@@ -167,6 +167,8 @@ Highlights.prototype.CSS = <![CDATA[
     HelpString                                  display: inline-block; color: green; font-weight: normal; vertical-align: text-top;
     HelpString::before                          content: '"';
     HelpString::after                           content: '"';
+    HelpString[delim]::before                   content: attr(delim);
+    HelpString[delim]::after                    content: attr(delim);
 
     HelpHead,html|h1,liberator://help/* {
         display: block;

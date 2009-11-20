@@ -1094,9 +1094,9 @@ const Tabs = Module("tabs", {
                 "Where to show requested popup windows",
                 "stringlist", "tab",
                 {
-                    setter: function (value) {
+                    setter: function (values) {
                         let [open, restriction] = [1, 0];
-                        for (let [, opt] in Iterator(this.parseValues(value))) {
+                        for (let [, opt] in Iterator(values)) {
                             if (opt == "tab")
                                 open = 3;
                             else if (opt == "window")
@@ -1107,7 +1107,7 @@ const Tabs = Module("tabs", {
 
                         options.safeSetPref("browser.link.open_newwindow", open, "See 'popups' option.");
                         options.safeSetPref("browser.link.open_newwindow.restriction", restriction, "See 'popups' option.");
-                        return value;
+                        return values;
                     },
                     completer: function (context) [
                         ["tab",     "Open popups in a new tab"],

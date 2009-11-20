@@ -598,6 +598,18 @@ const Bookmarks = Module("bookmarks", {
                     context.completions = [["", "Don't perform searches by default"]].concat(context.completions);
                 }
             });
+
+        options.add(["suggestengines"],
+             "Engine Alias which has a feature of suggest",
+             "stringlist", "google",
+             {
+                 completer: function completer(value) {
+                     let engines = services.get("browserSearch").getEngines({})
+                                           .filter(function (engine) engine.supportsResponseType("application/x-suggestions+json"));
+
+                     return engines.map(function (engine) [engine.alias, engine.description]);
+                 }
+             });
     },
     completion: function () {
         completion.bookmark = function bookmark(context, tags, extra) {

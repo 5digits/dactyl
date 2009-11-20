@@ -22,7 +22,6 @@
  *         getter    - see {@link Option#getter}
  *         completer - see {@link Option#completer}
  *         valdator  - see {@link Option#validator}
- *         checkHas  - see {@link Option#checkHas}
  * @optional
  * @private
  */
@@ -32,6 +31,17 @@ const Option = Class("Option", {
         this.names = names;
         this.type = type;
         this.description = description;
+
+        if (this.type in Option.getKey)
+            this.getKey = Option.getKey[this.type];
+
+        if (this.type in Option.parseValues)
+            this.parseValues = Option.parseValues[this.type];
+
+        if (this.type in Option.joinValues)
+            this.joinValues = Option.joinValues[this.type];
+
+        this._op = Option.ops[this.type];
 
         if (arguments.length > 3)
             this.defaultValue = defaultValue;
@@ -44,7 +54,7 @@ const Option = Class("Option", {
             this.names = array([name, "no" + name] for (name in values(names))).flatten().__proto__;
 
         if (this.globalValue == undefined)
-            this.globalValue = this.defaultValue;
+            this.globalValue = this.parseValues(this.defaultValue);
     },
 
     /** @property {value} The option's global value. @see #scope */
@@ -58,13 +68,7 @@ const Option = Class("Option", {
      * @param {value} value The option value.
      * @returns {value|string[]}
      */
-    parseValues: function (value) {
-        if (this.type == "stringlist")
-            return (value === "") ? [] : value.split(",");
-        if (this.type == "charlist")
-            return Array.slice(value);
-        return value;
-    },
+    parseValues: function (value) value,
 
     /**
      * Returns <b>values</b> packed in the appropriate format for the option
@@ -73,16 +77,10 @@ const Option = Class("Option", {
      * @param {value|string[]} values The option value.
      * @returns {value}
      */
-    joinValues: function (values) {
-        if (this.type == "stringlist")
-            return values.join(",");
-        if (this.type == "charlist")
-            return values.join("");
-        return values;
-    },
+    joinValues: function (vals) vals,
 
     /** @property {value|string[]} The option value or array of values. */
-    get values() this.parseValues(this.value),
+    get values() this.getValues(this.scope),
     set values(values) this.setValues(values, this.scope),
 
     /**
@@ -93,7 +91,26 @@ const Option = Class("Option", {
      *     {@link Option#scope}).
      * @returns {value|string[]}
      */
-    getValues: function (scope) this.parseValues(this.get(scope)),
+    getValues: function (scope) {
+        if (scope) {
+            if ((scope & this.scope) == 0) // option doesn't exist in this scope
+                return null;
+        }
+        else
+            scope = this.scope;
+
+        let values;
+
+        if (liberator.has("tabs") && (scope & Option.SCOPE_LOCAL))
+            values = tabs.options[this.name];
+        if ((scope & Option.SCOPE_GLOBAL) && (values == undefined))
+            values = this.globalValue;
+
+        if (this.getter)
+            return liberator.trapErrors(this.getter, this, values);
+
+        return values;
+    },
 
     /**
      * Sets the option's value from an array of values if the option type is
@@ -102,8 +119,22 @@ const Option = Class("Option", {
      * @param {number} scope The scope to apply these values to (see
      *     {@link Option#scope}).
      */
-    setValues: function (values, scope) {
-        this.set(this.joinValues(values), scope || this.scope);
+    setValues: function (newValues, scope, skipGlobal) {
+        scope = scope || this.scope;
+        if ((scope & this.scope) == 0) // option doesn't exist in this scope
+            return;
+
+        if (this.setter)
+            newValues = liberator.trapErrors(this.setter, this, newValues);
+        if (newValues === undefined)
+            return;
+
+        if (liberator.has("tabs") && (scope & Option.SCOPE_LOCAL))
+            tabs.options[this.name] = newValues;
+        if ((scope & Option.SCOPE_GLOBAL) && !skipGlobal)
+            this.globalValue = newValues;
+
+        this.hasChanged = true;
     },
 
     /**
@@ -115,26 +146,7 @@ const Option = Class("Option", {
      *     {@link Option#scope}).
      * @returns {value}
      */
-    get: function (scope) {
-        if (scope) {
-            if ((scope & this.scope) == 0) // option doesn't exist in this scope
-                return null;
-        }
-        else
-            scope = this.scope;
-
-        let value;
-
-        if (liberator.has("tabs") && (scope & Option.SCOPE_LOCAL))
-            value = tabs.options[this.name];
-        if ((scope & Option.SCOPE_GLOBAL) && (value == undefined))
-            value = this.globalValue;
-
-        if (this.getter)
-            return liberator.trapErrors(this.getter, this, value);
-
-        return value;
-    },
+    get: function (scope) this.joinValues(this.getValues(scope)),
 
     /**
      * Sets the option value to <b>newValue</b> for the specified <b>scope</b>.
@@ -145,21 +157,7 @@ const Option = Class("Option", {
      * @param {number} scope The scope to apply this value to (see
      *     {@link Option#scope}).
      */
-    set: function (newValue, scope) {
-        scope = scope || this.scope;
-        if ((scope & this.scope) == 0) // option doesn't exist in this scope
-            return;
-
-        if (this.setter)
-            newValue = liberator.trapErrors(this.setter, this, newValue);
-
-        if (liberator.has("tabs") && (scope & Option.SCOPE_LOCAL))
-            tabs.options[this.name] = newValue;
-        if ((scope & Option.SCOPE_GLOBAL) && newValue != this.globalValue)
-            this.globalValue = newValue;
-
-        this.hasChanged = true;
-    },
+    set: function (newValue, scope) this.setValues(this.parseValues(newValue), scope),
 
     /**
      * @property {value} The option's current value. The option's local value,
@@ -169,21 +167,15 @@ const Option = Class("Option", {
     get value() this.get(),
     set value(val) this.set(val),
 
+    getKey: function (key) undefined,
+
     /**
      * Returns whether the option value contains one or more of the specified
      * arguments.
      *
      * @returns {boolean}
      */
-    has: function () {
-        let self = this;
-        let test = function (val) values.indexOf(val) >= 0;
-        if (this.checkHas)
-            test = function (val) values.some(function (value) self.checkHas(value, val));
-        let values = this.values;
-        // return whether some argument matches
-        return Array.some(arguments, function (val) test(val));
-    },
+    has: function () Array.some(arguments, function (val) this.values.indexOf(val) >= 0, this),
 
     /**
      * Returns whether this option is identified by <b>name</b>.
@@ -216,97 +208,16 @@ const Option = Class("Option", {
      * @param {boolean} invert Whether this is an invert boolean operation.
      */
     op: function (operator, values, scope, invert) {
-        let newValue = null;
-        let self = this;
 
-        switch (this.type) {
-        case "boolean":
-            if (operator != "=")
-                break;
+        let newValues = this._op(operator, values, scope, invert);
 
-            if (invert)
-                newValue = !this.value;
-            else
-                newValue = values;
-            break;
-
-        case "number":
-            // TODO: support floats? Validators need updating.
-            if (!/^[+-]?(?:0x[0-9a-f]+|0[0-7]+|0|[1-9]\d*)$/i.test(values))
-                return "E521: Number required after := " + this.name + "=" + values;
-
-            let value = parseInt(values/* deduce radix */);
-
-            switch (operator) {
-            case "+":
-                newValue = this.value + value;
-                break;
-            case "-":
-                newValue = this.value - value;
-                break;
-            case "^":
-                newValue = this.value * value;
-                break;
-            case "=":
-                newValue = value;
-                break;
-            }
-
-            break;
-
-        case "charlist":
-        case "stringlist":
-            values = Array.concat(values);
-            switch (operator) {
-            case "+":
-                newValue = util.Array.uniq(Array.concat(this.values, values), true);
-                break;
-            case "^":
-                // NOTE: Vim doesn't prepend if there's a match in the current value
-                newValue = util.Array.uniq(Array.concat(values, this.values), true);
-                break;
-            case "-":
-                newValue = this.values.filter(function (item) values.indexOf(item) == -1);
-                break;
-            case "=":
-                newValue = values;
-                if (invert) {
-                    let keepValues = this.values.filter(function (item) values.indexOf(item) == -1);
-                    let addValues  = values.filter(function (item) self.values.indexOf(item) == -1);
-                    newValue = addValues.concat(keepValues);
-                }
-                break;
-            }
-
-            break;
-
-        case "string":
-            switch (operator) {
-            case "+":
-                newValue = this.value + values;
-                break;
-            case "-":
-                newValue = this.value.replace(values, "");
-                break;
-            case "^":
-                newValue = values + this.value;
-                break;
-            case "=":
-                newValue = values;
-                break;
-            }
-
-            break;
-
-        default:
-            return "E685: Internal error: option type `" + this.type + "' not supported";
-        }
-
-        if (newValue == null)
+        if (newValues == null)
             return "Operator " + operator + " not supported for option type " + this.type;
-        if (!this.isValidValue(newValue))
+
+        if (!this.isValidValue(newValues))
             return "E474: Invalid argument: " + values;
-        this.setValues(newValue, scope);
+
+        this.setValues(newValues, scope);
         return null;
     },
 
@@ -319,11 +230,13 @@ const Option = Class("Option", {
 
     /**
      * @property {string} The option's data type. One of:
-     *     "boolean"    - Boolean E.g. true
-     *     "number"     - Integer E.g. 1
-     *     "string"     - String E.g. "Vimperator"
-     *     "charlist"   - Character list E.g. "rb"
-     *     "stringlist" - String list E.g. "homepage,quickmark,tabopen,paste"
+     *     "boolean"    - Boolean, e.g., true
+     *     "number"     - Integer, e.g., 1
+     *     "string"     - String, e.g., "Vimperator"
+     *     "charlist"   - Character list, e.g., "rb"
+     *     "regexlist"  - Regex list, e.g., "^foo,bar$"
+     *     "stringmap"  - String map, e.g., "key=v,foo=bar"
+     *     "regexmap"   - Regex map, e.g., "^key=v,foo$=bar"
      */
     type: null,
 
@@ -370,12 +283,6 @@ const Option = Class("Option", {
             return Option.validateCompleter.apply(this, arguments);
         return true;
     },
-    /**
-     * @property The function called to determine whether the option already
-     *     contains a specified value.
-     * @see #has
-     */
-    checkHas: null,
 
     /**
      * @property {boolean} Set to true whenever the option is first set. This
@@ -410,6 +317,131 @@ const Option = Class("Option", {
      */
     SCOPE_BOTH: 3,
 
+    parseRegex: function (val, result) {
+        let [, bang, val] = /^(!?)(.*)/.exec(val);
+        let re = RegExp(val);
+        re.bang = bang;
+        re.result = arguments.length == 2 ? result : !bang;
+        return re;
+    },
+    unparseRegex: function (re) re.bang + re.source + (typeof re.result == "string" ? "=" + re.result : ""),
+
+    getKey: {
+        stringlist: function (k) this.values.indexOf(k) >= 0,
+        regexlist: function (k) {
+            for (let re in values(this.values))
+                if (re.test(k))
+                    return re.result;
+            return null;
+        }
+    },
+
+    joinValues: {
+        charlist:    function (vals) vals.join(""),
+        stringlist:  function (vals) vals.join(","),
+        stringmap:   function (vals) [k + "=" + v for ([k, v] in Iterator(vals))].join(","),
+        regexlist:   function (vals) vals.map(Option.unparseRegex).join(","),
+    },
+
+    parseValues: {
+        number:     function (value) Number(value),
+        boolean:    function (value) value == "true" || value == true ? true : false,
+        charlist:   function (value) Array.slice(value),
+        stringlist: function (value) (value === "") ? [] : value.split(","),
+        stringmap:  function (value) array(v.split("=") for (v in values(value.split(",")))).toObject(),
+        regexlist:  function (value) (value === "") ? [] : value.split(",").map(Option.parseRegex),
+        regexmap:   function (value) value.split(",").map(function (v) v.split("="))
+                                                     .map(function ([k, v]) v != null ? Option.parseRegex(k, v) : Option.parseRegex('.?', k))
+    },
+
+    ops: {
+        boolean: function (operator, values, scope, invert) {
+            if (operator != "=")
+                return null;
+            if (invert)
+                return !this.value;
+            return values;
+        },
+
+        number: function (operator, values, scope, invert) {
+            // TODO: support floats? Validators need updating.
+            if (!/^[+-]?(?:0x[0-9a-f]+|0[0-7]*|[1-9]+)$/i.test(values))
+                return "E521: Number required after := " + this.name + "=" + values;
+
+            let value = parseInt(values);
+
+            switch (operator) {
+            case "+":
+                return this.value + value;
+            case "-":
+                return this.value - value;
+            case "^":
+                return this.value * value;
+            case "=":
+                return value;
+            }
+            return null;
+        },
+
+        stringmap: function (operator, values, scope, invert) {
+            values = Array.concat(values);
+            orig = [k + "=" + v for ([k, v] in Iterator(this.values))];
+
+            switch (operator) {
+            case "+":
+                return util.Array.uniq(Array.concat(orig, values), true);
+            case "^":
+                // NOTE: Vim doesn't prepend if there's a match in the current value
+                return util.Array.uniq(Array.concat(values, orig), true);
+            case "-":
+                return orig.filter(function (item) values.indexOf(item) == -1);
+            case "=":
+                if (invert) {
+                    let keepValues = orig.filter(function (item) values.indexOf(item) == -1);
+                    let addValues  = values.filter(function (item) self.values.indexOf(item) == -1);
+                    return addValues.concat(keepValues);
+                }
+                return values;
+            }
+            return null;
+        },
+
+        stringlist: function (operator, values, scope, invert) {
+            values = Array.concat(values);
+            switch (operator) {
+            case "+":
+                return util.Array.uniq(Array.concat(this.values, values), true);
+            case "^":
+                // NOTE: Vim doesn't prepend if there's a match in the current value
+                return util.Array.uniq(Array.concat(values, this.values), true);
+            case "-":
+                return this.values.filter(function (item) values.indexOf(item) == -1);
+            case "=":
+                if (invert) {
+                    let keepValues = this.values.filter(function (item) values.indexOf(item) == -1);
+                    let addValues  = values.filter(function (item) self.values.indexOf(item) == -1);
+                    return addValues.concat(keepValues);
+                }
+                return values;
+            }
+            return null;
+        },
+
+        string: function (operator, values, scope, invert) {
+            switch (operator) {
+            case "+":
+                return this.value + values;
+            case "-":
+                return this.value.replace(values, "");
+            case "^":
+                return values + this.value;
+            case "=":
+                return values;
+            }
+            return null;
+        }
+    },
+
     // TODO: Run this by default?
     /**
      * Validates the specified <b>values</b> against values generated by the
@@ -423,9 +455,20 @@ const Option = Class("Option", {
         let res = context.fork("", 0, this, this.completer);
         if (!res)
             res = context.allItems.items.map(function (item) [item.text]);
+        if (this.type == "regexmap")
+            return Array.concat(values).every(function (re) res.some(function (item) item[0] == re.result));
         return Array.concat(values).every(function (value) res.some(function (item) item[0] == value));
     }
 });
+
+Option.joinValues["regexmap"] = Option.joinValues["regexlist"];
+
+Option.getKey["charlist"] = Option.getKey["stringlist"];
+Option.getKey["regexmap"] = Option.getKey["regexlist"];
+
+Option.ops["charlist"]  = Option.ops["stringlist"];
+Option.ops["regexlist"] = Option.ops["stringlist"];
+Option.ops["regexmap"]  = Option.ops["stringlist"];
 
 /**
  * @instance options
@@ -462,7 +505,7 @@ const Options = Module("options", {
             // Trigger any setters.
             let opt = options.get(option);
             if (event == "change" && opt)
-                opt.set(opt.value, Option.SCOPE_GLOBAL);
+                opt.setValues(opt.globalValue, Option.SCOPE_GLOBAL, true);
         }
 
         storage.newMap("options", { store: false });
@@ -1008,8 +1051,6 @@ const Options = Module("options", {
                     }
                 }
                 // write access
-                // NOTE: the behavior is generally Vim compatible but could be
-                // improved. i.e. Vim's behavior is pretty sloppy to no real benefit
                 else {
                     option.setFrom = modifiers.setFrom || null;
 
@@ -1017,7 +1058,12 @@ const Options = Module("options", {
                         liberator.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
                         opt.values = !opt.unsetBoolean;
                     }
-                    let res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert);
+                    try {
+                        var res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert);
+                    }
+                    catch (e) {
+                        res = e;
+                    }
                     if (res)
                         liberator.echoerr(res);
                 }
@@ -1244,8 +1290,15 @@ const Options = Module("options", {
             if (!completer)
                 return;
 
-            let curValues = curValue != null ? opt.parseValues(curValue) : opt.values;
-            let newValues = opt.parseValues(context.filter);
+            try {
+                var curValues = curValue != null ? opt.parseValues(curValue) : opt.values;
+                var newValues = opt.parseValues(context.filter);
+            }
+            catch (e) {
+                context.message = "Error: " + e;
+                context.completions = [];
+                return;
+            }
 
             let len = context.filter.length;
             switch (opt.type) {
@@ -1253,9 +1306,18 @@ const Options = Module("options", {
                 if (!completer)
                     completer = function () [["true", ""], ["false", ""]];
                 break;
+            case "regexlist":
+                newValues = context.filter.split(",");
+                // Fallthrough
             case "stringlist":
-                let target = newValues.pop();
-                len = target ? target.length : 0;
+                let target = newValues.pop() || "";
+                len = target.length;
+                break;
+            case "stringmap":
+            case "regexmap":
+                let vals = context.filter.split(",");
+                target = vals.pop() || "";
+                len = target.length - (target.indexOf("=") + 1);
                 break;
             case "charlist":
                 len = 0;
@@ -1268,9 +1330,10 @@ const Options = Module("options", {
             let completions = completer(context);
             if (!completions)
                 return;
+
             // Not Vim compatible, but is a significant enough improvement
             // that it's worth breaking compatibility.
-            if (newValues instanceof Array) {
+            if (isarray(newValues)) {
                 completions = completions.filter(function (val) newValues.indexOf(val[0]) == -1);
                 switch (op) {
                 case "+":

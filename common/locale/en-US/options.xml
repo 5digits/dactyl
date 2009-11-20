@@ -17,11 +17,27 @@
 </p>
 
 <dl>
-    <dt>boolean</dt>       <dd>can only be on or off</dd>
-    <dt>number</dt>        <dd>has a numeric value</dd>
-    <dt>string</dt>        <dd>has a string value</dd>
-    <dt>charlist</dt>      <dd>like a string but with unique characters</dd>
-    <dt>stringlist</dt>    <dd>a comma-separated list of strings</dd>
+    <dt>boolean</dt>       <dd>Can only be on or off</dd>
+    <dt>number</dt>        <dd>A numeric value</dd>
+    <dt>string</dt>        <dd>A string value</dd>
+    <dt>charlist</dt>      <dd>A string containing a discrete set of distinct characters</dd>
+    <dt>stringlist</dt>    <dd>A comma-separated list of strings</dd>
+    <dt>stringmap</dt>     <dd>A comma-separated list of key-value pairs, e.g., <str>key=val,foo=bar</str></dd>
+    <dt>regexlist</dt>
+    <dd>
+        A comma-separated list of regular expressions. Expressions may be
+        prefixed with a <em>!</em>, in which case the match will be negated. A
+        literal <em>!</em> at the begining of the expression may be matched with
+        <em>[!]</em>.  Generally, the first matching regular expression is used.
+    </dd>
+    <dt>regexmap</dt>
+    <dd>
+        A combination of a <em>stringmap</em> and a <em>regexlist</em>. Each key
+        in the <a>key</a>=<a>value</a> pair is a regexp. If the regexp begins with a
+        <em>!</em>, the sense match is negated, such that a non-matching
+        expression will be considered a match and <html:i>vice versa</html:i>.
+        The first <a>key</a> to match yields value.
+    </dd>
 </dl>
 
 <h2 tag="set-option E764">Setting options</h2>
@@ -293,6 +309,40 @@
     </description>
 </item>
 
+<item>
+    <tags>'au' 'autocomplete'</tags>
+    <spec>'autocomplete' 'au'</spec>
+    <type>regexlist</type>
+    <default>.*</default>
+    <description>
+        <p>
+            A list of regexps defining which completion contexts should be
+            autocompleted. When the value is non-empty, the completion list is
+            automatically opened along with the commandline. Thereafter, any key
+            press triggers a completion update for the matching contexts.
+            Non-matching contexts will only be updated when the tab key is
+            pressed. This option is useful for disabling autocompletion for
+            computationally intense contexts that don't perform well on your
+            system under load.
+        </p>
+
+        <example>
+            To enable autocompletion for everything but <ex>:history</ex> or
+            <ex>:bmarks</ex>, you would choose a value such as,
+            <str delim="'">!/ex/bmarks,.?</str>
+        </example>
+
+        <note>
+            Completion contexts have names very much like Unix path names. This
+            denotes the tree in which they're called. A completer will never be
+            called unless every completer preceding it in the tree was also
+            called. For example, if your completer excludes <str>/ex/</str>, it
+            will also exclude <str>/ex/bmarks</str>, and so on.
+        </note>
+
+        <p>See also <ex>:contexts</ex></p>
+    </description>
+</item>
 
 <item>
     <tags>$CDPATH</tags>
@@ -1249,40 +1299,49 @@
     </description>
 </item>
 
-
 <item>
-    <tags>'wildcase' 'wic'</tags>
+    <tags>'wic' 'wildcase'</tags>
     <spec>'wildcase' 'wic'</spec>
-    <type>string</type>
+    <type>regexmap</type>
     <default>smart</default>
     <description>
-        <p>Defines how completions are matched with regard to character case. Possible values:</p>
+        <p>
+            Defines how completions are matched for a given completion context
+            with regard to character case.
+        </p>
+
+        <p>Possible values:</p>
 
         <dl>
             <dt><str>smart</str></dt>  <dd>Case is significant when capital letters are typed</dd>
             <dt><str>match</str></dt>  <dd>Case is always significant</dd>
             <dt><str>ignore</str></dt> <dd>Case is never significant</dd>
         </dl>
+
+        <p>See also <ex>:contexts</ex></p>
     </description>
 </item>
-
 
 <item>
     <tags>'wildignore' 'wig'</tags>
     <spec>'wildignore' 'wig'</spec>
-    <type>stringlist</type>
+    <type>regexlist</type>
     <default></default>
     <description>
         <p>
             List of file patterns to ignore when completing files. E.g., to ignore object
             files and Vim swap files
-            <ex>:set wildignore=<str>.<em>\\.o,\\..</em>\\.s[a-z]\\<a>2</a></str></ex>
         </p>
 
+        <code><ex>:set wildignore=<str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]<a>2</a>$</str></ex></code>
+
         <note>Unlike Vim each pattern is a regex rather than a glob.</note>
+        <note>
+            The only way to include a literal comma in a pattern is with the
+            escape <str>\u0044</str>.
+        </note>
     </description>
 </item>
-
 
 <item>
     <tags>'wim' 'wildmode'</tags>
@@ -1318,24 +1377,22 @@
     </description>
 </item>
 
-
 <item>
-    <tags>'wop' 'wildoptions'</tags>
-    <spec>'wildoptions' 'wop'</spec>
-    <type>stringlist</type>
-    <default></default>
+    <tags>'wis' 'wildsort'</tags>
+    <spec>'wildsort' 'wis'</spec>
+    <type>regexlist</type>
+    <default>.*</default>
     <description>
-        <p>A list of words that change how command-line completion is done.</p>
+        <p>
+            A list of regexps defining which completion contexts
+            should be sorted. The main purpose of this option is to
+            prevent sorting of certain completion lists that don't
+            perform well under load.
+        </p>
 
-        <p>Possible words:</p>
-
-        <dl>
-            <dt>auto</dt>       <dd>Automatically show completions while you are typing.</dd>
-            <dt>sort</dt>       <dd>Always sort the completion list, overriding the <o>complete</o> option.</dd>
-        </dl>
+        <p>See also <ex>:contexts</ex></p>
     </description>
 </item>
-
 
 <item>
     <tags>'wsp' 'wordseparators'</tags>

@@ -194,8 +194,6 @@ const Template = Module("template", {
         return <>:{commandline.command}<br/>{xml}</>;
     },
 
-    // every item must have a .xml property which defines how to draw itself
-    // @param headers is an array of strings, the text for the header columns
     genericTable: function genericTable(items, format) {
         completion.listCompleter(function (context) {
             context.filterFunc = null;

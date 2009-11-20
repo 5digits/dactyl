@@ -102,7 +102,7 @@ const CommandLine = Module("commandline", {
         });
 
         this._autocompleteTimer = new Timer(200, 500, function autocompleteTell(tabPressed) {
-            if (!events.feedingKeys && self._completions && options.get("wildoptions").has("auto")) {
+            if (!events.feedingKeys && self._completions && options.get("autocomplete").values.length) {
                 self._completions.complete(true, false);
                 self._completions.itemList.show();
             }
@@ -1516,84 +1516,6 @@ const CommandLine = Module("commandline", {
         options.add(["showmode", "smd"],
             "Show the current mode in the command line",
             "boolean", true);
-
-        options.add(["suggestengines"],
-             "Engine Alias which has a feature of suggest",
-             "stringlist", "google",
-             {
-                 completer: function completer(value) {
-                     let engines = services.get("browserSearch").getEngines({})
-                                           .filter(function (engine) engine.supportsResponseType("application/x-suggestions+json"));
-
-                     return engines.map(function (engine) [engine.alias, engine.description]);
-                 }
-             });
-
-        options.add(["complete", "cpt"],
-            "Items which are completed at the :open prompts",
-            "charlist", typeof(config.defaults["complete"]) == "string" ? config.defaults["complete"] : "slf",
-            {
-                completer: function (context) array(values(completion.urlCompleters))
-            });
-
-        options.add(["wildcase", "wic"],
-            "Completion case matching mode",
-            "string", "smart",
-            {
-                completer: function () [
-                    ["smart", "Case is significant when capital letters are typed"],
-                    ["match", "Case is always significant"],
-                    ["ignore", "Case is never significant"]
-                ]
-            });
-
-        options.add(["wildignore", "wig"],
-            "List of file patterns to ignore when completing files",
-            "stringlist", "",
-            {
-                validator: function validator(values) {
-                    // TODO: allow for escaping the ","
-                    try {
-                        RegExp("^(" + values.join("|") + ")$");
-                        return true;
-                    }
-                    catch (e) {
-                        return false;
-                    }
-                }
-            });
-
-        options.add(["wildmode", "wim"],
-            "Define how command line completion works",
-            "stringlist", "list:full",
-            {
-                completer: function (context) [
-                    // Why do we need ""?
-                    ["",              "Complete only the first match"],
-                    ["full",          "Complete the next full match"],
-                    ["longest",       "Complete to longest common string"],
-                    ["list",          "If more than one match, list all matches"],
-                    ["list:full",     "List all and complete first match"],
-                    ["list:longest",  "List all and complete common string"]
-                ],
-                checkHas: function (value, val) {
-                    let [first, second] = value.split(":", 2);
-                    return first == val || second == val;
-                }
-            });
-
-        options.add(["wildoptions", "wop"],
-            "Change how command line completion is done",
-            "stringlist", "",
-            {
-                completer: function completer(value) {
-                    return [
-                        ["",     "Default completion that won't show or sort the results"],
-                        ["auto", "Automatically show this._completions while you are typing"],
-                        ["sort", "Always sort the completion list"]
-                    ];
-                }
-            });
     },
     styles: function () {
         let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;

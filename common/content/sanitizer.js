@@ -213,10 +213,9 @@ const Sanitizer = Module("sanitizer", {
             {
                 setter: function (values) {
                     for (let [, pref] in Iterator(sanitizer.prefNames)) {
-                        continue;
                         options.setPref(pref, false);
 
-                        for (let [, value] in Iterator(this.parseValues(values))) {
+                        for (let [, value] in Iterator(values)) {
                             if (Sanitizer.prefToArg(pref) == value) {
                                 options.setPref(pref, true);
                                 break;
@@ -226,7 +225,7 @@ const Sanitizer = Module("sanitizer", {
 
                     return values;
                 },
-                getter: function () sanitizer.prefNames.filter(function (pref) options.getPref(pref)).map(Sanitizer.prefToArg).join(","),
+                getter: function () sanitizer.prefNames.filter(function (pref) options.getPref(pref)).map(Sanitizer.prefToArg),
                 completer: function (value) [
                     ["cache", "Cache"],
                     ["commandline", "Command-line history"],

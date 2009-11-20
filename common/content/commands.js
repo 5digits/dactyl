@@ -894,10 +894,10 @@ const Commands = Module("commands", {
             }
 
             [prefix] = context.filter.match(/^(?:\w*[\s!]|!)\s*/);
-            let cmdContext = context.fork(cmd, prefix.length);
+            let cmdContext = context.fork(command.name, prefix.length);
             let argContext = context.fork("args", prefix.length);
             args = command.parseArgs(cmdContext.filter, argContext, { count: count, bang: bang });
-            if (args) {
+            if (args && !cmdContext.waitingForTab) {
                 // FIXME: Move to parseCommand
                 args.count = count;
                 args.bang = bang;

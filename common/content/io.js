@@ -240,7 +240,7 @@ const File = Class("File", {
      */
     MODE_EXCL: 0x80,
 
-    expandPathList: function (list) list.split(",").map(this.expandPath).join(","),
+    expandPathList: function (list) list.map(this.expandPath),
 
     expandPath: function (path, relative) {
 
@@ -1028,8 +1028,8 @@ lookup:
                         b.isdir - a.isdir || String.localeCompare(a.text, b.text);
 
             if (options["wildignore"]) {
-                let wigRegexp = RegExp("(^" + options.get("wildignore").values.join("|") + ")$");
-                context.filters.push(function ({item: f}) f.isDirectory() || !wigRegexp.test(f.leafName));
+                let wig = options.get("wildignore");
+                context.filters.push(function ({item: f}) f.isDirectory() || !wig.getKey(this.name));
             }
 
             // context.background = true;
@@ -1099,6 +1099,10 @@ lookup:
         options.add(["shellcmdflag", "shcf"],
             "Flag passed to shell when executing :! and :run commands",
             "string", shellcmdflag);
+
+        options.add(["wildignore", "wig"],
+            "List of file patterns to ignore when completing files",
+            "regexlist", "");
     }
 });
 
