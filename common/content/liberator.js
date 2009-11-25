@@ -1729,6 +1729,7 @@ const Liberator = Module("liberator", {
             context.completions = liberator.menuItems;
         };
 
+        var toolbox = document.getElementById("navigator-toolbox");
         completion.toolbar = function toolbar(context) {
             context.title = ["Toolbar"];
             context.keys = { text: function (item) item.getAttribute("toolbarname"), description: function () "" };
