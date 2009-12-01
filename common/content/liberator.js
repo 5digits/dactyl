@@ -1842,6 +1842,7 @@ const Liberator = Module("liberator", {
 
         statusline.update();
         liberator.log(config.name + " fully initialized", 0);
+        liberator.initialized = true;
     }
 });
 

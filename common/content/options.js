@@ -407,6 +407,7 @@ const Option = Class("Option", {
         },
 
         stringlist: function (operator, values, scope, invert) {
+            const self = this;
             values = Array.concat(values);
             switch (operator) {
             case "+":
