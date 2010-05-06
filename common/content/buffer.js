@@ -321,6 +321,19 @@ const Buffer = Module("buffer", {
     },
 
     /**
+     * @property {Array[Window]} All frames in the current buffer.
+     */
+    get allFrames() {
+        let frames = [];
+        (function (frame) {
+            if (frame.document.body instanceof HTMLBodyElement)
+                frames.push(frame);
+            Array.forEach(frame.frames, arguments.callee);
+        })(window.content);
+        return frames;
+    },
+
+    /**
      * @property {Object} A map of page info sections to their
      *     content generating functions.
      */
@@ -446,18 +459,23 @@ const Buffer = Module("buffer", {
     // FIXME: getSelection() doesn't always preserve line endings, see:
     // https://www.mozdev.org/bugs/show_bug.cgi?id=19303
     getCurrentWord: function () {
-        let selection = window.content.getSelection();
+        let win = tabs.localStore.focusedFrame || content;
+        let selection = win.getSelection();
+        if (selection.rangeCount == 0)
+            return "";
+
         let range = selection.getRangeAt(0);
         if (selection.isCollapsed) {
-            let selController = this.selectionController;
-            let caretmode = selController.getCaretEnabled();
-            selController.setCaretEnabled(true);
+            let controller = util.selectionController(win);
+            let caretmode = controller.getCaretEnabled();
+            controller.setCaretEnabled(true);
+
             // Only move backwards if the previous character is not a space.
             if (range.startOffset > 0 && !/\s/.test(range.startContainer.textContent[range.startOffset - 1]))
-                selController.wordMove(false, false);
+                controller.wordMove(false, false);
 
-            selController.wordMove(true, true);
-            selController.setCaretEnabled(caretmode);
+            controller.wordMove(true, true);
+            controller.setCaretEnabled(caretmode);
             return String.match(selection, /\w*/)[0];
         }
         if (util.computedStyle(range.startContainer).whiteSpace == "pre"
@@ -563,7 +581,7 @@ const Buffer = Module("buffer", {
         let ret = followFrame(window.content);
         if (!ret)
             // only loop through frames if the main content didn't match
-            ret = Array.some(window.content.frames, followFrame);
+            ret = Array.some(buffer.allFrames.frames, followFrame);
 
         if (!ret)
             dactyl.beep();
@@ -787,14 +805,7 @@ const Buffer = Module("buffer", {
             return;
 
         count = Math.max(count, 1);
-        let frames = [];
-
-        // find all frames - depth-first search
-        (function (frame) {
-            if (frame.document.body instanceof HTMLBodyElement)
-                frames.push(frame);
-            Array.forEach(frame.frames, arguments.callee);
-        })(window.content);
+        let frames = buffer.allFrames;
 
         if (frames.length == 0) // currently top is always included
             return;

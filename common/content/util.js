@@ -234,6 +234,20 @@ const Util = Module("util", {
     },
 
     /**
+     * Returns the selection controller for the given window.
+     *
+     * @param {Window} window
+     * @returns {nsISelectionController}
+     */
+    selectionController: function (win)
+        win.QueryInterface(Ci.nsIInterfaceRequestor)
+           .getInterface(Ci.nsIWebNavigation)
+           .QueryInterface(Ci.nsIDocShell)
+           .QueryInterface(Ci.nsIInterfaceRequestor)
+           .getInterface(Ci.nsISelectionDisplay)
+           .QueryInterface(Ci.nsISelectionController),
+
+    /**
      * Split a string on literal occurrences of a marker.
      *
      * Specifically this ignores occurrences preceded by a backslash, or
