@@ -366,7 +366,6 @@ const Bookmarks = Module("bookmarks", {
 
         // ripped from Firefox
         function getShortcutOrURI(url) {
-            var shortcutURL = null;
             var keyword = url;
             var param = "";
             var offset = url.indexOf(" ");
@@ -381,7 +380,7 @@ const Bookmarks = Module("bookmarks", {
                 return [submission.uri.spec, submission.postData];
             }
 
-            [shortcutURL, postData] = PlacesUtils.getURLAndPostDataForKeyword(keyword);
+            let [shortcutURL, postData] = PlacesUtils.getURLAndPostDataForKeyword(keyword);
             if (!shortcutURL)
                 return [url, null];
 

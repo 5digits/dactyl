@@ -1109,7 +1109,7 @@ const CommandLine = Module("commandline", {
      */
     Completions: Class("Completions", {
         init: function (input) {
-            this.context = CompletionContext(input.editor);
+            this.context = CompletionContext(input.QueryInterface(Ci.nsIDOMNSEditableElement).editor);
             this.context.onUpdate = this.closure._reset;
             this.editor = input.editor;
             this.selected = null;

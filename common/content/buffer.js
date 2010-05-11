@@ -19,9 +19,10 @@ const Point = Struct("x", "y");
  * @instance buffer
  */
 const Buffer = Module("buffer", {
-    requires: ["config"],
+    requires: ["config", "util"],
 
     init: function () {
+        this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};
 
         this.addPageInfoSection("f", "Feeds", function (verbose) {
@@ -1470,16 +1471,19 @@ const Buffer = Module("buffer", {
                 if (count < 1 && buffer.lastInputField)
                     buffer.focusElement(buffer.lastInputField);
                 else {
-                    let xpath = ["input[not(@type) or @type='text' or @type='password' or @type='file']",
-                                 "textarea[not(@disabled) and not(@readonly)]"];
+                    let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
 
-                    let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (match) {
-                        let computedStyle = util.computedStyle(match);
+                    let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (elem) {
+                        if (elem.readOnly || elem instanceof HTMLInputElement && ["text", "password", "file"].indexOf(elem.type) < 0)
+                            return false;
+                        let computedStyle = util.computedStyle(elem);
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none";
                     });
 
                     liberator.assert(elements.length > 0);
-                    buffer.focusElement(elements[util.Math.constrain(count, 1, elements.length) - 1]);
+                    let elem = elements[util.Math.constrain(count, 1, elements.length) - 1];
+                    elem.scrollIntoView();
+                    buffer.focusElement(elem);
                 }
             },
             { count: true });
@@ -1599,7 +1603,7 @@ const Buffer = Module("buffer", {
             "Desired info in the :pageinfo output",
             "charlist", "gfm",
             {
-                completer: function (context) [[k, v[1]] for ([k, v] in Iterator(this.pageInfo))]
+                completer: function (context) [[k, v[1]] for ([k, v] in Iterator(buffer.pageInfo))]
             });
 
         options.add(["scroll", "scr"],
