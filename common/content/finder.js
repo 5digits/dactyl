@@ -227,6 +227,28 @@ const RangeFinder = Module("rangefinder", {
     }
 });
 
+/**
+ * @class RangeFind
+ *
+ * A fairly sophisticated typeahead-find replacement. It supports
+ * incremental search very much as the builtin component.
+ * Additionally, it supports several features impossible to
+ * implement using the standard component. Incremental searching
+ * works both forwards and backwards. Erasing characters during an
+ * incremental search moves the selection back to the first
+ * available match for the shorter term. The selection and viewport
+ * are restored when the search is canceled.
+ *
+ * Also, in addition to full support for frames and iframes, this
+ * implementation will begin searching from the position of the
+ * caret in the last active frame. This is contrary to the behavior
+ * of the builtin component, which always starts a search from the
+ * begining of the first frame in the case of frameset documents,
+ * and cycles through all frames from begining to end. This makes it
+ * impossible to choose the starting point of a search for such
+ * documents, and represents a major detriment to productivity where
+ * large amounts of data are concerned (e.g., for API documents).
+ */
 const RangeFind = Class("RangeFind", {
     init: function (matchCase, backward, elementPath) {
         this.window = Cu.getWeakReference(window);
@@ -485,6 +507,7 @@ const RangeFind = Class("RangeFind", {
             parent.insertBefore(node, before);
             range.selectNode(node);
         }
+
         function unhighlight(range) {
             let elem = range.startContainer;
             while (!(elem instanceof Element) && elem.parentNode)
@@ -512,7 +535,7 @@ const RangeFind = Class("RangeFind", {
         else {
             this.highlighted = this.lastString;
             this.addListeners();
-            this.search(null, false);
+            this.search(null, false); // Rehighlight collapsed range
         }
     },
 
