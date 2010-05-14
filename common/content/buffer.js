@@ -280,7 +280,10 @@ const Buffer = Module("buffer", {
             autocommands.trigger("LocationChange", { url: buffer.URL });
 
             // if this is not delayed we get the position of the old buffer
-            setTimeout(function () { statusline.updateBufferPosition(); }, 500);
+            setTimeout(function () {
+                statusline.updateBufferPosition();
+                statusline.updateZoomLevel();
+            }, 500);
         },
         // called at the very end of a page load
         asyncUpdateUI: function () {
@@ -385,19 +388,18 @@ const Buffer = Module("buffer", {
     get pageHeight() window.content.innerHeight,
 
     /**
-     * @property {number} The current browser's text zoom level, as a
-     *     percentage with 100 as 'normal'. Only affects text size.
+     * @property {number} The current browser's zoom level, as a
+     *     percentage with 100 as 'normal'.
      */
-    get textZoom() config.browser.markupDocumentViewer.textZoom * 100,
-    set textZoom(value) { Buffer.setZoom(value, false); },
+    get zoomLevel() config.browser.markupDocumentViewer[this.fullZoom ? "textZoom" : "fullZoom"] * 100,
+    set zoomLevel(value) { Buffer.setZoom(value, this.fullZoom); },
 
     /**
-     * @property {number} The current browser's text zoom level, as a
-     *     percentage with 100 as 'normal'. Affects text size, as well as
-     *     image size and block size.
+     * @property {boolean} Whether the current browser is using full
+     *     zoom, as opposed to text zoom.
      */
-    get fullZoom() config.browser.markupDocumentViewer.fullZoom * 100,
-    set fullZoom(value) { Buffer.setZoom(value, true); },
+    get fullZoom() ZoomManager.useFullZoom,
+    set fullZoom(value) { Buffer.setZoom(this.zoomLevel, value); },
 
     /**
      * @property {string} The current document's title.
@@ -961,14 +963,20 @@ const Buffer = Module("buffer", {
         liberator.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
             "Zoom value out of range (" + Buffer.ZOOM_MIN + " - " + Buffer.ZOOM_MAX + "%)");
 
-        ZoomManager.useFullZoom = fullZoom;
+        if (fullZoom !== undefined)
+            ZoomManager.useFullZoom = fullZoom;
         ZoomManager.zoom = value / 100;
+
         if ("FullZoom" in window)
             FullZoom._applySettingToPref();
-        liberator.echomsg((fullZoom ? "Full" : "Text") + " zoom: " + value + "%");
+
+        statusline.updateZoomLevel(value, ZoomManager.useFullZoom);
     },
 
     bumpZoomLevel: function bumpZoomLevel(steps, fullZoom) {
+        if (fullZoom === undefined)
+            fullZoom = ZoomManager.useFullZoom;
+
         let values = ZoomManager.zoomValues;
         let cur = values.indexOf(ZoomManager.snap(ZoomManager.zoom));
         let i = util.Math.constrain(cur + steps, 0, values.length - 1);
@@ -1555,27 +1563,27 @@ const Buffer = Module("buffer", {
             function (count) { buffer.textZoom = count > 1 ? count : 100; },
             { count: true });
 
-        mappings.add(myModes, ["zI"],
+        mappings.add(myModes, ["ZI", "zI"],
             "Enlarge full zoom of current web page",
             function (count) { buffer.zoomIn(Math.max(count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["zM"],
+        mappings.add(myModes, ["ZM", "zM"],
             "Enlarge full zoom of current web page by a larger amount",
             function (count) { buffer.zoomIn(Math.max(count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["zO"],
+        mappings.add(myModes, ["ZO", "zO"],
             "Reduce full zoom of current web page",
             function (count) { buffer.zoomOut(Math.max(count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["zR"],
+        mappings.add(myModes, ["ZR", "zR"],
             "Reduce full zoom of current web page by a larger amount",
             function (count) { buffer.zoomOut(Math.max(count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["zZ"],
+        mappings.add(myModes, ["ZZ", "zZ"],
             "Set full zoom value of current web page",
             function (count) { buffer.fullZoom = count > 1 ? count : 100; },
             { count: true });

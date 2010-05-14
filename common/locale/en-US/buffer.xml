@@ -417,8 +417,8 @@ preference.
 
 
 <item>
-    <tags>zI</tags>
-    <spec><oa>count</oa>zI</spec>
+    <tags>ZI zI</tags>
+    <spec><oa>count</oa>ZI</spec>
     <description>
         <p>Enlarge full zoom of current web page. Mnemonic: zoom in.</p>
     </description>
@@ -426,8 +426,8 @@ preference.
 
 
 <item>
-    <tags>zM</tags>
-    <spec><oa>count</oa>zM</spec>
+    <tags>ZM zM</tags>
+    <spec><oa>count</oa>ZM</spec>
     <description>
         <p>Enlarge full zoom of current web page by a larger amount. Mnemonic: zoom more.</p>
     </description>
@@ -435,8 +435,8 @@ preference.
 
 
 <item>
-    <tags>zO</tags>
-    <spec><oa>count</oa>zO</spec>
+    <tags>ZO zO</tags>
+    <spec><oa>count</oa>ZO</spec>
     <description>
         <p>Reduce full zoom of current web page. Mnemonic: zoom out.</p>
     </description>
@@ -444,8 +444,8 @@ preference.
 
 
 <item>
-    <tags>zR</tags>
-    <spec><oa>count</oa>zR</spec>
+    <tags>ZR zR</tags>
+    <spec><oa>count</oa>ZR</spec>
     <description>
         <p>Reduce full zoom of current web page by a larger amount. Mnemonic: zoom reduce.</p>
     </description>
@@ -453,8 +453,8 @@ preference.
 
 
 <item>
-    <tags>zZ</tags>
-    <spec><oa>count</oa>zZ</spec>
+    <tags>ZZ zZ</tags>
+    <spec><oa>count</oa>ZZ</spec>
     <description>
         <p>
             Set full zoom value of current web page. Zoom value can be between 30 and

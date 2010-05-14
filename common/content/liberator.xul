@@ -86,12 +86,13 @@
 
     <statusbar id="status-bar" liberator:highlight="StatusLine">
         <hbox insertbefore="&liberator.statusBefore;" insertafter="&liberator.statusAfter;"
-              id="liberator-statusline" flex="1" hidden="false" align="center">
+              id="liberator-statusline-field-status" flex="1" hidden="false" align="center">
             <textbox class="plain" id="liberator-statusline-field-url" readonly="false" flex="1" crop="end"/>
             <label class="plain" id="liberator-statusline-field-inputbuffer"    flex="0"/>
             <label class="plain" id="liberator-statusline-field-progress"       flex="0"/>
             <label class="plain" id="liberator-statusline-field-tabcount"       flex="0"/>
             <label class="plain" id="liberator-statusline-field-bufferposition" flex="0"/>
+            <label class="plain" id="liberator-statusline-field-zoomlevel"      flex="0"/>
         </hbox>
         <!-- just hide them since other elements expect them -->
         <statusbarpanel id="statusbar-display" hidden="true"/>

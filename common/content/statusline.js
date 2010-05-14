@@ -13,12 +13,8 @@ const StatusLine = Module("statusline", {
         this._statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
 
         // our status bar fields
-        this._statuslineWidget     = document.getElementById("liberator-statusline");
-        this._urlWidget            = document.getElementById("liberator-statusline-field-url");
-        this._inputBufferWidget    = document.getElementById("liberator-statusline-field-inputbuffer");
-        this._progressWidget       = document.getElementById("liberator-statusline-field-progress");
-        this._tabCountWidget       = document.getElementById("liberator-statusline-field-tabcount");
-        this._bufferPositionWidget = document.getElementById("liberator-statusline-field-bufferposition");
+        this.widgets = dict(["status", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"].map(
+                function (field) [field, document.getElementById("liberator-statusline-field-" + field)]));
     },
 
     /**
@@ -49,6 +45,7 @@ const StatusLine = Module("statusline", {
         this.updateProgress();
         this.updateTabCount();
         this.updateBufferPosition();
+        this.updateZoomLevel();
     },
 
     /**
@@ -116,7 +113,7 @@ const StatusLine = Module("statusline", {
         if (modified)
             url += " [" + modified + "]";
 
-        this._urlWidget.value = url;
+        this.widgets.url.value = url;
     },
 
     /**
@@ -131,7 +128,7 @@ const StatusLine = Module("statusline", {
         if (!buffer || typeof buffer != "string")
             buffer = "";
 
-        this._inputBufferWidget.value = buffer;
+        this.widgets.inputbuffer.value = buffer;
     },
 
     /**
@@ -148,7 +145,7 @@ const StatusLine = Module("statusline", {
             progress = "";
 
         if (typeof progress == "string")
-            this._progressWidget.value = progress;
+            this.widgets.progress.value = progress;
         else if (typeof progress == "number") {
             let progressStr = "";
             if (progress <= 0)
@@ -161,7 +158,7 @@ const StatusLine = Module("statusline", {
                     + "                    ".substr(0, 19 - progress)
                     + "]";
             }
-            this._progressWidget.value = progressStr;
+            this.widgets.progress.value = progressStr;
         }
     },
 
@@ -185,7 +182,7 @@ const StatusLine = Module("statusline", {
                 for (let [i, tab] in util.Array.iteritems(config.browser.mTabs))
                     tab.setAttribute("ordinal", i + 1);
 
-            this._tabCountWidget.value = "[" + (tabs.index() + 1) + "/" + tabs.count + "]";
+            this.widgets.tabcount.value = "[" + (tabs.index() + 1) + "/" + tabs.count + "]";
         }
     },
 
@@ -196,7 +193,7 @@ const StatusLine = Module("statusline", {
      * @param {number} percent The position, as a percentage. @optional
      */
     updateBufferPosition: function updateBufferPosition(percent) {
-        if (!percent || typeof percent != "number") {
+        if (typeof percent != "number") {
             let win = document.commandDispatcher.focusedWindow;
             if (!win)
                 return;
@@ -209,14 +206,35 @@ const StatusLine = Module("statusline", {
             bufferPositionStr = "All";
         else if (percent == 0)
             bufferPositionStr = "Top";
-        else if (percent < 10)
-            bufferPositionStr = " " + percent + "%";
         else if (percent >= 100)
             bufferPositionStr = "Bot";
+        else if (percent < 10)
+            bufferPositionStr = " " + percent + "%";
         else
             bufferPositionStr = percent + "%";
 
-        this._bufferPositionWidget.value = bufferPositionStr;
+        this.widgets.bufferposition.value = bufferPositionStr;
+    },
+
+    /**
+     * Display the main content's zoom level.
+     *
+     * @param {number} percent The zoom level, as a percentage. @optional
+     * @param {boolean} full True if full zoom is in operation. @optional
+     */
+    updateZoomLevel: function updateZoomLevel(percent, full) {
+        if (arguments.length == 0)
+            [percent, full] = [buffer.zoomLevel, buffer.fullZoom];
+
+        if (percent == 100)
+            this.widgets.zoomlevel.value = "";
+        else {
+            percent = ("  " + percent).substr(-3);
+            if (full)
+                this.widgets.zoomlevel.value = " [" + percent + "%]";
+            else
+                this.widgets.zoomlevel.value = " (" + percent + "%)";
+        }
     }
 
 }, {
