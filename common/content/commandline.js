@@ -1034,7 +1034,7 @@ const CommandLine = Module("commandline", {
         sanitize: function (timespan) {
             let range = [0, Number.MAX_VALUE];
             if (liberator.has("sanitizer") && (timespan || options["sanitizetimespan"]))
-                range = sanitizer.getClearRange(timespan || options["sanitizetimespan"]);
+                range = Sanitizer.getClearRange(timespan || options["sanitizetimespan"]);
 
             const self = this;
             this.store.mutate("filter", function (item) {

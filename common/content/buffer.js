@@ -1490,8 +1490,8 @@ const Buffer = Module("buffer", {
 
                     liberator.assert(elements.length > 0);
                     let elem = elements[util.Math.constrain(count, 1, elements.length) - 1];
-                    elem.scrollIntoView();
                     buffer.focusElement(elem);
+                    util.scrollIntoView(elem);
                 }
             },
             { count: true });

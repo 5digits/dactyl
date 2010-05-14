@@ -674,6 +674,20 @@ const Util = Module("util", {
     },
 
     /**
+     * Scrolls an element into view if and only if it's not already
+     * fully visible.
+     *
+     * @param {Node} elem The element to make visible.
+     */
+    scrollIntoView: function scrollIntoView(elem) {
+        let win = elem.ownerDocument.defaultView;
+        let rect = elem.getBoundingClientRect();
+        if (!(rect && rect.top < win.innerHeight && rect.bottom >= 0 && rect.left < win.innerWidth && rect.right >= 0))
+            elem.scrollIntoView();
+    },
+
+
+    /**
      * Returns an array of URLs parsed from <b>str</b>.
      *
      * Given a string like 'google bla, www.osnews.com' return an array

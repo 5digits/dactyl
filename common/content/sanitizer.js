@@ -19,6 +19,7 @@ const Sanitizer = Module("sanitizer", {
     init: function () {
         const self = this;
         liberator.loadScript("chrome://browser/content/sanitize.js", Sanitizer);
+        Sanitizer.getClearRange = Sanitizer.Sanitizer.getClearRange;
         this.__proto__.__proto__ = new Sanitizer.Sanitizer; // Good enough.
 
         // TODO: remove this version test
