@@ -126,6 +126,9 @@ statusbarpanel {
 #liberator-commandline-command html|*:focus {
     outline-width: 0px !important
 }
+#liberator-commandline-command .textbox-search-icons {
+    visibility: collapse !important;
+}
 #liberator-message {
     margin: 0px;
 }
