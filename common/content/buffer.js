@@ -169,7 +169,7 @@ const Buffer = Module("buffer", {
     // called when the active document is scrolled
     _updateBufferPosition: function _updateBufferPosition() {
         statusline.updateBufferPosition();
-        modes.show();
+        modes.show(); // Clear the status line.
     },
 
     onDOMContentLoaded: function onDOMContentLoaded(event) {
@@ -283,6 +283,7 @@ const Buffer = Module("buffer", {
             setTimeout(function () {
                 statusline.updateBufferPosition();
                 statusline.updateZoomLevel();
+                modes.show(); // Clear the status line.
             }, 500);
         },
         // called at the very end of a page load

@@ -361,7 +361,7 @@ const RangeFind = Class("RangeFind", {
     // This doesn't work yet.
     resetCaret: function () {
         let equal = RangeFind.equal;
-        letselection = this.win.getSelection();
+        let selection = this.win.getSelection();
         if (selection.rangeCount == 0)
             selection.addRange(this.pageStart);
         function getLines() {
@@ -627,7 +627,13 @@ const RangeFind = Class("RangeFind", {
         range.collapse(before);
         return range;
     },
-    equal: function (r1, r2) !r1.compareBoundaryPoints(Range.START_TO_START, r2) && !r1.compareBoundaryPoints(Range.END_TO_END, r2)
+    equal: function (r1, r2) {
+        try {
+                return !r1.compareBoundaryPoints(Range.START_TO_START, r2) && !r1.compareBoundaryPoints(Range.END_TO_END, r2)
+        }
+        catch (e) {}
+        return false;
+    }
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

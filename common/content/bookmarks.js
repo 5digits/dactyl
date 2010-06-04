@@ -656,8 +656,11 @@ const Bookmarks = Module("bookmarks", {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);
                             if (item.url.substr(rest) == end && query.indexOf("&") == -1) {
-                                item.url = decodeURIComponent(query.replace(/#.*/, ""));
-                                return item;
+                                try {
+                                    item.url = decodeURIComponent(query.replace(/#.*/, ""));
+                                    return item;
+                                }
+                                catch (e) {}
                             }
                             return null;
                         }).filter(util.identity);

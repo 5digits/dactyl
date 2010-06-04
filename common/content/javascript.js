@@ -37,7 +37,10 @@ const JavaScript = Module("javascript", {
         let seen = {};
         let ret = {};
 
-        try {
+        if(obj == null)
+            return;
+
+        if(options["jsdebugger"]) {
             let orig = obj;
             let top = services.get("debugger").wrapValue(obj);
 
@@ -56,13 +59,16 @@ const JavaScript = Module("javascript", {
             }
             // The debugger doesn't list some properties. I can't guess why.
             for (let k in orig)
-                if (k in orig && !('|' + k in seen) && obj.hasOwnProperty(k) == toplevel)
+                if (k in orig && !('|' + k in seen) && orig.hasOwnProperty(k) == toplevel)
                     yield [k, this.getKey(orig, k)]
         }
-        catch(e) {
+        else {
             for (k in allkeys(obj))
-                if (obj.hasOwnProperty(k) == toplevel)
-                    yield [k, this.getKey(obj, k)];
+		    try {
+			if (obj.hasOwnProperty(k) == toplevel)
+			    yield [k, this.getKey(obj, k)];
+                    }
+                    catch (e) {}
         }
     },
 
@@ -230,8 +236,6 @@ const JavaScript = Module("javascript", {
                 case "'":
                 case "/":
                 case "{":
-                    this._push(this._c);
-                    break;
                 case "[":
                     this._push(this._c);
                     break;
@@ -341,6 +345,10 @@ const JavaScript = Module("javascript", {
 
     _complete: function (objects, key, compl, string, last) {
         const self = this;
+
+        if(!options["jsdebugger"] && !this.context.message)
+            this.context.message = "For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
+
         let orig = compl;
         if (!compl) {
             compl = function (context, obj, recurse) {
@@ -427,7 +435,8 @@ const JavaScript = Module("javascript", {
         // Okay, have parse stack. Figure out what we're completing.
 
         // Find any complete statements that we can eval before we eval our object.
-        // This allows for things like: let doc = window.content.document; let elem = doc.createElement...; elem.<Tab>
+        // This allows for things like:
+	//   let doc = window.content.document; let elem = doc.createEle<Tab> ...
         let prev = 0;
         for (let [, v] in Iterator(this._get(0).fullStatements)) {
             let key = this._str.substring(prev, v + 1);
@@ -437,14 +446,13 @@ const JavaScript = Module("javascript", {
             prev = v + 1;
         }
 
-        // In a string. Check if we're dereferencing an object.
-        // Otherwise, do nothing.
+        // In a string. Check if we're dereferencing an object or
+	// completing a function argument. Otherwise, do nothing.
         if (this._last == "'" || this._last == '"') {
-            //
+
             // str = "foo[bar + 'baz"
             // obj = "foo"
             // key = "bar + ''"
-            //
 
             // The top of the stack is the sting we're completing.
             // Wrap it in its delimiters and eval it to process escape sequences.
@@ -520,7 +528,7 @@ const JavaScript = Module("javascript", {
             return null;
         }
 
-        //
+
         // str = "foo.bar.baz"
         // obj = "foo.bar"
         // key = "baz"
@@ -528,11 +536,11 @@ const JavaScript = Module("javascript", {
         // str = "foo"
         // obj = [modules, window]
         // key = "foo"
-        //
+
 
         let [offset, obj, key] = this._getObjKey(-1);
 
-        // Wait for a keypress before completing the default objects.
+        // Wait for a keypress before completing when there's no key
         if (!this.context.tabPressed && key == "" && obj.length > 1) {
             this.context.waitingForTab = true;
             this.context.message = "Waiting for key press";

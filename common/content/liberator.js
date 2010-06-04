@@ -136,7 +136,7 @@ const Liberator = Module("liberator", {
     forceNewWindow: false,
 
     /** @property {string} The Liberator version string. */
-    version: "###VERSION### (created: ###DATE###)", // these VERSION and DATE tokens are replaced by the Makefile
+    version: "@VERSION@ (created: @DATE@)", // these VERSION and DATE tokens are replaced by the Makefile
 
     /**
      * @property {Object} The map of command-line options. These are
@@ -331,7 +331,7 @@ const Liberator = Module("liberator", {
         // you don't like them you can set verbose=0, or use :silent when
         // someone adds it. I reckon another flag and 'class' of messages
         // is just going to unnecessarily complicate things. --djk
-        flags |= commandline.APPEND_TO_MESSAGES | commandline.DISALLOW_MULTILINE;
+        flags |= commandline.APPEND_TO_MESSAGES; // | commandline.DISALLOW_MULTILINE;
 
         if (verbosity == null)
             verbosity = 0; // verbosity level is exclusionary

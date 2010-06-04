@@ -18,8 +18,8 @@ getfiles () {
     find "$@" -not -path '*\.hg*' 2>/dev/null | grep -E "$filter" || true
 }
 copytext () {
-    sed -e "s,###VERSION###,$VERSION,g" \
-        -e "s,###DATE###,$BUILD_DATE,g" \
+    sed -e "s,@VERSION@,$VERSION,g" \
+        -e "s,@DATE@,$BUILD_DATE,g" \
         <"$1" >"$2"
     cmp -s "$1" "$2" ||
     ( echo "modified: $1"; diff -u "$1" "$2" | grep '^[-+][^-+]' )
