@@ -628,8 +628,7 @@ lookup:
             if (/\.js$/.test(filename)) {
                 try {
                     liberator.loadScript(uri.spec, Script(file));
-                    if (liberator.initialized)
-                        liberator.initHelp();
+                    liberator.helpInitialized = false;
                 }
                 catch (e) {
                     let err = new Error();
