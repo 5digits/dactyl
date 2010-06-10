@@ -73,9 +73,9 @@ const Command = Class("Command", {
         modifiers = modifiers || {};
 
         let self = this;
-        function exec(args) {
+        function exec(command) {
             // FIXME: Move to parseCommand?
-            args = self.parseArgs(args);
+            args = self.parseArgs(command);
             if (!args)
                 return;
             args.count = count;
@@ -237,6 +237,7 @@ const ArgType = Struct("description", "parse");
 const Commands = Module("commands", {
     init: function () {
         this._exCommands = [];
+        this._exMap = {};
     },
 
     // FIXME: remove later, when our option handler is better
@@ -304,7 +305,7 @@ const Commands = Module("commands", {
     repeat: null,
 
     _addCommand: function (command, replace) {
-        if (this._exCommands.some(function (c) c.hasName(command.name))) {
+        if (command.name in this._exMap) {
             if (command.user && replace)
                 commands.removeUserCommand(command.name);
             else {
@@ -314,6 +315,8 @@ const Commands = Module("commands", {
         }
 
         this._exCommands.push(command);
+        for(let [,name] in Iterator(command.names))
+            this._exMap[name] = command;
 
         return true;
     },
@@ -387,7 +390,7 @@ const Commands = Module("commands", {
      * @returns {Command}
      */
     get: function (name) {
-        return this._exCommands.filter(function (cmd) cmd.hasName(name))[0] || null;
+        return this._exMap[name] || this._exCommands.filter(function (cmd) cmd.hasName(name))[0] || null;
     },
 
     /**
@@ -762,6 +765,10 @@ const Commands = Module("commands", {
      *     any of the command's names.
      */
     removeUserCommand: function (name) {
+        for(let [,cmd] in Iterator(this._exCommands))
+                if(cmd.user && cmd.hasName(name))
+                    for(let [,name] in Iterator(cmd.names))
+                        delete this._exMap[name];
         this._exCommands = this._exCommands.filter(function (cmd) !(cmd.user && cmd.hasName(name)));
     },
 

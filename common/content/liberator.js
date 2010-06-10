@@ -544,85 +544,88 @@ const Liberator = Module("liberator", {
      * Initialize the help system.
      */
     initHelp: function () {
-        let namespaces = [config.name.toLowerCase(), "liberator"];
-        services.get("liberator:").init({});
+        if(!this.helpInitialized) {
+            let namespaces = [config.name.toLowerCase(), "liberator"];
+            services.get("liberator:").init({});
 
-        let tagMap = services.get("liberator:").HELP_TAGS;
-        let fileMap = services.get("liberator:").FILE_MAP;
-        let overlayMap = services.get("liberator:").OVERLAY_MAP;
+            let tagMap = services.get("liberator:").HELP_TAGS;
+            let fileMap = services.get("liberator:").FILE_MAP;
+            let overlayMap = services.get("liberator:").OVERLAY_MAP;
 
-        // Left as an XPCOM instantiation so it can easilly be moved
-        // into XPCOM code.
-        function XSLTProcessor(sheet) {
-            let xslt = Cc["@mozilla.org/document-transformer;1?type=xslt"].createInstance(Ci.nsIXSLTProcessor);
-            xslt.importStylesheet(util.httpGet(sheet).responseXML);
-            return xslt;
-        }
-
-        // Find help and overlay files with the given name.
-        function findHelpFile(file) {
-            let result = [];
-            for (let [, namespace] in Iterator(namespaces)) {
-                let url = ["chrome://", namespace, "/locale/", file, ".xml"].join("");
-                let res = util.httpGet(url);
-                if (res) {
-                    if (res.responseXML.documentElement.localName == "document")
-                        fileMap[file] = url;
-                    if (res.responseXML.documentElement.localName == "overlay")
-                        overlayMap[file] = url;
-                    result.push(res.responseXML);
-                }
+            // Left as an XPCOM instantiation so it can easilly be moved
+            // into XPCOM code.
+            function XSLTProcessor(sheet) {
+                let xslt = Cc["@mozilla.org/document-transformer;1?type=xslt"].createInstance(Ci.nsIXSLTProcessor);
+                xslt.importStylesheet(util.httpGet(sheet).responseXML);
+                return xslt;
             }
-            return result;
-        }
-        // Find the tags in the document.
-        function addTags(file, doc) {
-            doc = XSLT.transformToDocument(doc);
-            for (let elem in util.evaluateXPath("//xhtml:a/@id", doc))
-                tagMap[elem.value] = file;
-        }
 
-        const XSLT = XSLTProcessor("chrome://liberator/content/help-single.xsl");
+            // Find help and overlay files with the given name.
+            function findHelpFile(file) {
+                let result = [];
+                for (let [, namespace] in Iterator(namespaces)) {
+                    let url = ["chrome://", namespace, "/locale/", file, ".xml"].join("");
+                    let res = util.httpGet(url);
+                    if (res) {
+                        if (res.responseXML.documentElement.localName == "document")
+                            fileMap[file] = url;
+                        if (res.responseXML.documentElement.localName == "overlay")
+                            overlayMap[file] = url;
+                        result.push(res.responseXML);
+                    }
+                }
+                return result;
+            }
+            // Find the tags in the document.
+            function addTags(file, doc) {
+                doc = XSLT.transformToDocument(doc);
+                for (let elem in util.evaluateXPath("//xhtml:a/@id", doc))
+                    tagMap[elem.value] = file;
+            }
 
-        // Scrape the list of help files from all.xml
-        // Always process main and overlay files, since XSLTProcessor and
-        // XMLHttpRequest don't allow access to chrome documents.
-        tagMap.all = "all";
-        let files = findHelpFile("all").map(function (doc)
-                [f.value for (f in util.evaluateXPath(
-                    "//liberator:include/@href", doc))]);
+            const XSLT = XSLTProcessor("chrome://liberator/content/help-single.xsl");
 
-        // Scrape the tags from the rest of the help files.
-        util.Array.flatten(files).forEach(function (file) {
-            findHelpFile(file).forEach(function (doc) {
-                addTags(file, doc);
+            // Scrape the list of help files from all.xml
+            // Always process main and overlay files, since XSLTProcessor and
+            // XMLHttpRequest don't allow access to chrome documents.
+            tagMap.all = "all";
+            let files = findHelpFile("all").map(function (doc)
+                    [f.value for (f in util.evaluateXPath(
+                        "//liberator:include/@href", doc))]);
+
+            // Scrape the tags from the rest of the help files.
+            util.Array.flatten(files).forEach(function (file) {
+                findHelpFile(file).forEach(function (doc) {
+                    addTags(file, doc);
+                });
             });
-        });
 
-        // Process plugin help entries.
-        XML.ignoreWhiteSpace = false;
-        XML.prettyPrinting = false;
-        XML.prettyPrinting = true; // Should be false, but ignoreWhiteSpace=false doesn't work correctly. This is the lesser evil.
-        XML.prettyIndent = 4;
+            // Process plugin help entries.
+            XML.ignoreWhiteSpace = false;
+            XML.prettyPrinting = false;
+            XML.prettyPrinting = true; // Should be false, but ignoreWhiteSpace=false doesn't work correctly. This is the lesser evil.
+            XML.prettyIndent = 4;
 
-        let body = XML();
-        for (let [, context] in Iterator(plugins.contexts))
-            if (context.INFO instanceof XML)
-                body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
-                    context.INFO;
+            let body = XML();
+            for (let [, context] in Iterator(plugins.contexts))
+                if (context.INFO instanceof XML)
+                    body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
+                        context.INFO;
 
-        let help = '<?xml version="1.0"?>\n' +
-                   '<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>\n' +
-                   '<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">' +
-            <document xmlns={NS}
-                name="plugins" title={config.name + " Plugins"}>
-                <h1 tag="using-plugins">Using Plugins</h1>
+            let help = '<?xml version="1.0"?>\n' +
+                       '<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>\n' +
+                       '<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">' +
+                <document xmlns={NS}
+                    name="plugins" title={config.name + " Plugins"}>
+                    <h1 tag="using-plugins">Using Plugins</h1>
 
-                {body}
-            </document>.toXMLString();
-        fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
+                    {body}
+                </document>.toXMLString();
+            fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
-        addTags("plugins", util.httpGet("liberator://help/plugins").responseXML);
+            addTags("plugins", util.httpGet("liberator://help/plugins").responseXML);
+            this.helpInitialized = true;
+        }
     },
 
     /**
@@ -634,6 +637,7 @@ const Liberator = Module("liberator", {
      * @returns {string}
      */
     help: function (topic, unchunked) {
+        liberator.initHelp();
         if (!topic) {
             let helpFile = unchunked ? "all" : options["helpfile"];
             if (helpFile in services.get("liberator:").FILE_MAP)
@@ -1717,6 +1721,7 @@ const Liberator = Module("liberator", {
         };
 
         completion.help = function help(context, unchunked) {
+            liberator.initHelp();
             context.title = ["Help"];
             context.anchored = false;
             context.completions = services.get("liberator:").HELP_TAGS;
@@ -1819,8 +1824,6 @@ const Liberator = Module("liberator", {
 
             if (options["loadplugins"])
                 liberator.loadPlugins();
-
-            liberator.initHelp();
 
             // after sourcing the initialization files, this function will set
             // all gui options to their default values, if they have not been

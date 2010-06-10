@@ -597,6 +597,8 @@ lookup:
      */
     source: function (filename, silent) {
         let wasSourcing = this.sourcing;
+        liberator.dump("sourcing " + filename);
+        let time = Date.now();
         try {
             var file = File(filename);
             this.sourcing = {
@@ -715,6 +717,7 @@ lookup:
                 liberator.echoerr(message);
         }
         finally {
+            liberator.dump("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
             this.sourcing = wasSourcing;
         }
     },
