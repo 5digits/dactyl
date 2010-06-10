@@ -270,8 +270,7 @@ const RangeFind = Class("RangeFind", {
 
     get selectedRange() {
         let range = RangeFind.Range(tabs.localStore.focusedFrame || content);
-        range = (range.selection.rangeCount ? range.selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
-        return range;
+        return (range.selection.rangeCount ? range.selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
     },
 
     reset: function () {
@@ -411,6 +410,9 @@ const RangeFind = Class("RangeFind", {
     },
 
     search: function (word, reverse, private_) {
+        if (!private_ && this.lastRange && !RangeFind.equal(this.selectedRange, this.lastRange))
+            this.reset();
+
         this.wrapped = false;
         this.finder.findBackwards = reverse ? !this.reverse : this.reverse;
         let again = word == null;
@@ -426,8 +428,6 @@ const RangeFind = Class("RangeFind", {
                 this.range.descroll();
             this.lastRange = this.startRange;
             this.range = this.ranges.first;
-        } else if (!private_ && this.lastRange && !RangeFind.equal(this.selectedRange, this.lastRange)) {
-            this.reset();
         }
 
         if (word == "")
