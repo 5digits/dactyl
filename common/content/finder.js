@@ -83,6 +83,7 @@ const RangeFinder = Module("rangefinder", {
 
         if (options["hlsearch"])
             this.highlight();
+        this.rangeFind.focus();
     },
 
     // Called when the user types a key in the search dialog. Triggers a find attempt if 'incsearch' is set
@@ -103,6 +104,7 @@ const RangeFinder = Module("rangefinder", {
 
         if (options["hlsearch"])
             this.highlight();
+        this.rangeFind.focus();
 
         modes.reset();
     },
@@ -308,6 +310,16 @@ const RangeFind = Class("RangeFind", {
             if (range.compareBoundaryPoints(Range.START_TO_END, r) >= 0 &&
                 range.compareBoundaryPoints(Range.END_TO_START, r) <= 0)
                 yield r;
+        }
+    },
+
+    focus: function() {
+        if(this.lastRange)
+            var node = util.evaluateXPath(RangeFind.selectNodePath, this.range.document,
+                                          this.lastRange.commonAncestorContainer).snapshotItem(0);
+        if(node) {
+            node.focus();
+            this.search(null, false); // Rehighlight collapsed range
         }
     },
 
@@ -622,6 +634,8 @@ const RangeFind = Class("RangeFind", {
             }}
 
     }),
+    selectNodePath: ["ancestor-or-self::" + s for ([i, s] in Iterator(
+            ["a", "xhtml:a", "*[@onclick]"]))].join(" | "),
     endpoint: function (range, before) {
         range = range.cloneRange();
         range.collapse(before);
