@@ -59,7 +59,9 @@ const JavaScript = Module("javascript", {
             }
             // The debugger doesn't list some properties. I can't guess why.
             for (let k in orig)
-                if (k in orig && !('|' + k in seen) && orig.hasOwnProperty(k) == toplevel)
+                if (k in orig && !('|' + k in seen)
+                    && callable(orig.hasOwnProperty)
+                    && orig.hasOwnProperty(k) == toplevel)
                     yield [k, this.getKey(orig, k)]
         }
         else {
