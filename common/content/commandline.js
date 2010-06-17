@@ -331,10 +331,11 @@ const CommandLine = Module("commandline", {
 
     FORCE_MULTILINE    : 1 << 0,
     FORCE_SINGLELINE   : 1 << 1,
-    DISALLOW_MULTILINE : 1 << 2, // if an echo() should try to use the single line
+    DISALLOW_MULTILINE : 1 << 2, // If an echo() should try to use the single line
                                  // but output nothing when the MOW is open; when also
                                  // FORCE_MULTILINE is given, FORCE_MULTILINE takes precedence
-    APPEND_TO_MESSAGES : 1 << 3, // add the string to the message this._history
+    APPEND_TO_MESSAGES : 1 << 3, // Add the string to the message this._history.
+    ACTIVE_WINDOW      : 1 << 4, // Only echo in active window.
 
     get completionContext() this._completions.context,
 
@@ -501,6 +502,10 @@ const CommandLine = Module("commandline", {
 
         if (flags & this.APPEND_TO_MESSAGES)
             this._messageHistory.add({ str: str, highlight: highlightGroup });
+        if ((flags & this.ACTIVE_WINDOW) &&
+            window != services.get("windowWatcher").activeWindow &&
+            services.get("windowWatcher").activeWindow.liberator)
+            return;
 
         // The DOM isn't threadsafe. It must only be accessed from the main thread.
         liberator.callInMainThread(function () {

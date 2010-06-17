@@ -340,7 +340,7 @@ const IO = Module("io", {
                     let file  = download.targetFile.path;
                     let size  = download.size;
 
-                    liberator.echomsg("Download of " + title + " to " + file + " finished", 1);
+                    liberator.echomsg("Download of " + title + " to " + file + " finished", 1, commandline.ACTIVE_WINDOW);
                     autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
                 }
             },
