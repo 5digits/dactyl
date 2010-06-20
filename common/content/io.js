@@ -1065,7 +1065,10 @@ lookup:
             };
         };
 
-        completion.addUrlCompleter("f", "Local files", completion.file);
+        completion.addUrlCompleter("f", "Local files", function (context, full) {
+            if (!/^\.?\//.test(context.filter))
+                completion.file(context, full);
+        });
     },
     options: function () {
         var shell, shellcmdflag;

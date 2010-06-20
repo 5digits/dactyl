@@ -686,65 +686,6 @@ const Util = Module("util", {
             elem.scrollIntoView();
     },
 
-
-    /**
-     * Returns an array of URLs parsed from <b>str</b>.
-     *
-     * Given a string like 'google bla, www.osnews.com' return an array
-     * ['www.google.com/search?q=bla', 'www.osnews.com']
-     *
-     * @param {string} str
-     * @returns {string[]}
-     */
-    stringToURLArray: function stringToURLArray(str) {
-        let urls;
-
-        if (options["urlseparator"])
-            urls = util.splitLiteral(str, RegExp("\\s*" + options["urlseparator"] + "\\s*"));
-        else
-            urls = [str];
-
-        return urls.map(function (url) {
-            if (url.substr(0, 5) != "file:") {
-                try {
-                    // Try to find a matching file.
-                    let file = io.File(url);
-                    if (file.exists() && file.isReadable())
-                        return services.get("io").newFileURI(file).spec;
-                }
-                catch (e) {}
-            }
-
-            // strip each 'URL' - makes things simpler later on
-            url = url.replace(/^\s+|\s+$/, "");
-
-            // Look for a valid protocol
-            let proto = url.match(/^([-\w]+):/);
-            if (proto && Cc["@mozilla.org/network/protocol;1?name=" + proto[1]])
-                // Handle as URL, but remove spaces. Useful for copied/'p'asted URLs.
-                return url.replace(/\s*\n+\s*/g, "");
-
-            // Ok, not a valid proto. If it looks like URL-ish (foo.com/bar),
-            // let Gecko figure it out.
-            if (/^[a-zA-Z0-9-.]+(?:\/|$)/.test(url) && /[.\/]/.test(url) && !/\s/.test(url) || /^[a-zA-Z0-9-.]+:\d+(?:\/|$)/.test(url))
-                return url;
-
-            // TODO: it would be clearer if the appropriate call to
-            // getSearchURL was made based on whether or not the first word was
-            // indeed an SE alias rather than seeing if getSearchURL can
-            // process the call usefully and trying again if it fails
-
-            // check for a search engine match in the string, then try to
-            // search for the whole string in the default engine
-            let searchURL = bookmarks.getSearchURL(url, false) || bookmarks.getSearchURL(url, true);
-            if (searchURL)
-                return searchURL;
-
-            // Hmm. No defsearch? Let the host app deal with it, then.
-            return url;
-        });
-    },
-
     /**
      * Converts an E4X XML literal to a DOM node.
      *

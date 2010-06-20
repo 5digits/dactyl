@@ -743,22 +743,12 @@ const Liberator = Module("liberator", {
      */
     open: function (urls, params, force) {
         // convert the string to an array of converted URLs
-        // -> see util.stringToURLArray for more details
+        // -> see liberator.stringToURLArray for more details
         //
         // This is strange. And counterintuitive. Is it really
         // necessary? --Kris
-        if (typeof urls == "string") {
-            // rather switch to the tab instead of opening a new url in case of "12: Tab Title" like "urls"
-            if (liberator.has("tabs")) {
-                let matches = urls.match(/^(\d+):/);
-                if (matches) {
-                    tabs.select(parseInt(matches[1], 10) - 1, false); // make it zero-based
-                    return;
-                }
-            }
-
-            urls = util.stringToURLArray(urls);
-        }
+        if (typeof urls == "string")
+            urls = liberator.stringToURLArray(urls);
 
         if (urls.length > 20 && !force) {
             commandline.input("This will open " + urls.length + " new tabs. Would you like to continue? (yes/[no]) ",
@@ -771,7 +761,7 @@ const Liberator = Module("liberator", {
 
         let flags = 0;
         params = params || {};
-        if (params instanceof Array)
+        if (isarray(params))
             params = { where: params };
 
         for (let [opt, flag] in Iterator({ replace: "REPLACE_HISTORY", hide: "BYPASS_HISTORY" }))
@@ -779,15 +769,11 @@ const Liberator = Module("liberator", {
                 flags |= Ci.nsIWebNavigation["LOAD_FLAGS_" + flag];
 
         let where = params.where || liberator.CURRENT_TAB;
+        let background = ("background" in params) ? params.background : params.where == NEW_BACKGROUND_TAB;
         if ("from" in params && liberator.has("tabs")) {
             if (!('where' in params) && options.get("newtab").has("all", params.from))
-                where = liberator.NEW_BACKGROUND_TAB;
-            if (options.get("activate").has("all", params.from)) {
-                if (where == liberator.NEW_TAB)
-                    where = liberator.NEW_BACKGROUND_TAB;
-                else if (where == liberator.NEW_BACKGROUND_TAB)
-                    where = liberator.NEW_TAB;
-            }
+                where = liberator.NEW_TAB;
+            background = !options.get("activate").has("all", params.from);
         }
 
         if (urls.length == 0)
@@ -805,7 +791,6 @@ const Liberator = Module("liberator", {
                     browser.loadURIWithFlags(url, flags, null, null, postdata);
                     break;
 
-                case liberator.NEW_BACKGROUND_TAB:
                 case liberator.NEW_TAB:
                     if (!liberator.has("tabs")) {
                         open(urls, liberator.NEW_WINDOW);
@@ -814,7 +799,7 @@ const Liberator = Module("liberator", {
 
                     options.withContext(function () {
                         options.setPref("browser.tabs.loadInBackground", true);
-                        browser.loadOneTab(url, null, null, postdata, where == liberator.NEW_BACKGROUND_TAB);
+                        browser.loadOneTab(url, null, null, postdata, background);
                     });
                     break;
 
@@ -838,7 +823,7 @@ const Liberator = Module("liberator", {
 
         for (let [, url] in Iterator(urls)) {
             open(url, where);
-            where = liberator.NEW_BACKGROUND_TAB;
+            background = true;
         }
     },
 
@@ -869,6 +854,64 @@ const Liberator = Module("liberator", {
             services.get("appStartup").quit(Ci.nsIAppStartup.eForceQuit);
         else
             window.goQuitApplication();
+    },
+
+    /**
+     * Returns an array of URLs parsed from <b>str</b>.
+     *
+     * Given a string like 'google bla, www.osnews.com' return an array
+     * ['www.google.com/search?q=bla', 'www.osnews.com']
+     *
+     * @param {string} str
+     * @returns {string[]}
+     */
+    stringToURLArray: function stringToURLArray(str) {
+        let urls;
+
+        if (options["urlseparator"])
+            urls = util.splitLiteral(str, RegExp("\\s*" + options["urlseparator"] + "\\s*"));
+        else
+            urls = [str];
+
+        return urls.map(function (url) {
+            if (/^\.?\//.test(url)) {
+                try {
+                    // Try to find a matching file.
+                    let file = io.File(url);
+                    if (file.exists() && file.isReadable())
+                        return services.get("io").newFileURI(file).spec;
+                }
+                catch (e) {}
+            }
+
+            // strip each 'URL' - makes things simpler later on
+            url = url.replace(/^\s+|\s+$/, "");
+
+            // Look for a valid protocol
+            let proto = url.match(/^([-\w]+):/);
+            if (proto && Cc["@mozilla.org/network/protocol;1?name=" + proto[1]])
+                // Handle as URL, but remove spaces. Useful for copied/'p'asted URLs.
+                return url.replace(/\s*\n+\s*/g, "");
+
+            // Ok, not a valid proto. If it looks like URL-ish (foo.com/bar),
+            // let Gecko figure it out.
+            if (/^[a-zA-Z0-9-.]+(?:\/|$)/.test(url) && /[.\/]/.test(url) && !/\s/.test(url) || /^[a-zA-Z0-9-.]+:\d+(?:\/|$)/.test(url))
+                return url;
+
+            // TODO: it would be clearer if the appropriate call to
+            // getSearchURL was made based on whether or not the first word was
+            // indeed an SE alias rather than seeing if getSearchURL can
+            // process the call usefully and trying again if it fails
+
+            // check for a search engine match in the string, then try to
+            // search for the whole string in the default engine
+            let searchURL = bookmarks.getSearchURL(url, false) || bookmarks.getSearchURL(url, true);
+            if (searchURL)
+                return searchURL;
+
+            // Hmm. No defsearch? Let the host app deal with it, then.
+            return url;
+        });
     },
 
     /*
