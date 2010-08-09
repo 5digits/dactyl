@@ -270,7 +270,7 @@ const Liberator = Module("liberator", {
         let stack = Error().stack.replace(/(?:.*\n){2}/, "");
         if (frames != null)
             [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
-        liberator.dump((msg || "Stack") + "\n" + stack);
+        liberator.dump((msg || "Stack") + "\n" + stack + "\n");
     },
 
     /**
@@ -769,7 +769,7 @@ const Liberator = Module("liberator", {
                 flags |= Ci.nsIWebNavigation["LOAD_FLAGS_" + flag];
 
         let where = params.where || liberator.CURRENT_TAB;
-        let background = ("background" in params) ? params.background : params.where == NEW_BACKGROUND_TAB;
+        let background = ("background" in params) ? params.background : params.where == liberator.NEW_BACKGROUND_TAB;
         if ("from" in params && liberator.has("tabs")) {
             if (!('where' in params) && options.get("newtab").has("all", params.from))
                 where = liberator.NEW_TAB;
@@ -1380,19 +1380,89 @@ const Liberator = Module("liberator", {
                 }
             });
 
+        ///////////////////////////////////////////////////////////////////////////
+
+        if (typeof AddonManager == "undefined") {
+            modules.AddonManager = {
+                getInstallForFile: function (file, callback, mimetype) {
+                    callback({
+                        install: function () {
+                            services.get("extensionManager").installItemFromFile(file, "app-profile");
+                        }
+                    });
+                },
+                getAddonById: function (id, callback) {
+                    let addon = id;
+                    if (!isobject(addon))
+                        addon = services.get("extensionManager").getItemForID(id);
+                    if (!addon)
+                        return callback(null);
+
+                    function getRdfProperty(item, property) {
+                        let resource = services.get("rdf").GetResource("urn:mozilla:item:" + item.id);
+                        let value = "";
+
+                        if (resource) {
+                            let target = services.get("extensionManager").datasource.GetTarget(resource,
+                                services.get("rdf").GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
+                            if (target && target instanceof Ci.nsIRDFLiteral)
+                                value = target.Value;
+                        }
+
+                        return value;
+                    }
+
+                    ["aboutURL", "creator", "description", "developers",
+                     "homepageURL", "iconURL", "installDate", "name",
+                     "optionsURL", "releaseNotesURI", "updateDate"].forEach(function (item) {
+                        addon[item] = getRdfProperty(addon, item);
+                    });
+                    addon.isActive = getRdfProperty(addon, "isDisabled") != "true";
+
+                    addon.uninstall = function () {
+                        services.get("extensionManager").uninstallItem(this.id);
+                    };
+                    addon.appDisabled = false;
+                    addon.__defineGetter("userDisabled", function() getRdfProperty("userDisabled") == "true");
+                    addon.__defineSetter__("userDisabled", function(val) {
+                        services.get("extensionManager")[val ? "enableItem" : "disableItem"](this.id);
+                    });
+
+                    return callback(addon);
+                },
+                getAddonsByTypes: function (types, callback) {
+                    let res = [];
+                    for (let [,type] in Iterator(types))
+                        for (let [,item] in Iterator(services.get("extensionManager")
+                                    .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
+                            res.append(this.getAddonById(item));
+                    return res;
+                }
+            };
+
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
+        
+        function callResult(method) {
+            let args = Array.slice(arguments, 1);
+            return function (result) { result[method].apply(result, args) };
+        }
+
         commands.add(["exta[dd]"],
             "Install an extension",
             function (args) {
-                let file = io.File(args[0]);
+                let url  = args[0];
+                let file = io.File(url);
 
-                if (file.exists() && file.isReadable() && file.isFile())
-                    services.get("extensionManager").installItemFromFile(file, "app-profile");
-                else {
-                    if (file.exists() && file.isDirectory())
-                        liberator.echomsg("Cannot install a directory: \"" + file.path + "\"", 0);
-
+                if (!file.exists())
+                    AddonManager.getInstallForURL(url,   callResult("install"), "application/x-xpinstall");
+                else if (file.isReadable() && file.isFile())
+                    AddonManager.getInstallForFile(file, callResult("install"), "application/x-xpinstall");
+                else if (file.isDirectory())
+                    liberator.echomsg("Cannot install a directory: \"" + file.path + "\"", 0);
+                else
                     liberator.echoerr("E484: Can't open file " + file.path);
-                }
             }, {
                 argCount: "1",
                 completer: function (context) {
@@ -1406,38 +1476,35 @@ const Liberator = Module("liberator", {
             {
                 name: "extde[lete]",
                 description: "Uninstall an extension",
-                action: "uninstallItem"
+                action: callResult("uninstall")
             },
             {
                 name: "exte[nable]",
                 description: "Enable an extension",
-                action: "enableItem",
-                filter: function ({ item: e }) !e.enabled
+                action: function (addon) addon.userDisabled = false,
+                filter: function ({ item: e }) e.userDisabled
             },
             {
                 name: "extd[isable]",
                 description: "Disable an extension",
-                action: "disableItem",
-                filter: function ({ item: e }) e.enabled
+                action: function (addon) addon.userDisabled = true,
+                filter: function ({ item: e }) !e.userDisabled
             }
         ].forEach(function (command) {
             commands.add([command.name],
                 command.description,
                 function (args) {
                     let name = args[0];
-                    function action(e) { services.get("extensionManager")[command.action](e.id); };
-
                     if (args.bang)
-                        liberator.extensions.forEach(function (e) { action(e); });
-                    else {
-                        liberator.assert(name, "E471: Argument required"); // XXX
+                        liberator.assert(!name, "E488: Trailing characters");
+                    else
+                        liberator.assert(name, "E471: Argument required");
 
-                        let extension = liberator.getExtension(name);
-                        if (extension)
-                            action(extension);
-                        else
-                            liberator.echoerr("E474: Invalid argument");
-                    }
+                    AddonManager.getAddonsByTypes(["extension"], function (list) {
+                        if (!args.bang)
+                            list = list.filter(function (extension) extension.name == name);
+                        list.forEach(command.action);
+                    });
                 }, {
                     argCount: "?", // FIXME: should be "1"
                     bang: true,
@@ -1453,19 +1520,21 @@ const Liberator = Module("liberator", {
         commands.add(["exto[ptions]", "extp[references]"],
             "Open an extension's preference dialog",
             function (args) {
-                let extension = liberator.getExtension(args[0]);
-                liberator.assert(extension && extension.options,
-                    "E474: Invalid argument");
-                if (args.bang)
-                    window.openDialog(extension.options, "_blank", "chrome");
-                else
-                    liberator.open(extension.options, { from: "extoptions" });
+                AddonManager.getAddonsByTypes(["extension"], function (list) {
+                    list = list.filter(function (extension) extension.name == args[0]);
+                    if (!list.length || !list[0].optionsURL)
+                        liberator.echoerr("E474: Invalid argument");
+                    else if (args.bang)
+                        window.openDialog(list[0].optionsURL, "_blank", "chrome");
+                    else
+                        liberator.open(list[0].optionsURL, { from: "extoptions" });
+                });
             }, {
                 argCount: "1",
                 bang: true,
                 completer: function (context) {
                     completion.extension(context);
-                    context.filters.push(function ({ item: e }) e.options);
+                    context.filters.push(function ({ item: e }) e.isActive && e.optionsURL);
                 },
                 literal: 0
             });
@@ -1474,29 +1543,41 @@ const Liberator = Module("liberator", {
         commands.add(["extens[ions]"],
             "List available extensions",
             function (args) {
-                let filter = args[0] || "";
-                let extensions = liberator.extensions.filter(function (e) e.name.indexOf(filter) >= 0);
+                AddonManager.getAddonsByTypes(["extension"], function (extensions) {
+                    liberator.dump(extensions);
+                    if (args[0])
+                        extensions = extensions.filter(function (extension) extension.name.indexOf(args[0]) >= 0);
 
-                if (extensions.length > 0) {
-                    let list = template.tabular(
-                        ["Name", "Version", "Status", "Description"], [],
-                        ([template.icon(e, e.name),
-                          e.version,
-                          e.enabled ? <span highlight="Enabled">enabled</span>
-                                    : <span highlight="Disabled">disabled</span>,
-                          e.description] for ([, e] in Iterator(extensions)))
-                    );
+                    liberator.dump(extensions);
+                    if (extensions.length > 0) {
+                        let list = template.tabular(
+                            ["Name", "Version", "Status", "Description"], [],
+                            ([template.icon({ icon: e.iconURL }, e.name),
+                              e.version,
+                              (e.isActive ? <span highlight="Enabled">enabled</span>
+                                          : <span highlight="Disabled">disabled</span>) +
+                              ((e.userDisabled || e.appDisabled) == !e.isActive ? XML() :
+                                  <>&#xa0;({e.userDisabled || e.appDisabled
+                                        ? <span highlight="Disabled">disabled</span>
+                                        : <span highlight="Enabled">enabled</span>}
+                                        on restart)
+                                  </>),
+                              e.description] for ([, e] in Iterator(extensions)))
+                        );
 
-                    commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
-                }
-                else {
-                    if (filter)
-                        liberator.echoerr("Exxx: No extension matching \"" + filter + "\"");
-                    else
-                        liberator.echoerr("No extensions installed");
-                }
+                        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+                    }
+                    else {
+                        if (filter)
+                            liberator.echoerr("Exxx: No extension matching \"" + filter + "\"");
+                        else
+                            liberator.echoerr("No extensions installed");
+                    }
+                });
             },
             { argCount: "?" });
+
+        ///////////////////////////////////////////////////////////////////////////
 
         commands.add(["exu[sage]"],
             "List all Ex commands with a short description",
@@ -1759,8 +1840,12 @@ const Liberator = Module("liberator", {
         completion.extension = function extension(context) {
             context.title = ["Extension"];
             context.anchored = false;
-            context.keys = { text: "name", description: "description", icon: "icon" },
-            context.completions = liberator.extensions;
+            context.keys = { text: "name", description: "description", icon: "iconURL" },
+            context.incomplete = true;
+            AddonManager.getAddonsByTypes(["extension"], function (addons) {
+                context.incomplete = false;
+                context.completions = addons;
+            });
         };
 
         completion.help = function help(context, unchunked) {

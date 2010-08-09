@@ -47,7 +47,7 @@ const Hints = Module("hints", {
             t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, liberator.NEW_TAB)),
             b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB)),
             w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, liberator.NEW_WINDOW),         extended),
-            F: Mode("Open multiple hints in tabs",          followAndReshow),
+            F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB); hints.show("F") }),
             O: Mode("Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX)),
             T: Mode("Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX)),
             W: Mode("Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX)),
@@ -59,21 +59,6 @@ const Hints = Module("hints", {
             i: Mode("Show image",                           function (elem) liberator.open(elem.src),                              images),
             I: Mode("Show image in a new tab",              function (elem) liberator.open(elem.src, liberator.NEW_TAB),           images)
         };
-
-        /**
-         * Follows the specified hint and then reshows all hints. Used to open
-         * multiple hints in succession.
-         *
-         * @param {Node} elem The selected hint.
-         */
-        function followAndReshow(elem) {
-            buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB);
-
-            // TODO: Maybe we find a *simple* way to keep the hints displayed rather than
-            // showing them again, or is this short flash actually needed as a "usability
-            // feature"? --mst
-            hints.show("F");
-        }
     },
 
     /**
@@ -129,7 +114,7 @@ const Hints = Module("hints", {
 
         let type = elem.type;
 
-        if (elem instanceof HTMLInputElement && /(submit|button|this._reset)/.test(type))
+        if (elem instanceof HTMLInputElement && /(submit|button|reset)/.test(type))
             return [elem.value, false];
         else {
             for (let [, option] in Iterator(options["hintinputs"].split(","))) {
@@ -272,10 +257,6 @@ const Hints = Module("hints", {
             if (!rect || rect.top > height || rect.bottom < 0 || rect.left > width || rect.right < 0)
                 continue;
 
-            rect = elem.getClientRects()[0];
-            if (!rect)
-                continue;
-
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
             if (computedStyle.getPropertyValue("visibility") != "visible" || computedStyle.getPropertyValue("display") == "none")
                 continue;
@@ -396,7 +377,7 @@ const Hints = Module("hints", {
             }
         }
 
-        if (config.browser.markupDocumentViewer.authorStyleDisabled) {
+        if (options["usermode"]) {
             let css = [];
             // FIXME: Broken for imgspans.
             for (let [, { doc: doc }] in Iterator(this._docs)) {

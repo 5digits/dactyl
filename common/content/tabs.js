@@ -797,14 +797,7 @@ const Tabs = Module("tabs", {
             commands.add(["tabopen", "t[open]", "tabnew"],
                 "Open one or more URLs in a new tab",
                 function (args) {
-                    let special = args.bang;
-                    args = args.string;
-
-                    let where = special ? liberator.NEW_TAB : liberator.NEW_BACKGROUND_TAB;
-                    if (args)
-                        liberator.open(args, { from: "tabopen", where: where });
-                    else
-                        liberator.open("about:blank", { from: "tabopen", where: where });
+                    liberator.open(args.string || "about:blank", { from: "tabopen", where: liberator.NEW_TAB, background: args.bang });
                 }, {
                     bang: true,
                     completer: function (context) completion.url(context),
