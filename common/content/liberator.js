@@ -1544,11 +1544,9 @@ const Liberator = Module("liberator", {
             "List available extensions",
             function (args) {
                 AddonManager.getAddonsByTypes(["extension"], function (extensions) {
-                    liberator.dump(extensions);
                     if (args[0])
                         extensions = extensions.filter(function (extension) extension.name.indexOf(args[0]) >= 0);
 
-                    liberator.dump(extensions);
                     if (extensions.length > 0) {
                         let list = template.tabular(
                             ["Name", "Version", "Status", "Description"], [],
