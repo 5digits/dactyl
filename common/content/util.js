@@ -4,6 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 /** @scope modules */
 
@@ -267,8 +268,9 @@ const Util = Module("util", {
         const PATH = FILE.leafName.replace(/\..*/, "") + "/";
         const TIME = Date.now();
 
+        liberator.initHelp();
         let zip = services.create("zipWriter");
-        zip.open(FILE, io.MODE_CREATE | io.MODE_WRONLY | io.MODE_TRUNCATE);
+        zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
         function addURIEntry(file, uri)
             zip.addEntryChannel(PATH + file, TIME, 9,
                 services.get("io").newChannel(uri, null, null), false);

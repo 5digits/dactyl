@@ -1,4 +1,5 @@
 // Header:
+"use strict";
 const Name = "Vimperator";
 /*
  * We can't load our modules here, so the following code is sadly

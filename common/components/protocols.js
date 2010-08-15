@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /* Adds support for data: URIs with chrome privileges
  * and fragment identifiers.

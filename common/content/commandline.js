@@ -4,6 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 /** @scope modules */
 
@@ -971,7 +972,7 @@ const CommandLine = Module("commandline", {
 
         let doc = this._multilineOutputWidget.contentDocument;
 
-        availableHeight = config.outputHeight;
+        let availableHeight = config.outputHeight;
         if (!this._outputContainer.collapsed)
             availableHeight += parseFloat(this._outputContainer.height);
         doc.body.style.minWidth = this._commandlineWidget.scrollWidth + "px";

@@ -4,7 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -412,12 +412,12 @@ const CompletionContext = Class("CompletionContext", {
         let filter = fixCase(this.filter);
         if (this.anchored) {
             var compare = function compare(text, s) text.substr(0, s.length) == s;
-            substrings = util.map(util.range(filter.length, text.length + 1),
+            var substrings = util.map(util.range(filter.length, text.length + 1),
                 function (end) text.substring(0, end));
         }
         else {
             var compare = function compare(text, s) text.indexOf(s) >= 0;
-            substrings = [];
+            var substrings = [];
             let start = 0;
             let idx;
             let length = filter.length;

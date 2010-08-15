@@ -5,7 +5,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -162,7 +162,7 @@ const File = Class("File", {
             mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_TRUNCATE;
 
         if (!perms)
-            perms = 0644;
+            perms = parseInt('0644', 8);
 
         ofstream.init(this, mode, perms, 0);
         let ocstream = getStream(0);
@@ -487,7 +487,7 @@ const IO = Module("io", {
         let file = services.get("directory").get("TmpD", Ci.nsIFile);
 
         file.append(config.tempFile);
-        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0600);
+        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, parseInt('0600', 8));
 
         return File(file);
     },
