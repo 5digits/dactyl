@@ -1,10 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
 // Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -103,32 +103,16 @@ const Events = Module("events", {
             }
         }, 100);
 
-        function wrapListener(method) {
-            return function (event) {
-                try {
-                    self[method](event);
-                }
-                catch (e) {
-                    if (e.message == "Interrupted")
-                        liberator.echoerr("Interrupted");
-                    else
-                        liberator.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
-                    liberator.reportError(e);
-                }
-            };
-        }
-
-        this._wrappedOnKeyPress = wrapListener("onKeyPress");
-        this._wrappedOnKeyUpOrDown = wrapListener("onKeyUpOrDown");
-        this.addSessionListener(window, "keypress", this.closure._wrappedOnKeyPress, true);
-        this.addSessionListener(window, "keydown", this.closure._wrappedOnKeyUpOrDown, true);
-        this.addSessionListener(window, "keyup", this.closure._wrappedOnKeyUpOrDown, true);
-
         this._activeMenubar = false;
-        this.addSessionListener(window, "popupshown", this.closure.onPopupShown, true);
-        this.addSessionListener(window, "popuphidden", this.closure.onPopupHidden, true);
         this.addSessionListener(window, "DOMMenuBarActive", this.closure.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.closure.onDOMMenuBarInactive, true);
+        this.addSessionListener(window, "focus", this.wrapListener(this.closure.onFocus), true);
+        this.addSessionListener(window, "keydown", this.wrapListener(this.closure.onKeyUpOrDown), true);
+        this.addSessionListener(window, "keypress", this.wrapListener(this.closure.onKeyPress), true);
+        this.addSessionListener(window, "keyup", this.wrapListener(this.closure.onKeyUpOrDown), true);
+        this.addSessionListener(window, "mousedown", this.wrapListener(this.closure.onMouseDown), true);
+        this.addSessionListener(window, "popuphidden", this.closure.onPopupHidden, true);
+        this.addSessionListener(window, "popupshown", this.closure.onPopupShown, true);
         this.addSessionListener(window, "resize", this.closure.onResize, true);
 
     },
@@ -151,8 +135,26 @@ const Events = Module("events", {
      */
     addSessionListener: function (target, event, callback, capture) {
         let args = Array.slice(arguments, 0);
-        target.addEventListener.apply(target, args.slice(1));
+        target.addEventListener.apply(args[0], args.slice(1));
         this.sessionListeners.push(args);
+    },
+
+    /**
+     * Wraps an event listener to ensure that errors are reported.
+     */
+    wrapListener: function wrapListener(method, self) {
+        return function (event) {
+            try {
+                method.apply(self, arguments);
+            }
+            catch (e) {
+                if (e.message == "Interrupted")
+                    liberator.echoerr("Interrupted");
+                else
+                    liberator.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
+                liberator.reportError(e);
+            }
+        };
     },
 
     /**
@@ -651,89 +653,14 @@ const Events = Module("events", {
         return ret;
     },
 
-    // argument "event" is deliberately not used, as i don't seem to have
-    // access to the real focus target
-    // Huh? --djk
-    onFocusChange: function (event) {
-        // command line has it's own focus change handler
-        if (liberator.mode == modes.COMMAND_LINE)
-            return;
-
-        function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
-
-        let win  = window.document.commandDispatcher.focusedWindow;
-        let elem = window.document.commandDispatcher.focusedElement;
-
-        if (win && win.top == content && liberator.has("tabs"))
-            tabs.localStore.focusedFrame = win;
-
-        try {
-            if (elem && elem.readOnly)
-                return;
-
-            if ((elem instanceof HTMLInputElement && /^(text|password)$/.test(elem.type)) ||
-                (elem instanceof HTMLSelectElement)) {
-                liberator.mode = modes.INSERT;
-                if (hasHTMLDocument(win))
-                    buffer.lastInputField = elem;
-                return;
-            }
-            if (elem instanceof HTMLEmbedElement || elem instanceof HTMLObjectElement) {
-                liberator.mode = modes.EMBED;
-                return;
-            }
-
-            if (elem instanceof HTMLTextAreaElement || (elem && elem.contentEditable == "true")) {
-                if (options["insertmode"])
-                    modes.set(modes.INSERT);
-                else if (elem.selectionEnd - elem.selectionStart > 0)
-                    modes.set(modes.VISUAL, modes.TEXTAREA);
-                else
-                    modes.main = modes.TEXTAREA;
-                if (hasHTMLDocument(win))
-                    buffer.lastInputField = elem;
-                return;
-            }
-
-            if (config.focusChange) {
-                config.focusChange(win);
-                return;
-            }
-
-            let urlbar = document.getElementById("urlbar");
-            if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
-                liberator.threadYield(true);
-
-            if (liberator.mode & (modes.EMBED | modes.INSERT | modes.TEXTAREA | modes.VISUAL))
-                 modes.reset();
-        }
-        finally {
-            this._lastFocus = elem;
-        }
+    onDOMMenuBarActive: function () {
+        this._activeMenubar = true;
+        modes.add(modes.MENU);
     },
 
-    onSelectionChange: function (event) {
-        let couldCopy = false;
-        let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
-        if (controller && controller.isCommandEnabled("cmd_copy"))
-            couldCopy = true;
-
-        if (liberator.mode != modes.VISUAL) {
-            if (couldCopy) {
-                if ((liberator.mode == modes.TEXTAREA ||
-                     (modes.extended & modes.TEXTAREA))
-                        && !options["insertmode"])
-                    modes.set(modes.VISUAL, modes.TEXTAREA);
-                else if (liberator.mode == modes.CARET)
-                    modes.set(modes.VISUAL, modes.CARET);
-            }
-        }
-        // XXX: disabled, as i think automatically starting visual caret mode does more harm than help
-        // else
-        // {
-        //     if (!couldCopy && modes.extended & modes.CARET)
-        //         liberator.mode = modes.CARET;
-        // }
+    onDOMMenuBarInactive: function () {
+        this._activeMenubar = false;
+        modes.remove(modes.MENU);
     },
 
     /**
@@ -805,6 +732,78 @@ const Events = Module("events", {
         default: // HINTS, CUSTOM or COMMAND_LINE
             modes.reset();
             break;
+        }
+    },
+
+    onFocus: function (event) {
+        function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
+
+        let elem = event.originalTarget;
+        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+
+        if (hasHTMLDocument(win) && !buffer.focusAllowed(win))
+            elem.blur();
+    },
+
+    // argument "event" is deliberately not used, as i don't seem to have
+    // access to the real focus target
+    // Huh? --djk
+    onFocusChange: function (event) {
+        // command line has it's own focus change handler
+        if (liberator.mode == modes.COMMAND_LINE)
+            return;
+
+        function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
+
+        let win  = window.document.commandDispatcher.focusedWindow;
+        let elem = window.document.commandDispatcher.focusedElement;
+
+        if (win && win.top == content && liberator.has("tabs"))
+            tabs.localStore.focusedFrame = win;
+
+        try {
+            if (elem && elem.readOnly)
+                return;
+
+            if ((elem instanceof HTMLInputElement && /^(search|text|password)$/.test(elem.type)) ||
+                (elem instanceof HTMLSelectElement)) {
+                liberator.mode = modes.INSERT;
+                if (hasHTMLDocument(win))
+                    buffer.lastInputField = elem;
+                return;
+            }
+
+            if(isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
+                liberator.mode = modes.EMBED;
+                return;
+            }
+
+            if (elem instanceof HTMLTextAreaElement || (elem && elem.contentEditable == "true")) {
+                if (options["insertmode"])
+                    modes.set(modes.INSERT);
+                else if (elem.selectionEnd - elem.selectionStart > 0)
+                    modes.set(modes.VISUAL, modes.TEXTAREA);
+                else
+                    modes.main = modes.TEXTAREA;
+                if (hasHTMLDocument(win))
+                    buffer.lastInputField = elem;
+                return;
+            }
+
+            if (config.focusChange) {
+                config.focusChange(win);
+                return;
+            }
+
+            let urlbar = document.getElementById("urlbar");
+            if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
+                liberator.threadYield(true);
+
+            if (liberator.mode & (modes.EMBED | modes.INSERT | modes.TEXTAREA | modes.VISUAL))
+                 modes.reset();
+        }
+        finally {
+            this._lastFocus = elem;
         }
     },
 
@@ -1022,7 +1021,9 @@ const Events = Module("events", {
 
                     if (liberator.mode == modes.COMMAND_LINE) {
                         if (!(modes.extended & modes.INPUT_MULTILINE))
-                            commandline.onEvent(event); // reroute event in command line mode
+                            liberator.trapErrors(function () {
+                                commandline.onEvent(event); // reroute event in command line mode
+                            });
                     }
                     else if (!modes.mainMode.input)
                         liberator.beep();
@@ -1050,6 +1051,13 @@ const Events = Module("events", {
         event.stopPropagation();
     },
 
+    onMouseDown: function (event) {
+        let elem = event.target;
+        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+        for(; win; win = win != win.parent && win.parent)
+            win.liberatorFocusAllowed = true;
+    },
+
     onPopupShown: function (event) {
         if (event.originalTarget.localName == "tooltip" || event.originalTarget.id == "liberator-visualbell")
             return;
@@ -1062,22 +1070,36 @@ const Events = Module("events", {
             modes.remove(modes.MENU);
     },
 
-    onDOMMenuBarActive: function () {
-        this._activeMenubar = true;
-        modes.add(modes.MENU);
-    },
-
-    onDOMMenuBarInactive: function () {
-        this._activeMenubar = false;
-        modes.remove(modes.MENU);
-    },
-
     onResize: function (event) {
         if (window.fullScreen != this._fullscreen) {
             this._fullscreen = window.fullScreen;
             liberator.triggerObserver("fullscreen", this._fullscreen);
             autocommands.trigger("Fullscreen", { state: this._fullscreen });
         }
+    },
+
+    onSelectionChange: function (event) {
+        let couldCopy = false;
+        let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
+        if (controller && controller.isCommandEnabled("cmd_copy"))
+            couldCopy = true;
+
+        if (liberator.mode != modes.VISUAL) {
+            if (couldCopy) {
+                if ((liberator.mode == modes.TEXTAREA ||
+                     (modes.extended & modes.TEXTAREA))
+                        && !options["insertmode"])
+                    modes.set(modes.VISUAL, modes.TEXTAREA);
+                else if (liberator.mode == modes.CARET)
+                    modes.set(modes.VISUAL, modes.CARET);
+            }
+        }
+        // XXX: disabled, as i think automatically starting visual caret mode does more harm than help
+        // else
+        // {
+        //     if (!couldCopy && modes.extended & modes.CARET)
+        //         liberator.mode = modes.CARET;
+        // }
     }
 }, {
     isInputElemFocused: function () {

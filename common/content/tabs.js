@@ -1,10 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
 // Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -797,14 +797,7 @@ const Tabs = Module("tabs", {
             commands.add(["tabopen", "t[open]", "tabnew"],
                 "Open one or more URLs in a new tab",
                 function (args) {
-                    let special = args.bang;
-                    args = args.string;
-
-                    let where = special ? liberator.NEW_TAB : liberator.NEW_BACKGROUND_TAB;
-                    if (args)
-                        liberator.open(args, { from: "tabopen", where: where });
-                    else
-                        liberator.open("about:blank", { from: "tabopen", where: where });
+                    liberator.open(args.string || "about:blank", { from: "tabopen", where: liberator.NEW_TAB, background: args.bang });
                 }, {
                     bang: true,
                     completer: function (context) completion.url(context),
@@ -1094,9 +1087,9 @@ const Tabs = Module("tabs", {
                 "Where to show requested popup windows",
                 "stringlist", "tab",
                 {
-                    setter: function (value) {
+                    setter: function (values) {
                         let [open, restriction] = [1, 0];
-                        for (let [, opt] in Iterator(this.parseValues(value))) {
+                        for (let [, opt] in Iterator(values)) {
                             if (opt == "tab")
                                 open = 3;
                             else if (opt == "window")
@@ -1107,7 +1100,7 @@ const Tabs = Module("tabs", {
 
                         options.safeSetPref("browser.link.open_newwindow", open, "See 'popups' option.");
                         options.safeSetPref("browser.link.open_newwindow.restriction", restriction, "See 'popups' option.");
-                        return value;
+                        return values;
                     },
                     completer: function (context) [
                         ["tab",     "Open popups in a new tab"],

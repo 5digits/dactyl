@@ -19,6 +19,7 @@
  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  DEALINGS IN THE SOFTWARE.
 }}} ***** END LICENSE BLOCK *****/
+"use strict";
 
 var EXPORTED_SYMBOLS = ["storage", "Timer"];
 
@@ -102,12 +103,12 @@ function readFile(file) {
 
 function writeFile(file, data) {
     if (!file.exists())
-        file.create(file.NORMAL_FILE_TYPE, 0600);
+        file.create(file.NORMAL_FILE_TYPE, parseInt('0600', 8));
 
     let fileStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
     let stream = Cc["@mozilla.org/intl/converter-output-stream;1"].createInstance(Ci.nsIConverterOutputStream);
 
-    fileStream.init(file, 0x20 | 0x08 | 0x02, 0600, 0); // PR_TRUNCATE | PR_CREATE | PR_WRITE
+    fileStream.init(file, 0x20 | 0x08 | 0x02, parseInt('0600', 8), 0); // PR_TRUNCATE | PR_CREATE | PR_WRITE
     stream.init(fileStream, "UTF-8", 0, 0);
 
     stream.writeString(data);

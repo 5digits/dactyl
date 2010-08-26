@@ -2,6 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 /** @scope modules */
 
@@ -47,6 +48,10 @@ const Services = Module("services", {
         this.addClass("file:",      "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
         this.addClass("find",       "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
         this.addClass("process",    "@mozilla.org/process/util;1",               Ci.nsIProcess);
+        this.addClass("zipWriter",  "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
+
+        if (!this.get("extensionManager"))
+            Components.utils.import("resource://gre/modules/AddonManager.jsm", modules);
     },
 
     _create: function (classes, ifaces, meth) {

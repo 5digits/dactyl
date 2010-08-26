@@ -1,12 +1,16 @@
 2009-XX-XX:
-    * version 2.3a1pre
-    * add basic plugin authorship documentation
-    * plugins may now provide full-fleged ':help' documentation
-    * asciidoc is no longer required to build Vimperator
-    * the help system is newly modularized
-    * remove [c]:edit[c], [c]:tabedit[c], and [c]:winedit[c]
-    * add 'jsdebugger' option - switch on/off javascript debugger service
-    * add "addons", "downloads", "extoptions" and "help" to the 'activate' option.
+    * Replaced 'focuscontent' with 'strictfocus'
+    * Replaced previous incremental search implementation
+    * :open now only opens files begining with / or ./
+    * Page zoom information is now shown in the status bar
+    * Added ZO, ZI, ZM, and ZR as aliases for zO, zI, zM, and zR
+    * Add basic plugin authorship documentation
+    * Plugins may now provide full-fleged ':help' documentation
+    * The help system is newly modularized
+    * Asciidoc is no longer for building
+    * Remove [c]:edit[c], [c]:tabedit[c], and [c]:winedit[c]
+    * Add 'jsdebugger' option - switch on/off javascript debugger service
+    * Add "addons", "downloads", "extoptions" and "help" to the 'activate' option.
 
 2009-10-28:
     * version 2.2
@@ -27,8 +31,6 @@
 ...................................
     * IMPORTANT: shifted key notation now matches Vim's behaviour. E.g. <C-a>
       and <C-A> are equivalent, to map the uppercase character use <C-S-A>.
-      (this might change again, as this is REALLY inconsistent, and i don't
-       know if I like copying bugs)
     * IMPORTANT: 'popups' now takes a stringlist rather than a number.
 
     * add [c]:winonly[c]

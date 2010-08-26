@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -134,7 +136,7 @@ const Liberator = Module("liberator", {
     forceNewWindow: false,
 
     /** @property {string} The Liberator version string. */
-    version: "###VERSION### (created: ###DATE###)", // these VERSION and DATE tokens are replaced by the Makefile
+    version: "@VERSION@ (created: @DATE@)", // these VERSION and DATE tokens are replaced by the Makefile
 
     /**
      * @property {Object} The map of command-line options. These are
@@ -268,7 +270,7 @@ const Liberator = Module("liberator", {
         let stack = Error().stack.replace(/(?:.*\n){2}/, "");
         if (frames != null)
             [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
-        liberator.dump((msg || "Stack") + "\n" + stack);
+        liberator.dump((msg || "Stack") + "\n" + stack + "\n");
     },
 
     /**
@@ -329,7 +331,7 @@ const Liberator = Module("liberator", {
         // you don't like them you can set verbose=0, or use :silent when
         // someone adds it. I reckon another flag and 'class' of messages
         // is just going to unnecessarily complicate things. --djk
-        flags |= commandline.APPEND_TO_MESSAGES | commandline.DISALLOW_MULTILINE;
+        flags |= commandline.APPEND_TO_MESSAGES; // | commandline.DISALLOW_MULTILINE;
 
         if (verbosity == null)
             verbosity = 0; // verbosity level is exclusionary
@@ -542,85 +544,88 @@ const Liberator = Module("liberator", {
      * Initialize the help system.
      */
     initHelp: function () {
-        let namespaces = [config.name.toLowerCase(), "liberator"];
-        services.get("liberator:").init({});
+        if(!this.helpInitialized) {
+            let namespaces = [config.name.toLowerCase(), "liberator"];
+            services.get("liberator:").init({});
 
-        let tagMap = services.get("liberator:").HELP_TAGS;
-        let fileMap = services.get("liberator:").FILE_MAP;
-        let overlayMap = services.get("liberator:").OVERLAY_MAP;
+            let tagMap = services.get("liberator:").HELP_TAGS;
+            let fileMap = services.get("liberator:").FILE_MAP;
+            let overlayMap = services.get("liberator:").OVERLAY_MAP;
 
-        // Left as an XPCOM instantiation so it can easilly be moved
-        // into XPCOM code.
-        function XSLTProcessor(sheet) {
-            let xslt = Cc["@mozilla.org/document-transformer;1?type=xslt"].createInstance(Ci.nsIXSLTProcessor);
-            xslt.importStylesheet(util.httpGet(sheet).responseXML);
-            return xslt;
-        }
-
-        // Find help and overlay files with the given name.
-        function findHelpFile(file) {
-            let result = [];
-            for (let [, namespace] in Iterator(namespaces)) {
-                let url = ["chrome://", namespace, "/locale/", file, ".xml"].join("");
-                let res = util.httpGet(url);
-                if (res) {
-                    if (res.responseXML.documentElement.localName == "document")
-                        fileMap[file] = url;
-                    if (res.responseXML.documentElement.localName == "overlay")
-                        overlayMap[file] = url;
-                    result.push(res.responseXML);
-                }
+            // Left as an XPCOM instantiation so it can easilly be moved
+            // into XPCOM code.
+            function XSLTProcessor(sheet) {
+                let xslt = Cc["@mozilla.org/document-transformer;1?type=xslt"].createInstance(Ci.nsIXSLTProcessor);
+                xslt.importStylesheet(util.httpGet(sheet).responseXML);
+                return xslt;
             }
-            return result;
-        }
-        // Find the tags in the document.
-        function addTags(file, doc) {
-            doc = XSLT.transformToDocument(doc);
-            for (let elem in util.evaluateXPath("//xhtml:a/@id", doc))
-                tagMap[elem.value] = file;
-        }
 
-        const XSLT = XSLTProcessor("chrome://liberator/content/help-single.xsl");
+            // Find help and overlay files with the given name.
+            function findHelpFile(file) {
+                let result = [];
+                for (let [, namespace] in Iterator(namespaces)) {
+                    let url = ["chrome://", namespace, "/locale/", file, ".xml"].join("");
+                    let res = util.httpGet(url);
+                    if (res) {
+                        if (res.responseXML.documentElement.localName == "document")
+                            fileMap[file] = url;
+                        if (res.responseXML.documentElement.localName == "overlay")
+                            overlayMap[file] = url;
+                        result.push(res.responseXML);
+                    }
+                }
+                return result;
+            }
+            // Find the tags in the document.
+            function addTags(file, doc) {
+                doc = XSLT.transformToDocument(doc);
+                for (let elem in util.evaluateXPath("//xhtml:a/@id", doc))
+                    tagMap[elem.value] = file;
+            }
 
-        // Scrape the list of help files from all.xml
-        // Always process main and overlay files, since XSLTProcessor and
-        // XMLHttpRequest don't allow access to chrome documents.
-        tagMap.all = "all";
-        let files = findHelpFile("all").map(function (doc)
-                [f.value for (f in util.evaluateXPath(
-                    "//liberator:include/@href", doc))]);
+            const XSLT = XSLTProcessor("chrome://liberator/content/help-single.xsl");
 
-        // Scrape the tags from the rest of the help files.
-        util.Array.flatten(files).forEach(function (file) {
-            findHelpFile(file).forEach(function (doc) {
-                addTags(file, doc);
+            // Scrape the list of help files from all.xml
+            // Always process main and overlay files, since XSLTProcessor and
+            // XMLHttpRequest don't allow access to chrome documents.
+            tagMap.all = "all";
+            let files = findHelpFile("all").map(function (doc)
+                    [f.value for (f in util.evaluateXPath(
+                        "//liberator:include/@href", doc))]);
+
+            // Scrape the tags from the rest of the help files.
+            util.Array.flatten(files).forEach(function (file) {
+                findHelpFile(file).forEach(function (doc) {
+                    addTags(file, doc);
+                });
             });
-        });
 
-        // Process plugin help entries.
-        XML.ignoreWhiteSpace = false;
-        XML.prettyPrinting = false;
-        XML.prettyPrinting = true; // Should be false, but ignoreWhiteSpace=false doesn't work correctly. This is the lesser evil.
-        XML.prettyIndent = 4;
+            // Process plugin help entries.
+            XML.ignoreWhiteSpace = false;
+            XML.prettyPrinting = false;
+            XML.prettyPrinting = true; // Should be false, but ignoreWhiteSpace=false doesn't work correctly. This is the lesser evil.
+            XML.prettyIndent = 4;
 
-        let body = XML();
-        for (let [, context] in Iterator(plugins.contexts))
-            if (context.INFO instanceof XML)
-                body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
-                    context.INFO;
+            let body = XML();
+            for (let [, context] in Iterator(plugins.contexts))
+                if (context.INFO instanceof XML)
+                    body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
+                        context.INFO;
 
-        let help = '<?xml version="1.0"?>\n' +
-                   '<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>\n' +
-                   '<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">' +
-            <document xmlns={NS}
-                name="plugins" title={config.name + " Plugins"}>
-                <h1 tag="using-plugins">Using Plugins</h1>
+            let help = '<?xml version="1.0"?>\n' +
+                       '<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>\n' +
+                       '<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">' +
+                <document xmlns={NS}
+                    name="plugins" title={config.name + " Plugins"}>
+                    <h1 tag="using-plugins">Using Plugins</h1>
 
-                {body}
-            </document>.toXMLString();
-        fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
+                    {body}
+                </document>.toXMLString();
+            fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
-        addTags("plugins", util.httpGet("liberator://help/plugins").responseXML);
+            addTags("plugins", util.httpGet("liberator://help/plugins").responseXML);
+            this.helpInitialized = true;
+        }
     },
 
     /**
@@ -632,6 +637,7 @@ const Liberator = Module("liberator", {
      * @returns {string}
      */
     help: function (topic, unchunked) {
+        liberator.initHelp();
         if (!topic) {
             let helpFile = unchunked ? "all" : options["helpfile"];
             if (helpFile in services.get("liberator:").FILE_MAP)
@@ -737,22 +743,12 @@ const Liberator = Module("liberator", {
      */
     open: function (urls, params, force) {
         // convert the string to an array of converted URLs
-        // -> see util.stringToURLArray for more details
+        // -> see liberator.stringToURLArray for more details
         //
         // This is strange. And counterintuitive. Is it really
         // necessary? --Kris
-        if (typeof urls == "string") {
-            // rather switch to the tab instead of opening a new url in case of "12: Tab Title" like "urls"
-            if (liberator.has("tabs")) {
-                let matches = urls.match(/^(\d+):/);
-                if (matches) {
-                    tabs.select(parseInt(matches[1], 10) - 1, false); // make it zero-based
-                    return;
-                }
-            }
-
-            urls = util.stringToURLArray(urls);
-        }
+        if (typeof urls == "string")
+            urls = liberator.stringToURLArray(urls);
 
         if (urls.length > 20 && !force) {
             commandline.input("This will open " + urls.length + " new tabs. Would you like to continue? (yes/[no]) ",
@@ -765,7 +761,7 @@ const Liberator = Module("liberator", {
 
         let flags = 0;
         params = params || {};
-        if (params instanceof Array)
+        if (isarray(params))
             params = { where: params };
 
         for (let [opt, flag] in Iterator({ replace: "REPLACE_HISTORY", hide: "BYPASS_HISTORY" }))
@@ -773,15 +769,11 @@ const Liberator = Module("liberator", {
                 flags |= Ci.nsIWebNavigation["LOAD_FLAGS_" + flag];
 
         let where = params.where || liberator.CURRENT_TAB;
+        let background = ("background" in params) ? params.background : params.where == liberator.NEW_BACKGROUND_TAB;
         if ("from" in params && liberator.has("tabs")) {
             if (!('where' in params) && options.get("newtab").has("all", params.from))
-                where = liberator.NEW_BACKGROUND_TAB;
-            if (options.get("activate").has("all", params.from)) {
-                if (where == liberator.NEW_TAB)
-                    where = liberator.NEW_BACKGROUND_TAB;
-                else if (where == liberator.NEW_BACKGROUND_TAB)
-                    where = liberator.NEW_TAB;
-            }
+                where = liberator.NEW_TAB;
+            background = !options.get("activate").has("all", params.from);
         }
 
         if (urls.length == 0)
@@ -799,7 +791,6 @@ const Liberator = Module("liberator", {
                     browser.loadURIWithFlags(url, flags, null, null, postdata);
                     break;
 
-                case liberator.NEW_BACKGROUND_TAB:
                 case liberator.NEW_TAB:
                     if (!liberator.has("tabs")) {
                         open(urls, liberator.NEW_WINDOW);
@@ -808,7 +799,7 @@ const Liberator = Module("liberator", {
 
                     options.withContext(function () {
                         options.setPref("browser.tabs.loadInBackground", true);
-                        browser.loadOneTab(url, null, null, postdata, where == liberator.NEW_BACKGROUND_TAB);
+                        browser.loadOneTab(url, null, null, postdata, background);
                     });
                     break;
 
@@ -832,7 +823,7 @@ const Liberator = Module("liberator", {
 
         for (let [, url] in Iterator(urls)) {
             open(url, where);
-            where = liberator.NEW_BACKGROUND_TAB;
+            background = true;
         }
     },
 
@@ -863,6 +854,64 @@ const Liberator = Module("liberator", {
             services.get("appStartup").quit(Ci.nsIAppStartup.eForceQuit);
         else
             window.goQuitApplication();
+    },
+
+    /**
+     * Returns an array of URLs parsed from <b>str</b>.
+     *
+     * Given a string like 'google bla, www.osnews.com' return an array
+     * ['www.google.com/search?q=bla', 'www.osnews.com']
+     *
+     * @param {string} str
+     * @returns {string[]}
+     */
+    stringToURLArray: function stringToURLArray(str) {
+        let urls;
+
+        if (options["urlseparator"])
+            urls = util.splitLiteral(str, RegExp("\\s*" + options["urlseparator"] + "\\s*"));
+        else
+            urls = [str];
+
+        return urls.map(function (url) {
+            if (/^\.?\//.test(url)) {
+                try {
+                    // Try to find a matching file.
+                    let file = io.File(url);
+                    if (file.exists() && file.isReadable())
+                        return services.get("io").newFileURI(file).spec;
+                }
+                catch (e) {}
+            }
+
+            // strip each 'URL' - makes things simpler later on
+            url = url.replace(/^\s+|\s+$/, "");
+
+            // Look for a valid protocol
+            let proto = url.match(/^([-\w]+):/);
+            if (proto && Cc["@mozilla.org/network/protocol;1?name=" + proto[1]])
+                // Handle as URL, but remove spaces. Useful for copied/'p'asted URLs.
+                return url.replace(/\s*\n+\s*/g, "");
+
+            // Ok, not a valid proto. If it looks like URL-ish (foo.com/bar),
+            // let Gecko figure it out.
+            if (/^[a-zA-Z0-9-.]+(?:\/|$)/.test(url) && /[.\/]/.test(url) && !/\s/.test(url) || /^[a-zA-Z0-9-.]+:\d+(?:\/|$)/.test(url))
+                return url;
+
+            // TODO: it would be clearer if the appropriate call to
+            // getSearchURL was made based on whether or not the first word was
+            // indeed an SE alias rather than seeing if getSearchURL can
+            // process the call usefully and trying again if it fails
+
+            // check for a search engine match in the string, then try to
+            // search for the whole string in the default engine
+            let searchURL = bookmarks.getSearchURL(url, false) || bookmarks.getSearchURL(url, true);
+            if (searchURL)
+                return searchURL;
+
+            // Hmm. No defsearch? Let the host app deal with it, then.
+            return url;
+        });
     },
 
     /*
@@ -1271,17 +1320,8 @@ const Liberator = Module("liberator", {
                 let arg = args[0];
 
                 try {
-                    // TODO: why are these sorts of properties arrays? --djk
-                    let dialogs = config.dialogs;
-
-                    for (let [, dialog] in Iterator(dialogs)) {
-                        if (util.compareIgnoreCase(arg, dialog[0]) == 0) {
-                            dialog[2]();
-                            return;
-                        }
-                    }
-
-                    liberator.echoerr("E475: Invalid argument: " + arg);
+                    liberator.assert(args[0] in config.dialogs, "E475: Invalid argument: " + arg);
+                    config.dialogs[args[0]][1]();
                 }
                 catch (e) {
                     liberator.echoerr("Error opening " + arg.quote() + ": " + e);
@@ -1331,19 +1371,89 @@ const Liberator = Module("liberator", {
                 }
             });
 
+        ///////////////////////////////////////////////////////////////////////////
+
+        if (typeof AddonManager == "undefined") {
+            modules.AddonManager = {
+                getInstallForFile: function (file, callback, mimetype) {
+                    callback({
+                        install: function () {
+                            services.get("extensionManager").installItemFromFile(file, "app-profile");
+                        }
+                    });
+                },
+                getAddonById: function (id, callback) {
+                    let addon = id;
+                    if (!isobject(addon))
+                        addon = services.get("extensionManager").getItemForID(id);
+                    if (!addon)
+                        return callback(null);
+
+                    function getRdfProperty(item, property) {
+                        let resource = services.get("rdf").GetResource("urn:mozilla:item:" + item.id);
+                        let value = "";
+
+                        if (resource) {
+                            let target = services.get("extensionManager").datasource.GetTarget(resource,
+                                services.get("rdf").GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
+                            if (target && target instanceof Ci.nsIRDFLiteral)
+                                value = target.Value;
+                        }
+
+                        return value;
+                    }
+
+                    ["aboutURL", "creator", "description", "developers",
+                     "homepageURL", "iconURL", "installDate", "name",
+                     "optionsURL", "releaseNotesURI", "updateDate"].forEach(function (item) {
+                        addon[item] = getRdfProperty(addon, item);
+                    });
+                    addon.isActive = getRdfProperty(addon, "isDisabled") != "true";
+
+                    addon.uninstall = function () {
+                        services.get("extensionManager").uninstallItem(this.id);
+                    };
+                    addon.appDisabled = false;
+                    addon.__defineGetter("userDisabled", function() getRdfProperty("userDisabled") == "true");
+                    addon.__defineSetter__("userDisabled", function(val) {
+                        services.get("extensionManager")[val ? "enableItem" : "disableItem"](this.id);
+                    });
+
+                    return callback(addon);
+                },
+                getAddonsByTypes: function (types, callback) {
+                    let res = [];
+                    for (let [,type] in Iterator(types))
+                        for (let [,item] in Iterator(services.get("extensionManager")
+                                    .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
+                            res.append(this.getAddonById(item));
+                    return res;
+                }
+            };
+
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
+        
+        function callResult(method) {
+            let args = Array.slice(arguments, 1);
+            return function (result) { result[method].apply(result, args) };
+        }
+
         commands.add(["exta[dd]"],
             "Install an extension",
             function (args) {
-                let file = io.File(args[0]);
+                let url  = args[0];
+                let file = io.File(url);
 
-                if (file.exists() && file.isReadable() && file.isFile())
-                    services.get("extensionManager").installItemFromFile(file, "app-profile");
-                else {
-                    if (file.exists() && file.isDirectory())
-                        liberator.echomsg("Cannot install a directory: \"" + file.path + "\"", 0);
-
+                if (!file.exists())
+                    AddonManager.getInstallForURL(url,   callResult("install"), "application/x-xpinstall");
+                else if (file.isReadable() && file.isFile())
+                    AddonManager.getInstallForFile(file, callResult("install"), "application/x-xpinstall");
+                else if (file.isDirectory())
+                    liberator.echomsg("Cannot install a directory: \"" + file.path + "\"", 0);
+                else
                     liberator.echoerr("E484: Can't open file " + file.path);
-                }
             }, {
                 argCount: "1",
                 completer: function (context) {
@@ -1357,38 +1467,35 @@ const Liberator = Module("liberator", {
             {
                 name: "extde[lete]",
                 description: "Uninstall an extension",
-                action: "uninstallItem"
+                action: callResult("uninstall")
             },
             {
                 name: "exte[nable]",
                 description: "Enable an extension",
-                action: "enableItem",
-                filter: function ({ item: e }) !e.enabled
+                action: function (addon) addon.userDisabled = false,
+                filter: function ({ item: e }) e.userDisabled
             },
             {
                 name: "extd[isable]",
                 description: "Disable an extension",
-                action: "disableItem",
-                filter: function ({ item: e }) e.enabled
+                action: function (addon) addon.userDisabled = true,
+                filter: function ({ item: e }) !e.userDisabled
             }
         ].forEach(function (command) {
             commands.add([command.name],
                 command.description,
                 function (args) {
                     let name = args[0];
-                    function action(e) { services.get("extensionManager")[command.action](e.id); };
-
                     if (args.bang)
-                        liberator.extensions.forEach(function (e) { action(e); });
-                    else {
-                        liberator.assert(name, "E471: Argument required"); // XXX
+                        liberator.assert(!name, "E488: Trailing characters");
+                    else
+                        liberator.assert(name, "E471: Argument required");
 
-                        let extension = liberator.getExtension(name);
-                        if (extension)
-                            action(extension);
-                        else
-                            liberator.echoerr("E474: Invalid argument");
-                    }
+                    AddonManager.getAddonsByTypes(["extension"], function (list) {
+                        if (!args.bang)
+                            list = list.filter(function (extension) extension.name == name);
+                        list.forEach(command.action);
+                    });
                 }, {
                     argCount: "?", // FIXME: should be "1"
                     bang: true,
@@ -1404,50 +1511,63 @@ const Liberator = Module("liberator", {
         commands.add(["exto[ptions]", "extp[references]"],
             "Open an extension's preference dialog",
             function (args) {
-                let extension = liberator.getExtension(args[0]);
-                liberator.assert(extension && extension.options,
-                    "E474: Invalid argument");
-                if (args.bang)
-                    window.openDialog(extension.options, "_blank", "chrome");
-                else
-                    liberator.open(extension.options, { from: "extoptions" });
+                AddonManager.getAddonsByTypes(["extension"], function (list) {
+                    list = list.filter(function (extension) extension.name == args[0]);
+                    if (!list.length || !list[0].optionsURL)
+                        liberator.echoerr("E474: Invalid argument");
+                    else if (args.bang)
+                        window.openDialog(list[0].optionsURL, "_blank", "chrome");
+                    else
+                        liberator.open(list[0].optionsURL, { from: "extoptions" });
+                });
             }, {
                 argCount: "1",
                 bang: true,
                 completer: function (context) {
                     completion.extension(context);
-                    context.filters.push(function ({ item: e }) e.options);
+                    context.filters.push(function ({ item: e }) e.isActive && e.optionsURL);
                 },
                 literal: 0
             });
 
         // TODO: maybe indicate pending status too?
-        commands.add(["extens[ions]"],
+        commands.add(["extens[ions]", "exts"],
             "List available extensions",
             function (args) {
-                let filter = args[0] || "";
-                let extensions = liberator.extensions.filter(function (e) e.name.indexOf(filter) >= 0);
+                AddonManager.getAddonsByTypes(["extension"], function (extensions) {
+                    if (args[0])
+                        extensions = extensions.filter(function (extension) extension.name.indexOf(args[0]) >= 0);
+                    extensions.sort(function (a, b) String.localeCompare(a.name, b.name));
 
-                if (extensions.length > 0) {
-                    let list = template.tabular(
-                        ["Name", "Version", "Status", "Description"], [],
-                        ([template.icon(e, e.name),
-                          e.version,
-                          e.enabled ? <span highlight="Enabled">enabled</span>
-                                    : <span highlight="Disabled">disabled</span>,
-                          e.description] for ([, e] in Iterator(extensions)))
-                    );
+                    if (extensions.length > 0) {
+                        let list = template.tabular(
+                            ["Name", "Version", "Status", "Description"], [],
+                            ([template.icon({ icon: e.iconURL }, e.name),
+                              e.version,
+                              (e.isActive ? <span highlight="Enabled">enabled</span>
+                                          : <span highlight="Disabled">disabled</span>) +
+                              ((e.userDisabled || e.appDisabled) == !e.isActive ? XML() :
+                                  <>&#xa0;({e.userDisabled || e.appDisabled
+                                        ? <span highlight="Disabled">disabled</span>
+                                        : <span highlight="Enabled">enabled</span>}
+                                        on restart)
+                                  </>),
+                              e.description] for ([, e] in Iterator(extensions)))
+                        );
 
-                    commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
-                }
-                else {
-                    if (filter)
-                        liberator.echoerr("Exxx: No extension matching \"" + filter + "\"");
-                    else
-                        liberator.echoerr("No extensions installed");
-                }
+                        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+                    }
+                    else {
+                        if (filter)
+                            liberator.echoerr("Exxx: No extension matching \"" + filter + "\"");
+                        else
+                            liberator.echoerr("No extensions installed");
+                    }
+                });
             },
             { argCount: "?" });
+
+        ///////////////////////////////////////////////////////////////////////////
 
         commands.add(["exu[sage]"],
             "List all Ex commands with a short description",
@@ -1704,17 +1824,22 @@ const Liberator = Module("liberator", {
     completion: function () {
         completion.dialog = function dialog(context) {
             context.title = ["Dialog"];
-            context.completions = config.dialogs;
+            context.completions = [[k, v[0]] for ([k, v] in Iterator(config.dialogs))];
         };
 
         completion.extension = function extension(context) {
             context.title = ["Extension"];
             context.anchored = false;
-            context.keys = { text: "name", description: "description", icon: "icon" },
-            context.completions = liberator.extensions;
+            context.keys = { text: "name", description: "description", icon: "iconURL" },
+            context.incomplete = true;
+            AddonManager.getAddonsByTypes(["extension"], function (addons) {
+                context.incomplete = false;
+                context.completions = addons;
+            });
         };
 
         completion.help = function help(context, unchunked) {
+            liberator.initHelp();
             context.title = ["Help"];
             context.anchored = false;
             context.completions = services.get("liberator:").HELP_TAGS;
@@ -1729,6 +1854,7 @@ const Liberator = Module("liberator", {
             context.completions = liberator.menuItems;
         };
 
+        var toolbox = document.getElementById("navigator-toolbox");
         completion.toolbar = function toolbar(context) {
             context.title = ["Toolbar"];
             context.keys = { text: function (item) item.getAttribute("toolbarname"), description: function () "" };
@@ -1817,8 +1943,6 @@ const Liberator = Module("liberator", {
             if (options["loadplugins"])
                 liberator.loadPlugins();
 
-            liberator.initHelp();
-
             // after sourcing the initialization files, this function will set
             // all gui options to their default values, if they have not been
             // set before by any RC file
@@ -1841,6 +1965,7 @@ const Liberator = Module("liberator", {
 
         statusline.update();
         liberator.log(config.name + " fully initialized", 0);
+        liberator.initialized = true;
     }
 });
 

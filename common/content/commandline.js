@@ -1,7 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 /** @scope modules */
 
@@ -102,7 +105,7 @@ const CommandLine = Module("commandline", {
         });
 
         this._autocompleteTimer = new Timer(200, 500, function autocompleteTell(tabPressed) {
-            if (!events.feedingKeys && self._completions && options.get("wildoptions").has("auto")) {
+            if (!events.feedingKeys && self._completions && options.get("autocomplete").values.length) {
                 self._completions.complete(true, false);
                 self._completions.itemList.show();
             }
@@ -329,10 +332,11 @@ const CommandLine = Module("commandline", {
 
     FORCE_MULTILINE    : 1 << 0,
     FORCE_SINGLELINE   : 1 << 1,
-    DISALLOW_MULTILINE : 1 << 2, // if an echo() should try to use the single line
+    DISALLOW_MULTILINE : 1 << 2, // If an echo() should try to use the single line
                                  // but output nothing when the MOW is open; when also
                                  // FORCE_MULTILINE is given, FORCE_MULTILINE takes precedence
-    APPEND_TO_MESSAGES : 1 << 3, // add the string to the message this._history
+    APPEND_TO_MESSAGES : 1 << 3, // Add the string to the message this._history.
+    ACTIVE_WINDOW      : 1 << 4, // Only echo in active window.
 
     get completionContext() this._completions.context,
 
@@ -499,6 +503,10 @@ const CommandLine = Module("commandline", {
 
         if (flags & this.APPEND_TO_MESSAGES)
             this._messageHistory.add({ str: str, highlight: highlightGroup });
+        if ((flags & this.ACTIVE_WINDOW) &&
+            window != services.get("windowWatcher").activeWindow &&
+            services.get("windowWatcher").activeWindow.liberator)
+            return;
 
         // The DOM isn't threadsafe. It must only be accessed from the main thread.
         liberator.callInMainThread(function () {
@@ -754,12 +762,12 @@ const CommandLine = Module("commandline", {
             case "<MiddleMouse>":
             case "<C-LeftMouse>":
             case "<C-M-LeftMouse>":
-                openLink(liberator.NEW_BACKGROUND_TAB);
+                openLink({ where: liberator.NEW_TAB, background: true });
                 break;
             case "<S-MiddleMouse>":
             case "<C-S-LeftMouse>":
             case "<C-M-S-LeftMouse>":
-                openLink(liberator.NEW_TAB);
+                openLink({ where: liberator.NEW_TAB, background: false });
                 break;
             case "<S-LeftMouse>":
                 openLink(liberator.NEW_WINDOW);
@@ -964,7 +972,7 @@ const CommandLine = Module("commandline", {
 
         let doc = this._multilineOutputWidget.contentDocument;
 
-        availableHeight = config.outputHeight;
+        let availableHeight = config.outputHeight;
         if (!this._outputContainer.collapsed)
             availableHeight += parseFloat(this._outputContainer.height);
         doc.body.style.minWidth = this._commandlineWidget.scrollWidth + "px";
@@ -1032,7 +1040,7 @@ const CommandLine = Module("commandline", {
         sanitize: function (timespan) {
             let range = [0, Number.MAX_VALUE];
             if (liberator.has("sanitizer") && (timespan || options["sanitizetimespan"]))
-                range = sanitizer.getClearRange(timespan || options["sanitizetimespan"]);
+                range = Sanitizer.getClearRange(timespan || options["sanitizetimespan"]);
 
             const self = this;
             this.store.mutate("filter", function (item) {
@@ -1107,7 +1115,7 @@ const CommandLine = Module("commandline", {
      */
     Completions: Class("Completions", {
         init: function (input) {
-            this.context = CompletionContext(input.editor);
+            this.context = CompletionContext(input.QueryInterface(Ci.nsIDOMNSEditableElement).editor);
             this.context.onUpdate = this.closure._reset;
             this.editor = input.editor;
             this.selected = null;
@@ -1127,7 +1135,7 @@ const CommandLine = Module("commandline", {
             let str = commandline.command;
             return str.substring(this.prefix.length, str.length - this.suffix.length);
         },
-        set completion set_completion(completion) {
+        set completion(completion) {
             this.previewClear();
 
             // Change the completion text.
@@ -1516,84 +1524,6 @@ const CommandLine = Module("commandline", {
         options.add(["showmode", "smd"],
             "Show the current mode in the command line",
             "boolean", true);
-
-        options.add(["suggestengines"],
-             "Engine Alias which has a feature of suggest",
-             "stringlist", "google",
-             {
-                 completer: function completer(value) {
-                     let engines = services.get("browserSearch").getEngines({})
-                                           .filter(function (engine) engine.supportsResponseType("application/x-suggestions+json"));
-
-                     return engines.map(function (engine) [engine.alias, engine.description]);
-                 }
-             });
-
-        options.add(["complete", "cpt"],
-            "Items which are completed at the :open prompts",
-            "charlist", typeof(config.defaults["complete"]) == "string" ? config.defaults["complete"] : "slf",
-            {
-                completer: function (context) array(values(completion.urlCompleters))
-            });
-
-        options.add(["wildcase", "wic"],
-            "Completion case matching mode",
-            "string", "smart",
-            {
-                completer: function () [
-                    ["smart", "Case is significant when capital letters are typed"],
-                    ["match", "Case is always significant"],
-                    ["ignore", "Case is never significant"]
-                ]
-            });
-
-        options.add(["wildignore", "wig"],
-            "List of file patterns to ignore when completing files",
-            "stringlist", "",
-            {
-                validator: function validator(values) {
-                    // TODO: allow for escaping the ","
-                    try {
-                        RegExp("^(" + values.join("|") + ")$");
-                        return true;
-                    }
-                    catch (e) {
-                        return false;
-                    }
-                }
-            });
-
-        options.add(["wildmode", "wim"],
-            "Define how command line completion works",
-            "stringlist", "list:full",
-            {
-                completer: function (context) [
-                    // Why do we need ""?
-                    ["",              "Complete only the first match"],
-                    ["full",          "Complete the next full match"],
-                    ["longest",       "Complete to longest common string"],
-                    ["list",          "If more than one match, list all matches"],
-                    ["list:full",     "List all and complete first match"],
-                    ["list:longest",  "List all and complete common string"]
-                ],
-                checkHas: function (value, val) {
-                    let [first, second] = value.split(":", 2);
-                    return first == val || second == val;
-                }
-            });
-
-        options.add(["wildoptions", "wop"],
-            "Change how command line completion is done",
-            "stringlist", "",
-            {
-                completer: function completer(value) {
-                    return [
-                        ["",     "Default completion that won't show or sort the results"],
-                        ["auto", "Automatically show this._completions while you are typing"],
-                        ["sort", "Always sort the completion list"]
-                    ];
-                }
-            });
     },
     styles: function () {
         let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;

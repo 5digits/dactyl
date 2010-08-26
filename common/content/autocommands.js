@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -274,9 +276,9 @@ const AutoCommands = Module("autocommands", {
                 completer: function () config.autocommands.concat([["all", "All events"]])
             });
 
-        options.add(["focuscontent", "fc"],
-            "Try to stay in normal mode after loading a web page",
-            "boolean", false);
+        options.add(["strictfocus", "sf"],
+            "Prevent scripts from focusing input elements without user intervention",
+            "boolean", true);
     }
 });
 

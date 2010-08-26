@@ -17,16 +17,27 @@
     <tags>:beep</tags>
     <spec>:beep</spec>
     <description>
-        <p>Play a system beep.</p>
+        <p>
+            Play a system beep. This should not be used for any purpose other
+            than testing the visual bell.
+        </p>
     </description>
 </item>
 
 
 <item>
-    <tags><![CDATA[<C-l> CTRL-L :redr :redraw]]></tags>
-    <spec>:redr<oa>aw</oa></spec>
+    <tags>:contexts</tags>
+    <spec>:contexts <a>ex-command</a></spec>
     <description>
-        <p>Redraws the screen. Useful to update the screen halfway executing a script or function.</p>
+        <p>
+            Lists the completion contexts used during the completion of its
+            arguments. These context names are used in options such as
+            <o>autocomplete</o> and <o>wildcase</o>. Note that completion must
+            be triggered in order for this command to be effective, so if
+            autocompletion is not active, you'll need to press the
+            <k name="Tab"/> key at least once. You should also be aware that
+            this command is only useful from the commandline.
+        </p>
     </description>
 </item>
 
@@ -42,6 +53,15 @@
             a complete command. <a>commands</a> cannot start with a space. Put 1 space before
             it, 1 space is one space.
         </p>
+    </description>
+</item>
+
+
+<item>
+    <tags><![CDATA[<C-l> CTRL-L :redr :redraw]]></tags>
+    <spec>:redr<oa>aw</oa></spec>
+    <description>
+        <p>Redraws the screen. Useful to update the screen halfway executing a script or function.</p>
     </description>
 </item>
 

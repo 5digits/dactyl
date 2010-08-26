@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 const DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
 
@@ -364,7 +366,6 @@ const Bookmarks = Module("bookmarks", {
 
         // ripped from Firefox
         function getShortcutOrURI(url) {
-            var shortcutURL = null;
             var keyword = url;
             var param = "";
             var offset = url.indexOf(" ");
@@ -379,7 +380,7 @@ const Bookmarks = Module("bookmarks", {
                 return [submission.uri.spec, submission.postData];
             }
 
-            [shortcutURL, postData] = PlacesUtils.getURLAndPostDataForKeyword(keyword);
+            let [shortcutURL, postData] = PlacesUtils.getURLAndPostDataForKeyword(keyword);
             if (!shortcutURL)
                 return [url, null];
 
@@ -598,6 +599,18 @@ const Bookmarks = Module("bookmarks", {
                     context.completions = [["", "Don't perform searches by default"]].concat(context.completions);
                 }
             });
+
+        options.add(["suggestengines"],
+             "Engine Alias which has a feature of suggest",
+             "stringlist", "google",
+             {
+                 completer: function completer(value) {
+                     let engines = services.get("browserSearch").getEngines({})
+                                           .filter(function (engine) engine.supportsResponseType("application/x-suggestions+json"));
+
+                     return engines.map(function (engine) [engine.alias, engine.description]);
+                 }
+             });
     },
     completion: function () {
         completion.bookmark = function bookmark(context, tags, extra) {
@@ -643,8 +656,11 @@ const Bookmarks = Module("bookmarks", {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);
                             if (item.url.substr(rest) == end && query.indexOf("&") == -1) {
-                                item.url = decodeURIComponent(query.replace(/#.*/, ""));
-                                return item;
+                                try {
+                                    item.url = decodeURIComponent(query.replace(/#.*/, ""));
+                                    return item;
+                                }
+                                catch (e) {}
                             }
                             return null;
                         }).filter(util.identity);

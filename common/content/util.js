@@ -1,7 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 /** @scope modules */
 
@@ -92,6 +95,55 @@ const Util = Module("util", {
     },
 
     /**
+     * Expands brace globbing patterns in a string.
+     *
+     * Example:
+     *     "a{b,c}d" => ["abd", "acd"]
+     *
+     * @param {string} pattern The pattern to deglob.
+     * @returns [string] The resulting strings.
+     */
+    debrace: function deglobBrace(pattern) {
+        function split(pattern, re, fn, dequote) {
+            let end = 0, match, res = [];
+            while (match = re.exec(pattern)) {
+                end = match.index + match[0].length;
+                res.push(match[1]);
+                if (fn)
+                    fn(match);
+            }
+            res.push(pattern.substr(end));
+            return res.map(function (s) util.dequote(s, dequote));
+        }
+        let patterns = [], res = [];
+        let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
+            function (match) {
+                patterns.push(split(match[2], /((?:[^\\,]|\\.)*),/gy,
+                    null, ",{}"));
+            }, "{}");
+        function rec(acc) {
+            if (acc.length == patterns.length)
+                res.push(util.Array.zip(substrings, acc).join(""));
+            else 
+                for (let [, pattern] in Iterator(patterns[acc.length]))
+                    rec(acc.concat(pattern));
+        }
+        rec([]);
+        return res;
+    },
+
+    /**
+     * Removes certain backslash-quoted characters while leaving other
+     * backslash-quoting sequences untouched.
+     *
+     * @param {string} pattern The string to unquote.
+     * @param {string} chars The characters to unquote.
+     * @returns {string}
+     */
+    dequote: function dequote(pattern, chars)
+        pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
+
+    /**
      * Converts HTML special characters in <b>str</b> to the equivalent HTML
      * entities.
      *
@@ -158,7 +210,8 @@ const Util = Module("util", {
      * @returns {string}
      */
     makeXPath: function makeXPath(nodes) {
-        return util.Array(nodes).map(function (node) [node, "xhtml:" + node]).flatten()
+        return util.Array(nodes).map(util.debrace).flatten()
+                                .map(function (node) [node, "xhtml:" + node]).flatten()
                                 .map(function (node) "//" + node).join(" | ");
     },
 
@@ -257,8 +310,9 @@ const Util = Module("util", {
         const PATH = FILE.leafName.replace(/\..*/, "") + "/";
         const TIME = Date.now();
 
+        liberator.initHelp();
         let zip = services.create("zipWriter");
-        zip.open(FILE, io.MODE_CREATE | io.MODE_WRONLY | io.MODE_TRUNCATE);
+        zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
         function addURIEntry(file, uri)
             zip.addEntryChannel(PATH + file, TIME, 9,
                 services.get("io").newChannel(uri, null, null), false);
@@ -407,11 +461,12 @@ const Util = Module("util", {
             null
         );
 
-        result.__iterator__ = asIterator
+        return {
+                __proto__: result,
+                __iterator__: asIterator
                             ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
-                            : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); };
-
-        return result;
+                            : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
+        }
     },
 
     /**
@@ -664,61 +719,16 @@ const Util = Module("util", {
     },
 
     /**
-     * Returns an array of URLs parsed from <b>str</b>.
+     * Scrolls an element into view if and only if it's not already
+     * fully visible.
      *
-     * Given a string like 'google bla, www.osnews.com' return an array
-     * ['www.google.com/search?q=bla', 'www.osnews.com']
-     *
-     * @param {string} str
-     * @returns {string[]}
+     * @param {Node} elem The element to make visible.
      */
-    stringToURLArray: function stringToURLArray(str) {
-        let urls;
-
-        if (options["urlseparator"])
-            urls = util.splitLiteral(str, RegExp("\\s*" + options["urlseparator"] + "\\s*"));
-        else
-            urls = [str];
-
-        return urls.map(function (url) {
-            if (url.substr(0, 5) != "file:") {
-                try {
-                    // Try to find a matching file.
-                    let file = io.File(url);
-                    if (file.exists() && file.isReadable())
-                        return services.get("io").newFileURI(file).spec;
-                }
-                catch (e) {}
-            }
-
-            // strip each 'URL' - makes things simpler later on
-            url = url.replace(/^\s+|\s+$/, "");
-
-            // Look for a valid protocol
-            let proto = url.match(/^([-\w]+):/);
-            if (proto && Cc["@mozilla.org/network/protocol;1?name=" + proto[1]])
-                // Handle as URL, but remove spaces. Useful for copied/'p'asted URLs.
-                return url.replace(/\s*\n+\s*/g, "");
-
-            // Ok, not a valid proto. If it looks like URL-ish (foo.com/bar),
-            // let Gecko figure it out.
-            if (/[.\/]/.test(url) && !/\s/.test(url) || /^[\w-.]+:\d+(?:\/|$)/.test(url))
-                return url;
-
-            // TODO: it would be clearer if the appropriate call to
-            // getSearchURL was made based on whether or not the first word was
-            // indeed an SE alias rather than seeing if getSearchURL can
-            // process the call usefully and trying again if it fails
-
-            // check for a search engine match in the string, then try to
-            // search for the whole string in the default engine
-            let searchURL = bookmarks.getSearchURL(url, false) || bookmarks.getSearchURL(url, true);
-            if (searchURL)
-                return searchURL;
-
-            // Hmm. No defsearch? Let the host app deal with it, then.
-            return url;
-        });
+    scrollIntoView: function scrollIntoView(elem) {
+        let win = elem.ownerDocument.defaultView;
+        let rect = elem.getBoundingClientRect();
+        if (!(rect && rect.top < win.innerHeight && rect.bottom >= 0 && rect.left < win.innerWidth && rect.right >= 0))
+            elem.scrollIntoView();
     },
 
     /**
@@ -740,7 +750,7 @@ const Util = Module("util", {
         }
         switch (node.nodeKind()) {
         case "text":
-            return doc.createTextNode(node);
+            return doc.createTextNode(String(node));
         case "element":
             let domnode = doc.createElementNS(node.namespace(), node.localName());
             for each (let attr in node.@*)
@@ -814,7 +824,7 @@ const Util = Module("util", {
          * @param {Array} ary
          * @returns {Array}
          */
-        flatten: function flatten(ary) Array.concat.apply([], ary),
+        flatten: function flatten(ary) ary.length ? Array.concat.apply([], ary) : [],
 
         /**
          * Returns an Iterator for an array's values.
@@ -864,6 +874,22 @@ const Util = Module("util", {
                 }
             }
             return ret;
+        },
+
+        /**
+         * Zips the contents of two arrays. The resulting array is twice the
+         * length of ary1, with any shortcomings of ary2 replaced with null
+         * strings.
+         *
+         * @param {Array} ary1
+         * @param {Array} ary2
+         * @returns {Array}
+         */
+        zip: function zip(ary1, ary2) {
+            let res = []
+            for(let [i, item] in Iterator(ary1))
+                res.push(item, i in ary2 ? ary2[i] : "");
+            return res;
         }
     })
 });

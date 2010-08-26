@@ -2,7 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /* Adds support for data: URIs with chrome privileges
  * and fragment identifiers.
@@ -27,7 +27,7 @@ let channel = Components.classesByID["{61ba33c0-3031-11d3-8cd0-0060b0fc14a3}"]
                         .QueryInterface(Ci.nsIRequest);
 const systemPrincipal = channel.owner;
 channel.cancel(NS_BINDING_ABORTED);
-delete channel;
+channel = null;
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {
@@ -152,8 +152,9 @@ Liberator.prototype = {
     }
 };
 
-var components = [ChromeData, Liberator];
-
-function NSGetModule(compMgr, fileSpec) XPCOMUtils.generateModule(components)
+if (XPCOMUtils.generateNSGetFactory)
+    const NSGetFactory = XPCOMUtils.generateNSGetFactory([ChromeData, Liberator]);
+else
+    const NSGetModule = XPCOMUtils.generateNSGetModule([ChromeData, Liberator]);
 
 // vim: set fdm=marker sw=4 ts=4 et:

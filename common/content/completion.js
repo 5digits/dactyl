@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -34,6 +35,11 @@ const CompletionContext = Class("CompletionContext", {
         if (editor instanceof this.constructor) {
             let parent = editor;
             name = parent.name + "/" + name;
+
+            this.autoComplete = options.get("autocomplete").getKey(name);
+            this.sortResults  = options.get("wildsort").getKey(name);
+            this.wildcase     = options.get("wildcase").getKey(name);
+
             this.contexts = parent.contexts;
             if (name in this.contexts)
                 self = this.contexts[name];
@@ -146,6 +152,8 @@ const CompletionContext = Class("CompletionContext", {
             this.top = this;
             this.__defineGetter__("incomplete", function () this.contextList.some(function (c) c.parent && c.incomplete));
             this.__defineGetter__("waitingForTab", function () this.contextList.some(function (c) c.parent && c.waitingForTab));
+            this.__defineSetter__("incomplete", function (val) {});
+            this.__defineSetter__("waitingForTab", function (val) {});
             this.reset();
         }
         /**
@@ -243,7 +251,7 @@ const CompletionContext = Class("CompletionContext", {
     get completions() this._completions || [],
     set completions(items) {
         // Accept a generator
-        if ({}.toString.call(items) != '[object Array]')
+        if (!isarray(items))
             items = [x for (x in Iterator(items))];
         delete this.cache.filtered;
         delete this.cache.filter;
@@ -333,7 +341,7 @@ const CompletionContext = Class("CompletionContext", {
     get ignoreCase() {
         if ("_ignoreCase" in this)
             return this._ignoreCase;
-        let mode = options["wildcase"];
+        let mode = this.wildcase;
         if (mode == "match")
             return this._ignoreCase = false;
         if (mode == "ignore")
@@ -367,7 +375,7 @@ const CompletionContext = Class("CompletionContext", {
         if (this.maxItems)
             filtered = filtered.slice(0, this.maxItems);
 
-        if (options.get("wildoptions").has("sort") && this.compare)
+        if (this.sortResults && this.compare)
             filtered.sort(this.compare);
         let quote = this.quote;
         if (quote)
@@ -404,12 +412,12 @@ const CompletionContext = Class("CompletionContext", {
         let filter = fixCase(this.filter);
         if (this.anchored) {
             var compare = function compare(text, s) text.substr(0, s.length) == s;
-            substrings = util.map(util.range(filter.length, text.length + 1),
+            var substrings = util.map(util.range(filter.length, text.length + 1),
                 function (end) text.substring(0, end));
         }
         else {
             var compare = function compare(text, s) text.indexOf(s) >= 0;
-            substrings = [];
+            var substrings = [];
             let start = 0;
             let idx;
             let length = filter.length;
@@ -498,8 +506,14 @@ const CompletionContext = Class("CompletionContext", {
             completer = self[completer];
         let context = CompletionContext(this, name, offset);
         this.contextList.push(context);
-        if (completer)
+
+        if (!context.autoComplete && !context.tabPressed && context.editor)
+            context.waitingForTab = true;
+        else if (completer)
             return completer.apply(self || this, [context].concat(Array.slice(arguments, arguments.callee.length)));
+
+        if (completer)
+            return null;
         return context;
     },
 
@@ -682,7 +696,7 @@ const Completion = Module("completion", {
         if (skip)
             context.advance(skip[0].length);
 
-        if (typeof complete === "undefined")
+        if (complete == null)
             complete = options["complete"];
 
         // Will, and should, throw an error if !(c in opts)
@@ -744,6 +758,80 @@ const Completion = Module("completion", {
     //}}}
 }, {
     UrlCompleter: Struct("name", "description", "completer")
+}, {
+    commands: function () {
+        commands.add(["contexts"],
+            "List the completion contexts used during completion of an ex command",
+            function (args) {
+                commandline.echo(template.commandOutput(
+                    <div highlight="Completions">
+                        { template.completionRow(["Context", "Title"], "CompTitle") }
+                        { template.map(completion.contextList || [], function (item) template.completionRow(item, "CompItem")) }
+                    </div>),
+                    null, commandline.FORCE_MULTILINE);
+
+            },
+            {
+                argCount: "1",
+                completer: function (context, args) {
+                    let PREFIX = "/ex/contexts";
+                    context.fork("ex", 0, completion, "ex");
+                    completion.contextList = [[k.substr(PREFIX.length), v.title[0]] for ([k, v] in iter(context.contexts)) if (k.substr(0, PREFIX.length) == PREFIX)];
+                },
+                literal: 0
+            });
+    },
+    options: function () {
+        options.add(["autocomplete", "au"],
+            "Automatically update the completion list on any key press",
+            "regexlist", ".*");
+
+        options.add(["complete", "cpt"],
+            "Items which are completed at the :open prompts",
+            "charlist", typeof(config.defaults["complete"]) == "string" ? config.defaults["complete"] : "slf",
+            {
+                completer: function (context) array(values(completion.urlCompleters))
+            });
+
+        options.add(["wildcase", "wic"],
+            "Completion case matching mode",
+            "regexmap", "smart",
+            {
+                completer: function () [
+                    ["smart", "Case is significant when capital letters are typed"],
+                    ["match", "Case is always significant"],
+                    ["ignore", "Case is never significant"]
+                ]
+            });
+
+        options.add(["wildmode", "wim"],
+            "Define how command line completion works",
+            "stringlist", "list:full",
+            {
+                completer: function (context) [
+                    // Why do we need ""?
+                    // Because its description is useful during completion. --Kris
+                    ["",              "Complete only the first match"],
+                    ["full",          "Complete the next full match"],
+                    ["longest",       "Complete to longest common string"],
+                    ["list",          "If more than one match, list all matches"],
+                    ["list:full",     "List all and complete first match"],
+                    ["list:longest",  "List all and complete common string"]
+                ],
+                checkHas: function (value, val) {
+                    let [first, second] = value.split(":", 2);
+                    return first == val || second == val;
+                },
+                has: function () {
+                    test = function (val) this.values.some(function (value) this.checkHas(value, val), this);
+                    return Array.some(arguments, test, this);
+                }
+            });
+
+        options.add(["wildsort", "wis"],
+            "Regexp list of which contexts to sort",
+            "regexlist", ".*");
+    }
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

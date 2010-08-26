@@ -99,8 +99,8 @@ dist: $(XPI)
 
 $(RDF): $(RDF_IN) Makefile
 	@echo "Preparing release..."
-	$(SED) -e "s,###VERSION###,$(VERSION),g" \
-	           -e "s,###DATE###,$(BUILD_DATE),g" \
+	$(SED) -e "s,@VERSION@,$(VERSION),g" \
+	           -e "s,@DATE@,$(BUILD_DATE),g" \
 	           < $< > $@
 	@echo "SUCCESS: $@"
 

@@ -1,7 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 /** @scope modules */
 
@@ -11,12 +14,8 @@ const StatusLine = Module("statusline", {
         this._statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
 
         // our status bar fields
-        this._statuslineWidget     = document.getElementById("liberator-statusline");
-        this._urlWidget            = document.getElementById("liberator-statusline-field-url");
-        this._inputBufferWidget    = document.getElementById("liberator-statusline-field-inputbuffer");
-        this._progressWidget       = document.getElementById("liberator-statusline-field-progress");
-        this._tabCountWidget       = document.getElementById("liberator-statusline-field-tabcount");
-        this._bufferPositionWidget = document.getElementById("liberator-statusline-field-bufferposition");
+        this.widgets = dict(["status", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"].map(
+                function (field) [field, document.getElementById("liberator-statusline-field-" + field)]));
     },
 
     /**
@@ -47,6 +46,7 @@ const StatusLine = Module("statusline", {
         this.updateProgress();
         this.updateTabCount();
         this.updateBufferPosition();
+        this.updateZoomLevel();
     },
 
     /**
@@ -61,20 +61,17 @@ const StatusLine = Module("statusline", {
     updateUrl: function updateUrl(url) {
         // ripped from Firefox; modified
         function losslessDecodeURI(url) {
-            // Countermeasure for "Error: malformed URI sequence".
-            // This error occurs when URL is encoded by not UTF-8 encoding.
-            function _decodeURI(url) {
-                try {
-                    return decodeURI(url);
-                }
-                catch (e) {
-                    return url;
-                }
-            };
-
             // 1. decodeURI decodes %25 to %, which creates unintended
             //    encoding sequences.
-            url = url.split("%25").map(_decodeURI).join("%25");
+            url = url.split("%25").map(function (url) {
+                    // Non-UTF-8 complient URLs cause "malformed URI sequence" errors.
+                    try {
+                        return decodeURI(url);
+                    }
+                    catch (e) {
+                        return url;
+                    }
+                }).join("%25");
             // 2. Re-encode whitespace so that it doesn't get eaten away
             //    by the location bar (bug 410726).
             url = url.replace(/[\r\n\t]/g, encodeURIComponent);
@@ -125,7 +122,7 @@ const StatusLine = Module("statusline", {
         if (modified)
             url += " [" + modified + "]";
 
-        this._urlWidget.value = url;
+        this.widgets.url.value = url;
     },
 
     /**
@@ -140,7 +137,7 @@ const StatusLine = Module("statusline", {
         if (!buffer || typeof buffer != "string")
             buffer = "";
 
-        this._inputBufferWidget.value = buffer;
+        this.widgets.inputbuffer.value = buffer;
     },
 
     /**
@@ -157,7 +154,7 @@ const StatusLine = Module("statusline", {
             progress = "";
 
         if (typeof progress == "string")
-            this._progressWidget.value = progress;
+            this.widgets.progress.value = progress;
         else if (typeof progress == "number") {
             let progressStr = "";
             if (progress <= 0)
@@ -170,7 +167,7 @@ const StatusLine = Module("statusline", {
                     + "                    ".substr(0, 19 - progress)
                     + "]";
             }
-            this._progressWidget.value = progressStr;
+            this.widgets.progress.value = progressStr;
         }
     },
 
@@ -194,7 +191,7 @@ const StatusLine = Module("statusline", {
                 for (let [i, tab] in util.Array.iteritems(config.browser.mTabs))
                     tab.setAttribute("ordinal", i + 1);
 
-            this._tabCountWidget.value = "[" + (tabs.index() + 1) + "/" + tabs.count + "]";
+            this.widgets.tabcount.value = "[" + (tabs.index() + 1) + "/" + tabs.count + "]";
         }
     },
 
@@ -205,7 +202,7 @@ const StatusLine = Module("statusline", {
      * @param {number} percent The position, as a percentage. @optional
      */
     updateBufferPosition: function updateBufferPosition(percent) {
-        if (!percent || typeof percent != "number") {
+        if (typeof percent != "number") {
             let win = document.commandDispatcher.focusedWindow;
             if (!win)
                 return;
@@ -218,14 +215,35 @@ const StatusLine = Module("statusline", {
             bufferPositionStr = "All";
         else if (percent == 0)
             bufferPositionStr = "Top";
-        else if (percent < 10)
-            bufferPositionStr = " " + percent + "%";
         else if (percent >= 100)
             bufferPositionStr = "Bot";
+        else if (percent < 10)
+            bufferPositionStr = " " + percent + "%";
         else
             bufferPositionStr = percent + "%";
 
-        this._bufferPositionWidget.value = bufferPositionStr;
+        this.widgets.bufferposition.value = bufferPositionStr;
+    },
+
+    /**
+     * Display the main content's zoom level.
+     *
+     * @param {number} percent The zoom level, as a percentage. @optional
+     * @param {boolean} full True if full zoom is in operation. @optional
+     */
+    updateZoomLevel: function updateZoomLevel(percent, full) {
+        if (arguments.length == 0)
+            [percent, full] = [buffer.zoomLevel, buffer.fullZoom];
+
+        if (percent == 100)
+            this.widgets.zoomlevel.value = "";
+        else {
+            percent = ("  " + percent).substr(-3);
+            if (full)
+                this.widgets.zoomlevel.value = " [" + percent + "%]";
+            else
+                this.widgets.zoomlevel.value = " (" + percent + "%)";
+        }
     }
 
 }, {

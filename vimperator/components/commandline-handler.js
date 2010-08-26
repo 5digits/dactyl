@@ -1,4 +1,5 @@
 // Header:
+"use strict";
 const Name = "Vimperator";
 /*
  * We can't load our modules here, so the following code is sadly
@@ -43,6 +44,9 @@ CommandLineHandler.prototype = {
     }
 };
 
-function NSGetModule(compMgr, fileSpec) XPCOMUtils.generateModule([CommandLineHandler])
+if (XPCOMUtils.generateNSGetFactory)
+    const NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler]);
+else
+    const NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
 
 // vim: set ft=javascript fdm=marker sw=4 ts=4 et:

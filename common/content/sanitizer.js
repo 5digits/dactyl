@@ -2,6 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 // TODO:
 //   - fix Sanitize autocommand
@@ -19,6 +20,7 @@ const Sanitizer = Module("sanitizer", {
     init: function () {
         const self = this;
         liberator.loadScript("chrome://browser/content/sanitize.js", Sanitizer);
+        Sanitizer.getClearRange = Sanitizer.Sanitizer.getClearRange;
         this.__proto__.__proto__ = new Sanitizer.Sanitizer; // Good enough.
 
         // TODO: remove this version test
@@ -213,10 +215,9 @@ const Sanitizer = Module("sanitizer", {
             {
                 setter: function (values) {
                     for (let [, pref] in Iterator(sanitizer.prefNames)) {
-                        continue;
                         options.setPref(pref, false);
 
-                        for (let [, value] in Iterator(this.parseValues(values))) {
+                        for (let [, value] in Iterator(values)) {
                             if (Sanitizer.prefToArg(pref) == value) {
                                 options.setPref(pref, true);
                                 break;
@@ -226,7 +227,7 @@ const Sanitizer = Module("sanitizer", {
 
                     return values;
                 },
-                getter: function () sanitizer.prefNames.filter(function (pref) options.getPref(pref)).map(Sanitizer.prefToArg).join(","),
+                getter: function () sanitizer.prefNames.filter(function (pref) options.getPref(pref)).map(Sanitizer.prefToArg),
                 completer: function (value) [
                     ["cache", "Cache"],
                     ["commandline", "Command-line history"],

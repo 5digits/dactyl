@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -194,8 +194,6 @@ const Template = Module("template", {
         return <>:{commandline.command}<br/>{xml}</>;
     },
 
-    // every item must have a .xml property which defines how to draw itself
-    // @param headers is an array of strings, the text for the header columns
     genericTable: function genericTable(items, format) {
         completion.listCompleter(function (context) {
             context.filterFunc = null;

@@ -1,10 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
 // Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -19,9 +19,10 @@ const Point = Struct("x", "y");
  * @instance buffer
  */
 const Buffer = Module("buffer", {
-    requires: ["config"],
+    requires: ["config", "util"],
 
     init: function () {
+        this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};
 
         this.addPageInfoSection("f", "Feeds", function (verbose) {
@@ -168,7 +169,7 @@ const Buffer = Module("buffer", {
     // called when the active document is scrolled
     _updateBufferPosition: function _updateBufferPosition() {
         statusline.updateBufferPosition();
-        modes.show();
+        modes.show(); // Clear the status line.
     },
 
     onDOMContentLoaded: function onDOMContentLoaded(event) {
@@ -199,19 +200,7 @@ const Buffer = Module("buffer", {
             // any buffer, even in a background tab
             doc.pageIsFullyLoaded = 1;
 
-            // code which is only relevant if the page load is the current tab goes here:
-            if (doc == config.browser.contentDocument) {
-                // we want to stay in command mode after a page has loaded
-                // TODO: move somewhere else, as focusing can already happen earlier than on "load"
-                if (options["focuscontent"]) {
-                    setTimeout(function () {
-                        let focused = liberator.focus;
-                        if (focused && (focused.value != null) && focused.value.length == 0)
-                            focused.blur();
-                    }, 0);
-                }
-            }
-            else // background tab
+            if (doc != config.browser.contentDocument)
                 liberator.echomsg("Background tab loaded: " + doc.title || doc.location.href, 3);
 
             this._triggerLoadAutocmd("PageLoad", doc);
@@ -279,7 +268,11 @@ const Buffer = Module("buffer", {
             autocommands.trigger("LocationChange", { url: buffer.URL });
 
             // if this is not delayed we get the position of the old buffer
-            setTimeout(function () { statusline.updateBufferPosition(); }, 500);
+            setTimeout(function () {
+                statusline.updateBufferPosition();
+                statusline.updateZoomLevel();
+                modes.show(); // Clear the status line.
+            }, 500);
         },
         // called at the very end of a page load
         asyncUpdateUI: function () {
@@ -384,19 +377,18 @@ const Buffer = Module("buffer", {
     get pageHeight() window.content.innerHeight,
 
     /**
-     * @property {number} The current browser's text zoom level, as a
-     *     percentage with 100 as 'normal'. Only affects text size.
+     * @property {number} The current browser's zoom level, as a
+     *     percentage with 100 as 'normal'.
      */
-    get textZoom() config.browser.markupDocumentViewer.textZoom * 100,
-    set textZoom(value) { Buffer.setZoom(value, false); },
+    get zoomLevel() config.browser.markupDocumentViewer[this.fullZoom ? "textZoom" : "fullZoom"] * 100,
+    set zoomLevel(value) { Buffer.setZoom(value, this.fullZoom); },
 
     /**
-     * @property {number} The current browser's text zoom level, as a
-     *     percentage with 100 as 'normal'. Affects text size, as well as
-     *     image size and block size.
+     * @property {boolean} Whether the current browser is using full
+     *     zoom, as opposed to text zoom.
      */
-    get fullZoom() config.browser.markupDocumentViewer.fullZoom * 100,
-    set fullZoom(value) { Buffer.setZoom(value, true); },
+    get fullZoom() ZoomManager.useFullZoom,
+    set fullZoom(value) { Buffer.setZoom(this.zoomLevel, value); },
 
     /**
      * @property {string} The current document's title.
@@ -471,6 +463,18 @@ const Buffer = Module("buffer", {
     },
 
     /**
+     * Returns true if a scripts are allowed to focus the given input
+     * element or input elements in the given window.
+     *
+     * @param {Node|Window}
+     * @returns {boolean}
+     */
+    focusAllowed: function (elem) {
+        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+        return !options["strictfocus"] || elem.liberatorFocusAllowed;
+    },
+
+    /**
      * Focuses the given element. In contrast to a simple
      * elem.focus() call, this function works for iframes and
      * image maps.
@@ -479,7 +483,10 @@ const Buffer = Module("buffer", {
      */
     focusElement: function (elem) {
         let doc = window.content.document;
-        if (elem instanceof HTMLFrameElement || elem instanceof HTMLIFrameElement)
+        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+        win.liberatorFocusAllowed = true;
+
+        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
             elem.contentWindow.focus();
         else if (elem instanceof HTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);
@@ -960,14 +967,20 @@ const Buffer = Module("buffer", {
         liberator.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
             "Zoom value out of range (" + Buffer.ZOOM_MIN + " - " + Buffer.ZOOM_MAX + "%)");
 
-        ZoomManager.useFullZoom = fullZoom;
+        if (fullZoom !== undefined)
+            ZoomManager.useFullZoom = fullZoom;
         ZoomManager.zoom = value / 100;
+
         if ("FullZoom" in window)
             FullZoom._applySettingToPref();
-        liberator.echomsg((fullZoom ? "Full" : "Text") + " zoom: " + value + "%");
+
+        statusline.updateZoomLevel(value, ZoomManager.useFullZoom);
     },
 
     bumpZoomLevel: function bumpZoomLevel(steps, fullZoom) {
+        if (fullZoom === undefined)
+            fullZoom = ZoomManager.useFullZoom;
+
         let values = ZoomManager.zoomValues;
         let cur = values.indexOf(ZoomManager.snap(ZoomManager.zoom));
         let i = util.Math.constrain(cur + steps, 0, values.length - 1);
@@ -1138,8 +1151,8 @@ const Buffer = Module("buffer", {
             },
             {
                 argCount: "?",
-                literal: 0,
-                bang: true
+                bang: true,
+                literal: 0
             });
 
         commands.add(["pa[geinfo]"],
@@ -1178,8 +1191,8 @@ const Buffer = Module("buffer", {
             "Reload the current web page",
             function (args) { tabs.reload(config.browser.mCurrentTab, args.bang); },
             {
-                bang: true,
-                argCount: "0"
+                argCount: "0",
+                bang: true
             });
 
         // TODO: we're prompted if download.useDownloadDir isn't set and no arg specified - intentional?
@@ -1470,16 +1483,19 @@ const Buffer = Module("buffer", {
                 if (count < 1 && buffer.lastInputField)
                     buffer.focusElement(buffer.lastInputField);
                 else {
-                    let xpath = ["input[not(@type) or @type='text' or @type='password' or @type='file']",
-                                 "textarea[not(@disabled) and not(@readonly)]"];
+                    let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
 
-                    let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (match) {
-                        let computedStyle = util.computedStyle(match);
+                    let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (elem) {
+                        if (elem.readOnly || elem instanceof HTMLInputElement && ["file", "search", "text", "password"].indexOf(elem.type) < 0)
+                            return false;
+                        let computedStyle = util.computedStyle(elem);
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none";
                     });
 
                     liberator.assert(elements.length > 0);
-                    buffer.focusElement(elements[util.Math.constrain(count, 1, elements.length) - 1]);
+                    let elem = elements[util.Math.constrain(count, 1, elements.length) - 1];
+                    buffer.focusElement(elem);
+                    util.scrollIntoView(elem);
                 }
             },
             { count: true });
@@ -1504,7 +1520,7 @@ const Buffer = Module("buffer", {
             function () {
                 let url = util.readFromClipboard();
                 liberator.assert(url);
-                liberator.open(url, { from: "activate", where: liberator.NEW_TAB });
+                liberator.open(url, { from: "paste", where: liberator.NEW_TAB });
             });
 
         // reloading
@@ -1551,27 +1567,27 @@ const Buffer = Module("buffer", {
             function (count) { buffer.textZoom = count > 1 ? count : 100; },
             { count: true });
 
-        mappings.add(myModes, ["zI"],
+        mappings.add(myModes, ["ZI", "zI"],
             "Enlarge full zoom of current web page",
             function (count) { buffer.zoomIn(Math.max(count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["zM"],
+        mappings.add(myModes, ["ZM", "zM"],
             "Enlarge full zoom of current web page by a larger amount",
             function (count) { buffer.zoomIn(Math.max(count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["zO"],
+        mappings.add(myModes, ["ZO", "zO"],
             "Reduce full zoom of current web page",
             function (count) { buffer.zoomOut(Math.max(count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["zR"],
+        mappings.add(myModes, ["ZR", "zR"],
             "Reduce full zoom of current web page by a larger amount",
             function (count) { buffer.zoomOut(Math.max(count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["zZ"],
+        mappings.add(myModes, ["ZZ", "zZ"],
             "Set full zoom value of current web page",
             function (count) { buffer.fullZoom = count > 1 ? count : 100; },
             { count: true });
@@ -1599,7 +1615,7 @@ const Buffer = Module("buffer", {
             "Desired info in the :pageinfo output",
             "charlist", "gfm",
             {
-                completer: function (context) [[k, v[1]] for ([k, v] in Iterator(this.pageInfo))]
+                completer: function (context) [[k, v[1]] for ([k, v] in Iterator(buffer.pageInfo))]
             });
 
         options.add(["scroll", "scr"],

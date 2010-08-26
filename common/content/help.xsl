@@ -202,7 +202,7 @@
         <xsl:variable name="type" select="preceding-sibling::liberator:type[1] | following-sibling::liberator:type[1]"/>
         <span liberator:highlight="HelpDefault">(default:<xsl:text> </xsl:text>
             <xsl:choose>
-                <xsl:when test="starts-with($type, 'string')">
+                <xsl:when test="starts-with($type, 'string') or starts-with($type, 'regex')">
                     <span liberator:highlight="HelpString"><xsl:apply-templates/></span>
                 </xsl:when>
                 <xsl:otherwise>
@@ -351,9 +351,13 @@
 
     <xsl:template match="liberator:ex" mode="pass-2">
         <span liberator:highlight="HelpEx">
-            <xsl:call-template name="linkify-tag">
-                <xsl:with-param name="contents" select="."/>
-            </xsl:call-template>
+            <xsl:variable name="tag" select="str:tokenize(text(), ' [!')[1]"/>
+            <a href="liberator://help-tag/{$tag}" style="color: inherit;">
+                <xsl:if test="contains($tags, concat(' ', $tag, ' '))">
+                    <xsl:attribute name="href">#<xsl:value-of select="$tag"/></xsl:attribute>
+                </xsl:if>
+                <xsl:apply-templates/>
+            </a>
         </span>
     </xsl:template>
 

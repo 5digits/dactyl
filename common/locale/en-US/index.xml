@@ -393,7 +393,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>exrc</o></dt> <dd>Allow reading of an RC file in the current directory</dd>
     <dt><o>extendedhinttags</o></dt> <dd>XPath string of hintable elements activated by <k>;</k></dd>
     <dt><o>fileencoding</o></dt> <dd>Changes the character encoding that &liberator.appname; uses to read and write files</dd>
-    <dt><o>focuscontent</o></dt> <dd>Try to stay in Normal mode after loading a web page</dd>
     <dt><o>followhints</o></dt> <dd>Change the behaviour of <k name="Return"/> in Hints mode</dd>
     <dt><o>fullscreen</o></dt> <dd>Show the current window fullscreen</dd>
     <dt><o>guioptions</o></dt> <dd>Show or hide certain GUI elements like the menu or toolbar</dd>
@@ -430,6 +429,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>showstatuslinks</o></dt> <dd>Show the destination of the link under the cursor in the status bar</dd>
     <dt><o>showtabline</o></dt> <dd>Control when to show the tab bar of opened web pages</dd>
     <dt><o>smartcase</o></dt> <dd>Override the <o>ignorecase</o> option if the pattern contains uppercase characters</dd>
+    <dt><o>strictfocus</o></dt> <dd>Prevent scripts from focusing input elements without user intervention</dd>
     <dt><o>suggestengines</o></dt> <dd>Engine Alias which has a feature of suggest</dd>
     <dt><o>titlestring</o></dt> <dd>Change the title of the window</dd>
     <dt><o>urlseparator</o></dt> <dd>Set the separator regex used to separate multiple URL args</dd>

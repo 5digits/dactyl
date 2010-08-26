@@ -2,6 +2,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 // TODO: Clean this up.
 
@@ -33,16 +34,17 @@ const JavaScript = Module("javascript", {
     },
 
     iter: function iter(obj, toplevel) {
+        "use strict";
         toplevel = !!toplevel;
         let seen = {};
         let ret = {};
 
-        try {
+        if(obj == null)
+            return;
+
+        if(options["jsdebugger"]) {
             let orig = obj;
             let top = services.get("debugger").wrapValue(obj);
-
-            if (!toplevel)
-                obj = obj.__proto__;
 
             for (; obj; obj = !toplevel && obj.__proto__) {
                 services.get("debugger").wrapValue(obj).getProperties(ret, {});
@@ -51,18 +53,27 @@ const JavaScript = Module("javascript", {
                     if (name in seen)
                         continue;
                     seen[name] = 1;
-                    yield [prop.name.stringValue, top.getProperty(prop.name.stringValue).value.getWrappedValue()]
+                    if (toplevel || obj !== orig)
+                        yield [prop.name.stringValue, top.getProperty(prop.name.stringValue).value.getWrappedValue()]
                 }
             }
             // The debugger doesn't list some properties. I can't guess why.
-            for (let k in orig)
-                if (k in orig && !('|' + k in seen) && obj.hasOwnProperty(k) == toplevel)
-                    yield [k, this.getKey(orig, k)]
+            // This only lists ENUMERABLE properties.
+            try {
+                for (let k in orig)
+                    if (k in orig && !('|' + k in seen)
+                        && Object.hasOwnProperty(orig, k) == toplevel)
+                        yield [k, this.getKey(orig, k)]
+            }
+            catch(e) {}
         }
-        catch(e) {
-            for (k in allkeys(obj))
-                if (obj.hasOwnProperty(k) == toplevel)
-                    yield [k, this.getKey(obj, k)];
+        else {
+            for (let k in allkeys(obj))
+		    try {
+			if (Object.hasOwnProperty(obj, k) == toplevel)
+			    yield [k, this.getKey(obj, k)];
+                    }
+                    catch (e) {}
         }
     },
 
@@ -101,7 +112,7 @@ const JavaScript = Module("javascript", {
         return completions;
     },
 
-    eval: function eval(arg, key, tmp) {
+    eval: function evalstr(arg, key, tmp) {
         let cache = this.context.cache.eval;
         let context = this.context.cache.evalContext;
 
@@ -230,8 +241,6 @@ const JavaScript = Module("javascript", {
                 case "'":
                 case "/":
                 case "{":
-                    this._push(this._c);
-                    break;
                 case "[":
                     this._push(this._c);
                     break;
@@ -341,6 +350,10 @@ const JavaScript = Module("javascript", {
 
     _complete: function (objects, key, compl, string, last) {
         const self = this;
+
+        if(!options["jsdebugger"] && !this.context.message)
+            this.context.message = "For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
+
         let orig = compl;
         if (!compl) {
             compl = function (context, obj, recurse) {
@@ -427,7 +440,8 @@ const JavaScript = Module("javascript", {
         // Okay, have parse stack. Figure out what we're completing.
 
         // Find any complete statements that we can eval before we eval our object.
-        // This allows for things like: let doc = window.content.document; let elem = doc.createElement...; elem.<Tab>
+        // This allows for things like:
+	//   let doc = window.content.document; let elem = doc.createEle<Tab> ...
         let prev = 0;
         for (let [, v] in Iterator(this._get(0).fullStatements)) {
             let key = this._str.substring(prev, v + 1);
@@ -437,14 +451,13 @@ const JavaScript = Module("javascript", {
             prev = v + 1;
         }
 
-        // In a string. Check if we're dereferencing an object.
-        // Otherwise, do nothing.
+        // In a string. Check if we're dereferencing an object or
+	// completing a function argument. Otherwise, do nothing.
         if (this._last == "'" || this._last == '"') {
-            //
+
             // str = "foo[bar + 'baz"
             // obj = "foo"
             // key = "bar + ''"
-            //
 
             // The top of the stack is the sting we're completing.
             // Wrap it in its delimiters and eval it to process escape sequences.
@@ -497,15 +510,15 @@ const JavaScript = Module("javascript", {
                 // Split up the arguments
                 let prev = this._get(-2).offset;
                 let args = [];
-                for (let [, idx] in Iterator(this._get(-2).comma)) {
+                for (let [i, idx] in Iterator(this._get(-2).comma)) {
                     let arg = this._str.substring(prev + 1, idx);
                     prev = idx;
-                    util.memoize(args, this._i, function () self.eval(arg));
+                    util.memoize(args, i, function () self.eval(arg));
                 }
                 let key = this._getKey();
                 args.push(key + string);
 
-                compl = function (context, obj) {
+                let compl = function (context, obj) {
                     let res = completer.call(self, context, func, obj, args);
                     if (res)
                         context.completions = res;
@@ -520,7 +533,7 @@ const JavaScript = Module("javascript", {
             return null;
         }
 
-        //
+
         // str = "foo.bar.baz"
         // obj = "foo.bar"
         // key = "baz"
@@ -528,11 +541,11 @@ const JavaScript = Module("javascript", {
         // str = "foo"
         // obj = [modules, window]
         // key = "foo"
-        //
+
 
         let [offset, obj, key] = this._getObjKey(-1);
 
-        // Wait for a keypress before completing the default objects.
+        // Wait for a keypress before completing when there's no key
         if (!this.context.tabPressed && key == "" && obj.length > 1) {
             this.context.waitingForTab = true;
             this.context.message = "Waiting for key press";
@@ -589,7 +602,7 @@ const JavaScript = Module("javascript", {
                 let completer = completers[args.length - 1];
                 if (!completer)
                     return [];
-                return completer.call(this, context, obj, args);
+                return completer.call(obj, context, obj, args);
             };
         }
     }

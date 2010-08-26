@@ -1,9 +1,11 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 // Some code based on Venkman
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 
@@ -160,7 +162,7 @@ const File = Class("File", {
             mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_TRUNCATE;
 
         if (!perms)
-            perms = 0644;
+            perms = parseInt('0644', 8);
 
         ofstream.init(this, mode, perms, 0);
         let ocstream = getStream(0);
@@ -240,7 +242,7 @@ const File = Class("File", {
      */
     MODE_EXCL: 0x80,
 
-    expandPathList: function (list) list.split(",").map(this.expandPath).join(","),
+    expandPathList: function (list) list.map(this.expandPath),
 
     expandPath: function (path, relative) {
 
@@ -338,7 +340,7 @@ const IO = Module("io", {
                     let file  = download.targetFile.path;
                     let size  = download.size;
 
-                    liberator.echomsg("Download of " + title + " to " + file + " finished", 1);
+                    liberator.echomsg("Download of " + title + " to " + file + " finished", 1, commandline.ACTIVE_WINDOW);
                     autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
                 }
             },
@@ -485,7 +487,7 @@ const IO = Module("io", {
         let file = services.get("directory").get("TmpD", Ci.nsIFile);
 
         file.append(config.tempFile);
-        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0600);
+        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, parseInt('0600', 8));
 
         return File(file);
     },
@@ -595,6 +597,8 @@ lookup:
      */
     source: function (filename, silent) {
         let wasSourcing = this.sourcing;
+        liberator.dump("sourcing " + filename);
+        let time = Date.now();
         try {
             var file = File(filename);
             this.sourcing = {
@@ -624,8 +628,7 @@ lookup:
             if (/\.js$/.test(filename)) {
                 try {
                     liberator.loadScript(uri.spec, Script(file));
-                    if (liberator.initialized)
-                        liberator.initHelp();
+                    liberator.helpInitialized = false;
                 }
                 catch (e) {
                     let err = new Error();
@@ -713,6 +716,7 @@ lookup:
                 liberator.echoerr(message);
         }
         finally {
+            liberator.dump("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
             this.sourcing = wasSourcing;
         }
     },
@@ -1028,8 +1032,8 @@ lookup:
                         b.isdir - a.isdir || String.localeCompare(a.text, b.text);
 
             if (options["wildignore"]) {
-                let wigRegexp = RegExp("(^" + options.get("wildignore").values.join("|") + ")$");
-                context.filters.push(function ({item: f}) f.isDirectory() || !wigRegexp.test(f.leafName));
+                let wig = options.get("wildignore");
+                context.filters.push(function ({item: f}) f.isDirectory() || !wig.getKey(this.name));
             }
 
             // context.background = true;
@@ -1061,7 +1065,10 @@ lookup:
             };
         };
 
-        completion.addUrlCompleter("f", "Local files", completion.file);
+        completion.addUrlCompleter("f", "Local files", function (context, full) {
+            if (!/^\.?\//.test(context.filter))
+                completion.file(context, full);
+        });
     },
     options: function () {
         var shell, shellcmdflag;
@@ -1099,6 +1106,10 @@ lookup:
         options.add(["shellcmdflag", "shcf"],
             "Flag passed to shell when executing :! and :run commands",
             "string", shellcmdflag);
+
+        options.add(["wildignore", "wig"],
+            "List of file patterns to ignore when completing files",
+            "regexlist", "");
     }
 });
 

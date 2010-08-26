@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
+// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 /** @scope modules */
 /** @instance hints */
@@ -40,12 +42,12 @@ const Hints = Module("hints", {
             "?": Mode("Show information for hint",          function (elem) buffer.showElementInfo(elem),                          extended),
             s: Mode("Save hint",                            function (elem) buffer.saveLink(elem, true)),
             a: Mode("Save hint with prompt",                function (elem) buffer.saveLink(elem, false)),
-            f: Mode("Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () util.makeXPath(["body"])),
+            f: Mode("Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]),
             o: Mode("Follow hint",                          function (elem) buffer.followLink(elem, liberator.CURRENT_TAB)),
             t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, liberator.NEW_TAB)),
             b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB)),
             w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, liberator.NEW_WINDOW),         extended),
-            F: Mode("Open multiple hints in tabs",          followAndReshow),
+            F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB); hints.show("F") }),
             O: Mode("Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX)),
             T: Mode("Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX)),
             W: Mode("Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX)),
@@ -57,21 +59,6 @@ const Hints = Module("hints", {
             i: Mode("Show image",                           function (elem) liberator.open(elem.src),                              images),
             I: Mode("Show image in a new tab",              function (elem) liberator.open(elem.src, liberator.NEW_TAB),           images)
         };
-
-        /**
-         * Follows the specified hint and then reshows all hints. Used to open
-         * multiple hints in succession.
-         *
-         * @param {Node} elem The selected hint.
-         */
-        function followAndReshow(elem) {
-            buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB);
-
-            // TODO: Maybe we find a *simple* way to keep the hints displayed rather than
-            // showing them again, or is this short flash actually needed as a "usability
-            // feature"? --mst
-            hints.show("F");
-        }
     },
 
     /**
@@ -127,7 +114,7 @@ const Hints = Module("hints", {
 
         let type = elem.type;
 
-        if (elem instanceof HTMLInputElement && /(submit|button|this._reset)/.test(type))
+        if (elem instanceof HTMLInputElement && /(submit|button|reset)/.test(type))
             return [elem.value, false];
         else {
             for (let [, option] in Iterator(options["hintinputs"].split(","))) {
@@ -266,12 +253,8 @@ const Hints = Module("hints", {
             let hint = { elem: elem, showText: false };
 
             // TODO: for iframes, this calculation is wrong
-            rect = elem.getBoundingClientRect();
+            let rect = elem.getBoundingClientRect();
             if (!rect || rect.top > height || rect.bottom < 0 || rect.left > width || rect.right < 0)
-                continue;
-
-            rect = elem.getClientRects()[0];
-            if (!rect)
                 continue;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
@@ -370,7 +353,7 @@ const Hints = Module("hints", {
 
                 if (hint.text == "" && hint.elem.firstChild && hint.elem.firstChild instanceof HTMLImageElement) {
                     if (!hint.imgSpan) {
-                        rect = hint.elem.firstChild.getBoundingClientRect();
+                        var rect = hint.elem.firstChild.getBoundingClientRect();
                         if (!rect)
                             continue;
 
@@ -394,11 +377,11 @@ const Hints = Module("hints", {
             }
         }
 
-        if (config.browser.markupDocumentViewer.authorStyleDisabled) {
+        if (options["usermode"]) {
             let css = [];
             // FIXME: Broken for imgspans.
             for (let [, { doc: doc }] in Iterator(this._docs)) {
-                for (let elem in util.evaluateXPath(" {//*[@liberator:highlight and @number]", doc)) {
+                for (let elem in util.evaluateXPath("//*[@liberator:highlight and @number]", doc)) {
                     let group = elem.getAttributeNS(NS.uri, "highlight");
                     css.push(highlight.selector(group) + "[number=" + elem.getAttribute("number").quote() + "] { " + elem.style.cssText + " }");
                 }
@@ -1058,8 +1041,8 @@ const Hints = Module("hints", {
     },
     options: function () {
         const DEFAULT_HINTTAGS =
-            util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select"])
-                + " | //*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @role='link']";
+            util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
+                            "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @role='link']"]);
 
         function checkXPath(val) {
             try {
