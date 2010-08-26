@@ -10,6 +10,7 @@
     * Asciidoc is no longer for building
     * Remove [c]:edit[c], [c]:tabedit[c], and [c]:winedit[c]
     * Add 'jsdebugger' option - switch on/off javascript debugger service
+    * Add "addons", "downloads", "extoptions" and "help" to the 'activate' option.
 
 2009-10-28:
     * version 2.2

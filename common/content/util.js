@@ -19,14 +19,6 @@ const Util = Module("util", {
     },
 
     /**
-     * Returns true if its argument is an Array object, regardless
-     * of which context it comes from.
-     *
-     * @param {object} obj
-     */
-    isArray: function isArray(obj) Object.prototype.toString.call(obj) == "[object Array]",
-
-    /**
      * Returns a shallow copy of <b>obj</b>.
      *
      * @param {Object} obj
@@ -454,7 +446,7 @@ const Util = Module("util", {
             doc = window.content.document;
         if (!elem)
             elem = doc;
-        if (util.isArray(expression))
+        if (isarray(expression))
             expression = util.makeXPath(expression);
 
         let result = doc.evaluate(expression, elem,

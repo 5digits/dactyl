@@ -63,7 +63,15 @@ const StatusLine = Module("statusline", {
         function losslessDecodeURI(url) {
             // 1. decodeURI decodes %25 to %, which creates unintended
             //    encoding sequences.
-            url = url.split("%25").map(decodeURI).join("%25");
+            url = url.split("%25").map(function (url) {
+                    // Non-UTF-8 complient URLs cause "malformed URI sequence" errors.
+                    try {
+                        return decodeURI(url);
+                    }
+                    catch (e) {
+                        return url;
+                    }
+                }).join("%25");
             // 2. Re-encode whitespace so that it doesn't get eaten away
             //    by the location bar (bug 410726).
             url = url.replace(/[\r\n\t]/g, encodeURIComponent);

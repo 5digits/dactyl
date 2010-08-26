@@ -924,7 +924,7 @@ lookup:
             "List all sourced script names",
             function () {
                 let list = template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                    ([i + 1, file] for ([i, file] in Iterator(this._scriptNames))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
+                    ([i + 1, file] for ([i, file] in Iterator(io._scriptNames))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
 
                 commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
             },
@@ -954,16 +954,16 @@ lookup:
                     arg = "!" + arg;
 
                 // replaceable bang and no previous command?
-                liberator.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || this._lastRunCommand,
+                liberator.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
                     "E34: No previous command");
 
                 // NOTE: Vim doesn't replace ! preceded by 2 or more backslashes and documents it - desirable?
                 // pass through a raw bang when escaped or substitute the last command
                 arg = arg.replace(/(\\)*!/g,
-                    function (m) /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", this._lastRunCommand)
+                    function (m) /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)
                 );
 
-                this._lastRunCommand = arg;
+                io._lastRunCommand = arg;
 
                 let output = io.system(arg);
 
