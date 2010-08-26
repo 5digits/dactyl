@@ -59,10 +59,13 @@ const JavaScript = Module("javascript", {
             }
             // The debugger doesn't list some properties. I can't guess why.
             // This only lists ENUMERABLE properties.
-            for (let k in orig)
-                if (k in orig && !('|' + k in seen)
-                    && Object.hasOwnProperty(orig, k) == toplevel)
-                    yield [k, this.getKey(orig, k)]
+            try {
+                for (let k in orig)
+                    if (k in orig && !('|' + k in seen)
+                        && Object.hasOwnProperty(orig, k) == toplevel)
+                        yield [k, this.getKey(orig, k)]
+            }
+            catch(e) {}
         }
         else {
             for (let k in allkeys(obj))

@@ -200,19 +200,7 @@ const Buffer = Module("buffer", {
             // any buffer, even in a background tab
             doc.pageIsFullyLoaded = 1;
 
-            // code which is only relevant if the page load is the current tab goes here:
-            if (doc == config.browser.contentDocument) {
-                // we want to stay in command mode after a page has loaded
-                // TODO: move somewhere else, as focusing can already happen earlier than on "load"
-                if (options["focuscontent"]) {
-                    setTimeout(function () {
-                        let focused = liberator.focus;
-                        if (focused && (focused.value != null) && focused.value.length == 0)
-                            focused.blur();
-                    }, 0);
-                }
-            }
-            else // background tab
+            if (doc != config.browser.contentDocument)
                 liberator.echomsg("Background tab loaded: " + doc.title || doc.location.href, 3);
 
             this._triggerLoadAutocmd("PageLoad", doc);
@@ -475,6 +463,18 @@ const Buffer = Module("buffer", {
     },
 
     /**
+     * Returns true if a scripts are allowed to focus the given input
+     * element or input elements in the given window.
+     *
+     * @param {Node|Window}
+     * @returns {boolean}
+     */
+    focusAllowed: function (elem) {
+        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+        return !options["strictfocus"] || elem.liberatorFocusAllowed;
+    },
+
+    /**
      * Focuses the given element. In contrast to a simple
      * elem.focus() call, this function works for iframes and
      * image maps.
@@ -483,7 +483,10 @@ const Buffer = Module("buffer", {
      */
     focusElement: function (elem) {
         let doc = window.content.document;
-        if (elem instanceof HTMLFrameElement || elem instanceof HTMLIFrameElement)
+        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+        win.liberatorFocusAllowed = true;
+
+        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
             elem.contentWindow.focus();
         else if (elem instanceof HTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);

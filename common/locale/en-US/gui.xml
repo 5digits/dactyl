@@ -151,8 +151,9 @@
 
 
 <item>
-    <tags>:extens :extensions</tags>
+    <tags>:exts :extens :extensions</tags>
     <spec>:extens<oa>ions</oa></spec>
+    <spec>:exts</spec>
     <description>
         <p>List all installed extensions.</p>
     </description>

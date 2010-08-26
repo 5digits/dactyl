@@ -11,6 +11,8 @@ syntax: glob
 */locale/*/*.html
 */chrome
 */contrib/vim/*.vba
+*/bak/*
+downloads/*
 
 ## Editor backup and swap files
 *~

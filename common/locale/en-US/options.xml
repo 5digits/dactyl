@@ -519,19 +519,14 @@
 
 
 <item>
-    <tags>'nofc' 'nofocuscontent'</tags>
-    <tags>'fc' 'focuscontent'</tags>
-    <spec>'focuscontent' 'fc'</spec>
+    <tags>'nosf' 'nostrictfocus'</tags>
+    <tags>'sf' 'strictfocus'</tags>
+    <spec>'strictfocus' 'sf'</spec>
     <type>boolean</type>
-    <default>off</default>
+    <default>on</default>
     <description>
         <p>
-            Focus the content after a page has loaded. This is useful if you
-            always want to stay in Normal mode when browsing between web sites.
-            When <str>on</str>, it blurs any textbox which often is
-            automatically focused on page load.  If you usually like
-            <o>focuscontent</o> but sometimes you'd like to focus the first
-            input field, you can use <k>gi</k> to jump to it.
+            Prevent scripts from focusing input elements without user intervention.
         </p>
     </description>
 </item>

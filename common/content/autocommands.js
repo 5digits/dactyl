@@ -271,9 +271,9 @@ const AutoCommands = Module("autocommands", {
                 completer: function () config.autocommands.concat([["all", "All events"]])
             });
 
-        options.add(["focuscontent", "fc"],
-            "Try to stay in normal mode after loading a web page",
-            "boolean", false);
+        options.add(["strictfocus", "sf"],
+            "Prevent scripts from focusing input elements without user intervention",
+            "boolean", true);
     }
 });
 
