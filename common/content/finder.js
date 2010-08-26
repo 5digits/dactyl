@@ -18,6 +18,7 @@ const RangeFinder = Module("rangefinder", {
         let backwards = mode == modes.FIND_BACKWARD;
         commandline.open(backwards ? "?" : "/", "", mode);
 
+        this.rangeFind = null;
         this.find("", backwards);
     },
 
