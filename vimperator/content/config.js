@@ -46,58 +46,58 @@ const Config = Module("config", ConfigBase, {
                    ["VimperatorLeavePre", "Triggered before exiting Firefox, just before destroying each module"],
                    ["VimperatorLeave",    "Triggered before exiting Firefox"]],
 
-    dialogs: [
-        ["about",            "About Firefox",
+    dialogs: {
+        about: ["About Firefox",
             function () { window.openDialog("chrome://browser/content/aboutDialog.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        ["addbookmark",      "Add bookmark for the current page",
+        addbookmark: ["Add bookmark for the current page",
             function () { PlacesCommandHook.bookmarkCurrentPage(true, PlacesUtils.bookmarksRootId); }],
-        ["addons",           "Manage Add-ons",
+        addons: ["Manage Add-ons",
             function () { window.BrowserOpenAddonsMgr(); }],
-        ["bookmarks",        "List your bookmarks",
+        bookmarks: ["List your bookmarks",
             function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
-        ["checkupdates",     "Check for updates",
+        checkupdates: ["Check for updates",
             function () { window.checkForUpdates(); }],
-        ["cleardata",        "Clear private data",
+        cleardata: ["Clear private data",
             function () { Cc[GLUE_CID].getService(Ci.nsIBrowserGlue).sanitize(window || null); }],
-        ["cookies",          "List your cookies",
+        cookies: ["List your cookies",
             function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
-        ["console",          "JavaScript console",
+        console: ["JavaScript console",
             function () { window.toJavaScriptConsole(); }],
-        ["customizetoolbar", "Customize the Toolbar",
+        customizetoolbar: ["Customize the Toolbar",
             function () { window.BrowserCustomizeToolbar(); }],
-        ["dominspector",     "DOM Inspector",
+        dominspector: ["DOM Inspector",
             function () { try { window.inspectDOMDocument(content.document); } catch (e) { liberator.echoerr("DOM Inspector extension not installed"); } }],
-        ["downloads",        "Manage Downloads",
+        downloads: ["Manage Downloads",
             function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
-        ["history",          "List your history",
+        history: ["List your history",
             function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
-        ["import",           "Import Preferences, Bookmarks, History, etc. from other browsers",
+        import: ["Import Preferences, Bookmarks, History, etc. from other browsers",
             function () { window.BrowserImport(); }],
-        ["openfile",         "Open the file selector dialog",
+        openfile: ["Open the file selector dialog",
             function () { window.BrowserOpenFileWindow(); }],
-        ["pageinfo",         "Show information about the current page",
+        pageinfo: ["Show information about the current page",
             function () { window.BrowserPageInfo(); }],
-        ["pagesource",       "View page source",
+        pagesource: ["View page source",
             function () { window.BrowserViewSourceOfDocument(content.document); }],
-        ["places",           "Places Organizer: Manage your bookmarks and history",
+        places: ["Places Organizer: Manage your bookmarks and history",
             function () { PlacesCommandHook.showPlacesOrganizer(ORGANIZER_ROOT_BOOKMARKS); }],
-        ["preferences",      "Show Firefox preferences dialog",
+        preferences: ["Show Firefox preferences dialog",
             function () { window.openPreferences(); }],
-        ["printpreview",     "Preview the page before printing",
+        printpreview: ["Preview the page before printing",
             function () { PrintUtils.printPreview(onEnterPrintPreview, onExitPrintPreview); }],
-        ["printsetup",       "Setup the page size and orientation before printing",
+        printsetup: ["Setup the page size and orientation before printing",
             function () { PrintUtils.showPageSetup(); }],
-        ["print",            "Show print dialog",
+        print: ["Show print dialog",
             function () { PrintUtils.print(); }],
-        ["saveframe",        "Save frame to disk",
+        saveframe: ["Save frame to disk",
             function () { window.saveFrameDocument(); }],
-        ["savepage",         "Save page to disk",
+        savepage: ["Save page to disk",
             function () { window.saveDocument(window.content.document); }],
-        ["searchengines",    "Manage installed search engines",
+        searchengines: ["Manage installed search engines",
             function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        ["selectionsource",  "View selection source",
+        selectionsource: ["View selection source",
             function () { buffer.viewSelectionSource(); }]
-    ],
+    },
 
     hasTabbrowser: true,
 
@@ -232,13 +232,20 @@ const Config = Module("config", ConfigBase, {
                 return;
 
             context.anchored = false;
-            context.title = ["Smart Completions"];
-            context.keys.icon = 2;
-            context.incomplete = true;
-            context.hasItems = context.completions.length > 0; // XXX
-            context.filterFunc = null;
-            context.cancel = function () { if (searchRunning) { services.get("autoCompleteSearch").stopSearch(); searchRunning = false; } };
             context.compare = CompletionContext.Sort.unsorted;
+            context.filterFunc = null;
+            context.hasItems = context.completions.length > 0; // XXX
+            context.incomplete = true;
+            context.keys.icon = 2;
+            context.title = ["Smart Completions"];
+            context.cancel = function () {
+                if (searchRunning) {
+                    services.get("autoCompleteSearch").stopSearch();
+                    searchRunning = false;
+                }
+            };
+            if (searchRunning)
+                services.get("autoCompleteSearch").stopSearch();
             let timer = new Timer(50, 100, function (result) {
                 context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
                 context.completions = [
@@ -246,9 +253,6 @@ const Config = Module("config", ConfigBase, {
                         for (i in util.range(0, result.matchCount))
                 ];
             });
-            if (searchRunning)
-                services.get("autoCompleteSearch").stopSearch();
-            searchRunning = true;
             services.get("autoCompleteSearch").startSearch(context.filter, "", context.result, {
                 onSearchResult: function onSearchResult(search, result) {
                     timer.tell(result);
@@ -258,6 +262,7 @@ const Config = Module("config", ConfigBase, {
                     }
                 }
             });
+            searchRunning = true;
         };
 
         completion.sidebar = function sidebar(context) {

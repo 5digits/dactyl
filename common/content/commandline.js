@@ -762,12 +762,12 @@ const CommandLine = Module("commandline", {
             case "<MiddleMouse>":
             case "<C-LeftMouse>":
             case "<C-M-LeftMouse>":
-                openLink(liberator.NEW_BACKGROUND_TAB);
+                openLink({ where: liberator.NEW_TAB, background: true });
                 break;
             case "<S-MiddleMouse>":
             case "<C-S-LeftMouse>":
             case "<C-M-S-LeftMouse>":
-                openLink(liberator.NEW_TAB);
+                openLink({ where: liberator.NEW_TAB, background: false });
                 break;
             case "<S-LeftMouse>":
                 openLink(liberator.NEW_WINDOW);

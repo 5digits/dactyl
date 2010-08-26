@@ -1320,17 +1320,8 @@ const Liberator = Module("liberator", {
                 let arg = args[0];
 
                 try {
-                    // TODO: why are these sorts of properties arrays? --djk
-                    let dialogs = config.dialogs;
-
-                    for (let [, dialog] in Iterator(dialogs)) {
-                        if (util.compareIgnoreCase(arg, dialog[0]) == 0) {
-                            dialog[2]();
-                            return;
-                        }
-                    }
-
-                    liberator.echoerr("E475: Invalid argument: " + arg);
+                    liberator.assert(args[0] in config.dialogs, "E475: Invalid argument: " + arg);
+                    config.dialogs[args[0]][1]();
                 }
                 catch (e) {
                     liberator.echoerr("Error opening " + arg.quote() + ": " + e);
@@ -1540,12 +1531,13 @@ const Liberator = Module("liberator", {
             });
 
         // TODO: maybe indicate pending status too?
-        commands.add(["extens[ions]"],
+        commands.add(["extens[ions]", "exts"],
             "List available extensions",
             function (args) {
                 AddonManager.getAddonsByTypes(["extension"], function (extensions) {
                     if (args[0])
                         extensions = extensions.filter(function (extension) extension.name.indexOf(args[0]) >= 0);
+                    extensions.sort(function (a, b) String.localeCompare(a.name, b.name));
 
                     if (extensions.length > 0) {
                         let list = template.tabular(
@@ -1832,7 +1824,7 @@ const Liberator = Module("liberator", {
     completion: function () {
         completion.dialog = function dialog(context) {
             context.title = ["Dialog"];
-            context.completions = config.dialogs;
+            context.completions = [[k, v[0]] for ([k, v] in Iterator(config.dialogs))];
         };
 
         completion.extension = function extension(context) {

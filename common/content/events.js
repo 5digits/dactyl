@@ -671,7 +671,7 @@ const Events = Module("events", {
             if (elem && elem.readOnly)
                 return;
 
-            if ((elem instanceof HTMLInputElement && /^(text|password)$/.test(elem.type)) ||
+            if ((elem instanceof HTMLInputElement && /^(search|text|password)$/.test(elem.type)) ||
                 (elem instanceof HTMLSelectElement)) {
                 liberator.mode = modes.INSERT;
                 if (hasHTMLDocument(win))
@@ -1022,7 +1022,9 @@ const Events = Module("events", {
 
                     if (liberator.mode == modes.COMMAND_LINE) {
                         if (!(modes.extended & modes.INPUT_MULTILINE))
-                            commandline.onEvent(event); // reroute event in command line mode
+                            liberator.trapErrors(function () {
+                                commandline.onEvent(event); // reroute event in command line mode
+                            });
                     }
                     else if (!modes.mainMode.input)
                         liberator.beep();

@@ -1148,8 +1148,8 @@ const Buffer = Module("buffer", {
             },
             {
                 argCount: "?",
-                literal: 0,
-                bang: true
+                bang: true,
+                literal: 0
             });
 
         commands.add(["pa[geinfo]"],
@@ -1188,8 +1188,8 @@ const Buffer = Module("buffer", {
             "Reload the current web page",
             function (args) { tabs.reload(config.browser.mCurrentTab, args.bang); },
             {
-                bang: true,
-                argCount: "0"
+                argCount: "0",
+                bang: true
             });
 
         // TODO: we're prompted if download.useDownloadDir isn't set and no arg specified - intentional?
@@ -1483,7 +1483,7 @@ const Buffer = Module("buffer", {
                     let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
 
                     let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (elem) {
-                        if (elem.readOnly || elem instanceof HTMLInputElement && ["text", "password", "file"].indexOf(elem.type) < 0)
+                        if (elem.readOnly || elem instanceof HTMLInputElement && ["file", "search", "text", "password"].indexOf(elem.type) < 0)
                             return false;
                         let computedStyle = util.computedStyle(elem);
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none";

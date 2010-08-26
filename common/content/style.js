@@ -702,10 +702,10 @@ Module("styles", {
         JavaScript.setCompleter(["get", "addSheet", "removeSheet", "findSheets"].map(function (m) styles[m]),
             [ // Prototype: (system, name, filter, css, index)
                 null,
-                function (context, obj, args) args[0] ? styles.systemNames : styles.userNames,
-                function (context, obj, args) styles.completeSite(context, content),
+                function (context, obj, args) args[0] ? this.systemNames : this.userNames,
+                function (context, obj, args) this.completeSite(context, content),
                 null,
-                function (context, obj, args) args[0] ? styles.systemSheets : styles.userSheets
+                function (context, obj, args) args[0] ? this.systemSheets : this.userSheets
             ]);
     }
 });

@@ -42,7 +42,7 @@ const Hints = Module("hints", {
             "?": Mode("Show information for hint",          function (elem) buffer.showElementInfo(elem),                          extended),
             s: Mode("Save hint",                            function (elem) buffer.saveLink(elem, true)),
             a: Mode("Save hint with prompt",                function (elem) buffer.saveLink(elem, false)),
-            f: Mode("Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () util.makeXPath(["body"])),
+            f: Mode("Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]),
             o: Mode("Follow hint",                          function (elem) buffer.followLink(elem, liberator.CURRENT_TAB)),
             t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, liberator.NEW_TAB)),
             b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB)),
@@ -353,7 +353,7 @@ const Hints = Module("hints", {
 
                 if (hint.text == "" && hint.elem.firstChild && hint.elem.firstChild instanceof HTMLImageElement) {
                     if (!hint.imgSpan) {
-                        rect = hint.elem.firstChild.getBoundingClientRect();
+                        var rect = hint.elem.firstChild.getBoundingClientRect();
                         if (!rect)
                             continue;
 
@@ -381,7 +381,7 @@ const Hints = Module("hints", {
             let css = [];
             // FIXME: Broken for imgspans.
             for (let [, { doc: doc }] in Iterator(this._docs)) {
-                for (let elem in util.evaluateXPath(" {//*[@liberator:highlight and @number]", doc)) {
+                for (let elem in util.evaluateXPath("//*[@liberator:highlight and @number]", doc)) {
                     let group = elem.getAttributeNS(NS.uri, "highlight");
                     css.push(highlight.selector(group) + "[number=" + elem.getAttribute("number").quote() + "] { " + elem.style.cssText + " }");
                 }
@@ -1041,8 +1041,8 @@ const Hints = Module("hints", {
     },
     options: function () {
         const DEFAULT_HINTTAGS =
-            util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select"])
-                + " | //*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @role='link']";
+            util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
+                            "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @role='link']"]);
 
         function checkXPath(val) {
             try {

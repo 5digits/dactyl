@@ -34,6 +34,7 @@ const JavaScript = Module("javascript", {
     },
 
     iter: function iter(obj, toplevel) {
+        "use strict";
         toplevel = !!toplevel;
         let seen = {};
         let ret = {};
@@ -45,9 +46,6 @@ const JavaScript = Module("javascript", {
             let orig = obj;
             let top = services.get("debugger").wrapValue(obj);
 
-            if (!toplevel)
-                obj = obj.__proto__;
-
             for (; obj; obj = !toplevel && obj.__proto__) {
                 services.get("debugger").wrapValue(obj).getProperties(ret, {});
                 for (let prop in values(ret.value)) {
@@ -55,20 +53,21 @@ const JavaScript = Module("javascript", {
                     if (name in seen)
                         continue;
                     seen[name] = 1;
-                    yield [prop.name.stringValue, top.getProperty(prop.name.stringValue).value.getWrappedValue()]
+                    if (toplevel || obj !== orig)
+                        yield [prop.name.stringValue, top.getProperty(prop.name.stringValue).value.getWrappedValue()]
                 }
             }
             // The debugger doesn't list some properties. I can't guess why.
+            // This only lists ENUMERABLE properties.
             for (let k in orig)
                 if (k in orig && !('|' + k in seen)
-                    && callable(orig.hasOwnProperty)
-                    && orig.hasOwnProperty(k) == toplevel)
+                    && Object.hasOwnProperty(orig, k) == toplevel)
                     yield [k, this.getKey(orig, k)]
         }
         else {
-            for (k in allkeys(obj))
+            for (let k in allkeys(obj))
 		    try {
-			if (obj.hasOwnProperty(k) == toplevel)
+			if (Object.hasOwnProperty(obj, k) == toplevel)
 			    yield [k, this.getKey(obj, k)];
                     }
                     catch (e) {}
@@ -508,15 +507,15 @@ const JavaScript = Module("javascript", {
                 // Split up the arguments
                 let prev = this._get(-2).offset;
                 let args = [];
-                for (let [, idx] in Iterator(this._get(-2).comma)) {
+                for (let [i, idx] in Iterator(this._get(-2).comma)) {
                     let arg = this._str.substring(prev + 1, idx);
                     prev = idx;
-                    util.memoize(args, this._i, function () self.eval(arg));
+                    util.memoize(args, i, function () self.eval(arg));
                 }
                 let key = this._getKey();
                 args.push(key + string);
 
-                compl = function (context, obj) {
+                let compl = function (context, obj) {
                     let res = completer.call(self, context, func, obj, args);
                     if (res)
                         context.completions = res;
@@ -600,7 +599,7 @@ const JavaScript = Module("javascript", {
                 let completer = completers[args.length - 1];
                 if (!completer)
                     return [];
-                return completer.call(this, context, obj, args);
+                return completer.call(obj, context, obj, args);
             };
         }
     }

@@ -27,7 +27,7 @@ let channel = Components.classesByID["{61ba33c0-3031-11d3-8cd0-0060b0fc14a3}"]
                         .QueryInterface(Ci.nsIRequest);
 const systemPrincipal = channel.owner;
 channel.cancel(NS_BINDING_ABORTED);
-delete channel;
+channel = null;
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {

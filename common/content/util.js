@@ -103,6 +103,55 @@ const Util = Module("util", {
     },
 
     /**
+     * Expands brace globbing patterns in a string.
+     *
+     * Example:
+     *     "a{b,c}d" => ["abd", "acd"]
+     *
+     * @param {string} pattern The pattern to deglob.
+     * @returns [string] The resulting strings.
+     */
+    debrace: function deglobBrace(pattern) {
+        function split(pattern, re, fn, dequote) {
+            let end = 0, match, res = [];
+            while (match = re.exec(pattern)) {
+                end = match.index + match[0].length;
+                res.push(match[1]);
+                if (fn)
+                    fn(match);
+            }
+            res.push(pattern.substr(end));
+            return res.map(function (s) util.dequote(s, dequote));
+        }
+        let patterns = [], res = [];
+        let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
+            function (match) {
+                patterns.push(split(match[2], /((?:[^\\,]|\\.)*),/gy,
+                    null, ",{}"));
+            }, "{}");
+        function rec(acc) {
+            if (acc.length == patterns.length)
+                res.push(util.Array.zip(substrings, acc).join(""));
+            else 
+                for (let [, pattern] in Iterator(patterns[acc.length]))
+                    rec(acc.concat(pattern));
+        }
+        rec([]);
+        return res;
+    },
+
+    /**
+     * Removes certain backslash-quoted characters while leaving other
+     * backslash-quoting sequences untouched.
+     *
+     * @param {string} pattern The string to unquote.
+     * @param {string} chars The characters to unquote.
+     * @returns {string}
+     */
+    dequote: function dequote(pattern, chars)
+        pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
+
+    /**
      * Converts HTML special characters in <b>str</b> to the equivalent HTML
      * entities.
      *
@@ -169,7 +218,8 @@ const Util = Module("util", {
      * @returns {string}
      */
     makeXPath: function makeXPath(nodes) {
-        return util.Array(nodes).map(function (node) [node, "xhtml:" + node]).flatten()
+        return util.Array(nodes).map(util.debrace).flatten()
+                                .map(function (node) [node, "xhtml:" + node]).flatten()
                                 .map(function (node) "//" + node).join(" | ");
     },
 
@@ -832,6 +882,22 @@ const Util = Module("util", {
                 }
             }
             return ret;
+        },
+
+        /**
+         * Zips the contents of two arrays. The resulting array is twice the
+         * length of ary1, with any shortcomings of ary2 replaced with null
+         * strings.
+         *
+         * @param {Array} ary1
+         * @param {Array} ary2
+         * @returns {Array}
+         */
+        zip: function zip(ary1, ary2) {
+            let res = []
+            for(let [i, item] in Iterator(ary1))
+                res.push(item, i in ary2 ? ary2[i] : "");
+            return res;
         }
     })
 });
