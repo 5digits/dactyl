@@ -18,7 +18,8 @@ const RangeFinder = Module("rangefinder", {
         let backwards = mode == modes.FIND_BACKWARD;
         commandline.open(backwards ? "?" : "/", "", mode);
 
-        this.rangeFind = null;
+        if (this.rangeFind)
+            this.rangeFind.reset();
         this.find("", backwards);
     },
 
@@ -30,7 +31,6 @@ const RangeFinder = Module("rangefinder", {
         let matchCase = !(options["ignorecase"] || options["smartcase"] && !/[A-Z]/.test(str));
         let linksOnly = options["linksearch"];
 
-        // All this ado is ludicrous.
         str = str.replace(/\\(.|$)/g, function (m, n1) {
             if (n1 == "l")
                 linksOnly = true;
@@ -268,8 +268,6 @@ const RangeFind = Class("RangeFind", {
 
         this.highlighted = null;
         this.lastString = "";
-        this.forward = null;
-        this.found = false;
     },
 
     get selectedRange() {
@@ -283,6 +281,9 @@ const RangeFind = Class("RangeFind", {
         this.lastRange = this.selectedRange;
         this.range = this.findRange(this.startRange);
         this.ranges.first = this.range;
+        this.ranges.forEach(function (range) range.save());
+        this.forward = null;
+        this.found = false;
     },
 
     sameDocument: function (r1, r2) r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument,
