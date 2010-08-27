@@ -578,8 +578,8 @@ const Buffer = Module("buffer", {
         let offsetX = 1;
         let offsetY = 1;
 
-        if (elem instanceof HTMLFrameElement || elem instanceof HTMLIFrameElement) {
-            elem.contentWindow.focus();
+        if (isinstance(elem [HTMLFrameElement, HTMLIFrameElement])) {
+            buffer.focusElement(elem);
             return;
         }
         else if (elem instanceof HTMLAreaElement) { // for imagemap
@@ -608,7 +608,7 @@ const Buffer = Module("buffer", {
             liberator.log("Invalid where argument for followLink()", 0);
         }
 
-        elem.focus();
+        buffer.focusElement(elem);
 
         options.withContext(function () {
             options.setPref("browser.tabs.loadInBackground", true);

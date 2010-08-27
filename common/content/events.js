@@ -735,13 +735,15 @@ const Events = Module("events", {
         }
     },
 
+    // TODO: Merge with onFocusChange
     onFocus: function (event) {
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
 
         let elem = event.originalTarget;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
-        if (hasHTMLDocument(win) && !buffer.focusAllowed(win))
+        if (hasHTMLDocument(win) && !buffer.focusAllowed(win)
+                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
             elem.blur();
     },
 
