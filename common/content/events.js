@@ -825,7 +825,7 @@ const Events = Module("events", {
              return;
 
         if (modes.isRecording) {
-            if (key == "q") { // TODO: should not be hardcoded
+            if (key == "q" && !modes.mainMode.input) { // TODO: should not be hardcoded
                 modes.isRecording = false;
                 dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro), 9);
                 dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
