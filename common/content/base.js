@@ -44,30 +44,34 @@ function allkeys(obj) {
     }
 }
 
-function keys(obj) {
-    if (modules.services) {
-        try {
-            let ret = {};
-            services.get("debugger").wrapValue(obj).getProperties(ret, {});
-            for (let prop in values(ret.value))
-                yield prop.name.stringValue;
-            return;
-        }
-        catch (e) {}
+function debuggerProperties(obj) {
+    if (modules.services && options["jsdebugger"]) {
+        let ret = {};
+        services.get("debugger").wrapValue(obj).getProperties(ret, {});
+        return ret.value;
+    }
+}
+
+if (!Object.keys)
+    Object.keys = function keys(obj) [k for (k in obj) if (obj.hasOwnProperty(k))];
+
+if (!Object.getOwnPropertyNames)
+    Object.getOwnPropertyNames = function getOwnPropertyNames(obj) {
+        let res = debuggerProperties(obj);
+        if (res)
+            return [prop.name.stringValue for (prop in values(res))];
+        return Object.keys(obj);
     }
 
-    if ("__iterator__" in obj) {
-        var iter = obj.__iterator__;
-        yield "__iterator__";
-        // This is dangerous, but necessary.
-        delete obj.__iterator__;
-    }
-    for (var k in obj)
-        if (obj.hasOwnProperty(k))
-            yield k;
-    if (iter !== undefined)
-        obj.__iterator__ = iter;
+function properties(obj, prototypes) {
+    let orig = obj;
+    let seen = {};
+    for (; obj; obj = prototypes && obj.__proto__)
+        for (let key in values(Object.getOwnPropertyNames(obj)))
+            if (!prototypes || !set.add(seen, key) && obj != orig)
+                yield key
 }
+
 function values(obj) {
     for (var k in obj)
         if (obj.hasOwnProperty(k))
@@ -273,7 +277,7 @@ function curry(fn, length, self, acc) {
 function update(target) {
     for (let i = 1; i < arguments.length; i++) {
         let src = arguments[i];
-        foreach(keys(src || {}), function (k) {
+        Object.getOwnPropertyNames(src || {}).forEach(function (k) {
             var get = src.__lookupGetter__(k),
                 set = src.__lookupSetter__(k);
             if (!get && !set) {

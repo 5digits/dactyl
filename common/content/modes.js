@@ -158,7 +158,7 @@ const Modes = Module("modes", {
 
     getCharModes: function (chr) [m for (m in values(this._modeMap)) if (m.char == chr)],
 
-    matchModes: function (obj) [m for (m in values(this._modeMap)) if (array(keys(obj)).every(function (k) obj[k] == (m[k] || false)))],
+    matchModes: function (obj) [m for (m in values(this._modeMap)) if (Object.keys(obj).every(function (k) obj[k] == (m[k] || false)))],
 
     // show the current mode string in the command line
     show: function () {

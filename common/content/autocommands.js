@@ -167,7 +167,7 @@ const AutoCommands = Module("autocommands", {
 
                 if (event) {
                     // NOTE: event can only be a comma separated list for |:au {event} {pat} {cmd}|
-                    let validEvents = keys(config.autocommands);
+                    let validEvents = Object.keys(config.autocommands);
                     validEvents.push("*");
 
                     events = event.split(",");
@@ -227,7 +227,7 @@ const AutoCommands = Module("autocommands", {
 
                     let [event, url] = args;
                     let defaultURL = url || buffer.URL;
-                    let validEvents = keys(config.autocommands);
+                    let validEvents = Object.keys(config.autocommands);
 
                     // TODO: add command validators
                     dactyl.assert(event != "*",

@@ -26,74 +26,39 @@ const JavaScript = Module("javascript", {
     // Some object members are only accessible as function calls
     getKey: function (obj, key) {
         try {
+            // if (!Object.prototype.__lookupGetter__.call(obj, key))
             return obj[key];
         }
-        catch (e) {
-            return undefined;
-        }
+        catch (e) {}
+        return undefined;
     },
 
     iter: function iter(obj, toplevel) {
         "use strict";
-        toplevel = !!toplevel;
-        let seen = {};
-        let ret = {};
+        const self = this;
 
         if(obj == null)
             return;
 
-        if(options["jsdebugger"]) {
-            let orig = obj;
-            let top = services.get("debugger").wrapValue(obj);
-
-            for (; obj; obj = !toplevel && obj.__proto__) {
-                services.get("debugger").wrapValue(obj).getProperties(ret, {});
-                for (let prop in values(ret.value)) {
-                    if (set.add(seen, prop.name.stringValue))
-                        continue;
-                    if (toplevel || obj !== orig)
-                        yield [prop.name.stringValue, top.getProperty(prop.name.stringValue).value.getWrappedValue()]
-                }
-            }
-            // The debugger doesn't list some properties. I can't guess why.
-            // This only lists ENUMERABLE properties.
-            try {
-                for (let k in orig)
-                    if (k in orig && !(set.has(seen, k))
-                        && Object.hasOwnProperty(orig, k) == toplevel)
-                        yield [k, this.getKey(orig, k)]
-            }
-            catch(e) {}
-        }
+        let orig = obj;
+        if(!options["jsdebugger"])
+            function value(key) self.getKey(orig, key);
         else {
-            for (let k in allkeys(obj))
-		    try {
-			if (Object.hasOwnProperty(obj, k) == toplevel)
-			    yield [k, this.getKey(obj, k)];
-                    }
-                    catch (e) {}
+            let top = services.get("debugger").wrapValue(obj);
+            function value(key) top.getProperty(key).value.getWrappedValue();
         }
+        for (let key in properties(obj, !toplevel))
+            yield [key, value(key)];
     },
 
-    // Search the object for strings starting with @key.
-    // If @last is defined, key is a quoted string, it's
-    // wrapped in @last after @offset characters are sliced
-    // off of it and it's quoted.
     objectKeys: function objectKeys(obj, toplevel) {
         // Things we can dereference
-        if (["object", "string", "function"].indexOf(typeof obj) == -1)
+        if (!obj || ["object", "string", "function"].indexOf(typeof obj) == -1)
             return [];
-        if (!obj)
+        if (modules.isPrototypeOf(obj) && !toplevel)
             return [];
 
-        let completions;
-        if (modules.isPrototypeOf(obj))
-            completions = [v for (v in Iterator(obj))];
-        else {
-            completions = [k for (k in this.iter(obj, toplevel))];
-            if (!toplevel)
-                completions = util.Array.uniq(completions, true);
-        }
+        let completions = [k for (k in this.iter(obj, toplevel))];
 
         // Add keys for sorting later.
         // Numbers are parsed to ints.
@@ -124,6 +89,7 @@ const JavaScript = Module("javascript", {
             return cache[key] = dactyl.eval(arg, context);
         }
         catch (e) {
+            this.context.message = "Error: " + e;
             return null;
         }
         finally {

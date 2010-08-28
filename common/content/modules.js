@@ -104,7 +104,7 @@ window.addEventListener("load", function () {
                         dactyl.reportError(e);
                 }
             }
-            for (let mod in keys(module.INIT)) {
+            for (let mod in values(Object.keys(module.INIT))) {
                 deferredInit[mod] = deferredInit[mod] || [];
                 deferredInit[mod].push(init(mod, module));
             }
