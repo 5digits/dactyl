@@ -62,9 +62,9 @@ const Addressbook = Module("addressbook", {
 
         if (addresses.length < 1) {
             if (!filter)
-                liberator.echoerr("Exxx: No contacts", commandline.FORCE_SINGLELINE);
+                dactyl.echoerr("Exxx: No contacts", commandline.FORCE_SINGLELINE);
             else
-                liberator.echoerr("Exxx: No contacts matching string '" + filter + "'", commandline.FORCE_SINGLELINE);
+                dactyl.echoerr("Exxx: No contacts matching string '" + filter + "'", commandline.FORCE_SINGLELINE);
             return false;
         }
 
@@ -99,9 +99,9 @@ const Addressbook = Module("addressbook", {
                     displayName = this.generateDisplayName(firstName, lastName);
 
                 if (addressbook.add(mailAddr, firstName, lastName, displayName))
-                    liberator.echomsg("Added address: " + displayName + " <" + mailAddr + ">", 1, commandline.FORCE_SINGLELINE);
+                    dactyl.echomsg("Added address: " + displayName + " <" + mailAddr + ">", 1, commandline.FORCE_SINGLELINE);
                 else
-                    liberator.echoerr("Exxx: Could not add contact `" + mailAddr + "'", commandline.FORCE_SINGLELINE);
+                    dactyl.echoerr("Exxx: Could not add contact `" + mailAddr + "'", commandline.FORCE_SINGLELINE);
 
             },
             {
@@ -126,7 +126,7 @@ const Addressbook = Module("addressbook", {
                     var to = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor;
                 }
                 catch (e) {
-                    liberator.beep();
+                    dactyl.beep();
                 }
 
                 if (!to)

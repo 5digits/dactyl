@@ -1,0 +1,13 @@
+
+<!ENTITY % dactylBranding SYSTEM "chrome://branding/locale/brand.dtd">
+%dactylBranding;
+
+<!ENTITY dactyl.mainWindow "main-window">
+<!ENTITY dactyl.name "pentadactyl">
+<!ENTITY dactyl.idname "PENTADACTYL">
+<!ENTITY dactyl.appname "Pentadactyl">
+<!ENTITY dactyl.host "&brandShortName;">
+<!ENTITY dactyl.hostbin "firefox">
+<!ENTITY dactyl.statusBefore "statusbar-display">
+<!ENTITY dactyl.statusAfter "">
+

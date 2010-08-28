@@ -10,7 +10,7 @@
 
 const XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
 const XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
-const NS = Namespace("liberator", "http://vimperator.org/namespaces/liberator");
+const NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
 
 const Util = Module("util", {
@@ -79,7 +79,7 @@ const Util = Module("util", {
         clipboardHelper.copyString(str);
 
         if (verbose)
-            liberator.echo("Yanked " + str, commandline.FORCE_SINGLELINE);
+            dactyl.echo("Yanked " + str, commandline.FORCE_SINGLELINE);
     },
 
     /**
@@ -310,7 +310,7 @@ const Util = Module("util", {
         const PATH = FILE.leafName.replace(/\..*/, "") + "/";
         const TIME = Date.now();
 
-        liberator.initHelp();
+        dactyl.initHelp();
         let zip = services.create("zipWriter");
         zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
         function addURIEntry(file, uri)
@@ -324,8 +324,8 @@ const Util = Module("util", {
             .split(" ").map(Array.concat));
 
         let chrome = {};
-        for (let [file,] in Iterator(services.get("liberator:").FILE_MAP)) {
-            liberator.open("liberator://help/" + file);
+        for (let [file,] in Iterator(services.get("dactyl:").FILE_MAP)) {
+            dactyl.open("dactyl://help/" + file);
             events.waitForPageLoad();
             let data = [
                 '<?xml version="1.0" encoding="UTF-8"?>\n',
@@ -343,12 +343,12 @@ const Util = Module("util", {
                             data.push(" xmlns=" + XHTML.uri.quote());
 
                         for (let { name: name, value: value } in util.Array.itervalues(node.attributes)) {
-                            if (name == "liberator:highlight") {
+                            if (name == "dactyl:highlight") {
                                 name = "class";
                                 value = "hl-" + value;
                             }
                             if (name == "href") {
-                                if (value.indexOf("liberator://help-tag/") == 0)
+                                if (value.indexOf("dactyl://help-tag/") == 0)
                                     value = services.get("io").newChannel(value, null, null).originalURI.path.substr(1);
                                 if (!/[#\/]/.test(value))
                                     value += ".xhtml";
@@ -423,14 +423,14 @@ const Util = Module("util", {
             return xmlhttp;
         }
         catch (e) {
-            liberator.log("Error opening " + url + ": " + e, 1);
+            dactyl.log("Error opening " + url + ": " + e, 1);
             return null;
         }
     },
 
     /**
      * Evaluates an XPath expression in the current or provided
-     * document. It provides the xhtml, xhtml2 and liberator XML
+     * document. It provides the xhtml, xhtml2 and dactyl XML
      * namespaces. The result may be used as an iterator.
      *
      * @param {string} expression The XPath expression to evaluate.
@@ -454,7 +454,7 @@ const Util = Module("util", {
                 return {
                     xhtml: "http://www.w3.org/1999/xhtml",
                     xhtml2: "http://www.w3.org/2002/06/xhtml2",
-                    liberator: NS.uri
+                    dactyl: NS.uri
                 }[prefix] || null;
             },
             asIterator ? XPathResult.ORDERED_NODE_ITERATOR_TYPE : XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
@@ -559,7 +559,7 @@ const Util = Module("util", {
             return false;
 
         const NAMESPACES = util.Array.toObject([
-            [NS, 'liberator'],
+            [NS, 'dactyl'],
             [XHTML, 'html'],
             [XUL, 'xul']
         ]);
@@ -674,7 +674,7 @@ const Util = Module("util", {
         let endTime = Date.now() + time;
         while (start < end) {
             if (Date.now() > endTime) {
-                liberator.threadYield(true, true);
+                dactyl.threadYield(true, true);
                 endTime = Date.now() + time;
             }
             yield start++;

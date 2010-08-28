@@ -28,7 +28,7 @@ const Events = Module("events", {
 
         // NOTE: the order of ["Esc", "Escape"] or ["Escape", "Esc"]
         //       matters, so use that string as the first item, that you
-        //       want to refer to within liberator's source code for
+        //       want to refer to within dactyl's source code for
         //       comparisons like if (key == "<Esc>") { ... }
         this._keyTable = {
             add: ["Plus", "Add"],
@@ -80,8 +80,8 @@ const Events = Module("events", {
 
                 if (dirs.length > 0) {
                     for (let [, dir] in Iterator(dirs)) {
-                        liberator.echomsg('Searching for "macros/*" in ' + dir.path.quote(), 2);
-                        liberator.log("Sourcing macros directory: " + dir.path + "...", 3);
+                        dactyl.echomsg('Searching for "macros/*" in ' + dir.path.quote(), 2);
+                        dactyl.log("Sourcing macros directory: " + dir.path + "...", 3);
 
                         for (let file in dir.iterDirectory()) {
                             if (file.exists() && !file.isDirectory() && file.isReadable() &&
@@ -89,17 +89,17 @@ const Events = Module("events", {
                                 let name = file.leafName.replace(/\.vimp$/i, "");
                                 this._macros.set(name, file.read().split("\n")[0]);
 
-                                liberator.log("Macro " + name + " added: " + this._macros.get(name), 5);
+                                dactyl.log("Macro " + name + " added: " + this._macros.get(name), 5);
                             }
                         }
                     }
                 }
                 else
-                    liberator.log("No user macros directory found", 3);
+                    dactyl.log("No user macros directory found", 3);
             }
             catch (e) {
                 // thrown if directory does not exist
-                liberator.log("Error sourcing macros directory: " + e, 9);
+                dactyl.log("Error sourcing macros directory: " + e, 9);
             }
         }, 100);
 
@@ -118,14 +118,14 @@ const Events = Module("events", {
     },
 
     destroy: function () {
-        liberator.dump("Removing all event listeners");
+        dactyl.dump("Removing all event listeners");
         for (let args in values(this.sessionListeners))
             args[0].removeEventListener.apply(args[0], args.slice(1));
     },
 
     /**
      * Adds an event listener for this session and removes it on
-     * liberator shutdown.
+     * dactyl shutdown.
      *
      * @param {Element} target The element on which to listen.
      * @param {string} event The event to listen for.
@@ -149,10 +149,10 @@ const Events = Module("events", {
             }
             catch (e) {
                 if (e.message == "Interrupted")
-                    liberator.echoerr("Interrupted");
+                    dactyl.echoerr("Interrupted");
                 else
-                    liberator.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
-                liberator.reportError(e);
+                    dactyl.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
+                dactyl.reportError(e);
             }
         };
     },
@@ -170,7 +170,7 @@ const Events = Module("events", {
      */
     startRecording: function (macro) {
             // TODO: ignore this like Vim?
-            liberator.assert(/[a-zA-Z0-9]/.test(macro),
+            dactyl.assert(/[a-zA-Z0-9]/.test(macro),
             "E354: Invalid register name: '" + macro + "'");
 
         modes.isRecording = true;
@@ -195,13 +195,13 @@ const Events = Module("events", {
     playMacro: function (macro) {
         let res = false;
         if (!/[a-zA-Z0-9@]/.test(macro) && macro.length == 1) {
-            liberator.echoerr("E354: Invalid register name: '" + macro + "'");
+            dactyl.echoerr("E354: Invalid register name: '" + macro + "'");
             return false;
         }
 
         if (macro == "@") { // use lastMacro if it's set
             if (!this._lastMacro) {
-                liberator.echoerr("E748: No previously used register");
+                dactyl.echoerr("E748: No previously used register");
                 return false;
             }
         }
@@ -227,9 +227,9 @@ const Events = Module("events", {
         else {
             if (this._lastMacro.length == 1)
                 // TODO: ignore this like Vim?
-                liberator.echoerr("Exxx: Register '" + this._lastMacro + "' not set");
+                dactyl.echoerr("Exxx: Register '" + this._lastMacro + "' not set");
             else
-                liberator.echoerr("Exxx: Named macro '" + this._lastMacro + "' not set");
+                dactyl.echoerr("Exxx: Named macro '" + this._lastMacro + "' not set");
         }
         return res;
     },
@@ -264,7 +264,7 @@ const Events = Module("events", {
     },
 
     /**
-     * Pushes keys onto the event queue from liberator. It is similar to
+     * Pushes keys onto the event queue from dactyl. It is similar to
      * Vim's feedkeys() method, but cannot cope with 2 partially-fed
      * strings, you have to feed one parsable string.
      *
@@ -288,10 +288,10 @@ const Events = Module("events", {
             commandline.quiet = quiet;
 
         try {
-            liberator.threadYield(1, true);
+            dactyl.threadYield(1, true);
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
-                let elem = liberator.focus || window.content;
+                let elem = dactyl.focus || window.content;
                 let evt = events.create(doc, "keypress", evt_obj);
 
                 if (typeof noremap == "object")
@@ -300,10 +300,10 @@ const Events = Module("events", {
                 else
                     evt.noremap = !!noremap;
                 evt.isMacro = true;
-                // A special hack for liberator-specific key names.
-                if (evt_obj.liberatorString || evt_obj.liberatorShift) {
-                    evt.liberatorString = evt_obj.liberatorString; // for key-less keypress events e.g. <Nop>
-                    evt.liberatorShift = evt_obj.liberatorShift; // for untypable shift keys e.g. <S-1>
+                // A special hack for dactyl-specific key names.
+                if (evt_obj.dactylString || evt_obj.dactylShift) {
+                    evt.dactylString = evt_obj.dactylString; // for key-less keypress events e.g. <Nop>
+                    evt.dactylShift = evt_obj.dactylShift; // for untypable shift keys e.g. <S-1>
                     events.onKeyPress(evt);
                 }
 
@@ -404,10 +404,10 @@ const Events = Module("events", {
      * purposes. They have many of the properties you'd expect to find on a
      * real event, but none of the methods.
      *
-     * Also may contain two "special" parameters, .liberatorString and
-     * .liberatorShift these are set for characters that can never by
+     * Also may contain two "special" parameters, .dactylString and
+     * .dactylShift these are set for characters that can never by
      * typed, but may appear in mappings, for example <Nop> is passed as
-     * liberatorString, and liberatorShift is set when a user specifies
+     * dactylString, and dactylShift is set when a user specifies
      * <S-@> where @ is a non-case-changable, non-space character.
      *
      * @param {string} keys The string to parse.
@@ -439,13 +439,13 @@ const Events = Module("events", {
                         if (evt_obj.shiftKey) {
                             keyname = keyname.toUpperCase();
                             if (keyname == keyname.toLowerCase())
-                                evt_obj.liberatorShift = true;
+                                evt_obj.dactylShift = true;
                         }
 
                         evt_obj.charCode = keyname.charCodeAt(0);
                     }
                     else if (keyname == "nop") {
-                        evt_obj.liberatorString = "<Nop>";
+                        evt_obj.dactylString = "<Nop>";
                     }
                     else if (/mouse$/.test(keyname)) { // mouse events
                         evt_obj.type = (/2-/.test(modifier) ? "dblclick" : "click");
@@ -478,7 +478,7 @@ const Events = Module("events", {
     },
 
     /**
-     * Converts the specified event to a string in liberator key-code
+     * Converts the specified event to a string in dactyl key-code
      * notation. Returns null for an unknown event.
      *
      * E.g. pressing ctrl+n would result in the string "<C-n>".
@@ -490,8 +490,8 @@ const Events = Module("events", {
         if (!event)
             return "[instance events]";
 
-        if (event.liberatorString)
-            return event.liberatorString;
+        if (event.dactylString)
+            return event.dactylString;
 
         let key = null;
         let modifier = "";
@@ -516,22 +516,22 @@ const Events = Module("events", {
             //            (i.e., cntrl codes 27--31)
             // ---
             // For more information, see:
-            //     [*] Vimp FAQ: http://vimperator.org/trac/wiki/Vimperator/FAQ#WhydoesntC-workforEscMacOSX
-            //     [*] Referenced mailing list msg: http://www.mozdev.org/pipermail/vimperator/2008-May/001548.html
+            //     [*] Vimp FAQ: http://vimperator.org/trac/wiki/Pentadactyl/FAQ#WhydoesntC-workforEscMacOSX
+            //     [*] Referenced mailing list msg: http://www.mozdev.org/pipermail/pentadactyl/2008-May/001548.html
             //     [*] Mozilla bug 416227: event.charCode in keypress handler has unexpected values on Mac for Ctrl with chars in "[ ] _ \"
             //         https://bugzilla.mozilla.org/show_bug.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&id=416227
             //     [*] Mozilla bug 432951: Ctrl+'foo' doesn't seem same charCode as Meta+'foo' on Cocoa
             //         https://bugzilla.mozilla.org/show_bug.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&id=432951
             // ---
             //
-            // The following fixes are only activated if liberator.has("MacUnix").
+            // The following fixes are only activated if dactyl.has("MacUnix").
             // Technically, they prevent mappings from <C-Esc> (and
             // <C-C-]> if your fancy keyboard permits such things<?>), but
             // these <C-control> mappings are probably pathological (<C-Esc>
             // certainly is on Windows), and so it is probably
             // harmless to remove the has("MacUnix") if desired.
             //
-            else if (liberator.has("MacUnix") && event.ctrlKey && charCode >= 27 && charCode <= 31) {
+            else if (dactyl.has("MacUnix") && event.ctrlKey && charCode >= 27 && charCode <= 31) {
                 if (charCode == 27) { // [Ctrl-Bug 1/5] the <C-[> bug
                     key = "Esc";
                     modifier = modifier.replace("C-", "");
@@ -545,7 +545,7 @@ const Events = Module("events", {
 
                 if (key in this._key_code) {
                     // a named charcode key (<Space> and <lt>) space can be shifted, <lt> must be forced
-                    if ((key.match(/^\s$/) && event.shiftKey) || event.liberatorShift)
+                    if ((key.match(/^\s$/) && event.shiftKey) || event.dactylShift)
                         modifier += "S-";
 
                     key = this._code_key[this._key_code[key]];
@@ -553,7 +553,7 @@ const Events = Module("events", {
                 else {
                     // a shift modifier is only allowed if the key is alphabetical and used in a C-A-M- mapping in the uppercase,
                     // or if the shift has been forced for a non-alphabetical character by the user while :map-ping
-                    if ((key != key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey)) || event.liberatorShift)
+                    if ((key != key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey)) || event.dactylShift)
                         modifier += "S-";
                     else if  (modifier.length == 0)
                         return key;
@@ -613,8 +613,8 @@ const Events = Module("events", {
      * @returns {boolean}
      */
     waitForPageLoad: function () {
-        //liberator.dump("start waiting in loaded state: " + buffer.loaded);
-        liberator.threadYield(true); // clear queue
+        //dactyl.dump("start waiting in loaded state: " + buffer.loaded);
+        dactyl.threadYield(true); // clear queue
 
         if (buffer.loaded == 1)
             return true;
@@ -624,31 +624,31 @@ const Events = Module("events", {
         let end = start + (maxWaitTime * 1000); // maximum time to wait - TODO: add option
         let now;
         while (now = Date.now(), now < end) {
-            liberator.threadYield();
+            dactyl.threadYield();
             //if ((now - start) % 1000 < 10)
-            //    liberator.dump("waited: " + (now - start) + " ms");
+            //    dactyl.dump("waited: " + (now - start) + " ms");
 
             if (!events.feedingKeys)
                 return false;
 
             if (buffer.loaded > 0) {
-                liberator.sleep(250);
+                dactyl.sleep(250);
                 break;
             }
             else
-                liberator.echo("Waiting for page to load...", commandline.DISALLOW_MULTILINE);
+                dactyl.echo("Waiting for page to load...", commandline.DISALLOW_MULTILINE);
         }
         modes.show();
 
         // TODO: allow macros to be continued when page does not fully load with an option
         let ret = (buffer.loaded == 1);
         if (!ret)
-            liberator.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
-        //liberator.dump("done waiting: " + ret);
+            dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
+        //dactyl.dump("done waiting: " + ret);
 
         // sometimes the input widget had focus when replaying a macro
         // maybe this call should be moved somewhere else?
-        // liberator.focusContent(true);
+        // dactyl.focusContent(true);
 
         return ret;
     },
@@ -675,7 +675,7 @@ const Events = Module("events", {
             return;
         }
 
-        switch (liberator.mode) {
+        switch (dactyl.mode) {
         case modes.NORMAL:
             // clear any selection made
             let selection = window.content.getSelection();
@@ -689,9 +689,9 @@ const Events = Module("events", {
 
         case modes.VISUAL:
             if (modes.extended & modes.TEXTAREA)
-                liberator.mode = modes.TEXTAREA;
+                dactyl.mode = modes.TEXTAREA;
             else if (modes.extended & modes.CARET)
-                liberator.mode = modes.CARET;
+                dactyl.mode = modes.CARET;
             break;
 
         case modes.CARET:
@@ -711,20 +711,20 @@ const Events = Module("events", {
             // it's a Vi editing mode. Extended modes really need to be
             // displayed too. --djk
             function isInputField() {
-                let elem = liberator.focus;
+                let elem = dactyl.focus;
                 return ((elem instanceof HTMLInputElement && !/image/.test(elem.type))
                       || elem instanceof HTMLIsIndexElement);
             }
 
             if (options["insertmode"] || isInputField())
-                liberator.mode = modes.INSERT;
+                dactyl.mode = modes.INSERT;
             else
                 modes.reset();
             break;
 
         case modes.INSERT:
             if ((modes.extended & modes.TEXTAREA))
-                liberator.mode = modes.TEXTAREA;
+                dactyl.mode = modes.TEXTAREA;
             else
                 modes.reset();
             break;
@@ -752,7 +752,7 @@ const Events = Module("events", {
     // Huh? --djk
     onFocusChange: function (event) {
         // command line has it's own focus change handler
-        if (liberator.mode == modes.COMMAND_LINE)
+        if (dactyl.mode == modes.COMMAND_LINE)
             return;
 
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
@@ -760,7 +760,7 @@ const Events = Module("events", {
         let win  = window.document.commandDispatcher.focusedWindow;
         let elem = window.document.commandDispatcher.focusedElement;
 
-        if (win && win.top == content && liberator.has("tabs"))
+        if (win && win.top == content && dactyl.has("tabs"))
             tabs.localStore.focusedFrame = win;
 
         try {
@@ -769,14 +769,14 @@ const Events = Module("events", {
 
             if ((elem instanceof HTMLInputElement && /^(search|text|password)$/.test(elem.type)) ||
                 (elem instanceof HTMLSelectElement)) {
-                liberator.mode = modes.INSERT;
+                dactyl.mode = modes.INSERT;
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
                 return;
             }
 
             if(isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
-                liberator.mode = modes.EMBED;
+                dactyl.mode = modes.EMBED;
                 return;
             }
 
@@ -799,9 +799,9 @@ const Events = Module("events", {
 
             let urlbar = document.getElementById("urlbar");
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
-                liberator.threadYield(true);
+                dactyl.threadYield(true);
 
-            if (liberator.mode & (modes.EMBED | modes.INSERT | modes.TEXTAREA | modes.VISUAL))
+            if (dactyl.mode & (modes.EMBED | modes.INSERT | modes.TEXTAREA | modes.VISUAL))
                  modes.reset();
         }
         finally {
@@ -827,17 +827,17 @@ const Events = Module("events", {
         if (modes.isRecording) {
             if (key == "q") { // TODO: should not be hardcoded
                 modes.isRecording = false;
-                liberator.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro), 9);
-                liberator.echomsg("Recorded macro '" + this._currentMacro + "'");
+                dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro), 9);
+                dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
                 killEvent();
                 return;
             }
-            else if (!mappings.hasMap(liberator.mode, this._input.buffer + key))
+            else if (!mappings.hasMap(dactyl.mode, this._input.buffer + key))
                 this._macros.set(this._currentMacro, this._macros.get(this._currentMacro) + key);
         }
 
         if (key == "<C-c>")
-            liberator.interrupted = true;
+            dactyl.interrupted = true;
 
         // feedingKeys needs to be separate from interrupted so
         // we can differentiate between a recorded <C-c>
@@ -848,7 +848,7 @@ const Events = Module("events", {
                 events.feedingKeys = false;
                 if (modes.isReplaying) {
                     modes.isReplaying = false;
-                    this.setTimeout(function () { liberator.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
+                    this.setTimeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
                 }
             }
             else
@@ -890,7 +890,7 @@ const Events = Module("events", {
             stop = true; // set to false if we should NOT consume this event but let the host app handle it
 
             // just forward event without checking any mappings when the MOW is open
-            if (liberator.mode == modes.COMMAND_LINE && (modes.extended & modes.OUTPUT_MULTILINE)) {
+            if (dactyl.mode == modes.COMMAND_LINE && (modes.extended & modes.OUTPUT_MULTILINE)) {
                 commandline.onMultilineOutputEvent(event);
                 throw killEvent();
             }
@@ -899,7 +899,7 @@ const Events = Module("events", {
             // they are without beeping also fixes key navigation in combo
             // boxes, submitting forms, etc.
             // FIXME: breaks iabbr for now --mst
-            if (key in config.ignoreKeys && (config.ignoreKeys[key] & liberator.mode)) {
+            if (key in config.ignoreKeys && (config.ignoreKeys[key] & dactyl.mode)) {
                 this._input.buffer = "";
                 return;
             }
@@ -908,7 +908,7 @@ const Events = Module("events", {
 
             if (!isEscapeKey(key)) {
                 // custom mode...
-                if (liberator.mode == modes.CUSTOM) {
+                if (dactyl.mode == modes.CUSTOM) {
                     plugins.onEvent(event);
                     throw killEvent();
                 }
@@ -938,15 +938,15 @@ const Events = Module("events", {
             // whatever reason).  if that happens to be correct, well..
             // XXX: why not just do that as well for HINTS mode actually?
 
-            if (liberator.mode == modes.CUSTOM)
+            if (dactyl.mode == modes.CUSTOM)
                 return;
 
             let inputStr = this._input.buffer + key;
             let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
             let candidateCommand = inputStr.substr(countStr.length);
-            let map = mappings[event.noremap ? "getDefault" : "get"](liberator.mode, candidateCommand);
+            let map = mappings[event.noremap ? "getDefault" : "get"](dactyl.mode, candidateCommand);
 
-            let candidates = mappings.getCandidates(liberator.mode, candidateCommand);
+            let candidates = mappings.getCandidates(dactyl.mode, candidateCommand);
             if (candidates.length == 0 && !map) {
                 map = this._input.pendingMap;
                 this._input.pendingMap = null;
@@ -1002,14 +1002,14 @@ const Events = Module("events", {
                         stop = false;
                 }
             }
-            else if (mappings.getCandidates(liberator.mode, candidateCommand).length > 0 && !event.skipmap) {
+            else if (mappings.getCandidates(dactyl.mode, candidateCommand).length > 0 && !event.skipmap) {
                 this._input.pendingMap = map;
                 this._input.buffer += key;
             }
             else { // if the key is neither a mapping nor the start of one
                 // the mode checking is necessary so that things like g<esc> do not beep
                 if (this._input.buffer != "" && !event.skipmap &&
-                    (liberator.mode & (modes.INSERT | modes.COMMAND_LINE | modes.TEXTAREA)))
+                    (dactyl.mode & (modes.INSERT | modes.COMMAND_LINE | modes.TEXTAREA)))
                     events.feedkeys(this._input.buffer, { noremap: true, skipmap: true });
 
                 this._input.buffer = "";
@@ -1021,14 +1021,14 @@ const Events = Module("events", {
                     // allow key to be passed to the host app if we can't handle it
                     stop = false;
 
-                    if (liberator.mode == modes.COMMAND_LINE) {
+                    if (dactyl.mode == modes.COMMAND_LINE) {
                         if (!(modes.extended & modes.INPUT_MULTILINE))
-                            liberator.trapErrors(function () {
+                            dactyl.trapErrors(function () {
                                 commandline.onEvent(event); // reroute event in command line mode
                             });
                     }
                     else if (!modes.mainMode.input)
-                        liberator.beep();
+                        dactyl.beep();
                 }
             }
 
@@ -1037,7 +1037,7 @@ const Events = Module("events", {
         }
         catch (e) {
             if (e !== undefined)
-                liberator.reportError(e);
+                dactyl.reportError(e);
         }
         finally {
             let motionMap = (this._input.pendingMotionMap && this._input.pendingMotionMap.names[0]) || "";
@@ -1057,11 +1057,11 @@ const Events = Module("events", {
         let elem = event.target;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         for(; win; win = win != win.parent && win.parent)
-            win.liberatorFocusAllowed = true;
+            win.dactylFocusAllowed = true;
     },
 
     onPopupShown: function (event) {
-        if (event.originalTarget.localName == "tooltip" || event.originalTarget.id == "liberator-visualbell")
+        if (event.originalTarget.localName == "tooltip" || event.originalTarget.id == "dactyl-visualbell")
             return;
         modes.add(modes.MENU);
     },
@@ -1075,7 +1075,7 @@ const Events = Module("events", {
     onResize: function (event) {
         if (window.fullScreen != this._fullscreen) {
             this._fullscreen = window.fullScreen;
-            liberator.triggerObserver("fullscreen", this._fullscreen);
+            dactyl.triggerObserver("fullscreen", this._fullscreen);
             autocommands.trigger("Fullscreen", { state: this._fullscreen });
         }
     },
@@ -1086,13 +1086,13 @@ const Events = Module("events", {
         if (controller && controller.isCommandEnabled("cmd_copy"))
             couldCopy = true;
 
-        if (liberator.mode != modes.VISUAL) {
+        if (dactyl.mode != modes.VISUAL) {
             if (couldCopy) {
-                if ((liberator.mode == modes.TEXTAREA ||
+                if ((dactyl.mode == modes.TEXTAREA ||
                      (modes.extended & modes.TEXTAREA))
                         && !options["insertmode"])
                     modes.set(modes.VISUAL, modes.TEXTAREA);
-                else if (liberator.mode == modes.CARET)
+                else if (dactyl.mode == modes.CARET)
                     modes.set(modes.VISUAL, modes.CARET);
             }
         }
@@ -1100,12 +1100,12 @@ const Events = Module("events", {
         // else
         // {
         //     if (!couldCopy && modes.extended & modes.CARET)
-        //         liberator.mode = modes.CARET;
+        //         dactyl.mode = modes.CARET;
         // }
     }
 }, {
     isInputElemFocused: function () {
-        let elem = liberator.focus;
+        let elem = dactyl.focus;
         return ((elem instanceof HTMLInputElement && !/image/.test(elem.type)) ||
                  elem instanceof HTMLTextAreaElement ||
                  elem instanceof HTMLIsIndexElement ||
@@ -1117,14 +1117,14 @@ const Events = Module("events", {
         commands.add(["delmac[ros]"],
             "Delete macros",
             function (args) {
-                liberator.assert(!args.bang || !args.string, "E474: Invalid argument");
+                dactyl.assert(!args.bang || !args.string, "E474: Invalid argument");
 
                 if (args.bang)
                     events.deleteMacros();
                 else if (args.string)
                     events.deleteMacros(args.string);
                 else
-                    liberator.echoerr("E471: Argument required");
+                    dactyl.echoerr("E471: Argument required");
             }, {
                 bang: true,
                 completer: function (context) completion.macro(context)

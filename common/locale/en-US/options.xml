@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <document
     name="options"
-    title="&liberator.appname; Options"
+    title="&dactyl.appname; Options"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <h1 tag="options">Options</h1>
 <toc start="2"/>
 
 <p>
-    &liberator.appname; has a number of internal variables and switches which can be set to
+    &dactyl.appname; has a number of internal variables and switches which can be set to
     achieve special effects. These options come in 5 forms:
 </p>
 
@@ -227,19 +227,19 @@
     character) or <em>$<a>VAR</a></em>. <em>%VAR%</em> is also supported on Windows.
 </p>
 
-<h2 tag="&liberator.host;-options preferences">Setting &liberator.host; options</h2>
+<h2 tag="&dactyl.host;-options preferences">Setting &dactyl.host; options</h2>
 
-<p>&liberator.host; options can be viewed and set with the following commands:</p>
+<p>&dactyl.host; options can be viewed and set with the following commands:</p>
 
 <item>
     <tags>:prefs :preferences</tags>
     <spec>:pref[erences]</spec>
     <description>
         <p>
-            Show the &liberator.host; preferences dialog. You can change the browser
-            preferences from this dialog. Be aware that not all &liberator.host;
-            preferences work, because &liberator.appname; overrides some key bindings and
-            changes &liberator.host;'s GUI.
+            Show the &dactyl.host; preferences dialog. You can change the browser
+            preferences from this dialog. Be aware that not all &dactyl.host;
+            preferences work, because &dactyl.appname; overrides some key bindings and
+            changes &dactyl.host;'s GUI.
         </p>
     </description>
 </item>
@@ -249,7 +249,7 @@
     <spec>:pref[erences]!</spec>
     <description>
         <p>
-            Opens about:config in the current tab where you can change advanced &liberator.host;
+            Opens about:config in the current tab where you can change advanced &dactyl.host;
             preferences.
         </p>
     </description>
@@ -260,7 +260,7 @@
     <spec>:se[t]! <a>preference</a>=<a>value</a></spec>
     <description>
         <p>
-            Change any &liberator.host; <a>preference</a> (those in the about:config
+            Change any &dactyl.host; <a>preference</a> (those in the about:config
             window). You can also reset/delete those preferences with
             <ex>:set! <a>preference</a>&amp;</ex>.
         </p>
@@ -270,7 +270,7 @@
 <tags>overridden-preferences</tags>
 
 <p>
-    &liberator.appname; sets several &liberator.host; preferences at startup. If this is undesirable,
+    &dactyl.appname; sets several &dactyl.host; preferences at startup. If this is undesirable,
     they can be changed to a different value in your RC file using
     <ex>:set! <a>preference</a>=<a>value</a></ex>
 </p>
@@ -371,7 +371,7 @@
         <dl>
             <dt>s</dt>     <dd>Search engines and keyword URLs</dd>
             <dt>f</dt>     <dd>Local files</dd>
-            <dt>l</dt>     <dd>&liberator.host; location bar entries (bookmarks and history sorted in an intelligent way)</dd>
+            <dt>l</dt>     <dd>&dactyl.host; location bar entries (bookmarks and history sorted in an intelligent way)</dd>
             <dt>b</dt>     <dd>Bookmarks</dd>
             <dt>h</dt>     <dd>History</dd>
             <dt>S</dt>     <dd>Search engine suggestions</dd>
@@ -410,7 +410,7 @@
         </p>
 
         <p>
-            If <o>defsearch</o> is empty, then &liberator.host; will always attempt to
+            If <o>defsearch</o> is empty, then &dactyl.host; will always attempt to
             open the raw [arg].
         </p>
     </description>
@@ -430,7 +430,7 @@
         </p>
 
         <warning>
-            &liberator.appname; will not behave correctly if the editor forks its own
+            &dactyl.appname; will not behave correctly if the editor forks its own
             process, such as with gvim without the -f argument.
         </warning>
     </description>
@@ -513,7 +513,7 @@
     <type>string</type>
     <default>UTF-8</default>
     <description>
-        <p>Changes the character encoding that &liberator.appname; uses to read and write files.</p>
+        <p>Changes the character encoding that &dactyl.appname; uses to read and write files.</p>
     </description>
 </item>
 
@@ -644,7 +644,7 @@
             <dt>contains</dt>           <dd>The typed characters are split on whitespace, and these character groups have to match anywhere inside the text of the link.</dd>
             <dt>wordstartswith</dt>     <dd>The typed characters are matched with the beginning of the first word (see <o>wordseparators</o>) in the link as long as possible. If no matches occur in the current word, then the matching is continued at the beginning of the next word. The words are worked through in the order they appear in the link. If the typed characters contain spaces, then the characters are split on whitespace. These character groups are then matched with the beginning of the words, beginning at the first one and continuing with the following words in the order they appear in the link.</dd>
             <dt>firstletters</dt>       <dd>Behaves like wordstartswith, but non-matching words aren't overleaped.</dd>
-            <dt>custom</dt>             <dd>Delegate to a custom function: liberator.plugins.customHintMatcher(hintString)</dd>
+            <dt>custom</dt>             <dd>Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)</dd>
         </dl>
     </description>
 </item>
@@ -756,7 +756,7 @@
     <description>
         <p>
             Use Insert mode as the default for text areas. This is useful if you
-            want to use the known &liberator.host; interface for editing text areas.
+            want to use the known &dactyl.host; interface for editing text areas.
             Input fields default to this behaviour irrespective of this option's
             setting.
         </p>
@@ -814,9 +814,9 @@
     <description>
         <p>
             Load plugin scripts when starting up. When on, yet unloaded plugins
-            are automatically loaded after the &liberator.name;rc file has been
+            are automatically loaded after the &dactyl.name;rc file has been
             sourced. To load plugins earlier, use the <ex>:loadplugins</ex>
-            command within the &liberator.name;rc.
+            command within the &dactyl.name;rc.
         </p>
     </description>
 </item>
@@ -962,7 +962,7 @@
             effective.
         </p>
 
-        <note>This option does not change the popup blocker of &liberator.host; in any way.</note>
+        <note>This option does not change the popup blocker of &dactyl.host; in any way.</note>
     </description>
 </item>
 
@@ -985,13 +985,13 @@
 
 
 <item>
-    <tags>$&liberator.idname;_RUNTIME</tags>
+    <tags>$&dactyl.idname;_RUNTIME</tags>
     <tags>'rtp' 'runtimepath'</tags>
     <spec>'runtimepath' 'rtp'</spec>
     <type>stringlist</type>
-    <default type="plain"><str>$&liberator.idname;_RUNTIME</str> or
-    Unix, Mac: <str>~/.&liberator.name;</str>,
-    Windows: <str>~/&liberator.name;</str></default>
+    <default type="plain"><str>$&dactyl.idname;_RUNTIME</str> or
+    Unix, Mac: <str>~/.&dactyl.name;</str>,
+    Windows: <str>~/&dactyl.name;</str></default>
     <description>
         <p>List of directories searched for runtime files:</p>
 
@@ -1003,17 +1003,17 @@
 
         <p>Example:</p>
 
-        <code><ex>:set runtimepath=<str>~/my&liberator.name;,~/.&liberator.name;</str></ex></code>
+        <code><ex>:set runtimepath=<str>~/my&dactyl.name;,~/.&dactyl.name;</str></ex></code>
 
         <p>
             This will search for plugins in both
-            <str>~/my&liberator.name;/plugin</str> and
-            <str>~/.&liberator.name;/plugin</str>
+            <str>~/my&dactyl.name;/plugin</str> and
+            <str>~/.&dactyl.name;/plugin</str>
         </p>
 
         <p>
-            On startup, if the environment variable <em>$&liberator.idname;_RUNTIME</em> does not
-            exist, &liberator.appname; will set it to match this value.
+            On startup, if the environment variable <em>$&dactyl.idname;_RUNTIME</em> does not
+            exist, &dactyl.appname; will set it to match this value.
         </p>
     </description>
 </item>
@@ -1212,15 +1212,15 @@
     <tags>'titlestring'</tags>
     <spec>'titlestring'</spec>
     <type>string</type>
-    <default>&liberator.appname;</default>
+    <default>&dactyl.appname;</default>
     <description>
         <p>
-            Change the title of the browser window.  &liberator.appname; changes the
-            browser title from <str>Title of web page - Mozilla &liberator.host;</str>
-            to <str>Title of web page - &liberator.appname;</str>.  If you don't like
+            Change the title of the browser window.  &dactyl.appname; changes the
+            browser title from <str>Title of web page - Mozilla &dactyl.host;</str>
+            to <str>Title of web page - &dactyl.appname;</str>.  If you don't like
             that, you can restore it with:
         </p>
-        <code><ex>:set titlestring=<str>Mozilla &liberator.host;</str></ex></code>
+        <code><ex>:set titlestring=<str>Mozilla &dactyl.host;</str></ex></code>
     </description>
 </item>
 
@@ -1266,7 +1266,7 @@
     <description>
         <p>
             Define which info messages are displayed.  When bigger than zero,
-            &liberator.appname; will give messages about what it is doing.  These can be
+            &dactyl.appname; will give messages about what it is doing.  These can be
             viewed at any time with the <ex>:messages</ex> command. The highest
             value is 15, being the most verbose mode.
         </p>

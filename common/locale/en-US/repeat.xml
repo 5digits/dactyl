@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <document
     name="repeat"
-    title="&liberator.appname; Repeating Commands"
+    title="&dactyl.appname; Repeating Commands"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <h1 tag="repeating">Repeating commands</h1>
 <toc start="2"/>
 
-<p>&liberator.appname; can repeat a number of commands and record macros.</p>
+<p>&dactyl.appname; can repeat a number of commands and record macros.</p>
 
 <h2 tag="single-repeat">Single repeats</h2>
 
@@ -21,7 +21,7 @@
     <description>
         <p>
             Repeat the last keyboard mapping <oa>count</oa> times. Note that, unlike in Vim, this
-            does not apply solely to editing commands, mainly because &liberator.appname; doesn't
+            does not apply solely to editing commands, mainly because &dactyl.appname; doesn't
             have them.
         </p>
     </description>
@@ -139,8 +139,8 @@ function hello2() {
         <p>are only available within the scope of the script.</p>
 
         <p>
-            The <tt>.&liberator.name;rc</tt> file in your home directory and any
-            files in <tt>~/.&liberator.name;/plugin/</tt> are always
+            The <tt>.&dactyl.name;rc</tt> file in your home directory and any
+            files in <tt>~/.&dactyl.name;/plugin/</tt> are always
             sourced at startup. <tt>~</tt> is supported as a
             shortcut for the <tt>$HOME</tt> directory. If <oa>!</oa> is
             specified, errors are not printed.
@@ -155,10 +155,10 @@ function hello2() {
     <description>
         <p>
             Load all unloaded plugins immediately. Because plugins are automatically
-            loaded after &liberator.name;rc is sourced, this command must be placed early
-            in the &liberator.name;rc file if &liberator.name;rc also includes commands that are
+            loaded after &dactyl.name;rc is sourced, this command must be placed early
+            in the &dactyl.name;rc file if &dactyl.name;rc also includes commands that are
             implemented by plugins. Additionally, this command allows for sourcing
-            new plugins without restarting &liberator.appname;.
+            new plugins without restarting &dactyl.appname;.
         </p>
     </description>
 </item>
@@ -194,7 +194,7 @@ function hello2() {
     <spec>:fini<oa>sh</oa></spec>
     <description>
         <p>
-            Stop sourcing a script file. This can only be called from within a &liberator.appname;
+            Stop sourcing a script file. This can only be called from within a &dactyl.appname;
             script file.
         </p>
     </description>
@@ -213,7 +213,7 @@ function hello2() {
             which might be slow, so take the results with a grain of salt.
         </p>
 
-        <p>If <a>code</a> starts with a <ex>:</ex>, it is executed as a &liberator.appname; command.</p>
+        <p>If <a>code</a> starts with a <ex>:</ex>, it is executed as a &dactyl.appname; command.</p>
 
         <p>
             Use the special version with <oa>!</oa> if you just want to run any command multiple

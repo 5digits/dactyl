@@ -45,34 +45,34 @@ const Player = Module("player", {
         onMediacoreEvent: function (event) {
             switch (event.type) {
                 case Ci.sbIMediacoreEvent.BEFORE_TRACK_CHANGE:
-                    liberator.log("Before track changed: " + event.data);
+                    dactyl.log("Before track changed: " + event.data);
                     autocommands.trigger("TrackChangePre", { track: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.TRACK_CHANGE:
                     autocommands.trigger("TrackChange", { track: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.BEFORE_VIEW_CHANGE:
-                    liberator.log("Before view changed: " + event.data);
+                    dactyl.log("Before view changed: " + event.data);
                     autocommands.trigger("ViewChangePre", { view: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.VIEW_CHANGE:
-                    liberator.log("View changed: " + event.data);
+                    dactyl.log("View changed: " + event.data);
                     autocommands.trigger("ViewChange", { view: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_START:
-                    liberator.log("Track started: " + gMM.sequencer.currentItem);
+                    dactyl.log("Track started: " + gMM.sequencer.currentItem);
                     autocommands.trigger("StreamStart", { track: gMM.sequencer.currentItem });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_PAUSE:
-                    liberator.log("Track paused: " + gMM.sequencer.currentItem);
+                    dactyl.log("Track paused: " + gMM.sequencer.currentItem);
                     autocommands.trigger("StreamPause", { track: gMM.sequencer.currentItem });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_END:
-                    liberator.log("Track ended: " + gMM.sequencer.currentItem);
+                    dactyl.log("Track ended: " + gMM.sequencer.currentItem);
                     autocommands.trigger("StreamEnd", { track: gMM.sequencer.currentItem });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_STOP:
-                    liberator.log("Track stopped: " + gMM.sequencer.currentItem);
+                    dactyl.log("Track stopped: " + gMM.sequencer.currentItem);
                     autocommands.trigger("StreamStop", { track: gMM.sequencer.currentItem });
                     break;
             }
@@ -259,7 +259,7 @@ const Player = Module("player", {
             this.focusTrack(searchView.getItemByIndex(this._lastSearchIndex));
         }
         else
-            liberator.echoerr("E486 Pattern not found: " + searchString, commandline.FORCE_SINGLELINE);
+            dactyl.echoerr("E486 Pattern not found: " + searchString, commandline.FORCE_SINGLELINE);
     },
 
     /**
@@ -448,7 +448,7 @@ const Player = Module("player", {
                     let view = LibraryUtils.createStandardMediaListView(LibraryUtils.mainLibrary, args.literalArg);
 
                     if (view.length == 0)
-                        liberator.echoerr("No Tracks matching the keywords");
+                        dactyl.echoerr("No Tracks matching the keywords");
                     else {
                          SBGetBrowser().loadMediaList(LibraryUtils.mainLibrary, null, null, view,
                                                          "chrome://songbird/content/mediapages/filtersPage.xul");
@@ -479,7 +479,7 @@ const Player = Module("player", {
                         }
                     }
 
-                    liberator.echoerr("E475: Invalid argument: " + arg);
+                    dactyl.echoerr("E475: Invalid argument: " + arg);
                 }
                 else {
                     // load main library if there are no args
@@ -520,7 +520,7 @@ const Player = Module("player", {
 
                 // intentionally supports 999:99:99
                 if (!/^[+-]?(\d+[smh]?|(\d+:\d\d:|\d+:)?\d{2})$/.test(arg))
-                    return void liberator.echoerr("E475: Invalid argument: " + arg);
+                    return void dactyl.echoerr("E475: Invalid argument: " + arg);
 
                 function ms(t, m) Math.abs(parseInt(t, 10) * { s: 1000, m: 60000, h: 3600000 }[m])
 
@@ -549,7 +549,7 @@ const Player = Module("player", {
             function (args) {
                 // FIXME: is this a SB restriction? --djk
                 if (!SBGetBrowser().currentMediaPage)
-                    return void liberator.echoerr("Exxx: Can only set the media view from the media tab"); // XXX
+                    return void dactyl.echoerr("Exxx: Can only set the media view from the media tab"); // XXX
 
                 let arg = args[0];
 
@@ -564,7 +564,7 @@ const Player = Module("player", {
                         }
                     }
 
-                    liberator.echoerr("E475: Invalid argument: " + arg);
+                    dactyl.echoerr("E475: Invalid argument: " + arg);
                 }
             },
             {
@@ -624,7 +624,7 @@ const Player = Module("player", {
                 let arg = args[0];
 
                 if (!/^[+-]?\d+$/.test(arg))
-                    return void liberator.echoerr("E488: Trailing characters");
+                    return void dactyl.echoerr("E488: Trailing characters");
 
                 let level = parseInt(arg, 10) / 100;
 
@@ -765,7 +765,7 @@ const Player = Module("player", {
                          if (item)
                              player.rateMediaItem(item, rating);
                          else
-                             liberator.beep();
+                             dactyl.beep();
                      }
                 );
             };

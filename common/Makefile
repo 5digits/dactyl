@@ -4,7 +4,7 @@ TOP           = $(shell pwd)
 OS            = $(shell uname -s)
 BUILD_DATE    = $(shell date "+%Y/%m/%d %H:%M:%S")
 BASE          = $(TOP)/../common
-GOOGLE_PROJ   = vimperator-labs
+GOOGLE_PROJ   = pentadactyl-labs
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
 
 LOCALEDIR     = locale

@@ -22,7 +22,7 @@ const Template = Module("template", {
             if (sep && n++)
                 ret += sep;
             if (interruptable && n % interruptable == 0)
-                liberator.threadYield(true, true);
+                dactyl.threadYield(true, true);
             ret += val;
         }
         return ret;

@@ -119,7 +119,7 @@ function writeFile(file, data) {
 
 var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 var prefService = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-                            .getBranch("extensions.liberator.datastore.");
+                            .getBranch("extensions.dactyl.datastore.");
 var json = Cc["@mozilla.org/dom/json;1"].createInstance(Ci.nsIJSON);
 
 function getCharPref(name) {
@@ -296,9 +296,9 @@ var storage = {
 
     addObserver: function addObserver(key, callback, ref) {
         if (ref) {
-            if (!ref.liberatorStorageRefs)
-                ref.liberatorStorageRefs = [];
-            ref.liberatorStorageRefs.push(callback);
+            if (!ref.dactylStorageRefs)
+                ref.dactylStorageRefs = [];
+            ref.dactylStorageRefs.push(callback);
             var callbackRef = Cu.getWeakReference(callback);
         }
         else {
@@ -322,7 +322,7 @@ var storage = {
 
     removeDeadObservers: function () {
         for (let [key, ary] in Iterator(observers)) {
-            observers[key] = ary = ary.filter(function (o) o.callback.get() && (!o.ref || o.ref.get() && o.ref.get().liberatorStorageRefs));
+            observers[key] = ary = ary.filter(function (o) o.callback.get() && (!o.ref || o.ref.get() && o.ref.get().dactylStorageRefs));
             if (!ary.length)
                 delete observers[key];
         }

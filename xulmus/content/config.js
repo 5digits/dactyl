@@ -92,7 +92,7 @@ const Config = Module("config", ConfigBase, {
             function () { window.BrowserCustomizeToolbar(); }],
         */
         ["dominspector",     "DOM Inspector",
-            function () { try { window.inspectDOMDocument(content.document); } catch (e) { liberator.echoerr("DOM Inspector extension not installed"); } }],
+            function () { try { window.inspectDOMDocument(content.document); } catch (e) { dactyl.echoerr("DOM Inspector extension not installed"); } }],
         ["downloads",        "Manage Downloads",
             function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
         /*
@@ -140,9 +140,9 @@ const Config = Module("config", ConfigBase, {
     focusChange: function () {
         // Switch to -- PLAYER -- mode for Songbird Media Player.
         if (config.isPlayerWindow)
-            liberator.mode = modes.PLAYER;
+            dactyl.mode = modes.PLAYER;
         else
-            liberator.mode = modes.NORMAL;
+            dactyl.mode = modes.NORMAL;
     },
 
     hasTabbrowser: true,
@@ -233,7 +233,7 @@ const Config = Module("config", ConfigBase, {
                 if (arg in Config.displayPanes)
                     Config.closeDisplayPane(Config.displayPanes[arg]);
                 else
-                    liberator.echoerr("E475: Invalid argument: " + arg);
+                    dactyl.echoerr("E475: Invalid argument: " + arg);
 
             },
             {
@@ -252,7 +252,7 @@ const Config = Module("config", ConfigBase, {
                     Config.openDisplayPane(Config.displayPanes[arg]);
                     // TODO: focus when we have better key handling of these extended modes
                 else
-                    liberator.echoerr("E475: Invalid argument: " + arg);
+                    dactyl.echoerr("E475: Invalid argument: " + arg);
             },
             {
                 argCount: "1",
@@ -264,9 +264,9 @@ const Config = Module("config", ConfigBase, {
             "Show " + config.hostApplication + " preferences",
             function (args) {
                 if (args.bang) { // open Songbird settings GUI dialog
-                    liberator.open("about:config",
+                    dactyl.open("about:config",
                         (options["newtab"] && options.get("newtab").has("all", "prefs"))
-                                ? liberator.NEW_TAB : liberator.CURRENT_TAB);
+                                ? dactyl.NEW_TAB : dactyl.CURRENT_TAB);
                 }
                 else
                     window.openPreferences();

@@ -128,13 +128,13 @@ Highlights.prototype.CSS = <![CDATA[
     HelpOptionalArg                             color: #6A97D4;
 
     HelpBody                                    display: block; margin: 1em auto; max-width: 100ex;
-    HelpBorder,*,liberator://help/*             border-color: silver; border-width: 0px; border-style: solid;
+    HelpBorder,*,dactyl://help/*             border-color: silver; border-width: 0px; border-style: solid;
     HelpCode                                    display: block; white-space: pre; margin-left: 2em; font-family: Terminus, Fixed, monospace;
 
     HelpDefault                                 margin-right: 1ex; white-space: pre;
 
     HelpDescription                             display: block;
-    HelpEm,html|em,liberator://help/*           font-weight: bold; font-style: normal;
+    HelpEm,html|em,dactyl://help/*           font-weight: bold; font-style: normal;
 
     HelpEx                                      display: inline-block; color: #527BBD; font-weight: bold;
 
@@ -149,19 +149,19 @@ Highlights.prototype.CSS = <![CDATA[
 
     HelpKey                                     color: #102663;
 
-    HelpLink,html|a,liberator://help/*          text-decoration: none;
+    HelpLink,html|a,dactyl://help/*          text-decoration: none;
     HelpLink[href]:hover                        text-decoration: underline;
 
-    HelpList,html|ul,liberator://help/*         display: block; list-style: outside disc;
-    HelpOrderedList,html|ol,liberator://help/*  display: block; list-style: outside decimal;
-    HelpListItem,html|li,liberator://help/*     display: list-item;
+    HelpList,html|ul,dactyl://help/*         display: block; list-style: outside disc;
+    HelpOrderedList,html|ol,dactyl://help/*  display: block; list-style: outside decimal;
+    HelpListItem,html|li,dactyl://help/*     display: list-item;
 
     HelpNote                                    color: red; font-weight: bold;
 
     HelpOpt                                     color: #106326;
     HelpOptInfo                                 display: inline-block; margin-bottom: 1ex;
 
-    HelpParagraph,html|p,liberator://help/*     display: block; margin: 1em 0em;
+    HelpParagraph,html|p,dactyl://help/*     display: block; margin: 1em 0em;
     HelpParagraph:first-child                   margin-top: 0;
     HelpSpec                                    display: block; margin-left: -10em; float: left; clear: left; color: #527BBD;
 
@@ -171,7 +171,7 @@ Highlights.prototype.CSS = <![CDATA[
     HelpString[delim]::before                   content: attr(delim);
     HelpString[delim]::after                    content: attr(delim);
 
-    HelpHead,html|h1,liberator://help/* {
+    HelpHead,html|h1,dactyl://help/* {
         display: block;
         margin: 1em 0;
         padding-bottom: .2ex;
@@ -181,7 +181,7 @@ Highlights.prototype.CSS = <![CDATA[
         color: #527BBD;
         clear: both;
     }
-    HelpSubhead,html|h2,liberator://help/* {
+    HelpSubhead,html|h2,dactyl://help/* {
         display: block;
         margin: 1em 0;
         padding-bottom: .2ex;
@@ -191,7 +191,7 @@ Highlights.prototype.CSS = <![CDATA[
         color: #527BBD;
         clear: both;
     }
-    HelpSubsubhead,html|h3,liberator://help/* {
+    HelpSubsubhead,html|h3,dactyl://help/* {
         display: block;
         margin: 1em 0;
         padding-bottom: .2ex;
@@ -204,12 +204,12 @@ Highlights.prototype.CSS = <![CDATA[
     HelpTOC
     HelpTOC>ol ol                               margin-left: -1em;
 
-    HelpTab,html|dl,liberator://help/*             display: table; width: 100%; margin: 1em 0; border-bottom-width: 1px; border-top-width: 1px; padding: .5ex 0; table-layout: fixed;
-    HelpTabColumn,html|column,liberator://help/*   display: table-column;
+    HelpTab,html|dl,dactyl://help/*             display: table; width: 100%; margin: 1em 0; border-bottom-width: 1px; border-top-width: 1px; padding: .5ex 0; table-layout: fixed;
+    HelpTabColumn,html|column,dactyl://help/*   display: table-column;
     HelpTabColumn:first-child                      width: 25%;
-    HelpTabTitle,html|dt,liberator://help/*        display: table-cell; padding: .1ex 1ex; font-weight: bold;
-    HelpTabDescription,html|dd,liberator://help/*  display: table-cell; padding: .1ex 1ex; border-width: 0px;
-    HelpTabRow,html|dl>html|tr,liberator://help/*  display: table-row;
+    HelpTabTitle,html|dt,dactyl://help/*        display: table-cell; padding: .1ex 1ex; font-weight: bold;
+    HelpTabDescription,html|dd,dactyl://help/*  display: table-cell; padding: .1ex 1ex; border-width: 0px;
+    HelpTabRow,html|dl>html|tr,dactyl://help/*  display: table-row;
 
     HelpTag                                     display: inline-block; color: #527BBD; margin-left: 1ex; font-size: 8pt; font-weight: bold;
     HelpTags                                    display: block; float: right; clear: right;
@@ -242,8 +242,8 @@ function Highlights(name, store) {
     const Highlight = Struct("class", "selector", "filter", "default", "value", "base");
     Highlight.defaultValue("filter", function ()
         this.base ? this.base.filter :
-        ["chrome://liberator/*",
-         "liberator:*",
+        ["chrome://dactyl/*",
+         "dactyl:*",
          "file://*"].concat(config.styleableChrome).join(","));
     Highlight.defaultValue("selector", function () self.selector(this.class));
     Highlight.defaultValue("value", function () this.default);
@@ -302,7 +302,7 @@ function Highlights(name, store) {
      */
     this.selector = function (class_) {
         let [, hl, rest] = class_.match(/^(\w*)(.*)/);
-        let pattern = "[liberator|highlight~=" + hl + "]"
+        let pattern = "[dactyl|highlight~=" + hl + "]"
         if (highlight[hl] && highlight[hl].class != class_)
             pattern = highlight[hl].selector;
         return pattern + rest;
@@ -351,18 +351,18 @@ function Highlights(name, store) {
  * @author Kris Maglione <maglione.k@gmail.com>
  */
 function Styles(name, store) {
-    // Can't reference liberator or Components inside Styles --
+    // Can't reference dactyl or Components inside Styles --
     // they're members of the window object, which disappear
     // with this window.
     const self = this;
     const util = modules.util;
-    const sleep = liberator.sleep;
+    const sleep = dactyl.sleep;
     const storage = modules.storage;
     const ios = services.get("io");
     const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
     const namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
                       "@namespace xul " + XUL.uri.quote() + ";\n" +
-                      "@namespace liberator " + NS.uri.quote() + ";\n";
+                      "@namespace dactyl " + NS.uri.quote() + ";\n";
 
     const Sheet = Struct("name", "id", "sites", "css", "system", "agent");
     Sheet.prototype.__defineGetter__("fullCSS", function wrapCSS() {
@@ -375,7 +375,7 @@ function Styles(name, store) {
                                                                         : "domain")
                                             + '("' + part.replace(/"/g, "%22").replace(/[*]$/, "") + '")')
                               .join(", ");
-        return namespace + "/* Liberator style #" + this.id + " */ @-moz-document " + selectors + "{\n" + css + "\n}\n";
+        return namespace + "/* Dactyl style #" + this.id + " */ @-moz-document " + selectors + "{\n" + css + "\n}\n";
     });
     Sheet.prototype.__defineGetter__("enabled", function () this._enabled);
     Sheet.prototype.__defineSetter__("enabled", function (on) {
@@ -411,7 +411,7 @@ function Styles(name, store) {
      *
      * @param {boolean} system Declares whether this is a system or
      *     user sheet. System sheets are used internally by
-     *     @liberator.
+     *     @dactyl.
      * @param {string} name The name given to the style sheet by
      *     which it may be later referenced.
      * @param {string} filter The sites to which this sheet will
@@ -561,7 +561,7 @@ function Styles(name, store) {
 }
 
 Module("styles", {
-    requires: ["config", "liberator", "storage", "util"],
+    requires: ["config", "dactyl", "storage", "util"],
 
     init: function () {
         let (array = util.Array) {
@@ -622,7 +622,7 @@ Module("styles", {
                     }
                     let err = styles.addSheet(false, name, filter, css);
                     if (err)
-                        liberator.echoerr(err);
+                        dactyl.echoerr(err);
                 }
             },
             {
@@ -733,7 +733,7 @@ Module("highlight", {
                 if (scheme == "default")
                     highlight.clear();
                 else
-                    liberator.assert(io.sourceFromRuntimePath(["colors/" + scheme + ".vimp"]),
+                    dactyl.assert(io.sourceFromRuntimePath(["colors/" + scheme + ".vimp"]),
                         "E185: Cannot find color scheme " + scheme);
                 autocommands.trigger("ColorScheme", { name: scheme });
             },
@@ -759,7 +759,7 @@ Module("highlight", {
                     args.shift();
 
                 let [key, css] = args;
-                liberator.assert(!(clear && css), "E488: Trailing characters");
+                dactyl.assert(!(clear && css), "E488: Trailing characters");
 
                 if (!css && !clear) {
                     // List matching keys
@@ -779,7 +779,7 @@ Module("highlight", {
                 else {
                     let error = highlight.set(key, css, clear, "-append" in args);
                     if (error)
-                        liberator.echoerr(error);
+                        dactyl.echoerr(error);
                 }
             },
             {

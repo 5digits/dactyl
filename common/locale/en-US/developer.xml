@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd" [
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd" [
     <!ENTITY tab "&#xa0;&#xa0;&#xa0;">
 ]>
 
 <document
     name="developer"
-    title="&liberator.appname; Developer information"
+    title="&dactyl.appname; Developer information"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <h1 tag="developer-information">Developer information</h1>
@@ -63,7 +63,7 @@
 <p>
     If you don't know in which file/section you should put some
     documentation, ask on the mailing list or on
-    <link topic="irc://irc.freenode.net/vimperator">#vimperator</link>.
+    <link topic="irc://irc.freenode.net/pentadactyl">#pentadactyl</link>.
 </p>
 
 <h3 tag="help-tags help-xml">Help tags</h3>
@@ -89,7 +89,7 @@
     <dt>&tab;@topic</dt>  <dd>The topic of the link. Either a help topic or a fully-qualified URI.</dd>
     <dt>em</dt>           <dd><em>Emphasized</em> text. (HelpEm)</dd>
     <dt>str</dt>          <dd>A <str>string</str>, with its contents wrapped in quotes. (HelpString)</dd>
-    <dt>logo</dt>         <dd>&liberator.appname;'s logo. (Logo)</dd>
+    <dt>logo</dt>         <dd>&dactyl.appname;'s logo. (Logo)</dd>
 </dl>
 <dl>
     <dt>Items</dt><dd/>
@@ -129,7 +129,7 @@
     <dt>&tab;@summary</dt>     <dd>A short description of the plugin, shown in its section head.</dd>
 
     <dt>project</dt>           <dd>The project for which this plugin was intended.</dd>
-    <dt>&tab;@name</dt>        <dd>The name of the project (i.e., <str>&liberator.name;</str>)</dd>
+    <dt>&tab;@name</dt>        <dd>The name of the project (i.e., <str>&dactyl.name;</str>)</dd>
     <dt>&tab;@minVersion</dt>  <dd>The minimum version of the project for which this plugin is intended to work.</dd>
     <dt>&tab;@maxVersion</dt>  <dd>The maximum version of the project for which this plugin is intended to work.</dd>
 
@@ -153,13 +153,13 @@
 <h2 tag="writing-plugins">Writing plugins</h2>
 
 <p>
-    Writing &liberator.appname; plugins is incredibly simple.
+    Writing &dactyl.appname; plugins is incredibly simple.
     Plugins are simply JavaScript files which run with full chrome
-    privileges and have full access to the &liberator.appname; and
-    &liberator.host; APIs. Each plugin has its own global object,
+    privileges and have full access to the &dactyl.appname; and
+    &dactyl.host; APIs. Each plugin has its own global object,
     which means that the variables and functions that you create
     won't pollute the global <em>window</em> or private
-    <em>liberator</em> namespaces. This means that there's no need
+    <em>dactyl</em> namespaces. This means that there's no need
     to wrap your plugin in a closure, as is often the practice in
     JavaScript development. Furthermore, any plugin which is
     installed in your <o>runtimepath</o><em>/plugin</em> directory
@@ -186,7 +186,7 @@ var INFO =
         xmlns="http://vimperator.org/namespaces/liberator">
     <author email="maglione.k@gmail.com">Kris Maglione</author>
     <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
-    <project name="Vimperator" minVersion="2.0"/>
+    <project name="Pentadactyl" minVersion="2.0"/>
     <p>
         This plugin provides the same features as the ever popular FlashBlock
         Firefox addon. Flash animations are substituted with place holders which
@@ -216,9 +216,9 @@ var INFO =
     The inline XML is made possible by
     <link topic="https://developer.mozilla.org/en/E4X">E4X</link>.
     It's important that the documentation be assigned to the
-    <em>INFO</em> variable, or &liberator.appname; will not be able
+    <em>INFO</em> variable, or &dactyl.appname; will not be able
     to find it. The documentation that you provide behaves exactly
-    as other &liberator.appname; documentation, which means that
+    as other &dactyl.appname; documentation, which means that
     the tags you provide are available via <ex>:help</ex> with
     full tag completion and cross-referencing support. Although
     documentation is not required, we strongly recommend that all

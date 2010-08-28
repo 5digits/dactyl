@@ -217,7 +217,7 @@ const CompletionContext = Class("CompletionContext", {
             return { start: minStart, items: util.Array.flatten(items), longestSubstring: this.longestAllSubstring };
         }
         catch (e) {
-            liberator.reportError(e);
+            dactyl.reportError(e);
             return { start: 0, items: [], longestAllSubstring: "" };
         }
     },
@@ -260,7 +260,7 @@ const CompletionContext = Class("CompletionContext", {
         this._completions = items;
         let self = this;
         if (this.updateAsync && !this.noUpdate)
-            liberator.callInMainThread(function () { self.onUpdate.call(self); });
+            dactyl.callInMainThread(function () { self.onUpdate.call(self); });
     },
 
     get createRow() this._createRow || template.completionRow, // XXX
@@ -325,8 +325,8 @@ const CompletionContext = Class("CompletionContext", {
             let lock = {};
             this.cache.backgroundLock = lock;
             this.incomplete = true;
-            let thread = this.getCache("backgroundThread", liberator.newThread);
-            liberator.callAsync(thread, this, function () {
+            let thread = this.getCache("backgroundThread", dactyl.newThread);
+            dactyl.callAsync(thread, this, function () {
                 if (this.cache.backgroundLock != lock)
                     return;
                 let items = this.generate();
@@ -609,7 +609,7 @@ const CompletionContext = Class("CompletionContext", {
     wait: function wait(interruptable, timeout) {
         let end = Date.now() + timeout;
         while (this.incomplete && (!timeout || Date.now() > end))
-            liberator.threadYield(false, interruptable);
+            dactyl.threadYield(false, interruptable);
         return this.incomplete;
     }
 }, {

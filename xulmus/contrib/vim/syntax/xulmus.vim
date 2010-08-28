@@ -3,7 +3,7 @@
 " Maintainer:       Doug Kearns <dougkearns@gmail.com>
 " Last Change:      2009 Nov 14
 
-" TODO: make this xulmus specific - shared liberator config?
+" TODO: make this xulmus specific - shared dactyl config?
 
 if exists("b:current_syntax")
   finish

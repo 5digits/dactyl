@@ -35,7 +35,7 @@ const AutoCommands = Module("autocommands", {
     add: function (events, regex, cmd) {
         if (typeof events == "string") {
             events = events.split(",");
-            liberator.log("DEPRECATED: the events list arg to autocommands.add() should be an array of event names");
+            dactyl.log("DEPRECATED: the events list arg to autocommands.add() should be an array of event names");
         }
         events.forEach(function (event) {
             this._store.push(AutoCommand(event, RegExp(regex), cmd));
@@ -119,7 +119,7 @@ const AutoCommands = Module("autocommands", {
 
         let autoCmds = this._store.filter(function (autoCmd) autoCmd.event == event);
 
-        liberator.echomsg("Executing " + event + " Auto commands for \"*\"", 8);
+        dactyl.echomsg("Executing " + event + " Auto commands for \"*\"", 8);
 
         let lastPattern = null;
         let url = args.url || "";
@@ -127,22 +127,22 @@ const AutoCommands = Module("autocommands", {
         for (let [, autoCmd] in Iterator(autoCmds)) {
             if (autoCmd.pattern.test(url)) {
                 if (!lastPattern || lastPattern.source != autoCmd.pattern.source)
-                    liberator.echomsg("Executing " + event + " Auto commands for \"" + autoCmd.pattern.source + "\"", 8);
+                    dactyl.echomsg("Executing " + event + " Auto commands for \"" + autoCmd.pattern.source + "\"", 8);
 
                 lastPattern = autoCmd.pattern;
-                liberator.echomsg("autocommand " + autoCmd.command, 9);
+                dactyl.echomsg("autocommand " + autoCmd.command, 9);
 
                 if (typeof autoCmd.command == "function") {
                     try {
                         autoCmd.command.call(autoCmd, args);
                     }
                     catch (e) {
-                        liberator.reportError(e);
-                        liberator.echoerr(e);
+                        dactyl.reportError(e);
+                        dactyl.echoerr(e);
                     }
                 }
                 else
-                    liberator.execute(commands.replaceTokens(autoCmd.command, args), null, true);
+                    dactyl.execute(commands.replaceTokens(autoCmd.command, args), null, true);
             }
         }
     }
@@ -162,7 +162,7 @@ const AutoCommands = Module("autocommands", {
                     RegExp(regex);
                 }
                 catch (e) {
-                    liberator.assert(false, "E475: Invalid argument: " + regex);
+                    dactyl.assert(false, "E475: Invalid argument: " + regex);
                 }
 
                 if (event) {
@@ -171,7 +171,7 @@ const AutoCommands = Module("autocommands", {
                     validEvents.push("*");
 
                     events = event.split(",");
-                    liberator.assert(events.every(function (event) validEvents.indexOf(event) >= 0),
+                    dactyl.assert(events.every(function (event) validEvents.indexOf(event) >= 0),
                         "E216: No such group or event: " + event);
                 }
 
@@ -221,7 +221,7 @@ const AutoCommands = Module("autocommands", {
                 function (args) {
                     // Vim compatible
                     if (args.length == 0) {
-                        liberator.echomsg("No matching autocommands");
+                        dactyl.echomsg("No matching autocommands");
                         return;
                     }
 
@@ -230,14 +230,14 @@ const AutoCommands = Module("autocommands", {
                     let validEvents = config.autocommands.map(function (e) e[0]);
 
                     // TODO: add command validators
-                    liberator.assert(event != "*",
+                    dactyl.assert(event != "*",
                         "E217: Can't execute autocommands for ALL events");
-                    liberator.assert(validEvents.indexOf(event) >= 0,
+                    dactyl.assert(validEvents.indexOf(event) >= 0,
                         "E216: No such group or event: " + args);
-                    liberator.assert(autocommands.get(event).some(function (c) c.pattern.test(defaultURL)),
+                    dactyl.assert(autocommands.get(event).some(function (c) c.pattern.test(defaultURL)),
                         "No matching autocommands");
 
-                    if (this.name == "doautoall" && liberator.has("tabs")) {
+                    if (this.name == "doautoall" && dactyl.has("tabs")) {
                         let current = tabs.index();
 
                         for (let i = 0; i < tabs.count; i++) {

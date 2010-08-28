@@ -123,7 +123,7 @@ const JavaScript = Module("javascript", {
 
         context[JavaScript.EVAL_TMP] = tmp;
         try {
-            return cache[key] = liberator.eval(arg, context);
+            return cache[key] = dactyl.eval(arg, context);
         }
         catch (e) {
             return null;
@@ -429,7 +429,7 @@ const JavaScript = Module("javascript", {
         }
         catch (e) {
             if (e.message != "Invalid JS")
-                liberator.reportError(e);
+                dactyl.reportError(e);
             this._lastIdx = 0;
             return null;
         }
@@ -499,7 +499,7 @@ const JavaScript = Module("javascript", {
                 obj = obj.slice(0, 1);
 
                 try {
-                    var completer = obj[0][0][func].liberatorCompleter;
+                    var completer = obj[0][0][func].dactylCompleter;
                 }
                 catch (e) {}
                 if (!completer)
@@ -566,7 +566,7 @@ const JavaScript = Module("javascript", {
         return null;
     }
 }, {
-    EVAL_TMP: "__liberator_eval_tmp",
+    EVAL_TMP: "__dactyl_eval_tmp",
 
     /**
      * A map of argument completion functions for named methods. The
@@ -598,7 +598,7 @@ const JavaScript = Module("javascript", {
     setCompleter: function (funcs, completers) {
         funcs = Array.concat(funcs);
         for (let [, func] in Iterator(funcs)) {
-            func.liberatorCompleter = function (context, func, obj, args) {
+            func.dactylCompleter = function (context, func, obj, args) {
                 let completer = completers[args.length - 1];
                 if (!completer)
                     return [];

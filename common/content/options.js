@@ -104,13 +104,13 @@ const Option = Class("Option", {
 
         let values;
 
-        if (liberator.has("tabs") && (scope & Option.SCOPE_LOCAL))
+        if (dactyl.has("tabs") && (scope & Option.SCOPE_LOCAL))
             values = tabs.options[this.name];
         if ((scope & Option.SCOPE_GLOBAL) && (values == undefined))
             values = this.globalValue;
 
         if (this.getter)
-            return liberator.trapErrors(this.getter, this, values);
+            return dactyl.trapErrors(this.getter, this, values);
 
         return values;
     },
@@ -128,11 +128,11 @@ const Option = Class("Option", {
             return;
 
         if (this.setter)
-            newValues = liberator.trapErrors(this.setter, this, newValues);
+            newValues = dactyl.trapErrors(this.setter, this, newValues);
         if (newValues === undefined)
             return;
 
-        if (liberator.has("tabs") && (scope & Option.SCOPE_LOCAL))
+        if (dactyl.has("tabs") && (scope & Option.SCOPE_LOCAL))
             tabs.options[this.name] = newValues;
         if ((scope & Option.SCOPE_GLOBAL) && !skipGlobal)
             this.globalValue = newValues;
@@ -235,7 +235,7 @@ const Option = Class("Option", {
      * @property {string} The option's data type. One of:
      *     "boolean"    - Boolean, e.g., true
      *     "number"     - Integer, e.g., 1
-     *     "string"     - String, e.g., "Vimperator"
+     *     "string"     - String, e.g., "Pentadactyl"
      *     "charlist"   - Character list, e.g., "rb"
      *     "regexlist"  - Regex list, e.g., "^foo,bar$"
      *     "stringmap"  - String map, e.g., "key=v,foo=bar"
@@ -499,7 +499,7 @@ const Options = Module("options", {
         var popupAllowedEvents = this._loadPreference("dom.popup_allowed_events", "change click dblclick mouseup reset submit");
         if (!/keypress/.test(popupAllowedEvents)) {
             this._storePreference("dom.popup_allowed_events", popupAllowedEvents + " keypress");
-            liberator.registerObserver("shutdown", function () {
+            dactyl.registerObserver("shutdown", function () {
                 if (this._loadPreference("dom.popup_allowed_events", "") == popupAllowedEvents + " keypress")
                     this._storePreference("dom.popup_allowed_events", popupAllowedEvents);
             });
@@ -550,7 +550,7 @@ const Options = Module("options", {
             switch (data) {
             case "accessibility.browsewithcaret":
                 let value = options.getPref("accessibility.browsewithcaret", false);
-                liberator.mode = value ? modes.CARET : modes.NORMAL;
+                dactyl.mode = value ? modes.CARET : modes.NORMAL;
                 break;
             }
          }
@@ -579,7 +579,7 @@ const Options = Module("options", {
 
         if (option.name in this._optionHash) {
             // never replace for now
-            liberator.log("Warning: " + names[0].quote() + " already exists, NOT replacing existing option.", 1);
+            dactyl.log("Warning: " + names[0].quote() + " already exists, NOT replacing existing option.", 1);
             return false;
         }
 
@@ -777,7 +777,7 @@ const Options = Module("options", {
      *
      * @param {string} name The preference name.
      * @param {value} forcedDefault The the default value for this
-     *     preference. Used for internal liberator preferences.
+     *     preference. Used for internal dactyl preferences.
      */
     getPref: function (name, forcedDefault) {
         return this._loadPreference(name, forcedDefault);
@@ -799,7 +799,7 @@ const Options = Module("options", {
             let msg = "Warning: setting preference " + name + ", but it's changed from its default value.";
             if (message)
                 msg += " " + message;
-            liberator.echomsg(msg);
+            dactyl.echomsg(msg);
         }
         this._storePreference(name, value);
         this._storePreference(Options.SAVED + name, value);
@@ -838,7 +838,7 @@ const Options = Module("options", {
         if (services.get("pref").getPrefType(name) == Ci.nsIPrefBranch.PREF_BOOL)
             this.setPref(name, !this.getPref(name));
         else
-            liberator.echoerr("E488: Trailing characters: " + name + "!");
+            dactyl.echoerr("E488: Trailing characters: " + name + "!");
     },
 
     /**
@@ -897,26 +897,26 @@ const Options = Module("options", {
                 services.get("pref").setComplexValue(name, Ci.nsISupportsString, supportString);
             }
             else if (type == Ci.nsIPrefBranch.PREF_INT)
-                liberator.echoerr("E521: Number required after =: " + name + "=" + value);
+                dactyl.echoerr("E521: Number required after =: " + name + "=" + value);
             else
-                liberator.echoerr("E474: Invalid argument: " + name + "=" + value);
+                dactyl.echoerr("E474: Invalid argument: " + name + "=" + value);
             break;
         case "number":
             if (type == Ci.nsIPrefBranch.PREF_INVALID || type == Ci.nsIPrefBranch.PREF_INT)
                 services.get("pref").setIntPref(name, value);
             else
-                liberator.echoerr("E474: Invalid argument: " + name + "=" + value);
+                dactyl.echoerr("E474: Invalid argument: " + name + "=" + value);
             break;
         case "boolean":
             if (type == Ci.nsIPrefBranch.PREF_INVALID || type == Ci.nsIPrefBranch.PREF_BOOL)
                 services.get("pref").setBoolPref(name, value);
             else if (type == Ci.nsIPrefBranch.PREF_INT)
-                liberator.echoerr("E521: Number required after =: " + name + "=" + value);
+                dactyl.echoerr("E521: Number required after =: " + name + "=" + value);
             else
-                liberator.echoerr("E474: Invalid argument: " + name + "=" + value);
+                dactyl.echoerr("E474: Invalid argument: " + name + "=" + value);
             break;
         default:
-            liberator.echoerr("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
+            dactyl.echoerr("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
         }
     },
 
@@ -949,8 +949,8 @@ const Options = Module("options", {
         }
     }
 }, {
-    SAVED: "extensions.liberator.saved.",
-    OLD_SAVED: "liberator.saved."
+    SAVED: "extensions.dactyl.saved.",
+    OLD_SAVED: "dactyl.saved."
 }, {
     commandline: function () {
         // TODO: maybe reset in .destroy()?
@@ -1020,10 +1020,10 @@ const Options = Module("options", {
                 }
 
                 let opt = options.parseOpt(arg, modifiers);
-                liberator.assert(opt, "Error parsing :set command: " + arg);
+                dactyl.assert(opt, "Error parsing :set command: " + arg);
 
                 let option = opt.option;
-                liberator.assert(option != null || opt.all,
+                dactyl.assert(option != null || opt.all,
                     "E518: Unknown option: " + opt.name);
 
                 // reset a variable to its default value
@@ -1051,7 +1051,7 @@ const Options = Module("options", {
                             msg += "\n        Last set from " + option.setFrom.path;
 
                         // FIXME: Message highlight group wrapping messes up the indent up for multi-arg verbose :set queries
-                        liberator.echo(<span highlight="CmdOutput">{msg}</span>);
+                        dactyl.echo(<span highlight="CmdOutput">{msg}</span>);
                     }
                 }
                 // write access
@@ -1059,7 +1059,7 @@ const Options = Module("options", {
                     option.setFrom = modifiers.setFrom || null;
 
                     if (opt.option.type == "boolean") {
-                        liberator.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
+                        dactyl.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
                         opt.values = !opt.unsetBoolean;
                     }
                     try {
@@ -1069,7 +1069,7 @@ const Options = Module("options", {
                         res = e;
                     }
                     if (res)
-                        liberator.echoerr(res);
+                        dactyl.echoerr(res);
                 }
             }
         }
@@ -1138,7 +1138,7 @@ const Options = Module("options", {
                     let str =
                         <table>
                         {
-                            template.map(liberator.globalVariables, function ([i, value]) {
+                            template.map(dactyl.globalVariables, function ([i, value]) {
                                 let prefix = typeof value == "number"   ? "#" :
                                              typeof value == "function" ? "*" :
                                                                           " ";
@@ -1150,9 +1150,9 @@ const Options = Module("options", {
                         }
                         </table>;
                     if (str.*.length())
-                        liberator.echo(str, commandline.FORCE_MULTILINE);
+                        dactyl.echo(str, commandline.FORCE_MULTILINE);
                     else
-                        liberator.echomsg("No variables found");
+                        dactyl.echomsg("No variables found");
                     return;
                 }
 
@@ -1161,16 +1161,16 @@ const Options = Module("options", {
                 if (matches) {
                     let [, type, name, stuff, expr] = matches;
                     if (!type) {
-                        let reference = liberator.variableReference(name);
-                        liberator.assert(reference[0] || !stuff,
+                        let reference = dactyl.variableReference(name);
+                        dactyl.assert(reference[0] || !stuff,
                             "E121: Undefined variable: " + name);
 
-                        expr = liberator.evalExpression(expr);
-                        liberator.assert(expr !== undefined, "E15: Invalid expression: " + expr);
+                        expr = dactyl.evalExpression(expr);
+                        dactyl.assert(expr !== undefined, "E15: Invalid expression: " + expr);
 
                         if (!reference[0]) {
                             if (reference[2] == "g")
-                                reference[0] = liberator.globalVariables;
+                                reference[0] = dactyl.globalVariables;
                             else
                                 return; // for now
                         }
@@ -1190,14 +1190,14 @@ const Options = Module("options", {
                 }
                 // 1 - name
                 else if ((matches = args.match(/^\s*([\w:]+)\s*$/))) {
-                    let reference = liberator.variableReference(matches[1]);
-                    liberator.assert(reference[0], "E121: Undefined variable: " + matches[1]);
+                    let reference = dactyl.variableReference(matches[1]);
+                    dactyl.assert(reference[0], "E121: Undefined variable: " + matches[1]);
 
                     let value = reference[0][reference[1]];
                     let prefix = typeof value == "number"   ? "#" :
                                  typeof value == "function" ? "*" :
                                                               " ";
-                    liberator.echo(reference[1] + "\t\t" + prefix + value);
+                    dactyl.echo(reference[1] + "\t\t" + prefix + value);
                 }
             },
             {
@@ -1260,10 +1260,10 @@ const Options = Module("options", {
             "Delete a variable",
             function (args) {
                 for (let [, name] in args) {
-                    let reference = liberator.variableReference(name);
+                    let reference = dactyl.variableReference(name);
                     if (!reference[0]) {
                         if (!args.bang)
-                            liberator.echoerr("E108: No such variable: " + name);
+                            dactyl.echoerr("E108: No such variable: " + name);
                         return;
                     }
 

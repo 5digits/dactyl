@@ -1,0 +1,66 @@
+// Copyright (c) 2008-2008 Kris Maglione <maglione.k at Gmail>
+//
+// This work is licensed for reuse under an MIT license. Details are
+// given in the LICENSE.txt file included with this file.
+"use strict";
+
+(function () {
+    const modules = {};
+    const BASE = "chrome://dactyl/content/";
+
+    modules.modules = modules;
+
+    const loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+                                     .getService(Components.interfaces.mozIJSSubScriptLoader);
+    function load(script) {
+        for (let [i, base] in Iterator(prefix)) {
+            try {
+                loader.loadSubScript(base + script, modules);
+                return;
+            }
+            catch (e) {
+                if (i + 1 < prefix.length)
+                    continue;
+                if (Components.utils.reportError)
+                    Components.utils.reportError(e);
+                dump("dactyl: Loading script " + script + ": " + e + "\n");
+                dump(e.stack + "\n");
+            }
+        }
+    }
+
+    let prefix = [BASE];
+
+    ["base.js",
+     "modules.js",
+     "autocommands.js",
+     "buffer.js",
+     "commandline.js",
+     "commands.js",
+     "completion.js",
+     "configbase.js",
+     "config.js",
+     "dactyl.js",
+     "editor.js",
+     "events.js",
+     "finder.js",
+     "hints.js",
+     "io.js",
+     "javascript.js",
+     "mappings.js",
+     "marks.js",
+     "modes.js",
+     "options.js",
+     "services.js",
+     "statusline.js",
+     "style.js",
+     "template.js",
+     "util.js",
+     ].forEach(load);
+
+    prefix.unshift("chrome://" + modules.Config.prototype.name.toLowerCase() + "/content/");
+    modules.Config.prototype.scripts.forEach(load);
+
+})();
+
+// vim: set fdm=marker sw=4 ts=4 et:

@@ -15,7 +15,7 @@
  * this class when the chrome is ready.
  */
 const CommandLine = Module("commandline", {
-    requires: ["config", "liberator", "modes", "services", "storage", "template", "util"],
+    requires: ["config", "dactyl", "modes", "services", "storage", "template", "util"],
 
     init: function () {
         const self = this;
@@ -124,7 +124,7 @@ const CommandLine = Module("commandline", {
         ////////////////////// VARIABLES ///////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////{{{
 
-        this._completionList = ItemList("liberator-completions");
+        this._completionList = ItemList("dactyl-completions");
         this._completions = null;
         this._history = null;
 
@@ -132,25 +132,25 @@ const CommandLine = Module("commandline", {
         this._lastSubstring = "";
 
         // the containing box for the this._promptWidget and this._commandWidget
-        this._commandlineWidget = document.getElementById("liberator-commandline");
+        this._commandlineWidget = document.getElementById("dactyl-commandline");
         // the prompt for the current command, for example : or /. Can be blank
-        this._promptWidget = document.getElementById("liberator-commandline-prompt");
+        this._promptWidget = document.getElementById("dactyl-commandline-prompt");
         // the command bar which contains the current command
-        this._commandWidget = document.getElementById("liberator-commandline-command");
+        this._commandWidget = document.getElementById("dactyl-commandline-command");
 
-        this._messageBox = document.getElementById("liberator-message");
+        this._messageBox = document.getElementById("dactyl-message");
 
         this._commandWidget.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
         this._messageBox.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
 
         // the widget used for multiline output
-        this._multilineOutputWidget = document.getElementById("liberator-multiline-output");
+        this._multilineOutputWidget = document.getElementById("dactyl-multiline-output");
         this._outputContainer = this._multilineOutputWidget.parentNode;
 
-        this._multilineOutputWidget.contentDocument.body.id = "liberator-multiline-output-content";
+        this._multilineOutputWidget.contentDocument.body.id = "dactyl-multiline-output-content";
 
         // the widget used for multiline intput
-        this._multilineInputWidget = document.getElementById("liberator-multiline-input");
+        this._multilineInputWidget = document.getElementById("dactyl-multiline-input");
 
         // we need to save the mode which were in before opening the command line
         // this is then used if we focus the command line again without the "official"
@@ -167,7 +167,7 @@ const CommandLine = Module("commandline", {
 
         this.registerCallback("submit", modes.EX, function (command) {
             commands.repeat = command;
-            liberator.execute(command);
+            dactyl.execute(command);
         });
         this.registerCallback("complete", modes.EX, function (context) {
             context.fork("ex", 0, completion, "ex");
@@ -256,7 +256,7 @@ const CommandLine = Module("commandline", {
         this._setHighlightGroup(highlightGroup);
         this._messageBox.value = str;
 
-        liberator.triggerObserver("echoLine", str, highlightGroup, forceSingle);
+        dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
 
         if (!this._commandShown())
             commandline.hide();
@@ -277,7 +277,7 @@ const CommandLine = Module("commandline", {
         let doc = this._multilineOutputWidget.contentDocument;
         let win = this._multilineOutputWidget.contentWindow;
 
-        liberator.triggerObserver("echoMultiline", str, highlightGroup);
+        dactyl.triggerObserver("echoMultiline", str, highlightGroup);
 
         // If it's already XML, assume it knows what it's doing.
         // Otherwise, white space is significant.
@@ -350,7 +350,7 @@ const CommandLine = Module("commandline", {
     get quiet() this._quiet,
     set quiet(val) {
         this._quiet = val;
-        Array.forEach(document.getElementById("liberator-commandline").childNodes, function (node) {
+        Array.forEach(document.getElementById("dactyl-commandline").childNodes, function (node) {
             node.style.opacity = this._quiet || this._silent ? "0" : "";
         });
     },
@@ -448,7 +448,7 @@ const CommandLine = Module("commandline", {
         this._history = null;
 
         statusline.updateProgress(""); // we may have a "match x of y" visible
-        liberator.focusContent(false);
+        dactyl.focusContent(false);
 
         this._multilineInputWidget.collapsed = true;
         this._completionList.hide();
@@ -495,7 +495,7 @@ const CommandLine = Module("commandline", {
      *          the MOW.
      */
     echo: function echo(str, highlightGroup, flags) {
-        // liberator.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
+        // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
         if (this._silent)
             return;
 
@@ -505,11 +505,11 @@ const CommandLine = Module("commandline", {
             this._messageHistory.add({ str: str, highlight: highlightGroup });
         if ((flags & this.ACTIVE_WINDOW) &&
             window != services.get("windowWatcher").activeWindow &&
-            services.get("windowWatcher").activeWindow.liberator)
+            services.get("windowWatcher").activeWindow.dactyl)
             return;
 
         // The DOM isn't threadsafe. It must only be accessed from the main thread.
-        liberator.callInMainThread(function () {
+        dactyl.callInMainThread(function () {
             if ((flags & this.DISALLOW_MULTILINE) && !this._outputContainer.collapsed)
                 return;
 
@@ -625,7 +625,7 @@ const CommandLine = Module("commandline", {
         else if (event.type == "focus") {
             if (!this._commandShown() && event.target == this._commandWidget.inputField) {
                 event.target.blur();
-                liberator.beep();
+                dactyl.beep();
             }
         }
         else if (event.type == "input") {
@@ -655,7 +655,7 @@ const CommandLine = Module("commandline", {
                 event.preventDefault();
                 event.stopPropagation();
 
-                liberator.assert(this._history);
+                dactyl.assert(this._history);
                 this._history.select(/Up/.test(key), !/(Page|S-)/.test(key));
             }
             // user pressed <Tab> to get completions of a command
@@ -690,7 +690,7 @@ const CommandLine = Module("commandline", {
 
     /**
      * Multiline input events, they will come straight from
-     * #liberator-multiline-input in the XUL.
+     * #dactyl-multiline-input in the XUL.
      *
      * @param {Event} event
      */
@@ -722,8 +722,8 @@ const CommandLine = Module("commandline", {
 
     /**
      * Handle events when we are in multiline output mode, these come from
-     * liberator when modes.extended & modes.MULTILINE_OUTPUT and also from
-     * #liberator-multiline-output in the XUL.
+     * dactyl when modes.extended & modes.MULTILINE_OUTPUT and also from
+     * #dactyl-multiline-output in the XUL.
      *
      * @param {Event} event
      */
@@ -745,9 +745,9 @@ const CommandLine = Module("commandline", {
                 event.preventDefault();
                 // FIXME: Why is this needed? --djk
                 if (event.target.getAttribute("href") == "#")
-                    liberator.open(event.target.textContent, where);
+                    dactyl.open(event.target.textContent, where);
                 else
-                    liberator.open(event.target.href, where);
+                    dactyl.open(event.target.href, where);
             }
 
             switch (key) {
@@ -757,20 +757,20 @@ const CommandLine = Module("commandline", {
                     tabs.select(parseInt(event.originalTarget.parentNode.parentNode.firstChild.textContent, 10) - 1);
                 }
                 else
-                    openLink(liberator.CURRENT_TAB);
+                    openLink(dactyl.CURRENT_TAB);
                 break;
             case "<MiddleMouse>":
             case "<C-LeftMouse>":
             case "<C-M-LeftMouse>":
-                openLink({ where: liberator.NEW_TAB, background: true });
+                openLink({ where: dactyl.NEW_TAB, background: true });
                 break;
             case "<S-MiddleMouse>":
             case "<C-S-LeftMouse>":
             case "<C-M-S-LeftMouse>":
-                openLink({ where: liberator.NEW_TAB, background: false });
+                openLink({ where: dactyl.NEW_TAB, background: false });
                 break;
             case "<S-LeftMouse>":
-                openLink(liberator.NEW_WINDOW);
+                openLink(dactyl.NEW_WINDOW);
                 break;
             }
 
@@ -1039,7 +1039,7 @@ const CommandLine = Module("commandline", {
          */
         sanitize: function (timespan) {
             let range = [0, Number.MAX_VALUE];
-            if (liberator.has("sanitizer") && (timespan || options["sanitizetimespan"]))
+            if (dactyl.has("sanitizer") && (timespan || options["sanitizetimespan"]))
                 range = Sanitizer.getClearRange(timespan || options["sanitizetimespan"]);
 
             const self = this;
@@ -1082,7 +1082,7 @@ const CommandLine = Module("commandline", {
                 this.index += diff;
                 if (this.index < 0 || this.index > this.store.length) {
                     this.index = util.Math.constrain(this.index, 0, this.store.length);
-                    liberator.beep();
+                    dactyl.beep();
                     // I don't know why this kludge is needed. It
                     // prevents the caret from moving to the end of
                     // the input field.
@@ -1305,7 +1305,7 @@ const CommandLine = Module("commandline", {
                     for (let [, context] in Iterator(list)) {
                         function done() !(idx >= n + context.items.length || idx == -2 && !context.items.length);
                         while (context.incomplete && !done())
-                            liberator.threadYield(false, true);
+                            dactyl.threadYield(false, true);
 
                         if (done())
                             break;
@@ -1371,7 +1371,7 @@ const CommandLine = Module("commandline", {
             }
 
             if (this.items.length == 0)
-                liberator.beep();
+                dactyl.beep();
         }
     }),
 
@@ -1388,10 +1388,10 @@ const CommandLine = Module("commandline", {
             return "";
 
         try {
-            arg = liberator.eval(arg);
+            arg = dactyl.eval(arg);
         }
         catch (e) {
-            liberator.echoerr(e);
+            dactyl.echoerr(e);
             return null;
         }
 
@@ -1410,17 +1410,17 @@ const CommandLine = Module("commandline", {
             {
                 name: "ec[ho]",
                 description: "Echo the expression",
-                action: liberator.echo
+                action: dactyl.echo
             },
             {
                 name: "echoe[rr]",
                 description: "Echo the expression as an error message",
-                action: liberator.echoerr
+                action: dactyl.echoerr
             },
             {
                 name: "echom[sg]",
                 description: "Echo the expression as an informational message",
-                action: liberator.echomsg
+                action: dactyl.echomsg
             }
         ].forEach(function (command) {
             commands.add([command.name],
@@ -1448,7 +1448,7 @@ const CommandLine = Module("commandline", {
                     XML.ignoreWhitespace = false;
                     let list = template.map(commandline._messageHistory.messages, function (message)
                         <div highlight={message.highlight + " Message"}>{message.str}</div>);
-                    liberator.echo(list, commandline.FORCE_MULTILINE);
+                    dactyl.echo(list, commandline.FORCE_MULTILINE);
                 }
             },
             { argCount: "0" });
@@ -1461,7 +1461,7 @@ const CommandLine = Module("commandline", {
         commands.add(["sil[ent]"],
             "Run a command silently",
             function (args) {
-                commandline.runSilently(function () liberator.execute(args[0], null, true));
+                commandline.runSilently(function () dactyl.execute(args[0], null, true));
             }, {
                 completer: function (context) completion.ex(context),
                 literal: 0
@@ -1497,7 +1497,7 @@ const CommandLine = Module("commandline", {
         mappings.add([modes.NORMAL],
             ["g<"], "Redisplay the last command output",
             function () {
-                liberator.assert(this._lastMowOutput);
+                dactyl.assert(this._lastMowOutput);
                 this._echoMultiline(this._lastMowOutput, commandline.HL_NORMAL);
             });
     },
@@ -1527,8 +1527,8 @@ const CommandLine = Module("commandline", {
     },
     styles: function () {
         let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;
-        styles.registerSheet("chrome://liberator/skin/liberator.css");
-        let error = styles.addSheet(true, "font-size", "chrome://liberator/content/buffer.xhtml",
+        styles.registerSheet("chrome://dactyl/skin/dactyl.css");
+        let error = styles.addSheet(true, "font-size", "chrome://dactyl/content/buffer.xhtml",
             "body { font-size: " + fontSize + "; }");
     }
 });
@@ -1547,7 +1547,7 @@ const ItemList = Class("ItemList", {
 
         var iframe = document.getElementById(id);
         if (!iframe) {
-            liberator.log("No iframe with id: " + id + " found, strange things may happen!"); // "The truth is out there..." -- djk
+            dactyl.log("No iframe with id: " + id + " found, strange things may happen!"); // "The truth is out there..." -- djk
             return; // XXX
         }
 
@@ -1573,7 +1573,7 @@ const ItemList = Class("ItemList", {
 
     _autoSize: function () {
         if (this._container.collapsed)
-            this._div.style.minWidth = document.getElementById("liberator-commandline").scrollWidth + "px";
+            this._div.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
 
         this._minHeight = Math.max(this._minHeight, this._divNodes.completions.getBoundingClientRect().bottom);
         this._container.height = this._minHeight;
@@ -1706,7 +1706,7 @@ const ItemList = Class("ItemList", {
 
         this._divNodes.noCompletions.style.display = haveCompletions ? "none" : "block";
 
-        this._completionElements = util.evaluateXPath("//xhtml:div[@liberator:highlight='CompItem']", this._doc);
+        this._completionElements = util.evaluateXPath("//xhtml:div[@dactyl:highlight='CompItem']", this._doc);
 
         return true;
     },
@@ -1780,7 +1780,7 @@ const ItemList = Class("ItemList", {
         //if (index == 0)
         //    this.start = now;
         //if (index == Math.min(len - 1, 100))
-        //    liberator.dump({ time: Date.now() - this.start });
+        //    dactyl.dump({ time: Date.now() - this.start });
     },
 
     onEvent: function onEvent(event) false

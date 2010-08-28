@@ -1,0 +1,4 @@
+<!ENTITY dactyl.mainWindow "msgcomposeWindow">
+<!ENTITY dactyl.name "muttator">
+<!ENTITY dactyl.statusBefore "">
+<!ENTITY dactyl.statusAfter "statusText">

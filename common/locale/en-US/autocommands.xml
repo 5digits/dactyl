@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <document
     name="autocommands"
-    title="&liberator.appname; Autocommands"
+    title="&dactyl.appname; Autocommands"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <h1 tag="autocommands">Automatic commands</h1>
@@ -31,7 +31,7 @@
             variables.
         </p>
 
-        <p>Add <a>cmd</a> to the list of commands &liberator.appname; will execute on <a>event</a> for a URL matching <a>pat</a>:</p>
+        <p>Add <a>cmd</a> to the list of commands &dactyl.appname; will execute on <a>event</a> for a URL matching <a>pat</a>:</p>
 
         <ul>
             <li><ex>:autocmd[!]</ex> <a>events</a> <a>pat</a>: list/remove autocommands filtered by <a>events</a> and <a>pat</a></li>

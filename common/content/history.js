@@ -63,7 +63,7 @@ const History = Module("history", {
         let current = window.getWebNavigation().sessionHistory.index;
 
         if (current == start && steps < 0 || current == end && steps > 0)
-            liberator.beep();
+            dactyl.beep();
         else {
             let index = util.Math.constrain(current + steps, start, end);
             window.getWebNavigation().gotoIndex(index);
@@ -76,7 +76,7 @@ const History = Module("history", {
         if (index > 0)
             window.getWebNavigation().gotoIndex(0);
         else
-            liberator.beep();
+            dactyl.beep();
 
     },
 
@@ -87,7 +87,7 @@ const History = Module("history", {
         if (sh.index < max)
             window.getWebNavigation().gotoIndex(max);
         else
-            liberator.beep();
+            dactyl.beep();
 
     },
 
@@ -101,12 +101,12 @@ const History = Module("history", {
         let items = completion.runCompleter("history", filter, maxItems);
 
         if (items.length)
-            return liberator.open(items.map(function (i) i.url), liberator.NEW_TAB);
+            return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0)
-            liberator.echoerr("E283: No history matching \"" + filter + "\"");
+            dactyl.echoerr("E283: No history matching \"" + filter + "\"");
         else
-            liberator.echoerr("No history set");
+            dactyl.echoerr("No history set");
         return null;
     }
 }, {
@@ -128,7 +128,7 @@ const History = Module("history", {
                         for (let [i, ent] in Iterator(sh.slice(0, sh.index).reverse()))
                             if (ent.URI.spec == url)
                                 return void window.getWebNavigation().gotoIndex(i);
-                        liberator.echoerr("Exxx: URL not found in history");
+                        dactyl.echoerr("Exxx: URL not found in history");
                     }
                     else
                         history.stepTo(-Math.max(args.count, 1));
@@ -167,7 +167,7 @@ const History = Module("history", {
                         for (let [i, ent] in Iterator(sh.slice(sh.index + 1)))
                             if (ent.URI.spec == url)
                                 return void window.getWebNavigation().gotoIndex(i);
-                        liberator.echoerr("Exxx: URL not found in history");
+                        dactyl.echoerr("Exxx: URL not found in history");
                     }
                     else
                         history.stepTo(Math.max(args.count, 1));

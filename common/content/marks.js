@@ -58,7 +58,7 @@ const Marks = Module("marks", {
             return;
         if (doc.body instanceof HTMLFrameSetElement) {
             if (!silent)
-                liberator.echoerr("Marks support for frameset pages not implemented yet");
+                dactyl.echoerr("Marks support for frameset pages not implemented yet");
             return;
         }
 
@@ -69,7 +69,7 @@ const Marks = Module("marks", {
         if (Marks.isURLMark(mark)) {
             this._urlMarks.set(mark, { location: win.location.href, position: position, tab: tabs.getTab() });
             if (!silent)
-                liberator.log("Adding URL mark: " + Marks.markToString(mark, this._urlMarks.get(mark)), 5);
+                dactyl.log("Adding URL mark: " + Marks.markToString(mark, this._urlMarks.get(mark)), 5);
         }
         else if (Marks.isLocalMark(mark)) {
             // remove any previous mark of the same name for this location
@@ -79,7 +79,7 @@ const Marks = Module("marks", {
             let vals = { location: win.location.href, position: position };
             this._localMarks.get(mark).push(vals);
             if (!silent)
-                liberator.log("Adding local mark: " + Marks.markToString(mark, vals), 5);
+                dactyl.log("Adding local mark: " + Marks.markToString(mark, vals), 5);
         }
     },
 
@@ -125,7 +125,7 @@ const Marks = Module("marks", {
                     this._pendingJumps.push(slice);
                     // NOTE: this obviously won't work on generated pages using
                     // non-unique URLs :(
-                    liberator.open(slice.location, liberator.NEW_TAB);
+                    dactyl.open(slice.location, dactyl.NEW_TAB);
                     return;
                 }
                 let index = tabs.index(slice.tab);
@@ -137,7 +137,7 @@ const Marks = Module("marks", {
                         win.location.href = slice.location;
                         return;
                     }
-                    liberator.log("Jumping to URL mark: " + Marks.markToString(mark, slice), 5);
+                    dactyl.log("Jumping to URL mark: " + Marks.markToString(mark, slice), 5);
                     buffer.scrollToPercent(slice.position.x * 100, slice.position.y * 100);
                     ok = true;
                 }
@@ -149,7 +149,7 @@ const Marks = Module("marks", {
 
             for (let [, lmark] in Iterator(slice)) {
                 if (win.location.href == lmark.location) {
-                    liberator.log("Jumping to local mark: " + Marks.markToString(mark, lmark), 5);
+                    dactyl.log("Jumping to local mark: " + Marks.markToString(mark, lmark), 5);
                     buffer.scrollToPercent(lmark.position.x * 100, lmark.position.y * 100);
                     ok = true;
                     break;
@@ -158,7 +158,7 @@ const Marks = Module("marks", {
         }
 
         if (!ok)
-            liberator.echoerr("E20: Mark not set");
+            dactyl.echoerr("E20: Mark not set");
     },
 
     /**
@@ -169,11 +169,11 @@ const Marks = Module("marks", {
     list: function (filter) {
         let marks = this.all;
 
-        liberator.assert(marks.length > 0, "No marks set");
+        dactyl.assert(marks.length > 0, "No marks set");
 
         if (filter.length > 0) {
             marks = marks.filter(function (mark) filter.indexOf(mark[0]) >= 0);
-            liberator.assert(marks.length > 0, "E283: No marks matching " + filter.quote());
+            dactyl.assert(marks.length > 0, "E283: No marks matching " + filter.quote());
         }
 
         let list = template.tabular(
@@ -204,7 +204,7 @@ const Marks = Module("marks", {
             let win = window.content;
             for (let [i, ] in Iterator(localmark)) {
                 if (localmark[i].location == win.location.href) {
-                    liberator.log("Deleting local mark: " + Marks.markToString(mark, localmark[i]), 5);
+                    dactyl.log("Deleting local mark: " + Marks.markToString(mark, localmark[i]), 5);
                     localmark.splice(i, 1);
                     if (localmark.length == 0)
                         this._localMarks.remove(mark);
@@ -217,7 +217,7 @@ const Marks = Module("marks", {
     _removeURLMark: function _removeURLMark(mark) {
         let urlmark = this._urlMarks.get(mark);
         if (urlmark) {
-            liberator.log("Deleting URL mark: " + Marks.markToString(mark, urlmark), 5);
+            dactyl.log("Deleting URL mark: " + Marks.markToString(mark, urlmark), 5);
             this._urlMarks.remove(mark);
         }
     },
@@ -251,7 +251,7 @@ const Marks = Module("marks", {
         mappings.add(myModes,
             ["m"], "Set mark at the cursor position",
             function (arg) {
-                liberator.assert(/^[a-zA-Z]$/.test(arg));
+                dactyl.assert(/^[a-zA-Z]$/.test(arg));
                 marks.add(arg);
             },
             { arg: true });
@@ -270,19 +270,19 @@ const Marks = Module("marks", {
                 args = args.string;
 
                 // assert(special ^ args)
-                liberator.assert( special ||  args, "E471: Argument required");
-                liberator.assert(!special || !args, "E474: Invalid argument");
+                dactyl.assert( special ||  args, "E471: Argument required");
+                dactyl.assert(!special || !args, "E474: Invalid argument");
 
                 let matches = args.match(/(?:(?:^|[^a-zA-Z0-9])-|-(?:$|[^a-zA-Z0-9])|[^a-zA-Z0-9 -]).*/);
                 // NOTE: this currently differs from Vim's behavior which
                 // deletes any valid marks in the arg list, up to the first
                 // invalid arg, as well as giving the error message.
-                liberator.assert(!matches, "E475: Invalid argument: " + matches[0]);
+                dactyl.assert(!matches, "E475: Invalid argument: " + matches[0]);
 
                 // check for illegal ranges - only allow a-z A-Z 0-9
                 if ((matches = args.match(/[a-zA-Z0-9]-[a-zA-Z0-9]/g))) {
                     for (let match in values(matches))
-                        liberator.assert(/[a-z]-[a-z]|[A-Z]-[A-Z]|[0-9]-[0-9]/.test(match) &&
+                        dactyl.assert(/[a-z]-[a-z]|[A-Z]-[A-Z]|[0-9]-[0-9]/.test(match) &&
                                          match[0] <= match[2],
                             "E475: Invalid argument: " + args.match(match + ".*")[0]);
                 }
@@ -298,8 +298,8 @@ const Marks = Module("marks", {
             "Mark current location within the web page",
             function (args) {
                 let mark = args[0];
-                liberator.assert(mark.length <= 1, "E488: Trailing characters");
-                liberator.assert(/[a-zA-Z]/.test(mark),
+                dactyl.assert(mark.length <= 1, "E488: Trailing characters");
+                dactyl.assert(/[a-zA-Z]/.test(mark),
                     "E191: Argument must be a letter or forward/backward quote");
 
                 marks.add(mark);
@@ -312,7 +312,7 @@ const Marks = Module("marks", {
                 args = args.string;
 
                 // ignore invalid mark characters unless there are no valid mark chars
-                liberator.assert(!args || /[a-zA-Z]/.test(args),
+                dactyl.assert(!args || /[a-zA-Z]/.test(args),
                     "E283: No marks matching " + args.quote());
 
                 let filter = args.replace(/[^a-zA-Z]/g, "");

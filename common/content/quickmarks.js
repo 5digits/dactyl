@@ -28,7 +28,7 @@ const QuickMarks = Module("quickmarks", {
      */
     add: function add(qmark, location) {
         this._qmarks.set(qmark, location);
-        liberator.echomsg("Added Quick Mark '" + qmark + "': " + location, 1);
+        dactyl.echomsg("Added Quick Mark '" + qmark + "': " + location, 1);
     },
 
     /**
@@ -59,15 +59,15 @@ const QuickMarks = Module("quickmarks", {
      *
      * @param {string} qmark The quickmark to open.
      * @param {number} where A constant describing where to open the page.
-     *     See {@link Liberator#open}.
+     *     See {@link Dactyl#open}.
      */
     jumpTo: function jumpTo(qmark, where) {
         let url = this._qmarks.get(qmark);
 
         if (url)
-            liberator.open(url, where);
+            dactyl.open(url, where);
         else
-            liberator.echoerr("E20: QuickMark not set");
+            dactyl.echoerr("E20: QuickMark not set");
     },
 
     /**
@@ -85,11 +85,11 @@ const QuickMarks = Module("quickmarks", {
 
         marks = Array.concat(lowercaseMarks, uppercaseMarks, numberMarks);
 
-        liberator.assert(marks.length > 0, "No QuickMarks set");
+        dactyl.assert(marks.length > 0, "No QuickMarks set");
 
         if (filter.length > 0) {
             marks = marks.filter(function (qmark) filter.indexOf(qmark) >= 0);
-            liberator.assert(marks.length >= 0, "E283: No QuickMarks matching \"" + filter + "\"");
+            dactyl.assert(marks.length >= 0, "E283: No QuickMarks matching \"" + filter + "\"");
         }
 
         let items = [[mark, this._qmarks.get(mark)] for ([k, mark] in Iterator(marks))];
@@ -103,8 +103,8 @@ const QuickMarks = Module("quickmarks", {
             function (args) {
                 // TODO: finish arg parsing - we really need a proper way to do this. :)
                 // assert(args.bang ^ args.string)
-                liberator.assert( args.bang ||  args.string, "E471: Argument required");
-                liberator.assert(!args.bang || !args.string, "E474: Invalid argument");
+                dactyl.assert( args.bang ||  args.string, "E471: Argument required");
+                dactyl.assert(!args.bang || !args.string, "E474: Invalid argument");
 
                 if (args.bang)
                     quickmarks.removeAll();
@@ -124,7 +124,7 @@ const QuickMarks = Module("quickmarks", {
             function (args) {
                 let matches = args.string.match(/^([a-zA-Z0-9])(?:\s+(.+))?$/);
                 if (!matches)
-                    liberator.echoerr("E488: Trailing characters");
+                    dactyl.echoerr("E488: Trailing characters");
                 else if (!matches[2])
                     quickmarks.add(matches[1], buffer.URL);
                 else
@@ -138,7 +138,7 @@ const QuickMarks = Module("quickmarks", {
                 args = args.string;
 
                 // ignore invalid qmark characters unless there are no valid qmark chars
-                liberator.assert(!args || /[a-zA-Z0-9]/.test(args), "E283: No QuickMarks matching \"" + args + "\"");
+                dactyl.assert(!args || /[a-zA-Z0-9]/.test(args), "E283: No QuickMarks matching \"" + args + "\"");
 
                 let filter = args.replace(/[^a-zA-Z0-9]/g, "");
                 quickmarks.list(filter);
@@ -149,7 +149,7 @@ const QuickMarks = Module("quickmarks", {
 
         mappings.add(myModes,
             ["go"], "Jump to a QuickMark",
-            function (arg) { quickmarks.jumpTo(arg, liberator.CURRENT_TAB); },
+            function (arg) { quickmarks.jumpTo(arg, dactyl.CURRENT_TAB); },
             { arg: true });
 
         mappings.add(myModes,
@@ -157,14 +157,14 @@ const QuickMarks = Module("quickmarks", {
             function (arg) {
                 quickmarks.jumpTo(arg,
                     /\bquickmark\b/.test(options["activate"]) ?
-                    liberator.NEW_TAB : liberator.NEW_BACKGROUND_TAB);
+                    dactyl.NEW_TAB : dactyl.NEW_BACKGROUND_TAB);
             },
             { arg: true });
 
         mappings.add(myModes,
             ["M"], "Add new QuickMark for current URL",
             function (arg) {
-                liberator.assert(/^[a-zA-Z0-9]$/.test(arg));
+                dactyl.assert(/^[a-zA-Z0-9]$/.test(arg));
                 quickmarks.add(arg, buffer.URL);
             },
             { arg: true });

@@ -40,7 +40,7 @@ const ConfigBase = Class(ModuleBase, {
     /**
      * @property {string[]} A list of features available in this
      *    application. Used extensively in feature test macros. Use
-     *    liberator.has(feature) to check for a feature's presence
+     *    dactyl.has(feature) to check for a feature's presence
      *    in this array.
      */
     features: [],
@@ -56,7 +56,7 @@ const ConfigBase = Class(ModuleBase, {
     hostApplication: null,
 
     /**
-     * @property {function} Called on liberator startup to allow for any
+     * @property {function} Called on dactyl startup to allow for any
      *     arbitrary application-specific initialization code.
      */
     init: function () {},
@@ -75,7 +75,7 @@ const ConfigBase = Class(ModuleBase, {
     /**
      * @property {[[]]} An array of application specific mode specifications.
      *     The values of each mode are passed to modes.addMode during
-     *     liberator startup.
+     *     dactyl startup.
      */
     modes: [],
 
@@ -92,8 +92,8 @@ const ConfigBase = Class(ModuleBase, {
     get outputHeight() config.browser.mPanelContainer.boxObject.height,
 
     /**
-     * @property {[string]} A list of extra scripts in the liberator or
-     *    application namespaces which should be loaded before liberator
+     * @property {[string]} A list of extra scripts in the dactyl or
+     *    application namespaces which should be loaded before dactyl
      *    initialization.
      */
     scripts: [],

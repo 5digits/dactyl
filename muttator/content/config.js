@@ -12,7 +12,7 @@ const Config = Module("config", ConfigBase, {
     /*** required options, no checks done if they really exist, so be careful ***/
     name: "Muttator",
     hostApplication: "Thunderbird", // TODO: can this be found out otherwise? gBrandBundle.getString("brandShortName");
-                                    // Yes, but it will be localized unlike all other strings. So, it's best left until we i18n liberator. --djk
+                                    // Yes, but it will be localized unlike all other strings. So, it's best left until we i18n dactyl. --djk
 
     get mainWindowId() this.isComposeWindow ? "msgcomposeWindow" : "messengerWindow",
 
@@ -94,11 +94,11 @@ const Config = Module("config", ConfigBase, {
 
     focusChange: function (win) {
         // we switch to -- MESSAGE -- mode for Muttator, when the main HTML widget gets focus
-        if (win && win.document instanceof HTMLDocument || liberator.focus instanceof HTMLAnchorElement) {
+        if (win && win.document instanceof HTMLDocument || dactyl.focus instanceof HTMLAnchorElement) {
             if (config.isComposeWindow)
                 modes.set(modes.INSERT, modes.TEXTAREA);
-            else if (liberator.mode != modes.MESSAGE)
-                liberator.mode = modes.MESSAGE;
+            else if (dactyl.mode != modes.MESSAGE)
+                dactyl.mode = modes.MESSAGE;
         }
     },
 

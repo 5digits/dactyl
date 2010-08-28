@@ -3,7 +3,7 @@
 " Maintainer:       Doug Kearns <dougkearns@gmail.com>
 " Last Change:      2009 Aug 27
 
-" TODO: make this muttator specific - shared liberator config?
+" TODO: make this muttator specific - shared dactyl config?
 
 if exists("b:current_syntax")
   finish

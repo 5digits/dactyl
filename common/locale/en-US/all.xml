@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <document
     name="all"
-    title="&liberator.appname; All"
+    title="&dactyl.appname; All"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <tags>all</tags>

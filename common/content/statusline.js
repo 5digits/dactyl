@@ -15,7 +15,7 @@ const StatusLine = Module("statusline", {
 
         // our status bar fields
         this.widgets = dict(["status", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"].map(
-                function (field) [field, document.getElementById("liberator-statusline-field-" + field)]));
+                function (field) [field, document.getElementById("dactyl-statusline-field-" + field)]));
     },
 
     /**
@@ -99,8 +99,8 @@ const StatusLine = Module("statusline", {
                 url = "[No Name]";
         }
         else {
-            url = url.replace(RegExp("^liberator://help/(\\S+)#(.*)"), function (m, n1, n2) n1 + " " + decodeURIComponent(n2) + " [Help]")
-                     .replace(RegExp("^liberator://help/(\\S+)"), "$1 [Help]");
+            url = url.replace(RegExp("^dactyl://help/(\\S+)#(.*)"), function (m, n1, n2) n1 + " " + decodeURIComponent(n2) + " [Help]")
+                     .replace(RegExp("^dactyl://help/(\\S+)"), "$1 [Help]");
         }
 
         // when session information is available, add [+] when we can go
@@ -180,7 +180,7 @@ const StatusLine = Module("statusline", {
      *      the tab state is fully updated.
      */
     updateTabCount: function updateTabCount(delayed) {
-        if (liberator.has("tabs")) {
+        if (dactyl.has("tabs")) {
             if (delayed) {
                 this.setTimeout(function () this.updateTabCount(false), 0);
                 return;
@@ -257,7 +257,7 @@ const StatusLine = Module("statusline", {
                     if (value == 0)
                         document.getElementById("status-bar").collapsed = true;
                     else if (value == 1)
-                        liberator.echoerr("show status line only with > 1 window not implemented yet");
+                        dactyl.echoerr("show status line only with > 1 window not implemented yet");
                     else
                         document.getElementById("status-bar").collapsed = false;
 

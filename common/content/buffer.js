@@ -158,7 +158,7 @@ const Buffer = Module("buffer", {
             title: doc.title
         };
 
-        if (liberator.has("tabs")) {
+        if (dactyl.has("tabs")) {
             args.tab = tabs.getContentIndex(doc) + 1;
             args.doc = "tabs.getTab(" + (args.tab - 1) + ").linkedBrowser.contentDocument";
         }
@@ -182,6 +182,10 @@ const Buffer = Module("buffer", {
     // event listener which is is called on each page load, even if the
     // page is loaded in a background tab
     onPageLoad: function onPageLoad(event) {
+        if (!dactyl.helpInitialized && event.originalTarget instanceof Document)
+            if (/^dactyl:/.test(event.originalTarget.location.href))
+                dactyl.initHelp();
+
         if (event.originalTarget instanceof HTMLDocument) {
             let doc = event.originalTarget;
             // document is part of a frameset
@@ -201,7 +205,7 @@ const Buffer = Module("buffer", {
             doc.pageIsFullyLoaded = 1;
 
             if (doc != config.browser.contentDocument)
-                liberator.echomsg("Background tab loaded: " + doc.title || doc.location.href, 3);
+                dactyl.echomsg("Background tab loaded: " + doc.title || doc.location.href, 3);
 
             this._triggerLoadAutocmd("PageLoad", doc);
         }
@@ -233,7 +237,7 @@ const Buffer = Module("buffer", {
                     // is not the focused frame
                     if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow) {
                         setTimeout(function () { modes.reset(false); },
-                            liberator.mode == modes.HINTS ? 500 : 0);
+                            dactyl.mode == modes.HINTS ? 500 : 0);
                     }
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
@@ -284,7 +288,7 @@ const Buffer = Module("buffer", {
                 if (ssli == 1)
                     statusline.updateUrl("Link: " + link);
                 else if (ssli == 2)
-                    liberator.echo("Link: " + link, commandline.DISALLOW_MULTILINE);
+                    dactyl.echo("Link: " + link, commandline.DISALLOW_MULTILINE);
             }
 
             if (link == "") {
@@ -343,9 +347,9 @@ const Buffer = Module("buffer", {
      *     tab.
      */
     get localStore() {
-        if (!content.liberatorStore)
-            content.liberatorStore = {};
-        return content.liberatorStore;
+        if (!content.dactylStore)
+            content.dactylStore = {};
+        return content.dactylStore;
     },
 
 
@@ -471,7 +475,7 @@ const Buffer = Module("buffer", {
      */
     focusAllowed: function (elem) {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        return !options["strictfocus"] || elem.liberatorFocusAllowed;
+        return !options["strictfocus"] || elem.dactylFocusAllowed;
     },
 
     /**
@@ -484,7 +488,7 @@ const Buffer = Module("buffer", {
     focusElement: function (elem) {
         let doc = window.content.document;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        win.liberatorFocusAllowed = true;
+        win.dactylFocusAllowed = true;
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
             elem.contentWindow.focus();
@@ -531,14 +535,14 @@ const Buffer = Module("buffer", {
             // <link>s have higher priority than normal <a> hrefs
             let elems = frame.document.getElementsByTagName("link");
             for (let elem in iter(elems)) {
-                liberator.open(elem.href);
+                dactyl.open(elem.href);
                 return true;
             }
 
             // no links? ok, look for hrefs
             elems = frame.document.getElementsByTagName("a");
             for (let elem in iter(elems)) {
-                buffer.followLink(elem, liberator.CURRENT_TAB);
+                buffer.followLink(elem, dactyl.CURRENT_TAB);
                 return true;
             }
 
@@ -548,7 +552,7 @@ const Buffer = Module("buffer", {
                     let elem = res.snapshotItem(i);
                     if (regex.test(elem.textContent) || regex.test(elem.title) ||
                             Array.some(elem.childNodes, function (child) regex.test(child.alt))) {
-                        buffer.followLink(elem, liberator.CURRENT_TAB);
+                        buffer.followLink(elem, dactyl.CURRENT_TAB);
                         return true;
                     }
                 }
@@ -562,7 +566,7 @@ const Buffer = Module("buffer", {
             ret = Array.some(window.content.frames, followFrame);
 
         if (!ret)
-            liberator.beep();
+            dactyl.beep();
     },
 
     /**
@@ -570,7 +574,7 @@ const Buffer = Module("buffer", {
      *
      * @param {Node} elem The element to click.
      * @param {number} where Where to open the link. See
-     *     {@link liberator.open}.
+     *     {@link dactyl.open}.
      */
     followLink: function (elem, where) {
         let doc = elem.ownerDocument;
@@ -594,18 +598,18 @@ const Buffer = Module("buffer", {
 
         let ctrlKey = false, shiftKey = false;
         switch (where) {
-        case liberator.NEW_TAB:
-        case liberator.NEW_BACKGROUND_TAB:
+        case dactyl.NEW_TAB:
+        case dactyl.NEW_BACKGROUND_TAB:
             ctrlKey = true;
-            shiftKey = (where != liberator.NEW_BACKGROUND_TAB);
+            shiftKey = (where != dactyl.NEW_BACKGROUND_TAB);
             break;
-        case liberator.NEW_WINDOW:
+        case dactyl.NEW_WINDOW:
             shiftKey = true;
             break;
-        case liberator.CURRENT_TAB:
+        case dactyl.CURRENT_TAB:
             break;
         default:
-            liberator.log("Invalid where argument for followLink()", 0);
+            dactyl.log("Invalid where argument for followLink()", 0);
         }
 
         buffer.focusElement(elem);
@@ -660,7 +664,7 @@ const Buffer = Module("buffer", {
             window.saveURL(url, text, null, true, skipPrompt, makeURI(url, doc.characterSet));
         }
         catch (e) {
-            liberator.echoerr(e);
+            dactyl.echoerr(e);
         }
     },
 
@@ -818,7 +822,7 @@ const Buffer = Module("buffer", {
 
             if (next > frames.length - 1) {
                 if (current == frames.length - 1)
-                    liberator.beep();
+                    dactyl.beep();
                 next = frames.length - 1; // still allow the frame indicator to be activated
             }
         }
@@ -827,7 +831,7 @@ const Buffer = Module("buffer", {
 
             if (next < 0) {
                 if (current == 0)
-                    liberator.beep();
+                    dactyl.beep();
                 next = 0; // still allow the frame indicator to be activated
             }
         }
@@ -857,7 +861,7 @@ const Buffer = Module("buffer", {
      * @param {Node} elem The element to query.
      */
     showElementInfo: function (elem) {
-        liberator.echo(<>Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
+        dactyl.echo(<>Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
     },
 
     /**
@@ -881,7 +885,7 @@ const Buffer = Module("buffer", {
                 info += ", bookmarked";
 
             let pageInfoText = <>{file.quote()} [{info}] {title}</>;
-            liberator.echo(pageInfoText, commandline.FORCE_SINGLELINE);
+            dactyl.echo(pageInfoText, commandline.FORCE_SINGLELINE);
             return;
         }
 
@@ -890,7 +894,7 @@ const Buffer = Module("buffer", {
             let opt = buffer.pageInfo[option];
             return opt ? template.table(opt[1], opt[0](true)) : undefined;
         }, <br/>);
-        liberator.echo(list, commandline.FORCE_MULTILINE);
+        dactyl.echo(list, commandline.FORCE_MULTILINE);
     },
 
     /**
@@ -936,7 +940,7 @@ const Buffer = Module("buffer", {
                 url = url.substr(PREFIX.length);
             else
                 url = PREFIX + url;
-            liberator.open(url, { hide: true });
+            dactyl.open(url, { hide: true });
         }
     },
 
@@ -964,7 +968,7 @@ const Buffer = Module("buffer", {
     ZOOM_MAX: "ZoomManager" in window && Math.round(ZoomManager.MAX * 100),
 
     setZoom: function setZoom(value, fullZoom) {
-        liberator.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
+        dactyl.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
             "Zoom value out of range (" + Buffer.ZOOM_MIN + " - " + Buffer.ZOOM_MAX + "%)");
 
         if (fullZoom !== undefined)
@@ -986,7 +990,7 @@ const Buffer = Module("buffer", {
         let i = util.Math.constrain(cur + steps, 0, values.length - 1);
 
         if (i == cur && fullZoom == ZoomManager.useFullZoom)
-            liberator.beep();
+            dactyl.beep();
 
         Buffer.setZoom(Math.round(values[i] * 100), fullZoom);
     },
@@ -994,7 +998,7 @@ const Buffer = Module("buffer", {
     checkScrollYBounds: function checkScrollYBounds(win, direction) {
         // NOTE: it's possible to have scrollY > scrollMaxY - FF bug?
         if (direction > 0 && win.scrollY >= win.scrollMaxY || direction < 0 && win.scrollY == 0)
-            liberator.beep();
+            dactyl.beep();
     },
 
     findScrollableWindow: function findScrollableWindow() {
@@ -1103,7 +1107,7 @@ const Buffer = Module("buffer", {
     openUploadPrompt: function openUploadPrompt(elem) {
         commandline.input("Upload file: ", function (path) {
             let file = io.File(path);
-            liberator.assert(file.exists());
+            dactyl.assert(file.exists());
 
             elem.value = file.path;
         }, {
@@ -1116,7 +1120,7 @@ const Buffer = Module("buffer", {
         commands.add(["frameo[nly]"],
             "Show only the current frame's page",
             function (args) {
-                liberator.open(tabs.localStore.focusedFrame.document.documentURI);
+                dactyl.open(tabs.localStore.focusedFrame.document.documentURI);
             },
             { argCount: "0" });
 
@@ -1126,17 +1130,17 @@ const Buffer = Module("buffer", {
                 let arg = args[0];
 
                 // FIXME: arg handling is a bit of a mess, check for filename
-                liberator.assert(!arg || arg[0] == ">" && !liberator.has("Win32"),
+                dactyl.assert(!arg || arg[0] == ">" && !dactyl.has("Win32"),
                     "E488: Trailing characters");
 
                 options.withContext(function () {
                     if (arg) {
                         options.setPref("print.print_to_file", "true");
                         options.setPref("print.print_to_filename", io.File(arg.substr(1)).path);
-                        liberator.echomsg("Printing to file: " + arg.substr(1));
+                        dactyl.echomsg("Printing to file: " + arg.substr(1));
                     }
                     else
-                        liberator.echomsg("Sending to printer...");
+                        dactyl.echomsg("Sending to printer...");
 
                     options.setPref("print.always_print_silent", args.bang);
                     options.setPref("print.show_print_progress", !args.bang);
@@ -1145,9 +1149,9 @@ const Buffer = Module("buffer", {
                 });
 
                 if (arg)
-                    liberator.echomsg("Printed: " + arg.substr(1));
+                    dactyl.echomsg("Printed: " + arg.substr(1));
                 else
-                    liberator.echomsg("Print job sent.");
+                    dactyl.echomsg("Print job sent.");
             },
             {
                 argCount: "?",
@@ -1173,7 +1177,7 @@ const Buffer = Module("buffer", {
 
                 let titles = buffer.alternateStyleSheets.map(function (stylesheet) stylesheet.title);
 
-                liberator.assert(!arg || titles.indexOf(arg) >= 0,
+                dactyl.assert(!arg || titles.indexOf(arg) >= 0,
                     "E475: Invalid argument: " + arg);
 
                 if (options["usermode"])
@@ -1206,7 +1210,7 @@ const Buffer = Module("buffer", {
                 if (filename) {
                     let file = io.File(filename);
 
-                    liberator.assert(!file.exists() || args.bang,
+                    dactyl.assert(!file.exists() || args.bang,
                         "E13: File exists (add ! to override)");
 
                     chosenData = { file: file, uri: window.makeURI(doc.location.href, doc.characterSet) };
@@ -1269,7 +1273,7 @@ const Buffer = Module("buffer", {
                     level = util.Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
                 else
-                    liberator.assert(false, "E488: Trailing characters");
+                    dactyl.assert(false, "E488: Trailing characters");
 
                 if (args.bang)
                     buffer.fullZoom = level;
@@ -1389,12 +1393,12 @@ const Buffer = Module("buffer", {
             function (count) { buffer.scrollLines(-Math.max(count, 1)); },
             { count: true });
 
-        mappings.add(myModes, liberator.has("mail") ? ["h"] : ["h", "<Left>"],
+        mappings.add(myModes, dactyl.has("mail") ? ["h"] : ["h", "<Left>"],
             "Scroll document to the left",
             function (count) { buffer.scrollColumns(-Math.max(count, 1)); },
             { count: true });
 
-        mappings.add(myModes, liberator.has("mail") ? ["l"] : ["l", "<Right>"],
+        mappings.add(myModes, dactyl.has("mail") ? ["l"] : ["l", "<Right>"],
             "Scroll document to the right",
             function (count) { buffer.scrollColumns(Math.max(count, 1)); },
             { count: true });
@@ -1420,7 +1424,7 @@ const Buffer = Module("buffer", {
         mappings.add(myModes, ["%"],
             "Scroll to {count} percent of the document",
             function (count) {
-                liberator.assert(count > 0 && count <= 100);
+                dactyl.assert(count > 0 && count <= 100);
                 buffer.scrollToPercent(buffer.scrollXPercent, count);
             },
             { count: true });
@@ -1492,7 +1496,7 @@ const Buffer = Module("buffer", {
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none";
                     });
 
-                    liberator.assert(elements.length > 0);
+                    dactyl.assert(elements.length > 0);
                     let elem = elements[util.Math.constrain(count, 1, elements.length) - 1];
                     buffer.focusElement(elem);
                     util.scrollIntoView(elem);
@@ -1503,24 +1507,24 @@ const Buffer = Module("buffer", {
         mappings.add(myModes, ["gP"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
-                liberator.open(util.readFromClipboard(),
-                    liberator[options.get("activate").has("paste") ? "NEW_BACKGROUND_TAB" : "NEW_TAB"]);
+                dactyl.open(util.readFromClipboard(),
+                    dactyl[options.get("activate").has("paste") ? "NEW_BACKGROUND_TAB" : "NEW_TAB"]);
             });
 
         mappings.add(myModes, ["p", "<MiddleMouse>"],
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
                 let url = util.readFromClipboard();
-                liberator.assert(url);
-                liberator.open(url);
+                dactyl.assert(url);
+                dactyl.open(url);
             });
 
         mappings.add(myModes, ["P"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = util.readFromClipboard();
-                liberator.assert(url);
-                liberator.open(url, { from: "paste", where: liberator.NEW_TAB });
+                dactyl.assert(url);
+                dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB });
             });
 
         // reloading
@@ -1537,7 +1541,7 @@ const Buffer = Module("buffer", {
             "Copy selected text or current word",
             function () {
                 let sel = buffer.getCurrentWord();
-                liberator.assert(sel);
+                dactyl.assert(sel);
                 util.copyToClipboard(sel, true);
             });
 

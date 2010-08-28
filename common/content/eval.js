@@ -1,7 +1,7 @@
-try { __liberator_eval_result = eval(__liberator_eval_string);
+try { __dactyl_eval_result = eval(__dactyl_eval_string);
 }
 catch (e) {
-    __liberator_eval_error = e;
+    __dactyl_eval_error = e;
 }
 // IMPORTANT: The eval statement *must* remain on the first line
 // in order for line numbering in any errors to remain correct.

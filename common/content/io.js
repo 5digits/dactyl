@@ -170,7 +170,7 @@ const File = Class("File", {
             ocstream.writeString(buf);
         }
         catch (e) {
-            liberator.dump(e);
+            dactyl.dump(e);
             if (e.result == Cr.NS_ERROR_LOSS_OF_SIGNIFICANT_DATA) {
                 ocstream = getStream("?".charCodeAt(0));
                 ocstream.writeString(buf);
@@ -251,7 +251,7 @@ const File = Class("File", {
         // Kris reckons we shouldn't replicate this 'bug'. --djk
         // TODO: should we be doing this for all paths?
         function expand(path) path.replace(
-            !liberator.has("Win32") ? /\$(\w+)\b|\${(\w+)}/g
+            !dactyl.has("Win32") ? /\$(\w+)\b|\${(\w+)}/g
                                  : /\$(\w+)\b|\${(\w+)}|%(\w+)%/g,
             function (m, n1, n2, n3) services.get("environment").get(n1 || n2 || n3) || m
         );
@@ -264,7 +264,7 @@ const File = Class("File", {
             let home = services.get("environment").get("HOME");
 
             // Windows has its own idiosyncratic $HOME variables.
-            if (!home && liberator.has("Win32"))
+            if (!home && dactyl.has("Win32"))
                 home = services.get("environment").get("USERPROFILE") ||
                        services.get("environment").get("HOMEDRIVE") + services.get("environment").get("HOMEPATH");
 
@@ -340,7 +340,7 @@ const IO = Module("io", {
                     let file  = download.targetFile.path;
                     let size  = download.size;
 
-                    liberator.echomsg("Download of " + title + " to " + file + " finished", 1, commandline.ACTIVE_WINDOW);
+                    dactyl.echomsg("Download of " + title + " to " + file + " finished", 1, commandline.ACTIVE_WINDOW);
                     autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
                 }
             },
@@ -426,7 +426,7 @@ const IO = Module("io", {
             let dir = File(newDir);
 
             if (!dir.exists() || !dir.isDirectory()) {
-                liberator.echoerr("E344: Can't find directory \"" + dir.path + "\" in path");
+                dactyl.echoerr("E344: Can't find directory \"" + dir.path + "\" in path");
                 return null;
             }
 
@@ -465,7 +465,7 @@ const IO = Module("io", {
         let rcFile1 = File.joinPaths(dir, "." + config.name.toLowerCase() + "rc");
         let rcFile2 = File.joinPaths(dir, "_" + config.name.toLowerCase() + "rc");
 
-        if (liberator.has("Win32"))
+        if (dactyl.has("Win32"))
             [rcFile1, rcFile2] = [rcFile2, rcFile1];
 
         if (rcFile1.exists() && rcFile1.isFile())
@@ -509,9 +509,9 @@ const IO = Module("io", {
         if (File.isAbsolutePath(program))
             file = File(program, true);
         else {
-            let dirs = services.get("environment").get("PATH").split(liberator.has("Win32") ? ";" : ":");
+            let dirs = services.get("environment").get("PATH").split(dactyl.has("Win32") ? ";" : ":");
             // Windows tries the CWD first TODO: desirable?
-            if (liberator.has("Win32"))
+            if (dactyl.has("Win32"))
                 dirs = [io.getCurrentDirectory().path].concat(dirs);
 
 lookup:
@@ -523,7 +523,7 @@ lookup:
 
                     // TODO: couldn't we just palm this off to the start command?
                     // automatically try to add the executable path extensions on windows
-                    if (liberator.has("Win32")) {
+                    if (dactyl.has("Win32")) {
                         let extensions = services.get("environment").get("PATHEXT").split(";");
                         for (let [, extension] in Iterator(extensions)) {
                             file = File.joinPaths(dir, program + extension);
@@ -537,7 +537,7 @@ lookup:
         }
 
         if (!file || !file.exists()) {
-            liberator.echoerr("Command not found: " + program);
+            dactyl.echoerr("Command not found: " + program);
             return -1;
         }
 
@@ -564,14 +564,14 @@ lookup:
         let dirs = File.getPathsFromPathList(options["runtimepath"]);
         let found = false;
 
-        liberator.echomsg("Searching for \"" + paths.join(" ") + "\" in \"" + options["runtimepath"] + "\"", 2);
+        dactyl.echomsg("Searching for \"" + paths.join(" ") + "\" in \"" + options["runtimepath"] + "\"", 2);
 
         outer:
         for (let [, dir] in Iterator(dirs)) {
             for (let [, path] in Iterator(paths)) {
                 let file = File.joinPaths(dir, path);
 
-                liberator.echomsg("Searching for \"" + file.path + "\"", 3);
+                dactyl.echomsg("Searching for \"" + file.path + "\"", 3);
 
                 if (file.exists() && file.isFile() && file.isReadable()) {
                     io.source(file.path, false);
@@ -584,7 +584,7 @@ lookup:
         }
 
         if (!found)
-            liberator.echomsg("not found in 'runtimepath': \"" + paths.join(" ") + "\"", 1);
+            dactyl.echomsg("not found in 'runtimepath': \"" + paths.join(" ") + "\"", 1);
 
         return found;
     },
@@ -597,7 +597,7 @@ lookup:
      */
     source: function (filename, silent) {
         let wasSourcing = this.sourcing;
-        liberator.dump("sourcing " + filename);
+        dactyl.dump("sourcing " + filename);
         let time = Date.now();
         try {
             var file = File(filename);
@@ -609,17 +609,17 @@ lookup:
             if (!file.exists() || !file.isReadable() || file.isDirectory()) {
                 if (!silent) {
                     if (file.exists() && file.isDirectory())
-                        liberator.echomsg("Cannot source a directory: \"" + filename + "\"", 0);
+                        dactyl.echomsg("Cannot source a directory: \"" + filename + "\"", 0);
                     else
-                        liberator.echomsg("could not source: \"" + filename + "\"", 1);
+                        dactyl.echomsg("could not source: \"" + filename + "\"", 1);
 
-                    liberator.echoerr("E484: Can't open file " + filename);
+                    dactyl.echoerr("E484: Can't open file " + filename);
                 }
 
                 return;
             }
 
-            liberator.echomsg("sourcing \"" + filename + "\"", 2);
+            dactyl.echomsg("sourcing \"" + filename + "\"", 2);
 
             let str = file.read();
             let uri = services.get("io").newFileURI(file);
@@ -627,8 +627,8 @@ lookup:
             // handle pure JavaScript files specially
             if (/\.js$/.test(filename)) {
                 try {
-                    liberator.loadScript(uri.spec, Script(file));
-                    liberator.helpInitialized = false;
+                    dactyl.loadScript(uri.spec, Script(file));
+                    dactyl.helpInitialized = false;
                 }
                 catch (e) {
                     let err = new Error();
@@ -671,9 +671,9 @@ lookup:
                         if (!command) {
                             let lineNumber = i + 1;
 
-                            liberator.echoerr("Error detected while processing " + file.path, commandline.FORCE_MULTILINE);
+                            dactyl.echoerr("Error detected while processing " + file.path, commandline.FORCE_MULTILINE);
                             commandline.echo("line " + lineNumber + ":", commandline.HL_LINENR, commandline.APPEND_TO_MESSAGES);
-                            liberator.echoerr("E492: Not an editor command: " + line);
+                            dactyl.echoerr("E492: Not an editor command: " + line);
                         }
                         else {
                             if (command.name == "finish")
@@ -705,18 +705,18 @@ lookup:
             if (this._scriptNames.indexOf(file.path) == -1)
                 this._scriptNames.push(file.path);
 
-            liberator.echomsg("finished sourcing \"" + filename + "\"", 2);
+            dactyl.echomsg("finished sourcing \"" + filename + "\"", 2);
 
-            liberator.log("Sourced: " + filename, 3);
+            dactyl.log("Sourced: " + filename, 3);
         }
         catch (e) {
-            liberator.reportError(e);
+            dactyl.reportError(e);
             let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
             if (!silent)
-                liberator.echoerr(message);
+                dactyl.echoerr(message);
         }
         finally {
-            liberator.dump("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
+            dactyl.dump("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
             this.sourcing = wasSourcing;
         }
     },
@@ -732,7 +732,7 @@ lookup:
      * @returns {string}
      */
     system: function (command, input) {
-        liberator.echomsg("Calling shell to execute: " + command, 4);
+        dactyl.echomsg("Calling shell to execute: " + command, 4);
 
         function escape(str) '"' + str.replace(/[\\"$]/g, "\\$&") + '"';
 
@@ -741,7 +741,7 @@ lookup:
                 stdin.write(input);
 
             // TODO: implement 'shellredir'
-            if (liberator.has("Win32")) {
+            if (dactyl.has("Win32")) {
                 command = "cd /D " + this._cwd.path + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(options["shell"], options["shellcmdflag"].split(/\s+/).concat(command), true);
             }
@@ -788,14 +788,14 @@ lookup:
     }
 }, {
     /**
-     * @property {string} The value of the $VIMPERATOR_RUNTIME environment
+     * @property {string} The value of the $PENTADACTYL_RUNTIME environment
      *     variable.
      */
     get runtimePath() {
         const rtpvar = config.name.toUpperCase() + "_RUNTIME";
         let rtp = services.get("environment").get(rtpvar);
         if (!rtp) {
-            rtp = "~/" + (liberator.has("Win32") ? "" : ".") + config.name.toLowerCase();
+            rtp = "~/" + (dactyl.has("Win32") ? "" : ".") + config.name.toLowerCase();
             services.get("environment").set(rtpvar, rtp);
         }
         return rtp;
@@ -820,7 +820,7 @@ lookup:
                 if (!arg)
                     arg = "~";
                 else if (arg == "-") {
-                    liberator.assert(io._oldcwd, "E186: No previous directory");
+                    dactyl.assert(io._oldcwd, "E186: No previous directory");
                     arg = io._oldcwd.path;
                 }
 
@@ -831,7 +831,7 @@ lookup:
                 // TODO: handle ../ and ./ paths
                 if (File.isAbsolutePath(arg)) {
                     if (io.setCurrentDirectory(arg))
-                        liberator.echomsg(io.getCurrentDirectory().path);
+                        dactyl.echomsg(io.getCurrentDirectory().path);
                 }
                 else {
                     let dirs = File.getPathsFromPathList(options["cdpath"]);
@@ -842,14 +842,14 @@ lookup:
 
                         if (dir.exists() && dir.isDirectory() && dir.isReadable()) {
                             io.setCurrentDirectory(dir.path);
-                            liberator.echomsg(io.getCurrentDirectory().path);
+                            dactyl.echomsg(io.getCurrentDirectory().path);
                             found = true;
                             break;
                         }
                     }
 
                     if (!found) {
-                        liberator.echoerr("E344: Can't find directory " + arg.quote() + " in cdpath\n"
+                        dactyl.echoerr("E344: Can't find directory " + arg.quote() + " in cdpath\n"
                                         + "E472: Command failed");
                     }
                 }
@@ -862,32 +862,32 @@ lookup:
         // NOTE: this command is only used in :source
         commands.add(["fini[sh]"],
             "Stop sourcing a script file",
-            function () { liberator.echoerr("E168: :finish used outside of a sourced file"); },
+            function () { dactyl.echoerr("E168: :finish used outside of a sourced file"); },
             { argCount: "0" });
 
         commands.add(["pw[d]"],
             "Print the current directory name",
-            function () { liberator.echomsg(io.getCurrentDirectory().path); },
+            function () { dactyl.echomsg(io.getCurrentDirectory().path); },
             { argCount: "0" });
 
         // "mkv[imperatorrc]" or "mkm[uttatorrc]"
         commands.add([config.name.toLowerCase().replace(/(.)(.*)/, "mk$1[$2rc]")],
             "Write current key mappings and changed options to the config file",
             function (args) {
-                liberator.assert(args.length <= 1, "E172: Only one file name allowed");
+                dactyl.assert(args.length <= 1, "E172: Only one file name allowed");
 
                 let filename = args[0] || io.getRCFile(null, true).path;
                 let file = File(filename);
 
-                liberator.assert(!file.exists() || args.bang,
+                dactyl.assert(!file.exists() || args.bang,
                     "E189: \"" + filename + "\" exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
                 let lines = [cmd.serial().map(commands.commandToString) for (cmd in commands) if (cmd.serial)];
                 lines = util.Array.flatten(lines);
 
-                // source a user .vimperatorrc file
-                lines.unshift('"' + liberator.version + "\n");
+                // source a user .pentadactylrc file
+                lines.unshift('"' + dactyl.version + "\n");
 
                 // For the record, I think that adding this line is absurd. --Kris
                 // I can't disagree. --djk
@@ -903,8 +903,8 @@ lookup:
                     file.write(lines.join("\n"));
                 }
                 catch (e) {
-                    liberator.echoerr("E190: Cannot open \"" + filename + "\" for writing");
-                    liberator.log("Could not write to " + file.path + ": " + e.message); // XXX
+                    dactyl.echoerr("E190: Cannot open \"" + filename + "\" for writing");
+                    dactyl.log("Could not write to " + file.path + ": " + e.message); // XXX
                 }
             }, {
                 argCount: "*", // FIXME: should be "?" but kludged for proper error message
@@ -934,7 +934,7 @@ lookup:
             "Read Ex commands from a file",
             function (args) {
                 if (args.length > 1)
-                    liberator.echoerr("E172: Only one file name allowed");
+                    dactyl.echoerr("E172: Only one file name allowed");
                 else
                     io.source(args[0], args.bang);
             }, {
@@ -954,7 +954,7 @@ lookup:
                     arg = "!" + arg;
 
                 // replaceable bang and no previous command?
-                liberator.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
+                dactyl.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
                     "E34: No previous command");
 
                 // NOTE: Vim doesn't replace ! preceded by 2 or more backslashes and documents it - desirable?
@@ -992,7 +992,7 @@ lookup:
                     "more1 more2 more3 more4 more5 unicode".split(" ").map(function (key)
                         options.getPref("intl.charsetmenu.browser." + key).split(', '))
                 ).flatten().uniq();
-                let bundle = document.getElementById("liberator-charset-bundle");
+                let bundle = document.getElementById("dactyl-charset-bundle");
                 return names.map(function (name) [name, bundle.getString(name.toLowerCase() + ".title")]);
             };
         };
@@ -1003,7 +1003,7 @@ lookup:
         };
 
         completion.environment = function environment(context) {
-            let command = liberator.has("Win32") ? "set" : "env";
+            let command = dactyl.has("Win32") ? "set" : "env";
             let lines = io.system(command).split("\n");
             lines.pop();
 
@@ -1050,7 +1050,7 @@ lookup:
         completion.shellCommand = function shellCommand(context) {
             context.title = ["Shell Command", "Path"];
             context.generate = function () {
-                let dirNames = services.get("environment").get("PATH").split(RegExp(liberator.has("Win32") ? ";" : ":"));
+                let dirNames = services.get("environment").get("PATH").split(RegExp(dactyl.has("Win32") ? ";" : ":"));
                 let commands = [];
 
                 for (let [, dirName] in Iterator(dirNames)) {
@@ -1072,7 +1072,7 @@ lookup:
     },
     options: function () {
         var shell, shellcmdflag;
-        if (liberator.has("Win32")) {
+        if (dactyl.has("Win32")) {
             shell = "cmd.exe";
             // TODO: setting 'shell' to "something containing sh" updates
             // 'shellcmdflag' appropriately at startup on Windows in Vim

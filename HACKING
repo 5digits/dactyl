@@ -1,6 +1,6 @@
 = Hacking =
 
-If you've taken to hacking Vimperator source code, we hope that you'll share
+If you've taken to hacking Pentadactyl source code, we hope that you'll share
 your changes. In case you do, please keep the following in mind, and we'll be
 happy to accept your patches.
 
@@ -20,7 +20,7 @@ important, please ask.
 In general: Just look at the existing source code!
 
 We try to target experienced JavaScript developers who do not
-necessarily need to have a good understanding of Vimperator's source
+necessarily need to have a good understanding of Pentadactyl's source
 code, nor necessarily understand in-depth concepts of other
 languages like Lisp or Python.  Therefore, the coding style should
 feel natural to any JavaScript developer.  Of course, this does not

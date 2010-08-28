@@ -16,7 +16,7 @@ const Browser = Module("browser", {
     // TODO: support 'nrformats'? -> probably not worth it --mst
     incrementURL: function (count) {
         let matches = buffer.URL.match(/(.*?)(\d+)(\D*)$/);
-        liberator.assert(matches);
+        dactyl.assert(matches);
 
         let [, pre, number, post] = matches;
         let newNumber = parseInt(number, 10) + count;
@@ -26,7 +26,7 @@ const Browser = Module("browser", {
                 newNumberStr = "0" + newNumberStr;
         }
 
-        liberator.open(pre + newNumberStr + post);
+        dactyl.open(pre + newNumberStr + post);
     }
 }, {
     options: function () {
@@ -46,7 +46,7 @@ const Browser = Module("browser", {
                         PlacesUtils.history.setCharsetForURI(getWebNavigation().currentURI, val);
                         getWebNavigation().reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
                     }
-                    catch (e) { liberator.reportError(e); }
+                    catch (e) { dactyl.reportError(e); }
                     return null;
                 },
                 completer: function (context) completion.charset(context)
@@ -138,7 +138,7 @@ const Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["~"],
             "Open home directory",
-            function () { liberator.open("~"); });
+            function () { dactyl.open("~"); });
 
         mappings.add([modes.NORMAL], ["gh"],
             "Open homepage",
@@ -148,7 +148,7 @@ const Browser = Module("browser", {
             "Open homepage in a new tab",
             function () {
                 let homepages = gHomeButton.getHomePage();
-                liberator.open(homepages, { from: "homepage", where: liberator.NEW_TAB });
+                dactyl.open(homepages, { from: "homepage", where: dactyl.NEW_TAB });
             });
 
         mappings.add([modes.NORMAL], ["gu"],
@@ -179,9 +179,9 @@ const Browser = Module("browser", {
                 url = url.replace(/^(.*:\/+.*?)\/+$/, "$1/"); // get rid of more than 1 / at the end
 
                 if (url == buffer.URL)
-                    liberator.beep();
+                    dactyl.beep();
                 else
-                    liberator.open(url);
+                    dactyl.open(url);
             },
             { count: true });
 
@@ -189,8 +189,8 @@ const Browser = Module("browser", {
             "Go to the root of the website",
             function () {
                 let uri = content.document.location;
-                liberator.assert(!/(about|mailto):/.test(uri.protocol)); // exclude these special protocols for now
-                liberator.open(uri.protocol + "//" + (uri.host || "") + "/");
+                dactyl.assert(!/(about|mailto):/.test(uri.protocol)); // exclude these special protocols for now
+                dactyl.open(uri.protocol + "//" + (uri.host || "") + "/");
             });
 
         mappings.add([modes.NORMAL], ["<C-l>"],
@@ -202,7 +202,7 @@ const Browser = Module("browser", {
         commands.add(["downl[oads]", "dl"],
             "Show progress of current downloads",
             function () {
-                liberator.open("chrome://mozapps/content/downloads/downloads.xul",
+                dactyl.open("chrome://mozapps/content/downloads/downloads.xul",
                     { from: "downloads"});
             },
             { argCount: "0" });
@@ -213,9 +213,9 @@ const Browser = Module("browser", {
                 args = args.string;
 
                 if (args)
-                    liberator.open(args);
+                    dactyl.open(args);
                 else
-                    liberator.open("about:blank");
+                    dactyl.open("about:blank");
             }, {
                 completer: function (context) completion.url(context),
                 literal: 0,

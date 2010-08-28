@@ -118,7 +118,7 @@ const Modes = Module("modes", {
                 options.setPref("accessibility.browsewithcaret", false);
 
             statusline.updateUrl();
-            liberator.focusContent(true);
+            dactyl.focusContent(true);
         }
     },
 
@@ -191,7 +191,7 @@ const Modes = Module("modes", {
             if (this._main != oldMain)
                 this._handleModeChange(oldMain, mainMode, oldExtended);
         }
-        liberator.triggerObserver("modeChange", [oldMain, oldExtended], [this._main, this._extended], stack);
+        dactyl.triggerObserver("modeChange", [oldMain, oldExtended], [this._main, this._extended], stack);
 
         if (!silent)
             this.show();

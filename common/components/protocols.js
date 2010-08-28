@@ -23,7 +23,7 @@ const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOSer
 
 let channel = Components.classesByID["{61ba33c0-3031-11d3-8cd0-0060b0fc14a3}"]
                         .getService(Ci.nsIProtocolHandler)
-                        .newChannel(ioService.newURI("chrome://liberator/content/data", null, null))
+                        .newChannel(ioService.newURI("chrome://dactyl/content/data", null, null))
                         .QueryInterface(Ci.nsIRequest);
 const systemPrincipal = channel.owner;
 channel.cancel(NS_BINDING_ABORTED);
@@ -39,9 +39,9 @@ function makeChannel(url, orig) {
     channel.originalURI = orig;
     return channel;
 }
-function fakeChannel(orig) makeChannel("chrome://liberator/content/does/not/exist", orig);
-function redirect(to, orig) {
-    let html = <html><head><meta http-equiv="Refresh" content={"0;" + to}/></head></html>.toXMLString();
+function fakeChannel(orig) makeChannel("chrome://dactyl/content/does/not/exist", orig);
+function redirect(to, orig, time) {
+    let html = <html><head><meta http-equiv="Refresh" content={(time || 0) + ";" + to}/></head></html>.toXMLString();
     return makeChannel(dataURL('text/html', html), ioService.newURI(to, null, null));
 }
 
@@ -86,7 +86,7 @@ ChromeData.prototype = {
     }
 };
 
-function Liberator() {
+function Dactyl() {
     this.wrappedJSObject = this;
 
     const self = this;
@@ -94,18 +94,18 @@ function Liberator() {
     this.FILE_MAP = {};
     this.OVERLAY_MAP = {};
 }
-Liberator.prototype = {
-    contractID:       "@mozilla.org/network/protocol;1?name=liberator",
+Dactyl.prototype = {
+    contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
     classID:          Components.ID("{9c8f2530-51c8-4d41-b356-319e0b155c44}"),
-    classDescription: "Liberator utility protocol",
+    classDescription: "Dactyl utility protocol",
     QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsIProtocolHandler]),
     _xpcom_factory: {
         createInstance: function (outer, iid) {
-            if (!Liberator.instance)
-                Liberator.instance = new Liberator();
+            if (!Dactyl.instance)
+                Dactyl.instance = new Dactyl();
             if (outer != null)
                 throw Components.results.NS_ERROR_NO_AGGREGATION;
-            return Liberator.instance.QueryInterface(iid);
+            return Dactyl.instance.QueryInterface(iid);
         }
     },
 
@@ -117,7 +117,7 @@ Liberator.prototype = {
         }
     },
 
-    scheme: "liberator",
+    scheme: "dactyl",
     defaultPort: -1,
     allowPort: function (port, scheme) false,
     protocolFlags: 0
@@ -134,6 +134,9 @@ Liberator.prototype = {
 
     newChannel: function (uri) {
         try {
+            if (!("all" in this.FILE_MAP))
+                return redirect(uri.spec, uri, 1);
+
             switch(uri.host) {
                 case "help":
                     let url = this.FILE_MAP[uri.path.replace(/^\/|#.*/g, "")];
@@ -144,7 +147,7 @@ Liberator.prototype = {
                 case "help-tag":
                     let tag = uri.path.substr(1);
                     if (tag in this.HELP_TAGS)
-                        return redirect("liberator://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
+                        return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
             }
         }
         catch (e) {}
@@ -153,8 +156,8 @@ Liberator.prototype = {
 };
 
 if (XPCOMUtils.generateNSGetFactory)
-    const NSGetFactory = XPCOMUtils.generateNSGetFactory([ChromeData, Liberator]);
+    const NSGetFactory = XPCOMUtils.generateNSGetFactory([ChromeData, Dactyl]);
 else
-    const NSGetModule = XPCOMUtils.generateNSGetModule([ChromeData, Liberator]);
+    const NSGetModule = XPCOMUtils.generateNSGetModule([ChromeData, Dactyl]);
 
 // vim: set fdm=marker sw=4 ts=4 et:

@@ -15,13 +15,13 @@ p.tagline {
     font-weight: bold;
 }
 
-table.vimperator {
+table.pentadactyl {
     border-width: 1px;
     border-style: dotted;
     border-color: gray;
     /*margin-bottom: 2em; /* FIXME: just a quick hack until we have proper pages */
 }
-table.vimperator td {
+table.pentadactyl td {
     border: none;
     padding: 3px;
 }

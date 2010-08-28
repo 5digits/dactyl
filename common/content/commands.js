@@ -80,7 +80,7 @@ const Command = Class("Command", {
                 return;
             args.count = count;
             args.bang = bang;
-            liberator.trapErrors(self.action, self, args, modifiers);
+            dactyl.trapErrors(self.action, self, args, modifiers);
         }
 
         if (this.hereDoc) {
@@ -188,7 +188,7 @@ const Command = Class("Command", {
     /**
      * @property {function} Should return an array of <b>Object</b>s suitable
      *     to be passed to {@link Commands#commandToString}, one for each past
-     *     invocation which should be restored on subsequent @liberator
+     *     invocation which should be restored on subsequent @dactyl
      *     startups.
      */
     serial: null,
@@ -309,7 +309,7 @@ const Commands = Module("commands", {
             if (command.user && replace)
                 commands.removeUserCommand(command.name);
             else {
-                liberator.log("Warning: :" + command.name + " already exists, NOT replacing existing command.", 1);
+                dactyl.log("Warning: :" + command.name + " already exists, NOT replacing existing command.", 1);
                 return false;
             }
         }
@@ -538,7 +538,7 @@ const Commands = Module("commands", {
             if (complete)
                 complete.message = error;
             else
-                liberator.echoerr(error);
+                dactyl.echoerr(error);
         }
 
         outer:
@@ -571,7 +571,7 @@ const Commands = Module("commands", {
                             let sep = sub[optname.length];
                             if (sep == "=" || /\s/.test(sep) && opt[1] != this.OPTION_NOARG) {
                                 [count, arg, quote, error] = getNextArg(sub.substr(optname.length + 1));
-                                liberator.assert(!error, error);
+                                dactyl.assert(!error, error);
 
                                 // if we add the argument to an option after a space, it MUST not be empty
                                 if (sep != "=" && !quote && arg.length == 0)
@@ -584,7 +584,7 @@ const Commands = Module("commands", {
 
                             let context = null;
                             if (!complete && quote) {
-                                liberator.echoerr("Invalid argument for option " + optname);
+                                dactyl.echoerr("Invalid argument for option " + optname);
                                 return null;
                             }
 
@@ -655,18 +655,18 @@ const Commands = Module("commands", {
 
             // if not an option, treat this token as an argument
             let [count, arg, quote, error] = getNextArg(sub);
-            liberator.assert(!error, error);
+            dactyl.assert(!error, error);
 
             if (complete) {
                 args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
                 args.completeFilter = arg || "";
             }
             else if (count == -1) {
-                liberator.echoerr("Error parsing arguments: " + arg);
+                dactyl.echoerr("Error parsing arguments: " + arg);
                 return null;
             }
             else if (!onlyArgumentsRemaining && /^-/.test(arg)) {
-                liberator.echoerr("Invalid option: " + arg);
+                dactyl.echoerr("Invalid option: " + arg);
                 return null;
             }
 
@@ -703,7 +703,7 @@ const Commands = Module("commands", {
         if (args.length == 0 && /^[1+]$/.test(argCount) ||
                 literal != null && /[1+]/.test(argCount) && !/\S/.test(args.literalArg || "")) {
             if (!complete) {
-                liberator.echoerr("E471: Argument required");
+                dactyl.echoerr("E471: Argument required");
                 return null;
             }
         }
@@ -816,7 +816,7 @@ const Commands = Module("commands", {
                     arg += res[2].replace(/\\(.)/g, "$1");
                 break;
 
-            case "vimperator":
+            case "pentadactyl":
                 if ((res = str.match(/^()((?:[^\\\s"']|\\.)+)((?:\\$)?)/)))
                     arg += res[2].replace(/\\(.)/g, "$1");
                 else if ((res = str.match(/^(")((?:[^\\"]|\\.)*)("?)/)))
@@ -864,10 +864,10 @@ const Commands = Module("commands", {
             function (count) {
                 if (commands.repeat) {
                     for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
-                        liberator.execute(commands.repeat);
+                        dactyl.execute(commands.repeat);
                 }
                 else
-                    liberator.echoerr("E30: No previous command line");
+                    dactyl.echoerr("E30: No previous command line");
             },
             { count: true });
     },
@@ -923,7 +923,7 @@ const Commands = Module("commands", {
                         }
                     }
                     catch (e) {
-                        liberator.reportError(e);
+                        dactyl.reportError(e);
                     }
                 }
             }
@@ -944,7 +944,7 @@ const Commands = Module("commands", {
                 count: this.count && args.count
             };
 
-            liberator.execute(commands.replaceTokens(this.replacementText, tokens));
+            dactyl.execute(commands.replaceTokens(this.replacementText, tokens));
         }
 
         // TODO: offer completion.ex?
@@ -968,7 +968,7 @@ const Commands = Module("commands", {
             function (args) {
                 let cmd = args[0];
 
-                liberator.assert(!/\W/.test(cmd || ''), "E182: Invalid command name");
+                dactyl.assert(!/\W/.test(cmd || ''), "E182: Invalid command name");
 
                 if (args.literalArg) {
                     let nargsOpt       = args["-nargs"] || "0";
@@ -984,15 +984,15 @@ const Commands = Module("commands", {
                             completeOpt = completeOpt.substr(7);
                             completeFunc = function () {
                                 try {
-                                    var completer = liberator.eval(completeOpt);
+                                    var completer = dactyl.eval(completeOpt);
 
                                     if (!(completer instanceof Function))
                                         throw new TypeError("User-defined custom completer " + completeOpt.quote() + " is not a function");
                                 }
                                 catch (e) {
-                                    liberator.echo(":" + this.name + " ...");
-                                    liberator.echoerr("E117: Unknown function: " + completeOpt);
-                                    liberator.log(e);
+                                    dactyl.echo(":" + this.name + " ...");
+                                    dactyl.echoerr("E117: Unknown function: " + completeOpt);
+                                    dactyl.log(e);
                                     return undefined;
                                 }
                                 return completer.apply(this, Array.slice(arguments));
@@ -1013,7 +1013,7 @@ const Commands = Module("commands", {
                                     }, args.bang);
 
                     if (!added)
-                        liberator.echoerr("E174: Command already exists: add ! to replace it");
+                        dactyl.echoerr("E174: Command already exists: add ! to replace it");
                 }
                 else {
                     function completerToString(completer) {
@@ -1041,7 +1041,7 @@ const Commands = Module("commands", {
                         commandline.echo(str, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
                     }
                     else
-                        liberator.echomsg("No user-defined commands found");
+                        dactyl.echomsg("No user-defined commands found");
                 }
             }, {
                 bang: true,
@@ -1100,7 +1100,7 @@ const Commands = Module("commands", {
                 if (commands.get(name))
                     commands.removeUserCommand(name);
                 else
-                    liberator.echoerr("E184: No such user-defined command: " + name);
+                    dactyl.echoerr("E184: No such user-defined command: " + name);
             }, {
                 argCount: "1",
                 completer: function (context) completion.userCommand(context)

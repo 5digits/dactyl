@@ -9,9 +9,9 @@
         <em:creator>Martin Stubenschrott</em:creator>
         <em:homepageURL>http://vimperator.org/</em:homepageURL>
         <em:iconURL>chrome://muttator/skin/icon.png</em:iconURL>
-        <em:optionsURL>chrome://liberator/content/preferences.xul</em:optionsURL>
+        <em:optionsURL>chrome://dactyl/content/preferences.xul</em:optionsURL>
         <em:file>
-            <Description about="urn:mozilla:extension:file:vimperator.jar">
+            <Description about="urn:mozilla:extension:file:pentadactyl.jar">
                 <em:package>content/muttator/</em:package>
             </Description>
         </em:file>

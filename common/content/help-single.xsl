@@ -1,9 +1,9 @@
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <xsl:stylesheet version="1.0"
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:html="http://www.w3.org/1999/xhtml"
-    xmlns:liberator="http://vimperator.org/namespaces/liberator"
+    xmlns:dactyl="http://vimperator.org/namespaces/liberator"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:str="http://exslt.org/strings"
     xmlns:exsl="http://exslt.org/common"
@@ -11,19 +11,19 @@
 
     <xsl:output method="xml" indent="no"/>
 
-    <xsl:variable name="root" select="/liberator:document"/>
+    <xsl:variable name="root" select="/dactyl:document"/>
     <xsl:variable name="tags">
         <xsl:text> </xsl:text>
-        <xsl:for-each select="$root//@tag|$root//liberator:tags/text()|$root//liberator:tag/text()">
+        <xsl:for-each select="$root//@tag|$root//dactyl:tags/text()|$root//dactyl:tag/text()">
             <xsl:value-of select="concat(., ' ')"/>
         </xsl:for-each>
     </xsl:variable>
 
     <xsl:template name="parse-tags">
         <xsl:param name="text"/>
-        <div liberator:highlight="HelpTags">
+        <div dactyl:highlight="HelpTags">
         <xsl:for-each select="str:tokenize($text)">
-            <a id="{.}" liberator:highlight="HelpTag"><xsl:value-of select="."/></a>
+            <a id="{.}" dactyl:highlight="HelpTag"><xsl:value-of select="."/></a>
         </xsl:for-each>
         </div>
     </xsl:template>

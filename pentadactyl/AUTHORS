@@ -1,0 +1,42 @@
+Developers:
+  * Kris Maglione
+
+Inactive/former developers:
+  * Viktor Kojouharov (Виктор Кожухаров)
+  * Marco Candrian (mac@calmar.ws)
+  * Daniel Bainton (dpb .AT. driftaway .DOT. org)
+  * Doug Kearns (dougkearns@gmail.com)
+  * Konstantin Stepanov (milezv@yandex.ru)
+  * Tim Hammerquist (penryu@gmail.com)
+  * Ted Pavlic <ted@tedpavlic.com>
+  * anekos <anekos@snca.net>
+  * teramako <teramako@gmail.com>
+  * janus_wel <janus.wel.3@gmail.com>
+  * Martin Stubenschrott (stubenschrott@vimperator.org)
+  * Conrad Irwin
+
+Patches (in no special order):
+  * Ruud Grosmann ('followhints' option)
+  * Xie&Tian (multibyte support for hints, doc fixes)
+  * Juergen Descher
+  * Kazuo (count support for ctrl-^)
+  * Daniel Schaffrath (;b support)
+  * Dominik Meister (:b# support and other buffer related commands)
+  * Lukas Mai
+  * Guido Van Hoecke
+  * Daniel Trstenjak (various things with hints)
+  * M.Terada (suggest engines)
+  * Muthu Kannan (ctrl-v support)
+  * Lars Kindler (:buffer(s) functionality)
+  * Lee Hinman (:open ./.. support)
+  * Bart Trojanowski (Makefile)
+  * Hannes Rist (:set titlestring support)
+  * Nikolai Weibull ($PENTADACTYL_HOME)
+  * Joseph Xu (supporting multiple top level windows better)
+  * Raimon Grau Cuscó (document relationship navigation - ]], [[)
+  * Ryan Zheng (ctrl-x/a support)
+  * Dan Boger (:set online support)
+  * Štěpán Němec (help copy-editing and favicon support)
+  * Jarkko Oranen ('maxitems' option)
+  * Gary Katsevman ('private' option)
+  * Srinath Krishna (disable password field editing)

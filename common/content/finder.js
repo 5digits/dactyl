@@ -61,7 +61,7 @@ const RangeFinder = Module("rangefinder", {
     find: function (pattern, backwards) {
         let str = this.bootstrap(pattern);
         if (!this.rangeFind.search(str))
-            setTimeout(function () { liberator.echoerr("E486: Pattern not found: " + pattern); }, 0);
+            setTimeout(function () { dactyl.echoerr("E486: Pattern not found: " + pattern); }, 0);
 
         return this.rangeFind.found;
     },
@@ -70,7 +70,7 @@ const RangeFinder = Module("rangefinder", {
         if (!this.rangeFind)
             this.find(this.lastSearchPattern);
         else if (!this.rangeFind.search(null, reverse))
-            liberator.echoerr("E486: Pattern not found: " + this.lastSearchPattern);
+            dactyl.echoerr("E486: Pattern not found: " + this.lastSearchPattern);
         else if (this.rangeFind.wrapped) {
             // hack needed, because wrapping causes a "scroll" event which clears
             // our command line

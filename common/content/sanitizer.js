@@ -7,7 +7,7 @@
 // TODO:
 //   - fix Sanitize autocommand
 //   - add warning for TIMESPAN_EVERYTHING?
-//   - respect privacy.clearOnShutdown et al or recommend VimperatorLeave autocommand?
+//   - respect privacy.clearOnShutdown et al or recommend PentadactylLeave autocommand?
 //   - add support for :set sanitizeitems=all like 'eventignore'?
 //   - integrate with the Clear Private Data dialog?
 
@@ -15,11 +15,11 @@
 //   - finish 1.9.0 support if we're going to support sanitizing in Xulmus
 
 const Sanitizer = Module("sanitizer", {
-    requires: ["liberator"],
+    requires: ["dactyl"],
 
     init: function () {
         const self = this;
-        liberator.loadScript("chrome://browser/content/sanitize.js", Sanitizer);
+        dactyl.loadScript("chrome://browser/content/sanitize.js", Sanitizer);
         Sanitizer.getClearRange = Sanitizer.Sanitizer.getClearRange;
         this.__proto__.__proto__ = new Sanitizer.Sanitizer; // Good enough.
 
@@ -29,7 +29,7 @@ const Sanitizer = Module("sanitizer", {
         else
             self.prefDomain = "privacy.item.";
 
-        self.prefDomain2 = "extensions.liberator.privacy.cpd.";
+        self.prefDomain2 = "extensions.dactyl.privacy.cpd.";
     },
 
     // Largely ripped from from browser/base/content/sanitize.js so we can override
@@ -60,7 +60,7 @@ const Sanitizer = Module("sanitizer", {
             item.range = range;
 
             if ("clear" in item && item.canClear && prefSet(itemName)) {
-                liberator.log("Sanitizing " + itemName + " items...");
+                dactyl.log("Sanitizing " + itemName + " items...");
                 // Some of these clear() may raise exceptions (see bug #265028)
                 // to sanitize as much as possible, we catch and store them,
                 // rather than fail fast.
@@ -97,7 +97,7 @@ const Sanitizer = Module("sanitizer", {
         commands.add(["sa[nitize]"],
             "Clear private data",
             function (args) {
-                liberator.assert(!options['private'], "Cannot sanitize items in private mode");
+                dactyl.assert(!options['private'], "Cannot sanitize items in private mode");
 
                 let timespan = args["-timespan"] || options["sanitizetimespan"];
 
@@ -105,22 +105,22 @@ const Sanitizer = Module("sanitizer", {
                 sanitizer.ignoreTimespan = !sanitizer.range;
 
                 if (args.bang) {
-                    liberator.assert(args.length == 0, "E488: Trailing characters");
+                    dactyl.assert(args.length == 0, "E488: Trailing characters");
 
-                    liberator.log("Sanitizing all items in 'sanitizeitems'...");
+                    dactyl.log("Sanitizing all items in 'sanitizeitems'...");
 
                     let errors = sanitizer.sanitize();
 
                     if (errors) {
                         for (let item in errors)
-                            liberator.echoerr("Error sanitizing " + item + ": " + errors[item]);
+                            dactyl.echoerr("Error sanitizing " + item + ": " + errors[item]);
                     }
                 }
                 else {
-                    liberator.assert(args.length > 0, "E471: Argument required");
+                    dactyl.assert(args.length > 0, "E471: Argument required");
 
                     for (let [, item] in Iterator(args.map(Sanitizer.argToPref))) {
-                        liberator.log("Sanitizing " + item + " items...");
+                        dactyl.log("Sanitizing " + item + " items...");
 
                         if (sanitizer.canClearItem(item)) {
                             try {
@@ -128,11 +128,11 @@ const Sanitizer = Module("sanitizer", {
                                 sanitizer.clearItem(item);
                             }
                             catch (e) {
-                                liberator.echoerr("Error sanitizing " + item + ": " + e);
+                                dactyl.echoerr("Error sanitizing " + item + ": " + e);
                             }
                         }
                         else
-                            liberator.echomsg("Cannot sanitize " + item);
+                            dactyl.echomsg("Cannot sanitize " + item);
                     }
                 }
             },
@@ -154,7 +154,7 @@ const Sanitizer = Module("sanitizer", {
     options: function () {
         const self = this;
 
-        // add liberator-specific private items
+        // add dactyl-specific private items
         [
             {
                 name: "commandLine",

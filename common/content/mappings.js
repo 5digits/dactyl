@@ -113,7 +113,7 @@ const Map = Class("Map", {
         if (this.names[0] != ".") // FIXME: Kludge.
             mappings.repeat = repeat;
 
-        return liberator.trapErrors(repeat);
+        return dactyl.trapErrors(repeat);
     }
 
 });
@@ -179,7 +179,7 @@ const Mappings = Module("mappings", {
     /** @property {Iterator(Map)} @private */
     __iterator__: function () this._mappingsIterator([modes.NORMAL], this._main),
 
-    // used by :mkvimperatorrc to save mappings
+    // used by :mkpentadactylrc to save mappings
     /**
      * Returns a user-defined mappings iterator for the specified
      * <b>mode</b>.
@@ -295,7 +295,7 @@ const Mappings = Module("mappings", {
      */
     // FIXME: property
     getMapLeader: function () {
-        let leaderRef = liberator.variableReference("mapleader");
+        let leaderRef = dactyl.variableReference("mapleader");
         return leaderRef[0] ? leaderRef[0][leaderRef[1]] : "\\";
     },
 
@@ -364,7 +364,7 @@ const Mappings = Module("mappings", {
 
         // TODO: Move this to an ItemList to show this automatically
         if (list.*.length() == list.text().length()) {
-            liberator.echomsg("No mapping found");
+            dactyl.echomsg("No mapping found");
             return;
         }
         commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
@@ -460,7 +460,7 @@ const Mappings = Module("mappings", {
                         }
                     }
                     if (!found)
-                        liberator.echoerr("E31: No such mapping");
+                        dactyl.echoerr("E31: No such mapping");
                 },
                 {
                     argCount: "1",

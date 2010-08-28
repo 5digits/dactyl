@@ -1,4 +1,4 @@
-DIRS = muttator vimperator xulmus
+DIRS = muttator pentadactyl xulmus
 TARGETS = clean distclean doc help info jar release xpi
 .SILENT:
 

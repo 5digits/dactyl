@@ -40,7 +40,7 @@ const Tabs = Module("tabs", {
         statusline.updateTabCount(true);
         this.updateSelectionHistory();
         if (options["focuscontent"])
-            setTimeout(function () { liberator.focusContent(true); }, 10); // just make sure, that no widget has focus
+            setTimeout(function () { dactyl.focusContent(true); }, 10); // just make sure, that no widget has focus
     },
 
     /**
@@ -65,12 +65,12 @@ const Tabs = Module("tabs", {
      */
     get tabsBound() Boolean(styles.get(true, "tab-binding")),
     set tabsBound(val) {
-        let fragment = liberator.has("MacUnix") ? "tab-mac" : "tab";
+        let fragment = dactyl.has("MacUnix") ? "tab-mac" : "tab";
         if (!val)
             styles.removeSheet(true, "tab-binding");
         else if (!this.tabsBound)
             styles.addSheet(true, "tab-binding", "chrome://browser/content/browser.xul",
-                ".tabbrowser-tab { -moz-binding: url(chrome://liberator/content/bindings.xml#" + fragment + ") !important; }" +
+                ".tabbrowser-tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#" + fragment + ") !important; }" +
                 // FIXME: better solution for themes?
                 ".tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }");
     },
@@ -105,9 +105,9 @@ const Tabs = Module("tabs", {
     //        useful for autocommands, and they get index arguments. --Kris
     getLocalStore: function (tabIndex) {
         let tab = this.getTab(tabIndex);
-        if (!tab.liberatorStore)
-            tab.liberatorStore = {};
-        return tab.liberatorStore;
+        if (!tab.dactylStore)
+            tab.dactylStore = {};
+        return tab.dactylStore;
     },
 
     /**
@@ -230,29 +230,29 @@ const Tabs = Module("tabs", {
                     else {
                         if (buffer.URL != "about:blank" ||
                             window.getWebNavigation().sessionHistory.count > 0) {
-                            liberator.open("about:blank", liberator.NEW_BACKGROUND_TAB);
+                            dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
                             config.tabbrowser.removeTab(tab);
                         }
                         else
-                            liberator.beep();
+                            dactyl.beep();
                     }
                 },
                 Thunderbird: function (tab) {
                     if (config.tabbrowser.mTabs.length > 1)
                         config.tabbrowser.removeTab(tab);
                     else
-                        liberator.beep();
+                        dactyl.beep();
                 },
                 Songbird: function (tab) {
                     if (config.tabbrowser.mTabs.length > 1)
                         config.tabbrowser.removeTab(tab);
                     else {
                         if (buffer.URL != "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
-                            liberator.open("about:blank", liberator.NEW_BACKGROUND_TAB);
+                            dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
                             config.tabbrowser.removeTab(tab);
                         }
                         else
-                            liberator.beep();
+                            dactyl.beep();
                     }
                 }
             }[config.hostApplication] || function () {};
@@ -261,10 +261,10 @@ const Tabs = Module("tabs", {
             count = 1;
 
         if (quitOnLastTab >= 1 && config.tabbrowser.mTabs.length <= count) {
-            if (liberator.windows.length > 1)
+            if (dactyl.windows.length > 1)
                 window.close();
             else
-                liberator.quit(quitOnLastTab == 2);
+                dactyl.quit(quitOnLastTab == 2);
 
             return;
         }
@@ -310,7 +310,7 @@ const Tabs = Module("tabs", {
         let index = Tabs.indexFromSpec(spec, wrap);
         // FIXME:
         if (index == -1)
-            liberator.beep();
+            dactyl.beep();
         else
             config.tabbrowser.mTabContainer.selectedIndex = index;
     },
@@ -435,9 +435,9 @@ const Tabs = Module("tabs", {
                 matches.push(index);
         }
         if (matches.length == 0)
-            liberator.echoerr("E94: No matching buffer for " + buffer);
+            dactyl.echoerr("E94: No matching buffer for " + buffer);
         else if (matches.length > 1 && !allowNonUnique)
-            liberator.echoerr("E93: More than one match for " + buffer);
+            dactyl.echoerr("E93: More than one match for " + buffer);
         else {
             if (reverse) {
                 index = matches.length - count;
@@ -485,7 +485,7 @@ const Tabs = Module("tabs", {
      * Selects the alternate tab.
      */
     selectAlternateTab: function () {
-        liberator.assert(tabs.alternate != null && tabs.getTab() != tabs.alternate,
+        dactyl.assert(tabs.alternate != null && tabs.getTab() != tabs.alternate,
             "E23: No alternate page");
 
         // NOTE: this currently relies on v.tabs.index() returning the
@@ -495,7 +495,7 @@ const Tabs = Module("tabs", {
         // TODO: since a tab close is more like a bdelete for us we
         // should probably reopen the closed tab when a 'deleted'
         // alternate is selected
-        liberator.assert(index >= 0, "E86: Buffer does not exist");  // TODO: This should read "Buffer N does not exist"
+        dactyl.assert(index >= 0, "E86: Buffer does not exist");  // TODO: This should read "Buffer N does not exist"
         tabs.select(index);
     },
 
@@ -599,9 +599,9 @@ const Tabs = Module("tabs", {
                     }
 
                     if (removed > 0)
-                        liberator.echomsg(removed + " fewer tab(s)", 9);
+                        dactyl.echomsg(removed + " fewer tab(s)", 9);
                     else
-                        liberator.echoerr("E94: No matching tab for " + arg);
+                        dactyl.echoerr("E94: No matching tab for " + arg);
                 }
                 else // just remove the current tab
                     tabs.remove(tabs.getTab(), Math.max(count, 1), special, 0);
@@ -619,7 +619,7 @@ const Tabs = Module("tabs", {
                 let alternate = tabs.alternate;
 
                 try {
-                    liberator.execute(args[0], null, true);
+                    dactyl.execute(args[0], null, true);
                 }
                 finally {
                     tabs.updateSelectionHistory([tabs.getTab(), alternate]);
@@ -634,9 +634,9 @@ const Tabs = Module("tabs", {
         commands.add(["tab"],
             "Execute a command and tell it to output in a new tab",
             function (args) {
-                liberator.forceNewTab = true;
-                liberator.execute(args.string, null, true);
-                liberator.forceNewTab = false;
+                dactyl.forceNewTab = true;
+                dactyl.execute(args.string, null, true);
+                dactyl.forceNewTab = false;
             }, {
                 argCount: "+",
                 completer: function (context) completion.ex(context),
@@ -648,7 +648,7 @@ const Tabs = Module("tabs", {
             function (args) {
                 for (let i = 0; i < tabs.count; i++) {
                     tabs.select(i);
-                    liberator.execute(args.string, null, true);
+                    dactyl.execute(args.string, null, true);
                 }
             }, {
                 argCount: "1",
@@ -673,7 +673,7 @@ const Tabs = Module("tabs", {
                     if (/^\d+$/.test(arg))
                         tabs.select("-" + arg, true);
                     else
-                        liberator.echoerr("E488: Trailing characters");
+                        dactyl.echoerr("E488: Trailing characters");
                 }
                 else if (count > 0)
                     tabs.select("-" + count, true);
@@ -696,7 +696,7 @@ const Tabs = Module("tabs", {
 
                     // count is ignored if an arg is specified, as per Vim
                     if (arg) {
-                        liberator.assert(/^\d+$/.test(arg), "E488: Trailing characters");
+                        dactyl.assert(/^\d+$/.test(arg), "E488: Trailing characters");
                         index = arg - 1;
                     }
                     else
@@ -705,7 +705,7 @@ const Tabs = Module("tabs", {
                     if (index < tabs.count)
                         tabs.select(index, true);
                     else
-                        liberator.beep();
+                        dactyl.beep();
                 }
                 else
                     tabs.select("+1", true);
@@ -731,7 +731,7 @@ const Tabs = Module("tabs", {
                     // if a numeric arg is specified any count is ignored; if a
                     // count and non-numeric arg are both specified then E488
                     if (arg && count > 0) {
-                        liberator.assert(/^\d+$/.test(arg), "E488: Trailing characters");
+                        dactyl.assert(/^\d+$/.test(arg), "E488: Trailing characters");
                         tabs.switchTo(arg, special);
                     }
                     else if (count > 0)
@@ -755,7 +755,7 @@ const Tabs = Module("tabs", {
 
             commands.add(["quita[ll]", "qa[ll]"],
                 "Quit " + config.name,
-                function (args) { liberator.quit(false, args.bang); }, {
+                function (args) { dactyl.quit(false, args.bang); }, {
                     argCount: "0",
                     bang: true
                 });
@@ -779,7 +779,7 @@ const Tabs = Module("tabs", {
                     let arg = args[0];
 
                     // FIXME: tabmove! N should probably produce an error
-                    liberator.assert(!arg || /^([+-]?\d+)$/.test(arg),
+                    dactyl.assert(!arg || /^([+-]?\d+)$/.test(arg),
                         "E488: Trailing characters");
 
                     // if not specified, move to after the last tab
@@ -797,7 +797,7 @@ const Tabs = Module("tabs", {
             commands.add(["tabopen", "t[open]", "tabnew"],
                 "Open one or more URLs in a new tab",
                 function (args) {
-                    liberator.open(args.string || "about:blank", { from: "tabopen", where: liberator.NEW_TAB, background: args.bang });
+                    dactyl.open(args.string || "about:blank", { from: "tabopen", where: dactyl.NEW_TAB, background: args.bang });
                 }, {
                     bang: true,
                     completer: function (context) completion.url(context),
@@ -808,7 +808,7 @@ const Tabs = Module("tabs", {
             commands.add(["tabde[tach]"],
                 "Detach current tab to its own window",
                 function () {
-                    liberator.assert(tabs.count > 1, "Can't detach the last tab");
+                    dactyl.assert(tabs.count > 1, "Can't detach the last tab");
 
                     tabs.detachTab(null);
                 },
@@ -837,14 +837,14 @@ const Tabs = Module("tabs", {
             commands.add(["taba[ttach]"],
                 "Attach the current tab to another window",
                 function (args) {
-                    liberator.assert(args.length <= 2 && !args.some(function (i) !/^\d+$/.test(i)),
+                    dactyl.assert(args.length <= 2 && !args.some(function (i) !/^\d+$/.test(i)),
                         "E488: Trailing characters");
 
                     let [winIndex, tabIndex] = args.map(parseInt);
-                    let win = liberator.windows[winIndex - 1];
+                    let win = dactyl.windows[winIndex - 1];
 
-                    liberator.assert(win, "Window " + winIndex + " does not exist");
-                    liberator.assert(win != window, "Can't reattach to the same window");
+                    dactyl.assert(win, "Window " + winIndex + " does not exist");
+                    dactyl.assert(win != window, "Can't reattach to the same window");
 
                     let browser = win.getBrowser();
                     let dummy = browser.addTab("about:blank");
@@ -870,7 +870,7 @@ const Tabs = Module("tabs", {
                 });
         }
 
-        if (liberator.has("tabs_undo")) {
+        if (dactyl.has("tabs_undo")) {
             commands.add(["u[ndo]"],
                 "Undo closing of a tab",
                 function (args) {
@@ -889,7 +889,7 @@ const Tabs = Module("tabs", {
                                 return;
                             }
 
-                        liberator.echoerr("Exxx: No matching closed tab");
+                        dactyl.echoerr("Exxx: No matching closed tab");
                     }
                 }, {
                     argCount: "?",
@@ -915,10 +915,10 @@ const Tabs = Module("tabs", {
 
         }
 
-        if (liberator.has("session")) {
+        if (dactyl.has("session")) {
             commands.add(["wqa[ll]", "wq", "xa[ll]"],
                 "Save the session and quit",
-                function () { liberator.quit(true); },
+                function () { dactyl.quit(true); },
                 { argCount: "0" });
         }
     },
@@ -999,7 +999,7 @@ const Tabs = Module("tabs", {
                 { count: true });
 
             // TODO: feature dependencies - implies "session"?
-            if (liberator.has("tabs_undo")) {
+            if (dactyl.has("tabs_undo")) {
                 mappings.add([modes.NORMAL], ["u"],
                     "Undo closing of a tab",
                     function (count) { commands.get("undo").execute("", false, count); },

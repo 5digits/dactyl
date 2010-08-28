@@ -43,11 +43,11 @@ const Hints = Module("hints", {
             s: Mode("Save hint",                            function (elem) buffer.saveLink(elem, true)),
             a: Mode("Save hint with prompt",                function (elem) buffer.saveLink(elem, false)),
             f: Mode("Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]),
-            o: Mode("Follow hint",                          function (elem) buffer.followLink(elem, liberator.CURRENT_TAB)),
-            t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, liberator.NEW_TAB)),
-            b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB)),
-            w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, liberator.NEW_WINDOW),         extended),
-            F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, liberator.NEW_BACKGROUND_TAB); hints.show("F") }),
+            o: Mode("Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB)),
+            t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB)),
+            b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB)),
+            w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW),         extended),
+            F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F") }),
             O: Mode("Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX)),
             T: Mode("Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX)),
             W: Mode("Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX)),
@@ -56,8 +56,8 @@ const Hints = Module("hints", {
             y: Mode("Yank hint location",                   function (elem, loc) util.copyToClipboard(loc, true)),
             Y: Mode("Yank hint description",                function (elem) util.copyToClipboard(elem.textContent || "", true),    extended),
             c: Mode("Open context menu",                    function (elem) buffer.openContextMenu(elem),                          extended),
-            i: Mode("Show image",                           function (elem) liberator.open(elem.src),                              images),
-            I: Mode("Show image in a new tab",              function (elem) liberator.open(elem.src, liberator.NEW_TAB),           images)
+            i: Mode("Show image",                           function (elem) dactyl.open(elem.src),                              images),
+            I: Mode("Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB),           images)
         };
     },
 
@@ -162,7 +162,7 @@ const Hints = Module("hints", {
     _getAreaOffset: function (elem, leftPos, topPos) {
         try {
             // Need to add the offset to the area element.
-            // Always try to find the top-left point, as per liberator default.
+            // Always try to find the top-left point, as per dactyl default.
             let shape = elem.getAttribute("shape").toLowerCase();
             let coordStr = elem.getAttribute("coords");
             // Technically it should be only commas, but hey
@@ -357,7 +357,7 @@ const Hints = Module("hints", {
                         if (!rect)
                             continue;
 
-                        hint.imgSpan = util.xmlToDom(<span highlight="Hint" liberator:class="HintImage" xmlns:liberator={NS}/>, doc);
+                        hint.imgSpan = util.xmlToDom(<span highlight="Hint" dactyl:class="HintImage" xmlns:dactyl={NS}/>, doc);
                         hint.imgSpan.style.left = (rect.left + offsetX) + "px";
                         hint.imgSpan.style.top = (rect.top + offsetY) + "px";
                         hint.imgSpan.style.width = (rect.right - rect.left) + "px";
@@ -381,7 +381,7 @@ const Hints = Module("hints", {
             let css = [];
             // FIXME: Broken for imgspans.
             for (let [, { doc: doc }] in Iterator(this._docs)) {
-                for (let elem in util.evaluateXPath("//*[@liberator:highlight and @number]", doc)) {
+                for (let elem in util.evaluateXPath("//*[@dactyl:highlight and @number]", doc)) {
                     let group = elem.getAttributeNS(NS.uri, "highlight");
                     css.push(highlight.selector(group) + "[number=" + elem.getAttribute("number").quote() + "] { " + elem.style.cssText + " }");
                 }
@@ -404,7 +404,7 @@ const Hints = Module("hints", {
         let firstElem = this._validHints[0] || null;
 
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
-            for (let elem in util.evaluateXPath("//*[@liberator:highlight='hints']", doc))
+            for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1)) {
                 let hint = this._pageHints[i];
@@ -433,7 +433,7 @@ const Hints = Module("hints", {
      */
     _processHints: function (followFirst) {
         if (this._validHints.length == 0) {
-            liberator.beep();
+            dactyl.beep();
             return false;
         }
 
@@ -445,7 +445,7 @@ const Hints = Module("hints", {
 
             // OK. return hit. But there's more than one hint, and
             // there's no tab-selected current link. Do not follow in mode 2
-            liberator.assert(options["followhints"] != 2 || this._validHints.length == 1 || this._hintNumber)
+            dactyl.assert(options["followhints"] != 2 || this._validHints.length == 1 || this._hintNumber)
         }
 
         if (!followFirst) {
@@ -478,7 +478,7 @@ const Hints = Module("hints", {
     _checkUnique: function () {
         if (this._hintNumber == 0)
             return;
-        liberator.assert(this._hintNumber <= this._validHints.length);
+        dactyl.assert(this._hintNumber <= this._validHints.length);
 
         // if we write a numeric part like 3, but we have 45 hints, only follow
         // the hint after a timeout, as the user might have wanted to follow link 34
@@ -681,8 +681,8 @@ const Hints = Module("hints", {
         case "contains"      : return containsMatcher(hintString);
         case "wordstartswith": return wordStartsWithMatcher(hintString, /*allowWordOverleaping=*/ true);
         case "firstletters"  : return wordStartsWithMatcher(hintString, /*allowWordOverleaping=*/ false);
-        case "custom"        : return liberator.plugins.customHintMatcher(hintString);
-        default              : liberator.echoerr("Invalid hintmatching type: " + hintMatching);
+        case "custom"        : return dactyl.plugins.customHintMatcher(hintString);
+        default              : dactyl.echoerr("Invalid hintmatching type: " + hintMatching);
         }
         return null;
     }, //}}}
@@ -713,7 +713,7 @@ const Hints = Module("hints", {
      */
     show: function (minor, filter, win) {
         this._hintMode = this._hintModes[minor];
-        liberator.assert(this._hintMode);
+        dactyl.assert(this._hintMode);
 
         commandline.input(this._hintMode.prompt + ": ", null, { onChange: this.closure._onInput });
         modes.extended = modes.HINTS;
@@ -728,13 +728,13 @@ const Hints = Module("hints", {
         this._generate(win);
 
         // get all keys from the input queue
-        liberator.threadYield(true);
+        dactyl.threadYield(true);
 
         this._canUpdate = true;
         this._showHints();
 
         if (this._validHints.length == 0) {
-            liberator.beep();
+            dactyl.beep();
             modes.reset();
         }
         else if (this._validHints.length == 1)
@@ -798,7 +798,7 @@ const Hints = Module("hints", {
             else {
                 this._usedTabKey = false;
                 this._hintNumber = 0;
-                liberator.beep();
+                dactyl.beep();
                 return;
             }
             break;
@@ -834,7 +834,7 @@ const Hints = Module("hints", {
                 }
                 this._showActiveHint(this._hintNumber, oldHintNumber || 1);
 
-                liberator.assert(this._hintNumber != 0);
+                dactyl.assert(this._hintNumber != 0);
 
                 this._checkUnique();
             }
@@ -1016,8 +1016,8 @@ const Hints = Module("hints", {
         // In fact, it might be nice if there was a "dual" to F (like H and
         // gH, except that gF is already taken). --tpp
         //
-        // Likewise, it might be nice to have a liberator.NEW_FOREGROUND_TAB
-        // and then make liberator.NEW_TAB always do what a Cntrl+Click
+        // Likewise, it might be nice to have a dactyl.NEW_FOREGROUND_TAB
+        // and then make dactyl.NEW_TAB always do what a Cntrl+Click
         // does. --tpp
         mappings.add(myModes, ["F"],
             "Start QuickHint mode, but open link in a new tab",
@@ -1090,7 +1090,7 @@ const Hints = Module("hints", {
                     ["contains",       "The typed characters are split on whitespace. The resulting groups must all appear in the hint."],
                     ["wordstartswith", "The typed characters are split on whitespace. The resulting groups must all match the beginings of words, in order."],
                     ["firstletters",   "Behaves like wordstartswith, but all groups much match a sequence of words."],
-                    ["custom",         "Delegate to a custom function: liberator.plugins.customHintMatcher(hintString)"],
+                    ["custom",         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)"],
                     ["transliterated", "When true, special latin characters are translated to their ascii equivalent (e.g., \u00e9 -> e)"]
                 ]
             });

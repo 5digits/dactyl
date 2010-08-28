@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <document
     name="pattern"
-    title="&liberator.appname; Patterns"
+    title="&dactyl.appname; Patterns"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <h1 tag="text-search-commands">Text search commands</h1>
 <toc start="2"/>
 
 <p>
-    &liberator.appname; provides a Vim-like interface to &liberator.host;'s standard text search
+    &dactyl.appname; provides a Vim-like interface to &dactyl.host;'s standard text search
     functionality. There is no support for using regular expressions in search
-    commands as &liberator.host; does not provide native regex support. It is unlikely that
+    commands as &dactyl.host; does not provide native regex support. It is unlikely that
     this will ever be available.
 </p>
 

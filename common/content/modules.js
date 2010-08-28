@@ -100,8 +100,8 @@ window.addEventListener("load", function () {
                     delete module.INIT[mod];
                 }
                 catch (e) {
-                    if (modules.liberator)
-                        liberator.reportError(e);
+                    if (modules.dactyl)
+                        dactyl.reportError(e);
                 }
             }
             for (let mod in keys(module.INIT)) {

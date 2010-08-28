@@ -1,0 +1,186 @@
+@namespace dactyl url("http://vimperator.org/namespaces/liberator");
+@namespace html url("http://www.w3.org/1999/xhtml");
+
+/* Applied to all content */
+[dactyl|activeframe] {
+    -moz-binding: url(chrome://dactyl/content/bindings.xml#frame);
+}
+
+[dactyl|highlight~=HintImage],
+[dactyl|highlight~=Hint] {
+    z-index: 5000;
+    position: absolute !important;
+}
+[dactyl|highlight~=Search] {
+    display: inline !important;
+}
+
+/* Applied only to completion buffer and MOW */
+@-moz-document
+    url-prefix(chrome://dactyl/) {
+
+*:-moz-loading, *:-moz-broken { display: none !important; }
+
+[dactyl|highlight~=Completions] {
+    width: 100%;
+    display: table;
+}
+[dactyl|highlight~=CompItem],
+[dactyl|highlight~=CompTitle] {
+    display: table-row;
+}
+[dactyl|highlight~=Completions] > ul {
+    display: table-row;
+}
+[dactyl|highlight~=CompItem] > *,
+[dactyl|highlight~=CompTitle] > * {
+    -moz-binding: url(chrome://dactyl/content/bindings.xml#compitem-td);
+    display: table-cell;
+    vertical-align: middle;
+}
+
+[dactyl|highlight~=CompMsg] {
+    height: 1.5em;
+    line-height: 1.5em !important;
+}
+
+.td-span {
+    display: inline-block;
+    overflow: visible;
+    width: 0px;
+    height: 1.5em;
+    line-height: 1.5em !important;
+}
+.td-strut {
+    display: inline-block;
+    vertical-align: middle;
+    height: 16px;
+    width: 0px;
+}
+
+.extra-info { color: gray; }
+
+.times-executed, .time-average { color: green; }
+.time-total { color: red; }
+
+}
+
+/* Applied to completion buffer, MOW, browser window */
+@-moz-document
+    url-prefix(chrome://) {
+
+.dactyl-container > * {
+    font-family: inherit;
+}
+
+#dactyl-completions {
+    -moz-user-focus: ignore;
+    overflow: -moz-scrollbars-none !important; /* does not seem to work fully */
+    border-width: 0px !important;
+    /*-moz-appearance: none !important; /* prevent an ugly 3D border */
+}
+
+/* fixes the min-height: 22px from firefox */
+#status-bar,
+statusbarpanel {
+    -moz-appearance: none !important;
+	min-height: 18px !important;
+    border: none !important;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+#dactyl-statusline {
+    font-family: monospace;
+    margin: 0px;
+}
+#dactyl-statusline > label {
+    padding: 0px 0px 0px 8px;
+}
+#dactyl-statusline > label:first-child {
+    padding: 0px;
+}
+#dactyl-statusline-field-url {
+    background-color: inherit;
+    color: inherit;
+}
+
+/* no longer at the window's bottom right corner */
+.statusbar-resizerpanel {
+    display: none;
+}
+#statusbar-display, #statusbar-progresspanel {
+    display: none;
+}
+
+#dactyl-commandline-prompt {
+    background-color: inherit;
+    margin: 0px;
+    padding: 0px;
+}
+#dactyl-commandline-command {
+    background-color: inherit;
+    color: inherit;
+    margin: 0px;
+}
+#dactyl-commandline-command html|*:focus {
+    outline-width: 0px !important
+}
+#dactyl-commandline-command .textbox-search-icons {
+    visibility: collapse !important;
+}
+#dactyl-message {
+    margin: 0px;
+}
+
+#sidebar {
+    max-width: 90% !important;
+    min-width: 10% !important;
+}
+
+/* MOW */
+
+#dactyl-completions,
+#dactyl-multiline-output,
+#dactyl-multiline-input {
+    overflow: hidden;
+    background-color: white;
+    color: black;
+}
+
+#dactyl-completions-content,
+#dactyl-multiline-output-content,
+#dactyl-multiline-input {
+    white-space: pre;
+    font-family: -moz-fixed;
+    margin: 0px;
+}
+
+#dactyl-completions-content *,
+#dactyl-multiline-output-content *,
+#dactyl-commandline-prompt *,
+#dactyl-commandline-command {
+    font: inherit;
+}
+
+#dactyl-completions-content table,
+#dactyl-multiline-output-content table {
+    white-space: inherit;
+    border-spacing: 0px;
+}
+
+#dactyl-completions-content td,
+#dactyl-multiline-output-content td,
+#dactyl-completions-content th,
+#dactyl-multiline-output-content th {
+    padding: 0px 2px;
+}
+
+/* for muttator's composer */
+#content-frame, #appcontent {
+    border: 0px;
+}
+
+}
+
+/* vim: set fdm=marker sw=4 ts=4 et: */

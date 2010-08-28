@@ -1,0 +1,13 @@
+
+<!ENTITY % dactylBranding SYSTEM "chrome://branding/locale/brand.dtd">
+%dactylBranding;
+
+<!ENTITY dactyl.mainWindow "mainplayer">
+<!ENTITY dactyl.name "xulmus">
+<!ENTITY dactyl.appname "Xulmus">
+<!ENTITY dactyl.idname "XULMUS">
+<!ENTITY dactyl.host "&brandShortName;">
+<!ENTITY dactyl.hostbin "songbird">
+<!ENTITY dactyl.statusBefore "statusbar-display">
+<!ENTITY dactyl.statusAfter "">
+

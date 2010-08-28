@@ -71,17 +71,17 @@ const Mail = Module("mail", {
     _moveOrCopy: function (copy, destinationFolder, operateOnThread) {
         let folders = mail.getFolders(destinationFolder);
         if (folders.length == 0)
-            return void liberator.echoerr("Exxx: No matching folder for " + destinationFolder);
+            return void dactyl.echoerr("Exxx: No matching folder for " + destinationFolder);
         else if (folders.length > 1)
-            return liberator.echoerr("Exxx: More than one match for " + destinationFolder);
+            return dactyl.echoerr("Exxx: More than one match for " + destinationFolder);
 
         let count = gDBView.selection.count;
         if (!count)
-            return void liberator.beep();
+            return void dactyl.beep();
 
         (copy ? MsgCopyMessage : MsgMoveMessage)(folders[0]);
         setTimeout(function () {
-            liberator.echomsg(count + " message(s) " + (copy ? "copied" : "moved") + " to " + folders[0].prettyName, 1);
+            dactyl.echomsg(count + " message(s) " + (copy ? "copied" : "moved") + " to " + folders[0].prettyName, 1);
         }, 100);
     },
 
@@ -115,7 +115,7 @@ const Mail = Module("mail", {
             i += direction;
         }
         if (!folder || count > 0)
-            liberator.beep();
+            dactyl.beep();
         else
             gFolderTreeView.selection.timedSelect(c + folder, 500);
     },
@@ -169,7 +169,7 @@ const Mail = Module("mail", {
                     let url = args.attachments.pop();
                     let file = io.getFile(url);
                     if (!file.exists())
-                        return void liberator.echoerr("Exxx: Could not attach file `" + url + "'", commandline.FORCE_SINGLELINE);
+                        return void dactyl.echoerr("Exxx: Could not attach file `" + url + "'", commandline.FORCE_SINGLELINE);
 
                     attachment = Cc["@mozilla.org/messengercompose/attachment;1"].createInstance(Ci.nsIMsgAttachment);
                     attachment.url = "file://" + file.path;
@@ -354,7 +354,7 @@ const Mail = Module("mail", {
                 }
                 catch (e) {
                     msgs = folder.getMessages(msgWindow); // for older thunderbirds
-                    liberator.dump("WARNING: " + folder.prettyName + " failed to getMessages, trying old API");
+                    dactyl.dump("WARNING: " + folder.prettyName + " failed to getMessages, trying old API");
                     //continue;
                 }
 
@@ -376,7 +376,7 @@ const Mail = Module("mail", {
 
         // TODO: finally for the "rest" of the current folder
 
-        liberator.beep();
+        dactyl.beep();
     },
 
     setHTML: function (value) {
@@ -403,8 +403,8 @@ const Mail = Module("mail", {
 
                 let folder = mail.getFolders(arg, true, true)[count];
                 if (!folder)
-                    liberator.echoerr("Exxx: Folder \"" + arg + "\" does not exist");
-                else if (liberator.forceNewTab)
+                    dactyl.echoerr("Exxx: Folder \"" + arg + "\" does not exist");
+                else if (dactyl.forceNewTab)
                     MsgOpenNewTabForFolder(folder.URI);
                 else
                     SelectFolder(folder.URI);
@@ -435,7 +435,7 @@ const Mail = Module("mail", {
 
                 // TODO: is there a better way to check for validity?
                 if (addresses.some(function (recipient) !(/\S@\S+\.\S/.test(recipient))))
-                    return void liberator.echoerr("Exxx: Invalid e-mail address");
+                    return void dactyl.echoerr("Exxx: Invalid e-mail address");
 
                 mail.composeNewMail(mailargs);
             },
@@ -499,7 +499,7 @@ const Mail = Module("mail", {
             "Open the message in new tab",
             function () {
                 if (gDBView && gDBView.selection.count < 1)
-                    return void liberator.beep();
+                    return void dactyl.beep();
 
                 MsgOpenNewTabForMessage();
             });
@@ -558,7 +558,7 @@ const Mail = Module("mail", {
                     let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
                     mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, false, count);
                 }
-                catch (e) { liberator.beep(); }
+                catch (e) { dactyl.beep(); }
             },
             { count: true });
 
@@ -569,7 +569,7 @@ const Mail = Module("mail", {
                     let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
                     mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, true, count);
                 }
-                catch (e) { liberator.beep(); }
+                catch (e) { dactyl.beep(); }
             },
             { count: true });
 
@@ -586,7 +586,7 @@ const Mail = Module("mail", {
                   commandline.open(":", "mail " + to + " -subject=", modes.EX);
               }
               catch (e) {
-                  liberator.beep();
+                  dactyl.beep();
               }
             });
 
@@ -634,7 +634,7 @@ const Mail = Module("mail", {
                 if (messenger.canUndo())
                     messenger.undo(msgWindow);
                 else
-                    liberator.beep();
+                    dactyl.beep();
             });
         mappings.add(myModes, ["<C-r>"],
             "Redo",
@@ -642,7 +642,7 @@ const Mail = Module("mail", {
                 if (messenger.canRedo())
                     messenger.redo(msgWindow);
                 else
-                    liberator.beep();
+                    dactyl.beep();
             });
 
         // GETTING MAIL
@@ -699,7 +699,7 @@ const Mail = Module("mail", {
                 if (folder)
                     SelectFolder(folder.URI);
                 else
-                    liberator.beep();
+                    dactyl.beep();
             },
             { count: true });
 
@@ -789,7 +789,7 @@ const Mail = Module("mail", {
             "Label message",
             function (arg) {
                 if (!GetSelectedMessages())
-                    return void liberator.beep();
+                    return void dactyl.beep();
 
                 switch (arg) {
                     case "r": MsgMarkMsgAsRead(); break;
@@ -799,7 +799,7 @@ const Mail = Module("mail", {
                     case "p": ToggleMessageTagKey(3); break; // Personal
                     case "t": ToggleMessageTagKey(4); break; // TODO
                     case "l": ToggleMessageTagKey(5); break; // Later
-                    default:  liberator.beep();
+                    default:  dactyl.beep();
                 }
             },
             {
@@ -811,7 +811,7 @@ const Mail = Module("mail", {
             "Mark current folder as read",
             function () {
                 if (mail.currentFolder.isServer)
-                    return liberator.beep();
+                    return dactyl.beep();
 
                 mail.currentFolder.markAllMessagesRead(msgWindow);
             });
@@ -846,7 +846,7 @@ const Mail = Module("mail", {
                     let subject = gDBView.hdrForFirstSelectedMessage.mime2DecodedSubject;
                     util.copyToClipboard(subject, true);
                 }
-                catch (e) { liberator.beep(); }
+                catch (e) { dactyl.beep(); }
             });
 
         mappings.add(myModes, ["y"],
@@ -858,7 +858,7 @@ const Mail = Module("mail", {
                     else
                         util.copyToClipboard(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor, true);
                 }
-                catch (e) { liberator.beep(); }
+                catch (e) { dactyl.beep(); }
             });
 
         // RSS specific mappings
@@ -871,7 +871,7 @@ const Mail = Module("mail", {
                     // TODO: what to do for non-rss message?
                 }
                 catch (e) {
-                    liberator.beep();
+                    dactyl.beep();
                 }
             });
     },

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <document
     name="hints"
-    title="&liberator.appname; Hints"
+    title="&dactyl.appname; Hints"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <h1 tag="quick-hints hints">Hints</h1>
 <toc start="2"/>
 
-Hints are the way in which &liberator.appname; allows you to follow links on a page. By
+Hints are the way in which &dactyl.appname; allows you to follow links on a page. By
 providing each link with a suitable hint, you can access all links with a
 similar amount of minimal effort. This contrasts strongly with the traditional
 approaches offered by the mouse, in which you must first find and then aim for
@@ -47,7 +47,7 @@ tedious unless you always visit the first link on a page.
             Start QuickHint mode, but open link in a new tab. Like normal QuickHint
             mode (activated with <k>f</k>) but opens the link in a new tab. The new
             tab will be loaded in background according to the
-            <str>browser.tabs.loadInBackground</str> &liberator.host; preference.
+            <str>browser.tabs.loadInBackground</str> &dactyl.host; preference.
         </p>
     </description>
 </item>

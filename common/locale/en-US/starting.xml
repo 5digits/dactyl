@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://liberator/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://liberator/content/liberator.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <document
     name="starting"
-    title="&liberator.appname; Starting"
+    title="&dactyl.appname; Starting"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
-<h1 tag="starting">Starting &liberator.appname;</h1>
+<h1 tag="starting">Starting &dactyl.appname;</h1>
 <toc start="2"/>
 
 <tags>startup-options</tags>
 
 <p>
-    Command-line options can be passed to &liberator.appname; via the -&liberator.name; &liberator.host;
+    Command-line options can be passed to &dactyl.appname; via the -&dactyl.name; &dactyl.host;
     option. These are passed as single string argument.
-    E.g., &liberator.hostbin; -&liberator.name; <str>++cmd 'set exrc' +u 'tempRcFile' ++noplugin</str>
+    E.g., &dactyl.hostbin; -&dactyl.name; <str>++cmd 'set exrc' +u 'tempRcFile' ++noplugin</str>
 </p>
 
 <item>
@@ -72,24 +72,24 @@
 
 <h2 tag="initialization startup">Initialization</h2>
 
-<p>At startup, &liberator.appname; completes the following tasks in order. </p>
+<p>At startup, &dactyl.appname; completes the following tasks in order. </p>
 
 <ol>
-    <li> &liberator.appname; can perform user initialization commands. When
+    <li> &dactyl.appname; can perform user initialization commands. When
     one of the following is successfully located, it is executed,
     and no further locations are tried.
 
         <ol>
-            <li tag="$&liberator.idname;_INIT">
-                <em>$&liberator.idname;_INIT</em> — May contain a single Ex command (e.g.,
+            <li tag="$&dactyl.idname;_INIT">
+                <em>$&dactyl.idname;_INIT</em> — May contain a single Ex command (e.g.,
                 "<ex>:source <a>file</a></ex>").
             </li>
-            <li tag="$MY_&liberator.idname;RC">
-                <em>~/&liberator.name;rc</em> — Windows only. If this file exists, its contents
-                are executed and <em>$MY_&liberator.idname;RC</em> set to its path.
+            <li tag="$MY_&dactyl.idname;RC">
+                <em>~/&dactyl.name;rc</em> — Windows only. If this file exists, its contents
+                are executed and <em>$MY_&dactyl.idname;RC</em> set to its path.
             </li>
             <li>
-                <em>~/.&liberator.name;rc</em> — If this file exists, its contents are executed.
+                <em>~/.&dactyl.name;rc</em> — If this file exists, its contents are executed.
             </li>
         </ol>
     </li>
@@ -121,7 +121,7 @@ The user's ~ (i.e., "home") directory is determined as follows:
 <ul>
     <li>On Unix and Mac, the environment variable  <em>$HOME</em> is used.</li>
     <li>
-        On Windows, &liberator.appname; checks for the existence of
+        On Windows, &dactyl.appname; checks for the existence of
         <em>%HOME%</em>, then <em>%USERPROFILE%</em>, and then
         <em>%HOMEDRIVE%%HOMEPATH%</em>. It uses the first one it
         finds.
@@ -131,13 +131,13 @@ The user's ~ (i.e., "home") directory is determined as follows:
 <h2 tag="save-settings">Saving settings</h2>
 
 <item>
-    <tags>:mkv :mk&liberator.name;rc</tags>
+    <tags>:mkv :mk&dactyl.name;rc</tags>
     <spec>:mkv<oa>imperatorrc</oa><oa>!</oa> <oa>file</oa></spec>
     <description>
         <p>
             Write current key mappings and changed options to <oa>file</oa>. If no
-            <oa>file</oa> is specified then <em>~/.&liberator.name;rc</em> is written unless this file
-            already exists. The special version <ex>:mk&liberator.name;rc!</ex> will overwrite
+            <oa>file</oa> is specified then <em>~/.&dactyl.name;rc</em> is written unless this file
+            already exists. The special version <ex>:mk&dactyl.name;rc!</ex> will overwrite
             <oa>file</oa> if it exists.
         </p>
 
@@ -155,7 +155,7 @@ The user's ~ (i.e., "home") directory is determined as follows:
     <tags>:res :restart</tags>
     <spec>:res<oa>tart</oa></spec>
     <description>
-        <p>Force &liberator.host; to restart. Useful when installing extensions.</p>
+        <p>Force &dactyl.host; to restart. Useful when installing extensions.</p>
     </description>
 </item>
 

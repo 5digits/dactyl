@@ -91,7 +91,7 @@ const Editor = Module("editor", {
     },
 
     unselectText: function () {
-        let elem = liberator.focus;
+        let elem = dactyl.focus;
         // A error occurs if the element has been removed when "elem.selectionStart" is executed.
         try {
             if (elem && elem.selectionEnd)
@@ -106,13 +106,13 @@ const Editor = Module("editor", {
     },
 
     pasteClipboard: function () {
-        if (liberator.has("Win32")) {
+        if (dactyl.has("Win32")) {
             this.executeCommand("cmd_paste");
             return;
         }
 
         // FIXME: #93 (<s-insert> in the bottom of a long textarea bounces up)
-        let elem = liberator.focus;
+        let elem = dactyl.focus;
 
         if (elem.setSelectionRange && util.readFromClipboard()) {
             // readFromClipboard would return 'undefined' if not checked
@@ -139,7 +139,7 @@ const Editor = Module("editor", {
     executeCommand: function (cmd, count) {
         let controller = Editor.getController();
         if (!controller || !controller.supportsCommand(cmd) || !controller.isCommandEnabled(cmd)) {
-            liberator.beep();
+            dactyl.beep();
             return false;
         }
 
@@ -157,7 +157,7 @@ const Editor = Module("editor", {
             }
             catch (e) {
                 if (!didCommand)
-                    liberator.beep();
+                    dactyl.beep();
                 return false;
             }
         }
@@ -220,7 +220,7 @@ const Editor = Module("editor", {
             break;
 
         default:
-            liberator.beep();
+            dactyl.beep();
             return false;
         }
 
@@ -240,7 +240,7 @@ const Editor = Module("editor", {
             break;
 
         default:
-            liberator.beep();
+            dactyl.beep();
             return false;
         }
         return true;
@@ -297,7 +297,7 @@ const Editor = Module("editor", {
                 return i + 1; // always position the cursor after the char
         }
 
-        liberator.beep();
+        dactyl.beep();
         return -1;
     },
 
@@ -322,7 +322,7 @@ const Editor = Module("editor", {
                 return i;
         }
 
-        liberator.beep();
+        dactyl.beep();
         return -1;
     },
 
@@ -330,10 +330,10 @@ const Editor = Module("editor", {
         // TODO: save return value in v:shell_error
         let args = commands.parseArgs(options["editor"], [], "*", true);
 
-        liberator.assert(args.length >= 1, "No editor specified");
+        dactyl.assert(args.length >= 1, "No editor specified");
 
         args.push(path);
-        liberator.callFunctionInThread(null, io.run, io.expandPath(args.shift()), args, true);
+        dactyl.callFunctionInThread(null, io.run, io.expandPath(args.shift()), args, true);
     },
 
     // TODO: clean up with 2 functions for textboxes and currentEditor?
@@ -343,7 +343,7 @@ const Editor = Module("editor", {
 
         let textBox = null;
         if (!(config.isComposeWindow))
-            textBox = liberator.focus;
+            textBox = dactyl.focus;
 
         if (!forceEditing && textBox && textBox.type == "password") {
             commandline.input("Editing a password field externally will reveal the password. Would you like to continue? (yes/[no]): ",
@@ -401,7 +401,7 @@ const Editor = Module("editor", {
             // Errors are unlikely, and our error messages won't
             // likely be any more helpful than that given in the
             // exception.
-            liberator.echoerr(e);
+            dactyl.echoerr(e);
             tmpBg = "red";
         }
 
@@ -571,11 +571,11 @@ const Editor = Module("editor", {
         let list = this.getAbbreviations(filter, lhs);
 
         if (!list.length)
-            liberator.echomsg("No this._abbreviations found");
+            dactyl.echomsg("No this._abbreviations found");
         else if (list.length == 1) {
             let [mode, lhs, rhs] = list[0];
 
-            liberator.echo(mode + "  " + lhs + "   " + rhs, commandline.FORCE_SINGLELINE); // 2 spaces, 3 spaces
+            dactyl.echo(mode + "  " + lhs + "   " + rhs, commandline.FORCE_SINGLELINE); // 2 spaces, 3 spaces
         }
         else {
             list = template.tabular(["", "LHS", "RHS"], [], list);
@@ -592,7 +592,7 @@ const Editor = Module("editor", {
      */
     removeAbbreviation: function (filter, lhs) {
         if (!lhs) {
-            liberator.echoerr("E474: Invalid argument");
+            dactyl.echoerr("E474: Invalid argument");
             return false;
         }
 
@@ -623,7 +623,7 @@ const Editor = Module("editor", {
             }
         }
 
-        liberator.echoerr("E24: No such abbreviation");
+        dactyl.echoerr("E24: No such abbreviation");
         return false;
     },
 
@@ -640,7 +640,7 @@ const Editor = Module("editor", {
                 this.removeAbbreviation(filter, lhs);
     }
 }, {
-    getEditor: function () liberator.focus,
+    getEditor: function () dactyl.focus,
 
     getController: function () {
         let ed = Editor.getEditor();
@@ -660,7 +660,7 @@ const Editor = Module("editor", {
                 "Abbreviate a key sequence" + modeDescription,
                 function (args) {
                     let matches = args.string.match(RegExp("^\\s*($|" + editor._abbrevmatch + ")(?:\\s*$|\\s+(.*))"));
-                    liberator.assert(matches, "E474: Invalid argument");
+                    dactyl.assert(matches, "E474: Invalid argument");
 
                     let [, lhs, rhs] = matches;
                     if (rhs)
@@ -866,7 +866,7 @@ const Editor = Module("editor", {
 
         mappings.add([modes.INSERT],
             ["<C-t>"], "Edit text field in Vi mode",
-            function () { liberator.mode = modes.TEXTAREA; });
+            function () { dactyl.mode = modes.TEXTAREA; });
 
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand insert mode abbreviation",
@@ -886,7 +886,7 @@ const Editor = Module("editor", {
             ["u"], "Undo",
             function (count) {
                 editor.executeCommand("cmd_undo", count);
-                liberator.mode = modes.TEXTAREA;
+                dactyl.mode = modes.TEXTAREA;
             },
             { count: true });
 
@@ -894,7 +894,7 @@ const Editor = Module("editor", {
             ["<C-r>"], "Redo",
             function (count) {
                 editor.executeCommand("cmd_redo", count);
-                liberator.mode = modes.TEXTAREA;
+                dactyl.mode = modes.TEXTAREA;
             },
             { count: true });
 
@@ -932,7 +932,7 @@ const Editor = Module("editor", {
         // visual mode
         mappings.add([modes.CARET, modes.TEXTAREA],
             ["v"], "Start visual mode",
-            function (count) { modes.set(modes.VISUAL, liberator.mode); });
+            function (count) { modes.set(modes.VISUAL, dactyl.mode); });
 
         mappings.add([modes.VISUAL],
             ["v"], "End visual mode",
@@ -949,7 +949,7 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL],
             ["c", "s"], "Change selected text",
             function (count) {
-                liberator.assert(modes.extended & modes.TEXTAREA);
+                dactyl.assert(modes.extended & modes.TEXTAREA);
                 editor.executeCommand("cmd_cut");
                 modes.set(modes.INSERT, modes.TEXTAREA);
             });
@@ -962,7 +962,7 @@ const Editor = Module("editor", {
                     modes.set(modes.TEXTAREA);
                 }
                 else
-                    liberator.beep();
+                    dactyl.beep();
             });
 
         mappings.add([modes.VISUAL],
@@ -974,7 +974,7 @@ const Editor = Module("editor", {
                 }
                 else {
                     let sel = window.content.document.getSelection();
-                    liberator.assert(sel);
+                    dactyl.assert(sel);
                     util.copyToClipboard(sel, true);
                 }
             });
@@ -982,12 +982,12 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL, modes.TEXTAREA],
             ["p"], "Paste clipboard contents",
             function (count) {
-                liberator.assert(!(modes.extended & modes.CARET));
+                dactyl.assert(!(modes.extended & modes.CARET));
                 if (!count)
                     count = 1;
                 while (count--)
                     editor.executeCommand("cmd_paste");
-                liberator.mode = modes.TEXTAREA;
+                dactyl.mode = modes.TEXTAREA;
             });
 
         // finding characters
@@ -996,7 +996,7 @@ const Editor = Module("editor", {
             function (count, arg) {
                 let pos = editor.findCharForward(arg, count);
                 if (pos >= 0)
-                    editor.moveToPosition(pos, true, liberator.mode == modes.VISUAL);
+                    editor.moveToPosition(pos, true, dactyl.mode == modes.VISUAL);
             },
             { arg: true, count: true });
 
@@ -1005,7 +1005,7 @@ const Editor = Module("editor", {
             function (count, arg) {
                 let pos = editor.findCharBackward(arg, count);
                 if (pos >= 0)
-                    editor.moveToPosition(pos, false, liberator.mode == modes.VISUAL);
+                    editor.moveToPosition(pos, false, dactyl.mode == modes.VISUAL);
             },
             { arg: true, count: true });
 
@@ -1014,7 +1014,7 @@ const Editor = Module("editor", {
             function (count, arg) {
                 let pos = editor.findCharForward(arg, count);
                 if (pos >= 0)
-                    editor.moveToPosition(pos - 1, true, liberator.mode == modes.VISUAL);
+                    editor.moveToPosition(pos - 1, true, dactyl.mode == modes.VISUAL);
             },
             { arg: true, count: true });
 
@@ -1023,7 +1023,7 @@ const Editor = Module("editor", {
             function (count, arg) {
                 let pos = editor.findCharBackward(arg, count);
                 if (pos >= 0)
-                    editor.moveToPosition(pos + 1, false, liberator.mode == modes.VISUAL);
+                    editor.moveToPosition(pos + 1, false, dactyl.mode == modes.VISUAL);
             },
             { arg: true, count: true });
 
@@ -1039,7 +1039,7 @@ const Editor = Module("editor", {
                 while (count-- > 0) {
                     let text = Editor.getEditor().value;
                     let pos = Editor.getEditor().selectionStart;
-                    liberator.assert(pos < text.length);
+                    dactyl.assert(pos < text.length);
 
                     let chr = text[pos];
                     Editor.getEditor().value = text.substring(0, pos) +

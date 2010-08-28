@@ -10,7 +10,7 @@ const DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
 
 // also includes methods for dealing with keywords and search engines
 const Bookmarks = Module("bookmarks", {
-    requires: ["autocommands", "config", "liberator", "storage", "services"],
+    requires: ["autocommands", "config", "dactyl", "storage", "services"],
 
     init: function () {
         const faviconService   = services.get("favicon");
@@ -47,7 +47,7 @@ const Bookmarks = Module("bookmarks", {
         const storage = modules.storage;
         function Cache(name, store) {
             const rootFolders = [bookmarksService.toolbarFolder, bookmarksService.bookmarksMenuFolder, bookmarksService.unfiledBookmarksFolder];
-            const sleep = liberator.sleep; // Storage objects are global to all windows, 'liberator' isn't.
+            const sleep = dactyl.sleep; // Storage objects are global to all windows, 'dactyl' isn't.
 
             let bookmarks = [];
             let self = this;
@@ -154,7 +154,7 @@ const Bookmarks = Module("bookmarks", {
                 onItemVisited:      function onItemVisited() {},
                 onItemMoved:        function onItemMoved() {},
                 onItemAdded: function onItemAdded(itemId, folder, index) {
-                    // liberator.dump("onItemAdded(" + itemId + ", " + folder + ", " + index + ")\n");
+                    // dactyl.dump("onItemAdded(" + itemId + ", " + folder + ", " + index + ")\n");
                     if (bookmarksService.getItemType(itemId) == bookmarksService.TYPE_BOOKMARK) {
                         if (self.isBookmark(itemId)) {
                             let bmark = loadBookmark(readBookmark(itemId));
@@ -163,14 +163,14 @@ const Bookmarks = Module("bookmarks", {
                     }
                 },
                 onItemRemoved: function onItemRemoved(itemId, folder, index) {
-                    // liberator.dump("onItemRemoved(" + itemId + ", " + folder + ", " + index + ")\n");
+                    // dactyl.dump("onItemRemoved(" + itemId + ", " + folder + ", " + index + ")\n");
                     if (deleteBookmark(itemId))
                         storage.fireEvent(name, "remove", itemId);
                 },
                 onItemChanged: function onItemChanged(itemId, property, isAnnotation, value) {
                     if (isAnnotation)
                         return;
-                    // liberator.dump("onItemChanged(" + itemId + ", " + property + ", " + value + ")\n");
+                    // dactyl.dump("onItemChanged(" + itemId + ", " + property + ", " + value + ")\n");
                     let bookmark = bookmarks.filter(function (item) item.id == itemId)[0];
                     if (bookmark) {
                         if (property == "tags")
@@ -241,7 +241,7 @@ const Bookmarks = Module("bookmarks", {
             }
         }
         catch (e) {
-            liberator.log(e, 0);
+            dactyl.log(e, 0);
             return false;
         }
 
@@ -285,13 +285,13 @@ const Bookmarks = Module("bookmarks", {
             return bmarks.length;
         }
         catch (e) {
-            liberator.log(e, 0);
+            dactyl.log(e, 0);
             return 0;
         }
     },
 
     // TODO: add filtering
-    // also ensures that each search engine has a Liberator-friendly alias
+    // also ensures that each search engine has a Dactyl-friendly alias
     getSearchEngines: function getSearchEngines() {
         let searchEngines = [];
         for (let [, engine] in Iterator(services.get("browserSearch").getVisibleEngines({}))) {
@@ -432,16 +432,16 @@ const Bookmarks = Module("bookmarks", {
         let items = completion.runCompleter("bookmark", filter, maxItems, tags);
 
         if (items.length)
-            return liberator.open(items.map(function (i) i.url), liberator.NEW_TAB);
+            return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0 && tags.length > 0)
-            liberator.echoerr("E283: No bookmarks matching tags: \"" + tags + "\" and string: \"" + filter + "\"");
+            dactyl.echoerr("E283: No bookmarks matching tags: \"" + tags + "\" and string: \"" + filter + "\"");
         else if (filter.length > 0)
-            liberator.echoerr("E283: No bookmarks matching string: \"" + filter + "\"");
+            dactyl.echoerr("E283: No bookmarks matching string: \"" + filter + "\"");
         else if (tags.length > 0)
-            liberator.echoerr("E283: No bookmarks matching tags: \"" + tags + "\"");
+            dactyl.echoerr("E283: No bookmarks matching tags: \"" + tags + "\"");
         else
-            liberator.echoerr("No bookmarks set");
+            dactyl.echoerr("No bookmarks set");
         return null;
     }
 }, {
@@ -494,10 +494,10 @@ const Bookmarks = Module("bookmarks", {
 
                 if (bookmarks.add(false, title, url, keyword, tags, args.bang)) {
                     let extra = (title == url) ? "" : " (" + title + ")";
-                    liberator.echomsg("Added bookmark: " + url + extra, 1, commandline.FORCE_SINGLELINE);
+                    dactyl.echomsg("Added bookmark: " + url + extra, 1, commandline.FORCE_SINGLELINE);
                 }
                 else
-                    liberator.echoerr("Exxx: Could not add bookmark `" + title + "'", commandline.FORCE_SINGLELINE);
+                    dactyl.echoerr("Exxx: Could not add bookmark `" + title + "'", commandline.FORCE_SINGLELINE);
             }, {
                 argCount: "?",
                 bang: true,
@@ -537,7 +537,7 @@ const Bookmarks = Module("bookmarks", {
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
                                 bookmarks._cache.bookmarks.forEach(function (bmark) { services.get("bookmarks").removeItem(bmark.id); });
-                                liberator.echomsg("All bookmarks deleted", 1, commandline.FORCE_SINGLELINE);
+                                dactyl.echomsg("All bookmarks deleted", 1, commandline.FORCE_SINGLELINE);
                             }
                         });
                 }
@@ -545,7 +545,7 @@ const Bookmarks = Module("bookmarks", {
                     let url = args.string || buffer.URL;
                     let deletedCount = bookmarks.remove(url);
 
-                    liberator.echomsg(deletedCount + " bookmark(s) with url " + url.quote() + " deleted", 1, commandline.FORCE_SINGLELINE);
+                    dactyl.echomsg(deletedCount + " bookmark(s) with url " + url.quote() + " deleted", 1, commandline.FORCE_SINGLELINE);
                 }
 
             },

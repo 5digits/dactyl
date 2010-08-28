@@ -22,7 +22,7 @@ const Services = Module("services", {
         this.add("browserSearch",       "@mozilla.org/browser/search-service;1",            Ci.nsIBrowserSearchService);
         this.add("cache",               "@mozilla.org/network/cache-service;1",             Ci.nsICacheService);
         this.add("console",             "@mozilla.org/consoleservice;1",                    Ci.nsIConsoleService);
-        this.add("liberator:",          "@mozilla.org/network/protocol;1?name=liberator");
+        this.add("dactyl:",          "@mozilla.org/network/protocol;1?name=dactyl");
         this.add("debugger",            "@mozilla.org/js/jsd/debugger-service;1",           Ci.jsdIDebuggerService);
         this.add("directory",           "@mozilla.org/file/directory_service;1",            Ci.nsIProperties);
         this.add("downloadManager",     "@mozilla.org/download-manager;1",                  Ci.nsIDownloadManager);
@@ -64,7 +64,7 @@ const Services = Module("services", {
             return res;
         }
         catch (e) {
-            // liberator.log() is not defined at this time, so just dump any error
+            // dactyl.log() is not defined at this time, so just dump any error
             dump("Service creation failed for '" + classes + "': " + e + "\n");
             return null;
         }
