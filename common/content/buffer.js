@@ -940,7 +940,12 @@ const Buffer = Module("buffer", {
                 url = url.substr(PREFIX.length);
             else
                 url = PREFIX + url;
-            dactyl.open(url, { hide: true });
+
+            let sh = history.session;
+            if (sh[sh.index].URI.spec == url)
+                window.getWebNavigation().gotoIndex(sh.index);
+            else
+                dactyl.open(url, { hide: true });
         }
     },
 
@@ -1470,16 +1475,12 @@ const Buffer = Module("buffer", {
             { count: true });
 
         mappings.add(myModes, ["gf"],
-            "View source",
+            "Toggle between rendered and source view",
             function () { buffer.viewSource(null, false); });
 
         mappings.add(myModes, ["gF"],
             "View source with an external editor",
             function () { buffer.viewSource(null, true); });
-
-        mappings.add(myModes, ["|"],
-            "Toggle between rendered and source view",
-            function () { buffer.viewSource(null, false); });
 
         mappings.add(myModes, ["gi"],
             "Focus last used input field",

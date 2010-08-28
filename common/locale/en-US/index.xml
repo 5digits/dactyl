@@ -121,11 +121,6 @@ This file contains a list of all available commands, mappings and options.
 
 
 <dl>
-    <dt><k>\</k></dt> <dd>Toggle between rendered and source view</dd>
-</dl>
-
-
-<dl>
     <dt><k>/</k></dt> <dd>Search forward for a pattern</dd>
     <dt><k>?</k></dt> <dd>Search backwards for a pattern</dd>
     <dt><k>*</k></dt> <dd>Find word under cursor</dd>
@@ -174,7 +169,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><k>gT</k></dt> <dd>Go to previous tab</dd>
     <dt><k>gU</k></dt> <dd>Go to the root of the website</dd>
     <dt><k>gb</k></dt> <dd>Repeat last <ex>:buffer<oa>!</oa></ex> command</dd>
-    <dt><k>gf</k></dt> <dd>View source</dd>
+    <dt><k>gf</k></dt> <dd>Toggle between rendered and source view</dd>
     <dt><k>gg</k></dt> <dd>Go to the top of the document</dd>
     <dt><k>gh</k></dt> <dd>Open homepage</dd>
     <dt><k>gi</k></dt> <dd>Focus last used input field</dd>

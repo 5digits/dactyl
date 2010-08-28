@@ -51,8 +51,8 @@
     <spec>gf</spec>
     <description>
         <p>
-            View source. Opens the source code of the current web site with the internal
-            editor in the current tab.
+            View source. Toggles between the source and rendered
+            content of the page.
         </p>
     </description>
 </item>
@@ -79,18 +79,6 @@
             View source code of current document. If <oa>url</oa> is specified then view the
             source of that document. When <oa>!</oa> is given, it is opened with the external
             editor.
-        </p>
-    </description>
-</item>
-
-
-<item>
-    <tags>|</tags>
-    <spec>|</spec>
-    <description>
-        <p>
-            Toggle between rendered and source view. Alternates the page in the current tab
-            between a normally rendered view and the internal editor source view.
         </p>
     </description>
 </item>
