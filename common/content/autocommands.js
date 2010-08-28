@@ -119,7 +119,7 @@ const AutoCommands = Module("autocommands", {
 
         let autoCmds = this._store.filter(function (autoCmd) autoCmd.event == event);
 
-        dactyl.echomsg("Executing " + event + " Auto commands for \"*\"", 8);
+        dactyl.echomsg('Executing ' + event + ' Auto commands for "*"', 8);
 
         let lastPattern = null;
         let url = args.url || "";
@@ -127,7 +127,7 @@ const AutoCommands = Module("autocommands", {
         for (let [, autoCmd] in Iterator(autoCmds)) {
             if (autoCmd.pattern.test(url)) {
                 if (!lastPattern || lastPattern.source != autoCmd.pattern.source)
-                    dactyl.echomsg("Executing " + event + " Auto commands for \"" + autoCmd.pattern.source + "\"", 8);
+                    dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.pattern.source.quote(), 8);
 
                 lastPattern = autoCmd.pattern;
                 dactyl.echomsg("autocommand " + autoCmd.command, 9);
@@ -167,7 +167,7 @@ const AutoCommands = Module("autocommands", {
 
                 if (event) {
                     // NOTE: event can only be a comma separated list for |:au {event} {pat} {cmd}|
-                    let validEvents = config.autocommands.map(function (event) event[0]);
+                    let validEvents = keys(config.autocommands);
                     validEvents.push("*");
 
                     events = event.split(",");
@@ -227,7 +227,7 @@ const AutoCommands = Module("autocommands", {
 
                     let [event, url] = args;
                     let defaultURL = url || buffer.URL;
-                    let validEvents = config.autocommands.map(function (e) e[0]);
+                    let validEvents = keys(config.autocommands);
 
                     // TODO: add command validators
                     dactyl.assert(event != "*",
@@ -257,10 +257,10 @@ const AutoCommands = Module("autocommands", {
         });
     },
     completion: function () {
-        JavaScript.setCompleter(this.get, [function () config.autocommands]);
+        JavaScript.setCompleter(this.get, [function () Iterator(config.autocommands)]);
 
         completion.autocmdEvent = function autocmdEvent(context) {
-            context.completions = config.autocommands;
+            context.completions = Iterator(config.autocommands);
         };
 
         completion.macro = function macro(context) {
@@ -273,7 +273,7 @@ const AutoCommands = Module("autocommands", {
             "List of autocommand event names which should be ignored",
             "stringlist", "",
             {
-                completer: function () config.autocommands.concat([["all", "All events"]])
+                completer: function () Iterator(update({ all: "All Events" }, config.autocommands))
             });
 
         options.add(["strictfocus", "sf"],

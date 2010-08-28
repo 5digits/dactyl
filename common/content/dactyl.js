@@ -73,11 +73,11 @@ const Dactyl = Module("dactyl", {
     },
 
     destroy: function () {
-        autocommands.trigger(config.name + "LeavePre", {});
+        autocommands.trigger("LeavePre", {});
         storage.saveAll();
         dactyl.triggerObserver("shutdown", null);
         dactyl.dump("All dactyl modules destroyed\n");
-        autocommands.trigger(config.name + "Leave", {});
+        autocommands.trigger("Leave", {});
     },
 
     /**
@@ -682,11 +682,12 @@ const Dactyl = Module("dactyl", {
             return;
         }
 
-        dactyl.echomsg('Searching for "plugin/**/*.{js,vimp}" in "'
-                            + [dir.path.replace(/.plugin$/, "") for ([, dir] in Iterator(dirs))].join(",") + '"', 2);
+        dactyl.echomsg('Searching for "plugin/**/*.{js,vimp}" in '
+                            + [dir.path.replace(/.plugin$/, "") for ([, dir] in Iterator(dirs))]
+                                .join(",").quote(), 2);
 
         dirs.forEach(function (dir) {
-            dactyl.echomsg("Searching for \"" + (dir.path + "/**/*.{js,vimp}") + "\"", 3);
+            dactyl.echomsg("Searching for " + (dir.path + "/**/*.{js,vimp}").quote(), 3);
             sourceDirectory(dir);
         });
     },
@@ -735,11 +736,6 @@ const Dactyl = Module("dactyl", {
      * @returns {boolean}
      */
     open: function (urls, params, force) {
-        // convert the string to an array of converted URLs
-        // -> see dactyl.stringToURLArray for more details
-        //
-        // This is strange. And counterintuitive. Is it really
-        // necessary? --Kris
         if (typeof urls == "string")
             urls = dactyl.stringToURLArray(urls);
 
@@ -867,7 +863,7 @@ const Dactyl = Module("dactyl", {
             urls = [str];
 
         return urls.map(function (url) {
-            if (/^\.?\//.test(url)) {
+            if (/^[.~]?\//.test(url)) {
                 try {
                     // Try to find a matching file.
                     let file = io.File(url);
@@ -1176,7 +1172,7 @@ const Dactyl = Module("dactyl", {
                     else
                         styles.removeSheet(true, "scrollbar");
                     options.safeSetPref("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
-                        "See 'guioptions' scrollbar flags.");
+                                        "See 'guioptions' scrollbar flags.");
                 },
                 validator: function (opts) (opts.indexOf("l") < 0 || opts.indexOf("r") < 0)
             },
@@ -1271,7 +1267,7 @@ const Dactyl = Module("dactyl", {
             {
                 setter: function (value) {
                     options.safeSetPref("accessibility.typeaheadfind.enablesound", !value,
-                        "See 'visualbell' option");
+                                        "See 'visualbell' option");
                     return value;
                 }
             });
@@ -1444,7 +1440,7 @@ const Dactyl = Module("dactyl", {
                 else if (file.isReadable() && file.isFile())
                     AddonManager.getInstallForFile(file, callResult("install"), "application/x-xpinstall");
                 else if (file.isDirectory())
-                    dactyl.echomsg("Cannot install a directory: \"" + file.path + "\"", 0);
+                    dactyl.echomsg("Cannot install a directory: " + file.path.quote(), 0);
                 else
                     dactyl.echoerr("E484: Can't open file " + file.path);
             }, {
@@ -1552,7 +1548,7 @@ const Dactyl = Module("dactyl", {
                     }
                     else {
                         if (filter)
-                            dactyl.echoerr("Exxx: No extension matching \"" + filter + "\"");
+                            dactyl.echoerr("Exxx: No extension matching " + filter.quote());
                         else
                             dactyl.echoerr("No extensions installed");
                     }
@@ -1953,7 +1949,7 @@ const Dactyl = Module("dactyl", {
                 });
 
             dactyl.triggerObserver("enter", null);
-            autocommands.trigger(config.name + "Enter", {});
+            autocommands.trigger("Enter", {});
         }, 0);
 
         statusline.update();

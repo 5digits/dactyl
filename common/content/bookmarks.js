@@ -435,11 +435,11 @@ const Bookmarks = Module("bookmarks", {
             return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0 && tags.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching tags: \"" + tags + "\" and string: \"" + filter + "\"");
+            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.quote() + " and string: " + filter.quote());
         else if (filter.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching string: \"" + filter + "\"");
+            dactyl.echoerr("E283: No bookmarks matching string: " + filter.quote());
         else if (tags.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching tags: \"" + tags + "\"");
+            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.quote());
         else
             dactyl.echoerr("No bookmarks set");
         return null;
@@ -497,7 +497,7 @@ const Bookmarks = Module("bookmarks", {
                     dactyl.echomsg("Added bookmark: " + url + extra, 1, commandline.FORCE_SINGLELINE);
                 }
                 else
-                    dactyl.echoerr("Exxx: Could not add bookmark `" + title + "'", commandline.FORCE_SINGLELINE);
+                    dactyl.echoerr("Exxx: Could not add bookmark " + title.quote(), commandline.FORCE_SINGLELINE);
             }, {
                 argCount: "?",
                 bang: true,

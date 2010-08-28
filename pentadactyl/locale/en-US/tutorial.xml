@@ -122,20 +122,24 @@
     Scrolling the browser window is done with simple keystrokes:
 </p>
 
-<ul>
-    <li><k>j</k>/<k>k</k> –
+<dl>
+    <dt><k>j</k>/<k>k</k></dt>
+    <dd>
         scroll window down/up by one line, respectively
-    </li>
-    <li><k>h</k>/<k>l</k> –
+    </dd>
+    <dt><k>h</k>/<k>l</k></dt>
+    <dd>
         scroll window left/right
-    </li>
-    <li><k name="Space"/>/<k name="C-b"/> –
+    </dd>
+    <dt><k name="Space"/>/<k name="C-b"/></dt>
+    <dd>
         scroll down/up by one page
-    </li>
-    <li><k name="C-d"/>/<k name="C-u"/> –
+    </dd>
+    <dt><k name="C-d"/>/<k name="C-u"/></dt>
+    <dd>
         scroll down/up by 1/2 page
-    </li>
-</ul>
+    </dd>
+</dl>
 
 <p>
     Your standard buttons (<k name="Up"/>/<k name="Down"/>/<k name="PgUp"/>/<k name="PgDn"/>) will
@@ -149,31 +153,36 @@
     scrolling.
 </p>
 
-<ul>
-    <li><k name="C-o"/>/<k name="C-i"/> –
+<dl>
+    <dt><k name="C-o"/>/<k name="C-i"/></dt>
+    <dd>
         move Back/Forward in the current window/tab's history, respectively
-    </li>
-</ul>
+    </dd>
+</dl>
 
 <p>
     Move between tabs using these keystrokes which may also be familiar to tabbing
     Vimmers.
 </p>
 
-<ul>
-    <li><k>gt</k>/<k name="C-n"/> –
+<dl>
+    <dt><k>gt</k>/<k name="C-n"/></dt>
+    <dd>
         go to the next tab
-    </li>
-    <li><k>gT</k>/<k name="C-p"/> –
+    </dd>
+    <dt><k>gT</k>/<k name="C-p"/></dt>
+    <dd>
         go to the previous tab
-    </li>
-    <li><k>g0</k>/<k>g$</k> –
+    </dd>
+    <dt><k>g0</k>/<k>g$</k></dt>
+    <dd>
         go to the first/last tab
-    </li>
-    <li><k>d</k> –
+    </dd>
+    <dt><k>d</k></dt>
+    <dd>
         close the active tab (delete the buffer)
-    </li>
-</ul>
+    </dd>
+</dl>
 
 <p>
     To open a web page in a new tab, use the <ex>:tabopen <a>url</a></ex>. To open a URL in
@@ -186,8 +195,8 @@
 <ex>:open my.webmail.com<key name="CR"/></ex>
 <k>o</k>my.webmail.com<key name="CR"/>
 
-<ex>:tabopen vimperator.org<key name="CR"/></ex>
-<k>t</k>vimperator.org<key name="CR"/>
+<ex>:tabopen google.com<key name="CR"/></ex>
+<k>t</k>google.com<key name="CR"/>
 </code>
 
 <h2 tag="hints-tutorial">Some hints about surfing…</h2>
@@ -225,7 +234,7 @@
 </p>
 
 <p>
-    To test it, try this link: <link target="http://vimperator.org/">&dactyl.appname; Homepage</link>.
+    To test it, try this link: <link target="&dactyl.apphome;">&dactyl.appname; Homepage</link>.
     Activate QuickHint mode with <k>f</k> or <k>F</k> to highlight all currently
     visible links. Then start typing the text of the link. The link should be
     uniquely identified soon, and &dactyl.appname; will open it. Once you're done,
@@ -250,7 +259,7 @@
 
 <code><k name="Esc"/></code>
 
-<h2 tag="pentadactylrc">Saving for posterity - pentadactylrc</h2>
+<h2 tag="pentadactylrc">Saving for posterity—pentadactylrc</h2>
 
 <p>
     Once you get &dactyl.appname; set up with your desired options, maps, and commands,
@@ -275,17 +284,24 @@
     &dactyl.appname; supports all of Vim's classic methods of exiting.
 </p>
 
-<ul>
-    <li><ex>:xall</ex> – command to quit and save the current browsing
-        session for next time; the default.
-    </li>
-    <li><ex>:qall</ex> – command to quit <em>without</em> saving the session
-    </li>
-    <li><k>ZZ</k> – Normal mode mapping equivalent to <ex>:xall</ex>
-    </li>
-    <li><k>ZQ</k> – Normal mode mapping equivalent to <ex>:qall</ex>
-    </li>
-</ul>
+<dl>
+    <dt><ex>:xall</ex></dt>
+    <dd>
+        command to quit and save the current browsing session for next time; the default.
+    </dd>
+    <dt><ex>:qall</ex></dt>
+    <dd>
+        command to quit <em>without</em> saving the session
+    </dd>
+    <dt><k>ZZ</k></dt>
+    <dd>
+        Normal mode mapping equivalent to <ex>:xall</ex>
+    </dd>
+    <dt><k>ZQ</k></dt>
+    <dd>
+        Normal mode mapping equivalent to <ex>:qall</ex>
+    </dd>
+</dl>
 
 <h2 tag="whither-&dactyl.host;">Where did &dactyl.host; go?</h2>
 
@@ -296,24 +312,28 @@
     make the best use of them.
 </p>
 
-<ul>
-    <li><ex>:dialog</ex> –
+<dl>
+    <dt><ex>:dialog</ex></dt>
+    <dd>
         To access some of &dactyl.host;'s many dialog windows, you can use the
         <ex>:dialog</ex> command. See <ex>:help :dialog</ex>.
-    </li>
-    <li><ex>:bmarks</ex> –
+    </dd>
+    <dt><ex>:bmarks</ex></dt>
+    <dd>
         &dactyl.appname; provides a new interface to bookmarks, but they're still your
         standard &dactyl.host; bookmarks under the hood. <ex>:bmark</ex> will add a new
         bookmark, while <ex>:bmarks</ex> will list the bookmarks currently defined.
-    </li>
-    <li><ex>:history</ex> –
+    </dd>
+    <dt><ex>:history</ex></dt>
+    <dd>
         It's exactly what it sounds like. This command will display a colorized,
         scrollable and clickable list of the locations in &dactyl.appname;'s history.
-    </li>
-    <li><ex>:emenu</ex> –
+    </dd>
+    <dt><ex>:emenu</ex></dt>
+    <dd>
         Access the &dactyl.host; menus through the &dactyl.appname; command line.
-    </li>
-</ul>
+    </dd>
+</dl>
 
 <p>
     Feel free to explore at this point. If you use the <ex>:tabopen</ex> command,

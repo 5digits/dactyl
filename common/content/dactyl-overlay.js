@@ -60,7 +60,6 @@
 
     prefix.unshift("chrome://" + modules.Config.prototype.name.toLowerCase() + "/content/");
     modules.Config.prototype.scripts.forEach(load);
-
 })();
 
 // vim: set fdm=marker sw=4 ts=4 et:

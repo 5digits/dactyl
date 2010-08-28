@@ -88,13 +88,18 @@ function dict(ary) {
 }
 
 function set(ary) {
-    var obj = {};
+    let obj = {};
     if (ary)
         for (var i = 0; i < ary.length; i++)
             obj[ary[i]] = true;
     return obj;
 }
-set.add = function (set, key) { set[key] = true; }
+set.add = function (set, key) {
+    let res = this.has(set, key);
+    set[key] = true;
+    return res;
+}
+set.has = function (set, key) Object.prototype.hasOwnProperty.call(set, key);
 set.remove = function (set, key) { delete set[key]; }
 
 function iter(obj) {
@@ -142,6 +147,8 @@ function isinstance(targ, src) {
     for (var i = 0; i < src.length; i++) {
         if (targ instanceof src[i])
             return true;
+        if (typeof src[i] == "string")
+            return Object.prototype.toString(targ) == "[object " + src[i] + "]";
         var type = types[typeof targ];
         if (type && issubclass(src[i], type))
             return true;

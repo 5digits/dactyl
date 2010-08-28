@@ -13,38 +13,32 @@ const Config = Module("config", ConfigBase, {
     name: "Pentadactyl",
     hostApplication: "Firefox",
 
-    /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: ["bookmarks", "hints", "history", "marks", "quickmarks", "sanitizer", "session", "tabs", "tabs_undo", "windows"],
+    get visualbellWindow() getBrowser().mPanelContainer,
+    styleableChrome: ["chrome://browser/content/browser.xul"],
+
+    autocommands: {
+        BookmarkAdd: "Triggered after a page is bookmarked",
+        ColorScheme: "Triggered after a color scheme has been loaded",
+        DOMLoad: "Triggered when a page's DOM content has fully loaded",
+        DownloadPost: "Triggered when a download has completed",
+        Fullscreen: "Triggered when the browser's fullscreen state changes",
+        LocationChange: "Triggered when changing tabs or when navigation to a new location",
+        PageLoadPre: "Triggered after a page load is initiated",
+        PageLoad: "Triggered when a page gets (re)loaded/opened",
+        PrivateMode: "Triggered when private mode is activated or deactivated",
+        Sanitize: "Triggered when a sanitizeable item is cleared",
+        ShellCmdPost: "Triggered after executing a shell command with :!cmd",
+        Enter: "Triggered after Firefox starts",
+        LeavePre: "Triggered before exiting Firefox, just before destroying each module",
+        Leave: "Triggered before exiting Firefox",
+    },
+
     defaults: {
         complete: "slf",
         guioptions: "rb",
         showtabline: 2,
         titlestring: "Pentadactyl"
     },
-
-    guioptions: {
-        m: ["Menubar",      ["toolbar-menubar"]],
-        T: ["Toolbar",      ["nav-bar"]],
-        B: ["Bookmark bar", ["PersonalToolbar"]]
-    },
-
-    get visualbellWindow() getBrowser().mPanelContainer,
-    styleableChrome: ["chrome://browser/content/browser.xul"],
-
-    autocommands: [["BookmarkAdd",        "Triggered after a page is bookmarked"],
-                   ["ColorScheme",        "Triggered after a color scheme has been loaded"],
-                   ["DOMLoad",            "Triggered when a page's DOM content has fully loaded"],
-                   ["DownloadPost",       "Triggered when a download has completed"],
-                   ["Fullscreen",         "Triggered when the browser's fullscreen state changes"],
-                   ["LocationChange",     "Triggered when changing tabs or when navigation to a new location"],
-                   ["PageLoadPre",        "Triggered after a page load is initiated"],
-                   ["PageLoad",           "Triggered when a page gets (re)loaded/opened"],
-                   ["PrivateMode",        "Triggered when private mode is activated or deactivated"],
-                   ["Sanitize",           "Triggered when a sanitizeable item is cleared"],
-                   ["ShellCmdPost",       "Triggered after executing a shell command with :!cmd"],
-                   ["PentadactylEnter",   "Triggered after Firefox starts"],
-                   ["PentadactylLeavePre","Triggered before exiting Firefox, just before destroying each module"],
-                   ["PentadactylLeave",   "Triggered before exiting Firefox"]],
 
     dialogs: {
         about: ["About Firefox",
@@ -99,9 +93,33 @@ const Config = Module("config", ConfigBase, {
             function () { buffer.viewSelectionSource(); }]
     },
 
+    features: [
+        "bookmarks", "hints", "history", "marks", "quickmarks", "sanitizer",
+        "session", "tabs", "tabs_undo", "windows"
+    ],
+
+    guioptions: {
+        m: ["Menubar",      ["toolbar-menubar"]],
+        T: ["Toolbar",      ["nav-bar"]],
+        B: ["Bookmark bar", ["PersonalToolbar"]]
+    },
+
     hasTabbrowser: true,
 
     ignoreKeys: {},
+
+    removeTab: function (tab) {
+        if (config.tabbrowser.mTabs.length > 1)
+            config.tabbrowser.removeTab(tab);
+        else {
+            if (buffer.URL != "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
+                dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
+                config.tabbrowser.removeTab(tab);
+            }
+            else
+                dactyl.beep();
+        }
+    },
 
     scripts: [
         "browser.js",
@@ -114,7 +132,6 @@ const Config = Module("config", ConfigBase, {
 
     get tempFile() {
         let prefix = this.name.toLowerCase();
-
         try {
             prefix += "-" + window.content.document.location.hostname;
         }

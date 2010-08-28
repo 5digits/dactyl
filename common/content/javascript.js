@@ -49,10 +49,8 @@ const JavaScript = Module("javascript", {
             for (; obj; obj = !toplevel && obj.__proto__) {
                 services.get("debugger").wrapValue(obj).getProperties(ret, {});
                 for (let prop in values(ret.value)) {
-                    let name = '|' + prop.name.stringValue;
-                    if (name in seen)
+                    if (set.add(seen, prop.name.stringValue))
                         continue;
-                    seen[name] = 1;
                     if (toplevel || obj !== orig)
                         yield [prop.name.stringValue, top.getProperty(prop.name.stringValue).value.getWrappedValue()]
                 }
@@ -61,7 +59,7 @@ const JavaScript = Module("javascript", {
             // This only lists ENUMERABLE properties.
             try {
                 for (let k in orig)
-                    if (k in orig && !('|' + k in seen)
+                    if (k in orig && !(set.has(seen, k))
                         && Object.hasOwnProperty(orig, k) == toplevel)
                         yield [k, this.getKey(orig, k)]
             }
@@ -298,14 +296,18 @@ const JavaScript = Module("javascript", {
                 continue;
             if (dot > stop || dot <= prev)
                 break;
-            let s = this._str.substring(prev, dot);
 
+            let s = this._str.substring(prev, dot);
             if (prev != statement)
                 s = JavaScript.EVAL_TMP + "." + s;
             cacheKey = this._str.substring(statement, dot);
 
             if (this._checkFunction(prev, dot, cacheKey))
                 return [];
+            if (prev != statement && obj == null) {
+                this.context.message = "Error: " + cacheKey.quote() + " is " + String(obj);
+                return [];
+            }
 
             prev = dot + 1;
             obj = this.eval(s, cacheKey, obj);
@@ -338,7 +340,7 @@ const JavaScript = Module("javascript", {
         context.anchored = anchored;
         context.filter = key;
         context.itemCache = context.parent.itemCache;
-        context.key = name;
+        context.key = name + last;
 
         if (last != null)
             context.quote = [last, function (text) util.escapeString(text.substr(offset), ""), last];
@@ -435,7 +437,7 @@ const JavaScript = Module("javascript", {
         }
 
         this.context.getCache("eval", Object);
-        this.context.getCache("evalContext", function () ({ __proto__: userContext }));
+        this.context.getCache("evalContext", function () ({ __proto__: userContext }));;
 
         // Okay, have parse stack. Figure out what we're completing.
 

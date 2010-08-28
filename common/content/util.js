@@ -452,7 +452,8 @@ const Util = Module("util", {
         let result = doc.evaluate(expression, elem,
             function lookupNamespaceURI(prefix) {
                 return {
-                    xhtml: "http://www.w3.org/1999/xhtml",
+                    xul: XUL.uri,
+                    xhtml: XHTML.uri,
                     xhtml2: "http://www.w3.org/2002/06/xhtml2",
                     dactyl: NS.uri
                 }[prefix] || null;

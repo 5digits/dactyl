@@ -14,48 +14,28 @@
 <link topic="http://vimperator.org">&dactyl.appname;</link> is a free browser add-on for &dactyl.host;,
 which makes it look and behave like the
 <link topic="http://www.vim.org">Vim</link>
-text editor. It has similar key bindings, and you could call it a modal
-web browser, as key bindings differ according to which mode you are in.
+text editor.
 
 <warning tag="warning">
-    To provide the most authentic Vim experience, the &dactyl.host; menubar and toolbar are hidden.
+    To provide the most authentic Vim experience, the &dactyl.host;
+    menubar and toolbar are hidden.
+
+    <p>
+        If you really need them, type: <ex>:set guioptions+=mT</ex> to
+        get them back.
+    </p>
+
+    <p>
+        If you don't like &dactyl.appname; at all, you can uninstall it
+        by typing <ex>:extdelete &dactyl.appname;</ex> or disable it
+        with <ex>:extdisable &dactyl.appname;</ex>
+    </p>
+
+    <p>
+        If you like it but can't remember the shortcuts, then type
+        <key name="F1"/> or <ex>:help</ex> to get this help window back.
+    </p>
 </warning>
-
-<p>If you really need them, type: <ex>:set guioptions+=mT</ex> to get them back.</p>
-<p>
-    If you don't like &dactyl.appname; at all, you can uninstall it by typing
-    <ex>:extdelete &dactyl.appname;</ex> or <ex>:extdisable &dactyl.appname;</ex> to disable it.
-</p>
-<p>
-    If you like it but can't remember the shortcuts, then press
-    <key name="F1"/> or <ex>:help</ex> to get this help window back.
-</p>
-
-<tags>author donaton sponsor</tags>
-<strut/>
-<p>
-    &dactyl.appname; was initially written by
-    <link topic="mailto:stubenschrott@vimperator.org">Martin
-    Stubenschrott</link> but has found many other
-    <link topic="http://vimperator.org/trac/wiki/&dactyl.appname;/Authors">contributors</link>
-    in the meanwhile. If you appreciate the work on &dactyl.appname; and want to
-    encourage us working on it more, you can send us greetings, patches, or
-    donations (thanks a lot to
-    <link topic="http://vimperator.org/trac/wiki/&dactyl.appname;/Donors">these
-        people</link>
-    who already did):
-</p>
-
-<pan><handle/></pan>
-
-<p>
-    If you prefer getting some nice products for your money, you can also support
-    us by buying some cool
-    <link topic="http://www.zazzle.com/maxauthority*">merchandise</link> like
-    t-shirts or mugs. Of course, as we believe in free, open source software, only
-    support us financially if you really like &dactyl.appname; and the money doesn't hurt
-    — otherwise just use it, recommend it, and like it :)
-</p>
 
 <h2 tag="overview">Help topics</h2>
 
@@ -156,9 +136,10 @@ web browser, as key bindings differ according to which mode you are in.
 </ol>
 
 <p>
-You can also jump directly to the help of a specific command with <ex>:help o</ex>
-or <ex>:help :set</ex>.
+    You can also jump directly to the help of a specific command via the <ex>:help</ex> command.
 </p>
+
+<example><ex>:help :help</ex></example>
 
 <h2 tag="features">Features</h2>
 
@@ -188,15 +169,14 @@ or <ex>:help :set</ex>.
 <h2 tag="contact">Contact</h2>
 
 <p>
-    Please send comments/bug reports/patches to the mailing list, where we will
-    properly answer any questions. You can also join the
-    <link topic="irc://irc.freenode.net/pentadactyl">#pentadactyl</link> IRC channel
-    on <link target="http://www.freenode.net/">Freenode</link> or check the
-    <link topic="http://vimperator.org/trac/wiki/&dactyl.appname;/Wiki">Wiki</link> for
-    <link topic="http://vimperator.org/trac/wiki/&dactyl.appname;/FAQ">
-        frequently asked questions (FAQ)
-    </link>. Make sure, you have read the TODO file first, as we are aware of many
-    things which can be improved when we find time for it or receive patches.
+    Please send comments, questions, or patches to the
+    <link topic="mailto:&dactyl.maillist;">mailing list</link>,
+    where we will do our best to answer any questions. You can also
+    check the
+    <link topic="http://code.google.com/p/dactyl/wiki">wiki</link> for
+    <link topic="http://code.google.com/p/dactyl/wiki/FAQ">FAQ</link>.
+    Issue reports can be entered in the
+    <link topic="http://code.google.com/p/dactyl/issues/list">issue tracker</link>.
 </p>
 
 </document>

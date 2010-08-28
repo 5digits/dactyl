@@ -18,7 +18,7 @@ const RangeFinder = Module("rangefinder", {
         let backwards = mode == modes.FIND_BACKWARD;
         commandline.open(backwards ? "?" : "/", "", mode);
 
-        if (this.rangeFind)
+        if (this.rangeFind && this.rangeFind.window.get() == window)
             this.rangeFind.reset();
         this.find("", backwards);
     },
@@ -28,6 +28,7 @@ const RangeFinder = Module("rangefinder", {
             this.rangeFind = null;
 
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
+        let selections = this.rangeFind && this.rangeFind.selections;
         let matchCase = !(options["ignorecase"] || options["smartcase"] && !/[A-Z]/.test(str));
         let linksOnly = options["linksearch"];
 
@@ -45,15 +46,19 @@ const RangeFinder = Module("rangefinder", {
             return "";
         });
 
-        // It's possible, with :tabdetach, for the rangeFind to actually move
-        // from one window to another, which breaks things.
-        if (!this.rangeFind || this.rangeFind.window.get() != window ||
-            linksOnly ^ !!this.rangeFind.elementPath ||
-            matchCase ^ this.rangeFind.matchCase || backward ^ this.rangeFind.reverse) {
+        // It's possible, with :tabdetach for instance, for the rangeFind to
+        // actually move from one window to another, which breaks things.
+        if (!this.rangeFind
+            || this.rangeFind.window.get() != window
+            || linksOnly  != !!this.rangeFind.elementPath
+            || matchCase  != this.rangeFind.matchCase
+            || !!backward != this.rangeFind.reverse) {
+
             if (this.rangeFind)
                 this.rangeFind.cancel();
             this.rangeFind = RangeFind(matchCase, backward, linksOnly && options["hinttags"]);
             this.rangeFind.highlighted = highlighted;
+            this.rangeFind.selections = selections;
         }
         return str;
     },
@@ -71,15 +76,15 @@ const RangeFinder = Module("rangefinder", {
             this.find(this.lastSearchPattern);
         else if (!this.rangeFind.search(null, reverse))
             dactyl.echoerr("E486: Pattern not found: " + this.lastSearchPattern);
-        else if (this.rangeFind.wrapped) {
-            // hack needed, because wrapping causes a "scroll" event which clears
-            // our command line
+        else if (this.rangeFind.wrapped)
+            // hack needed, because wrapping causes a "scroll" event which
+            // clears our command line
             this.setTimeout(function () {
                 let msg = this.rangeFind.backward ? "search hit TOP, continuing at BOTTOM"
                                                   : "search hit BOTTOM, continuing at TOP";
-                commandline.echo(msg, commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
+                commandline.echo(msg, commandline.HL_WARNINGMSG,
+                                 commandline.APPEND_TO_MESSAGES | commandline.FORCE_SINGLELINE);
             }, 0);
-        }
         else
             commandline.echo((this.rangeFind.backward ? "?" : "/") + this.lastSearchPattern, null, commandline.FORCE_SINGLELINE);
 
@@ -197,6 +202,10 @@ const RangeFinder = Module("rangefinder", {
         modes.addMode("FIND_BACKWARD", true);
     },
     options: function () {
+        options.safeSetPref("accessibility.typeaheadfind.autostart", false);
+        // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
+        options.safeSetPref("accessibility.typeaheadfind", false);
+
         options.add(["hlsearch", "hls"],
             "Highlight previous search pattern matches",
             "boolean", "false", {
@@ -267,26 +276,30 @@ const RangeFind = Class("RangeFind", {
         this.reset();
 
         this.highlighted = null;
+        this.selections = [];
         this.lastString = "";
     },
 
+    get backward() this.finder.findBackwards,
+
+    get searchString() this.lastString,
+
     get selectedRange() {
-        let range = RangeFind.Range(tabs.localStore.focusedFrame || content);
-        return (range.selection.rangeCount ? range.selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
+        let selection = (tabs.localStore.focusedFrame || content).getSelection();
+        return (selection.rangeCount ? selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
+    },
+    set selectedRange(range) {
+        this.range.selection.removeAllRanges();
+        this.range.selection.addRange(range);
+        this.range.selectionController.scrollSelectionIntoView(
+            this.range.selectionController.SELECTION_NORMAL, 0, false);
     },
 
-    reset: function () {
-        this.startRange = this.selectedRange;
-        this.startRange.collapse(!this.reverse);
-        this.lastRange = this.selectedRange;
-        this.range = this.findRange(this.startRange);
-        this.ranges.first = this.range;
-        this.ranges.forEach(function (range) range.save());
-        this.forward = null;
-        this.found = false;
+    cancel: function () {
+        this.purgeListeners();
+        this.range.deselect();
+        this.range.descroll();
     },
-
-    sameDocument: function (r1, r2) r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument,
 
     compareRanges: function (r1, r2)
             this.backward ?  r1.compareBoundaryPoints(Range.END_TO_START, r2)
@@ -296,9 +309,7 @@ const RangeFind = Class("RangeFind", {
         let doc = range.startContainer.ownerDocument;
         let win = doc.defaultView;
         let ranges = this.ranges.filter(function (r)
-            r.window == win &&
-            r.range.compareBoundaryPoints(Range.START_TO_END, range) >= 0 &&
-            r.range.compareBoundaryPoints(Range.END_TO_START, range) <= 0);
+            r.window == win && RangeFind.contains(r.range, range));
 
         if (this.backward)
             return ranges[ranges.length - 1];
@@ -308,10 +319,8 @@ const RangeFind = Class("RangeFind", {
     findSubRanges: function (range) {
         let doc = range.startContainer.ownerDocument;
         for (let elem in util.evaluateXPath(this.elementPath, doc)) {
-            let r = doc.createRange();
-            r.selectNode(elem);
-            if (range.compareBoundaryPoints(Range.START_TO_END, r) >= 0 &&
-                range.compareBoundaryPoints(Range.END_TO_START, r) <= 0)
+            let r = RangeFind.nodeRange(elem);
+            if (RangeFind.contains(range, r))
                 yield r;
         }
     },
@@ -322,7 +331,62 @@ const RangeFind = Class("RangeFind", {
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
         if(node) {
             node.focus();
-            this.search(null, false); // Rehighlight collapsed range
+            // Rehighlight collapsed selection
+            this.selectedRange = this.lastRange;
+        }
+    },
+
+    highlight: function (clear) {
+
+        if (!clear && (!this.lastString || this.lastString == this.highlighted))
+            return;
+        if (clear && !this.highlighted)
+            return;
+
+        if (!clear && this.highlighted)
+            this.highlight(true);
+
+        if (clear) {
+            this.selections.forEach(function (selection) {
+                selection.removeAllRanges();
+            });
+            this.selections = [];
+            this.highlighted = null;
+        }
+        else {
+            this.selections = [];
+            let string = this.lastString;
+            for (let r in this.iter(string)) {
+                let controller = this.range.selectionController;
+                for (let node=r.startContainer; node; node=node.parentNode)
+                    if (node instanceof Ci.nsIDOMNSEditableElement) {
+                        controller = node.editor.selectionController;
+                        break;
+                    }
+
+                let sel = controller.getSelection(Ci.nsISelectionController.SELECTION_FIND);
+                sel.addRange(r);
+                if (this.selections.indexOf(sel) < 0)
+                    this.selections.push(sel);
+            }
+            this.highlighted = this.lastString;
+            this.selectedRange = this.lastRange;
+            this.addListeners();
+        }
+    },
+
+    iter: function (word) {
+        let saved = ["range", "lastRange", "lastString"].map(function (s) [s, this[s]], this);
+        try {
+            this.range = this.ranges[0];
+            this.lastRange = null;
+            this.lastString = word;
+            var res;
+            while ((res = this.search(null, this.reverse, true)))
+                yield res;
+        }
+        finally {
+            saved.forEach(function ([k, v]) this[k] = v, this);
         }
     },
 
@@ -334,8 +398,7 @@ const RangeFind = Class("RangeFind", {
 
         function pushRange(start, end) {
             function push(r) {
-                r = RangeFind.Range(r, frames.length);
-                if (r)
+                if (r = RangeFind.Range(r, frames.length))
                     frames.push(r);
             }
 
@@ -351,18 +414,19 @@ const RangeFind = Class("RangeFind", {
         }
         function rec(win) {
             let doc = win.document;
-            let pageRange = doc.createRange();
-            pageRange.selectNode(doc.body || doc.documentElement.lastChild);
+            let pageRange = RangeFind.nodeRange(doc.body || doc.documentElement.lastChild);
             backup = backup || pageRange;
             let pageStart = RangeFind.endpoint(pageRange, true);
             let pageEnd = RangeFind.endpoint(pageRange, false);
 
             for (let frame in util.Array.itervalues(win.frames)) {
                 let range = doc.createRange();
-                range.selectNode(frame.frameElement);
-                pushRange(pageStart, RangeFind.endpoint(range, true));
-                pageStart = RangeFind.endpoint(range, false);
-                rec(frame);
+                if (util.computedStyle(frame.frameElement).visibility == "visible") {
+                    range.selectNode(frame.frameElement);
+                    pushRange(pageStart, RangeFind.endpoint(range, true));
+                    pageStart = RangeFind.endpoint(range, false);
+                    rec(frame);
+                }
             }
             pushRange(pageStart, pageEnd);
         }
@@ -370,6 +434,17 @@ const RangeFind = Class("RangeFind", {
         if (frames.length == 0)
             frames[0] = RangeFind.Range(RangeFind.endpoint(backup, true), 0);
         return frames;
+    },
+
+    reset: function () {
+        this.startRange = this.selectedRange;
+        this.startRange.collapse(!this.reverse);
+        this.lastRange = this.selectedRange;
+        this.range = this.findRange(this.startRange);
+        this.ranges.first = this.range;
+        this.ranges.forEach(function (range) range.save());
+        this.forward = null;
+        this.found = false;
     },
 
     // This doesn't work yet.
@@ -406,24 +481,6 @@ const RangeFind = Class("RangeFind", {
         return null;
     },
 
-    get searchString() this.lastString,
-    get backward() this.finder.findBackwards,
-
-    iter: function (word) {
-        let saved = ["range", "lastRange", "lastString"].map(this.closure(function (s) [s, this[s]]));
-        try {
-            this.range = this.ranges[0];
-            this.lastRange = null;
-            this.lastString = word;
-            var res;
-            while ((res = this.search(null, this.reverse, true)))
-                yield res;
-        }
-        finally {
-            saved.forEach(function ([k, v]) this[k] = v, this);
-        }
-    },
-
     search: function (word, reverse, private_) {
         if (!private_ && this.lastRange && !RangeFind.equal(this.selectedRange, this.lastRange))
             this.reset();
@@ -450,108 +507,55 @@ const RangeFind = Class("RangeFind", {
         else {
             function indices() {
                 let idx = this.range.index;
-                for (let i in this.backward ? util.range(idx + 1, 0, -1) : util.range(idx, this.ranges.length))
+                if (this.backward)
+                    var groups = [util.range(idx + 1, 0, -1), util.range(this.ranges.length, idx, -1)];
+                else
+                    var groups = [util.range(idx, this.ranges.length), util.range(0, idx + 1)];
+
+                for (let i in groups[0])
                     yield i;
-                if (private_)
-                    return;
-                this.wrapped = true;
-                this.lastRange = null;
-                for (let i in this.backward ? util.range(this.ranges.length, idx, -1) : util.range(0, idx + 1))
-                    yield i;
+
+                if (!private_) {
+                    this.wrapped = true;
+                    this.lastRange = null;
+                    for (let i in groups[1])
+                        yield i;
+                }
             }
             for (let i in indices.call(this)) {
+                if (!private_ && this.range.window != this.ranges[i].window && this.range.window != this.ranges[i].window.parent) {
+                    this.range.descroll();
+                    this.range.deselect();
+                }
                 this.range = this.ranges[i];
 
-                let start = this.sameDocument(this.lastRange, this.range.range) && this.range.intersects(this.lastRange) ?
-                            RangeFind.endpoint(this.lastRange, !(again ^ this.backward)) :
-                            RangeFind.endpoint(this.range.range, !this.backward);;
+                let start = RangeFind.sameDocument(this.lastRange, this.range.range) && this.range.intersects(this.lastRange) ?
+                                RangeFind.endpoint(this.lastRange, !(again ^ this.backward)) :
+                                RangeFind.endpoint(this.range.range, !this.backward);;
+
                 if (this.backward && !again)
                     start = RangeFind.endpoint(this.startRange, false);
 
                 var range = this.finder.Find(word, this.range.range, start, this.range.range);
                 if (range)
                     break;
-                if (!private_) {
-                    this.range.descroll();
-                    this.range.deselect();
-                }
             }
         }
 
         if (range)
             this.lastRange = range.cloneRange();
-        if (private_)
-            return range;
-
-        this.lastString = word;
-        if (range == null) {
-            this.cancel();
-            this.found = false;
-            return null;
+        if (!private_) {
+            this.lastString = word;
+            if (range == null) {
+                this.cancel();
+                this.found = false;
+                return null;
+            }
+            this.found = true;
         }
-        this.range.selection.removeAllRanges();
-        this.range.selection.addRange(range);
-        this.range.selectionController.scrollSelectionIntoView(
-            this.range.selectionController.SELECTION_NORMAL, 0, false);
-        this.found = true;
+        if (range && (!private_ || private_ < 0))
+            this.selectedRange = range;
         return range;
-    },
-
-    highlight: function (clear) {
-
-        if (!clear && (!this.lastString || this.lastString == this.highlighted))
-            return;
-
-        if (!clear && this.highlighted)
-            this.highlight(true);
-
-        if (clear && !this.highlighted)
-            return;
-
-        let span = util.xmlToDom(<span highlight="Search"/>, this.range.document);
-
-        function highlight(range) {
-            let startContainer = range.startContainer;
-            let startOffset = range.startOffset;
-            let node = startContainer.ownerDocument.importNode(span, true);
-
-            let docfrag = range.extractContents();
-            let before = startContainer.splitText(startOffset);
-            let parent = before.parentNode;
-            node.appendChild(docfrag);
-            parent.insertBefore(node, before);
-            range.selectNode(node);
-        }
-
-        function unhighlight(range) {
-            let elem = range.startContainer;
-            while (!(elem instanceof Element) && elem.parentNode)
-                elem = elem.parentNode;
-            if (elem.getAttributeNS(NS.uri, "highlight") != "Search")
-                return;
-
-            let docfrag = range.extractContents();
-
-            let parent = elem.parentNode;
-            parent.replaceChild(docfrag, elem);
-            parent.normalize();
-        }
-
-        let action = clear ? unhighlight : highlight;
-        let string = this[clear ? "highlighted" : "lastString"];
-        for (let r in this.iter(string)) {
-            action(r);
-            this.lastRange = r;
-        }
-        if (clear) {
-            this.highlighted = null;
-            this.purgeListeners();
-        }
-        else {
-            this.highlighted = this.lastString;
-            this.addListeners();
-            this.search(null, false); // Rehighlight collapsed range
-        }
     },
 
     addListeners: function () {
@@ -562,32 +566,23 @@ const RangeFind = Class("RangeFind", {
         for (let range in values(this.ranges))
             range.window.removeEventListener("unload", this.closure.onUnload, true);
     },
-
     onUnload: function (event) {
         this.purgeListeners();
         if (this.highlighted)
             this.highlight(false);
         this.stale = true;
-    },
-
-    cancel: function () {
-        this.purgeListeners();
-        this.range.deselect();
-        this.range.descroll();
     }
 }, {
     Range: Class("RangeFind.Range", {
         init: function (range, index) {
-            if (range instanceof Ci.nsIDOMWindow) { // Kludge
-                this.document = range.document;
-                return;
-            }
-
             this.index = index;
 
-            this.document = range.startContainer.ownerDocument;
-            this.window = this.document.defaultView;
             this.range = range;
+			this.document = range.startContainer.ownerDocument;
+            this.window = this.document.defaultView;
+            this.docShell = this.window.QueryInterface(Ci.nsIInterfaceRequestor)
+                                       .getInterface(Ci.nsIWebNavigation)
+                                       .QueryInterface(Ci.nsIDocShell);
 
             if (this.selection == null)
                 return false;
@@ -617,14 +612,6 @@ const RangeFind = Class("RangeFind", {
                 this.selection.addRange(this.initialSelection);
         },
 
-        get docShell() {
-            if (this._docShell)
-                return this._docShell;
-            for (let shell in iter(config.browser.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem.typeAll, Ci.nsIDocShell.ENUMERATE_FORWARDS)))
-                if (shell.QueryInterface(nsIWebNavigation).document == this.document)
-                    return this._docShell = shell;
-            throw Error();
-        },
         get selectionController() this.docShell
                     .QueryInterface(Ci.nsIInterfaceRequestor)
                     .getInterface(Ci.nsISelectionDisplay)
@@ -637,8 +624,9 @@ const RangeFind = Class("RangeFind", {
             }}
 
     }),
-    selectNodePath: ["ancestor-or-self::" + s for ([i, s] in Iterator(
-            ["a", "xhtml:a", "*[@onclick]"]))].join(" | "),
+	contains: function (range, r)
+		range.compareBoundaryPoints(Range.START_TO_END, r) >= 0 &&
+		range.compareBoundaryPoints(Range.END_TO_START, r) <= 0,
     endpoint: function (range, before) {
         range = range.cloneRange();
         range.collapse(before);
@@ -650,7 +638,15 @@ const RangeFind = Class("RangeFind", {
         }
         catch (e) {}
         return false;
-    }
+    },
+    nodeRange: function (node) {
+        let range = node.ownerDocument.createRange();
+        range.selectNode(node);
+        return range;
+    },
+    sameDocument: function (r1, r2) r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument,
+    selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(
+        function (p) "ancestor-or-self::" + p).join(" | ")
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

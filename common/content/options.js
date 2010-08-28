@@ -792,10 +792,11 @@ const Options = Module("options", {
      */
     // FIXME: Well it used to. I'm looking at you mst! --djk
     safeSetPref: function (name, value, message) {
-        let val = this._loadPreference(name, null, false);
-        let def = this._loadPreference(name, null, true);
-        let lib = this._loadPreference(Options.SAVED + name);
-        if (lib == null && val != def || val != lib) {
+        let curval = this._loadPreference(name, null, false);
+        let defval = this._loadPreference(name, null, true);
+        let saved  = this._loadPreference(Options.SAVED + name);
+
+        if (saved == null && curval != defval || curval != saved) {
             let msg = "Warning: setting preference " + name + ", but it's changed from its default value.";
             if (message)
                 msg += " " + message;
@@ -952,14 +953,6 @@ const Options = Module("options", {
     SAVED: "extensions.dactyl.saved.",
     OLD_SAVED: "dactyl.saved."
 }, {
-    commandline: function () {
-        // TODO: maybe reset in .destroy()?
-        // TODO: move to buffer.js
-        // we have our own typeahead find implementation
-        // See: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
-        options.safeSetPref("accessibility.typeaheadfind.autostart", false);
-        options.safeSetPref("accessibility.typeaheadfind", false); // actually the above setting should do it, but has no effect in Firefox
-    },
     commands: function () {
         function setAction(args, modifiers) {
             let bang = args.bang;

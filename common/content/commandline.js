@@ -613,78 +613,83 @@ const CommandLine = Module("commandline", {
      * @private
      */
     onEvent: function onEvent(event) {
-        let command = this.command;
+        try {
+            let command = this.command;
 
-        if (event.type == "blur") {
-            // prevent losing focus, there should be a better way, but it just didn't work otherwise
-            this.setTimeout(function () {
-                if (this._commandShown() && event.originalTarget == this._commandWidget.inputField)
-                    this._commandWidget.inputField.focus();
-            }, 0);
-        }
-        else if (event.type == "focus") {
-            if (!this._commandShown() && event.target == this._commandWidget.inputField) {
-                event.target.blur();
-                dactyl.beep();
+            if (event.type == "blur") {
+                // prevent losing focus, there should be a better way, but it just didn't work otherwise
+                this.setTimeout(function () {
+                    if (this._commandShown() && event.originalTarget == this._commandWidget.inputField)
+                        this._commandWidget.inputField.focus();
+                }, 0);
             }
-        }
-        else if (event.type == "input") {
-            this.resetCompletions();
-            commandline.triggerCallback("change", this._currentExtendedMode, command);
-        }
-        else if (event.type == "keypress") {
-            let key = events.toString(event);
-            if (this._completions)
-                this._completions.previewClear();
-            if (!this._currentExtendedMode)
-                return;
-
-            // user pressed <Enter> to carry out a command
-            // user pressing <Esc> is handled in the global onEscape
-            //   FIXME: <Esc> should trigger "cancel" event
-            if (events.isAcceptKey(key)) {
-                let mode = this._currentExtendedMode; // save it here, as modes.pop() resets it
-                this._keepCommand = !userContext.hidden_option_no_command_afterimage;
-                this._currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
-                modes.pop(!this._silent);
-                commandline.triggerCallback("submit", mode, command);
-            }
-            // user pressed <Up> or <Down> arrow to cycle this._history completion
-            else if (/^<(Up|Down|S-Up|S-Down|PageUp|PageDown)>$/.test(key)) {
-                // prevent tab from moving to the next field
-                event.preventDefault();
-                event.stopPropagation();
-
-                dactyl.assert(this._history);
-                this._history.select(/Up/.test(key), !/(Page|S-)/.test(key));
-            }
-            // user pressed <Tab> to get completions of a command
-            else if (/^<(Tab|S-Tab)>$/.test(key)) {
-                // prevent tab from moving to the next field
-                event.preventDefault();
-                event.stopPropagation();
-
-                this._tabTimer.tell(event);
-            }
-            else if (key == "<BS>") {
-                // reset the tab completion
-                //this.resetCompletions();
-
-                // and blur the command line if there is no text left
-                if (command.length == 0) {
-                    commandline.triggerCallback("cancel", this._currentExtendedMode);
-                    modes.pop();
+            else if (event.type == "focus") {
+                if (!this._commandShown() && event.target == this._commandWidget.inputField) {
+                    event.target.blur();
+                    dactyl.beep();
                 }
             }
-            else { // any other key
-                //this.resetCompletions();
+            else if (event.type == "input") {
+                this.resetCompletions();
+                commandline.triggerCallback("change", this._currentExtendedMode, command);
             }
-            // allow this event to be handled by the host app
+            else if (event.type == "keypress") {
+                let key = events.toString(event);
+                if (this._completions)
+                    this._completions.previewClear();
+                if (!this._currentExtendedMode)
+                    return;
+
+                // user pressed <Enter> to carry out a command
+                // user pressing <Esc> is handled in the global onEscape
+                //   FIXME: <Esc> should trigger "cancel" event
+                if (events.isAcceptKey(key)) {
+                    let mode = this._currentExtendedMode; // save it here, as modes.pop() resets it
+                    this._keepCommand = !userContext.hidden_option_no_command_afterimage;
+                    this._currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
+                    modes.pop(!this._silent);
+                    commandline.triggerCallback("submit", mode, command);
+                }
+                // user pressed <Up> or <Down> arrow to cycle this._history completion
+                else if (/^<(Up|Down|S-Up|S-Down|PageUp|PageDown)>$/.test(key)) {
+                    // prevent tab from moving to the next field
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    dactyl.assert(this._history);
+                    this._history.select(/Up/.test(key), !/(Page|S-)/.test(key));
+                }
+                // user pressed <Tab> to get completions of a command
+                else if (/^<(Tab|S-Tab)>$/.test(key)) {
+                    // prevent tab from moving to the next field
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    this._tabTimer.tell(event);
+                }
+                else if (key == "<BS>") {
+                    // reset the tab completion
+                    //this.resetCompletions();
+
+                    // and blur the command line if there is no text left
+                    if (command.length == 0) {
+                        commandline.triggerCallback("cancel", this._currentExtendedMode);
+                        modes.pop();
+                    }
+                }
+                else { // any other key
+                    //this.resetCompletions();
+                }
+                // allow this event to be handled by the host app
+            }
+            else if (event.type == "keyup") {
+                let key = events.toString(event);
+                if (/^<(Tab|S-Tab)>$/.test(key))
+                    this._tabTimer.flush();
+            }
         }
-        else if (event.type == "keyup") {
-            let key = events.toString(event);
-            if (/^<(Tab|S-Tab)>$/.test(key))
-                this._tabTimer.flush();
+        catch (e) {
+            dactyl.reportError(e);
         }
     },
 
@@ -1724,6 +1729,8 @@ const ItemList = Class("ItemList", {
 
     // if @param selectedItem is given, show the list and select that item
     setItems: function setItems(newItems, selectedItem) {
+        if (this._selItem > -1)
+            this._getCompletion(this._selItem).removeAttribute("selected");
         if (this._container.collapsed)
             this._minHeight = 0;
         this._startIndex = this._endIndex = this._selIndex = -1;
@@ -1737,9 +1744,6 @@ const ItemList = Class("ItemList", {
 
     // select index, refill list if necessary
     selectItem: function selectItem(index) {
-        //if (this._container.collapsed) // FIXME
-        //    return;
-
         //let now = Date.now();
 
         if (this._div == null)

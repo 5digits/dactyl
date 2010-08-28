@@ -426,7 +426,7 @@ const IO = Module("io", {
             let dir = File(newDir);
 
             if (!dir.exists() || !dir.isDirectory()) {
-                dactyl.echoerr("E344: Can't find directory \"" + dir.path + "\" in path");
+                dactyl.echoerr("E344: Can't find directory " + dir.path.quote());
                 return null;
             }
 
@@ -564,14 +564,14 @@ lookup:
         let dirs = File.getPathsFromPathList(options["runtimepath"]);
         let found = false;
 
-        dactyl.echomsg("Searching for \"" + paths.join(" ") + "\" in \"" + options["runtimepath"] + "\"", 2);
+        dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options["runtimepath"].quote(), 2);
 
         outer:
         for (let [, dir] in Iterator(dirs)) {
             for (let [, path] in Iterator(paths)) {
                 let file = File.joinPaths(dir, path);
 
-                dactyl.echomsg("Searching for \"" + file.path + "\"", 3);
+                dactyl.echomsg("Searching for " + file.path.quote(), 3);
 
                 if (file.exists() && file.isFile() && file.isReadable()) {
                     io.source(file.path, false);
@@ -584,7 +584,7 @@ lookup:
         }
 
         if (!found)
-            dactyl.echomsg("not found in 'runtimepath': \"" + paths.join(" ") + "\"", 1);
+            dactyl.echomsg("not found in 'runtimepath': " + paths.join(" ").quote(), 1);
 
         return found;
     },
@@ -609,9 +609,9 @@ lookup:
             if (!file.exists() || !file.isReadable() || file.isDirectory()) {
                 if (!silent) {
                     if (file.exists() && file.isDirectory())
-                        dactyl.echomsg("Cannot source a directory: \"" + filename + "\"", 0);
+                        dactyl.echomsg("Cannot source a directory: " + filename.quote(), 0);
                     else
-                        dactyl.echomsg("could not source: \"" + filename + "\"", 1);
+                        dactyl.echomsg("could not source: " + filename.quote(), 1);
 
                     dactyl.echoerr("E484: Can't open file " + filename);
                 }
@@ -619,7 +619,7 @@ lookup:
                 return;
             }
 
-            dactyl.echomsg("sourcing \"" + filename + "\"", 2);
+            dactyl.echomsg("sourcing " + filename.quote(), 2);
 
             let str = file.read();
             let uri = services.get("io").newFileURI(file);
@@ -705,7 +705,7 @@ lookup:
             if (this._scriptNames.indexOf(file.path) == -1)
                 this._scriptNames.push(file.path);
 
-            dactyl.echomsg("finished sourcing \"" + filename + "\"", 2);
+            dactyl.echomsg("finished sourcing " + filename.quote(), 2);
 
             dactyl.log("Sourced: " + filename, 3);
         }
@@ -880,7 +880,7 @@ lookup:
                 let file = File(filename);
 
                 dactyl.assert(!file.exists() || args.bang,
-                    "E189: \"" + filename + "\" exists (add ! to override)");
+                    "E189: " + filename.quote() + " exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
                 let lines = [cmd.serial().map(commands.commandToString) for (cmd in commands) if (cmd.serial)];
@@ -903,7 +903,7 @@ lookup:
                     file.write(lines.join("\n"));
                 }
                 catch (e) {
-                    dactyl.echoerr("E190: Cannot open \"" + filename + "\" for writing");
+                    dactyl.echoerr("E190: Cannot open " + filename.quote() + " for writing");
                     dactyl.log("Could not write to " + file.path + ": " + e.message); // XXX
                 }
             }, {

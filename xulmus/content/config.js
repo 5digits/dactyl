@@ -44,98 +44,74 @@ const Config = Module("config", ConfigBase, {
 
     styleableChrome: ["chrome://gonzo/content/xul/mainplayer.xul"],
 
-    autocommands: [["BookmarkAdd",    "Triggered after a page is bookmarked"],
-                   ["ColorScheme",    "Triggered after a color scheme has been loaded"],
-                   ["DOMLoad",        "Triggered when a page's DOM content has fully loaded"],
-                   ["DownloadPost",   "Triggered when a download has completed"],
-                   ["Fullscreen",     "Triggered when the browser's fullscreen state changes"],
-                   ["LocationChange", "Triggered when changing tabs or when navigation to a new location"],
-                   ["PageLoadPre",    "Triggered after a page load is initiated"],
-                   ["PageLoad",       "Triggered when a page gets (re)loaded/opened"],
-                   ["ShellCmdPost",   "Triggered after executing a shell command with :!cmd"],
-                   ["TrackChangePre", "Triggered before a playing track is changed"],
-                   ["TrackChange",    "Triggered after a playing track has changed"],
-                   ["ViewChangePre",  "Triggered before a sequencer view is changed"],
-                   ["ViewChange",     "Triggered after a sequencer view is changed"],
-                   ["StreamStart",    "Triggered after a stream has started"],
-                   ["StreamPause",    "Triggered after a stream has paused"],
-                   ["StreamEnd",      "Triggered after a stream has ended"],
-                   ["StreamStop",     "Triggered after a stream has stopped"],
-                   ["XulmusEnter",    "Triggered after Songbird starts"],
-                   ["XulmusLeavePre", "Triggered before exiting Songbird, just before destroying each module"],
-                   ["XulmusLeave",    "Triggered before exiting Songbird"]],
+    autocommands: {
+        BookmarkAdd: "Triggered after a page is bookmarked",
+        ColorScheme: "Triggered after a color scheme has been loaded",
+        DOMLoad: "Triggered when a page's DOM content has fully loaded",
+        DownloadPost: "Triggered when a download has completed",
+        Fullscreen: "Triggered when the browser's fullscreen state changes",
+        LocationChange: "Triggered when changing tabs or when navigation to a new location",
+        PageLoadPre: "Triggered after a page load is initiated",
+        PageLoad: "Triggered when a page gets (re)loaded/opened",
+        ShellCmdPost: "Triggered after executing a shell command with :!cmd",
+        TrackChangePre: "Triggered before a playing track is changed",
+        TrackChange: "Triggered after a playing track has changed",
+        ViewChangePre: "Triggered before a sequencer view is changed",
+        ViewChange: "Triggered after a sequencer view is changed",
+        StreamStart: "Triggered after a stream has started",
+        StreamPause: "Triggered after a stream has paused",
+        StreamEnd: "Triggered after a stream has ended",
+        StreamStop: "Triggered after a stream has stopped",
+        Enter: "Triggered after Songbird starts",
+        LeavePre: "Triggered before exiting Songbird, just before destroying each module",
+        Leave: "Triggered before exiting Songbird",
+    },
 
     // TODO: remove those which don't make sense, can't be provided.
-    dialogs: [
-        ["about",            "About Songbird",
+    dialogs: {
+        about: ["About Songbird",
             function () { window.openDialog("chrome://songbird/content/xul/about.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        /*
-        ["addbookmark",      "Add bookmark for the current page",
-            function () { PlacesCommandHook.bookmarkCurrentPage(true, PlacesUtils.bookmarksRootId); }],
-        */
-        ["addons",           "Manage Add-ons",
+        addons: ["Manage Add-ons",
             function () { SBOpenPreferences("paneAddons"); }],
-        /*
-        ["bookmarks",        "List your bookmarks",
-            function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
-        */
-        ["checkupdates",     "Check for updates",
+        checkupdates: ["Check for updates",
             function () { window.checkForUpdates(); }],
-        ["cleardata",        "Clear private data",
+        cleardata: ["Clear private data",
             function () {  Sanitizer.showUI(); }],
-        ["cookies",          "List your cookies",
+        cookies: ["List your cookies",
             function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
-        ["console",          "JavaScript console",
+        console: ["JavaScript console",
             function () { window.toJavaScriptConsole(); }],
-        /*
-        ["customizetoolbar", "Customize the Toolbar",
-            function () { window.BrowserCustomizeToolbar(); }],
-        */
-        ["dominspector",     "DOM Inspector",
+        dominspector: ["DOM Inspector",
             function () { try { window.inspectDOMDocument(content.document); } catch (e) { dactyl.echoerr("DOM Inspector extension not installed"); } }],
-        ["downloads",        "Manage Downloads",
+        downloads: ["Manage Downloads",
             function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
-        /*
-        ["history",          "List your history",
-            function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
-        ["import",           "Import Preferences, Bookmarks, History, etc. from other browsers",
-            function () { window.BrowserImport(); }],
-        */
-        ["jumpto",           "Jump to a media item",
+        jumpto: ["Jump to a media item",
             function () { onJumpToFileKey(); }],
-        ["newsmartplaylist", "Open the file selector dialog",
+        newsmartplaylist: ["Open the file selector dialog",
             function () { SBNewSmartPlaylist(); }],
-        ["openfile",         "Open the file selector dialog",
+        openfile: ["Open the file selector dialog",
             function () { SBFileOpen(); }],
-        /*
-        ["pageinfo",         "Show information about the current page",
-            function () { window.BrowserPageInfo(); }],
-        */
-        ["pagesource",       "View page source",
+        pagesource: ["View page source",
             function () { window.BrowserViewSourceOfDocument(content.document); }],
-        ["places",           "Places Organizer: Manage your bookmarks and history",
+        places: ["Places Organizer: Manage your bookmarks and history",
             function () { PlacesCommandHook.showPlacesOrganizer(ORGANIZER_ROOT_BOOKMARKS); }],
-        ["preferences",      "Show Songbird preferences dialog",
+        preferences: ["Show Songbird preferences dialog",
             function () { window.openPreferences(); }],
-        /*
-        ["printpreview",     "Preview the page before printing",
-            function () { PrintUtils.printPreview(onEnterPrintPreview, onExitPrintPreview); }],
-        */
-        ["printsetup",       "Setup the page size and orientation before printing",
+        printsetup: ["Setup the page size and orientation before printing",
             function () { PrintUtils.showPageSetup(); }],
-        ["print",            "Show print dialog",
+        print: ["Show print dialog",
             function () { PrintUtils.print(); }],
-        ["saveframe",        "Save frame to disk",
+        saveframe: ["Save frame to disk",
             function () { window.saveFrameDocument(); }],
-        ["savepage",         "Save page to disk",
+        savepage: ["Save page to disk",
             function () { window.saveDocument(window.content.document); }],
-        ["searchengines",    "Manage installed search engines",
+        searchengines: ["Manage installed search engines",
             function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        ["selectionsource",  "View selection source",
+        selectionsource: ["View selection source",
             function () { buffer.viewSelectionSource(); }],
-        ["subscribe",        "Add a new subscription",
+        subscribe: ["Add a new subscription",
             function () { SBSubscribe(); }]
-    ],
+    },
 
     focusChange: function () {
         // Switch to -- PLAYER -- mode for Songbird Media Player.
@@ -153,14 +129,27 @@ const Config = Module("config", ConfigBase, {
 
     modes: [["PLAYER", { char: "p" }]],
 
+    removeTab: function (tab) {
+        if (config.tabbrowser.mTabs.length > 1)
+            config.tabbrowser.removeTab(tab);
+        else {
+            if (buffer.URL != "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
+                dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
+                config.tabbrowser.removeTab(tab);
+            }
+            else
+                dactyl.beep();
+        }
+    },
+
     scripts: [
-        "browser.js",
-        "bookmarks.js",
-        "history.js",
-        "quickmarks.js",
-        "tabs.js",
-        "player.js",
-        "library.js"
+        "browser",
+        "bookmarks",
+        "history",
+        "quickmarks",
+        "tabs",
+        "player",
+        "library"
     ],
 
     // FIXME: tab arg and media tab exception?

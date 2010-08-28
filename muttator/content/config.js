@@ -14,83 +14,53 @@ const Config = Module("config", ConfigBase, {
     hostApplication: "Thunderbird", // TODO: can this be found out otherwise? gBrandBundle.getString("brandShortName");
                                     // Yes, but it will be localized unlike all other strings. So, it's best left until we i18n dactyl. --djk
 
-    get mainWindowId() this.isComposeWindow ? "msgcomposeWindow" : "messengerWindow",
+    autocommands: {
+        DOMLoad: "Triggered when a page's DOM content has fully loaded",
+        FolderLoad: "Triggered after switching folders in Thunderbird",
+        PageLoadPre: "Triggered after a page load is initiated",
+        PageLoad: "Triggered when a page gets (re)loaded/opened",
+        Enter: "Triggered after Thunderbird starts",
+        Leave: "Triggered before exiting Thunderbird",
+        LeavePre: "Triggered before exiting Thunderbird",
+    },
 
-    /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: ["hints", "mail", "marks", "addressbook", "tabs"],
+    get browser() getBrowser(),
+
+    dialogs: {
+        about: ["About Thunderbird",
+            function () { window.openAboutDialog(); }],
+        addons: ["Manage Add-ons",
+            function () { window.openAddonsMgr(); }],
+        addressbook: ["Address book",
+            function () { window.toAddressBook(); }],
+        checkupdates: ["Check for updates",
+            function () { window.checkForUpdates(); }],
+        console: ["JavaScript console",
+            function () { window.toJavaScriptConsole(); }],
+        dominspector: ["DOM Inspector",
+            function () { window.inspectDOMDocument(content.document); }],
+        downloads: ["Manage Downloads",
+            function () { window.toOpenWindowByType('Download:Manager', 'chrome://mozapps/content/downloads/downloads.xul', 'chrome,dialog=no,resizable'); }],
+        preferences: ["Show Thunderbird preferences dialog",
+            function () { openOptionsDialog(); }],
+        printsetup: ["Setup the page size and orientation before printing",
+            function () { PrintUtils.showPageSetup(); }],
+        print: ["Show print dialog",
+            function () { PrintUtils.print(); }],
+        saveframe: ["Save frame to disk",
+            function () { window.saveFrameDocument(); }],
+        savepage: ["Save page to disk",
+            function () { window.saveDocument(window.content.document); }],
+    },
+
     defaults: {
         guioptions: "frb",
         showtabline: 1,
         titlestring: "Muttator"
     },
 
-    guioptions: {
-        m: ["MenuBar",            ["mail-toolbar-menubar2"]],
-        T: ["Toolbar" ,           ["mail-bar2"]],
-        f: ["Folder list",        ["folderPaneBox", "folderpane_splitter"]],
-        F: ["Folder list header", ["folderPaneHeader"]]
-    },
-
-    get isComposeWindow() window.wintype == "msgcompose",
-    get browserModes() [modes.MESSAGE],
-    get mailModes() [modes.NORMAL],
-    // focusContent() focuses this widget
-    get mainWidget() this.isComposeWindow ? document.getElementById("content-frame") : GetThreadTree(),
-    get visualbellWindow() document.getElementById(this.mainWindowId),
-    styleableChrome: ["chrome://messenger/content/messenger.xul",
-                      "chrome://messenger/content/messengercompose/messengercompose.xul"],
-
-    autocommands: [["DOMLoad",         "Triggered when a page's DOM content has fully loaded"],
-                   ["FolderLoad",      "Triggered after switching folders in Thunderbird"],
-                   ["PageLoadPre",     "Triggered after a page load is initiated"],
-                   ["PageLoad",        "Triggered when a page gets (re)loaded/opened"],
-                   ["MuttatorEnter",    "Triggered after Thunderbird starts"],
-                   ["MuttatorLeave",    "Triggered before exiting Thunderbird"],
-                   ["MuttatorLeavePre", "Triggered before exiting Thunderbird"]],
-    dialogs: [
-        ["about",            "About Thunderbird",
-            function () { window.openAboutDialog(); }],
-        ["addons",           "Manage Add-ons",
-            function () { window.openAddonsMgr(); }],
-        ["addressbook",      "Address book",
-            function () { window.toAddressBook(); }],
-        ["checkupdates",     "Check for updates",
-            function () { window.checkForUpdates(); }],
-        /*["cleardata",        "Clear private data",
-         function () { Cc[GLUE_CID].getService(Ci.nsIBrowserGlue).sanitize(window || null); }],*/
-        ["console",          "JavaScript console",
-            function () { window.toJavaScriptConsole(); }],
-        /*["customizetoolbar", "Customize the Toolbar",
-            function () { BrowserCustomizeToolbar(); }],*/
-        ["dominspector",     "DOM Inspector",
-            function () { window.inspectDOMDocument(content.document); }],
-        ["downloads",        "Manage Downloads",
-            function () { window.toOpenWindowByType('Download:Manager', 'chrome://mozapps/content/downloads/downloads.xul', 'chrome,dialog=no,resizable'); }],
-        /*["import",           "Import Preferences, Bookmarks, History, etc. from other browsers",
-            function () { BrowserImport(); }],
-        ["openfile",         "Open the file selector dialog",
-            function () { BrowserOpenFileWindow(); }],
-        ["pageinfo",         "Show information about the current page",
-            function () { BrowserPageInfo(); }],
-        ["pagesource",       "View page source",
-            function () { BrowserViewSourceOfDocument(content.document); }],*/
-        ["preferences",      "Show Thunderbird preferences dialog",
-            function () { openOptionsDialog(); }],
-        /*["printpreview",     "Preview the page before printing",
-            function () { PrintUtils.printPreview(onEnterPrintPreview, onExitPrintPreview); }],*/
-        ["printsetup",       "Setup the page size and orientation before printing",
-            function () { PrintUtils.showPageSetup(); }],
-        ["print",            "Show print dialog",
-            function () { PrintUtils.print(); }],
-        ["saveframe",        "Save frame to disk",
-            function () { window.saveFrameDocument(); }],
-        ["savepage",         "Save page to disk",
-            function () { window.saveDocument(window.content.document); }],
-        /*["searchengines",    "Manage installed search engines",
-            function () { openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        ["selectionsource",  "View selection source",
-            function () { buffer.viewSelectionSource(); }]*/
-    ],
+    /*** optional options, there are checked for existence and a fallback provided  ***/
+    features: ["hints", "mail", "marks", "addressbook", "tabs"],
 
     focusChange: function (win) {
         // we switch to -- MESSAGE -- mode for Muttator, when the main HTML widget gets focus
@@ -102,23 +72,28 @@ const Config = Module("config", ConfigBase, {
         }
     },
 
-    get browser() getBrowser(),
-    tabbrowser: {
-        __proto__: document.getElementById("tabmail"),
-        get mTabContainer() this.tabContainer,
-        get mTabs() this.tabContainer.childNodes,
-        get mCurrentTab() this.tabContainer.selectedItem,
-        get mStrip() this.tabStrip,
-        get browsers() [browser for (browser in Iterator(this.mTabs))]
+    guioptions: {
+        m: ["MenuBar",            ["mail-toolbar-menubar2"]],
+        T: ["Toolbar" ,           ["mail-bar2"]],
+        f: ["Folder list",        ["folderPaneBox", "folderpane_splitter"]],
+        F: ["Folder list header", ["folderPaneHeader"]]
     },
 
     // they are sorted by relevance, not alphabetically
     helpFiles: ["intro.html", "version.html"],
 
+    get isComposeWindow() window.wintype == "msgcompose",
+
+    get mainWidget() this.isComposeWindow ? document.getElementById("content-frame") : GetThreadTree(),
+
+    get mainWindowId() this.isComposeWindow ? "msgcomposeWindow" : "messengerWindow",
+
     modes: [
         ["MESSAGE", { char: "m" }],
         ["COMPOSE"]
     ],
+    get browserModes() [modes.MESSAGE],
+    get mailModes() [modes.NORMAL],
 
     // NOTE: as I don't use TB I have no idea how robust this is. --djk
     get outputHeight() {
@@ -137,15 +112,35 @@ const Config = Module("config", ConfigBase, {
             return document.getElementById("appcontent").boxObject.height;
     },
 
+    removeTab: function (tab) {
+        if (config.tabbrowser.mTabs.length > 1)
+            config.tabbrowser.removeTab(tab);
+        else
+            dactyl.beep();
+    },
+
     get scripts() this.isComposeWindow ? ["compose/compose.js"] : [
         "addressbook.js",
         "mail.js",
         "tabs.js",
     ],
 
+    styleableChrome: ["chrome://messenger/content/messenger.xul",
+                      "chrome://messenger/content/messengercompose/messengercompose.xul"],
+
+    tabbrowser: {
+        __proto__: document.getElementById("tabmail"),
+        get mTabContainer() this.tabContainer,
+        get mTabs() this.tabContainer.childNodes,
+        get mCurrentTab() this.tabContainer.selectedItem,
+        get mStrip() this.tabStrip,
+        get browsers() [browser for (browser in Iterator(this.mTabs))]
+    },
+
     // to allow Vim to :set ft=mail automatically
     tempFile: "mutt-ator-mail",
 
+    get visualbellWindow() document.getElementById(this.mainWindowId),
 }, {
 }, {
     commands: function () {

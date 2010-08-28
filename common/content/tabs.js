@@ -43,6 +43,8 @@ const Tabs = Module("tabs", {
             setTimeout(function () { dactyl.focusContent(true); }, 10); // just make sure, that no widget has focus
     },
 
+    get allTabs() Array.slice(config.tabbrowser.tabContainer.childNodes),
+
     /**
      * @property {Object} The previously accessed tab or null if no tab
      *     other than the current one has been accessed.
@@ -57,6 +59,21 @@ const Tabs = Module("tabs", {
         let browsers = config.tabbrowser.browsers;
         for (let i = 0; i < browsers.length; i++)
             yield [i, browsers[i]];
+    },
+
+    /**
+     * @property {number} The number of tabs in the current window.
+     */
+    get count() config.tabbrowser.mTabs.length,
+
+    /**
+     * @property {Object} The local options store for the current tab.
+     */
+    get options() {
+        let store = this.localStore;
+        if (!("options" in store))
+            store.options = {};
+        return store.options;
     },
 
     /**
@@ -75,20 +92,7 @@ const Tabs = Module("tabs", {
                 ".tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }");
     },
 
-    /**
-     * @property {number} The number of tabs in the current window.
-     */
-    get count() config.tabbrowser.mTabs.length,
-
-    /**
-     * @property {Object} The local options store for the current tab.
-     */
-    get options() {
-        let store = this.localStore;
-        if (!("options" in store))
-            store.options = {};
-        return store.options;
-    },
+    get visibleTabs() config.tabbrowser.visibleTabs || this.allTabs.filter(function (tab) !tab.hidden),
 
     /**
      * Returns the local state store for the tab at the specified
@@ -123,37 +127,33 @@ const Tabs = Module("tabs", {
     get closedTabs() services.get("json").decode(services.get("sessionStore").getClosedTabData(window)),
 
     /**
-     * Returns the index of <b>tab</b> or the index of the currently
-     * selected tab if <b>tab</b> is not specified. This is a 0-based
-     * index.
+     * Clones the specified <b>tab</b> and append it to the tab list.
      *
-     * @param {Object} tab A tab from the current tab list.
-     * @returns {number}
+     * @param {Object} tab The tab to clone.
+     * @param {boolean} activate Whether to select the newly cloned tab.
      */
-    index: function (tab) {
-        if (tab)
-            return Array.indexOf(config.tabbrowser.mTabs, tab);
-        else
-            return config.tabbrowser.mTabContainer.selectedIndex;
+    cloneTab: function (tab, activate) {
+        let newTab = config.tabbrowser.addTab();
+        Tabs.copyTab(newTab, tab);
+
+        if (activate)
+            config.tabbrowser.mTabContainer.selectedItem = newTab;
+
+        return newTab;
     },
 
-    // TODO: implement filter
     /**
-     * Returns an array of all tabs in the tab list.
+     * Detaches the specified <b>tab</b> and open it in a new window. If no
+     * tab is specified the currently selected tab is detached.
      *
-     * @returns {Object[]}
+     * @param {Object} tab The tab to detach.
      */
-    // FIXME: why not return the tab element?
-    //      : unused? Remove me.
-    get: function () {
-        let buffers = [];
-        for (let [i, browser] in this.browsers) {
-            let title = browser.contentTitle || "(Untitled)";
-            let uri = browser.currentURI.spec;
-            let number = i + 1;
-            buffers.push([number, title, uri]);
-        }
-        return buffers;
+    detachTab: function (tab) {
+        if (!tab)
+            tab = config.tabbrowser.mTabContainer.selectedItem;
+
+        services.get("windowWatcher")
+                .openWindow(window, window.getBrowserURL(), null, "chrome,dialog=no,all", tab);
     },
 
     /**
@@ -172,6 +172,26 @@ const Tabs = Module("tabs", {
     },
 
     /**
+     * If TabView exists, returns the Panorama window. If the Panorama
+     * is has not yet initialized, this function will not return until
+     * it has.
+     *
+     * @returns {Window}
+     */
+    getGroups: function () {
+        if ("_groups" in this)
+            return this._groups;
+        if (window.TabView && TabView._initFrame)
+            TabView._initFrame();
+        let iframe = document.getElementById("tab-view");
+        this._groups = this._groups = iframe ? iframe.contentWindow : null;
+        if (this._groups)
+            while (!this._groups.TabItems)
+                dactyl.threadYield(false, true);
+        return this._groups;
+    },
+
+    /**
      * Returns the tab at the specified <b>index</b> or the currently
      * selected tab if <b>index</b> is not specified. This is a 0-based
      * index.
@@ -180,10 +200,70 @@ const Tabs = Module("tabs", {
      * @returns {Object}
      */
     getTab: function (index) {
-        if (index != undefined)
+        if (index != null)
             return config.tabbrowser.mTabs[index];
         else
             return config.tabbrowser.mCurrentTab;
+    },
+
+    /**
+     * Returns the index of <b>tab</b> or the index of the currently
+     * selected tab if <b>tab</b> is not specified. This is a 0-based
+     * index.
+     *
+     * @param {<xul:tab/>} tab A tab from the current tab list.
+     * @param {boolean} visible Whether to consider only visible tabs.
+     * @returns {number}
+     */
+    index: function (tab, visible) {
+        let tabs = this[visible ? "visibleTabs" : "allTabs"];
+        return tabs.indexOf(tab || config.tabbrowser.mCurrentTab);
+    },
+
+    /**
+     * @param spec can either be:
+     * - an absolute integer
+     * - "" for the current tab
+     * - "+1" for the next tab
+     * - "-3" for the tab, which is 3 positions left of the current
+     * - "$" for the last tab
+     */
+    indexFromSpec: function (spec, wrap) {
+        if (spec instanceof Node)
+            return this.allTabs.indexOf(spec);
+
+        let tabs     = this.visibleTabs;
+        let position = this.index(null, true);
+
+        if (spec == null || spec === "")
+            return position;
+
+        if (typeof spec === "number")
+            position = spec;
+        else if (spec === "$")
+            position = tabs.length - 1;
+        else if (/^[+-]\d+$/.test(spec))
+            position += parseInt(spec, 10);
+        else if (/^\d+$/.test(spec))
+            position = parseInt(spec, 10);
+        else
+            return -1;
+
+        if (position >= tabs.length)
+            position = wrap ? position % tabs.length : tabs.length - 1;
+        else if (position < 0)
+            position = wrap ? (position % tabs.length) + tabs.length : 0;
+
+        return this.allTabs.indexOf(tabs[position]);
+    },
+
+    /**
+     * Removes all tabs from the tab list except the specified <b>tab</b>.
+     *
+     * @param {Object} tab The tab to keep.
+     */
+    keepOnly: function (tab) {
+        config.tabbrowser.removeAllTabsBut(tab);
     },
 
     /**
@@ -206,7 +286,7 @@ const Tabs = Module("tabs", {
      *     list.
      */
     move: function (tab, spec, wrap) {
-        let index = Tabs.indexFromSpec(spec, wrap);
+        let index = tabs.indexFromSpec(spec, wrap);
         config.tabbrowser.moveTabTo(tab, index);
     },
 
@@ -223,96 +303,31 @@ const Tabs = Module("tabs", {
      */
     // FIXME: what is quitOnLastTab {1,2} all about then, eh? --djk
     remove: function (tab, count, focusLeftTab, quitOnLastTab) {
-        let removeOrBlankTab = {
-                Firefox: function (tab) {
-                    if (config.tabbrowser.mTabs.length > 1)
-                        config.tabbrowser.removeTab(tab);
-                    else {
-                        if (buffer.URL != "about:blank" ||
-                            window.getWebNavigation().sessionHistory.count > 0) {
-                            dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
-                            config.tabbrowser.removeTab(tab);
-                        }
-                        else
-                            dactyl.beep();
-                    }
-                },
-                Thunderbird: function (tab) {
-                    if (config.tabbrowser.mTabs.length > 1)
-                        config.tabbrowser.removeTab(tab);
-                    else
-                        dactyl.beep();
-                },
-                Songbird: function (tab) {
-                    if (config.tabbrowser.mTabs.length > 1)
-                        config.tabbrowser.removeTab(tab);
-                    else {
-                        if (buffer.URL != "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
-                            dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
-                            config.tabbrowser.removeTab(tab);
-                        }
-                        else
-                            dactyl.beep();
-                    }
-                }
-            }[config.hostApplication] || function () {};
+        count = Math.max(count, 1);
 
-        if (typeof count != "number" || count < 1)
-            count = 1;
-
-        if (quitOnLastTab >= 1 && config.tabbrowser.mTabs.length <= count) {
+        if (quitOnLastTab >= 1 && this.count <= count) {
             if (dactyl.windows.length > 1)
                 window.close();
             else
                 dactyl.quit(quitOnLastTab == 2);
-
             return;
         }
 
-        let index = this.index(tab);
-        if (focusLeftTab) {
-            let lastRemovedTab = 0;
-            for (let i = index; i > index - count && i >= 0; i--) {
-                removeOrBlankTab(this.getTab(i));
-                lastRemovedTab = i > 0 ? i : 1;
-            }
-            config.tabbrowser.mTabContainer.selectedIndex = lastRemovedTab - 1;
-        }
-        else {
-            let i = index + count - 1;
-            if (i >= this.count)
-                i = this.count - 1;
+        let tabs = this.visibleTabs
+        if (tabs.indexOf(tab) < 0)
+            tabs = this.allTabs;
+        let index = tabs.indexOf(tab);
 
-            for (; i >= index; i--)
-                removeOrBlankTab(this.getTab(i));
-            config.tabbrowser.mTabContainer.selectedIndex = index;
-        }
-    },
+        let next = index + (focusLeftTab ? -count : count);
+        if (!(next in tabs))
+            next = index + (focusLeftTab ? 1 : -1);
+        if (next in tabs)
+            config.tabbrowser.mTabContainer.selectedItem = tabs[next];
 
-    /**
-     * Removes all tabs from the tab list except the specified <b>tab</b>.
-     *
-     * @param {Object} tab The tab to keep.
-     */
-    keepOnly: function (tab) {
-        config.tabbrowser.removeAllTabsBut(tab);
-    },
-
-    /**
-     * Selects the tab at the position specified by <b>spec</b>.
-     *
-     * @param {string} spec See {@link Tabs.indexFromSpec}
-     * @param {boolean} wrap Whether an out of bounds <b>spec</b> causes
-     *     the selection position to wrap around the start/end of the tab
-     *     list.
-     */
-    select: function (spec, wrap) {
-        let index = Tabs.indexFromSpec(spec, wrap);
-        // FIXME:
-        if (index == -1)
-            dactyl.beep();
+        if (focusLeftTab)
+            tabs.slice(Math.max(0, index+1 - count), index+1).forEach(config.removeTab);
         else
-            config.tabbrowser.mTabContainer.selectedIndex = index;
+            tabs.slice(index, index + count).forEach(config.removeTab);
     },
 
     /**
@@ -351,6 +366,40 @@ const Tabs = Module("tabs", {
         }
         else
             config.tabbrowser.reloadAllTabs();
+    },
+
+    /**
+     * Selects the tab at the position specified by <b>spec</b>.
+     *
+     * @param {string} spec See {@link Tabs.indexFromSpec}
+     * @param {boolean} wrap Whether an out of bounds <b>spec</b> causes
+     *     the selection position to wrap around the start/end of the tab
+     *     list.
+     */
+    select: function (spec, wrap) {
+        let index = tabs.indexFromSpec(spec, wrap);
+        if (index == -1)
+            dactyl.beep();
+        else
+            config.tabbrowser.mTabContainer.selectedIndex = index;
+    },
+
+    /**
+     * Selects the alternate tab.
+     */
+    selectAlternateTab: function () {
+        dactyl.assert(tabs.alternate != null && tabs.getTab() != tabs.alternate,
+            "E23: No alternate page");
+
+        // NOTE: this currently relies on v.tabs.index() returning the
+        // currently selected tab index when passed null
+        let index = tabs.index(tabs.alternate);
+
+        // TODO: since a tab close is more like a bdelete for us we
+        // should probably reopen the closed tab when a 'deleted'
+        // alternate is selected
+        dactyl.assert(index >= 0, "E86: Buffer does not exist");  // TODO: This should read "Buffer N does not exist"
+        tabs.select(index);
     },
 
     /**
@@ -398,7 +447,7 @@ const Tabs = Module("tabs", {
         }
         else {
             buffer = this._lastBufferSwitchArgs;
-            if (allowNonUnique === undefined || allowNonUnique == null) // XXX
+            if (allowNonUnique == null) // XXX
                 allowNonUnique = this._lastBufferSwitchSpecial;
         }
 
@@ -407,14 +456,12 @@ const Tabs = Module("tabs", {
             return;
         }
 
-        if (!count || count < 1)
-            count = 1;
-        if (typeof reverse != "boolean")
-            reverse = false;
+        count = Math.max(1, count || 1);
+        reverse = Boolean(reverse);
 
         let matches = buffer.match(/^(\d+):?/);
         if (matches) {
-            tabs.select(parseInt(matches[1], 10) - 1, false); // make it zero-based
+            tabs.select(this.allTabs[parseInt(matches[1], 10) - 1], false);
             return;
         }
 
@@ -424,8 +471,9 @@ const Tabs = Module("tabs", {
         let nbrowsers = config.tabbrowser.browsers.length;
         for (let [i, ] in tabs.browsers) {
             let index = (i + first) % nbrowsers;
-            let url = config.tabbrowser.getBrowserAtIndex(index).contentDocument.location.href;
-            let title = config.tabbrowser.getBrowserAtIndex(index).contentDocument.title.toLowerCase();
+            let browser = config.tabbrowser.getBrowserAtIndex(index);
+            let url = browser.contentDocument.location.href;
+            let title = browser.contentDocument.title.toLowerCase();
             if (url == buffer) {
                 tabs.select(index, false);
                 return;
@@ -434,69 +482,19 @@ const Tabs = Module("tabs", {
             if (url.indexOf(buffer) >= 0 || title.indexOf(lowerBuffer) >= 0)
                 matches.push(index);
         }
+
         if (matches.length == 0)
             dactyl.echoerr("E94: No matching buffer for " + buffer);
         else if (matches.length > 1 && !allowNonUnique)
             dactyl.echoerr("E93: More than one match for " + buffer);
         else {
-            if (reverse) {
+            let index = (count - 1) % matches.length;
+            if (reverse)
                 index = matches.length - count;
-                while (index < 0)
-                    index += matches.length;
-            }
-            else
-                index = (count - 1) % matches.length;
 
-            tabs.select(matches[index], false);
+            index = Array.indexOf(config.tabbrowser.browsers, matches[index]);
+            tabs.select(index, false);
         }
-    },
-
-    /**
-     * Clones the specified <b>tab</b> and append it to the tab list.
-     *
-     * @param {Object} tab The tab to clone.
-     * @param {boolean} activate Whether to select the newly cloned tab.
-     */
-    cloneTab: function (tab, activate) {
-        let newTab = config.tabbrowser.addTab();
-        Tabs.copyTab(newTab, tab);
-
-        if (activate)
-            config.tabbrowser.mTabContainer.selectedItem = newTab;
-
-        return newTab;
-    },
-
-    /**
-     * Detaches the specified <b>tab</b> and open it in a new window. If no
-     * tab is specified the currently selected tab is detached.
-     *
-     * @param {Object} tab The tab to detach.
-     */
-    detachTab: function (tab) {
-        if (!tab)
-            tab = config.tabbrowser.mTabContainer.selectedItem;
-
-        services.get("windowWatcher")
-                .openWindow(window, window.getBrowserURL(), null, "chrome,dialog=no,all", tab);
-    },
-
-    /**
-     * Selects the alternate tab.
-     */
-    selectAlternateTab: function () {
-        dactyl.assert(tabs.alternate != null && tabs.getTab() != tabs.alternate,
-            "E23: No alternate page");
-
-        // NOTE: this currently relies on v.tabs.index() returning the
-        // currently selected tab index when passed null
-        let index = tabs.index(tabs.alternate);
-
-        // TODO: since a tab close is more like a bdelete for us we
-        // should probably reopen the closed tab when a 'deleted'
-        // alternate is selected
-        dactyl.assert(index >= 0, "E86: Buffer does not exist");  // TODO: This should read "Buffer N does not exist"
-        tabs.select(index);
     },
 
     // NOTE: when restarting a session FF selects the first tab and then the
@@ -520,41 +518,6 @@ const Tabs = Module("tabs", {
 
         let tabState = services.get("sessionStore").getTabState(from);
         services.get("sessionStore").setTabState(to, tabState);
-    },
-
-    /**
-     * @param spec can either be:
-     * - an absolute integer
-     * - "" for the current tab
-     * - "+1" for the next tab
-     * - "-3" for the tab, which is 3 positions left of the current
-     * - "$" for the last tab
-     */
-    indexFromSpec: function (spec, wrap) {
-        let position = config.tabbrowser.mTabContainer.selectedIndex;
-        let length   = config.tabbrowser.mTabs.length;
-        let last     = length - 1;
-
-        if (spec === undefined || spec === "")
-            return position;
-
-        if (typeof spec === "number")
-            position = spec;
-        else if (spec === "$")
-            position = last;
-        else if (/^[+-]\d+$/.test(spec))
-            position += parseInt(spec, 10);
-        else if (/^\d+$/.test(spec))
-            position = parseInt(spec, 10);
-        else
-            return -1;
-
-        if (position > last)
-            position = wrap ? position % length : last;
-        else if (position < 0)
-            position = wrap ? (position % length) + length : 0;
-
-        return position;
     }
 }, {
     commands: function () {
@@ -1037,7 +1000,7 @@ const Tabs = Module("tabs", {
                         let pref = "browser.tabStrip.autoHide";
                         if (options.getPref(pref) == null) // Try for FF 3.0 & 3.1
                             pref = "browser.tabs.autoHide";
-                        options.safeSetPref(pref, value == 1);
+                        options.safeSetPref(pref, value == 1, "See 'showtabline' option.");
                         tabStrip.collapsed = false;
                     }
 
@@ -1098,8 +1061,10 @@ const Tabs = Module("tabs", {
                                 restriction = 2;
                         }
 
-                        options.safeSetPref("browser.link.open_newwindow", open, "See 'popups' option.");
-                        options.safeSetPref("browser.link.open_newwindow.restriction", restriction, "See 'popups' option.");
+                        options.safeSetPref("browser.link.open_newwindow", open,
+                                            "See 'popups' option.");
+                        options.safeSetPref("browser.link.open_newwindow.restriction", restriction,
+                                            "See 'popups' option.");
                         return values;
                     },
                     completer: function (context) [

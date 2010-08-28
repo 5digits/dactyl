@@ -582,7 +582,7 @@ const Buffer = Module("buffer", {
         let offsetX = 1;
         let offsetY = 1;
 
-        if (isinstance(elem [HTMLFrameElement, HTMLIFrameElement])) {
+        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement])) {
             buffer.focusElement(elem);
             return;
         }
@@ -1308,39 +1308,55 @@ const Buffer = Module("buffer", {
         };
 
         completion.buffer = function buffer(context) {
-            filter = context.filter.toLowerCase();
-            context.anchored = false;
-            context.title = ["Buffer", "URL"];
-            context.keys = { text: "text", description: "url", icon: "icon" };
-            context.compare = CompletionContext.Sort.number;
-            let process = context.process[0];
-            context.process = [function (item, text)
-                    <>
-                        <span highlight="Indicator" style="display: inline-block; width: 1.5em; text-align: center">{item.item.indicator}</span>
-                        { process.call(this, item, text) }
-                    </>];
-
-            context.completions = util.map(tabs.browsers, function ([i, browser]) {
-                let indicator = " ";
-                if (i == tabs.index())
-                   indicator = "%"
-                else if (i == tabs.index(tabs.alternate))
-                   indicator = "#";
-
-                let tab = tabs.getTab(i);
-                let url = browser.contentDocument.location.href;
-                i = i + 1;
-
-                return {
-                    text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
-                    url:  template.highlightURL(url),
-                    indicator: indicator,
-                    icon: tab.image || DEFAULT_FAVICON
-                };
+            let filter = context.filter.toLowerCase();
+            let defItem = { parent: { getTitle: function () "" } };
+            let tabGroups = {};
+            tabs.getGroups();
+            tabs.allTabs.forEach(function (tab, i) {
+                let group = (tab.tabItem || defItem).parent || defItem.parent;
+                if (!set.has(tabGroups, group.id))
+                    tabGroups[group.id] = [group.getTitle(), []];
+                group = tabGroups[group.id];
+                group[1].push([i, tab.linkedBrowser]);
             });
+
+            let orig = context;
+            for (let [id, [name, browsers]] in Iterator(tabGroups)) {
+                context = orig.fork(id, 0);
+                context.anchored = false;
+                context.title = [name || "Buffers"];
+                context.keys = { text: "text", description: "url", icon: "icon" };
+                context.compare = CompletionContext.Sort.number;
+                let process = context.process[0];
+                context.process = [function (item, text)
+                        <>
+                            <span highlight="Indicator" style="display: inline-block; width: 1.5em; text-align: center">{item.item.indicator}</span>
+                            { process.call(this, item, text) }
+                        </>];
+
+                context.completions = util.map(util.Array.itervalues(browsers), function ([i, browser]) {
+                    let indicator = " ";
+                    if (i == tabs.index())
+                       indicator = "%"
+                    else if (i == tabs.index(tabs.alternate))
+                       indicator = "#";
+
+                    let tab = tabs.getTab(i);
+                    let url = browser.contentDocument.location.href;
+                    i = i + 1;
+
+                    return {
+                        text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
+                        url:  template.highlightURL(url),
+                        indicator: indicator,
+                        icon: tab.image || DEFAULT_FAVICON
+                    };
+                });
+            }
         };
     },
     events: function () {
+        /*
         window.XULBrowserWindow = this.progressListener;
         window.QueryInterface(Ci.nsIInterfaceRequestor)
               .getInterface(Ci.nsIWebNavigation)
@@ -1349,6 +1365,7 @@ const Buffer = Module("buffer", {
               .QueryInterface(Ci.nsIInterfaceRequestor)
               .getInterface(Ci.nsIXULWindow)
               .XULBrowserWindow = this.progressListener;
+        */
 
         try {
             config.browser.addProgressListener(this.progressListener, Ci.nsIWebProgress.NOTIFY_ALL);
@@ -1592,7 +1609,7 @@ const Buffer = Module("buffer", {
             function (count) { buffer.zoomOut(Math.max(count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["ZZ", "zZ"],
+        mappings.add(myModes, ["zZ"],
             "Set full zoom value of current web page",
             function (count) { buffer.fullZoom = count > 1 ? count : 100; },
             { count: true });

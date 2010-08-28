@@ -89,7 +89,7 @@ const QuickMarks = Module("quickmarks", {
 
         if (filter.length > 0) {
             marks = marks.filter(function (qmark) filter.indexOf(qmark) >= 0);
-            dactyl.assert(marks.length >= 0, "E283: No QuickMarks matching \"" + filter + "\"");
+            dactyl.assert(marks.length >= 0, "E283: No QuickMarks matching " + filter.quote());
         }
 
         let items = [[mark, this._qmarks.get(mark)] for ([k, mark] in Iterator(marks))];
@@ -138,7 +138,7 @@ const QuickMarks = Module("quickmarks", {
                 args = args.string;
 
                 // ignore invalid qmark characters unless there are no valid qmark chars
-                dactyl.assert(!args || /[a-zA-Z0-9]/.test(args), "E283: No QuickMarks matching \"" + args + "\"");
+                dactyl.assert(!args || /[a-zA-Z0-9]/.test(args), "E283: No QuickMarks matching " + args.quote());
 
                 let filter = args.replace(/[^a-zA-Z0-9]/g, "");
                 quickmarks.list(filter);

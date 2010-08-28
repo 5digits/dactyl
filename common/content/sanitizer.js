@@ -7,7 +7,7 @@
 // TODO:
 //   - fix Sanitize autocommand
 //   - add warning for TIMESPAN_EVERYTHING?
-//   - respect privacy.clearOnShutdown et al or recommend PentadactylLeave autocommand?
+//   - respect privacy.clearOnShutdown et al or recommend Leave autocommand?
 //   - add support for :set sanitizeitems=all like 'eventignore'?
 //   - integrate with the Clear Private Data dialog?
 

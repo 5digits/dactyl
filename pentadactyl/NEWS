@@ -1,9 +1,11 @@
 2009-XX-XX:
+    * Use only visible tabs for tab numbering, gt/gn/gN, etc.
+    * Group tabs in :buffer completions by panorama groups
     * Replaced 'focuscontent' with 'strictfocus'
     * Replaced previous incremental search implementation
     * gf now toggles between source and content view.
 	 '|' key binding has been removed.
-    * :open now only opens files begining with / or ./
+    * :open now only opens files begining with /, ./, or ~/
     * Page zoom information is now shown in the status bar
     * Added ZO, ZI, ZM, and ZR as aliases for zO, zI, zM, and zR
     * Add basic plugin authorship documentation

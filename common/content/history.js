@@ -104,7 +104,7 @@ const History = Module("history", {
             return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0)
-            dactyl.echoerr("E283: No history matching \"" + filter + "\"");
+            dactyl.echoerr("E283: No history matching " + filter.quote());
         else
             dactyl.echoerr("No history set");
         return null;

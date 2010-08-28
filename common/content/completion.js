@@ -670,8 +670,10 @@ const Completion = Module("completion", {
 
         let list = template.commandOutput(
             <div highlight="Completions">
-                { template.completionRow(context.title, "CompTitle") }
-                { template.map(context.items, function (item) context.createRow(item), null, 100) }
+                { template.map(context.contextList.filter(function (c) c.hasItems),
+                    function (context)
+                        template.completionRow(context.title, "CompTitle") +
+                        template.map(context.items, function (item) context.createRow(item), null, 100)) }
             </div>);
         commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
     },
