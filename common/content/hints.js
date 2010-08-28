@@ -114,7 +114,7 @@ const Hints = Module("hints", {
 
         let type = elem.type;
 
-        if (elem instanceof HTMLInputElement && /(submit|button|reset)/.test(type))
+        if (elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type))
             return [elem.value, false];
         else {
             for (let [, option] in Iterator(options["hintinputs"].split(","))) {
@@ -261,7 +261,7 @@ const Hints = Module("hints", {
             if (computedStyle.getPropertyValue("visibility") != "visible" || computedStyle.getPropertyValue("display") == "none")
                 continue;
 
-            if (elem instanceof HTMLInputElement || elem instanceof HTMLSelectElement || elem instanceof HTMLTextAreaElement)
+            if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
                 [hint.text, hint.showText] = this._getInputHint(elem, doc);
             else
                 hint.text = elem.textContent.toLowerCase();

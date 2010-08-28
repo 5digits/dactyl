@@ -712,8 +712,8 @@ const Events = Module("events", {
             // displayed too. --djk
             function isInputField() {
                 let elem = dactyl.focus;
-                return ((elem instanceof HTMLInputElement && !/image/.test(elem.type))
-                      || elem instanceof HTMLIsIndexElement);
+                return elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type)
+                    || elem instanceof HTMLIsIndexElement;
             }
 
             if (options["insertmode"] || isInputField())
@@ -743,7 +743,7 @@ const Events = Module("events", {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
         if (hasHTMLDocument(win) && !buffer.focusAllowed(win)
-                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
+            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
             elem.blur();
     },
 
@@ -767,8 +767,8 @@ const Events = Module("events", {
             if (elem && elem.readOnly)
                 return;
 
-            if ((elem instanceof HTMLInputElement && /^(search|text|password)$/.test(elem.type)) ||
-                (elem instanceof HTMLSelectElement)) {
+            if (elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type) ||
+                elem instanceof HTMLSelectElement) {
                 dactyl.mode = modes.INSERT;
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
@@ -1104,13 +1104,14 @@ const Events = Module("events", {
         // }
     }
 }, {
+    editableInputs: set(["date", "datetime", "datetime-local", "email", "file",
+                         "month", "number", "password", "range", "search",
+                         "tel", "text", "time", "url", "week"]),
     isInputElemFocused: function () {
         let elem = dactyl.focus;
-        return ((elem instanceof HTMLInputElement && !/image/.test(elem.type)) ||
-                 elem instanceof HTMLTextAreaElement ||
-                 elem instanceof HTMLIsIndexElement ||
-                 elem instanceof HTMLObjectElement ||
-                 elem instanceof HTMLEmbedElement);
+        return elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type) ||
+               isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
+                                 HTMLObjectElement, HTMLTextAreaElement]);
     }
 }, {
     commands: function () {

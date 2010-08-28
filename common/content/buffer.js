@@ -1508,7 +1508,7 @@ const Buffer = Module("buffer", {
                     let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
 
                     let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (elem) {
-                        if (elem.readOnly || elem instanceof HTMLInputElement && ["file", "search", "text", "password"].indexOf(elem.type) < 0)
+                        if (elem.readOnly || elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type))
                             return false;
                         let computedStyle = util.computedStyle(elem);
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none";
