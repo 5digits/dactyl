@@ -41,7 +41,7 @@ const Storage = Module("storage", {
 function Runnable(self, func, args) {
     return {
         QueryInterface: XPCOMUtils.generateQI([Ci.nsIRunnable]),
-        run: function () { func.apply(self, args); }
+        run: function () { func.apply(self, args || []); }
     };
 }
 
@@ -183,17 +183,19 @@ const Dactyl = Module("dactyl", {
     beep: function () {
         // FIXME: popups clear the command line
         if (options["visualbell"]) {
-            // flash the visual bell
-            let popup = document.getElementById("dactyl-visualbell");
-            let win = config.visualbellWindow;
-            let rect = win.getBoundingClientRect();
-            let width = rect.right - rect.left;
-            let height = rect.bottom - rect.top;
+            dactyl.callInMainThread(function () {
+                // flash the visual bell
+                let popup = document.getElementById("dactyl-visualbell");
+                let win = config.visualbellWindow;
+                let rect = win.getBoundingClientRect();
+                let width = rect.right - rect.left;
+                let height = rect.bottom - rect.top;
 
-            // NOTE: this doesn't seem to work in FF3 with full box dimensions
-            popup.openPopup(win, "overlap", 1, 1, false, false);
-            popup.sizeTo(width - 2, height - 2);
-            setTimeout(function () { popup.hidePopup(); }, 20);
+                // NOTE: this doesn't seem to work in FF3 with full box dimensions
+                popup.openPopup(win, "overlap", 1, 1, false, false);
+                popup.sizeTo(width - 2, height - 2);
+                setTimeout(function () { popup.hidePopup(); }, 20);
+            });
         }
         else {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);
@@ -1026,7 +1028,7 @@ const Dactyl = Module("dactyl", {
     callInMainThread: function (callback, self) {
         let mainThread = services.get("threadManager").mainThread;
         if (!services.get("threadManager").isMainThread)
-            mainThread.dispatch({ run: callback.call(self) }, mainThread.DISPATCH_NORMAL);
+            mainThread.dispatch(Runnable(self, callback), mainThread.DISPATCH_NORMAL);
         else
             callback.call(self);
     },
