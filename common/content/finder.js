@@ -326,10 +326,10 @@ const RangeFind = Class("RangeFind", {
     },
 
     focus: function() {
-        if(this.lastRange)
+        if (this.lastRange)
             var node = util.evaluateXPath(RangeFind.selectNodePath, this.range.document,
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
-        if(node) {
+        if (node) {
             node.focus();
             // Rehighlight collapsed selection
             this.selectedRange = this.lastRange;

@@ -131,26 +131,24 @@ const CommandLine = Module("commandline", {
         this._startHints = false; // whether we're waiting to start hints mode
         this._lastSubstring = "";
 
-        // the containing box for the this._promptWidget and this._commandWidget
-        this._commandlineWidget = document.getElementById("dactyl-commandline");
-        // the prompt for the current command, for example : or /. Can be blank
-        this._promptWidget = document.getElementById("dactyl-commandline-prompt");
-        // the command bar which contains the current command
-        this._commandWidget = document.getElementById("dactyl-commandline-command");
+        this.widgets = {
+            commandline: document.getElementById("dactyl-commandline"),
+            prompt: document.getElementById("dactyl-commandline-prompt"),
+            command: document.getElementById("dactyl-commandline-command"),
 
-        this._messageBox = document.getElementById("dactyl-message");
+            message: document.getElementById("dactyl-message"),
 
-        this._commandWidget.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
-        this._messageBox.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
+            multilineOutput: document.getElementById("dactyl-multiline-output"),
+            multilineInput: document.getElementById("dactyl-multiline-input"),
+        };
+
+        this.widgets.command.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
+        this.widgets.message.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
 
         // the widget used for multiline output
-        this._multilineOutputWidget = document.getElementById("dactyl-multiline-output");
-        this._outputContainer = this._multilineOutputWidget.parentNode;
+        this._outputContainer = this.widgets.multilineOutput.parentNode;
 
-        this._multilineOutputWidget.contentDocument.body.id = "dactyl-multiline-output-content";
-
-        // the widget used for multiline intput
-        this._multilineInputWidget = document.getElementById("dactyl-multiline-input");
+        this.widgets.multilineOutput.contentDocument.body.id = "dactyl-multiline-output-content";
 
         // we need to save the mode which were in before opening the command line
         // this is then used if we focus the command line again without the "official"
@@ -208,7 +206,7 @@ const CommandLine = Module("commandline", {
      * Highlight the messageBox according to <b>group</b>.
      */
     _setHighlightGroup: function (group) {
-        this._messageBox.setAttributeNS(NS.uri, "highlight", group);
+        this.widgets.message.setAttributeNS(NS.uri, "highlight", group);
     },
 
     /**
@@ -226,10 +224,10 @@ const CommandLine = Module("commandline", {
      * @param {string} highlightGroup
      */
     _setPrompt: function (val, highlightGroup) {
-        this._promptWidget.value = val;
-        this._promptWidget.size = val.length;
-        this._promptWidget.collapsed = (val == "");
-        this._promptWidget.setAttributeNS(NS.uri, "highlight", highlightGroup || commandline.HL_NORMAL);
+        this.widgets.prompt.value = val;
+        this.widgets.prompt.size = val.length;
+        this.widgets.prompt.collapsed = (val == "");
+        this.widgets.prompt.setAttributeNS(NS.uri, "highlight", highlightGroup || commandline.HL_NORMAL);
     },
 
     /**
@@ -239,9 +237,9 @@ const CommandLine = Module("commandline", {
      * @param {string} cmd
      */
     _setCommand: function (cmd) {
-        this._commandWidget.value = cmd;
-        this._commandWidget.selectionStart = cmd.length;
-        this._commandWidget.selectionEnd = cmd.length;
+        this.widgets.command.value = cmd;
+        this.widgets.command.selectionStart = cmd.length;
+        this.widgets.command.selectionEnd = cmd.length;
     },
 
     /**
@@ -254,14 +252,14 @@ const CommandLine = Module("commandline", {
      */
     _echoLine: function (str, highlightGroup, forceSingle) {
         this._setHighlightGroup(highlightGroup);
-        this._messageBox.value = str;
+        this.widgets.message.value = str;
 
         dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
 
         if (!this._commandShown())
             commandline.hide();
 
-        let field = this._messageBox.inputField;
+        let field = this.widgets.message.inputField;
         if (!forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth)
             this._echoMultiline(<span highlight="Message">{str}</span>, highlightGroup);
     },
@@ -274,8 +272,8 @@ const CommandLine = Module("commandline", {
      */
     // TODO: resize upon a window resize
     _echoMultiline: function (str, highlightGroup) {
-        let doc = this._multilineOutputWidget.contentDocument;
-        let win = this._multilineOutputWidget.contentWindow;
+        let doc = this.widgets.multilineOutput.contentDocument;
+        let win = this.widgets.multilineOutput.contentWindow;
 
         dactyl.triggerObserver("echoMultiline", str, highlightGroup);
 
@@ -316,9 +314,9 @@ const CommandLine = Module("commandline", {
      * Ensure that the multiline input widget is the correct size.
      */
     _autosizeMultilineInputWidget: function () {
-        let lines = this._multilineInputWidget.value.split("\n").length - 1;
+        let lines = this.widgets.multilineInput.value.split("\n").length - 1;
 
-        this._multilineInputWidget.setAttribute("rows", Math.max(lines, 1));
+        this.widgets.multilineInput.setAttribute("rows", Math.max(lines, 1));
     },
 
     HL_NORMAL:     "Normal",
@@ -386,15 +384,15 @@ const CommandLine = Module("commandline", {
         try {
             // The long path is because of complications with the
             // completion preview.
-            return this._commandWidget.inputField.editor.rootElement.firstChild.textContent;
+            return this.widgets.command.inputField.editor.rootElement.firstChild.textContent;
         }
         catch (e) {
-            return this._commandWidget.value;
+            return this.widgets.command.value;
         }
     },
-    set command(cmd) this._commandWidget.value = cmd,
+    set command(cmd) this.widgets.command.value = cmd,
 
-    get message() this._messageBox.value,
+    get message() this.widgets.message.value,
 
     /**
      * Open the command line. The main mode is set to
@@ -416,14 +414,14 @@ const CommandLine = Module("commandline", {
 
         this._setPrompt(this._currentPrompt);
         this._setCommand(this._currentCommand);
-        this._commandlineWidget.collapsed = false;
+        this.widgets.commandline.collapsed = false;
 
         modes.set(modes.COMMAND_LINE, this._currentExtendedMode);
 
-        this._commandWidget.focus();
+        this.widgets.command.focus();
 
-        this._history = CommandLine.History(this._commandWidget.inputField, (modes.extended == modes.EX) ? "command" : "search");
-        this._completions = CommandLine.Completions(this._commandWidget.inputField);
+        this._history = CommandLine.History(this.widgets.command.inputField, (modes.extended == modes.EX) ? "command" : "search");
+        this._completions = CommandLine.Completions(this.widgets.command.inputField);
 
         // open the completion list automatically if wanted
         if (cmd.length)
@@ -450,7 +448,7 @@ const CommandLine = Module("commandline", {
         statusline.updateProgress(""); // we may have a "match x of y" visible
         dactyl.focusContent(false);
 
-        this._multilineInputWidget.collapsed = true;
+        this.widgets.multilineInput.collapsed = true;
         this._completionList.hide();
 
         if (!this._keepCommand || this._silent || this._quiet) {
@@ -470,7 +468,7 @@ const CommandLine = Module("commandline", {
      * are under it.
      */
     hide: function hide() {
-        this._commandlineWidget.collapsed = true;
+        this.widgets.commandline.collapsed = true;
     },
 
     /**
@@ -509,7 +507,7 @@ const CommandLine = Module("commandline", {
             return;
 
         // The DOM isn't threadsafe. It must only be accessed from the main thread.
-        dactyl.callInMainThread(function () {
+        util.callInMainThread(function () {
             if ((flags & this.DISALLOW_MULTILINE) && !this._outputContainer.collapsed)
                 return;
 
@@ -518,7 +516,7 @@ const CommandLine = Module("commandline", {
 
             // TODO: this is all a bit convoluted - clean up.
             // assume that FORCE_MULTILINE output is fully styled
-            if (!(flags & this.FORCE_MULTILINE) && !single && (!this._outputContainer.collapsed || this._messageBox.value == this._lastEcho)) {
+            if (!(flags & this.FORCE_MULTILINE) && !single && (!this._outputContainer.collapsed || this.widgets.message.value == this._lastEcho)) {
                 highlightGroup += " Message";
                 action = this._echoMultiline;
             }
@@ -529,9 +527,9 @@ const CommandLine = Module("commandline", {
             if (single)
                 this._lastEcho = null;
             else {
-                if (this._messageBox.value == this._lastEcho)
+                if (this.widgets.message.value == this._lastEcho)
                     this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
-                        this._messageBox.getAttributeNS(NS.uri, "highlight"));
+                        this.widgets.message.getAttributeNS(NS.uri, "highlight"));
                 this._lastEcho = (action == this._echoLine) && str;
             }
 
@@ -571,10 +569,10 @@ const CommandLine = Module("commandline", {
 
         this._setPrompt(prompt, extra.promptHighlight || this.HL_QUESTION);
         this._setCommand(extra.default || "");
-        this._commandlineWidget.collapsed = false;
-        this._commandWidget.focus();
+        this.widgets.commandline.collapsed = false;
+        this.widgets.command.focus();
 
-        this._completions = CommandLine.Completions(this._commandWidget.inputField);
+        this._completions = CommandLine.Completions(this.widgets.command.inputField);
     },
 
     /**
@@ -588,7 +586,7 @@ const CommandLine = Module("commandline", {
     // FIXME: Buggy, especially when pasting. Shouldn't use a RegExp.
     inputMultiline: function inputMultiline(untilRegexp, callbackFunc) {
         // Kludge.
-        let cmd = !this._commandWidget.collapsed && this.command;
+        let cmd = !this.widgets.command.collapsed && this.command;
         modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE);
         if (cmd != false)
             this._echoLine(cmd, this.HL_NORMAL);
@@ -597,11 +595,11 @@ const CommandLine = Module("commandline", {
         this._multilineRegexp = untilRegexp;
         this._multilineCallback = callbackFunc;
 
-        this._multilineInputWidget.collapsed = false;
-        this._multilineInputWidget.value = "";
+        this.widgets.multilineInput.collapsed = false;
+        this.widgets.multilineInput.value = "";
         this._autosizeMultilineInputWidget();
 
-        this.setTimeout(function () { this._multilineInputWidget.focus(); }, 10);
+        this.setTimeout(function () { this.widgets.multilineInput.focus(); }, 10);
     },
 
     /**
@@ -619,12 +617,12 @@ const CommandLine = Module("commandline", {
             if (event.type == "blur") {
                 // prevent losing focus, there should be a better way, but it just didn't work otherwise
                 this.setTimeout(function () {
-                    if (this._commandShown() && event.originalTarget == this._commandWidget.inputField)
-                        this._commandWidget.inputField.focus();
+                    if (this._commandShown() && event.originalTarget == this.widgets.command.inputField)
+                        this.widgets.command.inputField.focus();
                 }, 0);
             }
             else if (event.type == "focus") {
-                if (!this._commandShown() && event.target == this._commandWidget.inputField) {
+                if (!this._commandShown() && event.target == this.widgets.command.inputField) {
                     event.target.blur();
                     dactyl.beep();
                 }
@@ -703,22 +701,22 @@ const CommandLine = Module("commandline", {
         if (event.type == "keypress") {
             let key = events.toString(event);
             if (events.isAcceptKey(key)) {
-                let text = this._multilineInputWidget.value.substr(0, this._multilineInputWidget.selectionStart);
+                let text = this.widgets.multilineInput.value.substr(0, this.widgets.multilineInput.selectionStart);
                 if (text.match(this._multilineRegexp)) {
                     text = text.replace(this._multilineRegexp, "");
                     modes.pop();
-                    this._multilineInputWidget.collapsed = true;
+                    this.widgets.multilineInput.collapsed = true;
                     this._multilineCallback.call(this, text);
                 }
             }
             else if (events.isCancelKey(key)) {
                 modes.pop();
-                this._multilineInputWidget.collapsed = true;
+                this.widgets.multilineInput.collapsed = true;
             }
         }
         else if (event.type == "blur") {
             if (modes.extended & modes.INPUT_MULTILINE)
-                this.setTimeout(function () { this._multilineInputWidget.inputField.focus(); }, 0);
+                this.setTimeout(function () { this.widgets.multilineInput.inputField.focus(); }, 0);
         }
         else if (event.type == "input")
             this._autosizeMultilineInputWidget();
@@ -735,7 +733,7 @@ const CommandLine = Module("commandline", {
     // FIXME: if 'more' is set and the MOW is not scrollable we should still
     // allow a down motion after an up rather than closing
     onMultilineOutputEvent: function onMultilineOutputEvent(event) {
-        let win = this._multilineOutputWidget.contentWindow;
+        let win = this.widgets.multilineOutput.contentWindow;
 
         let showMoreHelpPrompt = false;
         let showMorePrompt = false;
@@ -934,7 +932,7 @@ const CommandLine = Module("commandline", {
     },
 
     getSpaceNeeded: function getSpaceNeeded() {
-        let rect = this._commandlineWidget.getBoundingClientRect();
+        let rect = this.widgets.commandline.getBoundingClientRect();
         let offset = rect.bottom - window.innerHeight;
         return Math.max(0, offset);
     },
@@ -953,7 +951,7 @@ const CommandLine = Module("commandline", {
             return;
         }
 
-        let win = this._multilineOutputWidget.contentWindow;
+        let win = this.widgets.multilineOutput.contentWindow;
         function isScrollable() !win.scrollMaxY == 0;
         function atEnd() win.scrollY / win.scrollMaxY >= 1;
 
@@ -975,12 +973,12 @@ const CommandLine = Module("commandline", {
         if (!open && this._outputContainer.collapsed)
             return;
 
-        let doc = this._multilineOutputWidget.contentDocument;
+        let doc = this.widgets.multilineOutput.contentDocument;
 
         let availableHeight = config.outputHeight;
         if (!this._outputContainer.collapsed)
             availableHeight += parseFloat(this._outputContainer.height);
-        doc.body.style.minWidth = this._commandlineWidget.scrollWidth + "px";
+        doc.body.style.minWidth = this.widgets.commandline.scrollWidth + "px";
         this._outputContainer.height = Math.min(doc.height, availableHeight) + "px";
         doc.body.style.minWidth = "";
         this._outputContainer.collapsed = false;
@@ -1086,7 +1084,7 @@ const CommandLine = Module("commandline", {
             while (true) {
                 this.index += diff;
                 if (this.index < 0 || this.index > this.store.length) {
-                    this.index = util.Math.constrain(this.index, 0, this.store.length);
+                    this.index = Math.constrain(this.index, 0, this.store.length);
                     dactyl.beep();
                     // I don't know why this kludge is needed. It
                     // prevents the caret from moving to the end of
@@ -1146,8 +1144,8 @@ const CommandLine = Module("commandline", {
             // Change the completion text.
             // The second line is a hack to deal with some substring
             // preview corner cases.
-            commandline._commandWidget.value = this.prefix + completion + this.suffix;
-            this.editor.selection.focusNode.textContent = commandline._commandWidget.value;
+            commandline.widgets.command.value = this.prefix + completion + this.suffix;
+            this.editor.selection.focusNode.textContent = commandline.widgets.command.value;
 
             // Reset the caret to one position after the completion.
             this.caret = this.prefix.length + completion.length;
@@ -1155,8 +1153,8 @@ const CommandLine = Module("commandline", {
 
         get caret() this.editor.selection.focusOffset,
         set caret(offset) {
-            commandline._commandWidget.selectionStart = offset;
-            commandline._commandWidget.selectionEnd = offset;
+            commandline.widgets.command.selectionStart = offset;
+            commandline.widgets.command.selectionEnd = offset;
         },
 
         get start() this.context.allItems.start,
@@ -1236,9 +1234,9 @@ const CommandLine = Module("commandline", {
             }
             else if (this.removeSubstring) {
                 let str = this.removeSubstring;
-                let cmd = commandline._commandWidget.value;
+                let cmd = commandline.widgets.command.value;
                 if (cmd.substr(cmd.length - str.length) == str)
-                    commandline._commandWidget.value = cmd.substr(0, cmd.length - str.length);
+                    commandline.widgets.command.value = cmd.substr(0, cmd.length - str.length);
             }
             delete this.removeSubstring;
         },
@@ -1289,7 +1287,7 @@ const CommandLine = Module("commandline", {
                 idx = null;
                 break;
             default:
-                idx = util.Math.constrain(idx, 0, this.items.length - 1);
+                idx = Math.constrain(idx, 0, this.items.length - 1);
                 break;
             }
 
@@ -1310,7 +1308,7 @@ const CommandLine = Module("commandline", {
                     for (let [, context] in Iterator(list)) {
                         function done() !(idx >= n + context.items.length || idx == -2 && !context.items.length);
                         while (context.incomplete && !done())
-                            dactyl.threadYield(false, true);
+                            util.threadYield(false, true);
 
                         if (done())
                             break;
@@ -1369,7 +1367,7 @@ const CommandLine = Module("commandline", {
                 if (this.type.list)
                     this.itemList.show();
 
-                this.wildIndex = util.Math.constrain(this.wildIndex + 1, 0, this.wildtypes.length - 1);
+                this.wildIndex = Math.constrain(this.wildIndex + 1, 0, this.wildtypes.length - 1);
                 this.preview();
 
                 commandline._statusTimer.tell();
@@ -1651,7 +1649,7 @@ const ItemList = Class("ItemList", {
         let off = 0;
         let end = this._startIndex + options["maxitems"];
         function getRows(context) {
-            function fix(n) util.Math.constrain(n, 0, len);
+            function fix(n) Math.constrain(n, 0, len);
             let len = context.items.length;
             let start = off;
             end -= !!context.message + context.incomplete;

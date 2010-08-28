@@ -288,7 +288,7 @@ const Events = Module("events", {
             commandline.quiet = quiet;
 
         try {
-            dactyl.threadYield(1, true);
+            util.threadYield(1, true);
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 let elem = dactyl.focus || window.content;
@@ -614,7 +614,7 @@ const Events = Module("events", {
      */
     waitForPageLoad: function () {
         //dactyl.dump("start waiting in loaded state: " + buffer.loaded);
-        dactyl.threadYield(true); // clear queue
+        util.threadYield(true); // clear queue
 
         if (buffer.loaded == 1)
             return true;
@@ -624,7 +624,7 @@ const Events = Module("events", {
         let end = start + (maxWaitTime * 1000); // maximum time to wait - TODO: add option
         let now;
         while (now = Date.now(), now < end) {
-            dactyl.threadYield();
+            util.threadYield();
             //if ((now - start) % 1000 < 10)
             //    dactyl.dump("waited: " + (now - start) + " ms");
 
@@ -632,7 +632,7 @@ const Events = Module("events", {
                 return false;
 
             if (buffer.loaded > 0) {
-                dactyl.sleep(250);
+                util.sleep(250);
                 break;
             }
             else
@@ -799,7 +799,7 @@ const Events = Module("events", {
 
             let urlbar = document.getElementById("urlbar");
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
-                dactyl.threadYield(true);
+                util.threadYield(true);
 
             if (dactyl.mode & (modes.EMBED | modes.INSERT | modes.TEXTAREA | modes.VISUAL))
                  modes.reset();
@@ -837,7 +837,7 @@ const Events = Module("events", {
         }
 
         if (key == "<C-c>")
-            dactyl.interrupted = true;
+            util.interrupted = true;
 
         // feedingKeys needs to be separate from interrupted so
         // we can differentiate between a recorded <C-c>

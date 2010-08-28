@@ -65,7 +65,7 @@ const History = Module("history", {
         if (current == start && steps < 0 || current == end && steps > 0)
             dactyl.beep();
         else {
-            let index = util.Math.constrain(current + steps, start, end);
+            let index = Math.constrain(current + steps, start, end);
             window.getWebNavigation().gotoIndex(index);
         }
     },

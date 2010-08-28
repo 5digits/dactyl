@@ -139,7 +139,7 @@ const Modes = Module("modes", {
             options = extended;
             extended = false;
         }
-        this._modeMap[name] = this._modeMap[this[name]] = util.extend({
+        let mode = util.extend({
             extended: extended,
             count: true,
             input: false,
@@ -147,11 +147,12 @@ const Modes = Module("modes", {
             name: name,
             disp: disp
         }, options);
-        this._modeMap[name].display = this._modeMap[name].display || function () disp;
+        mode.display = mode.display || function () disp;
+        this._modeMap[name] = mode;
+        this._modeMap[this[name]] = mode;
         if (!extended)
             this._mainModes.push(this[name]);
-        if ("mappings" in modules)
-            mappings.addMode(this[name]);
+        dactyl.triggerObserver("mode-add", mode);
     },
 
     getMode: function (name) this._modeMap[name],

@@ -8,14 +8,23 @@
 
 const ConfigBase = Class(ModuleBase, {
     /**
+     * Called on dactyl startup to allow for any arbitrary application-specific
+     * initialization code. Must call superclass's init function.
+     */
+    init: function () {
+        highlight.styleableChrome = this.styleableChrome;
+        highlight.loadCSS(this.CSS);
+    },
+
+    /**
      * @property {[["string", "string"]]} A sequence of names and descriptions
      *     of the autocommands available in this application. Primarily used
      *     for completion results.
      */
     autocommands: [],
 
-    browser: window.gBrowser,
-    tabbrowser: window.gBrowser,
+    get browser() window.gBrowser,
+    get tabbrowser() window.gBrowser,
 
     get browserModes() [modes.NORMAL],
 
@@ -54,12 +63,6 @@ const ConfigBase = Class(ModuleBase, {
      *     “liberated” application. E.g., "Firefox" or "Xulrunner".
      */
     hostApplication: null,
-
-    /**
-     * @property {function} Called on dactyl startup to allow for any
-     *     arbitrary application-specific initialization code.
-     */
-    init: function () {},
 
     /**
      * @property {Object} A map between key names for key events should be ignored,
@@ -102,8 +105,229 @@ const ConfigBase = Class(ModuleBase, {
      * @property {string} The leaf name of any temp files created by
      *     {@link io.createTempFile}.
      */
-    get tempFile() this.name.toLowerCase() + ".tmp"
+    get tempFile() this.name.toLowerCase() + ".tmp",
 
+    /**
+     * @constant
+     * @property {string} The default highlighting rules. They have the
+     * form:
+     *    rule ::= selector space space+ css
+     *    selector ::= group
+     *               | group "," css-selector
+     *               | group "," css-selector "," scope
+     *    group ::= groupname
+     *            | groupname css-selector
+     */
+    // <css>
+    CSS: <![CDATA[
+        Boolean     color: red;
+        Function    color: navy;
+        Null        color: blue;
+        Number      color: blue;
+        Object      color: maroon;
+        String      color: green;
+
+        Key         font-weight: bold;
+
+        Enabled     color: blue;
+        Disabled    color: red;
+
+        Normal      color: black; background: white;
+        ErrorMsg    color: white; background: red; font-weight: bold;
+        InfoMsg     color: black; background: white;
+        ModeMsg     color: black; background: white;
+        MoreMsg     color: green; background: white;
+        WarningMsg  color: red; background: white;
+        Message     white-space: normal; min-width: 100%; padding-left: 2em; text-indent: -2em; display: block;
+        NonText     color: blue; min-height: 16px; padding-left: 2px;
+        Preview     color: gray;
+
+        CmdLine,>*  font-family: monospace; padding: 1px;
+        CmdOutput   white-space: pre;
+
+        CompGroup
+        CompGroup:not(:first-of-type)  margin-top: .5em;
+        CompTitle            color: magenta; background: white; font-weight: bold;
+        CompTitle>*          padding: 0 .5ex;
+        CompMsg              font-style: italic; margin-left: 16px;
+        CompItem
+        CompItem[selected]   background: yellow;
+        CompItem>*           padding: 0 .5ex;
+        CompIcon             width: 16px; min-width: 16px; display: inline-block; margin-right: .5ex;
+        CompIcon>img         max-width: 16px; max-height: 16px; vertical-align: middle;
+        CompResult           width: 45%; overflow: hidden;
+        CompDesc             color: gray; width: 50%;
+        CompLess             text-align: center; height: 0;    line-height: .5ex; padding-top: 1ex;
+        CompLess::after      content: "\2303" /* Unicode up arrowhead */
+        CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
+        CompMore::after      content: "\2304" /* Unicode down arrowhead */
+
+        Gradient        height: 1px; margin-bottom: -1px; margin-top: -1px;
+        GradientLeft    background-color: magenta;
+        GradientRight   background-color: white;
+
+        Indicator   color: blue;
+        Filter      font-weight: bold;
+
+        Keyword     color: red;
+        Tag         color: blue;
+
+        LineNr      color: orange; background: white;
+        Question    color: green; background: white; font-weight: bold;
+
+        StatusLine          color: white; background: black;
+        StatusLineBroken    color: black; background: #FFa0a0 /* light-red */
+        StatusLineSecure    color: black; background: #a0a0FF /* light-blue */
+        StatusLineExtended  color: black; background: #a0FFa0 /* light-green */
+
+        TabClose,.tab-close-button
+        TabIcon,.tab-icon
+        TabText,.tab-text
+        TabNumber      font-weight: bold; margin: 0px; padding-right: .3ex;
+        TabIconNumber {
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
+        }
+
+        Title       color: magenta; background: white; font-weight: bold;
+        URL         text-decoration: none; color: green; background: inherit;
+        URL:hover   text-decoration: underline; cursor: pointer;
+
+        FrameIndicator,,* {
+            background-color: red;
+            opacity: 0.5;
+            z-index: 999;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        Bell         border: none; background-color: black;
+        Hint,,* {
+            font-family: monospace;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            background-color: red;
+            border-color: ButtonShadow;
+            border-width: 0px;
+            border-style: solid;
+            padding: 0px 1px 0px 1px;
+        }
+        Hint::after,,*  content: attr(number);
+        HintElem,,*     background-color: yellow;  color: black;
+        HintActive,,*   background-color: #88FF00; color: black;
+        HintImage,,*    opacity: .5;
+
+        Help                                        font-size: 8pt; line-height: 1.4em; font-family: -moz-fixed;
+
+        HelpArg                                     color: #6A97D4;
+        HelpOptionalArg                             color: #6A97D4;
+
+        HelpBody                                    display: block; margin: 1em auto; max-width: 100ex;
+        HelpBorder,*,dactyl://help/*             border-color: silver; border-width: 0px; border-style: solid;
+        HelpCode                                    display: block; white-space: pre; margin-left: 2em; font-family: Terminus, Fixed, monospace;
+
+        HelpDefault                                 margin-right: 1ex; white-space: pre;
+
+        HelpDescription                             display: block;
+        HelpEm,html|em,dactyl://help/*           font-weight: bold; font-style: normal;
+
+        HelpEx                                      display: inline-block; color: #527BBD; font-weight: bold;
+
+        HelpExample                                 display: block; margin: 1em 0;
+        HelpExample::before                         content: "Example: "; font-weight: bold;
+
+        HelpInfo                                    display: block; width: 20em; margin-left: auto;
+        HelpInfoLabel                               display: inline-block; width: 6em;  color: magenta; font-weight: bold; vertical-align: text-top;
+        HelpInfoValue                               display: inline-block; width: 14em; text-decoration: none;             vertical-align: text-top;
+
+        HelpItem                                    display: block; margin: 1em 1em 1em 10em; clear: both;
+
+        HelpKey                                     color: #102663;
+
+        HelpLink,html|a,dactyl://help/*          text-decoration: none;
+        HelpLink[href]:hover                        text-decoration: underline;
+
+        HelpList,html|ul,dactyl://help/*         display: block; list-style: outside disc;
+        HelpOrderedList,html|ol,dactyl://help/*  display: block; list-style: outside decimal;
+        HelpListItem,html|li,dactyl://help/*     display: list-item;
+
+        HelpNote                                    color: red; font-weight: bold;
+
+        HelpOpt                                     color: #106326;
+        HelpOptInfo                                 display: inline-block; margin-bottom: 1ex;
+
+        HelpParagraph,html|p,dactyl://help/*     display: block; margin: 1em 0em;
+        HelpParagraph:first-child                   margin-top: 0;
+        HelpSpec                                    display: block; margin-left: -10em; float: left; clear: left; color: #527BBD;
+
+        HelpString                                  display: inline-block; color: green; font-weight: normal; vertical-align: text-top;
+        HelpString::before                          content: '"';
+        HelpString::after                           content: '"';
+        HelpString[delim]::before                   content: attr(delim);
+        HelpString[delim]::after                    content: attr(delim);
+
+        HelpHead,html|h1,dactyl://help/* {
+            display: block;
+            margin: 1em 0;
+            padding-bottom: .2ex;
+            border-bottom-width: 1px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #527BBD;
+            clear: both;
+        }
+        HelpSubhead,html|h2,dactyl://help/* {
+            display: block;
+            margin: 1em 0;
+            padding-bottom: .2ex;
+            border-bottom-width: 1px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #527BBD;
+            clear: both;
+        }
+        HelpSubsubhead,html|h3,dactyl://help/* {
+            display: block;
+            margin: 1em 0;
+            padding-bottom: .2ex;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #527BBD;
+            clear: both;
+        }
+
+        HelpTOC
+        HelpTOC>ol ol                               margin-left: -1em;
+
+        HelpTab,html|dl,dactyl://help/*             display: table; width: 100%; margin: 1em 0; border-bottom-width: 1px; border-top-width: 1px; padding: .5ex 0; table-layout: fixed;
+        HelpTabColumn,html|column,dactyl://help/*   display: table-column;
+        HelpTabColumn:first-child                      width: 25%;
+        HelpTabTitle,html|dt,dactyl://help/*        display: table-cell; padding: .1ex 1ex; font-weight: bold;
+        HelpTabDescription,html|dd,dactyl://help/*  display: table-cell; padding: .1ex 1ex; border-width: 0px;
+        HelpTabRow,html|dl>html|tr,dactyl://help/*  display: table-row;
+
+        HelpTag                                     display: inline-block; color: #527BBD; margin-left: 1ex; font-size: 8pt; font-weight: bold;
+        HelpTags                                    display: block; float: right; clear: right;
+        HelpTopic                                   color: #102663;
+        HelpType                                    margin-right: 2ex;
+
+        HelpWarning                                 color: red; font-weight: bold;
+
+        Logo
+
+        Search,,* {
+            font-size: inherit;
+            padding: 0;
+            color: black;
+            background-color: yellow;
+        }
+    ]]>.toString()
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

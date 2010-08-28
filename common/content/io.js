@@ -612,7 +612,6 @@ lookup:
                         dactyl.echomsg("Cannot source a directory: " + filename.quote(), 0);
                     else
                         dactyl.echomsg("could not source: " + filename.quote(), 1);
-
                     dactyl.echoerr("E484: Can't open file " + filename);
                 }
 
@@ -621,7 +620,6 @@ lookup:
 
             dactyl.echomsg("sourcing " + filename.quote(), 2);
 
-            let str = file.read();
             let uri = services.get("io").newFileURI(file);
 
             // handle pure JavaScript files specially
@@ -643,6 +641,7 @@ lookup:
             else {
                 let heredoc = "";
                 let heredocEnd = null; // the string which ends the heredoc
+                let str = file.read();
                 let lines = str.split(/\r\n|[\r\n]/);
 
                 function execute(args) { command.execute(args, special, count, { setFrom: file }); }
@@ -968,7 +967,8 @@ lookup:
                 let output = io.system(arg);
 
                 commandline.command = "!" + arg;
-                commandline.echo(template.commandOutput(<span highlight="CmdOutput">{output}</span>));
+                commandline.echo(template.commandOutput(commandline.command,
+                        <span highlight="CmdOutput">{output}</span>));
 
                 autocommands.trigger("ShellCmdPost", {});
             }, {
@@ -979,12 +979,6 @@ lookup:
             });
     },
     completion: function () {
-        JavaScript.setCompleter([this.File, File.expandPath],
-            [function (context, obj, args) {
-                context.quote[2] = "";
-                completion.file(context, true);
-            }]);
-
         completion.charset = function (context) {
             context.anchored = false;
             context.generate = function () {
@@ -1069,6 +1063,14 @@ lookup:
             if (!/^\.?\//.test(context.filter))
                 completion.file(context, full);
         });
+    },
+    javascript: function () {
+        JavaScript.setCompleter([this.File, File.expandPath],
+            [function (context, obj, args) {
+                context.quote[2] = "";
+                completion.file(context, true);
+            }]);
+
     },
     options: function () {
         var shell, shellcmdflag;

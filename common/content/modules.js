@@ -85,7 +85,7 @@ window.addEventListener("load", function () {
             set.add(seen, module.name);
 
             for (let dep in values(module.requires))
-                load(Module.constructors[dep], module.name);
+                load(Module.constructors[dep], module.name, dep);
 
             dump("Load" + (isstring(prereq) ? " " + prereq + " dependency: " : ": ") + module.name);
             modules[module.name] = module();

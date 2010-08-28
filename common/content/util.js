@@ -15,7 +15,16 @@ default xml namespace = XHTML;
 
 const Util = Module("util", {
     init: function () {
-        this.Array = Util.Array;
+        this.Array = array;
+    },
+
+    get activeWindow() services.get("windowWatcher").activeWindow,
+    callInMainThread: function (callback, self) {
+        let mainThread = services.get("threadManager").mainThread;
+        if (!services.get("threadManager").isMainThread)
+            mainThread.dispatch({ run: callback.call(self) }, mainThread.DISPATCH_NORMAL);
+        else
+            callback.call(self);
     },
 
     /**
@@ -25,7 +34,7 @@ const Util = Module("util", {
      * @returns {Object}
      */
     cloneObject: function cloneObject(obj) {
-        if (obj instanceof Array)
+        if (isarray(obj))
             return obj.slice();
         let newObj = {};
         for (let [k, v] in Iterator(obj))
@@ -62,7 +71,7 @@ const Util = Module("util", {
      * @returns {Object}
      */
     computedStyle: function computedStyle(node) {
-        while (node instanceof Text && node.parentNode)
+        while (node instanceof Ci.nsIDOMText && node.parentNode)
             node = node.parentNode;
         return node.ownerDocument.defaultView.getComputedStyle(node, null);
     },
@@ -151,13 +160,7 @@ const Util = Module("util", {
      * @returns {string}
      */
     escapeHTML: function escapeHTML(str) {
-        // XXX: the following code is _much_ slower than a simple .replace()
-        // :history display went down from 2 to 1 second after changing
-        //
-        // var e = window.content.document.createElement("div");
-        // e.appendChild(window.content.document.createTextNode(str));
-        // return e.innerHTML;
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;");
     },
 
     /**
@@ -185,6 +188,48 @@ const Util = Module("util", {
         return delimiter + str.replace(/([\\'"])/g, "\\$1").replace("\n", "\\n", "g").replace("\t", "\\t", "g") + delimiter;
     },
 
+    /**
+     * Evaluates an XPath expression in the current or provided
+     * document. It provides the xhtml, xhtml2 and dactyl XML
+     * namespaces. The result may be used as an iterator.
+     *
+     * @param {string} expression The XPath expression to evaluate.
+     * @param {Document} doc The document to evaluate the expression in.
+     * @default The current document.
+     * @param {Node} elem The context element.
+     * @default <b>doc</b>
+     * @param {boolean} asIterator Whether to return the results as an
+     *     XPath iterator.
+     */
+    evaluateXPath: function (expression, doc, elem, asIterator) {
+        if (!doc)
+            doc = content.document;
+        if (!elem)
+            elem = doc;
+        if (isarray(expression))
+            expression = util.makeXPath(expression);
+
+        let result = doc.evaluate(expression, elem,
+            function lookupNamespaceURI(prefix) {
+                return {
+                    xul: XUL.uri,
+                    xhtml: XHTML.uri,
+                    xhtml2: "http://www.w3.org/2002/06/xhtml2",
+                    dactyl: NS.uri
+                }[prefix] || null;
+            },
+            asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+            null
+        );
+
+        return {
+                __proto__: result,
+                __iterator__: asIterator
+                            ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
+                            : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
+        }
+    },
+
     extend: function extend(dest) {
         Array.slice(arguments, 1).filter(util.identity).forEach(function (src) {
             for (let [k, v] in Iterator(src)) {
@@ -202,38 +247,6 @@ const Util = Module("util", {
     },
 
     /**
-     * Returns an XPath union expression constructed from the specified node
-     * tests. An expression is built with node tests for both the null and
-     * XHTML namespaces. See {@link Buffer#evaluateXPath}.
-     *
-     * @param nodes {Array(string)}
-     * @returns {string}
-     */
-    makeXPath: function makeXPath(nodes) {
-        return util.Array(nodes).map(util.debrace).flatten()
-                                .map(function (node) [node, "xhtml:" + node]).flatten()
-                                .map(function (node) "//" + node).join(" | ");
-    },
-
-    /**
-     * Memoize the lookup of a property in an object.
-     *
-     * @param {object} obj The object to alter.
-     * @param {string} key The name of the property to memoize.
-     * @param {function} getter A function of zero to two arguments which
-     *          will return the property's value. <b>obj</b> is
-     *          passed as the first argument, <b>key</b> as the
-     *          second.
-     */
-    memoize: function memoize(obj, key, getter) {
-        obj.__defineGetter__(key, function () {
-            delete obj[key];
-            obj[key] = getter(obj, key);
-            return obj[key];
-        });
-    },
-
-    /**
      * Returns the selection controller for the given window.
      *
      * @param {Window} window
@@ -246,37 +259,6 @@ const Util = Module("util", {
            .QueryInterface(Ci.nsIInterfaceRequestor)
            .getInterface(Ci.nsISelectionDisplay)
            .QueryInterface(Ci.nsISelectionController),
-
-    /**
-     * Split a string on literal occurrences of a marker.
-     *
-     * Specifically this ignores occurrences preceded by a backslash, or
-     * contained within 'single' or "double" quotes.
-     *
-     * It assumes backslash escaping on strings, and will thus not count quotes
-     * that are preceded by a backslash or within other quotes as starting or
-     * ending quoted sections of the string.
-     *
-     * @param {string} str
-     * @param {RegExp} marker
-     */
-    splitLiteral: function splitLiteral(str, marker) {
-        let results = [];
-        let resep = RegExp(/^(([^\\'"]|\\.|'([^\\']|\\.)*'|"([^\\"]|\\.)*")*?)/.source + marker.source);
-        let cont = true;
-
-        while (cont) {
-            cont = false;
-            str = str.replace(resep, function (match, before) {
-                results.push(before);
-                cont = true;
-                return "";
-            });
-        }
-
-        results.push(str);
-        return results;
-    },
 
     /**
      * Converts <b>bytes</b> to a pretty printed data size string.
@@ -319,99 +301,6 @@ const Util = Module("util", {
         return strNum[0] + " " + unitVal[unitIndex];
     },
 
-    exportHelp: function (path) {
-        const FILE = io.File(path);
-        const PATH = FILE.leafName.replace(/\..*/, "") + "/";
-        const TIME = Date.now();
-
-        dactyl.initHelp();
-        let zip = services.create("zipWriter");
-        zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
-        function addURIEntry(file, uri)
-            zip.addEntryChannel(PATH + file, TIME, 9,
-                services.get("io").newChannel(uri, null, null), false);
-        function addDataEntry(file, data) // Inideal to an extreme.
-            addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
-
-        let empty = util.Array.toObject(
-            "area base basefont br col frame hr img input isindex link meta param"
-            .split(" ").map(Array.concat));
-
-        let chrome = {};
-        for (let [file,] in Iterator(services.get("dactyl:").FILE_MAP)) {
-            dactyl.open("dactyl://help/" + file);
-            events.waitForPageLoad();
-            let data = [
-                '<?xml version="1.0" encoding="UTF-8"?>\n',
-                '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',
-                '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
-            ];
-            function fix(node) {
-                switch(node.nodeType) {
-                    case Node.ELEMENT_NODE:
-                        if (node instanceof HTMLScriptElement)
-                            return;
-
-                        data.push("<"); data.push(node.localName);
-                        if (node instanceof HTMLHtmlElement)
-                            data.push(" xmlns=" + XHTML.uri.quote());
-
-                        for (let { name: name, value: value } in util.Array.itervalues(node.attributes)) {
-                            if (name == "dactyl:highlight") {
-                                name = "class";
-                                value = "hl-" + value;
-                            }
-                            if (name == "href") {
-                                if (value.indexOf("dactyl://help-tag/") == 0)
-                                    value = services.get("io").newChannel(value, null, null).originalURI.path.substr(1);
-                                if (!/[#\/]/.test(value))
-                                    value += ".xhtml";
-                            }
-                            if (name == "src" && value.indexOf(":") > 0) {
-                                chrome[value] = value.replace(/.*\//, "");;
-                                value = value.replace(/.*\//, "");
-                            }
-                            data.push(" ");
-                            data.push(name);
-                            data.push('="');
-                            data.push(<>{value}</>.toXMLString());
-                            data.push('"')
-                        }
-                        if (node.localName in empty)
-                            data.push(" />");
-                        else {
-                            data.push(">");
-                            if (node instanceof HTMLHeadElement)
-                                data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
-                            Array.map(node.childNodes, arguments.callee);
-                            data.push("</"); data.push(node.localName); data.push(">");
-                        }
-                        break;
-                    case Node.TEXT_NODE:
-                        data.push(<>{node.textContent}</>.toXMLString());
-                }
-            }
-            fix(content.document.documentElement);
-            addDataEntry(file + ".xhtml", data.join(""));
-        }
-
-        let data = [h.selector.replace(/^\[.*?=(.*?)\]/, ".hl-$1").replace(/html\|/, "") +
-                        "\t{" + h.value + "}"
-                    for (h in highlight) if (/^Help|^Logo/.test(h.class))];
-
-        data = data.join("\n");
-        addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
-
-        let re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
-        while ((m = re.exec(data)))
-            chrome[m[0]] = m[2];
-
-        for (let [uri, leaf] in Iterator(chrome))
-            addURIEntry(leaf, uri);
-
-        zip.close();
-    },
-
     /**
      * Sends a synchronous or asynchronous HTTP request to <b>url</b> and
      * returns the XMLHttpRequest object. If <b>callback</b> is specified the
@@ -424,7 +313,7 @@ const Util = Module("util", {
      */
     httpGet: function httpGet(url, callback) {
         try {
-            let xmlhttp = new XMLHttpRequest();
+            let xmlhttp = services.create("xmlhttp");
             xmlhttp.mozBackgroundRequest = true;
             if (callback) {
                 xmlhttp.onreadystatechange = function () {
@@ -437,50 +326,8 @@ const Util = Module("util", {
             return xmlhttp;
         }
         catch (e) {
-            dactyl.log("Error opening " + url + ": " + e, 1);
+            dactyl.log("Error opening " + String.quote(url) + ": " + e, 1);
             return null;
-        }
-    },
-
-    /**
-     * Evaluates an XPath expression in the current or provided
-     * document. It provides the xhtml, xhtml2 and dactyl XML
-     * namespaces. The result may be used as an iterator.
-     *
-     * @param {string} expression The XPath expression to evaluate.
-     * @param {Document} doc The document to evaluate the expression in.
-     * @default The current document.
-     * @param {Node} elem The context element.
-     * @default <b>doc</b>
-     * @param {boolean} asIterator Whether to return the results as an
-     *     XPath iterator.
-     */
-    evaluateXPath: function (expression, doc, elem, asIterator) {
-        if (!doc)
-            doc = window.content.document;
-        if (!elem)
-            elem = doc;
-        if (isarray(expression))
-            expression = util.makeXPath(expression);
-
-        let result = doc.evaluate(expression, elem,
-            function lookupNamespaceURI(prefix) {
-                return {
-                    xul: XUL.uri,
-                    xhtml: XHTML.uri,
-                    xhtml2: "http://www.w3.org/2002/06/xhtml2",
-                    dactyl: NS.uri
-                }[prefix] || null;
-            },
-            asIterator ? XPathResult.ORDERED_NODE_ITERATOR_TYPE : XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-            null
-        );
-
-        return {
-                __proto__: result,
-                __iterator__: asIterator
-                            ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
-                            : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
         }
     },
 
@@ -509,6 +356,20 @@ const Util = Module("util", {
     }),
 
     /**
+     * Returns an XPath union expression constructed from the specified node
+     * tests. An expression is built with node tests for both the null and
+     * XHTML namespaces. See {@link Buffer#evaluateXPath}.
+     *
+     * @param nodes {Array(string)}
+     * @returns {string}
+     */
+    makeXPath: function makeXPath(nodes) {
+        return util.Array(nodes).map(util.debrace).flatten()
+                                .map(function (node) [node, "xhtml:" + node]).flatten()
+                                .map(function (node) "//" + node).join(" | ");
+    },
+
+    /**
      * Returns the array that results from applying <b>func</b> to each
      * property of <b>obj</b>.
      *
@@ -524,21 +385,16 @@ const Util = Module("util", {
     },
 
     /**
-     * Math utility methods.
-     * @singleton
+     * Memoize the lookup of a property in an object.
+     *
+     * @param {object} obj The object to alter.
+     * @param {string} key The name of the property to memoize.
+     * @param {function} getter A function of zero to two arguments which
+     *          will return the property's value. <b>obj</b> is
+     *          passed as the first argument, <b>key</b> as the
+     *          second.
      */
-    Math: {
-        /**
-         * Returns the specified <b>value</b> constrained to the range <b>min</b> -
-         * <b>max</b>.
-         *
-         * @param {number} value The value to constrain.
-         * @param {number} min The minimum constraint.
-         * @param {number} max The maximum constraint.
-         * @returns {number}
-         */
-        constrain: function constrain(value, min, max) Math.min(Math.max(min, value), max)
-    },
+    memoize: memoize,
 
     /**
      * Converts a URI string into a URI object.
@@ -578,7 +434,7 @@ const Util = Module("util", {
             [XHTML, 'html'],
             [XUL, 'xul']
         ]);
-        if (object instanceof Element) {
+        if (object instanceof Ci.nsIDOMElement) {
             let elem = object;
             if (elem.nodeType == elem.TEXT_NODE)
                 return elem.data;
@@ -616,10 +472,12 @@ const Util = Module("util", {
         let keys = [];
         try { // window.content often does not want to be queried with "var i in object"
             let hasValue = !("__iterator__" in object);
+            /*
             if (modules.isPrototypeOf(object)) {
                 object = Iterator(object);
                 hasValue = false;
             }
+            */
             for (let i in object) {
                 let value = <![CDATA[<no value>]]>;
                 try {
@@ -627,7 +485,7 @@ const Util = Module("util", {
                 }
                 catch (e) {}
                 if (!hasValue) {
-                    if (i instanceof Array && i.length == 2)
+                    if (isarray(i) && i.length == 2)
                         [i, value] = i;
                     else
                         var noVal = true;
@@ -689,7 +547,7 @@ const Util = Module("util", {
         let endTime = Date.now() + time;
         while (start < end) {
             if (Date.now() > endTime) {
-                dactyl.threadYield(true, true);
+                util.threadYield(true, true);
                 endTime = Date.now() + time;
             }
             yield start++;
@@ -746,6 +604,58 @@ const Util = Module("util", {
             elem.scrollIntoView();
     },
 
+    sleep: function (delay) {
+        let mainThread = services.get("threadManager").mainThread;
+
+        let end = Date.now() + delay;
+        while (Date.now() < end)
+            mainThread.processNextEvent(true);
+        return true;
+    },
+
+    /**
+     * Split a string on literal occurrences of a marker.
+     *
+     * Specifically this ignores occurrences preceded by a backslash, or
+     * contained within 'single' or "double" quotes.
+     *
+     * It assumes backslash escaping on strings, and will thus not count quotes
+     * that are preceded by a backslash or within other quotes as starting or
+     * ending quoted sections of the string.
+     *
+     * @param {string} str
+     * @param {RegExp} marker
+     */
+    splitLiteral: function splitLiteral(str, marker) {
+        let results = [];
+        let resep = RegExp(/^(([^\\'"]|\\.|'([^\\']|\\.)*'|"([^\\"]|\\.)*")*?)/.source + marker.source);
+        let cont = true;
+
+        while (cont) {
+            cont = false;
+            str = str.replace(resep, function (match, before) {
+                results.push(before);
+                cont = true;
+                return "";
+            });
+        }
+
+        results.push(str);
+        return results;
+    },
+
+    threadYield: function (flush, interruptable) {
+        let mainThread = services.get("threadManager").mainThread;
+        /* FIXME */
+        util.interrupted = false;
+        do {
+            mainThread.processNextEvent(!flush);
+            if (util.interrupted)
+                throw new Error("Interrupted");
+        }
+        while (flush === true && mainThread.hasPendingEvents());
+    },
+
     /**
      * Converts an E4X XML literal to a DOM node.
      *
@@ -780,133 +690,26 @@ const Util = Module("util", {
         }
     }
 }, {
-    // TODO: Why don't we just push all util.BuiltinType up into modules? --djk
-    /**
-     * Array utility methods.
-     */
-    Array: Class("Array", Array, {
-        init: function (ary) {
-            return {
-                __proto__: ary,
-                __iterator__: function () this.iteritems(),
-                __noSuchMethod__: function (meth, args) {
-                    var res = util.Array[meth].apply(null, [this.__proto__].concat(args));
-
-                    if (util.Array.isinstance(res))
-                        return util.Array(res);
-                    return res;
-                },
-                toString: function () this.__proto__.toString(),
-                concat: function () this.__proto__.concat.apply(this.__proto__, arguments),
-                map: function () this.__noSuchMethod__("map", Array.slice(arguments))
-            };
-        }
-    }, {
-        isinstance: function isinstance(obj) {
-            return Object.prototype.toString.call(obj) == "[object Array]";
-        },
-
-        /**
-         * Converts an array to an object. As in lisp, an assoc is an
-         * array of key-value pairs, which maps directly to an object,
-         * as such:
-         *    [["a", "b"], ["c", "d"]] -> { a: "b", c: "d" }
-         *
-         * @param {Array[]} assoc
-         * @... {string} 0 - Key
-         * @...          1 - Value
-         */
-        toObject: function toObject(assoc) {
-            let obj = {};
-            assoc.forEach(function ([k, v]) { obj[k] = v; });
-            return obj;
-        },
-
-        /**
-         * Compacts an array, removing all elements that are null or undefined:
-         *    ["foo", null, "bar", undefined] -> ["foo", "bar"]
-         *
-         * @param {Array} ary
-         * @returns {Array}
-         */
-        compact: function compact(ary) ary.filter(function (item) item != null),
-
-        /**
-         * Flattens an array, such that all elements of the array are
-         * joined into a single array:
-         *    [["foo", ["bar"]], ["baz"], "quux"] -> ["foo", ["bar"], "baz", "quux"]
-         *
-         * @param {Array} ary
-         * @returns {Array}
-         */
-        flatten: function flatten(ary) ary.length ? Array.concat.apply([], ary) : [],
-
-        /**
-         * Returns an Iterator for an array's values.
-         *
-         * @param {Array} ary
-         * @returns {Iterator(Object)}
-         */
-        itervalues: function itervalues(ary) {
-            let length = ary.length;
-            for (let i = 0; i < length; i++)
-                yield ary[i];
-        },
-
-        /**
-         * Returns an Iterator for an array's indices and values.
-         *
-         * @param {Array} ary
-         * @returns {Iterator([{number}, {Object}])}
-         */
-        iteritems: function iteritems(ary) {
-            let length = ary.length;
-            for (let i = 0; i < length; i++)
-                yield [i, ary[i]];
-        },
-
-        /**
-         * Filters out all duplicates from an array. If
-         * <b>unsorted</b> is false, the array is sorted before
-         * duplicates are removed.
-         *
-         * @param {Array} ary
-         * @param {boolean} unsorted
-         * @returns {Array}
-         */
-        uniq: function uniq(ary, unsorted) {
-            let ret = [];
-            if (unsorted) {
-                for (let [, item] in Iterator(ary))
-                    if (ret.indexOf(item) == -1)
-                        ret.push(item);
-            }
-            else {
-                for (let [, item] in Iterator(ary.sort())) {
-                    if (item != last || !ret.length)
-                        ret.push(item);
-                    var last = item;
-                }
-            }
-            return ret;
-        },
-
-        /**
-         * Zips the contents of two arrays. The resulting array is twice the
-         * length of ary1, with any shortcomings of ary2 replaced with null
-         * strings.
-         *
-         * @param {Array} ary1
-         * @param {Array} ary2
-         * @returns {Array}
-         */
-        zip: function zip(ary1, ary2) {
-            let res = []
-            for(let [i, item] in Iterator(ary1))
-                res.push(item, i in ary2 ? ary2[i] : "");
-            return res;
-        }
-    })
+    Array: array
 });
+
+/**
+ * Math utility methods.
+ * @singleton
+ */
+var Math = {
+    __proto__: window.Math,
+
+    /**
+     * Returns the specified <b>value</b> constrained to the range <b>min</b> -
+     * <b>max</b>.
+     *
+     * @param {number} value The value to constrain.
+     * @param {number} min The minimum constraint.
+     * @param {number} max The maximum constraint.
+     * @returns {number}
+     */
+    constrain: function constrain(value, min, max) Math.min(Math.max(min, value), max)
+};
 
 // vim: set fdm=marker sw=4 ts=4 et:

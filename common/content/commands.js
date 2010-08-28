@@ -315,7 +315,7 @@ const Commands = Module("commands", {
         }
 
         this._exCommands.push(command);
-        for(let [,name] in Iterator(command.names))
+        for (let [,name] in Iterator(command.names))
             this._exMap[name] = command;
 
         return true;
@@ -765,9 +765,9 @@ const Commands = Module("commands", {
      *     any of the command's names.
      */
     removeUserCommand: function (name) {
-        for(let [,cmd] in Iterator(this._exCommands))
-                if(cmd.user && cmd.hasName(name))
-                    for(let [,name] in Iterator(cmd.names))
+        for (let [,cmd] in Iterator(this._exCommands))
+                if (cmd.user && cmd.hasName(name))
+                    for (let [,name] in Iterator(cmd.names))
                         delete this._exMap[name];
         this._exCommands = this._exCommands.filter(function (cmd) !(cmd.user && cmd.hasName(name)));
     },
@@ -858,23 +858,7 @@ const Commands = Module("commands", {
         return [len - str.length, arg, quote];
     }
 }, {
-    mappings: function () {
-        mappings.add(config.browserModes,
-            ["@:"], "Repeat the last Ex command",
-            function (count) {
-                if (commands.repeat) {
-                    for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
-                        dactyl.execute(commands.repeat);
-                }
-                else
-                    dactyl.echoerr("E30: No previous command line");
-            },
-            { count: true });
-    },
-
     completion: function () {
-        JavaScript.setCompleter(this.get, [function () ([c.name, c.description] for (c in commands))]);
-
         completion.command = function command(context) {
             context.title = ["Command"];
             context.keys = { text: "longNames", description: "description" };
@@ -1105,6 +1089,22 @@ const Commands = Module("commands", {
                 argCount: "1",
                 completer: function (context) completion.userCommand(context)
             });
+    },
+    javascript: function () {
+        JavaScript.setCompleter(this.get, [function () ([c.name, c.description] for (c in commands))]);
+    },
+    mappings: function () {
+        mappings.add(config.browserModes,
+            ["@:"], "Repeat the last Ex command",
+            function (count) {
+                if (commands.repeat) {
+                    for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
+                        dactyl.execute(commands.repeat);
+                }
+                else
+                    dactyl.echoerr("E30: No previous command line");
+            },
+            { count: true });
     }
 });
 

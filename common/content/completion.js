@@ -260,7 +260,7 @@ const CompletionContext = Class("CompletionContext", {
         this._completions = items;
         let self = this;
         if (this.updateAsync && !this.noUpdate)
-            dactyl.callInMainThread(function () { self.onUpdate.call(self); });
+            util.callInMainThread(function () { self.onUpdate.call(self); });
     },
 
     get createRow() this._createRow || template.completionRow, // XXX
@@ -326,7 +326,7 @@ const CompletionContext = Class("CompletionContext", {
             this.cache.backgroundLock = lock;
             this.incomplete = true;
             let thread = this.getCache("backgroundThread", dactyl.newThread);
-            dactyl.callAsync(thread, this, function () {
+            util.callAsync(thread, this, function () {
                 if (this.cache.backgroundLock != lock)
                     return;
                 let items = this.generate();
@@ -609,7 +609,7 @@ const CompletionContext = Class("CompletionContext", {
     wait: function wait(interruptable, timeout) {
         let end = Date.now() + timeout;
         while (this.incomplete && (!timeout || Date.now() > end))
-            dactyl.threadYield(false, interruptable);
+            util.threadYield(false, interruptable);
         return this.incomplete;
     }
 }, {
@@ -668,7 +668,7 @@ const Completion = Module("completion", {
         context = context.contexts["/list"];
         context.wait();
 
-        let list = template.commandOutput(
+        let list = template.commandOutput(commandline.command,
             <div highlight="Completions">
                 { template.map(context.contextList.filter(function (c) c.hasItems),
                     function (context)
@@ -765,7 +765,7 @@ const Completion = Module("completion", {
         commands.add(["contexts"],
             "List the completion contexts used during completion of an ex command",
             function (args) {
-                commandline.echo(template.commandOutput(
+                commandline.echo(template.commandOutput(commandline.command,
                     <div highlight="Completions">
                         { template.completionRow(["Context", "Title"], "CompTitle") }
                         { template.map(completion.contextList || [], function (item) template.completionRow(item, "CompItem")) }

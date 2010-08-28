@@ -127,6 +127,13 @@ const Mappings = Module("mappings", {
     init: function () {
         this._main = []; // default mappings
         this._user = []; // user created mappings
+
+        dactyl.registerObserver("mode-add", function (mode) {
+            if (!(mode.mask in this._user || mode.mask in this._main)) {
+                this._main[mode.mask] = [];
+                this._user[mode.mask] = [];
+            }
+        });
     },
 
     _addMap: function (map) {
@@ -188,13 +195,6 @@ const Mappings = Module("mappings", {
      * @returns {Iterator(Map)}
      */
     getUserIterator: function (mode) this._mappingsIterator(mode, this._user),
-
-    addMode: function (mode) {
-        if (!(mode in this._user || mode in this._main)) {
-            this._main[mode] = [];
-            this._user[mode] = [];
-        }
-    },
 
     /**
      * Adds a new default key mapping.
@@ -477,6 +477,17 @@ const Mappings = Module("mappings", {
                                [mode.disp.toLowerCase()]);
     },
     completion: function () {
+        completion.userMapping = function userMapping(context, args, modes) {
+            // FIXME: have we decided on a 'standard' way to handle this clash? --djk
+            modes = modes || [modules.modes.NORMAL];
+
+            if (args.completeArg == 0) {
+                let maps = [[m.names[0], ""] for (m in mappings.getUserIterator(modes))];
+                context.completions = maps;
+            }
+        };
+    },
+    javascript: function () {
         JavaScript.setCompleter(this.get,
             [
                 null,
@@ -489,16 +500,6 @@ const Mappings = Module("mappings", {
                     ]);
                 }
             ]);
-
-        completion.userMapping = function userMapping(context, args, modes) {
-            // FIXME: have we decided on a 'standard' way to handle this clash? --djk
-            modes = modes || [modules.modes.NORMAL];
-
-            if (args.completeArg == 0) {
-                let maps = [[m.names[0], ""] for (m in mappings.getUserIterator(modes))];
-                context.completions = maps;
-            }
-        };
     },
     modes: function () {
         for (let mode in modes) {

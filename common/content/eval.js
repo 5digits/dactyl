@@ -1,8 +1,6 @@
-try { __dactyl_eval_result = eval(__dactyl_eval_string);
-}
-catch (e) {
-    __dactyl_eval_error = e;
-}
+try { __dactyl_eval_result = eval(__dactyl_eval_string); }
+catch (e) { __dactyl_eval_error = e; }
+
 // IMPORTANT: The eval statement *must* remain on the first line
 // in order for line numbering in any errors to remain correct.
 

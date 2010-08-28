@@ -819,7 +819,7 @@ const Tabs = Module("tabs", {
 
                     let last = browser.mTabs.length - 1;
 
-                    browser.moveTabTo(dummy, util.Math.constrain(tabIndex || last, 0, last));
+                    browser.moveTabTo(dummy, Math.constrain(tabIndex || last, 0, last));
                     browser.selectedTab = dummy; // required
                     browser.swapBrowsersAndCloseOther(dummy, config.tabbrowser.mCurrentTab);
                 }, {

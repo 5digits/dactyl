@@ -9,14 +9,6 @@ const Ci = Components.interfaces;
 const Cr = Components.results;
 const Cu = Components.utils;
 
-function array(obj) {
-    if (isgenerator(obj))
-        obj = [k for (k in obj)];
-    else if (obj.length)
-        obj = Array.slice(obj);
-    return util.Array(obj);
-}
-
 function allkeys(obj) {
     let ret = {};
     try {
@@ -45,7 +37,7 @@ function allkeys(obj) {
 }
 
 function debuggerProperties(obj) {
-    if (modules.services && options["jsdebugger"]) {
+    if (modules.services && services.get("debugger").isOn) {
         let ret = {};
         services.get("debugger").wrapValue(obj).getProperties(ret, {});
         return ret.value;
@@ -125,9 +117,9 @@ function iter(obj) {
             }
             catch (e) {}
         })();
-    if (isinstance(obj, [HTMLCollection, NodeList]))
-        return util.Array.iteritems(obj);
-    if (obj instanceof NamedNodeMap)
+    if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
+        return array.iteritems(obj);
+    if (obj instanceof Ci.nsIDOMNamedNodeMap)
         return (function () {
             for (let i = 0; i < obj.length; i++)
                 yield [obj.name, obj];
@@ -206,6 +198,13 @@ function callable(val) {
 function call(fn) {
     fn.apply(arguments[1], Array.slice(arguments, 2));
     return fn;
+}
+
+function memoize(obj, key, getter) {
+    obj.__defineGetter__(key, function () {
+        delete obj[key];
+        return obj[key] = getter(obj, key);
+    });
 }
 
 /**
@@ -312,13 +311,8 @@ function update(target) {
  * @param {Object} overrides @optional
  */
 function extend(subclass, superclass, overrides) {
-    subclass.prototype = {};
+    subclass.prototype = { __proto__: superclass.prototype };
     update(subclass.prototype, overrides);
-    // This is unduly expensive. Unfortunately necessary since
-    // we apparently can't rely on the presence of the
-    // debugger to enumerate properties when we have
-    // __iterators__ attached to prototypes.
-    subclass.prototype.__proto__ = superclass.prototype;
 
     subclass.superclass = superclass.prototype;
     subclass.prototype.constructor = subclass;
@@ -421,8 +415,10 @@ Class.prototype = {
      */
     setTimeout: function (callback, timeout) {
         const self = this;
-        function target() callback.call(self);
-        return window.setTimeout(target, timeout);
+        let notify = { notify: function notify(timer) { callback.call(self) } };
+        let timer = services.create("timer");
+        timer.initWithCallback(notify, timeout, timer.TYPE_ONE_SHOT);
+        return timer;
     }
 };
 
@@ -492,5 +488,137 @@ const StructBase = Class("StructBase", {
 for (let k in values(["concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf",
                       "map", "reduce", "reduceRight", "reverse", "slice", "some", "sort"]))
     StructBase.prototype[k] = Array.prototype[k];
+
+/**
+ * Array utility methods.
+ */
+const array = Class("util.Array", Array, {
+    init: function (ary) {
+        if (isgenerator(ary))
+            ary = [k for (k in ary)];
+        else if (ary.length)
+            ary = Array.slice(ary);
+
+        return {
+            __proto__: ary,
+            __iterator__: function () this.iteritems(),
+            __noSuchMethod__: function (meth, args) {
+                var res = array[meth].apply(null, [this.__proto__].concat(args));
+
+                if (array.isinstance(res))
+                    return array(res);
+                return res;
+            },
+            toString: function () this.__proto__.toString(),
+            concat: function () this.__proto__.concat.apply(this.__proto__, arguments),
+            map: function () this.__noSuchMethod__("map", Array.slice(arguments))
+        };
+    }
+}, {
+    isinstance: function isinstance(obj) {
+        return Object.prototype.toString.call(obj) == "[object Array]";
+    },
+
+    /**
+     * Converts an array to an object. As in lisp, an assoc is an
+     * array of key-value pairs, which maps directly to an object,
+     * as such:
+     *    [["a", "b"], ["c", "d"]] -> { a: "b", c: "d" }
+     *
+     * @param {Array[]} assoc
+     * @... {string} 0 - Key
+     * @...          1 - Value
+     */
+    toObject: function toObject(assoc) {
+        let obj = {};
+        assoc.forEach(function ([k, v]) { obj[k] = v; });
+        return obj;
+    },
+
+    /**
+     * Compacts an array, removing all elements that are null or undefined:
+     *    ["foo", null, "bar", undefined] -> ["foo", "bar"]
+     *
+     * @param {Array} ary
+     * @returns {Array}
+     */
+    compact: function compact(ary) ary.filter(function (item) item != null),
+
+    /**
+     * Flattens an array, such that all elements of the array are
+     * joined into a single array:
+     *    [["foo", ["bar"]], ["baz"], "quux"] -> ["foo", ["bar"], "baz", "quux"]
+     *
+     * @param {Array} ary
+     * @returns {Array}
+     */
+    flatten: function flatten(ary) ary.length ? Array.concat.apply([], ary) : [],
+
+    /**
+     * Returns an Iterator for an array's values.
+     *
+     * @param {Array} ary
+     * @returns {Iterator(Object)}
+     */
+    itervalues: function itervalues(ary) {
+        let length = ary.length;
+        for (let i = 0; i < length; i++)
+            yield ary[i];
+    },
+
+    /**
+     * Returns an Iterator for an array's indices and values.
+     *
+     * @param {Array} ary
+     * @returns {Iterator([{number}, {Object}])}
+     */
+    iteritems: function iteritems(ary) {
+        let length = ary.length;
+        for (let i = 0; i < length; i++)
+            yield [i, ary[i]];
+    },
+
+    /**
+     * Filters out all duplicates from an array. If
+     * <b>unsorted</b> is false, the array is sorted before
+     * duplicates are removed.
+     *
+     * @param {Array} ary
+     * @param {boolean} unsorted
+     * @returns {Array}
+     */
+    uniq: function uniq(ary, unsorted) {
+        let ret = [];
+        if (unsorted) {
+            for (let [, item] in Iterator(ary))
+                if (ret.indexOf(item) == -1)
+                    ret.push(item);
+        }
+        else {
+            for (let [, item] in Iterator(ary.sort())) {
+                if (item != last || !ret.length)
+                    ret.push(item);
+                var last = item;
+            }
+        }
+        return ret;
+    },
+
+    /**
+     * Zips the contents of two arrays. The resulting array is twice the
+     * length of ary1, with any shortcomings of ary2 replaced with null
+     * strings.
+     *
+     * @param {Array} ary1
+     * @param {Array} ary2
+     * @returns {Array}
+     */
+    zip: function zip(ary1, ary2) {
+        let res = []
+        for(let [i, item] in Iterator(ary1))
+            res.push(item, i in ary2 ? ary2[i] : "");
+        return res;
+    }
+});
 
 // vim: set fdm=marker sw=4 ts=4 et:

@@ -38,13 +38,6 @@ const Storage = Module("storage", {
     }
 });
 
-function Runnable(self, func, args) {
-    return {
-        QueryInterface: XPCOMUtils.generateQI([Ci.nsIRunnable]),
-        run: function () { func.apply(self, args || []); }
-    };
-}
-
 const FailedAssertion = Class("FailedAssertion", Error, {
     init: function (message) {
         this.message = message;
@@ -91,40 +84,6 @@ const Dactyl = Module("dactyl", {
 
     /** @property {Element} The currently focused element. */
     get focus() document.commandDispatcher.focusedElement,
-
-    get extensions() {
-        const rdf = services.get("rdf");
-        const extensionManager = services.get("extensionManager");
-
-        let extensions = extensionManager.getItemList(Ci.nsIUpdateItem.TYPE_EXTENSION, {});
-
-        function getRdfProperty(item, property) {
-            let resource = rdf.GetResource("urn:mozilla:item:" + item.id);
-            let value = "";
-
-            if (resource) {
-                let target = extensionManager.datasource.GetTarget(resource,
-                    rdf.GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
-                if (target && target instanceof Ci.nsIRDFLiteral)
-                    value = target.Value;
-            }
-
-            return value;
-        }
-
-        //const Extension = Struct("id", "name", "description", "icon", "enabled", "version");
-        return extensions.map(function (e) ({
-            id: e.id,
-            name: e.name,
-            description: getRdfProperty(e, "description"),
-            enabled: getRdfProperty(e, "isDisabled") != "true",
-            icon: e.iconURL,
-            options: getRdfProperty(e, "optionsURL"),
-            version: e.version
-        }));
-    },
-
-    getExtension: function (name) this.extensions.filter(function (e) e.name == name)[0],
 
     // Global constants
     CURRENT_TAB: [],
@@ -183,7 +142,7 @@ const Dactyl = Module("dactyl", {
     beep: function () {
         // FIXME: popups clear the command line
         if (options["visualbell"]) {
-            dactyl.callInMainThread(function () {
+            util.callInMainThread(function () {
                 // flash the visual bell
                 let popup = document.getElementById("dactyl-visualbell");
                 let win = config.visualbellWindow;
@@ -202,45 +161,6 @@ const Dactyl = Module("dactyl", {
             soundService.beep();
         }
         return false; // so you can do: if (...) return dactyl.beep();
-    },
-
-    /**
-     * Creates a new thread.
-     */
-    newThread: function () services.get("threadManager").newThread(0),
-
-    /**
-     * Calls a function asynchronously on a new thread.
-     *
-     * @param {nsIThread} thread The thread to call the function on. If no
-     *     thread is specified a new one is created.
-     * @optional
-     * @param {Object} self The 'this' object used when executing the
-     *     function.
-     * @param {function} func The function to execute.
-     *
-     */
-    callAsync: function (thread, self, func) {
-        thread = thread || services.get("threadManager").newThread(0);
-        thread.dispatch(Runnable(self, func, Array.slice(arguments, 3)), thread.DISPATCH_NORMAL);
-    },
-
-    /**
-     * Calls a function synchronously on a new thread.
-     *
-     * NOTE: Be sure to call GUI related methods like alert() or dump()
-     * ONLY in the main thread.
-     *
-     * @param {nsIThread} thread The thread to call the function on. If no
-     *     thread is specified a new one is created.
-     * @optional
-     * @param {function} func The function to execute.
-     */
-    callFunctionInThread: function (thread, func) {
-        thread = thread || services.get("threadManager").newThread(0);
-
-        // DISPATCH_SYNC is necessary, otherwise strange things will happen
-        thread.dispatch(Runnable(null, func, Array.slice(arguments, 2)), thread.DISPATCH_SYNC);
     },
 
     /**
@@ -489,18 +409,6 @@ const Dactyl = Module("dactyl", {
     has: function (feature) config.features.indexOf(feature) >= 0,
 
     /**
-     * Returns whether the host application has the specified extension
-     * installed.
-     *
-     * @param {string} name The extension name.
-     * @returns {boolean}
-     */
-    hasExtension: function (name) {
-        let extensions = services.get("extensionManager").getItemList(Ci.nsIUpdateItem.TYPE_EXTENSION, {});
-        return extensions.some(function (e) e.name == name);
-    },
-
-    /**
      * Returns the URL of the specified help <b>topic</b> if it exists.
      *
      * @param {string} topic The help topic to lookup.
@@ -620,6 +528,99 @@ const Dactyl = Module("dactyl", {
             addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
             this.helpInitialized = true;
         }
+    },
+
+    exportHelp: function (path) {
+        const FILE = io.File(path);
+        const PATH = FILE.leafName.replace(/\..*/, "") + "/";
+        const TIME = Date.now();
+
+        dactyl.initHelp();
+        let zip = services.create("zipWriter");
+        zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
+        function addURIEntry(file, uri)
+            zip.addEntryChannel(PATH + file, TIME, 9,
+                services.get("io").newChannel(uri, null, null), false);
+        function addDataEntry(file, data) // Inideal to an extreme.
+            addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
+
+        let empty = util.Array.toObject(
+            "area base basefont br col frame hr img input isindex link meta param"
+            .split(" ").map(Array.concat));
+
+        let chrome = {};
+        for (let [file,] in Iterator(services.get("dactyl:").FILE_MAP)) {
+            dactyl.open("dactyl://help/" + file);
+            dactyl.modules.events.waitForPageLoad();
+            let data = [
+                '<?xml version="1.0" encoding="UTF-8"?>\n',
+                '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',
+                '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+            ];
+            function fix(node) {
+                switch(node.nodeType) {
+                    case Node.ELEMENT_NODE:
+                        if (node instanceof HTMLScriptElement)
+                            return;
+
+                        data.push("<"); data.push(node.localName);
+                        if (node instanceof HTMLHtmlElement)
+                            data.push(" xmlns=" + XHTML.uri.quote());
+
+                        for (let { name: name, value: value } in util.Array.itervalues(node.attributes)) {
+                            if (name == "dactyl:highlight") {
+                                name = "class";
+                                value = "hl-" + value;
+                            }
+                            if (name == "href") {
+                                if (value.indexOf("dactyl://help-tag/") == 0)
+                                    value = services.get("io").newChannel(value, null, null).originalURI.path.substr(1);
+                                if (!/[#\/]/.test(value))
+                                    value += ".xhtml";
+                            }
+                            if (name == "src" && value.indexOf(":") > 0) {
+                                chrome[value] = value.replace(/.*\//, "");;
+                                value = value.replace(/.*\//, "");
+                            }
+                            data.push(" ");
+                            data.push(name);
+                            data.push('="');
+                            data.push(<>{value}</>.toXMLString());
+                            data.push('"')
+                        }
+                        if (node.localName in empty)
+                            data.push(" />");
+                        else {
+                            data.push(">");
+                            if (node instanceof HTMLHeadElement)
+                                data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
+                            Array.map(node.childNodes, arguments.callee);
+                            data.push("</"); data.push(node.localName); data.push(">");
+                        }
+                        break;
+                    case Node.TEXT_NODE:
+                        data.push(<>{node.textContent}</>.toXMLString());
+                }
+            }
+            fix(content.document.documentElement);
+            addDataEntry(file + ".xhtml", data.join(""));
+        }
+
+        let data = [h.selector.replace(/^\[.*?=(.*?)\]/, ".hl-$1").replace(/html\|/, "") +
+                        "\t{" + h.value + "}"
+                    for (h in highlight) if (/^Help|^Logo/.test(h.class))];
+
+        data = data.join("\n");
+        addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
+
+        let re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
+        while ((m = re.exec(data)))
+            chrome[m[0]] = m[2];
+
+        for (let [uri, leaf] in Iterator(chrome))
+            addURIEntry(leaf, uri);
+
+        zip.close();
     },
 
     /**
@@ -1016,34 +1017,6 @@ const Dactyl = Module("dactyl", {
         return commands.parseArgs(cmdline, options, "*");
     },
 
-    sleep: function (delay) {
-        let mainThread = services.get("threadManager").mainThread;
-
-        let end = Date.now() + delay;
-        while (Date.now() < end)
-            mainThread.processNextEvent(true);
-        return true;
-    },
-
-    callInMainThread: function (callback, self) {
-        let mainThread = services.get("threadManager").mainThread;
-        if (!services.get("threadManager").isMainThread)
-            mainThread.dispatch(Runnable(self, callback), mainThread.DISPATCH_NORMAL);
-        else
-            callback.call(self);
-    },
-
-    threadYield: function (flush, interruptable) {
-        let mainThread = services.get("threadManager").mainThread;
-        dactyl.interrupted = false;
-        do {
-            mainThread.processNextEvent(!flush);
-            if (dactyl.interrupted)
-                throw new Error("Interrupted");
-        }
-        while (flush === true && mainThread.hasPendingEvents());
-    },
-
     variableReference: function (string) {
         if (!string)
             return [null, null, null];
@@ -1097,7 +1070,7 @@ const Dactyl = Module("dactyl", {
 
     // return the platform normalized to Vim values
     getPlatformFeature: function () {
-        let platform = navigator.platform;
+        let platform = services.get("runtime").OS;
         return /^Mac/.test(platform) ? "MacUnix" : platform == "Win32" ? "Win32" : "Unix";
     },
 
@@ -1521,7 +1494,6 @@ const Dactyl = Module("dactyl", {
                 literal: 0
             });
 
-        // TODO: maybe indicate pending status too?
         commands.add(["extens[ions]", "exts"],
             "List available extensions",
             function (args) {
@@ -1557,8 +1529,6 @@ const Dactyl = Module("dactyl", {
                 });
             },
             { argCount: "?" });
-
-        ///////////////////////////////////////////////////////////////////////////
 
         commands.add(["exu[sage]"],
             "List all Ex commands with a short description",
@@ -1726,7 +1696,7 @@ const Dactyl = Module("dactyl", {
                         else
                             totalUnits = "msec";
 
-                        let str = template.commandOutput(
+                        let str = template.commandOutput(commandline.command,
                                 <table>
                                     <tr highlight="Title" align="left">
                                         <th colspan="3">Code execution summary</th>
@@ -1797,7 +1767,8 @@ const Dactyl = Module("dactyl", {
                 if (args.bang)
                     dactyl.open("about:");
                 else
-                    dactyl.echo(template.commandOutput(<>{config.name} {dactyl.version} running on:<br/>{navigator.userAgent}</>));
+                    dactyl.echo(template.commandOutput(commandline.command,
+                            <>{config.name} {dactyl.version} running on:<br/>{navigator.userAgent}</>));
             }, {
                 argCount: "0",
                 bang: true

@@ -29,16 +29,19 @@ const Services = Module("services", {
         this.add("environment",         "@mozilla.org/process/environment;1",               Ci.nsIEnvironment);
         this.add("extensionManager",    "@mozilla.org/extensions/manager;1",                Ci.nsIExtensionManager);
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           Ci.nsIFaviconService);
-        this.add("history",             "@mozilla.org/browser/global-history;2",            [Ci.nsIGlobalHistory3, Ci.nsINavHistoryService, Ci.nsIBrowserHistory]);
+        this.add("history",             "@mozilla.org/browser/global-history;2",            [Ci.nsIBrowserHistory, Ci.nsIGlobalHistory3, Ci.nsINavHistoryService]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                Ci.nsIIOService);
         this.add("json",                "@mozilla.org/dom/json;1",                          Ci.nsIJSON, "createInstance");
         this.add("livemark",            "@mozilla.org/browser/livemark-service;2",          Ci.nsILivemarkService);
         this.add("observer",            "@mozilla.org/observer-service;1",                  Ci.nsIObserverService);
-        this.add("pref",                "@mozilla.org/preferences-service;1",               [Ci.nsIPrefService, Ci.nsIPrefBranch, Ci.nsIPrefBranch2]);
+        this.add("pref",                "@mozilla.org/preferences-service;1",               [Ci.nsIPrefBranch, Ci.nsIPrefBranch2, Ci.nsIPrefService]);
         this.add("profile",             "@mozilla.org/toolkit/profile-service;1",           Ci.nsIToolkitProfileService);
+        this.add("runtime",             "@mozilla.org/xre/runtime;1",                       [Ci.nsIXULAppInfo, Ci.nsIXULRuntime]);
         this.add("rdf",                 "@mozilla.org/rdf/rdf-service;1",                   Ci.nsIRDFService);
         this.add("sessionStore",        "@mozilla.org/browser/sessionstore;1",              Ci.nsISessionStore);
+        this.add("stylesheet",          "@mozilla.org/content/style-sheet-service;1",       Ci.nsIStyleSheetService);
         this.add("subscriptLoader",     "@mozilla.org/moz/jssubscript-loader;1",            Ci.mozIJSSubScriptLoader);
+        this.add("tagging",             "@mozilla.org/browser/tagging-service;1",           Ci.nsITaggingService);
         this.add("threadManager",       "@mozilla.org/thread-manager;1",                    Ci.nsIThreadManager);
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
@@ -48,6 +51,8 @@ const Services = Module("services", {
         this.addClass("file:",      "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
         this.addClass("find",       "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
         this.addClass("process",    "@mozilla.org/process/util;1",               Ci.nsIProcess);
+        this.addClass("timer",      "@mozilla.org/timer;1",                      Ci.nsITimer);
+        this.addClass("xmlhttp",    "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
         this.addClass("zipWriter",  "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
 
         if (!this.get("extensionManager"))
@@ -81,7 +86,11 @@ const Services = Module("services", {
      *     the service.
      */
     add: function (name, class_, ifaces, meth) {
-        return this.services[name] = this._create(class_, ifaces, meth);
+        const self = this;
+        this.services.__defineGetter__(name, function () {
+            delete this[name];
+            return this[name] = self._create(class_, ifaces, meth);
+        });
     },
 
     /**
@@ -111,11 +120,9 @@ const Services = Module("services", {
      */
     create: function (name) this.classes[name]()
 }, {
-}, {
-    completion: function () {
+    javascript: function (dactyl, modules) {
         JavaScript.setCompleter(this.get, [function () services.services]);
         JavaScript.setCompleter(this.create, [function () [[c, ""] for (c in services.classes)]]);
-
     }
 });
 

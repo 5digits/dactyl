@@ -333,7 +333,7 @@ const Editor = Module("editor", {
         dactyl.assert(args.length >= 1, "No editor specified");
 
         args.push(path);
-        dactyl.callFunctionInThread(null, io.run, io.expandPath(args.shift()), args, true);
+        util.callInThread(null, io.run, io.expandPath(args.shift()), args, true);
     },
 
     // TODO: clean up with 2 functions for textboxes and currentEditor?

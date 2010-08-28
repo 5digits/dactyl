@@ -464,7 +464,7 @@ const Bookmarks = Module("bookmarks", {
             args.completeFilter = have.pop();
 
             let prefix = filter.substr(0, filter.length - args.completeFilter.length);
-            let tags = util.Array.uniq(util.Array.flatten([b.tags for ([k, b] in Iterator(this._cache.bookmarks))]));
+            let tags = array.uniq(util.Array.flatten([b.tags for ([k, b] in Iterator(this._cache.bookmarks))]));
 
             return [[prefix + tag, tag] for ([i, tag] in Iterator(tags)) if (have.indexOf(tag) < 0)];
         }

@@ -1269,10 +1269,6 @@ const Options = Module("options", {
             });
     },
     completion: function () {
-        JavaScript.setCompleter(this.get, [function () ([o.name, o.description] for (o in options))]);
-        JavaScript.setCompleter([this.getPref, this.safeSetPref, this.setPref, this.resetPref, this.invertPref],
-                [function () options.allPrefs().map(function (pref) [pref, ""])]);
-
         completion.option = function option(context, scope) {
             context.title = ["Option"];
             context.keys = { text: "names", description: "description" };
@@ -1350,6 +1346,11 @@ const Options = Module("options", {
             context.keys = { text: function (item) item, description: function (item) options.getPref(item) };
             context.completions = options.allPrefs();
         };
+    },
+    javascript: function () {
+        JavaScript.setCompleter(this.get, [function () ([o.name, o.description] for (o in options))]);
+        JavaScript.setCompleter([this.getPref, this.safeSetPref, this.setPref, this.resetPref, this.invertPref],
+                [function () options.allPrefs().map(function (pref) [pref, ""])]);
     }
 });
 

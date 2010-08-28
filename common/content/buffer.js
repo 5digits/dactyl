@@ -1003,7 +1003,7 @@ const Buffer = Module("buffer", {
 
         let values = ZoomManager.zoomValues;
         let cur = values.indexOf(ZoomManager.snap(ZoomManager.zoom));
-        let i = util.Math.constrain(cur + steps, 0, values.length - 1);
+        let i = Math.constrain(cur + steps, 0, values.length - 1);
 
         if (i == cur && fullZoom == ZoomManager.useFullZoom)
             dactyl.beep();
@@ -1286,7 +1286,7 @@ const Buffer = Module("buffer", {
                         level = buffer.textZoom + parseInt(arg, 10);
 
                     // relative args shouldn't take us out of range
-                    level = util.Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
+                    level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
                 else
                     dactyl.assert(false, "E488: Trailing characters");
@@ -1519,14 +1519,14 @@ const Buffer = Module("buffer", {
                     let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
 
                     let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (elem) {
-                        if (elem.readOnly || elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type))
+                        if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(Events.editableInputs, elem.type))
                             return false;
                         let computedStyle = util.computedStyle(elem);
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none";
                     });
 
                     dactyl.assert(elements.length > 0);
-                    let elem = elements[util.Math.constrain(count, 1, elements.length) - 1];
+                    let elem = elements[Math.constrain(count, 1, elements.length) - 1];
                     buffer.focusElement(elem);
                     util.scrollIntoView(elem);
                 }

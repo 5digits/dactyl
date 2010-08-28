@@ -83,7 +83,7 @@ const AutoCommands = Module("autocommands", {
             }
         });
 
-        let list = template.commandOutput(
+        let list = template.commandOutput(commandline.command,
             <table>
                 <tr highlight="Title">
                     <td colspan="2">----- Auto Commands -----</td>
@@ -257,8 +257,6 @@ const AutoCommands = Module("autocommands", {
         });
     },
     completion: function () {
-        JavaScript.setCompleter(this.get, [function () Iterator(config.autocommands)]);
-
         completion.autocmdEvent = function autocmdEvent(context) {
             context.completions = Iterator(config.autocommands);
         };
@@ -267,6 +265,9 @@ const AutoCommands = Module("autocommands", {
             context.title = ["Macro", "Keys"];
             context.completions = [item for (item in events.getMacros())];
         };
+    },
+    javascript: function () {
+        JavaScript.setCompleter(this.get, [function () Iterator(config.autocommands)]);
     },
     options: function () {
         options.add(["eventignore", "ei"],

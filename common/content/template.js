@@ -12,7 +12,7 @@ const Template = Module("template", {
 
     map: function map(iter, func, sep, interruptable) {
         if (iter.length) // FIXME: Kludge?
-            iter = util.Array.itervalues(iter);
+            iter = array.itervalues(iter);
         let ret = <></>;
         let n = 0;
         for each (let i in Iterator(iter)) {
@@ -22,7 +22,7 @@ const Template = Module("template", {
             if (sep && n++)
                 ret += sep;
             if (interruptable && n % interruptable == 0)
-                dactyl.threadYield(true, true);
+                util.threadYield(true, true);
             ret += val;
         }
         return ret;
@@ -93,7 +93,8 @@ const Template = Module("template", {
             <table width="100%" style="height: 100%">
                 <tr>
                     { template.map(util.range(0, 100), function (i)
-                      <td highlight={left} style={"opacity: " + (1 - i / 100)}/>) }
+                      <td highlight={left} style={"opacity: " + (1 - i / 100)}
+                      />) }
                 </tr>
             </table>
         </div>,
@@ -118,6 +119,7 @@ const Template = Module("template", {
                 // Using /foo*(:?)/ instead.
                 if (processStrings)
                     return <span highlight="Function">{str.replace(/\{(.|\n)*(?:)/g, "{ ... }")}</span>;
+                    <>}</>; /* Vim */
                 return <>{arg}</>;
             case "undefined":
                 return <span highlight="Null">{arg}</span>;
@@ -136,7 +138,7 @@ const Template = Module("template", {
             }
         }
         catch (e) {
-            return<![CDATA[<unknown>]]>;
+            return <![CDATA[<unknown>]]>;
         }
     },
 
@@ -190,8 +192,8 @@ const Template = Module("template", {
             return str;
     },
 
-    commandOutput: function generic(xml) {
-        return <>:{commandline.command}<br/>{xml}</>;
+    commandOutput: function generic(command, xml) {
+        return <>:{command}<br/>{xml}</>;
     },
 
     genericTable: function genericTable(items, format) {
