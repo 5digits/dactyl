@@ -8,7 +8,9 @@
 
 /** @scope modules */
 
-Cu.import("resource://gre/modules/XPCOMUtils.jsm", modules);
+default xml namespace = XHTML;
+XML.ignoreWhitespace = false;
+XML.prettyPrinting = false;
 
 const plugins = { __proto__: modules };
 const userContext = { __proto__: modules };
@@ -17,27 +19,6 @@ const EVAL_ERROR = "__dactyl_eval_error";
 const EVAL_RESULT = "__dactyl_eval_result";
 const EVAL_STRING = "__dactyl_eval_string";
 
-// Move elsewhere?
-const Storage = Module("storage", {
-    requires: ["services"],
-
-    init: function () {
-        Components.utils.import("resource://dactyl/storage.jsm", this);
-        modules.Timer = this.Timer; // Fix me, please.
-
-        try {
-            let infoPath = services.create("file");
-            infoPath.initWithPath(File.expandPath(IO.runtimePath.replace(/,.*/, "")));
-            infoPath.append("info");
-            infoPath.append(dactyl.profileName);
-            this.storage.infoPath = infoPath;
-        }
-        catch (e) {}
-
-        return this.storage;
-    }
-});
-
 const FailedAssertion = Class("FailedAssertion", Error, {
     init: function (message) {
         this.message = message;
@@ -45,8 +26,6 @@ const FailedAssertion = Class("FailedAssertion", Error, {
 });
 
 const Dactyl = Module("dactyl", {
-    requires: ["config", "services"],
-
     init: function () {
         window.dactyl = this;
         window.liberator = this;
@@ -61,8 +40,6 @@ const Dactyl = Module("dactyl", {
         // without explicitly selecting a profile.
         /** @property {string} The name of the current user profile. */
         this.profileName = services.get("directory").get("ProfD", Ci.nsIFile).leafName.replace(/^.+?\./, "");
-
-        config.features.push(Dactyl.getPlatformFeature());
     },
 
     destroy: function () {
@@ -139,29 +116,26 @@ const Dactyl = Module("dactyl", {
      * bell may be either audible or visual depending on the value of the
      * 'visualbell' option.
      */
-    beep: function () {
+    beep: requiresMainThread(function () {
         // FIXME: popups clear the command line
         if (options["visualbell"]) {
-            util.callInMainThread(function () {
-                // flash the visual bell
-                let popup = document.getElementById("dactyl-visualbell");
-                let win = config.visualbellWindow;
-                let rect = win.getBoundingClientRect();
-                let width = rect.right - rect.left;
-                let height = rect.bottom - rect.top;
+            // flash the visual bell
+            let popup = document.getElementById("dactyl-visualbell");
+            let win = config.visualbellWindow;
+            let rect = win.getBoundingClientRect();
+            let width = rect.right - rect.left;
+            let height = rect.bottom - rect.top;
 
-                // NOTE: this doesn't seem to work in FF3 with full box dimensions
-                popup.openPopup(win, "overlap", 1, 1, false, false);
-                popup.sizeTo(width - 2, height - 2);
-                setTimeout(function () { popup.hidePopup(); }, 20);
-            });
+            // NOTE: this doesn't seem to work in FF3 with full box dimensions
+            popup.openPopup(win, "overlap", 1, 1, false, false);
+            popup.sizeTo(width - 2, height - 2);
+            setTimeout(function () { popup.hidePopup(); }, 20);
         }
         else {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);
             soundService.beep();
         }
-        return false; // so you can do: if (...) return dactyl.beep();
-    },
+    }),
 
     /**
      * Prints a message to the console. If <b>msg</b> is an object it is
@@ -217,9 +191,11 @@ const Dactyl = Module("dactyl", {
     echoerr: function (str, flags) {
         flags |= commandline.APPEND_TO_MESSAGES;
 
+        if (isinstance(str, ["Error", "Exception"]))
+            dactyl.reportError(str);
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
-        else if (str instanceof Error)
+        else if (isinstance(str, ["Error"]))
             str = str.fileName + ":" + str.lineNumber + ": " + str;
 
         if (options["errorbells"])
@@ -504,7 +480,7 @@ const Dactyl = Module("dactyl", {
 
             // Process plugin help entries.
             XML.ignoreWhiteSpace = false;
-            XML.prettyPrinting = true; // Should be false, but ignoreWhiteSpace=false doesn't work correctly. This is the lesser evil.
+            XML.prettyPrinting = false;
             XML.prettyIndent = 4;
 
             let body = XML();
@@ -594,7 +570,7 @@ const Dactyl = Module("dactyl", {
                             data.push(">");
                             if (node instanceof HTMLHeadElement)
                                 data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
-                            Array.map(node.childNodes, arguments.callee);
+                            Array.map(node.childNodes, fix);
                             data.push("</"); data.push(node.localName); data.push(">");
                         }
                         break;
@@ -1105,6 +1081,9 @@ const Dactyl = Module("dactyl", {
             dactyl.help(tag);
     }
 }, {
+    config: function () {
+        config.features.push(Dactyl.getPlatformFeature());
+    },
 
     // Only general options are added here, which are valid for all Dactyl extensions
     options: function () {
@@ -1502,30 +1481,25 @@ const Dactyl = Module("dactyl", {
                         extensions = extensions.filter(function (extension) extension.name.indexOf(args[0]) >= 0);
                     extensions.sort(function (a, b) String.localeCompare(a.name, b.name));
 
-                    if (extensions.length > 0) {
-                        let list = template.tabular(
-                            ["Name", "Version", "Status", "Description"], [],
-                            ([template.icon({ icon: e.iconURL }, e.name),
-                              e.version,
-                              (e.isActive ? <span highlight="Enabled">enabled</span>
-                                          : <span highlight="Disabled">disabled</span>) +
-                              ((e.userDisabled || e.appDisabled) == !e.isActive ? XML() :
-                                  <>&#xa0;({e.userDisabled || e.appDisabled
-                                        ? <span highlight="Disabled">disabled</span>
-                                        : <span highlight="Enabled">enabled</span>}
-                                        on restart)
-                                  </>),
-                              e.description] for ([, e] in Iterator(extensions)))
-                        );
-
-                        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
-                    }
-                    else {
-                        if (filter)
-                            dactyl.echoerr("Exxx: No extension matching " + filter.quote());
-                        else
-                            dactyl.echoerr("No extensions installed");
-                    }
+                    if (extensions.length > 0)
+                        commandline.commandOutput(
+                            template.tabular(["Name", "Version", "Status", "Description"], [],
+                                ([template.icon({ icon: e.iconURL }, e.name),
+                                  e.version,
+                                  (e.isActive ? <span highlight="Enabled">enabled</span>
+                                              : <span highlight="Disabled">disabled</span>) +
+                                  ((e.userDisabled || e.appDisabled) == !e.isActive ? XML() :
+                                      <>&#xa0;({e.userDisabled || e.appDisabled
+                                            ? <span highlight="Disabled">disabled</span>
+                                            : <span highlight="Enabled">enabled</span>}
+                                            on restart)
+                                      </>),
+                                  e.description]
+                                for ([, e] in Iterator(extensions)))));
+                    else if (filter)
+                        dactyl.echoerr("Exxx: No extension matching " + filter.quote());
+                    else
+                        dactyl.echoerr("No extensions installed");
                 });
             },
             { argCount: "?" });
@@ -1696,7 +1670,7 @@ const Dactyl = Module("dactyl", {
                         else
                             totalUnits = "msec";
 
-                        let str = template.commandOutput(commandline.command,
+                        commandline.commandOutput(
                                 <table>
                                     <tr highlight="Title" align="left">
                                         <th colspan="3">Code execution summary</th>
@@ -1705,7 +1679,6 @@ const Dactyl = Module("dactyl", {
                                     <tr><td>&#xa0;&#xa0;Average time:</td><td align="right"><span class="time-average">{each.toFixed(2)}</span></td><td>{eachUnits}</td></tr>
                                     <tr><td>&#xa0;&#xa0;Total time:</td><td align="right"><span class="time-total">{total.toFixed(2)}</span></td><td>{totalUnits}</td></tr>
                                 </table>);
-                        commandline.echo(str, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
                     }
                     else {
                         let beforeTime = Date.now();
@@ -1767,8 +1740,9 @@ const Dactyl = Module("dactyl", {
                 if (args.bang)
                     dactyl.open("about:");
                 else
-                    dactyl.echo(template.commandOutput(commandline.command,
-                            <>{config.name} {dactyl.version} running on:<br/>{navigator.userAgent}</>));
+                    commandline.commandOutput(<>
+                        {config.name} {dactyl.version} running on:<br/>{navigator.userAgent}
+                    </>);
             }, {
                 argCount: "0",
                 bang: true

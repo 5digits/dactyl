@@ -6,25 +6,71 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-/** @scope modules */
+Components.utils.import("resource://dactyl/base.jsm");
+defmodule("util", this, {
+    exports: ["Math", "NS", "Util", "XHTML", "XUL", "util"],
+    require: ["services"],
+    use: ["template"]
+});
 
 const XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
 const XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 const NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
 
-const Util = Module("util", {
+const Util = Module("Util", {
     init: function () {
         this.Array = array;
     },
 
     get activeWindow() services.get("windowWatcher").activeWindow,
+    dactyl: {
+        __noSuchMethod__: function (meth, args) {
+            let win = util.activeWindow;
+            if(win && win.dactyl)
+                return win.dactyl[meth].apply(win.dactyl, args);
+            return null;
+        }
+    },
+
     callInMainThread: function (callback, self) {
         let mainThread = services.get("threadManager").mainThread;
-        if (!services.get("threadManager").isMainThread)
-            mainThread.dispatch({ run: callback.call(self) }, mainThread.DISPATCH_NORMAL);
-        else
+        if (services.get("threadManager").isMainThread)
             callback.call(self);
+        else
+            mainThread.dispatch(Runnable(self, callback), mainThread.DISPATCH_NORMAL);
+    },
+
+    /**
+     * Calls a function asynchronously on a new thread.
+     *
+     * @param {nsIThread} thread The thread to call the function on. If no
+     *     thread is specified a new one is created.
+     * @optional
+     * @param {Object} self The 'this' object used when executing the
+     *     function.
+     * @param {function} func The function to execute.
+     *
+     */
+    callAsync: function (thread, self, func) {
+        thread = thread || services.get("threadManager").newThread(0);
+        thread.dispatch(Runnable(self, func, Array.slice(arguments, 3)), thread.DISPATCH_NORMAL);
+    },
+
+    /**
+     * Calls a function synchronously on a new thread.
+     *
+     * NOTE: Be sure to call GUI related methods like alert() or dump()
+     * ONLY in the main thread.
+     *
+     * @param {nsIThread} thread The thread to call the function on. If no
+     *     thread is specified a new one is created.
+     * @optional
+     * @param {function} func The function to execute.
+     */
+    callInThread: function (thread, func) {
+        thread = thread || services.get("threadManager").newThread(0);
+        thread.dispatch(Runnable(null, func, Array.slice(arguments, 2)), thread.DISPATCH_SYNC);
     },
 
     /**
@@ -88,7 +134,7 @@ const Util = Module("util", {
         clipboardHelper.copyString(str);
 
         if (verbose)
-            dactyl.echo("Yanked " + str, commandline.FORCE_SINGLELINE);
+            util.dactyl.echomsg("Yanked " + str);
     },
 
     /**
@@ -112,7 +158,10 @@ const Util = Module("util", {
      * @param {string} pattern The pattern to deglob.
      * @returns [string] The resulting strings.
      */
-    debrace: function deglobBrace(pattern) {
+    debrace: function debrace(pattern) {
+        if (pattern.indexOf("{") == -1)
+            return [pattern];
+
         function split(pattern, re, fn, dequote) {
             let end = 0, match, res = [];
             while (match = re.exec(pattern)) {
@@ -132,7 +181,7 @@ const Util = Module("util", {
             }, "{}");
         function rec(acc) {
             if (acc.length == patterns.length)
-                res.push(util.Array.zip(substrings, acc).join(""));
+                res.push(array(substrings).zip(acc).flatten().join(""));
             else 
                 for (let [, pattern] in Iterator(patterns[acc.length]))
                     rec(acc.concat(pattern));
@@ -203,7 +252,7 @@ const Util = Module("util", {
      */
     evaluateXPath: function (expression, doc, elem, asIterator) {
         if (!doc)
-            doc = content.document;
+            doc = util.activeWindow.content.document;
         if (!elem)
             elem = doc;
         if (isarray(expression))
@@ -245,20 +294,6 @@ const Util = Module("util", {
         });
         return dest;
     },
-
-    /**
-     * Returns the selection controller for the given window.
-     *
-     * @param {Window} window
-     * @returns {nsISelectionController}
-     */
-    selectionController: function (win)
-        win.QueryInterface(Ci.nsIInterfaceRequestor)
-           .getInterface(Ci.nsIWebNavigation)
-           .QueryInterface(Ci.nsIDocShell)
-           .QueryInterface(Ci.nsIInterfaceRequestor)
-           .getInterface(Ci.nsISelectionDisplay)
-           .QueryInterface(Ci.nsISelectionController),
 
     /**
      * Converts <b>bytes</b> to a pretty printed data size string.
@@ -326,7 +361,7 @@ const Util = Module("util", {
             return xmlhttp;
         }
         catch (e) {
-            dactyl.log("Error opening " + String.quote(url) + ": " + e, 1);
+                util.dactyl.log("Error opening " + String.quote(url) + ": " + e, 1);
             return null;
         }
     },
@@ -395,6 +430,8 @@ const Util = Module("util", {
      *          second.
      */
     memoize: memoize,
+
+    newThread: function () services.get("threadManager").newThread(0),
 
     /**
      * Converts a URI string into a URI object.
@@ -471,13 +508,11 @@ const Util = Module("util", {
 
         let keys = [];
         try { // window.content often does not want to be queried with "var i in object"
-            let hasValue = !("__iterator__" in object);
-            /*
-            if (modules.isPrototypeOf(object)) {
+            let hasValue = !("__iterator__" in object || isinstance(object, ["Generator", "Iterator"]));
+            if (object.dactyl && object.modules && object.modules.modules == object.modules) {
                 object = Iterator(object);
                 hasValue = false;
             }
-            */
             for (let i in object) {
                 let value = <![CDATA[<no value>]]>;
                 try {
@@ -604,6 +639,28 @@ const Util = Module("util", {
             elem.scrollIntoView();
     },
 
+    /**
+     * Returns the selection controller for the given window.
+     *
+     * @param {Window} window
+     * @returns {nsISelectionController}
+     */
+    selectionController: function (win)
+        win.QueryInterface(Ci.nsIInterfaceRequestor)
+           .getInterface(Ci.nsIWebNavigation)
+           .QueryInterface(Ci.nsIDocShell)
+           .QueryInterface(Ci.nsIInterfaceRequestor)
+           .getInterface(Ci.nsISelectionDisplay)
+           .QueryInterface(Ci.nsISelectionController),
+
+    /**
+     * Suspend execution for at least 'delay' milliseconds. Functions by
+     * yielding execution to the next item in the main event queue, and
+     * so may lead to unexpected call graphs, and long delays if another
+     * handler yields execution while waiting.
+     *
+     * @param {number} delay The time period for which to sleep in milliseconds.
+     */
     sleep: function (delay) {
         let mainThread = services.get("threadManager").mainThread;
 
@@ -611,6 +668,44 @@ const Util = Module("util", {
         while (Date.now() < end)
             mainThread.processNextEvent(true);
         return true;
+    },
+
+    highlightFilter: function highlightFilter(str, filter, highlight) {
+        return this.highlightSubstrings(str, (function () {
+            if (filter.length == 0)
+                return;
+            let lcstr = String.toLowerCase(str);
+            let lcfilter = filter.toLowerCase();
+            let start = 0;
+            while ((start = lcstr.indexOf(lcfilter, start)) > -1) {
+                yield [start, filter.length];
+                start += filter.length;
+            }
+        })(), highlight || template.filter);
+    },
+
+    /**
+     * Behaves like String.split, except that when 'limit' is reached,
+     * the trailing element contains the entire trailing portion of the
+     * string.
+     *
+     *     util.split("a, b, c, d, e", /, /, 3) -> ["a", "b", "c, d, e"]
+     * @param {string} str The string to split.
+     * @param {RegExp|string} re The regular expression on which to split the string.
+     * @param {number} limit The maximum number of elements to return.
+     * @returns {[string]}
+     */
+    split: function (str, re, limit) {
+        if (!re.global)
+            re = RegExp(re.source || re, "g");
+        let match, start = 0, res = [];
+        while ((match = re.exec(str)) && --limit && match[0].length) {
+            res.push(str.substring(start, match.index));
+            start = match.index + match[0].length;
+        }
+        if (limit)
+            res.push(str.substring(start));
+        return res;
     },
 
     /**
@@ -670,7 +765,7 @@ const Util = Module("util", {
         if (node.length() != 1) {
             let domnode = doc.createDocumentFragment();
             for each (let child in node)
-                domnode.appendChild(arguments.callee(child, doc, nodes));
+                domnode.appendChild(xmlToDom(child, doc, nodes));
             return domnode;
         }
         switch (node.nodeKind()) {
@@ -681,7 +776,7 @@ const Util = Module("util", {
             for each (let attr in node.@*)
                 domnode.setAttributeNS(attr.name() == "highlight" ? NS.uri : attr.namespace(), attr.name(), String(attr));
             for each (let child in node.*)
-                domnode.appendChild(arguments.callee(child, doc, nodes));
+                domnode.appendChild(xmlToDom(child, doc, nodes));
             if (nodes && node.@key)
                 nodes[node.@key] = domnode;
             return domnode;
@@ -697,8 +792,9 @@ const Util = Module("util", {
  * Math utility methods.
  * @singleton
  */
+const GlobalMath = Math;
 var Math = {
-    __proto__: window.Math,
+    __proto__: GlobalMath,
 
     /**
      * Returns the specified <b>value</b> constrained to the range <b>min</b> -
@@ -712,4 +808,8 @@ var Math = {
     constrain: function constrain(value, min, max) Math.min(Math.max(min, value), max)
 };
 
-// vim: set fdm=marker sw=4 ts=4 et:
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
+
+endmodule();
+
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

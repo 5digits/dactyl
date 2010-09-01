@@ -297,7 +297,7 @@ const CompletionContext = Class("CompletionContext", {
             let [k, v] = i;
             let _k = "_" + k;
             if (typeof v == "string" && /^[.[]/.test(v))
-                v = eval("(function (i) i" + v + ")");
+                v = Function("i", "return i" + v);
             if (typeof v == "function")
                 res.__defineGetter__(k, function () _k in this ? this[_k] : (this[_k] = v(this.item)));
             else
@@ -325,7 +325,7 @@ const CompletionContext = Class("CompletionContext", {
             let lock = {};
             this.cache.backgroundLock = lock;
             this.incomplete = true;
-            let thread = this.getCache("backgroundThread", dactyl.newThread);
+            let thread = this.getCache("backgroundThread", util.newThread);
             util.callAsync(thread, this, function () {
                 if (this.cache.backgroundLock != lock)
                     return;
@@ -510,7 +510,7 @@ const CompletionContext = Class("CompletionContext", {
         if (!context.autoComplete && !context.tabPressed && context.editor)
             context.waitingForTab = true;
         else if (completer)
-            return completer.apply(self || this, [context].concat(Array.slice(arguments, arguments.callee.length)));
+            return completer.apply(self || this, [context].concat(Array.slice(arguments, fork.length)));
 
         if (completer)
             return null;
@@ -668,14 +668,13 @@ const Completion = Module("completion", {
         context = context.contexts["/list"];
         context.wait();
 
-        let list = template.commandOutput(commandline.command,
+        commandline.commandOutput(
             <div highlight="Completions">
                 { template.map(context.contextList.filter(function (c) c.hasItems),
                     function (context)
                         template.completionRow(context.title, "CompTitle") +
                         template.map(context.items, function (item) context.createRow(item), null, 100)) }
             </div>);
-        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
     },
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -765,13 +764,11 @@ const Completion = Module("completion", {
         commands.add(["contexts"],
             "List the completion contexts used during completion of an ex command",
             function (args) {
-                commandline.echo(template.commandOutput(commandline.command,
+                commandline.commandOutput(
                     <div highlight="Completions">
                         { template.completionRow(["Context", "Title"], "CompTitle") }
                         { template.map(completion.contextList || [], function (item) template.completionRow(item, "CompItem")) }
-                    </div>),
-                    null, commandline.FORCE_MULTILINE);
-
+                    </div>);
             },
             {
                 argCount: "1",

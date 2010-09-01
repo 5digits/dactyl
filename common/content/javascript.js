@@ -26,7 +26,6 @@ const JavaScript = Module("javascript", {
     // Some object members are only accessible as function calls
     getKey: function (obj, key) {
         try {
-            // if (!Object.prototype.__lookupGetter__.call(obj, key))
             return obj[key];
         }
         catch (e) {}
@@ -35,20 +34,18 @@ const JavaScript = Module("javascript", {
 
     iter: function iter(obj, toplevel) {
         "use strict";
-        const self = this;
 
         if (obj == null)
             return;
 
-        let orig = obj;
-        if(!options["jsdebugger"])
-            function value(key) self.getKey(orig, key);
-        else {
-            let top = services.get("debugger").wrapValue(obj);
-            function value(key) top.getProperty(key).value.getWrappedValue();
+        let seen = {};
+        for (let key in properties(obj, !toplevel)) {
+            set.add(seen, key);
+            yield [key, this.getKey(obj, key)];
         }
-        for (let key in properties(obj, !toplevel))
-            yield [key, value(key)];
+        for (let key in properties(this.getKey(obj, "wrappedJSObject"), !toplevel))
+            if (!set.has(seen, key))
+                yield [key, this.getKey(obj, key)];
     },
 
     objectKeys: function objectKeys(obj, toplevel) {

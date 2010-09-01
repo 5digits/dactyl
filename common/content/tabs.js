@@ -14,8 +14,6 @@
  * @instance tabs
  */
 const Tabs = Module("tabs", {
-    requires: ["config"],
-
     init: function () {
         this._alternates = [config.tabbrowser.mCurrentTab, null];
 
@@ -187,7 +185,7 @@ const Tabs = Module("tabs", {
         this._groups = this._groups = iframe ? iframe.contentWindow : null;
         if (this._groups)
             while (!this._groups.TabItems)
-                dactyl.threadYield(false, true);
+                util.threadYield(false, true);
         return this._groups;
     },
 
@@ -196,14 +194,15 @@ const Tabs = Module("tabs", {
      * selected tab if <b>index</b> is not specified. This is a 0-based
      * index.
      *
-     * @param {number} index The index of the tab required.
+     * @param {number|Node} index The index of the tab required or the tab itself
      * @returns {Object}
      */
     getTab: function (index) {
+        if (index instanceof Node)
+            return index;
         if (index != null)
             return config.tabbrowser.mTabs[index];
-        else
-            return config.tabbrowser.mCurrentTab;
+        return config.tabbrowser.mCurrentTab;
     },
 
     /**

@@ -6,10 +6,6 @@
 // given in the LICENSE.txt file included with this file.
 
 const Config = Module("config", ConfigBase, {
-    init: function () {
-    },
-
-    /*** required options, no checks done if they really exist, so be careful ***/
     name: "Pentadactyl",
     hostApplication: "Firefox",
 
@@ -122,12 +118,13 @@ const Config = Module("config", ConfigBase, {
     },
 
     scripts: [
-        "browser.js",
-        "bookmarks.js",
-        "history.js",
-        "quickmarks.js",
-        "sanitizer.js",
-        "tabs.js"
+        "browser",
+        "bookmarkcache",
+        "bookmarks",
+        "history",
+        "quickmarks",
+        "sanitizer",
+        "tabs"
     ],
 
     get tempFile() {
@@ -299,6 +296,7 @@ const Config = Module("config", ConfigBase, {
             "<Up>": modes.NORMAL | modes.INSERT,
             "<Down>": modes.NORMAL | modes.INSERT
         };
+        config.modes.forEach(function (mode) { modes.addMode.apply(this, mode); });
     },
     options: function () {
         options.add(["online"],

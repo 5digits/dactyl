@@ -14,8 +14,6 @@ const AutoCommand = Struct("event", "pattern", "command");
  * @instance autocommands
  */
 const AutoCommands = Module("autocommands", {
-    requires: ["config"],
-
     init: function () {
         this._store = [];
     },
@@ -83,7 +81,7 @@ const AutoCommands = Module("autocommands", {
             }
         });
 
-        let list = template.commandOutput(commandline.command,
+        commandline.commandOutput(
             <table>
                 <tr highlight="Title">
                     <td colspan="2">----- Auto Commands -----</td>
@@ -101,8 +99,6 @@ const AutoCommands = Module("autocommands", {
                         </tr>))
                 }
             </table>);
-
-        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
     },
 
     /**
@@ -137,7 +133,6 @@ const AutoCommands = Module("autocommands", {
                         autoCmd.command.call(autoCmd, args);
                     }
                     catch (e) {
-                        dactyl.reportError(e);
                         dactyl.echoerr(e);
                     }
                 }
@@ -203,7 +198,12 @@ const AutoCommands = Module("autocommands", {
                         return args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
                 literal: 2,
-                options: [[["-javascript", "-js"], commands.OPTION_NOARG]]
+                options: [
+                    {
+                        names: ["-javascript", "-js"],
+                        description: "Interperate the action as JavaScript code rather than an ex command",
+                    }
+                ]
             });
 
         [

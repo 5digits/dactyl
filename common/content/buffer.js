@@ -8,8 +8,6 @@
 
 /** @scope modules */
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm", modules);
-
 const Point = Struct("x", "y");
 
 /**
@@ -19,8 +17,6 @@ const Point = Struct("x", "y");
  * @instance buffer
  */
 const Buffer = Module("buffer", {
-    requires: ["config", "util"],
-
     init: function () {
         this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};
@@ -146,10 +142,6 @@ const Buffer = Module("buffer", {
     },
 
     destroy: function () {
-        try {
-            config.browser.removeProgressListener(this.progressListener);
-        }
-        catch (e) {} // Why? --djk
     },
 
     _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc) {
@@ -214,14 +206,10 @@ const Buffer = Module("buffer", {
     /**
      * @property {Object} The document loading progress listener.
      */
-    progressListener: {
-        QueryInterface: XPCOMUtils.generateQI([
-            Ci.nsIWebProgressListener,
-            Ci.nsIXULBrowserWindow
-        ]),
-
+    progressListener: update({ __proto__: window.XULBrowserWindow }, {
         // XXX: function may later be needed to detect a canceled synchronous openURL()
-        onStateChange: function (webProgress, request, flags, status) {
+        onStateChange: function onStateChange(webProgress, request, flags, status) {
+            onStateChange.superapply(this, arguments);
             // STATE_IS_DOCUMENT | STATE_IS_WINDOW is important, because we also
             // receive statechange events for loading images and other parts of the web page
             if (flags & (Ci.nsIWebProgressListener.STATE_IS_DOCUMENT | Ci.nsIWebProgressListener.STATE_IS_WINDOW)) {
@@ -247,7 +235,8 @@ const Buffer = Module("buffer", {
             }
         },
         // for notifying the user about secure web pages
-        onSecurityChange: function (webProgress, request, state) {
+        onSecurityChange: function onSecurityChange(webProgress, request, state) {
+            onSecurityChange.superapply(this, arguments);
             // TODO: do something useful with STATE_SECURE_MED and STATE_SECURE_LOW
             if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
                 statusline.setClass("insecure");
@@ -258,14 +247,17 @@ const Buffer = Module("buffer", {
             else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
                 statusline.setClass("secure");
         },
-        onStatusChange: function (webProgress, request, status, message) {
+        onStatusChange: function onStatusChange(webProgress, request, status, message) {
+            onStatusChange.superapply(this, arguments);
             statusline.updateUrl(message);
         },
-        onProgressChange: function (webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
+        onProgressChange: function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
+            onProgressChange.superapply(this, arguments);
             statusline.updateProgress(curTotalProgress/maxTotalProgress);
         },
         // happens when the users switches tabs
-        onLocationChange: function () {
+        onLocationChange: function onLocationChange() {
+            onLocationChange.superapply(this, arguments);
             statusline.updateUrl();
             statusline.updateProgress();
 
@@ -279,10 +271,12 @@ const Buffer = Module("buffer", {
             }, 500);
         },
         // called at the very end of a page load
-        asyncUpdateUI: function () {
+        asyncUpdateUI: function asyncUpdateUI() {
+            asyncUpdateUI.superapply(this, arguments);
             setTimeout(function () { statusline.updateUrl(); }, 100);
         },
-        setOverLink: function (link, b) {
+        setOverLink: function setOverLink(link, b) {
+            setOverLink.superapply(this, arguments);
             let ssli = options["showstatuslinks"];
             if (link && ssli) {
                 if (ssli == 1)
@@ -298,15 +292,7 @@ const Buffer = Module("buffer", {
                     modes.show();
             }
         },
-
-        // nsIXULBrowserWindow stubs
-        setJSDefaultStatus: function (status) {},
-        setJSStatus: function (status) {},
-
-        // Stub for something else, presumably. Not in any documented
-        // interface.
-        onLinkIconAvailable: function () {}
-    },
+    }),
 
     /**
      * @property {Array} The alternative style sheets for the current
@@ -318,19 +304,6 @@ const Buffer = Module("buffer", {
         return stylesheets.filter(
             function (stylesheet) /^(screen|all|)$/i.test(stylesheet.media.mediaText) && !/^\s*$/.test(stylesheet.title)
         );
-    },
-
-    /**
-     * @property {Array[Window]} All frames in the current buffer.
-     */
-    get allFrames() {
-        let frames = [];
-        (function (frame) {
-            if (frame.document.body instanceof HTMLBodyElement)
-                frames.push(frame);
-            Array.forEach(frame.frames, arguments.callee);
-        })(window.content);
-        return frames;
     },
 
     /**
@@ -445,6 +418,19 @@ const Buffer = Module("buffer", {
      */
     addPageInfoSection: function addPageInfoSection(option, title, func) {
         this.pageInfo[option] = [func, title];
+    },
+
+    /**
+     * Returns a list of all frames in the given current buffer.
+     */
+    allFrames: function (win) {
+        let frames = [];
+        (function rec(frame) {
+            if (frame.document.body instanceof HTMLBodyElement)
+                frames.push(frame);
+            Array.forEach(frame.frames, rec);
+        })(win || window.content);
+        return frames;
     },
 
     /**
@@ -581,7 +567,7 @@ const Buffer = Module("buffer", {
         let ret = followFrame(window.content);
         if (!ret)
             // only loop through frames if the main content didn't match
-            ret = Array.some(buffer.allFrames.frames, followFrame);
+            ret = Array.some(buffer.allFrames().frames, followFrame);
 
         if (!ret)
             dactyl.beep();
@@ -805,7 +791,7 @@ const Buffer = Module("buffer", {
             return;
 
         count = Math.max(count, 1);
-        let frames = buffer.allFrames;
+        let frames = buffer.allFrames();
 
         if (frames.length == 0) // currently top is always included
             return;
@@ -1367,7 +1353,11 @@ const Buffer = Module("buffer", {
         };
     },
     events: function () {
-        /*
+        try {
+            config.browser.removeProgressListener(window.XULBrowserWindow);
+        }
+        catch (e) {} // Why? --djk
+        config.browser.addProgressListener(this.progressListener, Ci.nsIWebProgress.NOTIFY_ALL);
         window.XULBrowserWindow = this.progressListener;
         window.QueryInterface(Ci.nsIInterfaceRequestor)
               .getInterface(Ci.nsIWebNavigation)
@@ -1376,12 +1366,6 @@ const Buffer = Module("buffer", {
               .QueryInterface(Ci.nsIInterfaceRequestor)
               .getInterface(Ci.nsIXULWindow)
               .XULBrowserWindow = this.progressListener;
-        */
-
-        try {
-            config.browser.addProgressListener(this.progressListener, Ci.nsIWebProgress.NOTIFY_ALL);
-        }
-        catch (e) {} // Why? --djk
 
         let appContent = document.getElementById("appcontent");
         if (appContent) {

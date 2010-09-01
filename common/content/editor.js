@@ -11,8 +11,6 @@
 
 /** @instance editor */
 const Editor = Module("editor", {
-    requires: ["config"],
-
     init: function () {
         // store our last search with f, F, t or T
         //
@@ -408,10 +406,10 @@ const Editor = Module("editor", {
         // blink the textbox after returning
         if (textBox) {
             let colors = [tmpBg, oldBg, tmpBg, oldBg];
-            (function () {
+            (function next() {
                 textBox.style.backgroundColor = colors.shift();
                 if (colors.length > 0)
-                    setTimeout(arguments.callee, 100);
+                    setTimeout(next, 100);
             })();
         }
 
@@ -577,10 +575,8 @@ const Editor = Module("editor", {
 
             dactyl.echo(mode + "  " + lhs + "   " + rhs, commandline.FORCE_SINGLELINE); // 2 spaces, 3 spaces
         }
-        else {
-            list = template.tabular(["", "LHS", "RHS"], [], list);
-            commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
-        }
+        else
+            commandline.commandOutput(template.tabular(["", "LHS", "RHS"], [], list));
     },
 
     /**
@@ -670,7 +666,7 @@ const Editor = Module("editor", {
                 }, {
                     completer: function (context, args) completion.abbreviation(context, args, mode),
                     literal: 0,
-                    serial: function () [ {
+                    serialize: function () [ {
                             command: this.name,
                             arguments: [lhs],
                             literalArg: abbr[1]

@@ -11,8 +11,6 @@
  * @instance marks
  */
 const Marks = Module("marks", {
-    requires: ["config", "storage"],
-
     init: function init() {
         this._localMarks = storage.newMap("local-marks", { store: true, privateData: true });
         this._urlMarks = storage.newMap("url-marks", { store: true, privateData: true });
@@ -176,15 +174,15 @@ const Marks = Module("marks", {
             dactyl.assert(marks.length > 0, "E283: No marks matching " + filter.quote());
         }
 
-        let list = template.tabular(
-            ["Mark",   "Line",              "Column",            "File"],
-            ["",       "text-align: right", "text-align: right", "color: green"],
-            ([mark[0],
-              Math.round(mark[1].position.x * 100) + "%",
-              Math.round(mark[1].position.y * 100) + "%",
-              mark[1].location]
-             for ([, mark] in Iterator(marks))));
-        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+        commandline.commandOutput(
+            template.tabular(
+                ["Mark",   "Line",              "Column",            "File"],
+                ["",       "text-align: right", "text-align: right", "color: green"],
+                ([mark[0],
+                  Math.round(mark[1].position.x * 100) + "%",
+                  Math.round(mark[1].position.y * 100) + "%",
+                  mark[1].location]
+                  for ([, mark] in Iterator(marks)))));
     },
 
     _onPageLoad: function _onPageLoad(event) {

@@ -15,8 +15,6 @@
  * this class when the chrome is ready.
  */
 const CommandLine = Module("commandline", {
-    requires: ["config", "dactyl", "modes", "services", "storage", "template", "util"],
-
     init: function () {
         const self = this;
 
@@ -95,7 +93,7 @@ const CommandLine = Module("commandline", {
         ////////////////////// TIMERS //////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////{{{
 
-        this._statusTimer = new Timer(5, 100, function statusTell() {
+        this._statusTimer = Timer(5, 100, function statusTell() {
             if (self._completions == null)
                 return;
             if (self._completions.selected == null)
@@ -104,7 +102,7 @@ const CommandLine = Module("commandline", {
                 statusline.updateProgress("match " + (self._completions.selected + 1) + " of " + self._completions.items.length);
         });
 
-        this._autocompleteTimer = new Timer(200, 500, function autocompleteTell(tabPressed) {
+        this._autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
             if (!events.feedingKeys && self._completions && options.get("autocomplete").values.length) {
                 self._completions.complete(true, false);
                 self._completions.itemList.show();
@@ -114,8 +112,8 @@ const CommandLine = Module("commandline", {
         // This timer just prevents <Tab>s from queueing up when the
         // system is under load (and, thus, giving us several minutes of
         // the completion list scrolling). Multiple <Tab> presses are
-        // still processed normally, as the time is flushed on "keyup".
-        this._tabTimer = new Timer(0, 0, function tabTell(event) {
+        // still processed normally, as the timer is flushed on "keyup".
+        this._tabTimer = Timer(0, 0, function tabTell(event) {
             if (self._completions)
                 self._completions.tab(event.shiftKey);
         });
@@ -464,6 +462,18 @@ const CommandLine = Module("commandline", {
     },
 
     /**
+     * Displays the multi-line output of a command, preceded by the last
+     * executed ex command string.
+     * 
+     * @param {XML} xml The output as an E4X XML object.
+     */
+    commandOutput: function (xml) {
+        XML.ignoreWhitespace = false;
+        XML.prettyPrinting = false;
+        this.echo(<>:{this.command}<br/>{xml}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+    },
+
+    /**
      * Hides the command line, and shows any status messages that
      * are under it.
      */
@@ -492,7 +502,7 @@ const CommandLine = Module("commandline", {
      *   commandline.FORCE_MULTILINE    - Forces the message to appear in
      *          the MOW.
      */
-    echo: function echo(str, highlightGroup, flags) {
+    echo: requiresMainThread(function echo(str, highlightGroup, flags) {
         // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
         if (this._silent)
             return;
@@ -506,37 +516,34 @@ const CommandLine = Module("commandline", {
             services.get("windowWatcher").activeWindow.dactyl)
             return;
 
-        // The DOM isn't threadsafe. It must only be accessed from the main thread.
-        util.callInMainThread(function () {
-            if ((flags & this.DISALLOW_MULTILINE) && !this._outputContainer.collapsed)
-                return;
+        if ((flags & this.DISALLOW_MULTILINE) && !this._outputContainer.collapsed)
+            return;
 
-            let single = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
-            let action = this._echoLine;
+        let single = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
+        let action = this._echoLine;
 
-            // TODO: this is all a bit convoluted - clean up.
-            // assume that FORCE_MULTILINE output is fully styled
-            if (!(flags & this.FORCE_MULTILINE) && !single && (!this._outputContainer.collapsed || this.widgets.message.value == this._lastEcho)) {
-                highlightGroup += " Message";
-                action = this._echoMultiline;
-            }
+        // TODO: this is all a bit convoluted - clean up.
+        // assume that FORCE_MULTILINE output is fully styled
+        if (!(flags & this.FORCE_MULTILINE) && !single && (!this._outputContainer.collapsed || this.widgets.message.value == this._lastEcho)) {
+            highlightGroup += " Message";
+            action = this._echoMultiline;
+        }
 
-            if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || typeof str == "xml") && !(flags & this.FORCE_SINGLELINE))
-                action = this._echoMultiline;
+        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || typeof str == "xml") && !(flags & this.FORCE_SINGLELINE))
+            action = this._echoMultiline;
 
-            if (single)
-                this._lastEcho = null;
-            else {
-                if (this.widgets.message.value == this._lastEcho)
-                    this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
-                        this.widgets.message.getAttributeNS(NS.uri, "highlight"));
-                this._lastEcho = (action == this._echoLine) && str;
-            }
+        if (single)
+            this._lastEcho = null;
+        else {
+            if (this.widgets.message.value == this._lastEcho)
+                this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
+                    this.widgets.message.getAttributeNS(NS.uri, "highlight"));
+            this._lastEcho = (action == this._echoLine) && str;
+        }
 
-            if (action)
-                action.call(this, str, highlightGroup, single);
-        }, this);
-    },
+        if (action)
+            action.call(this, str, highlightGroup, single);
+    }),
 
     /**
      * Prompt the user. Sets modes.main to COMMAND_LINE, which the user may
@@ -675,7 +682,7 @@ const CommandLine = Module("commandline", {
                         modes.pop();
                     }
                 }
-                else { // any other key
+                else {
                     //this.resetCompletions();
                 }
                 // allow this event to be handled by the host app
@@ -1097,7 +1104,7 @@ const CommandLine = Module("commandline", {
                 }
 
                 let hist = this.store.get(this.index);
-                // user pressed DOWN when there is no newer this._history item
+                // user pressed DOWN when there is no newer history item
                 if (!hist)
                     hist = this.original;
                 else
@@ -1165,13 +1172,6 @@ const CommandLine = Module("commandline", {
 
         get wildtype() this.wildtypes[this.wildIndex] || "",
 
-        get type() ({
-            list:    this.wildmode.checkHas(this.wildtype, "list"),
-            longest: this.wildmode.checkHas(this.wildtype, "longest"),
-            first:   this.wildmode.checkHas(this.wildtype, ""),
-            full:    this.wildmode.checkHas(this.wildtype, "full")
-        }),
-
         complete: function complete(show, tabPressed) {
             this.context.reset();
             this.context.tabPressed = tabPressed;
@@ -1180,6 +1180,9 @@ const CommandLine = Module("commandline", {
             this.reset(show, tabPressed);
             this.wildIndex = 0;
         },
+
+        haveType: function (type)
+            this.wildmode.checkHas(this.wildtype, type == "first" ? "" : type),
 
         preview: function preview() {
             this.previewClear();
@@ -1364,7 +1367,7 @@ const CommandLine = Module("commandline", {
                     break;
                 }
 
-                if (this.type.list)
+                if (this.haveType("list"))
                     this.itemList.show();
 
                 this.wildIndex = Math.constrain(this.wildIndex + 1, 0, this.wildtypes.length - 1);
@@ -1549,17 +1552,14 @@ const ItemList = Class("ItemList", {
         this._completionElements = [];
 
         var iframe = document.getElementById(id);
-        if (!iframe) {
-            dactyl.log("No iframe with id: " + id + " found, strange things may happen!"); // "The truth is out there..." -- djk
-            return; // XXX
-        }
 
         this._doc = iframe.contentDocument;
+        this._win = iframe.contentWindow;
         this._container = iframe.parentNode;
 
         this._doc.body.id = id + "-content";
         this._doc.body.appendChild(this._doc.createTextNode(""));
-        this._doc.body.style.borderTop = "1px solid black"; // FIXME: For cases where this._completions/MOW are shown at once, or ls=0. Should use :highlight.
+        this._doc.body.style.borderTop = "1px solid black"; // FIXME: For cases where completions/MOW are shown at once, or ls=0. Should use :highlight.
 
         this._gradient = template.gradient("GradientLeft", "GradientRight");
 
@@ -1578,7 +1578,8 @@ const ItemList = Class("ItemList", {
         if (this._container.collapsed)
             this._div.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
 
-        this._minHeight = Math.max(this._minHeight, this._divNodes.completions.getBoundingClientRect().bottom);
+        this._minHeight = Math.max(this._minHeight, 
+            this._win.scrollY + this._divNodes.completions.getBoundingClientRect().bottom);
         this._container.height = this._minHeight;
 
         if (this._container.collapsed)

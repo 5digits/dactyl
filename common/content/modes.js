@@ -9,8 +9,6 @@
 /** @scope modules */
 
 const Modes = Module("modes", {
-    requires: ["config", "util"],
-
     init: function () {
         this._main = 1;     // NORMAL
         this._extended = 0; // NONE
@@ -49,8 +47,6 @@ const Modes = Module("modes", {
         this.addMode("MENU", true); // a popupmenu is active
         this.addMode("LINE", true); // linewise visual mode
         this.addMode("PROMPT", true);
-
-        config.modes.forEach(function (mode) { this.addMode.apply(this, mode); }, this);
     },
 
     _getModeMessage: function () {

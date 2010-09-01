@@ -4,9 +4,17 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-/** @scope modules */
+Components.utils.import("resource://dactyl/base.jsm");
+defmodule("template", this, {
+    exports: ["Template", "template"],
+    require: ["util"]
+});
 
-const Template = Module("template", {
+default xml namespace = XHTML;
+XML.ignoreWhiteSpace = true;
+XML.prettyPrinting = false;
+
+const Template = Module("Template", {
     add: function add(a, b) a + b,
     join: function join(c) function (a, b) a + c + b,
 
@@ -38,6 +46,23 @@ const Template = Module("template", {
         return <>{xml}</>;
     },
 
+    bookmarkDescription: function (item, text)
+    <>
+        <a href={item.item.url} highlight="URL">{text}</a>&#160;
+        {
+            !(item.extra && item.extra.length) ? "" :
+            <span class="extra-info">
+                ({
+                    template.map(item.extra, function (e)
+                    <>{e[0]}: <span highlight={e[2]}>{e[1]}</span></>,
+                    <>&#xa0;</>/* Non-breaking space */)
+                })
+            </span>
+        }
+    </>,
+
+    filter: function (str) <span highlight="Filter">{str}</span>,
+
     completionRow: function completionRow(item, highlightGroup) {
         if (typeof icon == "function")
             icon = icon();
@@ -63,26 +88,14 @@ const Template = Module("template", {
         // </e4x>
     },
 
-    bookmarkDescription: function (item, text)
-    <>
-        <a href={item.item.url} highlight="URL">{text}</a>&#160;
-        {
-            !(item.extra && item.extra.length) ? "" :
-            <span class="extra-info">
-                ({
-                    template.map(item.extra, function (e)
-                    <>{e[0]}: <span highlight={e[2]}>{e[1]}</span></>,
-                    <>&#xa0;</>/* Non-breaking space */)
-                })
-            </span>
-        }
-    </>,
-
-    icon: function (item, text) {
-        return <><span highlight="CompIcon">{item.icon ? <img src={item.icon}/> : <></>}</span><span class="td-strut"/>{text}</>
+    genericTable: function genericTable(items, format) {
+        completion.listCompleter(function (context) {
+            context.filterFunc = null;
+            if (format)
+                context.format = format;
+            context.completions = items;
+        });
     },
-
-    filter: function (str) <span highlight="Filter">{str}</span>,
 
     gradient: function (left, right)
         <div highlight="Gradient">
@@ -192,23 +205,13 @@ const Template = Module("template", {
             return str;
     },
 
-    commandOutput: function generic(command, xml) {
-        return <>:{command}<br/>{xml}</>;
-    },
-
-    genericTable: function genericTable(items, format) {
-        completion.listCompleter(function (context) {
-            context.filterFunc = null;
-            if (format)
-                context.format = format;
-            context.completions = items;
-        });
-    },
+    icon: function (item, text) <>
+        <span highlight="CompIcon">{item.icon ? <img src={item.icon}/> : <></>}</span><span class="td-strut"/>{text}
+    </>,
 
     jumps: function jumps(index, elems) {
         // <e4x>
-        return this.commandOutput(
-            <table>
+        return <table>
                 <tr style="text-align: left;" highlight="Title">
                     <th colspan="2">jump</th><th>title</th><th>URI</th>
                 </tr>
@@ -221,14 +224,13 @@ const Template = Module("template", {
                         <td><a href={val.URI.spec} highlight="URL jump-list">{val.URI.spec}</a></td>
                     </tr>)
                 }
-            </table>);
+            </table>;
         // </e4x>
     },
 
     options: function options(title, opts) {
         // <e4x>
-        return this.commandOutput(
-            <table>
+        return <table>
                 <tr highlight="Title" align="left">
                     <th>--- {title} ---</th>
                 </tr>
@@ -241,7 +243,7 @@ const Template = Module("template", {
                         </td>
                     </tr>)
                 }
-            </table>);
+            </table>;
         // </e4x>
     },
 
@@ -269,8 +271,7 @@ const Template = Module("template", {
     tabular: function tabular(headings, style, iter) {
         // TODO: This might be mind-bogglingly slow. We'll see.
         // <e4x>
-        return this.commandOutput(
-            <table>
+        return <table>
                 <tr highlight="Title" align="left">
                 {
                     this.map(headings, function (h)
@@ -286,14 +287,13 @@ const Template = Module("template", {
                     }
                     </tr>)
                 }
-            </table>);
+            </table>;
         // </e4x>
     },
 
     usage: function usage(iter) {
         // <e4x>
-        return this.commandOutput(
-            <table>
+        return <table>
             {
                 this.map(iter, function (item)
                 <tr>
@@ -301,9 +301,11 @@ const Template = Module("template", {
                     <td>{item.description}</td>
                 </tr>)
             }
-            </table>);
+            </table>;
         // </e4x>
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+endmodule();
+
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

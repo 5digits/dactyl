@@ -15,8 +15,6 @@
 //   - finish 1.9.0 support if we're going to support sanitizing in Xulmus
 
 const Sanitizer = Module("sanitizer", {
-    requires: ["dactyl"],
-
     init: function () {
         const self = this;
         dactyl.loadScript("chrome://browser/content/sanitize.js", Sanitizer);
@@ -144,10 +142,13 @@ const Sanitizer = Module("sanitizer", {
                     context.completions = options.get("sanitizeitems").completer();
                 },
                 options: [
-                    [["-timespan", "-t"],
-                     commands.OPTION_INT,
-                     function (arg) /^[0-4]$/.test(arg),
-                     function () options.get("sanitizetimespan").completer()]
+                    {
+                        names: ["-timespan", "-t"],
+                        description: "Timespan for which to sanitize items",
+                        completer: function () options.get("sanitizetimespan").completer(),
+                        type: CommandOption.INT,
+                        validator: function (arg) /^[0-4]$/.test(arg)
+                    }
                  ]
             });
     },

@@ -35,6 +35,7 @@ const Map = Class("Map", {
 
         this.modes = modes;
         this.names = keys.map(events.canonicalKeys);
+        this.name = this.names[0];
         this.action = action;
         this.description = description;
 
@@ -122,8 +123,6 @@ const Map = Class("Map", {
  * @instance mappings
  */
 const Mappings = Module("mappings", {
-    requires: ["modes"],
-
     init: function () {
         this._main = []; // default mappings
         this._user = []; // user created mappings
@@ -177,9 +176,9 @@ const Mappings = Module("mappings", {
     // Return all mappings present in all @modes
     _mappingsIterator: function (modes, stack) {
         modes = modes.slice();
-        return (map for ([i, map] in Iterator(stack[modes.shift()]))
+        return (map for ([i, map] in Iterator(stack[modes.shift()].sort(function (m1, m2) String.localeCompare(m1.name, m2.name))))
             if (modes.every(function (mode) stack[mode].some(
-                        function (m) m.rhs == map.rhs && m.names[0] == map.names[0]))))
+                        function (mapping) m.rhs == map.rhs && m.name == map.name))))
     },
 
     // NOTE: just normal mode for now
@@ -363,11 +362,10 @@ const Mappings = Module("mappings", {
                 </table>;
 
         // TODO: Move this to an ItemList to show this automatically
-        if (list.*.length() == list.text().length()) {
+        if (list.*.length() == list.text().length())
             dactyl.echomsg("No mapping found");
-            return;
-        }
-        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+        else
+            commandline.commandOutput(list);
     }
 }, {
 }, {
@@ -413,11 +411,9 @@ const Mappings = Module("mappings", {
 
             const opts = {
                     completer: function (context, args) completion.userMapping(context, args, modes),
-                    options: [
-                        [["<silent>", "<Silent>"],  commands.OPTION_NOARG]
-                    ],
                     literal: 1,
-                    serial: function () {
+                    options: [{ names: ["<silent>", "<Silent>"] }],
+                    serialize: function () {
                         let noremap = this.name.indexOf("noremap") > -1;
                         return [
                             {

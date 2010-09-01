@@ -1,6 +1,6 @@
 #### configuration
 
-VERSION       = 2.3a1pre
+VERSION       = 1.0pre
 NAME          = pentadactyl
 
 include ../common/Makefile

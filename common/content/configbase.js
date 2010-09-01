@@ -229,13 +229,13 @@ const ConfigBase = Class(ModuleBase, {
         HelpOptionalArg                             color: #6A97D4;
 
         HelpBody                                    display: block; margin: 1em auto; max-width: 100ex;
-        HelpBorder,*,dactyl://help/*             border-color: silver; border-width: 0px; border-style: solid;
+        HelpBorder,*,dactyl://help/*                border-color: silver; border-width: 0px; border-style: solid;
         HelpCode                                    display: block; white-space: pre; margin-left: 2em; font-family: Terminus, Fixed, monospace;
 
         HelpDefault                                 margin-right: 1ex; white-space: pre;
 
         HelpDescription                             display: block;
-        HelpEm,html|em,dactyl://help/*           font-weight: bold; font-style: normal;
+        HelpEm,html|em,dactyl://help/*              font-weight: bold; font-style: normal;
 
         HelpEx                                      display: inline-block; color: #527BBD; font-weight: bold;
 
@@ -250,21 +250,21 @@ const ConfigBase = Class(ModuleBase, {
 
         HelpKey                                     color: #102663;
 
-        HelpLink,html|a,dactyl://help/*          text-decoration: none;
+        HelpLink,html|a,dactyl://help/*             text-decoration: none;
         HelpLink[href]:hover                        text-decoration: underline;
 
-        HelpList,html|ul,dactyl://help/*         display: block; list-style: outside disc;
-        HelpOrderedList,html|ol,dactyl://help/*  display: block; list-style: outside decimal;
-        HelpListItem,html|li,dactyl://help/*     display: list-item;
+        HelpList,html|ul,dactyl://help/*            display: block; list-style: outside disc;
+        HelpOrderedList,html|ol,dactyl://help/*     display: block; list-style: outside decimal;
+        HelpListItem,html|li,dactyl://help/*        display: list-item;
 
         HelpNote                                    color: red; font-weight: bold;
 
         HelpOpt                                     color: #106326;
         HelpOptInfo                                 display: inline-block; margin-bottom: 1ex;
 
-        HelpParagraph,html|p,dactyl://help/*     display: block; margin: 1em 0em;
+        HelpParagraph,html|p,dactyl://help/*        display: block; margin: 1em 0em;
         HelpParagraph:first-child                   margin-top: 0;
-        HelpSpec                                    display: block; margin-left: -10em; float: left; clear: left; color: #527BBD;
+        HelpSpec                                    display: block; margin-left: -10em; float: left; clear: left; color: #527BBD; margin-right: 2em;
 
         HelpString                                  display: inline-block; color: green; font-weight: normal; vertical-align: text-top;
         HelpString::before                          content: '"';

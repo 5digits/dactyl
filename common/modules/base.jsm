@@ -9,6 +9,67 @@ const Ci = Components.interfaces;
 const Cr = Components.results;
 const Cu = Components.utils;
 
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+
+let use = {};
+let loaded = {};
+let currentModule;
+function defmodule(name, module, params) {
+    module.NAME = name;
+    module.EXPORTED_SYMBOLS = params.exports || [];
+    dump("defmodule " + name + "\n");
+    for(let [, mod] in Iterator(params.require || []))
+        require(module, mod);
+
+    for(let [, mod] in Iterator(params.use || []))
+        if (loaded.hasOwnProperty(mod))
+            require(module, mod, "use");
+        else {
+            use[mod] = use[mod] || [];
+            use[mod].push(module);
+        }
+    currentModule = module;
+}
+defmodule.modules = [];
+
+function endmodule() {
+    dump("endmodule " + currentModule.NAME + "\n");
+    loaded[currentModule.NAME] = 1;
+    for(let [, mod] in Iterator(use[currentModule.NAME] || []))
+        require(mod, currentModule.NAME, "use");
+}
+
+function require(obj, name, from) {
+    try {
+        dump((from || "require") + ": loading " + name + " into " + obj.NAME + "\n");
+        Cu.import("resource://dactyl/" + name + ".jsm", obj);
+    }
+    catch (e) {
+        dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n"); 
+        dump("    " + e.fileName + ":" + e.lineNumber + ": " + e +"\n");
+    }
+}
+
+defmodule("base", this, {
+    // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
+    exports: [
+        "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
+        "Struct", "StructBase", "Timer", "allkeys", "array", "call",
+        "callable", "curry", "debuggerProperties", "defmodule", "dict",
+        "endmodule", "extend", "foreach", "isarray", "isgenerator",
+        "isinstance", "isobject", "isstring", "issubclass", "iter", "memoize",
+        "properties", "requiresMainThread", "set", "update", "values",
+    ],
+    use: ["services"]
+});
+
+function Runnable(self, func, args) {
+    return {
+        QueryInterface: XPCOMUtils.generateQI([Ci.nsIRunnable]),
+        run: function () { func.apply(self, args || []); }
+    };
+}
+
 function allkeys(obj) {
     let ret = {};
     try {
@@ -37,7 +98,7 @@ function allkeys(obj) {
 }
 
 function debuggerProperties(obj) {
-    if (modules.services && services.get("debugger").isOn) {
+    if (loaded.services && services.get("debugger").isOn) {
         let ret = {};
         services.get("debugger").wrapValue(obj).getProperties(ret, {});
         return ret.value;
@@ -58,10 +119,17 @@ if (!Object.getOwnPropertyNames)
 function properties(obj, prototypes) {
     let orig = obj;
     let seen = {};
-    for (; obj; obj = prototypes && obj.__proto__)
-        for (let key in values(Object.getOwnPropertyNames(obj)))
+    for (; obj; obj = prototypes && obj.__proto__) {
+        try {
+            var iter = values(Object.getOwnPropertyNames(obj));
+        }
+        catch (e) {
+            iter = (prop.name.stringValue for (prop in values(debuggerProperties(obj))));
+        }
+        for (let key in iter)
             if (!prototypes || !set.add(seen, key) && obj != orig)
                 yield key
+    }
 }
 
 function values(obj) {
@@ -141,13 +209,17 @@ function isinstance(targ, src) {
     }
     src = Array.concat(src);
     for (var i = 0; i < src.length; i++) {
-        if (targ instanceof src[i])
-            return true;
-        if (typeof src[i] == "string")
-            return Object.prototype.toString(targ) == "[object " + src[i] + "]";
-        var type = types[typeof targ];
-        if (type && issubclass(src[i], type))
-            return true;
+        if (typeof src[i] == "string") {
+            if (Object.prototype.toString.call(targ) == "[object " + src[i] + "]")
+                return true;
+        }
+        else {
+            if (targ instanceof src[i])
+                return true;
+            var type = types[typeof targ];
+            if (type && issubclass(src[i], type))
+                return true;
+        }
     }
     return false;
 }
@@ -240,12 +312,12 @@ function curry(fn, length, self, acc) {
     if (acc == null)
         acc = [];
 
-    return function () {
+    return function curried() {
         let args = acc.concat(Array.slice(arguments));
 
         // The curried result should preserve 'this'
         if (arguments.length == 0)
-            return close(self || this, arguments.callee);
+            return close(self || this, curried);
 
         if (args.length >= length)
             return fn.apply(self || this, args);
@@ -253,6 +325,22 @@ function curry(fn, length, self, acc) {
         return curry(fn, length, self || this, args);
     };
 }
+
+/**
+ * Wraps a function so that when called it will always run synchronously
+ * in the main thread. Return values are not preserved.
+ *
+ * @param {function}
+ * @returns {function}
+ */
+function requiresMainThread(callback)
+    function wrapper() {
+        let mainThread = services.get("threadManager").mainThread;
+        if (services.get("threadManager").isMainThread)
+            callback.apply(this, arguments);
+        else
+            mainThread.dispatch(Runnable(this, callback, arguments), mainThread.DISPATCH_NORMAL);
+    }
 
 /**
  * Updates an object with the properties of another object. Getters
@@ -263,7 +351,7 @@ function curry(fn, length, self, acc) {
  *
  *    let a = { foo: function (arg) "bar " + arg }
  *    let b = { __proto__: a }
- *    update(b, { foo: function () arguments.callee.supercall(this, "baz") });
+ *    update(b, { foo: function foo() foo.supercall(this, "baz") });
  *
  *    a.foo("foo") -> "bar foo"
  *    b.foo()      -> "bar baz"
@@ -393,7 +481,18 @@ function Class() {
     });
     return Constructor;
 }
-Class.toString = function () "[class " + this.constructor.name + "]",
+if (Object.defineProperty)
+    Class.replaceProperty = function (obj, prop, value) {
+        Object.defineProperty(obj, prop, { configurable: true, enumerable: true, value: value, writable: true });
+        return value;
+    };
+else
+    Class.replaceProperty = function (obj, prop, value) {
+        obj.__defineGetter__(prop, function () value);
+        obj.__defineSetter__(prop, function (val) { value = val; });
+        return value;
+    };
+Class.toString = function () "[class " + this.name + "]";
 Class.prototype = {
     /**
      * Initializes new instances of this class. Called automatically
@@ -423,6 +522,25 @@ Class.prototype = {
 };
 
 /**
+ * Constructs a mew Module class and instantiates an instance into the current
+ * module global object.
+ *
+ * @param {string} name The name of the instance.
+ * @param {Object} prototype The instance prototype.
+ * @param {Object} classProperties Properties to be applied to the class constructor.
+ * @return {Class}
+ */
+function Module(name, prototype, classProperties, init) {
+    const module = Class(name, prototype, classProperties);
+    let instance = module();
+    module.name = name.toLowerCase();
+    instance.INIT = init || {};
+    currentModule[module.name] = instance;
+    defmodule.modules.push(instance);
+    return module;
+}
+
+/**
  * @class Struct
  *
  * Creates a new Struct constructor, used for creating objects with
@@ -439,7 +557,7 @@ Class.prototype = {
  */
 function Struct() {
     let args = Array.slice(arguments);
-    const Struct = Class("Struct", StructBase, {
+    const Struct = Class("Struct", Struct_Base, {
         length: args.length,
         members: args
     });
@@ -449,7 +567,7 @@ function Struct() {
     });
     return Struct;
 }
-const StructBase = Class("StructBase", {
+let Struct_Base = Class("StructBase", Array, {
     init: function () {
         for (let i = 0; i < arguments.length; i++)
             if (arguments[i] != undefined)
@@ -464,6 +582,11 @@ const StructBase = Class("StructBase", {
         return ([k, self[k]] for (k in values(self.members)))
     }
 }, {
+    fromArray: function (ary) {
+        ary.__proto__ = this.prototype;
+        return ary;
+    },
+
     /**
      * Sets a lazily constructed default value for a member of
      * the struct. The value is constructed once, the first time
@@ -477,17 +600,65 @@ const StructBase = Class("StructBase", {
     defaultValue: function (key, val) {
         let i = this.prototype.members.indexOf(key);
         this.prototype.__defineGetter__(i, function () (this[i] = val.call(this), this[i])); // Kludge for FF 3.0
-        this.prototype.__defineSetter__(i, function (value) {
-            this.__defineGetter__(i, function () value);
-            this.__defineSetter__(i, function (val) { value = val; });
-        });
+        this.prototype.__defineSetter__(i, function (value)
+            Class.replaceProperty(this, i, value));
     }
 });
-// Add no-sideeffect array methods. Can't set new Array() as the prototype or
-// get length() won't work.
-for (let k in values(["concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf",
-                      "map", "reduce", "reduceRight", "reverse", "slice", "some", "sort"]))
-    StructBase.prototype[k] = Array.prototype[k];
+
+const Timer = Class("Timer", {
+    init: function (minInterval, maxInterval, callback) {
+        this._timer = services.create("timer");
+        this.callback = callback;
+        this.minInterval = minInterval;
+        this.maxInterval = maxInterval;
+        this.doneAt = 0;
+        this.latest = 0;
+    },
+
+    notify: function (timer) {
+        this._timer.cancel();
+        this.latest = 0;
+        // minInterval is the time between the completion of the command and the next firing
+        this.doneAt = Date.now() + this.minInterval;
+
+        try {
+            this.callback(this.arg);
+        }
+        finally {
+            this.doneAt = Date.now() + this.minInterval;
+        }
+    },
+
+    tell: function (arg) {
+        if (arguments.length > 0)
+            this.arg = arg;
+
+        let now = Date.now();
+        if (this.doneAt == -1)
+            this._timer.cancel();
+
+        let timeout = this.minInterval;
+        if (now > this.doneAt && this.doneAt > -1)
+            timeout = 0;
+        else if (this.latest)
+            timeout = Math.min(timeout, this.latest - now);
+        else
+            this.latest = now + this.maxInterval;
+
+        this._timer.initWithCallback(this, Math.max(timeout, 0), this._timer.TYPE_ONE_SHOT);
+        this.doneAt = -1;
+    },
+
+    reset: function () {
+        this._timer.cancel();
+        this.doneAt = 0;
+    },
+
+    flush: function () {
+        if (this.doneAt == -1)
+            this.notify();
+    }
+});
 
 /**
  * Array utility methods.
@@ -605,9 +776,8 @@ const array = Class("util.Array", Array, {
     },
 
     /**
-     * Zips the contents of two arrays. The resulting array is twice the
-     * length of ary1, with any shortcomings of ary2 replaced with null
-     * strings.
+     * Zips the contents of two arrays. The resulting array is the length of
+     * ary1, with any shortcomings of ary2 replaced with null strings.
      *
      * @param {Array} ary1
      * @param {Array} ary2
@@ -616,9 +786,13 @@ const array = Class("util.Array", Array, {
     zip: function zip(ary1, ary2) {
         let res = []
         for(let [i, item] in Iterator(ary1))
-            res.push(item, i in ary2 ? ary2[i] : "");
+            res.push([item, i in ary2 ? ary2[i] : ""]);
         return res;
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+endmodule();
+
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
+
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

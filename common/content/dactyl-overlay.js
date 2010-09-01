@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2008 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -11,55 +11,61 @@
     modules.modules = modules;
 
     const loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                                     .getService(Components.interfaces.mozIJSSubScriptLoader);
-    function load(script) {
+                             .getService(Components.interfaces.mozIJSSubScriptLoader);
+
+    modules.load = function load(script) {
         for (let [i, base] in Iterator(prefix)) {
             try {
-                loader.loadSubScript(base + script, modules);
+                loader.loadSubScript(base + script + ".js", modules);
                 return;
             }
             catch (e) {
-                if (i + 1 < prefix.length)
-                    continue;
-                if (Components.utils.reportError)
-                    Components.utils.reportError(e);
-                dump("dactyl: Loading script " + script + ": " + e + "\n");
-                dump(e.stack + "\n");
+                if (e !== "Error opening input stream (invalid filename?)")
+                    dump("dactyl: Trying: " + (base + script + ".js") + ": " + e + "\n" + e.stack);
             }
         }
-    }
+        try {
+            Components.utils.import("resource://dactyl/" + script + ".jsm", modules);
+        }
+        catch (e) {
+            dump("dactyl: Loading script " + script + ": " + e.result + " " + e + "\n");
+            dump(Error().stack + "\n");
+        }
+    };
 
     let prefix = [BASE];
 
-    ["base.js",
-     "modules.js",
-     "autocommands.js",
-     "buffer.js",
-     "commandline.js",
-     "commands.js",
-     "completion.js",
-     "configbase.js",
-     "config.js",
-     "dactyl.js",
-     "editor.js",
-     "events.js",
-     "finder.js",
-     "hints.js",
-     "io.js",
-     "javascript.js",
-     "mappings.js",
-     "marks.js",
-     "modes.js",
-     "options.js",
-     "services.js",
-     "statusline.js",
-     "style.js",
-     "template.js",
-     "util.js",
-     ].forEach(load);
+    ["base",
+     "modules",
+     "storage",
+     "util",
+     "autocommands",
+     "buffer",
+     "commandline",
+     "commands",
+     "completion",
+     "configbase",
+     "config",
+     "dactyl",
+     "editor",
+     "events",
+     "finder",
+     "highlight",
+     "hints",
+     "io",
+     "javascript",
+     "mappings",
+     "marks",
+     "modes",
+     "options",
+     "services",
+     "statusline",
+     "styles",
+     "template",
+     ].forEach(modules.load);
 
     prefix.unshift("chrome://" + modules.Config.prototype.name.toLowerCase() + "/content/");
-    modules.Config.prototype.scripts.forEach(load);
+    modules.Config.prototype.scripts.forEach(modules.load);
 })();
 
 // vim: set fdm=marker sw=4 ts=4 et:

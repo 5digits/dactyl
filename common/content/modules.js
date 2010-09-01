@@ -53,12 +53,17 @@ const ModuleBase = Class("ModuleBase", {
  *
  * @returns {function} The constructor for the resulting module.
  */
-function Module(name, prototype, classProperties, moduleInit) {
+function Module(name) {
+    let args = Array.slice(arguments);
+
     var base = ModuleBase;
-    if (callable(prototype))
-        base = Array.splice(arguments, 1, 1)[0];
+    if (callable(args[1]))
+        base = args.splice(1, 1)[0];
+    let [, prototype, classProperties, moduleInit] = args;
     const module = Class(name, base, prototype, classProperties);
+
     module.INIT = moduleInit || {};
+    module.prototype.INIT = module.INIT;
     module.requires = prototype.requires || [];
     Module.list.push(module);
     Module.constructors[name] = module;
@@ -67,67 +72,82 @@ function Module(name, prototype, classProperties, moduleInit) {
 Module.list = [];
 Module.constructors = {};
 
-window.addEventListener("load", function () {
-    window.removeEventListener("load", arguments.callee, false);
+window.addEventListener("load", function onLoad() {
+    window.removeEventListener("load", onLoad, false);
+
+    Module.list.forEach(function(module) {
+        modules.__defineGetter__(module.name, function() {
+            delete modules[module.name];
+            return load(module.name, null, Components.stack.caller);
+        });
+    });
 
     function dump(str) window.dump(String.replace(str, /\n?$/, "\n").replace(/^/m, Config.prototype.name.toLowerCase() + ": "));
     const start = Date.now();
     const deferredInit = { load: [] };
     const seen = set();
-    const loaded = [];
+    const loaded = set(["init"]);
 
-    function load(module, prereq) {
+    function init(module) {
+        function init(func)
+            function () func.call(module, dactyl, modules, window);
+
+        set.add(loaded, module.constructor.name);
+        for (let [mod, func] in Iterator(module.INIT)) {
+            if (mod in loaded)
+                init(func)();
+            else {
+                deferredInit[mod] = deferredInit[mod] || [];
+                deferredInit[mod].push(init(func));
+            }
+        }
+    }
+    defmodule.modules.map(init);
+
+    function load(module, prereq, frame) {
+        if (isstring(module)) {
+            if (!Module.constructors.hasOwnProperty(module))
+                modules.load(module);
+            module = Module.constructors[module];
+        }
+
         try {
-            if (module.name in modules)
+            if (module.name in loaded)
                 return;
             if (module.name in seen)
                 throw Error("Module dependency loop.");
             set.add(seen, module.name);
 
             for (let dep in values(module.requires))
-                load(Module.constructors[dep], module.name, dep);
+                load(Module.constructors[dep], module.name);
 
             dump("Load" + (isstring(prereq) ? " " + prereq + " dependency: " : ": ") + module.name);
-            modules[module.name] = module();
-            loaded.push(module.name);
+            if (frame && frame.filename)
+                dump(" from: " + frame.filename + ":" + frame.lineNumber);
 
-            function init(mod, module)
-                function () module.INIT[mod].call(modules[module.name], modules[mod]);
-            for (let mod in values(loaded)) {
-                try {
-                    if (mod in module.INIT)
-                        init(mod, module)();
-                    delete module.INIT[mod];
-                }
-                catch (e) {
-                    if (modules.dactyl)
-                        dactyl.reportError(e);
-                }
-            }
-            for (let mod in values(Object.keys(module.INIT))) {
-                deferredInit[mod] = deferredInit[mod] || [];
-                deferredInit[mod].push(init(mod, module));
-            }
+            delete modules[module.name];
+            modules[module.name] = module();
+
+            init(modules[module.name]);
             for (let [, fn] in iter(deferredInit[module.name] || []))
                 fn();
         }
         catch (e) {
-            dump("Loading " + (module && module.name) + ": " + e + "\n");
+            dump("Loading " + (module && module.name) + ": " + e);
             if (e.stack)
                 dump(e.stack);
         }
+        return modules[module.name];
     }
+
     Module.list.forEach(load);
     deferredInit["load"].forEach(call);
 
-    for (let module in values(Module.list))
-        delete module.INIT;
-
-    dump("Loaded in " + (Date.now() - start) + "ms\n");
+    dump("Loaded in " + (Date.now() - start) + "ms");
 }, false);
 
-window.addEventListener("unload", function () {
-    window.removeEventListener("unload", arguments.callee, false);
+window.addEventListener("unload", function onUnload() {
+    window.removeEventListener("unload", onUnload, false);
     for (let [, mod] in iter(modules))
         if (mod instanceof ModuleBase && "destroy" in mod)
             mod.destroy();

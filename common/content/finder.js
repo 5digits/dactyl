@@ -8,8 +8,6 @@
 
 /** @instance rangefinder */
 const RangeFinder = Module("rangefinder", {
-    requires: ["config"],
-
     init: function () {
         this.lastSearchPattern = "";
     },
@@ -128,7 +126,7 @@ const RangeFinder = Module("rangefinder", {
     set rangeFind(val) buffer.localStore.rangeFind = val,
 
     /**
-     * Highlights all occurances of <b>str</b> in the buffer.
+     * Highlights all occurrences of <b>str</b> in the buffer.
      *
      * @param {string} str The string to highlight.
      */
@@ -146,6 +144,11 @@ const RangeFinder = Module("rangefinder", {
     }
 }, {
 }, {
+    modes: function () {
+        /* Must come before commandline. */
+        modes.addMode("FIND_FORWARD", true);
+        modes.addMode("FIND_BACKWARD", true);
+    },
     commandline: function () {
         // Event handlers for search - closure is needed
         commandline.registerCallback("change", modes.FIND_FORWARD, this.closure.onKeyPress);
@@ -196,10 +199,6 @@ const RangeFinder = Module("rangefinder", {
                 rangefinder.onSubmit(buffer.getCurrentWord(), true);
             });
 
-    },
-    modes: function () {
-        modes.addMode("FIND_FORWARD", true);
-        modes.addMode("FIND_BACKWARD", true);
     },
     options: function () {
         options.safeSetPref("accessibility.typeaheadfind.autostart", false);
@@ -256,8 +255,8 @@ const RangeFinder = Module("rangefinder", {
  * implementation will begin searching from the position of the
  * caret in the last active frame. This is contrary to the behavior
  * of the builtin component, which always starts a search from the
- * begining of the first frame in the case of frameset documents,
- * and cycles through all frames from begining to end. This makes it
+ * beginning of the first frame in the case of frameset documents,
+ * and cycles through all frames from beginning to end. This makes it
  * impossible to choose the starting point of a search for such
  * documents, and represents a major detriment to productivity where
  * large amounts of data are concerned (e.g., for API documents).
@@ -302,8 +301,8 @@ const RangeFind = Class("RangeFind", {
     },
 
     compareRanges: function (r1, r2)
-            this.backward ?  r1.compareBoundaryPoints(Range.END_TO_START, r2)
-                          : -r1.compareBoundaryPoints(Range.START_TO_END, r2),
+            this.backward ?  r1.compareBoundaryPoints(r1.END_TO_START, r2)
+                          : -r1.compareBoundaryPoints(r1.START_TO_END, r2),
 
     findRange: function (range) {
         let doc = range.startContainer.ownerDocument;
@@ -331,7 +330,7 @@ const RangeFind = Class("RangeFind", {
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
         if (node) {
             node.focus();
-            // Rehighlight collapsed selection
+            // Re-highlight collapsed selection
             this.selectedRange = this.lastRange;
         }
     },
@@ -358,7 +357,7 @@ const RangeFind = Class("RangeFind", {
             let string = this.lastString;
             for (let r in this.iter(string)) {
                 let controller = this.range.selectionController;
-                for (let node=r.startContainer; node; node=node.parentNode)
+                for (let node = r.startContainer; node; node = node.parentNode)
                     if (node instanceof Ci.nsIDOMNSEditableElement) {
                         controller = node.editor.selectionController;
                         break;
@@ -370,8 +369,27 @@ const RangeFind = Class("RangeFind", {
                     this.selections.push(sel);
             }
             this.highlighted = this.lastString;
-            this.selectedRange = this.lastRange;
+            if (this.lastRange)
+                this.selectedRange = this.lastRange;
             this.addListeners();
+        }
+    },
+
+    indexIter: function (private_) {
+        let idx = this.range.index;
+        if (this.backward)
+            var groups = [util.range(idx + 1, 0, -1), util.range(this.ranges.length, idx, -1)];
+        else
+            var groups = [util.range(idx, this.ranges.length), util.range(0, idx + 1)];
+
+        for (let i in groups[0])
+            yield i;
+
+        if (!private_) {
+            this.wrapped = true;
+            this.lastRange = null;
+            for (let i in groups[1])
+                yield i;
         }
     },
 
@@ -382,7 +400,7 @@ const RangeFind = Class("RangeFind", {
             this.lastRange = null;
             this.lastString = word;
             var res;
-            while ((res = this.search(null, this.reverse, true)))
+            while (res = this.search(null, this.reverse, true))
                 yield res;
         }
         finally {
@@ -504,25 +522,8 @@ const RangeFind = Class("RangeFind", {
 
         if (word == "")
             var range = this.startRange;
-        else {
-            function indices() {
-                let idx = this.range.index;
-                if (this.backward)
-                    var groups = [util.range(idx + 1, 0, -1), util.range(this.ranges.length, idx, -1)];
-                else
-                    var groups = [util.range(idx, this.ranges.length), util.range(0, idx + 1)];
-
-                for (let i in groups[0])
-                    yield i;
-
-                if (!private_) {
-                    this.wrapped = true;
-                    this.lastRange = null;
-                    for (let i in groups[1])
-                        yield i;
-                }
-            }
-            for (let i in indices.call(this)) {
+        else
+            for (let i in this.indexIter(private_)) {
                 if (!private_ && this.range.window != this.ranges[i].window && this.range.window != this.ranges[i].window.parent) {
                     this.range.descroll();
                     this.range.deselect();
@@ -540,7 +541,6 @@ const RangeFind = Class("RangeFind", {
                 if (range)
                     break;
             }
-        }
 
         if (range)
             this.lastRange = range.cloneRange();
@@ -559,11 +559,11 @@ const RangeFind = Class("RangeFind", {
     },
 
     addListeners: function () {
-        for (let range in values(this.ranges))
+        for (let range in array.itervalues(this.ranges))
             range.window.addEventListener("unload", this.closure.onUnload, true);
     },
     purgeListeners: function () {
-        for (let range in values(this.ranges))
+        for (let range in array.itervalues(this.ranges))
             range.window.removeEventListener("unload", this.closure.onUnload, true);
     },
     onUnload: function (event) {
@@ -591,8 +591,8 @@ const RangeFind = Class("RangeFind", {
         },
 
         intersects: function (range)
-            this.range.compareBoundaryPoints(Range.START_TO_END, range) >= 0 &&
-            this.range.compareBoundaryPoints(Range.END_TO_START, range) <= 0,
+            this.range.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
+            this.range.compareBoundaryPoints(range.END_TO_START, range) <= 0,
 
         save: function () {
             this.scroll = Point(this.window.pageXOffset, this.window.pageYOffset);
@@ -625,8 +625,8 @@ const RangeFind = Class("RangeFind", {
 
     }),
 	contains: function (range, r)
-		range.compareBoundaryPoints(Range.START_TO_END, r) >= 0 &&
-		range.compareBoundaryPoints(Range.END_TO_START, r) <= 0,
+		range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&
+		range.compareBoundaryPoints(range.END_TO_START, r) <= 0,
     endpoint: function (range, before) {
         range = range.cloneRange();
         range.collapse(before);
@@ -634,7 +634,7 @@ const RangeFind = Class("RangeFind", {
     },
     equal: function (r1, r2) {
         try {
-                return !r1.compareBoundaryPoints(Range.START_TO_START, r2) && !r1.compareBoundaryPoints(Range.END_TO_END, r2)
+                return !r1.compareBoundaryPoints(r1.START_TO_START, r2) && !r1.compareBoundaryPoints(r1.END_TO_END, r2)
         }
         catch (e) {}
         return false;

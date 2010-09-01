@@ -238,8 +238,8 @@ const Option = Class("Option", {
      *     "string"     - String, e.g., "Pentadactyl"
      *     "charlist"   - Character list, e.g., "rb"
      *     "regexlist"  - Regex list, e.g., "^foo,bar$"
-     *     "stringmap"  - String map, e.g., "key=v,foo=bar"
-     *     "regexmap"   - Regex map, e.g., "^key=v,foo$=bar"
+     *     "stringmap"  - String map, e.g., "key:v,foo:bar"
+     *     "regexmap"   - Regex map, e.g., "^key:v,foo$:bar"
      */
     type: null,
 
@@ -351,9 +351,9 @@ const Option = Class("Option", {
         boolean:    function (value) value == "true" || value == true ? true : false,
         charlist:   function (value) Array.slice(value),
         stringlist: function (value) (value === "") ? [] : value.split(","),
-        stringmap:  function (value) array(v.split("=") for (v in values(value.split(",")))).toObject(),
+        stringmap:  function (value) array(v.split(":") for (v in values(value.split(",")))).toObject(),
         regexlist:  function (value) (value === "") ? [] : value.split(",").map(Option.parseRegex),
-        regexmap:   function (value) value.split(",").map(function (v) v.split("="))
+        regexmap:   function (value) value.split(",").map(function (v) v.split(":"))
                                                      .map(function ([k, v]) v != null ? Option.parseRegex(k, v) : Option.parseRegex('.?', k))
     },
 
@@ -478,8 +478,6 @@ Option.ops["regexmap"]  = Option.ops["stringlist"];
  * @instance options
  */
 const Options = Module("options", {
-    requires: ["config", "highlight", "storage"],
-
     init: function () {
         this._optionHash = {};
         this._prefContexts = [];
@@ -661,8 +659,7 @@ const Options = Module("options", {
             }
         };
 
-        let list = template.options("Options", opts());
-        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+        commandline.commandOutput(template.options("Options", opts()));
     },
 
     /**
@@ -687,7 +684,7 @@ const Options = Module("options", {
                 if (onlyNonDefault && !userValue || pref.indexOf(filter) == -1)
                     continue;
 
-                value = options.getPref(pref);
+                let value = options.getPref(pref);
 
                 let option = {
                     isDefault: !userValue,
@@ -701,8 +698,8 @@ const Options = Module("options", {
             }
         };
 
-        let list = template.options(config.hostApplication + " Options", prefs());
-        commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+        commandline.commandOutput(
+            template.options(config.hostApplication + " Options", prefs()));
     },
 
     /**
@@ -783,15 +780,7 @@ const Options = Module("options", {
         return this._loadPreference(name, forcedDefault);
     },
 
-    /**
-     * Sets the preference <b>name</b> to </b>value</b> but warns the user
-     * if the value is changed from its default.
-     *
-     * @param {string} name The preference name.
-     * @param {value} value The new preference value.
-     */
-    // FIXME: Well it used to. I'm looking at you mst! --djk
-    safeSetPref: function (name, value, message) {
+    _checkPrefSafe: function (name, message) {
         let curval = this._loadPreference(name, null, false);
         let defval = this._loadPreference(name, null, true);
         let saved  = this._loadPreference(Options.SAVED + name);
@@ -802,6 +791,30 @@ const Options = Module("options", {
                 msg += " " + message;
             dactyl.echomsg(msg);
         }
+    },
+
+    /**
+     * Resets the preference <b>name</b> to </b>value</b> but warns the user
+     * if the value is changed from its default.
+     *
+     * @param {string} name The preference name.
+     * @param {value} value The new preference value.
+     */
+    safeResetPref: function (name, message) {
+        this._checkPrefSafe(name, message);
+        this.resetPref(name);
+        this.resetPref(Options.SAVED + name);
+    },
+
+    /**
+     * Sets the preference <b>name</b> to </b>value</b> but warns the user
+     * if the value is changed from its default.
+     *
+     * @param {string} name The preference name.
+     * @param {value} value The new preference value.
+     */
+    safeSetPref: function (name, value, message) {
+        this._checkPrefSafe(name, message);
         this._storePreference(name, value);
         this._storePreference(Options.SAVED + name, value);
     },
@@ -825,9 +838,7 @@ const Options = Module("options", {
         try {
             services.get("pref").clearUserPref(name);
         }
-        catch (e) {
-            // ignore - thrown if not a user set value
-        }
+        catch (e) {} // ignore - thrown if not a user set value
     },
 
     /**
@@ -1238,7 +1249,7 @@ const Options = Module("options", {
                 completer: function (context, args) {
                     return setCompleter(context, args);
                 },
-                serial: function () [
+                serialize: function () [
                     {
                         command: this.name,
                         arguments: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name

@@ -4,14 +4,12 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-/** @scope modules */
+Components.utils.import("resource://dactyl/base.jsm");
+defmodule("services", this, {
+    exports: ["Services", "services"]
+});
 
-/**
- * Cached XPCOM services and classes.
- *
- * @constructor
- */
-const Services = Module("services", {
+const Services = Module("Services", {
     init: function () {
         this.classes = {};
         this.services = {};
@@ -54,9 +52,6 @@ const Services = Module("services", {
         this.addClass("timer",      "@mozilla.org/timer;1",                      Ci.nsITimer);
         this.addClass("xmlhttp",    "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
         this.addClass("zipWriter",  "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
-
-        if (!this.get("extensionManager"))
-            Components.utils.import("resource://gre/modules/AddonManager.jsm", modules);
     },
 
     _create: function (classes, ifaces, meth) {
@@ -120,10 +115,19 @@ const Services = Module("services", {
      */
     create: function (name) this.classes[name]()
 }, {
+}, {
+    init: function (dactyl, modules) {
+        if (!this.get("extensionManager"))
+            Components.utils.import("resource://gre/modules/AddonManager.jsm", modules);
+    },
     javascript: function (dactyl, modules) {
-        JavaScript.setCompleter(this.get, [function () services.services]);
-        JavaScript.setCompleter(this.create, [function () [[c, ""] for (c in services.classes)]]);
+        modules.JavaScript.setCompleter(this.get, [function () services.services]);
+        modules.JavaScript.setCompleter(this.create, [function () [[c, ""] for (c in services.classes)]]);
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+endmodule();
+
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
+
+// vim: set fdm=marker sw=4 sts=4 et ft=javascript:

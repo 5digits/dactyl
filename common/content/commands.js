@@ -12,6 +12,75 @@
 // commands.add() instead
 
 /**
+ * A structure representing the options available for a command.
+ *
+ * @property {[string]} names An array of option names. The first name
+ *     is the canonical option name.
+ * @property {number} type The option's value type. This is one of:
+ *         (@link CommandOption.NOARG),
+ *         (@link CommandOption.STRING),
+ *         (@link CommandOption.BOOL),
+ *         (@link CommandOption.INT),
+ *         (@link CommandOption.FLOAT),
+ *         (@link CommandOption.LIST),
+ *         (@link CommandOption.ANY)
+ * @property {function} validator A validator function
+ * @property {function (CompletionContext, object)} completer A list of
+ *    completions, or a completion function which will be passed a
+ *    {@link CompletionContext} and an object like that returned by
+ *    {@link commands.parseArgs} with the following additional keys:
+ *      completeOpt - The name of the option currently being completed.
+ * @property {boolean} multiple Whether this option can be specified multiple times
+ * @property {string} description A description of the option
+ */
+const CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description");
+CommandOption.defaultValue("description", function () "");
+CommandOption.defaultValue("type", function () CommandOption.NOARG);
+CommandOption.defaultValue("multiple", function () false);
+update(CommandOption, {
+    // FIXME: remove later, when our option handler is better
+    /**
+     * @property {number} The option argument is unspecified. Any argument
+     *     is accepted and caller is responsible for parsing the return
+     *     value.
+     * @final
+     */
+    ANY: 0,
+
+    /**
+     * @property {number} The option doesn't accept an argument.
+     * @final
+     */
+    NOARG: 1,
+    /**
+     * @property {number} The option accepts a boolean argument.
+     * @final
+     */
+    BOOL: 2,
+    /**
+     * @property {number} The option accepts a string argument.
+     * @final
+     */
+    STRING: 3,
+    /**
+     * @property {number} The option accepts an integer argument.
+     * @final
+     */
+    INT: 4,
+    /**
+     * @property {number} The option accepts a float argument.
+     * @final
+     */
+    FLOAT: 5,
+    /**
+     * @property {number} The option accepts a string list argument.
+     *     E.g. "foo,bar"
+     * @final
+     */
+    LIST: 6
+});
+
+/**
  * A class representing Ex commands. Instances are created by
  * the {@link Commands} class.
  *
@@ -35,8 +104,6 @@
  * @private
  */
 const Command = Class("Command", {
-    requires: ["config"],
-
     init: function (specs, description, action, extraInfo) {
         specs = Array.concat(specs); // XXX
         let parsedSpecs = Command.parseSpecs(specs);
@@ -51,6 +118,8 @@ const Command = Class("Command", {
 
         if (extraInfo)
             update(this, extraInfo);
+        if (this.options)
+            this.options = this.options.map(CommandOption.fromArray, CommandOption);
     },
 
     /**
@@ -191,7 +260,7 @@ const Command = Class("Command", {
      *     invocation which should be restored on subsequent @dactyl
      *     startups.
      */
-    serial: null,
+    serialize: null,
     /**
      * @property {boolean} When true, invocations of this command
      *     may contain private data which should be purged from
@@ -239,47 +308,6 @@ const Commands = Module("commands", {
         this._exCommands = [];
         this._exMap = {};
     },
-
-    // FIXME: remove later, when our option handler is better
-    /**
-     * @property {number} The option argument is unspecified. Any argument
-     *     is accepted and caller is responsible for parsing the return
-     *     value.
-     * @final
-     */
-    OPTION_ANY: 0,
-
-    /**
-     * @property {number} The option doesn't accept an argument.
-     * @final
-     */
-    OPTION_NOARG: 1,
-    /**
-     * @property {number} The option accepts a boolean argument.
-     * @final
-     */
-    OPTION_BOOL: 2,
-    /**
-     * @property {number} The option accepts a string argument.
-     * @final
-     */
-    OPTION_STRING: 3,
-    /**
-     * @property {number} The option accepts an integer argument.
-     * @final
-     */
-    OPTION_INT: 4,
-    /**
-     * @property {number} The option accepts a float argument.
-     * @final
-     */
-    OPTION_FLOAT: 5,
-    /**
-     * @property {number} The option accepts a string list argument.
-     *     E.g. "foo,bar"
-     * @final
-     */
-    OPTION_LIST: 6,
 
     /**
      * @property Indicates that no count was specified for this
@@ -442,29 +470,8 @@ const Commands = Module("commands", {
      *
      * @param {string} str The Ex command-line string to parse. E.g.
      *     "-x=foo -opt=bar arg1 arg2"
-     * @param {Array} options The options accepted. These are specified as
-     *     an array [names, type, validator, completions, multiple].
-     *         names - an array of option names. The first name is the
-     *             canonical option name.
-     *         type - the option's value type. This is one of:
-     *             (@link Commands#OPTION_NOARG),
-     *             (@link Commands#OPTION_STRING),
-     *             (@link Commands#OPTION_BOOL),
-     *             (@link Commands#OPTION_INT),
-     *             (@link Commands#OPTION_FLOAT),
-     *             (@link Commands#OPTION_LIST),
-     *             (@link Commands#OPTION_ANY)
-     *         validator - a validator function
-     *         completer - a list of completions, or a completion function
-     *         multiple - whether this option can be specified multiple times
-     *     E.g.
-     *     options = [[["-force"], OPTION_NOARG],
-     *                [["-fullscreen", "-f"], OPTION_BOOL],
-     *                [["-language"], OPTION_STRING, validateFunc, ["perl", "ruby"]],
-     *                [["-speed"], OPTION_INT],
-     *                [["-acceleration"], OPTION_FLOAT],
-     *                [["-accessories"], OPTION_LIST, null, ["foo", "bar"], true],
-     *                [["-other"], OPTION_ANY]];
+     * @param {[CommandOption]} options The options accepted. These are specified
+     *      as an array of {@link CommandOption} structures.
      * @param {string} argCount The number of arguments accepted.
      *            "0": no arguments
      *            "1": exactly one argument
@@ -518,7 +525,7 @@ const Commands = Module("commands", {
         function matchOpts(arg) {
             // Push possible option matches into completions
             if (complete && !onlyArgumentsRemaining)
-                completeOpts = [[opt[0], opt[0][0]] for ([i, opt] in Iterator(options)) if (!(opt[0][0] in args))];
+                completeOpts = options.filter(function (opt) opt.multiple || !(opt.names[0] in args));
         }
         function resetCompletions() {
             completeOpts = null;
@@ -562,14 +569,14 @@ const Commands = Module("commands", {
             var optname = "";
             if (!onlyArgumentsRemaining) {
                 for (let [, opt] in Iterator(options)) {
-                    for (let [, optname] in Iterator(opt[0])) {
+                    for (let [, optname] in Iterator(opt.names)) {
                         if (sub.indexOf(optname) == 0) {
                             invalid = false;
                             arg = null;
                             quote = null;
                             count = 0;
                             let sep = sub[optname.length];
-                            if (sep == "=" || /\s/.test(sep) && opt[1] != this.OPTION_NOARG) {
+                            if (sep == "=" || /\s/.test(sep) && opt.type != CommandOption.NOARG) {
                                 [count, arg, quote, error] = getNextArg(sub.substr(optname.length + 1));
                                 dactyl.assert(!error, error);
 
@@ -595,7 +602,7 @@ const Commands = Module("commands", {
                                     args.completeFilter = arg;
                                     args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
                                 }
-                                let type = Commands.argTypes[opt[1]];
+                                let type = Commands.argTypes[opt.type];
                                 if (type && (!complete || arg != null)) {
                                     let orig = arg;
                                     arg = type.parse(arg);
@@ -610,8 +617,8 @@ const Commands = Module("commands", {
                                 }
 
                                 // we have a validator function
-                                if (typeof opt[2] == "function") {
-                                    if (opt[2].call(this, arg) == false) {
+                                if (typeof opt.validator == "function") {
+                                    if (opt.validator.call(this, arg) == false) {
                                         echoerr("Invalid argument for option: " + optname);
                                         if (complete)
                                             complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
@@ -620,11 +627,13 @@ const Commands = Module("commands", {
                                     }
                                 }
 
+                                matchOpts(sub);
+
                                 // option allowed multiple times
-                                if (!!opt[4])
-                                    args[opt[0][0]] = (args[opt[0][0]] || []).concat(arg);
+                                if (opt.multiple)
+                                    args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
                                 else
-                                    args[opt[0][0]] = opt[1] == this.OPTION_NOARG || arg;
+                                    args[opt.names[0]] = opt.type == this.OPTION_NOARG || arg;
 
                                 i += optname.length + count;
                                 if (i == str.length)
@@ -683,17 +692,18 @@ const Commands = Module("commands", {
         if (complete) {
             if (args.completeOpt) {
                 let opt = args.completeOpt;
-                let context = complete.fork(opt[0][0], args.completeStart);
+                let context = complete.fork(opt.names[0], args.completeStart);
                 context.filter = args.completeFilter;
-                if (typeof opt[3] == "function")
-                    var compl = opt[3](context, args);
+                if (typeof opt.completer == "function")
+                    var compl = opt.completer(context, args);
                 else
-                    compl = opt[3] || [];
-                context.title = [opt[0][0]];
+                    compl = opt.completer || [];
+                context.title = [opt.names[0]];
                 context.quote = args.quote;
                 context.completions = compl;
             }
             complete.advance(args.completeStart);
+            complete.keys = { text: "names", description: "description" };
             complete.title = ["Options"];
             if (completeOpts)
                 complete.completions = completeOpts;
@@ -1012,18 +1022,16 @@ const Commands = Module("commands", {
                     //     : No, array comprehensions are fine, generator statements aren't. --Kris
                     let cmds = this._exCommands.filter(function (c) c.user && (!cmd || c.name.match("^" + cmd)));
 
-                    if (cmds.length > 0) {
-                        let str = template.tabular(["", "Name", "Args", "Range", "Complete", "Definition"], ["padding-right: 2em;"],
-                            ([cmd.bang ? "!" : " ",
-                              cmd.name,
-                              cmd.argCount,
-                              cmd.count ? "0c" : "",
-                              completerToString(cmd.completer),
-                              cmd.replacementText || "function () { ... }"]
-                             for ([, cmd] in Iterator(cmds))));
-
-                        commandline.echo(str, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
-                    }
+                    if (cmds.length > 0)
+                        commandline.commandOutput(
+                            template.tabular(["", "Name", "Args", "Range", "Complete", "Definition"], ["padding-right: 2em;"]),
+                                ([cmd.bang ? "!" : " ",
+                                  cmd.name,
+                                  cmd.argCount,
+                                  cmd.count ? "0c" : "",
+                                  completerToString(cmd.completer),
+                                  cmd.replacementText || "function () { ... }"]
+                                 for ([, cmd] in Iterator(cmds))));
                     else
                         dactyl.echomsg("No user-defined commands found");
                 }
@@ -1036,23 +1044,33 @@ const Commands = Module("commands", {
                         completion.ex(context);
                 },
                 options: [
-                    [["-nargs"], commands.OPTION_STRING,
-                    function (arg) /^[01*?+]$/.test(arg),
-                    [["0", "No arguments are allowed (default)"],
-                     ["1", "One argument is allowed"],
-                     ["*", "Zero or more arguments are allowed"],
-                     ["?", "Zero or one argument is allowed"],
-                     ["+", "One or more arguments is allowed"]]],
-                    [["-bang"], commands.OPTION_NOARG],
-                    [["-count"], commands.OPTION_NOARG],
-                    [["-description"], commands.OPTION_STRING],
-                    // TODO: "E180: invalid complete value: " + arg
-                    [["-complete"], commands.OPTION_STRING,
-                         function (arg) arg in completeOptionMap || /custom,\w+/.test(arg),
-                         function (context) [[k, ""] for ([k, v] in Iterator(completeOptionMap))]]
+                    { names: ["-bang"],  description: "Command may be proceeded by a !" },
+                    { names: ["-count"], description: "Command may be preceeded by a count" },
+                    { 
+                        names: ["-description"], 
+                        description: "A user-visible description of the command",
+                        type: CommandOption.STRING
+                    }, { 
+                        // TODO: "E180: invalid complete value: " + arg
+                        names: ["-complete"], 
+                        description: "The argument completion function",
+                        completer: function (context) [[k, ""] for ([k, v] in Iterator(completeOptionMap))],
+                        type: CommandOption.STRING,
+                        validator: function (arg) arg in completeOptionMap || /custom,\w+/.test(arg),
+                    }, {
+                        names: ["-nargs"],
+                        description: "The allowed number of arguments",
+                        completer: [["0", "No arguments are allowed (default)"],
+                                    ["1", "One argument is allowed"],
+                                    ["*", "Zero or more arguments are allowed"],
+                                    ["?", "Zero or one argument is allowed"],
+                                    ["+", "One or more arguments are allowed"]],
+                        type: CommandOption.STRING,
+                        validator: function (arg) /^[01*?+]$/.test(arg)
+                    },
                 ],
                 literal: 1,
-                serial: function () [ {
+                serialize: function () [ {
                         command: this.name,
                         bang: true,
                         options: util.Array.toObject(

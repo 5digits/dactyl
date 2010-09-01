@@ -7,8 +7,6 @@
 "use strict";
 
 const History = Module("history", {
-    requires: ["config"],
-
     get format() bookmarks.format,
 
     get service() services.get("history"),
@@ -196,7 +194,7 @@ const History = Module("history", {
                 bang: true,
                 completer: function (context) { context.quote = null; completion.history(context); },
                 // completer: function (filter) completion.history(filter)
-                options: [[["-max", "-m"], commands.OPTION_INT]]
+                options: [{ names: ["-max", "-m"], description: "The maximum number of items to list", type: CommandOption.INT }]
             });
     },
     completion: function () {

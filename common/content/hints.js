@@ -10,8 +10,6 @@
 /** @instance hints */
 
 const Hints = Module("hints", {
-    requires: ["config"],
-
     init: function () {
 
         this._hintMode = null;

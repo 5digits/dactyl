@@ -41,11 +41,10 @@ BUGS:
 - The MOW shouldn't close when executing hints and ;F isn't working.
 
 FEATURES:
+9 Support multiple bookmarks, -keyword, -tags in :delbmarks
 8 Document Textarea, Caret and Visual modes.
 8 Replace config.name tests in dactyl with more specific feature
   tests or overridable APIs where at all feasible.
-8 change the extension ID to pentadactyl@vimperator.org rather than
-  pentadactyl@mozdev.org
 8 finish :help TODOs
 8 fix local options
 8 adaptive timeout for auto-completions, :set completions can be updated more often than

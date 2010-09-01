@@ -12,8 +12,6 @@
  * @instance events
  */
 const Events = Module("events", {
-    requires: ["autocommands", "config"],
-
     init: function () {
         const self = this;
 
@@ -737,12 +735,10 @@ const Events = Module("events", {
 
     // TODO: Merge with onFocusChange
     onFocus: function (event) {
-        function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
-
         let elem = event.originalTarget;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
-        if (hasHTMLDocument(win) && !buffer.focusAllowed(win)
+        if (Events.isContentNode(elem) && !buffer.focusAllowed(win)
             && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
             elem.blur();
     },
@@ -1107,6 +1103,13 @@ const Events = Module("events", {
     editableInputs: set(["date", "datetime", "datetime-local", "email", "file",
                          "month", "number", "password", "range", "search",
                          "tel", "text", "time", "url", "week"]),
+    isContentNode: function (node) {
+        let win = (node.ownerDocument || node).defaultView;
+        for (; win; win = win.parent != win && win.parent)
+            if (win == window.content)
+                return true;
+        return false;
+    },
     isInputElemFocused: function () {
         let elem = dactyl.focus;
         return elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type) ||

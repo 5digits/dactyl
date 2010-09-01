@@ -10,311 +10,27 @@
 /** @scope modules */
 
 plugins.contexts = {};
-const Script = Class("Script", {
-    init: function (file) {
-        let self = plugins.contexts[file.path];
-        if (self) {
-            if (self.onUnload)
-                self.onUnload();
-            return self;
-        }
-        plugins.contexts[file.path] = this;
-        this.NAME = file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
-        this.PATH = file.path;
-        this.toString = this.toString;
-        this.__context__ = this;
-        this.__proto__ = plugins;
-
-        // This belongs elsewhere
-        for (let [, dir] in Iterator(io.getRuntimeDirectories("plugin"))) {
-            if (dir.contains(file, false))
-                plugins[this.NAME] = this;
-        }
-        return this;
-    }
-});
-
-/**
- * @class File A class to wrap nsIFile objects and simplify operations
- * thereon.
- *
- * @param {nsIFile|string} path Expanded according to {@link IO#expandPath}
- * @param {boolean} checkPWD Whether to allow expansion relative to the
- *          current directory. @default true
- */
-const File = Class("File", {
-    init: function (path, checkPWD) {
-        if (arguments.length < 2)
-            checkPWD = true;
-
-        let file = services.create("file");
-
-        if (path instanceof Ci.nsIFile)
-            file = path;
-        else if (/file:\/\//.test(path))
-            file = services.create("file:").getFileFromURLSpec(path);
-        else {
-            let expandedPath = File.expandPath(path);
-
-            if (!File.isAbsolutePath(expandedPath) && checkPWD)
-                file = File.joinPaths(io.getCurrentDirectory().path, expandedPath);
-            else
-                file.initWithPath(expandedPath);
-        }
-        let self = XPCSafeJSObjectWrapper(file);
-        self.__proto__ = File.prototype;
+function Script(file) {
+    let self = plugins.contexts[file.path];
+    if (self) {
+        if (self.onUnload)
+            self.onUnload();
         return self;
-    },
+     }
+    self = { __proto__: plugins };
+    plugins.contexts[file.path] = self;
+    self.NAME = file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
+    self.PATH = file.path;
+    self.__context__ = self;
+    self.__proto__ = plugins;
 
-    /**
-     * Iterates over the objects in this directory.
-     */
-    iterDirectory: function () {
-        if (!this.isDirectory())
-            throw Error("Not a directory");
-        let entries = this.directoryEntries;
-        while (entries.hasMoreElements())
-            yield File(entries.getNext().QueryInterface(Ci.nsIFile));
-    },
-    /**
-     * Returns the list of files in this directory.
-     *
-     * @param {boolean} sort Whether to sort the returned directory
-     *     entries.
-     * @returns {nsIFile[]}
-     */
-    readDirectory: function (sort) {
-        if (!this.isDirectory())
-            throw Error("Not a directory");
-
-        let array = [e for (e in this.iterDirectory())];
-        if (sort)
-            array.sort(function (a, b) b.isDirectory() - a.isDirectory() ||  String.localeCompare(a.path, b.path));
-        return array;
-    },
-
-    /**
-     * Reads this file's entire contents in "text" mode and returns the
-     * content as a string.
-     *
-     * @param {string} encoding The encoding from which to decode the file.
-     *          @default options["fileencoding"]
-     * @returns {string}
-     */
-    read: function (encoding) {
-        let ifstream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
-        let icstream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
-
-        if (!encoding)
-            encoding = options["fileencoding"];
-
-        ifstream.init(this, -1, 0, 0);
-        icstream.init(ifstream, encoding, 4096, Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER); // 4096 bytes buffering
-
-        let buffer = [];
-        let str = {};
-        while (icstream.readString(4096, str) != 0)
-            buffer.push(str.value);
-
-        icstream.close();
-        ifstream.close();
-        return buffer.join("");
-    },
-
-    /**
-     * Writes the string <b>buf</b> to this file.
-     *
-     * @param {string} buf The file content.
-     * @param {string|number} mode The file access mode, a bitwise OR of
-     *     the following flags:
-     *       {@link #MODE_RDONLY}:   0x01
-     *       {@link #MODE_WRONLY}:   0x02
-     *       {@link #MODE_RDWR}:     0x04
-     *       {@link #MODE_CREATE}:   0x08
-     *       {@link #MODE_APPEND}:   0x10
-     *       {@link #MODE_TRUNCATE}: 0x20
-     *       {@link #MODE_SYNC}:     0x40
-     *     Alternatively, the following abbreviations may be used:
-     *       ">"  is equivalent to {@link #MODE_WRONLY} | {@link #MODE_CREATE} | {@link #MODE_TRUNCATE}
-     *       ">>" is equivalent to {@link #MODE_WRONLY} | {@link #MODE_CREATE} | {@link #MODE_APPEND}
-     * @default ">"
-     * @param {number} perms The file mode bits of the created file. This
-     *     is only used when creating a new file and does not change
-     *     permissions if the file exists.
-     * @default 0644
-     * @param {string} encoding The encoding to used to write the file.
-     * @default options["fileencoding"]
-     */
-    write: function (buf, mode, perms, encoding) {
-        let ofstream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
-        function getStream(defaultChar) {
-            let stream = Cc["@mozilla.org/intl/converter-output-stream;1"].createInstance(Ci.nsIConverterOutputStream);
-            stream.init(ofstream, encoding, 0, defaultChar);
-            return stream;
-        }
-
-        if (!encoding)
-            encoding = options["fileencoding"];
-
-        if (mode == ">>")
-            mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_APPEND;
-        else if (!mode || mode == ">")
-            mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_TRUNCATE;
-
-        if (!perms)
-            perms = parseInt('0644', 8);
-
-        ofstream.init(this, mode, perms, 0);
-        let ocstream = getStream(0);
-        try {
-            ocstream.writeString(buf);
-        }
-        catch (e) {
-            dactyl.dump(e);
-            if (e.result == Cr.NS_ERROR_LOSS_OF_SIGNIFICANT_DATA) {
-                ocstream = getStream("?".charCodeAt(0));
-                ocstream.writeString(buf);
-                return false;
-            }
-            else
-                throw e;
-        }
-        finally {
-            try {
-                ocstream.close();
-            }
-            catch (e) {}
-            ofstream.close();
-        }
-        return true;
+    // This belongs elsewhere
+    for (let [, dir] in Iterator(io.getRuntimeDirectories("plugin"))) {
+        if (dir.contains(file, false))
+            plugins[self.NAME] = self;
     }
-}, {
-    /**
-     * @property {number} Open for reading only.
-     * @final
-     */
-    MODE_RDONLY: 0x01,
-
-    /**
-     * @property {number} Open for writing only.
-     * @final
-     */
-    MODE_WRONLY: 0x02,
-
-    /**
-     * @property {number} Open for reading and writing.
-     * @final
-     */
-    MODE_RDWR: 0x04,
-
-    /**
-     * @property {number} If the file does not exist, the file is created.
-     *     If the file exists, this flag has no effect.
-     * @final
-     */
-    MODE_CREATE: 0x08,
-
-    /**
-     * @property {number} The file pointer is set to the end of the file
-     *     prior to each write.
-     * @final
-     */
-    MODE_APPEND: 0x10,
-
-    /**
-     * @property {number} If the file exists, its length is truncated to 0.
-     * @final
-     */
-    MODE_TRUNCATE: 0x20,
-
-    /**
-     * @property {number} If set, each write will wait for both the file
-     *     data and file status to be physically updated.
-     * @final
-     */
-    MODE_SYNC: 0x40,
-
-    /**
-     * @property {number} With MODE_CREATE, if the file does not exist, the
-     *     file is created. If the file already exists, no action and NULL
-     *     is returned.
-     * @final
-     */
-    MODE_EXCL: 0x80,
-
-    expandPathList: function (list) list.map(this.expandPath),
-
-    expandPath: function (path, relative) {
-
-        // expand any $ENV vars - this is naive but so is Vim and we like to be compatible
-        // TODO: Vim does not expand variables set to an empty string (and documents it).
-        // Kris reckons we shouldn't replicate this 'bug'. --djk
-        // TODO: should we be doing this for all paths?
-        function expand(path) path.replace(
-            !dactyl.has("Win32") ? /\$(\w+)\b|\${(\w+)}/g
-                                 : /\$(\w+)\b|\${(\w+)}|%(\w+)%/g,
-            function (m, n1, n2, n3) services.get("environment").get(n1 || n2 || n3) || m
-        );
-        path = expand(path);
-
-        // expand ~
-        // Yuck.
-        if (!relative && RegExp("~(?:$|[/" + util.escapeRegex(IO.PATH_SEP) + "])").test(path)) {
-            // Try $HOME first, on all systems
-            let home = services.get("environment").get("HOME");
-
-            // Windows has its own idiosyncratic $HOME variables.
-            if (!home && dactyl.has("Win32"))
-                home = services.get("environment").get("USERPROFILE") ||
-                       services.get("environment").get("HOMEDRIVE") + services.get("environment").get("HOMEPATH");
-
-            path = home + path.substr(1);
-        }
-
-        // TODO: Vim expands paths twice, once before checking for ~, once
-        // after, but doesn't document it. Is this just a bug? --Kris
-        path = expand(path);
-        return path.replace("/", IO.PATH_SEP, "g");
-    },
-
-    getPathsFromPathList: function (list) {
-        if (!list)
-            return [];
-        // empty list item means the current directory
-        return list.replace(/,$/, "").split(",")
-                   .map(function (dir) dir == "" ? io.getCurrentDirectory().path : dir);
-    },
-
-    replacePathSep: function (path) path.replace("/", IO.PATH_SEP, "g"),
-
-    joinPaths: function (head, tail) {
-        let path = this(head);
-        try {
-            path.appendRelativePath(this.expandPath(tail, true)); // FIXME: should only expand env vars and normalise path separators
-            // TODO: This code breaks the external editor at least in ubuntu
-            // because /usr/bin/gvim becomes /usr/bin/vim.gnome normalized and for
-            // some strange reason it will start without a gui then (which is not
-            // optimal if you don't start firefox from a terminal ;)
-            // Why do we need this code?
-            // if (path.exists() && path.normalize)
-            //    path.normalize();
-        }
-        catch (e) {
-            return { exists: function () false, __noSuchMethod__: function () { throw e; } };
-        }
-        return path;
-    },
-
-    isAbsolutePath: function (path) {
-        try {
-            services.create("file").initWithPath(path);
-            return true;
-        }
-        catch (e) {
-            return false;
-        }
-    }
-});
+    return self;
+}
 
 // TODO: why are we passing around strings rather than file objects?
 /**
@@ -322,8 +38,6 @@ const File = Class("File", {
  * @instance io
  */
 const IO = Module("io", {
-    requires: ["config", "services"],
-
     init: function () {
         this._processDir = services.get("directory").get("CurWorkD", Ci.nsIFile);
         this._cwd = this._processDir;
@@ -363,7 +77,10 @@ const IO = Module("io", {
      * @property {function} File class.
      * @final
      */
-    File: File,
+    File: Class("File", File, {
+        init: function init(path, checkCWD) 
+            init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.getCurrentDirectory())
+    }),
 
     /**
      * @property {Object} The current file sourcing context. As a file is
@@ -423,7 +140,7 @@ const IO = Module("io", {
         if (newDir == "-")
             [this._cwd, this._oldcwd] = [this._oldcwd, this.getCurrentDirectory()];
         else {
-            let dir = File(newDir);
+            let dir = io.File(newDir);
 
             if (!dir.exists() || !dir.isDirectory()) {
                 dactyl.echoerr("E344: Can't find directory " + dir.path.quote());
@@ -489,7 +206,7 @@ const IO = Module("io", {
         file.append(config.tempFile);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, parseInt('0600', 8));
 
-        return File(file);
+        return io.File(file);
     },
 
     /**
@@ -507,7 +224,7 @@ const IO = Module("io", {
         let file;
 
         if (File.isAbsolutePath(program))
-            file = File(program, true);
+            file = io.File(program, true);
         else {
             let dirs = services.get("environment").get("PATH").split(dactyl.has("Win32") ? ";" : ":");
             // Windows tries the CWD first TODO: desirable?
@@ -600,7 +317,7 @@ lookup:
         dactyl.dump("sourcing " + filename);
         let time = Date.now();
         try {
-            var file = File(filename);
+            var file = io.File(filename);
             this.sourcing = {
                 file: file.path,
                 line: 0
@@ -803,12 +520,7 @@ lookup:
     /**
      * @property {string} The current platform's path seperator.
      */
-    get PATH_SEP() {
-        delete this.PATH_SEP;
-        let f = services.get("directory").get("CurProcD", Ci.nsIFile);
-        f.append("foo");
-        return this.PATH_SEP = f.path.substr(f.parent.path.length, 1);
-    }
+    PATH_SEP: File.PATH_SEP
 }, {
     commands: function () {
         commands.add(["cd", "chd[ir]"],
@@ -876,13 +588,13 @@ lookup:
                 dactyl.assert(args.length <= 1, "E172: Only one file name allowed");
 
                 let filename = args[0] || io.getRCFile(null, true).path;
-                let file = File(filename);
+                let file = io.File(filename);
 
                 dactyl.assert(!file.exists() || args.bang,
                     "E189: " + filename.quote() + " exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
-                let lines = [cmd.serial().map(commands.commandToString) for (cmd in commands) if (cmd.serial)];
+                let lines = [cmd.serialize().map(commands.commandToString) for (cmd in commands) if (cmd.serialize)];
                 lines = util.Array.flatten(lines);
 
                 // source a user .pentadactylrc file
@@ -922,10 +634,9 @@ lookup:
         commands.add(["scrip[tnames]"],
             "List all sourced script names",
             function () {
-                let list = template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                    ([i + 1, file] for ([i, file] in Iterator(io._scriptNames))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
-
-                commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+                commandline.commandOutput(
+                    template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
+                        ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
             },
             { argCount: "0" });
 
@@ -967,8 +678,7 @@ lookup:
                 let output = io.system(arg);
 
                 commandline.command = "!" + arg;
-                commandline.echo(template.commandOutput(commandline.command,
-                        <span highlight="CmdOutput">{output}</span>));
+                commandline.commandOutput(<span highlight="CmdOutput">{output}</span>);
 
                 autocommands.trigger("ShellCmdPost", {});
             }, {
@@ -1034,7 +744,7 @@ lookup:
             context.key = dir;
             context.generate = function generate_file() {
                 try {
-                    return File(dir).readDirectory();
+                    return io.File(dir).readDirectory();
                 }
                 catch (e) {}
                 return [];
@@ -1065,7 +775,7 @@ lookup:
         });
     },
     javascript: function () {
-        JavaScript.setCompleter([this.File, File.expandPath],
+        JavaScript.setCompleter([File, File.expandPath],
             [function (context, obj, args) {
                 context.quote[2] = "";
                 completion.file(context, true);
@@ -1088,7 +798,9 @@ lookup:
         options.add(["fileencoding", "fenc"],
             "Sets the character encoding of read and written files",
             "string", "UTF-8", {
-                completer: function (context) completion.charset(context)
+                completer: function (context) completion.charset(context),
+                getter: function () File.defaultEncoding,
+                setter: function (value) (File.defaultEncoding = value)
             });
         options.add(["cdpath", "cd"],
             "List of directories searched when executing :cd",

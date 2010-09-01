@@ -10,193 +10,13 @@ const DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
 
 // also includes methods for dealing with keywords and search engines
 const Bookmarks = Module("bookmarks", {
-    requires: ["autocommands", "config", "dactyl", "storage", "services"],
-
     init: function () {
-        const faviconService   = services.get("favicon");
-        const bookmarksService = services.get("bookmarks");
-        const historyService   = services.get("history");
-        const tagging          = PlacesUtils.tagging;
-
-        this.getFavicon = getFavicon;
-        function getFavicon(uri) {
-            try {
-                return faviconService.getFaviconImageForPage(util.newURI(uri)).spec;
-            }
-            catch (e) {
-                return "";
-            }
-        }
-
-        // Fix for strange Firefox bug:
-        // Error: [Exception... "Component returned failure code: 0x8000ffff (NS_ERROR_UNEXPECTED) [nsIObserverService.addObserver]"
-        //     nsresult: "0x8000ffff (NS_ERROR_UNEXPECTED)"
-        //     location: "JS frame :: file://~firefox/components/nsTaggingService.js :: anonymous :: line 89"
-        //     data: no]
-        // Source file: file://~firefox/components/nsTaggingService.js
-        tagging.getTagsForURI(window.makeURI("http://mysterious.bug"), {});
-
-        const Bookmark = Struct("url", "title", "icon", "keyword", "tags", "id");
-        const Keyword = Struct("keyword", "title", "icon", "url");
-        Bookmark.defaultValue("icon", function () getFavicon(this.url));
-        Bookmark.prototype.__defineGetter__("extra", function () [
-                                ["keyword", this.keyword,         "Keyword"],
-                                ["tags",    this.tags.join(", "), "Tag"]
-                            ].filter(function (item) item[1]));
-
-        const storage = modules.storage;
-        function Cache(name, store) {
-            const rootFolders = [bookmarksService.toolbarFolder, bookmarksService.bookmarksMenuFolder, bookmarksService.unfiledBookmarksFolder];
-            const sleep = dactyl.sleep; // Storage objects are global to all windows, 'dactyl' isn't.
-
-            let bookmarks = [];
-            let self = this;
-
-            this.__defineGetter__("name",  function () name);
-            this.__defineGetter__("store", function () store);
-            this.__defineGetter__("bookmarks", function () this.load());
-
-            this.__defineGetter__("keywords",
-                function () [Keyword(k.keyword, k.title, k.icon, k.url) for ([, k] in Iterator(self.bookmarks)) if (k.keyword)]);
-
-            this.__iterator__ = function () (val for ([, val] in Iterator(self.bookmarks)));
-
-            function loadBookmark(node) {
-                if (node.uri == null) // How does this happen?
-                    return false;
-                let uri = util.newURI(node.uri);
-                let keyword = bookmarksService.getKeywordForBookmark(node.itemId);
-                let tags = tagging.getTagsForURI(uri, {}) || [];
-                let bmark = Bookmark(node.uri, node.title, node.icon && node.icon.spec, keyword, tags, node.itemId);
-
-                bookmarks.push(bmark);
-                return bmark;
-            }
-
-            function readBookmark(id) {
-                return {
-                    itemId: id,
-                    uri:    bookmarksService.getBookmarkURI(id).spec,
-                    title:  bookmarksService.getItemTitle(id)
-                };
-            }
-
-            function deleteBookmark(id) {
-                let length = bookmarks.length;
-                bookmarks = bookmarks.filter(function (item) item.id != id);
-                return bookmarks.length < length;
-            }
-
-            this.findRoot = function findRoot(id) {
-                do {
-                    var root = id;
-                    id = bookmarksService.getFolderIdForItem(id);
-                } while (id != bookmarksService.placesRoot && id != root);
-                return root;
-            };
-
-            this.isBookmark = function (id) rootFolders.indexOf(self.findRoot(id)) >= 0;
-
-            this.isRegularBookmark = function findRoot(id) {
-                do {
-                    var root = id;
-                    if (services.get("livemark") && services.get("livemark").isLivemark(id))
-                        return false;
-                    id = bookmarksService.getFolderIdForItem(id);
-                } while (id != bookmarksService.placesRoot && id != root);
-                return rootFolders.indexOf(root) >= 0;
-            };
-
-            // since we don't use a threaded bookmark loading (by set preload)
-            // anymore, is this loading synchronization still needed? --mst
-            let loading = false;
-            this.load = function load() {
-                if (loading) {
-                    while (loading)
-                        sleep(10);
-                    return bookmarks;
-                }
-
-                // update our bookmark cache
-                bookmarks = [];
-                loading = true;
-
-                let folders = rootFolders.slice();
-                let query = historyService.getNewQuery();
-                let options = historyService.getNewQueryOptions();
-                while (folders.length > 0) {
-                    query.setFolders(folders, 1);
-                    folders.shift();
-                    let result = historyService.executeQuery(query, options);
-                    let folder = result.root;
-                    folder.containerOpen = true;
-
-                    // iterate over the immediate children of this folder
-                    for (let i = 0; i < folder.childCount; i++) {
-                        let node = folder.getChild(i);
-                        if (node.type == node.RESULT_TYPE_FOLDER)   // folder
-                            folders.push(node.itemId);
-                        else if (node.type == node.RESULT_TYPE_URI) // bookmark
-                            loadBookmark(node);
-                    }
-
-                    // close a container after using it!
-                    folder.containerOpen = false;
-                }
-                this.__defineGetter__("bookmarks", function () bookmarks);
-                loading = false;
-                return bookmarks;
-            };
-
-            var observer = {
-                onBeginUpdateBatch: function onBeginUpdateBatch() {},
-                onEndUpdateBatch:   function onEndUpdateBatch() {},
-                onItemVisited:      function onItemVisited() {},
-                onItemMoved:        function onItemMoved() {},
-                onItemAdded: function onItemAdded(itemId, folder, index) {
-                    // dactyl.dump("onItemAdded(" + itemId + ", " + folder + ", " + index + ")\n");
-                    if (bookmarksService.getItemType(itemId) == bookmarksService.TYPE_BOOKMARK) {
-                        if (self.isBookmark(itemId)) {
-                            let bmark = loadBookmark(readBookmark(itemId));
-                            storage.fireEvent(name, "add", bmark);
-                        }
-                    }
-                },
-                onItemRemoved: function onItemRemoved(itemId, folder, index) {
-                    // dactyl.dump("onItemRemoved(" + itemId + ", " + folder + ", " + index + ")\n");
-                    if (deleteBookmark(itemId))
-                        storage.fireEvent(name, "remove", itemId);
-                },
-                onItemChanged: function onItemChanged(itemId, property, isAnnotation, value) {
-                    if (isAnnotation)
-                        return;
-                    // dactyl.dump("onItemChanged(" + itemId + ", " + property + ", " + value + ")\n");
-                    let bookmark = bookmarks.filter(function (item) item.id == itemId)[0];
-                    if (bookmark) {
-                        if (property == "tags")
-                            value = tagging.getTagsForURI(util.newURI(bookmark.url), {});
-                        if (property in bookmark)
-                            bookmark[property] = value;
-                        storage.fireEvent(name, "change", itemId);
-                    }
-                },
-                QueryInterface: function QueryInterface(iid) {
-                    if (iid.equals(Ci.nsINavBookmarkObserver) || iid.equals(Ci.nsISupports))
-                        return this;
-                    throw Cr.NS_ERROR_NO_INTERFACE;
-                }
-            };
-
-            bookmarksService.addObserver(observer, false);
-        }
-
         let bookmarkObserver = function (key, event, arg) {
             if (event == "add")
                 autocommands.trigger("BookmarkAdd", arg);
             statusline.updateUrl();
         };
 
-        this._cache = storage.newObject("bookmark-cache", Cache, { store: false });
         storage.addObserver("bookmark-cache", bookmarkObserver, window);
     },
 
@@ -217,7 +37,7 @@ const Bookmarks = Module("bookmarks", {
         try {
             let uri = util.createURI(url);
             if (!force) {
-                for (let bmark in this._cache) {
+                for (let bmark in bookmarkcache) {
                     if (bmark[0] == uri.spec) {
                         var id = bmark[5];
                         if (title)
@@ -268,7 +88,7 @@ const Bookmarks = Module("bookmarks", {
     isBookmarked: function isBookmarked(url) {
         try {
             return services.get("bookmarks").getBookmarkIdsForURI(makeURI(url), {})
-                                   .some(this._cache.isRegularBookmark);
+                                   .some(bookmarkcache.isRegularBookmark);
         }
         catch (e) {
             return false;
@@ -280,7 +100,7 @@ const Bookmarks = Module("bookmarks", {
         try {
             let uri = util.newURI(url);
             let bmarks = services.get("bookmarks").getBookmarkIdsForURI(uri, {})
-                                         .filter(this._cache.isRegularBookmark);
+                                         .filter(bookmarkcache.isRegularBookmark);
             bmarks.forEach(services.get("bookmarks").removeItem);
             return bmarks.length;
         }
@@ -350,7 +170,7 @@ const Bookmarks = Module("bookmarks", {
     // format of returned array:
     // [keyword, helptext, url]
     getKeywords: function getKeywords() {
-        return this._cache.keywords;
+        return bookmarkcache.keywords;
     },
 
     // full search string including engine name as first word in @param text
@@ -451,38 +271,53 @@ const Bookmarks = Module("bookmarks", {
             "Show jumplist",
             function () {
                 let sh = history.session;
-                let list = template.jumps(sh.index, sh);
-                commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
+                commandline.commandOutput(template.jumps(sh.index, sh));
             },
             { argCount: "0" });
 
         // TODO: Clean this up.
-        function tags(context, args) {
-            let filter = context.filter;
-            let have = filter.split(",");
+        const tags = {
+            names: ["-tags", "-T"],
+            description: "A comma-separated list of tags",
+            completer: function tags(context, args) {
+                let filter = context.filter;
+                let have = filter.split(",");
 
-            args.completeFilter = have.pop();
+                args.completeFilter = have.pop();
 
-            let prefix = filter.substr(0, filter.length - args.completeFilter.length);
-            let tags = array.uniq(util.Array.flatten([b.tags for ([k, b] in Iterator(this._cache.bookmarks))]));
+                let prefix = filter.substr(0, filter.length - args.completeFilter.length);
+                let tags = array.uniq(util.Array.flatten([b.tags for ([k, b] in Iterator(bookmarkcache.bookmarks))]));
 
-            return [[prefix + tag, tag] for ([i, tag] in Iterator(tags)) if (have.indexOf(tag) < 0)];
-        }
+                return [[prefix + tag, tag] for ([i, tag] in Iterator(tags)) if (have.indexOf(tag) < 0)];
+            },
+            type: CommandOption.LIST
+        };
 
-        function title(context, args) {
-            if (!args.bang)
-                return [[content.document.title, "Current Page Title"]];
-            context.keys.text = "title";
-            context.keys.description = "url";
-            return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: args["-keyword"], title: context.filter });
-        }
+        const title = {
+            names: ["-title", "-t"],
+            description: "Bookmark page title or description",
+            completer: function title(context, args) {
+                if (!args.bang)
+                    return [[content.document.title, "Current Page Title"]];
+                context.keys.text = "title";
+                context.keys.description = "url";
+                return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: args["-keyword"], title: context.filter });
+            },
+            type: CommandOption.STRING
+        };
 
-        function keyword(context, args) {
-            if (!args.bang)
-                return [];
-            context.keys.text = "keyword";
-            return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: context.filter, title: args["-title"] });
-        }
+        const keyword = {
+            names: ["-keyword", "-k"],
+            description: "Keyword by which this bookmark may be opened (:open {keyword})",
+            completer: function keyword(context, args) {
+                if (!args.bang)
+                    return [];
+                context.keys.text = "keyword";
+                return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: context.filter, title: args["-title"] });
+            },
+            type: CommandOption.STRING,
+            validator: function (arg) /^\S+$/.test(arg)
+        };
 
         commands.add(["bma[rk]"],
             "Add a bookmark",
@@ -503,14 +338,13 @@ const Bookmarks = Module("bookmarks", {
                 bang: true,
                 completer: function (context, args) {
                     if (!args.bang) {
+                        context.title = ["Page URL"];
                         context.completions = [[content.document.documentURI, "Current Location"]];
                         return;
                     }
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
                 },
-                options: [[["-title", "-t"],    commands.OPTION_STRING, null, title],
-                          [["-tags", "-T"],     commands.OPTION_LIST, null, tags],
-                          [["-keyword", "-k"],  commands.OPTION_STRING, function (arg) /\w/.test(arg)]]
+                options: [title, tags, keyword]
             });
 
         commands.add(["bmarks"],
@@ -525,22 +359,26 @@ const Bookmarks = Module("bookmarks", {
                     context.filter = args.join(" ");
                     completion.bookmark(context, args["-tags"]);
                 },
-                options: [[["-tags", "-T"], commands.OPTION_LIST, null, tags],
-                          [["-max", "-m"], commands.OPTION_INT]]
+                options: [tags,
+                    { 
+                        names: ["-max", "-m"],
+                        description: "The maximum number of items to list or open",
+                        type: CommandOption.INT
+                    }
+                ]
             });
 
         commands.add(["delbm[arks]"],
             "Delete a bookmark",
             function (args) {
-                if (args.bang) {
+                if (args.bang)
                     commandline.input("This will delete all bookmarks. Would you like to continue? (yes/[no]) ",
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
-                                bookmarks._cache.bookmarks.forEach(function (bmark) { services.get("bookmarks").removeItem(bmark.id); });
+                                bookmarkcache.bookmarks.forEach(function (bmark) { services.get("bookmarks").removeItem(bmark.id); });
                                 dactyl.echomsg("All bookmarks deleted", 1, commandline.FORCE_SINGLELINE);
                             }
                         });
-                }
                 else {
                     let url = args.string || buffer.URL;
                     let deletedCount = bookmarks.remove(url);
@@ -621,9 +459,7 @@ const Bookmarks = Module("bookmarks", {
                 if (v)
                     context.filters.push(function (item) this._match(v, item[k]));
             }
-            // Need to make a copy because set completions() checks instanceof Array,
-            // and this may be an Array from another window.
-            context.completions = Array.slice(storage["bookmark-cache"].bookmarks);
+            context.completions = bookmarkcache.bookmarks;
             completion.urls(context, tags);
         };
 

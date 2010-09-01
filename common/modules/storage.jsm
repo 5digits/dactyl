@@ -21,106 +21,21 @@
 }}} ***** END LICENSE BLOCK *****/
 "use strict";
 
-var EXPORTED_SYMBOLS = ["storage", "Timer"];
+Components.utils.import("resource://dactyl/base.jsm");
+defmodule("storage", this, {
+    exports: ["File", "storage"],
+    require: ["services", "util"]
+});
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cu = Components.utils;
+var prefService = services.get("pref").getBranch("extensions.dactyl.datastore.");
 
-// XXX: does not belong here
-function Timer(minInterval, maxInterval, callback) {
-    let timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-    this.doneAt = 0;
-    this.latest = 0;
-    this.notify = function (aTimer) {
-        timer.cancel();
-        this.latest = 0;
-        // minInterval is the time between the completion of the command and the next firing
-        this.doneAt = Date.now() + minInterval;
-
-        try {
-            callback(this.arg);
-        }
-        finally {
-            this.doneAt = Date.now() + minInterval;
-        }
-    };
-    this.tell = function (arg) {
-        if (arguments.length > 0)
-            this.arg = arg;
-
-        let now = Date.now();
-        if (this.doneAt == -1)
-            timer.cancel();
-
-        let timeout = minInterval;
-        if (now > this.doneAt && this.doneAt > -1)
-            timeout = 0;
-        else if (this.latest)
-            timeout = Math.min(timeout, this.latest - now);
-        else
-            this.latest = now + maxInterval;
-
-        timer.initWithCallback(this, Math.max(timeout, 0), timer.TYPE_ONE_SHOT);
-        this.doneAt = -1;
-    };
-    this.reset = function () {
-        timer.cancel();
-        this.doneAt = 0;
-    };
-    this.flush = function () {
-        if (this.doneAt == -1)
-            this.notify();
-    };
-}
+const win32 = services.get("runtime").OS == "Win32";
 
 function getFile(name) {
     let file = storage.infoPath.clone();
     file.append(name);
-    return file;
+    return File(file);
 }
-
-function readFile(file) {
-    let fileStream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
-    let stream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
-
-    try {
-        fileStream.init(file, -1, 0, 0);
-        stream.init(fileStream, "UTF-8", 4096, Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER); // 4096 bytes buffering
-
-        let hunks = [];
-        let res = {};
-        while (stream.readString(4096, res) != 0)
-            hunks.push(res.value);
-
-        stream.close();
-        fileStream.close();
-
-        return hunks.join("");
-    }
-    catch (e) {}
-}
-
-function writeFile(file, data) {
-    if (!file.exists())
-        file.create(file.NORMAL_FILE_TYPE, parseInt('0600', 8));
-
-    let fileStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
-    let stream = Cc["@mozilla.org/intl/converter-output-stream;1"].createInstance(Ci.nsIConverterOutputStream);
-
-    fileStream.init(file, 0x20 | 0x08 | 0x02, parseInt('0600', 8), 0); // PR_TRUNCATE | PR_CREATE | PR_WRITE
-    stream.init(fileStream, "UTF-8", 0, 0);
-
-    stream.writeString(data);
-
-    stream.close();
-    fileStream.close();
-}
-
-var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-var prefService = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-                            .getBranch("extensions.dactyl.datastore.");
-var json = Cc["@mozilla.org/dom/json;1"].createInstance(Ci.nsIJSON);
 
 function getCharPref(name) {
     try {
@@ -140,9 +55,9 @@ function loadPref(name, store, type) {
         if (store)
             var pref = getCharPref(name);
         if (!pref && storage.infoPath)
-            var file = readFile(getFile(name));
+            var file = getFile(name).read();
         if (pref || file)
-            var result = json.decode(pref || file);
+            var result = services.get("json").decode(pref || file);
         if (pref) {
             prefService.clearUserPref(name);
             savePref({ name: name, store: true, serial: pref });
@@ -157,122 +72,110 @@ function savePref(obj) {
     if (obj.privateData && storage.privateMode)
         return;
     if (obj.store && storage.infoPath)
-        writeFile(getFile(obj.name), obj.serial);
+        getFile(obj.name).write(obj.serial);
 }
 
-var prototype = {
+const StoreBase = Class("StoreBase", {
     OPTIONS: ["privateData"],
     fireEvent: function (event, arg) { storage.fireEvent(this.name, event, arg); },
+    get serial() services.get("json").encode(this._object),
     save: function () { savePref(this); },
-    init: function (name, store, data, options) {
+    init: function (name, store, load, options) {
+        this._load = load;
+
         this.__defineGetter__("store", function () store);
         this.__defineGetter__("name", function () name);
         for (let [k, v] in Iterator(options))
             if (this.OPTIONS.indexOf(k) >= 0)
                 this[k] = v;
         this.reload();
-    }
-};
-
-function ObjectStore(name, store, load, options) {
-    var object = {};
-
-    this.reload = function reload() {
-        object = load() || {};
+    },
+    reload: function reload() {
+        this._object = this._load() || this._constructor();
         this.fireEvent("change", null);
-    };
+    }
+});
 
-    this.init.apply(this, arguments);
-    this.__defineGetter__("serial", function () json.encode(object));
+const ObjectStore = Class("ObjectStore", StoreBase, {
+    _constructor: Object,
 
-    this.set = function set(key, val) {
-        var defined = key in object;
-        var orig = object[key];
-        object[key] = val;
+    set: function set(key, val) {
+        var defined = key in this._object;
+        var orig = this._object[key];
+        this._object[key] = val;
         if (!defined)
             this.fireEvent("add", key);
         else if (orig != val)
             this.fireEvent("change", key);
-    };
+    },
 
-    this.remove = function remove(key) {
-        var ret = object[key];
-        delete object[key];
+    remove: function remove(key) {
+        var ret = this._object[key];
+        delete this._object[key];
         this.fireEvent("remove", key);
         return ret;
-    };
+    },
 
-    this.get = function get(val, default_) val in object ? object[val] : default_;
+    get: function get(val, default_) val in this._object ? this._object[val] : default_,
 
-    this.clear = function () {
-        object = {};
-    };
+    clear: function () {
+        this._object = {};
+    },
 
-    this.__iterator__ = function () Iterator(object);
-}
-ObjectStore.prototype = prototype;
+    __iterator__: function () Iterator(this._object),
+});
 
-function ArrayStore(name, store, load, options) {
-    var array = [];
+const ArrayStore = Class("ArrayStore", StoreBase, {
+    _constructor: Array,
 
-    this.reload = function reload() {
-        array = load() || [];
-        this.fireEvent("change", null);
-    };
+    get length() this._object.length,
 
-    this.init.apply(this, arguments);
-    this.__defineGetter__("serial", function () json.encode(array));
-    this.__defineGetter__("length", function () array.length);
-
-    this.set = function set(index, value) {
-        var orig = array[index];
-        array[index] = value;
+    set: function set(index, value) {
+        var orig = this._object[index];
+        this._object[index] = value;
         this.fireEvent("change", index);
-    };
+    },
 
-    this.push = function push(value) {
-        array.push(value);
-        this.fireEvent("push", array.length);
-    };
+    push: function push(value) {
+        this._object.push(value);
+        this.fireEvent("push", this._object.length);
+    },
 
-    this.pop = function pop(value) {
-        var ret = array.pop();
-        this.fireEvent("pop", array.length);
+    pop: function pop(value) {
+        var ret = this._object.pop();
+        this.fireEvent("pop", this._object.length);
         return ret;
-    };
+    },
 
-    this.truncate = function truncate(length, fromEnd) {
-        var ret = array.length;
-        if (array.length > length) {
+    truncate: function truncate(length, fromEnd) {
+        var ret = this._object.length;
+        if (this._object.length > length) {
             if (fromEnd)
-                array.splice(0, array.length - length);
-            array.length = length;
+                this._object.splice(0, this._object.length - length);
+            this._object.length = length;
             this.fireEvent("truncate", length);
         }
         return ret;
-    };
+    },
 
     // XXX: Awkward.
-    this.mutate = function mutate(aFuncName) {
-        var funcName = aFuncName;
-        arguments[0] = array;
-        array = Array[funcName].apply(Array, arguments);
+    mutate: function mutate(funcName) {
+        var _funcName = funcName;
+        arguments[0] = this._object;
+        this._object = Array[_funcName].apply(Array, arguments);
         this.fireEvent("change", null);
-    };
+    },
 
-    this.get = function get(index) {
-        return index >= 0 ? array[index] : array[array.length + index];
-    };
+    get: function get(index) index >= 0 ? this._object[index] : this._object[this._object.length + index],
 
-    this.__iterator__ = function () Iterator(array);
-}
-ArrayStore.prototype = prototype;
+    __iterator__: function () Iterator(this._object),
+});
 
 var keys = {};
 var observers = {};
 var timers = {};
 
-var storage = {
+const Storage = Module("Storage", {
     alwaysReload: {},
     newObject: function newObject(key, constructor, params) {
         if (!(key in keys) || params.reload || this.alwaysReload[key]) {
@@ -363,6 +266,304 @@ var storage = {
                 this.load(key);
         return this._privateMode = Boolean(val);
     }
-};
+}, {
+}, {
+    init: function (dactyl, modules) {
+        let infoPath = services.create("file");
+        infoPath.initWithPath(File.expandPath(modules.IO.runtimePath.replace(/,.*/, "")));
+        infoPath.append("info");
+        infoPath.append(dactyl.profileName);
+        storage.infoPath = infoPath;
+    }
+});
+
+/**
+ * @class File A class to wrap nsIFile objects and simplify operations
+ * thereon.
+ *
+ * @param {nsIFile|string} path Expanded according to {@link IO#expandPath}
+ * @param {boolean} checkPWD Whether to allow expansion relative to the
+ *          current directory. @default true
+ */
+const File = Class("File", {
+    init: function (path, checkPWD) {
+        let file = services.create("file");
+
+        if (path instanceof Ci.nsIFile)
+            file = path;
+        else if (/file:\/\//.test(path))
+            file = services.create("file:").getFileFromURLSpec(path);
+        else {
+            let expandedPath = File.expandPath(path);
+
+            if (!File.isAbsolutePath(expandedPath) && checkPWD)
+                file = File.joinPaths(checkPWD, expandedPath);
+            else
+                file.initWithPath(expandedPath);
+        }
+        let self = XPCSafeJSObjectWrapper(file);
+        self.__proto__ = File.prototype;
+        return self;
+    },
+
+    /**
+     * Iterates over the objects in this directory.
+     */
+    iterDirectory: function () {
+        if (!this.isDirectory())
+            throw Error("Not a directory");
+        let entries = this.directoryEntries;
+        while (entries.hasMoreElements())
+            yield File(entries.getNext().QueryInterface(Ci.nsIFile));
+    },
+
+    /**
+     * Reads this file's entire contents in "text" mode and returns the
+     * content as a string.
+     *
+     * @param {string} encoding The encoding from which to decode the file.
+     *          @default options["fileencoding"]
+     * @returns {string}
+     */
+    read: function (encoding) {
+        let ifstream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
+        let icstream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
+
+        if (!encoding)
+            encoding = File.defaultEncoding;
+
+        ifstream.init(this, -1, 0, 0);
+        icstream.init(ifstream, encoding, 4096, Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER); // 4096 bytes buffering
+
+        let buffer = [];
+        let str = {};
+        while (icstream.readString(4096, str) != 0)
+            buffer.push(str.value);
+
+        icstream.close();
+        ifstream.close();
+        return buffer.join("");
+    },
+
+    /**
+     * Returns the list of files in this directory.
+     *
+     * @param {boolean} sort Whether to sort the returned directory
+     *     entries.
+     * @returns {nsIFile[]}
+     */
+    readDirectory: function (sort) {
+        if (!this.isDirectory())
+            throw Error("Not a directory");
+
+        let array = [e for (e in this.iterDirectory())];
+        if (sort)
+            array.sort(function (a, b) b.isDirectory() - a.isDirectory() ||  String.localeCompare(a.path, b.path));
+        return array;
+    },
+
+    /**
+     * Writes the string <b>buf</b> to this file.
+     *
+     * @param {string} buf The file content.
+     * @param {string|number} mode The file access mode, a bitwise OR of
+     *     the following flags:
+     *       {@link #MODE_RDONLY}:   0x01
+     *       {@link #MODE_WRONLY}:   0x02
+     *       {@link #MODE_RDWR}:     0x04
+     *       {@link #MODE_CREATE}:   0x08
+     *       {@link #MODE_APPEND}:   0x10
+     *       {@link #MODE_TRUNCATE}: 0x20
+     *       {@link #MODE_SYNC}:     0x40
+     *     Alternatively, the following abbreviations may be used:
+     *       ">"  is equivalent to {@link #MODE_WRONLY} | {@link #MODE_CREATE} | {@link #MODE_TRUNCATE}
+     *       ">>" is equivalent to {@link #MODE_WRONLY} | {@link #MODE_CREATE} | {@link #MODE_APPEND}
+     * @default ">"
+     * @param {number} perms The file mode bits of the created file. This
+     *     is only used when creating a new file and does not change
+     *     permissions if the file exists.
+     * @default 0644
+     * @param {string} encoding The encoding to used to write the file.
+     * @default options["fileencoding"]
+     */
+    write: function (buf, mode, perms, encoding) {
+        let ofstream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
+        function getStream(defaultChar) {
+            let stream = Cc["@mozilla.org/intl/converter-output-stream;1"].createInstance(Ci.nsIConverterOutputStream);
+            stream.init(ofstream, encoding, 0, defaultChar);
+            return stream;
+        }
+
+        if (!encoding)
+            encoding = File.defaultEncoding;
+
+        if (mode == ">>")
+            mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_APPEND;
+        else if (!mode || mode == ">")
+            mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_TRUNCATE;
+
+        if (!perms)
+            perms = parseInt('0644', 8);
+
+        ofstream.init(this, mode, perms, 0);
+        let ocstream = getStream(0);
+        try {
+            ocstream.writeString(buf);
+        }
+        catch (e) {
+            if (e.result == Cr.NS_ERROR_LOSS_OF_SIGNIFICANT_DATA) {
+                ocstream = getStream("?".charCodeAt(0));
+                ocstream.writeString(buf);
+                return false;
+            }
+            else
+                throw e;
+        }
+        finally {
+            try {
+                ocstream.close();
+            }
+            catch (e) {}
+            ofstream.close();
+        }
+        return true;
+    }
+}, {
+    /**
+     * @property {number} Open for reading only.
+     * @final
+     */
+    MODE_RDONLY: 0x01,
+
+    /**
+     * @property {number} Open for writing only.
+     * @final
+     */
+    MODE_WRONLY: 0x02,
+
+    /**
+     * @property {number} Open for reading and writing.
+     * @final
+     */
+    MODE_RDWR: 0x04,
+
+    /**
+     * @property {number} If the file does not exist, the file is created.
+     *     If the file exists, this flag has no effect.
+     * @final
+     */
+    MODE_CREATE: 0x08,
+
+    /**
+     * @property {number} The file pointer is set to the end of the file
+     *     prior to each write.
+     * @final
+     */
+    MODE_APPEND: 0x10,
+
+    /**
+     * @property {number} If the file exists, its length is truncated to 0.
+     * @final
+     */
+    MODE_TRUNCATE: 0x20,
+
+    /**
+     * @property {number} If set, each write will wait for both the file
+     *     data and file status to be physically updated.
+     * @final
+     */
+    MODE_SYNC: 0x40,
+
+    /**
+     * @property {number} With MODE_CREATE, if the file does not exist, the
+     *     file is created. If the file already exists, no action and NULL
+     *     is returned.
+     * @final
+     */
+    MODE_EXCL: 0x80,
+
+    /**
+     * @property {string} The current platform's path seperator.
+     */
+    get PATH_SEP() {
+        delete this.PATH_SEP;
+        let f = services.get("directory").get("CurProcD", Ci.nsIFile);
+        f.append("foo");
+        return this.PATH_SEP = f.path.substr(f.parent.path.length, 1);
+    },
+
+    defaultEncoding: "UTF-8",
+
+    expandPath: function (path, relative) {
+
+        // expand any $ENV vars - this is naive but so is Vim and we like to be compatible
+        // TODO: Vim does not expand variables set to an empty string (and documents it).
+        // Kris reckons we shouldn't replicate this 'bug'. --djk
+        // TODO: should we be doing this for all paths?
+        function expand(path) path.replace(
+            !win32 ? /\$(\w+)\b|\${(\w+)}/g
+                   : /\$(\w+)\b|\${(\w+)}|%(\w+)%/g,
+            function (m, n1, n2, n3) services.get("environment").get(n1 || n2 || n3) || m
+        );
+        path = expand(path);
+
+        // expand ~
+        // Yuck.
+        if (!relative && RegExp("~(?:$|[/" + util.escapeRegex(File.PATH_SEP) + "])").test(path)) {
+            // Try $HOME first, on all systems
+            let home = services.get("environment").get("HOME");
+
+            // Windows has its own idiosyncratic $HOME variables.
+            if (!home && win32)
+                home = services.get("environment").get("USERPROFILE") ||
+                       services.get("environment").get("HOMEDRIVE") + services.get("environment").get("HOMEPATH");
+
+            path = home + path.substr(1);
+        }
+
+        // TODO: Vim expands paths twice, once before checking for ~, once
+        // after, but doesn't document it. Is this just a bug? --Kris
+        path = expand(path);
+        return path.replace("/", File.PATH_SEP, "g");
+    },
+
+    expandPathList: function (list) list.map(this.expandPath),
+
+    getPathsFromPathList: function (list) {
+        if (!list)
+            return [];
+        // empty list item means the current directory
+        return list.replace(/,$/, "").split(",")
+                   .map(function (dir) dir == "" ? io.getCurrentDirectory().path : dir);
+    },
+
+    isAbsolutePath: function (path) {
+        try {
+            services.create("file").initWithPath(path);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+    },
+
+    joinPaths: function (head, tail) {
+        let path = this(head);
+        try {
+            // FIXME: should only expand env vars and normalise path separators
+            path.appendRelativePath(this.expandPath(tail, true));
+        }
+        catch (e) {
+            return { exists: function () false, __noSuchMethod__: function () { throw e; } };
+        }
+        return path;
+    },
+
+    replacePathSep: function (path) path.replace("/", File.PATH_SEP, "g")
+});
+
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
+
+endmodule();
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:
