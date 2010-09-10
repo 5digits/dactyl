@@ -147,8 +147,8 @@
 <h2 tag="save-settings">Saving settings</h2>
 
 <item>
-    <tags>:mkv :mk&dactyl.name;rc</tags>
-    <spec>:mkv<oa>imperatorrc</oa><oa>!</oa> <oa>file</oa></spec>
+    <tags>:mkp :mk&dactyl.name;rc</tags>
+    <spec>:mkp<oa>entadactylrc</oa><oa>!</oa> <oa>file</oa></spec>
     <description>
         <p>
             Write current key mappings and changed options to <oa>file</oa>. If no
