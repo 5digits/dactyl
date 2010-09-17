@@ -291,8 +291,15 @@ const RangeFind = Class("RangeFind", {
     get matchCase() this.finder.caseSensitive,
     set matchCase(val) this.finder.caseSensitive = Boolean(val),
 
-    get regex() this.finder.regularExpression,
-    set regex(val) this.finder.regularExpression = Boolean(val),
+    get regex() this.finder.regularExpression || false,
+    set regex(val) {
+        try {
+            return this.finder.regularExpression = Boolean(val);
+        }
+        catch (e) {
+            return false;
+        }
+    },
 
     get searchString() this.lastString,
 
