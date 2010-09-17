@@ -347,7 +347,7 @@ const Commands = Module("commands", {
         if (!replace && args[3] && args[3].user)
             dactyl.assert(!names.some(function (name) name in this._exMap, this),
                           "Not replacing command " + args[0]);
-        for (let name in names)
+        for (let name in values(names))
             if (name in this._exMap)
                 commands.removeUserCommand(name);
 
@@ -833,7 +833,7 @@ const Commands = Module("commands", {
     removeUserCommand: function (name) {
         let cmd = this.get(name);
         dactyl.assert(cmd.user, "E184: No such user-defined command: " + name);
-        for (let name in values(cmd.names))
+        for (let name in array.itervalues(cmd.names))
             delete this._exMap[name];
         this._exCommands = this._exCommands.filter(function (c) c != cmd);
     },
@@ -1133,7 +1133,8 @@ const Commands = Module("commands", {
             });
     },
     javascript: function () {
-        JavaScript.setCompleter(this.get, [function () ([c.name, c.description] for (c in commands))]);
+        JavaScript.setCompleter([this.get, this.removeUserCommand],
+                                [function () ([c.name, c.description] for (c in commands))]);
     },
     mappings: function () {
         mappings.add(config.browserModes,
