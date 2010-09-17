@@ -1,24 +1,7 @@
-/***** BEGIN LICENSE BLOCK ***** {{{
- Copyright ©2008-2009 by Kris Maglione <maglione.k at Gmail>
-
- Permission is hereby granted, free of charge, to any person obtaining a
- copy of this software and associated documentation files (the "Software"),
- to deal in the Software without restriction, including without limitation
- the rights to use, copy, modify, merge, publish, distribute, sublicense,
- and/or sell copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- DEALINGS IN THE SOFTWARE.
-}}} ***** END LICENSE BLOCK *****/
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
+//
+// This work is licensed for reuse under an MIT license. Details are
+// given in the LICENSE.txt file included with this file.
 "use strict";
 
 const myObject = Object;
@@ -98,38 +81,6 @@ const StoreBase = Class("StoreBase", {
     save: function () { savePref(this); },
 });
 
-const ObjectStore = Class("ObjectStore", StoreBase, {
-    _constructor: myObject,
-
-    clear: function () {
-        this._object = {};
-        this.fireEvent("clear");
-    },
-
-    get: function get(key, default_) key in this._object ? this._object[key] : this.set(key, default_),
-
-    keys: function keys() Object.keys(this._object),
-
-    remove: function remove(key) {
-        var ret = this._object[key];
-        delete this._object[key];
-        this.fireEvent("remove", key);
-    },
-
-    set: function set(key, val) {
-        var defined = key in this._object;
-        var orig = this._object[key];
-        this._object[key] = val;
-        if (!defined)
-            this.fireEvent("add", key);
-        else if (orig != val)
-            this.fireEvent("change", key);
-        return val;
-    },
-
-    __iterator__: function () Iterator(this._object),
-});
-
 const ArrayStore = Class("ArrayStore", StoreBase, {
     _constructor: Array,
 
@@ -176,12 +127,51 @@ const ArrayStore = Class("ArrayStore", StoreBase, {
     __iterator__: function () Iterator(this._object),
 });
 
+const ObjectStore = Class("ObjectStore", StoreBase, {
+    _constructor: myObject,
+
+    clear: function () {
+        this._object = {};
+        this.fireEvent("clear");
+    },
+
+    get: function get(key, default_)
+        key in this._object  ? this._object[key] :
+        arguments.length > 1 ? this.set(key, default_) :
+                               undefined,
+
+    keys: function keys() Object.keys(this._object),
+
+    remove: function remove(key) {
+        var ret = this._object[key];
+        delete this._object[key];
+        this.fireEvent("remove", key);
+    },
+
+    set: function set(key, val) {
+        var defined = key in this._object;
+        var orig = this._object[key];
+        this._object[key] = val;
+        if (!defined)
+            this.fireEvent("add", key);
+        else if (orig != val)
+            this.fireEvent("change", key);
+        return val;
+    },
+
+    __iterator__: function () Iterator(this._object),
+});
+
 var keys = {};
 var observers = {};
 
 const Storage = Module("Storage", {
     alwaysReload: {},
+
     newObject: function newObject(key, constructor, params) {
+        if (params == null || !isobject(params))
+            throw Error("Invalid argument type");
+
         if (!(key in keys) || params.reload || this.alwaysReload[key]) {
             if (key in this && !(params.reload || this.alwaysReload[key]))
                 throw Error();
@@ -198,7 +188,7 @@ const Storage = Module("Storage", {
     },
 
     newArray: function newArray(key, options) {
-        return this.newObject(key, ArrayStore, { type: Array, __proto__: options });
+        return this.newObject(key, ArrayStore, update({ type: Array }, options));
     },
 
     addObserver: function addObserver(key, callback, ref) {
@@ -295,7 +285,7 @@ const File = Class("File", {
         let file = services.create("file");
 
         if (path instanceof Ci.nsIFile)
-            file = path;
+            file = path.QueryInterface(Ci.nsIFile);
         else if (/file:\/\//.test(path))
             file = services.create("file:").getFileFromURLSpec(path);
         else {
@@ -317,9 +307,8 @@ const File = Class("File", {
     iterDirectory: function () {
         if (!this.isDirectory())
             throw Error("Not a directory");
-        let entries = this.directoryEntries;
-        while (entries.hasMoreElements())
-            yield File(entries.getNext().QueryInterface(Ci.nsIFile));
+        for (let file in iter(this.directoryEntries))
+            yield File(file);
     },
 
     /**
@@ -409,6 +398,8 @@ const File = Class("File", {
 
         if (!perms)
             perms = parseInt('0644', 8);
+        if (!this.exists()) // OCREAT won't creat the directory
+            this.create(this.NORMAL_FILE_TYPE, perms);
 
         ofstream.init(this, mode, perms, 0);
         let ocstream = getStream(0);
@@ -567,8 +558,8 @@ const File = Class("File", {
     replacePathSep: function (path) path.replace("/", File.PATH_SEP, "g")
 });
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
-
 endmodule();
+
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:

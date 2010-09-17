@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -11,13 +11,11 @@ const DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
 // also includes methods for dealing with keywords and search engines
 const Bookmarks = Module("bookmarks", {
     init: function () {
-        let bookmarkObserver = function (key, event, arg) {
+        storage.addObserver("bookmark-cache", function (key, event, arg) {
             if (event == "add")
                 autocommands.trigger("BookmarkAdd", arg);
             statusline.updateUrl();
-        };
-
-        storage.addObserver("bookmark-cache", bookmarkObserver, window);
+        }, window);
     },
 
     get format() ({
@@ -36,7 +34,8 @@ const Bookmarks = Module("bookmarks", {
     add: function add(starOnly, title, url, keyword, tags, force) {
         try {
             let uri = util.createURI(url);
-            if (!force) {
+            if (!force && bookmarks.isBookmarked(uri.spec)) {
+                // WTF? This seems wrong... --Kris
                 for (let bmark in bookmarkcache) {
                     if (bmark[0] == uri.spec) {
                         var id = bmark[5];
@@ -74,21 +73,22 @@ const Bookmarks = Module("bookmarks", {
 
         let count = this.remove(url);
         if (count > 0)
-            commandline.echo("Removed bookmark: " + url, commandline.HL_NORMAL, commandline.FORCE_SINGLELINE);
+            dactyl.echomsg({ domains: [util.getHost(url)], message: "Removed bookmark: " + url });
         else {
             let title = buffer.title || url;
             let extra = "";
             if (title != url)
                 extra = " (" + title + ")";
             this.add(true, title, url);
-            commandline.echo("Added bookmark: " + url + extra, commandline.HL_NORMAL, commandline.FORCE_SINGLELINE);
+            dactyl.echomsg({ domains: [util.getHost(url)], message: "Added bookmark: " + url + extra });
         }
     },
 
     isBookmarked: function isBookmarked(url) {
         try {
-            return services.get("bookmarks").getBookmarkIdsForURI(makeURI(url), {})
-                                   .some(bookmarkcache.isRegularBookmark);
+            return services.get("bookmarks")
+                           .getBookmarkIdsForURI(makeURI(url), {})
+                           .some(bookmarkcache.closure.isRegularBookmark);
         }
         catch (e) {
             return false;
@@ -99,13 +99,14 @@ const Bookmarks = Module("bookmarks", {
     remove: function remove(url) {
         try {
             let uri = util.newURI(url);
-            let bmarks = services.get("bookmarks").getBookmarkIdsForURI(uri, {})
-                                         .filter(bookmarkcache.isRegularBookmark);
+            let bmarks = services.get("bookmarks")
+                                 .getBookmarkIdsForURI(uri, {})
+                                 .filter(bookmarkcache.closure.isRegularBookmark);
             bmarks.forEach(services.get("bookmarks").removeItem);
             return bmarks.length;
         }
         catch (e) {
-            dactyl.log(e, 0);
+            dactyl.reportError(e);
             return 0;
         }
     },
@@ -287,7 +288,7 @@ const Bookmarks = Module("bookmarks", {
                 args.completeFilter = have.pop();
 
                 let prefix = filter.substr(0, filter.length - args.completeFilter.length);
-                let tags = array.uniq(util.Array.flatten([b.tags for ([k, b] in Iterator(bookmarkcache.bookmarks))]));
+                let tags = array.uniq(array.flatten([b.tags for ([k, b] in Iterator(bookmarkcache.bookmarks))]));
 
                 return [[prefix + tag, tag] for ([i, tag] in Iterator(tags)) if (have.indexOf(tag) < 0)];
             },
@@ -330,7 +331,8 @@ const Bookmarks = Module("bookmarks", {
 
                 if (bookmarks.add(false, title, url, keyword, tags, args.bang)) {
                     let extra = (title == url) ? "" : " (" + title + ")";
-                    dactyl.echomsg("Added bookmark: " + url + extra, 1, commandline.FORCE_SINGLELINE);
+                    dactyl.echomsg({ domains: [util.getHost(url)], message: "Added bookmark: " + url + extra },
+                                   1, commandline.FORCE_SINGLELINE);
                 }
                 else
                     dactyl.echoerr("Exxx: Could not add bookmark " + title.quote(), commandline.FORCE_SINGLELINE);
@@ -385,7 +387,8 @@ const Bookmarks = Module("bookmarks", {
                     let url = args.string || buffer.URL;
                     let deletedCount = bookmarks.remove(url);
 
-                    dactyl.echomsg(deletedCount + " bookmark(s) with url " + url.quote() + " deleted", 1, commandline.FORCE_SINGLELINE);
+                    dactyl.echomsg({ domains: [util.getHost(url)], message: deletedCount + " bookmark(s) with url " + url.quote() + " deleted" },
+                                   1, commandline.FORCE_SINGLELINE);
                 }
 
             },
@@ -493,13 +496,12 @@ const Bookmarks = Module("bookmarks", {
                         return history.get({ uri: window.makeURI(begin), uriIsPrefix: true }).map(function (item) {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);
-                            if (item.url.substr(rest) == end && query.indexOf("&") == -1) {
+                            if (item.url.substr(rest) == end && query.indexOf("&") == -1)
                                 try {
-                                    item.url = decodeURIComponent(query.replace(/#.*/, ""));
+                                    item.url = decodeURIComponent(query.replace(/#.*/, "").replace(/\+/g, " "));
                                     return item;
                                 }
                                 catch (e) {}
-                            }
                             return null;
                         }).filter(util.identity);
                     };

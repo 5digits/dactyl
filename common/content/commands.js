@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -171,16 +171,10 @@ const Command = Class("Command", {
      * @returns {boolean}
      */
     hasName: function (name) {
-        for (let [, spec] in Iterator(this.specs)) {
-            let fullName = spec.replace(/\[(\w+)]$/, "$1");
-            let index = spec.indexOf("[");
-            let min = index == -1 ? fullName.length : index;
-
-            if (fullName.indexOf(name) == 0 && name.length >= min)
-                return true;
-        }
-
-        return false;
+        return this.specs.some(function (spec) {
+            let [, head, tail] = spec.match(/([^[]+)(?:\[(.*)])?/);
+            return name.indexOf(head) == 0 && (head + (tail || "")).indexOf(name) == 0;
+        });
     },
 
     /**
@@ -340,25 +334,29 @@ const Commands = Module("commands", {
     /** @property {Iterator(Command)} @private */
     __iterator__: function () {
         let sorted = this._exCommands.sort(function (a, b) a.name > b.name);
-        return util.Array.itervalues(sorted);
+        return array.itervalues(sorted);
     },
 
     /** @property {string} The last executed Ex command line. */
     repeat: null,
 
-    _addCommand: function (command, replace) {
-        if (command.name in this._exMap) {
-            if (command.user && replace)
-                commands.removeUserCommand(command.name);
-            else {
-                dactyl.log("Warning: :" + command.name + " already exists, NOT replacing existing command.", 1);
-                return false;
-            }
-        }
+    _addCommand: function (args, replace) {
+        let names = array.flatten(Command.parseSpecs(args[0]));
+        dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
+                      "E182: Can't replace non-user command: " + args[0]);
+        if (!replace && args[3] && args[3].user)
+            dactyl.assert(!names.some(function (name) name in this._exMap, this),
+                          "Not replacing command " + args[0]);
+        for (let name in names)
+            if (name in this._exMap)
+                commands.removeUserCommand(name);
 
-        this._exCommands.push(command);
-        for (let [,name] in Iterator(command.names))
-            this._exMap[name] = command;
+        let name = names[0];
+        let closure = function () commands._exMap[name];
+        memoize(this._exMap, name, function () Command.apply(null, args));
+        memoize(this._exCommands, this._exCommands.length, closure);
+        for (let alias in values(names.slice(1)))
+            memoize(this._exMap, alias, closure);
 
         return true;
     },
@@ -375,7 +373,7 @@ const Commands = Module("commands", {
      * @optional
      */
     add: function (names, description, action, extra) {
-        return this._addCommand(Command(names, description, action, extra), false);
+        return this._addCommand([names, description, action, extra], false);
     },
 
     /**
@@ -395,7 +393,7 @@ const Commands = Module("commands", {
         extra.user = true;
         description = description || "User defined command";
 
-        return this._addCommand(Command(names, description, action, extra), replace);
+        return this._addCommand([names, description, action, extra], replace);
     },
 
     /**
@@ -407,7 +405,7 @@ const Commands = Module("commands", {
      */
     commandToString: function (args) {
         let res = [args.command + (args.bang ? "!" : "")];
-        function quote(str) Commands.quoteArg[/[\s"'\\]|^$/.test(str) ? '"' : ""](str);
+        function quote(str) Commands.quoteArg[/[\s"'\\]|^$/.test(str) ? "'" : ""](str);
 
         for (let [opt, val] in Iterator(args.options || {})) {
             let chr = /^-.$/.test(opt) ? " " : "=";
@@ -431,8 +429,8 @@ const Commands = Module("commands", {
      *     any of the command's names.
      * @returns {Command}
      */
-    get: function (name) {
-        return this._exMap[name] || this._exCommands.filter(function (cmd) cmd.hasName(name))[0] || null;
+    get: function (name, full) {
+        return this._exMap[name] || !full && this._exCommands.filter(function (cmd) cmd.hasName(name))[0] || null;
     },
 
     /**
@@ -573,7 +571,7 @@ const Commands = Module("commands", {
             argCount = "*";
 
         var args = [];       // parsed options
-        args.__iterator__ = function () util.Array.iteritems(this);
+        args.__iterator__ = function () array.iteritems(this);
         args.string = str;   // for access to the unparsed string
         args.literalArg = "";
 
@@ -833,11 +831,11 @@ const Commands = Module("commands", {
      *     any of the command's names.
      */
     removeUserCommand: function (name) {
-        for (let [,cmd] in Iterator(this._exCommands))
-                if (cmd.user && cmd.hasName(name))
-                    for (let [,name] in Iterator(cmd.names))
-                        delete this._exMap[name];
-        this._exCommands = this._exCommands.filter(function (cmd) !(cmd.user && cmd.hasName(name)));
+        let cmd = this.get(name);
+        dactyl.assert(cmd.user, "E184: No such user-defined command: " + name);
+        for (let name in values(cmd.names))
+            delete this._exMap[name];
+        this._exCommands = this._exCommands.filter(function (c) c != cmd);
     },
 
     // FIXME: still belong here? Also used for autocommand parameters.
@@ -867,8 +865,6 @@ const Commands = Module("commands", {
         });
     }
 }, {
-    QUOTE_STYLE: "rc-ish",
-
     // returns [count, parsed_argument]
     parseArg: function (str) {
         let arg = "";
@@ -918,7 +914,7 @@ const Commands = Module("commands", {
             // dynamically get completions as specified with the command's completer function
             let command = commands.get(cmd);
             if (!command) {
-                context.highlight(0, cmd.length, "SPELLCHECK");
+                context.highlight(0, cmd && cmd.length, "SPELLCHECK");
                 return;
             }
 
@@ -936,7 +932,8 @@ const Commands = Module("commands", {
                     cmdContext.filter = args.completeFilter;
                     try {
                         let compObject = command.completer.call(command, cmdContext, args);
-                        if (compObject instanceof Array) // for now at least, let completion functions return arrays instead of objects
+
+                        if (isarray(compObject)) // for now at least, let completion functions return arrays instead of objects
                             compObject = { start: compObject[0], items: compObject[1] };
                         if (compObject != null) {
                             cmdContext.advance(compObject.start);
@@ -1041,14 +1038,13 @@ const Commands = Module("commands", {
                     function completerToString(completer) {
                         if (completer)
                             return [k for ([k, v] in Iterator(completeOptionMap)) if (completer == completion[v])][0] || "custom";
-                        else
-                            return "";
+                        return "";
                     }
 
                     // TODO: using an array comprehension here generates flakey results across repeated calls
                     //     : perhaps we shouldn't allow options in a list call but just ignore them for now
                     //     : No, array comprehensions are fine, generator statements aren't. --Kris
-                    let cmds = this._exCommands.filter(function (c) c.user && (!cmd || c.name.match("^" + cmd)));
+                    let cmds = commands._exCommands.filter(function (c) c.user && (!cmd || c.name.match("^" + cmd)));
 
                     if (cmds.length > 0)
                         commandline.commandOutput(
@@ -1101,7 +1097,7 @@ const Commands = Module("commands", {
                 serialize: function () [ {
                         command: this.name,
                         bang: true,
-                        options: util.Array.toObject(
+                        options: array.toObject(
                             [[v, typeof cmd[k] == "boolean" ? null : cmd[k]]
                              // FIXME: this map is expressed multiple times
                              for ([k, v] in Iterator({ argCount: "-nargs", bang: "-bang", count: "-count", description: "-description" }))
@@ -1162,17 +1158,20 @@ const Commands = Module("commands", {
     };
     function quote(q, list) {
         let re = RegExp("[" + list + "]", "g");
-        return function (str) q + String.replace(str, re, function ($0) $0 in Commands.quoteMap ? Commands.quoteMap[$0] : ("\\" + $0)) + q;
+        let res = function (str) q + String.replace(str, re, function ($0) $0 in Commands.quoteMap ? Commands.quoteMap[$0] : ("\\" + $0)) + q;
+        res.list = list;
+        return res;
     };
-    Commands.complQuote = { // FIXME
+    Commands.complQuote = {
         '"': ['"', quote("", '\n\t"\\\\'), '"'],
         "'": ["'", quote("", "\\\\'"), "'"],
-        "":  ["", quote("",  "\\\\ "), ""]
+        "":  ["", quote("",  "\\\\ '\""), ""]
     };
+
     Commands.quoteArg = {
         '"': quote('"', '\n\t"\\\\'),
         "'": quote("'", "\\\\'"),
-        "":  quote("",  "\\\\ ")
+        "":  quote("",  "\\\\ '\"")
     };
 
     Commands.parseBool = function (arg) {

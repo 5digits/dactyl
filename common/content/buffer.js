@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -84,7 +84,7 @@ const Buffer = Module("buffer", {
             const ACCESS_READ = Ci.nsICache.ACCESS_READ;
             let cacheKey = doc.location.toString().replace(/#.*$/, "");
 
-            for (let proto in util.Array.itervalues(["HTTP", "FTP"])) {
+            for (let proto in array.itervalues(["HTTP", "FTP"])) {
                 try {
                     var cacheEntryDescriptor = services.get("cache").createSession(proto, 0, true)
                                                        .openCacheEntry(cacheKey, ACCESS_READ, false);
@@ -174,9 +174,11 @@ const Buffer = Module("buffer", {
     // event listener which is is called on each page load, even if the
     // page is loaded in a background tab
     onPageLoad: function onPageLoad(event) {
-        if (!dactyl.helpInitialized && event.originalTarget instanceof Document)
-            if (/^dactyl:/.test(event.originalTarget.location.href))
+        if (event.originalTarget instanceof Document)
+            if (/^dactyl:/.test(event.originalTarget.location.href)) {
                 dactyl.initHelp();
+                config.styleHelp();
+            }
 
         if (event.originalTarget instanceof HTMLDocument) {
             let doc = event.originalTarget;
@@ -197,7 +199,7 @@ const Buffer = Module("buffer", {
             doc.pageIsFullyLoaded = 1;
 
             if (doc != config.browser.contentDocument)
-                dactyl.echomsg("Background tab loaded: " + doc.title || doc.location.href, 3);
+                dactyl.echomsg({ domains: [util.getHost(doc.location.href)], message: "Background tab loaded: " + doc.title || doc.location.href }, 3);
 
             this._triggerLoadAutocmd("PageLoad", doc);
         }
@@ -206,7 +208,11 @@ const Buffer = Module("buffer", {
     /**
      * @property {Object} The document loading progress listener.
      */
-    progressListener: update({ __proto__: window.XULBrowserWindow }, {
+    progressListener: update(Object.create(window.XULBrowserWindow), {
+        QueryInterface: XPCOMUtils.generateQI([Ci.nsISupportsWeakReference, Ci.nsIWebProgressListener]),
+
+        loadCount: 0,
+
         // XXX: function may later be needed to detect a canceled synchronous openURL()
         onStateChange: function onStateChange(webProgress, request, flags, status) {
             onStateChange.superapply(this, arguments);
@@ -223,7 +229,7 @@ const Buffer = Module("buffer", {
 
                     // don't reset mode if a frame of the frameset gets reloaded which
                     // is not the focused frame
-                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow) {
+                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.loadCount++) {
                         util.timeout(function () { modes.reset(false); },
                             dactyl.mode == modes.HINTS ? 500 : 0);
                     }
@@ -1012,7 +1018,7 @@ const Buffer = Module("buffer", {
         if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
             return win;
 
-        for (let frame in util.Array.itervalues(win.frames))
+        for (let frame in array.itervalues(win.frames))
             if (frame.scrollMaxX > 0 || frame.scrollMaxY > 0)
                 return frame;
 
@@ -1314,39 +1320,39 @@ const Buffer = Module("buffer", {
                 group[1].push([i, tab.linkedBrowser]);
             });
 
-            let orig = context;
-            for (let [id, [name, browsers]] in Iterator(tabGroups)) {
-                context = orig.fork(id, 0);
-                context.anchored = false;
-                context.title = [name || "Buffers"];
-                context.keys = { text: "text", description: "url", icon: "icon" };
-                context.compare = CompletionContext.Sort.number;
-                let process = context.process[0];
-                context.process = [function (item, text)
-                        <>
-                            <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
-                            { process.call(this, item, text) }
-                        </>];
+            context.pushProcessor(0, function (item, text, next) <>
+                <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
+                { next.call(this, item, text) }
+            </>);
+            context.process[1] = function (item, text) template.highlightURL(text);
 
-                context.completions = util.map(util.Array.itervalues(browsers), function ([i, browser]) {
-                    let indicator = " ";
-                    if (i == tabs.index())
-                       indicator = "%"
-                    else if (i == tabs.index(tabs.alternate))
-                       indicator = "#";
+            context.anchored = false;
+            context.keys = { text: "text", description: "url", icon: "icon" };
+            context.compare = CompletionContext.Sort.number;
 
-                    let tab = tabs.getTab(i);
-                    let url = browser.contentDocument.location.href;
-                    i = i + 1;
+            for (let [id, vals] in Iterator(tabGroups))
+                context.fork(id, 0, this, function (context, [name, browsers]) {
+                    context.title = [name || "Buffers"];
+                    context.generate = function ()
+                        util.map(array.itervalues(browsers), function ([i, browser]) {
+                            let indicator = " ";
+                            if (i == tabs.index())
+                               indicator = "%"
+                            else if (i == tabs.index(tabs.alternate))
+                               indicator = "#";
 
-                    return {
-                        text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
-                        url:  template.highlightURL(url),
-                        indicator: indicator,
-                        icon: tab.image || DEFAULT_FAVICON
-                    };
-                });
-            }
+                            let tab = tabs.getTab(i);
+                            let url = browser.contentDocument.location.href;
+                            i = i + 1;
+
+                            return {
+                                text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
+                                url:  url,
+                                indicator: indicator,
+                                icon: tab.image || DEFAULT_FAVICON
+                            };
+                        });
+                }, vals);
         };
     },
     events: function () {
@@ -1354,6 +1360,15 @@ const Buffer = Module("buffer", {
             config.browser.removeProgressListener(window.XULBrowserWindow);
         }
         catch (e) {} // Why? --djk
+
+        // I hate this whole hack. --Kris
+        let obj = window.XULBrowserWindow, getter;
+        for (let p in properties(obj))
+            if ((getter = obj.__lookupGetter__(p)) && !obj.__lookupSetter__(p)) {
+                this.progressListener.__defineGetter__(p, getter);
+                delete obj[p];
+            }
+
         config.browser.addProgressListener(this.progressListener, Ci.nsIWebProgress.NOTIFY_ALL);
         window.XULBrowserWindow = this.progressListener;
         window.QueryInterface(Ci.nsIInterfaceRequestor)
@@ -1503,7 +1518,8 @@ const Buffer = Module("buffer", {
                         if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(Events.editableInputs, elem.type))
                             return false;
                         let computedStyle = util.computedStyle(elem);
-                        return computedStyle.visibility != "hidden" && computedStyle.display != "none";
+                        return computedStyle.visibility != "hidden" && computedStyle.display != "none" &&
+                            computedStyle.MozUserFocus != "ignore";
                     });
 
                     dactyl.assert(elements.length > 0);
@@ -1617,13 +1633,13 @@ const Buffer = Module("buffer", {
             function () { buffer.showPageInfo(true); });
     },
     options: function () {
-        options.add(["nextpattern"], // \u00BB is » (>> in a single char)
+        options.add(["nextpattern"],
             "Patterns to use when guessing the 'next' page in a document sequence",
-            "stringlist", "\\bnext\\b,^>$,^(>>|\u00BB)$,^(>|\u00BB),(>|\u00BB)$,\\bmore\\b");
+            "stringlist", UTF8("\\bnext\\b,^>$,^(>>|»)$,^(>|»),(>|»)$,\\bmore\\b"));
 
-        options.add(["previouspattern"], // \u00AB is « (<< in a single char)
+        options.add(["previouspattern"],
             "Patterns to use when guessing the 'previous' page in a document sequence",
-            "stringlist", "\\bprev|previous\\b,^<$,^(<<|\u00AB)$,^(<|\u00AB),(<|\u00AB)$");
+            "stringlist", UTF8("\\bprev|previous\\b,^<$,^(<<|«)$,^(<|«),(<|«)$"));
 
         options.add(["pageinfo", "pa"],
             "Desired info in the :pageinfo output",

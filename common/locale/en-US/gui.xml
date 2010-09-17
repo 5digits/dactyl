@@ -6,29 +6,33 @@
 <document
     name="gui"
     title="&dactyl.appname; GUI"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
-<h1 tag="gui">&dactyl.appname;'s GUI</h1>
+    xmlns="&xmlns.dactyl;"
+    xmlns:dactyl="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
+<h1 tag="gui">&dactyl.host;'s GUI</h1>
 <toc start="2"/>
 
 <p>
-    Although &dactyl.appname; offers the most frequently used &dactyl.host; functionality via
-    Ex and Normal mode commands there may be times when directly accessing the GUI
-    is required. There are commands for accessing the menu system, standard dialogs
-    and the sidebar.
+    Although &dactyl.appname; offers access to the most frequently used
+    &dactyl.host; functionality via Ex and Normal mode commands, there may be
+    times when direct access to the &dactyl.host; GUI is required. For such
+    eventualities, there there are commands to access menu items and to launch
+    standard &dactyl.host; dialogs.
 </p>
 
 <h2 tag="menu">Menus</h2>
 
 <item>
     <tags>:emenu</tags>
+    <strut/>
     <spec>:emenu <a>menu</a></spec>
     <description>
         <p>
             Execute <a>menu</a> from the command line. This command provides command-line access
             to all menu items available from the main &dactyl.host; menubar. <a>menu</a> is a
             hierarchical path to the menu item with each submenu separated by a period.
-            E.g. <ex>:emenu File.Open File…</ex>
+            E.g. <ex>:emenu File.Open File…</ex> launches the standard
+            &dactyl.host; ‘Open File’ dialog.
         </p>
     </description>
 </item>
@@ -38,13 +42,14 @@
 
 <item>
     <tags>:addo :addons</tags>
+    <strut/>
     <spec>:addo<oa>ns</oa></spec>
     <description>
         <p>
-            Show available &dactyl.host; Extensions and Themes.
-            You can add/remove/disable browser extensions from this dialog.
-            Be aware that not all &dactyl.host; extensions work, because &dactyl.appname; overrides
-            some key bindings and changes &dactyl.host;'s GUI.
+            Opens the &dactyl.host; addon manager, where extensions and themes
+            may be installed, removed, disabled, and configured. See also
+            <ex>:extenstions</ex>, <ex>:extinstall</ex>, <ex>:extoptions</ex>,
+            <ex>:extenable</ex>, <ex>:extdisable</ex>, and <ex>:extdelete</ex>.
         </p>
     </description>
 </item>
@@ -54,9 +59,8 @@
     <tags>:dia :dialog</tags>
     <spec>:dia<oa>log</oa> <oa>&dactyl.host;-dialog</oa></spec>
     <description>
-        <p>Open a &dactyl.host; dialog.</p>
+        <p>Open a &dactyl.host; dialog. Available dialogs include,</p>
 
-        <p>Available dialogs:</p>
         <dl tag="dialog-list">
             <dt>about</dt>           <dd>About Mozilla &dactyl.host;;</dd>
             <dt>addbookmark</dt>     <dd>Add bookmark for the current page</dd>
@@ -90,11 +94,13 @@
 
 <item>
     <tags>:dl :downl :downloads</tags>
+    <strut/>
     <spec>:downl<oa>oads</oa></spec>
     <description>
         <p>
-            Show progress of current downloads. Open the original &dactyl.host; download dialog
-            in a new tab. Here, downloads can be paused, canceled and resumed.
+            Show progress of current downloads. Open the standard &dactyl.host;
+            download dialog in a new tab. Here, downloads can be paused,
+            resumed, and canceled.
         </p>
     </description>
 </item>
@@ -104,9 +110,12 @@
 
 <item>
     <tags>:exta :extadd</tags>
-    <spec>:exta<oa>dd</oa> <a>file</a></spec>
+    <spec>:exta<oa>dd</oa> <a>file|url</a></spec>
     <description>
-        <p>Install an extension. <a>file</a> is an extension XPInstall file (*.xpi).</p>
+        <p>
+            Install an extension. <a>file|uri</a> must be the local file
+            path or URL of an XPInstall (.xpi) file.
+        </p>
     </description>
 </item>
 
@@ -162,8 +171,8 @@
 
 <item>
     <tags>:exto :extoptions</tags>
-    <tags>:extp :extpreferences</tags>
     <spec>:exto<oa>ptions</oa><oa>!</oa> <a>extension</a></spec>
+    <tags>:extp :extpreferences</tags>
     <spec>:extp<oa>references</oa><oa>!</oa> <a>extension</a></spec>
     <description>
         <p>
@@ -179,7 +188,7 @@
 <item>
     <tags>:sbcl :sbclose</tags>
     <spec>:sbcl<oa>ose</oa></spec>
-    <description>
+    <description short="true">
         <p>Close the sidebar window.</p>
     </description>
 </item>
@@ -212,36 +221,43 @@
 
 <ul>
     <li>
-        URL: The URL of the currently loaded page. While the page is loading
+        <em>URL</em>: The URL of the currently loaded page. While the page is loading
         progress messages are also output to this field.
     </li>
     <li>
-        History and bookmark status ([+-❤]): The position of the current page in
-        the tab's session history; + and - indicate that it's possible to move
+        <em>History and bookmark status</em> (<em>[+-❤]</em>): The position of the current page in
+        the tab's session history; + and - indicate that it is possible to move
         backwards and forwards through the history respectively. ❤ indicates that
         the current page is bookmarked.
     </li>
     <li>
-        Tab index ([N/M]): N is the index of the currently selected tab and M is
+        <em>Tab index</em> (<em>[N/M]</em>): N is the index of the currently selected tab and M is
         the total number of tabs in the current window.
     </li>
     <li>
-        Vertical scroll: The vertical scroll percentage of the current buffer.
-        This is a percentage or Top for 0% and Bot for 100%.
+        <em>Vertical scroll</em>: The vertical scroll percentage of the current buffer,
+        or Top or Bot for the top and bottom of the buffer respectively.
     </li>
     <li>
-        Security: The security information button is displayed when appropriate
+        <em>Security</em>: The security information button is displayed when appropriate
         as per &dactyl.host;. The color of the status bar also changes to reflect the
         current security status of the loaded page.
-        <ul>
-            <li>black – the site's identity is unverified and the connection is unencrypted</li>
-            <li>blue – the site's domain has been verified and the connection is encrypted</li>
-            <li>green – the site's domain and owner have been fully verified via an</li>
-        </ul>
-        Extended Validation certificate and the connection is encrypted
+        <dl>
+            <dt style="border:1px solid white" dactyl:highlight="StatusLine">black</dt>
+            <dd>The site's identity is unverified and the connection is unencrypted</dd>
+
+            <dt style="border:1px solid white" dactyl:highlight="StatusLineBroken">red</dt>
+            <dd>The connection is encrypted, but the site's identity has not been verified or it contains unencrypted content</dd>
+
+            <dt style="border:1px solid white" dactyl:highlight="StatusLineSecure">blue</dt>
+            <dd>The site's domain has been verified and the connection is encrypted</dd>
+
+            <dt style="border:1px solid white" dactyl:highlight="StatusLineExtended">green</dt>
+            <dd>The site's domain and owner have been fully verified via an Extended Validation certificate and the connection is encrypted</dd>
+        </dl>
     </li>
     <li>
-        Extensions: Any extension buttons that would normally be installed to the
+        <em>Extensions</em>: Any extension buttons that would normally be installed to the
         &dactyl.host; status bar are appended to the end of the status line.
     </li>
 </ul>

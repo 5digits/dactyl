@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -36,26 +36,26 @@ const Hints = Module("hints", {
         function images() util.makeXPath(["img"]);
 
         this._hintModes = {
-            ";": Mode("Focus hint",                         function (elem) buffer.focusElement(elem),                             extended),
-            "?": Mode("Show information for hint",          function (elem) buffer.showElementInfo(elem),                          extended),
+            ";": Mode("Focus hint",                         function (elem) buffer.focusElement(elem),                              extended),
+            "?": Mode("Show information for hint",          function (elem) buffer.showElementInfo(elem),                           extended),
             s: Mode("Save hint",                            function (elem) buffer.saveLink(elem, true)),
             a: Mode("Save hint with prompt",                function (elem) buffer.saveLink(elem, false)),
             f: Mode("Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]),
             o: Mode("Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB)),
             t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB)),
             b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB)),
-            w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW),         extended),
+            w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW),             extended),
             F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F") }),
             O: Mode("Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX)),
             T: Mode("Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX)),
             W: Mode("Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX)),
-            v: Mode("View hint source",                     function (elem, loc) buffer.viewSource(loc, false),                    extended),
-            V: Mode("View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true),                     extended),
+            v: Mode("View hint source",                     function (elem, loc) buffer.viewSource(loc, false),                     extended),
+            V: Mode("View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true),                      extended),
             y: Mode("Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true)),
             Y: Mode("Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true),    extended),
-            c: Mode("Open context menu",                    function (elem) buffer.openContextMenu(elem),                          extended),
-            i: Mode("Show image",                           function (elem) dactyl.open(elem.src),                              images),
-            I: Mode("Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB),           images)
+            c: Mode("Open context menu",                    function (elem) buffer.openContextMenu(elem),                           extended),
+            i: Mode("Show image",                           function (elem) dactyl.open(elem.src),                                  images),
+            I: Mode("Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB),                  images)
         };
     },
 
@@ -351,7 +351,7 @@ const Hints = Module("hints", {
 
                 if (hint.text == "" && hint.elem.firstChild && hint.elem.firstChild instanceof HTMLImageElement) {
                     if (!hint.imgSpan) {
-                        var rect = hint.elem.firstChild.getBoundingClientRect();
+                        let rect = hint.elem.firstChild.getBoundingClientRect();
                         if (!rect)
                             continue;
 
@@ -1054,7 +1054,7 @@ const Hints = Module("hints", {
                     ["wordstartswith", "The typed characters are split on whitespace. The resulting groups must all match the beginings of words, in order."],
                     ["firstletters",   "Behaves like wordstartswith, but all groups much match a sequence of words."],
                     ["custom",         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)"],
-                    ["transliterated", "When true, special latin characters are translated to their ascii equivalent (e.g., \u00e9 -> e)"]
+                    ["transliterated", UTF8("When true, special latin characters are translated to their ascii equivalent (e.g., é -> e)")]
                 ]
             });
 

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -120,7 +120,7 @@ const Modes = Module("modes", {
 
     NONE: 0,
 
-    __iterator__: function () util.Array.itervalues(this.all),
+    __iterator__: function () array.itervalues(this.all),
 
     get all() this._mainModes.slice(),
 
@@ -155,7 +155,8 @@ const Modes = Module("modes", {
 
     getCharModes: function (chr) [m for (m in values(this._modeMap)) if (m.char == chr)],
 
-    matchModes: function (obj) [m for (m in values(this._modeMap)) if (Object.keys(obj).every(function (k) obj[k] == (m[k] || false)))],
+    matchModes: function (obj)
+        [m for (m in values(this._modeMap)) if (Object.keys(obj).every(function (k) obj[k] == (m[k] || false)))],
 
     // show the current mode string in the command line
     show: function () {

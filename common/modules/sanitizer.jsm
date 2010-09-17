@@ -69,7 +69,7 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
                         services.get("permissions").remove(util.createURI(p.host), p.type);
                         services.get("permissions").add(util.createURI(p.host), p.type, 0);
                     }
-                    for (let p in iter(services.get("contentprefs").getPrefs(util.createURI(host)).enumerator))
+                    for (let p in iter(services.get("contentprefs").getPrefs(util.createURI(host))))
                         services.get("contentprefs").removePref(util.createURI(host), p.QueryInterface(Ci.nsIProperty).name);
                 }
                 else {
@@ -185,12 +185,12 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
 
     iterCookies: function iterCookies(host) {
-        for (let c in iter(services.get("cookies").enumerator))
+        for (let c in iter(services.get("cookies")))
             if (!host || util.isSubdomain(c.QueryInterface(Ci.nsICookie2).rawHost, host))
                 yield c;
     },
     iterPermissions: function iterPermissions(host) {
-        for (let p in iter(services.get("permissions").enumerator))
+        for (let p in iter(services.get("permissions")))
             if (p.QueryInterface(Ci.nsIPermission) && (!host || util.isSubdomain(p.host, host)))
                 yield p;
     }

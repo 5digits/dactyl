@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -1173,7 +1173,7 @@ const Events = Module("events", {
             function () { document.commandDispatcher.rewindFocus(); });
 
         mappings.add(modes.all,
-            ["<C-z>"], "Temporarily ignore all " + config.name + " key bindings",
+            ["<C-z>"], "Temporarily ignore all " + config.appname + " key bindings",
             function () { modes.passAllKeys = true; });
 
         mappings.add(modes.all,

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -23,6 +23,8 @@
  *         completer   - see {@link Option#completer}
  *         domains     - see {@link Option#domains}
  *         getter      - see {@link Option#getter}
+ *         initialValue - Initial value is loaded from getter
+ *         persist     - see {@link Option#persist}
  *         privateData - see {@link Option#privateData}
  *         scope       - see {@link Option#scope}
  *         setter      - see {@link Option#setter}
@@ -56,9 +58,9 @@ const Option = Class("Option", {
 
         // add no{option} variant of boolean {option} to this.names
         if (this.type == "boolean")
-            this.names = array([name, "no" + name] for (name in values(names))).flatten().__proto__;
+            this.names = array([name, "no" + name] for (name in values(names))).flatten().array;
 
-        if (this.globalValue == undefined)
+        if (this.globalValue == undefined && !this.initialValue)
             this.globalValue = this.parseValues(this.defaultValue);
     },
 
@@ -296,6 +298,13 @@ const Option = Class("Option", {
     getter: null,
 
     /**
+     * @property {boolean} When true, this options values will be saved
+     *     when generating a configuration file.
+     * @default true
+     */
+    persist: true,
+
+    /**
      * @property {boolean|function(values)} When true, values of this
      *     option may contain private data which should be purged from
      *     saved histories when clearing private data. If a function, it
@@ -363,18 +372,23 @@ const Option = Class("Option", {
         let re = RegExp(val);
         re.bang = bang;
         re.result = arguments.length == 2 ? result : !bang;
+        re.toString = function () Option.unparseRegex(this);
         return re;
     },
-    unparseRegex: function (re) re.bang + re.source + (typeof re.result == "string" ? ":" + re.result : ""),
+    unparseRegex: function (re) re.bang + re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m) +
+        (typeof re.result == "string" ? ":" + re.result : ""),
 
     getKey: {
         stringlist: function (k) this.values.indexOf(k) >= 0,
+        get charlist() this.stringlist,
+
         regexlist: function (k) {
             for (let re in values(this.values))
                 if (re.test(k))
                     return re.result;
             return null;
-        }
+        },
+        get regexmap() this.regexlist
     },
 
     joinValues: {
@@ -382,6 +396,7 @@ const Option = Class("Option", {
         stringlist:  function (vals) vals.join(","),
         stringmap:   function (vals) [k + ":" + v for ([k, v] in Iterator(vals))].join(","),
         regexlist:   function (vals) vals.map(Option.unparseRegex).join(","),
+        get regexmap() this.regexlist
     },
 
     parseValues: {
@@ -430,10 +445,10 @@ const Option = Class("Option", {
 
             switch (operator) {
             case "+":
-                return util.Array.uniq(Array.concat(orig, values), true);
+                return array.uniq(Array.concat(orig, values), true);
             case "^":
                 // NOTE: Vim doesn't prepend if there's a match in the current value
-                return util.Array.uniq(Array.concat(values, orig), true);
+                return array.uniq(Array.concat(values, orig), true);
             case "-":
                 return orig.filter(function (item) values.indexOf(item) == -1);
             case "=":
@@ -452,10 +467,10 @@ const Option = Class("Option", {
             values = Array.concat(values);
             switch (operator) {
             case "+":
-                return util.Array.uniq(Array.concat(this.values, values), true);
+                return array.uniq(Array.concat(this.values, values), true);
             case "^":
                 // NOTE: Vim doesn't prepend if there's a match in the current value
-                return util.Array.uniq(Array.concat(values, this.values), true);
+                return array.uniq(Array.concat(values, this.values), true);
             case "-":
                 return this.values.filter(function (item) values.indexOf(item) == -1);
             case "=":
@@ -468,6 +483,9 @@ const Option = Class("Option", {
             }
             return null;
         },
+        get charlist() this.stringlist,
+        get regexlist() this.stringlist,
+        get regexmap() this.stringlist,
 
         string: function (operator, values, scope, invert) {
             switch (operator) {
@@ -503,21 +521,14 @@ const Option = Class("Option", {
     }
 });
 
-Option.joinValues["regexmap"] = Option.joinValues["regexlist"];
-
-Option.getKey["charlist"] = Option.getKey["stringlist"];
-Option.getKey["regexmap"] = Option.getKey["regexlist"];
-
-Option.ops["charlist"]  = Option.ops["stringlist"];
-Option.ops["regexlist"] = Option.ops["stringlist"];
-Option.ops["regexmap"]  = Option.ops["stringlist"];
-
 /**
  * @instance options
  */
 const Options = Module("options", {
     init: function () {
-        this._optionHash = {};
+        this.needInit = [];
+        this._options = [];
+        this._optionMap = {};
         this._prefContexts = [];
 
         for (let [, pref] in Iterator(this.allPrefs(Options.OLD_SAVED))) {
@@ -541,45 +552,28 @@ const Options = Module("options", {
             });
         }
 
-        function optionObserver(key, event, option) {
+        storage.newMap("options", { store: false });
+        storage.addObserver("options", function optionObserver(key, event, option) {
             // Trigger any setters.
             let opt = options.get(option);
             if (event == "change" && opt)
                 opt.setValues(opt.globalValue, Option.SCOPE_GLOBAL, true);
-        }
+        }, window);
 
-        storage.newMap("options", { store: false });
-        storage.addObserver("options", optionObserver, window);
-
-        this.prefObserver.register();
+        this._branch = services.get("pref").getBranch("").QueryInterface(Ci.nsIPrefBranch2);
+        this._branch.addObserver("", this, false);
     },
 
     destroy: function () {
-        this.prefObserver.unregister();
+        this._branch.removeObserver("", this);
     },
 
     /** @property {Iterator(Option)} @private */
     __iterator__: function ()
-        array(values(this._optionHash)).sort(function (a, b) String.localeCompare(a.name, b.name))
-                                       .itervalues(),
+        values(this._options.sort(function (a, b) String.localeCompare(a.name, b.name))),
 
-    /** @property {Object} Observes preference value changes. */
-    prefObserver: {
-        register: function () {
-            // better way to monitor all changes?
-            this._branch = services.get("pref").getBranch("").QueryInterface(Ci.nsIPrefBranch2);
-            this._branch.addObserver("", this, false);
-        },
-
-        unregister: function () {
-            if (this._branch)
-                this._branch.removeObserver("", this);
-        },
-
-        observe: function (subject, topic, data) {
-            if (topic != "nsPref:changed")
-                return;
-
+    observe: function (subject, topic, data) {
+        if (topic == "nsPref:changed") {
             // subject is the nsIPrefBranch we're observing (after appropriate QI)
             // data is the name of the pref that's been changed (relative to subject)
             switch (data) {
@@ -588,7 +582,7 @@ const Options = Module("options", {
                 dactyl.mode = value ? modes.CARET : modes.NORMAL;
                 break;
             }
-         }
+        }
     },
 
     /**
@@ -601,29 +595,28 @@ const Options = Module("options", {
      * @param {Object} extra An optional extra configuration hash (see
      *     {@link Map#extraInfo}).
      * @optional
-     * @returns {boolean} Whether the option was created.
      */
     add: function (names, description, type, defaultValue, extraInfo) {
         if (!extraInfo)
             extraInfo = {};
 
-        let option = Option(names, description, type, defaultValue, extraInfo);
-
-        if (!option)
-            return false;
-
-        if (option.name in this._optionHash) {
-            // never replace for now
-            dactyl.log("Warning: " + names[0].quote() + " already exists, NOT replacing existing option.", 1);
-            return false;
+        let name = names[0];
+        if (name in this._optionMap) {
+            dactyl.log("Warning: " + name.quote() + " already exists: replacing existing option.", 1);
+            this.remove(name);
         }
 
-        // quickly access options with options["wildmode"]:
-        this.__defineGetter__(option.name, function () option.value);
-        this.__defineSetter__(option.name, function (value) { option.value = value; });
+        let closure = function () options._optionMap[name];
+        memoize(this._options, this._options.length, closure);
+        memoize(this._optionMap, name, function () Option(names, description, type, defaultValue, extraInfo));
+        for (let alias in values(names.slice(1)))
+            memoize(this._optionMap, alias, closure);
+        if (extraInfo.setter)
+            memoize(this.needInit, this.needInit.length, closure);
 
-        this._optionHash[option.name] = option;
-        return true;
+        // quickly access options with options["wildmode"]:
+        this.__defineGetter__(name, function () this._optionMap[name].value);
+        this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
     },
 
     /**
@@ -646,12 +639,8 @@ const Options = Module("options", {
         if (!scope)
             scope = Option.SCOPE_BOTH;
 
-        if (name in this._optionHash)
-            return (this._optionHash[name].scope & scope) && this._optionHash[name];
-
-        for (let opt in values(this._optionHash))
-            if (opt.hasName(name))
-                return (opt.scope & scope) && opt;
+        if (name in this._optionMap && (this._optionMap[name].scope & scope))
+            return this._optionMap[name];
         return null;
     },
 
@@ -734,7 +723,7 @@ const Options = Module("options", {
         };
 
         commandline.commandOutput(
-            template.options(config.hostApplication + " Options", prefs()));
+            template.options(config.host + " Options", prefs()));
     },
 
     /**
@@ -751,7 +740,7 @@ const Options = Module("options", {
         let matches, prefix, postfix, valueGiven;
 
         [matches, prefix, ret.name, postfix, valueGiven, ret.operator, ret.value] =
-        args.match(/^\s*(no|inv)?([a-z_]*)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
+        args.match(/^\s*(no|inv)?([a-z_-]*?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
 
         ret.args = args;
         ret.onlyNonDefault = false; // used for :set to print non-default options
@@ -760,8 +749,13 @@ const Options = Module("options", {
             ret.onlyNonDefault = true;
         }
 
-        if (matches)
+        if (matches) {
             ret.option = options.get(ret.name, ret.scope);
+            if (!ret.option && (ret.option = options.get(prefix + ret.name, ret.scope))) {
+                ret.name = prefix + ret.name;
+                prefix = "";
+            }
+        }
 
         ret.prefix = prefix;
         ret.postfix = postfix;
@@ -795,10 +789,10 @@ const Options = Module("options", {
      *     any of the options's names.
      */
     remove: function (name) {
-        for each (let option in this._optionHash) {
-            if (option.hasName(name))
-                delete this._optionHash[option.name];
-        }
+        let opt = this.get(name);
+        for (let name in values(opt.names))
+            delete this._optionMap[name];
+        this._options = this._options.filter(function (o) o != opt);
     },
 
     /** @property {Object} The options store. */
@@ -1023,7 +1017,7 @@ const Options = Module("options", {
                     }
 
                     if (name == "all" && reset)
-                        commandline.input("Warning: Resetting all preferences may make " + config.hostApplication + " unusable. Continue (yes/[no]): ",
+                        commandline.input("Warning: Resetting all preferences may make " + config.host + " unusable. Continue (yes/[no]): ",
                             function (resp) {
                                 if (resp == "yes")
                                     for (let pref in values(options.allPrefs()))
@@ -1037,20 +1031,14 @@ const Options = Module("options", {
                     else if (invertBoolean)
                         options.invertPref(name);
                     else if (valueGiven) {
-                        switch (value) {
-                        case undefined:
+                        if (value == undefined)
                             value = "";
-                            break;
-                        case "true":
+                        else if (value == "true")
                             value = true;
-                            break;
-                        case "false":
-                            value = false;
-                            break;
-                        default:
-                            if (/^\d+$/.test(value))
-                                value = parseInt(value, 10);
-                        }
+                        else if (value == "false")
+                            value = true;
+                        else if (/^\d+$/.test(value))
+                            value = parseInt(value, 10);
                         options.setPref(name, value);
                     }
                     else
@@ -1123,7 +1111,7 @@ const Options = Module("options", {
                     context.completions = [
                             [options._loadPreference(filter, null, false), "Current Value"],
                             [options._loadPreference(filter, null, true), "Default Value"]
-                    ].filter(function ([k]) k != null);
+                    ].filter(function ([k]) k != null && k.length < 200);
                     return null;
                 }
 
@@ -1134,15 +1122,10 @@ const Options = Module("options", {
             let prefix = opt.prefix;
 
             if (context.filter.indexOf("=") == -1) {
-                if (prefix)
-                    context.filters.push(function ({ item: opt }) opt.type == "boolean" || prefix == "inv" && opt.values instanceof Array);
-                return completion.option(context, opt.scope);
+                if (false && prefix)
+                    context.filters.push(function ({ item }) item.type == "boolean" || prefix == "inv" && isarray(item.values));
+                return completion.option(context, opt.scope, prefix);
             }
-            else if (prefix == "no")
-                return null;
-
-            if (prefix)
-                context.advance(prefix.length);
 
             let option = opt.option;
             context.advance(context.filter.indexOf("=") + 1);
@@ -1155,17 +1138,33 @@ const Options = Module("options", {
             if (opt.get || opt.reset || !option || prefix)
                 return null;
 
-            if (!opt.value) {
+            if (!opt.value && !opt.operator && !opt.invert) {
                 context.fork("default", 0, this, function (context) {
                     context.title = ["Extra Completions"];
                     context.completions = [
                             [option.value, "Current value"],
                             [option.defaultValue, "Default value"]
-                    ].filter(function (f) f[0] != "");
+                    ].filter(function (f) f[0] != "" && f[0].length < 200);
                 });
             }
 
-            return context.fork("values", 0, completion, "optionValue", opt.name, opt.operator);
+            let optcontext = context.fork("values");
+            completion.optionValue(optcontext, opt.name, opt.operator);
+
+            // Fill in the current values if we're removing
+            if (opt.operator == "-" && isarray(opt.values)) {
+                let have = set([i.text for (i in context.allItems)]);
+                context = context.fork("current-values", 0);
+                context.anchored = optcontext.anchored
+                context.maxItems = optcontext.maxItems
+
+                context.filters.push(function (i) !set.has(have, i.text));
+                completion.optionValue(context, opt.name, opt.operator, null,
+                                       function (context) {
+                                           context.generate = function () option.values.map(function (o) [o, ""])
+                                       });
+                context.title = ["Current values"];
+            }
         }
 
         commands.add(["let"],
@@ -1321,17 +1320,21 @@ const Options = Module("options", {
             });
     },
     completion: function () {
-        completion.option = function option(context, scope) {
+        completion.option = function option(context, scope, prefix) {
             context.title = ["Option"];
             context.keys = { text: "names", description: "description" };
             context.completions = options;
+            if (prefix == "inv")
+                context.keys.text = function (opt)
+                    opt.type == "boolean" || isarray(opt.values) ? opt.names.map(function (n) "inv" + n)
+                                                                 : opt.names;
             if (scope)
-                context.filters.push(function ({ item: opt }) opt.scope & scope);
+                context.filters.push(function ({ item }) item.scope & scope);
         };
 
-        completion.optionValue = function (context, name, op, curValue) {
+        completion.optionValue = function (context, name, op, curValue, completer) {
             let opt = options.get(name);
-            let completer = opt.completer;
+            completer = completer || opt.completer;
             if (!completer)
                 return;
 
@@ -1372,31 +1375,24 @@ const Options = Module("options", {
             context.advance(context.filter.length - len);
 
             context.title = ["Option Value"];
-            let completions = completer(context);
-            if (!isarray(completions))
-                completions = array(completions).__proto__;
-            if (!completions)
-                return;
-
             // Not Vim compatible, but is a significant enough improvement
             // that it's worth breaking compatibility.
             if (isarray(newValues)) {
-                completions = completions.filter(function (val) newValues.indexOf(val[0]) == -1);
-                switch (op) {
-                case "+":
-                    completions = completions.filter(function (val) curValues.indexOf(val[0]) == -1);
-                    break;
-                case "-":
-                    completions = completions.filter(function (val) curValues.indexOf(val[0]) > -1);
-                    break;
-                }
+                context.filters.push(function (i) newValues.indexOf(i.text) == -1);
+                if (op == "+")
+                    context.filters.push(function (i) curValues.indexOf(i.text) == -1);
+                if (op == "-")
+                    context.filters.push(function (i) curValues.indexOf(i.text) > -1);
             }
-            context.completions = completions;
+
+            let res = completer.call(opt, context);
+            if (res)
+                context.completions = res;
         };
 
         completion.preference = function preference(context) {
             context.anchored = false;
-            context.title = [config.hostApplication + " Preference", "Value"];
+            context.title = [config.host + " Preference", "Value"];
             context.keys = { text: function (item) item, description: function (item) options.getPref(item) };
             context.completions = options.allPrefs();
         };
@@ -1404,14 +1400,14 @@ const Options = Module("options", {
     javascript: function () {
         JavaScript.setCompleter(this.get, [function () ([o.name, o.description] for (o in options))]);
         JavaScript.setCompleter([this.getPref, this.safeSetPref, this.setPref, this.resetPref, this.invertPref],
-                [function () options.allPrefs().map(function (pref) [pref, ""])]);
+                [function (context) (context.anchored=false, options.allPrefs().map(function (pref) [pref, ""]))]);
     },
     sanitizer: function () {
         sanitizer.addItem("options", {
             description: "Options containing hostname data",
             action: function (timespan, host) {
                 if (host)
-                    for (let opt in values(options._optionHash))
+                    for (let opt in values(options._options))
                         if (timespan.contains(opt.lastSet * 1000) && opt.domains)
                             try {
                                 opt.values = opt.filterDomain(host, opt.values);
@@ -1421,12 +1417,12 @@ const Options = Module("options", {
                             }
             },
             privateEnter: function () {
-                for (let opt in values(options._optionHash))
+                for (let opt in values(options._options))
                     if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.values)))
                         opt.oldValue = opt.value;
             },
             privateLeave: function () {
-                for (let opt in values(options._optionHash))
+                for (let opt in values(options._options))
                     if (opt.oldValue != null) {
                         opt.value = opt.oldValue;
                         opt.oldValue = null;

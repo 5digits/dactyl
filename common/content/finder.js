@@ -27,20 +27,25 @@ const RangeFinder = Module("rangefinder", {
 
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;
+        let regex = false;
         let matchCase = !(options["ignorecase"] || options["smartcase"] && !/[A-Z]/.test(str));
         let linksOnly = options["linksearch"];
 
         str = str.replace(/\\(.|$)/g, function (m, n1) {
-            if (n1 == "l")
-                linksOnly = true;
-            else if (n1 == "L")
-                linksOnly = false;
-            else if (n1 == "c")
+            if (n1 == "c")
                 matchCase = false;
             else if (n1 == "C")
                 matchCase = true;
+            else if (n1 == "l")
+                linksOnly = true;
+            else if (n1 == "L")
+                linksOnly = false;
+            else if (n1 == "r")
+                regex = true;
+            else if (n1 == "R")
+                regex = false;
             else
-                return n1;
+                return m;
             return "";
         });
 
@@ -49,12 +54,13 @@ const RangeFinder = Module("rangefinder", {
         if (!this.rangeFind
             || this.rangeFind.window.get() != window
             || linksOnly  != !!this.rangeFind.elementPath
+            || regex      != this.rangeFind.regex
             || matchCase  != this.rangeFind.matchCase
             || !!backward != this.rangeFind.reverse) {
 
             if (this.rangeFind)
                 this.rangeFind.cancel();
-            this.rangeFind = RangeFind(matchCase, backward, linksOnly && options["hinttags"]);
+            this.rangeFind = RangeFind(matchCase, backward, linksOnly && options["hinttags"], regex);
             this.rangeFind.highlighted = highlighted;
             this.rangeFind.selections = selections;
         }
@@ -201,7 +207,7 @@ const RangeFinder = Module("rangefinder", {
 
     },
     options: function () {
-        options.safeSetPref("accessibility.typeaheadfind.autostart", false);
+        // options.safeSetPref("accessibility.typeaheadfind.autostart", false);
         // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
         options.safeSetPref("accessibility.typeaheadfind", false);
 
@@ -262,13 +268,14 @@ const RangeFinder = Module("rangefinder", {
  * large amounts of data are concerned (e.g., for API documents).
  */
 const RangeFind = Class("RangeFind", {
-    init: function (matchCase, backward, elementPath) {
+    init: function (matchCase, backward, elementPath, regex) {
         this.window = Cu.getWeakReference(window);
         this.elementPath = elementPath || null;
-        this.matchCase = Boolean(matchCase);
         this.reverse = Boolean(backward);
+
         this.finder = services.create("find");
-        this.finder.caseSensitive = this.matchCase;
+        this.matchCase = Boolean(matchCase);
+        this.regex = Boolean(regex);
 
         this.ranges = this.makeFrameList(content);
 
@@ -280,6 +287,12 @@ const RangeFind = Class("RangeFind", {
     },
 
     get backward() this.finder.findBackwards,
+
+    get matchCase() this.finder.caseSensitive,
+    set matchCase(val) this.finder.caseSensitive = Boolean(val),
+
+    get regex() this.finder.regularExpression,
+    set regex(val) this.finder.regularExpression = Boolean(val),
 
     get searchString() this.lastString,
 
@@ -437,7 +450,7 @@ const RangeFind = Class("RangeFind", {
             let pageStart = RangeFind.endpoint(pageRange, true);
             let pageEnd = RangeFind.endpoint(pageRange, false);
 
-            for (let frame in util.Array.itervalues(win.frames)) {
+            for (let frame in array.itervalues(win.frames)) {
                 let range = doc.createRange();
                 if (util.computedStyle(frame.frameElement).visibility == "visible") {
                     range.selectNode(frame.frameElement);

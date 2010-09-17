@@ -569,7 +569,7 @@ const Editor = Module("editor", {
         let list = this.getAbbreviations(filter, lhs);
 
         if (!list.length)
-            dactyl.echomsg("No this._abbreviations found");
+            dactyl.echomsg("No abbreviations found");
         else if (list.length == 1) {
             let [mode, lhs, rhs] = list[0];
 

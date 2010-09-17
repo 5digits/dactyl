@@ -20,8 +20,10 @@
                 return;
             }
             catch (e) {
-                if (e !== "Error opening input stream (invalid filename?)")
+                if (e !== "Error opening input stream (invalid filename?)") {
                     dump("dactyl: Trying: " + (base + script + ".js") + ": " + e + "\n" + e.stack);
+                    Components.utils.reportError(e);
+                }
             }
         }
         try {
@@ -30,6 +32,7 @@
         catch (e) {
             dump("dactyl: Loading script " + script + ": " + e.result + " " + e + "\n");
             dump(Error().stack + "\n");
+            Components.utils.reportError(e);
         }
     };
 
@@ -64,7 +67,7 @@
      "template",
      ].forEach(modules.load);
 
-    prefix.unshift("chrome://" + modules.Config.prototype.name.toLowerCase() + "/content/");
+    prefix.unshift("chrome://" + modules.services.get("dactyl:").name + "/content/");
     modules.Config.prototype.scripts.forEach(modules.load);
 })();
 

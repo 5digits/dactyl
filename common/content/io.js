@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 // Some code based on Venkman
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -19,16 +19,15 @@ function Script(file) {
      }
     self = { __proto__: plugins };
     plugins.contexts[file.path] = self;
+    plugins[file.path] = self;
     self.NAME = file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
     self.PATH = file.path;
     self.__context__ = self;
-    self.__proto__ = plugins;
 
     // This belongs elsewhere
-    for (let [, dir] in Iterator(io.getRuntimeDirectories("plugin"))) {
-        if (dir.contains(file, false))
-            plugins[self.NAME] = self;
-    }
+    if (io.getRuntimeDirectories("plugins").some(
+            function (dir) dir.contains(file, false)))
+        plugins[self.NAME] = self;
     return self;
 }
 
@@ -54,7 +53,8 @@ const IO = Module("io", {
                     let file  = download.targetFile.path;
                     let size  = download.size;
 
-                    dactyl.echomsg("Download of " + title + " to " + file + " finished", 1, commandline.ACTIVE_WINDOW);
+                    dactyl.echomsg({ domains: [util.getHost(url)], message: "Download of " + title + " to " + file + " finished" },
+                                   1, commandline.ACTIVE_WINDOW);
                     autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
                 }
             },
@@ -179,8 +179,8 @@ const IO = Module("io", {
     getRCFile: function (dir, always) {
         dir = dir || "~";
 
-        let rcFile1 = File.joinPaths(dir, "." + config.name.toLowerCase() + "rc");
-        let rcFile2 = File.joinPaths(dir, "_" + config.name.toLowerCase() + "rc");
+        let rcFile1 = File.joinPaths(dir, "." + config.name + "rc");
+        let rcFile2 = File.joinPaths(dir, "_" + config.name + "rc");
 
         if (dactyl.has("Win32"))
             [rcFile1, rcFile2] = [rcFile2, rcFile1];
@@ -346,6 +346,8 @@ lookup:
                     dactyl.helpInitialized = false;
                 }
                 catch (e) {
+                    if (isstring(e))
+                        e = { message: e };
                     let err = new Error();
                     for (let [k, v] in Iterator(e))
                         err[k] = v;
@@ -508,10 +510,10 @@ lookup:
      *     variable.
      */
     get runtimePath() {
-        const rtpvar = config.name.toUpperCase() + "_RUNTIME";
+        const rtpvar = config.idname + "_RUNTIME";
         let rtp = services.get("environment").get(rtpvar);
         if (!rtp) {
-            rtp = "~/" + (dactyl.has("Win32") ? "" : ".") + config.name.toLowerCase();
+            rtp = "~/" + (dactyl.has("Win32") ? "" : ".") + config.name;
             services.get("environment").set(rtpvar, rtp);
         }
         return rtp;
@@ -582,7 +584,7 @@ lookup:
             { argCount: "0" });
 
         // "mkv[imperatorrc]" or "mkm[uttatorrc]"
-        commands.add([config.name.toLowerCase().replace(/(.)(.*)/, "mk$1[$2rc]")],
+        commands.add([config.name.replace(/(.)(.*)/, "mk$1[$2rc]")],
             "Write current key mappings and changed options to the config file",
             function (args) {
                 dactyl.assert(args.length <= 1, "E172: Only one file name allowed");
@@ -595,7 +597,7 @@ lookup:
 
                 // TODO: Use a set/specifiable list here:
                 let lines = [cmd.serialize().map(commands.commandToString) for (cmd in commands) if (cmd.serialize)];
-                lines = util.Array.flatten(lines);
+                lines = array.flatten(lines);
 
                 // source a user .pentadactylrc file
                 lines.unshift('"' + dactyl.version + "\n");
@@ -608,7 +610,7 @@ lookup:
                     arguments: [filename + ".local"]
                 }));
 
-                lines.push("\n\" vim: set ft=" + config.name.toLowerCase() + ":");
+                lines.push("\n\" vim: set ft=" + config.name + ":");
 
                 try {
                     file.write(lines.join("\n"));
@@ -669,9 +671,13 @@ lookup:
 
                 // NOTE: Vim doesn't replace ! preceded by 2 or more backslashes and documents it - desirable?
                 // pass through a raw bang when escaped or substitute the last command
-                arg = arg.replace(/(\\)*!/g,
-                    function (m) /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)
-                );
+                
+                // This is an asinine and irritating feature when we have searchable
+                // command-line history. --Kris
+                if (options["banghist"])
+                    arg = arg.replace(/(\\)*!/g,
+                        function (m) /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)
+                    );
 
                 io._lastRunCommand = arg;
 
@@ -691,19 +697,20 @@ lookup:
     completion: function () {
         completion.charset = function (context) {
             context.anchored = false;
-            context.generate = function () {
-                let names = util.Array(
-                    "more1 more2 more3 more4 more5 unicode".split(" ").map(function (key)
-                        options.getPref("intl.charsetmenu.browser." + key).split(', '))
-                ).flatten().uniq();
-                let bundle = document.getElementById("dactyl-charset-bundle");
-                return names.map(function (name) [name, bundle.getString(name.toLowerCase() + ".title")]);
+            let bundle = services.get("stringBundle").createBundle(
+                "chrome://global/locale/charsetTitles.properties");
+            context.keys = {
+                text: util.identity,
+                description: function (charset) bundle.GetStringFromName(charset.toLowerCase() + ".title")
             };
+            context.generate = function () array("more1 more2 more3 more4 more5 unicode".split(" "))
+                    .map(function (key) options.getPref("intl.charsetmenu.browser." + key).split(', '))
+                    .flatten().uniq().array;
         };
 
         completion.directory = function directory(context, full) {
             this.file(context, full);
-            context.filters.push(function ({ item: f }) f.isDirectory());
+            context.filters.push(function ({ item }) item.isDirectory());
         };
 
         completion.environment = function environment(context) {
@@ -737,7 +744,7 @@ lookup:
 
             if (options["wildignore"]) {
                 let wig = options.get("wildignore");
-                context.filters.push(function ({item: f}) f.isDirectory() || !wig.getKey(this.name));
+                context.filters.push(function ({ item }) item.isDirectory() || !wig.getKey(this.name));
             }
 
             // context.background = true;
@@ -765,7 +772,7 @@ lookup:
                     }
                 }
 
-                return util.Array.flatten(commands);
+                return array.flatten(commands);
             };
         };
 
@@ -794,6 +801,10 @@ lookup:
             shell = services.get("environment").get("SHELL") || "sh";
             shellcmdflag = "-c";
         }
+
+        options.add(["banghist", "bh"],
+            "Replace occurances of ! with the previous command when executing external commands",
+            "banghist", true);
 
         options.add(["fileencoding", "fenc"],
             "Sets the character encoding of read and written files",

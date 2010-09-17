@@ -6,8 +6,8 @@
 <document
     name="tutorial"
     title="&dactyl.appname; Tutorial"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <!-- Initial revision: Sun Jun  8 10:07:05 UTC 2008 (penryu) -->
 
 <h1 tag="tutorial">Quick-start tutorial</h1>

@@ -1,18 +1,40 @@
 2009-XX-XX:
-    * Use only visible tabs for tab numbering, gt/gn/gN, etc.
-    * Group tabs in :buffer completions by panorama groups
+    * Extensive Firefox 4 support, including:
+      - Tabs in :buffer completions and listings are grouped
+        by panorama groups
+      - Only visible tabs are considered in tab numbering,
+        gt/gn/gN, etc.
+    * Greatly improved startup time.
+    * Significant completion speed improvements, especially for
+      JavaScript.
+    * Greatly improved private mode support and :sanitize command.
+    * :extadd now supports URLs.
     * Replaced 'focuscontent' with 'strictfocus'
-    * Replaced previous incremental search implementation
+    * New and much more powerful incremental search implementation.
+      Improvements over the standard Firefox find include.
+      - Starts at the cursor position in the currently selected
+        frame, unlike Firefox, which always starts at the start of
+        the first frame.
+      - Returns the cursor and viewport to their original position
+        on cancel.
+      - Backtracks to the first successful match after pressing
+        backspace.
+      - Supports reverse incremental search.
     * gf now toggles between source and content view.
-	 '|' key binding has been removed.
-    * :open now only opens files begining with /, ./, or ~/
-    * Page zoom information is now shown in the status bar
+      The | key binding has been removed.
+    * :open now only opens files begining with /, ./, ../, or ~/
+    * 'complete' now defaults to ‘slf’ but file completion only
+      triggers when the URL begins as above.
+    * Page zoom information is now shown in the status bar, and
+      change in zoom status no longer appears in :messages.
     * Added ZO, ZI, ZM, and ZR as aliases for zO, zI, zM, and zR
-    * Add basic plugin authorship documentation
-    * Plugins may now provide full-fleged ':help' documentation
-    * The help system is newly modularized
-    * Asciidoc is no longer for building
-    * Remove [c]:edit[c], [c]:tabedit[c], and [c]:winedit[c]
+    * Major help system improvements:
+      - Plugins may now provide full-fleged ':help' documentation
+      - Add basic plugin authorship documentation
+      - The help system is newly modularized and features significant
+        updates, rewrites, and formatting improvements.
+      - Asciidoc is no longer for building
+    * Remove :edit, :tabedit, and :winedit aliases.
     * Add 'jsdebugger' option - switch on/off javascript debugger service
     * Add "addons", "downloads", "extoptions" and "help" to the 'activate' option.
 
@@ -22,17 +44,6 @@
       tri-license to the MIT license.
     * IMPORTANT: Map.flags has been replaced with individual properties.
       Mappings defined in plugins with mappings.add will need to be updated.
-...................................
-      E.g.
-          mappings.add(...,
-              { flags: Mappings.flags.ARGUMENT |
-                       Mappings.flags.COUNT |
-                       Mappings.flags.MOTION |
-                       Mappings.flags.ALLOW_EVENT_ROUTING });
-      is now
-	   mappings.add(...,
-               { arg: true, count: true, motion: true, route: true });
-...................................
     * IMPORTANT: shifted key notation now matches Vim's behaviour. E.g. <C-a>
       and <C-A> are equivalent, to map the uppercase character use <C-S-A>.
     * IMPORTANT: 'popups' now takes a stringlist rather than a number.

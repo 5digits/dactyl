@@ -6,8 +6,8 @@
 <document
     name="all"
     title="&dactyl.appname; All"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <tags>all</tags>
 
 <toc/>

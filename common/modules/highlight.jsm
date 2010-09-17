@@ -8,22 +8,40 @@ Components.utils.import("resource://dactyl/base.jsm");
 defmodule("highlight", this, {
     exports: ["Highlight", "Highlights", "highlight"],
     require: ["services", "styles"],
-    use: ["template"]
+    use: ["template", "util"]
 });
 
-const Highlight = Struct("class", "selector", "filter", "default", "value", "base");
+const Highlight = Struct("class", "selector", "sites",
+                         "default", "value", "agent",
+                         "base", "baseClass", "style");
+Highlight.liveProperty = function (name, prop) {
+    let i = this.prototype.members.indexOf(name);
+    this.prototype.__defineGetter__(name, function () this[i]);
+    this.prototype.__defineSetter__(name, function (val) {
+        this[i] = val;
+        this.style[prop || name] = this[prop || name];
+    });
+}
+Highlight.liveProperty("agent");
+Highlight.liveProperty("value", "css");
+Highlight.liveProperty("selector", "css");
+Highlight.liveProperty("sites");
+Highlight.liveProperty("style", "css");
 
-Highlight.defaultValue("filter", function ()
-    this.base ? this.base.filter :
-    ["chrome://dactyl/*",
-     "dactyl:*",
-     "file://*"].concat(highlight.styleableChrome).join(","));
+Highlight.defaultValue("baseClass", function () /^(\w*)/.exec(this.class)[0]);
 Highlight.defaultValue("selector", function () highlight.selector(this.class));
+Highlight.defaultValue("sites", function ()
+    this.base ? this.base.sites
+              : ["chrome://dactyl/*", "dactyl:*", "file://*"].concat(
+                    highlight.styleableChrome));
+Highlight.defaultValue("style", function ()
+    styles.addSheet(true, "highlight:" + this.class, this.sites, this.css, this.agent, true));
 Highlight.defaultValue("value", function () this.default);
-Highlight.defaultValue("base", function () {
-    let base = /^(\w*)/.exec(this.class)[0];
-    return (base != this.class && base in highlight.highlight) ? highlight.highlight[base] : null;
-});
+
+Highlight.prototype.__defineGetter__("base", function ()
+    this.baseClass != this.class && highlight.highlight[this.baseClass] || null);
+Highlight.prototype.__defineGetter__("css", function ()
+    this.selector + "{" + this.value + "}");
 Highlight.prototype.toString = function ()
     "Highlight(" + this.class + ")\n\t"
     + [k + ": " + String.quote(v) for ([k, v] in this)]
@@ -38,11 +56,46 @@ Highlight.prototype.toString = function ()
 const Highlights = Module("Highlight", {
     init: function () {
         this.highlight = {};
+        this.loaded = {};
     },
 
     keys: function keys() Object.keys(this.highlight).sort(),
 
     __iterator__: function () values(this.highlight),
+
+    _create: function (agent, args) {
+        let obj = Highlight.apply(Highlight, args);
+
+        if (!isarray(obj[2]))
+            obj[2] = obj[2].split(",");
+        obj[5] = agent;
+
+        let old = this.highlight[obj.class];
+        this.highlight[obj.class] = obj;
+        // This *must* come before any other property changes.
+        if (old)
+            obj.style = old.style;
+
+        if (/^[>+ ]/.test(obj.selector))
+            obj.selector = this.selector(obj.class) + obj.selector;
+        if (old && old.value != old.default)
+            obj.value = old.style;
+
+        if (!old && obj.base && obj.base.enabled)
+            obj.style.enabled = true;
+        else
+            this.loaded.__defineSetter__(obj.class, function () {
+                delete this[obj.class];
+                this[obj.class] = true;
+
+                if (obj.class === obj.baseClass)
+                    for (let h in highlight)
+                        if (h.baseClass === obj.class)
+                            this[h.class] = true;
+                obj.style.enabled = true;
+            });
+        return obj;
+    },
 
     get: function (k) this.highlight[k],
     set: function (key, newStyle, force, append) {
@@ -51,35 +104,40 @@ const Highlights = Module("Highlight", {
         if (!(class_ in this.highlight))
             return "Unknown highlight keyword: " + class_;
 
-        let style = this.highlight[key] || Highlight(key);
+        let highlight = this.highlight[key] || this._create(false, [key]);
 
         if (append)
-            newStyle = (style.value || "").replace(/;?\s*$/, "; " + newStyle);
+            newStyle = (highlight.value || "").replace(/;?\s*$/, "; " + newStyle);
         if (/^\s*$/.test(newStyle))
             newStyle = null;
         if (newStyle == null) {
-            if (style.default == null) {
-                styles.removeSheet(true, style.selector);
-                delete this.highlight[style.class];
+            if (highlight.default == null) {
+                highlight.style.enabled = false;
+                delete this.loaded[highlight.class];
+                delete this.highlight[highlight.class];
                 return null;
             }
-            newStyle = style.default;
+            newStyle = highlight.default;
         }
 
-        if (!style.loaded || style.value != newStyle) {
-            styles.removeSheet(true, style.selector);
-            let css = newStyle.replace(/(?:!\s*important\s*)?(?:;?\s*$|;)/g, "!important;")
-                              .replace(";!important;", ";", "g"); // Seeming Spidermonkey bug
-            if (!/^\s*(?:!\s*important\s*)?;*\s*$/.test(css)) {
-                css = style.selector + " { " + css + " }";
+        highlight.value = newStyle;
+        if (force)
+            highlight.style.enabled = true;
+        this.highlight[highlight.class] = highlight;
+        return highlight;
+    },
 
-                styles.addSheet(true, "highlight:" + style.class, style.filter, css, true);
-                style.loaded = true;
-            }
-        }
-        style.value = newStyle;
-        this.highlight[style.class] = style;
-        return null;
+    /**
+     * Highlights a node with the given group, and ensures that said
+     * group is loaded.
+     *
+     * @param {Node} node
+     * @param {string} group
+     */
+    highlightNode: function (node, group) {
+        node.setAttributeNS(NS.uri, "highlight", group);
+        for each (let h in group.split(" "))
+            this.loaded[h] = true;
     },
 
     /**
@@ -104,30 +162,69 @@ const Highlights = Module("Highlight", {
             this.set(k, null, true);
     },
 
+    groupRegexp:  RegExp(String.replace(<![CDATA[
+        ^
+        (\s* (?:\S|\s\S)+ \s+)
+        \{ ([^}]*) \}
+        \s*
+        $
+    ]]>, /\s*/g, ""), "gm"),
+    sheetRegexp: RegExp(String.replace(<![CDATA[
+        ^\s*
+        !? \*?
+             ( (?:[^;\s]|\s\S)+ )
+        (?:; ( (?:[^;\s]|\s\S)+ )? )?
+        (?:; ( (?:[^ \s]|\s\S)+ )  )?
+        \s*  (.*)
+        $
+    ]]>, /\s*/g, "")),
+
     /**
-     * Bulk loads new CSS rules.
+     * Bulk loads new CSS rules, in the format of,
+     *
+     *   Rules     ::= Rule | Rule "\n" Rule
+     *   Rule      ::= Bang? Star? MatchSpec Space Space* Css
+     *               | Comment
+     *   Comment   ::= Space* "//" *
+     *   Bang      ::= "!"
+     *   Star      ::= "*"
+     *   MatchSpec ::= Class
+     *               | Class ";" Selector
+     *               | Class ";" Selector ";" Sites
+     *   CSS       ::= CSSLine | "{" CSSLines "}"
+     *   CSSLines  ::= CSSLine | CSSLine "\n" CSSLines
+     *
+     * Where Class is the name of the sheet, Selector is the CSS
+     * selector for the style, Site is the comma-separated list of site
+     * filters to apply the style to.
+     *
+     * If Selector is not provided, it defaults to [dactyl|highlight~={Class}].
+     * If it is provided and begins with any of "+", ">" or " ", it is
+     * appended to the default.
+     *
+     * If Sites is not provided, it defaults to the chrome documents of
+     * the main application window, dactyl help files, and any other
+     * dactyl-specific documents.
+     *
+     * If Star is provided, the style is applied as an agent sheet.
+     *
+     * The new styles are lazily activated unless Bang or 'eager' is
+     * provided. See {@link Util#xmlToDom}.
      *
      * @param {string} css The rules to load. See {@link Highlights#css}.
+     * @param {boolean} eager When true, load all provided rules immediately.
      */
-    loadCSS: function (css) {
-        css.replace(/^(\s*\S*\s+)\{((?:.|\n)*?)\}\s*$/gm, function (_, _1, _2) _1 + " " + _2.replace(/\n\s*/g, " "))
-           .split("\n").filter(function (s) /\S/.test(s))
-           .forEach(function (style) {
-               style = Highlight.apply(Highlight,
-                   Array.slice(style.match(/^\s*((?:[^,\s]|\s\S)+)(?:,((?:[^,\s]|\s\S)+)?)?(?:,((?:[^,\s]|\s\S)+))?\s*(.*)$/),
-                               1));
-               if (/^[>+ ]/.test(style.selector))
-                   style.selector = this.selector(style.class) + style.selector;
+    loadCSS: function (css, eager) {
+        String.replace(css, this.groupRegexp, function (m, m1, m2) m1 + " " + m2.replace(/\n\s*/g, " "))
+              .split("\n").filter(function (s) /\S/.test(s) && !/^\s*\/\//.test(s))
+              .forEach(function (highlight) {
 
-               let old = this.highlight[style.class];
-               if (!old)
-                   this.highlight[style.class] = style;
-               else if (old.value == old.default)
-                   old.value = style.value;
-           }, this);
-        for (let [class_, hl] in Iterator(this.highlight))
-            if (hl.value == hl.default)
-                this.set(class_);
+            let bang = eager || /^\s*!/.test(highlight);
+            let star = /^\s*!?\*/.test(highlight);
+            highlight = this._create(star, this.sheetRegexp.exec(highlight).slice(1));
+            if (bang)
+                highlight.style.enabled = true;
+       }, this);
     }
 }, {
 }, {
@@ -181,11 +278,8 @@ const Highlights = Module("Highlight", {
                                 if (!key || h.class.indexOf(key) > -1))));
                 else if (!key && clear)
                     highlight.clear();
-                else {
-                    let error = highlight.set(key, css, clear, "-append" in args);
-                    if (error)
-                        dactyl.echoerr(error);
-                }
+                else
+                    highlight.set(key, css, clear, "-append" in args);
             },
             {
                 // TODO: add this as a standard highlight completion function?
@@ -221,7 +315,7 @@ const Highlights = Module("Highlight", {
         completion.colorScheme = function colorScheme(context) {
             context.title = ["Color Scheme", "Runtime Path"];
             context.keys = { text: function (f) f.leafName.replace(/\.vimp$/, ""), description: ".parent.path" };
-            context.completions = util.Array.flatten(
+            context.completions = array.flatten(
                 modules.io.getRuntimeDirectories("colors").map(
                     function (dir) dir.readDirectory().filter(
                         function (file) /\.vimp$/.test(file.leafName))))
@@ -232,6 +326,12 @@ const Highlights = Module("Highlight", {
             context.title = ["Highlight Group", "Value"];
             context.completions = [[v.class, v.value] for (v in highlight)];
         };
+    },
+    javascript: function (dactyl, modules, window) {
+        modules.JavaScript.setCompleter(["get", "set"].map(function (m) highlight[m]),
+            [ function (context, obj, args) Iterator(highlight.highlight) ]);
+        modules.JavaScript.setCompleter(["highlightNode"].map(function (m) highlight[m]),
+            [ null, function (context, obj, args) Iterator(highlight.highlight) ]);
     }
 });
 

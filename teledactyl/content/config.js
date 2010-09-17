@@ -4,15 +4,11 @@
 // given in the LICENSE.txt file included with this file.
 
 const Config = Module("config", ConfigBase, {
-    init: function () {
+    init: function init() {
+        init.supercall(this);
         // don't wait too long when selecting new messages
         // GetThreadTree()._selectDelay = 300; // TODO: make configurable
     },
-
-    /*** required options, no checks done if they really exist, so be careful ***/
-    name: "Muttator",
-    hostApplication: "Thunderbird", // TODO: can this be found out otherwise? gBrandBundle.getString("brandShortName");
-                                    // Yes, but it will be localized unlike all other strings. So, it's best left until we i18n dactyl. --djk
 
     autocommands: {
         DOMLoad: "Triggered when a page's DOM content has fully loaded",
@@ -56,14 +52,14 @@ const Config = Module("config", ConfigBase, {
     defaults: {
         guioptions: "frb",
         showtabline: 1,
-        titlestring: "Muttator"
+        titlestring: "Teledactyl"
     },
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
     features: ["hints", "mail", "marks", "addressbook", "tabs"],
 
     focusChange: function (win) {
-        // we switch to -- MESSAGE -- mode for Muttator, when the main HTML widget gets focus
+        // we switch to -- MESSAGE -- mode for Teledactyl when the main HTML widget gets focus
         if (win && win.document instanceof HTMLDocument || dactyl.focus instanceof HTMLAnchorElement) {
             if (config.isComposeWindow)
                 modes.set(modes.INSERT, modes.TEXTAREA);
@@ -120,9 +116,9 @@ const Config = Module("config", ConfigBase, {
     },
 
     get scripts() this.isComposeWindow ? ["compose/compose.js"] : [
-        "addressbook.js",
-        "mail.js",
-        "tabs.js",
+        "addressbook",
+        "mail",
+        "tabs",
     ],
 
     styleableChrome: ["chrome://messenger/content/messenger.xul",
@@ -145,7 +141,7 @@ const Config = Module("config", ConfigBase, {
 }, {
     commands: function () {
         commands.add(["pref[erences]", "prefs"],
-            "Show " + config.hostApplication + " preferences",
+            "Show " + config.host + " preferences",
             function () { window.openOptionsDialog(); },
             { argCount: "0" });
     },

@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -20,6 +20,13 @@ const Tabs = Module("tabs", {
         // used for the "gb" and "gB" mappings to remember the last :buffer[!] command
         this._lastBufferSwitchArgs = "";
         this._lastBufferSwitchSpecial = true;
+
+        let fragment = dactyl.has("MacUnix") ? "tab-mac" : "tab";
+        this.tabBinding = styles.addSheet(true, "tab-binding", "chrome://browser/content/browser.xul",
+                ".tabbrowser-tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#" + fragment + ") !important; }" +
+                // FIXME: better solution for themes?
+                ".tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }",
+                false, true);
 
         // hide tabs initially to prevent flickering when 'stal' would hide them
         // on startup
@@ -72,22 +79,6 @@ const Tabs = Module("tabs", {
         if (!("options" in store))
             store.options = {};
         return store.options;
-    },
-
-    /**
-     * @property {boolean} Whether the tab numbering XBL binding has been
-     *     applied.
-     */
-    get tabsBound() Boolean(styles.get(true, "tab-binding")),
-    set tabsBound(val) {
-        let fragment = dactyl.has("MacUnix") ? "tab-mac" : "tab";
-        if (!val)
-            styles.removeSheet(true, "tab-binding");
-        else if (!this.tabsBound)
-            styles.addSheet(true, "tab-binding", "chrome://browser/content/browser.xul",
-                ".tabbrowser-tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#" + fragment + ") !important; }" +
-                // FIXME: better solution for themes?
-                ".tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }");
     },
 
     get visibleTabs() config.tabbrowser.visibleTabs || this.allTabs.filter(function (tab) !tab.hidden),
@@ -721,7 +712,7 @@ const Tabs = Module("tabs", {
                 });
 
             commands.add(["quita[ll]", "qa[ll]"],
-                "Quit " + config.name,
+                "Quit " + config.appname,
                 function (args) { dactyl.quit(false, args.bang); }, {
                     argCount: "0",
                     bang: true
@@ -831,7 +822,7 @@ const Tabs = Module("tabs", {
                     argCount: "+",
                     completer: function (context, args) {
                         if (args.completeArg == 0) {
-                            context.filters.push(function ({ item: win }) win != window);
+                            context.filters.push(function ({ item }) item != window);
                             completion.window(context);
                         }
                     }

@@ -9,7 +9,9 @@
 Components.utils.import("resource://gre/modules/utils.js"); // XXX
 
 const Config = Module("config", ConfigBase, {
-    init: function () {
+    init: function init() {
+        init.supercall(this);
+
         // TODO: mention this to SB devs, they seem keen to provide these
         // functions to make porting from FF as simple as possible.
         window.toJavaScriptConsole = function () {
@@ -250,7 +252,7 @@ const Config = Module("config", ConfigBase, {
             });
 
         commands.add(["pref[erences]", "prefs"],
-            "Show " + config.hostApplication + " preferences",
+            "Show " + config.host + " preferences",
             function (args) {
                 if (args.bang) { // open Songbird settings GUI dialog
                     dactyl.open("about:config",

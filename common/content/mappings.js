@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -383,7 +383,7 @@ const Mappings = Module("mappings", {
                 let [lhs, rhs] = args;
 
                 if (!rhs) // list the mapping
-                    mappings.list(modes, this._expandLeader(lhs));
+                    mappings.list(modes, mappings._expandLeader(lhs));
                 else {
                     // this matches Vim's behaviour
                     if (/^<Nop>$/i.test(rhs))
@@ -467,7 +467,7 @@ const Mappings = Module("mappings", {
         addMapCommands("",  [modes.NORMAL, modes.VISUAL], "");
 
         for (let mode in modes.mainModes)
-            if (mode.char && !commands.get(mode.char + "map"))
+            if (mode.char && !commands.get(mode.char + "map", true))
                 addMapCommands(mode.char,
                                [m.mask for (m in modes.mainModes) if (m.char == mode.char)],
                                [mode.disp.toLowerCase()]);
@@ -489,8 +489,7 @@ const Mappings = Module("mappings", {
                 null,
                 function (context, obj, args) {
                     let mode = args[0];
-                    return util.Array.flatten(
-                    [
+                    return array.flatten([
                         [[name, map.description] for ([i, name] in Iterator(map.names))]
                         for ([i, map] in Iterator(mappings._user[mode].concat(mappings._main[mode])))
                     ]);

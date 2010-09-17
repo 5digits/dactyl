@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defmodule("bookmarkcache", this, {
     exports: ["Bookmark", "BookmarkCache", "Keyword", "bookmarkcache"],
-    require: ["services", "util"]
+    require: ["services", "storage", "util"]
 });
 
 
@@ -26,11 +26,10 @@ const name      = "bookmark-cache";
 
 const BookmarkCache = Module("BookmarkCache", {
     init: function init() {
-
         bookmarks.addObserver(this, false);
     },
 
-    __iterator__: function () (val for ([, val] in Iterator(self.bookmarks))),
+    __iterator__: function () (val for ([, val] in Iterator(this.bookmarks))),
 
     get bookmarks() Class.replaceProperty(this, "bookmarks", this.load()),
 
@@ -38,9 +37,9 @@ const BookmarkCache = Module("BookmarkCache", {
         .map(function (s) bookmarks[s]),
 
     _deleteBookmark: function deleteBookmark(id) {
-        let length = bookmarks.length;
-        bookmarks = bookmarks.filter(function (item) item.id != id);
-        return bookmarks.length < length;
+        let length = this.bookmarks.length;
+        this.bookmarks = this.bookmarks.filter(function (item) item.id != id);
+        return this.bookmarks.length < length;
     },
 
     _loadBookmark: function loadBookmark(node) {
@@ -118,7 +117,7 @@ const BookmarkCache = Module("BookmarkCache", {
     onItemMoved:        function onItemMoved() {},
     onItemAdded: function onItemAdded(itemId, folder, index) {
         if (bookmarks.getItemType(itemId) == bookmarks.TYPE_BOOKMARK) {
-            if (self.isBookmark(itemId)) {
+            if (this.isBookmark(itemId)) {
                 let bmark = this._loadBookmark(this.readBookmark(itemId));
                 this.bookmarks.push(bmark);
                 storage.fireEvent(name, "add", bmark);

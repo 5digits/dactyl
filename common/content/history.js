@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -45,11 +45,12 @@ const History = Module("history", {
         let sh = window.getWebNavigation().sessionHistory;
         let obj = [];
         obj.index = sh.index;
-        obj.__iterator__ = function () util.Array.iteritems(this);
+        obj.__iterator__ = function () array.iteritems(this);
         for (let i in util.range(0, sh.count)) {
-            obj[i] = { index: i, __proto__: sh.getEntryAtIndex(i, false) };
-            util.memoize(obj[i], "icon",
-                function (obj) services.get("favicon").getFaviconImageForPage(obj.URI).spec);
+            obj[i] = update(Object.create(sh.getEntryAtIndex(i, false)),
+                            { index: i });
+            memoize(obj[i], "icon",
+                function () services.get("favicon").getFaviconImageForPage(this.URI).spec);
         }
         return obj;
     },
@@ -64,7 +65,10 @@ const History = Module("history", {
             dactyl.beep();
         else {
             let index = Math.constrain(current + steps, start, end);
-            window.getWebNavigation().gotoIndex(index);
+            try {
+                window.getWebNavigation().gotoIndex(index);
+            }
+            catch (e) {} // We get NS_ERROR_FILE_NOT_FOUND if files in history don't exist
         }
     },
 

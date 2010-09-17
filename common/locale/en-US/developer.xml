@@ -8,62 +8,39 @@
 <document
     name="developer"
     title="&dactyl.appname; Developer information"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <h1 tag="developer-information">Developer information</h1>
 <toc start="2"/>
 
 <h2 tag="writing-docs documentation">Writing documentation</h2>
 
 <p>
-    For every new feature, writing documentation is <em>mandatory</em> for the
-    patch to be accepted. The docs are written in an XML dialect similar to
-    XHTML, with a few tags specific to our documentation. For example:
+    In order for any user-visible change to be accepted into the mainline, it
+    must be accompanied by accurate documentation. The docs are written in an
+    XML dialect similar to XHTML, with a few tags specific to our
+    documentation. For example:
 </p>
 
-<code><![CDATA[
-<item>
-    <tags><![CDATA[<F1> :help :h help]]]]><![CDATA[></tags>
-    <spec>:h<oa>elp</oa> <a>subject</a></spec>
-    <spec><![CDATA[<F1>]]]]><![CDATA[></spec>
+<xml-block><item>
+    <tags>&lt;F1> :help :h help</tags>
+    <spec>:h<oa>elp</oa> <oa>subject</oa></spec>
+    <spec>&lt;F1></spec>
     <description>
         <p>
-            Open help window.
-            The default section is shown unless <a>subject</a> is specified.
-            If you need help for a specific topic, try <ex>:help overview</ex>.
+            Open the help page. The default page, as specified by <o>helpfile</o> is shown
+            unless <oa>subject</oa> is specified. If you need help for a specific topic, try
+            <ex>:help overview</ex>.
         </p>
     </description>
-</item>
-]]></code>
+</item></xml-block>
 
 <p>
     creates a new help section for the command <ex>:help</ex> and for
     the related key binding, <k name="F1"/>. It also creates help tags
     for the command, its shortcuts, the key binding, and the general
-    topic, 'help'. These tags enable linking to this section when from
+    topic, ‘help’. These tags enable linking to this section when from
     other mentions of the topic and from the <ex>:help</ex> command.
-    The above code displays as:
-</p>
-
-<html:div style="margin: 2em;">
-<item>
-    <tags><![CDATA[<F1> :help :h help]]></tags>
-    <spec>:h<oa>elp</oa> <a>subject</a></spec>
-    <spec><![CDATA[<F1>]]></spec>
-    <description>
-        <p>
-            Open help window.
-            The default section is shown unless <a>subject</a> is specified.
-            If you need help for a specific topic, try <ex>:help overview</ex>.
-        </p>
-    </description>
-</item>
-</html:div>
-
-<p>
-    If you don't know in which file/section you should put some
-    documentation, ask on the mailing list or on
-    <link topic="irc://irc.freenode.net/pentadactyl">#pentadactyl</link>.
 </p>
 
 <h3 tag="help-tags help-xml">Help tags</h3>
@@ -80,8 +57,9 @@
     <dt>h2</dt>        <dd>A second-level heading (HelpSubhead)</dd>
     <dt>h3</dt>        <dd>A third-level heading (HelpSubsubhead)</dd>
     <dt>code</dt>      <dd>A pre-formatted code block. (HelpCode)</dd>
-    <dt>note</dt>      <dd><note style="margin: 0;">A note paragraph. (HelpNote)</note></dd>
-    <dt>warning</dt>   <dd><warning style="margin: 0;">A warning paragraph. (HelpWarning)</warning></dd>
+    <dt>note</dt>      <dd><note>A note paragraph. (HelpNote)</note></dd>
+    <dt>strut</dt>     <dd>A horizontal strut which prevents any previous floating elements from appearing below it.</dd>
+    <dt>warning</dt>   <dd><warning>A warning paragraph. (HelpWarning)</warning></dd>
 </dl>
 <dl>
     <dt>Generic</dt><dd/>
@@ -96,19 +74,21 @@
     <dt>item</dt>       <dd>A help entry (HelpItem)</dd>
     <dt>&tab;tags</dt>  <dd>See the 'Tagging' section (HelpTags)</dd>
     <dt>&tab;spec</dt>  <dd>The specification for this item, such as an example command-line. (HelpSpec)</dd>
+    <dt>&tab;strut</dt> <dd>A horizontal formatting strut which ensures that all previous &lt;tags> and &lt;spec> elements appear above the ones that follow.</dd>
     <dt>&tab;type</dt>  <dd>For options, the type of the option.
                             <em>number</em>, <em>boolean</em>, <em>string</em>, <em>string</em>, <em>stringlist</em>, or <em>charlist</em>.
                             (HelpType)
                         </dd>
     <dt>&tab;default</dt>     <dd>For options, the default value. (HelpDefault)</dd>
     <dt>&tab;description</dt> <dd>The description of this help item. (HelpDescription)</dd>
+    <dt>&tab;&tab;@short</dt> <dd>Indicates that this is a short description which should appear between the specs and tags.</dd>
     <dt>a</dt>  <dd>Required <a>argument</a>. (HelpArg)</dd>
     <dt>oa</dt> <dd>Optional <oa>argument</oa>. (HelpOptionalArg)</dd>
 </dl>
 <dl>
     <dt>Tagging</dt><dd/>
     <dt>tags</dt>   <dd>Space-separated list of strings to tag. Displayed right-aligned, and used for cross-linking. (HelpTags)</dd>
-    <dt>@tag</dt>   <dd>The tag attribute. Applied to any element, generates a &lt;tags> element with its value for its contents. (HelpTag)</dd>
+    <dt>@tag</dt>   <dd>The tag attribute. Applied to any element, generates a &lt;tags> element for the given tags. (HelpTag)</dd>
 </dl>
 <dl>
     <dt>Linking</dt><dd/>
@@ -129,7 +109,7 @@
     <dt>&tab;@summary</dt>     <dd>A short description of the plugin, shown in its section head.</dd>
 
     <dt>project</dt>           <dd>The project for which this plugin was intended.</dd>
-    <dt>&tab;@name</dt>        <dd>The name of the project (i.e., <str>&dactyl.name;</str>)</dd>
+    <dt>&tab;@name</dt>        <dd>The name of the project (i.e., <str>&dactyl.appname;</str>)</dd>
     <dt>&tab;@minVersion</dt>  <dd>The minimum version of the project for which this plugin is intended to work.</dd>
     <dt>&tab;@maxVersion</dt>  <dd>The maximum version of the project for which this plugin is intended to work.</dd>
 
@@ -148,52 +128,67 @@
     written a new command, mapping or option.
 </p>
 
-<example><ex>:echo util.generateHelp(commands.get(<str>addons</str>), <![CDATA[<p>Extra text</p>]]>)</ex></example>
+<example><ex>:echo dactyl.generateHelp(commands.get(<str>addons</str>), <![CDATA[<p>Extra text</p>]]>)</ex></example>
 
 <h2 tag="writing-plugins">Writing plugins</h2>
 
 <p>
-    Writing &dactyl.appname; plugins is incredibly simple.
-    Plugins are simply JavaScript files which run with full chrome
-    privileges and have full access to the &dactyl.appname; and
-    &dactyl.host; APIs. Each plugin has its own global object,
-    which means that the variables and functions that you create
-    won't pollute the global <em>window</em> or private
-    <em>dactyl</em> namespaces. This means that there's no need
-    to wrap your plugin in a closure, as is often the practice in
-    JavaScript development. Furthermore, any plugin which is
-    installed in your <o>runtimepath</o><em>/plugin</em> directory
-    will find its context stored in
-    <em>plugins.&lt;pluginName></em>, which is often invaluable
-    during development and testing.
+    Writing &dactyl.appname; plugins is incredibly simple. Plugins are
+    simply JavaScript files which run with full chrome privileges and
+    have full access to the &dactyl.appname; and &dactyl.host; APIs.
+    Each plugin has its own global object, which means that the
+    variables and functions that you create won't pollute the global
+    <em>window</em> or private <em>dactyl</em> namespaces. This means
+    that there's no need to wrap your plugin in a closure, as is often
+    the practice in JavaScript development. Furthermore, any plugin
+    which is installed in your <o>runtimepath</o><em>/plugins</em>
+    directory will find its context stored in
+    <em>plugins.&lt;pluginName></em>, which is often invaluable during
+    development and testing.
+</p>
+
+<p>
+    Plugins are always initialized after the main window is loaded, so
+    there is no need to write <str>load</str> event handlers. Beyond
+    that, what you may do with your plugins is practically limitless.
+    Plugins have full access to all of the chrome resources that
+    ordinary &dactyl.host; do, along with the entire power of the
+    &dactyl.appname; API. If you need a starting point, have a look at some
+    <link topic="&dactyl.plugins;">existing plugins</link> or
+    <link topic="http://addon.mozilla.org/">extensions</link>,
+    especially the
+    <link topic="&dactyl.code;source/browse/">&dactyl.appname;</link>
+    source.
 </p>
 
 <h3 tag="plugin-documentation">Plugin documentation</h3>
 
 <p>
-    Plugins may provide inline documentation, which will appear on
-    the <ex>:help plugins</ex> page. The markup for help entries
-    is the same as the above, with a few more plugin specific
-    entries. Here is an example from the popular
-    <em>flashblock</em> extension:
+    Plugins should provide inline documentation, which will appear on the
+    <ex>:help plugins</ex> page. The markup for help entries is the same
+    as the above, along with a few extra plugin-specific entries. Here is an
+    example from the popular <em>flashblock</em> extension:
 </p>
 
-<code><![CDATA[
-var INFO =
-<plugin name="flashblock" version="1.0"
-        href="http://ticket.vimperator.org/9"
-        summary="Flash Blocker"
-        xmlns="http://vimperator.org/namespaces/liberator">
+<xml-block><escape><hl key="HelpXMLString">use strict</hl>;
+XML.ignoreWhitespace = <hl key="Boolean">false</hl>;
+XML.prettyPrinting   = <hl key="Boolean">false</hl>;
+<hl key="HelpXML">var</hl> INFO = <!-- Cursed manual XML highlighting! -->
+<hl key="HelpXMLTagStart">&lt;plugin
+    <hl key="HelpXMLAttribute">name</hl><hl key="HelpXMLString">flashblock</hl>
+    <hl key="HelpXMLAttribute">version</hl><hl key="HelpXMLString">1.0</hl>
+    <hl key="HelpXMLAttribute">href</hl><hl key="HelpXMLString">http://ticket.vimperator.org/9</hl>
+    <hl key="HelpXMLAttribute">summary</hl><hl key="HelpXMLString">Flash Blocker</hl>
+    <hl key="HelpXMLAttribute">xmlns</hl>{NS}></hl></escape>
     <author email="maglione.k@gmail.com">Kris Maglione</author>
     <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
-    <project name="Pentadactyl" minVersion="2.0"/>
+    <project name="Pentadactyl" minVersion="1.0"/>
     <p>
         This plugin provides the same features as the ever popular FlashBlock
         Firefox addon. Flash animations are substituted with place holders which
         play the original animation when clicked. Additionally, this plugin provides
         options to control which sites can play animations without restrictions, and
         triggers to toggle the playing of animation on the current page.
-	commandline from the data in a given form.
     </p>
     <item>
 	<tags>'flashblock' 'fb'</tags>
@@ -206,25 +201,30 @@ var INFO =
                 holders are substituted for flash animations on untrusted sites.
             </p>
 	</description>
-    </item>]]>
-    <em>…</em><![CDATA[
-</plugin>;
-]]>
-</code>
+    </item>
+    <escape><oa>...</oa>
+<hl key="HelpXMLTagEnd">&lt;/plugin></hl></escape>;</xml-block>
 
 <p>
     The inline XML is made possible by
     <link topic="https://developer.mozilla.org/en/E4X">E4X</link>.
-    It's important that the documentation be assigned to the
+    It is important that the documentation be assigned to the
     <em>INFO</em> variable, or &dactyl.appname; will not be able
-    to find it. The documentation that you provide behaves exactly
-    as other &dactyl.appname; documentation, which means that
-    the tags you provide are available via <ex>:help</ex> with
-    full tag completion and cross-referencing support. Although
-    documentation is not required, we strongly recommend that all
-    plugin authors provide at least basic documentation of the
-    functionality of their plugins and of each of the options,
-    commands, and especially mappings that they provide.
+    to find it. The XML property changes are not compulsory, but
+    they do prevent certain formatting problems that may occur
+    otherwise. Beginning your file with <str>use strict</str>, while
+    not required, helps to prevent a lot of common errors.
+</p>
+    
+<p>
+    The documentation that you provide behaves exactly as other
+    &dactyl.appname; documentation, which means that the tags you
+    provide are available via <ex>:help</ex> with full tag
+    completion and cross-referencing support. Although documentation
+    is not required, we strongly recommend that all plugin authors
+    provide at least basic documentation of the functionality of
+    their plugins and of each of the options, commands, and
+    especially mappings that they provide.
 </p>
 
 </document>

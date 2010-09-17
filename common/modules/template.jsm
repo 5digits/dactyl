@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -40,6 +40,8 @@ const Template = Module("Template", {
         if (typeof xml == "xml")
             return xml;
         try {
+            XML.ignoreWhitespace = false;
+            XML.prettyPrinting = false;
             return new XMLList(xml);
         }
         catch (e) {}
@@ -48,7 +50,7 @@ const Template = Module("Template", {
 
     bookmarkDescription: function (item, text)
     <>
-        <a href={item.item.url} highlight="URL">{text}</a>&#160;
+        <a href={item.item.url} highlight="URL">{text || ""}</a>&#xa0;
         {
             !(item.extra && item.extra.length) ? "" :
             <span class="extra-info">
@@ -72,8 +74,8 @@ const Template = Module("Template", {
             var desc = item[1] || "";
         }
         else {
-            var text = this.process[0].call(this, item, item.text);
-            var desc = this.process[1].call(this, item, item.description);
+            var text = this.processor[0].call(this, item, item.result);
+            var desc = this.processor[1].call(this, item, item.description);
         }
 
         // <e4x>
@@ -82,8 +84,8 @@ const Template = Module("Template", {
                       - from pushing the baseline down and enlarging
                       - the row.
                       -->
-                   <li highlight="CompResult">{text}&#160;</li>
-                   <li highlight="CompDesc">{desc}&#160;</li>
+                   <li highlight="CompResult">{text}&#xa0;</li>
+                   <li highlight="CompDesc">{desc}&#xa0;</li>
                </div>;
         // </e4x>
     },

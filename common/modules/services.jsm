@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2020 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -9,6 +9,9 @@ defmodule("services", this, {
     exports: ["Services", "services"]
 });
 
+/**
+ * A lazily-instantiated XPCOM class and service cache.
+ */
 const Services = Module("Services", {
     init: function () {
         this.classes = {};
@@ -33,12 +36,13 @@ const Services = Module("Services", {
         this.add("json",                "@mozilla.org/dom/json;1",                          Ci.nsIJSON, "createInstance");
         this.add("livemark",            "@mozilla.org/browser/livemark-service;2",          Ci.nsILivemarkService);
         this.add("observer",            "@mozilla.org/observer-service;1",                  Ci.nsIObserverService);
-        this.add("pref",                "@mozilla.org/preferences-service;1",               [Ci.nsIPrefBranch, Ci.nsIPrefBranch2, Ci.nsIPrefService]);
+        this.add("pref",                "@mozilla.org/preferences-service;1",               [Ci.nsIPrefBranch2, Ci.nsIPrefService]);
         this.add("privateBrowsing",     "@mozilla.org/privatebrowsing;1",                   Ci.nsIPrivateBrowsingService);
         this.add("profile",             "@mozilla.org/toolkit/profile-service;1",           Ci.nsIToolkitProfileService);
         this.add("runtime",             "@mozilla.org/xre/runtime;1",                       [Ci.nsIXULAppInfo, Ci.nsIXULRuntime]);
         this.add("rdf",                 "@mozilla.org/rdf/rdf-service;1",                   Ci.nsIRDFService);
         this.add("sessionStore",        "@mozilla.org/browser/sessionstore;1",              Ci.nsISessionStore);
+        this.add("stringBundle",        "@mozilla.org/intl/stringbundle;1",                 Ci.nsIStringBundleService);
         this.add("stylesheet",          "@mozilla.org/content/style-sheet-service;1",       Ci.nsIStyleSheetService);
         this.add("subscriptLoader",     "@mozilla.org/moz/jssubscript-loader;1",            Ci.mozIJSSubScriptLoader);
         this.add("tagging",             "@mozilla.org/browser/tagging-service;1",           Ci.nsITaggingService);
@@ -104,18 +108,18 @@ const Services = Module("Services", {
     },
 
     /**
+     * Returns a new instance of the cached class with the specified name.
+     *
+     * @param {string} name The class's cache key.
+     */
+    create: function (name) this.classes[name](),
+
+    /**
      * Returns the cached service with the specified name.
      *
      * @param {string} name The service's cache key.
      */
     get: function (name) this.services[name],
-
-    /**
-     * Returns a new instance of the cached class with the specified name.
-     *
-     * @param {string} name The class's cache key.
-     */
-    create: function (name) this.classes[name]()
 }, {
 }, {
     init: function (dactyl, modules) {

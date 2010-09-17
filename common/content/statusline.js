@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -14,8 +14,9 @@ const StatusLine = Module("statusline", {
         this._statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
 
         // our status bar fields
-        this.widgets = dict(["status", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"].map(
-                function (field) [field, document.getElementById("dactyl-statusline-field-" + field)]));
+        this.widgets = array(["status", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"]
+                    .map(function (field) [field, document.getElementById("dactyl-statusline-field-" + field)]))
+                    .toObject();
     },
 
     /**
@@ -36,7 +37,7 @@ const StatusLine = Module("statusline", {
             insecure: "StatusLine"
         };
 
-        this._statusBar.setAttributeNS(NS.uri, "highlight", highlightGroup[type]);
+        highlight.highlightNode(this._statusBar, highlightGroup[type]);
     },
 
     // update all fields of the statusline
@@ -115,8 +116,8 @@ const StatusLine = Module("statusline", {
         }
         if (modules.bookmarks) {
             if (bookmarks.isBookmarked(buffer.URL))
-                modified += "\u2764"; // a heart symbol: ❤
-                //modified += "\u2665"; // a heart symbol: ♥
+                modified += UTF8("❤");
+                //modified += UTF8("♥");
         }
 
         if (modified)
@@ -206,7 +207,9 @@ const StatusLine = Module("statusline", {
             let win = document.commandDispatcher.focusedWindow;
             if (!win)
                 return;
-            percent = win.scrollMaxY == 0 ? -1 : win.scrollY / win.scrollMaxY;
+            win.scrollY;
+            percent = win.scrollY    == 0 ?  0 : // This prevents a forced rendering
+                      win.scrollMaxY == 0 ? -1 : win.scrollY / win.scrollMaxY;
         }
 
         let bufferPositionStr = "";
@@ -255,11 +258,11 @@ const StatusLine = Module("statusline", {
             {
                 setter: function setter(value) {
                     if (value == 0)
-                        document.getElementById("status-bar").collapsed = true;
+                        statusline._statusBar.collapsed = true;
                     else if (value == 1)
                         dactyl.echoerr("show status line only with > 1 window not implemented yet");
                     else
-                        document.getElementById("status-bar").collapsed = false;
+                        statusline._statusBar.collapsed = false;
 
                     return value;
                 },

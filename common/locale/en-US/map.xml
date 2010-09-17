@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
 <!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
@@ -6,39 +6,71 @@
 <document
     name="map"
     title="&dactyl.appname; Key Mappings"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
-<h1>Key mappings, abbreviations, and user-defined commands</h1>
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
+<h1 tag="keyboard-shortcuts">Keyboard shortcuts and commands</h1>
 <toc start="2"/>
+
+<p>
+    &dactyl.appname; provides a number commands to change the
+    behavior of key presses. This can be mean anythong from
+    automatically substituting one key for another, to automatically
+    replacing one typed word for another, to launching a dialog or
+    running a command.
+</p>
 
 <h2 tag="key-mapping mapping map macro">Key mapping</h2>
 
 <p>
-    The key mapping commands can be used to either redefine the standard key
-    bindings or define new ones. A mapping consists of a key, or <t>key-sequence</t>,
-    which is translated to a string of characters. Example:
+    Key mappings are the most basic means &dactyl.appname; provides
+    for altering the actions of key presses. Each key mapping is
+    associated with a mode, such as <link topic="insert-mode">insert</link>,
+    <link topic="normal-mode">normal</link>, or
+    <link topic="command-line-mode">command-line</link>, and only
+    has effect when that mode is active. Although each mode has a
+    full suite of internal mappings, they may be easily augmented,
+    altered, or removed with the <ex>:map</ex> command and its
+    variants. These commands, in essence, allow the user to quickly
+    substitute one sequence of key presses for another.
+    For instance,
 </p>
-<code><ex>:map <k name="F2"/> :echo new Date().toDateString()<k name="CR"/></ex></code>
+
+<code><ex>:map <k name="F2"/></ex> <ex>:echo Date()<k name="CR"/></ex></code>
+
 <p>
-    will echo the current date to the command line when <k name="F2"/> is pressed.
+    causes “<ex>:echo Date()<k name="CR"/></ex>” to be typed out
+    whenever <k name="F2"/> is pressed, thus echoing the full date
+    to the command-line.
 </p>
 
-<tags>:map-modes</tags>
+<p tag=":map-modes">
+    Standard key mapping commands are provided for the four most
+    common modes,
+</p>
+
+<dl>
+    <dt>n</dt> <dd>Normal mode: When browsing normally</dd>
+    <dt>v</dt> <dd>Visual mode: When selecting text with the cursor keys</dd>
+    <dt>i</dt> <dd>Insert mode: When interacting with text fields on a website</dd>
+    <dt>c</dt> <dd>Command-line mode: When typing into the &dactyl.appname; command line</dd>
+</dl>
 
 <p>
-    Keys can be mapped in four distinct modes:
+    The ordinary <ex>:map</ex> and <ex>:noremap</ex> commands
+    add mappings for normal and visual mode. In order to map key
+    bindings in a different mode, any of the mapping commands may be
+    prefixed with one of the above letters. For instance,
+    <ex>:imap</ex> creates a new key mapping in insert mode, while
+    <ex>:cunmap</ex> removes a key mapping from command-line mode.
+    Although other modes do exist, their mappings may currently only
+    be altered via JavaScript.
 </p>
-
-<ul>
-    <li>Normal mode: When browsing normally</li>
-    <li>Visual mode: When selecting text with the cursor keys</li>
-    <li>Insert mode: When interacting with text fields on a website</li>
-    <li>Command-line mode: When typing into the &dactyl.appname; command line</li>
-</ul>
 
 <warning>
-    Mappings are NOT saved between sessions, make sure you put them in your
-    &dactyl.name;rc file!
+    It is important to note that mappings are <em>not</em>
+    automatically saved between sessions. In order to preserve them,
+    they must either be added to your <tt>&dactyl.name;rc</tt> or
+    saved via the <ex>:mk&dactyl.name;rc</ex> command.
 </warning>
 
 <h3 tag=":map-commands">Map commands</h3>
@@ -56,8 +88,16 @@
     <spec>:cm<oa>ap</oa> <a>lhs</a> <a>rhs</a></spec>
     <description>
         <p>
-            Map the <t>key-sequence</t> <a>lhs</a> to <a>rhs</a> for the applicable mode(s). The <a>rhs</a> is
-            remapped, allowing for nested and recursive mappings.
+            Map the <t>key-sequence</t> <a>lhs</a> to <a>rhs</a> for
+            the applicable mode(s). The keys of <a>rhs</a> respect
+            user-defined mappings, so the following will result in
+            an infinite loop,
+        </p>
+        <code><ex>:map a b</ex>
+<ex>:map b a</ex></code>
+        <p>
+            In order to avoid this shortcoming, the
+            <ex>:noremap</ex> command may be used.
         </p>
     </description>
 </item>
@@ -76,9 +116,14 @@
     <spec>:cno<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
     <description>
         <p>
-            Map the <t>key-sequence</t> <a>lhs</a> to <a>rhs</a> for the applicable mode(s). No remapping of
-            the <a>rhs</a> is performed.
+            Map the <t>key-sequence</t> <a>lhs</a> to <a>rhs</a> for
+            the applicable mode(s). The keys in <a>rhs</a> do not
+            respect user-defined key mappings, so the following
+            effectively reverses the default meanings of the keys
+            <k>d</k> and <k>D</k>
         </p>
+        <code><ex>:noremap d D</ex>
+<ex>:noremap D d</ex></code>
     </description>
 </item>
 
@@ -113,8 +158,7 @@
     <spec>:cmapc<oa>lear</oa></spec>
     <description>
         <p>
-            Remove all mappings for the applicable mode(s). All user-defined mappings are
-            cleared.
+            Remove all user-defined mappings for the applicable mode(s).
         </p>
     </description>
 </item>
@@ -155,11 +199,11 @@
 <tags>:map-&lt;silent></tags>
 
 <p>
-    When the first argument to one of the mapping commands is <k name="silent"/>,
-    <a>rhs</a> is not echoed to the command line, nor, for that matter, anything
-    else until the command has completed.
+    When the first argument to one of the mapping commands is
+    <k name="silent"/>, the keys in <a>rhs</a> are not shown in the
+    command line as they are generated. Nor, for that matter, is
+    anything else until the command has completed.
 </p>
-
 
 <p>
     Below is an overview of which modes each map command applies to:
@@ -175,70 +219,110 @@
 :cmap  :cnoremap  :cunmap  :cmapclear – Command-line mode
 </code>
 
-<h3 tag="key-notation,key-sequence">Key sequences</h3>
+<h3 tag="key-notation key-sequence">Key sequences</h3>
 
 <p>
-    For most keys, the key-sequence is the same as the character you see when you
-    type that key, however there are some exceptions which allow for a much larger
-    number of keys to be used in mappings.
+    Most keys in key sequences are represented simply by the
+    character that you see on the screen when you type them.
+    However, as a number of these characters have special meanings,
+    and a number of keys have no visual representation, a special
+    notation is required.
 </p>
 
 <ul>
-    <li><k name="lt"/>, <k>&lt;</k>, <k name="Space"/>, <k>\ </k> allow a literal &lt; or space character.</li>
-    <li>', " and \ must be used to avoid escaping issues when mapping a quote or backslash.</li>
     <li>
-        <k name="Left"/> <k name="Right"/> <k name="Up"/>
-        <k name="Down"/> <k name="PageUp"/> <k name="PageDown"/>
-        <k name="Esc"/> <k name="CR"/> (for carriage return/enter)
+        The first argument to the <ex>:map</ex> commands must be
+        <link topic="quoting">quoted</link> if it contains spaces,
+        quotation marks or back-slashes. A space may additionally be
+        typed as <k name="Space"/>.
     </li>
-    <li><k name="CapsLock"/> <k name="NumLock"/> <k name="Ins"/> <k name="Del"/> <k name="Tab"/> <k name="BS"/> (for a backspace)</li>
+    <li>
+        As special key names start with the <em>&lt;</em> character,
+        a literal &lt; must be typed as <k name="lt"/>.
+    </li>
+    <li>
+        <k name="Left"/>, <k name="Right"/>, <k name="Up"/>,
+        and <k name="Down"/> represent the standard arrow keys.
+    </li>
+    <li>
+        <k name="CapsLock"/>, <k name="NumLock"/>, <k name="Ins"/>
+        <k name="Del"/>, <k name="Tab"/>, <k name="PageUp"/>,
+        <k name="PageDown"/>, and <k name="Esc"/> work as
+        expected.
+   </li>
+    <li>
+        <k name="Return"/> or <k name="CR"/> represent the carriage
+        return key.
+    </li>
+    <li><k name="BS"/> represents the backspace key.</li>
     <li><k name="F1"/> through <k name="F12"/> work as expected</li>
+    <li>
+        <k name="K0"/> through <k name="K9"/> represent keys on the
+        numeric keypad.
+    </li>
 </ul>
 
 <p>
-    Most keyboards have some modifiers such as the control, alt or meta keys. In
-    order to create a mapping that uses these keys the correct prefix must be used
-    within the angle brackets.
+    In order to represent key presses using the Control, Alt, Meta,
+    or Shift keys, the following prefixes may be used,
 </p>
 
 <ol>
-    <li><k name="C-x"/>: The control or ctrl key.</li>
-    <li><k name="A-x"/>: The alt key.</li>
-    <li><k name="M-x"/>: The meta key, windows key, or command key</li>
-    <li><k name="S-x"/>: The shift key.</li>
+    <li><k name="C-␣"/>: The control or ctrl key.</li>
+    <li><k name="A-␣"/>: The alt key.</li>
+    <li><k name="M-␣"/>: The meta key, windows key, or command key</li>
+    <li><k name="S-␣"/>: The shift key.</li>
 </ol>
 
 <p>
-    These prefixes can be combined however you see fit, though you should note that
-    within angle brackets all alphabetic characters are read as lowercase. In order
-    to force them to be uppercase, you must specify the S- prefix as well.
-    Additionally, you should never use the S- prefix with a number or piece of
-    punctuation, even if you require a shift to type that character; doing so will
-    give you a mapping that cannot be typed. With non-character keys, tab and
-    space, the S- modifier works just like C- A- and M-. Some examples may clarify
-    the situation:
+    These prefixes can be combined however you see fit, though you
+    should note that within angle brackets all alphabetic characters
+    are read as lowercase. Uppercase characters can only be
+    specified with the <em>S-</em> modifier. The following key
+    sequences are interperated as described,
 </p>
 
-<ol>
-    <li><k>xc</k>: type x, and then type c</li>
-    <li><k name="C-x">c</k>: hold control and type x, then type c without control</li>
-    <li><k name="C-2"/>: type 2 while holding control</li>
-    <li><k name="C-@"/>: type @ while holding control</li>
-    <li><k name="S-Space"/>: press space while holding shift</li>
-    <li><k name="C-A-j"/>: press j while holding control and alt</li>
-    <li><k name="C-A-J"/>: exactly the same as above</li>
-    <li><k name="C-A-S-j"/>: press J while holding control and alt</li>
-</ol>
+<dl>
+    <dt><k>xc</k></dt>
+    <dd>Type the ‘X’ key followed by the ‘C’ key</dd>
+
+    <dt><k name="C-x">c</k></dt>
+    <dd>
+        Type the ‘X’ key while holding the ‘Control’ key, followed
+        by the ‘C’ key.
+    </dd>
+
+    <dt><k name="C-2"/></dt>
+    <dd>Type the ‘2’ while holding the ‘Control’ key.</dd>
+
+    <dt><k name="C-@"/></dt>
+    <dd>Type the ‘2’ key @ while holding the ‘Control’ key.</dd>
+
+    <dt><k name="S-Space"/></dt>
+    <dd>Press the space bar while holding the ‘Shift’ key.</dd>
+
+    <dt><k name="C-A-j"/></dt>
+    <dd>Type the ‘J’ key while while holding both the ‘Control’ and ‘Alt’ keys.</dd>
+
+    <dt><k name="C-A-J"/></dt>
+    <dd>Exactly the same as above.</dd>
+
+    <dt><k name="C-A-S-j"/></dt>
+    <dd>Type the ‘J’ key while while holding both the ‘Control’, ‘Alt’, and ‘Shift’ keys.</dd>
+</dl>
 
 <h3 tag=":map-special-chars">Special characters</h3>
 
 <item>
     <tags><![CDATA[<Nop>]]></tags>
+    <strut/>
     <spec>&lt;Nop></spec>
     <description>
         <p>
-            Do nothing. This command is useful for disabling a specific mapping.
-            <ex>:map <k name="C-n"/> <k name="Nop"/></ex> will prevent <k name="C-n"/> from doing anything.
+            Do nothing. This pseudo-key is useful for disabling a
+            specific builtin mapping. For example,
+            <ex>:map <k name="C-n"/> <k name="Nop"/></ex> will prevent <k name="C-n"/>
+            from doing anything.
         </p>
     </description>
 </item>
@@ -246,6 +330,7 @@
 
 <item>
     <tags><![CDATA[<CR> map_return]]></tags>
+    <strut/>
     <spec>&lt;CR></spec>
     <description>
         <p>
@@ -258,20 +343,21 @@
 
 
 <item>
-    <tags><![CDATA[<Leader> mapleader]]></tags>
+    <tags><![CDATA[<Leader> mapleader \]]></tags>
+    <strut/>
     <spec>&lt;Leader></spec>
     <description>
         <p>
-            Expands to the value of the "mapleader" variable in key mapping. If
-            "mapleader" is unset or empty then <str>\</str> is used. Example:
+            Expands to the value of the ‘mapleader’ variable in key mapping. If
+            ‘mapleader’ is unset or empty then ‘\’ is used. For example, by default,
         </p>
-        <code><ex>:map <k name="Leader"/>h :echo <str>Hello</str><k name="CR"/></ex></code>
+        <code><ex>:map <k name="Leader"/>h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
         <p>works like</p>
-        <code><ex>:map \h :echo <str>Hello</str><k name="CR"/></ex></code>
+        <code><ex>:map \h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
         <p>but after</p>
-        <code><ex>let mapleader = <str>,</str></ex></code>
+        <code><ex>:let mapleader = <str>,</str></ex></code>
         <p>it works like</p>
-        <code><ex>:map ,h :echo <str>Hello</str><k name="CR"/></ex></code>
+        <code><ex>:map ,h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
     </description>
 </item>
 
@@ -279,27 +365,27 @@
 <h2 tag="abbreviations">Abbreviations</h2>
 
 <p>
-    &dactyl.appname; can automatically replace words identified as abbreviations,
-    which may be used to save typing or to correct commonly misspelled
-    words. An abbreviation can be one of three types that are defined by the
-    types of constituent characters. Whitespace and quotes are non-keyword
-    types, and all other characters are keyword types.
+    In addition to basic mappings, &dactyl.appname; can also
+    automatically replace whole words after they've been typed.
+    These shortcuts are known as abbreviations, and are most often
+    useful for correcting spelling of commonly mistyped words, as
+    well as shortening the typing of oft-typed but long words or
+    phrases. There are three basic types of abbreviations, defined
+    by the types of characters they contain,
 </p>
 
-<ol>
-    <li>A "full-id" abbreviation consists entirely of keyword characters (e.g., "teh", "msoft").</li>
-    <li>An "end-id" abbreviation ends in keyword character but otherwise contains all non-keyword characters (e.g., "'i").</li>
-    <li>A "non-id" abbreviation ends in a non-keyword character but otherwise contains any non-whitespace character (e.g., "def'").</li>
-</ol>
+<ul>
+    <li>‘full-id’ abbreviations consist entirely of keyword characters (e.g., ‘teh’, ‘msoft’).</li>
+    <li>‘end-id’ abbreviations end in keyword character but otherwise contains all non-keyword characters (e.g., ‘'i’).</li>
+    <li>‘non-id’ abbreviations end in a non-keyword character but otherwise contains any non-whitespace character (e.g., ‘def'’).</li>
+    <li>Strings which fit none of the above patterns can not be defined as abbreviations (e.g., ‘a'b’ and ‘a b’).</li>
+</ul>
 
 <p>
-    Strings that cannot be abbreviations include "a'b" and "a b".
-</p>
-
-<p>
-    An abbreviation is recognized when a space, quote character, or
-    <k name="C-]"/> is typed after the abbreviation. There are no default
-    abbreviations, and abbreviations are never recursive.
+    For the purposes of abbreviations, keyword characters include
+    all non-whitespace characters except for single or double
+    quotation marks. Abbreviations are expanded as soon as any
+    non-keyword character, or the key <k name="C-]"/>, is typed.
 </p>
 
 <item>
@@ -309,9 +395,10 @@
     <spec>:ab<oa>breviate</oa></spec>
     <description>
         <p>
-            Abbreviate a key sequence. Abbreviate <a>lhs</a> to <a>rhs</a>. If only <a>lhs</a> is given,
-            list all abbreviations that start with <a>lhs</a>. If no arguments are given,
-            list all abbreviations.
+            Abbreviate <a>lhs</a> to <a>rhs</a>. If only <a>lhs</a>
+            is given, list all abbreviations that start with
+            <a>lhs</a>. If no arguments are given, list all
+            abbreviations.
         </p>
     </description>
 </item>
@@ -324,8 +411,9 @@
     <spec>:ca<oa>bbrev</oa></spec>
     <description>
         <p>
-            Abbreviate a key sequence for Command-line mode. Same as <ex>:ab<oa>breviate</oa></ex>,
-            but for Command-line mode only.
+            Abbreviate a key sequence for Command-line mode. Same as
+            <ex>:ab<oa>breviate</oa></ex>, but for
+            <t>command-line</t> mode only.
         </p>
     </description>
 </item>
@@ -338,8 +426,8 @@
     <spec>:ia<oa>bbrev</oa></spec>
     <description>
         <p>
-            Abbreviate a key sequence for Insert mode. Same as <ex>:ab<oa>breviate</oa></ex> but
-            for Insert mode only.
+            Abbreviate a key sequence for Insert mode. Same as
+            <ex>:ab<oa>breviate</oa></ex>, but for insert mode only.
         </p>
     </description>
 </item>
@@ -359,8 +447,9 @@
     <spec>:cuna<oa>bbrev</oa> <a>lhs</a></spec>
     <description>
         <p>
-            Remove an abbreviation for Command-line mode. Same as <ex>:una<oa>bbreviate</oa></ex>,
-            but for Command-line mode only.
+            Remove an abbreviation for Command-line mode. Same as
+            <ex>:una<oa>bbreviate</oa></ex>, but for
+            <t>command-line</t> mode only.
         </p>
     </description>
 </item>
@@ -371,8 +460,9 @@
     <spec>:iuna<oa>bbrev</oa> <a>lhs</a></spec>
     <description>
         <p>
-            Remove an abbreviation for Insert mode. Same as <ex>:una<oa>bbreviate</oa></ex> but for
-            Insert mode only.
+            Remove an abbreviation for Insert mode. Same as
+            <ex>:una<oa>bbreviate</oa></ex> but for Insert mode
+            only.
         </p>
     </description>
 </item>
@@ -381,7 +471,7 @@
 <item>
     <tags>:abc :abclear</tags>
     <spec>:abc<oa>lear</oa></spec>
-    <description>
+    <description short="true">
         <p>Remove all abbreviations.</p>
     </description>
 </item>
@@ -390,8 +480,8 @@
 <item>
     <tags>:cabc :cabclear</tags>
     <spec>:cabc<oa>lear</oa></spec>
-    <description>
-        <p>Remove all abbreviations for Command-line mode.</p>
+    <description short="true">
+        <p>Remove all abbreviations for command-line mode.</p>
     </description>
 </item>
 
@@ -399,7 +489,7 @@
 <item>
     <tags>:iabc :iabclear</tags>
     <spec>:iabc<oa>lear</oa></spec>
-    <description>
+    <description short="true">
         <p>Remove all abbreviations for Insert mode.</p>
     </description>
 </item>
@@ -407,10 +497,21 @@
 
 <h2 tag="user-commands">User-defined commands</h2>
 
+<p>
+    Defining new commands is perhaps the most straightforward way of
+    repeating commonly used actions. User-defined commands may be
+    entered from the command-line or scripts exactly like standard
+    commands, and may similarly accept arguments, options, counts,
+    and <oa>!</oa>s, as well as provide command-line completion.
+    These commands may be defined as either ordinary,
+    macro-interpolated Ex commands, or otherwise as plain
+    JavaScript statements.
+</p>
+
 <item>
     <tags>:com :command</tags>
     <spec>:com<oa>mand</oa></spec>
-    <description>
+    <description short="true">
         <p>List all user-defined commands.</p>
     </description>
 </item>
@@ -428,21 +529,33 @@
     <spec>:com<oa>mand</oa><oa>!</oa> <oa><a>attr</a>…</oa> <a>cmd</a> <a>rep</a></spec>
     <description>
         <p>
-            Define a new user command. The name of the command is <a>cmd</a> and its replacement
-            text is <a>rep</a>. The command's attributes are <a>attr</a>. If a command with this name
-            already exists an error is reported unless <oa>!</oa> is specified, in which case the
-            command is redefined. Unlike Vim, the command may start with a lowercase
-            letter.
+            Define a new user command. The name of the command is
+            <a>cmd</a> and its replacement text is <a>rep</a>. If a
+            command with this name already exists, an error is
+            reported unless <oa>!</oa> is specified, in which case
+            the command is redefined. Unlike Vim, the command may
+            start with a lowercase letter.
         </p>
 
         <p>
-            The command's behavior can be specified by providing attributes when the
-            command is defined.
+            The new command is usually defined by a string to be
+            executed as an Ex command. In this case, before
+            execution, strings of the form
+            <hl key="HelpKey">&lt;<a>var</a>></hl> are interpolated
+            as described below, in order to insert arguments,
+            options, and the like. If the <em>-javascript</em> (short
+            name <em>-js</em>) flag is present, the command is
+            executed as JavaScript, and the arguments are present as
+            variables in its scope instead, and no interpolation is
+            performed.
         </p>
 
-        <p tag="E175 E176 :command-nargs">
-            Argument handling
+        <p>
+            The command's behavior can be altered by providing
+            attributes when the command is defined.
         </p>
+
+        <h3 tag="E175 E176 :command-nargs">Argument handling</h3>
 
         <p>
             By default user commands accept no arguments. This can be changed by specifying
@@ -459,9 +572,7 @@
             <dt>-nargs=+</dt><dd>One or more arguments are allowed</dd>
         </dl>
 
-        <p tag="E180 E181 :command-complete">
-            Argument completion
-        </p>
+        <h3 tag="E180 E181 :command-complete">Argument completion</h3>
 
         <p>
             Completion for arguments to user defined commands is not available by default.
@@ -496,9 +607,7 @@
             <dt>custom,<a>func</a></dt><dd>custom completion, provided by <a>func</a></dd>
         </dl>
 
-        <p tag="E467 E468 :command-completion-custom">
-            Custom completion
-        </p>
+        <h3 tag="E467 E468 :command-completion-custom">Custom completion</h3>
 
         <p>
             Custom completion can be provided by specifying the <str>custom,<a>func</a></str> argument to
@@ -516,9 +625,7 @@
 
         <!-- TODO: add examples -->
 
-        <p tag="E177 E178 :command-count">
-            Count handling
-        </p>
+        <h3 tag="E177 E178 :command-count">Count handling</h3>
 
         <p>
             By default user commands do not accept a count. Use the -count attribute if
@@ -526,9 +633,7 @@
             available for expansion as &lt;count> in the argument.
         </p>
 
-        <p tag=":command-bang">
-            Special cases
-        </p>
+        <h3 tag=":command-bang">Special cases</h3>
 
         <p>
             By default a user command does not have a special version, i.e. a version
@@ -536,18 +641,14 @@
             and &lt;bang> will be available in the argument.
         </p>
 
-        <p tag=":command-description">
-            Command description
-        </p>
+        <h3 tag=":command-description">Command description</h3>
 
         <p>
             The command's description text can be set with -description. Otherwise it will
             default to "User-defined command".
         </p>
 
-        <p tag=":command-replacement-text">
-            Replacement text
-        </p>
+        <h3 tag=":command-replacement-text">Replacement text</h3>
 
         <p>
             The replacement text <a>rep</a> is scanned for escape sequences and these are
@@ -580,7 +681,7 @@
 <item>
     <tags>:comc :comclear</tags>
     <spec>:comc<oa>lear</oa></spec>
-    <description>
+    <description short="true">
         <p>Delete all user-defined commands.</p>
     </description>
 </item>

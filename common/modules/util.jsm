@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -10,7 +10,7 @@ Components.utils.import("resource://dactyl/base.jsm");
 defmodule("util", this, {
     exports: ["Math", "NS", "Util", "XHTML", "XUL", "util"],
     require: ["services"],
-    use: ["template"]
+    use: ["highlight", "template"]
 });
 
 const XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
@@ -206,7 +206,7 @@ const Util = Module("Util", {
         function rec(acc) {
             if (acc.length == patterns.length)
                 res.push(array(substrings).zip(acc).flatten().join(""));
-            else 
+            else
                 for (let [, pattern] in Iterator(patterns[acc.length]))
                     rec(acc.concat(pattern));
         }
@@ -295,12 +295,12 @@ const Util = Module("Util", {
             null
         );
 
-        return {
-                __proto__: result,
-                __iterator__: asIterator
-                            ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
-                            : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
-        }
+        return Object.create(result, {
+            __iterator__: {
+                value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
+                                  : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
+            }
+        });
     },
 
     extend: function extend(dest) {
@@ -388,18 +388,17 @@ const Util = Module("Util", {
         try {
             let xmlhttp = services.create("xmlhttp");
             xmlhttp.mozBackgroundRequest = true;
-            if (callback) {
+            if (callback)
                 xmlhttp.onreadystatechange = function () {
                     if (xmlhttp.readyState == 4)
                         callback(xmlhttp);
                 };
-            }
             xmlhttp.open("GET", url, !!callback);
             xmlhttp.send(null);
             return xmlhttp;
         }
         catch (e) {
-                util.dactyl.log("Error opening " + String.quote(url) + ": " + e, 1);
+            util.dactyl.log("Error opening " + String.quote(url) + ": " + e, 1);
             return null;
         }
     },
@@ -460,9 +459,9 @@ const Util = Module("Util", {
      * @returns {string}
      */
     makeXPath: function makeXPath(nodes) {
-        return util.Array(nodes).map(util.debrace).flatten()
-                                .map(function (node) [node, "xhtml:" + node]).flatten()
-                                .map(function (node) "//" + node).join(" | ");
+        return array(nodes).map(util.debrace).flatten()
+                           .map(function (node) [node, "xhtml:" + node]).flatten()
+                           .map(function (node) "//" + node).join(" | ");
     },
 
     /**
@@ -479,18 +478,6 @@ const Util = Module("Util", {
             ary.push(func(i));
         return ary;
     },
-
-    /**
-     * Memoize the lookup of a property in an object.
-     *
-     * @param {object} obj The object to alter.
-     * @param {string} key The name of the property to memoize.
-     * @param {function} getter A function of zero to two arguments which
-     *          will return the property's value. <b>obj</b> is
-     *          passed as the first argument, <b>key</b> as the
-     *          second.
-     */
-    memoize: memoize,
 
     newThread: function () services.get("threadManager").newThread(0),
 
@@ -524,34 +511,47 @@ const Util = Module("Util", {
         if (object === null)
             return "null\n";
 
-        if (typeof object != "object")
+        if (typeof object !== "object")
             return false;
 
-        const NAMESPACES = util.Array.toObject([
-            [NS, 'dactyl'],
-            [XHTML, 'html'],
-            [XUL, 'xul']
-        ]);
         if (object instanceof Ci.nsIDOMElement) {
+            const NAMESPACES = array.toObject([
+                [NS, "dactyl"],
+                [XHTML, "html"],
+                [XUL, "xul"]
+            ]);
             let elem = object;
             if (elem.nodeType == elem.TEXT_NODE)
                 return elem.data;
+
             function namespaced(node) {
-                var ns = NAMESPACES[node.namespaceURI];
-                if (ns)
-                    return ns + ":" + node.localName;
-                return node.localName.toLowerCase();
+                var ns = NAMESPACES[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
+                if (!ns)
+                    return node.localName;
+                if (color)
+                    return <><span highlight="HelpXMLNamespace">{ns}</span>{node.localName}</>
+                return ns + ":" + node.localName;
             }
             try {
+                let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling)
+                if (color)
+                    return <span highlight="HelpXMLBlock"><span highlight="HelpXMLTagStart">&lt;{
+                            namespaced(elem)} {
+                                template.map(array.itervalues(elem.attributes),
+                                    function (attr)
+                                        <span highlight="HelpXMLAttribute">{namespaced(attr)}</span> +
+                                        <span highlight="HelpXMLString">{attr.value}</span>,
+                                    <> </>)
+                            }{ hasChildren ? "/>" : ">"
+                        }</span>{ !hasChildren ? "" :
+                        <>...</> +
+                        <span highlight="HtmlTagEnd">&lt;{namespaced(elem)}></span>
+                    }</span>;
+
                 let tag = "<" + [namespaced(elem)].concat(
                     [namespaced(a) + "=" +  template.highlight(a.value, true)
-                     for ([i, a] in util.Array.iteritems(elem.attributes))]).join(" ");
-
-                if (!elem.firstChild || /^\s*$/.test(elem.firstChild) && !elem.firstChild.nextSibling)
-                    tag += '/>';
-                else
-                    tag += '>...</' + namespaced(elem) + '>';
-                return tag;
+                     for ([i, a] in array.iteritems(elem.attributes))]).join(" ");
+                return tag + (hasChildren ? "/>" : ">...</" + namespaced(elem) + ">");
             }
             catch (e) {
                 return {}.toString.call(elem);
@@ -562,13 +562,15 @@ const Util = Module("Util", {
             var obj = String(object);
         }
         catch (e) {
-            obj = "[Object]";
+            obj = Object.prototype.toString.call(obj);
         }
         obj = template.highlightFilter(util.clip(obj, 150), "\n", !color ? function () "^J" : function () <span highlight="NonText">^J</span>);
-        let string = <><span highlight="Title Object">{obj}</span>::<br/>&#xa;</>;
+        let string = <><span highlight="Title Object">{obj}</span>::<br/>&#x0a;</>;
 
         let keys = [];
-        try { // window.content often does not want to be queried with "var i in object"
+
+        // window.content often does not want to be queried with "var i in object"
+        try {
             let hasValue = !("__iterator__" in object || isinstance(object, ["Generator", "Iterator"]));
             if (object.dactyl && object.modules && object.modules.modules == object.modules) {
                 object = Iterator(object);
@@ -593,7 +595,7 @@ const Util = Module("Util", {
                     i = parseInt(i);
                 else if (/^[A-Z_]+$/.test(i))
                     i = "";
-                keys.push([i, <>{key}{noVal ? "" : <>: {value}</>}<br/>&#xa;</>]);
+                keys.push([i, <>{key}{noVal ? "" : <>: {value}</>}<br/>&#x0a;</>]);
             }
         }
         catch (e) {}
@@ -672,7 +674,6 @@ const Util = Module("Util", {
     selectionController: function (win)
         win.QueryInterface(Ci.nsIInterfaceRequestor)
            .getInterface(Ci.nsIWebNavigation)
-           .QueryInterface(Ci.nsIDocShell)
            .QueryInterface(Ci.nsIInterfaceRequestor)
            .getInterface(Ci.nsISelectionDisplay)
            .QueryInterface(Ci.nsISelectionController),
@@ -714,6 +715,7 @@ const Util = Module("Util", {
      * string.
      *
      *     util.split("a, b, c, d, e", /, /, 3) -> ["a", "b", "c, d, e"]
+     *
      * @param {string} str The string to split.
      * @param {RegExp|string} re The regular expression on which to split the string.
      * @param {number} limit The maximum number of elements to return.
@@ -775,7 +777,9 @@ const Util = Module("Util", {
     },
 
     /**
-     * Converts an E4X XML literal to a DOM node.
+     * Converts an E4X XML literal to a DOM node. Any attribute named
+     * highlight is present, it is transformed into dactyl:highlight,
+     * and the named highlight groups are guaranteed to be loaded.
      *
      * @param {Node} node
      * @param {Document} doc
@@ -797,7 +801,14 @@ const Util = Module("Util", {
         case "element":
             let domnode = doc.createElementNS(node.namespace(), node.localName());
             for each (let attr in node.@*)
-                domnode.setAttributeNS(attr.name() == "highlight" ? NS.uri : attr.namespace(), attr.name(), String(attr));
+                if (attr.name() != "highlight")
+                    domnode.setAttributeNS(attr.namespace(), attr.name(), String(attr));
+                else {
+                    domnode.setAttributeNS(NS.uri, "highlight", String(attr));
+                    for each (let h in String.split(attr, " "))
+                        highlight.loaded[h] = true;
+                }
+
             for each (let child in node.*)
                 domnode.appendChild(xmlToDom(child, doc, nodes));
             if (nodes && node.@key)
@@ -816,9 +827,7 @@ const Util = Module("Util", {
  * @singleton
  */
 const GlobalMath = Math;
-var Math = {
-    __proto__: GlobalMath,
-
+var Math = update(Object.create(GlobalMath), {
     /**
      * Returns the specified <b>value</b> constrained to the range <b>min</b> -
      * <b>max</b>.
@@ -829,9 +838,9 @@ var Math = {
      * @returns {number}
      */
     constrain: function constrain(value, min, max) Math.min(Math.max(min, value), max)
-};
+});
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 endmodule();
 

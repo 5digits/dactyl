@@ -4,12 +4,19 @@
 
 <!ENTITY dactyl.mainWindow "main-window">
 <!ENTITY dactyl.name "pentadactyl">
+<!ENTITY dactyl.version "1.0">
 <!ENTITY dactyl.idname "PENTADACTYL">
 <!ENTITY dactyl.appname "Pentadactyl">
-<!ENTITY dactyl.apphome "http://dactyl.googlecode.com/">
+<!ENTITY dactyl.apphome "http://dactyl.sf.net/">
+<!ENTITY dactyl.code "http://code.google.com/p/dactyl/">
+<!ENTITY dactyl.plugins "http://dactyl.sf.net/&dactyl.name;/plugins">
 <!ENTITY dactyl.maillist "pentadactyl@googlegroups.com">
 <!ENTITY dactyl.host "&brandShortName;">
 <!ENTITY dactyl.hostbin "firefox">
 <!ENTITY dactyl.statusBefore "statusbar-display">
 <!ENTITY dactyl.statusAfter "">
+
+<!ENTITY xmlns.dactyl "http://vimperator.org/namespaces/liberator">
+<!ENTITY xmlns.html   "http://www.w3.org/1999/xhtml">
+<!ENTITY xmlns.xul    "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 

@@ -6,8 +6,8 @@
 <document
     name="autocommands"
     title="&dactyl.appname; Autocommands"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <h1 tag="autocommands">Automatic commands</h1>
 <toc start="2"/>
 
@@ -18,48 +18,57 @@
 
 <item>
     <tags>:au :autocmd</tags>
-    <spec>:au[tocmd]</spec>
+    <spec>:au<oa>tocmd</oa><oa>!</oa> <oa>events</oa> <oa>pat</oa> <oa>cmd</oa></spec>
     <description>
         <p>Execute commands automatically on events.</p>
 
-        <p><ex>:au[tocmd]</ex> <a>event</a> <a>pat</a> <a>cmd</a></p>
-
         <p>
-            If the <em>-javascript</em> (short name <em>-js</em>)
-            option is specified, <a>cmd</a> is executed as JavaScript
-            code, with any supplied arguments available as
-            variables.
+            When <oa>cmd</oa> is not given, list all commands
+            defined for the given <oa>events</oa> and <oa>pat</oa>.
+            When <oa>!</oa> is given, delete the matching commands
+            rather than listing them.
         </p>
 
-        <p>Add <a>cmd</a> to the list of commands &dactyl.appname; will execute on <a>event</a> for a URL matching <a>pat</a>:</p>
+        <p>
+            When <oa>cmd</oa> is given, add it to the list of
+            commands to be executed when <oa>events</oa> occur for
+            pages matching the regular expression <oa>pat</oa>. If
+            the <em>-javascript</em> (short name <em>-js</em>)
+            option is given, <oa>cmd</oa> is interperated as
+            JavaScript code. Otherwise, it is interperated as an ex
+            command.
+        </p>
 
-        <ul>
-            <li><ex>:autocmd[!]</ex> <a>events</a> <a>pat</a>: list/remove autocommands filtered by <a>events</a> and <a>pat</a></li>
-            <li><ex>:autocmd[!]</ex> <a>events</a>: list/remove autocommands matching <a>events</a></li>
-            <li><ex>:autocmd[!]</ex> <a>pat</a>: list/remove autocommands matching <a>pat</a></li>
-            <li><ex>:autocmd[!]</ex>: list/remove all autocommands</li>
-        </ul>
+        <note>
+            This behavior differs from Vim's implementation in that
+            <oa>pat</oa> is a regular expression rather than a glob.
+        </note>
 
-        <p>Available <a>events</a>:</p>
+        <p>Available <oa>events</oa>:</p>
 
         <dl tag="autocommand-list"/>
 
-        <p><a>pat</a> is a regular expression, use <tt>.*</tt> if you want to match all URLs.</p>
-
-        <note>This differs from Vim which uses a glob rather than a regex for <a>pat</a>.</note>
-
-        <p>The following keywords are available where relevant:</p>
+        <p>
+            For ex <oa>cmd</oa>s, the following keywords are
+            replaced with the appropriate value before the commands
+            are executed. For JavaScript commands, they may be
+            accessed as ordinary variables, sans angle brackets.
+        </p>
 
         <dl tag="autocommand-args"/>
     </description>
 </item>
 
 <item>
+</item>
+
+<item>
     <tags>:doautoa :doautoall</tags>
-    <spec>:doautoa[ll] <a>event</a> <oa>url</oa></spec>
+    <spec>:doautoa<oa>ll</oa> <a>event</a> <oa>url</oa></spec>
     <description>
         <p>
-            Apply the autocommands matching the specified URL to all buffers. If no
+            Apply all <a>event</a> autocommands matching the
+            specified <oa>url</oa> to all buffers. If no
             <oa>url</oa> is specified use the current URL.
         </p>
     </description>
@@ -67,11 +76,12 @@
 
 <item>
     <tags>:do :doautocmd</tags>
-    <spec>:do[autocmd] <a>event</a> <oa>url</oa></spec>
+    <spec>:do<oa>autocmd</oa> <a>event</a> <oa>url</oa></spec>
     <description>
         <p>
-            Apply the autocommands matching the specified URL to the current buffer. If no
-            <oa>url</oa> is specified use the current URL.
+            Apply all autocommands matching the specified
+            <oa>url</oa> to the current buffer. If no <oa>url</oa>
+            is specified use the current URL.
         </p>
     </description>
 </item>
@@ -91,7 +101,7 @@
 
 <code><!-- Why is the XSLT processor mangling newlines? -->
 <ex>:autocmd LocationChange .* :set editor=<str>gvim -f</str></ex>
-<ex>:autocmd LocationChange mail\\.google\\.com :set editor=<str>gvim -f -c 'set ft=mail'</str></ex>
+<ex>:autocmd LocationChange 'mail\.google\.com' :set editor=<str>gvim -f -c 'set ft=mail'</str></ex>
 </code>
 
 </document>

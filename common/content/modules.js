@@ -1,4 +1,4 @@
-// Copyright (c) 2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -15,7 +15,7 @@ const ModuleBase = Class("ModuleBase", {
      */
     requires: [],
 
-    toString: function () "[module " + this.constructor.name + "]"
+    toString: function () "[module " + this.constructor.classname + "]"
 });
 
 /**
@@ -76,26 +76,29 @@ window.addEventListener("load", function onLoad() {
     window.removeEventListener("load", onLoad, false);
 
     Module.list.forEach(function(module) {
-        modules.__defineGetter__(module.name, function() {
-            delete modules[module.name];
-            return load(module.name, null, Components.stack.caller);
+        modules.__defineGetter__(module.classname, function() {
+            delete modules[module.classname];
+            return load(module.classname, null, Components.stack.caller);
         });
     });
 
-    function dump(str) window.dump(String.replace(str, /\n?$/, "\n").replace(/^/m, Config.prototype.name.toLowerCase() + ": "));
+    function dump(str) window.dump(String.replace(str, /\n?$/, "\n").replace(/^/m, services.get("dactyl:").name + ": "));
     const start = Date.now();
     const deferredInit = { load: [] };
     const seen = set();
     const loaded = set(["init"]);
+    modules.loaded = loaded;
 
     function init(module) {
         function init(func, mod)
-            function () defmodule.time(module.name || module.constructor.name, mod, func, module, dactyl, modules, window);
+            function () defmodule.time(module.classname || module.constructor.classname, mod,
+                                       func, module,
+                                       dactyl, modules, window);
 
-        set.add(loaded, module.constructor.name);
+        set.add(loaded, module.constructor.classname);
         for (let [mod, func] in Iterator(module.INIT)) {
             if (mod in loaded)
-                init(func)();
+                init(func, mod)();
             else {
                 deferredInit[mod] = deferredInit[mod] || [];
                 deferredInit[mod].push(init(func, mod));
@@ -112,34 +115,35 @@ window.addEventListener("load", function onLoad() {
         }
 
         try {
-            if (module.name in loaded)
+            if (module.classname in loaded)
                 return;
-            if (module.name in seen)
+            if (module.classname in seen)
                 throw Error("Module dependency loop.");
-            set.add(seen, module.name);
+            set.add(seen, module.classname);
 
             for (let dep in values(module.requires))
-                load(Module.constructors[dep], module.name);
+                load(Module.constructors[dep], module.classname);
 
-            defmodule.loadLog.push("Load" + (isstring(prereq) ? " " + prereq + " dependency: " : ": ") + module.name);
+            defmodule.loadLog.push("Load" + (isstring(prereq) ? " " + prereq + " dependency: " : ": ") + module.classname);
             if (frame && frame.filename)
                 defmodule.loadLog.push(" from: " + frame.filename + ":" + frame.lineNumber);
 
-            delete modules[module.name];
-            modules[module.name] = defmodule.time(module.name, "init", module);
+            delete modules[module.classname];
+            modules[module.classname] = defmodule.time(module.classname, "init", module);
 
-            init(modules[module.name]);
-            for (let [, fn] in iter(deferredInit[module.name] || []))
+            init(modules[module.classname]);
+            for (let [, fn] in iter(deferredInit[module.classname] || []))
                 fn();
         }
         catch (e) {
-            dump("Loading " + (module && module.name) + ": " + e + "\n" + (e.stack || ""));
+            dump("Loading " + (module && module.classname) + ": " + e + "\n" + (e.stack || ""));
         }
-        return modules[module.name];
+        return modules[module.classname];
     }
 
     Module.list.forEach(load);
     deferredInit["load"].forEach(call);
+    modules.times = update({}, defmodule.times);
 
     dump("Loaded in " + (Date.now() - start) + "ms");
 }, false);

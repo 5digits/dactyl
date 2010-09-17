@@ -6,21 +6,46 @@
 <document
     name="pattern"
     title="&dactyl.appname; Patterns"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <h1 tag="text-search-commands">Text search commands</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appname; provides a Vim-like interface to &dactyl.host;'s standard text search
-    functionality. There is no support for using regular expressions in search
-    commands as &dactyl.host; does not provide native regex support. It is unlikely that
-    this will ever be available.
+    &dactyl.appname; provides a Vim-like incremental search interface to
+    replace &dactyl.host;'s crippled Typeahead Find. Among other improvements,
+    our search service:
+</p>
+<ul>
+    <li>
+        Starts at the cursor position in the currently selected frame, unlike
+        &dactyl.host;, which always starts at the beginning of the first frame
+        for documents with more than one frame.
+    </li>
+    <li>
+        Returns the cursor and viewport to their original position on cancel.
+    </li>
+    <li>
+        Backtracks to the first successful match after pressing backspace,
+        unlike &dactyl.host;, which will always continue from the last match..
+    </li>
+    <li>
+        Supports reverse incremental search.
+    </li>
+    <li>
+        Escape sequences to toggle link-only and case-sensitive searching.
+    </li>
+</ul>
+
+<p>
+    Regular expression search, however, is not currently available unless the
+    /Find Bar/ service is installed, in which case it may be toggled on with
+    a search flag.
 </p>
 
 <item>
     <tags>/</tags>
-    <spec>/<a>pattern</a>[/]&lt;CR></spec>
+    <spec>/<a>pattern</a><oa>/</oa><k name="CR"/></spec>
     <description>
         <p>Search forward for the first occurrence of <a>pattern</a>.</p>
 
@@ -31,13 +56,19 @@
         </p>
 
         <dl>
-            <dt>\c</dt> <dd>Perform case insensitive search (default
-                if <o>ignorecase</o> is set).</dd>
+            <dt>\c</dt> <dd>Perform case insensitive search (default if <o>ignorecase</o> is set).</dd>
             <dt>\C</dt> <dd>Perform case sensitive search</dd>
-            <dt>\l</dt> <dd>Search only in links, as defined by
-                <o>hinttags</o>. (default if <o>linksearch</o> is
-                set).</dd>
-            <dt>\L</dt> <dd>Do not search only in links.</dd>
+            <dt>\l</dt> <dd>Search only in links, as defined by <o>hinttags</o>. (default if <o>linksearch</o> is set).</dd>
+            <dt>\L</dt> <dd>Search the entire page.</dd>
+        </dl>
+
+        <p>
+            Additionally, if the /Find Bar/ extension is installed, the
+            following flags may be used,
+        </p>
+        <dl>
+            <dt>\r</dt> <dd>Process the entire pattern as a regular expression.</dd>
+            <dt>\R</dt> <dd>Process the entire pattern as an ordinary string.</dd>
         </dl>
     </description>
 </item>
@@ -45,13 +76,9 @@
 
 <item>
     <tags>?</tags>
-    <spec>?<a>pattern</a>[?]&lt;CR></spec>
+    <spec>?<a>pattern</a><oa>?</oa><k name="CR"/></spec>
     <description>
-        <p>Search backwards for <a>pattern</a>.</p>
-
-        <p><a>pattern</a> can use the same modifiers as for <k>/</k>.</p>
-
-        <note>Incremental searching currently only works in the forward direction.</note>
+        <p>Search backward for <a>pattern</a>, in exactly the same manner as <k>/</k>.</p>
     </description>
 </item>
 
@@ -59,7 +86,7 @@
 <item>
     <tags>n</tags>
     <spec>n</spec>
-    <description>
+    <description short="true">
         <p>Find next. Repeat the last search.</p>
     </description>
 </item>
@@ -68,7 +95,7 @@
 <item>
     <tags>N</tags>
     <spec>N</spec>
-    <description>
+    <description short="true">
         <p>Find previous. Repeat the last search in the opposite direction.</p>
     </description>
 </item>
@@ -77,7 +104,7 @@
 <item>
     <tags>*</tags>
     <spec>*</spec>
-    <description>
+    <description short="true">
         <p>Search forward for the next word under the cursor.</p>
     </description>
 </item>
@@ -86,7 +113,7 @@
 <item>
     <tags>#</tags>
     <spec>#</spec>
-    <description>
+    <description short="true">
         <p>Search backward for the previous word under the cursor.</p>
     </description>
 </item>
@@ -94,11 +121,13 @@
 
 <item>
     <tags>:noh :nohlsearch</tags>
+    <strut/>
     <spec>:noh<oa>lsearch</oa></spec>
     <description>
         <p>
-            Remove the search highlighting. The document highlighting is turned back on
-            when another search command is used or the <o>hlsearch</o> option is set.
+            Remove the search highlighting. The document is highlighted again
+            when another search command is used or the <o>hlsearch</o> option
+            is set.
         </p>
     </description>
 </item>

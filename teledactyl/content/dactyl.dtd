@@ -3,9 +3,9 @@
 %dactylBranding;
 
 <!ENTITY dactyl.mainWindow "messengerWindow">
-<!ENTITY dactyl.name "muttator">
-<!ENTITY dactyl.idname "muttator">
-<!ENTITY dactyl.appname "Muttator">
+<!ENTITY dactyl.name "teledactyl">
+<!ENTITY dactyl.idname "TELEDACTYL">
+<!ENTITY dactyl.appname "Teledactyl">
 <!ENTITY dactyl.host "&brandShortName;">
 <!ENTITY dactyl.hostbin "thunderbird">
 <!ENTITY dactyl.statusBefore "">

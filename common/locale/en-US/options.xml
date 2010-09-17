@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd" [
+  <!ENTITY hinttags "//*[@onclick or @onmouseover or @onmousedown or
+               @onmouseup or @oncommand or
+               @class='lk' or @role='link'] |
+           //input[not(@type='hidden')] | //a | //area |
+           //iframe | //textarea | //button | //select |
+           //xhtml:input[not(@type='hidden')] | //xhtml:a |
+           //xhtml:area | //xhtml:iframe | //xhtml:textarea |
+           //xhtml:button | //xhtml:select">
+]>
 
 <document
     name="options"
     title="&dactyl.appname; Options"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <h1 tag="options">Options</h1>
 <toc start="2"/>
 
@@ -20,21 +29,21 @@
     <dt>boolean</dt>       <dd>Can only be on or off</dd>
     <dt>number</dt>        <dd>A numeric value</dd>
     <dt>string</dt>        <dd>A string value</dd>
-    <dt>charlist</dt>      <dd>A string containing a discrete set of distinct characters</dd>
-    <dt>stringlist</dt>    <dd>A comma-separated list of strings</dd>
-    <dt>stringmap</dt>     <dd>A comma-separated list of key-value pairs, e.g., <str>key=val,foo=bar</str></dd>
+    <dt>charlist</dt>      <dd tag="charlist">A string containing a discrete set of distinct characters</dd>
+    <dt>stringlist</dt>    <dd tag="stringlist">A comma-separated list of strings</dd>
+    <dt>stringmap</dt>     <dd tag="stringmap">A comma-separated list of key-value pairs, e.g., <str>key:val,foo:bar</str></dd>
     <dt>regexlist</dt>
-    <dd>
+    <dd tag="regexlist">
         A comma-separated list of regular expressions. Expressions may be
         prefixed with a <em>!</em>, in which case the match will be negated. A
         literal <em>!</em> at the begining of the expression may be matched with
         <em>[!]</em>.  Generally, the first matching regular expression is used.
     </dd>
     <dt>regexmap</dt>
-    <dd>
+    <dd tag="regexmap">
         A combination of a <em>stringmap</em> and a <em>regexlist</em>. Each key
-        in the <a>key</a>=<a>value</a> pair is a regexp. If the regexp begins with a
-        <em>!</em>, the sense match is negated, such that a non-matching
+        in the <a>key</a>:<a>value</a> pair is a regexp. If the regexp begins with a
+        <em>!</em>, the sense of the match is negated, such that a non-matching
         expression will be considered a match and <html:i>vice versa</html:i>.
         The first <a>key</a> to match yields value.
     </dd>
@@ -44,14 +53,14 @@
 
 <item>
     <tags>:set :se</tags>
-    <spec>:se[t]</spec>
+    <spec>:se<oa>t</oa></spec>
     <description short="true">
-        <p>Show all options that differ from their default value.</p>
+        <p>Show all options which differ from their default values.</p>
     </description>
 </item>
 
 <item>
-    <spec>:se[t] all</spec>
+    <spec>:se<oa>t</oa> all</spec>
     <description short="true">
         <p>Show all options.</p>
     </description>
@@ -59,45 +68,50 @@
 
 <item>
     <tags>E518 E519</tags>
-    <spec>:se[t] <a>option</a>?</spec>
+    <spec>:se<oa>t</oa> <a>option</a>?</spec>
     <description>
         <p>Show value of <a>option</a>.</p>
     </description>
 </item>
 
 <item>
-    <spec>:se[t] <a>option</a> […]</spec>
+    <spec>:se<oa>t</oa> <a>option</a> <oa>...</oa></spec>
     <description>
-        <dl>
-            <dt>Toggle option</dt> <dd>set, switch it on.</dd>
-            <dt>Number option</dt> <dd>show value.</dd>
-            <dt>String option</dt> <dd>show value.</dd>
-        </dl>
+        <p>
+            For boolean options, turn them on. For all other types,
+            show their values.
+        </p>
     </description>
 </item>
 
 <item>
-    <spec>:se[t] no<a>option</a> […]</spec>
+    <spec>:se<oa>t</oa> no<a>option</a> <oa>...</oa></spec>
     <description>
-        <p>Toggle option: Reset, switch it off.</p>
+        <p>
+            For boolean options, turn them off. For all other types,
+            display an error.
+        </p>
     </description>
 </item>
 
 <item>
-    <spec>:se[t] <a>option</a>! […]</spec>
-    <spec>:se[t] inv<a>option</a> […]</spec>
+    <spec>:se<oa>t</oa> <a>option</a>! <oa>...</oa></spec>
+    <spec>:se<oa>t</oa> inv<a>option</a> <oa>...</oa></spec>
     <description>
-        <p>Toggle option: Invert value.</p>
+        <p>
+            For boolean options, invert their value. For all other types,
+            display an error.
+        </p>
     </description>
 </item>
 
 <item>
-    <spec>:se[t] inv<a>option</a>=<a>value</a> […]</spec>
-    <spec>:se[t] <a>option</a>!=<a>value</a> […]</spec>
+    <spec>:se<oa>t</oa> inv<a>option</a>=<a>value</a> <oa>...</oa></spec>
+    <spec>:se<oa>t</oa> <a>option</a>!=<a>value</a> <oa>...</oa></spec>
     <description>
         <p>For list options, toggle the specified values.</p>
 
-        <p>If the option is a list, the given values are toggled. Given</p>
+        <p>If the option is a list, the given values are toggled. Given,</p>
         <code><ex>:set opt=foo,bar</ex></code>
         <p>then,</p>
         <code><ex>:set opt!=foo,baz</ex></code>
@@ -108,14 +122,14 @@
 
 <item>
     <tags>:set-default</tags>
-    <spec>:se[t] <a>option</a>&amp; […]</spec>
+    <spec>:se<oa>t</oa> <a>option</a>&amp; <oa>...</oa></spec>
     <description>
         <p>Reset option to its default value.</p>
     </description>
 </item>
 
 <item>
-    <spec>:se[t] all&amp;</spec>
+    <spec>:se<oa>t</oa> all&amp;</spec>
     <description>
         <p>Set all options to their default value.</p>
     </description>
@@ -123,7 +137,7 @@
 
 <item>
     <tags>:set-args E487 E521</tags>
-    <spec>:se[t] <a>option</a>=<a>value</a> […]</spec>
+    <spec>:se<oa>t</oa> <a>option</a>=<a>value</a> <oa>...</oa></spec>
     <description>
         <p>
             Set string or number option to <a>value</a>.
@@ -135,7 +149,7 @@
 
 <item>
     <tags>:set+=</tags>
-    <spec>:se[t] <a>option</a>+=<a>value</a> […]</spec>
+    <spec>:se<oa>t</oa> <a>option</a>+=<a>value</a> <oa>...</oa></spec>
     <description>
         <p>
             Add the <a>value</a> to a number option, or append the <a>value</a>
@@ -149,7 +163,7 @@
 
 <item>
     <tags>:set^=</tags>
-    <spec>:se[t] <a>option</a>^=<a>value</a> […]</spec>
+    <spec>:se<oa>t</oa> <a>option</a>^=<a>value</a> <oa>...</oa></spec>
     <description>
         <p>
             Multiply the <a>value</a> to a number option, or prepend the
@@ -161,7 +175,7 @@
 
 <item>
     <tags>:set-=</tags>
-    <spec>:se[t] <a>option</a>-=<a>value</a> […]</spec>
+    <spec>:se<oa>t</oa> <a>option</a>-=<a>value</a> <oa>...</oa></spec>
     <description>
         <p>
             Subtract the <a>value</a> from a number option, or remove the
@@ -177,18 +191,18 @@
 
 <item>
     <tags>:setlocal :setl</tags>
-    <spec>:setl[ocal]</spec>
-    <spec>:setl[ocal] all</spec>
-    <spec>:setl[ocal] <a>option</a>?</spec>
-    <spec>:setl[ocal] <a>option</a></spec>
-    <spec>:setl[ocal] no<a>option</a></spec>
-    <spec>:setl[ocal] inv<a>option</a></spec>
-    <spec>:setl[ocal] <a>option</a>&amp;</spec>
-    <spec>:setl[ocal] all&amp;</spec>
-    <spec>:setl[ocal] <a>option</a>=<a>value</a></spec>
-    <spec>:setl[ocal] <a>option</a>+=<a>value</a></spec>
-    <spec>:setl[ocal] <a>option</a>^=<a>value</a></spec>
-    <spec>:setl[ocal] <a>option</a>-=<a>value</a></spec>
+    <spec>:setl<oa>ocal</oa></spec>
+    <spec>:setl<oa>ocal</oa> all</spec>
+    <spec>:setl<oa>ocal</oa> <a>option</a>?</spec>
+    <spec>:setl<oa>ocal</oa> <a>option</a></spec>
+    <spec>:setl<oa>ocal</oa> no<a>option</a></spec>
+    <spec>:setl<oa>ocal</oa> inv<a>option</a></spec>
+    <spec>:setl<oa>ocal</oa> <a>option</a>&amp;</spec>
+    <spec>:setl<oa>ocal</oa> all&amp;</spec>
+    <spec>:setl<oa>ocal</oa> <a>option</a>=<a>value</a></spec>
+    <spec>:setl<oa>ocal</oa> <a>option</a>+=<a>value</a></spec>
+    <spec>:setl<oa>ocal</oa> <a>option</a>^=<a>value</a></spec>
+    <spec>:setl<oa>ocal</oa> <a>option</a>-=<a>value</a></spec>
     <description>
         <p>
             The same as <ex>:set</ex> command, but operates on current tab options
@@ -199,18 +213,18 @@
 
 <item>
     <tags>:setglobal :setg</tags>
-    <spec>:setg[lobal]</spec>
-    <spec>:setg[lobal] all</spec>
-    <spec>:setg[lobal] <a>option</a>?</spec>
-    <spec>:setg[lobal] <a>option</a></spec>
-    <spec>:setg[lobal] no<a>option</a></spec>
-    <spec>:setg[lobal] inv<a>option</a></spec>
-    <spec>:setg[lobal] <a>option</a>&amp;</spec>
-    <spec>:setg[lobal] all&amp;</spec>
-    <spec>:setg[lobal] <a>option</a>=<a>value</a></spec>
-    <spec>:setg[lobal] <a>option</a>+=<a>value</a></spec>
-    <spec>:setg[lobal] <a>option</a>^=<a>value</a></spec>
-    <spec>:setg[lobal] <a>option</a>-=<a>value</a></spec>
+    <spec>:setg<oa>lobal</oa></spec>
+    <spec>:setg<oa>lobal</oa> all</spec>
+    <spec>:setg<oa>lobal</oa> <a>option</a>?</spec>
+    <spec>:setg<oa>lobal</oa> <a>option</a></spec>
+    <spec>:setg<oa>lobal</oa> no<a>option</a></spec>
+    <spec>:setg<oa>lobal</oa> inv<a>option</a></spec>
+    <spec>:setg<oa>lobal</oa> <a>option</a>&amp;</spec>
+    <spec>:setg<oa>lobal</oa> all&amp;</spec>
+    <spec>:setg<oa>lobal</oa> <a>option</a>=<a>value</a></spec>
+    <spec>:setg<oa>lobal</oa> <a>option</a>+=<a>value</a></spec>
+    <spec>:setg<oa>lobal</oa> <a>option</a>^=<a>value</a></spec>
+    <spec>:setg<oa>lobal</oa> <a>option</a>-=<a>value</a></spec>
     <description>
         <p>
             The same as <ex>:set</ex> command, but operates on global options only.
@@ -219,9 +233,7 @@
     </description>
 </item>
 
-<tags>expand-environment-var expand-env :set_env</tags>
-
-<p>
+<p tag="expand-environment-var expand-env :set_env">
     Environment variables are expanded for path options like <o>cdpath</o> and
     <o>runtimepath</o>. The variable notation is <em>$VAR</em> (terminated by a non-word
     character) or <em>$<a>VAR</a></em>. <em>%VAR%</em> is also supported on Windows.
@@ -233,7 +245,7 @@
 
 <item>
     <tags>:prefs :preferences</tags>
-    <spec>:pref[erences]</spec>
+    <spec>:pref<oa>erences</oa></spec>
     <description>
         <p>
             Show the &dactyl.host; preferences dialog. You can change the browser
@@ -246,10 +258,10 @@
 
 <item>
     <tags>:prefs! :preferences!</tags>
-    <spec>:pref[erences]!</spec>
+    <spec>:pref<oa>erences</oa>!</spec>
     <description>
         <p>
-            Opens about:config in the current tab where you can change advanced &dactyl.host;
+            Opens about:config in the current tab, where you can change advanced &dactyl.host;
             preferences.
         </p>
     </description>
@@ -257,33 +269,29 @@
 
 <item>
     <tags>:set! :set-!</tags>
-    <spec>:se[t]! <a>preference</a>=<a>value</a></spec>
+    <spec>:se<oa>t</oa>! <a>preference</a>=<a>value</a></spec>
+    <spec>:se<oa>t</oa>! <a>preference</a>&amp;</spec>
     <description>
         <p>
-            Change any &dactyl.host; <a>preference</a> (those in the about:config
-            window). You can also reset/delete those preferences with
+            Change any &dactyl.host; <a>preference</a> (those on the about:config
+            page). You can also reset/delete these preferences with
             <ex>:set! <a>preference</a>&amp;</ex>.
         </p>
     </description>
 </item>
 
-<tags>overridden-preferences</tags>
-
-<p>
-    &dactyl.appname; sets several &dactyl.host; preferences at startup. If this is undesirable,
-    they can be changed to a different value in your RC file using
-    <ex>:set! <a>preference</a>=<a>value</a></ex>
+<p tag="overridden-preferences">
+    &dactyl.appname; needs to set several &dactyl.host; preferences at
+    startup in order to function properly. If this is unacceptable,
+    they can be changed in your RC file with the <ex>:set!</ex>
+    command, but beware of unexpected behavior. The affected
+    preferences are:
 </p>
 
-<p>The following preferences are set:</p>
-
 <ul>
-    <li><link topic="http://kb.mozillazine.org/Dom.popup_allowed_events">dom.popup_allowed_events</link></li>
-    <li><link topic="http://kb.mozillazine.org/Accessibility.typeaheadfind.autostart">accessibility.typeaheadfind.autostart</link></li>
-    <li><link topic="http://kb.mozillazine.org/Accessibility.typeaheadfind">accessibility.typeaheadfind</link></li>
+    <li><pref>dom.popup_allowed_events</pref></li>
+    <li><pref>accessibility.typeaheadfind</pref></li>
 </ul>
-
-<!-- TODO: others? -->
 
 <h2 tag="list-options">List of options</h2>
 
@@ -291,21 +299,25 @@
     <tags>'act' 'activate'</tags>
     <spec>'activate' 'act'</spec>
     <type>stringlist</type>
-    <default>addons,downloads,extensions,help,homepage,quickmark,tabopen,paste</default>
+    <default>addons,downloads,extensions,help,
+           homepage,quickmark,tabopen,paste</default>
     <description>
-        <p>Define when tabs are automatically activated. Available items:</p>
+        <p>
+            A list of items when, when opened in a new tab are
+            automatically focused. Available items are,
+        </p>
 
         <dl>
-            <dt>addons</dt>        <dd><ex>:addo[ns]</ex> command</dd>
-            <dt>downloads</dt>     <dd><ex>:downl[oads]</ex> command</dd>
-            <dt>extoptions</dt>    <dd><ex>:exto[ptions]</ex> command</dd>
-            <dt>help</dt>          <dd><ex>:h[elp]</ex> command</dd>
+            <dt>all</dt>           <dd>Activate all items.</dd>
+            <dt>addons</dt>        <dd><ex>:addo<oa>ns</oa></ex> command</dd>
+            <dt>downloads</dt>     <dd><ex>:downl<oa>oads</oa></ex> command</dd>
+            <dt>extoptions</dt>    <dd><ex>:exto<oa>ptions</oa></ex> command</dd>
+            <dt>help</dt>          <dd><ex>:h<oa>elp</oa></ex> command</dd>
             <dt>homepage</dt>      <dd><k>gH</k> mapping</dd>
             <dt>quickmark</dt>     <dd><k>go</k> and <k>gn</k> mappings</dd>
-            <dt>tabopen</dt>       <dd><ex>:tabopen[!]</ex> command</dd>
+            <dt>tabopen</dt>       <dd><ex>:tabopen<oa>!</oa></ex> command</dd>
             <dt>paste</dt>         <dd><k>P</k> and <k>gP</k> mappings</dd>
         </dl>
-
     </description>
 </item>
 
@@ -317,13 +329,13 @@
     <description>
         <p>
             A list of regexps defining which completion contexts should be
-            autocompleted. When the value is non-empty, the completion list is
-            automatically opened along with the commandline. Thereafter, any key
-            press triggers a completion update for the matching contexts.
-            Non-matching contexts will only be updated when the tab key is
-            pressed. This option is useful for disabling autocompletion for
-            computationally intense contexts that don't perform well on your
-            system under load.
+            auto-completed. When the value is non-empty, the completion list
+            is automatically when the <t>command-line</t> is focused.
+            Thereafter, any key press triggers a completion update for the
+            matching contexts.  Non-matching contexts will only be updated
+            when the <k name="Tab"/> key is pressed. This option is useful for
+            disabling auto-completion for computationally intensive contexts
+            that don't perform well when your system is under load.
         </p>
 
         <example>
@@ -333,14 +345,28 @@
         </example>
 
         <note>
-            Completion contexts have names very much like Unix path names. This
-            denotes the tree in which they're called. A completer will never be
-            called unless every completer preceding it in the tree was also
-            called. For example, if your completer excludes <str>/ex/</str>, it
-            will also exclude <str>/ex/bmarks</str>, and so on.
+            Completion contexts have names very much like Unix path names.
+            These denotes the tree in which they're called. A completer will
+            never be called unless every completer preceding it in the tree
+            was also called. For example, if your completer excludes
+            <str>/ex/</str>, it will also exclude <str>/ex/bmarks</str>, and
+            so on.
         </note>
 
         <p>See also <ex>:contexts</ex></p>
+    </description>
+</item>
+
+<item>
+    <tags>'bh' 'banghist'</tags>
+    <spec>'banghist' 'bh'</spec>
+    <type>boolean</type>
+    <default>on</default>
+    <description>
+        <p>
+            Replace occurances of ! with the previous command when
+            executing external commands.
+        </p>
     </description>
 </item>
 
@@ -366,25 +392,27 @@
     <type>charlist</type>
     <default>slf</default>
     <description>
-        <p>Items which are completed at the <ex>:open</ex> prompts. Available items:</p>
+        <p>Items which are completed at the <ex>:open</ex> prompts. Available items are,</p>
 
         <dl>
-            <dt>s</dt>     <dd>Search engines and keyword URLs</dd>
-            <dt>f</dt>     <dd>Local files</dd>
-            <dt>l</dt>     <dd>&dactyl.host; location bar entries (bookmarks and history sorted in an intelligent way)</dd>
-            <dt>b</dt>     <dd>Bookmarks</dd>
-            <dt>h</dt>     <dd>History</dd>
-            <dt>S</dt>     <dd>Search engine suggestions</dd>
-            <dt>t</dt>     <dd>Open tabs</dd>
+            <dt>s</dt> <dd>Search engines and keyword URLs</dd>
+            <dt>f</dt> <dd>Local files</dd>
+            <dt>l</dt> <dd>&dactyl.host; location bar entries (bookmarks and history sorted in an intelligent way)</dd>
+            <dt>b</dt> <dd>Bookmarks</dd>
+            <dt>h</dt> <dd>History</dd>
+            <dt>S</dt> <dd>Search engine suggestions</dd>
+            <dt>t</dt> <dd>Open tabs</dd>
         </dl>
 
         <p>
-            The order is important, so <ex>:set complete=bs</ex> would list bookmarks first,
-            and then any available quick searches.
+            The order is important, such that <ex>:set complete=bsf</ex> will
+            list bookmarks followed by matching quick searches and then
+            matching files.
         </p>
 
         <warning>
-            Using <em>b</em> and <em>h</em> can make completion very slow if there are many items.
+            Using <em>b</em> and <em>h</em> can make completion very slow if
+            there are many items.
         </warning>
     </description>
 </item>
@@ -397,21 +425,17 @@
     <default>google</default>
     <description>
         <p>
-            Sets the default search engine. The default search engine name is
-            used in the <ex>:open [arg]</ex> command if [arg] neither
-            looks like a URL nor like a specified search engine/keyword.
+            Sets the default search engine. The default search engine is
+            used by <ex>:open</ex> and related commands for arguments which
+            include no search or bookmark keywords and can't otherwise be
+            converted into URLs or existing file names.
         </p>
 
         <p>
-            This means that if you set <o>defsearch</o> to <str>youtube</str>,
-            then <ex>:open arnold schwarzenegger</ex> will be exactly the same as
-            <ex>:open youtube arnold schwarzenegger</ex>. Therefore, you need
-            to add a keyword or search engine <str>youtube</str> first.
-        </p>
-
-        <p>
-            If <o>defsearch</o> is empty, then &dactyl.host; will always attempt to
-            open the raw [arg].
+            This means that with <o>defsearch</o> set to <str>youtube</str>,
+            then <ex>:open Tim Minchin</ex> behaves exactly as
+            <ex>:open youtube Tim Minchin</ex>, so long as you don't have a
+            search or bookmark keyword called ‘Tim’.
         </p>
     </description>
 </item>
@@ -425,13 +449,14 @@
     <description>
         <p>
             Set the external text editor.
-            Sets the editor to run when <k name="C-i"/> is pressed in Insert and TextArea
-            modes.
+            This is the editor used by <k name="C-i"/>, <k>gF</k>, and other
+            commands which launch an external text editor.
         </p>
 
         <warning>
-            &dactyl.appname; will not behave correctly if the editor forks its own
-            process, such as with gvim without the -f argument.
+            &dactyl.appname; will not behave correctly if the editor forks its
+            own process, rather than blocking until editing is complete. Gvim
+            invoked without the <em>-f</em> option is one such example.
         </warning>
     </description>
 </item>
@@ -446,7 +471,8 @@
     <description>
         <p>
             Allow reading of an RC file in the current directory. This file is
-            sourced in addition to, and after, your default RC file.
+            sourced after the default <tt>&dactyl.name;rc</tt> file in your
+            home directory.
         </p>
     </description>
 </item>
@@ -455,13 +481,9 @@
 <item>
     <tags>'eht' 'extendedhinttags'</tags>
     <spec>'extendedhinttags' 'eht'</spec>
+    <strut/>
     <type>string</type>
-    <default>//*[@onclick or @onmouseover or @onmousedown or @onmouseup or
-            @oncommand or @class='lk' or @role='link'] |
-        //input[not(@type='hidden')] | //xhtml:input[not(@type='hidden')] |
-        //a | //xhtml:a | //area | //xhtml:area | //iframe | //xhtml:iframe |
-        //textarea | //xhtml:textarea | //button | //xhtml:button |
-        //select | //xhtml:select</default>
+    <default>&hinttags;</default>
     <description>
         <p>The XPath string of hintable elements activated by <k>;</k>.</p>
     </description>
@@ -475,7 +497,10 @@
     <type>boolean</type>
     <default>off</default>
     <description>
-        <p>Ring the bell when an error message is displayed.</p>
+        <p>
+            Ring the bell when an error message is displayed. See also
+            <o>visualbell</o>.
+        </p>
     </description>
 </item>
 
@@ -487,8 +512,9 @@
     <default></default>
     <description>
         <p>
-            A list of autocommand event names which should be ignored. If the list contains
-            the value <str>all</str> then all events are ignored.
+            A list of autocommand event names which should be ignored. If the
+            list contains the value <str>all</str> then all events are
+            ignored.
         </p>
     </description>
 </item>
@@ -500,8 +526,8 @@
     <default>UTF-8</default>
     <description>
         <p>
-            Changes the character encoding of the current buffer. Valid only for
-            the current page.
+            Changes the character encoding of the current buffer. Valid only
+            until a new page is loaded.
         </p>
     </description>
 </item>
@@ -513,7 +539,10 @@
     <type>string</type>
     <default>UTF-8</default>
     <description>
-        <p>Changes the character encoding that &dactyl.appname; uses to read and write files.</p>
+        <p>
+            Changes the character encoding that &dactyl.appname; uses to read
+            and write files.
+        </p>
     </description>
 </item>
 
@@ -538,7 +567,7 @@
     <type>number</type>
     <default>0</default>
     <description>
-        <p>Change the behaviour of <k name="Return"/> in Hints mode.</p>
+        <p>Changes how soon matching hints are followed in in Hints mode.</p>
 
         <p>Possible values:</p>
 
@@ -559,8 +588,8 @@
     <default>off</default>
     <description>
         <p>
-            Show the current window fullscreen. Also hide certain GUI elements like the
-            statusline.
+            Show the current window full-screen. Also hide certain GUI elements, such as
+            <t>status-line</t> and tab bar.
         </p>
     </description>
 </item>
@@ -570,9 +599,9 @@
     <tags>'go' 'guioptions'</tags>
     <spec>'guioptions' 'go'</spec>
     <type>charlist</type>
-    <default></default>
+    <default>rb</default>
     <description>
-        <p>Show or hide certain GUI elements like the menu or toolbar.</p>
+        <p>Show or hide certain GUI elements.</p>
 
         <p>Supported characters:</p>
 
@@ -587,9 +616,10 @@
             <dt>l</dt>      <dd>Left scrollbar (<em>l</em> and <em>r</em> are mutually exclusive)</dd>
         </dl>
 
-        <p>You can also hide the tab bar with <ex>:set showtabline=0</ex>.</p>
+        <p>See also <o>showtabline</o>.</p>
 
         <note>Scrollbar changes require a page reload to take effect.</note>
+        <note>Only one of <em>l</em> or <em>r</em> may be included.</note>
     </description>
 </item>
 
@@ -601,8 +631,8 @@
     <default>intro</default>
     <description>
         <p>
-            Name of the main help file. This is the tail component of the chrome
-            URL as displayed in the status line when viewing the page.
+            Name of the main help file. This is that page shown if the
+            <ex>:help</ex> command is called without any arguments.
         </p>
     </description>
 </item>
@@ -616,9 +646,9 @@
     <description>
         <p>
             When generating hints for input elements that do not have an
-            explicit caption, this specifies the methods to try and generate a
-            textual hint. It tries the options in the order that you give, and
-            uses the first that it finds.
+            explicit caption, this specifies the methods used to generate a
+            textual hint. The options are attempted in the order they are
+            given, and the first successful value is used.
         </p>
 
         <dl>
@@ -633,7 +663,7 @@
 <item>
     <tags>'hm' 'hintmatching'</tags>
     <spec>'hintmatching' 'hm'</spec>
-    <type>string</type>
+    <type>stringlist</type>
     <default>contains</default>
     <description>
         <p>Change the hint matching algorithm during Hints mode.</p>
@@ -641,10 +671,43 @@
         <p>Possible values:</p>
 
         <dl>
-            <dt>contains</dt>           <dd>The typed characters are split on whitespace, and these character groups have to match anywhere inside the text of the link.</dd>
-            <dt>wordstartswith</dt>     <dd>The typed characters are matched with the beginning of the first word (see <o>wordseparators</o>) in the link as long as possible. If no matches occur in the current word, then the matching is continued at the beginning of the next word. The words are worked through in the order they appear in the link. If the typed characters contain spaces, then the characters are split on whitespace. These character groups are then matched with the beginning of the words, beginning at the first one and continuing with the following words in the order they appear in the link.</dd>
-            <dt>firstletters</dt>       <dd>Behaves like wordstartswith, but non-matching words aren't overleaped.</dd>
-            <dt>custom</dt>             <dd>Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)</dd>
+            <dt>contains</dt>           
+            <dd>
+                The typed characters are split on whitespace, and
+                these character groups have to match anywhere inside
+                the text of the link.
+            </dd>
+            <dt>wordstartswith</dt>     
+            <dd>
+                The typed characters are matched with the beginning
+                of the first word (see <o>wordseparators</o>) in the
+                link as long as possible. If no matches occur in the
+                current word, then the matching is continued at the
+                beginning of the next word. The words are worked
+                through in the order they appear in the link. If the
+                typed characters contain spaces, then the characters
+                are split on whitespace. These character groups are
+                then matched with the beginning of the words,
+                beginning at the first one and continuing with the
+                following words in the order they appear in the
+                link.
+            </dd>
+            <dt>firstletters</dt>       
+            <dd>
+                Behaves like wordstartswith, but non-matching words
+                aren't overleaped.
+            </dd>
+            <dt>custom</dt>             
+            <dd>
+                Delegate to the function
+                <tt>dactyl.plugins.customHintMatcher</tt>
+            </dd>
+            <dt>transliterated</dt>       
+            <dd>
+                Certain alphanumeric characters are translated into their
+                unaccented equivalents, such that ‘euro’ will match 'æuró',
+                and ‘Ångström’ will match ‘angstrom’.
+            </dd>
         </dl>
     </description>
 </item>
@@ -654,12 +717,7 @@
     <tags>'ht' 'hinttags'</tags>
     <spec>'hinttags' 'ht'</spec>
     <type>string</type>
-    <default>//*[@onclick or @onmouseover or @onmousedown or @onmouseup or
-     @oncommand or @class='lk' or @role='link'] |
- //input[not(@type='hidden')] | //a | //area |
- //iframe | //textarea | //button | //select |
-//xhtml:input[not(@type='hidden')] | //xhtml:a | //xhtml:area |
-//xhtml:iframe | //xhtml:textarea | //xhtml:button | //xhtml:select</default>
+    <default>&hinttags;</default>
     <description>
         <p>XPath string of hintable elements activated by <k>f</k> and <k>F</k></p>
     </description>
@@ -673,9 +731,9 @@
     <default>0</default>
     <description>
         <p>
-            Timeout before automatically following a non-unique numerical hint. Set to 0
-            (the default) to only follow numeric hints after pressing <k name="Return"/> or
-            when the hint is unique.
+            Timeout before automatically following a non-unique numerical
+            hint. Set to 0 (the default) to only follow numeric hints after
+            pressing <k name="Return"/> or when the hint is unique.
         </p>
     </description>
 </item>
@@ -687,7 +745,10 @@
     <type>number</type>
     <default>500</default>
     <description>
-        <p>Number of Ex commands and search patterns to store in the command-line history.</p>
+        <p>
+            Maximum number of Ex commands and search patterns to store in the
+            <t>command-line</t> history.
+        </p>
     </description>
 </item>
 
@@ -701,9 +762,10 @@
         <p>
             Set the <str>private browsing</str> option. In private browsing mode
             history, cache files, cookies, form data, passwords, download list
-            entries, local and URL marks, command-line history and macros are
-            available only for the duration of the private browsing session and
-            deleted when returning to normal browsing mode.
+            entries, local and URL <t>marks</t>, <t>command-line</t> history
+            and macros are available only for the duration of the private
+            browsing session and deleted when returning to normal browsing
+            mode. See also <t>privacy</t>.
         </p>
     </description>
 </item>
@@ -740,9 +802,7 @@
     <type>boolean</type>
     <default>on</default>
     <description>
-        <p>Show where the search pattern matches as it is typed.</p>
-
-        <note>Incremental searching currently only works in the forward direction.</note>
+        <p>Show the first match for a search pattern as it is typed.</p>
     </description>
 </item>
 
@@ -757,7 +817,7 @@
         <p>
             Use Insert mode as the default for text areas. This is useful if you
             want to use the known &dactyl.host; interface for editing text areas.
-            Input fields default to this behaviour irrespective of this option's
+            Input fields default to this behavior irrespective of this option's
             setting.
         </p>
 
@@ -770,12 +830,25 @@
 
 
 <item>
+    <tags>'jsd' 'jsdebugger'</tags>
+    <spec>'jsdebugger' 'jsd'</spec>
+    <type>boolean</type>
+    <default>off</default>
+    <description>
+        <p>
+            Use the JavaScript debugger service for JavaScript completion.
+        </p>
+    </description>
+</item>
+
+
+<item>
     <tags>'ls' 'laststatus'</tags>
     <spec>'laststatus' 'ls'</spec>
     <type>number</type>
     <default>2</default>
     <description>
-        <p>Determines when the last window will have a status line.</p>
+        <p>Determines when the status line is shown.</p>
 
         <p>Possible values:</p>
 
@@ -785,7 +858,7 @@
             <dt>2</dt>      <dd>Always</dd>
         </dl>
 
-        <note>laststatus=1 not implemented yet.</note>
+        <note>laststatus=1 not implemented.</note>
     </description>
 </item>
 
@@ -798,8 +871,10 @@
     <default>off</default>
     <description>
         <p>
-            Limit the search to hyperlink text.  This includes (X)HTML elements
-            with an <str>href</str> atrribute and XLink <str>simple</str> links.
+            Limit searches to hyperlink text. This includes all elements
+            matched by the <o>hinttags</o> XPath. This behavior can also be
+            enabled by including <em>\l</em> in the search pattern, and
+            disabled by including <em>\L</em>.
         </p>
     </description>
 </item>
@@ -839,7 +914,7 @@
     <type>number</type>
     <default>100</default>
     <description>
-        <p>Number of messages to store in the message history.</p>
+        <p>Maximum number of messages to store in the message history.</p>
     </description>
 </item>
 
@@ -850,7 +925,10 @@
     <type>boolean</type>
     <default>on</default>
     <description>
-        <p>Pause the message list window when more than one screen of listings is displayed.</p>
+        <p>
+            Pause the message list window when more than one screen of
+            listings is displayed.
+        </p>
     </description>
 </item>
 
@@ -862,11 +940,11 @@
     <default>\bnext,^>$,^(>>|»)$,^(>|»),(>|»)$,\bmore\b</default>
     <description>
         <p>
-            Patterns to use when guessing the <o>next</o> page in a document
-            sequence when the user hits <k>]]</k>. Each pattern, in order, is
-            matched against all links in the page with the first match being
-            used. The patterns are case insensitive regular expressions and the
-            link elements are those defined by <o>hinttags</o>.
+            Patterns to use when guessing the next page in a document
+            sequence after pressing the <k>]]</k> key. Each pattern is
+            successively tested against each link in the page (as defined by
+            <o>hinttags</o>, starting with the last), and the first link to
+            match is followed.
         </p>
     </description>
 </item>
@@ -879,21 +957,22 @@
     <default></default>
     <description>
         <p>
-            Define which Ex commands output the result in a new tab
-            automatically. You can also use <ex>:tab command</ex> to manually
-            output a command in a new tab.
+            Defines which Ex commands open pages in new tabs rather than the
+            current tab by default. This may be overridden with the
+            <ex>:tab</ex> command, and is usually inverted by affixing a
+            <em>!</em> to the command in question.
         </p>
 
-        <p>The possible values:</p>
+        <p>The possible values are,</p>
 
         <dl>
             <dt>all</dt>            <dd>All commands</dd>
-            <dt>addons</dt>         <dd><ex>:addo[ns]</ex> command</dd>
-            <dt>downloads</dt>      <dd><ex>:downl[oads]</ex> command</dd>
-            <dt>extoptions</dt>     <dd><ex>:exto[ptions]</ex> command</dd>
-            <dt>help</dt>           <dd><ex>:h[elp]</ex> command</dd>
+            <dt>addons</dt>         <dd><ex>:addo<oa>ns</oa></ex> command</dd>
+            <dt>downloads</dt>      <dd><ex>:downl<oa>oads</oa></ex> command</dd>
+            <dt>extoptions</dt>     <dd><ex>:exto<oa>ptions</oa></ex> command</dd>
+            <dt>help</dt>           <dd><ex>:h<oa>elp</oa></ex> command</dd>
             <dt>javascript</dt>     <dd><ex>:javascript!</ex> or <ex>:js!</ex> command</dd>
-            <dt>prefs</dt>          <dd><ex>:pref[erences]!</ex> or <ex>:prefs!</ex> command</dd>
+            <dt>prefs</dt>          <dd><ex>:pref<oa>erences</oa>!</ex> or <ex>:prefs!</ex> command</dd>
         </dl>
 
     </description>
@@ -906,7 +985,10 @@
     <type>boolean</type>
     <default>on</default>
     <description>
-        <p>Show and set the 'work offline' behavior.</p>
+        <p>
+            Enables or disables ‘offline’ mode, where network access is
+            disabled and all web pages are loaded entirely from cache.
+        </p>
     </description>
 </item>
 
@@ -918,9 +1000,9 @@
     <type>charlist</type>
     <default>gfm</default>
     <description>
-        <p>Desired info in the <ex>:pageinfo</ex> output.</p>
+        <p>Info shown in in the <ex>:pageinfo</ex> output.</p>
 
-        <p>Available items:</p>
+        <p>Items available by default are,</p>
 
         <dl>
             <dt>g</dt>      <dd>General info</dd>
@@ -943,26 +1025,30 @@
     <default>tab</default>
     <description>
         <p>
-            Define where to show requested popup windows.  Does not apply to
-            windows which are opened by middle clicking a link, they always open
-            in a new tab.
+            Defines where to show requested pop-up windows. Applies only to
+            links which request to open in a new window. The behavior of
+            middle-, shift-, or control- clicking a link is unaffected by this
+            option.
         </p>
 
-        <p>Possible values:</p>
+        <p>Possible values are:</p>
 
         <dl>
-            <dt>tab</dt>            <dd>Open popups in a new tab</dd>
-            <dt>window</dt>         <dd>Open popups in a new window</dd>
-            <dt>resized</dt>        <dd>Open resized popups in a new window</dd>
+            <dt>tab</dt>            <dd>Open pop-ups in a new tab</dd>
+            <dt>window</dt>         <dd>Open pop-ups in a new window</dd>
+            <dt>resized</dt>        <dd>Open resized pop-ups in a new window</dd>
         </dl>
 
         <p>
-            If neither <em>tab</em> nor <em>window</em> is provided, all popups open in the current tab.
-            <em>tab</em> and <em>window</em> are mutually exclusive, and the last one listed is
-            effective.
+            If neither <em>tab</em> nor <em>window</em> is provided, all
+            pop-ups open in the current tab. <em>tab</em> and <em>window</em>
+            are mutually exclusive, and the last one listed is effective.
         </p>
 
-        <note>This option does not change the popup blocker of &dactyl.host; in any way.</note>
+        <note>
+            This option does not alter the behavior pop-up blocker of
+            &dactyl.host; in any way.
+        </note>
     </description>
 </item>
 
@@ -974,11 +1060,11 @@
     <default><![CDATA[\bprev|previous\b,^<$,^(<<|«)$,^(<|«),(<|«)$]]></default>
     <description>
         <p>
-            Patterns to use when guessing the <o>previous</o> page in a document
-            sequence when the user hits <ex>[[</ex>. Each pattern, in order, is
-            matched against all links in the page with the first match being
-            used. The patterns are case insensitive regular expressions and the
-            link elements are those defined by <o>hinttags</o>.
+            Patterns to use when guessing the previous page in a document
+            sequence after pressing the <k>[[</k> key. Each pattern is
+            successively tested against each link in the page (as defined by
+            <o>hinttags</o>, starting with the last), and the first link to
+            match is followed.
         </p>
     </description>
 </item>
@@ -990,25 +1076,25 @@
     <spec>'runtimepath' 'rtp'</spec>
     <type>stringlist</type>
     <default type="plain"><str>$&dactyl.idname;_RUNTIME</str> or
-    Unix, Mac: <str>~/.&dactyl.name;</str>,
-    Windows: <str>~/&dactyl.name;</str></default>
+       Unix, Mac: <str>~/.&dactyl.name;</str>
+         Windows: <str>~/&dactyl.name;</str></default>
     <description>
         <p>List of directories searched for runtime files:</p>
 
         <ul>
             <li>colors/</li>
             <li>macros/</li>
-            <li>plugin/</li>
+            <li>plugins/</li>
         </ul>
 
         <p>Example:</p>
 
-        <code><ex>:set runtimepath=<str>~/my&dactyl.name;,~/.&dactyl.name;</str></ex></code>
+        <code><ex>:set runtimepath=~/my&dactyl.name;,~/.&dactyl.name;</ex></code>
 
         <p>
             This will search for plugins in both
-            <str>~/my&dactyl.name;/plugin</str> and
-            <str>~/.&dactyl.name;/plugin</str>
+            <str>~/my&dactyl.name;/plugins</str> and
+            <str>~/.&dactyl.name;/plugins</str>
         </p>
 
         <p>
@@ -1022,13 +1108,13 @@
 <item>
     <tags>'si' 'sanitizeitems'</tags>
     <spec>'sanitizeitems' 'si'</spec>
+    <strut/>
     <type>stringlist</type>
     <default>all</default>
     <description>
         <p>
             The default list of private items to sanitize. See
-            <ex>:sanitize</ex> for a list and explanation of
-            possible values.
+            <ex>:sanitize</ex> for a list and explanation of possible values.
         </p>
     </description>
 </item>
@@ -1037,6 +1123,7 @@
 <item>
     <tags>'sts' 'sanitizetimespan'</tags>
     <spec>'sanitizetimespan' 'sts'</spec>
+    <strut/>
     <type>number</type>
     <default>all</default>
     <description>
@@ -1065,11 +1152,10 @@
     <description>
         <p>
             Number of lines to scroll with <k name="C-u"/> and <k name="C-d"/>
-            commands.  The number of lines scrolled defaults to half the window
-            size.  When a [count] is specified to the <k name="C-u"/> or
-            <k name="C-d"/> commands this is used to set the value of
-            <o>scroll</o> and also used for the current command. The value can
-            be reset to half the window height with <ex>:set scroll=0</ex>.
+            commands. The number of lines scrolled defaults to half the window
+            size. When a <oa>count</oa> is specified to the <k name="C-u"/> or
+            <k name="C-d"/> commands, that value is used instead. When the
+            value is <em>0</em>, it defaults to half the window height.
         </p>
     </description>
 </item>
@@ -1079,7 +1165,7 @@
     <tags>'shell' 'sh'</tags>
     <spec>'shell' 'sh'</spec>
     <type>string</type>
-    <default>_$SHELL_ or "sh", Win32: "cmd.exe"</default>
+    <default type="plain"><em>$SHELL</em> or <str>sh</str>, Win32: <str>cmd.exe</str></default>
     <description>
         <p>Shell to use for executing <ex>:!</ex> and <ex>:run</ex> commands.</p>
     </description>
@@ -1089,12 +1175,11 @@
 <item>
     <tags>'shellcmdflag' 'shcf'</tags>
     <spec>'shellcmdflag' 'shcf'</spec>
+    <strut/>
     <type>string</type>
     <default type="plain"><str>-c</str>, Win32: <str>/c</str></default>
     <description>
         <p>Flag passed to shell when executing <ex>:!</ex> and <ex>:run</ex> commands.</p>
-
-        <example><str>bash -c gvim</str></example>
     </description>
 </item>
 
@@ -1114,21 +1199,21 @@
 <item>
     <tags>'ssli' 'showstatuslinks'</tags>
     <spec>'showstatuslinks' 'ssli'</spec>
+    <strut/>
     <type>number</type>
     <default>1</default>
     <description>
         <p>
-            Show the destination of the link under the cursor in the status bar.
-            Also links which are focused by keyboard commands like
-            <k name="Tab"/> are shown.
+            When the mouse hovers over a link, or a link is otherwise focused,
+            show its destination in the status bar.
         </p>
 
-        <p>Possible values:</p>
+        <p>Possible values are:</p>
 
         <dl>
-            <dt>0</dt>      <dd>Don't show link destination</dd>
-            <dt>1</dt>      <dd>Show the link in the status line</dd>
-            <dt>2</dt>      <dd>Show the link in the command line</dd>
+            <dt>0</dt> <dd>Don't show link destination</dd>
+            <dt>1</dt> <dd>Show the link's destination in the <t>status-line</t></dd>
+            <dt>2</dt> <dd>Show the link's destination in the <t>command-line</t></dd>
         </dl>
     </description>
 </item>
@@ -1140,14 +1225,14 @@
     <type>number</type>
     <default>2</default>
     <description>
-        <p>Control when to show the tab bar of opened web pages.</p>
+        <p>Controls when to the tab line is shown.</p>
 
-        <p>Possible values:</p>
+        <p>Possible values are:</p>
 
         <dl>
-            <dt>0</dt>      <dd>Never show tab bar</dd>
-            <dt>1</dt>      <dd>Show tab bar only if more than one tab is open</dd>
-            <dt>2</dt>      <dd>Always show tab bar</dd>
+            <dt>0</dt>      <dd>Never show tab line</dd>
+            <dt>1</dt>      <dd>Show tab line only if more than one tab is open</dd>
+            <dt>2</dt>      <dd>Always show tab line</dd>
         </dl>
     </description>
 </item>
@@ -1176,16 +1261,9 @@
     <default>google</default>
     <description>
         <p>
-            Set the search engines which can be used for completion suggestions.
-            Add <str>S</str> to the <o>complete</o> option if you want to use
-            this feature.
+            Set the search engines which can be used for completion
+            suggestions when <o>complete</o> contains <em>S</em>.
         </p>
-
-        <warning>
-            This feature could make tab-completion slower because it needs to
-            wait for changes, so use it only if you have a fast internet
-            connection.
-        </warning>
     </description>
 </item>
 
@@ -1197,12 +1275,10 @@
     <default>&dactyl.appname;</default>
     <description>
         <p>
-            Change the title of the browser window.  &dactyl.appname; changes the
-            browser title from <str>Title of web page - Mozilla &dactyl.host;</str>
-            to <str>Title of web page - &dactyl.appname;</str>.  If you don't like
-            that, you can restore it with:
+            Set the application name shown after the current page title in
+            &dactyl.host;'s title bar.
         </p>
-        <code><ex>:set titlestring=<str>Mozilla &dactyl.host;</str></ex></code>
+        <example><ex>:set titlestring=<str>Mozilla &dactyl.host;</str></ex></example>
     </description>
 </item>
 
@@ -1214,9 +1290,7 @@
     <type>boolean</type>
     <default>off</default>
     <description>
-        <p>Show current website with a minimal style sheet to make it easily accessible.</p>
-
-        <note>This is a local option for now, a global value may be supported in the future.</note>
+        <p>Show current website with minimal styling.</p>
     </description>
 </item>
 
@@ -1228,14 +1302,12 @@
     <default>,\s</default>
     <description>
         <p>
-            Set the separator regex used to separate multiple URL args. Multiple
-            arguments can be specified for <ex>:open</ex>, and similar commands,
-            using this regex as the separator. Using whitespace alone is not
-            generally useful since it is often contained in a single argument.
-            E.g., <ex>:open linus torvalds</ex> should perform a single search
-            for the key words <str>linus</str> and <str>torvalds</str>. If this
-            is set to the empty string then these arguments will never be split.
+            The regular expression used to split URL lists in commands
+            including <ex>:open</ex>. When set to the empty string, URL lists
+            are never split. With the default value, the following will open
+            three URLs in the current tab and two new background tabs,
         </p>
+        <code><ex>:open google Linux, wikipedia Arch Linux, imdb March of the Penguins</ex></code>
     </description>
 </item>
 
@@ -1247,10 +1319,11 @@
     <default>1</default>
     <description>
         <p>
-            Define which info messages are displayed.  When bigger than zero,
-            &dactyl.appname; will give messages about what it is doing.  These can be
-            viewed at any time with the <ex>:messages</ex> command. The highest
-            value is 15, being the most verbose mode.
+            Define which info messages are displayed. As the value increases,
+            &dactyl.appname; will show more messages about its progress.
+            These can be viewed at any time with the <ex>:messages</ex>
+            command. The highest useful value is 15, being the most verbose
+            mode.
         </p>
         <!-- TODO: list levels and associated messages -->
     </description>
@@ -1265,13 +1338,9 @@
     <default>off</default>
     <description>
         <p>
-            Use visual bell instead of beeping on errors. The visual bell style is
-            controlled by <ex>:hi Bell</ex>.
-        </p>
-
-        <p>
-            To disable both the audible and visual bells use <ex>:set visualbell</ex>
-            and <ex>:hi Bell display: none;</ex>
+            Use visual bell instead of beeping on errors. The visual bell
+            style is controlled by <ex>:highlight Bell</ex>. See also
+            <o>errorbells</o>.
         </p>
     </description>
 </item>
@@ -1283,19 +1352,17 @@
     <default>smart</default>
     <description>
         <p>
-            Defines how completions are matched for a given completion context
-            with regard to character case.
+            Defines how completions are matched with regard to character case.
+            Keys in the <t>regexmap</t> refer to completion context names (see
+            <ex>:contexts</ex>) for which the value applies. Possible values
+            are,
         </p>
-
-        <p>Possible values:</p>
 
         <dl>
             <dt><str>smart</str></dt>  <dd>Case is significant when capital letters are typed</dd>
             <dt><str>match</str></dt>  <dd>Case is always significant</dd>
             <dt><str>ignore</str></dt> <dd>Case is never significant</dd>
         </dl>
-
-        <p>See also <ex>:contexts</ex></p>
     </description>
 </item>
 
@@ -1306,16 +1373,16 @@
     <default></default>
     <description>
         <p>
-            List of file patterns to ignore when completing files. E.g., to ignore object
-            files and Vim swap files
+            List of file patterns to ignore when completing files. For example, 
+            the following will ignore object files and Vim swap files:
         </p>
 
         <code><ex>:set wildignore=<str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]<a>2</a>$</str></ex></code>
 
-        <note>Unlike Vim each pattern is a regex rather than a glob.</note>
+        <note>Unlike Vim each pattern is a regular expression rather than a glob.</note>
         <note>
             The only way to include a literal comma in a pattern is with the
-            escape <str>\u0044</str>.
+            escape sequence <str>\u0044</str>.
         </note>
     </description>
 </item>
@@ -1327,19 +1394,19 @@
     <default>list:full</default>
     <description>
         <p>
-            Defines how command-line completion works.  It is a comma-separated
+            Defines how command-line completion works. It is a comma-separated
             list of parts, where each part specifies what to do for each
-            consecutive use of the completion key.  The first part specifies the
-            behavior for the first use of the completion key, the second part
-            for the second use, etc.
+            consecutive press of the <k name="Tab"/> key. The last element in
+            the list is used for each succeeding <k name="Tab"/> after it has
+            been reached.
         </p>
 
-        <p>These are the possible values for each part:</p>
+        <p>These are the possible values for each part are,</p>
 
         <dl>
             <dt><str></str></dt>             <dd>Complete only the first match.</dd>
             <dt><str>full</str></dt>         <dd>Complete the next full match. After the last, the original string is used.</dd>
-            <dt><str>longest</str></dt>      <dd>Complete till the longest common string.</dd>
+            <dt><str>longest</str></dt>      <dd>Complete the longest common substring of all completions.</dd>
             <dt><str>list</str></dt>         <dd>When more than one match, list all matches.</dd>
             <dt><str>list:full</str></dt>    <dd>When more than one match, list all matches and complete the first match.</dd>
             <dt><str>list:longest</str></dt>
@@ -1361,10 +1428,10 @@
     <default>.*</default>
     <description>
         <p>
-            A list of regexps defining which completion contexts
-            should be sorted. The main purpose of this option is to
-            prevent sorting of certain completion lists that don't
-            perform well under load.
+            A list of regular expressions defining which completion contexts
+            should be sorted. The main purpose of this option is to prevent
+            sorting of certain completion lists that don't perform well under
+            load.
         </p>
 
         <p>See also <ex>:contexts</ex></p>
@@ -1374,26 +1441,15 @@
 <item>
     <tags>'wsp' 'wordseparators'</tags>
     <spec>'wordseparators' 'wsp'</spec>
+    <strut/>
     <type>string</type>
-    <default><![CDATA[[\.,!\?:;/\\"\^\$%&?\(\)\[\]\\<a>\\</a><>#\\*\+\\|=~ _\\-]]]></default>
+    <default><![CDATA[[.,!?:;\\/"^$%&?()[\]{}<>#*+|=~ _-]]]></default>
     <description>
         <p>
-            A regex which defines the word separators which are used for the
-            <o>hintmatching</o> types <str>wordstartswith</str> and
-            "firstletters" to split the words in the text of a link.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags>'jsd' 'jsdebugger'</tags>
-    <spec>'jsdebugger' 'jsd'</spec>
-    <type>boolean</type>
-    <default>off</default>
-    <description>
-        <p>
-            Use javascript debugger service at the completion list.
-            More list is shown up when it is on.
+            A regular expression which defines how words are split for the
+            the <o>hintmatching</o> types <str>wordstartswith</str> and
+            <str>firstletters</str>. Words are split on each occurrence of the
+            given pattern.
         </p>
     </description>
 </item>

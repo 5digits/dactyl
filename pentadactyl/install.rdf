@@ -5,21 +5,16 @@
         <em:id>pentadactyl@dactyl.googlecode.com</em:id>
         <em:name>Pentadactyl</em:name>
         <em:version>@VERSION@</em:version>
-        <em:description>Make Firefox behave like Vim</em:description>
+        <em:description>Firefox for Vim and Links addicts</em:description>
         <em:creator>Kris Maglione</em:creator>
-        <em:homepageURL>http://dactyl.sf.net/</em:homepageURL>
+        <em:homepageURL>http://dactyl.sf.net/Pentadactyl</em:homepageURL>
         <em:iconURL>chrome://pentadactyl/skin/icon.png</em:iconURL>
         <em:optionsURL>chrome://dactyl/content/preferences.xul</em:optionsURL>
-        <em:file>
-            <Description about="urn:mozilla:extension:file:pentadactyl.jar">
-                <em:package>content/dactyl/</em:package>
-            </Description>
-        </em:file>
         <em:targetApplication>
             <Description>
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
                 <em:minVersion>3.5</em:minVersion>
-                <em:maxVersion>4.0b5pre</em:maxVersion>
+                <em:maxVersion>4.0b7pre</em:maxVersion>
             </Description>
         </em:targetApplication>
     </Description>

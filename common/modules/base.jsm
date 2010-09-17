@@ -1,4 +1,4 @@
-// Copyright (c) 2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -10,6 +10,74 @@ const Cr = Components.results;
 const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+
+let objproto = Object.prototype;
+let hasOwnProperty = objproto.hasOwnProperty;
+
+if (!Object.create)
+    Object.create = function (proto, props) {
+        let obj = { __proto__: proto };
+        for (let k in properties(props || {})) 
+            Object.defineProperty(obj, k, props[k]);
+        return obj;
+    };
+if (!Object.defineProperty)
+    Object.defineProperty = function (obj, prop, desc) {
+        let value = desc.value;
+        if ("value" in desc)
+            if (desc.writable && !objproto.__lookupGetter__.call(obj, prop)
+                              && !objproto.__lookupSetter__.call(obj, prop))
+                obj[prop] = value;
+            else {
+                objproto.__defineGetter__.call(obj, prop, function () value);
+                if (desc.writable)
+                    objproto.__defineSetter__.call(obj, prop, function (val) { value = val; });
+            }
+
+        if ("get" in desc)
+            objproto.__defineGetter__.call(obj, prop, desc.get);
+        if ("set" in desc)
+            objproto.__defineSetter__.call(obj, prop, desc.set);
+    }
+if (!Object.getOwnPropertyDescriptor)
+    Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
+        if (!hasOwnProperty.call(obj, prop))
+            return undefined;
+        let desc = {
+            configurable: true,
+            enumerable: objproto.propertyIsEnumerable.call(obj, prop),
+        };
+        var get = obj.__lookupGetter__(prop),
+            set = obj.__lookupSetter__(prop);
+        if (!get && !set) {
+            desc.value = obj[prop];
+            desc.writable = true;
+        }
+        if (get)
+            desc.get = get;
+        if (set)
+            desc.set = set;
+        return desc;
+    }
+if (!Object.getOwnPropertyNames)
+    Object.getOwnPropertyNames = function getOwnPropertyNames(obj) {
+        // This is an ugly and unfortunately necessary hack.
+        if (hasOwnProperty.call(obj, "__iterator__")) {
+            var oldIter = obj.__iterator__;
+            delete obj.__iterator__;
+        }
+        let res = [k for (k in obj) if (hasOwnProperty.call(obj, k))];
+        if (oldIter !== undefined) {
+            obj.__iterator__ = oldIter;
+            res.push("__iterator__");
+        }
+        return res;
+    };
+if (!Object.getPrototypeOf)
+    Object.getPrototypeOf = function (obj) obj.__proto__;
+if (!Object.keys)
+    Object.keys = function (obj)
+        Object.getOwnPropertyNames(obj).filter(function (k) objproto.propertyIsEnumerable.call(obj, k));
 
 let use = {};
 let loaded = {};
@@ -30,17 +98,21 @@ function defmodule(name, module, params) {
         }
     currentModule = module;
 }
+
 defmodule.loadLog = [];
-// Object.defineProperty(defmodule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val } });
+Object.defineProperty(defmodule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val } });
 defmodule.modules = [];
-defmodule.times = {};
-defmodule.time = function (major, minor, func, self) {
+defmodule.times = { all: 0 };
+defmodule.time = function time(major, minor, func, self) {
     let time = Date.now();
     let res = func.apply(self, Array.slice(arguments, 4));
     let delta = Date.now() - time;
+    defmodule.times.all += delta;
     defmodule.times[major] = (defmodule.times[major] || 0) + delta;
-    if (minor)
+    if (minor) {
+        defmodule.times[":" + minor] = (defmodule.times[":" + minor] || 0) + delta;
         defmodule.times[major + ":" + minor] = (defmodule.times[major + ":" + minor] || 0) + delta;
+    }
     return res;
 }
 
@@ -66,12 +138,12 @@ defmodule("base", this, {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
-        "Struct", "StructBase", "Timer", "XPCOMUtils", "allkeys", "array",
-        "call", "callable", "curry", "debuggerProperties", "defmodule", "dict",
+        "Struct", "StructBase", "Timer", "UTF8", "XPCOMUtils", "array",
+        "call", "callable", "curry", "debuggerProperties", "defmodule",
         "endmodule", "extend", "foreach", "isarray", "isgenerator",
-        "isinstance", "isobject", "isstring", "issubclass", "iter", "keys",
-        "memoize", "properties", "requiresMainThread", "set", "update",
-        "values",
+        "isinstance", "isobject", "isstring", "issubclass", "iter", "iterall",
+        "keys", "memoize", "properties", "requiresMainThread", "set",
+        "update", "values",
     ],
     use: ["services"]
 });
@@ -83,33 +155,13 @@ function Runnable(self, func, args) {
     };
 }
 
-function allkeys(obj) {
-    let ret = {};
-    try {
-        for (; obj; obj = obj.__proto__) {
-            services.get("debugger").wrapValue(obj).getProperties(ret, {});
-            for (let prop in values(ret.value))
-                yield prop.name.stringValue;
-        }
-        return;
-    }
-    catch (e) {}
-
-    let __iterator__ = obj.__iterator__;
-    try {
-        if ("__iterator__" in obj) {
-            yield "__iterator__";
-            delete obj.__iterator__;
-        }
-        for (let k in obj)
-            yield k;
-    }
-    finally {
-        if (__iterator__)
-            obj.__iterator__ = __iterator__;
-    }
-}
-
+/**
+ * Returns a list of all of the top-level properties of an object, by
+ * way of the debugger.
+ *
+ * @param {object} obj
+ * @returns [jsdIProperty]
+ */
 function debuggerProperties(obj) {
     if (loaded.services && services.get("debugger").isOn) {
         let ret = {};
@@ -118,58 +170,89 @@ function debuggerProperties(obj) {
     }
 }
 
-let hasOwnProperty = Object.prototype.hasOwnProperty;
-if (!Object.keys)
-    Object.keys = function keys(obj) [k for (k in obj) if (hasOwnProperty.call(obj, k))];
-
-if (!Object.getOwnPropertyNames)
-    Object.getOwnPropertyNames = function getOwnPropertyNames(obj) {
-        let res = debuggerProperties(obj);
-        if (res)
-            return [prop.name.stringValue for (prop in values(res))];
-        return Object.keys(obj);
-    }
-
-function properties(obj, prototypes) {
+/**
+ * Iterates over the names of all of the top-level properties of an
+ * object or, if prototypes is given, all of the properties in the
+ * prototype chain below the top. Uses the debugger if possible.
+ *
+ * @param {object} obj The object to inspect.
+ * @param {boolean} properties Whether to inspect the prototype chain
+ * @default false
+ * @returns {Generator}
+ */
+function properties(obj, prototypes, debugger_) {
     let orig = obj;
     let seen = {};
     for (; obj; obj = prototypes && obj.__proto__) {
         try {
-            var iter = values(Object.getOwnPropertyNames(obj));
+            var iter = (!debugger_ || !services.get("debugger").isOn) && values(Object.getOwnPropertyNames(obj));
         }
-        catch (e) {
+        catch (e) {}
+        if (!iter)
             iter = (prop.name.stringValue for (prop in values(debuggerProperties(obj))));
-        }
+
         for (let key in iter)
             if (!prototypes || !set.add(seen, key) && obj != orig)
                 yield key
     }
 }
 
+/**
+ * Iterates over all of the top-level, iterable property names of an
+ * object.
+ *
+ * @param {object} obj The object to inspect.
+ * @returns {Generator}
+ */
 function keys(obj) {
     for (var k in obj)
         if (hasOwnProperty.call(obj, k))
             yield k;
 }
+/**
+ * Iterates over all of the top-level, iterable property values of an
+ * object.
+ *
+ * @param {object} obj The object to inspect.
+ * @returns {Generator}
+ */
 function values(obj) {
     for (var k in obj)
         if (hasOwnProperty.call(obj, k))
             yield obj[k];
 }
+
+/**
+ * Iterates over an iterable object and calls a callback for each
+ * element.
+ *
+ * @param {object} iter The iterator.
+ * @param {function} fn The callback.
+ * @param {object} self The this object for 'fn'.
+ */
 function foreach(iter, fn, self) {
     for (let val in iter)
         fn.call(self, val);
 }
 
-function dict(ary) {
-    var obj = {};
-    for (var i = 0; i < ary.length; i++) {
-        var val = ary[i];
-        obj[val[0]] = val[1];
-    }
-    return obj;
+/**
+ * Iterates over each iterable argument in turn, yielding each value.
+ *
+ * @returns {Generator}
+ */
+function iterall() {
+    for (let i = 0; i < arguments.length; i++)
+        for (let j in Iterator(arguments[i]))
+            yield j;
 }
 
+/**
+ * Utility for managing sets of strings. Given an array, returns an
+ * object with one key for each value thereof.
+ *
+ * @param {[string]} ary @optional
+ * @returns {object}
+ */
 function set(ary) {
     let obj = {};
     if (ary)
@@ -177,33 +260,86 @@ function set(ary) {
             obj[ary[i]] = true;
     return obj;
 }
+/**
+ * Adds an element to a set and returns true if the element was
+ * previously contained.
+ *
+ * @param {object} set The set.
+ * @param {string} key The key to add.
+ * @returns boolean
+ */
 set.add = function (set, key) {
     let res = this.has(set, key);
     set[key] = true;
     return res;
 }
+/**
+ * Returns true if the given set contains the given key.
+ *
+ * @param {object} set The set.
+ * @param {string} key The key to check.
+ * @returns {boolean}
+ */
 set.has = function (set, key) hasOwnProperty.call(set, key);
-set.remove = function (set, key) { delete set[key]; }
+/**
+ * Returns a new set containing the members of the first argument which
+ * do not exist in any of the other given arguments.
+ *
+ * @param {object} set The set.
+ * @returns {object}
+ */
+set.subtract = function (set) {
+    set = update({}, set);
+    for (let i = 1; i < arguments.length; i++)
+        for (let k in keys(arguments[i]))
+            delete set[k];
+    return set;
+}
+/**
+ * Removes an element from a set and returns true if the element was
+ * previously contained.
+ *
+ * @param {object} set The set.
+ * @param {string} key The key to remove.
+ * @returns boolean
+ */
+set.remove = function (set, key) {
+    let res = set.has(set, key);
+    delete set[key];
+    return res;
+}
 
+/**
+ * Iterates over an arbitrary object. The following iterators types are
+ * supported, and work as a user would expect:
+ *
+ *  • nsIDOMNodeIterator
+ *  • mozIStorageStatement
+ *
+ * Additionally, the following array-like objects yield a tuple of the
+ * form [index, element] for each contained element:
+ *
+ *  • nsIDOMHTMLCollection
+ *  • nsIDOMNodeList
+ *
+ * and the following likewise yield one element of the form
+ * [name, element] for each contained element:
+ *
+ *  • nsIDOMNamedNodeMap
+ *
+ * Duck typing is implemented for the any other type. If the object
+ * contains the "enumerator" property, iter is called on that. If the
+ * property is a function, it is called first. If it contains the
+ * property "getNext" along with either "hasMoreItems" or "hasMore", it
+ * is iterated over appropriately.
+ *
+ * For all other cases, this function behaves exactly like the Iterator
+ * function.
+ *
+ * @param {object} obj
+ * @returns {Generator}
+ */
 function iter(obj) {
-    if (obj instanceof Ci.nsISimpleEnumerator)
-        return (function () {
-            while (obj.hasMoreElements())
-                yield obj.getNext();
-        })();
-    if (isinstance(obj, [Ci.nsIStringEnumerator, Ci.nsIUTF8StringEnumerator]))
-        return (function () {
-            while (obj.hasMore())
-                yield obj.getNext();
-        })();
-    if (isinstance(obj, Ci.nsIDOMNodeIterator))
-        return (function () {
-            try {
-                while (true)
-                    yield obj.nextNode();
-            }
-            catch (e) {}
-        })();
     if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
         return array.iteritems(obj);
     if (obj instanceof Ci.nsIDOMNamedNodeMap)
@@ -217,14 +353,51 @@ function iter(obj) {
                 yield obj.row;
             obj.reset();
         })(obj);
+    if ("getNext" in obj) {
+        if ("hasMoreElements" in obj)
+            return (function () {
+                while (obj.hasMoreElements())
+                    yield obj.getNext();
+            })();
+        if ("hasMore" in obj)
+            return (function () {
+                while (obj.hasMore())
+                    yield obj.getNext();
+            })();
+    }
+    if ("enumerator" in obj) {
+        if (callable(obj.enumerator))
+            return iter(obj.enumerator());
+        return iter(obj.enumerator);
+    }
     return Iterator(obj);
 }
 
+/**
+ * Returns true if both arguments are functions and
+ * (targ() instaneof src) would also return true.
+ *
+ * @param {function} targ
+ * @param {function} src
+ * @returns {boolean}
+ */
 function issubclass(targ, src) {
     return src === targ ||
         targ && typeof targ === "function" && targ.prototype instanceof src;
 }
 
+/**
+ * Returns true if targ is an instance or src. If src is an array,
+ * returns true if targ is an instance of any element of src. If src is
+ * the object form of a primitive type, returns true if targ is a
+ * non-boxed version of the type, i.e., if (typeof targ == "string"),
+ * isinstance(targ, String) is true. Finally, if src is a string,
+ * returns true if ({}.toString.call(targ) == "[object <src>]").
+ *
+ * @param {object} targ The object to check.
+ * @param {object|string|[object|string]} src The types to check targ against.
+ * @returns {boolean}
+ */
 function isinstance(targ, src) {
     const types = {
         boolean: Boolean,
@@ -234,8 +407,8 @@ function isinstance(targ, src) {
     }
     src = Array.concat(src);
     for (var i = 0; i < src.length; i++) {
-        if (typeof src[i] == "string") {
-            if (Object.prototype.toString.call(targ) == "[object " + src[i] + "]")
+        if (typeof src[i] === "string") {
+            if (objproto.toString.call(targ) === "[object " + src[i] + "]")
                 return true;
         }
         else {
@@ -249,9 +422,10 @@ function isinstance(targ, src) {
     return false;
 }
 
-function isobject(obj) {
-    return typeof obj === "object" && obj != null;
-}
+/**
+ * Returns true if obj is a non-null object.
+ */
+function isobject(obj) typeof obj === "object" && obj != null;
 
 /**
  * Returns true if and only if its sole argument is an
@@ -259,9 +433,8 @@ function isobject(obj) {
  * any window, frame, namespace, or execution context, which
  * is not the case when using (obj instanceof Array).
  */
-function isarray(val) {
-    return Object.prototype.toString.call(val) == "[object Array]";
-}
+const isarray = Array.isArray ||
+    function isarray(val) objproto.toString.call(val) == "[object Array]";
 
 /**
  * Returns true if and only if its sole argument is an
@@ -269,9 +442,7 @@ function isarray(val) {
  * functions containing the 'yield' statement and generator
  * statements such as (x for (x in obj)).
  */
-function isgenerator(val) {
-    return Object.prototype.toString.call(val) == "[object Generator]";
-}
+function isgenerator(val) objproto.toString.call(val) == "[object Generator]";
 
 /**
  * Returns true if and only if its sole argument is a String,
@@ -280,28 +451,30 @@ function isgenerator(val) {
  * namespace, or execution context, which is not the case when
  * using (obj instanceof String) or (typeof obj == "string").
  */
-function isstring(val) {
-    return Object.prototype.toString.call(val) == "[object String]";
-}
+function isstring(val) objproto.toString.call(val) == "[object String]";
 
 /**
  * Returns true if and only if its sole argument may be called
  * as a function. This includes classes and function objects.
  */
-function callable(val) {
-    return typeof val === "function";
-}
+function callable(val) typeof val === "function";
 
 function call(fn) {
     fn.apply(arguments[1], Array.slice(arguments, 2));
     return fn;
 }
 
+/**
+ * Memoizes an object property value.
+ *
+ * @param {object} obj The object to add the property to.
+ * @param {string} key The property name.
+ * @param {function} getter The function which will return the initial
+ * value of the property.
+ */
 function memoize(obj, key, getter) {
-    obj.__defineGetter__(key, function () {
-        delete obj[key];
-        return obj[key] = getter(obj, key);
-    });
+    obj.__defineGetter__(key, function ()
+        Class.replaceProperty(this, key, getter.call(this, key)));
 }
 
 /**
@@ -390,24 +563,15 @@ function update(target) {
     for (let i = 1; i < arguments.length; i++) {
         let src = arguments[i];
         Object.getOwnPropertyNames(src || {}).forEach(function (k) {
-            var get = src.__lookupGetter__(k),
-                set = src.__lookupSetter__(k);
-            if (!get && !set) {
-                var v = src[k];
-                target[k] = v;
-                if (target.__proto__ && callable(v)) {
-                    v.superapply = function (self, args) {
-                        return target.__proto__[k].apply(self, args);
-                    };
-                    v.supercall = function (self) {
-                        return v.superapply(self, Array.slice(arguments, 1));
-                    };
-                }
+            let desc = Object.getOwnPropertyDescriptor(src, k);
+            if (desc.value && callable(desc.value) && Object.getPrototypeOf(target)) {
+                let func = desc.value;
+                desc.value.superapply = function (self, args)
+                    Object.getPrototypeOf(target)[k].apply(self, args);
+                desc.value.supercall = function (self)
+                    func.superapply(self, Array.slice(arguments, 1));
             }
-            if (get)
-                target.__defineGetter__(k, get);
-            if (set)
-                target.__defineSetter__(k, set);
+            Object.defineProperty(target, k, desc);
         });
     }
     return target;
@@ -424,14 +588,19 @@ function update(target) {
  * @param {Object} overrides @optional
  */
 function extend(subclass, superclass, overrides) {
-    subclass.prototype = { __proto__: superclass.prototype };
+    subclass.superclass = superclass;
+
+    try {
+        subclass.prototype = Object.create(superclass.prototype);
+    }
+    catch(e) {
+        dump(e + "\n" + String.replace(e.stack, /^/gm, "    ") + "\n\n");
+    }
     update(subclass.prototype, overrides);
-
-    subclass.superclass = superclass.prototype;
     subclass.prototype.constructor = subclass;
-    subclass.prototype.__class__ = subclass;
+    subclass.prototype._class_ = subclass;
 
-    if (superclass.prototype.constructor === Object.prototype.constructor)
+    if (superclass.prototype.constructor === objproto.constructor)
         superclass.prototype.constructor = superclass;
 }
 
@@ -459,22 +628,6 @@ function extend(subclass, superclass, overrides) {
  * @returns {function} The constructor for the resulting class.
  */
 function Class() {
-    function constructor() {
-        let self = {
-            __proto__: Constructor.prototype,
-            constructor: Constructor,
-            get closure() {
-                delete this.closure;
-                function closure(fn) function () fn.apply(self, arguments);
-                for (let k in this)
-                    if (!this.__lookupGetter__(k) && callable(this[k]))
-                        closure[k] = closure(self[k]);
-                return this.closure = closure;
-            }
-        };
-        var res = self.init.apply(self, arguments);
-        return res !== undefined ? res : self;
-    }
 
     var args = Array.slice(arguments);
     if (isstring(args[0]))
@@ -483,21 +636,43 @@ function Class() {
     if (callable(args[0]))
         superclass = args.shift();
 
-    var Constructor = eval("(function " + (name || superclass.name).replace(/\W/g, "_") +
-            String.substr(constructor, 20) + ")");
-    Constructor.__proto__ = superclass;
-    Constructor.name = name || superclass.name;
+    var Constructor = eval(String.replace(<![CDATA[
+        (function constructor() {
+            let self = Object.create(Constructor.prototype, {
+                constructor: { value: Constructor },
+                closure: {
+                    configurable: true,
+                    get: function () {
+                        function closure(fn) function () fn.apply(self, arguments);
+                        for (let k in iterall(properties(this),
+                                              properties(this, true)))
+                            if (!this.__lookupGetter__(k) && callable(this[k]))
+                                closure[k] = closure(self[k]);
+                        Object.defineProperty(this, "closure", { value: closure });
+                        return closure;
+                    }
+                }
+            });
+            var res = self.init.apply(self, arguments);
+            return res !== undefined ? res : self;
+        })]]>,
+        "constructor", (name || superclass.classname).replace(/\W/g, "_")));
+    Constructor.classname = name || superclass.classname || superclass.name;
 
-    if (!("init" in superclass.prototype)) {
-        var superc = superclass;
+    if ("init" in superclass.prototype)
+        Constructor.__proto__ = superclass;
+    else {
+        let superc = superclass;
         superclass = function Shim() {};
         extend(superclass, superc, {
             init: superc
         });
+        superclass.__proto__ = superc;
     }
 
     extend(Constructor, superclass, args[0]);
     update(Constructor, args[1]);
+    Constructor.__proto__ = superclass;
     args = args.slice(2);
     Array.forEach(args, function (obj) {
         if (callable(obj))
@@ -506,18 +681,11 @@ function Class() {
     });
     return Constructor;
 }
-if (Object.defineProperty)
-    Class.replaceProperty = function (obj, prop, value) {
-        Object.defineProperty(obj, prop, { configurable: true, enumerable: true, value: value, writable: true });
-        return value;
-    };
-else
-    Class.replaceProperty = function (obj, prop, value) {
-        obj.__defineGetter__(prop, function () value);
-        obj.__defineSetter__(prop, function (val) { value = val; });
-        return value;
-    };
-Class.toString = function () "[class " + this.name + "]";
+Class.replaceProperty = function (obj, prop, value) {
+    Object.defineProperty(obj, prop, { configurable: true, enumerable: true, value: value, writable: true });
+    return value;
+};
+Class.toString = function () "[class " + this.classname + "]";
 Class.prototype = {
     /**
      * Initializes new instances of this class. Called automatically
@@ -525,7 +693,7 @@ Class.prototype = {
      */
     init: function () {},
 
-    toString: function () "[instance " + this.constructor.name + "]",
+    toString: function () "[instance " + this.constructor.classname + "]",
 
     /**
      * Executes 'callback' after 'timeout' milliseconds. The value of
@@ -558,9 +726,9 @@ function Module(name, prototype) {
     let init = callable(prototype) ? 4 : 3;
     const module = Class.apply(Class, Array.slice(arguments, 0, init));
     let instance = module();
-    module.name = name.toLowerCase();
+    module.classname = name.toLowerCase();
     instance.INIT = arguments[init] || {};
-    currentModule[module.name] = instance;
+    currentModule[module.classname] = instance;
     defmodule.modules.push(instance);
     return module;
 }
@@ -597,7 +765,7 @@ else
  */
 function Struct() {
     let args = Array.slice(arguments);
-    const Struct = Class("Struct", Struct_Base, {
+    const Struct = Class("Struct", StructBase, {
         length: args.length,
         members: args
     });
@@ -607,7 +775,7 @@ function Struct() {
     });
     return Struct;
 }
-let Struct_Base = Class("StructBase", Array, {
+let StructBase = Class("StructBase", Array, {
     init: function () {
         for (let i = 0; i < arguments.length; i++)
             if (arguments[i] != undefined)
@@ -639,7 +807,7 @@ let Struct_Base = Class("StructBase", Array, {
      */
     defaultValue: function (key, val) {
         let i = this.prototype.members.indexOf(key);
-        this.prototype.__defineGetter__(i, function () (this[i] = val.call(this), this[i])); // Kludge for FF 3.0
+        this.prototype.__defineGetter__(i, function () (this[i] = val.call(this)));
         this.prototype.__defineSetter__(i, function (value)
             Class.replaceProperty(this, i, value));
     }
@@ -701,9 +869,25 @@ const Timer = Class("Timer", {
 });
 
 /**
+ * Returns the UTF-8 encoded value of a string mis-encoded into
+ * ISO-8859-1.
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+function UTF8(str) {
+    try {
+        return decodeURIComponent(escape(str))
+    }
+    catch (e) {
+        return str
+    }
+}
+
+/**
  * Array utility methods.
  */
-const array = Class("util.Array", Array, {
+const array = Class("array", Array, {
     init: function (ary) {
         if (isinstance(ary, ["Iterator", "Generator"]))
             ary = [k for (k in ary)];
@@ -714,23 +898,19 @@ const array = Class("util.Array", Array, {
             __proto__: ary,
             __iterator__: function () this.iteritems(),
             __noSuchMethod__: function (meth, args) {
-                var res = array[meth].apply(null, [this.__proto__].concat(args));
-
+                var res = array[meth].apply(null, [this.array].concat(args));
                 if (isarray(res))
                     return array(res);
                 return res;
             },
-            toString: function () this.__proto__.toString(),
-            concat: function () this.__proto__.concat.apply(this.__proto__, arguments),
+            array: ary,
+            toString: function () this.array.toString(),
+            concat: function () this.array.concat.apply(this.array, arguments),
             filter: function () this.__noSuchMethod__("filter", Array.slice(arguments)),
             map: function () this.__noSuchMethod__("map", Array.slice(arguments))
         };
     }
 }, {
-    isinstance: function isinstance(obj) {
-        return Object.prototype.toString.call(obj) == "[object Array]";
-    },
-
     /**
      * Converts an array to an object. As in lisp, an assoc is an
      * array of key-value pairs, which maps directly to an object,
@@ -834,6 +1014,6 @@ const array = Class("util.Array", Array, {
 
 endmodule();
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

@@ -23,11 +23,6 @@
     <script type="application/x-javascript;version=1.8" src="&dactyl.content;dactyl-overlay.js"/>
 
     <window id="&dactyl.mainWindow;">
-        <stringbundleset id="dactyl-stringbundles">
-            <stringbundle id="dactyl-charset-bundle"
-                src="chrome://global/locale/charsetTitles.properties"/>
-        </stringbundleset>
-
         <keyset id="mainKeyset">
             <key id="key_open_vimbar" key=":" oncommand="window.dactyl &and; dactyl.modules.commandline.open(':', '', dactyl.modules.modes.EX);" modifiers=""/>
             <key id="key_stop" keycode="VK_ESCAPE" oncommand="window.dactyl &and; dactyl.modules.events.onEscape();"/>
@@ -43,13 +38,13 @@
         <commandset id="onPentadactylFocus"
             commandupdater="true"
             events="focus"
-            oncommandupdate="if (window.dactyl &and; dactyl.modules.events != undefined) dactyl.modules.events.onFocusChange(event);"/>
+            oncommandupdate="if (window.dactyl &and; dactyl.modules.loaded.events) dactyl.modules.events.onFocusChange(event);"/>
         <commandset id="onPentadactylSelect"
             commandupdater="true"
             events="select"
-            oncommandupdate="if (window.dactyl &and; dactyl.modules.events != undefined) dactyl.modules.events.onSelectionChange(event);"/>
+            oncommandupdate="if (window.dactyl &and; dactyl.modules.loaded.events) dactyl.modules.events.onSelectionChange(event);"/>
 
-        <!-- As of Firefox 3.1pre, <iframe>.height changes do not seem to have immediate effect,
+        <!-- As of Firefox 3.1pre, iframe.height changes do not seem to have immediate effect,
              therefore we need to put them into a <vbox> for which that works just fine -->
         <vbox class="dactyl-container" hidden="false" collapsed="true">
             <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
@@ -81,7 +76,6 @@
                 oninput="window.dactyl &and; dactyl.modules.commandline.onMultilineInputEvent(event);"
                 onblur="window.dactyl &and; dactyl.modules.commandline.onMultilineInputEvent(event);"/>
         </vbox>
-
     </window>
 
     <statusbar id="status-bar" dactyl:highlight="StatusLine">
@@ -98,7 +92,6 @@
         <statusbarpanel id="statusbar-display" hidden="true"/>
         <statusbarpanel id="statusbar-progresspanel" hidden="true"/>
     </statusbar>
-
 </overlay>
 
 <!-- vim: set fdm=marker sw=4 ts=4 et: -->

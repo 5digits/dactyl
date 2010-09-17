@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -54,7 +54,7 @@ const CompletionContext = Class("CompletionContext", {
 
             ["filters", "keys", "title", "quote"].forEach(function (key)
                 self[key] = parent[key] && util.cloneObject(parent[key]));
-            ["anchored", "compare", "editor", "_filter", "filterFunc", "keys", "_process", "top"].forEach(function (key)
+            ["anchored", "compare", "editor", "_filter", "filterFunc", "keys", "process", "top"].forEach(function (key)
                 self[key] = parent[key]);
 
             self.__defineGetter__("value", function () this.top.value);
@@ -90,14 +90,34 @@ const CompletionContext = Class("CompletionContext", {
                 this._value = editor;
             else
                 this.editor = editor;
-            this.compare = function (a, b) String.localeCompare(a.text, b.text);
+            /**
+             * @property {boolean} Specifies whether this context results must
+             *     match the filter at the beginning of the string.
+             * @default true
+             */
+            this.anchored = true;
 
+            this.compare = function (a, b) String.localeCompare(a.text, b.text);
             /**
              * @property {function} This function is called when we close
              *     a completion window with Esc or Ctrl-c. Usually this callback
              *     is only needed for long, asynchronous completions
              */
             this.cancel = null;
+            /**
+             * @property {[CompletionContext]} A list of active
+             *     completion contexts, in the order in which they were
+             *     instantiated.
+             */
+            this.contextList = [];
+            /**
+             * @property {Object} A map of all contexts, keyed on their names.
+             *    Names are assigned when a context is forked, with its specified
+             *    name appended, after a '/', to its parent's name. May
+             *    contain inactive contexts. For active contexts, see
+             *    {@link #contextList}.
+             */
+            this.contexts = { "": this };
             /**
              * @property {function} The function used to filter the results.
              * @default Selects all results which match every predicate in the
@@ -114,20 +134,6 @@ const CompletionContext = Class("CompletionContext", {
              *     results.
              */
             this.filters = [CompletionContext.Filter.text];
-            /**
-             * @property {boolean} Specifies whether this context results must
-             *     match the filter at the beginning of the string.
-             * @default true
-             */
-            this.anchored = true;
-            /**
-             * @property {Object} A map of all contexts, keyed on their names.
-             *    Names are assigned when a context is forked, with its specified
-             *    name appended, after a '/', to its parent's name. May
-             *    contain inactive contexts. For active contexts, see
-             *    {@link #contextList}.
-             */
-            this.contexts = { "": this };
             /**
              * @property {Object} A mapping of keys, for {@link #getKey}. Given
              *      { key: value }, getKey(item, key) will return values as such:
@@ -146,6 +152,9 @@ const CompletionContext = Class("CompletionContext", {
              *     {@link #updateAsync} is true.
              */
             this.onUpdate = function () true;
+
+            this.runCount = 0;
+
             /**
              * @property {CompletionContext} The top-level completion context.
              */
@@ -190,6 +199,7 @@ const CompletionContext = Class("CompletionContext", {
                                  : item.item[key];
         return this;
     },
+
     // Temporary
     /**
      * @property {Object}
@@ -202,7 +212,7 @@ const CompletionContext = Class("CompletionContext", {
     get allItems() {
         try {
             let self = this;
-            let minStart = Math.min.apply(Math, [context.offset for ([k, context] in Iterator(this.contexts)) if (context.items.length && context.hasItems)]);
+            let minStart = Math.min.apply(Math, [context.offset for ([k, context] in Iterator(this.contexts)) if (context.hasItems && context.items.length)]);
             if (minStart == Infinity)
                 minStart = 0;
             let items = this.contextList.map(function (context) {
@@ -214,7 +224,7 @@ const CompletionContext = Class("CompletionContext", {
                     __proto__: item
                 }));
             });
-            return { start: minStart, items: util.Array.flatten(items), longestSubstring: this.longestAllSubstring };
+            return { start: minStart, items: array.flatten(items), longestSubstring: this.longestAllSubstring };
         }
         catch (e) {
             dactyl.reportError(e);
@@ -235,7 +245,7 @@ const CompletionContext = Class("CompletionContext", {
                 lists.pop());
         if (!substrings) // FIXME: How is this undefined?
             return [];
-        return util.Array.uniq(Array.slice(substrings));
+        return array.uniq(Array.slice(substrings));
     },
     // Temporary
     get longestAllSubstring() {
@@ -253,14 +263,16 @@ const CompletionContext = Class("CompletionContext", {
         // Accept a generator
         if (!isarray(items))
             items = [x for (x in Iterator(items))];
-        delete this.cache.filtered;
-        delete this.cache.filter;
-        this.cache.rows = [];
-        this.hasItems = items.length > 0;
-        this._completions = items;
-        let self = this;
+        if (this._completions !== items) {
+            delete this.cache.filtered;
+            delete this.cache.filter;
+            this.cache.rows = [];
+            this.hasItems = items.length > 0;
+            this._completions = items;
+            this.itemCache[this.key] = items;
+        }
         if (this.updateAsync && !this.noUpdate)
-            util.callInMainThread(function () { self.onUpdate.call(self); });
+            util.callInMainThread(function () { this.onUpdate(); }, this);
     },
 
     get createRow() this._createRow || template.completionRow, // XXX
@@ -293,14 +305,18 @@ const CompletionContext = Class("CompletionContext", {
 
     get proto() {
         let res = {};
-        for (let i in Iterator(this.keys)) {
+        function result(quote) {
+            yield ["result", quote ? function () quote[0] + quote[1](this.text) + quote[2]
+                                   : function () this.text]
+        };
+        for (let i in iterall(this.keys, result(this.quote))) {
             let [k, v] = i;
             if (typeof v == "string" && /^[.[]/.test(v))
                 // This is only allowed to be a simple accessor, and shouldn't
                 // reference any variables. Don't bother with eval context.
                 v = Function("i", "return i" + v);
             if (typeof v == "function")
-                res.__defineGetter__(k, function () Class.replaceProperty(this, k, v(this.item)));
+                res.__defineGetter__(k, function () Class.replaceProperty(this, k, v.call(this, this.item)));
             else
                 res.__defineGetter__(k, function () Class.replaceProperty(this, k, this.item[v]));
             res.__defineSetter__(k, function (val) Class.replaceProperty(this, k, val));
@@ -312,11 +328,16 @@ const CompletionContext = Class("CompletionContext", {
     set regenerate(val) { if (val) delete this.itemCache[this.key]; },
 
     get generate() !this._generate ? null : function () {
-        if (this.offset != this.cache.offset)
+        if (this.offset != this.cache.offset || this.lastActivated != this.top.runCount) {
             this.itemCache = {};
-        this.cache.offset = this.offset;
-        if (!this.itemCache[this.key])
-            this.itemCache[this.key] = this._generate.call(this) || [];
+            this.cache.offset = this.offset;
+            this.lastActivated = this.top.runCount;
+        }
+        if (!this.itemCache[this.key]) {
+            let res = this._generate.call(this) || [];
+            if (res != null)
+                this.itemCache[this.key] = res;
+        }
         return this.itemCache[this.key];
     },
     set generate(arg) {
@@ -354,16 +375,27 @@ const CompletionContext = Class("CompletionContext", {
     get items() {
         if (!this.hasItems || this.backgroundLock)
             return [];
-        if (this.cache.filtered && this.cache.filter == this.filter)
-            return this.cache.filtered;
-        this.cache.rows = [];
-        let items = this.completions;
+
+        // Regenerate completions if we must
         if (this.generate && !this.background) {
             // XXX
             this.noUpdate = true;
-            this.completions = items = this.generate();
+            this.completions = this.generate();
             this.noUpdate = false;
         }
+        let items = this.completions;
+
+        // Check for cache miss
+        if (this.cache.completions !== this.completions) {
+            this.cache.completions = this.completions;
+            this.cache.constructed = null;
+            this.cache.filtered = null;
+        }
+
+        if (this.cache.filtered && this.cache.filter == this.filter)
+            return this.cache.filtered;
+
+        this.cache.rows = [];
         this.cache.filter = this.filter;
         if (items == null)
             return items;
@@ -371,6 +403,7 @@ const CompletionContext = Class("CompletionContext", {
         let self = this;
         delete this._substrings;
 
+        // Item matchers
         if (this.ignoreCase)
             this.matchString = this.anchored ?
                 function (filter, str) String.toLowerCase(str).indexOf(filter.toLowerCase()) == 0 :
@@ -380,34 +413,26 @@ const CompletionContext = Class("CompletionContext", {
                 function (filter, str) String.indexOf(str, filter) == 0 :
                 function (filter, str) String.indexOf(str, filter) >= 0;
 
+        // Item formatters
+        this.processor = Array.slice(this.process);
+        if (!this.anchored)
+            this.processor[0] = function (item, text) self.process[0].call(self, item,
+                    template.highlightFilter(item.text, self.filter));
+
+        // Item prototypes
         let proto = this.proto;
-        let filtered = this.filterFunc(items.map(function (item) ({ __proto__: proto, item: item })));
+        if (!this.cache.constructed)
+            this.cache.constructed = items.map(function (item) Object.create(proto, { item: { value: item, enumerable: true } }));
+
+        // Filters
+        let filtered = this.filterFunc(this.cache.constructed);
         if (this.maxItems)
             filtered = filtered.slice(0, this.maxItems);
 
+        // Sorting
         if (this.sortResults && this.compare)
             filtered.sort(this.compare);
-        let quote = this.quote;
-        if (quote)
-            filtered.forEach(function (item) {
-                item.unquoted = item.text;
-                item.text = quote[0] + quote[1](item.text) + quote[2];
-            });
         return this.cache.filtered = filtered;
-    },
-
-    get process() { // FIXME
-        let self = this;
-        let process = this._process;
-        process = [process[0] || template.icon, process[1] || function (item, k) k];
-        let first = process[0];
-        let filter = this.filter;
-        if (!this.anchored)
-            process[0] = function (item, text) first.call(self, item, template.highlightFilter(item.text, filter));
-        return process;
-    },
-    set process(process) {
-        this._process = process;
     },
 
     get substrings() {
@@ -418,7 +443,10 @@ const CompletionContext = Class("CompletionContext", {
             return this._substrings;
 
         let fixCase = this.ignoreCase ? String.toLowerCase : util.identity;
-        let text = fixCase(items[0].unquoted || items[0].text);
+        let text = fixCase(items[0].text);
+        // Exceedingly long substrings cause Gecko to go into convulsions
+        if (text.length > 100)
+            text = text.substr(0, 100);
         let filter = fixCase(this.filter);
         if (this.anchored) {
             var compare = function compare(text, s) text.substr(0, s.length) == s;
@@ -521,7 +549,6 @@ const CompletionContext = Class("CompletionContext", {
             context.waitingForTab = true;
         else if (completer)
             return completer.apply(self || this, [context].concat(Array.slice(arguments, fork.length)));
-
         if (completer)
             return null;
         return context;
@@ -535,20 +562,24 @@ const CompletionContext = Class("CompletionContext", {
     },
 
     highlight: function highlight(start, length, type) {
-        try { // Gecko < 1.9.1 doesn't have repaintSelection
-            this.selectionTypes[type] = null;
+        if (arguments.length == 0) {
+            for (let type in this.selectionTypes)
+                this.highlight(0, 0, type);
+            this.selectionTypes = {};
+        }
+        try {
+            // Requires Gecko >= 1.9.1
+            this.selectionTypes[type] = true;
             const selType = Ci.nsISelectionController["SELECTION_" + type];
-            const editor = this.editor;
-            let sel = editor.selectionController.getSelection(selType);
+            let sel = this.editor.selectionController.getSelection(selType);
             if (length == 0)
                 sel.removeAllRanges();
             else {
-                let range = editor.selection.getRangeAt(0).cloneRange();
+                let range = this.editor.selection.getRangeAt(0).cloneRange();
                 range.setStart(range.startContainer, this.offset + start);
                 range.setEnd(range.startContainer, this.offset + start + length);
                 sel.addRange(range);
             }
-            editor.selectionController.repaintSelection(selType);
         }
         catch (e) {}
     },
@@ -557,23 +588,19 @@ const CompletionContext = Class("CompletionContext", {
         return this.matchString(this.filter, str);
     },
 
+    pushProcessor: function pushProcess(i, fn) {
+        let next = this.process[i];
+        this.process[i] = function (item, text) fn(item, text, next);
+    },
+
     reset: function reset() {
         let self = this;
         if (this.parent)
             throw Error();
-        // Not ideal.
-        for (let type in this.selectionTypes)
-            this.highlight(0, 0, type);
 
-        /**
-         * @property {[CompletionContext]} A list of active
-         *     completion contexts, in the order in which they were
-         *     instantiated.
-         */
-        this.contextList = [];
         this.offset = 0;
-        this.process = [];
-        this.selectionTypes = {};
+        this.process = [template.icon, function (item, k) k];
+        this.filters = [CompletionContext.Filter.text];
         this.tabPressed = false;
         this.title = ["Completions"];
         this.updateAsync = false;
@@ -595,6 +622,10 @@ const CompletionContext = Class("CompletionContext", {
             if (context != context.top)
                 context.incomplete = false;
         }
+        this.runCount++;
+        for each (let context in this.contextList)
+            context.lastActivated = this.runCount;
+        this.contextList = [];
     },
 
     /**
@@ -668,7 +699,7 @@ const Completion = Module("completion", {
 
         commandline.commandOutput(
             <div highlight="Completions">
-                { template.map(context.contextList.filter(function (c) c.hasItems),
+                { template.map(context.contextList.filter(function (c) c.hasItems && c.items.length),
                     function (context)
                         template.completionRow(context.title, "CompTitle") +
                         template.map(context.items, function (item) context.createRow(item), null, 100)) }
@@ -747,7 +778,7 @@ const Completion = Module("completion", {
 
             let re = RegExp(tokens.filter(util.identity).map(util.escapeRegex).join("|"), "g");
             function highlight(item, text, i) process[i].call(this, item, template.highlightRegexp(text, re));
-            let process = [template.icon, function (item, k) k];
+            let process = context.process;
             context.process = [
                 function (item, text) highlight.call(this, item, item.text, 0),
                 function (item, text) highlight.call(this, item, text, 1)

@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -41,11 +41,13 @@ const JavaScript = Module("javascript", {
         let seen = {};
         for (let key in properties(obj, !toplevel)) {
             set.add(seen, key);
-            yield [key, this.getKey(obj, key)];
+            yield key;
         }
+        // Properties aren't visible in an XPCNativeWrapper until
+        // they're accessed.
         for (let key in properties(this.getKey(obj, "wrappedJSObject"), !toplevel))
-            if (!set.has(seen, key))
-                yield [key, this.getKey(obj, key)];
+            if (key in obj && !set.has(seen, key))
+                yield key;
     },
 
     objectKeys: function objectKeys(obj, toplevel) {
@@ -110,14 +112,13 @@ const JavaScript = Module("javascript", {
     },
 
     _pop: function pop(arg) {
-        if (this._top.char != arg) {
-            this.context.highlight(this._top.offset, this._i - this._top.offset, "SPELLCHECK");
-            this.context.highlight(this._top.offset, 1, "FIND");
-            throw new Error("Invalid JS");
-        }
-
         if (this._i == this.context.caret - 1)
             this.context.highlight(this._top.offset, 1, "FIND");
+
+        if (this._top.char != arg) {
+            this.context.highlight(this._top.offset, this._i - this._top.offset, "SPELLCHECK");
+            throw Error("Invalid JS");
+        }
 
         // The closing character of this stack frame will have pushed a new
         // statement, leaving us with an empty statement. This doesn't matter,
@@ -139,11 +140,13 @@ const JavaScript = Module("javascript", {
 
         // Reuse the old stack.
         if (this._str && filter.substr(0, this._str.length) == this._str) {
+            this.context.highlight(0, 0, "FIND");
             this._i = this._str.length;
             if (this.popStatement)
                 this._top.statements.pop();
         }
         else {
+            this.context.highlight();
             this._stack = [];
             this._functions = [];
             this._push("#root");
@@ -239,7 +242,7 @@ const JavaScript = Module("javascript", {
     _getObj: function (frame, stop) {
         let statement = this._get(frame, 0, "statements") || 0; // Current statement.
         let prev = statement;
-        let obj;
+        let obj = null;
         let cacheKey;
         for (let [, dot] in Iterator(this._get(frame).dots.concat(stop))) {
             if (dot < statement)
@@ -285,19 +288,19 @@ const JavaScript = Module("javascript", {
         return [dot + 1 + space.length, obj, key];
     },
 
-    _fill: function (context, obj, name, compl, anchored, key, last, offset) {
-        context.title = [name];
-        context.anchored = anchored;
-        context.filter = key;
+    _fill: function (context, args) {
+        context.title = [args.name];
+        context.anchored = args.anchored;
+        context.filter = args.filter;
         context.itemCache = context.parent.itemCache;
-        context.key = name + last;
+        context.key = args.name + args.last;
 
-        if (last != null)
-            context.quote = [last, function (text) util.escapeString(text.substr(offset), ""), last];
+        if (args.last != null)
+            context.quote = [args.last, function (text) util.escapeString(text.substr(args.offset), ""), args.last];
         else // We're not looking for a quoted string, so filter out anything that's not a valid identifier
             context.filters.push(function (item) /^[a-zA-Z_$][\w$]*$/.test(item.text));
 
-        compl.call(self, context, obj);
+        args.completer.call(self, context, args.obj);
     },
 
     _complete: function (objects, key, compl, string, last) {
@@ -309,7 +312,10 @@ const JavaScript = Module("javascript", {
         let orig = compl;
         if (!compl) {
             compl = function (context, obj, recurse) {
-                context.process = [null, function highlight(item, v) template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true)];
+
+                context.process[1] = function highlight(item, v) 
+                    template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true);
+
                 // Sort in a logical fashion for object keys:
                 //  Numbers are sorted as numbers, rather than strings, and appear first.
                 //  Constants are unsorted, and appear before other non-null strings.
@@ -321,14 +327,15 @@ const JavaScript = Module("javascript", {
                         return a.key - b.key;
                     return isnan(b.key) - isnan(a.key) || compare(a, b);
                 };
-                context.keys = { text: 0, description: 1,
+                context.keys = {
+                    text: util.identity,
+                    description: function (item) self.getKey(obj, item),
                     key: function (item) {
-                        let key = item[0];
                         if (!isNaN(key))
                             return parseInt(key);
-                        else if (/^[A-Z_][A-Z0-9_]*$/.test(key))
+                         if (/^[A-Z_][A-Z0-9_]*$/.test(key))
                             return ""
-                        return key;
+                        return item;
                     }
                 };
 
@@ -339,37 +346,51 @@ const JavaScript = Module("javascript", {
                 context.generate = function () self.objectKeys(obj, !recurse);
             };
         }
+
+        let args = {
+            completer: compl,
+            anchored: true,
+            filter: key + (string || ""),
+            last: last,
+            offset: key.length
+        };
+
         // TODO: Make this a generic completion helper function.
-        let filter = key + (string || "");
-        for (let [, obj] in Iterator(objects)) {
+        for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1], this._top.offset, this, this._fill,
-                obj[0], obj[1], compl,
-                true, filter, last, key.length);
-        }
+                update(args, {
+                    obj: obj[0],
+                    name: obj[1],
+                }));
 
         if (orig)
             return;
 
-        for (let [, obj] in Iterator(objects)) {
-            let name = obj[1] + " (prototypes)";
-            this.context.fork(name, this._top.offset, this, this._fill,
-                obj[0], name, function (a, b) compl(a, b, true),
-                true, filter, last, key.length);
-        }
+        for (let [, obj] in Iterator(objects))
+            this.context.fork(obj[1] + "/prototypes", this._top.offset, this, this._fill,
+                update(args, {
+                    obj: obj[0],
+                    name: obj[1] + " (prototypes)",
+                    completer: function (a, b) compl(a, b, true)
+                }));
 
-        for (let [, obj] in Iterator(objects)) {
-            let name = obj[1] + " (substrings)";
-            this.context.fork(name, this._top.offset, this, this._fill,
-                obj[0], name, compl,
-                false, filter, last, key.length);
-        }
+        for (let [, obj] in Iterator(objects))
+            this.context.fork(obj[1] + "/substrings", this._top.offset, this, this._fill,
+                update(args, {
+                    obj: obj[0],
+                    name: obj[1] + " (substrings)",
+                    anchored: false,
+                    completer: compl
+                }));
 
-        for (let [, obj] in Iterator(objects)) {
-            let name = obj[1] + " (prototype substrings)";
-            this.context.fork(name, this._top.offset, this, this._fill,
-                obj[0], name, function (a, b) compl(a, b, true),
-                false, filter, last, key.length);
-        }
+        for (let [, obj] in Iterator(objects))
+            this.context.fork(obj[1] + "/prototypes/substrings", this._top.offset, this, this._fill,
+                update(args, {
+                    obj: obj[0],
+                    name: obj[1] + " (prototype substrings)",
+                    anchored: false,
+                    completer: function (a, b) compl(a, b, true)
+                }));
     },
 
     _getKey: function () {
@@ -398,7 +419,7 @@ const JavaScript = Module("javascript", {
         }
 
         this.context.getCache("evalled", Object);
-        this.context.getCache("evalContext", function () ({ __proto__: userContext }));;
+        this.context.getCache("evalContext", function () ({ __proto__: userContext }));
 
         // Okay, have parse stack. Figure out what we're completing.
 
@@ -478,7 +499,7 @@ const JavaScript = Module("javascript", {
                 for (let [i, idx] in Iterator(this._get(-2).comma)) {
                     let arg = this._str.substring(prev + 1, idx);
                     prev = idx;
-                    util.memoize(args, i, function () self.evalled(arg));
+                    memoize(args, i, function () self.evalled(arg));
                 }
                 let key = this._getKey();
                 args.push(key + string);

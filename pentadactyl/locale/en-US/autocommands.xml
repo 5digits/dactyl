@@ -4,8 +4,8 @@
 <!DOCTYPE overlay SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <overlay
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 
 <dl tag="autocommand-list" replace="autocommand-list">
     <dt>BookmarkAdd</dt>       <dd>Triggered after a page is bookmarked</dd>

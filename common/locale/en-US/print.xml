@@ -6,8 +6,8 @@
 <document
     name="print"
     title="&dactyl.appname; Printing"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <h1 tag="printing">Printing</h1>
 <toc start="2"/>
 

@@ -156,8 +156,6 @@ statusbarpanel {
     margin: 0px;
 }
 
-#dactyl-completions-content *,
-#dactyl-multiline-output-content *,
 #dactyl-commandline-prompt *,
 #dactyl-commandline-command {
     font: inherit;

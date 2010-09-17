@@ -6,26 +6,27 @@
 <document
     name="browsing"
     title="&dactyl.appname; Browsing"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <h1 tag="surfing browsing">Browsing</h1>
 <toc start="2"/>
 
-&dactyl.appname; overrides nearly all &dactyl.host; keys in order to make browsing more
-pleasant for Vim users. On the rare occasions when you want to pass a keystroke
-to &dactyl.host;, or to the web page, and have it retain its original meaning you
-have 2 possibilities:
+<h2 tag="bypassing-&dactyl.name;">Bypassing &dactyl.appname;</h2>
+
+&dactyl.appname; overrides nearly all &dactyl.host; keys in order to
+make browsing more pleasant for Vim users. On the occasions when you
+want to bypass &dactyl.appname;'s key handling and pass keys directly to 
+&dactyl.host; or to a web page, you have two options:
 
 <item>
     <tags><![CDATA[pass-through <C-z> CTRL-Z]]></tags>
     <spec>CTRL-Z</spec>
     <description>
         <p>
-            Disable all &dactyl.appname; keys except <k name="Esc"/> and pass them to the next event
-            handler. This is especially useful if JavaScript controlled forms (e.g., the
-            RichEdit form fields of Gmail) don't work anymore. To exit this mode, press
-            <k name="Esc"/>. If you also need to pass <k name="Esc"/> in this mode to the web page,
-            prepend it with <k name="C-v"/>.
+            Pass all keys except for <k name="Esc"/> directly to
+            &dactyl.host;. When <k name="Esc"/> is pressed,
+            resume normal key handling. This is especially useful
+            for web sites which make heavy use of key bindings.
         </p>
     </description>
 </item>
@@ -36,11 +37,7 @@ have 2 possibilities:
     <spec>CTRL-V</spec>
     <description>
         <p>
-            If you only need to pass a single key to a JavaScript form field or another
-            extension prefix the key with <k name="C-v"/>. Also works to unshadow &dactyl.host;
-            shortcuts like <k name="C-o"/> which are otherwise hidden in &dactyl.appname;. When
-            &dactyl.appname; mode is temporarily disabled with <k name="C-z"/>, <k name="C-v"/> will pass
-            the next key to &dactyl.appname; instead of the web page.
+            Pass the next key press directly to &dactyl.host;.
         </p>
     </description>
 </item>
@@ -54,52 +51,55 @@ have 2 possibilities:
     <spec>o</spec>
     <description>
         <p>
-            Open one or more URLs in the current tab.
-            Multiple URLs can be separated with <o>urlseparator</o> (default: ", " Note that the
-            space after the comma is required.)
-            The first URL is opened in the current tab, and all other URLs are
-            opened in new tabs.
-            Each token is analyzed and in this order:
+            Open a single URL in the current tab, or multiple URLs
+            in the current tab and background tabs. URLs may be
+            separated with <o>urlseparator</o>, in which case the
+            first URL is opened in the current tab and the rest are
+            opened in new background tabs.
+        </p>
+
+        <p>
+            Each URL may be one of the following:
         </p>
 
         <ol>
             <li>
-                Opened as a local file if it is an existing relative or absolute filename.
-                <ul>
-                    <li><ex>:open /etc/fstab</ex> shows the file system table.</li>
-                    <li><ex>:open ../other/foo.html</ex> in your home directory opens <tt>/home/other/foo.html</tt></li>
-                </ul>
+                A local filename, if it begins with <em>/</em>,
+                <em>./</em>, or <em>~/</em> and the specified file
+                exists.
             </li>
             <li>
-                 Opened with the specified search engine if the
-                 token looks like a search string and the first word
-                 is the name of a search engine (
-                 <ex>:open wikipedia linus torvalds</ex> opens the Wikipedia entry for
-                 linus torvalds). The short name of a search engine
-                 is automatically guessed from its name. If you want
-                 to set a custom name, you can change it with
-                 <ex>:dialog searchengines</ex>.
+                <p>
+                    A search or bookmark keyword, or a search engine
+                    name, followed by search arguments.
+                </p>
+                <example><ex>:open wikipedia Linus Torvalds</ex></example>
+                <p>
+                    Search engines can be edited via
+                    <ex>:dialog searchengines</ex> and search
+                    keywords may be added by right clicking any
+                    search box and selecting <str>Add a Keyword for
+                    this Search</str>.
+                </p>
             </li>
             <li>
-                Opened with the default search engine or keyword
-                (specified with the <o>defsearch</o> option) if the first
-                word is no search engine (<ex>:open linus torvalds</ex>
-                opens a Google search for linus torvalds).
+                <p>
+                    Any search string which does not look like a URL or
+                    hostname, which will be passed to the default
+                    search engine (see <o>defsearch</o>).
+                </p>
+                <example><ex>:open Linus Torvalds</ex></example>
            </li>
            <li>
-               Passed directly to &dactyl.host; in all other cases
-               (<ex>:open www.osnews.com, www.slashdot.org</ex>
-               opens OSNews in the current, and Slashdot in a new
-               background tab).
+               Any other value is passed directly &dactyl.host; and
+               must be a valid URL or hostname.
            </li>
         </ol>
 
         <p>
-            You can use <ex>:open -tags linux torvalds<k name="Tab"/></ex> to complete bookmarks with
-            tag "linux" and which contain "torvalds". Note that -tags support is only
-            available for tab completion, not for the actual command.
-            The items which are completed on <k name="Tab"/> are specified in the <o>complete</o>
-            option.
+            <ex>:open</ex> provides powerful URL completion from
+            several possible sources, which can be adjusted via the
+            <o>complete</o> option.
         </p>
     </description>
 </item>
@@ -111,8 +111,9 @@ have 2 possibilities:
     <spec>t</spec>
     <description>
         <p>
-            Just like <ex>:open</ex> but also uses a new tab for the first URL. When
-            used with <oa>!</oa>, the <em>tabopen</em> value of the <o>activate</o> option is negated.
+            Like <ex>:open</ex>, but all arguments are opened in new
+            tabs. The first new tab is activated if <o>activate</o>
+            contains <str>tabopen</str> or <oa>!</oa> is provided.
         </p>
     </description>
 </item>
@@ -121,10 +122,9 @@ have 2 possibilities:
 <item>
     <tags>T</tags>
     <spec>T</spec>
-    <description>
+    <description short="true">
         <p>
-            Show a <ex>:tabopen</ex> prompt containing the current URL. Useful if you want to
-            go somewhere by editing the URL of the current page.
+            Open a <ex>:tabopen</ex> prompt followed by the current URL.
         </p>
     </description>
 </item>
@@ -135,9 +135,9 @@ have 2 possibilities:
     <spec>:<oa>count</oa>tabdu<oa>plicate</oa><oa>!</oa></spec>
     <description>
         <p>
-            Duplicates current tab <oa>count</oa> times. Uses <em>tabopen</em> value of the <o>activate</o>
-            option to determine if the last cloned tab should be activated. When used with
-            <oa>!</oa>, <em>tabopen</em> value is negated.
+            Duplicates current tab <oa>count</oa> times. The first
+            new tab is activated if <o>activate</o> contains
+            <str>tabopen</str> or <oa>!</oa> is provided.
         </p>
     </description>
 </item>
@@ -146,10 +146,9 @@ have 2 possibilities:
 <item>
     <tags>O</tags>
     <spec>O</spec>
-    <description>
+    <description short="true">
         <p>
-            Show an <ex>:open</ex> prompt containing the current URL. Useful if you want to
-            go somewhere by editing the URL of the current page.
+            Open an <ex>:open</ex> prompt followed by the current URL.
         </p>
     </description>
 </item>
@@ -160,7 +159,10 @@ have 2 possibilities:
     <spec>:wino<oa>pen</oa><oa>!</oa> <oa>arg1</oa>, <oa>arg2</oa>, …</spec>
     <spec>w</spec>
     <description>
-        <p>Just like <ex>:tabopen</ex> but opens the resulting web page(s) in a new window.</p>
+        <p>
+            Like <ex>:tabopen</ex>, but all arguments are opened in
+            a single new window.
+        </p>
     </description>
 </item>
 
@@ -168,10 +170,9 @@ have 2 possibilities:
 <item>
     <tags>W</tags>
     <spec>W</spec>
-    <description>
+    <description short="true">
         <p>
-            Open one or more URLs in a new window based on current location. Works like
-            <k>w</k> but preselects current URL in the <ex>:winopen</ex> query.
+            Open a <ex>:winopen</ex> prompt followed by the current URL.
         </p>
     </description>
 </item>
@@ -179,13 +180,14 @@ have 2 possibilities:
 
 <item>
     <tags><![CDATA[<MiddleMouse> p]]></tags>
+    <strut/>
     <spec>p</spec>
     <description>
         <p>
-            Open (put) a URL based on the current clipboard contents in the current buffer.
-            You can also just select (for non-X11 users: copy) some non-URL text, and
-            search for it with the default search engine or keyword (specified by the
-            <o>defsearch</o> option) with <k>p</k>.
+            Open (put) a URL based on the current clipboard
+            contents, or, on X11 systems, the currently selected
+            text. All white space is stripped from the selection and
+            it is opened in the same manner as <ex>:open</ex>.
         </p>
     </description>
 </item>
@@ -193,14 +195,14 @@ have 2 possibilities:
 
 <item>
     <tags>P</tags>
+    <strut/>
     <spec>P</spec>
     <description>
         <p>
-            Open (put) a URL based on the current clipboard contents in a new buffer. Works
-            like <k>p</k> but opens a new tab.
-        </p>
-        <p>
-            Whether the new buffer is activated, depends on the <o>activate</o> option.
+            Open (put) a URL based on the current clipboard contents
+            in a new buffer. Works like <k>p</k> but opens a new
+            tab. The new tab is activated if <o>activate</o>
+            contains <str>paste</str>.
         </p>
     </description>
 </item>
@@ -208,11 +210,13 @@ have 2 possibilities:
 
 <item>
     <tags>gP</tags>
+    <strut/>
     <spec>gP</spec>
     <description>
         <p>
-            Open (put) a URL based on the current clipboard contents in a new buffer.
-            Works like <k>P</k> but inverts the <o>activate</o> option.
+            Open (put) a URL based on the current clipboard contents
+            in a new buffer. The new tab is activated if <o>activate</o>
+            does <em>not</em> contain <str>paste</str>.
         </p>
     </description>
 </item>
@@ -220,12 +224,14 @@ have 2 possibilities:
 
 <item>
     <tags><![CDATA[<C-x>]]></tags>
+    <strut/>
     <spec><oa>count</oa>&lt;C-x></spec>
     <description>
         <p>
-            Decrements the last number in URL by 1, or by <oa>count</oa> if given. Negative
-            numbers are not supported, as this is not generally useful, so the number cannot
-            be decremented past 0.
+            Decrements the last number in URL by 1, or by
+            <oa>count</oa> if given. Negative numbers are not
+            supported as trailing numbers in URLs are often preceded
+            by hyphens.
         </p>
     </description>
 </item>
@@ -233,9 +239,13 @@ have 2 possibilities:
 
 <item>
     <tags><![CDATA[<C-a>]]></tags>
+    <strut/>
     <spec><oa>count</oa>&lt;C-a></spec>
     <description>
-        <p>Increments the last number in URL by 1, or by <oa>count</oa> if given.</p>
+        <p>
+            Increments the last number in URL by 1, or by
+            <oa>count</oa> if given.
+        </p>
     </description>
 </item>
 
@@ -243,11 +253,8 @@ have 2 possibilities:
 <item>
     <tags>~</tags>
     <spec>~</spec>
-    <description>
-        <p>
-            Open home directory. You can also use the hints and have the probably fastest
-            file browser on earth. :)
-        </p>
+    <description short="true">
+        <p>Open home directory. Equivalent to <ex>:open ~/</ex></p>
     </description>
 </item>
 
@@ -261,9 +268,10 @@ have 2 possibilities:
     <spec>CTRL-o</spec>
     <description>
         <p>
-            Go <oa>count</oa> pages back in the browser history. If <oa>url</oa> is specified go back to
-            the first matching URL. The special version <ex>:back!</ex> goes to the beginning
-            of the browser history.
+            Go <oa>count</oa> pages back in the browser history. If
+            <oa>url</oa> is specified go back to the first matching
+            URL. The special version <ex>:back!</ex> goes to the
+            beginning of the browser history.
         </p>
     </description>
 </item>
@@ -276,9 +284,10 @@ have 2 possibilities:
     <spec>CTRL-i</spec>
     <description>
         <p>
-            Go <oa>count</oa> pages forward in the browser history. If <oa>url</oa> is specified go
-            forward to the first matching URL. The special version <ex>:forward!</ex> goes to
-            the end of the browser history.
+            Go <oa>count</oa> pages forward in the browser history.
+            If <oa>url</oa> is specified go forward to the first
+            matching URL. The special version <ex>:forward!</ex>
+            goes to the end of the browser history.
         </p>
     </description>
 </item>
@@ -288,11 +297,12 @@ have 2 possibilities:
     <tags>:ju :jumps</tags>
     <spec>:ju<oa>mps</oa></spec>
     <description>
-        <p>List all jumps aka current tab's history aka session history.</p>
+        <p>List all jumps, i.e., the current tab's session history.</p>
 
         <p>
-            Current history position is marked with >, jump numbers are counters to be used
-            with <ex>:back</ex> (above zero record) or <ex>:forward</ex> (below zero record).
+            Current history position is marked with <em>></em>.
+            Jump numbers may be used as counts for with
+            <ex>:back</ex> or <ex>:forward</ex>.
         </p>
     </description>
 </item>
@@ -301,7 +311,7 @@ have 2 possibilities:
 <item>
     <tags>gh</tags>
     <spec>gh</spec>
-    <description>
+    <description short="true">
         <p>Go home. Opens the homepage in the current tab.</p>
     </description>
 </item>
@@ -309,11 +319,13 @@ have 2 possibilities:
 
 <item>
     <tags>gH</tags>
+    <strut/>
     <spec>gH</spec>
     <description>
         <p>
-            Go home in a new tab. Opens the homepage in a new tab. Whether the new tab is
-            activated or not depends on the <o>activate</o> option.
+            Go home in a new tab. Opens the homepage in a new tab.
+            The new tab is activated if <o>activate</o> contains
+            <str>homepage</str>.
         </p>
     </description>
 </item>
@@ -322,13 +334,13 @@ have 2 possibilities:
 <item>
     <tags>gu</tags>
     <spec><oa>count</oa>gu</spec>
-    <description>
+    <description short="true">
         <p>Go to <oa>count</oa>th parent directory.</p>
 
         <p>
-            <k>2gu</k> on
-            <tt>http://www.example.com/dir1/dir2/file.htm</tt> opens
-            <tt>http://www.example.com/dir1/</tt>.
+            For example, at the URL
+            <tt>http://www.example.com/dir1/dir2/file.htm</tt>,
+            <k>2gu</k> opens <tt>http://www.example.com/dir1/</tt>.
         </p>
     </description>
 </item>
@@ -337,13 +349,13 @@ have 2 possibilities:
 <item>
     <tags>gU</tags>
     <spec>gU</spec>
-    <description>
+    <description short="true">
         <p>Go to the root of the web site.</p>
 
         <p>
-            <k>gU</k> on <tt>http://www.example.com/dir1/dir2/file.htm</tt> opens
-            <tt>http://www.example.com/</tt>.
-            When browsing a local directory, it goes to the root directory.
+            For example, at the URL
+            <tt>http://www.example.com/dir1/dir2/file.htm</tt>,
+            <k>gU</k> opens <tt>http://www.example.com/</tt>.
         </p>
     </description>
 </item>
@@ -354,8 +366,8 @@ have 2 possibilities:
 <item>
     <tags>r</tags>
     <spec>r</spec>
-    <description>
-        <p>Force reloading of the current web page.</p>
+    <description short="true">
+        <p>Reload the current web page.</p>
     </description>
 </item>
 
@@ -363,8 +375,8 @@ have 2 possibilities:
 <item>
     <tags>R</tags>
     <spec>R</spec>
-    <description>
-        <p>Force reloading of the current web page skipping the cache.</p>
+    <description short="true">
+        <p>Reload the current web page without using the cache.</p>
     </description>
 </item>
 
@@ -374,8 +386,8 @@ have 2 possibilities:
     <spec>:re<oa>load</oa><oa>!</oa></spec>
     <description>
         <p>
-            Reload current web page. Forces reloading of the current page. If <oa>!</oa> is given,
-            skip the cache.
+            Reload current web page. If <oa>!</oa> is given, reload
+            without using the cache.
         </p>
     </description>
 </item>
@@ -385,7 +397,10 @@ have 2 possibilities:
     <tags>:reloada :reloadall</tags>
     <spec>:reloada<oa>ll</oa><oa>!</oa></spec>
     <description>
-        <p>Reload all pages. Forces reloading of all pages. If <oa>!</oa> is given, skip the cache.</p>
+        <p>
+            Reload all tabs. If <oa>!</oa> is given, reload without
+            using the cache.
+        </p>
     </description>
 </item>
 
@@ -393,18 +408,11 @@ have 2 possibilities:
 <h2 tag="stopping">Stopping</h2>
 
 <item>
-    <tags><![CDATA[<C-c>]]></tags>
+    <tags><![CDATA[<C-c> :st :stop]]></tags>
     <spec>&lt;C-c></spec>
-    <description>
-        <p>Stop loading the current web page.</p>
-    </description>
-</item>
-
-
-<item>
-    <tags>:st :stop</tags>
+    <strut/>
     <spec>:st<oa>op</oa></spec>
-    <description>
+    <description short="true">
         <p>Stop loading the current web page.</p>
     </description>
 </item>
@@ -413,7 +421,7 @@ have 2 possibilities:
 <item>
     <tags>:stopa :stopall</tags>
     <spec>:stopa<oa>ll</oa></spec>
-    <description>
+    <description short="true">
         <p>Stop loading all web pages.</p>
     </description>
 </item>
@@ -423,11 +431,14 @@ have 2 possibilities:
 
 <item>
     <tags>:w :write :sav :saveas</tags>
+    <strut/>
     <spec>:sav<oa>eas</oa><oa>!</oa> <oa>file</oa></spec>
     <description>
         <p>
-            Save current web page to disk. If <oa>file</oa> is omitted, save to the page's
-            default filename. Existing documents will only be overwritten if <oa>!</oa> is given.
+            Save current web page to disk. If <oa>file</oa> is
+            omitted, save to the page's default filename. Existing
+            documents will only be overwritten if <oa>!</oa> is
+            given.
         </p>
     </description>
 </item>
@@ -437,12 +448,12 @@ have 2 possibilities:
 
 <item>
     <tags>:q :quit</tags>
+    <strut/>
     <spec>:q<oa>uit</oa></spec>
     <description>
         <p>
-            Quit current tab. If this is the last tab in the window, close the window. If
-            this was the last window, close &dactyl.appname;. When quitting &dactyl.appname;, the
-            session is not stored.
+            Quit current tab. If this is the last tab in the window,
+            close the window.
         </p>
     </description>
 </item>
@@ -450,11 +461,12 @@ have 2 possibilities:
 
 <item>
     <tags>:qa :qall :quita :quitall</tags>
+    <strut/>
     <spec>:quita<oa>ll</oa></spec>
     <description>
         <p>
-            Quit &dactyl.appname;. Quit &dactyl.appname;, no matter how many tabs/windows are open.
-            The session is not stored.
+            Quit &dactyl.appname;, no matter how many tabs/windows
+            are open. The session is not stored.
         </p>
     </description>
 </item>
@@ -463,8 +475,8 @@ have 2 possibilities:
 <item>
     <tags>:wc :wclose :winc :winclose</tags>
     <spec>:winc<oa>lose</oa></spec>
-    <description>
-        <p>Close window.</p>
+    <description short="true">
+        <p>Close the current window.</p>
     </description>
 </item>
 
@@ -472,8 +484,8 @@ have 2 possibilities:
 <item>
     <tags>:winon :winonly</tags>
     <spec>:winon<oa>ly</oa></spec>
-    <description>
-        <p>Close all other windows.</p>
+    <description short="true">
+        <p>Close all windows but the current.</p>
     </description>
 </item>
 
@@ -481,14 +493,14 @@ have 2 possibilities:
 <item>
     <tags>:xa :xall :wq :wqa :wqall</tags>
     <spec>:wqa<oa>ll</oa></spec>
+    <strut/>
     <spec>:xa<oa>ll</oa></spec>
-    <description>
-        <p>
-            Save the session and quit. Quit &dactyl.appname;, no matter how many tabs/windows
-            are open. The session is stored. <ex>:wq</ex> is different from Vim, as it
-            closes the window instead of just one tab by popular demand. Complain on the
-            mailing list if you want to change that.
-        </p>
+    <description short="true">
+        <p>Save the current session and quit.</p>
+        <note>
+            Unlike Vim, <ex>:wq</ex> closes the entire window rather
+            than just the current tab.
+        </note>
     </description>
 </item>
 
@@ -496,7 +508,7 @@ have 2 possibilities:
 <item>
     <tags>ZQ</tags>
     <spec>ZQ</spec>
-    <description>
+    <description short="true">
         <p>Quit and don't save the session. Works like <ex>:qall</ex>.</p>
     </description>
 </item>
@@ -505,10 +517,10 @@ have 2 possibilities:
 <item>
     <tags>ZZ</tags>
     <spec>ZZ</spec>
-    <description>
+    <description short="true">
         <p>
-            Quit and save the session. Quit &dactyl.appname;, no matter how many tabs/windows
-            are open. The session is stored. Works like <ex>:xall</ex>.
+            Quit &dactyl.appname; and save the session. Works like
+            <ex>:xall</ex>.
         </p>
     </description>
 </item>
@@ -518,9 +530,14 @@ have 2 possibilities:
 
 <item>
     <tags>:chd :chdir :cd</tags>
-    <spec>:cd <oa>-|path</oa></spec>
+    <strut/>
+    <spec>:cd <oa>path</oa></spec>
     <description>
-        <p>Change the current directory. <ex>:cd -</ex> changes to the last directory.</p>
+        <p>
+            Change the current directory. If <oa>path</oa> is
+            <em>-</em>, change to the previous directory. If it is
+            omitted, change to the home directory.
+        </p>
     </description>
 </item>
 
@@ -528,7 +545,7 @@ have 2 possibilities:
 <item>
     <tags>:pw :pwd</tags>
     <spec>:pw<oa>d</oa></spec>
-    <description>
+    <description short="true">
         <p>Print the current directory name.</p>
     </description>
 </item>

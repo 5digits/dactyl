@@ -6,21 +6,23 @@
 <document
     name="insert"
     title="&dactyl.appname; Insert Mode"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 <h1 tag="Insert-mode Insert mode-insert">Insert mode</h1>
 <toc start="2"/>
 
+<!-- TODO: This makes no sense. Rewrite. -->
+
 <p>
     Insert mode is used to enter text in text boxes and text areas. When
-    <o>insertmode</o> is set, focusing on a text area immediately switches to
-    Insert mode.
+    the <o>insertmode</o> option is set, insert mode is immediately
+    entered when focusing a text area.
 </p>
 
 <item>
     <tags>i_i</tags>
     <spec>i_i</spec>
-    <description>
+    <description short="true">
         <p>Starts Insert mode in text areas when <o>insertmode</o> is not set.</p>
     </description>
 </item>
@@ -32,7 +34,7 @@
 <item>
     <tags><![CDATA[i_<C-i>]]></tags>
     <spec>&lt;C-i></spec>
-    <description>
+    <description short="true">
         <p>Launch the external editor. See the <o>editor</o> option.</p>
     </description>
 </item>
@@ -41,7 +43,7 @@
 <item>
     <tags><![CDATA[i_<C-]>]]></tags>
     <spec>&lt;C-]></spec>
-    <description>
+    <description short="true">
         <p>Expand an Insert-mode abbreviation.</p>
     </description>
 </item>

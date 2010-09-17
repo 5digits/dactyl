@@ -7,7 +7,8 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defmodule("styles", this, {
     exports: ["Style", "Styles", "styles"],
-    require: ["services", "util"]
+    require: ["services", "util"],
+    use: ["template"]
 });
 
 const sss = services.get("stylesheet");
@@ -17,6 +18,35 @@ const namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
                   "@namespace dactyl " + NS.uri.quote() + ";\n";
 
 const Sheet = Struct("name", "id", "sites", "css", "system", "agent");
+Sheet.liveProperty = function (name) {
+    let i = this.prototype.members.indexOf(name);
+    this.prototype.__defineGetter__(name, function () this[i]);
+    this.prototype.__defineSetter__(name, function (val) {
+        this[i] = val;
+        this.enabled = this.enabled;
+    });
+}
+Sheet.liveProperty("agent");
+Sheet.liveProperty("css");
+Sheet.liveProperty("sites");
+Sheet.prototype.__defineGetter__("uri", function () cssUri(this.fullCSS));
+Sheet.prototype.__defineGetter__("enabled", function () this._enabled);
+Sheet.prototype.__defineSetter__("enabled", function (on) {
+    if (on != this._enabled || this.uri != this._uri) {
+        if (on)
+            this.enabled = false;
+        else if (!this._uri)
+            return;
+
+        let meth = on ? "registerSheet" : "unregisterSheet";
+        styles[meth](on ? this.uri   : this._uri,
+                     on ? this.agent : this._agent);
+
+        this._agent = this.agent;
+        this._enabled = Boolean(on);
+        this._uri = this.uri;
+    }
+});
 Sheet.prototype.__defineGetter__("fullCSS", function wrapCSS() {
     let filter = this.sites;
     let css = this.css;
@@ -29,23 +59,8 @@ Sheet.prototype.__defineGetter__("fullCSS", function wrapCSS() {
                                                      : "domain")
                                 + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
                           .join(", ");
-    return "/* Dactyl style #" + this.id + " */ " + namespace + " @-moz-document " + selectors + "{\n" + css + "\n}\n";
-});
-Sheet.prototype.__defineGetter__("css", function () this[3]);
-Sheet.prototype.__defineSetter__("css", function (val) {
-    this.enabled = false;
-    this[3] = val;
-    this.enabled = true;
-    return val;
-});
-Sheet.prototype.__defineGetter__("enabled", function () this._enabled);
-Sheet.prototype.__defineSetter__("enabled", function (on) {
-    this._enabled = Boolean(on);
-    let meth = on ? "registerSheet" : "unregisterSheet";
-
-    styles[meth](cssUri(this.fullCSS));
-    if (this.agent)
-        styles[meth](cssUri(this.fullCSS), true);
+    return "/* Dactyl style #" + this.id + (this.agent ? " (agent)" : "") + " */ "
+         + namespace + " @-moz-document " + selectors + "{\n" + css + "\n}\n";
 });
 
 /**
@@ -64,7 +79,7 @@ const Styles = Module("Styles", {
         this.systemNames = {};
     },
 
-    get sites() array(this.userSheets).map(function (s) s.sites).flatten().uniq().__proto__,
+    get sites() array(this.userSheets).map(function (s) s.sites).flatten().uniq().array,
 
     __iterator__: function () Iterator(this.userSheets.concat(this.systemSheets)),
 
@@ -81,25 +96,27 @@ const Styles = Module("Styles", {
      *     "*" is matched as a prefix.
      * @param {string} css The CSS to be applied.
      */
-    addSheet: function addSheet(system, name, filter, css, agent) {
+    addSheet: function addSheet(system, name, filter, css, agent, lazy) {
         let sheets = system ? this.systemSheets : this.userSheets;
         let names = system ? this.systemNames : this.userNames;
-        if (name && name in names)
-            this.removeSheet(system, name);
 
-        let sheet = Sheet(name, this._id++, filter.split(",").filter(util.identity), String(css), null, system, agent);
+        if (!isarray(filter))
+            filter = filter.split(",");
+        if (name && name in names) {
+            var sheet = names[name];
+            sheet.filter = filter;
+            sheet.css = String(css);
+        }
+        else
+            sheet = Sheet(name, this._id++, filter.filter(util.identity), String(css), system, agent);
 
-        try {
+        if (!lazy)
             sheet.enabled = true;
-        }
-        catch (e) {
-            return e.echoerr || e;
-        }
         sheets.push(sheet);
 
         if (name)
             names[name] = sheet;
-        return null;
+        return sheet;
     },
 
     /**
@@ -129,14 +146,13 @@ const Styles = Module("Styles", {
      */
     findSheets: function findSheets(system, name, filter, css, index) {
         let sheets = system ? this.systemSheets : this.userSheets;
-        let names = system ? this.systemNames : this.userNames;
 
         // Grossly inefficient.
         let matches = [k for ([k, v] in Iterator(sheets))];
         if (index)
             matches = String(index).split(",").filter(function (i) i in sheets);
         if (name)
-            matches = matches.filter(function (i) sheets[i] == names[name]);
+            matches = matches.filter(function (i) sheets[i].name == name);
         if (css)
             matches = matches.filter(function (i) sheets[i].css == css);
         if (filter)
@@ -178,18 +194,18 @@ const Styles = Module("Styles", {
             return null;
 
         for (let [, sheet] in Iterator(matches.reverse())) {
-            sheet.enabled = false;
-            if (name)
-                delete names[name];
-            if (sheets.indexOf(sheet) > -1)
-                sheets.splice(sheets.indexOf(sheet), 1);
-
-            /* Re-add if we're only changing the site filter. */
             if (filter) {
                 let sites = sheet.sites.filter(function (f) f != filter);
-                if (sites.length)
-                    this.addSheet(system, name, sites.join(","), css, sheet.agent);
+                if (sites.length) {
+                    sheet.sites = sites;
+                    continue;
+                }
             }
+            sheet.enabled = false;
+            if (sheet.name)
+                delete names[sheet.name];
+            if (sheets.indexOf(sheet) > -1)
+                sheets.splice(sheets.indexOf(sheet), 1);
         }
         return matches.length;
     },
@@ -256,7 +272,7 @@ const Styles = Module("Styles", {
                             ["min-width: 1em; text-align: center; color: red; font-weight: bold;",
                              "padding: 0 1em 0 1ex; vertical-align: top;",
                              "padding: 0 1em 0 0; vertical-align: top;"],
-                            ([sheet.enabled ? "" : "\u00d7",
+                            ([sheet.enabled ? "" : UTF8("×"),
                               key,
                               sheet.sites.join(","),
                               sheet.css]
@@ -271,9 +287,7 @@ const Styles = Module("Styles", {
                             css = sheet.css + " " + css;
                         }
                     }
-                    let err = styles.addSheet(false, name, filter, css);
-                    if (err)
-                        dactyl.echoerr(err);
+                    styles.addSheet(false, name, filter, css);
                 }
             },
             {
@@ -376,5 +390,7 @@ const Styles = Module("Styles", {
 });
 
 endmodule();
+
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim:se fdm=marker sw=4 ts=4 et ft=javascript:

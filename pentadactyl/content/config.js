@@ -1,14 +1,11 @@
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
 
 const Config = Module("config", ConfigBase, {
-    name: "Pentadactyl",
-    hostApplication: "Firefox",
-
     get visualbellWindow() getBrowser().mPanelContainer,
     styleableChrome: ["chrome://browser/content/browser.xul"],
 
@@ -150,7 +147,7 @@ const Config = Module("config", ConfigBase, {
             { argCount: "0" });
 
         commands.add(["pref[erences]", "prefs"],
-            "Show " + config.hostApplication + " preferences",
+            "Show " + config.host + " preferences",
             function (args) {
                 if (args.bang) { // open Firefox settings GUI dialog
                     dactyl.open("about:config",
@@ -242,6 +239,7 @@ const Config = Module("config", ConfigBase, {
             });
     },
     completion: function () {
+        dactyl.dump("Load completion\n");
         var searchRunning = false; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
         completion.location = function location(context) {
             if (!services.get("autoCompleteSearch"))

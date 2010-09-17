@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -204,14 +204,14 @@ const Dactyl = Module("dactyl", {
      *
      * @param {string|Object} msg The message to print.
      */
-    dump: function () {
+    dump: function dump() {
         let msg = Array.map(arguments, function (msg) {
             if (typeof msg == "object")
                 msg = util.objectToString(msg);
             return msg;
         }).join(", ");
         msg = String.replace(msg, /\n?$/, "\n");
-        window.dump(msg.replace(/^./gm, ("config" in modules && config.name.toLowerCase()) + ": $&"));
+        window.dump(msg.replace(/^./gm, ("config" in modules && config.name) + ": $&"));
     },
 
     /**
@@ -220,7 +220,7 @@ const Dactyl = Module("dactyl", {
      * @param {string} msg The trace message.
      * @param {number} frames The number of frames to print.
      */
-    dumpStack: function (msg, frames) {
+    dumpStack: function dumpStack(msg, frames) {
         let stack = Error().stack.replace(/(?:.*\n){2}/, "");
         if (frames != null)
             [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
@@ -234,7 +234,7 @@ const Dactyl = Module("dactyl", {
      * @param {number} flags These control the multiline message behaviour.
      *     See {@link CommandLine#echo}.
      */
-    echo: function (str, flags) {
+    echo: function echo(str, flags) {
         commandline.echo(str, commandline.HL_NORMAL, flags);
     },
 
@@ -246,7 +246,7 @@ const Dactyl = Module("dactyl", {
      * @param {number} flags These control the multiline message behaviour.
      *     See {@link CommandLine#echo}.
      */
-    echoerr: function (str, flags) {
+    echoerr: function echoerr(str, flags) {
         flags |= commandline.APPEND_TO_MESSAGES;
 
         if (isinstance(str, ["Error", "Exception"]))
@@ -293,8 +293,6 @@ const Dactyl = Module("dactyl", {
      *     should be loaded.
      */
     loadScript: function (uri, context) {
-        XML.ignoreWhiteSpace = false;
-        XML.prettyPrinting = false;
         services.get("subscriptLoader").loadSubScript(uri, context);
     },
 
@@ -395,7 +393,7 @@ const Dactyl = Module("dactyl", {
         let command = commands.get(cmd);
 
         if (command === null) {
-            err = "E492: Not a " + config.name.toLowerCase() + " command: " + str;
+            err = "E492: Not a " + config.name + " command: " + str;
             dactyl.focusContent();
         }
         else if (command.action === null)
@@ -486,26 +484,18 @@ const Dactyl = Module("dactyl", {
      * Initialize the help system.
      */
     initHelp: function () {
-        if ("noscriptOverlay" in window) {
-            noscriptOverlay.safeAllow("chrome-data:", true, false);
-            noscriptOverlay.safeAllow("dactyl:", true, false);
-        }
+        if (!this.helpInitialized) {
+            if ("noscriptOverlay" in window) {
+                noscriptOverlay.safeAllow("chrome-data:", true, false);
+                noscriptOverlay.safeAllow("dactyl:", true, false);
+            }
 
-        if(!this.helpInitialized) {
-            let namespaces = [config.name.toLowerCase(), "dactyl"];
+            let namespaces = [config.name, "dactyl"];
             services.get("dactyl:").init({});
 
             let tagMap = services.get("dactyl:").HELP_TAGS;
             let fileMap = services.get("dactyl:").FILE_MAP;
             let overlayMap = services.get("dactyl:").OVERLAY_MAP;
-
-            // Left as an XPCOM instantiation so it can easilly be moved
-            // into XPCOM code.
-            function XSLTProcessor(sheet) {
-                let xslt = Cc["@mozilla.org/document-transformer;1?type=xslt"].createInstance(Ci.nsIXSLTProcessor);
-                xslt.importStylesheet(util.httpGet(sheet).responseXML);
-                return xslt;
-            }
 
             // Find help and overlay files with the given name.
             function findHelpFile(file) {
@@ -525,23 +515,20 @@ const Dactyl = Module("dactyl", {
             }
             // Find the tags in the document.
             function addTags(file, doc) {
-                doc = XSLT.transformToDocument(doc);
-                for (let elem in util.evaluateXPath("//xhtml:a/@id", doc))
-                    tagMap[elem.value] = file;
+                for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
+                    for (let tag in array((elem.value || elem.textContent).split(/\s+/)).compact().itervalues())
+                        tagMap[tag] = file;
             }
 
-            const XSLT = XSLTProcessor("chrome://dactyl/content/help-single.xsl");
-
             // Scrape the list of help files from all.xml
-            // Always process main and overlay files, since XSLTProcessor and
+            // Manually process main and overlay files, since XSLTProcessor and
             // XMLHttpRequest don't allow access to chrome documents.
             tagMap.all = "all";
             let files = findHelpFile("all").map(function (doc)
-                    [f.value for (f in util.evaluateXPath(
-                        "//dactyl:include/@href", doc))]);
+                    [f.value for (f in util.evaluateXPath("//dactyl:include/@href", doc))]);
 
             // Scrape the tags from the rest of the help files.
-            util.Array.flatten(files).forEach(function (file) {
+            array.flatten(files).forEach(function (file) {
                 findHelpFile(file).forEach(function (doc) {
                     addTags(file, doc);
                 });
@@ -550,7 +537,6 @@ const Dactyl = Module("dactyl", {
             // Process plugin help entries.
             XML.ignoreWhiteSpace = false;
             XML.prettyPrinting = false;
-            XML.prettyIndent = 4;
 
             let body = XML();
             for (let [, context] in Iterator(plugins.contexts))
@@ -558,11 +544,12 @@ const Dactyl = Module("dactyl", {
                     body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
                         context.INFO;
 
-            let help = '<?xml version="1.0"?>\n' +
-                       '<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>\n' +
-                       '<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">' +
+            let help = 
+                '<?xml version="1.0"?>\n' +
+                '<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>\n' +
+                '<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">\n' +
                 <document xmlns={NS}
-                    name="plugins" title={config.name + " Plugins"}>
+                    name="plugins" title={config.appname + " Plugins"}>
                     <h1 tag="using-plugins">Using Plugins</h1>
                     <toc start="2"/>
 
@@ -589,11 +576,11 @@ const Dactyl = Module("dactyl", {
         function addDataEntry(file, data) // Inideal to an extreme.
             addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
 
-        let empty = util.Array.toObject(
-            "area base basefont br col frame hr img input isindex link meta param"
-            .split(" ").map(Array.concat));
+        let empty = set("area base basefont br col frame hr img input isindex link meta param"
+                            .split(" "));
 
         let chrome = {};
+        let styles = {};
         for (let [file,] in Iterator(services.get("dactyl:").FILE_MAP)) {
             dactyl.open("dactyl://help/" + file);
             dactyl.modules.events.waitForPageLoad();
@@ -612,10 +599,11 @@ const Dactyl = Module("dactyl", {
                         if (node instanceof HTMLHtmlElement)
                             data.push(" xmlns=" + XHTML.uri.quote());
 
-                        for (let { name: name, value: value } in util.Array.itervalues(node.attributes)) {
+                        for (let { name, value } in array.itervalues(node.attributes)) {
                             if (name == "dactyl:highlight") {
                                 name = "class";
                                 value = "hl-" + value;
+                                set.add(styles, value);
                             }
                             if (name == "href") {
                                 if (value.indexOf("dactyl://help-tag/") == 0)
@@ -651,11 +639,11 @@ const Dactyl = Module("dactyl", {
             addDataEntry(file + ".xhtml", data.join(""));
         }
 
-        let data = [h.selector.replace(/^\[.*?=(.*?)\]/, ".hl-$1").replace(/html\|/, "") +
-                        "\t{" + h.value + "}"
-                    for (h in highlight) if (/^Help|^Logo/.test(h.class))];
-
-        data = data.join("\n");
+        let data = [h for (h in highlight) if (set.has(styles, h.class) || /^Help/.test(h.class))]
+            .map(function (h)
+                 h.selector.replace(/^\[.*?=(.*?)\]/, ".hl-$1").replace(/html\|/, "") + "\t" +
+                     "{" + h.value + "}")
+            .join("\n");
         addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 
         let re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
@@ -667,6 +655,49 @@ const Dactyl = Module("dactyl", {
 
         zip.close();
     },
+
+    /**
+     * Generates a help entry.
+     *
+     * @param {Command|Map|Option} obj A dactyl <b>Command</b>,
+     *     <b>Map</b> or <b>Option</b> object
+     * @param {XMLList} extraHelp Extra help text beyond the description.
+     * @returns {string}
+     */
+    generateHelp: function generateHelp(obj, extraHelp)
+    {
+        default xml namespace = "";
+        let spec = util.identity;
+        let tag = util.identity;
+        if (obj instanceof Command)
+            tag = spec = function (cmd) <>:{cmd}</>;
+        else if (obj instanceof Map && obj.count)
+            spec = function (map) <><oa>count</oa>{map}</>;
+        else if (obj instanceof Option)
+            tag = spec = function (opt) <>'{opt}'</>;
+
+        XML.prettyPrinting = false;
+        XML.ignoreWhitespace = false;
+
+        // E4X has its warts.
+        let br = <>
+                    </>;
+
+        return <>
+            <item>
+                <tags>{template.map(obj.names, tag, " ")}</tags>
+                <spec>{spec((obj.specs || obj.names)[0])}</spec>{
+                !obj.type ? "" : <>
+                <type>{obj.type}</type>
+                <default>{obj.defaultValue}</default></>}
+                <description>{
+                    obj.description ? br+<p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
+                        extraHelp ? br+extraHelp : "" }{
+                        !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }
+                </description>
+            </item></>.toXMLString();
+    },
+
 
     /**
      * Opens the help page containing the specified <b>topic</b> if it
@@ -692,8 +723,6 @@ const Dactyl = Module("dactyl", {
         dactyl.assert(page != null, "E149: Sorry, no help for " + topic);
 
         dactyl.open("dactyl://help/" + page, { from: "help" });
-        if (options.get("activate").has("all", "help"))
-            content.postMessage("fragmentChange", "*");
     },
 
     /**
@@ -723,15 +752,15 @@ const Dactyl = Module("dactyl", {
             });
         }
 
-        let dirs = io.getRuntimeDirectories("plugin");
+        let dirs = io.getRuntimeDirectories("plugins");
 
         if (dirs.length == 0) {
             dactyl.log("No user plugin directory found", 3);
             return;
         }
 
-        dactyl.echomsg('Searching for "plugin/**/*.{js,vimp}" in '
-                            + [dir.path.replace(/.plugin$/, "") for ([, dir] in Iterator(dirs))]
+        dactyl.echomsg('Searching for "plugins/**/*.{js,vimp}" in '
+                            + [dir.path.replace(/.plugins$/, "") for ([, dir] in Iterator(dirs))]
                                 .join(",").quote(), 2);
 
         dirs.forEach(function (dir) {
@@ -765,20 +794,33 @@ const Dactyl = Module("dactyl", {
         if (typeof msg == "object")
             msg = util.objectToString(msg, false);
 
-        services.get("console").logStringMessage(config.name.toLowerCase() + ": " + msg);
+        services.get("console").logStringMessage(config.name + ": " + msg);
     },
 
     /**
      * Opens one or more URLs. Returns true when load was initiated, or
      * false on error.
      *
-     * @param {string|string[]} urls Either a URL string or an array of URLs.
-     *     The array can look like this:
-     *       ["url1", "url2", "url3", ...]
-     *     or:
-     *       [["url1", postdata1], ["url2", postdata2], ...]
-     * @param {number|Object} where If ommited, CURRENT_TAB is assumed but NEW_TAB
-     *     is set when dactyl.forceNewTab is true.
+     * @param {string|Array} urls A representation of the URLs to open. May be
+     *     either a string, which will be bassed to
+     *     {@see Dactyl#stringToURLArray}, or an array in the same format as
+     *     would be returned by the same.
+     * @param {object} params A set of parameters specifing to open the
+     *     URLs. The following properties are recognized:
+     *
+     *      • background   If true, new tabs are opened in the background.
+     *
+     *      • from         The desgination of the opener, as appears in
+     *                     'activate' and 'newtab' options. If present,
+     *                     the newtab option provides the default 'where'
+     *                     parameter, and the value of the 'activate'
+     *                     parameter is inverted if 'background' is true.
+     *
+     *      • where        One of CURRENT_TAB, NEW_TAB, or NEW_WINDOW
+     *
+     *      As a deprecated special case, the where paramater may be provided
+     *      by itself, in which case it is transformed into { where: params }.
+     *
      * @param {boolean} force Don't prompt whether to open more than 20
      *     tabs.
      * @returns {boolean}
@@ -787,30 +829,29 @@ const Dactyl = Module("dactyl", {
         if (typeof urls == "string")
             urls = dactyl.stringToURLArray(urls);
 
-        if (urls.length > 20 && !force) {
-            commandline.input("This will open " + urls.length + " new tabs. Would you like to continue? (yes/[no]) ",
+        if (urls.length > 20 && !force)
+            return commandline.input("This will open " + urls.length + " new tabs. Would you like to continue? (yes/[no]) ",
                 function (resp) {
                     if (resp && resp.match(/^y(es)?$/i))
                         dactyl.open(urls, params, true);
                 });
-            return;
-        }
 
-        let flags = 0;
         params = params || {};
         if (isarray(params))
             params = { where: params };
 
+        let flags = 0;
         for (let [opt, flag] in Iterator({ replace: "REPLACE_HISTORY", hide: "BYPASS_HISTORY" }))
-            if (params[opt])
-                flags |= Ci.nsIWebNavigation["LOAD_FLAGS_" + flag];
+            flags |= params[opt] && Ci.nsIWebNavigation["LOAD_FLAGS_" + flag];
 
         let where = params.where || dactyl.CURRENT_TAB;
-        let background = ("background" in params) ? params.background : params.where == dactyl.NEW_BACKGROUND_TAB;
-        if ("from" in params && dactyl.has("tabs")) {
-            if (!('where' in params) && options.get("newtab").has("all", params.from))
+        let background = ("background" in params) ? params.background
+                                                  : params.where == dactyl.NEW_BACKGROUND_TAB;
+
+        if (params.from && dactyl.has("tabs")) {
+            if (!params.where && options.get("newtab").has("all", params.from))
                 where = dactyl.NEW_TAB;
-            background = !options.get("activate").has("all", params.from);
+            background ^= !options.get("activate").has("all", params.from);
         }
 
         if (urls.length == 0)
@@ -829,10 +870,8 @@ const Dactyl = Module("dactyl", {
                     break;
 
                 case dactyl.NEW_TAB:
-                    if (!dactyl.has("tabs")) {
-                        open(urls, dactyl.NEW_WINDOW);
-                        return;
-                    }
+                    if (!dactyl.has("tabs"))
+                        return open(urls, dactyl.NEW_WINDOW);
 
                     options.withContext(function () {
                         options.setPref("browser.tabs.loadInBackground", true);
@@ -849,6 +888,9 @@ const Dactyl = Module("dactyl", {
                 }
             }
             catch(e) {}
+            // Unfortunately, failed page loads throw exceptions and
+            // cause a lot of unwanted noise. This solution means that
+            // any genuine errors go unreported.
         }
 
         if (dactyl.forceNewTab)
@@ -860,6 +902,7 @@ const Dactyl = Module("dactyl", {
 
         for (let [, url] in Iterator(urls)) {
             open(url, where);
+            where = dactyl.NEW_TAB;
             background = true;
         }
     },
@@ -1037,12 +1080,10 @@ const Dactyl = Module("dactyl", {
         services.get("observer").notifyObservers(null, "quit-application-granted", null);
 
         // enumerate all windows and call shutdown handlers
-        let windows = services.get("windowMediator").getEnumerator(null);
-        while (windows.hasMoreElements()) {
-            let win = windows.getNext();
+        for (let win in iter(services.get("windowMediator").getEnumerator(null)))
             if (("tryToClose" in win) && !win.tryToClose())
                 return;
-        }
+
         services.get("appStartup").quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
     },
 
@@ -1092,14 +1133,7 @@ const Dactyl = Module("dactyl", {
      * @property {Window[]} Returns an array of all the host application's
      *     open windows.
      */
-    get windows() {
-        let windows = [];
-        let enumerator = services.get("windowMediator").getEnumerator("navigator:browser");
-        while (enumerator.hasMoreElements())
-            windows.push(enumerator.getNext());
-
-        return windows;
-    }
+    get windows() [win for (win in iter(services.get("windowMediator").getEnumerator("navigator:browser")))],
 
 }, {
     // initially hide all GUI elements, they are later restored unless the user
@@ -1193,26 +1227,27 @@ const Dactyl = Module("dactyl", {
                         this);
                     let class_ = dir.map(function (dir) "html|html > xul|scrollbar[orient=" + dir + "]");
 
-                    if (class_.length)
-                        styles.addSheet(true, "scrollbar", "*", class_.join(", ") + " { visibility: collapse !important; }", true);
-                    else
-                        styles.removeSheet(true, "scrollbar");
+                    styles.addSheet(true, "scrollbar", "*",
+                            class_.length ? class_.join(", ") + " { visibility: collapse !important; }" : "");
+
                     options.safeSetPref("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
                                         "See 'guioptions' scrollbar flags.");
                 },
                 validator: function (opts) (opts.indexOf("l") < 0 || opts.indexOf("r") < 0)
             },
             tab: {
+                feature: "tabs",
                 opts: {
                     n: ["Tab number", highlight.selector("TabNumber")],
                     N: ["Tab number over icon", highlight.selector("TabIconNumber")]
                 },
                 setter: function (opts) {
-                    const self = this;
                     let classes = [v[1] for ([k, v] in Iterator(this.opts)) if (opts.indexOf(k) < 0)];
-                    let css = classes.length ? classes.join(",") + "{ display: none; }" : "";
-                    styles.addSheet(true, "taboptions", "chrome://*", css);
-                    tabs.tabsBound = Array.some(opts, function (k) k in self.opts);
+
+                    styles.addSheet(true, "taboptions", "chrome://*",
+                        classes.length ? classes.join(",") + "{ display: none; }" : "");
+
+                    tabs.tabBinding.enabled = Array.some(opts, function (k) k in this.opts, this);
                     statusline.updateTabCount();
                 }
             }
@@ -1230,13 +1265,14 @@ const Dactyl = Module("dactyl", {
             "charlist", config.defaults.guioptions || "", {
                 setter: function (value) {
                     for (let [, group] in Iterator(groups))
-                        group.setter(value);
+                        if (!group.feature || dactyl.has(group.feature))
+                            group.setter(value);
                     return value;
                 },
                 completer: function (context) {
-                    let opts = [v.opts for ([k, v] in Iterator(groups))];
+                    let opts = [v.opts for ([k, v] in Iterator(groups)) if (!v.feature || dactyl.has(v.feature))];
                     opts = opts.map(function (opt) [[k, v[0]] for ([k, v] in Iterator(opt))]);
-                    return util.Array.flatten(opts);
+                    return array.flatten(opts);
                 },
                 validator: function (val) Option.validateCompleter.call(this, val) &&
                         [v for ([k, v] in Iterator(groups))].every(function (g) !g.validator || g.validator(val))
@@ -1252,7 +1288,7 @@ const Dactyl = Module("dactyl", {
 
         options.add(["titlestring"],
             "Change the title of the window",
-            "string", config.defaults.titlestring || config.hostApplication,
+            "string", config.defaults.titlestring || config.host,
             {
                 setter: function (value) {
                     let win = document.documentElement;
@@ -1330,13 +1366,13 @@ const Dactyl = Module("dactyl", {
             { argCount: "0" });
 
         commands.add(["dia[log]"],
-            "Open a " + config.name + " dialog",
+            "Open a " + config.appname + " dialog",
             function (args) {
-                let arg = args[0];
+                let dialog = args[0];
 
+                dactyl.assert(dialog in config.dialogs, "E475: Invalid argument: " + dialog);
                 try {
-                    dactyl.assert(args[0] in config.dialogs, "E475: Invalid argument: " + arg);
-                    config.dialogs[args[0]][1]();
+                    config.dialogs[dialog][1]();
                 }
                 catch (e) {
                     dactyl.echoerr("Error opening " + arg.quote() + ": " + e);
@@ -1383,15 +1419,8 @@ const Dactyl = Module("dactyl", {
 
         ///////////////////////////////////////////////////////////////////////////
 
-        if (typeof AddonManager == "undefined") {
+        if (typeof AddonManager == "undefined") 
             modules.AddonManager = {
-                getInstallForFile: function (file, callback, mimetype) {
-                    callback({
-                        install: function () {
-                            services.get("extensionManager").installItemFromFile(file, "app-profile");
-                        }
-                    });
-                },
                 getAddonById: function (id, callback) {
                     let addon = id;
                     if (!isobject(addon))
@@ -1438,10 +1467,18 @@ const Dactyl = Module("dactyl", {
                                     .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
                             res.append(this.getAddonById(item));
                     return res;
-                }
+                },
+                getInstallForFile: function (file, callback, mimetype) {
+                    callback({
+                        install: function () {
+                            services.get("extensionManager").installItemFromFile(file, "app-profile");
+                        }
+                    });
+                },
+                getInstallForURL: function (url, callback, mimetype) {
+                    dactyl.assert(false, "Install by URL not implimented");
+                },
             };
-
-        }
 
         ///////////////////////////////////////////////////////////////////////////
         
@@ -1467,7 +1504,7 @@ const Dactyl = Module("dactyl", {
             }, {
                 argCount: "1",
                 completer: function (context) {
-                    context.filters.push(function ({ item: f }) f.isDirectory() || /\.xpi$/.test(f.leafName));
+                    context.filters.push(function ({ item }) item.isDirectory() || /\.xpi$/.test(item.leafName));
                     completion.file(context);
                 }
             });
@@ -1483,13 +1520,13 @@ const Dactyl = Module("dactyl", {
                 name: "exte[nable]",
                 description: "Enable an extension",
                 action: function (addon) addon.userDisabled = false,
-                filter: function ({ item: e }) e.userDisabled
+                filter: function ({ item }) item.userDisabled
             },
             {
                 name: "extd[isable]",
                 description: "Disable an extension",
                 action: function (addon) addon.userDisabled = true,
-                filter: function ({ item: e }) !e.userDisabled
+                filter: function ({ item }) !item.userDisabled
             }
         ].forEach(function (command) {
             commands.add([command.name],
@@ -1535,7 +1572,7 @@ const Dactyl = Module("dactyl", {
                 bang: true,
                 completer: function (context) {
                     completion.extension(context);
-                    context.filters.push(function ({ item: e }) e.isActive && e.optionsURL);
+                    context.filters.push(function ({ item }) item.isActive && item.optionsURL);
                 },
                 literal: 0
             });
@@ -1543,6 +1580,23 @@ const Dactyl = Module("dactyl", {
         commands.add(["extens[ions]", "exts"],
             "List available extensions",
             function (args) {
+                function addonExtra(e) {
+                    let extra;
+                    if (e.pendingOperations & AddonManager.PENDING_UNINSTALL)
+                        extra = ["Disabled", "uninstalled"];
+                    else if (e.pendingOperations & AddonManager.PENDING_DISABLE)
+                        extra = ["Disabled", "disabled"];
+                    else if (e.pendingOperations & AddonManager.PENDING_INSTALL)
+                        extra = ["Enabled", "installed"];
+                    else if (e.pendingOperations & AddonManager.PENDING_ENABLE)
+                        extra = ["Enabled", "enabled"];
+                    else if (e.pendingOperations & AddonManager.PENDING_UPGRADE)
+                        extra = ["Enabled", "upgraded"];
+                    if (extra)
+                        return <>&#xa0;(<span highlight={extra[0]}>{extra[1]}</span>
+                                        &#xa0;on restart)</>;
+                    return <></>;
+                }
                 AddonManager.getAddonsByTypes(["extension"], function (extensions) {
                     if (args[0])
                         extensions = extensions.filter(function (extension) extension.name.indexOf(args[0]) >= 0);
@@ -1555,12 +1609,7 @@ const Dactyl = Module("dactyl", {
                                   e.version,
                                   (e.isActive ? <span highlight="Enabled">enabled</span>
                                               : <span highlight="Disabled">disabled</span>) +
-                                  ((e.userDisabled || e.appDisabled) == !e.isActive ? XML() :
-                                      <>&#xa0;({e.userDisabled || e.appDisabled
-                                            ? <span highlight="Disabled">disabled</span>
-                                            : <span highlight="Enabled">enabled</span>}
-                                            on restart)
-                                      </>),
+                                  addonExtra(e),
                                   e.description]
                                 for ([, e] in Iterator(extensions)))));
                     else if (filter)
@@ -1658,7 +1707,7 @@ const Dactyl = Module("dactyl", {
             });
 
         commands.add(["res[tart]"],
-            "Force " + config.name + " to restart",
+            "Force " + config.appname + " to restart",
             function () { dactyl.restart(); },
             { argCount: "0" });
 
@@ -1810,7 +1859,7 @@ const Dactyl = Module("dactyl", {
                     dactyl.open("about:");
                 else
                     commandline.commandOutput(<>
-                        {config.name} {dactyl.version} running on:<br/>{navigator.userAgent}
+                        {config.appname} {dactyl.version} running on:<br/>{navigator.userAgent}
                     </>);
             }, {
                 argCount: "0",
@@ -1836,11 +1885,13 @@ const Dactyl = Module("dactyl", {
             context.title = ["Extension"];
             context.anchored = false;
             context.keys = { text: "name", description: "description", icon: "iconURL" },
-            context.incomplete = true;
-            AddonManager.getAddonsByTypes(["extension"], function (addons) {
-                context.incomplete = false;
-                context.completions = addons;
-            });
+            context.generate = function () {
+                context.incomplete = true;
+                AddonManager.getAddonsByTypes(["extension"], function (addons) {
+                    context.incomplete = false;
+                    context.completions = addons;
+                });
+            };
         };
 
         completion.help = function help(context, unchunked) {
@@ -1877,7 +1928,7 @@ const Dactyl = Module("dactyl", {
 
         dactyl.log("All modules loaded", 3);
 
-        services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name.toLowerCase());
+        services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
 
         let commandline = services.get("commandLineHandler").optionValue;
         if (commandline) {
@@ -1892,7 +1943,7 @@ const Dactyl = Module("dactyl", {
         dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);
 
         // first time intro message
-        const firstTime = "extensions." + config.name.toLowerCase() + ".firsttime";
+        const firstTime = "extensions." + config.name + ".firsttime";
         if (options.getPref(firstTime, true)) {
             util.timeout(function () {
                 dactyl.help();
@@ -1904,7 +1955,7 @@ const Dactyl = Module("dactyl", {
         modes.reset();
 
         // TODO: we should have some class where all this guioptions stuff fits well
-        Dactyl.hideGUI();
+        // Dactyl.hideGUI();
 
         if (dactyl.commandLineOptions.preCommands)
             dactyl.commandLineOptions.preCommands.forEach(function (cmd) {
@@ -1914,7 +1965,7 @@ const Dactyl = Module("dactyl", {
         // finally, read the RC file and source plugins
         // make sourcing asynchronous, otherwise commands that open new tabs won't work
         util.timeout(function () {
-            let extensionName = config.name.toUpperCase();
+            let extensionName = config.idname;
             let init = services.get("environment").get(extensionName + "_INIT");
             let rcFile = io.getRCFile("~");
 
@@ -1951,13 +2002,18 @@ const Dactyl = Module("dactyl", {
             // after sourcing the initialization files, this function will set
             // all gui options to their default values, if they have not been
             // set before by any RC file
-            for (let option in options) {
+            for (let option in values(options.needInit))
+                // FIXME:
                 // 'encoding' option should not be set at this timing.
                 // Probably a wrong value is set into the option,
                 // if current page's encoging is not UTF-8.
-                if (option.name != "encoding" && option.setter)
-                    option.value = option.value;
-            }
+                try {
+                    if (option.name != "encoding");
+                        option.value = option.value;
+                }
+                catch (e) {
+                    dactyl.reportError(e);
+                }
 
             if (dactyl.commandLineOptions.postCommands)
                 dactyl.commandLineOptions.postCommands.forEach(function (cmd) {
@@ -1969,7 +2025,7 @@ const Dactyl = Module("dactyl", {
         }, 0);
 
         statusline.update();
-        dactyl.log(config.name + " fully initialized", 0);
+        dactyl.log(config.appname + " fully initialized", 0);
         dactyl.initialized = true;
     }
 });

@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2010 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -35,6 +35,7 @@ function makeChannel(url, orig) {
         url = dataURL.apply(null, url());
     let uri = ioService.newURI(url, null, null);
     let channel = ioService.newChannelFromURI(uri);
+    channel.contentCharset = "UTF-8";
     channel.owner = systemPrincipal;
     channel.originalURI = orig;
     return channel;
@@ -45,6 +46,27 @@ function redirect(to, orig, time) {
     return makeChannel(dataURL('text/html', html), ioService.newURI(to, null, null));
 }
 
+function AboutHandler() {}
+AboutHandler.prototype = {
+
+    classDescription: "About " + Dactyl.prototype.name + " Page",
+
+    classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
+
+    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.appname,
+
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
+
+    newChannel: function (uri) {
+        let channel = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
+                          .newChannel("chrome://dactyl/content/about.xul", null, null);
+        channel.originalURI = uri;
+        return channel;
+    },
+
+    getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT,
+};
+
 function ChromeData() {}
 ChromeData.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=chrome-data",
@@ -53,10 +75,10 @@ ChromeData.prototype = {
     QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsIProtocolHandler]),
     _xpcom_factory: {
         createInstance: function (outer, iid) {
-            if (!ChromeData.instance)
-                ChromeData.instance = new ChromeData();
             if (outer != null)
                 throw Components.results.NS_ERROR_NO_AGGREGATION;
+            if (!ChromeData.instance)
+                ChromeData.instance = new ChromeData();
             return ChromeData.instance.QueryInterface(iid);
         }
     },
@@ -89,7 +111,6 @@ ChromeData.prototype = {
 function Dactyl() {
     this.wrappedJSObject = this;
 
-    const self = this;
     this.HELP_TAGS = {};
     this.FILE_MAP = {};
     this.OVERLAY_MAP = {};
@@ -101,13 +122,15 @@ Dactyl.prototype = {
     QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsIProtocolHandler]),
     _xpcom_factory: {
         createInstance: function (outer, iid) {
-            if (!Dactyl.instance)
-                Dactyl.instance = new Dactyl();
             if (outer != null)
                 throw Components.results.NS_ERROR_NO_AGGREGATION;
+            if (!Dactyl.instance)
+                Dactyl.instance = new Dactyl();
             return Dactyl.instance.QueryInterface(iid);
         }
     },
+
+    __proto__: Cc["@dactyl.googlecode.com/base/dactyl"].getService().wrappedJSObject,
 
     init: function (obj) {
         for each (let prop in ["HELP_TAGS", "FILE_MAP", "OVERLAY_MAP"]) {
@@ -125,9 +148,9 @@ Dactyl.prototype = {
          | nsIProtocolHandler.URI_IS_LOCAL_RESOURCE,
 
     newURI: function (spec, charset, baseURI) {
-        var uri = Components.classes["@mozilla.org/network/standard-url;1"]
-                            .createInstance(Components.interfaces.nsIStandardURL)
-                            .QueryInterface(Components.interfaces.nsIURI);
+        var uri = Cc["@mozilla.org/network/standard-url;1"]
+                        .createInstance(Ci.nsIStandardURL)
+                        .QueryInterface(Ci.nsIURI);
         uri.init(uri.URLTYPE_STANDARD, this.defaultPort, spec, charset, baseURI);
         return uri;
     },
@@ -138,16 +161,16 @@ Dactyl.prototype = {
                 return redirect(uri.spec, uri, 1);
 
             switch(uri.host) {
-                case "help":
-                    let url = this.FILE_MAP[uri.path.replace(/^\/|#.*/g, "")];
-                    return makeChannel(url, uri);
-                case "help-overlay":
-                    url = this.OVERLAY_MAP[uri.path.replace(/^\/|#.*/g, "")];
-                    return makeChannel(url, uri);
-                case "help-tag":
-                    let tag = uri.path.substr(1);
-                    if (tag in this.HELP_TAGS)
-                        return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
+            case "help":
+                let url = this.FILE_MAP[decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""))];
+                return makeChannel(url, uri);
+            case "help-overlay":
+                url = this.OVERLAY_MAP[decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""))];
+                return makeChannel(url, uri);
+            case "help-tag":
+                let tag = decodeURIComponent(uri.path.substr(1));
+                if (tag in this.HELP_TAGS)
+                    return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
             }
         }
         catch (e) {}
@@ -155,9 +178,19 @@ Dactyl.prototype = {
     }
 };
 
+// A hack to get infermation about interfaces.
+// Doesn't belong here.
+function Shim() {}
+Shim.prototype = {
+    contractID:       "@dactyl.googlecode.com/base/xpc-interface-shim",
+    classID:          Components.ID("{f4506a17-5b4d-4cd9-92d4-2eb4630dc388}"),
+    classDescription: "XPCOM empty interface shim",
+    QueryInterface:   function () this
+};
+
 if (XPCOMUtils.generateNSGetFactory)
-    const NSGetFactory = XPCOMUtils.generateNSGetFactory([ChromeData, Dactyl]);
+    const NSGetFactory = XPCOMUtils.generateNSGetFactory([AboutHandler, ChromeData, Dactyl, Shim]);
 else
-    const NSGetModule = XPCOMUtils.generateNSGetModule([ChromeData, Dactyl]);
+    const NSGetModule = XPCOMUtils.generateNSGetModule([AboutHandler, ChromeData, Dactyl, Shim]);
 
 // vim: set fdm=marker sw=4 ts=4 et:

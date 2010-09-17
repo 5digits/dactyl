@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2009 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -17,7 +17,7 @@ const Marks = Module("marks", {
         this._urlMarks = storage.newMap("url-marks", { privateData: true, replacer: replacer, store: true });
 
         try {
-            if(isarray(Iterator(this._localMarks).next()));
+            if(isarray(Iterator(this._localMarks).next()[1]))
                 this._localMarks.clear();
         }
         catch(e) {}
@@ -31,7 +31,7 @@ const Marks = Module("marks", {
      */
     get all() {
         let lmarks = array(Iterator(this._localMarks.get(this.localURI) || {}));
-        let umarks = array(Iterator(this._urlMarks)).__proto__;
+        let umarks = array(Iterator(this._urlMarks)).array;
 
         return lmarks.concat(umarks).sort(function (a, b) String.localeCompare(a[0], b[0]));
     },
@@ -54,9 +54,7 @@ const Marks = Module("marks", {
         let win = window.content;
         let doc = win.document;
 
-        if (!doc.body)
-            return;
-        if (doc.body instanceof HTMLFrameSetElement) {
+        if (doc.body && doc.body instanceof HTMLFrameSetElement) {
             if (!silent)
                 dactyl.echoerr("Marks support for frameset pages not implemented yet");
             return;
@@ -72,8 +70,8 @@ const Marks = Module("marks", {
                 dactyl.log("Adding URL mark: " + Marks.markToString(mark, res), 5);
         }
         else if (Marks.isLocalMark(mark)) {
-            let marks = this._localMarks.get(doc.URL, {});
-            marks[mark] = { location: doc.URL, position: position, timestamp: Date.now()*1000 };
+            let marks = this._localMarks.get(doc.documentURI, {});
+            marks[mark] = { location: doc.documentURI, position: position, timestamp: Date.now()*1000 };
             this._localMarks.changed();
             if (!silent)
                 dactyl.log("Adding local mark: " + Marks.markToString(mark, marks[mark]), 5);
@@ -237,7 +235,7 @@ const Marks = Module("marks", {
                 // NOTE: this currently differs from Vim's behavior which
                 // deletes any valid marks in the arg list, up to the first
                 // invalid arg, as well as giving the error message.
-                dactyl.assert(!matches, "E475: Invalid argument: " + matches[0]);
+                dactyl.assert(!matches, "E475: Invalid argument: " + (matches && matches[0]));
 
                 // check for illegal ranges - only allow a-z A-Z 0-9
                 if ((matches = args.match(/[a-zA-Z0-9]-[a-zA-Z0-9]/g))) {

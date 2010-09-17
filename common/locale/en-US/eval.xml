@@ -6,23 +6,40 @@
 <document
     name="eval"
     title="&dactyl.appname; Expression Evaluation"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
-<h1 tag="expression expr eval">Expression evaluation</h1>
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
+<h1 tag="expression expr eval javascript">Expression evaluation</h1>
 <toc start="2"/>
 
-<!-- INTRO TO BE WRITTEN… -->
+<p>
+    Much of the power of &dactyl.appname; lies in its scriptable expression
+    evaluation. &dactyl.appname; understands two kinds of expressions: ex
+    commands, and JavaScript. Ex commands are simple, easy to type, and
+    readily accessible from the <t>command-line</t>. They form a core part of
+    the user interface. JavaScript, on the other hand, is much less
+    straightforward, but allows for any number of complex actions to be
+    executed, with full access to all of the internals of &dactyl.appname; and
+    &dactyl.host;. Both expression evaluation methods support sophisticated
+    expression completion, including option lists and descriptions thereof.
+</p>
 
 <item>
     <tags>:ec :echo</tags>
     <spec>:ec<oa>ho</oa> <a>expr</a></spec>
     <description>
         <p>
-            Echo the expression. Useful for showing informational messages. Multiple lines
-            can be separated by \n. <a>expr</a> can either be a quoted string, or any expression
-            which can be fed to eval() like 4+5. You can also view the source code of
-            objects and functions if the return value of <a>expr</a> is an object or function.
+            Echo a JavaScript expression. <a>expr</a> may be a simple quoted
+            string, in which case it is shown in the statusline, or any
+            arbitrary JavaScript expression. If the expression results in
+            anything other than a string, it is pretty-printed in a multiline
+            frame just above the command-line. The output depends on the type
+            of object. Functions display their source, DOM nodes display the
+            pretty-printed XML of the top-level node, XML literals are
+            rendered as page content, and all other objects display their
+            string representation and all of their enumerable properties.
         </p>
+
+        <p>See also <ex>:javascript</ex></p>
     </description>
 </item>
 
@@ -56,12 +73,15 @@
     <spec>:exe<oa>cute</oa> <a>expr</a></spec>
     <description>
         <p>
-            Execute the string that results from the evaluation of <a>expr</a> as an Ex command.
-            Example: <ex>:execute "source " + io.getRCFile().path</ex> sources the appropriate
-            RC file.
+            Execute the ex command string that results from the evaluation of
+            the JavaScript expression <a>expr</a>. For example,
+        </p>
+        <code><ex>:execute "open " + content.location.host</ex></code>
+        <p>
+            opens the homepage of the currently opened site.
         </p>
 
-        <p>Note: Unlike Vim this currently only supports a single argument.</p>
+        <note>Unlike Vim this only supports a single argument.</note>
     </description>
 </item>
 
@@ -69,29 +89,50 @@
 <item>
     <tags>:js :javas :javascript</tags>
     <spec>:javas<oa>cript</oa> <a>cmd</a></spec>
-    <spec>:javascript &lt;&lt;<a>endpattern</a>\n<a>empty</a><a>script</a>\n<a>empty</a><a>endpattern</a></spec>
+    <spec>:javascript &lt;&lt;<a>endpattern</a>\n<a>cmd</a>\n<a>endpattern</a></spec>
     <spec>:javascript<oa>!</oa></spec>
     <description>
         <p>
-            Run any JavaScript command through eval(). Acts as a JavaScript interpreter by
-            passing the argument to <tt>eval()</tt>.
-            <ex>:javascript alert(<str>Hello world</str>)</ex> shows
-            a dialog box with the text "Hello world".
-            <ex>:javascript &lt;&lt;EOF</ex> reads all the lines
-            until a line starting with "EOF"
-            is found, and interpret them with the JavaScript <em>eval()</em> function.
+            Evaluates the given <a>cmd</a> as JavaScript. Behaves exactly as
+            <ex>:echo</ex>, except that the result is not printed. Any
+            exception raised by the evaluation will, however, be displayed as
+            an error message and appended to <ex>:messages</ex>.
+        </p>
+
+        <example>
+            <ex>:javascript alert(<str>Hello world</str>)</ex> will open a
+            dialog window with the message <str>Hello world</str>.
+        </example>
+
+        <p>
+            Moreover, multiline scripts can be executed with shell-like here
+            document syntax. For example, the following,
+        </p>
+
+        <code><ex>:jsavascript</ex> &lt;&lt;<em>EOF</em>
+<kwd>for each</kwd> (<kwd>var</kwd> tab <kwd>in</kwd> tabs.visibleTabs)
+    tab.linkedBrowser.reload();
+<em>EOF</em></code>
+
+        <p>
+            will reload all visible tabs.
+        </p>
+
+        <p>
+            Moreover, sophisticated, context-sensitive <k name="Tab"/>
+            completion is available for JavaScript code, which extends to
+            property names, object keys, and programmable completion for
+            string function arguments. The completion code is designed to be
+            both as safe and as powerful as possible. Expressions in a given
+            command-line session will only be evaluated once, and, with
+            autocompletion turned on, any completion which requires a function
+            to be executed requires an explicit <k name="Tab"/> press to
+            commence.
         </p>
 
         <p>
             The special version <ex>:javascript!</ex> opens the JavaScript console of
             &dactyl.host;.
-        </p>
-
-        <p>
-            <k name="Tab"/> completion is available for <ex>:javascript <a>cmd</a><k name="Tab"/></ex> (but not
-            yet for the <ex>:js &lt;&lt;EOF</ex> multiline widget). Be aware that &dactyl.appname; needs
-            to run <a>cmd</a> through eval() to get the completions, which could have unwanted
-            side effects.
         </p>
     </description>
 </item>
@@ -104,9 +145,10 @@
     <spec>:let</spec>
     <description>
         <p>
-            Sets or lists a variable. Sets the variable {var-name} to the value of the
+            Sets or lists a variable. Sets the variable <a>var-name</a> to the value of the
             expression <a>expr1</a>. If no expression is given, the value of the variable is
             displayed. Without arguments, displays a list of all variables.
+            This functionality has few useful applications and so is deprecated.
         </p>
     </description>
 </item>
@@ -117,8 +159,8 @@
     <spec>:unl<oa>et</oa><oa>!</oa> <a>name</a> …</spec>
     <description>
         <p>
-            Deletes the variable <a>name</a>. Several variable names can be given. When used
-            with <oa>!</oa> no error message is output for non-existing variables.
+            Deletes the named variables. When <oa>!</oa> is given, no error
+            message is output for non-existing variables.
         </p>
     </description>
 </item>

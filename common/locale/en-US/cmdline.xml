@@ -6,25 +6,44 @@
 <document
     name="cmdline"
     title="&dactyl.appname; Command-line"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
-<h1 tag="Command-line-mode Command-line mode-cmdline">Command-line mode</h1>
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
+<h1 tag="command-line-mode command-line mode-cmdline">Command-line mode</h1>
 <toc start="2"/>
 
-Command-line mode is used to enter Ex commands (<k>:</k>) and text search patterns
-(<k>/</k> and <k>?</k>).
+<p>
+    &dactyl.appname;'s command-line mode is perhaps its most
+    powerful interface. In this mode, the command input bar at the
+    bottom of the window is given the keyboard focus for any of a
+    variety of required inputs. In addition to access to almost
+    every aspect of &dactyl.appname; and &dactyl.host;, the command
+    line provides power and comprehensive completion for all of its
+    commands, along with concise descriptions for each command and
+    all of its arguments. Couple this with persistent, searchable
+    command history, and you have a very efficient interface for
+    easily performing simple and complex tasks.
+</p>
+
+<p>
+    Included among the several command-line modes are ex command
+    mode (the standard mode for entering commands), find mode (for
+    searching the current page), prompt mode (for selecting files,
+    confirming actions), and hint mode (for selecting links and
+    other items on a page).
+</p>
 
 <item>
     <tags>:</tags>
+    <strut/>
     <spec>:</spec>
     <description>
         <p>
-            Start Command-line mode. In Command-line mode, you can perform extended
-            commands, which may require arguments.
+            Opens the command-line in ex mode. This is the mode used
+            for entering the various commands listed in
+            <t>ex-cmd-index</t>.
         </p>
     </description>
 </item>
-
 
 
 <h2 tag="cmdline-editing">Command-line editing</h2>
@@ -32,7 +51,7 @@ Command-line mode is used to enter Ex commands (<k>:</k>) and text search patter
 <item>
     <tags><![CDATA[c_<C-c>]]></tags>
     <spec>&lt;C-c></spec>
-    <description>
+    <description short="true">
         <p>Quit Command-line mode without executing.</p>
     </description>
 </item>
@@ -41,7 +60,7 @@ Command-line mode is used to enter Ex commands (<k>:</k>) and text search patter
 <item>
     <tags><![CDATA[c_<C-]>]]></tags>
     <spec>&lt;C-]></spec>
-    <description>
+    <description short="true">
         <p>Expand a command-line abbreviation.</p>
     </description>
 </item>
@@ -49,11 +68,12 @@ Command-line mode is used to enter Ex commands (<k>:</k>) and text search patter
 
 <item>
     <tags><![CDATA[c_<Up>]]></tags>
+    <strut/>
     <spec>&lt;Up></spec>
     <description>
         <p>
-            Recall the previous command line from the history list which matches the
-            current command line.
+            Recall from command history the previous command-line
+            which begins with the current input value.
         </p>
     </description>
 </item>
@@ -61,11 +81,12 @@ Command-line mode is used to enter Ex commands (<k>:</k>) and text search patter
 
 <item>
     <tags><![CDATA[c_<Down>]]></tags>
+    <strut/>
     <spec>&lt;Down></spec>
     <description>
         <p>
-            Recall the next command line from the history list which matches the current
-            command line.
+            Recall from command history the next command-line
+            which begins with the current input value.
         </p>
     </description>
 </item>
@@ -74,6 +95,7 @@ Command-line mode is used to enter Ex commands (<k>:</k>) and text search patter
 <item>
     <tags><![CDATA[c_<S-Up> c_<PageUp>]]></tags>
     <spec>&lt;S-Up></spec>
+    <strut/>
     <spec>&lt;PageUp></spec>
     <description>
         <p>Recall the previous command line from the history list.</p>
@@ -95,12 +117,14 @@ Command-line mode is used to enter Ex commands (<k>:</k>) and text search patter
 
 <item>
     <tags><![CDATA[c_<Tab>]]></tags>
+    <strut/>
     <spec>&lt;Tab></spec>
     <description>
         <p>
-            Complete the word in front of the cursor according to the behavior specified in
-            <o>wildmode</o>. If <o>wildmode</o> contains "list" and there are multiple matches then
-            the completion menu window is opened.
+            Complete the word in front of the cursor according to the behavior
+            specified in <o>wildmode</o>. If <o>wildmode</o> contains
+            <str>list</str> and there are multiple matches then the completion
+            menu window is opened.
         </p>
     </description>
 </item>
@@ -108,9 +132,10 @@ Command-line mode is used to enter Ex commands (<k>:</k>) and text search patter
 
 <item>
     <tags><![CDATA[c_<S-Tab>]]></tags>
+    <strut/>
     <spec>&lt;S-Tab></spec>
     <description>
-        <p>Complete the previous full match when <o>wildmode</o> contains "full".</p>
+        <p>Complete the previous full match when <o>wildmode</o> contains <str>full</str>.</p>
     </description>
 </item>
 
