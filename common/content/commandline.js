@@ -590,7 +590,7 @@ const CommandLine = Module("commandline", {
         this.widgets.multilineInput.value = "";
         this._autosizeMultilineInputWidget();
 
-        this.setTimeout(function () { this.widgets.multilineInput.focus(); }, 10);
+        this.timeout(function () { this.widgets.multilineInput.focus(); }, 10);
     },
 
     /**
@@ -607,7 +607,7 @@ const CommandLine = Module("commandline", {
 
             if (event.type == "blur") {
                 // prevent losing focus, there should be a better way, but it just didn't work otherwise
-                this.setTimeout(function () {
+                this.timeout(function () {
                     if (this.commandVisible && event.originalTarget == this.widgets.command.inputField)
                         this.widgets.command.inputField.focus();
                 }, 0);
@@ -707,7 +707,7 @@ const CommandLine = Module("commandline", {
         }
         else if (event.type == "blur") {
             if (modes.extended & modes.INPUT_MULTILINE)
-                this.setTimeout(function () { this.widgets.multilineInput.inputField.focus(); }, 0);
+                this.timeout(function () { this.widgets.multilineInput.inputField.focus(); }, 0);
         }
         else if (event.type == "input")
             this._autosizeMultilineInputWidget();
@@ -1586,7 +1586,7 @@ const ItemList = Class("ItemList", {
 
         // FIXME: Belongs elsewhere.
         commandline.updateOutputHeight(false);
-        this.setTimeout(function () { this._container.height -= commandline.getSpaceNeeded(); }, 0);
+        this.timeout(function () { this._container.height -= commandline.getSpaceNeeded(); }, 0);
     },
 
     _getCompletion: function (index) this._completionElements.snapshotItem(index - this._startIndex),
@@ -1627,7 +1627,7 @@ const ItemList = Class("ItemList", {
             this._divNodes.completions.appendChild(context.cache.nodes.root);
         }, this);
 
-        setTimeout(this.closure._autoSize, 0);
+        this.timeout(this._autoSize, 0);
     },
 
     /**

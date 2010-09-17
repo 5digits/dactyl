@@ -409,7 +409,7 @@ const Editor = Module("editor", {
             (function next() {
                 textBox.style.backgroundColor = colors.shift();
                 if (colors.length > 0)
-                    setTimeout(next, 100);
+                    util.timeout(next, 100);
             })();
         }
 

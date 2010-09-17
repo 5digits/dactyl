@@ -182,7 +182,7 @@ const StatusLine = Module("statusline", {
     updateTabCount: function updateTabCount(delayed) {
         if (dactyl.has("tabs")) {
             if (delayed) {
-                this.setTimeout(function () this.updateTabCount(false), 0);
+                this.timeout(function () this.updateTabCount(false), 0);
                 return;
             }
 

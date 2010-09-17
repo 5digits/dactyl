@@ -80,7 +80,7 @@ const Mail = Module("mail", {
             return void dactyl.beep();
 
         (copy ? MsgCopyMessage : MsgMoveMessage)(folders[0]);
-        setTimeout(function () {
+        util.timeout(function () {
             dactyl.echomsg(count + " message(s) " + (copy ? "copied" : "moved") + " to " + folders[0].prettyName, 1);
         }, 100);
     },

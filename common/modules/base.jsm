@@ -528,16 +528,15 @@ Class.prototype = {
     toString: function () "[instance " + this.constructor.name + "]",
 
     /**
-     * Exactly like {@see nsIDOMWindow#setTimeout}, except that it
-     * preserves the value of 'this' on invocation of 'callback'.
+     * Executes 'callback' after 'timeout' milliseconds. The value of
+     * 'this' is preserved in the invocation of 'callback'.
      *
      * @param {function} callback The function to call after 'timeout'
-     * @param {number} timeout The timeout, in seconds, to wait
+     * @param {number} timeout The time, in milliseconds, to wait
      *     before calling 'callback'.
-     * @returns {integer} The ID of this timeout, to be passed to
-     *     {@see nsIDOMWindow#clearTimeout}.
+     * @returns {nsITimer} The timer which backs this timeout.
      */
-    setTimeout: function (callback, timeout) {
+    timeout: function (callback, timeout) {
         const self = this;
         let notify = { notify: function notify(timer) { callback.call(self) } };
         let timer = services.create("timer");

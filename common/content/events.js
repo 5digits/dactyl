@@ -74,8 +74,8 @@ const Events = Module("events", {
         };
 
         // load all macros
-        // setTimeout needed since io. is loaded after events.
-        setTimeout(function () {
+        // util.timeout needed since io. is loaded after events.
+        this.timeout(function () {
             try {
                 let dirs = io.getRuntimeDirectories("macros");
 
@@ -849,7 +849,7 @@ const Events = Module("events", {
                 events.feedingKeys = false;
                 if (modes.isReplaying) {
                     modes.isReplaying = false;
-                    this.setTimeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
+                    this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
                 }
             }
             else

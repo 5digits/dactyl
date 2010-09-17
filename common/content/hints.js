@@ -412,7 +412,7 @@ const Hints = Module("hints", {
 
             // animate the disappearance of the first hint
             if (timeout && firstElem)
-                setTimeout(function () { firstElem.removeAttributeNS(NS.uri, "highlight"); }, timeout);
+                this.timeout(function () { firstElem.removeAttributeNS(NS.uri, "highlight"); }, timeout);
         }
         styles.removeSheet(true, "hint-positions");
 
@@ -465,7 +465,7 @@ const Hints = Module("hints", {
             // force a possible mode change, based on whether an input field has focus
             events.onFocusChange();
 
-        this.setTimeout(function () {
+        this.timeout(function () {
             if (modes.extended & modes.HINTS)
                 modes.reset();
             this._hintMode.action(elem, elem.href || "", this._extendedhintCount);
@@ -483,7 +483,7 @@ const Hints = Module("hints", {
         if (this._hintNumber > 0 && this._hintNumber * 10 <= this._validHints.length) {
             let timeout = options["hinttimeout"];
             if (timeout > 0)
-                this._activeTimeout = this.setTimeout(function () { this._processHints(true); }, timeout);
+                this._activeTimeout = this.timeout(function () { this._processHints(true); }, timeout);
         }
         else // we have a unique hint
             this._processHints(true);
@@ -998,7 +998,7 @@ const Hints = Module("hints", {
                             context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints._hintModes))];
                         },
                         onChange: function () { modes.pop(); },
-                        onCancel: function (arg) { arg && setTimeout(function () hints.show(arg), 0); }
+                        onCancel: function (arg) { arg && util.timeout(function () hints.show(arg), 0); }
                     });
             }, { count: true });
     },

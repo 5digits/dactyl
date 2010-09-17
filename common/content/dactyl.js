@@ -129,7 +129,7 @@ const Dactyl = Module("dactyl", {
             // NOTE: this doesn't seem to work in FF3 with full box dimensions
             popup.openPopup(win, "overlap", 1, 1, false, false);
             popup.sizeTo(width - 2, height - 2);
-            setTimeout(function () { popup.hidePopup(); }, 20);
+            util.timeout(function () { popup.hidePopup(); }, 20);
         }
         else {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);
@@ -1888,7 +1888,7 @@ const Dactyl = Module("dactyl", {
         // first time intro message
         const firstTime = "extensions." + config.name.toLowerCase() + ".firsttime";
         if (options.getPref(firstTime, true)) {
-            setTimeout(function () {
+            util.timeout(function () {
                 dactyl.help();
                 options.setPref(firstTime, false);
             }, 1000);
@@ -1907,7 +1907,7 @@ const Dactyl = Module("dactyl", {
 
         // finally, read the RC file and source plugins
         // make sourcing asynchronous, otherwise commands that open new tabs won't work
-        setTimeout(function () {
+        util.timeout(function () {
             let extensionName = config.name.toUpperCase();
             let init = services.get("environment").get(extensionName + "_INIT");
             let rcFile = io.getRCFile("~");

@@ -38,7 +38,7 @@ const Tabs = Module("tabs", {
         statusline.updateTabCount(true);
         this.updateSelectionHistory();
         if (options["focuscontent"])
-            setTimeout(function () { dactyl.focusContent(true); }, 10); // just make sure, that no widget has focus
+            this.timeout(function () { dactyl.focusContent(true); }, 10); // just make sure, that no widget has focus
     },
 
     get allTabs() Array.slice(config.tabbrowser.tabContainer.childNodes),

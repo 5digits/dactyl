@@ -270,7 +270,7 @@ const Player = Module("player", {
      */
     searchViewAgain: function searchViewAgain(reverse) {
         function echo(str) {
-            setTimeout(function () {
+            this.timeout(function () {
                 commandline.echo(str, commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES | commandline.FORCE_SINGLELINE);
             }, 0);
         }

@@ -185,7 +185,7 @@ const Buffer = Module("buffer", {
                 // hacky way to get rid of "Transfering data from ..." on sites with frames
                 // when you click on a link inside a frameset, because asyncUpdateUI
                 // is not triggered there (Gecko bug?)
-                setTimeout(function () { statusline.updateUrl(); }, 10);
+                this.timeout(function () { statusline.updateUrl(); }, 10);
                 return;
             }
 
@@ -224,7 +224,7 @@ const Buffer = Module("buffer", {
                     // don't reset mode if a frame of the frameset gets reloaded which
                     // is not the focused frame
                     if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow) {
-                        setTimeout(function () { modes.reset(false); },
+                        util.timeout(function () { modes.reset(false); },
                             dactyl.mode == modes.HINTS ? 500 : 0);
                     }
                 }
@@ -264,7 +264,7 @@ const Buffer = Module("buffer", {
             autocommands.trigger("LocationChange", { url: buffer.URL });
 
             // if this is not delayed we get the position of the old buffer
-            setTimeout(function () {
+            util.timeout(function () {
                 statusline.updateBufferPosition();
                 statusline.updateZoomLevel();
                 modes.show(); // Clear the status line.
@@ -273,7 +273,7 @@ const Buffer = Module("buffer", {
         // called at the very end of a page load
         asyncUpdateUI: function asyncUpdateUI() {
             asyncUpdateUI.superapply(this, arguments);
-            setTimeout(function () { statusline.updateUrl(); }, 100);
+            util.timeout(function () { statusline.updateUrl(); }, 100);
         },
         setOverLink: function setOverLink(link, b) {
             setOverLink.superapply(this, arguments);
@@ -843,11 +843,11 @@ const Buffer = Module("buffer", {
         let indicator = util.xmlToDom(<div highlight="FrameIndicator"/>, doc);
         doc.body.appendChild(indicator);
 
-        setTimeout(function () { doc.body.removeChild(indicator); }, 500);
+        util.timeout(function () { doc.body.removeChild(indicator); }, 500);
 
         // Doesn't unattach
         //doc.body.setAttributeNS(NS.uri, "activeframe", "true");
-        //setTimeout(function () { doc.body.removeAttributeNS(NS.uri, "activeframe"); }, 500);
+        //util.timeout(function () { doc.body.removeAttributeNS(NS.uri, "activeframe"); }, 500);
     },
 
     // similar to pageInfo
