@@ -13,11 +13,21 @@ files="$@"
 stage="$top/${jar%.*}"
 mkdir -p $stage
 
-getfiles () {
+if hg root >/dev/null 2>&1
+then
+    root="$(hg root)"; mf="$(hg mf)"
+    find() {
+        set -x
+        echo "$mf" | sed -n "s!$(pwd | sed "s!$root/\?!!")/\?!!p" |
+            grep "^$1"
+    }
+fi
+
+getfiles() {
     filter="\.($(echo $1 | tr ' ' '|'))$"; shift
     find "$@" -not -path '*\.hg*' 2>/dev/null | grep -E "$filter" || true
 }
-copytext () {
+copytext() {
     sed -e "s,@VERSION@,$VERSION,g" \
         -e "s,@DATE@,$BUILD_DATE,g" \
         <"$1" >"$2"
@@ -56,3 +66,4 @@ done
 (set -e; cd $stage; zip -9r "$top/$jar" *) || exit 1
 rm -rf "$stage"
 
+# vim:se ft=sh sts=4 sw=4 et:
