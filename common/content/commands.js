@@ -877,45 +877,15 @@ const Commands = Module("commands", {
 
         while (str.length && !/^\s/.test(str)) {
             let res;
-
-            switch (Commands.QUOTE_STYLE) {
-            case "vim-sucks":
-                if (res = str.match = str.match(/^()((?:[^\\\s]|\\.)+)((?:\\$)?)/))
-                    arg += res[2].replace(/\\(.)/g, "$1");
+            if ((res = str.match = str.match(/^()((?:[^\\\s"']|\\.)+)((?:\\$)?)/)))
+                arg += res[2].replace(/\\(.)/g, "$1");
+            else if ((res = str.match(/^(")((?:[^\\"]|\\.)*)("?)/)))
+                arg += eval(res[0] + (res[3] ? "" : '"'));
+            else if ((res = str.match(/^(')((?:[^']|'')*)('?)/)))
+                arg += res[2].replace("''", "'", "g");
+            else
                 break;
 
-            case "pentadactyl":
-                if ((res = str.match(/^()((?:[^\\\s"']|\\.)+)((?:\\$)?)/)))
-                    arg += res[2].replace(/\\(.)/g, "$1");
-                else if ((res = str.match(/^(")((?:[^\\"]|\\.)*)("?)/)))
-                    arg += eval(res[0] + (res[3] ? "" : '"'));
-                else if ((res = str.match(/^(')((?:[^\\']|\\.)*)('?)/)))
-                    arg += res[2].replace(/\\(.)/g, function (n0, n1) /[\\']/.test(n1) ? n1 : n0);
-                break;
-
-            case "rc-ish":
-                if ((res = str.match = str.match(/^()((?:[^\\\s"']|\\.)+)((?:\\$)?)/)))
-                    arg += res[2].replace(/\\(.)/g, "$1");
-                else if ((res = str.match(/^(")((?:[^\\"]|\\.)*)("?)/)))
-                    arg += eval(res[0] + (res[3] ? "" : '"'));
-                else if ((res = str.match(/^(')((?:[^']|'')*)('?)/)))
-                    arg += res[2].replace("''", "'", "g");
-                break;
-
-            case "pythonesque":
-                if ((res = str.match = str.match(/^()((?:[^\\\s"']|\\.)+)((?:\\$)?)/)))
-                    arg += res[2].replace(/\\(.)/g, "$1");
-                else if ((res = str.match(/^(""")((?:.?.?[^"])*)((?:""")?)/)))
-                    arg += res[2];
-                else if ((res = str.match(/^(")((?:[^\\"]|\\.)*)("?)/)))
-                    arg += eval(res[0] + (res[3] ? "" : '"'));
-                else if ((res = str.match(/^(')((?:[^\\']|\\.)*)('?)/)))
-                    arg += res[2].replace(/\\(.)/g, function (n0, n1) /[\\']/.test(n1) ? n1 : n0);
-                break;
-            }
-
-            if (!res)
-                break;
             if (!res[3])
                 quote = res[1];
             if (!res[1])
@@ -1036,7 +1006,7 @@ const Commands = Module("commands", {
                             completeOpt = completeOpt.substr(7);
                             completeFunc = function () {
                                 try {
-                                    var completer = dactyl.eval(completeOpt);
+                                    var completer = dactyl.usereval(completeOpt);
 
                                     if (!callable(completer))
                                         throw new TypeError("User-defined custom completer " + completeOpt.quote() + " is not a function");

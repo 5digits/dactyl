@@ -1352,7 +1352,7 @@ const CommandLine = Module("commandline", {
     }),
 
     /**
-     * eval() a JavaScript expression and return a string suitable
+     * Evaluate a JavaScript expression and return a string suitable
      * to be echoed.
      *
      * @param {string} arg
@@ -1364,7 +1364,7 @@ const CommandLine = Module("commandline", {
             return "";
 
         try {
-            arg = dactyl.eval(arg);
+            arg = dactyl.usereval(arg);
         }
         catch (e) {
             dactyl.echoerr(e);

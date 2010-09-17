@@ -298,7 +298,7 @@ const Dactyl = Module("dactyl", {
         services.get("subscriptLoader").loadSubScript(uri, context);
     },
 
-    eval: function (str, context) {
+    usereval: function (str, context) {
         try {
             if (!context)
                 context = userContext;
@@ -323,10 +323,21 @@ const Dactyl = Module("dactyl", {
         }
     },
 
+    /**
+     * Acts like the Function builtin, but the code executes in the
+     * userContext global.
+     */
+    userfunc: function () {
+        return this.userEval(
+            "(function (" +
+            Array.slice(arguments, 0, -1).join(", ") +
+            ") { " + arguments[arguments.length - 1] + " })")
+    },
+
     // partial sixth level expression evaluation
     // TODO: what is that really needed for, and where could it be used?
     //       Or should it be removed? (c) Viktor
-    //       Better name?  See other dactyl.eval()
+    //       Better name?  See other dactyl.usereval()
     //       I agree, the name is confusing, and so is the
     //           description --Kris
     evalExpression: function (string) {
@@ -1360,14 +1371,9 @@ const Dactyl = Module("dactyl", {
 
         commands.add(["exe[cute]"],
             "Execute the argument as an Ex command",
-            // FIXME: this should evaluate each arg separately then join
-            // with " " before executing.
-            // E.g. :execute "source" io.getRCFile().path
-            // Need to fix commands.parseArgs which currently strips the quotes
-            // from quoted args
             function (args) {
                 try {
-                    let cmd = dactyl.eval(args.string);
+                    let cmd = dactyl.usereval(args.string);
                     dactyl.execute(cmd, null, true);
                 }
                 catch (e) {
@@ -1598,7 +1604,7 @@ const Dactyl = Module("dactyl", {
         });
 
         commands.add(["javas[cript]", "js"],
-            "Run a JavaScript command through eval()",
+            "Evaluate a JavaScript string",
             function (args) {
                 if (args.bang) { // open JavaScript console
                     dactyl.open("chrome://global/content/console.xul",
@@ -1606,7 +1612,7 @@ const Dactyl = Module("dactyl", {
                 }
                 else {
                     try {
-                        dactyl.eval(args.string);
+                        dactyl.usereval(args.string);
                     }
                     catch (e) {
                         dactyl.echoerr(e);
@@ -1699,7 +1705,7 @@ const Dactyl = Module("dactyl", {
                 if (args[0] == ":")
                     var method = function () dactyl.execute(args, null, true);
                 else
-                    method = dactyl.eval("(function () {" + args + "})");
+                    method = dactyl.userfunction(args);
 
                 try {
                     if (count > 1) {

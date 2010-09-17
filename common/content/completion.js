@@ -296,6 +296,8 @@ const CompletionContext = Class("CompletionContext", {
         for (let i in Iterator(this.keys)) {
             let [k, v] = i;
             if (typeof v == "string" && /^[.[]/.test(v))
+                // This is only allowed to be a simple accessor, and shouldn't
+                // reference any variables. Don't bother with eval context.
                 v = Function("i", "return i" + v);
             if (typeof v == "function")
                 res.__defineGetter__(k, function () Class.replaceProperty(this, k, v(this.item)));

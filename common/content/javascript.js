@@ -59,8 +59,8 @@ const JavaScript = Module("javascript", {
         return completions;
     },
 
-    eval: function evalstr(arg, key, tmp) {
-        let cache = this.context.cache.eval;
+    evalled: function evalled(arg, key, tmp) {
+        let cache = this.context.cache.evalled;
         let context = this.context.cache.evalContext;
 
         if (!key)
@@ -70,7 +70,7 @@ const JavaScript = Module("javascript", {
 
         context[JavaScript.EVAL_TMP] = tmp;
         try {
-            return cache[key] = dactyl.eval(arg, context);
+            return cache[key] = dactyl.usereval(arg, context);
         }
         catch (e) {
             this.context.message = "Error: " + e;
@@ -157,7 +157,7 @@ const JavaScript = Module("javascript", {
         let length = this._str.length;
         for (; this._i < length; this._lastChar = this._c, this._i++) {
             this._c = this._str[this._i];
-            if (this._last == '"' || this._last == "'" || this._last == "/") {
+            if (/['"\/]/.test(this._last)) {
                 if (this._lastChar == "\\") { // Escape. Skip the next char, whatever it may be.
                     this._c = "";
                     this._i++;
@@ -223,7 +223,7 @@ const JavaScript = Module("javascript", {
     // Don't eval any function calls unless the user presses tab.
     _checkFunction: function (start, end, key) {
         let res = this._functions.some(function (idx) idx >= start && idx < end);
-        if (!res || this.context.tabPressed || key in this.cache.eval)
+        if (!res || this.context.tabPressed || key in this.cache.evalled)
             return false;
         this.context.waitingForTab = true;
         return true;
@@ -260,7 +260,7 @@ const JavaScript = Module("javascript", {
             }
 
             prev = dot + 1;
-            obj = this.eval(s, cacheKey, obj);
+            obj = this.evalled(s, cacheKey, obj);
         }
         return [[obj, cacheKey]];
     },
@@ -378,7 +378,7 @@ const JavaScript = Module("javascript", {
         // After the opening [ upto the opening ", plus '' to take care of any operators before it
         let key = this._str.substring(this._get(-2, 0, "statements"), this._get(-1, null, "offset")) + "''";
         // Now eval the key, to process any referenced variables.
-        return this.eval(key);
+        return this.evalled(key);
     },
 
     get cache() this.context.cache,
@@ -397,7 +397,7 @@ const JavaScript = Module("javascript", {
             return null;
         }
 
-        this.context.getCache("eval", Object);
+        this.context.getCache("evalled", Object);
         this.context.getCache("evalContext", function () ({ __proto__: userContext }));;
 
         // Okay, have parse stack. Figure out what we're completing.
@@ -410,7 +410,7 @@ const JavaScript = Module("javascript", {
             let key = this._str.substring(prev, v + 1);
             if (this._checkFunction(prev, v, key))
                 return null;
-            this.eval(key);
+            this.evalled(key);
             prev = v + 1;
         }
 
@@ -425,6 +425,8 @@ const JavaScript = Module("javascript", {
             // The top of the stack is the sting we're completing.
             // Wrap it in its delimiters and eval it to process escape sequences.
             let string = this._str.substring(this._get(-1).offset + 1, this._lastIdx);
+            // This is definitely a properly quoted string.
+            // Just eval it normally.
             string = eval(this._last + string + this._last);
 
             // Is this an object accessor?
@@ -476,7 +478,7 @@ const JavaScript = Module("javascript", {
                 for (let [i, idx] in Iterator(this._get(-2).comma)) {
                     let arg = this._str.substring(prev + 1, idx);
                     prev = idx;
-                    util.memoize(args, i, function () self.eval(arg));
+                    util.memoize(args, i, function () self.evalled(arg));
                 }
                 let key = this._getKey();
                 args.push(key + string);
