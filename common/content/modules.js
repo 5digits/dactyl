@@ -89,8 +89,8 @@ window.addEventListener("load", function onLoad() {
     const loaded = set(["init"]);
 
     function init(module) {
-        function init(func)
-            function () func.call(module, dactyl, modules, window);
+        function init(func, mod)
+            function () defmodule.time(module.name || module.constructor.name, mod, func, module, dactyl, modules, window);
 
         set.add(loaded, module.constructor.name);
         for (let [mod, func] in Iterator(module.INIT)) {
@@ -98,7 +98,7 @@ window.addEventListener("load", function onLoad() {
                 init(func)();
             else {
                 deferredInit[mod] = deferredInit[mod] || [];
-                deferredInit[mod].push(init(func));
+                deferredInit[mod].push(init(func, mod));
             }
         }
     }
@@ -121,21 +121,19 @@ window.addEventListener("load", function onLoad() {
             for (let dep in values(module.requires))
                 load(Module.constructors[dep], module.name);
 
-            dump("Load" + (isstring(prereq) ? " " + prereq + " dependency: " : ": ") + module.name);
+            defmodule.loadLog.push("Load" + (isstring(prereq) ? " " + prereq + " dependency: " : ": ") + module.name);
             if (frame && frame.filename)
-                dump(" from: " + frame.filename + ":" + frame.lineNumber);
+                defmodule.loadLog.push(" from: " + frame.filename + ":" + frame.lineNumber);
 
             delete modules[module.name];
-            modules[module.name] = module();
+            modules[module.name] = defmodule.time(module.name, "init", module);
 
             init(modules[module.name]);
             for (let [, fn] in iter(deferredInit[module.name] || []))
                 fn();
         }
         catch (e) {
-            dump("Loading " + (module && module.name) + ": " + e);
-            if (e.stack)
-                dump(e.stack);
+            dump("Loading " + (module && module.name) + ": " + e + "\n" + (e.stack || ""));
         }
         return modules[module.name];
     }

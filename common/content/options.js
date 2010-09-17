@@ -327,7 +327,7 @@ const Option = Class("Option", {
         re.result = arguments.length == 2 ? result : !bang;
         return re;
     },
-    unparseRegex: function (re) re.bang + re.source + (typeof re.result == "string" ? "=" + re.result : ""),
+    unparseRegex: function (re) re.bang + re.source + (typeof re.result == "string" ? ":" + re.result : ""),
 
     getKey: {
         stringlist: function (k) this.values.indexOf(k) >= 0,
@@ -342,7 +342,7 @@ const Option = Class("Option", {
     joinValues: {
         charlist:    function (vals) vals.join(""),
         stringlist:  function (vals) vals.join(","),
-        stringmap:   function (vals) [k + "=" + v for ([k, v] in Iterator(vals))].join(","),
+        stringmap:   function (vals) [k + ":" + v for ([k, v] in Iterator(vals))].join(","),
         regexlist:   function (vals) vals.map(Option.unparseRegex).join(","),
     },
 
@@ -351,10 +351,10 @@ const Option = Class("Option", {
         boolean:    function (value) value == "true" || value == true ? true : false,
         charlist:   function (value) Array.slice(value),
         stringlist: function (value) (value === "") ? [] : value.split(","),
-        stringmap:  function (value) array(v.split(":") for (v in values(value.split(",")))).toObject(),
+        stringmap:  function (value) array(util.split(v, /:/g, 2) for (v in values(value.split(",")))).toObject(),
         regexlist:  function (value) (value === "") ? [] : value.split(",").map(Option.parseRegex),
-        regexmap:   function (value) value.split(",").map(function (v) v.split(":"))
-                                                     .map(function ([k, v]) v != null ? Option.parseRegex(k, v) : Option.parseRegex('.?', k))
+        regexmap:   function (value) value.split(",").map(function (v) util.split(v, /:/g, 2))
+                                                     .map(function ([k, v]) v != null ? Option.parseRegex(k, v) : Option.parseRegex(".?", k))
     },
 
     ops: {
@@ -388,7 +388,7 @@ const Option = Class("Option", {
 
         stringmap: function (operator, values, scope, invert) {
             values = Array.concat(values);
-            orig = [k + "=" + v for ([k, v] in Iterator(this.values))];
+            orig = [k + ":" + v for ([k, v] in Iterator(this.values))];
 
             switch (operator) {
             case "+":
@@ -1321,7 +1321,7 @@ const Options = Module("options", {
             case "regexmap":
                 let vals = context.filter.split(",");
                 target = vals.pop() || "";
-                len = target.length - (target.indexOf("=") + 1);
+                len = target.length - (target.indexOf(":") + 1);
                 break;
             case "charlist":
                 len = 0;

@@ -314,7 +314,7 @@ lookup:
      */
     source: function (filename, silent) {
         let wasSourcing = this.sourcing;
-        dactyl.dump("sourcing " + filename);
+        defmodule.loadLog.push("sourcing " + filename);
         let time = Date.now();
         try {
             var file = io.File(filename);
@@ -432,7 +432,7 @@ lookup:
                 dactyl.echoerr(message);
         }
         finally {
-            dactyl.dump("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
+            defmodule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
             this.sourcing = wasSourcing;
         }
     },

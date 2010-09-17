@@ -17,7 +17,7 @@ let currentModule;
 function defmodule(name, module, params) {
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
-    dump("defmodule " + name + "\n");
+    defmodule.loadLog.push("defmodule " + name);
     for(let [, mod] in Iterator(params.require || []))
         require(module, mod);
 
@@ -30,10 +30,22 @@ function defmodule(name, module, params) {
         }
     currentModule = module;
 }
+defmodule.loadLog = [];
+// Object.defineProperty(defmodule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val } });
 defmodule.modules = [];
+defmodule.times = {};
+defmodule.time = function (major, minor, func, self) {
+    let time = Date.now();
+    let res = func.apply(self, Array.slice(arguments, 4));
+    let delta = Date.now() - time;
+    defmodule.times[major] = (defmodule.times[major] || 0) + delta;
+    if (minor)
+        defmodule.times[major + ":" + minor] = (defmodule.times[major + ":" + minor] || 0) + delta;
+    return res;
+}
 
 function endmodule() {
-    dump("endmodule " + currentModule.NAME + "\n");
+    defmodule.loadLog.push("endmodule " + currentModule.NAME);
     loaded[currentModule.NAME] = 1;
     for(let [, mod] in Iterator(use[currentModule.NAME] || []))
         require(mod, currentModule.NAME, "use");
@@ -41,7 +53,7 @@ function endmodule() {
 
 function require(obj, name, from) {
     try {
-        dump((from || "require") + ": loading " + name + " into " + obj.NAME + "\n");
+        defmodule.loadLog.push((from || "require") + ": loading " + name + " into " + obj.NAME);
         Cu.import("resource://dactyl/" + name + ".jsm", obj);
     }
     catch (e) {

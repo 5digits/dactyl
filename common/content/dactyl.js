@@ -842,7 +842,7 @@ const Dactyl = Module("dactyl", {
             urls = [str];
 
         return urls.map(function (url) {
-            if (/^[.~]?\//.test(url)) {
+            if (/^(\.{0,2}|~)\//.test(url)) {
                 try {
                     // Try to find a matching file.
                     let file = io.File(url);
@@ -906,14 +906,7 @@ const Dactyl = Module("dactyl", {
             return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {
-            if (e instanceof FailedAssertion) {
-                if (e.message)
-                    dactyl.echoerr(e.message);
-                else
-                    dactyl.beep();
-            }
-            else
-                dactyl.reportError(e);
+            dactyl.reportError(e);
             return undefined;
         }
     },
@@ -925,6 +918,14 @@ const Dactyl = Module("dactyl", {
      * @param {Object} error The error object.
      */
     reportError: function (error) {
+        if (error instanceof FailedAssertion) {
+            if (error.message)
+                dactyl.echoerr(error.message);
+            else
+                dactyl.beep();
+            return;
+        }
+
         if (Cu.reportError)
             Cu.reportError(error);
 

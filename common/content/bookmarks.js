@@ -366,6 +366,7 @@ const Bookmarks = Module("bookmarks", {
                         type: CommandOption.INT
                     }
                 ]
+                // Not privateData, since we don't treat bookmarks as private
             });
 
         commands.add(["delbm[arks]"],
@@ -457,7 +458,7 @@ const Bookmarks = Module("bookmarks", {
             for (let val in Iterator(extra || [])) {
                 let [k, v] = val; // Need block scope here for the closure
                 if (v)
-                    context.filters.push(function (item) this._match(v, item[k]));
+                    context.filters.push(function (item) this.matchString(v, item[k]));
             }
             context.completions = bookmarkcache.bookmarks;
             completion.urls(context, tags);

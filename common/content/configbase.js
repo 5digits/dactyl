@@ -166,7 +166,7 @@ const ConfigBase = Class(ModuleBase, {
         GradientLeft    background-color: magenta;
         GradientRight   background-color: white;
 
-        Indicator   color: blue;
+        Indicator   color: blue; width: 1.5em; text-align: center;
         Filter      font-weight: bold;
 
         Keyword     color: red;

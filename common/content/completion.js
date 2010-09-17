@@ -295,14 +295,13 @@ const CompletionContext = Class("CompletionContext", {
         let res = {};
         for (let i in Iterator(this.keys)) {
             let [k, v] = i;
-            let _k = "_" + k;
             if (typeof v == "string" && /^[.[]/.test(v))
                 v = Function("i", "return i" + v);
             if (typeof v == "function")
-                res.__defineGetter__(k, function () _k in this ? this[_k] : (this[_k] = v(this.item)));
+                res.__defineGetter__(k, function () Class.replaceProperty(this, k, v(this.item)));
             else
-                res.__defineGetter__(k, function () _k in this ? this[_k] : (this[_k] = this.item[v]));
-            res.__defineSetter__(k, function (val) this[_k] = val);
+                res.__defineGetter__(k, function () Class.replaceProperty(this, k, this.item[v]));
+            res.__defineSetter__(k, function (val) Class.replaceProperty(this, k, val));
         }
         return res;
     },
@@ -369,6 +368,15 @@ const CompletionContext = Class("CompletionContext", {
 
         let self = this;
         delete this._substrings;
+
+        if (this.ignoreCase)
+            this.matchString = this.anchored ?
+                function (filter, str) String.toLowerCase(str).indexOf(filter.toLowerCase()) == 0 :
+                function (filter, str) String.toLowerCase(str).indexOf(filter.toLowerCase()) >= 0;
+        else
+            this.matchString = this.anchored ?
+                function (filter, str) String.indexOf(str, filter) == 0 :
+                function (filter, str) String.indexOf(str, filter) >= 0;
 
         let proto = this.proto;
         let filtered = this.filterFunc(items.map(function (item) ({ __proto__: proto, item: item })));
@@ -543,19 +551,8 @@ const CompletionContext = Class("CompletionContext", {
         catch (e) {}
     },
 
-    // FIXME
-    _match: function _match(filter, str) {
-        if (this.ignoreCase) {
-            filter = filter.toLowerCase();
-            str = str.toLowerCase();
-        }
-        if (this.anchored)
-            return str.substr(0, filter.length) == filter;
-        return str.indexOf(filter) > -1;
-    },
-
     match: function match(str) {
-        return this._match(this.filter, str);
+        return this.matchString(this.filter, str);
     },
 
     reset: function reset() {
@@ -614,8 +611,7 @@ const CompletionContext = Class("CompletionContext", {
     }
 }, {
     Sort: {
-        number: function (a, b) parseInt(b) - parseInt(a) || String.localeCompare(a, b),
-
+        number: function (a, b) parseInt(a.text) - parseInt(b.text) || String.localeCompare(a.text, b.text),
         unsorted: null
     },
 

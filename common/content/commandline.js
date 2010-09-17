@@ -105,7 +105,8 @@ const CommandLine = Module("commandline", {
         this._autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
             if (!events.feedingKeys && self._completions && options.get("autocomplete").values.length) {
                 self._completions.complete(true, false);
-                self._completions.itemList.show();
+                if (self._completions)
+                    self._completions.itemList.show();
             }
         });
 

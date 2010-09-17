@@ -167,9 +167,9 @@ const Events = Module("events", {
      * @param {string} macro The name for the macro.
      */
     startRecording: function (macro) {
-            // TODO: ignore this like Vim?
-            dactyl.assert(/[a-zA-Z0-9]/.test(macro),
-            "E354: Invalid register name: '" + macro + "'");
+        // TODO: ignore this like Vim?
+        dactyl.assert(/[a-zA-Z0-9]/.test(macro),
+                      "E354: Invalid register name: '" + macro + "'");
 
         modes.isRecording = true;
 

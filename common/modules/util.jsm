@@ -699,12 +699,11 @@ const Util = Module("Util", {
         if (!re.global)
             re = RegExp(re.source || re, "g");
         let match, start = 0, res = [];
-        while ((match = re.exec(str)) && --limit && match[0].length) {
+        while (--limit && (match = re.exec(str)) && match[0].length) {
             res.push(str.substring(start, match.index));
             start = match.index + match[0].length;
         }
-        if (limit)
-            res.push(str.substring(start));
+        res.push(str.substring(start));
         return res;
     },
 

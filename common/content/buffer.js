@@ -1292,16 +1292,13 @@ const Buffer = Module("buffer", {
             context.title = ["Stylesheet", "Location"];
 
             // unify split style sheets
-            let styles = {};
+            let styles = array.toObject([s.title, []] for (s in values(buffer.alternateStyleSheets)));
 
             buffer.alternateStyleSheets.forEach(function (style) {
-                if (!(style.title in styles))
-                    styles[style.title] = [];
-
                 styles[style.title].push(style.href || "inline");
             });
 
-            context.completions = [[s, styles[s].join(", ")] for (s in styles)];
+            context.completions = [[title, href.join(", ")] for ([title, href] in Iterator(styles))];
         };
 
         completion.buffer = function buffer(context) {
@@ -1327,7 +1324,7 @@ const Buffer = Module("buffer", {
                 let process = context.process[0];
                 context.process = [function (item, text)
                         <>
-                            <span highlight="Indicator" style="display: inline-block; width: 1.5em; text-align: center">{item.item.indicator}</span>
+                            <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
                             { process.call(this, item, text) }
                         </>];
 
