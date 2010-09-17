@@ -27,12 +27,14 @@ const Services = Module("Services", {
         this.add("environment",         "@mozilla.org/process/environment;1",               Ci.nsIEnvironment);
         this.add("extensionManager",    "@mozilla.org/extensions/manager;1",                Ci.nsIExtensionManager);
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           Ci.nsIFaviconService);
-        this.add("history",             "@mozilla.org/browser/global-history;2",            [Ci.nsIBrowserHistory, Ci.nsIGlobalHistory3, Ci.nsINavHistoryService]);
+        this.add("history",             "@mozilla.org/browser/global-history;2",            [Ci.nsIBrowserHistory, Ci.nsIGlobalHistory3,
+                                                                                             Ci.nsINavHistoryService, Ci.nsPIPlacesDatabase]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                Ci.nsIIOService);
         this.add("json",                "@mozilla.org/dom/json;1",                          Ci.nsIJSON, "createInstance");
         this.add("livemark",            "@mozilla.org/browser/livemark-service;2",          Ci.nsILivemarkService);
         this.add("observer",            "@mozilla.org/observer-service;1",                  Ci.nsIObserverService);
         this.add("pref",                "@mozilla.org/preferences-service;1",               [Ci.nsIPrefBranch, Ci.nsIPrefBranch2, Ci.nsIPrefService]);
+        this.add("privateBrowsing",     "@mozilla.org/privatebrowsing;1",                   Ci.nsIPrivateBrowsingService);
         this.add("profile",             "@mozilla.org/toolkit/profile-service;1",           Ci.nsIToolkitProfileService);
         this.add("runtime",             "@mozilla.org/xre/runtime;1",                       [Ci.nsIXULAppInfo, Ci.nsIXULRuntime]);
         this.add("rdf",                 "@mozilla.org/rdf/rdf-service;1",                   Ci.nsIRDFService);
@@ -41,9 +43,9 @@ const Services = Module("Services", {
         this.add("subscriptLoader",     "@mozilla.org/moz/jssubscript-loader;1",            Ci.mozIJSSubScriptLoader);
         this.add("tagging",             "@mozilla.org/browser/tagging-service;1",           Ci.nsITaggingService);
         this.add("threadManager",       "@mozilla.org/thread-manager;1",                    Ci.nsIThreadManager);
+        this.add("urifixup",            "@mozilla.org/docshell/urifixup;1",                 Ci.nsIURIFixup);
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
-        this.add("xulAppInfo",          "@mozilla.org/xre/app-info;1",                      Ci.nsIXULAppInfo);
 
         this.addClass("file",       "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
         this.addClass("file:",      "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
@@ -128,6 +130,6 @@ const Services = Module("Services", {
 
 endmodule();
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n");}
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:

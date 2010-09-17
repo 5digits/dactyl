@@ -178,7 +178,7 @@ const Mappings = Module("mappings", {
         modes = modes.slice();
         return (map for ([i, map] in Iterator(stack[modes.shift()].sort(function (m1, m2) String.localeCompare(m1.name, m2.name))))
             if (modes.every(function (mode) stack[mode].some(
-                        function (mapping) m.rhs == map.rhs && m.name == map.name))))
+                function (m) m.rhs == map.rhs && m.name == map.name))))
     },
 
     // NOTE: just normal mode for now

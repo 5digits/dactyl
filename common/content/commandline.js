@@ -23,36 +23,6 @@ const CommandLine = Module("commandline", {
         storage.newArray("history-search", { store: true, privateData: true });
         storage.newArray("history-command", { store: true, privateData: true });
 
-        // Really inideal.
-        let services = modules.services; // Storage objects are global to all windows, 'modules' isn't.
-        storage.newObject("sanitize", function () {
-            ({
-                CLEAR: "browser:purge-session-history",
-                QUIT:  "quit-application",
-                init: function () {
-                    services.get("observer").addObserver(this, this.CLEAR, false);
-                    services.get("observer").addObserver(this, this.QUIT, false);
-                },
-                observe: function (subject, topic, data) {
-                    switch (topic) {
-                    case this.CLEAR:
-                        ["search", "command"].forEach(function (mode) {
-                            CommandLine.History(null, mode).sanitize();
-                        });
-                        break;
-                    case this.QUIT:
-                        services.get("observer").removeObserver(this, this.CLEAR);
-                        services.get("observer").removeObserver(this, this.QUIT);
-                        break;
-                    }
-                }
-            }).init();
-        }, { store: false });
-        storage.addObserver("sanitize",
-            function (key, event, value) {
-                autocommands.trigger("Sanitize", {});
-            }, window);
-
         this._messageHistory = { //{{{
             _messages: [],
             get messages() {
@@ -71,6 +41,10 @@ const CommandLine = Module("commandline", {
                 this._messages = [];
             },
 
+            filter: function filter(fn, self) {
+                this._messages = this._messages.filter(fn, self);
+            },
+
             add: function add(message) {
                 if (!message)
                     return;
@@ -78,7 +52,9 @@ const CommandLine = Module("commandline", {
                 if (this._messages.length >= options["messages"])
                     this._messages.shift();
 
-                this._messages.push(message);
+                this._messages.push(update({
+                    timestamp: Date.now()
+                }, message));
             }
         }; //}}}
 
@@ -103,11 +79,13 @@ const CommandLine = Module("commandline", {
         });
 
         this._autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
-            if (!events.feedingKeys && self._completions && options.get("autocomplete").values.length) {
-                self._completions.complete(true, false);
-                if (self._completions)
-                    self._completions.itemList.show();
-            }
+            dactyl.trapErrors(function () {
+                if (!events.feedingKeys && self._completions && options.get("autocomplete").values.length) {
+                    self._completions.complete(true, false);
+                    if (self._completions)
+                        self._completions.itemList.show();
+                }
+            });
         });
 
         // This timer just prevents <Tab>s from queueing up when the
@@ -115,8 +93,10 @@ const CommandLine = Module("commandline", {
         // the completion list scrolling). Multiple <Tab> presses are
         // still processed normally, as the timer is flushed on "keyup".
         this._tabTimer = Timer(0, 0, function tabTell(event) {
-            if (self._completions)
-                self._completions.tab(event.shiftKey);
+            dactyl.trapErrors(function () {
+                if (self._completions)
+                    self._completions.tab(event.shiftKey);
+            });
         });
 
         /////////////////////////////////////////////////////////////////////////////}}}
@@ -213,7 +193,7 @@ const CommandLine = Module("commandline", {
      *
      * @returns {boolean}
      */
-    _commandShown: function () modes.main == modes.COMMAND_LINE &&
+    get commandVisible() modes.main == modes.COMMAND_LINE &&
             !(modes.extended & (modes.INPUT_MULTILINE | modes.OUTPUT_MULTILINE)),
 
     /**
@@ -255,7 +235,7 @@ const CommandLine = Module("commandline", {
 
         dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
 
-        if (!this._commandShown())
+        if (!this.commandVisible)
             commandline.hide();
 
         let field = this.widgets.message.inputField;
@@ -347,9 +327,9 @@ const CommandLine = Module("commandline", {
     get quiet() this._quiet,
     set quiet(val) {
         this._quiet = val;
-        Array.forEach(document.getElementById("dactyl-commandline").childNodes, function (node) {
+        Array.forEach(this.widgets.commandline.childNodes, function (node) {
             node.style.opacity = this._quiet || this._silent ? "0" : "";
-        });
+        }, this);
     },
 
     // @param type can be:
@@ -510,8 +490,11 @@ const CommandLine = Module("commandline", {
 
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
-        if (flags & this.APPEND_TO_MESSAGES)
-            this._messageHistory.add({ str: str, highlight: highlightGroup });
+        if (flags & this.APPEND_TO_MESSAGES) {
+            let message = isobject(str) ? str : { message: str };
+            this._messageHistory.add(update({ highlight: highlightGroup }, str));
+            str = message.message;
+        }
         if ((flags & this.ACTIVE_WINDOW) &&
             window != services.get("windowWatcher").activeWindow &&
             services.get("windowWatcher").activeWindow.dactyl)
@@ -625,12 +608,12 @@ const CommandLine = Module("commandline", {
             if (event.type == "blur") {
                 // prevent losing focus, there should be a better way, but it just didn't work otherwise
                 this.setTimeout(function () {
-                    if (this._commandShown() && event.originalTarget == this.widgets.command.inputField)
+                    if (this.commandVisible && event.originalTarget == this.widgets.command.inputField)
                         this.widgets.command.inputField.focus();
                 }, 0);
             }
             else if (event.type == "focus") {
-                if (!this._commandShown() && event.target == this.widgets.command.inputField) {
+                if (!this.commandVisible && event.target == this.widgets.command.inputField) {
                     event.target.blur();
                     dactyl.beep();
                 }
@@ -695,7 +678,7 @@ const CommandLine = Module("commandline", {
             }
         }
         catch (e) {
-            dactyl.reportError(e);
+            dactyl.reportError(e, true);
         }
     },
 
@@ -908,7 +891,7 @@ const CommandLine = Module("commandline", {
 
         // copy text to clipboard
         case "<C-y>":
-            util.copyToClipboard(win.getSelection());
+            dactyl.clipboardWrite(win.getSelection());
             break;
 
         // close the window
@@ -1032,7 +1015,7 @@ const CommandLine = Module("commandline", {
             if (/^\s*$/.test(str))
                 return;
             this.store.mutate("filter", function (line) (line.value || line) != str);
-            this.store.push({ value: str, timestamp: Date.now(), privateData: this.checkPrivate(str) });
+            this.store.push({ value: str, timestamp: Date.now()*1000, privateData: this.checkPrivate(str) });
             this.store.truncate(options["history"], true);
         },
         /**
@@ -1042,22 +1025,8 @@ const CommandLine = Module("commandline", {
         checkPrivate: function (str) {
             // Not really the ideal place for this check.
             if (this.mode == "command")
-                return (commands.get(commands.parseCommand(str)[1]) || {}).privateData;
+                return commands.hasPrivateData(str);
             return false;
-        },
-        /**
-         * Removes any private data from this history.
-         */
-        sanitize: function (timespan) {
-            let range = [0, Number.MAX_VALUE];
-            if (dactyl.has("sanitizer") && (timespan || options["sanitizetimespan"]))
-                range = Sanitizer.getClearRange(timespan || options["sanitizetimespan"]);
-
-            const self = this;
-            this.store.mutate("filter", function (item) {
-                let timestamp = (item.timestamp || Date.now()/1000) * 1000;
-                return !line.privateData || timestamp < self.range[0] || timestamp > self.range[1];
-            });
         },
         /**
          * Replace the current input field value.
@@ -1443,19 +1412,19 @@ const CommandLine = Module("commandline", {
         });
 
         commands.add(["mes[sages]"],
-            "Display previously given messages",
+            "Display previously shown messages",
             function () {
                 // TODO: are all messages single line? Some display an aggregation
                 //       of single line messages at least. E.g. :source
                 if (commandline._messageHistory.length == 1) {
                     let message = commandline._messageHistory.messages[0];
-                    commandline.echo(message.str, message.highlight, commandline.FORCE_SINGLELINE);
+                    commandline.echo(message.message, message.highlight, commandline.FORCE_SINGLELINE);
                 }
                 else if (commandline._messageHistory.length > 1) {
                     XML.ignoreWhitespace = false;
-                    let list = template.map(commandline._messageHistory.messages, function (message)
-                        <div highlight={message.highlight + " Message"}>{message.str}</div>);
-                    dactyl.echo(list, commandline.FORCE_MULTILINE);
+                    commandline.commandOutput(
+                        template.map(commandline._messageHistory.messages, function (message)
+                            <div highlight={message.highlight + " Message"}>{message.message}</div>));;
                 }
             },
             { argCount: "0" });
@@ -1471,7 +1440,8 @@ const CommandLine = Module("commandline", {
                 commandline.runSilently(function () dactyl.execute(args[0], null, true));
             }, {
                 completer: function (context) completion.ex(context),
-                literal: 0
+                literal: 0,
+                subCommand: 0
             });
     },
     mappings: function () {
@@ -1531,6 +1501,34 @@ const CommandLine = Module("commandline", {
         options.add(["showmode", "smd"],
             "Show the current mode in the command line",
             "boolean", true);
+    },
+    sanitizer: function () {
+        sanitizer.addItem("commandline", {
+            description: "Command-line and search history",
+            action: function (timespan, host) {
+                if (!host)
+                    storage["history-search"].mutate("filter", function (item) !timespan.contains(item.timestamp));
+                storage["history-command"].mutate("filter", function (item) 
+                    !(timespan.contains(item.timestamp) && (!host || commands.hasDomain(item.value, host))));
+            }
+        });
+        // Delete history-like items from the commandline and messages on history purge
+        sanitizer.addItem("history", {
+            action: function (timespan, host) {
+                storage["history-command"].mutate("filter", function (item) 
+                    !(timespan.contains(item.timestamp) && (host ? commands.hasDomain(item.value, host) : item.privateData)));
+                commandline._messageHistory.filter(function (item) !timespan.contains(item.timestamp * 1000) ||
+                    !item.domains && !item.privateData ||
+                    host && (!item.domains || !item.domains.some(function (d) util.isSubdomain(d, host))));
+            }
+        });
+        sanitizer.addItem("messages", {
+            description: "Saved :messages",
+            action: function (timespan, host) {
+                commandline._messageHistory.filter(function (item) !timespan.contains(item.timestamp * 1000) ||
+                    host && (!item.domains || !item.domains.some(function (d) util.isSubdomain(d, host))));
+            }
+        });
     },
     styles: function () {
         let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;

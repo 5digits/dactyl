@@ -572,7 +572,8 @@ const Tabs = Module("tabs", {
                 bang: true,
                 count: true,
                 completer: function (context) completion.buffer(context),
-                literal: 0
+                literal: 0,
+                privateData: true
             });
 
         commands.add(["keepa[lt]"],
@@ -589,7 +590,8 @@ const Tabs = Module("tabs", {
             }, {
                 argCount: "+",
                 completer: function (context) completion.ex(context),
-                literal: 0
+                literal: 0,
+                subCommand: 0
             });
 
         // TODO: this should open in a new tab positioned directly after the current one, not at the end
@@ -602,7 +604,8 @@ const Tabs = Module("tabs", {
             }, {
                 argCount: "+",
                 completer: function (context) completion.ex(context),
-                literal: 0
+                literal: 0,
+                subCommand: 0
             });
 
         commands.add(["tabd[o]", "bufd[o]"],
@@ -615,7 +618,8 @@ const Tabs = Module("tabs", {
             }, {
                 argCount: "1",
                 completer: function (context) completion.ex(context),
-                literal: 0
+                literal: 0,
+                subCommand: 0
             });
 
         commands.add(["tabl[ast]", "bl[ast]"],
@@ -705,7 +709,8 @@ const Tabs = Module("tabs", {
                     bang: true,
                     count: true,
                     completer: function (context) completion.buffer(context),
-                    literal: 0
+                    literal: 0,
+                    privateData: true
                 });
 
             commands.add(["buffers", "files", "ls", "tabs"],
@@ -763,6 +768,7 @@ const Tabs = Module("tabs", {
                 }, {
                     bang: true,
                     completer: function (context) completion.url(context),
+                    domains: function (args) commands.get("open").domains(args),
                     literal: 0,
                     privateData: true
                 });
@@ -863,7 +869,8 @@ const Tabs = Module("tabs", {
                         context.completions = Iterator(tabs.closedTabs);
                     },
                     count: true,
-                    literal: 0
+                    literal: 0,
+                    privateData: true
                 });
 
             commands.add(["undoa[ll]"],

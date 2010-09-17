@@ -52,45 +52,6 @@ const Browser = Module("browser", {
                 completer: function (context) completion.charset(context)
             });
 
-        // only available in FF 3.5
-        services.add("privateBrowsing", "@mozilla.org/privatebrowsing;1", Ci.nsIPrivateBrowsingService);
-        if (services.get("privateBrowsing")) {
-            options.add(["private", "pornmode"],
-                "Set the 'private browsing' option",
-                "boolean", false,
-                {
-                    setter: function (value) services.get("privateBrowsing").privateBrowsingEnabled = value,
-                    getter: function () services.get("privateBrowsing").privateBrowsingEnabled
-                });
-            let services = modules.services; // Storage objects are global to all windows, 'modules' isn't.
-            storage.newObject("private-mode", function () {
-                ({
-                    init: function () {
-                        services.get("observer").addObserver(this, "private-browsing", false);
-                        services.get("observer").addObserver(this, "quit-application", false);
-                        this.private = services.get("privateBrowsing").privateBrowsingEnabled;
-                    },
-                    observe: function (subject, topic, data) {
-                        if (topic == "private-browsing") {
-                            if (data == "enter")
-                                storage.privateMode = true;
-                            else if (data == "exit")
-                                storage.privateMode = false;
-                            storage.fireEvent("private-mode", "change", storage.privateMode);
-                        }
-                        else if (topic == "quit-application") {
-                            services.get("observer").removeObserver(this, "quit-application");
-                            services.get("observer").removeObserver(this, "private-browsing");
-                        }
-                    }
-                }).init();
-            }, { store: false });
-            storage.addObserver("private-mode",
-                function (key, event, value) {
-                    autocommands.trigger("PrivateMode", { state: value });
-                }, window);
-        }
-
         options.add(["urlseparator"],
             "Set the separator regex used to separate multiple URL args",
             "string", ",\\s");
@@ -99,7 +60,7 @@ const Browser = Module("browser", {
     mappings: function () {
         mappings.add([modes.NORMAL],
             ["y"], "Yank current location to the clipboard",
-            function () { util.copyToClipboard(buffer.URL, true); });
+            function () { dactyl.clipboardWrite(buffer.URL, true); });
 
         // opening websites
         mappings.add([modes.NORMAL],
@@ -218,6 +179,8 @@ const Browser = Module("browser", {
                     dactyl.open("about:blank");
             }, {
                 completer: function (context) completion.url(context),
+                domains: function (args) array.compact(dactyl.stringToURLArray(args[0] || "").map(
+                    function (url) util.getHost(url))),
                 literal: 0,
                 privateData: true
             });

@@ -95,11 +95,13 @@ update(CommandOption, {
  *         bang        - see {@link Command#bang}
  *         completer   - see {@link Command#completer}
  *         count       - see {@link Command#count}
+ *         domains     - see {@link Command#domains}
  *         heredoc     - see {@link Command#heredoc}
  *         literal     - see {@link Command#literal}
  *         options     - see {@link Command#options}
- *         serial      - see {@link Command#serial}
  *         privateData - see {@link Command#privateData}
+ *         serialize   - see {@link Command#serialize}
+ *         subCommand  - see {@link Command#subCommand}
  * @optional
  * @private
  */
@@ -144,24 +146,22 @@ const Command = Class("Command", {
         let self = this;
         function exec(command) {
             // FIXME: Move to parseCommand?
-            args = self.parseArgs(command);
-            if (!args)
-                return;
+            args = this.parseArgs(command);
             args.count = count;
             args.bang = bang;
-            dactyl.trapErrors(self.action, self, args, modifiers);
+            this.action(args, modifiers);
         }
 
         if (this.hereDoc) {
             let matches = args.match(/(.*)<<\s*(\S+)$/);
             if (matches && matches[2]) {
                 commandline.inputMultiline(RegExp("^" + matches[2] + "$", "m"),
-                    function (args) { exec(matches[1] + "\n" + args); });
+                    function (args) { dactyl.trapErrors(exec, self, matches[1] + "\n" + args); });
                 return;
             }
         }
 
-        exec(args);
+        dactyl.trapErrors(exec, this, args);
     },
 
     /**
@@ -232,11 +232,6 @@ const Command = Class("Command", {
     /** @property {boolean} Whether this command accepts a here document. */
     hereDoc: false,
     /**
-     * @property {Array} The options this command takes.
-     * @see Commands@parseArguments
-     */
-    options: [],
-    /**
      * @property {boolean} Whether this command may be called with a bang,
      *     e.g., :com!
      */
@@ -247,6 +242,13 @@ const Command = Class("Command", {
      */
     count: false,
     /**
+     * @property {function(args)} A function which should return a list
+     *     of domains referenced in the given args. Used in determing
+     *     whether to purge the command from history when clearing
+     *     private data.
+     */
+    domains: function (args) [],
+    /**
      * @property {boolean} At what index this command's literal arguments
      *     begin. For instance, with a value of 2, all arguments starting with
      *     the third are parsed as a single string, with all quoting characters
@@ -255,6 +257,19 @@ const Command = Class("Command", {
      */
     literal: null,
     /**
+     * @property {Array} The options this command takes.
+     * @see Commands@parseArguments
+     */
+    options: [],
+    /**
+     * @property {boolean|function(args)} When true, invocations of this
+     *     command may contain private data which should be purged from
+     *     saved histories when clearing private data. If a function, it
+     *     should return true if an invocation with the given args
+     *     contains private data
+     */
+    privateData: true,
+    /**
      * @property {function} Should return an array of <b>Object</b>s suitable
      *     to be passed to {@link Commands#commandToString}, one for each past
      *     invocation which should be restored on subsequent @dactyl
@@ -262,12 +277,11 @@ const Command = Class("Command", {
      */
     serialize: null,
     /**
-     * @property {boolean} When true, invocations of this command
-     *     may contain private data which should be purged from
-     *     saved histories when clearing private data.
+     * @property {number} If this command takes another ex command as an
+     *     argument, the index of that argument. Used in determining whether to 
+     *     purge the command from history when clearing private data.
      */
-    privateData: false,
-
+    subCommand: null,
     /**
      * @property {boolean} Specifies whether this is a user command.  User
      *     commands may be created by plugins, or directly by users, and,
@@ -441,6 +455,60 @@ const Commands = Module("commands", {
         return this._exCommands.filter(function (cmd) cmd.user);
     },
 
+    _subCommands: function (command) {
+        while (command) {
+            // FIXME: This parseCommand/commands.get/parseArgs is duplicated too often.
+            let [count, cmd, bang, args] = commands.parseCommand(command);
+            command = commands.get(cmd);
+            if (command) {
+                try {
+                    args = command.parseArgs(args, null, { count: count, bang: bang });
+                    yield [command, args];
+                    if (commands.subCommand == null)
+                        break;
+                    command = args[command.subCommand];
+                }
+                catch (e) {
+                    break;
+                }
+            }
+        }
+    },
+
+    /**
+     * Returns true if a command invocation contains a URL referring to the 
+     * domain 'host'.
+     *
+     * @param {string} command
+     * @param {string} host
+     * @returns {boolean}
+     */
+    hasDomain: function (command, host) {
+        try {
+            for (let [cmd, args] in this._subCommands(command))
+                if (Array.concat(cmd.domains(args)).some(function (domain) util.isSubdomain(domain, host)))
+                    return true;
+        }
+        catch (e) {
+            dactyl.reportError(e);
+        }
+        return false;
+    },
+
+    /**
+     * Returns true if a command invocation contains private data which should 
+     * be cleared when purging private data.
+     *
+     * @param {string} command
+     * @returns {boolean}
+     */
+    hasPrivateData: function (command) {
+        for (let [cmd, args] in this._subCommands(command))
+            if (cmd.privateData)
+                return !callable(cmd.privateData) || cmd.privateData(args);
+        return false;
+    },
+
     // TODO: should it handle comments?
     //     : it might be nice to be able to specify that certain quoting
     //     should be disabled E.g. backslash without having to resort to
@@ -541,11 +609,11 @@ const Commands = Module("commands", {
             args.completeArg = 0;
         }
 
-        function echoerr(error) {
+        function fail(error) {
             if (complete)
                 complete.message = error;
             else
-                dactyl.echoerr(error);
+                dactyl.assert(false, error);
         }
 
         outer:
@@ -589,11 +657,12 @@ const Commands = Module("commands", {
                             else if (!/\s/.test(sep) && sep != undefined) // this isn't really an option as it has trailing characters, parse it as an argument
                                 invalid = true;
 
+                            if (complete && !/[\s=]/.test(sep))
+                                matchOpts(sub);
+
                             let context = null;
-                            if (!complete && quote) {
-                                dactyl.echoerr("Invalid argument for option " + optname);
-                                return null;
-                            }
+                            if (!complete && quote)
+                                fail("Invalid argument for option " + optname);
 
                             if (!invalid) {
                                 if (complete && count > 0) {
@@ -602,32 +671,28 @@ const Commands = Module("commands", {
                                     args.completeFilter = arg;
                                     args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
                                 }
-                                let type = Commands.argTypes[opt.type];
-                                if (type && (!complete || arg != null)) {
-                                    let orig = arg;
-                                    arg = type.parse(arg);
-                                    if (arg == null || (typeof arg == "number" && isNaN(arg))) {
-                                        if (!complete || orig != "" || args.completeStart != str.length)
-                                            echoerr("Invalid argument for " + type.description + " option: " + optname);
-                                        if (complete)
-                                            complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
-                                        else
-                                            return null;
+                                if (!complete || arg != null) {
+                                    let type = Commands.argTypes[opt.type];
+                                    if (type) {
+                                        let orig = arg;
+                                        arg = type.parse(arg);
+                                        if (arg == null || (typeof arg == "number" && isNaN(arg))) {
+                                            if (!complete || orig != "" || args.completeStart != str.length)
+                                                fail("Invalid argument for " + type.description + " option: " + optname);
+                                            if (complete)
+                                                complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
+                                        }
+                                    }
+
+                                    // we have a validator function
+                                    if (typeof opt.validator == "function") {
+                                        if (opt.validator.call(this, arg) == false) {
+                                            fail("Invalid argument for option: " + optname);
+                                            if (complete) // Always true.
+                                                complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
+                                        }
                                     }
                                 }
-
-                                // we have a validator function
-                                if (typeof opt.validator == "function") {
-                                    if (opt.validator.call(this, arg) == false) {
-                                        echoerr("Invalid argument for option: " + optname);
-                                        if (complete)
-                                            complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
-                                        else
-                                            return null;
-                                    }
-                                }
-
-                                matchOpts(sub);
 
                                 // option allowed multiple times
                                 if (opt.multiple)
@@ -670,14 +735,10 @@ const Commands = Module("commands", {
                 args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
                 args.completeFilter = arg || "";
             }
-            else if (count == -1) {
-                dactyl.echoerr("Error parsing arguments: " + arg);
-                return null;
-            }
-            else if (!onlyArgumentsRemaining && /^-/.test(arg)) {
-                dactyl.echoerr("Invalid option: " + arg);
-                return null;
-            }
+            else if (count == -1)
+                fail("Error parsing arguments: " + arg);
+            else if (!onlyArgumentsRemaining && /^-/.test(arg))
+                fail("Invalid option: " + arg);
 
             if (arg != null)
                 args.push(arg);
@@ -700,7 +761,8 @@ const Commands = Module("commands", {
                     compl = opt.completer || [];
                 context.title = [opt.names[0]];
                 context.quote = args.quote;
-                context.completions = compl;
+                if (compl)
+                    context.completions = compl;
             }
             complete.advance(args.completeStart);
             complete.keys = { text: "names", description: "description" };
@@ -712,16 +774,12 @@ const Commands = Module("commands", {
         // check for correct number of arguments
         if (args.length == 0 && /^[1+]$/.test(argCount) ||
                 literal != null && /[1+]/.test(argCount) && !/\S/.test(args.literalArg || "")) {
-            if (!complete) {
-                dactyl.echoerr("E471: Argument required");
-                return null;
-            }
+            if (!complete)
+                fail("E471: Argument required");
         }
         else if (args.length == 1 && (argCount == "0") ||
-                 args.length > 1  && /^[01?]$/.test(argCount)) {
-            echoerr("E488: Trailing characters");
-            return null;
-        }
+                 args.length > 1  && /^[01?]$/.test(argCount))
+            fail("E488: Trailing characters");
 
         return args;
     },
@@ -980,7 +1038,7 @@ const Commands = Module("commands", {
                                 try {
                                     var completer = dactyl.eval(completeOpt);
 
-                                    if (!(completer instanceof Function))
+                                    if (!callable(completer))
                                         throw new TypeError("User-defined custom completer " + completeOpt.quote() + " is not a function");
                                 }
                                 catch (e) {

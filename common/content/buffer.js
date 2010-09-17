@@ -1517,14 +1517,14 @@ const Buffer = Module("buffer", {
         mappings.add(myModes, ["gP"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
-                dactyl.open(util.readFromClipboard(),
+                dactyl.open(dactyl.clipboardRead(),
                     dactyl[options.get("activate").has("paste") ? "NEW_BACKGROUND_TAB" : "NEW_TAB"]);
             });
 
         mappings.add(myModes, ["p", "<MiddleMouse>"],
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
-                let url = util.readFromClipboard();
+                let url = dactyl.clipboardRead();
                 dactyl.assert(url);
                 dactyl.open(url);
             });
@@ -1532,7 +1532,7 @@ const Buffer = Module("buffer", {
         mappings.add(myModes, ["P"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
-                let url = util.readFromClipboard();
+                let url = dactyl.clipboardRead();
                 dactyl.assert(url);
                 dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB });
             });
@@ -1552,7 +1552,7 @@ const Buffer = Module("buffer", {
             function () {
                 let sel = buffer.getCurrentWord();
                 dactyl.assert(sel);
-                util.copyToClipboard(sel, true);
+                dactyl.clipboardWrite(sel, true);
             });
 
         // zooming

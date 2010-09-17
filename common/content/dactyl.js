@@ -138,6 +138,64 @@ const Dactyl = Module("dactyl", {
     }),
 
     /**
+     * Reads a string from the system clipboard.
+     *
+     * This is same as Firefox's readFromClipboard function, but is needed for
+     * apps like Thunderbird which do not provide it.
+     *
+     * @returns {string}
+     */
+    clipboardRead: function clipboardRead() {
+        let str;
+
+        try {
+            const clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+            const transferable = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+
+            transferable.addDataFlavor("text/unicode");
+
+            if (clipboard.supportsSelectionClipboard())
+                clipboard.getData(transferable, clipboard.kSelectionClipboard);
+            else
+                clipboard.getData(transferable, clipboard.kGlobalClipboard);
+
+            let data = {};
+            let dataLen = {};
+
+            transferable.getTransferData("text/unicode", data, dataLen);
+
+            if (data) {
+                data = data.value.QueryInterface(Ci.nsISupportsString);
+                str = data.data.substring(0, dataLen.value / 2);
+            }
+        }
+        catch (e) {}
+
+        return str;
+    },
+
+    /**
+     * Copies a string to the system clipboard. If <b>verbose</b> is specified
+     * the copied string is also echoed to the command line.
+     *
+     * @param {string} str
+     * @param {boolean} verbose
+     */
+    clipboardWrite: function clipboardWrite(str, verbose) {
+        const clipboardHelper = Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper);
+        clipboardHelper.copyString(str);
+
+        if (verbose) {
+            let message = { message: "Yanked " + str };
+            try {
+                message.domains = [util.newURI(str).host];
+            }
+            catch (e) {};
+            dactyl.echomsg(message);
+        }
+    },
+
+    /**
      * Prints a message to the console. If <b>msg</b> is an object it is
      * pretty printed.
      *
@@ -906,7 +964,7 @@ const Dactyl = Module("dactyl", {
             return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {
-            dactyl.reportError(e);
+            dactyl.reportError(e, true);
             return undefined;
         }
     },
@@ -917,7 +975,7 @@ const Dactyl = Module("dactyl", {
      *
      * @param {Object} error The error object.
      */
-    reportError: function (error) {
+    reportError: function (error, echo) {
         if (error instanceof FailedAssertion) {
             if (error.message)
                 dactyl.echoerr(error.message);
@@ -925,6 +983,8 @@ const Dactyl = Module("dactyl", {
                 dactyl.beep();
             return;
         }
+        if (echo)
+            dactyl.echoerr(error);
 
         if (Cu.reportError)
             Cu.reportError(error);
@@ -1709,7 +1769,8 @@ const Dactyl = Module("dactyl", {
                         return completion.javascript(context);
                 },
                 count: true,
-                literal: 0
+                literal: 0,
+                subCommand: 0
             });
 
         commands.add(["verb[ose]"],
@@ -1732,7 +1793,8 @@ const Dactyl = Module("dactyl", {
                 argCount: "+",
                 completer: function (context) completion.ex(context),
                 count: true,
-                literal: 0
+                literal: 0,
+                subCommand: 0
             });
 
         commands.add(["ve[rsion]"],

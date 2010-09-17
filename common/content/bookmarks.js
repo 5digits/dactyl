@@ -280,6 +280,7 @@ const Bookmarks = Module("bookmarks", {
             names: ["-tags", "-T"],
             description: "A comma-separated list of tags",
             completer: function tags(context, args) {
+                // TODO: Move the bulk of this to parseArgs.
                 let filter = context.filter;
                 let have = filter.split(",");
 

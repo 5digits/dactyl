@@ -146,7 +146,8 @@ const History = Module("history", {
                     context.keys = { text: function (item) (sh.index - item.index) + ": " + item.URI.spec, description: "title", icon: "icon" };
                 },
                 count: true,
-                literal: 0
+                literal: 0,
+                privateData: true
             });
 
         commands.add(["fo[rward]", "fw"],
@@ -185,7 +186,8 @@ const History = Module("history", {
                     context.keys = { text: function (item) (item.index - sh.index) + ": " + item.URI.spec, description: "title", icon: "icon" };
                 },
                 count: true,
-                literal: 0
+                literal: 0,
+                privateData: true
             });
 
         commands.add(["hist[ory]", "hs"],
@@ -194,10 +196,25 @@ const History = Module("history", {
                 bang: true,
                 completer: function (context) { context.quote = null; completion.history(context); },
                 // completer: function (filter) completion.history(filter)
-                options: [{ names: ["-max", "-m"], description: "The maximum number of items to list", type: CommandOption.INT }]
+                options: [{ names: ["-max", "-m"], description: "The maximum number of items to list", type: CommandOption.INT }],
+                privateData: true
             });
     },
     completion: function () {
+        completion.domain = function (context) {
+            context.anchored = false;
+            context.compare = function (a, b) String.localeCompare(a.key, b.key);
+            context.keys = { text: util.identity, description: util.identity,
+                key: function (host) host.split(".").reverse().join(".") };
+
+            // FIXME: Schema-specific
+            context.generate = function () [
+                Array.slice(row.rev_host).reverse().join("").slice(1)
+                for (row in iter(services.get("history").DBConnection
+                                         .createStatement("SELECT DISTINCT rev_host FROM moz_places;")))
+            ].slice(2);
+        };
+
         completion.history = function _history(context, maxItems) {
             context.format = history.format;
             context.title = ["History"];

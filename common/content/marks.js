@@ -12,8 +12,9 @@
  */
 const Marks = Module("marks", {
     init: function init() {
-        this._localMarks = storage.newMap("local-marks", { store: true, privateData: true });
-        this._urlMarks = storage.newMap("url-marks", { store: true, privateData: true });
+        function replacer(key, val) val instanceof Node ? null : val;
+        this._localMarks = storage.newMap("local-marks", { privateData: true, replacer: replacer, store: true });
+        this._urlMarks = storage.newMap("url-marks", { privateData: true, replacer: replacer, store: true });
 
         this._pendingJumps = [];
     },
@@ -65,7 +66,7 @@ const Marks = Module("marks", {
         let position = { x: x, y: y };
 
         if (Marks.isURLMark(mark)) {
-            this._urlMarks.set(mark, { location: win.location.href, position: position, tab: tabs.getTab() });
+            this._urlMarks.set(mark, { location: win.location.href, position: position, tab: tabs.getTab(), timestamp: Date.now()*1000 });
             if (!silent)
                 dactyl.log("Adding URL mark: " + Marks.markToString(mark, this._urlMarks.get(mark)), 5);
         }
@@ -74,7 +75,7 @@ const Marks = Module("marks", {
             this._removeLocalMark(mark);
             if (!this._localMarks.get(mark))
                 this._localMarks.set(mark, []);
-            let vals = { location: win.location.href, position: position };
+            let vals = { location: win.location.href, position: position, timestamp: Date.now()*1000 };
             this._localMarks.get(mark).push(vals);
             if (!silent)
                 dactyl.log("Adding local mark: " + Marks.markToString(mark, vals), 5);
@@ -327,6 +328,20 @@ const Marks = Module("marks", {
             context.keys.description = function ([, m]) percent(m.position.y) + "% " + percent(m.position.x) + "% " + m.location;
             context.completions = marks.all;
         };
+    },
+    sanitizer: function () {
+        sanitizer.addItem("marks", {
+            description: "Local and URL marks",
+            action: function (timespan, host) {
+                function filter(mark) !(timespan.contains(mark.timestamp) && (!host || util.isDomainURL(mark.location, host)));
+
+                for (let [k, v] in storage["local-marks"])
+                    storage["local-marks"].set(k, v.filter(filter));
+
+                for (let key in (k for ([k, v] in storage["url-marks"]) if (!filter(v))))
+                    storage["url-marks"].remove(key);
+            }
+        });
     }
 });
 

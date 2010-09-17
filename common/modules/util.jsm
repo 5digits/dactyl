@@ -33,6 +33,41 @@ const Util = Module("Util", {
         }
     },
 
+    /**
+     * Registers a obj as a new observer with the observer service. obj.observe
+     * must be an object where each key is the name of a target to observe and
+     * each value is a function(subject, data) to be called when the given
+     * target is broadcast. obj.observe will be replaced with a new opaque
+     * function. The observer is automatically unregistered on application
+     * shutdown.
+     *
+     * @param {object} obj
+     */
+    addObserver: function (obj) {
+        let observers = obj.observe;
+        function register(meth) {
+            services.get("observer")[meth](obj, "quit-application", true);
+            for (let target in keys(observers))
+                services.get("observer")[meth](obj, target, true);
+        }
+        Class.replaceProperty(obj, "observe",
+            function (subject, target, data) {
+                if (target == "quit-application")
+                    register("removeObserver");
+                if (observers[target])
+                    observers[target].call(obj, subject, data);
+            });
+        register("addObserver");
+    },
+
+    /**
+     * Calls a function synchronously in the main thread. Return values are not
+     * preserved.
+     *
+     * @param {function} callback
+     * @param {object} self The this object for the call.
+     * @returns {function}
+     */
     callInMainThread: function (callback, self) {
         let mainThread = services.get("threadManager").mainThread;
         if (services.get("threadManager").isMainThread)
@@ -123,30 +158,19 @@ const Util = Module("Util", {
     },
 
     /**
-     * Copies a string to the system clipboard. If <b>verbose</b> is specified
-     * the copied string is also echoed to the command line.
+     * Converts any arbitrary string into an URI object. Returns null on
+     * failure.
      *
      * @param {string} str
-     * @param {boolean} verbose
+     * @returns {nsIURI|null}
      */
-    copyToClipboard: function copyToClipboard(str, verbose) {
-        const clipboardHelper = Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper);
-        clipboardHelper.copyString(str);
-
-        if (verbose)
-            util.dactyl.echomsg("Yanked " + str);
-    },
-
-    /**
-     * Converts any arbitrary string into an URI object.
-     *
-     * @param {string} str
-     * @returns {Object}
-     */
-    // FIXME: newURI needed too?
     createURI: function createURI(str) {
-        const fixup = Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup);
-        return fixup.createFixupURI(str, fixup.FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP);
+        try {
+            return services.get("urifixup").createFixupURI(str, services.get("urifixup").FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP);
+        }
+        catch (e) {
+            return null;
+        }
     },
 
     /**
@@ -337,6 +361,20 @@ const Util = Module("Util", {
     },
 
     /**
+     * Returns the host for the given URL, or null if invalid.
+     *
+     * @param {string} url
+     * @returns {string|null}
+     */
+    getHost: function (url) {
+        try {
+            return util.createURI(url).host;
+        }
+        catch (e) {}
+        return null;
+    },
+
+    /**
      * Sends a synchronous or asynchronous HTTP request to <b>url</b> and
      * returns the XMLHttpRequest object. If <b>callback</b> is specified the
      * request is asynchronous and the <b>callback</b> is invoked with the
@@ -389,6 +427,29 @@ const Util = Module("Util", {
         top: Math.max(r1.top, r2.top),
         bottom: Math.min(r1.bottom, r2.bottom)
     }),
+
+    /**
+     * Returns true if 'url' is in the domain 'domain'.
+     *
+     * @param {string} url
+     * @param {string} domain
+     * @returns {boolean}
+     */
+    isDomainURL: function isDomainURL(url, domain) util.isSubdomain(util.getHost(url), domain),
+
+    /**
+     * Returns true if 'host' is a subdomain of 'domain'.
+     *
+     * @param {string} host The host to check.
+     * @param {string} domain The base domain to check the host agains.
+     * @returns {boolean}
+     */
+    isSubdomain: function isSubdomain(host, domain) {
+        if (host == null)
+            return false;
+        let idx = host.lastIndexOf(domain);
+        return idx > -1 && idx + domain.length == host.length && (idx == 0 || host[idx-1] == ".");
+    },
 
     /**
      * Returns an XPath union expression constructed from the specified node
@@ -587,43 +648,6 @@ const Util = Module("Util", {
             }
             yield start++;
         }
-    },
-
-    /**
-     * Reads a string from the system clipboard.
-     *
-     * This is same as Firefox's readFromClipboard function, but is needed for
-     * apps like Thunderbird which do not provide it.
-     *
-     * @returns {string}
-     */
-    readFromClipboard: function readFromClipboard() {
-        let str;
-
-        try {
-            const clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
-            const transferable = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
-
-            transferable.addDataFlavor("text/unicode");
-
-            if (clipboard.supportsSelectionClipboard())
-                clipboard.getData(transferable, clipboard.kSelectionClipboard);
-            else
-                clipboard.getData(transferable, clipboard.kGlobalClipboard);
-
-            let data = {};
-            let dataLen = {};
-
-            transferable.getTransferData("text/unicode", data, dataLen);
-
-            if (data) {
-                data = data.value.QueryInterface(Ci.nsISupportsString);
-                str = data.data.substring(0, dataLen.value / 2);
-            }
-        }
-        catch (e) {}
-
-        return str;
     },
 
     /**

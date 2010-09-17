@@ -51,8 +51,8 @@ const Hints = Module("hints", {
             W: Mode("Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX)),
             v: Mode("View hint source",                     function (elem, loc) buffer.viewSource(loc, false),                    extended),
             V: Mode("View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true),                     extended),
-            y: Mode("Yank hint location",                   function (elem, loc) util.copyToClipboard(loc, true)),
-            Y: Mode("Yank hint description",                function (elem) util.copyToClipboard(elem.textContent || "", true),    extended),
+            y: Mode("Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true)),
+            Y: Mode("Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true),    extended),
             c: Mode("Open context menu",                    function (elem) buffer.openContextMenu(elem),                          extended),
             i: Mode("Show image",                           function (elem) dactyl.open(elem.src),                              images),
             I: Mode("Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB),           images)

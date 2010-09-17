@@ -22,7 +22,10 @@ const Events = Module("events", {
 
         this.sessionListeners = [];
 
-        this._macros = storage.newMap("macros", true, { privateData: true });
+        this._macros = storage.newMap("macros", { privateData: true, store: true });
+        for (let [k, m] in this._macros)
+            if (isstring(m))
+                m = { keys: m, timeRecorded: Date.now() };
 
         // NOTE: the order of ["Esc", "Escape"] or ["Escape", "Esc"]
         //       matters, so use that string as the first item, that you
@@ -85,9 +88,12 @@ const Events = Module("events", {
                             if (file.exists() && !file.isDirectory() && file.isReadable() &&
                                 /^[\w_-]+(\.vimp)?$/i.test(file.leafName)) {
                                 let name = file.leafName.replace(/\.vimp$/i, "");
-                                this._macros.set(name, file.read().split("\n")[0]);
+                                this._macros.set(name, {
+                                    keys: file.read().split("\n")[0],
+                                    timeRecorded: file.lastModifiedTime
+                                });
 
-                                dactyl.log("Macro " + name + " added: " + this._macros.get(name), 5);
+                                dactyl.log("Macro " + name + " added: " + this._macros.get(name).keys, 5);
                             }
                         }
                     }
@@ -146,11 +152,11 @@ const Events = Module("events", {
                 method.apply(self, arguments);
             }
             catch (e) {
+                dactyl.reportError(e);
                 if (e.message == "Interrupted")
                     dactyl.echoerr("Interrupted");
                 else
                     dactyl.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
-                dactyl.reportError(e);
             }
         };
     },
@@ -176,11 +182,11 @@ const Events = Module("events", {
         if (/[A-Z]/.test(macro)) { // uppercase (append)
             this._currentMacro = macro.toLowerCase();
             if (!this._macros.get(this._currentMacro))
-                this._macros.set(this._currentMacro, ""); // initialize if it does not yet exist
+                this._macros.set(this._currentMacro, { keys: "", timeRecorded: Date.now() }); // initialize if it does not yet exist
         }
         else {
             this._currentMacro = macro;
-            this._macros.set(this._currentMacro, "");
+            this._macros.set(this._currentMacro, { keys: "", timeRecorded: Date.now() });
         }
     },
 
@@ -219,7 +225,7 @@ const Events = Module("events", {
 
             buffer.loaded = 1; // even if not a full page load, assume it did load correctly before starting the macro
             modes.isReplaying = true;
-            res = events.feedkeys(this._macros.get(this._lastMacro), { noremap: true });
+            res = events.feedkeys(this._macros.get(this._lastMacro).keys, { noremap: true });
             modes.isReplaying = false;
         }
         else {
@@ -239,11 +245,8 @@ const Events = Module("events", {
      *     filter selects all macros.
      */
     getMacros: function (filter) {
-        if (!filter)
-            return this._macros;
-
-        let re = RegExp(filter);
-        return ([macro, keys] for ([macro, keys] in this._macros) if (re.test(macro)));
+        let re = RegExp(filter || "");
+        return ([k, m.keys] for ([k, m] in this._macros) if (re.test(macro)));
     },
 
     /**
@@ -253,10 +256,9 @@ const Events = Module("events", {
      *     filter deletes all macros.
      */
     deleteMacros: function (filter) {
-        let re = RegExp(filter);
-
+        let re = RegExp(filter || "");
         for (let [item, ] in this._macros) {
-            if (re.test(item) || !filter)
+            if (!filter || re.test(item))
                 this._macros.remove(item);
         }
     },
@@ -823,13 +825,16 @@ const Events = Module("events", {
         if (modes.isRecording) {
             if (key == "q" && !modes.mainMode.input) { // TODO: should not be hardcoded
                 modes.isRecording = false;
-                dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro), 9);
+                dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro, {}).keys, 9);
                 dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
                 killEvent();
                 return;
             }
             else if (!mappings.hasMap(dactyl.mode, this._input.buffer + key))
-                this._macros.set(this._currentMacro, this._macros.get(this._currentMacro) + key);
+                this._macros.set(this._currentMacro, {
+                    keys: this._macros.get(this._currentMacro, {}).keys + key,
+                    timeRecorded: Date.now()
+                });
         }
 
         if (key == "<C-c>")
@@ -1188,11 +1193,22 @@ const Events = Module("events", {
         mappings.add([modes.NORMAL, modes.PLAYER, modes.MESSAGE],
             ["@"], "Play a macro",
             function (count, arg) {
-                if (count < 1) count = 1;
+                count = Math.max(count, 1);
                 while (count-- && events.playMacro(arg))
                     ;
             },
             { arg: true, count: true });
+    },
+    sanitizer: function () {
+        sanitizer.addItem("macros", {
+            description: "Saved macros",
+            action: function (timespan, host) {
+                if (!host)
+                    for (let [k, m] in events._macros)
+                        if (timespan.contains(m.timeRecorded * 1000))
+                            events._macros.remove(k);
+            }
+        });
     }
 });
 

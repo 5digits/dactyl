@@ -770,7 +770,7 @@ lookup:
         };
 
         completion.addUrlCompleter("f", "Local files", function (context, full) {
-            if (!/^\.?\//.test(context.filter))
+            if (/^(\.{0,2}|~)\/|^file:/.test(context.filter))
                 completion.file(context, full);
         });
     },

@@ -66,11 +66,12 @@ defmodule("base", this, {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
-        "Struct", "StructBase", "Timer", "allkeys", "array", "call",
-        "callable", "curry", "debuggerProperties", "defmodule", "dict",
+        "Struct", "StructBase", "Timer", "XPCOMUtils", "allkeys", "array",
+        "call", "callable", "curry", "debuggerProperties", "defmodule", "dict",
         "endmodule", "extend", "foreach", "isarray", "isgenerator",
-        "isinstance", "isobject", "isstring", "issubclass", "iter", "memoize",
-        "properties", "requiresMainThread", "set", "update", "values",
+        "isinstance", "isobject", "isstring", "issubclass", "iter", "keys",
+        "memoize", "properties", "requiresMainThread", "set", "update",
+        "values",
     ],
     use: ["services"]
 });
@@ -117,8 +118,9 @@ function debuggerProperties(obj) {
     }
 }
 
+let hasOwnProperty = Object.prototype.hasOwnProperty;
 if (!Object.keys)
-    Object.keys = function keys(obj) [k for (k in obj) if (obj.hasOwnProperty(k))];
+    Object.keys = function keys(obj) [k for (k in obj) if (hasOwnProperty.call(obj, k))];
 
 if (!Object.getOwnPropertyNames)
     Object.getOwnPropertyNames = function getOwnPropertyNames(obj) {
@@ -144,9 +146,14 @@ function properties(obj, prototypes) {
     }
 }
 
+function keys(obj) {
+    for (var k in obj)
+        if (hasOwnProperty.call(obj, k))
+            yield k;
+}
 function values(obj) {
     for (var k in obj)
-        if (obj.hasOwnProperty(k))
+        if (hasOwnProperty.call(obj, k))
             yield obj[k];
 }
 function foreach(iter, fn, self) {
@@ -175,7 +182,7 @@ set.add = function (set, key) {
     set[key] = true;
     return res;
 }
-set.has = function (set, key) Object.prototype.hasOwnProperty.call(set, key);
+set.has = function (set, key) hasOwnProperty.call(set, key);
 set.remove = function (set, key) { delete set[key]; }
 
 function iter(obj) {
@@ -204,6 +211,12 @@ function iter(obj) {
             for (let i = 0; i < obj.length; i++)
                 yield [obj.name, obj];
         })();
+    if (obj instanceof Ci.mozIStorageStatement) 
+        return (function (obj) {
+            while (obj.executeStep())
+                yield obj.row;
+            obj.reset();
+        })(obj);
     return Iterator(obj);
 }
 
@@ -542,15 +555,31 @@ Class.prototype = {
  * @param {Object} classProperties Properties to be applied to the class constructor.
  * @return {Class}
  */
-function Module(name, prototype, classProperties, init) {
-    const module = Class(name, prototype, classProperties);
+function Module(name, prototype) {
+    let init = callable(prototype) ? 4 : 3;
+    const module = Class.apply(Class, Array.slice(arguments, 0, init));
     let instance = module();
     module.name = name.toLowerCase();
-    instance.INIT = init || {};
+    instance.INIT = arguments[init] || {};
     currentModule[module.name] = instance;
     defmodule.modules.push(instance);
     return module;
 }
+if (Cu.getGlobalForObject)
+    Module.callerGlobal = function (caller) {
+        try {
+            return Cu.getGlobalForObject(caller);
+        }
+        catch (e) {
+            return null;
+        }
+    };
+else
+    Module.callerGlobal = function (caller) {
+        while (caller.__parent__)
+            caller = caller.__parent__;
+        return caller;
+    };
 
 /**
  * @class Struct
@@ -677,7 +706,7 @@ const Timer = Class("Timer", {
  */
 const array = Class("util.Array", Array, {
     init: function (ary) {
-        if (isgenerator(ary))
+        if (isinstance(ary, ["Iterator", "Generator"]))
             ary = [k for (k in ary)];
         else if (ary.length)
             ary = Array.slice(ary);
@@ -688,12 +717,13 @@ const array = Class("util.Array", Array, {
             __noSuchMethod__: function (meth, args) {
                 var res = array[meth].apply(null, [this.__proto__].concat(args));
 
-                if (array.isinstance(res))
+                if (isarray(res))
                     return array(res);
                 return res;
             },
             toString: function () this.__proto__.toString(),
             concat: function () this.__proto__.concat.apply(this.__proto__, arguments),
+            filter: function () this.__noSuchMethod__("filter", Array.slice(arguments)),
             map: function () this.__noSuchMethod__("map", Array.slice(arguments))
         };
     }

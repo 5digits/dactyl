@@ -31,6 +31,13 @@ Sheet.prototype.__defineGetter__("fullCSS", function wrapCSS() {
                           .join(", ");
     return "/* Dactyl style #" + this.id + " */ " + namespace + " @-moz-document " + selectors + "{\n" + css + "\n}\n";
 });
+Sheet.prototype.__defineGetter__("css", function () this[3]);
+Sheet.prototype.__defineSetter__("css", function (val) {
+    this.enabled = false;
+    this[3] = val;
+    this.enabled = true;
+    return val;
+});
 Sheet.prototype.__defineGetter__("enabled", function () this._enabled);
 Sheet.prototype.__defineSetter__("enabled", function (on) {
     this._enabled = Boolean(on);

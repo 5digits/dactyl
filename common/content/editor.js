@@ -112,8 +112,8 @@ const Editor = Module("editor", {
         // FIXME: #93 (<s-insert> in the bottom of a long textarea bounces up)
         let elem = dactyl.focus;
 
-        if (elem.setSelectionRange && util.readFromClipboard()) {
-            // readFromClipboard would return 'undefined' if not checked
+        if (elem.setSelectionRange && dactyl.clipboardRead()) {
+            // clipboardRead would return 'undefined' if not checked
             // dunno about .setSelectionRange
             // This is a hacky fix - but it works.
             let curTop = elem.scrollTop;
@@ -122,7 +122,7 @@ const Editor = Module("editor", {
             let rangeStart = elem.selectionStart; // caret position
             let rangeEnd = elem.selectionEnd;
             let tempStr1 = elem.value.substring(0, rangeStart);
-            let tempStr2 = util.readFromClipboard();
+            let tempStr2 = dactyl.clipboardRead();
             let tempStr3 = elem.value.substring(rangeEnd);
             elem.value = tempStr1 + tempStr2 + tempStr3;
             elem.selectionStart = rangeStart + tempStr2.length;
@@ -971,7 +971,7 @@ const Editor = Module("editor", {
                 else {
                     let sel = window.content.document.getSelection();
                     dactyl.assert(sel);
-                    util.copyToClipboard(sel, true);
+                    dactyl.clipboardWrite(sel, true);
                 }
             });
 

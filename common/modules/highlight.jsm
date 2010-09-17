@@ -52,7 +52,6 @@ const Highlights = Module("Highlight", {
             return "Unknown highlight keyword: " + class_;
 
         let style = this.highlight[key] || Highlight(key);
-        styles.removeSheet(true, style.selector);
 
         if (append)
             newStyle = (style.value || "").replace(/;?\s*$/, "; " + newStyle);
@@ -60,22 +59,23 @@ const Highlights = Module("Highlight", {
             newStyle = null;
         if (newStyle == null) {
             if (style.default == null) {
-                delete this.highlight[style.class];
                 styles.removeSheet(true, style.selector);
+                delete this.highlight[style.class];
                 return null;
             }
             newStyle = style.default;
-            force = true;
         }
 
-        let css = newStyle.replace(/(?:!\s*important\s*)?(?:;?\s*$|;)/g, "!important;")
-                          .replace(";!important;", ";", "g"); // Seeming Spidermonkey bug
-        if (!/^\s*(?:!\s*important\s*)?;*\s*$/.test(css)) {
-            css = style.selector + " { " + css + " }";
+        if (!style.loaded || style.value != newStyle) {
+            styles.removeSheet(true, style.selector);
+            let css = newStyle.replace(/(?:!\s*important\s*)?(?:;?\s*$|;)/g, "!important;")
+                              .replace(";!important;", ";", "g"); // Seeming Spidermonkey bug
+            if (!/^\s*(?:!\s*important\s*)?;*\s*$/.test(css)) {
+                css = style.selector + " { " + css + " }";
 
-            let error = styles.addSheet(true, "highlight:" + style.class, style.filter, css, true);
-            if (error)
-                return error;
+                styles.addSheet(true, "highlight:" + style.class, style.filter, css, true);
+                style.loaded = true;
+            }
         }
         style.value = newStyle;
         this.highlight[style.class] = style;
@@ -120,9 +120,10 @@ const Highlights = Module("Highlight", {
                    style.selector = this.selector(style.class) + style.selector;
 
                let old = this.highlight[style.class];
-               this.highlight[style.class] = style;
-               if (old && old.value != old.default)
-                   style.value = old.value;
+               if (!old)
+                   this.highlight[style.class] = style;
+               else if (old.value == old.default)
+                   old.value = style.value;
            }, this);
         for (let [class_, hl] in Iterator(this.highlight))
             if (hl.value == hl.default)

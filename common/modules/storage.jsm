@@ -21,6 +21,7 @@
 }}} ***** END LICENSE BLOCK *****/
 "use strict";
 
+const myObject = Object;
 Components.utils.import("resource://dactyl/base.jsm");
 defmodule("storage", this, {
     exports: ["File", "storage"],
@@ -76,9 +77,9 @@ function savePref(obj) {
 }
 
 const StoreBase = Class("StoreBase", {
-    OPTIONS: ["privateData"],
+    OPTIONS: ["privateData", "replacer"],
     fireEvent: function (event, arg) { storage.fireEvent(this.name, event, arg); },
-    get serial() services.get("json").encode(this._object),
+    get serial() JSON.stringify(this._object, this.replacer),
     save: function () { savePref(this); },
     init: function (name, store, load, options) {
         this._load = load;
@@ -97,7 +98,7 @@ const StoreBase = Class("StoreBase", {
 });
 
 const ObjectStore = Class("ObjectStore", StoreBase, {
-    _constructor: Object,
+    _constructor: myObject,
 
     set: function set(key, val) {
         var defined = key in this._object;
@@ -120,6 +121,7 @@ const ObjectStore = Class("ObjectStore", StoreBase, {
 
     clear: function () {
         this._object = {};
+        this.fireEvent("clear", key);
     },
 
     __iterator__: function () Iterator(this._object),
@@ -181,7 +183,7 @@ const Storage = Module("Storage", {
         if (!(key in keys) || params.reload || this.alwaysReload[key]) {
             if (key in this && !(params.reload || this.alwaysReload[key]))
                 throw Error();
-            let load = function () loadPref(key, params.store, params.type || Object);
+            let load = function () loadPref(key, params.store, params.type || myObject);
             keys[key] = new constructor(key, params.store, load, params);
             timers[key] = new Timer(1000, 10000, function () storage.save(key));
             this.__defineGetter__(key, function () keys[key]);
@@ -234,14 +236,13 @@ const Storage = Module("Storage", {
     get observers() observers,
 
     fireEvent: function fireEvent(key, event, arg) {
-        if (!(key in this))
-            return;
         this.removeDeadObservers();
         // Safe, since we have our own Array object here.
         if (key in observers)
             for each (let observer in observers[key])
                 observer.callback.get()(key, event, arg);
-        timers[key].tell();
+        if (timers[key])
+            timers[key].tell();
     },
 
     load: function load(key) {
@@ -261,6 +262,8 @@ const Storage = Module("Storage", {
     _privateMode: false,
     get privateMode() this._privateMode,
     set privateMode(val) {
+        if (val && !this._privateMode)
+            this.saveAll();
         if (!val && this._privateMode)
             for (let key in keys)
                 this.load(key);

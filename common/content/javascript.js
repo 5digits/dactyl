@@ -56,19 +56,6 @@ const JavaScript = Module("javascript", {
             return [];
 
         let completions = [k for (k in this.iter(obj, toplevel))];
-
-        // Add keys for sorting later.
-        // Numbers are parsed to ints.
-        // Constants, which should be unsorted, are found and marked null.
-        completions.forEach(function (item) {
-            let key = item[0];
-            if (!isNaN(key))
-                key = parseInt(key);
-            else if (/^[A-Z_][A-Z0-9_]*$/.test(key))
-                key = "";
-            item.key = key;
-        });
-
         return completions;
     },
 
@@ -322,7 +309,7 @@ const JavaScript = Module("javascript", {
         let orig = compl;
         if (!compl) {
             compl = function (context, obj, recurse) {
-                context.process = [null, function highlight(item, v) template.highlight(v, true)];
+                context.process = [null, function highlight(item, v) template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true)];
                 // Sort in a logical fashion for object keys:
                 //  Numbers are sorted as numbers, rather than strings, and appear first.
                 //  Constants are unsorted, and appear before other non-null strings.
@@ -330,10 +317,21 @@ const JavaScript = Module("javascript", {
                 let compare = context.compare;
                 function isnan(item) item != '' && isNaN(item);
                 context.compare = function (a, b) {
-                    if (!isnan(a.item.key) && !isnan(b.item.key))
-                        return a.item.key - b.item.key;
-                    return isnan(b.item.key) - isnan(a.item.key) || compare(a, b);
+                    if (!isnan(a.key) && !isnan(b.key))
+                        return a.key - b.key;
+                    return isnan(b.key) - isnan(a.key) || compare(a, b);
                 };
+                context.keys = { text: 0, description: 1,
+                    key: function (item) {
+                        let key = item[0];
+                        if (!isNaN(key))
+                            return parseInt(key);
+                        else if (/^[A-Z_][A-Z0-9_]*$/.test(key))
+                            return ""
+                        return key;
+                    }
+                };
+
                 if (!context.anchored) // We've already listed anchored matches, so don't list them again here.
                     context.filters.push(function (item) util.compareIgnoreCase(item.text.substr(0, this.filter.length), this.filter));
                 if (obj == self.cache.evalContext)

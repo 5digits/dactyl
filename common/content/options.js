@@ -20,11 +20,13 @@
  * @param {string} defaultValue The default value for this option.
  * @param {Object} extraInfo An optional extra configuration hash. The
  *     following properties are supported.
- *         scope     - see {@link Option#scope}
- *         setter    - see {@link Option#setter}
- *         getter    - see {@link Option#getter}
- *         completer - see {@link Option#completer}
- *         valdator  - see {@link Option#validator}
+ *         completer   - see {@link Option#completer}
+ *         domains     - see {@link Option#domains}
+ *         getter      - see {@link Option#getter}
+ *         privateData - see {@link Option#privateData}
+ *         scope       - see {@link Option#scope}
+ *         setter      - see {@link Option#setter}
+ *         valdator    - see {@link Option#validator}
  * @optional
  * @private
  */
@@ -61,8 +63,8 @@ const Option = Class("Option", {
     },
 
     /** @property {value} The option's global value. @see #scope */
-    get globalValue() options.store.get(this.name),
-    set globalValue(val) { options.store.set(this.name, val); },
+    get globalValue() options.store.get(this.name, {}).value,
+    set globalValue(val) { options.store.set(this.name, { value: val, time: Date.now() }); },
 
     /**
      * Returns <b>value</b> as an array of parsed values if the option type is
@@ -194,6 +196,9 @@ const Option = Class("Option", {
      */
     isValidValue: function (values) this.validator(values),
 
+    invalidArgument: function (arg, op) "E474: Invalid argument: " +
+        this.name + (op || "").replace(/=?$/, "=") + arg,
+
     /**
      * Resets the option to its default value.
      */
@@ -210,7 +215,7 @@ const Option = Class("Option", {
      *     {@link #scope}).
      * @param {boolean} invert Whether this is an invert boolean operation.
      */
-    op: function (operator, values, scope, invert) {
+    op: function (operator, values, scope, invert, str) {
 
         let newValues = this._op(operator, values, scope, invert);
 
@@ -218,7 +223,7 @@ const Option = Class("Option", {
             return "Operator " + operator + " not supported for option type " + this.type;
 
         if (!this.isValidValue(newValues))
-            return "E474: Invalid argument: " + values;
+            return this.invalidArgument(str || this.joinValues(values), operator);
 
         this.setValues(newValues, scope);
         return null;
@@ -258,6 +263,27 @@ const Option = Class("Option", {
     description: "",
 
     /**
+     * @property {function(CompletionContext, Args)} This option's completer.
+     * @see CompletionContext
+     */
+    completer: null,
+
+    /**
+     * @property {function(host, values)} A function which should return a list
+     *     of domains referenced in the given values. Used in determing whether
+     *     to purge the command from history when clearing private data.
+     * @see Command#domains
+     */
+    domains: null,
+
+    /**
+     * @property {function(host, values)} A function which should strip
+     *     references to a given domain from the given values.
+     */
+    filterDomain: function filterDomain(host, values)
+        Array.filter(values, function (val) !util.isSubdomain(val, host)),
+
+    /**
      * @property {value} The option's default value. This value will be used
      *     unless the option is explicitly set either interactively or in an RC
      *     file or plugin.
@@ -265,18 +291,24 @@ const Option = Class("Option", {
     defaultValue: null,
 
     /**
-     * @property {function} The function called when the option value is set.
-     */
-    setter: null,
-    /**
      * @property {function} The function called when the option value is read.
      */
     getter: null,
+
     /**
-     * @property {function(CompletionContext, Args)} This option's completer.
-     * @see CompletionContext
+     * @property {boolean|function(values)} When true, values of this
+     *     option may contain private data which should be purged from
+     *     saved histories when clearing private data. If a function, it
+     *     should return true if an invocation with the given values
+     *     contains private data
      */
-    completer: null,
+    privateData: false,
+
+    /**
+     * @property {function} The function called when the option value is set.
+     */
+    setter: null,
+
     /**
      * @property {function} The function called to validate the option's value
      *     when set.
@@ -293,6 +325,12 @@ const Option = Class("Option", {
      *     interactively or by some RC file.
      */
     hasChanged: false,
+
+    /**
+     * Returns the timestamp when the option's value was last changed.
+     */
+    get lastSet() options.store.get(this.name).time,
+    set lastSet(val) { options.store.set(this.name, { value: this.globalValue, time: Date.now() }); },
 
     /**
      * @property {nsIFile} The script in which this option was last set. null
@@ -521,10 +559,9 @@ const Options = Module("options", {
     },
 
     /** @property {Iterator(Option)} @private */
-    __iterator__: function () {
-        let sorted = [o for ([i, o] in Iterator(this._optionHash))].sort(function (a, b) String.localeCompare(a.name, b.name));
-        return (v for ([k, v] in Iterator(sorted)));
-    },
+    __iterator__: function ()
+        array(values(this._optionHash)).sort(function (a, b) String.localeCompare(a.name, b.name))
+                                       .itervalues(),
 
     /** @property {Object} Observes preference value changes. */
     prefObserver: {
@@ -612,11 +649,9 @@ const Options = Module("options", {
         if (name in this._optionHash)
             return (this._optionHash[name].scope & scope) && this._optionHash[name];
 
-        for (let opt in Iterator(options)) {
+        for (let opt in values(this._optionHash))
             if (opt.hasName(name))
                 return (opt.scope & scope) && opt;
-        }
-
         return null;
     },
 
@@ -1067,7 +1102,7 @@ const Options = Module("options", {
                         opt.values = !opt.unsetBoolean;
                     }
                     try {
-                        var res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert);
+                        var res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert, opt.value);
                     }
                     catch (e) {
                         res = e;
@@ -1209,56 +1244,62 @@ const Options = Module("options", {
             }
         );
 
-        commands.add(["setl[ocal]"],
-            "Set local option",
-            function (args, modifiers) {
-                modifiers.scope = Option.SCOPE_LOCAL;
-                setAction(args, modifiers);
+        [
+            {
+                names: ["setl[ocal]"],
+                description: "Set local option",
+                modifiers: { scope: Option.SCOPE_LOCAL }
             },
             {
-                bang: true,
-                count: true,
-                completer: function (context, args) {
-                    return setCompleter(context, args, { scope: Option.SCOPE_LOCAL });
-                },
-                literal: 0
-            }
-        );
-
-        commands.add(["setg[lobal]"],
-            "Set global option",
-            function (args, modifiers) {
-                modifiers.scope = Option.SCOPE_GLOBAL;
-                setAction(args, modifiers);
+                names: ["setg[lobal]"],
+                description: "Set global option",
+                modifiers: { scope: Option.SCOPE_GLOBAL }
             },
             {
-                bang: true,
-                count: true,
-                completer: function (context, args) {
-                    return setCompleter(context, args, { scope: Option.SCOPE_GLOBAL });
-                },
-                literal: 0
+                names: ["se[t]"],
+                description: "Set an option",
+                modifiers: {},
+                extra: {
+                    serialize: function () [
+                        {
+                            command: this.name,
+                            arguments: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
+                                                              : opt.name + "=" + opt.value]
+                        }
+                        for (opt in options)
+                        if (!opt.getter && opt.value != opt.defaultValue && (opt.scope & Option.SCOPE_GLOBAL))
+                    ]
+                }
             }
-        );
-
-        commands.add(["se[t]"],
-            "Set an option",
-            function (args, modifiers) { setAction(args, modifiers); },
-            {
-                bang: true,
-                completer: function (context, args) {
-                    return setCompleter(context, args);
+        ].forEach(function (params) {
+            commands.add(params.names, params.description,
+                function (args, modifiers) {
+                    setAction(args, update(modifiers, params.modifiers));
                 },
-                serialize: function () [
-                    {
-                        command: this.name,
-                        arguments: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
-                                                          : opt.name + "=" + opt.value]
-                    }
-                    for (opt in options)
-                    if (!opt.getter && opt.value != opt.defaultValue && (opt.scope & Option.SCOPE_GLOBAL))
-                ]
-            });
+                update({
+                    bang: true,
+                    domains: function (args) array.flatten(args.map(function (spec) {
+                        try {
+                            let opt = options.parseOpt(spec);
+                            if (opt.option && opt.option.domains)
+                                return opt.option.domains(opt.values);
+                        }
+                        catch (e) {
+                            dactyl.reportError(e);
+                        }
+                        return [];
+                    })),
+                    completer: function (context, args) {
+                        return setCompleter(context, args);
+                    },
+                    privateData: function (args) args.some(function (spec) {
+                        let opt = options.parseOpt(spec);
+                        return opt.option && opt.option.privateData &&
+                            (!callable(opt.option.privateData) ||
+                             opt.option.privateData(opt.values))
+                    })
+                }, params.extra || {}));
+        });
 
         commands.add(["unl[et]"],
             "Delete a variable",
@@ -1332,6 +1373,8 @@ const Options = Module("options", {
 
             context.title = ["Option Value"];
             let completions = completer(context);
+            if (!isarray(completions))
+                completions = array(completions).__proto__;
             if (!completions)
                 return;
 
@@ -1362,6 +1405,34 @@ const Options = Module("options", {
         JavaScript.setCompleter(this.get, [function () ([o.name, o.description] for (o in options))]);
         JavaScript.setCompleter([this.getPref, this.safeSetPref, this.setPref, this.resetPref, this.invertPref],
                 [function () options.allPrefs().map(function (pref) [pref, ""])]);
+    },
+    sanitizer: function () {
+        sanitizer.addItem("options", {
+            description: "Options containing hostname data",
+            action: function (timespan, host) {
+                if (host)
+                    for (let opt in values(options._optionHash))
+                        if (timespan.contains(opt.lastSet * 1000) && opt.domains)
+                            try {
+                                opt.values = opt.filterDomain(host, opt.values);
+                            }
+                            catch (e) {
+                                dactyl.reportError(e);
+                            }
+            },
+            privateEnter: function () {
+                for (let opt in values(options._optionHash))
+                    if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.values)))
+                        opt.oldValue = opt.value;
+            },
+            privateLeave: function () {
+                for (let opt in values(options._optionHash))
+                    if (opt.oldValue != null) {
+                        opt.value = opt.oldValue;
+                        opt.oldValue = null;
+                    }
+            }
+        });
     }
 });
 

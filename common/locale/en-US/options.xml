@@ -1023,29 +1023,12 @@
     <tags>'si' 'sanitizeitems'</tags>
     <spec>'sanitizeitems' 'si'</spec>
     <type>stringlist</type>
-    <default>cache,commandline,cookies,formdata,history,marks,sessions</default>
+    <default>all</default>
     <description>
-        <p>The default list of private items to sanitize.</p>
-
-        <dl>
-            <dt>cache       </dt>       <dd>Cache</dd>
-            <dt>commandline </dt>       <dd>Command-line history</dd>
-            <dt>cookies     </dt>       <dd>Cookies</dd>
-            <dt>downloads   </dt>       <dd>Download history</dd>
-            <dt>formdata    </dt>       <dd>Saved form and search history</dd>
-            <dt>history     </dt>       <dd>Browsing history</dd>
-            <dt>marks       </dt>       <dd>Local and URL marks</dd>
-            <dt>macros      </dt>       <dd>Saved macros</dd>
-            <dt>offlineapps </dt>       <dd>Offline website data</dd>
-            <dt>passwords   </dt>       <dd>Saved passwords</dd>
-            <dt>sessions    </dt>       <dd>Authenticated sessions</dd>
-            <dt>sitesettings</dt>       <dd>Site preferences</dd>
-        </dl>
-
         <p>
-            When history items are sanitized <ex>:open</ex>,
-            <ex>:tabopen</ex> and <ex>:winopen</ex> command-line
-            history entries are also removed.
+            The default list of private items to sanitize. See
+            <ex>:sanitize</ex> for a list and explanation of
+            possible values.
         </p>
     </description>
 </item>
@@ -1055,21 +1038,20 @@
     <tags>'sts' 'sanitizetimespan'</tags>
     <spec>'sanitizetimespan' 'sts'</spec>
     <type>number</type>
-    <default>1</default>
+    <default>all</default>
     <description>
         <p>
             The default sanitizer time span. Only items created within this timespan are
-            deleted.
+            deleted. The value must be of the one of the forms,
         </p>
 
-        <note>This only applies to <em>cookies</em>, <em>history</em>, <em>formdata</em>, and <em>downloads</em>.</note>
-
         <dl>
-            <dt>0</dt>      <dd>Everything</dd>
-            <dt>1</dt>      <dd>Last hour</dd>
-            <dt>2</dt>      <dd>Last two hours</dd>
-            <dt>3</dt>      <dd>Last four hours</dd>
-            <dt>4</dt>      <dd>Today</dd>
+            <dt>all</dt>       <dd>Everything</dd>
+            <dt>session</dt>   <dd>The current session</dd>
+            <dt><a>n</a>m</dt> <dd>Past <a>n</a> Minutes</dd>
+            <dt><a>n</a>h</dt> <dd>Past <a>n</a> Hours</dd>
+            <dt><a>n</a>d</dt> <dd>Past <a>n</a> Days</dd>
+            <dt><a>n</a>w</dt> <dd>Past <a>n</a> Weeks</dd>
         </dl>
     </description>
 </item>

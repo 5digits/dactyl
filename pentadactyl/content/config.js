@@ -215,7 +215,8 @@ const Config = Module("config", ConfigBase, {
             {
                 argCount: "+",
                 completer: function (context) completion.ex(context),
-                literal: 0
+                literal: 0,
+                subCommand: 0
             });
 
         commands.add(["winc[lose]", "wc[lose]"],
@@ -235,6 +236,7 @@ const Config = Module("config", ConfigBase, {
             },
             {
                 completer: function (context) completion.url(context),
+                domains: function (args) commands.get("open").domains(args),
                 literal: 0,
                 privateData: true
             });
