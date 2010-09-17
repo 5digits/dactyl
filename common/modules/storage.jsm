@@ -80,7 +80,6 @@ const StoreBase = Class("StoreBase", {
     OPTIONS: ["privateData", "replacer"],
     fireEvent: function (event, arg) { storage.fireEvent(this.name, event, arg); },
     get serial() JSON.stringify(this._object, this.replacer),
-    save: function () { savePref(this); },
     init: function (name, store, load, options) {
         this._load = load;
 
@@ -91,14 +90,31 @@ const StoreBase = Class("StoreBase", {
                 this[k] = v;
         this.reload();
     },
+    changed: function () { this.timer.tell() },
     reload: function reload() {
         this._object = this._load() || this._constructor();
         this.fireEvent("change", null);
-    }
+    },
+    save: function () { savePref(this); },
 });
 
 const ObjectStore = Class("ObjectStore", StoreBase, {
     _constructor: myObject,
+
+    clear: function () {
+        this._object = {};
+        this.fireEvent("clear");
+    },
+
+    get: function get(key, default_) key in this._object ? this._object[key] : this.set(key, default_),
+
+    keys: function keys() Object.keys(this._object),
+
+    remove: function remove(key) {
+        var ret = this._object[key];
+        delete this._object[key];
+        this.fireEvent("remove", key);
+    },
 
     set: function set(key, val) {
         var defined = key in this._object;
@@ -108,20 +124,7 @@ const ObjectStore = Class("ObjectStore", StoreBase, {
             this.fireEvent("add", key);
         else if (orig != val)
             this.fireEvent("change", key);
-    },
-
-    remove: function remove(key) {
-        var ret = this._object[key];
-        delete this._object[key];
-        this.fireEvent("remove", key);
-        return ret;
-    },
-
-    get: function get(val, default_) val in this._object ? this._object[val] : default_,
-
-    clear: function () {
-        this._object = {};
-        this.fireEvent("clear", key);
+        return val;
     },
 
     __iterator__: function () Iterator(this._object),
@@ -175,7 +178,6 @@ const ArrayStore = Class("ArrayStore", StoreBase, {
 
 var keys = {};
 var observers = {};
-var timers = {};
 
 const Storage = Module("Storage", {
     alwaysReload: {},
@@ -185,7 +187,7 @@ const Storage = Module("Storage", {
                 throw Error();
             let load = function () loadPref(key, params.store, params.type || myObject);
             keys[key] = new constructor(key, params.store, load, params);
-            timers[key] = new Timer(1000, 10000, function () storage.save(key));
+            keys[key].timer = new Timer(1000, 10000, function () storage.save(key));
             this.__defineGetter__(key, function () keys[key]);
         }
         return keys[key];
@@ -241,8 +243,8 @@ const Storage = Module("Storage", {
         if (key in observers)
             for each (let observer in observers[key])
                 observer.callback.get()(key, event, arg);
-        if (timers[key])
-            timers[key].tell();
+        if (key in keys)
+            this[key].timer.tell();
     },
 
     load: function load(key) {

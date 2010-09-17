@@ -16,6 +16,12 @@ const Marks = Module("marks", {
         this._localMarks = storage.newMap("local-marks", { privateData: true, replacer: replacer, store: true });
         this._urlMarks = storage.newMap("url-marks", { privateData: true, replacer: replacer, store: true });
 
+        try {
+            if(isarray(Iterator(this._localMarks).next()));
+                this._localMarks.clear();
+        }
+        catch(e) {}
+
         this._pendingJumps = [];
     },
 
@@ -24,19 +30,14 @@ const Marks = Module("marks", {
      *     array.
      */
     get all() {
-        // local marks
-        let location = window.content.location.href;
-        let lmarks = [i for (i in this._localMarkIter()) if (i[1].location == location)];
-        lmarks.sort();
+        let lmarks = array(Iterator(this._localMarks.get(this.localURI) || {}));
+        let umarks = array(Iterator(this._urlMarks)).__proto__;
 
-        // URL marks
-        // FIXME: why does umarks.sort() cause a "Component is not available =
-        // NS_ERROR_NOT_AVAILABLE" exception when used here?
-        let umarks = [i for (i in this._urlMarks)];
-        umarks.sort(function (a, b) a[0].localeCompare(b[0]));
-
-        return lmarks.concat(umarks);
+        return lmarks.concat(umarks).sort(function (a, b) String.localeCompare(a[0], b[0]));
     },
+
+    // FIXME: Frameset
+    get localURI() window.content.document.documentURI,
 
     /**
      * Add a named mark for the current buffer, at its current position.
@@ -66,19 +67,16 @@ const Marks = Module("marks", {
         let position = { x: x, y: y };
 
         if (Marks.isURLMark(mark)) {
-            this._urlMarks.set(mark, { location: win.location.href, position: position, tab: tabs.getTab(), timestamp: Date.now()*1000 });
+            let res = this._urlMarks.set(mark, { location: doc.URL, position: position, tab: tabs.getTab(), timestamp: Date.now()*1000 });
             if (!silent)
-                dactyl.log("Adding URL mark: " + Marks.markToString(mark, this._urlMarks.get(mark)), 5);
+                dactyl.log("Adding URL mark: " + Marks.markToString(mark, res), 5);
         }
         else if (Marks.isLocalMark(mark)) {
-            // remove any previous mark of the same name for this location
-            this._removeLocalMark(mark);
-            if (!this._localMarks.get(mark))
-                this._localMarks.set(mark, []);
-            let vals = { location: win.location.href, position: position, timestamp: Date.now()*1000 };
-            this._localMarks.get(mark).push(vals);
+            let marks = this._localMarks.get(doc.URL, {});
+            marks[mark] = { location: doc.URL, position: position, timestamp: Date.now()*1000 };
+            this._localMarks.changed();
             if (!silent)
-                dactyl.log("Adding local mark: " + Marks.markToString(mark, vals), 5);
+                dactyl.log("Adding local mark: " + Marks.markToString(mark, marks[mark]), 5);
         }
     },
 
@@ -90,21 +88,21 @@ const Marks = Module("marks", {
      *     mark to be removed.
      * @param {boolean} special Whether to delete all local marks.
      */
-    // FIXME: Shouldn't special be replaced with a null filter?
     remove: function (filter, special) {
-        if (special) {
-            // :delmarks! only deletes a-z marks
-            for (let [mark, ] in this._localMarks)
-                this._removeLocalMark(mark);
-        }
+        if (special)
+            this._localMarks.remove(this.localURI);
         else {
-            for (let [mark, ] in this._urlMarks) {
-                if (filter.indexOf(mark) >= 0)
-                    this._removeURLMark(mark);
+            let local = this._localMarks.get(this.localURI);
+            Array.forEach(filter, function (mark) {
+                delete local[mark];
+                this.urlMarks.remove(mark);
+            });
+            try {
+                Iterator(local).next();
+                this._localMarks.changed();
             }
-            for (let [mark, ] in this._localMarks) {
-                if (filter.indexOf(mark) >= 0)
-                    this._removeLocalMark(mark);
+            catch (e) {
+                this._localMarks.remove(this.localURI);
             }
         }
     },
@@ -143,16 +141,10 @@ const Marks = Module("marks", {
             }
         }
         else if (Marks.isLocalMark(mark)) {
-            let win = window.content;
-            let slice = this._localMarks.get(mark) || [];
-
-            for (let [, lmark] in Iterator(slice)) {
-                if (win.location.href == lmark.location) {
-                    dactyl.log("Jumping to local mark: " + Marks.markToString(mark, lmark), 5);
-                    buffer.scrollToPercent(lmark.position.x * 100, lmark.position.y * 100);
-                    ok = true;
-                    break;
-                }
+            ok = (this._localMarks.get(this.localURI) || {})[mark];
+            if (ok) {
+                dactyl.log("Jumping to local mark: " + Marks.markToString(mark, ok), 5);
+                buffer.scrollToPercent(ok.position.x * 100, ok.position.y * 100);
             }
         }
 
@@ -196,37 +188,6 @@ const Marks = Module("marks", {
             }
         }
     },
-
-    _removeLocalMark: function _removeLocalMark(mark) {
-        let localmark = this._localMarks.get(mark);
-        if (localmark) {
-            let win = window.content;
-            for (let [i, ] in Iterator(localmark)) {
-                if (localmark[i].location == win.location.href) {
-                    dactyl.log("Deleting local mark: " + Marks.markToString(mark, localmark[i]), 5);
-                    localmark.splice(i, 1);
-                    if (localmark.length == 0)
-                        this._localMarks.remove(mark);
-                    break;
-                }
-            }
-        }
-    },
-
-    _removeURLMark: function _removeURLMark(mark) {
-        let urlmark = this._urlMarks.get(mark);
-        if (urlmark) {
-            dactyl.log("Deleting URL mark: " + Marks.markToString(mark, urlmark), 5);
-            this._urlMarks.remove(mark);
-        }
-    },
-
-    _localMarkIter: function _localMarkIter() {
-        for (let [mark, value] in this._localMarks)
-            for (let [, val] in Iterator(value))
-                yield [mark, val];
-    }
-
 }, {
     markToString: function markToString(name, mark) {
         return name + ", " + mark.location +
@@ -333,12 +294,19 @@ const Marks = Module("marks", {
         sanitizer.addItem("marks", {
             description: "Local and URL marks",
             action: function (timespan, host) {
-                function filter(mark) !(timespan.contains(mark.timestamp) && (!host || util.isDomainURL(mark.location, host)));
+                function matchhost(url) !host || util.isDomainURL(url, host);
+                function match(marks) (k for ([k, v] in Iterator(marks)) if (timespan.contains(v.timestamp) && matchhost(v.location)));
 
-                for (let [k, v] in storage["local-marks"])
-                    storage["local-marks"].set(k, v.filter(filter));
+                for (let [url, local] in storage["local-marks"])
+                    if (matchhost(url)) {
+                        for (let key in match(local))
+                            delete local[key];
+                        if (!Object.keys(local).length)
+                            storage["local-marks"].remove(url);
+                    }
+                storage["local-marks"].changed();
 
-                for (let key in (k for ([k, v] in storage["url-marks"]) if (!filter(v))))
+                for (let key in match(storage["url-marks"]))
                     storage["url-marks"].remove(key);
             }
         });
