@@ -302,10 +302,10 @@ const Highlights = Module("Highlight", {
                 serialize: function () [
                     {
                         command: this.name,
-                        arguments: [k],
-                        literalArg: v
+                        arguments: [v.class],
+                        literalArg: v.value
                     }
-                    for ([k, v] in Iterator(highlight))
+                    for (v in Iterator(highlight))
                     if (v.value != v.default)
                 ]
             });

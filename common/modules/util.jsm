@@ -452,6 +452,16 @@ const Util = Module("Util", {
     },
 
     /**
+     * Returns true if the given DOM node is currently visible.
+     *
+     * @param {Node} node
+     */
+    isVisible: function (node) {
+        let style = util.computedStyle(node);
+        return style.visibility == "visible" && style.display != "none";
+    },
+
+    /**
      * Returns an XPath union expression constructed from the specified node
      * tests. An expression is built with node tests for both the null and
      * XHTML namespaces. See {@link Buffer#evaluateXPath}.

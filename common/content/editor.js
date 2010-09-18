@@ -554,8 +554,8 @@ const Editor = Module("editor", {
     getAbbreviations: function (filter, lhs) {
         // ! -> list all, on c or i ! matches too
         let searchFilter = (filter == "!") ? "!ci" : filter + "!";
-        return list = [[mode, left, right] for ([left, [mode, right]] in this.abbrevs())
-                          if (searchFilter.indexOf(mode) >= 0 && left.indexOf(lhs || "") == 0)];
+        return [[mode, left, right] for ([left, [mode, right]] in this.abbrevs())
+                if (searchFilter.indexOf(mode) >= 0 && left.indexOf(lhs || "") == 0)];
     },
 
     /**
@@ -968,11 +968,8 @@ const Editor = Module("editor", {
                     editor.executeCommand("cmd_copy");
                     modes.set(modes.TEXTAREA);
                 }
-                else {
-                    let sel = window.content.document.getSelection();
-                    dactyl.assert(sel);
-                    dactyl.clipboardWrite(sel, true);
-                }
+                else
+                    dactyl.clipboardWrite(buffer.getCurrentWord(), true);
             });
 
         mappings.add([modes.VISUAL, modes.TEXTAREA],

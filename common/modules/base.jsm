@@ -487,7 +487,7 @@ function memoize(obj, key, getter) {
  *     function foo(a, b, c) [a, b, c].join(" ");
  *     curry(foo)(1, 2, 3) -> "1 2 3";
  *     curry(foo)(4)(5, 6) -> "4 5 6";
- *     curry(foo)(4)(8)(9) -> "7 8 9";
+ *     curry(foo)(7)(8)(9) -> "7 8 9";
  *
  * @param {function} fn The function to curry.
  * @param {integer} length The number of arguments expected.
@@ -580,7 +580,7 @@ function update(target) {
 /**
  * Extends a subclass with a superclass. The subclass's
  * prototype is replaced with a new object, which inherits
- * from the super class's prototype, {@see update}d with the
+ * from the superclass's prototype, {@see update}d with the
  * members of 'overrides'.
  *
  * @param {function} subclass
@@ -720,7 +720,7 @@ Class.prototype = {
  * @param {string} name The name of the instance.
  * @param {Object} prototype The instance prototype.
  * @param {Object} classProperties Properties to be applied to the class constructor.
- * @return {Class}
+ * @returns {Class}
  */
 function Module(name, prototype) {
     let init = callable(prototype) ? 4 : 3;
@@ -755,7 +755,7 @@ else
  * a fixed set of named members. Each argument should be the name of
  * a member in the resulting objects. These names will correspond to
  * the arguments passed to the resultant constructor. Instances of
- * the new struct may be treated vary much like arrays, and provide
+ * the new struct may be treated very much like arrays, and provide
  * many of the same methods.
  *
  *     const Point = Struct("x", "y", "z");
