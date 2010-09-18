@@ -1,4 +1,5 @@
 // Copyright (c) 2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2009-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -50,7 +51,7 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
             passwords: "Saved passwords",
             sessions: "Authenticated sessions",
         };
-        // These builtin methods don't support hosts or have
+        // These builtin methods don't support hosts or otherwise have
         // insufficient granularity
         this.addItem("cookies", {
             description: "Cookies",

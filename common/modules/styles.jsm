@@ -107,12 +107,13 @@ const Styles = Module("Styles", {
             sheet.filter = filter;
             sheet.css = String(css);
         }
-        else
+        else {
             sheet = Sheet(name, this._id++, filter.filter(util.identity), String(css), system, agent);
+            sheets.push(sheet);
+        }
 
         if (!lazy)
             sheet.enabled = true;
-        sheets.push(sheet);
 
         if (name)
             names[name] = sheet;
