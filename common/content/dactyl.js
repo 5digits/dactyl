@@ -72,7 +72,7 @@ const Dactyl = Module("dactyl", {
     forceNewWindow: false,
 
     /** @property {string} The Dactyl version string. */
-    version: "@VERSION@ (created: @DATE@)", // these VERSION and DATE tokens are replaced by the Makefile
+    version: null,
 
     /**
      * @property {Object} The map of command-line options. These are
@@ -1421,12 +1421,14 @@ const Dactyl = Module("dactyl", {
 
         if (typeof AddonManager == "undefined") 
             modules.AddonManager = {
-                getAddonById: function (id, callback) {
+                getAddonByID: function (id, callback) {
+                    callback = callback || util.identity;
                     let addon = id;
                     if (!isobject(addon))
                         addon = services.get("extensionManager").getItemForID(id);
                     if (!addon)
                         return callback(null);
+                    addon = Object.create(addon);
 
                     function getRdfProperty(item, property) {
                         let resource = services.get("rdf").GetResource("urn:mozilla:item:" + item.id);
@@ -1444,7 +1446,7 @@ const Dactyl = Module("dactyl", {
 
                     ["aboutURL", "creator", "description", "developers",
                      "homepageURL", "iconURL", "installDate", "name",
-                     "optionsURL", "releaseNotesURI", "updateDate"].forEach(function (item) {
+                     "optionsURL", "releaseNotesURI", "updateDate", "version"].forEach(function (item) {
                         addon[item] = getRdfProperty(addon, item);
                     });
                     addon.isActive = getRdfProperty(addon, "isDisabled") != "true";
@@ -1453,7 +1455,7 @@ const Dactyl = Module("dactyl", {
                         services.get("extensionManager").uninstallItem(this.id);
                     };
                     addon.appDisabled = false;
-                    addon.__defineGetter("userDisabled", function() getRdfProperty("userDisabled") == "true");
+                    addon.__defineGetter__("userDisabled", function() getRdfProperty("userDisabled") == "true");
                     addon.__defineSetter__("userDisabled", function(val) {
                         services.get("extensionManager")[val ? "enableItem" : "disableItem"](this.id);
                     });
@@ -1465,8 +1467,8 @@ const Dactyl = Module("dactyl", {
                     for (let [,type] in Iterator(types))
                         for (let [,item] in Iterator(services.get("extensionManager")
                                     .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
-                            res.append(this.getAddonById(item));
-                    return res;
+                            res.push(this.getAddonByID(item));
+                    callback(res);
                 },
                 getInstallForFile: function (file, callback, mimetype) {
                     callback({
@@ -1974,6 +1976,12 @@ const Dactyl = Module("dactyl", {
         dactyl.triggerObserver("load");
 
         dactyl.log("All modules loaded", 3);
+
+        AddonManager.getAddonByID(services.get("dactyl:").addonID, function (addon) {
+            // @DATE@ token replaced by the Makefile
+            // TODO: Find it automatically
+            dactyl.version = addon.version + " (created: @DATE@)";
+        });
 
         services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
 

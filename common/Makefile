@@ -6,6 +6,7 @@ BUILD_DATE    = $(shell date "+%Y/%m/%d %H:%M:%S")
 BASE          = $(TOP)/../common
 GOOGLE_PROJ   = dactyl
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
+VERSION	      = $(shell sed -n 's/.*<em:version>\(.*\)<.*/\1/p' $(TOP)/install.rdf)
 
 LOCALEDIR     = locale
 DOC_FILES     = $(wildcard $(LOCALEDIR)/*/*.xml)

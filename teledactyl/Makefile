@@ -1,6 +1,5 @@
 #### configuration
 
-VERSION       = 0.6a1pre
-NAME          = muttator
+NAME          = teledactyl
 
 include ../common/Makefile

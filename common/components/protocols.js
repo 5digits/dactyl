@@ -114,6 +114,7 @@ function Dactyl() {
     this.HELP_TAGS = {};
     this.FILE_MAP = {};
     this.OVERLAY_MAP = {};
+    this.addonID = this.name + "@dactyl.googlecode.com";
 }
 Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
