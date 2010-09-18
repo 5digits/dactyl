@@ -46,8 +46,11 @@ const JavaScript = Module("javascript", {
         // Properties aren't visible in an XPCNativeWrapper until
         // they're accessed.
         for (let key in properties(this.getKey(obj, "wrappedJSObject"), !toplevel))
-            if (key in obj && !set.has(seen, key))
-                yield key;
+            try {
+                if (key in obj && !set.has(seen, key))
+                    yield key;
+            }
+            catch (e) {}
     },
 
     objectKeys: function objectKeys(obj, toplevel) {

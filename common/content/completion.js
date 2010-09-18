@@ -221,6 +221,7 @@ const CompletionContext = Class("CompletionContext", {
                 let prefix = self.value.substring(minStart, context.offset);
                 return context.items.map(function (item) ({
                     text: prefix + item.text,
+                    result: prefix + item.result,
                     __proto__: item
                 }));
             });

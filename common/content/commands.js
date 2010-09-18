@@ -344,7 +344,7 @@ const Commands = Module("commands", {
         let names = array.flatten(Command.parseSpecs(args[0]));
         dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
                       "E182: Can't replace non-user command: " + args[0]);
-        if (!replace && args[3] && args[3].user)
+        if (!replace || !(args[3] && args[3].user))
             dactyl.assert(!names.some(function (name) name in this._exMap, this),
                           "Not replacing command " + args[0]);
         for (let name in values(names))

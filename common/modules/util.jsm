@@ -57,6 +57,7 @@ const Util = Module("Util", {
                 if (observers[target])
                     observers[target].call(obj, subject, data);
             });
+        this.dactyl.dump(String(obj), obj instanceof Ci.nsIObserver);
         register("addObserver");
     },
 
