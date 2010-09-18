@@ -1553,21 +1553,26 @@ const Dactyl = Module("dactyl", {
             {
                 name: "extde[lete]",
                 description: "Uninstall an extension",
-                action: callResult("uninstall")
+                action: callResult("uninstall"),
+                perm: "uninstall"
             },
             {
                 name: "exte[nable]",
                 description: "Enable an extension",
                 action: function (addon) addon.userDisabled = false,
-                filter: function ({ item }) item.userDisabled
+                filter: function ({ item }) item.userDisabled,
+                perm: "enable"
             },
             {
                 name: "extd[isable]",
                 description: "Disable an extension",
                 action: function (addon) addon.userDisabled = true,
-                filter: function ({ item }) !item.userDisabled
+                filter: function ({ item }) !item.userDisabled,
+                perm: "disable"
             }
         ].forEach(function (command) {
+            let perm = AddonManager["PERM_CAN_" + command.perm.toUpperCase()];
+            function ok(addon) !perm || addon.permissions & perm;
             commands.add([command.name],
                 command.description,
                 function (args) {
@@ -1580,6 +1585,8 @@ const Dactyl = Module("dactyl", {
                     AddonManager.getAddonsByTypes(["extension"], function (list) {
                         if (!args.bang)
                             list = list.filter(function (extension) extension.name == name);
+                        if (!args.bang && !list.every(ok))
+                            return dactyl.echoerr("Permission denied");
                         list.forEach(command.action);
                     });
                 }, {
@@ -1587,6 +1594,7 @@ const Dactyl = Module("dactyl", {
                     bang: true,
                     completer: function (context) {
                         completion.extension(context);
+                        context.filters.push(function ({ item }) ok(item));
                         if (command.filter)
                             context.filters.push(command.filter);
                     },
