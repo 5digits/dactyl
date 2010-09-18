@@ -1470,6 +1470,7 @@ const Dactyl = Module("dactyl", {
                 },
                 getInstallForFile: function (file, callback, mimetype) {
                     callback({
+                        addListener: function () {},
                         install: function () {
                             services.get("extensionManager").installItemFromFile(file, "app-profile");
                         }
@@ -1479,6 +1480,40 @@ const Dactyl = Module("dactyl", {
                     dactyl.assert(false, "Install by URL not implimented");
                 },
             };
+
+        const addonErrors = array.toObject([
+            [AddonManager.ERROR_NETWORK_FAILURE, "A network error occured"],
+            [AddonManager.ERROR_INCORRECT_HASH,  "The downloaded file did not match the expected hash"],
+            [AddonManager.ERROR_CORRUPT_FILE,    "The file appears to be corrupt"],
+            [AddonManager.ERROR_FILE_ACCESS,     "There was an error accessing the filesystem"]]);
+
+        const addonListener = {
+            onNewInstall: function (install) {},
+            onDownloadStarted: function (install) {},
+            onDownloadProgress: function (install) {},
+            onDownloadEnded: function (install) {
+                dactyl.echomsg("Add-on download complete: " + (install.name || install.sourceURI.spec));
+            },
+            onDownloadCancelled: function (install) {
+                dactyl.echomsg("Add-on download cancelled: " + (install.name || install.sourceURI.spec));
+            },
+            onDownloadFailed: function (install) {
+                dactyl.echoerr("Add-on download failed: " + (install.name || install.sourceURI.spec) + ": " +
+                               addonErrors[install.error]);
+            },
+            onInstallStarted: function (install) {},
+            onInstallEnded: function (install, addon) {
+                dactyl.echomsg("Add-on installation complete: " + (install.name || install.sourceURI.spec));
+            },
+            onInstallCancelled: function (install) {
+                dactyl.echomsg("Add-on installation cancelled: " + (install.name || install.sourceURI.spec));
+            },
+            onInstallFailed: function (install) {
+                dactyl.echoerr("Add-on installation failed: " + (install.name || install.sourceURI.spec) + ": " +
+                               addonErrors[install.error]);
+            },
+            onExternalInstall: function (addon, existingAddon, needsRestart) {}
+        };
 
         ///////////////////////////////////////////////////////////////////////////
         
@@ -1492,11 +1527,15 @@ const Dactyl = Module("dactyl", {
             function (args) {
                 let url  = args[0];
                 let file = io.File(url);
+                function install(addonInstall) {
+                    addonInstall.addListener(addonListener);
+                    addonInstall.install();
+                }
 
                 if (!file.exists())
-                    AddonManager.getInstallForURL(url,   callResult("install"), "application/x-xpinstall");
+                    AddonManager.getInstallForURL(url,   install, "application/x-xpinstall");
                 else if (file.isReadable() && file.isFile())
-                    AddonManager.getInstallForFile(file, callResult("install"), "application/x-xpinstall");
+                    AddonManager.getInstallForFile(file, install, "application/x-xpinstall");
                 else if (file.isDirectory())
                     dactyl.echomsg("Cannot install a directory: " + file.path.quote(), 0);
                 else
