@@ -19,6 +19,7 @@
         backspace.
       - Supports reverse incremental search.
     * Replaced 'focuscontent' with 'strictfocus'
+    * Added 'altwildmode' and <A-Tab> commandline key binding
     * Added 'banghist' option
     * gf now toggles between source and content view.
       The | key binding has been removed.

@@ -811,6 +811,32 @@ const Completion = Module("completion", {
             });
     },
     options: function () {
+        let wildmode = {
+            completer: function (context) [
+                // Why do we need ""?
+                // Because its description is useful during completion. --Kris
+                ["",              "Complete only the first match"],
+                ["full",          "Complete the next full match"],
+                ["longest",       "Complete to longest common string"],
+                ["list",          "If more than one match, list all matches"],
+                ["list:full",     "List all and complete first match"],
+                ["list:longest",  "List all and complete common string"]
+            ],
+            checkHas: function (value, val) {
+                let [first, second] = value.split(":", 2);
+                return first == val || second == val;
+            },
+            has: function () {
+                test = function (val) this.values.some(function (value) this.checkHas(value, val), this);
+                return Array.some(arguments, test, this);
+            }
+        };
+
+        options.add(["altwildmode", "awim"],
+            "Define how command line completion works when the Alt key is pressed",
+            "stringlist", "list:full",
+            wildmode);
+
         options.add(["autocomplete", "au"],
             "Automatically update the completion list on any key press",
             "regexlist", ".*");
@@ -836,26 +862,7 @@ const Completion = Module("completion", {
         options.add(["wildmode", "wim"],
             "Define how command line completion works",
             "stringlist", "list:full",
-            {
-                completer: function (context) [
-                    // Why do we need ""?
-                    // Because its description is useful during completion. --Kris
-                    ["",              "Complete only the first match"],
-                    ["full",          "Complete the next full match"],
-                    ["longest",       "Complete to longest common string"],
-                    ["list",          "If more than one match, list all matches"],
-                    ["list:full",     "List all and complete first match"],
-                    ["list:longest",  "List all and complete common string"]
-                ],
-                checkHas: function (value, val) {
-                    let [first, second] = value.split(":", 2);
-                    return first == val || second == val;
-                },
-                has: function () {
-                    test = function (val) this.values.some(function (value) this.checkHas(value, val), this);
-                    return Array.some(arguments, test, this);
-                }
-            });
+            wildmode);
 
         options.add(["wildsort", "wis"],
             "Regexp list of which contexts to sort",

@@ -95,7 +95,7 @@ const CommandLine = Module("commandline", {
         this._tabTimer = Timer(0, 0, function tabTell(event) {
             dactyl.trapErrors(function () {
                 if (self._completions)
-                    self._completions.tab(event.shiftKey);
+                    self._completions.tab(event.shiftKey, event.altKey && options.get("altwildmode").values);
             });
         });
 
@@ -658,7 +658,7 @@ const CommandLine = Module("commandline", {
                     this._history.select(/Up/.test(key), !/(Page|S-)/.test(key));
                 }
                 // user pressed <Tab> to get completions of a command
-                else if (/^<(Tab|S-Tab)>$/.test(key)) {
+                else if (/^<(?:A-)?(?:S-)?Tab>$/.test(key)) {
                     // prevent tab from moving to the next field
                     event.preventDefault();
                     event.stopPropagation();
@@ -682,7 +682,7 @@ const CommandLine = Module("commandline", {
             }
             else if (event.type == "keyup") {
                 let key = events.toString(event);
-                if (/^<(Tab|S-Tab)>$/.test(key))
+                if (/^<(?:A-)?(?:S-)?Tab>$/.test(key))
                     this._tabTimer.flush();
             }
         }
@@ -1120,6 +1120,7 @@ const CommandLine = Module("commandline", {
             this.editor = input.editor;
             this.selected = null;
             this.wildmode = options.get("wildmode");
+            this.wildtypes = this.wildmode.values;
             this.itemList = commandline._completionList;
             this.itemList.setItems(this.context);
             this.reset();
@@ -1161,8 +1162,6 @@ const CommandLine = Module("commandline", {
         get substring() this.context.longestAllSubstring,
 
         get wildtype() this.wildtypes[this.wildIndex] || "",
-
-        get wildtypes() this.wildmode.values,
 
         complete: function complete(show, tabPressed) {
             this.context.reset();
@@ -1331,20 +1330,20 @@ const CommandLine = Module("commandline", {
 
         tabs: [],
 
-        tab: function tab(reverse) {
+        tab: function tab(reverse, wildmode) {
             commandline._autocompleteTimer.flush();
             // Check if we need to run the completer.
             if (this.context.waitingForTab || this.wildIndex == -1)
                 this.complete(true, true);
 
-            this.tabs.push(reverse);
+            this.tabs.push([reverse, wildmode || options.get("wildmode").values]);
             if (this.waiting)
                 return;
 
             while (this.tabs.length) {
-                this.wildIndex = Math.min(this.wildIndex, this.wildtypes.length - 1);
+                [reverse, this.wildtypes] = this.tabs.shift();
 
-                reverse = this.tabs.shift();
+                this.wildIndex = Math.min(this.wildIndex, this.wildtypes.length - 1);
                 switch (this.wildtype.replace(/.*:/, "")) {
                 case "":
                     this.select(0);

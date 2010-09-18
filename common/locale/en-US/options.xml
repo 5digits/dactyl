@@ -322,6 +322,18 @@
 </item>
 
 <item>
+    <tags>'awim' 'altwildmode'</tags>
+    <spec>'altwildmode' 'awim'</spec>
+    <type>stringlist</type>
+    <default>list:full</default>
+    <description>
+        <p>
+            Like <o>wildmode</o>, but when the <k name="Alt"/> key is pressed.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>'au' 'autocomplete'</tags>
     <spec>'autocomplete' 'au'</spec>
     <type>regexlist</type>
@@ -1417,6 +1429,10 @@
                 regardless of the case.
             </dd>
         </dl>
+
+        <p>
+            See also <o>altwildmode</o>.
+        </p>
 
     </description>
 </item>
