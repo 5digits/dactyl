@@ -16,8 +16,9 @@ mkdir -p $stage
 if hg root >/dev/null 2>&1
 then
     root="$(hg root)"; mf="$(hg mf)"
+    find=$(which find)
     find() {
-        set -x
+        $find "$@" -name '*.jar'
         echo "$mf" | sed -n "s!$(pwd | sed "s!$root/\?!!")/\?!!p" |
             grep "^$1"
     }
