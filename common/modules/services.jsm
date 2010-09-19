@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("services", this, {
+defmodule("services", {
     exports: ["Services", "services"]
 });
 

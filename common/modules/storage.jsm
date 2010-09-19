@@ -6,7 +6,7 @@
 
 const myObject = Object;
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("storage", this, {
+defmodule("storage", {
     exports: ["File", "storage"],
     require: ["services", "util"]
 });

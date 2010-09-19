@@ -78,7 +78,7 @@ const IO = Module("io", {
      * @final
      */
     File: Class("File", File, {
-        init: function init(path, checkCWD) 
+        init: function init(path, checkCWD)
             init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.getCurrentDirectory())
     }),
 
@@ -671,7 +671,7 @@ lookup:
 
                 // NOTE: Vim doesn't replace ! preceded by 2 or more backslashes and documents it - desirable?
                 // pass through a raw bang when escaped or substitute the last command
-                
+
                 // This is an asinine and irritating feature when we have searchable
                 // command-line history. --Kris
                 if (options["banghist"])

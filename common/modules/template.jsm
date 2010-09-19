@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("template", this, {
+defmodule("template", {
     exports: ["Template", "template"],
     require: ["util"]
 });

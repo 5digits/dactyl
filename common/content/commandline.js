@@ -451,7 +451,7 @@ const CommandLine = Module("commandline", {
     /**
      * Displays the multi-line output of a command, preceded by the last
      * executed ex command string.
-     * 
+     *
      * @param {XML} xml The output as an E4X XML object.
      */
     commandOutput: function (xml) {
@@ -1532,14 +1532,14 @@ const CommandLine = Module("commandline", {
             action: function (timespan, host) {
                 if (!host)
                     storage["history-search"].mutate("filter", function (item) !timespan.contains(item.timestamp));
-                storage["history-command"].mutate("filter", function (item) 
+                storage["history-command"].mutate("filter", function (item)
                     !(timespan.contains(item.timestamp) && (!host || commands.hasDomain(item.value, host))));
             }
         });
         // Delete history-like items from the commandline and messages on history purge
         sanitizer.addItem("history", {
             action: function (timespan, host) {
-                storage["history-command"].mutate("filter", function (item) 
+                storage["history-command"].mutate("filter", function (item)
                     !(timespan.contains(item.timestamp) && (host ? commands.hasDomain(item.value, host) : item.privateData)));
                 commandline._messageHistory.filter(function (item) !timespan.contains(item.timestamp * 1000) ||
                     !item.domains && !item.privateData ||
@@ -1601,7 +1601,7 @@ const ItemList = Class("ItemList", {
         if (this._container.collapsed)
             this._div.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
 
-        this._minHeight = Math.max(this._minHeight, 
+        this._minHeight = Math.max(this._minHeight,
             this._win.scrollY + this._divNodes.completions.getBoundingClientRect().bottom);
 
         if (this._container.collapsed)

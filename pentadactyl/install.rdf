@@ -1,21 +1,20 @@
 <?xml version="1.0"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-    <Description about="urn:mozilla:install-manifest">
-        <em:id>pentadactyl@dactyl.googlecode.com</em:id>
-        <em:name>Pentadactyl</em:name>
-        <em:version>1.0b1pre</em:version>
-        <em:description>Firefox for Vim and Links addicts</em:description>
-        <em:creator>Kris Maglione</em:creator>
-        <em:homepageURL>http://dactyl.sf.net/Pentadactyl</em:homepageURL>
-        <em:iconURL>chrome://pentadactyl/skin/icon.png</em:iconURL>
-        <em:optionsURL>chrome://dactyl/content/preferences.xul</em:optionsURL>
+    <Description about="urn:mozilla:install-manifest"
+        em:id="pentadactyl@dactyl.googlecode.com"
+        em:name="Pentadactyl"
+        em:version="1.0b1pre"
+        em:description="Firefox for Vim and Links addicts"
+        em:creator="Kris Maglione"
+        em:homepageURL="http://dactyl.sf.net/Pentadactyl"
+        em:iconURL="chrome://pentadactyl/skin/icon.png"
+        em:optionsURL="chrome://dactyl/content/preferences.xul">
         <em:targetApplication>
-            <Description>
-                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-                <em:minVersion>3.5</em:minVersion>
-                <em:maxVersion>4.0b7pre</em:maxVersion>
-            </Description>
+            <Description
+                em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                em:minVersion="3.5"
+                em:maxVersion="4.0b7pre"/>
         </em:targetApplication>
     </Description>
 </RDF>

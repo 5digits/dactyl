@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("styles", this, {
+defmodule("styles", {
     exports: ["Style", "Styles", "styles"],
     require: ["services", "util"],
     use: ["template"]
@@ -368,7 +368,7 @@ const Styles = Module("Styles", {
                                     if (!cmd.filter || cmd.filter(sheet))];
                         },
                     }, {
-                        names: ["-name", "-n"], 
+                        names: ["-name", "-n"],
                         type: modules.CommandOption.STRING,
                         completer: function () [[name, sheet.css]
                                                 for ([name, sheet] in Iterator(styles.userNames))

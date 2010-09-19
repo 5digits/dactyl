@@ -20,18 +20,24 @@
       - Supports reverse incremental search.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'
+    * IMPORTANT: Single quotes no longer treat \s specially
     * Replaced 'focuscontent' with 'strictfocus'
+      I.e., 'fo\o''bar' ≡ fo\o'bar
     * Added 'altwildmode' and <A-Tab> commandline key binding
     * Added 'banghist' option
+    * Added ‘transliterated’ option to 'hintmatching'
     * gf now toggles between source and content view.
       The | key binding has been removed.
-    * :extadd now supports URLs.
+    * :extadd now supports remote URLs as well as local files on
+      Firefox 4.
     * :open now only opens files beginning with /, ./, ../, or ~/
     * 'complete' now defaults to ‘slf’ but file completion only
       triggers when the URL begins as above.
     * Page zoom information is now shown in the status bar, and
       change in zoom status no longer appears in :messages.
     * Added ZO, ZI, ZM, and ZR as aliases for zO, zI, zM, and zR
+    * Completion list now behaves better when the multi-line output 
+      window is displayed
     * Major help system improvements:
       - Plugins may now provide full-fledged ':help' documentation
       - Add basic plugin authorship documentation

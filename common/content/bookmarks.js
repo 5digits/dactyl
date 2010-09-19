@@ -363,7 +363,7 @@ const Bookmarks = Module("bookmarks", {
                     completion.bookmark(context, args["-tags"]);
                 },
                 options: [tags,
-                    { 
+                    {
                         names: ["-max", "-m"],
                         description: "The maximum number of items to list or open",
                         type: CommandOption.INT

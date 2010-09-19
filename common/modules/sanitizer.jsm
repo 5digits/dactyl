@@ -15,7 +15,7 @@
 //   - finish 1.9.0 support if we're going to support sanitizing in Xulmus
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("sanitizer", this, {
+defmodule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
     require: ["services", "storage", "util"]
 });
@@ -79,7 +79,7 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
                     // Zoom level, ...
                     services.get("contentprefs").removeGroupedPrefs();
                 }
-                
+
                 // "Never remember passwords" ...
                 for each (let domain in services.get("loginmanager").getAllDisabledHosts())
                     if (!host || util.isSubdomain(domain, host))

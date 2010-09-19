@@ -20,7 +20,8 @@
     straightforward, but allows for any number of complex actions to be
     executed, with full access to all of the internals of &dactyl.appname; and
     &dactyl.host;. Both expression evaluation methods support sophisticated
-    expression completion, including option lists and descriptions thereof.
+    expression completion, including option lists and descriptions thereof,
+    along with paren matching and syntax error highlighting.
 </p>
 
 <item>

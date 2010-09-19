@@ -544,7 +544,7 @@ const Dactyl = Module("dactyl", {
                     body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
                         context.INFO;
 
-            let help = 
+            let help =
                 '<?xml version="1.0"?>\n' +
                 '<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>\n' +
                 '<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">\n' +
@@ -1419,7 +1419,7 @@ const Dactyl = Module("dactyl", {
 
         ///////////////////////////////////////////////////////////////////////////
 
-        if (typeof AddonManager == "undefined") 
+        if (typeof AddonManager == "undefined")
             modules.AddonManager = {
                 getAddonByID: function (id, callback) {
                     callback = callback || util.identity;
@@ -1518,7 +1518,7 @@ const Dactyl = Module("dactyl", {
         };
 
         ///////////////////////////////////////////////////////////////////////////
-        
+
         function callResult(method) {
             let args = Array.slice(arguments, 1);
             return function (result) { result[method].apply(result, args) };

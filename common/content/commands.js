@@ -272,7 +272,7 @@ const Command = Class("Command", {
     serialize: null,
     /**
      * @property {number} If this command takes another ex command as an
-     *     argument, the index of that argument. Used in determining whether to 
+     *     argument, the index of that argument. Used in determining whether to
      *     purge the command from history when clearing private data.
      */
     subCommand: null,
@@ -474,7 +474,7 @@ const Commands = Module("commands", {
     },
 
     /**
-     * Returns true if a command invocation contains a URL referring to the 
+     * Returns true if a command invocation contains a URL referring to the
      * domain 'host'.
      *
      * @param {string} command
@@ -494,7 +494,7 @@ const Commands = Module("commands", {
     },
 
     /**
-     * Returns true if a command invocation contains private data which should 
+     * Returns true if a command invocation contains private data which should
      * be cleared when purging private data.
      *
      * @param {string} command
@@ -1070,13 +1070,13 @@ const Commands = Module("commands", {
                 options: [
                     { names: ["-bang"],  description: "Command may be proceeded by a !" },
                     { names: ["-count"], description: "Command may be preceeded by a count" },
-                    { 
-                        names: ["-description"], 
+                    {
+                        names: ["-description"],
                         description: "A user-visible description of the command",
                         type: CommandOption.STRING
-                    }, { 
+                    }, {
                         // TODO: "E180: invalid complete value: " + arg
-                        names: ["-complete"], 
+                        names: ["-complete"],
                         description: "The argument completion function",
                         completer: function (context) [[k, ""] for ([k, v] in Iterator(completeOptionMap))],
                         type: CommandOption.STRING,

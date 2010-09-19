@@ -17,7 +17,7 @@ let hasOwnProperty = objproto.hasOwnProperty;
 if (!Object.create)
     Object.create = function (proto, props) {
         let obj = { __proto__: proto };
-        for (let k in properties(props || {})) 
+        for (let k in properties(props || {}))
             Object.defineProperty(obj, k, props[k]);
         return obj;
     };
@@ -82,7 +82,8 @@ if (!Object.keys)
 let use = {};
 let loaded = {};
 let currentModule;
-function defmodule(name, module, params) {
+function defmodule(name, params) {
+    let module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
     defmodule.loadLog.push("defmodule " + name);
@@ -129,12 +130,12 @@ function require(obj, name, from) {
         Cu.import("resource://dactyl/" + name + ".jsm", obj);
     }
     catch (e) {
-        dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n"); 
+        dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n");
         dump("    " + e.fileName + ":" + e.lineNumber + ": " + e +"\n");
     }
 }
 
-defmodule("base", this, {
+defmodule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
@@ -347,7 +348,7 @@ function iter(obj) {
             for (let i = 0; i < obj.length; i++)
                 yield [obj.name, obj];
         })();
-    if (obj instanceof Ci.mozIStorageStatement) 
+    if (obj instanceof Ci.mozIStorageStatement)
         return (function (obj) {
             while (obj.executeStep())
                 yield obj.row;
