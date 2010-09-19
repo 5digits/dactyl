@@ -4,7 +4,7 @@
     <Description about="urn:mozilla:install-manifest"
         em:id="pentadactyl@dactyl.googlecode.com"
         em:name="Pentadactyl"
-        em:version="1.0b1pre"
+        em:version="1.0b1"
         em:description="Firefox for Vim and Links addicts"
         em:creator="Kris Maglione"
         em:homepageURL="http://dactyl.sf.net/Pentadactyl"
