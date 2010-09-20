@@ -583,7 +583,6 @@ lookup:
             function () { dactyl.echomsg(io.getCurrentDirectory().path); },
             { argCount: "0" });
 
-        // "mkv[imperatorrc]" or "mkm[uttatorrc]"
         commands.add([config.name.replace(/(.)(.*)/, "mk$1[$2rc]")],
             "Write current key mappings and changed options to the config file",
             function (args) {
@@ -599,17 +598,7 @@ lookup:
                 let lines = [cmd.serialize().map(commands.commandToString) for (cmd in commands) if (cmd.serialize)];
                 lines = array.flatten(lines);
 
-                // source a user .pentadactylrc file
                 lines.unshift('"' + dactyl.version + "\n");
-
-                // For the record, I think that adding this line is absurd. --Kris
-                // I can't disagree. --djk
-                lines.push(commands.commandToString({
-                    command: "source",
-                    bang: true,
-                    arguments: [filename + ".local"]
-                }));
-
                 lines.push("\n\" vim: set ft=" + config.name + ":");
 
                 try {
