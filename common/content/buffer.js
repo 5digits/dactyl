@@ -1298,7 +1298,7 @@ const Buffer = Module("buffer", {
             context.title = ["Stylesheet", "Location"];
 
             // unify split style sheets
-            let styles = array.toObject([s.title, []] for (s in values(buffer.alternateStyleSheets)));
+            let styles = array.toObject([[s.title, []] for (s in values(buffer.alternateStyleSheets))]);
 
             buffer.alternateStyleSheets.forEach(function (style) {
                 styles[style.title].push(style.href || "inline");
