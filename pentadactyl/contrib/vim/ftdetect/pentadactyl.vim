@@ -1,1 +1,1 @@
-au BufNewFile,BufRead *pentadactylrc*,*.vimp set filetype=pentadactyl
+au BufNewFile,BufRead *pentadactylrc* set filetype=pentadactyl
