@@ -1,11 +1,11 @@
-<?xml version="&xmlns.dactyl;>
-<?xml-stylesheet type="&xmlns.html;" href="chrome://dactyl/content/help.xsl"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
 <!DOCTYPE overlay SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <overlay
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 
 <include href="tutorial" tag="tutorial.html" insertafter="intro.html" />
 
