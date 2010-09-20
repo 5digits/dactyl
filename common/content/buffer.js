@@ -981,7 +981,12 @@ const Buffer = Module("buffer", {
 
         if (fullZoom !== undefined)
             ZoomManager.useFullZoom = fullZoom;
-        ZoomManager.zoom = value / 100;
+        try {
+            ZoomManager.zoom = value / 100;
+        }
+        catch (e if e == Cr.NS_ERROR_ILLEGAL_VALUE) {
+            return dactyl.echoerr("Illegal value");
+        }
 
         if ("FullZoom" in window)
             FullZoom._applySettingToPref();
@@ -1283,10 +1288,7 @@ const Buffer = Module("buffer", {
                 else
                     dactyl.assert(false, "E488: Trailing characters");
 
-                if (args.bang)
-                    buffer.fullZoom = level;
-                else
-                    buffer.textZoom = level;
+                Buffer.setZoom(level, args.bang);
             },
             {
                 argCount: "?",
