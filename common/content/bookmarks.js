@@ -34,11 +34,10 @@ const Bookmarks = Module("bookmarks", {
     add: function add(starOnly, title, url, keyword, tags, force) {
         try {
             let uri = util.createURI(url);
-            if (force && bookmarks.isBookmarked(uri.spec))
-                // WTF? This seems wrong... --Kris
+            if (!force && bookmarks.isBookmarked(uri.spec))
                 for (let bmark in bookmarkcache)
-                    if (bmark[0] == uri.spec) {
-                        var id = bmark[5];
+                    if (bmark.url == uri.spec) {
+                        var id = bmark.id;
                         if (title)
                             services.get("bookmarks").setItemTitle(id, title);
                         break;
@@ -423,7 +422,7 @@ const Bookmarks = Module("bookmarks", {
                 }
 
                 commandline.open(":",
-                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.URL], bang: bmarks.length == 1 }),
+                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.URL] }),
                     modes.EX);
             });
 
