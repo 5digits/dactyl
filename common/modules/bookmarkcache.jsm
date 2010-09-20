@@ -131,7 +131,7 @@ const BookmarkCache = Module("BookmarkCache", {
     onItemChanged: function onItemChanged(itemId, property, isAnnotation, value) {
         if (isAnnotation)
             return;
-        let bookmark = bookmarks.filter(function (item) item.id == itemId)[0];
+        let bookmark = bookmarkcache.bookmarks.filter(function (item) item.id == itemId)[0];
         if (bookmark) {
             if (property == "tags")
                 value = tagging.getTagsForURI(util.newURI(bookmark.url), {});
