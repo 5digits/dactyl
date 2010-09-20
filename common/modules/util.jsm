@@ -553,10 +553,9 @@ const Util = Module("Util", {
                                         <span highlight="HelpXMLAttribute">{namespaced(attr)}</span> +
                                         <span highlight="HelpXMLString">{attr.value}</span>,
                                     <> </>)
-                            }{ hasChildren ? "/>" : ">"
-                        }</span>{ !hasChildren ? "" :
-                        <>...</> +
-                        <span highlight="HtmlTagEnd">&lt;{namespaced(elem)}></span>
+                            }{ !hasChildren ? "/>" : ">"
+                        }</span>{ !hasChildren ? "" : <>...</> +
+                            <span highlight="HtmlTagEnd">&lt;{namespaced(elem)}></span>
                     }</span>;
 
                 let tag = "<" + [namespaced(elem)].concat(
