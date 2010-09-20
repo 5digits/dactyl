@@ -266,6 +266,7 @@ const Hints = Module("hints", {
 
             hint.span = baseNodeAbsolute.cloneNode(true);
 
+            rect = elem.getClientRects()[0] || rect;
             let leftPos = Math.max((rect.left + offsetX), offsetX);
             let topPos =  Math.max((rect.top + offsetY), offsetY);
 

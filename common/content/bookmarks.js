@@ -34,17 +34,16 @@ const Bookmarks = Module("bookmarks", {
     add: function add(starOnly, title, url, keyword, tags, force) {
         try {
             let uri = util.createURI(url);
-            if (!force && bookmarks.isBookmarked(uri.spec)) {
+            if (force && bookmarks.isBookmarked(uri.spec))
                 // WTF? This seems wrong... --Kris
-                for (let bmark in bookmarkcache) {
+                for (let bmark in bookmarkcache)
                     if (bmark[0] == uri.spec) {
                         var id = bmark[5];
                         if (title)
                             services.get("bookmarks").setItemTitle(id, title);
                         break;
                     }
-                }
-            }
+
             if (id == undefined)
                 id = services.get("bookmarks").insertBookmark(
                          services.get("bookmarks")[starOnly ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],

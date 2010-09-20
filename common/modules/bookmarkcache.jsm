@@ -29,7 +29,7 @@ const BookmarkCache = Module("BookmarkCache", {
         bookmarks.addObserver(this, false);
     },
 
-    __iterator__: function () (val for ([, val] in Iterator(this.bookmarks))),
+    __iterator__: function () (val for ([, val] in Iterator(bookmarkcache.bookmarks))),
 
     get bookmarks() Class.replaceProperty(this, "bookmarks", this.load()),
 
