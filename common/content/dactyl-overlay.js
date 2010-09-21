@@ -42,6 +42,7 @@
      "modules",
      "storage",
      "util",
+     "abbreviations",
      "autocommands",
      "buffer",
      "commandline",

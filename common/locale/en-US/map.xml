@@ -416,6 +416,17 @@
             <a>lhs</a>. If no arguments are given, list all
             abbreviations.
         </p>
+
+        <p>
+            If the <em>-javascript</em> (short names <em>-js</em>,
+            <em>-j</em>) option is given, <a>lhs</a> is expanded to
+            the value <em>return</em>ed by the JavaScript code
+            <a>rhs</a>. The code is evaluated with the variable
+            <em>editor</em> set to the editable element that the
+            abbreviation is currently being expanded in. The code
+            should <em>not</em> make any changes to the contents of
+            the editor.
+        </p>
     </description>
 </item>
 
