@@ -13,7 +13,7 @@
 
 <p>
     &dactyl.appname; provides a number commands to change the
-    behavior of key presses. This can be mean anything from
+    behavior of key presses. This can mean anything from
     automatically substituting one key for another, to automatically
     replacing one typed word for another, to launching a dialog or
     running a command.
