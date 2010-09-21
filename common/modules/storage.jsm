@@ -13,7 +13,7 @@ defmodule("storage", {
 
 var prefService = services.get("pref").getBranch("extensions.dactyl.datastore.");
 
-const win32 = services.get("runtime").OS == "Win32";
+const win32 = /^win(32|nt)$/i.test(services.get("runtime").OS);
 
 function getFile(name) {
     let file = storage.infoPath.clone();
