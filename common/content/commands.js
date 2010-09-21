@@ -912,9 +912,9 @@ const Commands = Module("commands", {
             }
 
             // dynamically get completions as specified with the command's completer function
+            context.highlight();
             let command = cmd && commands.get(cmd);
             if (!command) {
-                context.highlight();
                 context.highlight(0, cmd && cmd.length, "SPELLCHECK");
                 return;
             }

@@ -264,11 +264,12 @@ const Storage = Module("Storage", {
 }, {
 }, {
     init: function (dactyl, modules) {
-        let infoPath = services.create("file");
-        infoPath.initWithPath(File.expandPath(modules.IO.runtimePath.replace(/,.*/, "")));
-        infoPath.append("info");
-        infoPath.append(dactyl.profileName);
-        storage.infoPath = infoPath;
+        let infoPath = File(modules.IO.runtimePath.replace(/,.*/, ""));
+        if (infoPath) {
+            infoPath.append("info");
+            infoPath.append(dactyl.profileName);
+            storage.infoPath = infoPath;
+        }
     }
 });
 
@@ -289,12 +290,18 @@ const File = Class("File", {
         else if (/file:\/\//.test(path))
             file = services.create("file:").getFileFromURLSpec(path);
         else {
-            let expandedPath = File.expandPath(path);
+            try {
+                let expandedPath = File.expandPath(path);
 
-            if (!File.isAbsolutePath(expandedPath) && checkPWD)
-                file = File.joinPaths(checkPWD, expandedPath);
-            else
-                file.initWithPath(expandedPath);
+                if (!File.isAbsolutePath(expandedPath) && checkPWD)
+                    file = File.joinPaths(checkPWD, expandedPath);
+                else
+                    file.initWithPath(expandedPath);
+            }
+            catch (e) {
+                dump("dactyl: " + e + "\n" + String.replace(e.stack, /^/gm, "dactyl:  ") + "\n");
+                return null;
+            }
         }
         let self = XPCSafeJSObjectWrapper(file);
         self.__proto__ = File.prototype;
@@ -510,7 +517,7 @@ const File = Class("File", {
             let home = services.get("environment").get("HOME");
 
             // Windows has its own idiosyncratic $HOME variables.
-            if (!home && win32)
+            if (win32 && (!home || !File(home) || !File(home).exists()))
                 home = services.get("environment").get("USERPROFILE") ||
                        services.get("environment").get("HOMEDRIVE") + services.get("environment").get("HOMEPATH");
 
