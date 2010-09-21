@@ -75,7 +75,7 @@
     <spec>:!<a>cmd</a></spec>
     <description>
         <p>
-            Run an extenral command command. Runs <a>cmd</a> through system()
+            Run an external command command. Runs <a>cmd</a> through system()
             and displays its output. Any ‘!’ in <a>cmd</a> is replaced with
             the previous external command, so long as it is not preceded by a
             backslash and <o>banghist</o> is enabled.
@@ -227,7 +227,7 @@
             <em>options</em>, and <em>sitesettings</em>. All other
             domain-specific data is cleared only along with <em>history</em>,
             when a request is made to &dactyl.host; to purge all data for
-            <em>host</em>. Included in this purge are all matchint history
+            <em>host</em>. Included in this purge are all matching history
             entries, cookies, closed tabs, form data, and location bar
             entries.
         </note>

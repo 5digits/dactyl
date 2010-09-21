@@ -13,7 +13,7 @@
 
 <p>
     &dactyl.appname; provides a number commands to change the
-    behavior of key presses. This can be mean anythong from
+    behavior of key presses. This can be mean anything from
     automatically substituting one key for another, to automatically
     replacing one typed word for another, to launching a dialog or
     running a command.
@@ -279,7 +279,7 @@
     should note that within angle brackets all alphabetic characters
     are read as lowercase. Uppercase characters can only be
     specified with the <em>S-</em> modifier. The following key
-    sequences are interperated as described,
+    sequences are interpreted as described,
 </p>
 
 <dl>

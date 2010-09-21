@@ -34,8 +34,8 @@
             commands to be executed when <oa>events</oa> occur for
             pages matching the regular expression <oa>pat</oa>. If
             the <em>-javascript</em> (short name <em>-js</em>)
-            option is given, <oa>cmd</oa> is interperated as
-            JavaScript code. Otherwise, it is interperated as an ex
+            option is given, <oa>cmd</oa> is interpreted as
+            JavaScript code. Otherwise, it is interpreted as an ex
             command.
         </p>
 
