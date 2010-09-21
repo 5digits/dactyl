@@ -340,12 +340,13 @@
     <default>.*</default>
     <description>
         <p>
-            A list of regexps defining which completion contexts should be
-            auto-completed. When the value is non-empty, the completion list
-            is automatically when the <t>command-line</t> is focused.
-            Thereafter, any key press triggers a completion update for the
-            matching contexts.  Non-matching contexts will only be updated
-            when the <k name="Tab"/> key is pressed. This option is useful for
+            Enables automatic completion for completion groups matching the
+            given regular expressions. When automatic completion is enabled,
+            the completion list is automatically opened when the
+            <t>command-line</t> is focused.  Thereafter, any key press
+            triggers a completion update for the matching groups (hereafter
+            ‘contexts’). Non-matching contexts will only be updated when the
+            <k name="Tab"/> key is pressed. This option is useful for
             disabling auto-completion for computationally intensive contexts
             that don't perform well when your system is under load.
         </p>
@@ -358,7 +359,7 @@
 
         <note>
             Completion contexts have names very much like Unix path names.
-            These denotes the tree in which they're called. A completer will
+            These denote the tree in which they're called. A completer will
             never be called unless every completer preceding it in the tree
             was also called. For example, if your completer excludes
             <str>/ex/</str>, it will also exclude <str>/ex/bmarks</str>, and
