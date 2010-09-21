@@ -696,7 +696,7 @@ const Commands = Module("commands", {
                                 if (opt.multiple)
                                     args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
                                 else
-                                    args[opt.names[0]] = opt.type == this.OPTION_NOARG || arg;
+                                    args[opt.names[0]] = opt.type == CommandOption.NOARG || arg;
 
                                 i += optname.length + count;
                                 if (i == str.length)
@@ -919,7 +919,7 @@ const Commands = Module("commands", {
                 return;
             }
 
-            [prefix] = context.filter.match(/^(?:\w*[\s!]|!)\s*/);
+            [prefix] = context.filter.match(/^(?:\w*[\s!])?\s*/);
             let cmdContext = context.fork(command.name, prefix.length);
             let argContext = context.fork("args", prefix.length);
             args = command.parseArgs(cmdContext.filter, argContext, { count: count, bang: bang });

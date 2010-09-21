@@ -326,7 +326,7 @@ const Dactyl = Module("dactyl", {
      * userContext global.
      */
     userfunc: function () {
-        return this.userEval(
+        return this.usereval(
             "(function (" +
             Array.slice(arguments, 0, -1).join(", ") +
             ") { " + arguments[arguments.length - 1] + " })")

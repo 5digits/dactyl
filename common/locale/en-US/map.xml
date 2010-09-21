@@ -62,8 +62,6 @@
     prefixed with one of the above letters. For instance,
     <ex>:imap</ex> creates a new key mapping in insert mode, while
     <ex>:cunmap</ex> removes a key mapping from command-line mode.
-    Although other modes do exist, their mappings may currently only
-    be altered via JavaScript.
 </p>
 
 <warning>
@@ -101,6 +99,24 @@
         </p>
     </description>
 </item>
+
+
+<h3 tag=":map-options">Map options</h3>
+<p>
+    Any of the map commands may be given the following options:
+</p>
+
+<dl>
+    <dt></dt> <dd></dd>
+
+    <dt>-builtin</dt> <dd>Execute this mapping as if there were no user-defined mappings (short name <em>-b</em>)</dd>
+    <dt>-descripion</dt> <dd>A discription of this mapping (short name <em>-d</em>)</dd>
+    <dt>-ex</dt> <dd>Execute <a>rhs</a> as an Ex command rather than keys (short name <em>-e</em>)</dd>
+    <dt>-javascript</dt> <dd>Execute <a>rhs</a> as JavaScript rather than keys (short names <em>-js</em>, <em>-j</em>)</dd>
+    <dt>-modes</dt> <dd>Create this mapping in the given modes (short names <em>-mode</em>, <em>-m</em>)</dd>
+    <dt>-nopersist</dt> <dd>Do not save this mapping to an auto-generated rc file (short name <em>-n</em>)</dd>
+    <dt>-silent</dt> <dd>Do not echo any generated keys to the command-line (short name <em>-s</em>, also <em>&lt;silent></em> for Vim compatibility)</dd>
+</dl>
 
 
 <item>

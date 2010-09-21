@@ -10,6 +10,7 @@
 
 const Modes = Module("modes", {
     init: function () {
+        this.modeChars = {};
         this._main = 1;     // NORMAL
         this._extended = 0; // NONE
 
@@ -143,6 +144,11 @@ const Modes = Module("modes", {
             name: name,
             disp: disp
         }, options);
+        if (mode.char) {
+            this.modeChars[mode.char] = this.modeChars[mode.char] || [];
+            this.modeChars[mode.char].push(mode);
+        }
+
         mode.display = mode.display || function () disp;
         this._modeMap[name] = mode;
         this._modeMap[this[name]] = mode;

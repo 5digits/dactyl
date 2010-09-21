@@ -33,6 +33,7 @@ const Map = Class("Map", {
     init: function (modes, keys, description, action, extraInfo) {
         modes = Array.concat(modes).map(function (m) isobject(m) ? m.mask : m);
 
+        this.id = ++Map.id;
         this.modes = modes;
         this.names = keys.map(events.canonicalKeys);
         this.name = this.names[0];
@@ -117,6 +118,8 @@ const Map = Class("Map", {
         return dactyl.trapErrors(repeat);
     }
 
+}, {
+    id: 0
 });
 
 /**
@@ -177,8 +180,8 @@ const Mappings = Module("mappings", {
     _mappingsIterator: function (modes, stack) {
         modes = modes.slice();
         return (map for ([i, map] in Iterator(stack[modes.shift()].sort(function (m1, m2) String.localeCompare(m1.name, m2.name))))
-            if (modes.every(function (mode) stack[mode].some(
-                function (m) m.rhs == map.rhs && m.name == map.name))))
+            if (modes.every(function (mode) stack[mode].
+                    some(function (m) array.equals(m.rhs, map.rhs) && m.name == map.name))))
     },
 
     // NOTE: just normal mode for now
@@ -356,7 +359,7 @@ const Mappings = Module("mappings", {
                         <tr>
                             <td>{modeSign} {name}</td>
                             <td>{map.noremap ? "*" : " "}</td>
-                            <td>{map.rhs || "function () { ... }"}</td>
+                            <td>{map.rhs ? map.rhs.join(" ") : "function () { ... }"}</td>
                         </tr>))
                 }
                 </table>;
@@ -370,32 +373,49 @@ const Mappings = Module("mappings", {
 }, {
 }, {
     commands: function () {
-        function addMapCommands(ch, modes, modeDescription) {
+        const stockDescription = "User defined mapping";
+        function addMapCommands(ch, mapmodes, modeDescription) {
             // 0 args -> list all maps
             // 1 arg  -> list the maps starting with args
             // 2 args -> map arg1 to arg*
-            function map(args, modes, noremap) {
+            function map(args, mapmodes, noremap) {
+                mapmodes = getModes(args, mapmodes);
                 if (!args.length) {
-                    mappings.list(modes);
+                    mappings.list(mapmodes);
                     return;
                 }
 
                 let [lhs, rhs] = args;
 
                 if (!rhs) // list the mapping
-                    mappings.list(modes, mappings._expandLeader(lhs));
+                    mappings.list(mapmodes, mappings._expandLeader(lhs));
                 else {
-                    // this matches Vim's behaviour
-                    if (/^<Nop>$/i.test(rhs))
-                        noremap = true;
+                    if (args["-javascript"]) {
+                        rhs = ["-javascript", rhs];
+                        var action = dactyl.userfunc("count", rhs);
+                    }
+                    else if (args["-ex"]) {
+                        rhs = ["-ex", rhs];
+                        action = function (count) {
+                            dactyl.execute(commands.replaceTokens(rhs[1], { count: count }));
+                        };
+                    }
+                    else {
+                        rhs = [events.canonicalKeys(rhs)];
+                        action = function (count) {
+                            events.feedkeys(commands.replaceTokens(rhs[0], { count: count }),
+                                    this.noremap, this.silent);
+                        };
+                    }
 
-                    mappings.addUserMap(modes, [lhs],
-                        "User defined mapping",
-                        function (count) { events.feedkeys((count || "") + this.rhs, this.noremap, this.silent); }, {
-                            count: true,
-                            rhs: events.canonicalKeys(rhs),
-                            noremap: !!noremap,
-                            silent: "<silent>" in args
+                    mappings.addUserMap(mapmodes, [lhs],
+                        args["-description"] || stockDescription,
+                        action, {
+                            count: args["-count"],
+                            rhs: rhs,
+                            noremap: "-builtin" in args || noremap,
+                            persist: !args["-nopersist"],
+                            silent: "-silent" in args
                         });
                 }
             }
@@ -409,38 +429,109 @@ const Mappings = Module("mappings", {
                     && /^[nv](nore)?map$/.test(cmd);
             }
 
+            function findMode(name) {
+                if (typeof name == "number")
+                    return name;
+                for (let mode in modes.mainModes)
+                    if (name == mode.char || name == mode.name.toLowerCase())
+                        return mode.mask;
+                return null;
+            }
+            function getModes(args, def)
+                array.uniq((args["-modes"] || def || ["n", "v"]).map(findMode));
+            function uniqueModes(modes) {
+                modes = modes.map(modules.modes.closure.getMode);
+                let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
+                             if (v.every(function (mode) modes.indexOf(mode) >= 0))];
+                return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0).concat(chars));
+            }
+
             const opts = {
-                    completer: function (context, args) completion.userMapping(context, args, modes),
+                    completer: function (context, args) {
+                        if (args.length == 1)
+                            return completion.userMapping(context, args, mapmodes)
+                        if (args["-javascript"])
+                            return completion.javascript(context);
+                        if (args["-ex"])
+                            return completion.ex(context);
+                    },
                     literal: 1,
-                    options: [{ names: ["<silent>", "<Silent>"] }],
+                    options: [
+                        {
+                            names: ["-builtin", "-b"],
+                            description: "Execute this mapping as if there were no user-defined mappings"
+                        },
+                        {
+                            names: ["-descripion", "-d"],
+                            type: CommandOption.STRING,
+                            description: "A discription of this mapping"
+                        },
+                        {
+                            names: ["-ex", "-e"],
+                            description: "Execute this mapping as an Ex command rather than keys"
+                        },
+                        {
+                            names: ["-javascript", "-js", "-j"],
+                            description: "Execute this mapping as JavaScript rather than keys"
+                        },
+                        {
+                            names: ["-modes", "-mode", "-m"],
+                            type: CommandOption.LIST,
+                            description: "Create this mapping in the given modes",
+                            validator: function (list) !list || list.every(findMode),
+                            completer: function () [[array.compact([mode.name.toLowerCase(), mode.char]), mode.disp]
+                                                    for (mode in modes.mainModes)],
+                        },
+                        {
+                            names: ["-nopersist", "-n"],
+                            description: "Do not save this mapping to an auto-generated RC file"
+                        },
+                        {
+                            names: ["-silent", "-s", "<silent>", "<Silent>"],
+                            description: "Do not echo any generated keys to the command-line"
+                        }
+                    ],
                     serialize: function () {
-                        let noremap = this.name.indexOf("noremap") > -1;
-                        return [
+                        return this.name == "map" ? [
                             {
                                 command: this.name,
-                                options: map.silent ? { "<silent>": null } : {},
+                                options: array([
+                                    ["-modes", uniqueModes(map.modes)],
+                                    map.noremap && ["-builtin"],
+                                    map.description != stockDescription && ["-description", map.description],
+                                    map.rhs.length > 1 && [map.rhs[0]],
+                                    map.silent && ["-silent"]])
+                                    .filter(util.identity)
+                                    .toObject(),
                                 arguments: [map.names[0]],
-                                literalArg: map.rhs
+                                literalArg: map.rhs[map.rhs.length - 1]
                             }
-                            for (map in mappings._mappingsIterator(modes, mappings._user))
-                            if (map.rhs && map.noremap == noremap && !isMultiMode(map, this.name))
-                        ];
+                            for (map in userMappings())
+                            if (map.persist)
+                        ] : [];
                     }
             };
+            function userMappings() {
+                let seen = {};
+                for (let [, stack] in Iterator(mappings._user))
+                    for (let map in values(stack))
+                        if (!set.add(seen, map.id))
+                            yield map;
+            }
 
             commands.add([ch ? ch + "m[ap]" : "map"],
                 "Map a key sequence" + modeDescription,
-                function (args) { map(args, modes, false); },
+                function (args) { map(args, mapmodes, false); },
                 opts);
 
             commands.add([ch + "no[remap]"],
                 "Map a key sequence without remapping keys" + modeDescription,
-                function (args) { map(args, modes, true); },
+                function (args) { map(args, mapmodes, true); },
                 opts);
 
             commands.add([ch + "mapc[lear]"],
                 "Remove all mappings" + modeDescription,
-                function () { modes.forEach(function (mode) { mappings.removeAll(mode); }); },
+                function () { mapmodes.forEach(function (mode) { mappings.removeAll(mode); }); },
                 { argCount: "0" });
 
             commands.add([ch + "unm[ap]"],
@@ -449,7 +540,7 @@ const Mappings = Module("mappings", {
                     args = args[0];
 
                     let found = false;
-                    for (let [, mode] in Iterator(modes)) {
+                    for (let [, mode] in Iterator(mapmodes)) {
                         if (mappings.hasMap(mode, args)) {
                             mappings.remove(mode, args);
                             found = true;
@@ -460,7 +551,7 @@ const Mappings = Module("mappings", {
                 },
                 {
                     argCount: "1",
-                    completer: function (context, args) completion.userMapping(context, args, modes)
+                    completer: function (context, args) completion.userMapping(context, args, mapmodes)
                 });
         }
 

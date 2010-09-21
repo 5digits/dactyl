@@ -938,6 +938,17 @@ const array = Class("array", Array, {
     compact: function compact(ary) ary.filter(function (item) item != null),
 
     /**
+     * Returns true if each element of ary1 is equal to the
+     * corresponding element in ary2.
+     *
+     * @param {Array} ary1
+     * @param {Array} ary2
+     * @returns {boolean}
+     */
+    equals: function (ary1, ary2)
+        ary1.length == ary2.length && Array.every(ary1, function (e, i) e == ary2[i]),
+
+    /**
      * Flattens an array, such that all elements of the array are
      * joined into a single array:
      *    [["foo", ["bar"]], ["baz"], "quux"] -> ["foo", ["bar"], "baz", "quux"]
