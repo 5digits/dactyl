@@ -150,7 +150,7 @@ const IO = Module("io", {
             [this._cwd, this._oldcwd] = [dir, this.getCurrentDirectory()];
         }
 
-        return self.getCurrentDirectory();
+        return this.getCurrentDirectory(); // XXX
     },
 
     /**
