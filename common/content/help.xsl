@@ -286,7 +286,7 @@
 
     <xsl:template name="linkify-tag">
         <xsl:param name="contents" select="text()"/>
-        <xsl:variable name="tag" select="str:tokenize($contents, ' [!')[1]"/>
+        <xsl:variable name="tag" select="$contents"/>
         <a href="dactyl://help-tag/{$tag}" style="color: inherit;">
             <xsl:if test="contains(ancestor::*/@document-tags, concat(' ', $tag, ' '))">
                 <xsl:attribute name="href">#<xsl:value-of select="$tag"/></xsl:attribute>
