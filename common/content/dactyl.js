@@ -28,6 +28,9 @@ const FailedAssertion = Class("FailedAssertion", Error, {
 const Dactyl = Module("dactyl", {
     init: function () {
         window.dactyl = this;
+        // cheap attempt at compatibility
+        window.liberator = this;
+        modules.liberator = this;
         this.observers = {};
         this.modules = modules;
 
