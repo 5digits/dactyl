@@ -336,10 +336,10 @@ const Dactyl = Module("dactyl", {
     //       Better name?  See other dactyl.usereval()
     //       I agree, the name is confusing, and so is the
     //           description --Kris
-    evalExpression: function (string) {
-        string = string.toString().replace(/^\s*/, "").replace(/\s*$/, "");
+    evalExpression: function (str) {
+        str = str.trim(); // XXX
 
-        let matches = string.match(/^&(\w+)/);
+        let matches = str.match(/^&(\w+)/);
         if (matches) {
             let opt = this.options.get(matches[1]);
 
@@ -354,17 +354,17 @@ const Dactyl = Module("dactyl", {
             return value;
         }
         // String
-        else if ((matches = string.match(/^(['"])([^\1]*?[^\\]?)\1/))) {
+        else if ((matches = str.match(/^(['"])([^\1]*?[^\\]?)\1/))) {
             return matches[2].toString();
         }
         // Number
-        else if ((matches = string.match(/^(\d+)$/)))
+        else if ((matches = str.match(/^(\d+)$/)))
             return parseInt(matches[1], 10);
 
-        let reference = this.variableReference(string);
+        let reference = this.variableReference(str);
 
         if (!reference[0])
-            this.echoerr("E121: Undefined variable: " + string);
+            this.echoerr("E121: Undefined variable: " + str);
         else
             return reference[0][reference[1]];
         return null;
@@ -962,7 +962,7 @@ const Dactyl = Module("dactyl", {
             }
 
             // strip each 'URL' - makes things simpler later on
-            url = url.replace(/^\s+|\s+$/, "");
+            url = url.trim();
 
             // Look for a valid protocol
             let proto = url.match(/^([-\w]+):/);
