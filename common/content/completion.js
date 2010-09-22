@@ -308,7 +308,7 @@ const CompletionContext = Class("CompletionContext", {
         let res = {};
         function result(quote) {
             yield ["result", quote ? function () quote[0] + quote[1](this.text) + quote[2]
-                                   : function () this.text]
+                                   : function () this.text];
         };
         for (let i in iterall(this.keys, result(this.quote))) {
             let [k, v] = i;

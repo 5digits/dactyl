@@ -337,7 +337,7 @@ const JavaScript = Module("javascript", {
                         if (!isNaN(key))
                             return parseInt(key);
                          if (/^[A-Z_][A-Z0-9_]*$/.test(key))
-                            return ""
+                            return "";
                         return item;
                     }
                 };
@@ -363,7 +363,7 @@ const JavaScript = Module("javascript", {
             this.context.fork(obj[1], this._top.offset, this, this._fill,
                 update(args, {
                     obj: obj[0],
-                    name: obj[1],
+                    name: obj[1]
                 }));
 
         if (orig)

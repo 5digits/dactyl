@@ -449,7 +449,7 @@ const Mappings = Module("mappings", {
             const opts = {
                     completer: function (context, args) {
                         if (args.length == 1)
-                            return completion.userMapping(context, args, mapmodes)
+                            return completion.userMapping(context, args, mapmodes);
                         if (args["-javascript"])
                             return completion.javascript(context);
                         if (args["-ex"])

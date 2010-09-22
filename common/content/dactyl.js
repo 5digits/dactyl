@@ -327,7 +327,7 @@ const Dactyl = Module("dactyl", {
         return this.usereval(
             "(function (" +
             Array.slice(arguments, 0, -1).join(", ") +
-            ") { " + arguments[arguments.length - 1] + " })")
+            ") { " + arguments[arguments.length - 1] + " })");
     },
 
     // partial sixth level expression evaluation
@@ -617,7 +617,7 @@ const Dactyl = Module("dactyl", {
                             data.push(name);
                             data.push('="');
                             data.push(<>{value}</>.toXMLString());
-                            data.push('"')
+                            data.push('"');
                         }
                         if (node.localName in empty)
                             data.push(" />");
@@ -644,7 +644,7 @@ const Dactyl = Module("dactyl", {
             .join("\n");
         addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 
-        let re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
+        let m, re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
         while ((m = re.exec(data)))
             chrome[m[0]] = m[2];
 
@@ -1520,7 +1520,7 @@ const Dactyl = Module("dactyl", {
 
         function callResult(method) {
             let args = Array.slice(arguments, 1);
-            return function (result) { result[method].apply(result, args) };
+            return function (result) { result[method].apply(result, args); };
         }
 
         commands.add(["exta[dd]"],
@@ -1774,7 +1774,7 @@ const Dactyl = Module("dactyl", {
                     }, {
                         argcount: "1",
                         completer: function (context) {
-                            completion.toolbar(context)
+                            completion.toolbar(context);
                             if (filter)
                                 context.filters.push(filter);
                         },
@@ -1966,7 +1966,7 @@ const Dactyl = Module("dactyl", {
         };
 
         completion.window = function window(context) {
-            context.title = ["Window", "Title"]
+            context.title = ["Window", "Title"];
             context.keys = { text: function (win) dactyl.windows.indexOf(win) + 1, description: function (win) win.document.title };
             context.completions = dactyl.windows;
         };

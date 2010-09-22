@@ -65,7 +65,7 @@
      "services",
      "statusline",
      "styles",
-     "template",
+     "template"
      ].forEach(modules.load);
 
     prefix.unshift("chrome://" + modules.services.get("dactyl:").name + "/content/");

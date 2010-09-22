@@ -23,7 +23,7 @@ const Config = Module("config", ConfigBase, {
         ShellCmdPost: "Triggered after executing a shell command with :!cmd",
         Enter: "Triggered after Firefox starts",
         LeavePre: "Triggered before exiting Firefox, just before destroying each module",
-        Leave: "Triggered before exiting Firefox",
+        Leave: "Triggered before exiting Firefox"
     },
 
     defaults: {

@@ -1071,7 +1071,7 @@ const Buffer = Module("buffer", {
         else if (increment == "pages")
             increment = elem.clientHeight - fontSize;
         else
-            throw Error()
+            throw Error();
 
         elem.scrollTop += number * increment;
     },
@@ -1083,7 +1083,7 @@ const Buffer = Module("buffer", {
         else if (increment == "pages")
             increment = elem.clientWidth - fontSize;
         else
-            throw Error()
+            throw Error();
 
         elem.scrollLeft += number * increment;
     },

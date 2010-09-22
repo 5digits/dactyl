@@ -532,7 +532,7 @@ const Options = Module("options", {
         this._prefContexts = [];
 
         for (let [, pref] in Iterator(this.allPrefs(Options.OLD_SAVED))) {
-            let saved = Options.SAVED + pref.substr(Options.OLD_SAVED.length)
+            let saved = Options.SAVED + pref.substr(Options.OLD_SAVED.length);
             if (!this.getPref(saved))
                 this.setPref(saved, this.getPref(pref));
             this.resetPref(pref);
@@ -1155,13 +1155,13 @@ const Options = Module("options", {
             if (opt.operator == "-" && isarray(opt.values)) {
                 let have = set([i.text for (i in context.allItems)]);
                 context = context.fork("current-values", 0);
-                context.anchored = optcontext.anchored
-                context.maxItems = optcontext.maxItems
+                context.anchored = optcontext.anchored;
+                context.maxItems = optcontext.maxItems;
 
                 context.filters.push(function (i) !set.has(have, i.text));
                 completion.optionValue(context, opt.name, opt.operator, null,
                                        function (context) {
-                                           context.generate = function () option.values.map(function (o) [o, ""])
+                                           context.generate = function () option.values.map(function (o) [o, ""]);
                                        });
                 context.title = ["Current values"];
             }
@@ -1295,7 +1295,7 @@ const Options = Module("options", {
                         let opt = options.parseOpt(spec);
                         return opt.option && opt.option.privateData &&
                             (!callable(opt.option.privateData) ||
-                             opt.option.privateData(opt.values))
+                             opt.option.privateData(opt.values));
                     })
                 }, params.extra || {}));
         });

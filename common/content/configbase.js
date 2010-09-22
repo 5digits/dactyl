@@ -30,7 +30,7 @@ const ConfigBase = Class(ModuleBase, {
                      height:     {img.height}px;
                 </>));
             img = null;
-        }
+        };
     },
 
     styleHelp: function () {

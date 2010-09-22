@@ -201,7 +201,7 @@ const AutoCommands = Module("autocommands", {
                 options: [
                     {
                         names: ["-javascript", "-js"],
-                        description: "Interperate the action as JavaScript code rather than an ex command",
+                        description: "Interperate the action as JavaScript code rather than an ex command"
                     }
                 ]
             });

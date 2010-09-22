@@ -303,7 +303,7 @@ const Tabs = Module("tabs", {
             return;
         }
 
-        let tabs = this.visibleTabs
+        let tabs = this.visibleTabs;
         if (tabs.indexOf(tab) < 0)
             tabs = this.allTabs;
         let index = tabs.indexOf(tab);

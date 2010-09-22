@@ -119,7 +119,7 @@ const CommandLine = Module("commandline", {
                 message: document.getElementById("dactyl-message"),
 
                 multilineOutput: document.getElementById("dactyl-multiline-output"),
-                multilineInput: document.getElementById("dactyl-multiline-input"),
+                multilineInput: document.getElementById("dactyl-multiline-input")
             };
 
             widgets.command.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
@@ -1611,7 +1611,7 @@ const ItemList = Class("ItemList", {
         commandline.updateOutputHeight(false, Math.max(0, this._minHeight - this._container.height));
 
         this._container.height = this._minHeight;
-        this._container.height -= commandline.getSpaceNeeded()
+        this._container.height -= commandline.getSpaceNeeded();
         commandline.updateOutputHeight(false);
         this.timeout(function () { this._container.height -= commandline.getSpaceNeeded(); }, 0);
     },

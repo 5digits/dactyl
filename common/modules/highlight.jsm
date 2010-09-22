@@ -147,7 +147,7 @@ const Highlights = Module("Highlight", {
      */
     selector: function (class_) {
         let [, hl, rest] = class_.match(/^(\w*)(.*)/);
-        let pattern = "[dactyl|highlight~=" + hl + "]"
+        let pattern = "[dactyl|highlight~=" + hl + "]";
         if (this.highlight[hl] && this.highlight[hl].class != class_)
             pattern = this.highlight[hl].selector;
         return pattern + rest;
@@ -318,7 +318,7 @@ const Highlights = Module("Highlight", {
             context.completions = array.flatten(
                 modules.io.getRuntimeDirectories("colors").map(
                     function (dir) dir.readDirectory().filter(
-                        function (file) /\.vimp$/.test(file.leafName))))
+                        function (file) /\.vimp$/.test(file.leafName))));
 
         };
 

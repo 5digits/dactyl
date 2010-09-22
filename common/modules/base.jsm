@@ -38,14 +38,14 @@ if (!Object.defineProperty)
             objproto.__defineGetter__.call(obj, prop, desc.get);
         if ("set" in desc)
             objproto.__defineSetter__.call(obj, prop, desc.set);
-    }
+    };
 if (!Object.getOwnPropertyDescriptor)
     Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
         if (!hasOwnProperty.call(obj, prop))
             return undefined;
         let desc = {
             configurable: true,
-            enumerable: objproto.propertyIsEnumerable.call(obj, prop),
+            enumerable: objproto.propertyIsEnumerable.call(obj, prop)
         };
         var get = obj.__lookupGetter__(prop),
             set = obj.__lookupSetter__(prop);
@@ -58,7 +58,7 @@ if (!Object.getOwnPropertyDescriptor)
         if (set)
             desc.set = set;
         return desc;
-    }
+    };
 if (!Object.getOwnPropertyNames)
     Object.getOwnPropertyNames = function getOwnPropertyNames(obj) {
         // This is an ugly and unfortunately necessary hack.
@@ -101,7 +101,7 @@ function defmodule(name, params) {
 }
 
 defmodule.loadLog = [];
-Object.defineProperty(defmodule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val } });
+Object.defineProperty(defmodule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val; } });
 defmodule.modules = [];
 defmodule.times = { all: 0 };
 defmodule.time = function time(major, minor, func, self) {
@@ -144,7 +144,7 @@ defmodule("base", {
         "endmodule", "extend", "foreach", "isarray", "isgenerator",
         "isinstance", "isobject", "isstring", "issubclass", "iter", "iterall",
         "keys", "memoize", "properties", "requiresMainThread", "set",
-        "update", "values",
+        "update", "values"
     ],
     use: ["services"]
 });
@@ -194,7 +194,7 @@ function properties(obj, prototypes, debugger_) {
 
         for (let key in iter)
             if (!prototypes || !set.add(seen, key) && obj != orig)
-                yield key
+                yield key;
     }
 }
 
@@ -878,10 +878,10 @@ const Timer = Class("Timer", {
  */
 function UTF8(str) {
     try {
-        return decodeURIComponent(escape(str))
+        return decodeURIComponent(escape(str));
     }
     catch (e) {
-        return str
+        return str;
     }
 }
 
@@ -1017,7 +1017,7 @@ const array = Class("array", Array, {
      * @returns {Array}
      */
     zip: function zip(ary1, ary2) {
-        let res = []
+        let res = [];
         for(let [i, item] in Iterator(ary1))
             res.push([item, i in ary2 ? ary2[i] : ""]);
         return res;

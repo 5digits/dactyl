@@ -136,7 +136,7 @@ Dactyl.prototype = {
         for each (let prop in ["HELP_TAGS", "FILE_MAP", "OVERLAY_MAP"]) {
             this[prop] = this[prop].constructor();
             for (let [k, v] in Iterator(obj[prop] || {}))
-                this[prop][k] = v
+                this[prop][k] = v;
         }
     },
 

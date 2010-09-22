@@ -45,7 +45,7 @@ const Hints = Module("hints", {
             t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB)),
             b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB)),
             w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW),             extended),
-            F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F") }),
+            F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F"); }),
             O: Mode("Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX)),
             T: Mode("Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX)),
             W: Mode("Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX)),
@@ -444,7 +444,7 @@ const Hints = Module("hints", {
 
             // OK. return hit. But there's more than one hint, and
             // there's no tab-selected current link. Do not follow in mode 2
-            dactyl.assert(options["followhints"] != 2 || this._validHints.length == 1 || this._hintNumber)
+            dactyl.assert(options["followhints"] != 2 || this._validHints.length == 1 || this._hintNumber);
         }
 
         if (!followFirst) {
@@ -928,7 +928,7 @@ const Hints = Module("hints", {
             [0x249c, 0x24b5, "a"], [0x24b6, 0x24cf, "A"],
             [0x24d0, 0x24e9, "a"],
             [0xfb00, 0xfb06, ["ff", "fi", "fl", "ffi", "ffl", "st", "st"]],
-            [0xff21, 0xff3a, "A"], [0xff41, 0xff5a, "a"],
+            [0xff21, 0xff3a, "A"], [0xff41, 0xff5a, "a"]
         ].forEach(function (start, stop, val) {
             if (typeof a[2] != "string")
                 for (i=start; i <= stop; i++)
