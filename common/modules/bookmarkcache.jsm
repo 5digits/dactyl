@@ -111,10 +111,11 @@ const BookmarkCache = Module("BookmarkCache", {
         return bookmarks;
     },
 
-    onBeginUpdateBatch: function onBeginUpdateBatch() {},
-    onEndUpdateBatch:   function onEndUpdateBatch() {},
-    onItemVisited:      function onItemVisited() {},
-    onItemMoved:        function onItemMoved() {},
+    onBeforeItemRemoved: function () {},
+    onBeginUpdateBatch:  function onBeginUpdateBatch() {},
+    onEndUpdateBatch:    function onEndUpdateBatch() {},
+    onItemVisited:       function onItemVisited() {},
+    onItemMoved:         function onItemMoved() {},
     onItemAdded: function onItemAdded(itemId, folder, index) {
         if (bookmarks.getItemType(itemId) == bookmarks.TYPE_BOOKMARK) {
             if (this.isBookmark(itemId)) {
@@ -140,11 +141,7 @@ const BookmarkCache = Module("BookmarkCache", {
             storage.fireEvent(name, "change", itemId);
         }
     },
-    QueryInterface: function QueryInterface(iid) {
-        if (iid.equals(Ci.nsINavBookmarkObserver) || iid.equals(Ci.nsISupports))
-            return this;
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    }
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsINavBookmarkObserver])
 }, {
     getFavicon: function getFavicon(uri) {
         try {

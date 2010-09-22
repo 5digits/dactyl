@@ -20,8 +20,8 @@
                 return;
             }
             catch (e) {
-                if (e !== "Error opening input stream (invalid filename?)") {
-                    dump("dactyl: Trying: " + (base + script + ".js") + ": " + e + "\n" + e.stack);
+                if (typeof e !== "string") {
+                    dump("dactyl: Trying: " + (base + script + ".js") + ": " + e + "\n" + e.stack + "\n");
                     Components.utils.reportError(e);
                 }
             }
