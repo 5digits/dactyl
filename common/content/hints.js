@@ -17,7 +17,7 @@ const Hints = Module("hints", {
         this._hintString = "";           // the typed string part of the hint is in this string
         this._hintNumber = 0;            // only the numerical part of the hint
         this._usedTabKey = false;        // when we used <Tab> to select an element
-        this._prevInput = "";            // record previous user input type, "text" || "number"
+        this.prevInput = "";            // record previous user input type, "text" || "number"
         this._extendedhintCount = null;  // for the count argument of Mode#action (extended hint only)
 
         this._pageHints = [];
@@ -67,7 +67,7 @@ const Hints = Module("hints", {
         this._hintString = "";
         this._hintNumber = 0;
         this._usedTabKey = false;
-        this._prevInput = "";
+        this.prevInput = "";
         this._pageHints = [];
         this._validHints = [];
         this._canUpdate = false;
@@ -83,7 +83,8 @@ const Hints = Module("hints", {
      * Display the current status to the user.
      */
     _updateStatusline: function () {
-        statusline.updateInputBuffer((hints.escNumbers ? mappings.getMapLeader() : "") + (this._hintNumber || ""));
+        statusline.updateInputBuffer((hints.escNumbers ? mappings.getMapLeader() : "") +
+                                     (this._hintNumber ? this.getHintString(this._hintNumber) : ""));
     },
 
     /**
@@ -256,7 +257,7 @@ const Hints = Module("hints", {
                 continue;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
-            if (computedStyle.getPropertyValue("visibility") != "visible" || computedStyle.getPropertyValue("display") == "none")
+            if (computedStyle["visibility"] != "visible" || computedStyle["display"] == "none")
                 continue;
 
             if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
@@ -268,7 +269,7 @@ const Hints = Module("hints", {
 
             rect = elem.getClientRects()[0] || rect;
             let leftPos = Math.max((rect.left + offsetX), offsetX);
-            let topPos =  Math.max((rect.top + offsetY), offsetY);
+            let topPos  = Math.max((rect.top + offsetY), offsetY);
 
             if (elem instanceof HTMLAreaElement)
                 [leftPos, topPos] = this._getAreaOffset(elem, leftPos, topPos);
@@ -366,9 +367,10 @@ const Hints = Module("hints", {
                     this._setClass(hint.imgSpan, activeHint == hintnum);
                 }
 
-                hint.span.setAttribute("number", hint.showText ? hintnum + ": " + hint.text.substr(0, 50) : hintnum);
+                let str = this.getHintString(hintnum);
+                hint.span.setAttribute("number", hint.showText ? str + ": " + hint.text.substr(0, 50) : str);
                 if (hint.imgSpan)
-                    hint.imgSpan.setAttribute("number", hintnum);
+                    hint.imgSpan.setAttribute("number", str);
                 else
                     this._setClass(hint.elem, activeHint == hintnum);
                 this._validHints.push(hint.elem);
@@ -481,7 +483,7 @@ const Hints = Module("hints", {
 
         // if we write a numeric part like 3, but we have 45 hints, only follow
         // the hint after a timeout, as the user might have wanted to follow link 34
-        if (this._hintNumber > 0 && this._hintNumber * 10 <= this._validHints.length) {
+        if (this._hintNumber > 0 && this._hintNumber * this.hintKeys.length <= this._validHints.length) {
             let timeout = options["hinttimeout"];
             if (timeout > 0)
                 this._activeTimeout = this.timeout(function () { this._processHints(true); }, timeout);
@@ -499,7 +501,7 @@ const Hints = Module("hints", {
      * @param {Event} event The keypress event.
      */
     _onInput: function (event) {
-        this._prevInput = "text";
+        this.prevInput = "text";
 
         // clear any timeout which might be active after pressing a number
         if (this._activeTimeout) {
@@ -704,6 +706,32 @@ const Hints = Module("hints", {
     },
 
     /**
+     * Returns the hint string for a given number based on the values of
+     * the 'hintkeys' option.
+     *
+     * @param {number} n The number to transform.
+     * @returns {string}
+     */
+    getHintString: function (n) {
+        let res = [], len = this.hintKeys.length;
+        do {
+            res.push(this.hintKeys[n % len]);
+            n = Math.floor(n / len);
+        }
+        while (n > 0);
+        return res.reverse().join("");
+    },
+
+    /**
+     * Returns true if the given key string represents a
+     * pseudo-hint-number.
+     *
+     * @param {string} key The key to test.
+     * @returns {boolean} Whether the key represents a hint number.
+     */
+    isHintKey: function (key) this.hintKeys.indexOf(key) >= 0,
+
+    /**
      * Updates the display of hints.
      *
      * @param {string} minor Which hint mode to use.
@@ -717,11 +745,12 @@ const Hints = Module("hints", {
         commandline.input(this._hintMode.prompt + ": ", null, { onChange: this.closure._onInput });
         modes.extended = modes.HINTS;
 
+        this.hintKeys = events.fromString(options["hintkeys"]).map(events.closure.toString);
         this._submode = minor;
         this._hintString = filter || "";
         this._hintNumber = 0;
         this._usedTabKey = false;
-        this._prevInput = "";
+        this.prevInput = "";
         this._canUpdate = false;
 
         this._generate(win);
@@ -790,9 +819,9 @@ const Hints = Module("hints", {
 
         case "<BS>":
             if (this._hintNumber > 0 && !this._usedTabKey) {
-                this._hintNumber = Math.floor(this._hintNumber / 10);
+                this._hintNumber = Math.floor(this._hintNumber / this.hintKeys.length);
                 if (this._hintNumber == 0)
-                    this._prevInput = "text";
+                    this.prevInput = "text";
             }
             else {
                 this._usedTabKey = false;
@@ -811,16 +840,16 @@ const Hints = Module("hints", {
            return;
 
         default:
-            if (/^\d$/.test(key)) {
-                this._prevInput = "number";
+            if (this.isHintKey(key)) {
+                this.prevInput = "number";
 
                 let oldHintNumber = this._hintNumber;
-                if (this._hintNumber == 0 || this._usedTabKey) {
+                if (this._usedTabKey) {
+                    this._hintNumber = 0;
                     this._usedTabKey = false;
-                    this._hintNumber = parseInt(key, 10);
                 }
-                else
-                    this._hintNumber = parseInt(String(this._hintNumber) + key, 10);
+                this._hintNumber = this._hintNumber * this.hintKeys.length +
+                    this.hintKeys.indexOf(key);
 
                 this._updateStatusline();
 
@@ -1027,6 +1056,19 @@ const Hints = Module("hints", {
             "XPath string of hintable elements activated by 'f' and 'F'",
             "string", DEFAULT_HINTTAGS,
             { validator: checkXPath });
+
+        options.add(["hintkeys", "hk"],
+            "The keys used to label and select hints",
+            "string", "0123456789",
+            {
+                completer: function () [
+                    ["0123456789", "Numbers"],
+                    ["asdfg;lkjh", "Home Row"]],
+                validator: function (value) {
+                    let values = events.fromString(value).map(events.closure.toString).sort();
+                    return array.equals(array.uniq(values), values);
+                }
+            });
 
         options.add(["hinttimeout", "hto"],
             "Timeout before automatically following a non-unique numerical hint",

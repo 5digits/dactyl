@@ -661,6 +661,23 @@
 
 
 <item>
+    <tags>'hk' 'hintkeys'</tags>
+    <spec>'hintkeys' 'hk'</spec>
+    <type>string</type>
+    <default>0123456789</default>
+    <description>
+        <p>
+            The keys used to label and select hints. With its default value,
+            each hint has a unique number which can be typed to select it,
+            while all other characters are used to filter hints based on their
+            text. With a value such as <str>asdfg;lkjh</str>, each hint is
+            ‘numbered’ based on the characters of the home row.
+        </p>
+    </description>
+</item>
+
+
+<item>
     <tags>'hm' 'hintmatching'</tags>
     <spec>'hintmatching' 'hm'</spec>
     <type>stringlist</type>

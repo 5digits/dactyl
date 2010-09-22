@@ -920,8 +920,8 @@ const Events = Module("events", {
                     // under HINT mode, certain keys are redirected to hints.onEvent
                     if (key == "<Return>" || key == "<Tab>" || key == "<S-Tab>"
                         || key == mappings.getMapLeader()
-                        || (key == "<BS>" && hints.previnput == "number")
-                        || (/^[0-9]$/.test(key) && !hints.escNumbers)) {
+                        || (key == "<BS>" && hints.prevInput == "number")
+                        || (hints.isHintKey(key) && !hints.escNumbers)) {
                         hints.onEvent(event);
                         this._input.buffer = "";
                         throw killEvent();

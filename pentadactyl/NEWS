@@ -23,6 +23,7 @@
     * IMPORTANT: Single quotes no longer treat \s specially
       I.e., 'fo\o''bar' ≡ fo\o'bar
     * Replaced 'focuscontent' with 'strictfocus'
+    * Added 'hintkeys' option
     * Added 'altwildmode' and <A-Tab> commandline key binding
     * Added 'banghist' option
     * Added ‘transliterated’ option to 'hintmatching'
