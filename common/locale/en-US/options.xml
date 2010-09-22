@@ -299,12 +299,12 @@
     <tags>'act' 'activate'</tags>
     <spec>'activate' 'act'</spec>
     <type>stringlist</type>
-    <default>addons,downloads,extensions,help,
+    <default>addons,downloads,extoptions,help,
            homepage,quickmark,tabopen,paste</default>
     <description>
         <p>
-            A list of items when, when opened in a new tab are
-            automatically focused. Available items are,
+            A list of items which, when opened in a new tab, are
+            automatically focused. Available items:
         </p>
 
         <dl>
@@ -353,7 +353,7 @@
 
         <example>
             To enable autocompletion for everything but <ex>:history</ex> or
-            <ex>:bmarks</ex>, you would choose a value such as,
+            <ex>:bmarks</ex>, you would choose a value such as
             <str delim="'">!/ex/bmarks,.?</str>
         </example>
 
@@ -377,7 +377,7 @@
     <default>on</default>
     <description>
         <p>
-            Replace occurances of ! with the previous command when
+            Replace occurences of ! with the previous command when
             executing external commands.
         </p>
     </description>
@@ -392,8 +392,8 @@
     <description>
         <p>
             List of directories searched when executing the <ex>:cd</ex>
-            command. This is only used for relative paths if an absolute path is
-            specified then the option is ignored.
+            command. This is only used for relative paths; if an absolute path is
+            specified, this option is ignored.
         </p>
     </description>
 </item>
@@ -405,7 +405,7 @@
     <type>charlist</type>
     <default>slf</default>
     <description>
-        <p>Items which are completed at the <ex>:open</ex> prompts. Available items are,</p>
+        <p>Items which are completed at the <ex>:open</ex> prompts. Available items:</p>
 
         <dl>
             <dt>s</dt> <dd>Search engines and keyword URLs</dd>
@@ -446,7 +446,7 @@
 
         <p>
             This means that with <o>defsearch</o> set to <str>youtube</str>,
-            then <ex>:open Tim Minchin</ex> behaves exactly as
+            <ex>:open Tim Minchin</ex> behaves exactly as
             <ex>:open youtube Tim Minchin</ex>, so long as you don't have a
             search or bookmark keyword called ‘Tim’.
         </p>
@@ -476,29 +476,15 @@
 
 
 <item>
-    <tags>'noex' 'noexrc'</tags>
-    <tags>'ex' 'exrc'</tags>
-    <spec>'exrc' 'ex'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <tags>'enc' 'encoding'</tags>
+    <spec>'encoding'</spec>
+    <type>string</type>
+    <default>UTF-8</default>
     <description>
         <p>
-            Allow reading of an RC file in the current directory. This file is
-            sourced after the default <tt>&dactyl.name;rc</tt> file in your
-            home directory.
+            Changes the character encoding of the current buffer. Valid only
+            until a new page is loaded.
         </p>
-    </description>
-</item>
-
-
-<item>
-    <tags>'eht' 'extendedhinttags'</tags>
-    <spec>'extendedhinttags' 'eht'</spec>
-    <strut/>
-    <type>string</type>
-    <default>&hinttags;</default>
-    <description>
-        <p>The XPath string of hintable elements activated by <k>;</k>.</p>
     </description>
 </item>
 
@@ -532,16 +518,31 @@
     </description>
 </item>
 
+
 <item>
-    <tags>'enc' 'encoding'</tags>
-    <spec>'encoding'</spec>
-    <type>string</type>
-    <default>UTF-8</default>
+    <tags>'noex' 'noexrc'</tags>
+    <tags>'ex' 'exrc'</tags>
+    <spec>'exrc' 'ex'</spec>
+    <type>boolean</type>
+    <default>off</default>
     <description>
         <p>
-            Changes the character encoding of the current buffer. Valid only
-            until a new page is loaded.
+            Allow reading of an RC file in the current directory. This file is
+            sourced after the default <t>&dactyl.name;rc</t> file in your
+            home directory.
         </p>
+    </description>
+</item>
+
+
+<item>
+    <tags>'eht' 'extendedhinttags'</tags>
+    <spec>'extendedhinttags' 'eht'</spec>
+    <strut/>
+    <type>string</type>
+    <default>&hinttags;</default>
+    <description>
+        <p>The XPath string of hintable elements activated by <k>;</k>.</p>
     </description>
 </item>
 
@@ -555,20 +556,6 @@
         <p>
             Changes the character encoding that &dactyl.appname; uses to read
             and write files.
-        </p>
-    </description>
-</item>
-
-
-<item>
-    <tags>'nosf' 'nostrictfocus'</tags>
-    <tags>'sf' 'strictfocus'</tags>
-    <spec>'strictfocus' 'sf'</spec>
-    <type>boolean</type>
-    <default>on</default>
-    <description>
-        <p>
-            Prevent scripts from focusing input elements without user intervention.
         </p>
     </description>
 </item>
@@ -666,8 +653,8 @@
 
         <dl>
             <dt>value</dt>      <dd>The hint is the value displayed in a text input, or the selected option for a dropdown.</dd>
-            <dt>label</dt>      <dd>The value of an explicit label for the input, this will not match most manually added labels that are found on sites.</dd>
-            <dt>name </dt>      <dd>The name of the input will be used, although the name is not designed for user consumption, it is frequently very similar to the label.</dd>
+            <dt>label</dt>      <dd>The value of an explicit label for the input; this will not match most manually added labels that are found on sites.</dd>
+            <dt>name </dt>      <dd>The name of the input will be used; although the name is not designed for user consumption, it is frequently very similar to the label.</dd>
         </dl>
     </description>
 </item>
@@ -679,18 +666,18 @@
     <type>stringlist</type>
     <default>contains</default>
     <description>
-        <p>Change the hint matching algorithm during Hints mode.</p>
+        <p>Change the hint matching algorithm used in Hints mode.</p>
 
         <p>Possible values:</p>
 
         <dl>
-            <dt>contains</dt>           
+            <dt>contains</dt>
             <dd>
                 The typed characters are split on whitespace, and
                 these character groups have to match anywhere inside
                 the text of the link.
             </dd>
-            <dt>wordstartswith</dt>     
+            <dt>wordstartswith</dt>
             <dd>
                 The typed characters are matched with the beginning
                 of the first word (see <o>wordseparators</o>) in the
@@ -705,17 +692,17 @@
                 following words in the order they appear in the
                 link.
             </dd>
-            <dt>firstletters</dt>       
+            <dt>firstletters</dt>
             <dd>
                 Behaves like wordstartswith, but non-matching words
                 aren't overleaped.
             </dd>
-            <dt>custom</dt>             
+            <dt>custom</dt>
             <dd>
                 Delegate to the function
-                <tt>dactyl.plugins.customHintMatcher</tt>
+                <tt>dactyl.plugins.customHintMatcher</tt>.
             </dd>
-            <dt>transliterated</dt>       
+            <dt>transliterated</dt>
             <dd>
                 Certain alphanumeric characters are translated into their
                 unaccented equivalents, such that ‘euro’ will match 'æuró',
@@ -767,31 +754,13 @@
 
 
 <item>
-    <tags>'noprivate' 'private'</tags>
-    <spec>'private'</spec>
-    <type>boolean</type>
-    <default>off</default>
-    <description>
-        <p>
-            Set the <str>private browsing</str> option. In private browsing mode
-            history, cache files, cookies, form data, passwords, download list
-            entries, local and URL <t>marks</t>, <t>command-line</t> history
-            and macros are available only for the duration of the private
-            browsing session and deleted when returning to normal browsing
-            mode. See also <t>privacy</t>.
-        </p>
-    </description>
-</item>
-
-
-<item>
     <tags>'nohls' 'nohlsearch'</tags>
     <tags>'hls' 'hlsearch'</tags>
     <spec>'hlsearch' 'hls'</spec>
     <type>boolean</type>
     <default>off</default>
     <description>
-        <p>Highlight previous search pattern matches</p>
+        <p>Highlight previous search pattern matches.</p>
     </description>
 </item>
 
@@ -902,9 +871,9 @@
     <description>
         <p>
             Load plugin scripts when starting up. When on, yet unloaded plugins
-            are automatically loaded after the &dactyl.name;rc file has been
+            are automatically loaded after the <t>&dactyl.name;rc</t> file has been
             sourced. To load plugins earlier, use the <ex>:loadplugins</ex>
-            command within the &dactyl.name;rc.
+            command within <t>&dactyl.name;rc</t>.
         </p>
     </description>
 </item>
@@ -947,23 +916,6 @@
 
 
 <item>
-    <tags>'nextpattern'</tags>
-    <spec>'nextpattern'</spec>
-    <type>stringlist</type>
-    <default>\bnext,^>$,^(>>|»)$,^(>|»),(>|»)$,\bmore\b</default>
-    <description>
-        <p>
-            Patterns to use when guessing the next page in a document
-            sequence after pressing the <k>]]</k> key. Each pattern is
-            successively tested against each link in the page (as defined by
-            <o>hinttags</o>, starting with the last), and the first link to
-            match is followed.
-        </p>
-    </description>
-</item>
-
-
-<item>
     <tags>'newtab'</tags>
     <spec>'newtab'</spec>
     <type>stringlist</type>
@@ -976,7 +928,7 @@
             <em>!</em> to the command in question.
         </p>
 
-        <p>The possible values are,</p>
+        <p>Possible values:</p>
 
         <dl>
             <dt>all</dt>            <dd>All commands</dd>
@@ -988,6 +940,23 @@
             <dt>prefs</dt>          <dd><ex>:pref<oa>erences</oa>!</ex> or <ex>:prefs!</ex> command</dd>
         </dl>
 
+    </description>
+</item>
+
+
+<item>
+    <tags>'nextpattern'</tags>
+    <spec>'nextpattern'</spec>
+    <type>stringlist</type>
+    <default>\bnext,^>$,^(>>|»)$,^(>|»),(>|»)$,\bmore\b</default>
+    <description>
+        <p>
+            Patterns to use when guessing the next page in a document
+            sequence after pressing the <k>]]</k> key. Each pattern is
+            successively tested against each link in the page (as defined by
+            <o>hinttags</o>, starting with the last), and the first link to
+            match is followed.
+        </p>
     </description>
 </item>
 
@@ -1013,9 +982,9 @@
     <type>charlist</type>
     <default>gfm</default>
     <description>
-        <p>Info shown in in the <ex>:pageinfo</ex> output.</p>
+        <p>Info shown in the <ex>:pageinfo</ex> output.</p>
 
-        <p>Items available by default are,</p>
+        <p>Items available by default:</p>
 
         <dl>
             <dt>g</dt>      <dd>General info</dd>
@@ -1059,8 +1028,8 @@
         </p>
 
         <note>
-            This option does not alter the behavior pop-up blocker of
-            &dactyl.host; in any way.
+            This option does not alter the &dactyl.host; pop-up blocker behavior
+            in any way.
         </note>
     </description>
 </item>
@@ -1078,6 +1047,24 @@
             successively tested against each link in the page (as defined by
             <o>hinttags</o>, starting with the last), and the first link to
             match is followed.
+        </p>
+    </description>
+</item>
+
+
+<item>
+    <tags>'noprivate' 'private'</tags>
+    <spec>'private'</spec>
+    <type>boolean</type>
+    <default>off</default>
+    <description>
+        <p>
+            Set the <str>private browsing</str> option. In private browsing mode
+            history, cache files, cookies, form data, passwords, download list
+            entries, local and URL <t>marks</t>, <t>command-line</t> history
+            and macros are available only for the duration of the private
+            browsing session and deleted when returning to normal browsing
+            mode. See also <t>privacy</t>.
         </p>
     </description>
 </item>
@@ -1142,7 +1129,7 @@
     <description>
         <p>
             The default sanitizer time span. Only items created within this timespan are
-            deleted. The value must be of the one of the forms,
+            deleted. The value must be of the one of:
         </p>
 
         <dl>
@@ -1268,6 +1255,20 @@
 
 
 <item>
+    <tags>'nosf' 'nostrictfocus'</tags>
+    <tags>'sf' 'strictfocus'</tags>
+    <spec>'strictfocus' 'sf'</spec>
+    <type>boolean</type>
+    <default>on</default>
+    <description>
+        <p>
+            Prevent scripts from focusing input elements without user intervention.
+        </p>
+    </description>
+</item>
+
+
+<item>
     <tags>'suggestengines'</tags>
     <spec>'suggestengines'</spec>
     <type>stringlist</type>
@@ -1297,18 +1298,6 @@
 
 
 <item>
-    <tags>'noum' 'nousermode'</tags>
-    <tags>'um' 'usermode'</tags>
-    <spec>'usermode' 'um'</spec>
-    <type>boolean</type>
-    <default>off</default>
-    <description>
-        <p>Show current website with minimal styling.</p>
-    </description>
-</item>
-
-
-<item>
     <tags>'urlseparator'</tags>
     <spec>'urlseparator'</spec>
     <type>string</type>
@@ -1316,11 +1305,23 @@
     <description>
         <p>
             The regular expression used to split URL lists in commands
-            including <ex>:open</ex>. When set to the empty string, URL lists
+            like <ex>:open</ex>. When set to the empty string, URL lists
             are never split. With the default value, the following will open
             three URLs in the current tab and two new background tabs,
         </p>
         <code><ex>:open google Linux, wikipedia Arch Linux, imdb March of the Penguins</ex></code>
+    </description>
+</item>
+
+
+<item>
+    <tags>'noum' 'nousermode'</tags>
+    <tags>'um' 'usermode'</tags>
+    <spec>'usermode' 'um'</spec>
+    <type>boolean</type>
+    <default>off</default>
+    <description>
+        <p>Show current website with minimal styling.</p>
     </description>
 </item>
 
@@ -1368,7 +1369,7 @@
             Defines how completions are matched with regard to character case.
             Keys in the <t>regexmap</t> refer to completion context names (see
             <ex>:contexts</ex>) for which the value applies. Possible values
-            are,
+            are:
         </p>
 
         <dl>
@@ -1392,7 +1393,7 @@
 
         <code><ex>:set wildignore=<str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]<a>2</a>$</str></ex></code>
 
-        <note>Unlike Vim each pattern is a regular expression rather than a glob.</note>
+        <note>Unlike Vim, each pattern is a regular expression rather than a glob.</note>
         <note>
             The only way to include a literal comma in a pattern is with the
             escape sequence <str>\u0044</str>.
@@ -1414,7 +1415,7 @@
             been reached.
         </p>
 
-        <p>These are the possible values for each part are,</p>
+        <p>These are the possible values for each part:</p>
 
         <dl>
             <dt><str></str></dt>             <dd>Complete only the first match.</dd>

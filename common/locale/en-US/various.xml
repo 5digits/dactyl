@@ -32,7 +32,7 @@
     <description>
         <p>
             Lists the completion contexts used during the completion of its
-            arguments. These context names may used to tune the function of
+            arguments. These context names may be used to tune the function of
             the completion system via options like <o>autocomplete</o> and
             <o>wildcase</o>. Note that completion must be triggered in order
             for this command to be effective, so if autocompletion is not
@@ -75,7 +75,7 @@
     <spec>:!<a>cmd</a></spec>
     <description>
         <p>
-            Run an external command command. Runs <a>cmd</a> through system()
+            Run an external command. Runs <a>cmd</a> through system()
             and displays its output. Any ‘!’ in <a>cmd</a> is replaced with
             the previous external command, so long as it is not preceded by a
             backslash and <o>banghist</o> is enabled.
@@ -168,7 +168,7 @@
     <description>
         <p>
             Clear private data items for <a>timespan</a>, where <a>item</a> …
-            is a list of private items to delete. If <oa>!</oa> is specified
+            is a list of private items to delete. If <oa>!</oa> is specified,
             then <o>sanitizeitems</o> is used for the list of items to delete.
             Items may be any of:
         </p>
@@ -199,10 +199,10 @@
         </p>
 
         <p>
-            If <a>timespan</a> (short name <em>-t</em>) is specified then only
+            If <a>timespan</a> (short name <em>-t</em>) is specified, only
             items within that timespan are deleted, otherwise the value of
             <o>sanitizetimespan</o> is used.  If <oa>-older</oa> (short name
-            <em>-o</em>) is specified, than only items older than
+            <em>-o</em>) is specified, then only items older than
             <a>timespan</a> are deleted.
         </p>
 
@@ -244,7 +244,7 @@
     <description>
         <p>
             Open a help page for <oa>subject</oa>. If <oa>subject</oa> is
-            omitted, open the default pate as specified in <o>helpfile</o>.
+            omitted, open the default page as specified in <o>helpfile</o>.
             If you're not sure of the exact topic you need help with, try
             <k name="Tab"/> completion or <ex>:help overview</ex>.
         </p>
