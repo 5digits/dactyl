@@ -316,7 +316,7 @@ const JavaScript = Module("javascript", {
         if (!compl) {
             compl = function (context, obj, recurse) {
 
-                context.process[1] = function highlight(item, v) 
+                context.process[1] = function highlight(item, v)
                     template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true);
 
                 // Sort in a logical fashion for object keys:

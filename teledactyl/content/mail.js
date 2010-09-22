@@ -107,7 +107,7 @@ const Mail = Module("mail", {
         let i = direction;
         let folder;
         while (count > 0 && (c + i) < gFolderTreeView.rowCount && (c + i) >= 0) {
-            let resource = gFolderTreeView._rowMap[c+i]._folder;
+            let resource = gFolderTreeView._rowMap[c + i]._folder;
             if (!resource.isServer && resource.getNumUnread(false)) {
                 count -= 1;
                 folder = i;

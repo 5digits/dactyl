@@ -344,7 +344,7 @@ const RangeFind = Class("RangeFind", {
         }
     },
 
-    focus: function() {
+    focus: function () {
         if (this.lastRange)
             var node = util.evaluateXPath(RangeFind.selectNodePath, this.range.document,
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);

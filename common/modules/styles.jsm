@@ -71,7 +71,7 @@ Sheet.prototype.__defineGetter__("fullCSS", function wrapCSS() {
  * @author Kris Maglione <maglione.k@gmail.com>
  */
 const Styles = Module("Styles", {
-    init: function() {
+    init: function () {
         this._id = 0;
         this.userSheets = [];
         this.systemSheets = [];

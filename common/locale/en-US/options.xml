@@ -1387,7 +1387,7 @@
     <default></default>
     <description>
         <p>
-            List of file patterns to ignore when completing files. For example, 
+            List of file patterns to ignore when completing files. For example,
             the following will ignore object files and Vim swap files:
         </p>
 

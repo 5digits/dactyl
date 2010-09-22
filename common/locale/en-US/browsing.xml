@@ -15,7 +15,7 @@
 
 &dactyl.appname; overrides nearly all &dactyl.host; keys in order to
 make browsing more pleasant for Vim users. On the occasions when you
-want to bypass &dactyl.appname;'s key handling and pass keys directly to 
+want to bypass &dactyl.appname;'s key handling and pass keys directly to
 &dactyl.host; or to a web page, you have two options:
 
 <item>

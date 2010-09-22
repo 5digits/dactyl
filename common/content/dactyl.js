@@ -664,8 +664,7 @@ const Dactyl = Module("dactyl", {
      * @param {XMLList} extraHelp Extra help text beyond the description.
      * @returns {string}
      */
-    generateHelp: function generateHelp(obj, extraHelp)
-    {
+    generateHelp: function generateHelp(obj, extraHelp) {
         default xml namespace = "";
         let spec = util.identity;
         let tag = util.identity;
@@ -1461,8 +1460,8 @@ const Dactyl = Module("dactyl", {
                         services.get("extensionManager").uninstallItem(this.id);
                     };
                     addon.appDisabled = false;
-                    addon.__defineGetter__("userDisabled", function() getRdfProperty("userDisabled") == "true");
-                    addon.__defineSetter__("userDisabled", function(val) {
+                    addon.__defineGetter__("userDisabled", function () getRdfProperty("userDisabled") == "true");
+                    addon.__defineSetter__("userDisabled", function (val) {
                         services.get("extensionManager")[val ? "enableItem" : "disableItem"](this.id);
                     });
 

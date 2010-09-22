@@ -75,8 +75,8 @@ Module.constructors = {};
 window.addEventListener("load", function onLoad() {
     window.removeEventListener("load", onLoad, false);
 
-    Module.list.forEach(function(module) {
-        modules.__defineGetter__(module.classname, function() {
+    Module.list.forEach(function (module) {
+        modules.__defineGetter__(module.classname, function () {
             delete modules[module.classname];
             return load(module.classname, null, Components.stack.caller);
         });

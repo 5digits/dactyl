@@ -215,7 +215,7 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
     otherwise. Beginning your file with <str>use strict</str>, while
     not required, helps to prevent a lot of common errors.
 </p>
-    
+
 <p>
     The documentation that you provide behaves exactly as other
     &dactyl.appname; documentation, which means that the tags you
