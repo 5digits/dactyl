@@ -26,6 +26,7 @@ BUGS:
 (recent Mercurial regressions):
 9 One of the recent completion fixes seems to have broken the caret
   position update. BLOCKER.
+9 about:pentadactyl is currently about:undefined
 
 - visual caret mode is broken, requires a manual page focus first anyway or
   else it chucks, I haven't investigated --djk

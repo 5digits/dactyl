@@ -39,7 +39,7 @@ function Script(file) {
 const IO = Module("io", {
     init: function () {
         this._processDir = services.get("directory").get("CurWorkD", Ci.nsIFile);
-        this._cwd = this._processDir;
+        this._cwd = this._processDir.path;
         this._oldcwd = null;
 
         this._lastRunCommand = ""; // updated whenever the users runs a command with :!
@@ -66,6 +66,50 @@ const IO = Module("io", {
         services.get("downloadManager").addListener(this.downloadListener);
     },
 
+
+    // TODO: there seems to be no way, short of a new component, to change
+    // the process's CWD - see https://bugzilla.mozilla.org/show_bug.cgi?id=280953
+    /**
+     * Returns the current working directory.
+     *
+     * It's not possible to change the real CWD of the process so this
+     * state is maintained internally. External commands run via
+     * {@link #system} are executed in this directory.
+     *
+     * @returns {nsIFile}
+     */
+    get cwd() {
+        let dir = File(this._cwd);
+
+        // NOTE: the directory could have been deleted underneath us so
+        // fallback to the process's CWD
+        if (dir.exists() && dir.isDirectory())
+            return dir.path;
+        else
+            return this._processDir.path;
+    },
+
+    /**
+     * Sets the current working directory.
+     *
+     * @param {string} newDir The new CWD. This may be a relative or
+     *     absolute path and is expanded by {@link #expandPath}.
+     */
+    set cwd(newDir) {
+        newDir = newDir || "~";
+
+        if (newDir == "-") {
+            dactyl.assert(this._oldcwd != null, "E186: No previous directory");
+            [this._cwd, this._oldcwd] = [this._oldcwd, this.cwd];
+        }
+        else {
+            let dir = io.File(newDir);
+            dactyl.assert(dir.exists() && dir.isDirectory(), "E344: Can't find directory " + dir.path.quote());
+            [this._cwd, this._oldcwd] = [dir.path, this.cwd];
+        }
+        return this.cwd;
+    },
+
     destroy: function () {
         services.get("downloadManager").removeListener(this.downloadListener);
         for (let [, plugin] in Iterator(plugins.contexts))
@@ -79,7 +123,7 @@ const IO = Module("io", {
      */
     File: Class("File", File, {
         init: function init(path, checkCWD)
-            init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.getCurrentDirectory())
+            init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.cwd)
     }),
 
     /**
@@ -106,53 +150,6 @@ const IO = Module("io", {
      */
     expandPath: File.expandPath,
 
-    // TODO: there seems to be no way, short of a new component, to change
-    // the process's CWD - see https://bugzilla.mozilla.org/show_bug.cgi?id=280953
-    /**
-     * Returns the current working directory.
-     *
-     * It's not possible to change the real CWD of the process so this
-     * state is maintained internally. External commands run via
-     * {@link #system} are executed in this directory.
-     *
-     * @returns {nsIFile}
-     */
-    getCurrentDirectory: function () {
-        let dir = File(this._cwd.path);
-
-        // NOTE: the directory could have been deleted underneath us so
-        // fallback to the process's CWD
-        if (dir.exists() && dir.isDirectory())
-            return dir;
-        else
-            return this._processDir;
-    },
-
-    /**
-     * Sets the current working directory.
-     *
-     * @param {string} newDir The new CWD. This may be a relative or
-     *     absolute path and is expanded by {@link #expandPath}.
-     */
-    setCurrentDirectory: function (newDir) {
-        newDir = newDir || "~";
-
-        if (newDir == "-")
-            [this._cwd, this._oldcwd] = [this._oldcwd, this.getCurrentDirectory()];
-        else {
-            let dir = io.File(newDir);
-
-            if (!dir.exists() || !dir.isDirectory()) {
-                dactyl.echoerr("E344: Can't find directory " + dir.path.quote());
-                return null;
-            }
-
-            [this._cwd, this._oldcwd] = [dir, this.getCurrentDirectory()];
-        }
-
-        return this.getCurrentDirectory(); // XXX
-    },
-
     /**
      * Returns all directories named <b>name<b/> in 'runtimepath'.
      *
@@ -160,9 +157,9 @@ const IO = Module("io", {
      * @returns {nsIFile[])
      */
     getRuntimeDirectories: function (name) {
-        let dirs = File.getPathsFromPathList(options["runtimepath"]);
+        let dirs = options.get("runtimepath").values;
 
-        dirs = dirs.map(function (dir) File.joinPaths(dir, name))
+        dirs = dirs.map(function (dir) File.joinPaths(dir, name, this.cwd))
                    .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
         return dirs;
     },
@@ -179,8 +176,8 @@ const IO = Module("io", {
     getRCFile: function (dir, always) {
         dir = dir || "~";
 
-        let rcFile1 = File.joinPaths(dir, "." + config.name + "rc");
-        let rcFile2 = File.joinPaths(dir, "_" + config.name + "rc");
+        let rcFile1 = File.joinPaths(dir, "." + config.name + "rc", this.cwd);
+        let rcFile2 = File.joinPaths(dir, "_" + config.name + "rc", this.cwd);
 
         if (dactyl.has("WINNT"))
             [rcFile1, rcFile2] = [rcFile2, rcFile1];
@@ -229,11 +226,11 @@ const IO = Module("io", {
             let dirs = services.get("environment").get("PATH").split(dactyl.has("WINNT") ? ";" : ":");
             // Windows tries the CWD first TODO: desirable?
             if (dactyl.has("WINNT"))
-                dirs = [io.getCurrentDirectory().path].concat(dirs);
+                dirs = [io.cwd].concat(dirs);
 
 lookup:
             for (let [, dir] in Iterator(dirs)) {
-                file = File.joinPaths(dir, program);
+                file = File.joinPaths(dir, program, io.cwd);
                 try {
                     if (file.exists())
                         break;
@@ -243,7 +240,7 @@ lookup:
                     if (dactyl.has("WINNT")) {
                         let extensions = services.get("environment").get("PATHEXT").split(";");
                         for (let [, extension] in Iterator(extensions)) {
-                            file = File.joinPaths(dir, program + extension);
+                            file = File.joinPaths(dir, program + extension, io.cwd);
                             if (file.exists())
                                 break lookup;
                         }
@@ -278,7 +275,7 @@ lookup:
      * @param {boolean} all Whether all found files should be sourced.
      */
     sourceFromRuntimePath: function (paths, all) {
-        let dirs = File.getPathsFromPathList(options["runtimepath"]);
+        let dirs = options.get("runtimepath").values;
         let found = false;
 
         dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options["runtimepath"].quote(), 2);
@@ -286,7 +283,7 @@ lookup:
         outer:
         for (let [, dir] in Iterator(dirs)) {
             for (let [, path] in Iterator(paths)) {
-                let file = File.joinPaths(dir, path);
+                let file = File.joinPaths(dir, path, this.cwd);
 
                 dactyl.echomsg("Searching for " + file.path.quote(), 3);
 
@@ -460,11 +457,11 @@ lookup:
 
             // TODO: implement 'shellredir'
             if (dactyl.has("WINNT")) {
-                command = "cd /D " + this._cwd.path + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
+                command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(options["shell"], options["shellcmdflag"].split(/\s+/).concat(command), true);
             }
             else {
-                cmd.write("cd " + escape(this._cwd.path) + "\n" +
+                cmd.write("cd " + escape(this.cwd) + "\n" +
                         ["exec", ">" + escape(stdout.path), "2>&1", "<" + escape(stdin.path),
                          escape(options["shell"]), options["shellcmdflag"], escape(command)].join(" "));
                 res = this.run("/bin/sh", ["-e", cmd.path], true);
@@ -532,10 +529,6 @@ lookup:
 
                 if (!arg)
                     arg = "~";
-                else if (arg == "-") {
-                    dactyl.assert(io._oldcwd, "E186: No previous directory");
-                    arg = io._oldcwd.path;
-                }
 
                 arg = File.expandPath(arg);
 
@@ -543,28 +536,23 @@ lookup:
                 // match in 'cdpath'
                 // TODO: handle ../ and ./ paths
                 if (File.isAbsolutePath(arg)) {
-                    if (io.setCurrentDirectory(arg))
-                        dactyl.echomsg(io.getCurrentDirectory().path);
+                    io.cwd = arg;
+                    dactyl.echomsg(io.cwd);
                 }
                 else {
-                    let dirs = File.getPathsFromPathList(options["cdpath"]);
-                    let found = false;
-
+                    let dirs = options.get("cdpath").values;
                     for (let [, dir] in Iterator(dirs)) {
-                        dir = File.joinPaths(dir, arg);
+                        dir = File.joinPaths(dir, arg, io.cwd);
 
                         if (dir.exists() && dir.isDirectory() && dir.isReadable()) {
-                            io.setCurrentDirectory(dir.path);
-                            dactyl.echomsg(io.getCurrentDirectory().path);
-                            found = true;
-                            break;
+                            io.cwd = dir.path;
+                            dactyl.echomsg(io.cwd);
+                            return;
                         }
                     }
 
-                    if (!found) {
-                        dactyl.echoerr("E344: Can't find directory " + arg.quote() + " in cdpath\n"
-                                        + "E472: Command failed");
-                    }
+                    dactyl.echoerr("E344: Can't find directory " + arg.quote() + " in cdpath");
+                    dactyl.echoerr("E472: Command failed");
                 }
             }, {
                 argCount: "?",
@@ -580,7 +568,7 @@ lookup:
 
         commands.add(["pw[d]"],
             "Print the current directory name",
-            function () { dactyl.echomsg(io.getCurrentDirectory().path); },
+            function () { dactyl.echomsg(io.cwd); },
             { argCount: "0" });
 
         commands.add([config.name.replace(/(.)(.*)/, "mk$1[$2rc]")],
@@ -804,7 +792,7 @@ lookup:
             });
         options.add(["cdpath", "cd"],
             "List of directories searched when executing :cd",
-            "stringlist", "," + (services.get("environment").get("CDPATH").replace(/[:;]/g, ",") || ","),
+            "stringlist", ["."].concat(services.get("environment").get("CDPATH").split(/[:;]/).filter(util.identity)).join(","),
             { setter: function (value) File.expandPathList(value) });
 
         options.add(["runtimepath", "rtp"],

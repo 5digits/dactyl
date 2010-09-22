@@ -532,14 +532,6 @@ const File = Class("File", {
 
     expandPathList: function (list) list.map(this.expandPath),
 
-    getPathsFromPathList: function (list) {
-        if (!list)
-            return [];
-        // empty list item means the current directory
-        return list.replace(/,$/, "").split(",")
-                   .map(function (dir) dir == "" ? io.getCurrentDirectory().path : dir);
-    },
-
     isAbsolutePath: function (path) {
         try {
             services.create("file").initWithPath(path);
@@ -550,11 +542,12 @@ const File = Class("File", {
         }
     },
 
-    joinPaths: function (head, tail) {
-        let path = this(head);
+    joinPaths: function (head, tail, cwd) {
+        let path = this(head, cwd);
         try {
             // FIXME: should only expand env vars and normalise path separators
             path.appendRelativePath(this.expandPath(tail, true));
+            path.normalize();
         }
         catch (e) {
             return { exists: function () false, __noSuchMethod__: function () { throw e; } };

@@ -388,7 +388,7 @@
     <tags>'cd' 'cdpath'</tags>
     <spec>'cdpath' 'cd'</spec>
     <type>string</type>
-    <default type="plain">equivalent to <em>$CDPATH</em> or <str>,,</str></default>
+    <default type="plain">equivalent to <em>$CDPATH</em> or <str>.</str></default>
     <description>
         <p>
             List of directories searched when executing the <ex>:cd</ex>

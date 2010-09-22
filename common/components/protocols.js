@@ -46,27 +46,6 @@ function redirect(to, orig, time) {
     return makeChannel(dataURL('text/html', html), ioService.newURI(to, null, null));
 }
 
-function AboutHandler() {}
-AboutHandler.prototype = {
-
-    classDescription: "About " + Dactyl.prototype.name + " Page",
-
-    classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
-
-    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.appname,
-
-    QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
-
-    newChannel: function (uri) {
-        let channel = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
-                          .newChannel("chrome://dactyl/content/about.xul", null, null);
-        channel.originalURI = uri;
-        return channel;
-    },
-
-    getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT,
-};
-
 function ChromeData() {}
 ChromeData.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=chrome-data",
@@ -176,6 +155,27 @@ Dactyl.prototype = {
         catch (e) {}
         return fakeChannel(uri);
     }
+};
+
+function AboutHandler() {}
+AboutHandler.prototype = {
+
+    classDescription: "About " + Dactyl.prototype.name + " Page",
+
+    classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
+
+    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.appname,
+
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
+
+    newChannel: function (uri) {
+        let channel = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
+                          .newChannel("chrome://dactyl/content/about.xul", null, null);
+        channel.originalURI = uri;
+        return channel;
+    },
+
+    getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT,
 };
 
 // A hack to get infermation about interfaces.
