@@ -462,9 +462,9 @@ const Mappings = Module("mappings", {
                             description: "Execute this mapping as if there were no user-defined mappings"
                         },
                         {
-                            names: ["-descripion", "-d"],
+                            names: ["-description", "-d"],
                             type: CommandOption.STRING,
-                            description: "A discription of this mapping"
+                            description: "A description of this mapping"
                         },
                         {
                             names: ["-ex", "-e"],
