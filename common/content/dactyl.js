@@ -1098,12 +1098,18 @@ const Dactyl = Module("dactyl", {
      */
     parseCommandLine: function (cmdline) {
         const options = [
-            [["+u"], commands.OPTIONS_STRING],
-            [["++noplugin"], commands.OPTIONS_NOARG],
-            [["++cmd"], commands.OPTIONS_STRING, null, null, true],
-            [["+c"], commands.OPTIONS_STRING, null, null, true]
-        ];
-        return commands.parseArgs(cmdline, options, "*");
+            [["+u"], CommandOption.STRING],
+            [["++noplugin"], CommandOption.NOARG],
+            [["++cmd"], CommandOption.STRING, null, null, true],
+            [["+c"], CommandOption.STRING, null, null, true]
+        ].map(CommandOption.fromArray, CommandOption);
+        try {
+            return commands.parseArgs(cmdline, options, "*");
+        }
+        catch (e) {
+            dactyl.reportError(e, true);
+            return [];
+        }
     },
 
     variableReference: function (string) {

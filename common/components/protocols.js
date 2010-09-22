@@ -109,6 +109,7 @@ ChromeData.prototype = {
 };
 
 function Dactyl() {
+    Dactyl.prototype.__proto__ = Cc["@dactyl.googlecode.com/base/dactyl"].getService().wrappedJSObject;
     this.wrappedJSObject = this;
 
     this.HELP_TAGS = {};
@@ -130,8 +131,6 @@ Dactyl.prototype = {
             return Dactyl.instance.QueryInterface(iid);
         }
     },
-
-    __proto__: Cc["@dactyl.googlecode.com/base/dactyl"].getService().wrappedJSObject,
 
     init: function (obj) {
         for each (let prop in ["HELP_TAGS", "FILE_MAP", "OVERLAY_MAP"]) {

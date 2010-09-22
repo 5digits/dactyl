@@ -6,28 +6,27 @@
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-const Name = Components.classes["@dactyl.googlecode.com/base/dactyl"]
-                       .getService().wrappedJSObject.name;
-const name = Name.toLowerCase();
 function CommandLineHandler() {
     this.wrappedJSObject = this;
 }
 CommandLineHandler.prototype = {
 
-    classDescription: Name + " Command-line Handler",
+    classDescription: "Dactyl Command-line Handler",
 
     classID: Components.ID("{16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}"),
 
-    contractID: "@mozilla.org/commandlinehandler/general-startup;1?type=" + name,
+    contractID: "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl",
 
     _xpcom_categories: [{
         category: "command-line-handler",
-        entry: "m-" + name
+        entry: "m-dactyl"
     }],
 
     QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsICommandLineHandler]),
 
     handle: function (commandLine) {
+        let name = Components.classes["@dactyl.googlecode.com/base/dactyl"]
+                             .getService().wrappedJSObject.name;
         // TODO: handle remote launches differently?
         try {
             this.optionValue = commandLine.handleFlagWithParam(name, false);
