@@ -1804,7 +1804,7 @@ const Dactyl = Module("dactyl", {
                 if (args[0] == ":")
                     var method = function () dactyl.execute(args, null, true);
                 else
-                    method = dactyl.userfunction(args);
+                    method = dactyl.userfunc(args);
 
                 try {
                     if (count > 1) {
