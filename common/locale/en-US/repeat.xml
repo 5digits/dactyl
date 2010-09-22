@@ -13,7 +13,7 @@
 
 <p>
     &dactyl.appname; can repeat commands in a number of ways, from repeating
-    the last command, recording and playing macros, to saving its state and
+    the last command, to recording and playing macros, to saving its state and
     executing scripts.
 </p>
 
@@ -140,7 +140,7 @@
             page and every chrome document, including all browser windows and
             dialogs. If the same file is sourced more than once, its previous
             rules are cleared before it is applied again. Rules can be
-            restricted to specific documents by enclosing them inside
+            restricted to specific documents by enclosing them in
             <link topic="https://developer.mozilla.org/en/CSS/@-moz-document">@-moz-document</link>
             blocks.
         </p>

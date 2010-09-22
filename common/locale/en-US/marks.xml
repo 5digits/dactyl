@@ -70,7 +70,7 @@
         </dl>
 
         <p>
-            If <oa>url</oa> is omitted, URL of the currently loaded web
+            If <oa>url</oa> is omitted, the URL of the currently loaded web
             page is used.
         </p>
 
