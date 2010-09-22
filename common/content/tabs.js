@@ -21,7 +21,7 @@ const Tabs = Module("tabs", {
         this._lastBufferSwitchArgs = "";
         this._lastBufferSwitchSpecial = true;
 
-        let fragment = dactyl.has("MacUnix") ? "tab-mac" : "tab";
+        let fragment = dactyl.has("Darwin") ? "tab-mac" : "tab";
         this.tabBinding = styles.addSheet(true, "tab-binding", "chrome://browser/content/browser.xul",
                 ".tabbrowser-tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#" + fragment + ") !important; }" +
                 // FIXME: better solution for themes?

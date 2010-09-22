@@ -1143,7 +1143,7 @@ const Buffer = Module("buffer", {
                 let arg = args[0];
 
                 // FIXME: arg handling is a bit of a mess, check for filename
-                dactyl.assert(!arg || arg[0] == ">" && !dactyl.has("Win32"),
+                dactyl.assert(!arg || arg[0] == ">" && !dactyl.has("WINNT"),
                     "E488: Trailing characters");
 
                 options.withContext(function () {

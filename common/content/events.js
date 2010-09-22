@@ -524,14 +524,14 @@ const Events = Module("events", {
             //         https://bugzilla.mozilla.org/show_bug.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&id=432951
             // ---
             //
-            // The following fixes are only activated if dactyl.has("MacUnix").
+            // The following fixes are only activated if dactyl.has("Darwin").
             // Technically, they prevent mappings from <C-Esc> (and
             // <C-C-]> if your fancy keyboard permits such things<?>), but
             // these <C-control> mappings are probably pathological (<C-Esc>
             // certainly is on Windows), and so it is probably
-            // harmless to remove the has("MacUnix") if desired.
+            // harmless to remove the has("Darwin") if desired.
             //
-            else if (dactyl.has("MacUnix") && event.ctrlKey && charCode >= 27 && charCode <= 31) {
+            else if (dactyl.has("Darwin") && event.ctrlKey && charCode >= 27 && charCode <= 31) {
                 if (charCode == 27) { // [Ctrl-Bug 1/5] the <C-[> bug
                     key = "Esc";
                     modifier = modifier.replace("C-", "");

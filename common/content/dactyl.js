@@ -1155,12 +1155,6 @@ const Dactyl = Module("dactyl", {
         }
     },
 
-    // return the platform normalized to Vim values
-    getPlatformFeature: function () {
-        let platform = services.get("runtime").OS;
-        return /^Mac/.test(platform) ? "MacUnix" : platform == "Win32" ? "Win32" : "Unix";
-    },
-
     // TODO: move this
     getMenuItems: function () {
         function addChildren(node, parent) {
@@ -1193,7 +1187,9 @@ const Dactyl = Module("dactyl", {
     }
 }, {
     config: function () {
-        config.features.push(Dactyl.getPlatformFeature());
+        // TODO: is the OS really a config feature? I think not. --djk
+        let os = services.get("runtime").OS;
+        config.features.push(os == "WINNT" || os == "Darwin" ? os : "Unix");
     },
 
     // Only general options are added here, which are valid for all Dactyl extensions

@@ -54,7 +54,7 @@ const Editor = Module("editor", {
     },
 
     pasteClipboard: function () {
-        if (dactyl.has("Win32")) {
+        if (dactyl.has("WINNT")) {
             this.executeCommand("cmd_paste");
             return;
         }
