@@ -170,7 +170,9 @@ const Dactyl = Module("dactyl", {
                 str = data.data.substring(0, dataLen.value / 2);
             }
         }
-        catch (e) {}
+        catch (e) {
+            dactyl.reportError(e, true);
+        }
 
         return str;
     },
