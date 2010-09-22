@@ -257,7 +257,7 @@ const Hints = Module("hints", {
                 continue;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
-            if (computedStyle["visibility"] != "visible" || computedStyle["display"] == "none")
+            if (computedStyle.visibility != "visible" || computedStyle.display == "none")
                 continue;
 
             if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
@@ -1065,8 +1065,8 @@ const Hints = Module("hints", {
                     ["0123456789", "Numbers"],
                     ["asdfg;lkjh", "Home Row"]],
                 validator: function (value) {
-                    let values = events.fromString(value).map(events.closure.toString).sort();
-                    return array.equals(array.uniq(values), values);
+                    let values = events.fromString(value).map(events.closure.toString);
+                    return array.uniq(values).length === values.length;
                 }
             });
 
