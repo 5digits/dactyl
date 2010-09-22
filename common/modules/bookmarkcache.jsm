@@ -112,10 +112,10 @@ const BookmarkCache = Module("BookmarkCache", {
     },
 
     onBeforeItemRemoved: function () {},
-    onBeginUpdateBatch:  function onBeginUpdateBatch() {},
-    onEndUpdateBatch:    function onEndUpdateBatch() {},
-    onItemVisited:       function onItemVisited() {},
-    onItemMoved:         function onItemMoved() {},
+    onBeginUpdateBatch:  function () {},
+    onEndUpdateBatch:    function () {},
+    onItemVisited:       function () {},
+    onItemMoved:         function () {},
     onItemAdded: function onItemAdded(itemId, folder, index) {
         if (bookmarks.getItemType(itemId) == bookmarks.TYPE_BOOKMARK) {
             if (this.isBookmark(itemId)) {
