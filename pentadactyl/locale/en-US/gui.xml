@@ -8,7 +8,7 @@
     xmlns:html="&xmlns.html;">
 
 <dl tag="dialog-list" replace="dialog-list">
-    <dt>about</dt>           <dd>About Mozilla &dactyl.host;;</dd>
+    <dt>about</dt>           <dd>About Mozilla &dactyl.host;</dd>
     <dt>addbookmark</dt>     <dd>Add bookmark for the current page</dd>
     <dt>addons</dt>          <dd>Manage Add-ons</dd>
     <dt>bookmarks</dt>       <dd>List your bookmarks</dd>
