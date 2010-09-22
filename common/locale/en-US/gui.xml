@@ -16,7 +16,7 @@
     Although &dactyl.appname; offers access to the most frequently used
     &dactyl.host; functionality via Ex and Normal mode commands, there may be
     times when direct access to the &dactyl.host; GUI is required. For such
-    eventualities, there there are commands to access menu items and to launch
+    eventualities, there are commands to access menu items and to launch
     standard &dactyl.host; dialogs.
 </p>
 
@@ -48,7 +48,7 @@
         <p>
             Opens the &dactyl.host; addon manager, where extensions and themes
             may be installed, removed, disabled, and configured. See also
-            <ex>:extenstions</ex>, <ex>:extinstall</ex>, <ex>:extoptions</ex>,
+            <ex>:extensions</ex>, <ex>:extinstall</ex>, <ex>:extoptions</ex>,
             <ex>:extenable</ex>, <ex>:extdisable</ex>, and <ex>:extdelete</ex>.
         </p>
     </description>
@@ -59,10 +59,10 @@
     <tags>:dia :dialog</tags>
     <spec>:dia<oa>log</oa> <oa>&dactyl.host;-dialog</oa></spec>
     <description>
-        <p>Open a &dactyl.host; dialog. Available dialogs include,</p>
+        <p>Open a &dactyl.host; dialog. Available dialogs include:</p>
 
         <dl tag="dialog-list">
-            <dt>about</dt>           <dd>About Mozilla &dactyl.host;;</dd>
+            <dt>about</dt>           <dd>About Mozilla &dactyl.host;</dd>
             <dt>addbookmark</dt>     <dd>Add bookmark for the current page</dd>
             <dt>addons</dt>          <dd>Manage Add-ons</dd>
             <dt>bookmarks</dt>       <dd>List your bookmarks</dd>
@@ -221,7 +221,7 @@
 
 <ul>
     <li>
-        <em>URL</em>: The URL of the currently loaded page. While the page is loading
+        <em>URL</em>: The URL of the currently loaded page. While the page is loading,
         progress messages are also output to this field.
     </li>
     <li>

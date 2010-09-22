@@ -18,7 +18,7 @@
 
 <ul>
     <li><em>Bookmarks</em> are the standard marks of &dactyl.host;, and are fully supported.</li>
-    <li><em>QuickMarks</em> allow you to quickly save and return as many as 62 (a-zA-Z0-9) different web sites with a quick keyboard shortcut.</li>
+    <li><em>QuickMarks</em> allow you to quickly save and return to as many as 62 (a-zA-Z0-9) different web sites with a quick keyboard shortcut.</li>
     <li><em>Local marks</em> allow you to store and return to a position within the current web page.</li>
     <li><em>URL marks</em> allow you to store and return to the position and URL of the current web page.</li>
     <li><em>History</em> marks every opened page with data on when and how often it has been visited.</li>
@@ -70,7 +70,7 @@
         </dl>
 
         <p>
-            If <oa>url</oa> is omitted, the URL currently loaded web
+            If <oa>url</oa> is omitted, URL of the currently loaded web
             page is used.
         </p>
 
@@ -113,7 +113,7 @@
 
         <p>
             The special version <ex>:bmarks!</ex> works the same as
-            <ex>:bmarks</ex> except that it opens all all matching
+            <ex>:bmarks</ex> except that it opens all matching
             bookmarks in new tabs rather than listing them.
         </p>
 
@@ -158,7 +158,7 @@
     when and how often it is visited, and can be retrieved both in
     history list and location completions. Indeed, the ‘frecency’
     algorithm used to determine the results of location completions
-    (see the <o>complete</o> option) mean that history is often a
+    (see the <o>complete</o> option) means that history is often a
     more effective type of mark than bookmarks themselves.
 </p>
 
@@ -252,7 +252,7 @@
 
         <p>
             The special version <ex>:history!</ex> works the same as
-            <ex>:history</ex> except that it opens all all matching
+            <ex>:history</ex> except that it opens all matching
             pages in new tabs rather than listing them.
         </p>
 

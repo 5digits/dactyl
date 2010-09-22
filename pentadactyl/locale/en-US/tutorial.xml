@@ -13,7 +13,7 @@
 <h1 tag="tutorial">Quick-start tutorial</h1>
 
 <html:p style="text-align: center">
-    This is a quickstart tutorial to help get new users up and running
+    This is a quickstart tutorial to help new users get up and running
     in &dactyl.appname;. It is not intended as a full reference explaining all
     features.
 </html:p>
@@ -26,17 +26,17 @@
     regain these by issuing the command
 </p>
 
-<code><ex>:set go+=mTB<key name="CR"/></ex></code>
+<code><ex>:set go+=mTB<k name="CR"/></ex></code>
 
 <p>
-    where <k name="CR"/> represents pressing the <key name="Enter"/> or <key name="Return"/> key.
+    where <k name="CR"/> represents pressing the <k name="Enter"/> or <k name="Return"/> key.
     If you're a veteran Vim user, this may look familiar. It should.
 </p>
 
 <p>
     However, in this author's opinion, the best way to get familiar with
     &dactyl.appname; is to leave these disabled for now. (The above action can be
-    reversed with <ex>:set go=<key name="CR"/></ex>) You can look at the entry for <o>guioptions</o> in
+    reversed with <ex>:set go=<k name="CR"/></ex>) You can look at the entry for <o>guioptions</o> in
     <t>options</t> for more information on this.
 </p>
 
@@ -70,13 +70,13 @@
 
 <p>
     Vim is a great editor but it's not much of a web browser. So even seasoned Vim
-    users will probably have to look at &dactyl.appname; documentation sooner or later.
+    users will probably have to look at &dactyl.appname;'s documentation sooner or later.
     Most of the documentation for &dactyl.appname;'s features are easily found using the
     <ex>:help</ex> command. For example, you can find help on the <ex>:help</ex> command
     by typing
 </p>
 
-<code><ex>:help :help<key name="CR"/></ex></code>
+<code><ex>:help :help<k name="CR"/></ex></code>
 
 <p>
     Similarly, help on configurable options is available with
@@ -90,8 +90,8 @@
 </p>
 
 <code>
-<ex>:help gt<key name="CR"/></ex>
-<ex>:help gT<key name="CR"/></ex>
+<ex>:help gt<k name="CR"/></ex>
+<ex>:help gT<k name="CR"/></ex>
 </code>
 
 <p>
@@ -192,11 +192,11 @@
 </p>
 
 <code>
-<ex>:open my.webmail.com<key name="CR"/></ex>
-<k>o</k>my.webmail.com<key name="CR"/>
+<ex>:open my.webmail.com<k name="CR"/></ex>
+<k>o</k>my.webmail.com<k name="CR"/>
 
-<ex>:tabopen google.com<key name="CR"/></ex>
-<k>t</k>google.com<key name="CR"/>
+<ex>:tabopen google.com<k name="CR"/></ex>
+<k>t</k>google.com<k name="CR"/>
 </code>
 
 <h2 tag="hints-tutorial">Some hints about surfing…</h2>
@@ -269,7 +269,7 @@
 
 <p>
     To save your current settings and allow them to be loaded automatically
-    next time you start &dactyl.appname;, issue the <ex>:mkv</ex> command.
+    next time you start &dactyl.appname;, issue the <ex>:mkp</ex> command.
 </p>
 
 <p>
@@ -339,7 +339,7 @@
     Feel free to explore at this point. If you use the <ex>:tabopen</ex> command,
     remember to use the <k>gt</k>/<k>gT</k> mappings to get back to this page. If
     using the <ex>:open</ex> command, use the history keys (e.g., <k>H</k>) to return.
-    If you get hopelessly lost, just type <ex>:help<key name="CR"/></ex> and click the
+    If you get hopelessly lost, just type <ex>:help<k name="CR"/></ex> and click the
     <em>Tutorial</em> link to return.
 </p>
 

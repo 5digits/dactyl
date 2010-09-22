@@ -148,7 +148,7 @@
     <spec>:sty<oa>le</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-append</oa> <a>filter</a> <oa>css</oa></spec>
     <description>
         <p>
-            Add CSS styles to the browser or to web pages. <a>filter</a> is a comma separated
+            Add CSS styles to the browser or to web pages. <a>filter</a> is a comma-separated
             list of URLs to match. URLs ending with <em>*</em> are matched as prefixes, URLs not
             containing any <em>:</em> or <em>/</em> characters are matched as domains. <oa>css</oa> is a full
             CSS rule set (e.g., <tt>body { color: blue; }</tt>).

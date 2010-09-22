@@ -12,7 +12,7 @@
 <toc start="2"/>
 
 <p>
-    A buffer the container that holds the given web page, including
+    Buffer is a container that holds the given web page, including
     all of its history and frames. Each tab contains exactly one
     buffer, and for most purposes the two terms are interchangeable.
     See <t>tabs</t> for more.

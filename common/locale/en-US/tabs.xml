@@ -15,7 +15,7 @@
     Tabs allow you to keep many web pages open at the same time and to quickly
     switch between them. Each tab contains exactly one buffer. If your version
     of &dactyl.host; supports tab groups, only buffers in the active group
-    will be attached to visible tabs. Though all buffers may not always be
+    will be attached to visible tabs. Although not all buffers are always
     attached to visible tabs, they are all always accessible via the
     buffer-centric commands and key bindings. Tab-centric commands and key
     bindings, however, only operate on the set of visible tabs.
@@ -134,8 +134,8 @@
     <spec><oa>count</oa>gt</spec>
     <description>
         <p>
-            Go to the next tab. Cycles to the first tab when the last is selected.
-            If <oa>count</oa> is specified go to the <oa>count</oa>th tab.
+            Go to the next tab. Cycles to the first tab when the last one is selected.
+            If <oa>count</oa> is specified, go to the <oa>count</oa>th tab.
         </p>
     </description>
 </item>
@@ -147,8 +147,8 @@
     <spec><oa>count</oa>&lt;C-n></spec>
     <description>
         <p>
-            Go to the next tab. Cycles to the first tab when the last is selected.
-            If <oa>count</oa> is specified go to the <oa>count</oa>th next tab.
+            Go to the next tab. Cycles to the first tab when the last one is selected.
+            If <oa>count</oa> is specified, go to the <oa>count</oa>th next tab.
         </p>
     </description>
 </item>
@@ -160,8 +160,8 @@
     <spec><oa>count</oa>gT</spec>
     <description>
         <p>
-            Go to the previous tab. Cycles to the last tab when the first is selected.
-            If <oa>count</oa> is specified go to the <oa>count</oa>th previous tab.
+            Go to the previous tab. Cycles to the last tab when the first one is selected.
+            If <oa>count</oa> is specified, go to the <oa>count</oa>th previous tab.
         </p>
     </description>
 </item>
@@ -176,8 +176,8 @@
     <spec>:<oa>count</oa>bn<oa>ext</oa> <oa>count</oa></spec>
     <description>
         <p>
-            Switch to the next or <oa>count</oa>th tab. Cycles to the first tab when the last is
-            selected and <oa>count</oa> is not specified.
+            Switch to the next or <oa>count</oa>th tab. Cycles to the first tab when
+            the last one is selected and <oa>count</oa> is not specified.
         </p>
     </description>
 </item>
@@ -234,7 +234,7 @@
 
         <p>If argument is <em>#</em>, the alternate buffer will be selected (see <k name="C-^"/>).</p>
 
-        <p>If no argument is given the current buffer remains current.</p>
+        <p>If no argument is given, the current buffer remains current.</p>
     </description>
 </item>
 

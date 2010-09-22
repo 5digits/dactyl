@@ -12,9 +12,9 @@
 <toc start="2"/>
 
 <p>
-    &dactyl.appname; provides a number commands to change the
+    &dactyl.appname; provides a number of commands to change the
     behavior of key presses. This can mean anything from
-    automatically substituting one key for another, to automatically
+    automatically substituting one key for another or automatically
     replacing one typed word for another, to launching a dialog or
     running a command.
 </p>
@@ -67,7 +67,7 @@
 <warning>
     It is important to note that mappings are <em>not</em>
     automatically saved between sessions. In order to preserve them,
-    they must either be added to your <tt>&dactyl.name;rc</tt> or
+    they must either be added to your <t>&dactyl.name;rc</t> or
     saved via the <ex>:mk&dactyl.name;rc</ex> command.
 </warning>
 
@@ -110,7 +110,7 @@
     <dt></dt> <dd></dd>
 
     <dt>-builtin</dt> <dd>Execute this mapping as if there were no user-defined mappings (short name <em>-b</em>)</dd>
-    <dt>-descripion</dt> <dd>A discription of this mapping (short name <em>-d</em>)</dd>
+    <dt>-descripion</dt> <dd>A description of this mapping (short name <em>-d</em>)</dd>
     <dt>-ex</dt> <dd>Execute <a>rhs</a> as an Ex command rather than keys (short name <em>-e</em>)</dd>
     <dt>-javascript</dt> <dd>Execute <a>rhs</a> as JavaScript rather than keys (short names <em>-js</em>, <em>-j</em>)</dd>
     <dt>-modes</dt> <dd>Create this mapping in the given modes (short names <em>-mode</em>, <em>-m</em>)</dd>
@@ -312,7 +312,7 @@
     <dd>Type the ‘2’ while holding the ‘Control’ key.</dd>
 
     <dt><k name="C-@"/></dt>
-    <dd>Type the ‘2’ key @ while holding the ‘Control’ key.</dd>
+    <dd>Type the ‘@’ key while holding the ‘Control’ key.</dd>
 
     <dt><k name="S-Space"/></dt>
     <dd>Press the space bar while holding the ‘Shift’ key.</dd>
@@ -585,7 +585,7 @@
         <h3 tag="E175 E176 :command-nargs">Argument handling</h3>
 
         <p>
-            By default user commands accept no arguments. This can be changed by specifying
+            By default, user commands accept no arguments. This can be changed by specifying
             the -nargs attribute.
         </p>
 
@@ -602,7 +602,7 @@
         <h3 tag="E180 E181 :command-complete">Argument completion</h3>
 
         <p>
-            Completion for arguments to user defined commands is not available by default.
+            Completion for arguments to user-defined commands is not available by default.
             Completion can be enabled by specifying one of the following arguments to the
             -complete option when defining the command.
         </p>
@@ -646,7 +646,7 @@
 
         <p>
             <em>start</em> is the index into the word being completed at which the returned values
-            should be applied and <em>completions</em> is a two dimensional array of the form:
+            should be applied and <em>completions</em> is a two-dimensional array of the form:
             [[arg1, description1], [arg2, description2], …]
         </p>
 
@@ -655,7 +655,7 @@
         <h3 tag="E177 E178 :command-count">Count handling</h3>
 
         <p>
-            By default user commands do not accept a count. Use the -count attribute if
+            By default, user commands do not accept a count. Use the -count attribute if
             you'd like to have a count passed to your user command. This will then be
             available for expansion as &lt;count> in the argument.
         </p>
@@ -663,7 +663,7 @@
         <h3 tag=":command-bang">Special cases</h3>
 
         <p>
-            By default a user command does not have a special version, i.e. a version
+            By default, a user command does not have a special version, i.e. a version
             executed with the ! modifier. Providing the -bang attribute will enable this
             and &lt;bang> will be available in the argument.
         </p>

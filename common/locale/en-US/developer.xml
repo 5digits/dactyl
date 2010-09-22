@@ -39,7 +39,7 @@
     creates a new help section for the command <ex>:help</ex> and for
     the related key binding, <k name="F1"/>. It also creates help tags
     for the command, its shortcuts, the key binding, and the general
-    topic, ‘help’. These tags enable linking to this section when from
+    topic, ‘help’. These tags enable linking to this section from
     other mentions of the topic and from the <ex>:help</ex> command.
 </p>
 
@@ -76,7 +76,7 @@
     <dt>&tab;spec</dt>  <dd>The specification for this item, such as an example command-line. (HelpSpec)</dd>
     <dt>&tab;strut</dt> <dd>A horizontal formatting strut which ensures that all previous &lt;tags> and &lt;spec> elements appear above the ones that follow.</dd>
     <dt>&tab;type</dt>  <dd>For options, the type of the option.
-                            <em>number</em>, <em>boolean</em>, <em>string</em>, <em>string</em>, <em>stringlist</em>, or <em>charlist</em>.
+                            <em>number</em>, <em>boolean</em>, <em>string</em>, <em>stringlist</em>, or <em>charlist</em>.
                             (HelpType)
                         </dd>
     <dt>&tab;default</dt>     <dd>For options, the default value. (HelpDefault)</dd>
@@ -152,7 +152,7 @@
     there is no need to write <str>load</str> event handlers. Beyond
     that, what you may do with your plugins is practically limitless.
     Plugins have full access to all of the chrome resources that
-    ordinary &dactyl.host; do, along with the entire power of the
+    ordinary &dactyl.host; does, along with the entire power of the
     &dactyl.appname; API. If you need a starting point, have a look at some
     <link topic="&dactyl.plugins;">existing plugins</link> or
     <link topic="http://addon.mozilla.org/">extensions</link>,
