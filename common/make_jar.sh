@@ -15,7 +15,7 @@ mkdir -p $stage
 
 if hg root >/dev/null 2>&1
 then
-    root="$(hg root)"; mf="$(hg mf)"
+    root="$(hg root)"; mf="$(hg manifest)"
     find=$(which find)
     find() {
         $find "$@" -name '*.jar'
