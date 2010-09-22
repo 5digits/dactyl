@@ -421,7 +421,7 @@ const Option = Class("Option", {
 
         number: function (operator, values, scope, invert) {
             // TODO: support floats? Validators need updating.
-            if (!/^[+-]?(?:0x[0-9a-f]+|0[0-7]*|[1-9]+)$/i.test(values))
+            if (!/^[+-]?(?:0x[0-9a-f]+|0[0-7]*|[1-9][0-9]*)$/i.test(values))
                 return "E521: Number required after := " + this.name + "=" + values;
 
             let value = parseInt(values);
