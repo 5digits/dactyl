@@ -732,6 +732,7 @@ const Util = Module("Util", {
      * @returns {[string]}
      */
     split: function (str, re, limit) {
+        re.lastIndex = 0;
         if (!re.global)
             re = RegExp(re.source || re, "g");
         let match, start = 0, res = [];
