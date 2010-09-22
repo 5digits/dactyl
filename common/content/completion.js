@@ -335,7 +335,7 @@ const CompletionContext = Class("CompletionContext", {
             this.lastActivated = this.top.runCount;
         }
         if (!this.itemCache[this.key]) {
-            let res = this._generate.call(this) || [];
+            let res = this._generate.call(this);
             if (res != null)
                 this.itemCache[this.key] = res;
         }
@@ -356,7 +356,8 @@ const CompletionContext = Class("CompletionContext", {
                 if (this.cache.backgroundLock != lock)
                     return;
                 this.incomplete = false;
-                this.completions = items;
+                if (items != null)
+                    this.completions = items;
             });
         }
     },

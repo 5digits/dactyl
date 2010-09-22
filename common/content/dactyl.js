@@ -1459,7 +1459,7 @@ const Dactyl = Module("dactyl", {
                         services.get("extensionManager").uninstallItem(this.id);
                     };
                     addon.appDisabled = false;
-                    addon.__defineGetter__("userDisabled", function () getRdfProperty("userDisabled") == "true");
+                    addon.__defineGetter__("userDisabled", function () getRdfProperty(addon, "userDisabled") == "true");
                     addon.__defineSetter__("userDisabled", function (val) {
                         services.get("extensionManager")[val ? "enableItem" : "disableItem"](this.id);
                     });
