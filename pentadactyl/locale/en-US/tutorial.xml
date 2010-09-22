@@ -259,12 +259,12 @@
 
 <code><k name="Esc"/></code>
 
-<h2 tag="pentadactylrc">Saving for posterity—pentadactylrc</h2>
+<h2 tag="pentadactylrc">Saving for posterity—<tt>pentadactylrc</tt></h2>
 
 <p>
     Once you get &dactyl.appname; set up with your desired options, maps, and commands,
     you'll probably want them to be available the next time you open &dactyl.appname;.
-    Continuing the Vim theme, this is done with a pentadactylrc file.
+    Continuing the Vim theme, this is done with a <tt>pentadactylrc</tt> file.
 </p>
 
 <p>

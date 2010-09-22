@@ -67,7 +67,7 @@
 <warning>
     It is important to note that mappings are <em>not</em>
     automatically saved between sessions. In order to preserve them,
-    they must either be added to your <t>&dactyl.name;rc</t> or
+    they must either be added to your <tt><t>&dactyl.name;rc</t></tt> or
     saved via the <ex>:mk&dactyl.name;rc</ex> command.
 </warning>
 

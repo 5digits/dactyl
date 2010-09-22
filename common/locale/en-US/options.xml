@@ -528,7 +528,7 @@
     <description>
         <p>
             Allow reading of an RC file in the current directory. This file is
-            sourced after the default <t>&dactyl.name;rc</t> file in your
+            sourced after the default <tt><t>&dactyl.name;rc</t></tt> file in your
             home directory.
         </p>
     </description>
@@ -888,9 +888,9 @@
     <description>
         <p>
             Load plugin scripts when starting up. When on, yet unloaded plugins
-            are automatically loaded after the <t>&dactyl.name;rc</t> file has been
+            are automatically loaded after the <tt><t>&dactyl.name;rc</t></tt> file has been
             sourced. To load plugins earlier, use the <ex>:loadplugins</ex>
-            command within <t>&dactyl.name;rc</t>.
+            command within <tt><t>&dactyl.name;rc</t></tt>.
         </p>
     </description>
 </item>

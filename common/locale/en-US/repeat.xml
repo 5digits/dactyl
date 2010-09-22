@@ -195,9 +195,9 @@
     <description>
         <p>
             Immediately load all plugins which have yet to be loaded. Because
-            plugins are not automatically loaded until after &dactyl.name;rc
+            plugins are not automatically loaded until after <tt><t>&dactyl.name;rc</t></tt>
             is sourced, this command must be placed early in the
-            &dactyl.name;rc file if &dactyl.name;rc uses commands or options
+            <tt>&dactyl.name;rc</tt> file if <tt>&dactyl.name;rc</tt> uses commands or options
             which are defined by plugins. Additionally, this command allows
             newly installed plugins to be easily loaded without restarting
             &dactyl.appname;.
