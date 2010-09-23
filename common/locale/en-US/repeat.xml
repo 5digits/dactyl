@@ -200,7 +200,7 @@
             <tt>&dactyl.name;rc</tt> file if <tt>&dactyl.name;rc</tt> uses commands or options
             which are defined by plugins. Additionally, this command allows
             newly installed plugins to be easily loaded without restarting
-            &dactyl.appname;.
+            &dactyl.appname;. See also <o>loadplugins</o>.
         </p>
     </description>
 </item>
