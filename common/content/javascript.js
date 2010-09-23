@@ -358,7 +358,7 @@ const JavaScript = Module("javascript", {
             offset: key.length
         };
 
-        context.forceAnchored = true;
+        this.context.forceAnchored = true;
         // TODO: Make this a generic completion helper function.
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1], this._top.offset, this, this._fill,
