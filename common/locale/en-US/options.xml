@@ -1377,6 +1377,24 @@
 </item>
 
 <item>
+    <tags>'wia' 'wildanchor'</tags>
+    <spec>'wildanchor' 'wia'</spec>
+    <type>regexlist</type>
+    <default>!/ex/(back|buffer|ext|forward|help|undo),.*</default>
+    <description>
+        <p>
+            Regular expression list defining which completion groups show only
+            matches anchored to the beginning of the result. The first
+            matching expression is the one that applies. If the match is
+            negated, then the current filter may match anywhere in the result.
+            If it is not negated, then the match may only occur at the
+            beginning of the result. If no items match, then a
+            context-dependent default value is used.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>'wic' 'wildcase'</tags>
     <spec>'wildcase' 'wic'</spec>
     <type>regexmap</type>

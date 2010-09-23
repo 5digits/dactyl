@@ -54,7 +54,7 @@ const CompletionContext = Class("CompletionContext", {
 
             ["filters", "keys", "title", "quote"].forEach(function (key)
                 self[key] = parent[key] && util.cloneObject(parent[key]));
-            ["anchored", "compare", "editor", "_filter", "filterFunc", "keys", "process", "top"].forEach(function (key)
+            ["anchored", "compare", "editor", "_filter", "filterFunc", "forceAnchored", "keys", "process", "top"].forEach(function (key)
                 self[key] = parent[key]);
 
             self.__defineGetter__("value", function () this.top.value);
@@ -96,6 +96,7 @@ const CompletionContext = Class("CompletionContext", {
              * @default true
              */
             this.anchored = true;
+            this.forceAnchored = null;
 
             this.compare = function (a, b) String.localeCompare(a.text, b.text);
             /**
@@ -404,6 +405,9 @@ const CompletionContext = Class("CompletionContext", {
 
         let self = this;
         delete this._substrings;
+
+        if (!this.forceAnchored)
+            this.anchored = options.get("wildanchor").getKey(this.name, this.anchored);
 
         // Item matchers
         if (this.ignoreCase)
@@ -802,7 +806,7 @@ const Completion = Module("completion", {
                     </div>);
             },
             {
-                argCount: "1",
+                argCount: "*",
                 completer: function (context, args) {
                     let PREFIX = "/ex/contexts";
                     context.fork("ex", 0, completion, "ex");
@@ -848,6 +852,10 @@ const Completion = Module("completion", {
             {
                 completer: function (context) array(values(completion.urlCompleters))
             });
+
+        options.add(["wildanchor", "wia"],
+            "Regexp list defining which contexts require matches anchored to the begining of the result",
+            "regexlist", "!/ex/(back|buffer|ext|forward|help|undo),.*");
 
         options.add(["wildcase", "wic"],
             "Completion case matching mode",

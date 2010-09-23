@@ -358,6 +358,7 @@ const JavaScript = Module("javascript", {
             offset: key.length
         };
 
+        context.forceAnchored = true;
         // TODO: Make this a generic completion helper function.
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1], this._top.offset, this, this._fill,
@@ -605,10 +606,7 @@ const JavaScript = Module("javascript", {
             "Switch on/off jsdebugger",
             "boolean", false, {
                 setter: function (value) {
-                    if (value)
-                        services.get("debugger").on();
-                    else
-                        services.get("debugger").off();
+                    services.get("debugger")[value ? "on" : "off"]();
                 },
                 getter: function () services.get("debugger").isOn
             });

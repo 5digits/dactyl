@@ -42,7 +42,6 @@ BUGS:
 
 FEATURES:
 9 Make 'loadplugins' a regexlist
-9 Add 'wildanchor' option
 9 Add quoting help tag
 9 JavaScript completer: show function parameter spec
 9 Fix the arbitrary distinction between 'hinttags' and

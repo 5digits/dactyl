@@ -382,11 +382,11 @@ const Option = Class("Option", {
         stringlist: function (k) this.values.indexOf(k) >= 0,
         get charlist() this.stringlist,
 
-        regexlist: function (k) {
+        regexlist: function (k, default_) {
             for (let re in values(this.values))
                 if (re.test(k))
                     return re.result;
-            return null;
+            return arguments.length > 1 ? default_ : null;
         },
         get regexmap() this.regexlist
     },
