@@ -41,7 +41,6 @@ BUGS:
 - The MOW shouldn't close when executing hints and ;F isn't working.
 
 FEATURES:
-9 Make 'loadplugins' a regexlist
 9 Add quoting help tag
 9 JavaScript completer: show function parameter spec
 9 Fix the arbitrary distinction between 'hinttags' and

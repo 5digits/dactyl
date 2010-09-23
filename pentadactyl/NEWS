@@ -20,6 +20,8 @@
       - Supports reverse incremental search.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
+    * IMPORTANT: 'loadplugins' is not a regexlist option rather than
+      a boolean.
     * IMPORTANT: Single quotes no longer treat \s specially.
       I.e., 'fo\o''bar' ≡ fo\o'bar
     * IMPORTANT: 'cdpath' and 'runtimepath' no longer treat ‘,,’

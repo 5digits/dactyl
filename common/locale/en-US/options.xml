@@ -883,15 +883,17 @@
     <tags>'nolpl' 'lpl'</tags>
     <tags>'noloadplugins' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>regexlist</type>
+    <default>\.(js|vimp)$</default>
     <description>
         <p>
-            Load plugin scripts when starting up. When on, yet unloaded plugins
-            are automatically loaded after the <tt><t>&dactyl.name;rc</t></tt> file has been
-            sourced. To load plugins earlier, use the <ex>:loadplugins</ex>
-            command within <tt><t>&dactyl.name;rc</t></tt>.
+            A regular expression list that defines which plugins are loaded at
+            startup and via <ex>:loadplugins</ex>. The first item to match is
+            the one that takes effect. If no items match, the file is not
+            loaded. Setting this to a blank value effectively disables plugin
+            loading. See also <ex>:runtime</ex>.
         </p>
+        <example><ex>:set loadplugins^=</ex>!<str delim="'">foobar-plugin</str></example>
     </description>
 </item>
 

@@ -739,8 +739,9 @@ const Dactyl = Module("dactyl", {
             dactyl.assert(dir.isReadable(), "E484: Can't open file " + dir.path);
 
             dactyl.log("Sourcing plugin directory: " + dir.path + "...", 3);
+            let loadplugins = options.get("loadplugins");
             dir.readDirectory(true).forEach(function (file) {
-                if (file.isFile() && /\.(js|vimp)$/i.test(file.path) && !(file.path in dactyl.pluginFiles)) {
+                if (file.isFile() && loadplugins.getKey(file.path) && !(file.path in dactyl.pluginFiles)) {
                     try {
                         io.source(file.path, false);
                         dactyl.pluginFiles[file.path] = true;
@@ -1287,8 +1288,8 @@ const Dactyl = Module("dactyl", {
             "string", "intro");
 
         options.add(["loadplugins", "lpl"],
-            "Load plugin scripts when starting up",
-            "boolean", true);
+            "A regex list that defines which plugins are loaded at startup and via :loadplugins",
+            "regexlist", "\\.(js|vimp)$");
 
         options.add(["titlestring"],
             "Change the title of the window",
