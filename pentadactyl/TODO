@@ -27,8 +27,6 @@ BUGS:
 9 One of the recent completion fixes seems to have broken the caret
   position update. BLOCKER.
 9 about:pentadactyl is currently about:undefined
-9 */# are broken for the upteenth time E.g. * followed by n matches a
-  previously searched (/) for word not the word matched with *
 
 - visual caret mode is broken, requires a manual page focus first anyway or
   else it chucks, I haven't investigated --djk

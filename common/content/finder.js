@@ -64,11 +64,11 @@ const RangeFinder = Module("rangefinder", {
             this.rangeFind.highlighted = highlighted;
             this.rangeFind.selections = selections;
         }
-        return str;
+        return this.lastSearchPattern = str;
     },
 
     find: function (pattern, backwards) {
-        let str = this.bootstrap(pattern);
+        let str = this.bootstrap(pattern, backwards);
         if (!this.rangeFind.search(str))
             this.timeout(function () { dactyl.echoerr("E486: Pattern not found: " + pattern); }, 0);
 
@@ -110,8 +110,6 @@ const RangeFinder = Module("rangefinder", {
             this.clear();
             this.find(command || this.lastSearchPattern, modes.extended & modes.FIND_BACKWARD);
         }
-
-        this.lastSearchPattern = command;
 
         if (options["hlsearch"])
             this.highlight();
@@ -194,15 +192,15 @@ const RangeFinder = Module("rangefinder", {
         mappings.add(myModes.concat([modes.CARET, modes.TEXTAREA]), ["*"],
             "Find word under cursor",
             function () {
-                rangefinder._found = false;
-                rangefinder.onSubmit(buffer.getCurrentWord(), false);
+                rangefinder.find(buffer.getCurrentWord(), false);
+                rangefinder.findAgain();
             });
 
         mappings.add(myModes.concat([modes.CARET, modes.TEXTAREA]), ["#"],
             "Find word under cursor backwards",
             function () {
-                rangefinder._found = false;
-                rangefinder.onSubmit(buffer.getCurrentWord(), true);
+                rangefinder.find(buffer.getCurrentWord(), true);
+                rangefinder.findAgain();
             });
 
     },
