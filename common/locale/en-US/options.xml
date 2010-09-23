@@ -1380,7 +1380,7 @@
     <tags>'wia' 'wildanchor'</tags>
     <spec>'wildanchor' 'wia'</spec>
     <type>regexlist</type>
-    <default>!/ex/(back|buffer|ext|forward|help|undo),.*</default>
+    <default>!/ex/(back|buffer|ext|forward|help|undo)</default>
     <description>
         <p>
             Regular expression list defining which completion groups show only

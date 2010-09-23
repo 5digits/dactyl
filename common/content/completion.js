@@ -855,7 +855,7 @@ const Completion = Module("completion", {
 
         options.add(["wildanchor", "wia"],
             "Regexp list defining which contexts require matches anchored to the begining of the result",
-            "regexlist", "!/ex/(back|buffer|ext|forward|help|undo),.*");
+            "regexlist", "!/ex/(back|buffer|ext|forward|help|undo)");
 
         options.add(["wildcase", "wic"],
             "Completion case matching mode",
