@@ -187,7 +187,7 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
 
     iterCookies: function iterCookies(host) {
         for (let c in iter(services.get("cookies")))
-            if (!host || util.isSubdomain(c.QueryInterface(Ci.nsICookie2).rawHost, host))
+            if (c.QueryInterface(Ci.nsICookie2) && !host || util.isSubdomain(c.rawHost, host))
                 yield c;
     },
     iterPermissions: function iterPermissions(host) {
