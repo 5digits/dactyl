@@ -309,7 +309,7 @@ const JavaScript = Module("javascript", {
     _complete: function (objects, key, compl, string, last) {
         const self = this;
 
-        if (!options["jsdebugger"] && !this.context.message)
+        if (!window.Object.getOwnPropertyNames && !options["jsdebugger"] && !this.context.message)
             this.context.message = "For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
 
         let orig = compl;
