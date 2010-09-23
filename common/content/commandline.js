@@ -497,7 +497,7 @@ const CommandLine = Module("commandline", {
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
         if (flags & this.APPEND_TO_MESSAGES) {
-            let message = isobject(str) ? str : { message: str };
+            let message = isObject(str) ? str : { message: str };
             this._messageHistory.add(update({ highlight: highlightGroup }, message));
             str = message.message;
         }
@@ -1388,7 +1388,7 @@ const CommandLine = Module("commandline", {
             return "";
 
         try {
-            arg = dactyl.usereval(arg);
+            arg = dactyl.userEval(arg);
         }
         catch (e) {
             dactyl.echoerr(e);

@@ -24,7 +24,7 @@ const Events = Module("events", {
 
         this._macros = storage.newMap("macros", { privateData: true, store: true });
         for (let [k, m] in this._macros)
-            if (isstring(m))
+            if (isString(m))
                 m = { keys: m, timeRecorded: Date.now() };
 
         // NOTE: the order of ["Esc", "Escape"] or ["Escape", "Esc"]
@@ -741,7 +741,7 @@ const Events = Module("events", {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
         if (Events.isContentNode(elem) && !buffer.focusAllowed(win)
-            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
+            && isInstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
             elem.blur();
     },
 
@@ -773,7 +773,7 @@ const Events = Module("events", {
                 return;
             }
 
-            if(isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
+            if(isInstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
                 dactyl.mode = modes.EMBED;
                 return;
             }
@@ -1118,7 +1118,7 @@ const Events = Module("events", {
     isInputElemFocused: function () {
         let elem = dactyl.focus;
         return elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type) ||
-               isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
+               isInstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
                                  HTMLObjectElement, HTMLTextAreaElement]);
     }
 }, {

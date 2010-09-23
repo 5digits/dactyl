@@ -500,7 +500,7 @@ const Buffer = Module("buffer", {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         win.dactylFocusAllowed = true;
 
-        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
+        if (isInstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
             elem.contentWindow.focus();
         else if (elem instanceof HTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);
@@ -592,7 +592,7 @@ const Buffer = Module("buffer", {
         let offsetX = 1;
         let offsetY = 1;
 
-        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement])) {
+        if (isInstance(elem, [HTMLFrameElement, HTMLIFrameElement])) {
             buffer.focusElement(elem);
             return;
         }

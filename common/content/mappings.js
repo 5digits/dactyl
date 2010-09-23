@@ -31,7 +31,7 @@
  */
 const Map = Class("Map", {
     init: function (modes, keys, description, action, extraInfo) {
-        modes = Array.concat(modes).map(function (m) isobject(m) ? m.mask : m);
+        modes = Array.concat(modes).map(function (m) isObject(m) ? m.mask : m);
 
         this.id = ++Map.id;
         this.modes = modes;
@@ -392,7 +392,7 @@ const Mappings = Module("mappings", {
                 else {
                     if (args["-javascript"]) {
                         rhs = ["-javascript", rhs];
-                        var action = dactyl.userfunc("count", rhs);
+                        var action = dactyl.userFunc("count", rhs);
                     }
                     else if (args["-ex"]) {
                         rhs = ["-ex", rhs];

@@ -252,11 +252,11 @@ const Dactyl = Module("dactyl", {
     echoerr: function echoerr(str, flags) {
         flags |= commandline.APPEND_TO_MESSAGES;
 
-        if (isinstance(str, ["Error", "Exception"]))
+        if (isInstance(str, ["Error", "Exception"]))
             dactyl.reportError(str);
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
-        else if (isinstance(str, ["Error"]))
+        else if (isInstance(str, ["Error"]))
             str = str.fileName + ":" + str.lineNumber + ": " + str;
 
         if (options["errorbells"])
@@ -299,7 +299,7 @@ const Dactyl = Module("dactyl", {
         services.get("subscriptLoader").loadSubScript(uri, context);
     },
 
-    usereval: function (str, context) {
+    userEval: function (str, context) {
         try {
             if (!context)
                 context = userContext;
@@ -328,8 +328,8 @@ const Dactyl = Module("dactyl", {
      * Acts like the Function builtin, but the code executes in the
      * userContext global.
      */
-    userfunc: function () {
-        return this.usereval(
+    userFunc: function () {
+        return this.userEval(
             "(function (" +
             Array.slice(arguments, 0, -1).join(", ") +
             ") { " + arguments[arguments.length - 1] + " })");
@@ -338,7 +338,7 @@ const Dactyl = Module("dactyl", {
     // partial sixth level expression evaluation
     // TODO: what is that really needed for, and where could it be used?
     //       Or should it be removed? (c) Viktor
-    //       Better name?  See other dactyl.usereval()
+    //       Better name?  See other dactyl.userEval()
     //       I agree, the name is confusing, and so is the
     //           description --Kris
     evalExpression: function (str) {
@@ -839,7 +839,7 @@ const Dactyl = Module("dactyl", {
                 });
 
         params = params || {};
-        if (isarray(params))
+        if (isArray(params))
             params = { where: params };
 
         let flags = 0;
@@ -1413,7 +1413,7 @@ const Dactyl = Module("dactyl", {
             "Execute the argument as an Ex command",
             function (args) {
                 try {
-                    let cmd = dactyl.usereval(args.string);
+                    let cmd = dactyl.userEval(args.string);
                     dactyl.execute(cmd, null, true);
                 }
                 catch (e) {
@@ -1428,7 +1428,7 @@ const Dactyl = Module("dactyl", {
                 getAddonByID: function (id, callback) {
                     callback = callback || util.identity;
                     let addon = id;
-                    if (!isobject(addon))
+                    if (!isObject(addon))
                         addon = services.get("extensionManager").getItemForID(id);
                     if (!addon)
                         return callback(null);
@@ -1714,7 +1714,7 @@ const Dactyl = Module("dactyl", {
                 }
                 else {
                     try {
-                        dactyl.usereval(args.string);
+                        dactyl.userEval(args.string);
                     }
                     catch (e) {
                         dactyl.echoerr(e);
@@ -1807,7 +1807,7 @@ const Dactyl = Module("dactyl", {
                 if (args[0] == ":")
                     var method = function () dactyl.execute(args, null, true);
                 else
-                    method = dactyl.userfunc(args);
+                    method = dactyl.userFunc(args);
 
                 try {
                     if (count > 1) {

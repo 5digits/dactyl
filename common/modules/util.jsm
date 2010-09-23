@@ -7,7 +7,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("util", {
+defineModule("util", {
     exports: ["Math", "NS", "Util", "XHTML", "XUL", "util"],
     require: ["services"],
     use: ["highlight", "template"]
@@ -116,7 +116,7 @@ const Util = Module("Util", {
      * @returns {Object}
      */
     cloneObject: function cloneObject(obj) {
-        if (isarray(obj))
+        if (isArray(obj))
             return obj.slice();
         let newObj = {};
         for (let [k, v] in Iterator(obj))
@@ -280,7 +280,7 @@ const Util = Module("Util", {
             doc = util.activeWindow.content.document;
         if (!elem)
             elem = doc;
-        if (isarray(expression))
+        if (isArray(expression))
             expression = util.makeXPath(expression);
 
         let result = doc.evaluate(expression, elem,
@@ -581,7 +581,7 @@ const Util = Module("Util", {
 
         // window.content often does not want to be queried with "var i in object"
         try {
-            let hasValue = !("__iterator__" in object || isinstance(object, ["Generator", "Iterator"]));
+            let hasValue = !("__iterator__" in object || isInstance(object, ["Generator", "Iterator"]));
             if (object.dactyl && object.modules && object.modules.modules == object.modules) {
                 object = Iterator(object);
                 hasValue = false;
@@ -593,7 +593,7 @@ const Util = Module("Util", {
                 }
                 catch (e) {}
                 if (!hasValue) {
-                    if (isarray(i) && i.length == 2)
+                    if (isArray(i) && i.length == 2)
                         [i, value] = i;
                     else
                         var noVal = true;
@@ -853,6 +853,6 @@ var Math = update(Object.create(GlobalMath), {
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
-endmodule();
+endModule();
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

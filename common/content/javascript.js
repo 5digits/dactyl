@@ -75,7 +75,7 @@ const JavaScript = Module("javascript", {
 
         context[JavaScript.EVAL_TMP] = tmp;
         try {
-            return cache[key] = dactyl.usereval(arg, context);
+            return cache[key] = dactyl.userEval(arg, context);
         }
         catch (e) {
             this.context.message = "Error: " + e;

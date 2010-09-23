@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("template", {
+defineModule("template", {
     exports: ["Template", "template"],
     require: ["util"]
 });
@@ -308,6 +308,6 @@ const Template = Module("Template", {
     }
 });
 
-endmodule();
+endModule();
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

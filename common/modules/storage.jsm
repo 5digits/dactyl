@@ -6,7 +6,7 @@
 
 const myObject = Object;
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("storage", {
+defineModule("storage", {
     exports: ["File", "storage"],
     require: ["services", "util"]
 });
@@ -169,7 +169,7 @@ const Storage = Module("Storage", {
     alwaysReload: {},
 
     newObject: function newObject(key, constructor, params) {
-        if (params == null || !isobject(params))
+        if (params == null || !isObject(params))
             throw Error("Invalid argument type");
 
         if (!(key in keys) || params.reload || this.alwaysReload[key]) {
@@ -559,7 +559,7 @@ const File = Class("File", {
     replacePathSep: function (path) path.replace("/", File.PATH_SEP, "g")
 });
 
-endmodule();
+endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 

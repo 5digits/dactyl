@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("highlight", {
+defineModule("highlight", {
     exports: ["Highlight", "Highlights", "highlight"],
     require: ["services", "styles"],
     use: ["template", "util"]
@@ -66,7 +66,7 @@ const Highlights = Module("Highlight", {
     _create: function (agent, args) {
         let obj = Highlight.apply(Highlight, args);
 
-        if (!isarray(obj[2]))
+        if (!isArray(obj[2]))
             obj[2] = obj[2].split(",");
         obj[5] = agent;
 
@@ -337,6 +337,6 @@ const Highlights = Module("Highlight", {
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
-endmodule();
+endModule();
 
 // vim:se fdm=marker sw=4 ts=4 et ft=javascript:

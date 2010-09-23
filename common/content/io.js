@@ -311,7 +311,7 @@ lookup:
      */
     source: function (filename, silent) {
         let wasSourcing = this.sourcing;
-        defmodule.loadLog.push("sourcing " + filename);
+        defineModule.loadLog.push("sourcing " + filename);
         let time = Date.now();
         try {
             var file = io.File(filename);
@@ -343,7 +343,7 @@ lookup:
                     dactyl.helpInitialized = false;
                 }
                 catch (e) {
-                    if (isstring(e))
+                    if (isString(e))
                         e = { message: e };
                     let err = new Error();
                     for (let [k, v] in Iterator(e))
@@ -431,7 +431,7 @@ lookup:
                 dactyl.echoerr(message);
         }
         finally {
-            defmodule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
+            defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
             this.sourcing = wasSourcing;
         }
     },

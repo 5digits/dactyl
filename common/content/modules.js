@@ -15,7 +15,7 @@ const ModuleBase = Class("ModuleBase", {
      */
     requires: [],
 
-    toString: function () "[module " + this.constructor.classname + "]"
+    toString: function () "[module " + this.constructor.className + "]"
 });
 
 /**
@@ -76,9 +76,9 @@ window.addEventListener("load", function onLoad() {
     window.removeEventListener("load", onLoad, false);
 
     Module.list.forEach(function (module) {
-        modules.__defineGetter__(module.classname, function () {
-            delete modules[module.classname];
-            return load(module.classname, null, Components.stack.caller);
+        modules.__defineGetter__(module.className, function () {
+            delete modules[module.className];
+            return load(module.className, null, Components.stack.caller);
         });
     });
 
@@ -91,11 +91,11 @@ window.addEventListener("load", function onLoad() {
 
     function init(module) {
         function init(func, mod)
-            function () defmodule.time(module.classname || module.constructor.classname, mod,
+            function () defineModule.time(module.className || module.constructor.className, mod,
                                        func, module,
                                        dactyl, modules, window);
 
-        set.add(loaded, module.constructor.classname);
+        set.add(loaded, module.constructor.className);
         for (let [mod, func] in Iterator(module.INIT)) {
             if (mod in loaded)
                 init(func, mod)();
@@ -105,45 +105,45 @@ window.addEventListener("load", function onLoad() {
             }
         }
     }
-    defmodule.modules.map(init);
+    defineModule.modules.map(init);
 
     function load(module, prereq, frame) {
-        if (isstring(module)) {
+        if (isString(module)) {
             if (!Module.constructors.hasOwnProperty(module))
                 modules.load(module);
             module = Module.constructors[module];
         }
 
         try {
-            if (module.classname in loaded)
+            if (module.className in loaded)
                 return;
-            if (module.classname in seen)
+            if (module.className in seen)
                 throw Error("Module dependency loop.");
-            set.add(seen, module.classname);
+            set.add(seen, module.className);
 
             for (let dep in values(module.requires))
-                load(Module.constructors[dep], module.classname);
+                load(Module.constructors[dep], module.className);
 
-            defmodule.loadLog.push("Load" + (isstring(prereq) ? " " + prereq + " dependency: " : ": ") + module.classname);
+            defineModule.loadLog.push("Load" + (isString(prereq) ? " " + prereq + " dependency: " : ": ") + module.className);
             if (frame && frame.filename)
-                defmodule.loadLog.push(" from: " + frame.filename + ":" + frame.lineNumber);
+                defineModule.loadLog.push(" from: " + frame.filename + ":" + frame.lineNumber);
 
-            delete modules[module.classname];
-            modules[module.classname] = defmodule.time(module.classname, "init", module);
+            delete modules[module.className];
+            modules[module.className] = defineModule.time(module.className, "init", module);
 
-            init(modules[module.classname]);
-            for (let [, fn] in iter(deferredInit[module.classname] || []))
+            init(modules[module.className]);
+            for (let [, fn] in iter(deferredInit[module.className] || []))
                 fn();
         }
         catch (e) {
-            dump("Loading " + (module && module.classname) + ": " + e + "\n" + (e.stack || ""));
+            dump("Loading " + (module && module.className) + ": " + e + "\n" + (e.stack || ""));
         }
-        return modules[module.classname];
+        return modules[module.className];
     }
 
     Module.list.forEach(load);
     deferredInit["load"].forEach(call);
-    modules.times = update({}, defmodule.times);
+    modules.times = update({}, defineModule.times);
 
     dump("Loaded in " + (Date.now() - start) + "ms");
 }, false);

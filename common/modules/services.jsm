@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("services", {
+defineModule("services", {
     exports: ["Services", "services"]
 });
 
@@ -132,7 +132,7 @@ const Services = Module("Services", {
     }
 });
 
-endmodule();
+endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 

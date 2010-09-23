@@ -1123,7 +1123,7 @@ const Options = Module("options", {
 
             if (context.filter.indexOf("=") == -1) {
                 if (false && prefix)
-                    context.filters.push(function ({ item }) item.type == "boolean" || prefix == "inv" && isarray(item.values));
+                    context.filters.push(function ({ item }) item.type == "boolean" || prefix == "inv" && isArray(item.values));
                 return completion.option(context, opt.scope, prefix);
             }
 
@@ -1152,7 +1152,7 @@ const Options = Module("options", {
             completion.optionValue(optcontext, opt.name, opt.operator);
 
             // Fill in the current values if we're removing
-            if (opt.operator == "-" && isarray(opt.values)) {
+            if (opt.operator == "-" && isArray(opt.values)) {
                 let have = set([i.text for (i in context.allItems)]);
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
@@ -1326,7 +1326,7 @@ const Options = Module("options", {
             context.completions = options;
             if (prefix == "inv")
                 context.keys.text = function (opt)
-                    opt.type == "boolean" || isarray(opt.values) ? opt.names.map(function (n) "inv" + n)
+                    opt.type == "boolean" || isArray(opt.values) ? opt.names.map(function (n) "inv" + n)
                                                                  : opt.names;
             if (scope)
                 context.filters.push(function ({ item }) item.scope & scope);
@@ -1377,7 +1377,7 @@ const Options = Module("options", {
             context.title = ["Option Value"];
             // Not Vim compatible, but is a significant enough improvement
             // that it's worth breaking compatibility.
-            if (isarray(newValues)) {
+            if (isArray(newValues)) {
                 context.filters.push(function (i) newValues.indexOf(i.text) == -1);
                 if (op == "+")
                     context.filters.push(function (i) curValues.indexOf(i.text) == -1);

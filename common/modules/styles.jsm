@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("styles", {
+defineModule("styles", {
     exports: ["Style", "Styles", "styles"],
     require: ["services", "util"],
     use: ["template"]
@@ -100,7 +100,7 @@ const Styles = Module("Styles", {
         let sheets = system ? this.systemSheets : this.userSheets;
         let names = system ? this.systemNames : this.userNames;
 
-        if (!isarray(filter))
+        if (!isArray(filter))
             filter = filter.split(",");
         if (name && name in names) {
             var sheet = names[name];
@@ -390,7 +390,7 @@ const Styles = Module("Styles", {
     }
 });
 
-endmodule();
+endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 

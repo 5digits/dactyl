@@ -934,7 +934,7 @@ const Commands = Module("commands", {
                     try {
                         let compObject = command.completer.call(command, cmdContext, args);
 
-                        if (isarray(compObject)) // for now at least, let completion functions return arrays instead of objects
+                        if (isArray(compObject)) // for now at least, let completion functions return arrays instead of objects
                             compObject = { start: compObject[0], items: compObject[1] };
                         if (compObject != null) {
                             cmdContext.advance(compObject.start);
@@ -1004,7 +1004,7 @@ const Commands = Module("commands", {
                             completeOpt = completeOpt.substr(7);
                             completeFunc = function () {
                                 try {
-                                    var completer = dactyl.usereval(completeOpt);
+                                    var completer = dactyl.userEval(completeOpt);
 
                                     if (!callable(completer))
                                         throw new TypeError("User-defined custom completer " + completeOpt.quote() + " is not a function");

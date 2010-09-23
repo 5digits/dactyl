@@ -174,7 +174,7 @@ const AutoCommands = Module("autocommands", {
                     if (args.bang)
                         autocommands.remove(event, regex);
                     if (args["-javascript"])
-                        cmd = dactyl.userfunc("args", "with(args) {" + cmd + "}");
+                        cmd = dactyl.userFunc("args", "with(args) {" + cmd + "}");
                     autocommands.add(events, regex, cmd);
                 }
                 else {

@@ -82,11 +82,11 @@ if (!Object.keys)
 let use = {};
 let loaded = {};
 let currentModule;
-function defmodule(name, params) {
+function defineModule(name, params) {
     let module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
-    defmodule.loadLog.push("defmodule " + name);
+    defineModule.loadLog.push("defineModule " + name);
     for(let [, mod] in Iterator(params.require || []))
         require(module, mod);
 
@@ -100,25 +100,25 @@ function defmodule(name, params) {
     currentModule = module;
 }
 
-defmodule.loadLog = [];
-Object.defineProperty(defmodule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val; } });
-defmodule.modules = [];
-defmodule.times = { all: 0 };
-defmodule.time = function time(major, minor, func, self) {
+defineModule.loadLog = [];
+Object.defineProperty(defineModule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val; } });
+defineModule.modules = [];
+defineModule.times = { all: 0 };
+defineModule.time = function time(major, minor, func, self) {
     let time = Date.now();
     let res = func.apply(self, Array.slice(arguments, 4));
     let delta = Date.now() - time;
-    defmodule.times.all += delta;
-    defmodule.times[major] = (defmodule.times[major] || 0) + delta;
+    defineModule.times.all += delta;
+    defineModule.times[major] = (defineModule.times[major] || 0) + delta;
     if (minor) {
-        defmodule.times[":" + minor] = (defmodule.times[":" + minor] || 0) + delta;
-        defmodule.times[major + ":" + minor] = (defmodule.times[major + ":" + minor] || 0) + delta;
+        defineModule.times[":" + minor] = (defineModule.times[":" + minor] || 0) + delta;
+        defineModule.times[major + ":" + minor] = (defineModule.times[major + ":" + minor] || 0) + delta;
     }
     return res;
 }
 
-function endmodule() {
-    defmodule.loadLog.push("endmodule " + currentModule.NAME);
+function endModule() {
+    defineModule.loadLog.push("endModule " + currentModule.NAME);
     loaded[currentModule.NAME] = 1;
     for(let [, mod] in Iterator(use[currentModule.NAME] || []))
         require(mod, currentModule.NAME, "use");
@@ -126,7 +126,7 @@ function endmodule() {
 
 function require(obj, name, from) {
     try {
-        defmodule.loadLog.push((from || "require") + ": loading " + name + " into " + obj.NAME);
+        defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + obj.NAME);
         Cu.import("resource://dactyl/" + name + ".jsm", obj);
     }
     catch (e) {
@@ -135,14 +135,14 @@ function require(obj, name, from) {
     }
 }
 
-defmodule("base", {
+defineModule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
         "Struct", "StructBase", "Timer", "UTF8", "XPCOMUtils", "array",
-        "call", "callable", "curry", "debuggerProperties", "defmodule",
-        "endmodule", "extend", "foreach", "isarray", "isgenerator",
-        "isinstance", "isobject", "isstring", "issubclass", "iter", "iterall",
+        "call", "callable", "curry", "debuggerProperties", "defineModule",
+        "endModule", "extend", "forEach", "isArray", "isGenerator",
+        "isInstance", "isObject", "isString", "isSubclass", "iter", "iterall",
         "keys", "memoize", "properties", "requiresMainThread", "set",
         "update", "values"
     ],
@@ -231,7 +231,7 @@ function values(obj) {
  * @param {function} fn The callback.
  * @param {object} self The this object for 'fn'.
  */
-function foreach(iter, fn, self) {
+function forEach(iter, fn, self) {
     for (let val in iter)
         fn.call(self, val);
 }
@@ -341,7 +341,7 @@ set.remove = function (set, key) {
  * @returns {Generator}
  */
 function iter(obj) {
-    if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
+    if (isInstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
         return array.iteritems(obj);
     if (obj instanceof Ci.nsIDOMNamedNodeMap)
         return (function () {
@@ -382,7 +382,7 @@ function iter(obj) {
  * @param {function} src
  * @returns {boolean}
  */
-function issubclass(targ, src) {
+function isSubclass(targ, src) {
     return src === targ ||
         targ && typeof targ === "function" && targ.prototype instanceof src;
 }
@@ -392,14 +392,14 @@ function issubclass(targ, src) {
  * returns true if targ is an instance of any element of src. If src is
  * the object form of a primitive type, returns true if targ is a
  * non-boxed version of the type, i.e., if (typeof targ == "string"),
- * isinstance(targ, String) is true. Finally, if src is a string,
+ * isInstance(targ, String) is true. Finally, if src is a string,
  * returns true if ({}.toString.call(targ) == "[object <src>]").
  *
  * @param {object} targ The object to check.
  * @param {object|string|[object|string]} src The types to check targ against.
  * @returns {boolean}
  */
-function isinstance(targ, src) {
+function isInstance(targ, src) {
     const types = {
         boolean: Boolean,
         string: String,
@@ -416,7 +416,7 @@ function isinstance(targ, src) {
             if (targ instanceof src[i])
                 return true;
             var type = types[typeof targ];
-            if (type && issubclass(src[i], type))
+            if (type && isSubclass(src[i], type))
                 return true;
         }
     }
@@ -426,7 +426,7 @@ function isinstance(targ, src) {
 /**
  * Returns true if obj is a non-null object.
  */
-function isobject(obj) typeof obj === "object" && obj != null;
+function isObject(obj) typeof obj === "object" && obj != null;
 
 /**
  * Returns true if and only if its sole argument is an
@@ -434,8 +434,8 @@ function isobject(obj) typeof obj === "object" && obj != null;
  * any window, frame, namespace, or execution context, which
  * is not the case when using (obj instanceof Array).
  */
-const isarray = Array.isArray ||
-    function isarray(val) objproto.toString.call(val) == "[object Array]";
+const isArray = Array.isArray ||
+    function isArray(val) objproto.toString.call(val) == "[object Array]";
 
 /**
  * Returns true if and only if its sole argument is an
@@ -443,7 +443,7 @@ const isarray = Array.isArray ||
  * functions containing the 'yield' statement and generator
  * statements such as (x for (x in obj)).
  */
-function isgenerator(val) objproto.toString.call(val) == "[object Generator]";
+function isGenerator(val) objproto.toString.call(val) == "[object Generator]";
 
 /**
  * Returns true if and only if its sole argument is a String,
@@ -452,7 +452,7 @@ function isgenerator(val) objproto.toString.call(val) == "[object Generator]";
  * namespace, or execution context, which is not the case when
  * using (obj instanceof String) or (typeof obj == "string").
  */
-function isstring(val) objproto.toString.call(val) == "[object String]";
+function isString(val) objproto.toString.call(val) == "[object String]";
 
 /**
  * Returns true if and only if its sole argument may be called
@@ -631,7 +631,7 @@ function extend(subclass, superclass, overrides) {
 function Class() {
 
     var args = Array.slice(arguments);
-    if (isstring(args[0]))
+    if (isString(args[0]))
         var name = args.shift();
     var superclass = Class;
     if (callable(args[0]))
@@ -657,8 +657,8 @@ function Class() {
             var res = self.init.apply(self, arguments);
             return res !== undefined ? res : self;
         })]]>,
-        "constructor", (name || superclass.classname).replace(/\W/g, "_")));
-    Constructor.classname = name || superclass.classname || superclass.name;
+        "constructor", (name || superclass.className).replace(/\W/g, "_")));
+    Constructor.className = name || superclass.className || superclass.name;
 
     if ("init" in superclass.prototype)
         Constructor.__proto__ = superclass;
@@ -686,7 +686,7 @@ Class.replaceProperty = function (obj, prop, value) {
     Object.defineProperty(obj, prop, { configurable: true, enumerable: true, value: value, writable: true });
     return value;
 };
-Class.toString = function () "[class " + this.classname + "]";
+Class.toString = function () "[class " + this.className + "]";
 Class.prototype = {
     /**
      * Initializes new instances of this class. Called automatically
@@ -694,7 +694,7 @@ Class.prototype = {
      */
     init: function () {},
 
-    toString: function () "[instance " + this.constructor.classname + "]",
+    toString: function () "[instance " + this.constructor.className + "]",
 
     /**
      * Executes 'callback' after 'timeout' milliseconds. The value of
@@ -727,10 +727,10 @@ function Module(name, prototype) {
     let init = callable(prototype) ? 4 : 3;
     const module = Class.apply(Class, Array.slice(arguments, 0, init));
     let instance = module();
-    module.classname = name.toLowerCase();
+    module.className = name.toLowerCase();
     instance.INIT = arguments[init] || {};
-    currentModule[module.classname] = instance;
-    defmodule.modules.push(instance);
+    currentModule[module.className] = instance;
+    defineModule.modules.push(instance);
     return module;
 }
 if (Cu.getGlobalForObject)
@@ -890,7 +890,7 @@ function UTF8(str) {
  */
 const array = Class("array", Array, {
     init: function (ary) {
-        if (isinstance(ary, ["Iterator", "Generator"]))
+        if (isInstance(ary, ["Iterator", "Generator"]))
             ary = [k for (k in ary)];
         else if (ary.length)
             ary = Array.slice(ary);
@@ -900,7 +900,7 @@ const array = Class("array", Array, {
             __iterator__: function () this.iteritems(),
             __noSuchMethod__: function (meth, args) {
                 var res = array[meth].apply(null, [this.array].concat(args));
-                if (isarray(res))
+                if (isArray(res))
                     return array(res);
                 return res;
             },
@@ -1024,7 +1024,7 @@ const array = Class("array", Array, {
     }
 });
 
-endmodule();
+endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 

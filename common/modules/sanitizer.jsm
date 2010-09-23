@@ -15,7 +15,7 @@
 //   - finish 1.9.0 support if we're going to support sanitizing in Xulmus
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("sanitizer", {
+defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
     require: ["services", "storage", "util"]
 });
@@ -324,7 +324,7 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
     }
 });
 
-endmodule();
+endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 

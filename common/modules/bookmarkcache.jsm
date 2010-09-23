@@ -5,7 +5,7 @@
 "use strict";
 
 Components.utils.import("resource://dactyl/base.jsm");
-defmodule("bookmarkcache", {
+defineModule("bookmarkcache", {
     exports: ["Bookmark", "BookmarkCache", "Keyword", "bookmarkcache"],
     require: ["services", "storage", "util"]
 });
@@ -153,6 +153,6 @@ const BookmarkCache = Module("BookmarkCache", {
     }
 });
 
-endmodule();
+endModule();
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:

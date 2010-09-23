@@ -17,7 +17,7 @@ const Marks = Module("marks", {
         this._urlMarks = storage.newMap("url-marks", { privateData: true, replacer: replacer, store: true });
 
         try {
-            if(isarray(Iterator(this._localMarks).next()[1]))
+            if(isArray(Iterator(this._localMarks).next()[1]))
                 this._localMarks.clear();
         }
         catch(e) {}
