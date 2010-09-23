@@ -2024,39 +2024,43 @@ const Dactyl = Module("dactyl", {
         // finally, read the RC file and source plugins
         // make sourcing asynchronous, otherwise commands that open new tabs won't work
         util.timeout(function () {
-            let extensionName = config.idname;
-            let init = services.get("environment").get(extensionName + "_INIT");
+            let init = services.get("environment").get(config.idname + "_INIT");
             let rcFile = io.getRCFile("~");
 
-            if (dactyl.commandLineOptions.rcFile) {
-                let filename = dactyl.commandLineOptions.rcFile;
-                if (!/^(NONE|NORC)$/.test(filename))
-                    io.source(io.File(filename).path, false); // let io.source handle any read failure like Vim
-            }
-            else {
-                if (init)
-                    dactyl.execute(init);
+            try {
+                if (dactyl.commandLineOptions.rcFile) {
+                    let filename = dactyl.commandLineOptions.rcFile;
+                    if (!/^(NONE|NORC)$/.test(filename))
+                        io.source(io.File(filename).path, false); // let io.source handle any read failure like Vim
+                }
                 else {
-                    if (rcFile) {
-                        io.source(rcFile.path, true);
-                        services.get("environment").set("MY_" + extensionName + "RC", rcFile.path);
+                    if (init)
+                        dactyl.execute(init);
+                    else {
+                        if (rcFile) {
+                            io.source(rcFile.path, true);
+                            services.get("environment").set("MY_" + config.idname + "RC", rcFile.path);
+                        }
+                        else
+                            dactyl.log("No user RC file found", 3);
                     }
-                    else
-                        dactyl.log("No user RC file found", 3);
+
+                    if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
+                        let localRCFile = io.getRCFile(io.cwd);
+                        if (localRCFile && !localRCFile.equals(rcFile))
+                            io.source(localRCFile.path, true);
+                    }
                 }
 
-                if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
-                    let localRCFile = io.getRCFile(io.cwd);
-                    if (localRCFile && !localRCFile.equals(rcFile))
-                        io.source(localRCFile.path, true);
-                }
+                if (dactyl.commandLineOptions.rcFile == "NONE" || dactyl.commandLineOptions.noPlugins)
+                    options["loadplugins"] = false;
+
+                if (options["loadplugins"])
+                    dactyl.loadPlugins();
             }
-
-            if (dactyl.commandLineOptions.rcFile == "NONE" || dactyl.commandLineOptions.noPlugins)
-                options["loadplugins"] = false;
-
-            if (options["loadplugins"])
-                dactyl.loadPlugins();
+            catch (e) {
+                dactyl.reportError(e, true);
+            }
 
             // after sourcing the initialization files, this function will set
             // all gui options to their default values, if they have not been
