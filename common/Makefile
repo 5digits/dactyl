@@ -82,7 +82,6 @@ release: $(XPI) $(RDF)
 dist: $(XPI)
 	@echo DIST $(XPI) $(GOOGLE)
 	set -e;							        	\
-	which $$(echo $(B64ENCODE) | $(AWK) '{print $1}') >/dev/null;		\
 								        	\
 	proj=$$(echo -n $(NAME) | sed 's/\(.\).*/\1/' | tr a-z A-Z);    	\
 	proj="$$proj$$(echo $(NAME) | sed 's/.//')";                    	\
@@ -93,9 +92,10 @@ dist: $(XPI)
 	IFS=,; for l in $$labels; do						\
 		set -- "$$@" --form-string "label=$$l";				\
 	done;									\
+	auth=$$(echo -n "$(GOOGLE_USER):$(GOOGLE_PASS)" | $(B64ENCODE));	\
 	$(CURL) "$$@" --form-string "summary=$$summary" 			\
 		-F "filename=@$(XPI)"						\
-		-H "Authorization: Basic $$(echo -n "$(GOOGLE_USER):$(GOOGLE_PASS)" | $(B64ENCODE))" \
+		-H "Authorization: Basic $$auth"				\
 		-i "$(GOOGLE)" | sed -n '/^Location/{p;q;}'
 
 $(RDF): $(RDF_IN) Makefile
