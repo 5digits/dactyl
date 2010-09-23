@@ -105,6 +105,7 @@ const IO = Module("io", {
         else {
             let dir = io.File(newDir);
             dactyl.assert(dir.exists() && dir.isDirectory(), "E344: Can't find directory " + dir.path.quote());
+            dir.normalize();
             [this._cwd, this._oldcwd] = [dir.path, this.cwd];
         }
         return this.cwd;

@@ -547,8 +547,6 @@ const File = Class("File", {
         try {
             // FIXME: should only expand env vars and normalise path separators
             path.appendRelativePath(this.expandPath(tail, true));
-            if (path.exists())
-                path.normalize();
         }
         catch (e) {
             return { exists: function () false, __noSuchMethod__: function () { throw e; } };
