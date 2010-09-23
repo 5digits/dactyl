@@ -664,7 +664,7 @@ const Editor = Module("editor", {
                     modes.set(modes.TEXTAREA);
                 }
                 else
-                    dactyl.clipboardWrite(buffer.getCurrentWord(), true);
+                    dactyl.clipboardWrite(buffer.currentWord, true);
             });
 
         mappings.add([modes.VISUAL, modes.TEXTAREA],
