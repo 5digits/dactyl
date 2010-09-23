@@ -316,7 +316,7 @@ const CommandLine = Module("commandline", {
     DISALLOW_MULTILINE : 1 << 2, // If an echo() should try to use the single line
                                  // but output nothing when the MOW is open; when also
                                  // FORCE_MULTILINE is given, FORCE_MULTILINE takes precedence
-    APPEND_TO_MESSAGES : 1 << 3, // Add the string to the message this._history.
+    APPEND_TO_MESSAGES : 1 << 3, // Add the string to the message history.
     ACTIVE_WINDOW      : 1 << 4, // Only echo in active window.
 
     get completionContext() this._completions.context,
@@ -648,7 +648,7 @@ const CommandLine = Module("commandline", {
                     modes.pop(!this._silent);
                     commandline.triggerCallback("submit", mode, command);
                 }
-                // user pressed <Up> or <Down> arrow to cycle this._history completion
+                // user pressed <Up> or <Down> arrow to cycle history completion
                 else if (/^<(Up|Down|S-Up|S-Down|PageUp|PageDown)>$/.test(key)) {
                     // prevent tab from moving to the next field
                     event.preventDefault();
@@ -1076,7 +1076,7 @@ const CommandLine = Module("commandline", {
                 this.index = this.store.length;
             }
 
-            // search the this._history for the first item matching the current
+            // search the history for the first item matching the current
             // commandline string
             while (true) {
                 this.index += diff;
@@ -1454,7 +1454,7 @@ const CommandLine = Module("commandline", {
             { argCount: "0" });
 
         commands.add(["messc[lear]"],
-            "Clear the message this._history",
+            "Clear the message history",
             function () { commandline._messageHistory.clear(); },
             { argCount: "0" });
 
@@ -1504,7 +1504,7 @@ const CommandLine = Module("commandline", {
     },
     options: function () {
         options.add(["history", "hi"],
-            "Number of Ex commands and search patterns to store in the command-line this._history",
+            "Number of Ex commands and search patterns to store in the command-line history",
             "number", 500,
             { validator: function (value) value >= 0 });
 
@@ -1514,7 +1514,7 @@ const CommandLine = Module("commandline", {
             { validator: function (value) value >= 1 });
 
         options.add(["messages", "msgs"],
-            "Number of messages to store in the message this._history",
+            "Number of messages to store in the message history",
             "number", 100,
             { validator: function (value) value >= 0 });
 
