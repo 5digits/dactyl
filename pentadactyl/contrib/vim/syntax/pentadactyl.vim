@@ -50,12 +50,12 @@ syn match pentadactylAutoEventList "\(\a\+,\)*\a\+" contained contains=pentadact
 syn region pentadactylSet matchgroup=pentadactylCommand start="\%(^\s*:\=\)\@<=\<\%(setl\%[ocal]\|setg\%[lobal]\|set\=\)\=\>"
     \ end="$" keepend oneline contains=pentadactylOption,pentadactylString
 
-syn keyword pentadactylOption act activate altwildmode awim au autocomplete cd cdpath complete cpt defsearch ds editor eht ei enc encoding
-    \ eventignore extendedhinttags fenc fileencoding fh followhints go guioptions helpfile hf hi hin hintinputs hintmatching
-    \ hinttags hinttimeout history hm ht hto laststatus ls maxitems messages msgs newtab nextpattern pa pageinfo popups pps
-    \ previouspattern rtp runtimepath si sanitizeitems sts sanitizetimespan scr scroll sh shcf shell shellcmdflag showstatuslinks
-    \ showtabline ssli stal suggestengines titlestring urlseparator vbs verbose wic wig wildcase wildignore wildmode wildoptions
-    \ wildsort wim wis wop wordseparators wsp
+syn keyword pentadactylOption act activate altwildmode awim au autocomplete cd cdpath complete cpt defsearch ds editor eht
+    \ ei enc encoding eventignore extendedhinttags fenc fileencoding fh followhints go guioptions helpfile hf hi hin hintinputs
+    \ hintkeys hk hintmatching hinttags hinttimeout history hm ht hto laststatus ls maxitems messages msgs newtab nextpattern pa
+    \ pageinfo popups pps previouspattern rtp runtimepath si sanitizeitems sts sanitizetimespan scr scroll sh shcf shell
+    \ shellcmdflag showstatuslinks showtabline ssli stal suggestengines titlestring urlseparator vbs verbose wic wig wildcase
+    \ wildignore wildmode wildoptions wildsort wim wis wop wordseparators wsp
     \ contained nextgroup=pentadactylSetMod
 
 " toggle options
