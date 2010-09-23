@@ -440,7 +440,7 @@ const Buffer = Module("buffer", {
     },
 
     /**
-     * Returns the current selection. If the selection is
+     * Returns the currently selected word. If the selection is
      * null, it tries to guess the word that the caret is
      * positioned in.
      *
@@ -450,9 +450,7 @@ const Buffer = Module("buffer", {
      */
     // FIXME: getSelection() doesn't always preserve line endings, see:
     // https://www.mozdev.org/bugs/show_bug.cgi?id=19303
-    // FIXME: The ABRACADABRA nature of this function has always seemed bizarre
-    // to me. Who's with me? --djk
-    get currentWord() {
+    getCurrentWord: function () {
         let win = tabs.localStore.focusedFrame || content;
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
@@ -1570,7 +1568,7 @@ const Buffer = Module("buffer", {
         mappings.add(myModes, ["Y"],
             "Copy selected text or current word",
             function () {
-                let sel = buffer.currentWord;
+                let sel = buffer.getCurrentWord();
                 dactyl.assert(sel);
                 dactyl.clipboardWrite(sel, true);
             });

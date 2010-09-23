@@ -195,14 +195,14 @@ const RangeFinder = Module("rangefinder", {
             "Find word under cursor",
             function () {
                 rangefinder._found = false;
-                rangefinder.onSubmit(buffer.currentWord, false);
+                rangefinder.onSubmit(buffer.getCurrentWord(), false);
             });
 
         mappings.add(myModes.concat([modes.CARET, modes.TEXTAREA]), ["#"],
             "Find word under cursor backwards",
             function () {
                 rangefinder._found = false;
-                rangefinder.onSubmit(buffer.currentWord, true);
+                rangefinder.onSubmit(buffer.getCurrentWord(), true);
             });
 
     },
