@@ -13,6 +13,7 @@ const ConfigBase = Class(ModuleBase, {
      */
     init: function () {
         this.name = services.get("dactyl:").name;
+        this.idname = services.get("dactyl:").idname;
         this.appname = services.get("dactyl:").appname;
         this.host = services.get("dactyl:").host;
 
