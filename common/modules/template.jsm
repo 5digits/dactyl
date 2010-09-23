@@ -139,6 +139,8 @@ const Template = Module("Template", {
             case "undefined":
                 return <span highlight="Null">{arg}</span>;
             case "object":
+                if (arg instanceof Ci.nsIDOMElement)
+                    return util.objectToString(arg, false);
                 // for java packages value.toString() would crash so badly
                 // that we cannot even try/catch it
                 if (/^\[JavaPackage.*\]$/.test(arg))
