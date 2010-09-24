@@ -41,7 +41,7 @@ syn match pentadactylCommand "!" contained
 
 syn keyword pentadactylAutoCmd au[tocmd] contained nextgroup=pentadactylAutoEventList skipwhite
 
-syn keyword pentadactylAutoEvent BookmarkAdd ColorSheme DOMLoad DownloadPost Fullscreen LocationChange PageLoadPre PageLoad
+syn keyword pentadactylAutoEvent BookmarkAdd ColorScheme DOMLoad DownloadPost Fullscreen LocationChange PageLoadPre PageLoad
     \ PrivateMode Sanitize ShellCmdPost Enter LeavePre Leave
     \ contained
 
@@ -50,12 +50,12 @@ syn match pentadactylAutoEventList "\(\a\+,\)*\a\+" contained contains=pentadact
 syn region pentadactylSet matchgroup=pentadactylCommand start="\%(^\s*:\=\)\@<=\<\%(setl\%[ocal]\|setg\%[lobal]\|set\=\)\=\>"
     \ end="$" keepend oneline contains=pentadactylOption,pentadactylString
 
-syn keyword pentadactylOption act activate altwildmode awim au autocomplete cd cdpath complete cpt defsearch ds editor eht
-    \ ei enc encoding eventignore extendedhinttags fenc fileencoding fh followhints go guioptions helpfile hf hi hin hintinputs
-    \ hintkeys hk hintmatching hinttags hinttimeout history hm ht hto laststatus ls maxitems messages msgs newtab nextpattern pa
-    \ pageinfo popups pps previouspattern rtp runtimepath si sanitizeitems sts sanitizetimespan scr scroll sh shcf shell
-    \ shellcmdflag showstatuslinks showtabline ssli stal suggestengines titlestring urlseparator vbs verbose wic wig wildcase
-    \ wildignore wildmode wildoptions wildsort wim wis wop wordseparators wsp
+syn keyword pentadactylOption act activate altwildmode au autocomplete awim cd cdpath complete cpt defsearch ds editor eht
+    \ ei enc encoding eventignore extendedhinttags fenc fh fileencoding followhints go guioptions helpfile hf hi hin hintinputs
+    \ hintkeys hintmatching hinttags hinttimeout history hk hm ht hto laststatus loadplugins lpl ls maxitems messages msgs newtab
+    \ nextpattern pa pageinfo popups pps previouspattern rtp runtimepath sanitizeitems sanitizetimespan scr scroll sh shcf shell
+    \ shellcmdflag showstatuslinks showtabline si ssli stal sts suggestengines titlestring urlseparator vbs verbose wia wic wig
+    \ wildanchor wildcase wildignore wildmode wildoptions wildsort wim wis wop wordseparators wsp
     \ contained nextgroup=pentadactylSetMod
 
 " toggle options
@@ -63,11 +63,9 @@ syn match pentadactylOption "\<\%(no\|inv\)\=\%(banghist\|bh\|errorbells\|eb\|ex
     \ contained nextgroup=pentadactylSetMod
 syn match pentadactylOption "\<\%(no\|inv\)\=\%(incsearch\|is\|insertmode\|im\|hlsearch\|hls\|jsd\|jsdebugger\)\>!\="
     \ contained nextgroup=pentadactylSetMod
-syn match pentadactylOption "\<\%(no\|inv\)\=\%(linksearch\|lks\|loadplugins\|lpl\|more\|online\|pornmode\|private\)\>!\="
+syn match pentadactylOption "\<\%(no\|inv\)\=\%(linksearch\|lks\|more\|online\|pornmode\|private\|showmode\|smd\)\>!\="
     \ contained nextgroup=pentadactylSetMod
-syn match pentadactylOption "\<\%(no\|inv\)\=\%(showmode\|smd\|smartcase\|scs\|strictfocus\|sf\|online\|visualbell\|vb\)\>!\="
-    \ contained nextgroup=pentadactylSetMod
-syn match pentadactylOption "\<\%(no\|inv\)\=\%(usermode\|um\)\>!\="
+syn match pentadactylOption "\<\%(no\|inv\)\=\%(smartcase\|scs\|strictfocus\|sf\|online\|visualbell\|vb\|usermode\|um\)\>!\="
     \ contained nextgroup=pentadactylSetMod
 
 syn match pentadactylSetMod "\%(\<[a-z_]\+\)\@<=&" contained
