@@ -142,6 +142,7 @@ const Option = Class("Option", {
             this.globalValue = newValues;
 
         this.hasChanged = true;
+        this.setFrom = null;
     },
 
     /**
@@ -1060,7 +1061,6 @@ const Options = Module("options", {
                             option.reset();
                     }
                     else {
-                        option.setFrom = modifiers.setFrom || null;
                         option.reset();
                     }
                 }
@@ -1083,8 +1083,6 @@ const Options = Module("options", {
                 }
                 // write access
                 else {
-                    option.setFrom = modifiers.setFrom || null;
-
                     if (opt.option.type == "boolean") {
                         dactyl.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
                         opt.values = !opt.unsetBoolean;
@@ -1097,6 +1095,7 @@ const Options = Module("options", {
                     }
                     if (res)
                         dactyl.echoerr(res);
+                    option.setFrom = modifiers.setFrom || null;
                 }
             }
         }
