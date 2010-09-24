@@ -321,7 +321,7 @@ const CompletionContext = Class("CompletionContext", {
             yield ["result", quote ? function () quote[0] + quote[1](this.text) + quote[2]
                                    : function () this.text];
         };
-        for (let i in iterall(this.keys, result(this.quote))) {
+        for (let i in iterAll(this.keys, result(this.quote))) {
             let [k, v] = i;
             if (typeof v == "string" && /^[.[]/.test(v))
                 // This is only allowed to be a simple accessor, and shouldn't

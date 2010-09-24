@@ -13,8 +13,8 @@ const ConfigBase = Class(ModuleBase, {
      */
     init: function () {
         this.name = services.get("dactyl:").name;
-        this.idname = services.get("dactyl:").idname;
-        this.appname = services.get("dactyl:").appname;
+        this.idName = services.get("dactyl:").idName;
+        this.appName = services.get("dactyl:").appName;
         this.host = services.get("dactyl:").host;
 
         highlight.styleableChrome = this.styleableChrome;

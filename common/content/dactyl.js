@@ -252,11 +252,11 @@ const Dactyl = Module("dactyl", {
     echoerr: function echoerr(str, flags) {
         flags |= commandline.APPEND_TO_MESSAGES;
 
-        if (isInstance(str, ["Error", "Exception"]))
+        if (isinstance(str, ["Error", "Exception"]))
             dactyl.reportError(str);
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
-        else if (isInstance(str, ["Error"]))
+        else if (isinstance(str, ["Error"]))
             str = str.fileName + ":" + str.lineNumber + ": " + str;
 
         if (options["errorbells"])
@@ -552,7 +552,7 @@ const Dactyl = Module("dactyl", {
                 '<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>\n' +
                 '<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">\n' +
                 <document xmlns={NS}
-                    name="plugins" title={config.appname + " Plugins"}>
+                    name="plugins" title={config.appName + " Plugins"}>
                     <h1 tag="using-plugins">Using Plugins</h1>
                     <toc start="2"/>
 
@@ -1371,7 +1371,7 @@ const Dactyl = Module("dactyl", {
             { argCount: "0" });
 
         commands.add(["dia[log]"],
-            "Open a " + config.appname + " dialog",
+            "Open a " + config.appName + " dialog",
             function (args) {
                 let dialog = args[0];
 
@@ -1761,7 +1761,7 @@ const Dactyl = Module("dactyl", {
             });
 
         commands.add(["res[tart]"],
-            "Force " + config.appname + " to restart",
+            "Force " + config.appName + " to restart",
             function () { dactyl.restart(); },
             { argCount: "0" });
 
@@ -1913,7 +1913,7 @@ const Dactyl = Module("dactyl", {
                     dactyl.open("about:");
                 else
                     commandline.commandOutput(<>
-                        {config.appname} {dactyl.version} running on:<br/>{navigator.userAgent}
+                        {config.appName} {dactyl.version} running on:<br/>{navigator.userAgent}
                     </>);
             }, {
                 argCount: "0",
@@ -2025,7 +2025,7 @@ const Dactyl = Module("dactyl", {
         // finally, read the RC file and source plugins
         // make sourcing asynchronous, otherwise commands that open new tabs won't work
         util.timeout(function () {
-            let init = services.get("environment").get(config.idname + "_INIT");
+            let init = services.get("environment").get(config.idName + "_INIT");
             let rcFile = io.getRCFile("~");
 
             try {
@@ -2040,7 +2040,7 @@ const Dactyl = Module("dactyl", {
                     else {
                         if (rcFile) {
                             io.source(rcFile.path, true);
-                            services.get("environment").set("MY_" + config.idname + "RC", rcFile.path);
+                            services.get("environment").set("MY_" + config.idName + "RC", rcFile.path);
                         }
                         else
                             dactyl.log("No user RC file found", 3);
@@ -2089,7 +2089,7 @@ const Dactyl = Module("dactyl", {
         }, 0);
 
         statusline.update();
-        dactyl.log(config.appname + " fully initialized", 0);
+        dactyl.log(config.appName + " fully initialized", 0);
         dactyl.initialized = true;
     }
 });

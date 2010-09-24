@@ -164,7 +164,7 @@ AboutHandler.prototype = {
 
     classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
 
-    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.appname,
+    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.appName,
 
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
 

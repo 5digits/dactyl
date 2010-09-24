@@ -712,7 +712,7 @@ const Tabs = Module("tabs", {
                 });
 
             commands.add(["quita[ll]", "qa[ll]"],
-                "Quit " + config.appname,
+                "Quit " + config.appName,
                 function (args) { dactyl.quit(false, args.bang); }, {
                     argCount: "0",
                     bang: true

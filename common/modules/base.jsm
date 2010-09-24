@@ -142,7 +142,7 @@ defineModule("base", {
         "Struct", "StructBase", "Timer", "UTF8", "XPCOMUtils", "array",
         "call", "callable", "curry", "debuggerProperties", "defineModule",
         "endModule", "extend", "forEach", "isArray", "isGenerator",
-        "isInstance", "isObject", "isString", "isSubclass", "iter", "iterall",
+        "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
         "keys", "memoize", "properties", "requiresMainThread", "set",
         "update", "values"
     ],
@@ -241,7 +241,7 @@ function forEach(iter, fn, self) {
  *
  * @returns {Generator}
  */
-function iterall() {
+function iterAll() {
     for (let i = 0; i < arguments.length; i++)
         for (let j in Iterator(arguments[i]))
             yield j;
@@ -341,7 +341,7 @@ set.remove = function (set, key) {
  * @returns {Generator}
  */
 function iter(obj) {
-    if (isInstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
+    if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
         return array.iteritems(obj);
     if (obj instanceof Ci.nsIDOMNamedNodeMap)
         return (function () {
@@ -392,14 +392,14 @@ function isSubclass(targ, src) {
  * returns true if targ is an instance of any element of src. If src is
  * the object form of a primitive type, returns true if targ is a
  * non-boxed version of the type, i.e., if (typeof targ == "string"),
- * isInstance(targ, String) is true. Finally, if src is a string,
+ * isinstance(targ, String) is true. Finally, if src is a string,
  * returns true if ({}.toString.call(targ) == "[object <src>]").
  *
  * @param {object} targ The object to check.
  * @param {object|string|[object|string]} src The types to check targ against.
  * @returns {boolean}
  */
-function isInstance(targ, src) {
+function isinstance(targ, src) {
     const types = {
         boolean: Boolean,
         string: String,
@@ -645,7 +645,7 @@ function Class() {
                     configurable: true,
                     get: function () {
                         function closure(fn) function () fn.apply(self, arguments);
-                        for (let k in iterall(properties(this),
+                        for (let k in iterAll(properties(this),
                                               properties(this, true)))
                             if (!this.__lookupGetter__(k) && callable(this[k]))
                                 closure[k] = closure(self[k]);
@@ -890,7 +890,7 @@ function UTF8(str) {
  */
 const array = Class("array", Array, {
     init: function (ary) {
-        if (isInstance(ary, ["Iterator", "Generator"]))
+        if (isinstance(ary, ["Iterator", "Generator"]))
             ary = [k for (k in ary)];
         else if (ary.length)
             ary = Array.slice(ary);

@@ -741,7 +741,7 @@ const Events = Module("events", {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
         if (Events.isContentNode(elem) && !buffer.focusAllowed(win)
-            && isInstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
+            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
             elem.blur();
     },
 
@@ -773,7 +773,7 @@ const Events = Module("events", {
                 return;
             }
 
-            if(isInstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
+            if(isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
                 dactyl.mode = modes.EMBED;
                 return;
             }
@@ -1118,7 +1118,7 @@ const Events = Module("events", {
     isInputElemFocused: function () {
         let elem = dactyl.focus;
         return elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type) ||
-               isInstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
+               isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
                                  HTMLObjectElement, HTMLTextAreaElement]);
     }
 }, {
@@ -1173,7 +1173,7 @@ const Events = Module("events", {
             function () { document.commandDispatcher.rewindFocus(); });
 
         mappings.add(modes.all,
-            ["<C-z>"], "Temporarily ignore all " + config.appname + " key bindings",
+            ["<C-z>"], "Temporarily ignore all " + config.appName + " key bindings",
             function () { modes.passAllKeys = true; });
 
         mappings.add(modes.all,

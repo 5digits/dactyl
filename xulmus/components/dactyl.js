@@ -18,9 +18,9 @@ Dactyl.prototype = {
     classDescription: "Dactyl component base definitions",
     QueryInterface:   XPCOMUtils.generateQI([]),
 
-    appname: "Xulmus",
+    appName: "Xulmus",
     name: "xulmus",
-    idname: "XULMUS",
+    idName: "XULMUS",
     host: "Songbird"
 };
 

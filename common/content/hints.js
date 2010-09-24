@@ -260,7 +260,7 @@ const Hints = Module("hints", {
             if (computedStyle.visibility != "visible" || computedStyle.display == "none")
                 continue;
 
-            if (isInstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
+            if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
                 [hint.text, hint.showText] = this._getInputHint(elem, doc);
             else
                 hint.text = elem.textContent.toLowerCase();

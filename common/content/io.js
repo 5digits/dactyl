@@ -508,7 +508,7 @@ lookup:
      *     variable.
      */
     get runtimePath() {
-        const rtpvar = config.idname + "_RUNTIME";
+        const rtpvar = config.idName + "_RUNTIME";
         let rtp = services.get("environment").get(rtpvar);
         if (!rtp) {
             rtp = "~/" + (dactyl.has("WINNT") ? "" : ".") + config.name;

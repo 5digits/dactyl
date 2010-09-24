@@ -581,7 +581,7 @@ const Util = Module("Util", {
 
         // window.content often does not want to be queried with "var i in object"
         try {
-            let hasValue = !("__iterator__" in object || isInstance(object, ["Generator", "Iterator"]));
+            let hasValue = !("__iterator__" in object || isinstance(object, ["Generator", "Iterator"]));
             if (object.dactyl && object.modules && object.modules.modules == object.modules) {
                 object = Iterator(object);
                 hasValue = false;

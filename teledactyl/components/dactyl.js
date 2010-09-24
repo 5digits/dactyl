@@ -18,9 +18,9 @@ Dactyl.prototype = {
     classDescription: "Dactyl component base definitions",
     QueryInterface:   XPCOMUtils.generateQI([]),
 
-    appname: "Teledactyl",
+    appName: "Teledactyl",
     name: "teledactyl",
-    idname: "TELEDACTYL",
+    idName: "TELEDACTYL",
     host: "Thunderbird"
 };
 
