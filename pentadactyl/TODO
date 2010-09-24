@@ -25,8 +25,6 @@ BUGS:
 (recent Mercurial regressions):
 9 about:pentadactyl is currently about:undefined
 
-- visual caret mode is broken, requires a manual page focus first anyway or
-  else it chucks, I haven't investigated --djk
 - messages is still broken in several ways - needs testing.
   => :ls | :echomsg "Foobar" doesn't add "Foobar" to the already open MOW.
   (NOTE: an intentional design decision by MS - Boo!)
