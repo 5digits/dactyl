@@ -888,12 +888,33 @@
     <description>
         <p>
             A regular expression list that defines which plugins are loaded at
-            startup and via <ex>:loadplugins</ex>. The first item to match is
+            startup or via <ex>:loadplugins</ex>. The first item to match is
             the one that takes effect. If no items match, the file is not
             loaded. Setting this to a blank value effectively disables plugin
-            loading. See also <ex>:runtime</ex>.
+            loading.
         </p>
-        <example><ex>:set loadplugins^=</ex>!<str delim="'">foobar-plugin</str></example>
+        <p>
+            For example, to prepend to the default value of this option to load
+            all plugins except for <em>foobar-plugin</em>, you could use:
+        </p>
+        <code><ex>:se lpl^=</ex>!<str delim="'">foobar-plugin</str></code>
+        <p>
+            Alternatively, you can specify which plugins to load and which to
+            omit in your <tt><t>&dactyl.name;rc</t></tt> using something like
+            the below:
+        </p>
+        <code><ex>:set loadplugins=</ex>!<str delim="'">foo|bar</str>,<str delim="'">\.(js|vimp)$</str></code>
+        <p>
+            That will load all plugins but <em>foo</em> and <em>bar</em>.
+        </p>
+        <p>
+            Note that in the first expression of the latter example you don't
+            need parentheses, as the <em>!</em> negates the whole of the
+            following expression (cf. <t>regexlist</t>).
+        </p>
+        <p>
+            See also <ex>:runtime</ex>.
+        </p>
     </description>
 </item>
 
