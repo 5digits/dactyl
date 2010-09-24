@@ -532,8 +532,7 @@ const Buffer = Module("buffer", {
      *     RegExp.
      */
     followDocumentRelationship: function (rel) {
-        let regexes = options.get(rel + "pattern").values
-                             .map(function (re) RegExp(re, "i"));
+        let regexes = options[rel + "pattern"].map(function (re) RegExp(re, "i"));
 
         function followFrame(frame) {
             function iter(elems) {

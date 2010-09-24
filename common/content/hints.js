@@ -698,7 +698,7 @@ const Hints = Module("hints", {
         if (options.get("hintmatching").has("transliterated"))
             indexOf = Hints.indexOf;
 
-        switch (options.get("hintmatching").values[0]) {
+        switch (options["hintmatching"][0]) {
         case "contains"      : return containsMatcher(hintString);
         case "wordstartswith": return wordStartsWithMatcher(hintString, /*allowWordOverleaping=*/ true);
         case "firstletters"  : return wordStartsWithMatcher(hintString, /*allowWordOverleaping=*/ false);

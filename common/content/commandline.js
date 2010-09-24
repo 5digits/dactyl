@@ -80,7 +80,7 @@ const CommandLine = Module("commandline", {
 
         this._autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
             dactyl.trapErrors(function () {
-                if (!events.feedingKeys && self._completions && options.get("autocomplete").values.length) {
+                if (!events.feedingKeys && self._completions && options["autocomplete"].length) {
                     self._completions.complete(true, false);
                     if (self._completions)
                         self._completions.itemList.show();
@@ -95,7 +95,7 @@ const CommandLine = Module("commandline", {
         this._tabTimer = Timer(0, 0, function tabTell(event) {
             dactyl.trapErrors(function () {
                 if (self._completions)
-                    self._completions.tab(event.shiftKey, event.altKey && options.get("altwildmode").values);
+                    self._completions.tab(event.shiftKey, event.altKey && options["altwildmode"]);
             });
         });
 
@@ -1347,7 +1347,7 @@ const CommandLine = Module("commandline", {
             if (this.context.waitingForTab || this.wildIndex == -1)
                 this.complete(true, true);
 
-            this.tabs.push([reverse, wildmode || options.get("wildmode").values]);
+            this.tabs.push([reverse, wildmode || options["wildmode"]]);
             if (this.waiting)
                 return;
 

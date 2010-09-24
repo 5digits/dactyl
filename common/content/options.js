@@ -641,8 +641,8 @@ const Options = Module("options", {
             memoize(this.needInit, this.needInit.length, closure);
 
         // quickly access options with options["wildmode"]:
-        this.__defineGetter__(name, function () this._optionMap[name].value);
-        this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
+        this.__defineGetter__(name, function () this._optionMap[name].values);
+        this.__defineSetter__(name, function (value) { this._optionMap[name].values = value; });
     },
 
     /**

@@ -158,7 +158,7 @@ const IO = Module("io", {
      * @returns {nsIFile[])
      */
     getRuntimeDirectories: function (name) {
-        let dirs = options.get("runtimepath").values;
+        let dirs = options["runtimepath"];
 
         dirs = dirs.map(function (dir) File.joinPaths(dir, name, this.cwd))
                    .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
@@ -276,10 +276,10 @@ lookup:
      * @param {boolean} all Whether all found files should be sourced.
      */
     sourceFromRuntimePath: function (paths, all) {
-        let dirs = options.get("runtimepath").values;
+        let dirs = options["runtimepath"];
         let found = false;
 
-        dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options["runtimepath"].quote(), 2);
+        dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options.get("runtimepath").value, 2);
 
         outer:
         for (let [, dir] in Iterator(dirs)) {
@@ -541,7 +541,7 @@ lookup:
                     dactyl.echomsg(io.cwd);
                 }
                 else {
-                    let dirs = options.get("cdpath").values;
+                    let dirs = options["cdpath"];
                     for (let [, dir] in Iterator(dirs)) {
                         dir = File.joinPaths(dir, arg, io.cwd);
 
