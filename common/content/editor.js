@@ -283,7 +283,7 @@ const Editor = Module("editor", {
 
     editFileExternally: function (path) {
         // TODO: save return value in v:shell_error
-        let args = commands.parseArgs(options["editor"], [], "*", true);
+        let args = commands.parseArgs(options["editor"], { argCount: "*", allowUnknownOptions: true });
 
         dactyl.assert(args.length >= 1, "No editor specified");
 

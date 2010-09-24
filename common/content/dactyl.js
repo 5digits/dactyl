@@ -1109,7 +1109,7 @@ const Dactyl = Module("dactyl", {
             [["+c"], CommandOption.STRING, null, null, true]
         ].map(CommandOption.fromArray, CommandOption);
         try {
-            return commands.parseArgs(cmdline, options, "*");
+            return commands.parseArgs(cmdline, { options: options, argCount: "*" });
         }
         catch (e) {
             dactyl.reportError(e, true);

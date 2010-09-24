@@ -561,7 +561,7 @@ const Commands = Module("commands", {
      *     Args object.
      * @returns {Args}
      */
-    parseArgs: function (str, options, argCount, allowUnknownOptions, literal, complete, extra) {
+    parseArgs: function (str, params) {
         function getNextArg(str) {
             let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
             if (quote == "\\" && !complete)
@@ -571,10 +571,7 @@ const Commands = Module("commands", {
             return [count, arg, quote];
         }
 
-        let keepQuotes;
-
-        if (isObject(options))
-            ({ allowUnknownOptions, argCount, complete, extra, literal, options, keepQuotes }) = options;
+        var { allowUnknownOptions, argCount, complete, extra, literal, options, keepQuotes } = params;
 
         if (!options)
             options = [];
