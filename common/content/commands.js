@@ -570,9 +570,9 @@ const Commands = Module("commands", {
         if (!argCount)
             argCount = "*";
 
-        var args = [];       // parsed options
+        var args = []; // parsed options
         args.__iterator__ = function () array.iteritems(this);
-        args.string = str;   // for access to the unparsed string
+        args.string = str; // for access to the unparsed string
         args.literalArg = "";
 
         // FIXME!
@@ -712,7 +712,7 @@ const Commands = Module("commands", {
             matchOpts(sub);
 
             if (complete) {
-                if (argCount == "0" || args.length > 0  && (/[1?]/.test(argCount)))
+                if (argCount == "0" || args.length > 0 && (/[1?]/.test(argCount)))
                     complete.highlight(i, sub.length, "SPELLCHECK");
             }
 
@@ -776,7 +776,7 @@ const Commands = Module("commands", {
                 fail("E471: Argument required");
         }
         else if (args.length == 1 && (argCount == "0") ||
-                 args.length > 1  && /^[01?]$/.test(argCount))
+                 args.length > 1 && /^[01?]$/.test(argCount))
             fail("E488: Trailing characters");
 
         return args;

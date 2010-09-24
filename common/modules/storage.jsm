@@ -359,7 +359,7 @@ const File = Class("File", {
 
         let array = [e for (e in this.iterDirectory())];
         if (sort)
-            array.sort(function (a, b) b.isDirectory() - a.isDirectory() ||  String.localeCompare(a.path, b.path));
+            array.sort(function (a, b) b.isDirectory() - a.isDirectory() || String.localeCompare(a.path, b.path));
         return array;
     },
 

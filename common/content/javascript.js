@@ -139,7 +139,7 @@ const JavaScript = Module("javascript", {
 
         // Todo: Fix these one-letter variable names.
         this._i = 0;
-        this._c = "";     // Current index and character, respectively.
+        this._c = ""; // Current index and character, respectively.
 
         // Reuse the old stack.
         if (this._str && filter.substr(0, this._str.length) == this._str) {
@@ -180,7 +180,7 @@ const JavaScript = Module("javascript", {
                 // A "." or a "[" dereferences the last "statement" and effectively
                 // joins it to this logical statement.
                 if ((this._c == "." || this._c == "[") && /[\w$\])"']/.test(this._lastNonwhite)
-                ||  this._lastNonwhite == "." && /[a-zA-Z_$]/.test(this._c))
+                || this._lastNonwhite == "." && /[a-zA-Z_$]/.test(this._c))
                         this._top.statements.pop();
 
                 switch (this._c) {

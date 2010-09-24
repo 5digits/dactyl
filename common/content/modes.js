@@ -245,7 +245,7 @@ const Modes = Module("modes", {
     get passAllKeys() this._passAllKeys,
     set passAllKeys(value) { this._passAllKeys = value; this.show(); },
 
-    get isRecording()  this._isRecording,
+    get isRecording() this._isRecording,
     set isRecording(value) { this._isRecording = value; this.show(); },
 
     get isReplaying() this._isReplaying,

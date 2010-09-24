@@ -67,10 +67,10 @@ const Events = Module("events", {
         }
 
         this._input = {
-            buffer: "",                // partial command storage
-            pendingMotionMap: null,    // e.g. "d{motion}" if we wait for a motion of the "d" command
-            pendingArgMap: null,       // pending map storage for commands like m{a-z}
-            count: null                // parsed count from the input buffer
+            buffer: "",             // partial command storage
+            pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
+            pendingArgMap: null,    // pending map storage for commands like m{a-z}
+            count: null             // parsed count from the input buffer
         };
 
         // load all macros
@@ -283,7 +283,7 @@ const Events = Module("events", {
         let wasFeeding = this.feedingKeys;
         this.feedingKeys = true;
         this.duringFeed = this.duringFeed || [];
-        let wasQuiet  = commandline.quiet;
+        let wasQuiet = commandline.quiet;
         if (quiet)
             commandline.quiet = quiet;
 
@@ -338,9 +338,9 @@ const Events = Module("events", {
      * The pseudo-event object (such as may be retrieved from events.fromString)
      * should have any properties you want the event to have.
      *
-     * @param {Document} doc  The DOM document to associate this event with
-     * @param {Type} type  The type of event (keypress, click, etc.)
-     * @param {Object} opts  The pseudo-event.
+     * @param {Document} doc The DOM document to associate this event with
+     * @param {Type} type The type of event (keypress, click, etc.)
+     * @param {Object} opts The pseudo-event.
      */
     create: function (doc, type, opts) {
         var DEFAULTS = {
@@ -428,7 +428,7 @@ const Events = Module("events", {
                 modifier = modifier.toUpperCase();
                 keyname = keyname.toLowerCase();
 
-                if (keyname && !(keyname.length == 1 && modifier.length == 0 ||  // disallow <> and <a>
+                if (keyname && !(keyname.length == 1 && modifier.length == 0 || // disallow <> and <a>
                     !(keyname.length == 1 || this._key_code[keyname] || keyname == "nop" || /mouse$/.test(keyname)))) { // disallow <misteak>
                     evt_obj.ctrlKey  = /C-/.test(modifier);
                     evt_obj.altKey   = /A-/.test(modifier);
@@ -555,7 +555,7 @@ const Events = Module("events", {
                     // or if the shift has been forced for a non-alphabetical character by the user while :map-ping
                     if ((key != key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey)) || event.dactylShift)
                         modifier += "S-";
-                    else if  (modifier.length == 0)
+                    else if (modifier.length == 0)
                         return key;
                 }
             }

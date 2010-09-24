@@ -187,7 +187,7 @@ const AutoCommands = Module("autocommands", {
                             autocommands.remove(event, regex); // remove all
                     }
                     else
-                        autocommands.list(event, regex);   // list all
+                        autocommands.list(event, regex); // list all
                 }
             }, {
                 bang: true,

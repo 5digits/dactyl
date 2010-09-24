@@ -1349,7 +1349,7 @@ const Buffer = Module("buffer", {
 
                             return {
                                 text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
-                                url:  url,
+                                url: url,
                                 indicator: indicator,
                                 icon: tab.image || DEFAULT_FAVICON
                             };

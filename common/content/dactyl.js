@@ -1002,8 +1002,8 @@ const Dactyl = Module("dactyl", {
      * failure.
      *
      * @param {boolean} condition The condition to test.
-     * @param {string}  message The message to present to the
-     *                          user on failure.
+     * @param {string} message The message to present to the
+     *     user on failure.
      */
     assert: function (condition, message) {
         if (!condition)

@@ -133,7 +133,7 @@ const CommandLine = Module("commandline", {
         // we need to save the mode which were in before opening the command line
         // this is then used if we focus the command line again without the "official"
         // way of calling "open"
-        this._currentExtendedMode = null;     // the extended mode which we last openend the command line for
+        this._currentExtendedMode = null; // the extended mode which we last openend the command line for
         this._currentPrompt = null;
         this._currentCommand = null;
 
@@ -640,7 +640,7 @@ const CommandLine = Module("commandline", {
 
                 // user pressed <Enter> to carry out a command
                 // user pressing <Esc> is handled in the global onEscape
-                //   FIXME: <Esc> should trigger "cancel" event
+                // FIXME: <Esc> should trigger "cancel" event
                 if (events.isAcceptKey(key)) {
                     let mode = this._currentExtendedMode; // save it here, as modes.pop() resets it
                     this._keepCommand = !userContext.hidden_option_no_command_afterimage;
@@ -1592,9 +1592,9 @@ const ItemList = Class("ItemList", {
         this._gradient = template.gradient("GradientLeft", "GradientRight");
 
         this._items = null;
-        this._startIndex = -1;  // The index of the first displayed item
-        this._endIndex = -1;    // The index one *after* the last displayed item
-        this._selIndex = -1;    // The index of the currently selected element
+        this._startIndex = -1; // The index of the first displayed item
+        this._endIndex = -1;   // The index one *after* the last displayed item
+        this._selIndex = -1;   // The index of the currently selected element
         this._div = null;
         this._divNodes = {};
         this._minHeight = 0;

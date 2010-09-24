@@ -963,7 +963,7 @@ const Options = Module("options", {
 
     _loadPreference: function (name, forcedDefault, defaultBranch) {
         let defaultValue = null; // XXX
-        if (forcedDefault != null)  // this argument sets defaults for non-user settable options (like extensions.history.comp_history)
+        if (forcedDefault != null) // this argument sets defaults for non-user settable options (like extensions.history.comp_history)
             defaultValue = forcedDefault;
 
         let branch = defaultBranch ? services.get("pref").getDefaultBranch("") : services.get("pref");

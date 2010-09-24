@@ -325,7 +325,7 @@ const Bookmarks = Module("bookmarks", {
                 let url = args.length == 0 ? buffer.URL : args[0];
                 let title = args["-title"] || (args.length == 0 ? buffer.title : null);
                 let keyword = args["-keyword"] || null;
-                let tags =    args["-tags"] || [];
+                let tags = args["-tags"] || [];
 
                 if (bookmarks.add(false, title, url, keyword, tags, args.bang)) {
                     let extra = (title == url) ? "" : " (" + title + ")";

@@ -13,17 +13,17 @@ const Hints = Module("hints", {
     init: function () {
 
         this._hintMode = null;
-        this._submode    = "";           // used for extended mode, can be "o", "t", "y", etc.
-        this._hintString = "";           // the typed string part of the hint is in this string
-        this._hintNumber = 0;            // only the numerical part of the hint
-        this._usedTabKey = false;        // when we used <Tab> to select an element
+        this._submode = "";             // used for extended mode, can be "o", "t", "y", etc.
+        this._hintString = "";          // the typed string part of the hint is in this string
+        this._hintNumber = 0;           // only the numerical part of the hint
+        this._usedTabKey = false;       // when we used <Tab> to select an element
         this.prevInput = "";            // record previous user input type, "text" || "number"
-        this._extendedhintCount = null;  // for the count argument of Mode#action (extended hint only)
+        this._extendedhintCount = null; // for the count argument of Mode#action (extended hint only)
 
         this._pageHints = [];
         this._validHints = []; // store the indices of the "hints" array with valid elements
 
-        this._activeTimeout = null;  // needed for hinttimeout > 0
+        this._activeTimeout = null; // needed for hinttimeout > 0
         this._canUpdate = false;
 
         // keep track of the documents which we generated the hints for
@@ -153,10 +153,10 @@ const Hints = Module("hints", {
      *
      * Only called by {@link #_generate}.
      *
-     * @param {Object} elem  The <area> element.
-     * @param {number} leftPos  The left offset of the image.
-     * @param {number} topPos  The top offset of the image.
-     * @returns [leftPos, topPos]  The updated offsets.
+     * @param {Object} elem The <area> element.
+     * @param {number} leftPos The left offset of the image.
+     * @param {number} topPos The top offset of the image.
+     * @returns [leftPos, topPos] The updated offsets.
      */
     _getAreaOffset: function (elem, leftPos, topPos) {
         try {
@@ -834,7 +834,7 @@ const Hints = Module("hints", {
        case mappings.getMapLeader():
            hints.escNumbers = !hints.escNumbers;
            if (hints.escNumbers && this._usedTabKey) // this._hintNumber not used normally, but someone may wants to toggle
-               this._hintNumber = 0;            // <tab>s ? this._reset. Prevent to show numbers not entered.
+               this._hintNumber = 0;                 // <tab>s ? this._reset. Prevent to show numbers not entered.
 
            this._updateStatusline();
            return;

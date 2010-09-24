@@ -555,7 +555,7 @@ const Mappings = Module("mappings", {
                 });
         }
 
-        addMapCommands("",  [modes.NORMAL, modes.VISUAL], "");
+        addMapCommands("", [modes.NORMAL, modes.VISUAL], "");
 
         for (let mode in modes.mainModes)
             if (mode.char && !commands.get(mode.char + "map", true))
