@@ -150,8 +150,9 @@ const CommandLine = Module("commandline", {
         this.registerCallback("complete", modes.EX, function (context) {
             context.fork("ex", 0, completion, "ex");
         });
-        this.registerCallback("change", modes.EX, function (command) {
-            self._autocompleteTimer.tell(false);
+        this.registerCallback("change", modes.EX, function (command, from) {
+            if (from !== "history")
+                self._autocompleteTimer.tell(false);
         });
 
         this.registerCallback("cancel", modes.PROMPT, cancelPrompt);
@@ -347,9 +348,9 @@ const CommandLine = Module("commandline", {
         this._callbacks[type][mode] = func;
     },
 
-    triggerCallback: function (type, mode, data) {
+    triggerCallback: function (type, mode) {
         if (this._callbacks[type] && this._callbacks[type][mode])
-            this._callbacks[type][mode].call(this, data);
+            this._callbacks[type][mode].apply(this, Array.slice(arguments, 2));
     },
 
     runSilently: function (func, self) {
@@ -1058,7 +1059,7 @@ const CommandLine = Module("commandline", {
          */
         replace: function (val) {
             this.input.value = val;
-            commandline.triggerCallback("change", this._currentExtendedMode, val);
+            commandline.triggerCallback("change", commandline._currentExtendedMode, val, "history");
         },
 
         /**
