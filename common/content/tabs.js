@@ -31,7 +31,8 @@ const Tabs = Module("tabs", {
         // hide tabs initially to prevent flickering when 'stal' would hide them
         // on startup
         if (config.hasTabbrowser)
-            config.tabbrowser.mTabContainer.collapsed = true; // FIXME: see 'stal' comment
+            config.tabStrip.collapsed = true; // FIXME: see 'stal' comment
+
     },
 
     _updateTabCount: function () {
@@ -987,7 +988,7 @@ const Tabs = Module("tabs", {
                     // don't have to fight against the host app's attempts to keep
                     // it open - hack! Adding a filter watch to mStrip is probably
                     // the cleanest solution.
-                    let tabStrip = config.tabbrowser.mTabContainer;
+                    let tabStrip = config.tabStrip;
 
                     if (value == 0)
                         tabStrip.collapsed = true;

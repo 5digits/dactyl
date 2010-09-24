@@ -127,6 +127,9 @@ const ConfigBase = Class(ModuleBase, {
      */
     scripts: [],
 
+    get tabStrip()
+        Class.replaceProperty(this, "tabStrip", document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
+
     /**
      * @property {string} The leaf name of any temp files created by
      *     {@link io.createTempFile}.
