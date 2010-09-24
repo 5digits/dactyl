@@ -668,11 +668,11 @@ const Util = Module("Util", {
      *
      * @param {Node} elem The element to make visible.
      */
-    scrollIntoView: function scrollIntoView(elem) {
+    scrollIntoView: function scrollIntoView(elem, alignWithTop) {
         let win = elem.ownerDocument.defaultView;
         let rect = elem.getBoundingClientRect();
-        if (!(rect && rect.top < win.innerHeight && rect.bottom >= 0 && rect.left < win.innerWidth && rect.right >= 0))
-            elem.scrollIntoView();
+        if (!(rect && rect.bottom <= win.innerHeight && rect.top >= 0 && rect.right <= win.innerWidth && rect.left >= 0))
+            elem.scrollIntoView(arguments.length > 1 ? alignWithTop : Math.abs(rect.top) < Math.abs(win.innerHeight - rect.bottom));
     },
 
     /**
