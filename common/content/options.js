@@ -1036,7 +1036,7 @@ const Options = Module("options", {
                         else if (value == "true")
                             value = true;
                         else if (value == "false")
-                            value = true;
+                            value = false;
                         else if (/^\d+$/.test(value))
                             value = parseInt(value, 10);
                         options.setPref(name, value);
