@@ -90,8 +90,8 @@ const QuickMarks = Module("quickmarks", {
             dactyl.assert(marks.length >= 0, "E283: No QuickMarks matching " + filter.quote());
         }
 
-        let items = [[mark, this._qmarks.get(mark)] for ([k, mark] in Iterator(marks))];
-        template.genericTable(items, { title: ["QuickMark", "URL"] });
+        commandline.commandOutput(template.tabular(["QuickMark", "URL"], [],
+            ([mark, quickmarks._qmarks.get(mark)] for ([k, mark] in Iterator(marks)))));
     }
 }, {
 }, {

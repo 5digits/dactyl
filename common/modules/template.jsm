@@ -90,15 +90,6 @@ const Template = Module("Template", {
         // </e4x>
     },
 
-    genericTable: function genericTable(items, format) {
-        completion.listCompleter(function (context) {
-            context.filterFunc = null;
-            if (format)
-                context.format = format;
-            context.completions = items;
-        });
-    },
-
     gradient: function (left, right)
         <div highlight="Gradient">
             <div style="height: 0px">
