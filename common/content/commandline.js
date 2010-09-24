@@ -1643,7 +1643,7 @@ const ItemList = Class("ItemList", {
                 </div>
             </div>, this._divNodes);
         this._doc.body.replaceChild(this._div, this._doc.body.firstChild);
-        //div.scrollIntoView(true);
+        div.scrollIntoView(true);
 
         this._items.contextList.forEach(function init_eachContext(context) {
             delete context.cache.nodes;
@@ -1813,7 +1813,7 @@ const ItemList = Class("ItemList", {
         this._fill(newOffset);
         if (index >= 0) {
             this._getCompletion(index).setAttribute("selected", "true");
-            //this._getCompletion(index).scrollIntoView(false);
+            this._getCompletion(index).scrollIntoView(false);
         }
 
         //if (index == 0)
