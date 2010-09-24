@@ -1040,6 +1040,8 @@ const Dactyl = Module("dactyl", {
                 dactyl.beep();
             return;
         }
+        if (error.result == Cr.NS_BINDING_ABORTED)
+            return;
         if (echo)
             dactyl.echoerr(error);
 
