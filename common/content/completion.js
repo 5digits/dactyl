@@ -213,6 +213,11 @@ const CompletionContext = Class("CompletionContext", {
     get allItems() {
         try {
             let self = this;
+            let allItems = this.contextList.map(function (context) context.hasItems && context.items);
+            if (this.cache.allItems && array.equals(this.cache.allItems, allItems))
+                return this.cache.allItemsResult;
+            this.cache.allItems = allItems;
+
             let minStart = Math.min.apply(Math, [context.offset for ([k, context] in Iterator(this.contexts)) if (context.hasItems && context.items.length)]);
             if (minStart == Infinity)
                 minStart = 0;
@@ -226,7 +231,9 @@ const CompletionContext = Class("CompletionContext", {
                     __proto__: item
                 }));
             });
-            return { start: minStart, items: array.flatten(items), longestSubstring: this.longestAllSubstring };
+            this.cache.allItemsResult = { start: minStart, items: array.flatten(items) };
+            memoize(this.cache.allItemsResult, "longestSubstring", function () self.longestAllSubstring);
+            return this.cache.allItemsResult;
         }
         catch (e) {
             dactyl.reportError(e);
@@ -242,6 +249,9 @@ const CompletionContext = Class("CompletionContext", {
             return context.substrings.map(function (s) prefix + s);
         });
 
+        /* TODO: Deal with sub-substrings for multiple contexts again.
+         * Possibly.
+         */
         let substrings = lists.reduce(
                 function (res, list) res.filter(function (str) list.some(function (s) s.substr(0, str.length) == str)),
                 lists.pop());
@@ -264,7 +274,7 @@ const CompletionContext = Class("CompletionContext", {
     set completions(items) {
         // Accept a generator
         if (!isArray(items))
-            items = [x for (x in Iterator(items))];
+            items = [x for (x in Iterator(items || []))];
         if (this._completions !== items) {
             delete this.cache.filtered;
             delete this.cache.filter;
@@ -456,8 +466,7 @@ const CompletionContext = Class("CompletionContext", {
         let filter = fixCase(this.filter);
         if (this.anchored) {
             var compare = function compare(text, s) text.substr(0, s.length) == s;
-            var substrings = util.map(util.range(filter.length, text.length + 1),
-                function (end) text.substring(0, end));
+            var substrings = [text.substring(filter.length)];
         }
         else {
             var compare = function compare(text, s) text.indexOf(s) >= 0;
@@ -466,14 +475,31 @@ const CompletionContext = Class("CompletionContext", {
             let idx;
             let length = filter.length;
             while ((idx = text.indexOf(filter, start)) > -1 && idx < text.length) {
-                for (let end in util.range(idx + length, text.length + 1))
-                    substrings.push(text.substring(idx, end));
+                substrings.push(text.substring(idx));
                 start = idx + 1;
             }
         }
-        substrings = items.reduce(
-                function (res, item) res.filter(function (str) compare(fixCase(item.unquoted || item.text), str)),
-                substrings);
+        substrings = items.reduce(function (res, item)
+            res.map(function (list) {
+                var m, len = list.length;
+                var n = list.length;
+                var i = 0;
+                while (n) {
+                    m = Math.floor(n / 2);
+                    let s = list[i + m];
+                    let keep = compare(fixCase(item.text), list.substring(0, i + m));
+                    if (!keep)
+                        len = i + m;
+                    if (!keep || m == 0)
+                        n = m;
+                    else {
+                        i += m;
+                        n = n - m;
+                    }
+                }
+                return len == list.length ? list : list.substr(0, len);
+            }),
+            substrings);
         let quote = this.quote;
         if (quote)
             substrings = substrings.map(function (str) quote[0] + quote[1](str));

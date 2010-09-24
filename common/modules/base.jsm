@@ -946,7 +946,7 @@ const array = Class("array", Array, {
      * @returns {boolean}
      */
     equals: function (ary1, ary2)
-        ary1.length == ary2.length && Array.every(ary1, function (e, i) e == ary2[i]),
+        ary1.length === ary2.length && Array.every(ary1, function (e, i) e === ary2[i]),
 
     /**
      * Flattens an array, such that all elements of the array are
