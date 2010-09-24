@@ -5,20 +5,20 @@
 
 <document
     name="eval"
-    title="&dactyl.appname; Expression Evaluation"
+    title="&dactyl.appName; Expression Evaluation"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="expression expr eval javascript">Expression evaluation</h1>
 <toc start="2"/>
 
 <p>
-    Much of the power of &dactyl.appname; lies in its scriptable expression
-    evaluation. &dactyl.appname; understands two kinds of expressions: ex
+    Much of the power of &dactyl.appName; lies in its scriptable expression
+    evaluation. &dactyl.appName; understands two kinds of expressions: ex
     commands, and JavaScript. Ex commands are simple, easy to type, and
     readily accessible from the <t>command-line</t>. They form a core part of
     the user interface. JavaScript, on the other hand, is much less
     straightforward, but allows for any number of complex actions to be
-    executed, with full access to all of the internals of &dactyl.appname; and
+    executed, with full access to all of the internals of &dactyl.appName; and
     &dactyl.host;. Both expression evaluation methods support sophisticated
     expression completion, including option lists and descriptions thereof,
     along with paren matching and syntax error highlighting.

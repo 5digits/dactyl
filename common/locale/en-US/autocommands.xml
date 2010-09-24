@@ -5,7 +5,7 @@
 
 <document
     name="autocommands"
-    title="&dactyl.appname; Autocommands"
+    title="&dactyl.appName; Autocommands"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="autocommands">Automatic commands</h1>

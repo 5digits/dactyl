@@ -5,7 +5,7 @@
 
 <document
     name="intro"
-    title="&dactyl.appname; Intro"
+    title="&dactyl.appName; Intro"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 
@@ -13,7 +13,7 @@
 
 <h2 tag="intro">Introduction</h2>
 
-<link topic="http://vimperator.org/%dactyl.name;">&dactyl.appname;</link>
+<link topic="http://vimperator.org/%dactyl.name;">&dactyl.appName;</link>
 is a free media player add-on for &dactyl.host;, which
 combines the best features of the
 <link topic="http://cmus.sourceforge.net">CMus</link>
@@ -25,17 +25,17 @@ text editor.
     To provide the most authentic CMus/Vim experience, the &dactyl.host; toolbar
     is hidden.
     If you really need it, type: <ex>:set guioptions+=T</ex> to get it back.
-    If you don't like &dactyl.appname; at all, you can uninstall it by typing
-    <ex>:extdelete &dactyl.appname;</ex> or <ex>:extdisable &dactyl.appname;</ex> to disable it.
+    If you don't like &dactyl.appName; at all, you can uninstall it by typing
+    <ex>:extdelete &dactyl.appName;</ex> or <ex>:extdisable &dactyl.appName;</ex> to disable it.
     If you like it but can't remember the shortcuts, then press <k>F1</k> or
     <ex>:help</ex> to get this help window back.
 </warning>
 
 <tags>author donation</tags>
 <p>
-    &dactyl.appname; was written by
+    &dactyl.appName; was written by
     <link topic="prathyushthota@gmail.com">Prathyush Thota</link>.  If you
-    appreciate my work on &dactyl.appname; and want to encourage
+    appreciate my work on &dactyl.appName; and want to encourage
     me working on it more, you can either send me greetings, patches
     or make a donation:
 </p>
@@ -44,7 +44,7 @@ text editor.
 
 <p>
     Of course as a believer in free open source software, only make
-    a donation if you really like &dactyl.appname; and the money
+    a donation if you really like &dactyl.appName; and the money
     doesn't hurt -- otherwise just use it, recommend it and like it
     :)
 </p>
@@ -52,7 +52,7 @@ text editor.
 <h2 tag="overview">Help topics</h2>
 
 <ul>
-    <li><link topic="starting">Starting &dactyl.appname;</link>: How &dactyl.appname; starts up, where it reads the config file... </li>
+    <li><link topic="starting">Starting &dactyl.appName;</link>: How &dactyl.appName; starts up, where it reads the config file... </li>
     <li><link topic="player">Player mode</link>: Interacting with the media player.</li>
     <li><link topic="browsing">Browsing</link>: Basic mappings and commands needed for a browsing session (how to open a web page or go back in history).</li>
     <li><link topic="buffer">Buffer</link>: Operations on the current document like scrolling or copying text.</li>
@@ -68,8 +68,8 @@ text editor.
     <li><link topic="repeat">Repeating commands</link>: Using macros to repeat recurring workflows.</li>
     <li><link topic="autocommands">Automatic commands</link>: Automatically executing code on certain events.</li>
     <li><link topic="print">Printing</link>: Printing pages.</li>
-    <li><link topic="gui">&dactyl.appname;'s GUI</link>: Accessing &dactyl.host; menus, dialogs and the display panels.</li>
-    <li><link topic="styling">Styling the GUI and web pages</link>: Changing the styling of content pages and &dactyl.appname; itself.</li>
+    <li><link topic="gui">&dactyl.appName;'s GUI</link>: Accessing &dactyl.host; menus, dialogs and the display panels.</li>
+    <li><link topic="styling">Styling the GUI and web pages</link>: Changing the styling of content pages and &dactyl.appName; itself.</li>
     <li><link topic="message">Error and informational messages</link>: A description of messages and error messages.</li>
     <li><link topic="developer">Developer information</link>: How to write docs or plugins.</li>
     <li><link topic="various">Various commands</link>: Other help which didn't fit into any other category.</li>
@@ -116,7 +116,7 @@ text editor.
     <link topic="http://www.freenode.net/">Freenode</link> or check the
     <link topic="http://code.google.com/p/pentadactyl-labs/w/list?q=label%3Aproject-xulmus">Wiki</link>
     for
-    <link topic="http://code.google.com/p/pentadactyl-labs/wiki/&dactyl.appname;FAQ">
+    <link topic="http://code.google.com/p/pentadactyl-labs/wiki/&dactyl.appName;FAQ">
         frequently asked questions (FAQ)</link>.
     Make sure, you have read the
     <link topic="http://pentadactyl-labs.googlecode.com/hg/xulmus/TODO">TODO</link>

@@ -5,17 +5,17 @@
 
 <document
     name="browsing"
-    title="&dactyl.appname; Browsing"
+    title="&dactyl.appName; Browsing"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="surfing browsing">Browsing</h1>
 <toc start="2"/>
 
-<h2 tag="bypassing-&dactyl.name;">Bypassing &dactyl.appname;</h2>
+<h2 tag="bypassing-&dactyl.name;">Bypassing &dactyl.appName;</h2>
 
-&dactyl.appname; overrides nearly all &dactyl.host; keys in order to
+&dactyl.appName; overrides nearly all &dactyl.host; keys in order to
 make browsing more pleasant for Vim users. On the occasions when you
-want to bypass &dactyl.appname;'s key handling and pass keys directly to
+want to bypass &dactyl.appName;'s key handling and pass keys directly to
 &dactyl.host; or to a web page, you have two options:
 
 <item>
@@ -465,7 +465,7 @@ want to bypass &dactyl.appname;'s key handling and pass keys directly to
     <spec>:quita<oa>ll</oa></spec>
     <description>
         <p>
-            Quit &dactyl.appname;, no matter how many tabs/windows
+            Quit &dactyl.appName;, no matter how many tabs/windows
             are open. The session is not stored.
         </p>
     </description>
@@ -519,7 +519,7 @@ want to bypass &dactyl.appname;'s key handling and pass keys directly to
     <spec>ZZ</spec>
     <description short="true">
         <p>
-            Quit &dactyl.appname; and save the session. Works like
+            Quit &dactyl.appName; and save the session. Works like
             <ex>:xall</ex>.
         </p>
     </description>

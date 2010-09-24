@@ -16,9 +16,9 @@
     <dt>PageLoadPre</dt>       <dd>Triggered after a page load is initiated</dd>
     <dt>PageLoad</dt>          <dd>Triggered when a page gets (re)loaded/opened</dd>
     <dt>ShellCmdPost</dt>      <dd>Triggered after executing a shell command with <ex>:!</ex><a>cmd</a></dd>
-    <dt>&dactyl.appname;Enter</dt>   <dd>Triggered after &dactyl.host; starts</dd>
-    <dt>&dactyl.appname;LeavePre</dt><dd>Triggered before exiting &dactyl.host;, just before destroying each module</dd>
-    <dt>&dactyl.appname;Leave</dt>   <dd>Triggered before exiting &dactyl.host;</dd>
+    <dt>&dactyl.appName;Enter</dt>   <dd>Triggered after &dactyl.host; starts</dd>
+    <dt>&dactyl.appName;LeavePre</dt><dd>Triggered before exiting &dactyl.host;, just before destroying each module</dd>
+    <dt>&dactyl.appName;Leave</dt>   <dd>Triggered before exiting &dactyl.host;</dd>
 
     <dt>FolderLoad</dt>        <dd>Triggered after switching folders in &dactyl.host;</dd>
 </dl>

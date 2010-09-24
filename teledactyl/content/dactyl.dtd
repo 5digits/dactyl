@@ -4,8 +4,8 @@
 
 <!ENTITY dactyl.mainWindow "messengerWindow">
 <!ENTITY dactyl.name "teledactyl">
-<!ENTITY dactyl.idname "TELEDACTYL">
-<!ENTITY dactyl.appname "Teledactyl">
+<!ENTITY dactyl.idName "TELEDACTYL">
+<!ENTITY dactyl.appName "Teledactyl">
 <!ENTITY dactyl.host "&brandShortName;">
 <!ENTITY dactyl.hostbin "thunderbird">
 <!ENTITY dactyl.statusBefore "">

@@ -5,7 +5,7 @@
 
 <document
     name="intro"
-    title="&dactyl.appname; Introduction"
+    title="&dactyl.appName; Introduction"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 
@@ -14,7 +14,7 @@
 <h1 tag="intro">Introduction</h1>
 
 <p>
-    <link topic="&dactyl.apphome;">&dactyl.appname;</link> is a free
+    <link topic="&dactyl.apphome;">&dactyl.appName;</link> is a free
     browser add-on for &dactyl.host;, which makes it look and behave
     like the <link topic="http://www.vim.org">Vim</link> text
     editor. It has similar key bindings, and you could call it a
@@ -23,7 +23,7 @@
 </p>
 
 <p tag="first-run">
-    If this is your first time running &dactyl.appname;, you may need some
+    If this is your first time running &dactyl.appName;, you may need some
     time to adjust to the standard interface, which hides the menu,
     navigation, and tool bars by default. If you find it uncomfortable to work
     without them, you can re-enable them by typing,
@@ -32,9 +32,9 @@
 <p>
     If you have trouble remembering commands or keyboard shortcuts, you can
     bring up this help page at any time by typing <ex>:help</ex> or the
-    <k name="F1"/>. If you find that you don't like &dactyl.appname; at all,
-    you can disable it by typing <ex>:extdisable &dactyl.appname;</ex> or
-    delete it entirely by typing <ex>:extdelete &dactyl.appname;</ex>
+    <k name="F1"/>. If you find that you don't like &dactyl.appName; at all,
+    you can disable it by typing <ex>:extdisable &dactyl.appName;</ex> or
+    delete it entirely by typing <ex>:extdelete &dactyl.appName;</ex>
 </p>
 
 <h2 tag="overview">Help topics</h2>
@@ -45,8 +45,8 @@
         A quick-start tutorial for new users.
     </li>
     <li>
-        <link topic="starting">Starting &dactyl.appname;</link>:
-        How &dactyl.appname; starts up, where it reads the config file…
+        <link topic="starting">Starting &dactyl.appName;</link>:
+        How &dactyl.appName; starts up, where it reads the config file…
     </li>
     <li>
         <link topic="browsing">Browsing</link>:
@@ -106,12 +106,12 @@
         Printing pages.
     </li>
     <li>
-        <link topic="gui">&dactyl.appname;'s GUI</link>:
+        <link topic="gui">&dactyl.appName;'s GUI</link>:
         Accessing &dactyl.host; menus, dialogs and the sidebar.
     </li>
     <li>
         <link topic="styling">Styling the GUI and web pages</link>:
-        Changing the styling of content pages and &dactyl.appname; itself.
+        Changing the styling of content pages and &dactyl.appName; itself.
     </li>
     <li>
         <link topic="message">Error and informational messages</link>:

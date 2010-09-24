@@ -5,7 +5,7 @@
 
 <document
     name="tabs"
-    title="&dactyl.appname; Tabs"
+    title="&dactyl.appName; Tabs"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="tabs buffers">Tabs and buffers</h1>

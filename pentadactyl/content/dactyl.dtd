@@ -5,8 +5,8 @@
 <!ENTITY dactyl.mainWindow "main-window">
 <!ENTITY dactyl.name "pentadactyl">
 <!ENTITY dactyl.version "1.0">
-<!ENTITY dactyl.idname "PENTADACTYL">
-<!ENTITY dactyl.appname "Pentadactyl">
+<!ENTITY dactyl.idName "PENTADACTYL">
+<!ENTITY dactyl.appName "Pentadactyl">
 <!ENTITY dactyl.apphome "http://dactyl.sf.net/">
 <!ENTITY dactyl.code "http://code.google.com/p/dactyl/">
 <!ENTITY dactyl.plugins "http://dactyl.sf.net/&dactyl.name;/plugins">

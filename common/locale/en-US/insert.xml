@@ -5,7 +5,7 @@
 
 <document
     name="insert"
-    title="&dactyl.appname; Insert Mode"
+    title="&dactyl.appName; Insert Mode"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="Insert-mode Insert mode-insert">Insert mode</h1>

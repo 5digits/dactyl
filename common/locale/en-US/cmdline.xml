@@ -5,18 +5,18 @@
 
 <document
     name="cmdline"
-    title="&dactyl.appname; Command-line"
+    title="&dactyl.appName; Command-line"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="command-line-mode command-line mode-cmdline">Command-line mode</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appname;'s command-line mode is perhaps its most
+    &dactyl.appName;'s command-line mode is perhaps its most
     powerful interface. In this mode, the command input bar at the
     bottom of the window is given the keyboard focus for any of a
     variety of required inputs. In addition to access to almost
-    every aspect of &dactyl.appname; and &dactyl.host;, the command
+    every aspect of &dactyl.appName; and &dactyl.host;, the command
     line provides power and comprehensive completion for all of its
     commands, along with concise descriptions for each command and
     all of its arguments. Couple this with persistent, searchable

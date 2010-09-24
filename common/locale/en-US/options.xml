@@ -14,14 +14,14 @@
 
 <document
     name="options"
-    title="&dactyl.appname; Options"
+    title="&dactyl.appName; Options"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="options">Options</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appname; has a number of internal variables and switches which can be set to
+    &dactyl.appName; has a number of internal variables and switches which can be set to
     achieve special effects. These options come in 8 forms:
 </p>
 
@@ -250,7 +250,7 @@
         <p>
             Show the &dactyl.host; preferences dialog. You can change the browser
             preferences from this dialog. Be aware that not all &dactyl.host;
-            preferences work, because &dactyl.appname; overrides some key bindings and
+            preferences work, because &dactyl.appName; overrides some key bindings and
             changes &dactyl.host;'s GUI.
         </p>
     </description>
@@ -281,7 +281,7 @@
 </item>
 
 <p tag="overridden-preferences">
-    &dactyl.appname; needs to set several &dactyl.host; preferences at
+    &dactyl.appName; needs to set several &dactyl.host; preferences at
     startup in order to function properly. If this is unacceptable,
     they can be changed in your RC file with the <ex>:set!</ex>
     command, but beware of unexpected behavior. The affected
@@ -467,7 +467,7 @@
         </p>
 
         <warning>
-            &dactyl.appname; will not behave correctly if the editor forks its
+            &dactyl.appName; will not behave correctly if the editor forks its
             own process, rather than blocking until editing is complete. Gvim
             invoked without the <em>-f</em> option is one such example.
         </warning>
@@ -554,7 +554,7 @@
     <default>UTF-8</default>
     <description>
         <p>
-            Changes the character encoding that &dactyl.appname; uses to read
+            Changes the character encoding that &dactyl.appName; uses to read
             and write files.
         </p>
     </description>
@@ -1090,11 +1090,11 @@
 
 
 <item>
-    <tags>$&dactyl.idname;_RUNTIME</tags>
+    <tags>$&dactyl.idName;_RUNTIME</tags>
     <tags>'rtp' 'runtimepath'</tags>
     <spec>'runtimepath' 'rtp'</spec>
     <type>stringlist</type>
-    <default type="plain"><str>$&dactyl.idname;_RUNTIME</str> or
+    <default type="plain"><str>$&dactyl.idName;_RUNTIME</str> or
        Unix, Mac: <str>~/.&dactyl.name;</str>
          Windows: <str>~/&dactyl.name;</str></default>
     <description>
@@ -1117,8 +1117,8 @@
         </p>
 
         <p>
-            On startup, if the environment variable <em>$&dactyl.idname;_RUNTIME</em> does not
-            exist, &dactyl.appname; will set it to match this value.
+            On startup, if the environment variable <em>$&dactyl.idName;_RUNTIME</em> does not
+            exist, &dactyl.appName; will set it to match this value.
         </p>
     </description>
 </item>
@@ -1305,7 +1305,7 @@
     <tags>'titlestring'</tags>
     <spec>'titlestring'</spec>
     <type>string</type>
-    <default>&dactyl.appname;</default>
+    <default>&dactyl.appName;</default>
     <description>
         <p>
             Set the application name shown after the current page title in
@@ -1353,7 +1353,7 @@
     <description>
         <p>
             Define which info messages are displayed. As the value increases,
-            &dactyl.appname; will show more messages about its progress.
+            &dactyl.appName; will show more messages about its progress.
             These can be viewed at any time with the <ex>:messages</ex>
             command. The highest useful value is 15, being the most verbose
             mode.

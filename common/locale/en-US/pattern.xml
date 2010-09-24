@@ -5,14 +5,14 @@
 
 <document
     name="pattern"
-    title="&dactyl.appname; Patterns"
+    title="&dactyl.appName; Patterns"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="text-search-commands">Text search commands</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appname; provides a Vim-like incremental search interface to
+    &dactyl.appName; provides a Vim-like incremental search interface to
     replace &dactyl.host;'s crippled Typeahead Find. Among other improvements,
     our search service:
 </p>

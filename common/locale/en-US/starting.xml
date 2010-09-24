@@ -5,16 +5,16 @@
 
 <document
     name="starting"
-    title="&dactyl.appname; Starting"
+    title="&dactyl.appName; Starting"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
-<h1 tag="starting">Starting &dactyl.appname;</h1>
+<h1 tag="starting">Starting &dactyl.appName;</h1>
 <toc start="2"/>
 
 <h2 tag="startup-options">Command-line options</h2>
 
 <p>
-    Command-line options can be passed to &dactyl.appname; via the -&dactyl.name; &dactyl.host;
+    Command-line options can be passed to &dactyl.appName; via the -&dactyl.name; &dactyl.host;
     option. These are passed as single string argument.
     E.g., &dactyl.hostbin; -&dactyl.name; <str>++cmd 'set exrc' +u 'tempRcFile' ++noplugin</str>
 </p>
@@ -72,27 +72,27 @@
 
 <h2 tag="initialization startup">Initialization</h2>
 
-<p>At startup, &dactyl.appname; completes the following tasks in order. </p>
+<p>At startup, &dactyl.appName; completes the following tasks in order. </p>
 
 <ol>
     <li>
         <p>
-            &dactyl.appname; first searches for user initialization commands in
+            &dactyl.appName; first searches for user initialization commands in
             the following locations. The first of these to be found is executed,
             after which no further locations are searched.
         </p>
 
         <ol>
-            <li tag="$&dactyl.idname;_INIT">
-                <em>$&dactyl.idname;_INIT</em>
+            <li tag="$&dactyl.idName;_INIT">
+                <em>$&dactyl.idName;_INIT</em>
                 <strut/>
                 May contain a single Ex command (e.g., "<ex>:source <a>file</a></ex>").
             </li>
-            <li tag="$MY_&dactyl.idname;RC">
+            <li tag="$MY_&dactyl.idName;RC">
                 <em>~/_&dactyl.name;rc</em>
                 <strut/>
                 Windows only. If this file exists, its contents
-                are executed and <em>$MY_&dactyl.idname;RC</em> set to its path.
+                are executed and <em>$MY_&dactyl.idName;RC</em> set to its path.
             </li>
             <li>
                 <em>~/.&dactyl.name;rc</em>
@@ -137,7 +137,7 @@
 <ul>
     <li>On Unix and Mac, the environment variable  <em>$HOME</em> is used.</li>
     <li>
-        On Windows, &dactyl.appname; checks for the existence of
+        On Windows, &dactyl.appName; checks for the existence of
         <em>%HOME%</em>, then <em>%USERPROFILE%</em>, and then
         <em>%HOMEDRIVE%%HOMEPATH%</em>. It uses the first one it
         finds.

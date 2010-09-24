@@ -5,14 +5,14 @@
 
 <document
     name="map"
-    title="&dactyl.appname; Key Mappings"
+    title="&dactyl.appName; Key Mappings"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="keyboard-shortcuts">Keyboard shortcuts and commands</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appname; provides a number of commands to change the
+    &dactyl.appName; provides a number of commands to change the
     behavior of key presses. This can mean anything from
     automatically substituting one key for another or automatically
     replacing one typed word for another, to launching a dialog or
@@ -22,7 +22,7 @@
 <h2 tag="key-mapping mapping map macro">Key mapping</h2>
 
 <p>
-    Key mappings are the most basic means &dactyl.appname; provides
+    Key mappings are the most basic means &dactyl.appName; provides
     for altering the actions of key presses. Each key mapping is
     associated with a mode, such as <link topic="insert-mode">insert</link>,
     <link topic="normal-mode">normal</link>, or
@@ -52,7 +52,7 @@
     <dt>n</dt> <dd>Normal mode: When browsing normally</dd>
     <dt>v</dt> <dd>Visual mode: When selecting text with the cursor keys</dd>
     <dt>i</dt> <dd>Insert mode: When interacting with text fields on a website</dd>
-    <dt>c</dt> <dd>Command-line mode: When typing into the &dactyl.appname; command line</dd>
+    <dt>c</dt> <dd>Command-line mode: When typing into the &dactyl.appName; command line</dd>
 </dl>
 
 <p>
@@ -381,7 +381,7 @@
 <h2 tag="abbreviations">Abbreviations</h2>
 
 <p>
-    In addition to basic mappings, &dactyl.appname; can also
+    In addition to basic mappings, &dactyl.appName; can also
     automatically replace whole words after they've been typed.
     These shortcuts are known as abbreviations, and are most often
     useful for correcting spelling of commonly mistyped words, as
@@ -624,7 +624,7 @@
             <dt>macro</dt>        <dd>named macros</dd>
             <dt>mapping</dt>      <dd>user mappings</dd>
             <dt>menu</dt>         <dd>menu items</dd>
-            <dt>option</dt>       <dd>&dactyl.appname; options</dd>
+            <dt>option</dt>       <dd>&dactyl.appName; options</dd>
             <dt>preference</dt>   <dd>&dactyl.host; preferences</dd>
             <dt>search</dt>       <dd>search engines and keywords</dd>
             <dt>shellcmd</dt>     <dd>shell commands</dd>

@@ -5,7 +5,7 @@
 
 <document
     name="print"
-    title="&dactyl.appname; Printing"
+    title="&dactyl.appName; Printing"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="printing">Printing</h1>

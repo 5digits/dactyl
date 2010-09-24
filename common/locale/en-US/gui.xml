@@ -5,7 +5,7 @@
 
 <document
     name="gui"
-    title="&dactyl.appname; GUI"
+    title="&dactyl.appName; GUI"
     xmlns="&xmlns.dactyl;"
     xmlns:dactyl="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
@@ -13,7 +13,7 @@
 <toc start="2"/>
 
 <p>
-    Although &dactyl.appname; offers access to the most frequently used
+    Although &dactyl.appName; offers access to the most frequently used
     &dactyl.host; functionality via Ex and Normal mode commands, there may be
     times when direct access to the &dactyl.host; GUI is required. For such
     eventualities, there are commands to access menu items and to launch

@@ -5,14 +5,14 @@
 
 <document
     name="repeat"
-    title="&dactyl.appname; Repeating Commands"
+    title="&dactyl.appName; Repeating Commands"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="repeating">Repeating commands</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appname; can repeat commands in a number of ways, from repeating
+    &dactyl.appName; can repeat commands in a number of ways, from repeating
     the last command, to recording and playing macros, to saving its state and
     executing scripts.
 </p>
@@ -27,7 +27,7 @@
         <p>
             Repeat the last keyboard mapping <oa>count</oa> times. Note that,
             unlike in Vim, this does not apply solely to editing commands,
-            mainly because &dactyl.appname; doesn't have them.
+            mainly because &dactyl.appName; doesn't have them.
         </p>
     </description>
 </item>
@@ -200,7 +200,7 @@
             <tt>&dactyl.name;rc</tt> file if <tt>&dactyl.name;rc</tt> uses commands or options
             which are defined by plugins. Additionally, this command allows
             newly installed plugins to be easily loaded without restarting
-            &dactyl.appname;. See also <o>loadplugins</o>.
+            &dactyl.appName;. See also <o>loadplugins</o>.
         </p>
     </description>
 </item>
@@ -237,7 +237,7 @@
     <description>
         <p>
             Stop sourcing a script file. This can only be called from within a
-            &dactyl.appname; script file.
+            &dactyl.appName; script file.
         </p>
     </description>
 </item>

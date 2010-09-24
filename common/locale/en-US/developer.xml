@@ -7,7 +7,7 @@
 
 <document
     name="developer"
-    title="&dactyl.appname; Developer information"
+    title="&dactyl.appName; Developer information"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="developer-information">Developer information</h1>
@@ -67,7 +67,7 @@
     <dt>&tab;@topic</dt>  <dd>The topic of the link. Either a help topic or a fully-qualified URI.</dd>
     <dt>em</dt>           <dd><em>Emphasized</em> text. (HelpEm)</dd>
     <dt>str</dt>          <dd>A <str>string</str>, with its contents wrapped in quotes. (HelpString)</dd>
-    <dt>logo</dt>         <dd>&dactyl.appname;'s logo. (Logo)</dd>
+    <dt>logo</dt>         <dd>&dactyl.appName;'s logo. (Logo)</dd>
 </dl>
 <dl>
     <dt>Items</dt><dd/>
@@ -109,7 +109,7 @@
     <dt>&tab;@summary</dt>     <dd>A short description of the plugin, shown in its section head.</dd>
 
     <dt>project</dt>           <dd>The project for which this plugin was intended.</dd>
-    <dt>&tab;@name</dt>        <dd>The name of the project (i.e., <str>&dactyl.appname;</str>)</dd>
+    <dt>&tab;@name</dt>        <dd>The name of the project (i.e., <str>&dactyl.appName;</str>)</dd>
     <dt>&tab;@minVersion</dt>  <dd>The minimum version of the project for which this plugin is intended to work.</dd>
     <dt>&tab;@maxVersion</dt>  <dd>The maximum version of the project for which this plugin is intended to work.</dd>
 
@@ -133,9 +133,9 @@
 <h2 tag="writing-plugins">Writing plugins</h2>
 
 <p>
-    Writing &dactyl.appname; plugins is incredibly simple. Plugins are
+    Writing &dactyl.appName; plugins is incredibly simple. Plugins are
     simply JavaScript files which run with full chrome privileges and
-    have full access to the &dactyl.appname; and &dactyl.host; APIs.
+    have full access to the &dactyl.appName; and &dactyl.host; APIs.
     Each plugin has its own global object, which means that the
     variables and functions that you create won't pollute the global
     <em>window</em> or private <em>dactyl</em> namespaces. This means
@@ -153,11 +153,11 @@
     that, what you may do with your plugins is practically limitless.
     Plugins have full access to all of the chrome resources that
     ordinary &dactyl.host; does, along with the entire power of the
-    &dactyl.appname; API. If you need a starting point, have a look at some
+    &dactyl.appName; API. If you need a starting point, have a look at some
     <link topic="&dactyl.plugins;">existing plugins</link> or
     <link topic="http://addon.mozilla.org/">extensions</link>,
     especially the
-    <link topic="&dactyl.code;source/browse/">&dactyl.appname;</link>
+    <link topic="&dactyl.code;source/browse/">&dactyl.appName;</link>
     source.
 </p>
 
@@ -209,7 +209,7 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
     The inline XML is made possible by
     <link topic="https://developer.mozilla.org/en/E4X">E4X</link>.
     It is important that the documentation be assigned to the
-    <em>INFO</em> variable, or &dactyl.appname; will not be able
+    <em>INFO</em> variable, or &dactyl.appName; will not be able
     to find it. The XML property changes are not compulsory, but
     they do prevent certain formatting problems that may occur
     otherwise. Beginning your file with <str>use strict</str>, while
@@ -218,7 +218,7 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
 
 <p>
     The documentation that you provide behaves exactly as other
-    &dactyl.appname; documentation, which means that the tags you
+    &dactyl.appName; documentation, which means that the tags you
     provide are available via <ex>:help</ex> with full tag
     completion and cross-referencing support. Although documentation
     is not required, we strongly recommend that all plugin authors

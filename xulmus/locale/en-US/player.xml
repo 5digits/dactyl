@@ -5,7 +5,7 @@
 
 <document
     name="browsing"
-    title="&dactyl.appname; Browsing"
+    title="&dactyl.appName; Browsing"
     xmlns="http://vimperator.org/namespaces/liberator"
     xmlns:html="http://www.w3.org/1999/xhtml">
 <h1 tag="player-mode player">Player mode</h1>

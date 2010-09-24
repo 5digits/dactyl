@@ -5,7 +5,7 @@
 
 <document
     name="buffer"
-    title="&dactyl.appname; Buffer"
+    title="&dactyl.appName; Buffer"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="buffer document">Buffer</h1>

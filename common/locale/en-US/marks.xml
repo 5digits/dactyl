@@ -5,14 +5,14 @@
 
 <document
     name="marks"
-    title="&dactyl.appname; Marks"
+    title="&dactyl.appName; Marks"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="marks">Marks</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appname; supports a number of different methods of
+    &dactyl.appName; supports a number of different methods of
     marking your place, in order to easily return later,
 </p>
 
@@ -28,9 +28,9 @@
 
 <p>
     Bookmarks are the most traditional kind of marks supported by
-    &dactyl.appname;. They are accessible through &dactyl.host;'s
+    &dactyl.appName;. They are accessible through &dactyl.host;'s
     bookmark menu, sidebar, and toolbar, in addition to its location
-    bar completion system. &dactyl.appname; makes them accessible
+    bar completion system. &dactyl.appName; makes them accessible
     not only via several commands and its completion system (see the
     <o>complete</o> option), but also displays a ❤ in the status bar
     when a bookmarked page is displayed.
@@ -154,7 +154,7 @@
 <p>
     Though not traditionally considered a mark, history behaves very
     similarly to bookmarks both in &dactyl.host; and
-    &dactyl.appname;. Every visited page is marked and weighted by
+    &dactyl.appName;. Every visited page is marked and weighted by
     when and how often it is visited, and can be retrieved both in
     history list and location completions. Indeed, the ‘frecency’
     algorithm used to determine the results of location completions

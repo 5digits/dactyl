@@ -5,7 +5,7 @@
 
 <document
     name="hints"
-    title="&dactyl.appname; Hints"
+    title="&dactyl.appName; Hints"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 <h1 tag="quick-hints hints">Hints</h1>
@@ -13,7 +13,7 @@
 
 <p>
     Hints are an easy way to interact with web pages without using
-    your mouse. In hint mode, &dactyl.appname; highlights and
+    your mouse. In hint mode, &dactyl.appName; highlights and
     numbers all clickable elements. The elements can be selected
     either by typing their numbers, or typing parts of their text to
     narrow them down. While the default action is to click the
