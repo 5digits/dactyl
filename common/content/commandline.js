@@ -1148,6 +1148,7 @@ const CommandLine = Module("commandline", {
 
             // Reset the caret to one position after the completion.
             this.caret = this.prefix.length + completion.length;
+            this._caret = this.caret;
         },
 
         get caret() this.editor.selection.focusOffset,
@@ -1333,6 +1334,10 @@ const CommandLine = Module("commandline", {
 
         tab: function tab(reverse, wildmode) {
             commandline._autocompleteTimer.flush();
+            if (this._caret != this.caret)
+                this.reset();
+            this._caret = this.caret;
+
             // Check if we need to run the completer.
             if (this.context.waitingForTab || this.wildIndex == -1)
                 this.complete(true, true);
