@@ -149,11 +149,8 @@ const Config = Module("config", ConfigBase, {
         commands.add(["pref[erences]", "prefs"],
             "Show " + config.host + " preferences",
             function (args) {
-                if (args.bang) { // open Firefox settings GUI dialog
-                    dactyl.open("about:config",
-                        (options["newtab"] && options.get("newtab").has("all", "prefs"))
-                                ? dactyl.NEW_TAB : dactyl.CURRENT_TAB);
-                }
+                if (args.bang) // open Firefox settings GUI dialog
+                    dactyl.open("about:config", { from: "prefs" });
                 else
                     window.openPreferences();
             },
