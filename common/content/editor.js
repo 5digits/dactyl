@@ -545,7 +545,7 @@ const Editor = Module("editor", {
 
         mappings.add(myModes,
             ["<C-h>"], "Delete character to the left",
-            function () { editor.executeCommand("cmd_deleteCharBackward", 1); });
+            function () { events.feedkeys("<BS>", true); });
 
         mappings.add(myModes,
             ["<C-d>"], "Delete character to the right",
