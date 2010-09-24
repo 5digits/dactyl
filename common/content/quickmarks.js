@@ -152,11 +152,7 @@ const QuickMarks = Module("quickmarks", {
 
         mappings.add(myModes,
             ["gn"], "Jump to a QuickMark in a new tab",
-            function (arg) {
-                quickmarks.jumpTo(arg,
-                    /\bquickmark\b/.test(options["activate"]) ?
-                    dactyl.NEW_TAB : dactyl.NEW_BACKGROUND_TAB);
-            },
+            function (arg) { quickmarks.jumpTo(arg, { from: "quickmark", where: dactyl.NEW_TAB }); },
             { arg: true });
 
         mappings.add(myModes,
