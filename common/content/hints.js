@@ -470,7 +470,7 @@ const Hints = Module("hints", {
 
         this.timeout(function () {
             if (modes.extended & modes.HINTS)
-                modes.reset();
+                modes.pop();
             this._hintMode.action(elem, elem.href || "", this._extendedhintCount);
         }, timeout);
         return true;
@@ -763,7 +763,7 @@ const Hints = Module("hints", {
 
         if (this._validHints.length == 0) {
             dactyl.beep();
-            modes.reset();
+            modes.pop();
         }
         else if (this._validHints.length == 1)
             this._processHints(false);
@@ -833,8 +833,8 @@ const Hints = Module("hints", {
 
        case mappings.getMapLeader():
            hints.escNumbers = !hints.escNumbers;
-           if (hints.escNumbers && this._usedTabKey) // this._hintNumber not used normally, but someone may wants to toggle
-               this._hintNumber = 0;                 // <tab>s ? this._reset. Prevent to show numbers not entered.
+           if (hints.escNumbers && this._usedTabKey)
+               this._hintNumber = 0;
 
            this._updateStatusline();
            return;

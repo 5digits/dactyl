@@ -36,7 +36,6 @@ BUGS:
   bookmark - they're being set after the observer triggers the autocmd event.
 - :messages is _very_ slow for message history of several thousand lines ->
   Unresponsive Script: util.js:79 (sometimes xmlToDom() and elsewhere)
-- The MOW shouldn't close when executing hints and ;F isn't working.
 
 FEATURES:
 9 Add quoting help tag
