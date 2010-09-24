@@ -11,6 +11,7 @@
 
 const Hints = Module("hints", {
     init: function () {
+        const self = this;
 
         this._hintMode = null;
         this._submode = "";             // used for extended mode, can be "o", "t", "y", etc.
@@ -29,6 +30,15 @@ const Hints = Module("hints", {
         // keep track of the documents which we generated the hints for
         // this._docs = { doc: document, start: start_index in hints[], end: end_index in hints[] }
         this._docs = [];
+
+        this._resizeTimer = Timer(100, 500, function () {
+            if (self._top && (modes.extended & modes.HINTS)) {
+                let win = self._top;
+                self._removeHints(0, true);
+                self._generate(win);
+                self._showHints();
+            }
+        });
 
         const Mode = Hints.Mode;
         Mode.defaultValue("tags", function () function () options.hinttags);
@@ -62,17 +72,19 @@ const Hints = Module("hints", {
     /**
      * Reset hints, so that they can be cleanly used again.
      */
-    _reset: function () {
-        statusline.updateInputBuffer("");
-        this._hintString = "";
-        this._hintNumber = 0;
-        this._usedTabKey = false;
-        this.prevInput = "";
+    _reset: function (slight) {
+        if (!slight) {
+            statusline.updateInputBuffer("");
+            this._hintString = "";
+            this._hintNumber = 0;
+            this._usedTabKey = false;
+            this.prevInput = "";
+            this.escNumbers = false;
+            this._canUpdate = false;
+        }
         this._pageHints = [];
         this._validHints = [];
-        this._canUpdate = false;
         this._docs = [];
-        hints.escNumbers = false;
 
         if (this._activeTimeout)
             this._activeTimeout.cancel();
@@ -236,6 +248,10 @@ const Hints = Module("hints", {
     _generate: function (win) {
         if (!win)
             win = window.content;
+        if (!this._top) {
+            this._top = win;
+            win.addEventListener("resize", this._resizeTimer.closure.tell, true);
+        }
 
         let doc = win.document;
         let height = win.innerHeight;
@@ -401,8 +417,12 @@ const Hints = Module("hints", {
      * @param {number} timeout The number of milliseconds before the active
      *     hint disappears.
      */
-    _removeHints: function (timeout) {
+    _removeHints: function (timeout, slight) {
         let firstElem = this._validHints[0] || null;
+
+        if (this._top)
+            this._top.removeEventListener("resize", this._resizeTimer.closure.tell, true);
+        this._top = null;
 
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
@@ -419,7 +439,7 @@ const Hints = Module("hints", {
         }
         styles.removeSheet(true, "hint-positions");
 
-        this._reset();
+        this._reset(slight);
     },
 
     /**

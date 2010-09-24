@@ -15,7 +15,6 @@ REFACTORING:
 - remove unnecessary usage of "self"
 
 BUGS:
-- add window resize support to hints
 - insert abbreviations broken on <space>
 - :sidebar improvements (:sidebar! Downloads while downloads is open should refocus the sidebar)
 - ;s saves the page rather than the image
