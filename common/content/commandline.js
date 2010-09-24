@@ -1643,7 +1643,7 @@ const ItemList = Class("ItemList", {
                 </div>
             </div>, this._divNodes);
         this._doc.body.replaceChild(this._div, this._doc.body.firstChild);
-        this._div.scrollIntoView(true);
+        util.scrollIntoView(this._div);
 
         this._items.contextList.forEach(function init_eachContext(context) {
             delete context.cache.nodes;

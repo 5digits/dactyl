@@ -269,7 +269,7 @@ const Hints = Module("hints", {
 
             // TODO: for iframes, this calculation is wrong
             let rect = elem.getBoundingClientRect();
-            if (!rect || rect.top > height || rect.bottom < 0 || rect.left > width || rect.right < 0)
+            if (!rect || !rect.width || !rect.height || rect.top > height || rect.bottom < 0 || rect.left > width || rect.right < 0)
                 continue;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
