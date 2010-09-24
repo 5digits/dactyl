@@ -180,7 +180,7 @@ const Hints = Module("hints", {
                 let leftBound = Infinity;
                 let topBound = Infinity;
 
-                // First find the top-left corner of the bounding rectangle (offset from image topleft can be noticably suboptimal)
+                // First find the top-left corner of the bounding rectangle (offset from image topleft can be noticeably suboptimal)
                 for (let i = 0; i < coords.length; i += 2) {
                     leftBound = Math.min(coords[i], leftBound);
                     topBound = Math.min(coords[i + 1], topBound);

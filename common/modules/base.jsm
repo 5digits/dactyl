@@ -376,7 +376,7 @@ function iter(obj) {
 
 /**
  * Returns true if both arguments are functions and
- * (targ() instaneof src) would also return true.
+ * (targ() instanceof src) would also return true.
  *
  * @param {function} targ
  * @param {function} src

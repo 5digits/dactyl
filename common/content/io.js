@@ -518,7 +518,7 @@ lookup:
     },
 
     /**
-     * @property {string} The current platform's path seperator.
+     * @property {string} The current platform's path separator.
      */
     PATH_SEP: File.PATH_SEP
 }, {

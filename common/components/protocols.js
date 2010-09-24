@@ -178,7 +178,7 @@ AboutHandler.prototype = {
     getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT,
 };
 
-// A hack to get infermation about interfaces.
+// A hack to get information about interfaces.
 // Doesn't belong here.
 function Shim() {}
 Shim.prototype = {

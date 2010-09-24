@@ -576,7 +576,7 @@ const Dactyl = Module("dactyl", {
         function addURIEntry(file, uri)
             zip.addEntryChannel(PATH + file, TIME, 9,
                 services.get("io").newChannel(uri, null, null), false);
-        function addDataEntry(file, data) // Inideal to an extreme.
+        function addDataEntry(file, data) // Unideal to an extreme.
             addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
 
         let empty = set("area base basefont br col frame hr img input isindex link meta param"
@@ -805,7 +805,7 @@ const Dactyl = Module("dactyl", {
      * false on error.
      *
      * @param {string|Array} urls A representation of the URLs to open. May be
-     *     either a string, which will be bassed to
+     *     either a string, which will be passed to
      *     {@see Dactyl#stringToURLArray}, or an array in the same format as
      *     would be returned by the same.
      * @param {object} params A set of parameters specifing to open the
@@ -813,7 +813,7 @@ const Dactyl = Module("dactyl", {
      *
      *      • background   If true, new tabs are opened in the background.
      *
-     *      • from         The desgination of the opener, as appears in
+     *      • from         The designation of the opener, as appears in
      *                     'activate' and 'newtab' options. If present,
      *                     the newtab option provides the default 'where'
      *                     parameter, and the value of the 'activate'
@@ -821,7 +821,7 @@ const Dactyl = Module("dactyl", {
      *
      *      • where        One of CURRENT_TAB, NEW_TAB, or NEW_WINDOW
      *
-     *      As a deprecated special case, the where paramater may be provided
+     *      As a deprecated special case, the where parameter may be provided
      *      by itself, in which case it is transformed into { where: params }.
      *
      * @param {boolean} force Don't prompt whether to open more than 20
@@ -2070,7 +2070,7 @@ const Dactyl = Module("dactyl", {
                 // FIXME:
                 // 'encoding' option should not be set at this timing.
                 // Probably a wrong value is set into the option,
-                // if current page's encoging is not UTF-8.
+                // if current page's encoding is not UTF-8.
                 try {
                     if (option.name != "encoding");
                         option.value = option.value;

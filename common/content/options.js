@@ -272,7 +272,7 @@ const Option = Class("Option", {
 
     /**
      * @property {function(host, values)} A function which should return a list
-     *     of domains referenced in the given values. Used in determing whether
+     *     of domains referenced in the given values. Used in determining whether
      *     to purge the command from history when clearing private data.
      * @see Command#domains
      */
@@ -786,7 +786,7 @@ const Options = Module("options", {
      * Remove the option with matching <b>name</b>.
      *
      * @param {string} name The name of the option to remove. This can be
-     *     any of the options's names.
+     *     any of the option's names.
      */
     remove: function (name) {
         let opt = this.get(name);
@@ -802,7 +802,7 @@ const Options = Module("options", {
      * Returns the value of the preference <b>name</b>.
      *
      * @param {string} name The preference name.
-     * @param {value} forcedDefault The the default value for this
+     * @param {value} forcedDefault The default value for this
      *     preference. Used for internal dactyl preferences.
      */
     getPref: function (name, forcedDefault) {

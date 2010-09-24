@@ -405,7 +405,7 @@ const File = Class("File", {
 
         if (!perms)
             perms = parseInt('0644', 8);
-        if (!this.exists()) // OCREAT won't creat the directory
+        if (!this.exists()) // OCREAT won't create the directory
             this.create(this.NORMAL_FILE_TYPE, perms);
 
         ofstream.init(this, mode, perms, 0);
@@ -486,7 +486,7 @@ const File = Class("File", {
     MODE_EXCL: 0x80,
 
     /**
-     * @property {string} The current platform's path seperator.
+     * @property {string} The current platform's path separator.
      */
     get PATH_SEP() {
         delete this.PATH_SEP;

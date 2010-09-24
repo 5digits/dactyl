@@ -184,7 +184,7 @@ const Buffer = Module("buffer", {
             let doc = event.originalTarget;
             // document is part of a frameset
             if (doc.defaultView.frameElement) {
-                // hacky way to get rid of "Transfering data from ..." on sites with frames
+                // hacky way to get rid of "Transferring data from ..." on sites with frames
                 // when you click on a link inside a frameset, because asyncUpdateUI
                 // is not triggered there (Gecko bug?)
                 this.timeout(function () { statusline.updateUrl(); }, 10);
@@ -814,7 +814,7 @@ const Buffer = Module("buffer", {
         // find the currently focused frame index
         // TODO: If the window is a frameset then the first _frame_ should be
         //       focused.  Since this is not the current FF behaviour,
-        //       we initalize current to -1 so the first call takes us to the
+        //       we initialize current to -1 so the first call takes us to the
         //       first frame.
         let current = frames.indexOf(document.commandDispatcher.focusedWindow);
 

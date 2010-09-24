@@ -303,7 +303,7 @@ const Events = Module("events", {
                 // A special hack for dactyl-specific key names.
                 if (evt_obj.dactylString || evt_obj.dactylShift) {
                     evt.dactylString = evt_obj.dactylString; // for key-less keypress events e.g. <Nop>
-                    evt.dactylShift = evt_obj.dactylShift; // for untypable shift keys e.g. <S-1>
+                    evt.dactylShift = evt_obj.dactylShift; // for untypeable shift keys e.g. <S-1>
                     events.onKeyPress(evt);
                 }
 
@@ -383,7 +383,7 @@ const Events = Module("events", {
      * <C- > maps to <C-Space>, <S-a> maps to A
      * << maps to <lt><lt>
      *
-     * <S-@> is preserved, as in vim, to allow untypable key-combinations
+     * <S-@> is preserved, as in vim, to allow untypeable key-combinations
      * in macros.
      *
      * canonicalKeys(canonicalKeys(x)) == canonicalKeys(x) for all values
@@ -408,7 +408,7 @@ const Events = Module("events", {
      * .dactylShift these are set for characters that can never by
      * typed, but may appear in mappings, for example <Nop> is passed as
      * dactylString, and dactylShift is set when a user specifies
-     * <S-@> where @ is a non-case-changable, non-space character.
+     * <S-@> where @ is a non-case-changeable, non-space character.
      *
      * @param {string} keys The string to parse.
      * @returns {Array[Object]}

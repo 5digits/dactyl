@@ -237,7 +237,7 @@ const Command = Class("Command", {
     count: false,
     /**
      * @property {function(args)} A function which should return a list
-     *     of domains referenced in the given args. Used in determing
+     *     of domains referenced in the given args. Used in determining
      *     whether to purge the command from history when clearing
      *     private data.
      */
