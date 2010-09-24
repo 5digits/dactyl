@@ -466,7 +466,7 @@ const CompletionContext = Class("CompletionContext", {
         let filter = fixCase(this.filter);
         if (this.anchored) {
             var compare = function compare(text, s) text.substr(0, s.length) == s;
-            var substrings = [text.substring(filter.length)];
+            var substrings = [text];
         }
         else {
             var compare = function compare(text, s) text.indexOf(s) >= 0;
@@ -489,7 +489,7 @@ const CompletionContext = Class("CompletionContext", {
                     let s = list[i + m];
                     let keep = compare(fixCase(item.text), list.substring(0, i + m));
                     if (!keep)
-                        len = i + m;
+                        len = i + m - 1;
                     if (!keep || m == 0)
                         n = m;
                     else {
@@ -497,7 +497,7 @@ const CompletionContext = Class("CompletionContext", {
                         n = n - m;
                     }
                 }
-                return len == list.length ? list : list.substr(0, len);
+                return len == list.length ? list : list.substr(0, Math.max(len, 0));
             }),
             substrings);
         let quote = this.quote;
