@@ -199,10 +199,12 @@
         progress messages are also output to this field.
     </li>
     <li>
-        <em>History and bookmark status</em> (<em>[+-❤]</em>): The position of the current page in
-        the tab's session history; + and - indicate that it is possible to move
-        backwards and forwards through the history respectively. ❤ indicates that
-        the current page is bookmarked.
+        <em>History and bookmark status</em> (<em>[+-❤⋯]</em>): The position
+        of the current page in the tab's session history; <em>+</em> and
+        <em>-</em> indicate that it is possible to move backwards and forwards
+        through the history respectively. ❤ indicates that the current page is
+        bookmarked. Any other character indicates a QuickMark matching the
+        current page.
     </li>
     <li>
         <em>Tab index</em> (<em>[N/M]</em>): N is the index of the currently selected tab and M is

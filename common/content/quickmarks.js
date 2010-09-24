@@ -14,6 +14,9 @@
 const QuickMarks = Module("quickmarks", {
     init: function () {
         this._qmarks = storage.newMap("quickmarks", { store: true });
+        storage.addObserver("quickmarks", function () {
+            statusline.updateUrl();
+        }, window);
     },
 
     /**
@@ -27,6 +30,20 @@ const QuickMarks = Module("quickmarks", {
     add: function add(qmark, location) {
         this._qmarks.set(qmark, location);
         dactyl.echomsg({ domains: [util.getHost(location)], message: "Added Quick Mark '" + qmark + "': " + location }, 1);
+    },
+
+    /**
+     * Returns a list of QuickMarks associates with the given URL.
+     *
+     * @param {string} url The url to find QuickMarks for.
+     * @return {[string]}
+     */
+    find: function find(url) {
+        let res = [];
+        for (let [k, v] in this._qmarks)
+            if (dactyl.stringToURLArray(v).some(function (u) String.replace(u, /#.*/, "") == url))
+                res.push(k);
+        return res;
     },
 
     /**
@@ -120,15 +137,21 @@ const QuickMarks = Module("quickmarks", {
         commands.add(["qma[rk]"],
             "Mark a URL with a letter for quick access",
             function (args) {
-                let matches = args.string.match(/^([a-zA-Z0-9])(?:\s+(.+))?$/);
-                if (!matches)
+                if (!/^[a-zA-Z0-9]$/.test(args[0]))
                     dactyl.echoerr("E488: Trailing characters");
-                else if (!matches[2])
-                    quickmarks.add(matches[1], buffer.URL);
+                else if (!args[1])
+                    quickmarks.add(args[0], buffer.URL);
                 else
-                    quickmarks.add(matches[1], matches[2]);
+                    quickmarks.add(args[0], args[1]);
             },
-            { argCount: "+" });
+            {
+                argCount: "+",
+                completer: function (context, args) {
+                    if (args.length == 2)
+                        return completion.url(context);
+                },
+                literal: 1
+            });
 
         commands.add(["qmarks"],
             "Show all QuickMarks",

@@ -90,19 +90,9 @@ const StatusLine = Module("statusline", {
             return url;
         };
 
+        // TODO: this probably needs a more general solution.
         if (url == null)
-            // TODO: this probably needs a more general solution.
-            url = losslessDecodeURI(buffer.URL);
-
-        // make it even more Vim-like
-        if (url == "about:blank") {
-            if (!buffer.title)
-                url = "[No Name]";
-        }
-        else {
-            url = url.replace(RegExp("^dactyl://help/(\\S+)#(.*)"), function (m, n1, n2) n1 + " " + decodeURIComponent(n2) + " [Help]")
-                     .replace(RegExp("^dactyl://help/(\\S+)"), "$1 [Help]");
-        }
+            url = buffer.URL;
 
         // when session information is available, add [+] when we can go
         // backwards, [-] when we can go forwards
@@ -118,6 +108,20 @@ const StatusLine = Module("statusline", {
             if (bookmarks.isBookmarked(buffer.URL))
                 modified += UTF8("❤");
                 //modified += UTF8("♥");
+        }
+        if (modules.quickmarks)
+            modified += quickmarks.find(url.replace(/#.*/, "")).join("");
+
+        url = losslessDecodeURI(url);
+
+        // make it even more Vim-like
+        if (url == "about:blank") {
+            if (!buffer.title)
+                url = "[No Name]";
+        }
+        else {
+            url = url.replace(RegExp("^dactyl://help/(\\S+)#(.*)"), function (m, n1, n2) n1 + " " + decodeURIComponent(n2) + " [Help]")
+                     .replace(RegExp("^dactyl://help/(\\S+)"), "$1 [Help]");
         }
 
         if (modified)
