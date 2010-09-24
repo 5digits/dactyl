@@ -30,14 +30,21 @@
     <dt>number</dt>        <dd>A numeric value</dd>
     <dt>string</dt>        <dd>A string value</dd>
     <dt>charlist</dt>      <dd tag="charlist">A string containing a discrete set of distinct characters</dd>
-    <dt>stringlist</dt>    <dd tag="stringlist">A comma-separated list of strings</dd>
+    <dt>stringlist</dt>
+    <dd tag="stringlist">
+        A comma-separated list of strings. Any comma appearing within single
+        or double quotes, or prefixed with a <em>\</em>, will not be treated
+        as an item separator.
+    </dd>
     <dt>stringmap</dt>     <dd tag="stringmap">A comma-separated list of key-value pairs, e.g., <str>key:val,foo:bar</str></dd>
     <dt>regexlist</dt>
     <dd tag="regexlist">
         A comma-separated list of regular expressions. Expressions may be
         prefixed with a <em>!</em>, in which case the match will be negated. A
         literal <em>!</em> at the begining of the expression may be matched with
-        <em>[!]</em>.  Generally, the first matching regular expression is used.
+        <em>[!]</em>.  Generally, the first matching regular expression is
+        used. Any comma appearing within single or double quotes, or prefixed
+        with a <em>\</em>, will not be treated as an item separator.
     </dd>
     <dt>regexmap</dt>
     <dd tag="regexmap">
@@ -1452,10 +1459,6 @@
         <code><ex>:set wildignore=<str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]<a>2</a>$</str></ex></code>
 
         <note>Unlike Vim, each pattern is a regular expression rather than a glob.</note>
-        <note>
-            The only way to include a literal comma in a pattern is with the
-            escape sequence <str>\u0044</str>.
-        </note>
     </description>
 </item>
 

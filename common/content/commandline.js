@@ -1071,7 +1071,8 @@ const CommandLine = Module("commandline", {
          */
         select: function (backward, matchCurrent) {
             // always reset the tab completion if we use up/down keys
-            commandline._completions.reset();
+            if (commandline._completions)
+                commandline._completions.reset();
 
             let diff = backward ? -1 : 1;
 

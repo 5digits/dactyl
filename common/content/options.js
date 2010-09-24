@@ -50,8 +50,11 @@ const Option = Class("Option", {
 
         this._op = Option.ops[this.type];
 
-        if (arguments.length > 3)
-            this.defaultValue = defaultValue;
+        if (arguments.length > 3) {
+            if (this.type == "string")
+                defaultValue = Commands.quote(defaultValue);
+            this.defaultValue = this.joinValues(this.parseValues(defaultValue));
+        }
 
         if (extraInfo)
             update(this, extraInfo);
@@ -75,7 +78,7 @@ const Option = Class("Option", {
      * @param {value} value The option value.
      * @returns {value|string[]}
      */
-    parseValues: function (value) value,
+    parseValues: function (value) Option.dequote(value),
 
     /**
      * Returns <b>values</b> packed in the appropriate format for the option
@@ -84,7 +87,7 @@ const Option = Class("Option", {
      * @param {value|string[]} values The option value.
      * @returns {value}
      */
-    joinValues: function (vals) vals,
+    joinValues: function (vals) Commands.quote(vals),
 
     /** @property {value|string[]} The option value or array of values. */
     get values() this.getValues(this.scope),
@@ -376,8 +379,8 @@ const Option = Class("Option", {
         re.toString = function () Option.unparseRegex(this);
         return re;
     },
-    unparseRegex: function (re) re.bang + re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m) +
-        (typeof re.result == "string" ? ":" + re.result : ""),
+    unparseRegex: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m)) +
+        (typeof re.result == "string" ? ":" + Option.quote(re.result) : ""),
 
     getKey: {
         stringlist: function (k) this.values.indexOf(k) >= 0,
@@ -393,23 +396,45 @@ const Option = Class("Option", {
     },
 
     joinValues: {
-        charlist:    function (vals) vals.join(""),
-        stringlist:  function (vals) vals.join(","),
-        stringmap:   function (vals) [k + ":" + v for ([k, v] in Iterator(vals))].join(","),
-        regexlist:   function (vals) vals.map(Option.unparseRegex).join(","),
+        charlist:    function (vals) Commands.quote(vals.join("")),
+        stringlist:  function (vals) vals.map(Option.quote).join(","),
+        stringmap:   function (vals) [Option.quote(k) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
+        regexlist:   function (vals) vals.join(","),
         get regexmap() this.regexlist
     },
 
     parseValues: {
-        number:     function (value) Number(value),
-        boolean:    function (value) value == "true" || value == true ? true : false,
-        charlist:   function (value) Array.slice(value),
-        stringlist: function (value) (value === "") ? [] : value.split(","),
-        stringmap:  function (value) array(util.split(v, /:/g, 2) for (v in values(value.split(",")))).toObject(),
-        regexlist:  function (value) (value === "") ? [] : value.split(",").map(Option.parseRegex),
-        regexmap:   function (value) value.split(",").map(function (v) util.split(v, /:/g, 2))
-                                                     .map(function ([k, v]) v != null ? Option.parseRegex(k, v) : Option.parseRegex(".?", k))
+        number:     function (value) Number(Option.dequote(value)),
+        boolean:    function (value) Option.dequote(value) == "true" || value == true ? true : false,
+        charlist:   function (value) Array.slice(Option.dequote(value)),
+        stringlist: function (value) (value === "") ? [] : Option.splitList(value),
+        stringmap:  function (value) array(util.split(v, /:/g, 2) for (v in values(Option.splitList(value)))).toObject(),
+        regexlist:  function (value) (value === "") ? [] : Option.splitList(value).map(Option.parseRegex),
+        regexmap:   function (value) Option.splitList(value)
+                                           .map(function (v) util.split(v, /:/g, 2))
+                                           .map(function ([k, v]) v != null ? Option.parseRegex(k, v) : Option.parseRegex(".?", k))
     },
+
+    dequote: function (value) {
+        let arg;
+        [, arg, Option._quote] = Commands.parseArg(String(value), "");
+        Option._splitAt = 0;
+        return arg;
+    },
+    splitList: function (value) {
+        let res = [];
+        Option._splitAt = 0;
+        do {
+            if (count !== undefined)
+                Option._splitAt += count + 1;
+            var [count, arg, quote] = Commands.parseArg(value, /,/);
+            Option._quote = quote; // FIXME
+            res.push(arg);
+            value = value.slice(count + 1);
+        } while (value.length);
+        return res;
+    },
+    quote: function quote(str) Commands.quoteArg[/[\s"'\\,]|^$/.test(str) ? "'" : ""](str),
 
     ops: {
         boolean: function (operator, values, scope, invert) {
@@ -640,7 +665,7 @@ const Options = Module("options", {
         if (!scope)
             scope = Option.SCOPE_BOTH;
 
-        if (name in this._optionMap && (this._optionMap[name].scope & scope))
+        if (this._optionMap[name] && (this._optionMap[name].scope & scope))
             return this._optionMap[name];
         return null;
     },
@@ -661,7 +686,7 @@ const Options = Module("options", {
         function opts(opt) {
             for (let opt in Iterator(options)) {
                 let option = {
-                    isDefault: opt.value == opt.defaultValue,
+                    isDefault: opt.value === opt.defaultValue,
                     name:      opt.name,
                     default:   opt.defaultValue,
                     pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
@@ -1261,8 +1286,8 @@ const Options = Module("options", {
                     serialize: function () [
                         {
                             command: this.name,
-                            arguments: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
-                                                              : opt.name + "=" + opt.value]
+                            literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
+                                                               : opt.name + "=" + opt.value]
                         }
                         for (opt in options)
                         if (!opt.getter && opt.value != opt.defaultValue && (opt.scope & Option.SCOPE_GLOBAL))
@@ -1276,6 +1301,9 @@ const Options = Module("options", {
                 },
                 update({
                     bang: true,
+                    completer: function (context, args) {
+                        return setCompleter(context, args);
+                    },
                     domains: function (args) array.flatten(args.map(function (spec) {
                         try {
                             let opt = options.parseOpt(spec);
@@ -1287,9 +1315,7 @@ const Options = Module("options", {
                         }
                         return [];
                     })),
-                    completer: function (context, args) {
-                        return setCompleter(context, args);
-                    },
+                    keepQuotes: true,
                     privateData: function (args) args.some(function (spec) {
                         let opt = options.parseOpt(spec);
                         return opt.option && opt.option.privateData &&
@@ -1347,33 +1373,30 @@ const Options = Module("options", {
                 return;
             }
 
-            let len = context.filter.length;
             switch (opt.type) {
             case "boolean":
                 if (!completer)
                     completer = function () [["true", ""], ["false", ""]];
                 break;
             case "regexlist":
-                newValues = context.filter.split(",");
+                newValues = Option.splitList(context.filter);
                 // Fallthrough
             case "stringlist":
-                let target = newValues.pop() || "";
-                len = target.length;
+                var target = newValues.pop() || "";
                 break;
             case "stringmap":
             case "regexmap":
-                let vals = context.filter.split(",");
+                let vals = Option.splitList(context.filter);
                 target = vals.pop() || "";
-                len = target.length - (target.indexOf(":") + 1);
-                break;
-            case "charlist":
-                len = 0;
+                Option._splitAt += target.indexOf(":") ? target.indexOf(":") + 1 : 0;
                 break;
             }
             // TODO: Highlight when invalid
-            context.advance(context.filter.length - len);
+            context.advance(Option._splitAt);
+            context.filter = target != null ? target : Option.dequote(context.filter);
 
             context.title = ["Option Value"];
+            context.quote = Commands.complQuote[Option._quote] || Commands.complQuote[""]
             // Not Vim compatible, but is a significant enough improvement
             // that it's worth breaking compatibility.
             if (isArray(newValues)) {

@@ -189,7 +189,15 @@ const Command = Class("Command", {
      * @returns {Args}
      * @see Commands#parseArgs
      */
-    parseArgs: function (args, complete, extra) commands.parseArgs(args, this.options, this.argCount, false, this.literal, complete, extra),
+    parseArgs: function (args, complete, extra) commands.parseArgs(args, {
+        allowUnknownOptions: !!this.allowUnknownOptions,
+        argCount: this.argCount,
+        complete: complete,
+        extra: extra,
+        keepQuotes: !!this.keepQuotes,
+        literal: this.literal,
+        options: this.options
+    }),
 
     /**
      * @property {string[]} All of this command's name specs. e.g., "com[mand]"
@@ -405,16 +413,15 @@ const Commands = Module("commands", {
      */
     commandToString: function (args) {
         let res = [args.command + (args.bang ? "!" : "")];
-        function quote(str) Commands.quoteArg[/[\s"'\\]|^$/.test(str) ? "'" : ""](str);
 
         for (let [opt, val] in Iterator(args.options || {})) {
             let chr = /^-.$/.test(opt) ? " " : "=";
             if (val != null)
-                opt += chr + quote(val);
+                opt += chr + Commands.quote(val);
             res.push(opt);
         }
         for (let [, arg] in Iterator(args.arguments || []))
-            res.push(quote(arg));
+            res.push(Commands.quote(arg));
 
         let str = args.literalArg;
         if (str)
@@ -556,13 +563,18 @@ const Commands = Module("commands", {
      */
     parseArgs: function (str, options, argCount, allowUnknownOptions, literal, complete, extra) {
         function getNextArg(str) {
-            let [count, arg, quote] = Commands.parseArg(str);
+            let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
             if (quote == "\\" && !complete)
                 return [,,,"Trailing \\"];
             if (quote && !complete)
                 return [,,,"E114: Missing quote: " + quote];
             return [count, arg, quote];
         }
+
+        let keepQuotes;
+
+        if (isObject(options))
+            ({ allowUnknownOptions, argCount, complete, extra, literal, options, keepQuotes }) = options;
 
         if (!options)
             options = [];
@@ -581,7 +593,7 @@ const Commands = Module("commands", {
 
         var invalid = false;
         // FIXME: best way to specify these requirements?
-        var onlyArgumentsRemaining = allowUnknownOptions || options.length == 0 || false; // after a -- has been found
+        var onlyArgumentsRemaining = allowUnknownOptions || options.length == 0; // after a -- has been found
         var arg = null;
         var count = 0; // the length of the argument
         var i = 0;
@@ -866,19 +878,26 @@ const Commands = Module("commands", {
     }
 }, {
     // returns [count, parsed_argument]
-    parseArg: function (str) {
+    parseArg: function (str, sep, keepQuotes) {
         let arg = "";
         let quote = null;
         let len = str.length;
 
-        while (str.length && !/^\s/.test(str)) {
+        // Fix me.
+        if (isString(sep))
+            sep = RegExp(sep);
+        sep = sep != null ? sep : /\s/;
+        let re1 = RegExp("^" + (sep.source === "" ? "(?!)" : sep.source));
+        let re2 = RegExp(/^()((?:[^\\S"']|\\.)+)((?:\\$)?)/.source.replace("S", sep.source));
+
+        while (str.length && !re1.test(str)) {
             let res;
-            if ((res = str.match = str.match(/^()((?:[^\\\s"']|\\.)+)((?:\\$)?)/)))
-                arg += res[2].replace(/\\(.)/g, "$1");
-            else if ((res = str.match(/^(")((?:[^\\"]|\\.)*)("?)/)))
-                arg += eval(res[0] + (res[3] ? "" : '"'));
-            else if ((res = str.match(/^(')((?:[^']|'')*)('?)/)))
-                arg += res[2].replace("''", "'", "g");
+            if ((res = re2.exec(str)))
+                arg += keepQuotes ? res[0] : res[2].replace(/\\(.)/g, "$1");
+            else if ((res = /^(")((?:[^\\"]|\\.)*)("?)/.exec(str)))
+                arg += keepQuotes ? res[0] : eval(res[0] + (res[3] ? "" : '"'));
+            else if ((res = /^(')((?:[^']|'')*)('?)/.exec(str)))
+                arg += keepQuotes ? res[0] : res[2].replace("''", "'", "g");
             else
                 break;
 
@@ -890,7 +909,9 @@ const Commands = Module("commands", {
         }
 
         return [len - str.length, arg, quote];
-    }
+    },
+
+    quote: function quote(str) Commands.quoteArg[/[\s"'\\]|^$/.test(str) ? "'" : ""](str)
 }, {
     completion: function () {
         completion.command = function command(context) {
@@ -1155,8 +1176,9 @@ const Commands = Module("commands", {
 (function () {
 
     Commands.quoteMap = {
-        "\n": "n",
-        "\t": "t"
+        "\n": "\\n",
+        "\t": "\\t",
+        "'":  "''"
     };
     function quote(q, list) {
         let re = RegExp("[" + list + "]", "g");
@@ -1166,14 +1188,14 @@ const Commands = Module("commands", {
     };
     Commands.complQuote = {
         '"': ['"', quote("", '\n\t"\\\\'), '"'],
-        "'": ["'", quote("", "\\\\'"), "'"],
+        "'": ["'", quote("", "'"), "'"],
         "":  ["", quote("",  "\\\\ '\""), ""]
     };
 
     Commands.quoteArg = {
         '"': quote('"', '\n\t"\\\\'),
-        "'": quote("'", "\\\\'"),
-        "":  quote("",  "\\\\ '\"")
+        "'": quote("'", "'"),
+        "":  quote("",  "\\\\\\s'\"")
     };
 
     Commands.parseBool = function (arg) {

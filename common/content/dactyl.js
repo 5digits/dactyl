@@ -1291,7 +1291,7 @@ const Dactyl = Module("dactyl", {
 
         options.add(["loadplugins", "lpl"],
             "A regex list that defines which plugins are loaded at startup and via :loadplugins",
-            "regexlist", "\\.(js|vimp)$");
+            "regexlist", "'\\.(js|vimp)$'");
 
         options.add(["titlestring"],
             "Change the title of the window",

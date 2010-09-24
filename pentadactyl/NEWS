@@ -26,6 +26,11 @@
       I.e., 'fo\o''bar' ≡ fo\o'bar
     * IMPORTANT: 'cdpath' and 'runtimepath' no longer treat ‘,,’
       specially. Use ‘.’ instead.
+    * IMPORTANT: Option value quoting has changed. List options will
+      no longer be split at quoted commas and the option name,
+      operators, and = sign may no longer be quoted. This will break
+      certain automatically-generated configuration files.
+      See :help stringlist
     * Added 'altwildmode' and <A-Tab> commandline key binding.
     * Added 'autocomplete' option for specifying which completion
       groups should be auto-completed.

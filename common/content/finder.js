@@ -211,7 +211,7 @@ const RangeFinder = Module("rangefinder", {
 
         options.add(["hlsearch", "hls"],
             "Highlight previous search pattern matches",
-            "boolean", "false", {
+            "boolean", false, {
                 setter: function (value) {
                     try {
                         if (value)

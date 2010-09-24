@@ -474,8 +474,9 @@ function call(fn) {
  * value of the property.
  */
 function memoize(obj, key, getter) {
-    obj.__defineGetter__(key, function ()
-        Class.replaceProperty(this, key, getter.call(this, key)));
+    obj.__defineGetter__(key, function () (
+        Class.replaceProperty(this, key, null),
+        Class.replaceProperty(this, key, getter.call(this, key))));
 }
 
 /**
