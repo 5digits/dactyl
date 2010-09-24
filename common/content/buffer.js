@@ -1535,15 +1535,16 @@ const Buffer = Module("buffer", {
         mappings.add(myModes, ["gP"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
-                dactyl.open(dactyl.clipboardRead(),
-                    dactyl[options.get("activate").has("paste") ? "NEW_BACKGROUND_TAB" : "NEW_TAB"]);
+                let url = dactyl.clipboardRead();
+                dactyl.assert(url, "No clipboard data");
+                dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB, background: true });
             });
 
         mappings.add(myModes, ["p", "<MiddleMouse>"],
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
                 let url = dactyl.clipboardRead();
-                dactyl.assert(url);
+                dactyl.assert(url, "No clipboard data");
                 dactyl.open(url);
             });
 
@@ -1551,7 +1552,7 @@ const Buffer = Module("buffer", {
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
-                dactyl.assert(url);
+                dactyl.assert(url, "No clipboard data");
                 dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB });
             });
 

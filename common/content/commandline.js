@@ -747,6 +747,9 @@ const CommandLine = Module("commandline", {
             function openLink(where) {
                 event.preventDefault();
                 // FIXME: Why is this needed? --djk
+                //      : It seems to be a hack so that AnchorElements
+                //        don't need their URLs in their @href and their
+                //        text content. I'd rather be rid of it. --Kris
                 if (event.target.getAttribute("href") == "#")
                     dactyl.open(event.target.textContent, where);
                 else
