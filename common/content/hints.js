@@ -41,8 +41,8 @@ const Hints = Module("hints", {
         });
 
         const Mode = Hints.Mode;
-        Mode.defaultValue("tags", function () function () options.hinttags);
-        function extended() options.extendedhinttags;
+        Mode.defaultValue("tags", function () function () options["hinttags"]);
+        function extended() options["extendedhinttags"];
         function images() util.makeXPath(["img"]);
 
         this._hintModes = {
@@ -128,7 +128,7 @@ const Hints = Module("hints", {
         if (elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type))
             return [elem.value, false];
         else {
-            for (let [, option] in Iterator(options["hintinputs"].split(","))) {
+            for (let [, option] in Iterator(options["hintinputs"])) {
                 if (option == "value") {
                     if (elem instanceof HTMLSelectElement) {
                         if (elem.selectedIndex >= 0)
@@ -718,7 +718,7 @@ const Hints = Module("hints", {
      *     element that matches.
      * @param {function():string} tags The function that returns an
      *     XPath expression to decide which elements can be hinted (the
-     *     default returns options.hinttags).
+     *     default returns options["hinttags"]).
      * @optional
      */
     addMode: function (mode, prompt, action, tags) {

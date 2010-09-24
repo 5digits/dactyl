@@ -510,7 +510,7 @@ const Bookmarks = Module("bookmarks", {
             if (!context.filter)
                 return;
 
-            let engineList = (engineAliases || options["suggestengines"] || "google").split(",");
+            let engineList = (engineAliases || options["suggestengines"].join(",") || "google").split(",");
 
             let completions = [];
             engineList.forEach(function (name) {
