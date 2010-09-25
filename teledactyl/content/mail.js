@@ -844,7 +844,7 @@ const Mail = Module("mail", {
             function () {
                 try {
                     let subject = gDBView.hdrForFirstSelectedMessage.mime2DecodedSubject;
-                    util.copyToClipboard(subject, true);
+                    dactyl.clipboardWrite(subject, true);
                 }
                 catch (e) { dactyl.beep(); }
             });
@@ -854,9 +854,9 @@ const Mail = Module("mail", {
             function () {
                 try {
                     if (mail.currentAccount.server.type == "rss")
-                        util.copyToClipboard(this._getRSSUrl(), true);
+                        dactyl.clipboardWrite(this._getRSSUrl(), true);
                     else
-                        util.copyToClipboard(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor, true);
+                        dactyl.clipboardWrite(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor, true);
                 }
                 catch (e) { dactyl.beep(); }
             });
