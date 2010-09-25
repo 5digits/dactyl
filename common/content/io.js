@@ -208,12 +208,7 @@ const IO = Module("io", {
     },
 
     readHeredoc: function (end) {
-        let args;
-        commandline.inputMultiline(end,
-            function (res) { args = res; });
-        while (args === undefined)
-            util.threadYield(true);
-        return args;
+        return "";
     },
 
     /**

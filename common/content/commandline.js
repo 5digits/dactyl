@@ -144,8 +144,15 @@ const CommandLine = Module("commandline", {
         this._input = {};
 
         this.registerCallback("submit", modes.EX, function (command) {
-            commands.repeat = command;
-            dactyl.execute(command);
+            try {
+                var readHeredoc = io.readHeredoc;
+                io.readHeredoc = commandline.readHeredoc;
+                commands.repeat = command;
+                dactyl.execute(command);
+            }
+            finally {
+                io.readHeredoc = readHeredoc;
+            }
         });
         this.registerCallback("complete", modes.EX, function (context) {
             context.fork("ex", 0, completion, "ex");
@@ -576,6 +583,15 @@ const CommandLine = Module("commandline", {
         this._completions = CommandLine.Completions(this.widgets.command.inputField);
     },
 
+    readHeredoc: function (end) {
+        let args;
+        commandline.inputMultiline(end,
+            function (res) { args = res; });
+        while (args === undefined)
+            util.threadYield(true);
+        return args;
+    },
+
     /**
      * Get a multiline input from a user, up to but not including the line
      * which matches the given regular expression. Then execute the
@@ -702,7 +718,7 @@ const CommandLine = Module("commandline", {
         if (event.type == "keypress") {
             let key = events.toString(event);
             if (events.isAcceptKey(key)) {
-                let text = "\n" + this.widgets.multilineInput.value.substr(0, this.widgets.multilineInput.selectionStart);
+                let text = "\n" + this.widgets.multilineInput.value.substr(0, this.widgets.multilineInput.selectionStart) + "\n";
                 let index = text.indexOf(this._multilineEnd);
                 if (index >= 0) {
                     text = text.substring(1, index);
