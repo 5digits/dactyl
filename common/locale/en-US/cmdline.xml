@@ -146,7 +146,7 @@
     <spec>&lt;A-Tab></spec>
     <description>
         <p>
-            Similar to <k name="Tab"/>, but the completion behavior is
+            Similar to <k name="Tab" mode="c"/>, but the completion behavior is
             specified by the <o>altwildmode</o> option.
         </p>
     </description>
@@ -158,7 +158,7 @@
     <strut/>
     <spec>&lt;A-S-Tab></spec>
     <description>
-        <p>The <k name="S-Tab"/> equivalent for <o>altwildmode</o>.</p>
+        <p>The <k name="S-Tab" mode="c"/> equivalent for <o>altwildmode</o>.</p>
     </description>
 </item>
 

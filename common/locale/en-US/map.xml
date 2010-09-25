@@ -401,7 +401,7 @@
     For the purposes of abbreviations, keyword characters include
     all non-whitespace characters except for single or double
     quotation marks. Abbreviations are expanded as soon as any
-    non-keyword character, or the key <k name="C-]"/>, is typed.
+    non-keyword character, or the key <k name="C-]" mode="c"/>, is typed.
 </p>
 
 <item>

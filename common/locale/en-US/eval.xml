@@ -120,15 +120,15 @@
         </p>
 
         <p>
-            Moreover, sophisticated, context-sensitive <k name="Tab"/>
+            Moreover, sophisticated, context-sensitive <k name="Tab" mode="c"/>
             completion is available for JavaScript code, which extends to
             property names, object keys, and programmable completion for
             string function arguments. The completion code is designed to be
             both as safe and as powerful as possible. Expressions in a given
             command-line session will only be evaluated once, and, with
             autocompletion turned on, any completion which requires a function
-            to be executed requires an explicit <k name="Tab"/> press to
-            commence.
+            to be executed requires an explicit <k name="Tab" mode="c"/> press
+            to commence.
         </p>
 
         <p>

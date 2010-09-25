@@ -149,7 +149,7 @@
         <p>
             Set string or number option to <a>value</a>.
             For numeric options the value must be given in decimal.
-            The old value can be inserted by typing <k name="Tab"/>.
+            The old value can be inserted by typing <k name="Tab" mode="c"/>.
         </p>
     </description>
 </item>
@@ -335,7 +335,8 @@
     <default>list:full</default>
     <description>
         <p>
-            Like <o>wildmode</o>, but when the <k name="A-Tab"/> key is pressed.
+            Like <o>wildmode</o>, but when the <k name="A-Tab" mode="c"/> key
+            is pressed.
         </p>
     </description>
 </item>
@@ -353,7 +354,7 @@
             <t>command-line</t> is focused.  Thereafter, any key press
             triggers a completion update for the matching groups (hereafter
             ‘contexts’). Non-matching contexts will only be updated when the
-            <k name="Tab"/> key is pressed. This option is useful for
+            <k name="Tab" mode="c"/> key is pressed. This option is useful for
             disabling auto-completion for computationally intensive contexts
             that don't perform well when your system is under load.
         </p>
@@ -469,8 +470,8 @@
     <description>
         <p>
             Set the external text editor.
-            This is the editor used by <k name="C-i"/>, <k>gF</k>, and other
-            commands which launch an external text editor.
+            This is the editor used by <k name="C-i" mode="i"/>, <k>gF</k>, and
+            other commands which launch an external text editor.
         </p>
 
         <warning>
@@ -581,7 +582,7 @@
         <dl>
             <dt>0</dt>      <dd>Follow the first hint as soon as typed text uniquely identifies it.</dd>
             <dt>1</dt>      <dd>Follow the selected hint on <k name="Return"/>.</dd>
-            <dt>2</dt>      <dd>Follow the selected hint on <k name="Return"/> only if it's been <k name="Tab"/>-selected.</dd>
+            <dt>2</dt>      <dd>Follow the selected hint on <k name="Return"/> only if it's been <k name="Tab" mode="c"/>-selected.</dd>
         </dl>
     </description>
 </item>
@@ -1471,9 +1472,9 @@
         <p>
             Defines how command-line completion works. It is a comma-separated
             list of parts, where each part specifies what to do for each
-            consecutive press of the <k name="Tab"/> key. The last element in
-            the list is used for each succeeding <k name="Tab"/> after it has
-            been reached.
+            consecutive press of the <k name="Tab" mode="c"/> key. The last
+            element in the list is used for each succeeding <k name="Tab" mode="c"/>
+            after it has been reached.
         </p>
 
         <p>These are the possible values for each part:</p>
