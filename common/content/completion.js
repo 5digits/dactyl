@@ -279,10 +279,11 @@ const CompletionContext = Class("CompletionContext", {
             delete this.cache.filtered;
             delete this.cache.filter;
             this.cache.rows = [];
-            this.hasItems = items.length > 0;
             this._completions = items;
             this.itemCache[this.key] = items;
         }
+        if (this._completions)
+            this.hasItems = this._completions.length > 0;
         if (this.updateAsync && !this.noUpdate)
             util.callInMainThread(function () { this.onUpdate(); }, this);
     },

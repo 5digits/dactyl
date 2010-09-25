@@ -301,6 +301,7 @@ const Styles = Module("Styles", {
                         let sheet = styles.get(false, args["-name"]);
                         if (sheet)
                             context.completions = [[sheet.css, "Current Value"]];
+                        context.fork("css", 0, modules.completion, "css");
                     }
                 },
                 hereDoc: true,
@@ -377,6 +378,44 @@ const Styles = Module("Styles", {
                 ]
             });
         });
+    },
+    completion: function (dactyl, modules, window) {
+        const names = Array.slice(util.computedStyle(window.document.createElement("div")));
+        const string = /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/.source;
+        const pattern = RegExp(String.replace(<![CDATA[
+            (?:
+                (\s*)
+                ([-a-z]*)
+                (?:
+                    \s* : \s* (
+                        (?:
+                            [-\w]
+                            (?:
+                                \s* \( \s*
+                                    (?: S | [^)]*  )
+                                \s* (?: \) | $)
+                            )?
+                            \s*
+                            | \s* S \s* | [^;}]*
+                        )*
+                    )
+                )?
+            )
+            (\s* (?: ; | $) )
+        ]]>, /S/g, string).replace(/\s*/g, ""), "gi");
+        modules.completion.css = function (context) {
+            context.title = ["Property"];
+            context.keys = { text: function (p) p + ":", description: function () "" };
+
+            pattern.lastIndex = 0;
+            let match, lastMatch;
+            while ((!match || match[0]) && (match = pattern.exec(context.filter)) && (match[0].length || !lastMatch))
+                lastMatch = match;
+            if (lastMatch != null && !lastMatch[3] && !lastMatch[4]) {
+                context.advance(lastMatch.index + lastMatch[1].length)
+                context.completions = names;
+            }
+        };
     },
     javascript: function (dactyl, modules, window) {
         modules.JavaScript.setCompleter(["get", "addSheet", "removeSheet", "findSheets"].map(function (m) styles[m]),

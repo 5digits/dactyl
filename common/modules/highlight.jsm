@@ -294,6 +294,7 @@ const Highlights = Module("Highlight", {
                         let hl = highlight.get(args[0]);
                         if (hl)
                             context.completions = [[hl.value, "Current Value"], [hl.default || "", "Default Value"]];
+                        context.fork("css", 0, modules.completion, "css");
                     }
                 },
                 hereDoc: true,
