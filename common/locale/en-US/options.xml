@@ -29,16 +29,26 @@
     <dt>boolean</dt>       <dd>Can only be on or off</dd>
     <dt>number</dt>        <dd>A numeric value</dd>
     <dt>string</dt>        <dd>A string value</dd>
-    <dt>charlist</dt>      <dd tag="charlist">A string containing a discrete set of distinct characters</dd>
+
+    <dt/><dd tag="charlist"/>
+    <dt>charlist</dt>
+    <dd>A string containing a discrete set of distinct characters</dd>
+
+    <dt/><dd tag="stringlist"/>
     <dt>stringlist</dt>
-    <dd tag="stringlist">
+    <dd>
         A comma-separated list of strings. Any comma appearing within single
         or double quotes, or prefixed with a <em>\</em>, will not be treated
         as an item separator.
     </dd>
-    <dt>stringmap</dt>     <dd tag="stringmap">A comma-separated list of key-value pairs, e.g., <str>key:val,foo:bar</str></dd>
+
+    <dt/><dd tag="stringmap"/>
+    <dt>stringmap</dt>
+    <dd>A comma-separated list of key-value pairs, e.g., <str>key:val,foo:bar</str></dd>
+
+    <dt/><dd tag="regexlist"/>
     <dt>regexlist</dt>
-    <dd tag="regexlist">
+    <dd>
         A comma-separated list of regular expressions. Expressions may be
         prefixed with a <em>!</em>, in which case the match will be negated. A
         literal <em>!</em> at the begining of the expression may be matched with
@@ -46,8 +56,10 @@
         used. Any comma appearing within single or double quotes, or prefixed
         with a <em>\</em>, will not be treated as an item separator.
     </dd>
+
+    <dt/><dd tag="regexmap"/>
     <dt>regexmap</dt>
-    <dd tag="regexmap">
+    <dd>
         A combination of a <em>stringmap</em> and a <em>regexlist</em>. Each key
         in the <a>key</a>:<a>value</a> pair is a regexp. If the regexp begins with a
         <em>!</em>, the sense of the match is negated, such that a non-matching
