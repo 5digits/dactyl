@@ -386,7 +386,7 @@ lookup:
                     line = line.replace(/\r$/, "");
 
                     if (!/^\s*(".*)?$/.test(line))
-                        dactyl.execute(line, null, true);
+                        dactyl.execute(line, { setFrom: file }, true);
                 }
             }
 
