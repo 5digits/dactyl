@@ -10,13 +10,23 @@
 
 const StatusLine = Module("statusline", {
     init: function () {
-        this._statusBar = document.getElementById("status-bar");
+        this._statusBar = document.getElementById("addon-bar") || document.getElementById("status-bar");
         this._statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
 
         // our status bar fields
         this.widgets = array(["status", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"]
                     .map(function (field) [field, document.getElementById("dactyl-statusline-field-" + field)]))
                     .toObject();
+
+        if (this._statusBar.localName == "toolbar") {
+            styles.addSheet(true, "addon-bar", config.styleableChrome, <css><![CDATA[
+                #addon-bar { padding: 0 !important; }
+                #addon-bar > statusbar { -moz-box-flex: 1 }
+            ]]></css>);
+            let parent = this.widgets.status.parentNode;
+            parent.removeChild(this.widgets.status);
+            parent.insertBefore(this.widgets.status, parent.firstChild);
+        }
     },
 
     /**
