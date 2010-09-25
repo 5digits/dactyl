@@ -21,7 +21,8 @@ const StatusLine = Module("statusline", {
 
         if (this._statusBar.localName == "toolbar") {
             styles.addSheet(true, "addon-bar", config.styleableChrome, <css><![CDATA[
-                #addon-bar { padding: 0 !important; }
+                #status-bar { margin-top: 0 !important; }
+                #addon-bar { padding: 0 !important; min-height: 18px !important; }
                 #addon-bar > statusbar { -moz-box-flex: 1 }
             ]]></css>);
             let parent = this.widgets.status.parentNode;
