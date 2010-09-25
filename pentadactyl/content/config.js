@@ -203,7 +203,7 @@ const Config = Module("config", ConfigBase, {
             "Execute a command and tell it to output in a new window",
             function (args) {
                 dactyl.forceNewWindow = true;
-                dactyl.execute(args.string, null, true);
+                dactyl.execute(args[0], null, true);
                 dactyl.forceNewWindow = false;
             },
             {
@@ -221,10 +221,8 @@ const Config = Module("config", ConfigBase, {
         commands.add(["wino[pen]", "wo[pen]"],
             "Open one or more URLs in a new window",
             function (args) {
-                args = args.string;
-
-                if (args)
-                    dactyl.open(args, dactyl.NEW_WINDOW);
+                if (args[0])
+                    dactyl.open(args[0], dactyl.NEW_WINDOW);
                 else
                     dactyl.open("about:blank", dactyl.NEW_WINDOW);
             },

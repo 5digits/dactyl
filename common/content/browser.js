@@ -171,10 +171,8 @@ const Browser = Module("browser", {
         commands.add(["o[pen]"],
             "Open one or more URLs in the current tab",
             function (args) {
-                args = args.string;
-
-                if (args)
-                    dactyl.open(args);
+                if (args[0])
+                    dactyl.open(args[0]);
                 else
                     dactyl.open("about:blank");
             }, {

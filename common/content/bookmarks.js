@@ -382,7 +382,7 @@ const Bookmarks = Module("bookmarks", {
                             }
                         });
                 else {
-                    let url = args.string || buffer.URL;
+                    let url = args[0] || buffer.URL;
                     let deletedCount = bookmarks.remove(url);
 
                     dactyl.echomsg({ domains: [util.getHost(url)], message: deletedCount + " bookmark(s) with url " + url.quote() + " deleted" },

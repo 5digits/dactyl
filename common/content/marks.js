@@ -225,7 +225,7 @@ const Marks = Module("marks", {
             "Delete the specified marks",
             function (args) {
                 let special = args.bang;
-                args = args.string;
+                args = args[0];
 
                 // assert(special ^ args)
                 dactyl.assert( special ||  args, "E471: Argument required");
@@ -249,7 +249,8 @@ const Marks = Module("marks", {
             },
             {
                 bang: true,
-                completer: function (context) completion.mark(context)
+                completer: function (context) completion.mark(context),
+                literal: 0
             });
 
         commands.add(["ma[rk]"],
@@ -267,7 +268,7 @@ const Marks = Module("marks", {
         commands.add(["marks"],
             "Show all location marks of current web page",
             function (args) {
-                args = args.string;
+                args = args[0];
 
                 // ignore invalid mark characters unless there are no valid mark chars
                 dactyl.assert(!args || /[a-zA-Z]/.test(args),
@@ -275,6 +276,8 @@ const Marks = Module("marks", {
 
                 let filter = args.replace(/[^a-zA-Z]/g, "");
                 marks.list(filter);
+            }, {
+                literal: 0
             });
     },
 

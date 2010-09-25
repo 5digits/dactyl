@@ -117,21 +117,22 @@ const QuickMarks = Module("quickmarks", {
             "Delete the specified QuickMarks",
             function (args) {
                 // TODO: finish arg parsing - we really need a proper way to do this. :)
-                // assert(args.bang ^ args.string)
-                dactyl.assert( args.bang ||  args.string, "E471: Argument required");
-                dactyl.assert(!args.bang || !args.string, "E474: Invalid argument");
+                // assert(args.bang ^ args[0])
+                dactyl.assert( args.bang ||  args[0], "E471: Argument required");
+                dactyl.assert(!args.bang || !args[0], "E474: Invalid argument");
 
                 if (args.bang)
                     quickmarks.removeAll();
                 else
-                    quickmarks.remove(args.string);
+                    quickmarks.remove(args[0]);
             },
             {
                 bang: true,
                 completer: function (context) {
                     context.title = ["QuickMark", "URL"];
                     context.completions = this._qmarks;
-                }
+                },
+                literal: 0
             });
 
         commands.add(["qma[rk]"],
@@ -156,13 +157,15 @@ const QuickMarks = Module("quickmarks", {
         commands.add(["qmarks"],
             "Show all QuickMarks",
             function (args) {
-                args = args.string;
+                args = args[0];
 
                 // ignore invalid qmark characters unless there are no valid qmark chars
                 dactyl.assert(!args || /[a-zA-Z0-9]/.test(args), "E283: No QuickMarks matching " + args.quote());
 
                 let filter = args.replace(/[^a-zA-Z0-9]/g, "");
                 quickmarks.list(filter);
+            }, {
+                literal: 0
             });
     },
     mappings: function () {

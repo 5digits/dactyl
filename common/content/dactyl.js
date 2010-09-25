@@ -1415,13 +1415,13 @@ const Dactyl = Module("dactyl", {
             "Execute the argument as an Ex command",
             function (args) {
                 try {
-                    let cmd = dactyl.userEval(args.string);
+                    let cmd = dactyl.userEval(args[0]);
                     dactyl.execute(cmd, null, true);
                 }
                 catch (e) {
                     dactyl.echoerr(e);
                 }
-            });
+            }, { literal: 0 });
 
         ///////////////////////////////////////////////////////////////////////////
 
@@ -1736,15 +1736,17 @@ const Dactyl = Module("dactyl", {
 
         commands.add(["norm[al]"],
             "Execute Normal mode commands",
-            function (args) { events.feedkeys(args.string, args.bang); },
+            function (args) { events.feedkeys(args[0], args.bang); },
             {
                 argCount: "+",
-                bang: true
+                bang: true,
+                literal: 0
             });
 
         commands.add(["optionu[sage]"],
             "List all options with a short description",
-            function (args) { Dactyl.showHelpIndex("option-index", options, args.bang); }, {
+            function (args) { Dactyl.showHelpIndex("option-index", options, args.bang); },
+            {
                 argCount: "0",
                 bang: true
             });
@@ -1804,7 +1806,7 @@ const Dactyl = Module("dactyl", {
             function (args) {
                 let count = args.count;
                 let special = args.bang;
-                args = args.string;
+                args = args[0];
 
                 if (args[0] == ":")
                     var method = function () dactyl.execute(args, null, true);

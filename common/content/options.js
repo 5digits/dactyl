@@ -1195,7 +1195,7 @@ const Options = Module("options", {
         commands.add(["let"],
             "Set or list a variable",
             function (args) {
-                args = args.string;
+                args = args[0];
 
                 if (!args) {
                     let str =

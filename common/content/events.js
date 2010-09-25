@@ -1126,17 +1126,18 @@ const Events = Module("events", {
         commands.add(["delmac[ros]"],
             "Delete macros",
             function (args) {
-                dactyl.assert(!args.bang || !args.string, "E474: Invalid argument");
+                dactyl.assert(!args.bang || !args[0], "E474: Invalid argument");
 
                 if (args.bang)
                     events.deleteMacros();
-                else if (args.string)
-                    events.deleteMacros(args.string);
+                else if (args[0])
+                    events.deleteMacros(args[0]);
                 else
                     dactyl.echoerr("E471: Argument required");
             }, {
                 bang: true,
-                completer: function (context) completion.macro(context)
+                completer: function (context) completion.macro(context),
+                literal: 0
             });
 
         commands.add(["macros"],
