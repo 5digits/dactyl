@@ -555,7 +555,7 @@ const Buffer = Module("buffer", {
                 return true;
             }
 
-            let res = util.evaluateXPath(options.get("hinttags").defaultValue, frame.document);
+            let res = util.evaluateXPath(options.get("hinttags").defaultValues, frame.document);
             for (let [, regex] in Iterator(regexes)) {
                 for (let i in util.range(res.snapshotLength, 0, -1)) {
                     let elem = res.snapshotItem(i);

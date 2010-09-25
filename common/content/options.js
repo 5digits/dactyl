@@ -53,7 +53,8 @@ const Option = Class("Option", {
         if (arguments.length > 3) {
             if (this.type == "string")
                 defaultValue = Commands.quote(defaultValue);
-            this.defaultValue = this.joinValues(this.parseValues(defaultValue));
+            this.defaultValues = this.parseValues(defaultValue)
+            this.defaultValue = this.joinValues(this.defaultValues);
         }
 
         if (extraInfo)
@@ -1291,7 +1292,7 @@ const Options = Module("options", {
                                                                : opt.name + "=" + opt.value]
                         }
                         for (opt in options)
-                        if (!opt.getter && opt.value != opt.defaultValue && (opt.scope & Option.SCOPE_GLOBAL))
+                        if (!opt.getter && opt.value !== opt.defaultValue && (opt.scope & Option.SCOPE_GLOBAL))
                     ]
                 }
             }
