@@ -180,8 +180,8 @@ const Mappings = Module("mappings", {
     _mappingsIterator: function (modes, stack) {
         modes = modes.slice();
         return (map for ([i, map] in Iterator(stack[modes.shift()].sort(function (m1, m2) String.localeCompare(m1.name, m2.name))))
-            if (modes.every(function (mode) stack[mode].
-                    some(function (m) array.equals(m.rhs, map.rhs) && m.name == map.name))))
+            if (map.rhs && modes.every(function (mode) stack[mode].
+                    some(function (m) m.rhs && array.equals(m.rhs, map.rhs) && m.name == map.name))))
     },
 
     // NOTE: just normal mode for now
