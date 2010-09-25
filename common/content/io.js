@@ -386,7 +386,14 @@ lookup:
                     line = line.replace(/\r$/, "");
 
                     if (!/^\s*(".*)?$/.test(line))
-                        dactyl.execute(line, { setFrom: file }, true);
+                        try {
+                            dactyl.execute(line, { setFrom: file }, true);
+                        }
+                        catch (e) {
+                            dactyl.echoerr("Error detected while processing " + file.path);
+                            dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                            dactyl.reportError(e, true);
+                        }
                 }
             }
 

@@ -141,6 +141,11 @@ const Command = Class("Command", {
         let self = this;
         modifiers = modifiers || {};
 
+        if (args.count != null && !this.count)
+            throw FailedAssertion("E481: No range allowed");
+        if (args.bang && !this.bang)
+            throw FailedAssertion("E477: No ! allowed");
+
         dactyl.trapErrors(function exec(command) {
             this.action(args, modifiers);
         }, this);

@@ -393,18 +393,9 @@ const Dactyl = Module("dactyl", {
 
         let err = null;
         for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
-            if (command === null) {
-                err = "E492: Not a " + config.name + " command: " + str;
-                dactyl.focusContent();
-            }
-            else if (command.action === null)
-                err = "E666: Internal error: command.action === null"; // TODO: need to perform this test? -- djk
-            else if (args.count != null && !command.count)
-                err = "E481: No range allowed";
-            else if (args.bang && !command.bang)
-                err = "E477: No ! allowed";
+            if (command === null)
+                throw FailedAssertion("E492: Not a " + config.appName + " command: " + str);
 
-            dactyl.assert(!err, err);
             if (!silent)
                 commandline.command = str.replace(/^\s*:\s*/, "");
 
