@@ -10,7 +10,8 @@
 
 const StatusLine = Module("statusline", {
     init: function () {
-        this._statusBar = document.getElementById("addon-bar") || document.getElementById("status-bar");
+        this._statusLine = document.getElementById("status-bar");
+        this._statusBar = document.getElementById("addon-bar") || this._statusLine;
         this._statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
 
         // our status bar fields
@@ -47,7 +48,7 @@ const StatusLine = Module("statusline", {
             insecure: "StatusLine"
         };
 
-        highlight.highlightNode(this._statusBar, highlightGroup[type]);
+        highlight.highlightNode(this._statusLine, highlightGroup[type]);
     },
 
     // update all fields of the statusline
