@@ -1604,6 +1604,7 @@ const Dactyl = Module("dactyl", {
         commands.add(["exto[ptions]", "extp[references]"],
             "Open an extension's preference dialog",
             function (args) {
+                let tab = dactyl.forceNewTab;
                 AddonManager.getAddonsByTypes(["extension"], function (list) {
                     list = list.filter(function (extension) extension.name == args[0]);
                     if (!list.length || !list[0].optionsURL)
@@ -1611,7 +1612,7 @@ const Dactyl = Module("dactyl", {
                     else if (args.bang)
                         window.openDialog(list[0].optionsURL, "_blank", "chrome");
                     else
-                        dactyl.open(list[0].optionsURL, { from: "extoptions" });
+                        dactyl.open(list[0].optionsURL, { from: "extoptions", where: tab && dactyl.NEW_TAB });
                 });
             }, {
                 argCount: "1",
