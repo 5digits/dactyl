@@ -335,7 +335,7 @@
     <default>list:full</default>
     <description>
         <p>
-            Like <o>wildmode</o>, but when the <k name="Alt"/> key is pressed.
+            Like <o>wildmode</o>, but when the <k name="A-Tab"/> key is pressed.
         </p>
     </description>
 </item>

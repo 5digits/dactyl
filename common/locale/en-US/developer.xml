@@ -96,7 +96,12 @@
     <dt>ex</dt>         <dd>Link to an ex command. (HelpEx)</dd>
     <dt>k</dt>          <dd>Link to a key. (HelpKey)</dd>
     <dt>&tab;@name</dt> <dd>The name attribute to &lt;k>. When provided, &lt;<a>value</a>> is prepended to
-                            the element's contents, i.e., <em>&lt;k name="lt"/></em> becomes <em><k name="lt"/></em>.
+                            the element's contents, i.e., <em>&lt;k name="Tab"/></em> becomes <em><k name="Tab"/></em>.
+                        </dd>
+    <dt>&tab;@mode</dt> <dd>The mode attribute to &lt;k>. Some keys have different functions in different modes.
+                            You can use this attribute to specify which of the modes (other than Normal) a key pertains to.
+                            The &lt;<a>value</a>> is prepended to the element's contents, i.e., <em>&lt;k name="C-i" mode="i"/></em>
+                            becomes <em><k name="C-i" mode="i"/></em>, and <em>&lt;k mode="i">i&lt;/k></em> becomes <em><k mode="i">i</k></em>.
                         </dd>
     <dt>t</dt>          <dd>Links to an arbitrary help topic. (HelpTopic)</dd>
 </dl>

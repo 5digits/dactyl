@@ -16,8 +16,9 @@ This file contains a list of all available commands, mappings and options.
 <h2 tag="insert-index">Insert mode</h2>
 
 <dl>
-    <dt><k name="C-i"/></dt> <dd>Launch the external editor</dd>
-    <dt><k name="C-]"/></dt> <dd>Expand an Insert-mode abbreviation</dd>
+    <dt><k mode="i">i</k></dt> <dd>Start Insert mode in text areas when <o>insertmode</o> is not set</dd>
+    <dt><k name="C-i" mode="i"/></dt> <dd>Launch the external editor</dd>
+    <dt><k name="C-]" mode="i"/></dt> <dd>Expand an Insert-mode abbreviation</dd>
 </dl>
 
 
@@ -199,24 +200,26 @@ This file contains a list of all available commands, mappings and options.
 <h2 tag="ex-edit-index">Command-line editing</h2>
 
 <dl>
-    <dt><k name="C-c"/></dt> <dd>Quit Command-line mode without executing</dd>
+    <dt><k name="C-c" mode="c"/></dt> <dd>Quit Command-line mode without executing</dd>
 </dl>
 
 
 <dl>
-    <dt><k name="C-]"/></dt> <dd>Expand a command-line abbreviation</dd>
+    <dt><k name="C-]" mode="c"/></dt> <dd>Expand a command-line abbreviation</dd>
 </dl>
 
 
 <dl>
-    <dt><k name="Up"/></dt> <dd>Recall the previous command line from the history list which matches the current command line</dd>
-    <dt><k name="Down"/></dt> <dd>Recall the next command line from the history list which matches the current command line</dd>
+    <dt><k name="Up" mode="c"/></dt> <dd>Recall the previous command line from the history list which matches the current command line</dd>
+    <dt><k name="Down" mode="c"/></dt> <dd>Recall the next command line from the history list which matches the current command line</dd>
 </dl>
 
 
 <dl>
-    <dt><k name="Tab"/></dt> <dd>Complete the word in front of the cursor according to the behavior specified in <o>wildmode</o></dd>
-    <dt><k name="S-Tab"/></dt> <dd>Complete the previous full match when <o>wildmode</o> contains "full"</dd>
+    <dt><k name="Tab" mode="c"/></dt> <dd>Complete the word in front of the cursor according to the behavior specified in <o>wildmode</o></dd>
+    <dt><k name="S-Tab" mode="c"/></dt> <dd>Complete the previous full match when <o>wildmode</o> contains "full"</dd>
+    <dt><k name="A-Tab" mode="c"/></dt> <dd>Complete the word in front of the cursor according to the behavior specified in <o>altwildmode</o></dd>
+    <dt><k name="A-S-Tab" mode="c"/></dt> <dd>Complete the previous full match when <o>altwildmode</o> contains "full"</dd>
 </dl>
 
 

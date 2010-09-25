@@ -140,6 +140,29 @@
 </item>
 
 
+<item>
+    <tags><![CDATA[c_<A-Tab>]]></tags>
+    <strut/>
+    <spec>&lt;A-Tab></spec>
+    <description>
+        <p>
+            Similar to <k name="Tab"/>, but the completion behavior is
+            specified by the <o>altwildmode</o> option.
+        </p>
+    </description>
+</item>
+
+
+<item>
+    <tags><![CDATA[c_<A-S-Tab>]]></tags>
+    <strut/>
+    <spec>&lt;A-S-Tab></spec>
+    <description>
+        <p>The <k name="S-Tab"/> equivalent for <o>altwildmode</o>.</p>
+    </description>
+</item>
+
+
 </document>
 
 <!-- vim:se sts=4 sw=4 et: -->

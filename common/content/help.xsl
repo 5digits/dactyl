@@ -328,6 +328,20 @@
             </xsl:call-template>
         </span>
     </xsl:template>
+    <xsl:template match="dactyl:k[@mode]" mode="help-2">
+        <span dactyl:highlight="HelpKey">
+            <xsl:call-template name="linkify-tag">
+                <xsl:with-param name="contents" select="concat(@mode, '_', text())"/>
+            </xsl:call-template>
+        </span>
+    </xsl:template>
+    <xsl:template match="dactyl:k[@mode and @name]" mode="help-2">
+        <span dactyl:highlight="HelpKey">
+            <xsl:call-template name="linkify-tag">
+                <xsl:with-param name="contents" select="concat(@mode, '_', '&lt;', @name, '>', .)"/>
+            </xsl:call-template>
+        </span>
+    </xsl:template>
 
     <!-- HTML-ish elements {{{1 -->
 
