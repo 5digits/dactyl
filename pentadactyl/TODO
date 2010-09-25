@@ -26,8 +26,6 @@ BUGS:
 9 about:pentadactyl is currently about:undefined
 
 - messages is still broken in several ways - needs testing.
-  => :ls | :echomsg "Foobar" doesn't add "Foobar" to the already open MOW.
-  (NOTE: an intentional design decision by MS - Boo!)
   => it often overwrites the open command line while editing etc.
 - <tags> and <keyword> autocmd 'keywords' are not available when adding a
   bookmark - they're being set after the observer triggers the autocmd event.
@@ -36,7 +34,6 @@ BUGS:
 
 FEATURES:
 9 Add quoting help tag
-9 JavaScript completer: show function parameter spec
 9 Fix the arbitrary distinction between 'hinttags' and
   'extendedhinttags'
 9 Support multiple bookmarks, -keyword, -tags in :delbmarks

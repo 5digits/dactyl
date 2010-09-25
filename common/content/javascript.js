@@ -439,6 +439,25 @@ const JavaScript = Module("javascript", {
             prev = v + 1;
         }
 
+        try {
+            let i = (this._get(-2) && this._get(-2).char == "(") ? -2 : -1;
+            if (this._get(i).char == "(") {
+                let [offset, obj, funcName] = this._getObjKey(i-1);
+                if (obj.length) {
+                    let func = obj[0][0][funcName];
+                    if (callable(func)) {
+                        let [, prefix, args] = /^(function .*?)\((.*)?\)/.exec(Function.prototype.toString.call(func));
+                        let n = this._get(i).comma.length;
+                        args = template.map(Iterator(args.split(", ")),
+                            function ([i, arg]) <span highlight={i == n ? "Filter" : ""}>{arg}</span>,
+                            <>,&#xa0;</>);
+                        this.context.message = <>{prefix}({args})</>;
+                    }
+                }
+            }
+        }
+        catch (e) {}
+
         // In a string. Check if we're dereferencing an object or
 	// completing a function argument. Otherwise, do nothing.
         if (this._last == "'" || this._last == '"') {
@@ -483,17 +502,18 @@ const JavaScript = Module("javascript", {
                 if (this._get(-3, 0, "functions") != this._get(-2).offset)
                     return null; // No. We're done.
 
-                let [offset, obj, func] = this._getObjKey(-3);
+                let [offset, obj, funcName] = this._getObjKey(-3);
                 if (!obj.length)
                     return null;
                 obj = obj.slice(0, 1);
 
                 try {
-                    var completer = obj[0][0][func].dactylCompleter;
+                    let func = obj[0][0][funcName];
+                    var completer = func.dactylCompleter;
                 }
                 catch (e) {}
                 if (!completer)
-                    completer = JavaScript.completers[func];
+                    completer = JavaScript.completers[funcName];
                 if (!completer)
                     return null;
 
@@ -509,12 +529,12 @@ const JavaScript = Module("javascript", {
                 args.push(key + string);
 
                 let compl = function (context, obj) {
-                    let res = completer.call(self, context, func, obj, args);
+                    let res = completer.call(self, context, funcName, obj, args);
                     if (res)
                         context.completions = res;
                 };
 
-                obj[0][1] += "." + func + "(... [" + args.length + "]";
+                obj[0][1] += "." + funcName + "(... [" + args.length + "]";
                 return this._complete(obj, key, compl, string, this._last);
             }
 

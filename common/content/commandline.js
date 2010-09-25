@@ -1605,7 +1605,7 @@ const ItemList = Class("ItemList", {
         this._minHeight = 0;
     },
 
-    _dom: function (xml, map) util.xmlToDom(xml, this._doc, map),
+    _dom: function (xml, map) util.xmlToDom(xml instanceof XML ? xml : <>{xml}</>, this._doc, map),
 
     _autoSize: function () {
         if (this._container.collapsed)
@@ -1707,7 +1707,7 @@ const ItemList = Class("ItemList", {
             let [start, end, waiting] = getRows(context);
 
             if (context.message)
-                nodes.message.textContent = context.message;
+                nodes.message.appendChild(this._dom(context.message));
             nodes.message.style.display = context.message ? "block" : "none";
             nodes.waiting.style.display = waiting ? "block" : "none";
             nodes.up.style.opacity = "0";
