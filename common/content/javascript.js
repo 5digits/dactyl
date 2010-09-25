@@ -597,7 +597,9 @@ const JavaScript = Module("javascript", {
         "RangeError", "ReferenceError", "RegExp", "String",
         "SyntaxError", "TypeError", "URIError", "decodeURI",
         "decodeURIComponent", "encodeURI", "encodeURIComponent", "eval",
-        "isFinite", "isNaN", "parseFloat", "parseInt", "undefined"],
+        "isFinite", "isNaN", "parseFloat", "parseInt", "undefined"].concat(
+        [k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))]
+            .filter(function (k) k in window)),
 
     /**
      * Installs argument string completers for a set of functions.
