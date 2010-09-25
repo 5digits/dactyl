@@ -312,7 +312,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:optionusage</ex></dt> <dd>List all options with a short description</dd>
     <dt><ex>:pageinfo</ex></dt> <dd>Show various page information</dd>
     <dt><ex>:pagestyle</ex></dt> <dd>Select the author style sheet to apply</dd>
-    <dt><ex>:play</ex></dt> <dd>Replay a recorded macro</dd>
     <dt><ex>:preferences</ex></dt> <dd>Show &dactyl.host; preferences dialog</dd>
     <dt><ex>:pwd</ex></dt> <dd>Print the current directory name</dd>
     <dt><ex>:qmark</ex></dt> <dd>Mark a URL with a letter for quick access</dd>

@@ -62,6 +62,7 @@
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements.
     * Remove :edit, :tabedit, and :winedit aliases.
+    * Remove :play.
     * Add 'jsdebugger' option - switch on/off javascript debugger
       service.
     * Add "addons", "downloads", "extoptions" and "help" to the

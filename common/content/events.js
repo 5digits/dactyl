@@ -1146,13 +1146,6 @@ const Events = Module("events", {
                 argCount: "?",
                 completer: function (context) completion.macro(context)
             });
-
-        commands.add(["pl[ay]"],
-            "Replay a recorded macro",
-            function (args) { events.playMacro(args[0]); }, {
-                argCount: "1",
-                completer: function (context) completion.macro(context)
-            });
     },
     mappings: function () {
         mappings.add(modes.all,

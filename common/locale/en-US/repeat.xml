@@ -87,8 +87,7 @@
 
 
 <item>
-    <tags>@ :play</tags>
-    <spec>:pl<oa>ay</oa> <a>a-z0-9</a></spec>
+    <tags>@</tags>
     <spec><oa>count</oa>@<a>a-z0-9</a></spec>
     <description>
         <p>

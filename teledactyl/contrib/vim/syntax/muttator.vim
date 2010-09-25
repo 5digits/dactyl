@@ -28,7 +28,7 @@ syn keyword muttatorCommand ab[breviate] ab[clear] addo[ns] addr[essbook] bN[ext
     \ h[elp] helpa[ll] ha[rdcopy] hi[ghlight] ia[bbrev] iabc[lear] im[ap] imapc[lear] ino[remap] iu[nmap] iuna[bbrev] javas[cript]
     \ js let loadplugins lpl m[ail] ma[rk] macros map mapc[lear] marks mes[sages] messc[lear] mkm[uttatorrc] mm[ap] mmapc[lear]
     \ mno[remap] move[to] mu[nmap] nm[ap] nmapc[lear] nno[remap] no[remap] norm[al] nu[nmap] optionu[sage] pa[geinfo] pagest[yle]
-    \ pas pl[ay] pref[erences] prefs pw[d] q[uit] re[load] res[tart] run runt[ime] sav[eas] scrip[tnames] se[t] setg[lobal]
+    \ pas pref[erences] prefs pw[d] q[uit] re[load] res[tart] run runt[ime] sav[eas] scrip[tnames] se[t] setg[lobal]
     \ setl[ocal] sil[ent] so[urce] st[op] sty[le] tN[ext] t[open] tab tabN[ext] tabc[lose] tabd[o] tabfir[st] tabl[ast] tabn[ext]
     \ tabp[revious] tabr[ewind] tbh[ide] tbs[how] tbt[oggle] time tn[ext] toolbarh[ide] toolbars[how] toolbart[oggle] tp[revious]
     \ una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vu[nmap] w[rite] zo[om]
