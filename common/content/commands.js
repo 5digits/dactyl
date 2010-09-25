@@ -127,14 +127,7 @@ const Command = Class("Command", {
     /**
      * Execute this command.
      *
-     * @param {string} args The args to be parsed and passed to
-     *     {@link #action}.
-     * @param {boolean} bang Whether this command was executed with a trailing
-     *     bang.
-     * @deprecated
-     * @param {number} count Whether this command was executed with a leading
-     *     count.
-     * @deprecated
+     * @param {Args} args The Args object passed to {@link #action}.
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
     execute: function (args, modifiers) {

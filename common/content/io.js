@@ -375,8 +375,6 @@ lookup:
                     dactyl.assert(false, "Unexpected end of file waiting for " + end);
                 };
 
-                function execute(args) { command.execute(args, special, count, { setFrom: file }); }
-
                 let iter = Iterator(lines);
                 for (let [i, line] in iter) {
                     if (this.sourcing.finished)

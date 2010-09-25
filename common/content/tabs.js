@@ -968,7 +968,7 @@ const Tabs = Module("tabs", {
             if (dactyl.has("tabs_undo")) {
                 mappings.add([modes.NORMAL], ["u"],
                     "Undo closing of a tab",
-                    function (count) { commands.get("undo").execute("", false, count); },
+                    function (count) { dactyl.execute(count + "undo"); },
                     { count: true });
             }
 
