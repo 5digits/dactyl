@@ -1169,6 +1169,7 @@ const Options = Module("options", {
                             [option.value, "Current value"],
                             [option.defaultValue, "Default value"]
                     ].filter(function (f) f[0] !== "" && String(f[0]).length < 200);
+                    context.quote = ["", util.identity, ""];
                 });
             }
 

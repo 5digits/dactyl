@@ -1175,23 +1175,23 @@ const Commands = Module("commands", {
     Commands.quoteMap = {
         "\n": "\\n",
         "\t": "\\t",
-        "'":  "''"
     };
-    function quote(q, list) {
+    function quote(q, list, map) {
+        map = map || Commands.quoteMap;
         let re = RegExp("[" + list + "]", "g");
-        let res = function (str) q + String.replace(str, re, function ($0) $0 in Commands.quoteMap ? Commands.quoteMap[$0] : ("\\" + $0)) + q;
+        let res = function (str) q + String.replace(str, re, function ($0) $0 in map ? map[$0] : ("\\" + $0)) + q;
         res.list = list;
         return res;
     };
     Commands.complQuote = {
         '"': ['"', quote("", '\n\t"\\\\'), '"'],
-        "'": ["'", quote("", "'"), "'"],
+        "'": ["'", quote("", "'", { "'": "''" }), "'"],
         "":  ["", quote("",  "\\\\ '\""), ""]
     };
 
     Commands.quoteArg = {
         '"': quote('"', '\n\t"\\\\'),
-        "'": quote("'", "'"),
+        "'": quote("'", "'", { "'": "''" }),
         "":  quote("",  "\\\\\\s'\"")
     };
 
