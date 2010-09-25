@@ -1412,7 +1412,10 @@ const Dactyl = Module("dactyl", {
                 catch (e) {
                     dactyl.echoerr(e);
                 }
-            }, { literal: 0 });
+            }, {
+                completer: function (context) completion.javascript(context),
+                literal: 0
+            });
 
         ///////////////////////////////////////////////////////////////////////////
 
