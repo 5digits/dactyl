@@ -24,12 +24,12 @@ const ConfigBase = Class(ModuleBase, {
         let img = Image();
         img.src = this.logo || "chrome://" + this.name + "/content/logo.png";
         img.onload = function () {
-            highlight.set("Logo", String(<>
+            highlight.loadCSS(<>{"!Logo  {"}
                      display:    inline-block;
                      background: url({img.src});
                      width:      {img.width}px;
                      height:     {img.height}px;
-                </>));
+                 {"}"}</>);
             img = null;
         };
     },
@@ -244,7 +244,6 @@ const ConfigBase = Class(ModuleBase, {
         !HintActive;;*   background-color: #88FF00 !important; color: black !important;
         !HintImage;;*    opacity: .5 !important;
 
-        !Logo
         // </css>
     ]]></>),
 
