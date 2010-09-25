@@ -829,8 +829,7 @@
         </p>
 
         <p>
-            Textarea mode can be entered with <k name="C-t"/> from Insert mode.
-            <!-- TODO: <C-t> is not documented yet. -->
+            Textarea mode can be entered with <k name="C-t" mode="i"/> from Insert mode.
         </p>
     </description>
 </item>

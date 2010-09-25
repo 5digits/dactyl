@@ -37,7 +37,7 @@ FEATURES:
 9 Fix the arbitrary distinction between 'hinttags' and
   'extendedhinttags'
 9 Support multiple bookmarks, -keyword, -tags in :delbmarks
-8 Document Textarea, Caret and Visual modes.
+8 Document Caret and Visual modes.
 8 finish :help TODOs
 8 fix local options
 8 adaptive timeout for auto-completions, :set completions can be updated more often than
