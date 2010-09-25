@@ -430,7 +430,7 @@ const JavaScript = Module("javascript", {
 
         // Find any complete statements that we can eval before we eval our object.
         // This allows for things like:
-	//   let doc = window.content.document; let elem = doc.createEle<Tab> ...
+        //   let doc = window.content.document; let elem = doc.createEle<Tab> ...
         let prev = 0;
         for (let [, v] in Iterator(this._get(0).fullStatements)) {
             let key = this._str.substring(prev, v + 1);
@@ -460,7 +460,7 @@ const JavaScript = Module("javascript", {
         catch (e) {}
 
         // In a string. Check if we're dereferencing an object or
-	// completing a function argument. Otherwise, do nothing.
+        // completing a function argument. Otherwise, do nothing.
         if (this._last == "'" || this._last == '"') {
 
             // str = "foo[bar + 'baz"
@@ -592,12 +592,18 @@ const JavaScript = Module("javascript", {
      * A list of properties of the global object which are not
      * enumerable by any standard method.
      */
-    globalNames: ["Array", "Boolean", "Date", "Error", "EvalError",
-        "Function", "Infinity", "Math", "NaN", "Number", "Object",
-        "RangeError", "ReferenceError", "RegExp", "String",
-        "SyntaxError", "TypeError", "URIError", "decodeURI",
+    globalNames: [
+        "Array", "ArrayBuffer", "AttributeName", "Boolean", "Date", "Error",
+        "EvalError", "Function", "Infinity", "Iterator", "JSON", "Math", "NaN",
+        "Namespace", "Number", "Object", "QName", "RangeError",
+        "ReferenceError", "RegExp", "StopIteration", "String", "Error",
+        "EvalError", "InternalError", "RangeError", "ReferenceError",
+        "SyntaxError", "TypeError", "URIError", "decodeURI", "XML", "XMLList",
         "decodeURIComponent", "encodeURI", "encodeURIComponent", "eval",
-        "isFinite", "isNaN", "parseFloat", "parseInt", "undefined"].concat(
+        "isFinite", "isNaN", "isXMLName", "parseFloat", "parseInt", "undefined",
+        "uneval", "Int8Array", "Uint8Array", "Int16Array", "Uint16Array",
+        "Int32Array", "Uint32Array", "Float32Array", "Float64Array", "Proxy",
+    ].concat(
         [k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))]
             .filter(function (k) k in window)),
 
