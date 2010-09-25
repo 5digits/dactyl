@@ -137,31 +137,13 @@ const Command = Class("Command", {
      * @deprecated
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
-    execute: function (args, bang, count, modifiers) {
-        // XXX
-        bang = !!bang;
-        count = (count === undefined) ? null : count;
+    execute: function (args, modifiers) {
+        let self = this;
         modifiers = modifiers || {};
 
-        let self = this;
-        function exec(command) {
-            // FIXME: Move to parseCommand?
-            args = this.parseArgs(command);
-            args.count = count;
-            args.bang = bang;
+        dactyl.trapErrors(function exec(command) {
             this.action(args, modifiers);
-        }
-
-        if (this.hereDoc) {
-            let matches = args.match(/(.*)<<\s*(\S+)$/);
-            if (matches && matches[2]) {
-                commandline.inputMultiline(RegExp("^" + matches[2] + "$", "m"),
-                    function (args) { dactyl.trapErrors(exec, self, matches[1] + "\n" + args); });
-                return;
-            }
-        }
-
-        dactyl.trapErrors(exec, this, args);
+        }, this);
     },
 
     /**
@@ -194,6 +176,7 @@ const Command = Class("Command", {
         argCount: this.argCount,
         complete: complete,
         extra: extra,
+        hereDoc: this.hereDoc,
         keepQuotes: !!this.keepQuotes,
         literal: this.literal,
         options: this.options
@@ -460,26 +443,6 @@ const Commands = Module("commands", {
         return this._exCommands.filter(function (cmd) cmd.user);
     },
 
-    _subCommands: function (command) {
-        while (command) {
-            // FIXME: This parseCommand/commands.get/parseArgs is duplicated too often.
-            let [count, cmd, bang, args] = commands.parseCommand(command);
-            command = commands.get(cmd);
-            if (command) {
-                try {
-                    args = command.parseArgs(args, null, { count: count, bang: bang });
-                    yield [command, args];
-                    if (commands.subCommand == null)
-                        break;
-                    command = args[command.subCommand];
-                }
-                catch (e) {
-                    break;
-                }
-            }
-        }
-    },
-
     /**
      * Returns true if a command invocation contains a URL referring to the
      * domain 'host'.
@@ -563,6 +526,13 @@ const Commands = Module("commands", {
      */
     parseArgs: function (str, params) {
         function getNextArg(str) {
+            if (str.substr(0, 2) === "<<" && hereDoc) {
+                let arg = /^<<(\S*)/.exec(str)[1];
+                let count = arg.length + 2;
+                if (complete)
+                    return [count, "", ""]
+                return [count, io.readHeredoc(arg), ""];
+            }
             let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
             if (quote == "\\" && !complete)
                 return [,,,"Trailing \\"];
@@ -571,7 +541,7 @@ const Commands = Module("commands", {
             return [count, arg, quote];
         }
 
-        var { allowUnknownOptions, argCount, complete, extra, literal, options, keepQuotes } = params;
+        var { allowUnknownOptions, argCount, complete, extra, hereDoc, literal, options, keepQuotes } = params || {};
 
         if (!options)
             options = [];
@@ -628,6 +598,11 @@ const Commands = Module("commands", {
             // skip whitespace
             while (/\s/.test(str[i]) && i < str.length)
                 i++;
+            if (str[i] == "|") {
+                args.string = str.slice(0, i);
+                args.trailing = str.slice(i + 1);
+                break;
+            }
             if (i == str.length && !complete)
                 break;
 
@@ -728,6 +703,11 @@ const Commands = Module("commands", {
             if (args.length == literal) {
                 if (complete)
                     args.completeArg = args.length;
+                // Hack.
+                if (sub.substr(0, 2) === "<<" && hereDoc)
+                    let ([count, arg] = getNextArg(sub)) {
+                        sub = arg + sub.substr(count);
+                    }
                 args.literalArg = sub;
                 args.push(sub);
                 args.quote = null;
@@ -757,7 +737,7 @@ const Commands = Module("commands", {
                 break;
         }
 
-        if (complete) {
+        if (complete && args.trailing == null) {
             if (args.completeOpt) {
                 let opt = args.completeOpt;
                 let context = complete.fork(opt.names[0], args.completeStart);
@@ -811,12 +791,12 @@ const Commands = Module("commands", {
         str.replace(/\s*".*$/, "");
 
         // 0 - count, 1 - cmd, 2 - special, 3 - args
-        let matches = str.match(/^[:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?(?:\s*(.*?))?$/);
+        let matches = str.match(/^([:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?\s*)(.*?)?$/);
         //var matches = str.match(/^:*(\d+|%)?([a-zA-Z]+|!)(!)?(?:\s*(.*?)\s*)?$/);
         if (!matches)
             return [null, null, null, null];
 
-        let [, count, cmd, special, args] = matches;
+        let [, spec, count, cmd, special, args] = matches;
 
         // parse count
         if (count)
@@ -824,7 +804,42 @@ const Commands = Module("commands", {
         else
             count = this.COUNT_NONE;
 
-        return [count, cmd, !!special, args || ""];
+        return [count, cmd, !!special, args || "", spec.length];
+    },
+
+    parseCommands: function (str, complete) {
+        do {
+            let [count, cmd, bang, args, len] = commands.parseCommand(str);
+            if (cmd == null)
+                return;
+            let command = commands.get(cmd);
+            if (command && complete) {
+                complete.fork(command.name);
+                var context = complete.fork("args", len);
+            }
+
+            if (command && /\w[!\s]/.test(str))
+                args = command.parseArgs(args, context, { count: count, bang: bang });
+            else
+                args = commands.parseArgs(args, { extra: { count: count, bang: bang } });
+            args.commandName = cmd;
+            args.commandString = str.substr(0, len) + args.string;
+            str = args.trailing;
+            yield [command, args];
+        }
+        while (str);
+    },
+
+    _subCommands: function (command) {
+        let commands = [command];
+        while (command = commands.shift())
+            for (let [command, args] in this.parseCommands(command)) {
+                if (command) {
+                    yield [command, args];
+                    if (command.subCommand && args[command.subCommand])
+                        commands.push(args[command.subCommand]);
+                }
+            }
     },
 
     /** @property */
@@ -921,8 +936,13 @@ const Commands = Module("commands", {
         completion.ex = function ex(context) {
             // if there is no space between the command name and the cursor
             // then get completions of the command name
-            let [count, cmd, bang, args] = commands.parseCommand(context.filter);
-            let [, prefix, junk] = context.filter.match(/^(:*\d*)\w*(.?)/) || [];
+            for (var [command, args] in commands.parseCommands(context.filter, context))
+                if (args.trailing)
+                    context.advance(args.commandString.length + 1);
+            if (!args)
+                args = { commandString: context.filter };
+
+            let [, prefix, junk] = args.commandString.match(/^(:*\s*\d*\s*)\w*(.?)/) || [];
             context.advance(prefix.length);
             if (!junk) {
                 context.fork("", 0, this, "command");
@@ -931,39 +951,25 @@ const Commands = Module("commands", {
 
             // dynamically get completions as specified with the command's completer function
             context.highlight();
-            let command = cmd && commands.get(cmd);
             if (!command) {
-                context.highlight(0, cmd && cmd.length, "SPELLCHECK");
+                context.highlight(0, args.commandName && args.commandName.length, "SPELLCHECK");
                 return;
             }
 
-            [prefix] = context.filter.match(/^(?:\w*[\s!])?\s*/);
+            [prefix] = args.commandString.match(/^(?:\w*[\s!])?\s*/);
             let cmdContext = context.fork(command.name, prefix.length);
-            let argContext = context.fork("args", prefix.length);
-            args = command.parseArgs(cmdContext.filter, argContext, { count: count, bang: bang });
-            if (args && !cmdContext.waitingForTab) {
-                // FIXME: Move to parseCommand
-                args.count = count;
-                args.bang = bang;
-                if (!args.completeOpt && command.completer) {
-                    cmdContext.advance(args.completeStart);
-                    cmdContext.quote = args.quote;
-                    cmdContext.filter = args.completeFilter;
-                    try {
-                        let compObject = command.completer.call(command, cmdContext, args);
-
-                        if (isArray(compObject)) // for now at least, let completion functions return arrays instead of objects
-                            compObject = { start: compObject[0], items: compObject[1] };
-                        if (compObject != null) {
-                            cmdContext.advance(compObject.start);
-                            cmdContext.filterFunc = null;
-                            cmdContext.completions = compObject.items;
-                        }
-                    }
-                    catch (e) {
-                        dactyl.reportError(e);
+            try {
+                if (!cmdContext.waitingForTab) {
+                    if (!args.completeOpt && command.completer) {
+                        cmdContext.advance(args.completeStart);
+                        cmdContext.quote = args.quote;
+                        cmdContext.filter = args.completeFilter;
+                        command.completer.call(command, cmdContext, args);
                     }
                 }
+            }
+            catch (e) {
+                dactyl.reportError(e);
             }
         };
 
@@ -1183,16 +1189,16 @@ const Commands = Module("commands", {
         res.list = list;
         return res;
     };
-    Commands.complQuote = {
-        '"': ['"', quote("", '\n\t"\\\\'), '"'],
-        "'": ["'", quote("", "'", { "'": "''" }), "'"],
-        "":  ["", quote("",  "\\\\ '\""), ""]
-    };
 
     Commands.quoteArg = {
         '"': quote('"', '\n\t"\\\\'),
         "'": quote("'", "'", { "'": "''" }),
-        "":  quote("",  "\\\\\\s'\"")
+        "":  quote("",  "|\\\\\\s'\"")
+    };
+    Commands.complQuote = {
+        '"': ['"', Commands.quoteArg['"'], '"'],
+        "'": ["'", Commands.quoteArg["'"], "'"],
+        "":  ["", Commands.quoteArg[""], ""]
     };
 
     Commands.parseBool = function (arg) {

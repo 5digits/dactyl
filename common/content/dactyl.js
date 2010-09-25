@@ -392,25 +392,24 @@ const Dactyl = Module("dactyl", {
         modifiers = modifiers || {};
 
         let err = null;
-        let [count, cmd, special, args] = commands.parseCommand(str.replace(/^'(.*)'$/, "$1"));
-        let command = commands.get(cmd);
+        for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
+            if (command === null) {
+                err = "E492: Not a " + config.name + " command: " + str;
+                dactyl.focusContent();
+            }
+            else if (command.action === null)
+                err = "E666: Internal error: command.action === null"; // TODO: need to perform this test? -- djk
+            else if (args.count != null && !command.count)
+                err = "E481: No range allowed";
+            else if (args.bang && !command.bang)
+                err = "E477: No ! allowed";
 
-        if (command === null) {
-            err = "E492: Not a " + config.name + " command: " + str;
-            dactyl.focusContent();
+            dactyl.assert(!err, err);
+            if (!silent)
+                commandline.command = str.replace(/^\s*:\s*/, "");
+
+            command.execute(args, modifiers);
         }
-        else if (command.action === null)
-            err = "E666: Internal error: command.action === null"; // TODO: need to perform this test? -- djk
-        else if (count != null && !command.count)
-            err = "E481: No range allowed";
-        else if (special && !command.bang)
-            err = "E477: No ! allowed";
-
-        dactyl.assert(!err, err);
-        if (!silent)
-            commandline.command = str.replace(/^\s*:\s*/, "");
-
-        command.execute(args, special, count, modifiers);
     },
 
     /**
@@ -1717,7 +1716,7 @@ const Dactyl = Module("dactyl", {
                 }
                 else {
                     try {
-                        dactyl.userEval(args.string);
+                        dactyl.userEval(args[0]);
                     }
                     catch (e) {
                         dactyl.echoerr(e);

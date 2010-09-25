@@ -18,6 +18,7 @@
       - Backtracks to the first successful match after pressing
         backspace.
       - Supports reverse incremental search.
+    * Multiple ex commands may now be separated by |
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
     * IMPORTANT: 'loadplugins' is not a regexlist option rather than

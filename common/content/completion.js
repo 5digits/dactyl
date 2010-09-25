@@ -576,7 +576,8 @@ const CompletionContext = Class("CompletionContext", {
         if (typeof completer == "string")
             completer = self[completer];
         let context = CompletionContext(this, name, offset);
-        this.contextList.push(context);
+        if (this.contextList.indexOf(context) < 0)
+            this.contextList.push(context);
 
         if (!context.autoComplete && !context.tabPressed && context.editor)
             context.waitingForTab = true;

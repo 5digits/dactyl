@@ -207,6 +207,15 @@ const IO = Module("io", {
         return io.File(file);
     },
 
+    readHeredoc: function (end) {
+        let args;
+        commandline.inputMultiline(end,
+            function (res) { args = res; });
+        while (args === undefined)
+            dactyl.threadYield(true);
+        return args;
+    },
+
     /**
      * Runs an external program.
      *
@@ -312,6 +321,7 @@ lookup:
      */
     source: function (filename, silent) {
         let wasSourcing = this.sourcing;
+        let readHeredoc = this.readHeredoc;
         defineModule.loadLog.push("sourcing " + filename);
         let time = Date.now();
         try {
@@ -355,61 +365,27 @@ lookup:
                 let str = file.read();
                 let lines = str.split(/\r\n|[\r\n]/);
 
+                this.readHeredoc = function (end) {
+                    let res = [];
+                    for (let [i, line] in iter)
+                        if (line === end)
+                            return res.join("\n");
+                        else
+                            res.push(line);
+                    dactyl.assert(false, "Unexpected end of file waiting for " + end);
+                };
+
                 function execute(args) { command.execute(args, special, count, { setFrom: file }); }
 
-                for (let [i, line] in Iterator(lines)) {
-                    if (heredocEnd) { // we already are in a heredoc
-                        if (heredocEnd.test(line)) {
-                            execute(heredoc);
-                            heredoc = "";
-                            heredocEnd = null;
-                        }
-                        else
-                            heredoc += line + "\n";
-                    }
-                    else {
-                        this.sourcing.line = i + 1;
-                        // skip line comments and blank lines
-                        line = line.replace(/\r$/, "");
+                let iter = Iterator(lines);
+                for (let [i, line] in iter) {
+                    this.sourcing.line = i + 1;
+                    // skip line comments and blank lines
+                    line = line.replace(/\r$/, "");
 
-                        if (/^\s*(".*)?$/.test(line))
-                            continue;
-
-                        var [count, cmd, special, args] = commands.parseCommand(line);
-                        var command = commands.get(cmd);
-
-                        if (!command) {
-                            let lineNumber = i + 1;
-
-                            dactyl.echoerr("Error detected while processing " + file.path, commandline.FORCE_MULTILINE);
-                            commandline.echo("line " + lineNumber + ":", commandline.HL_LINENR, commandline.APPEND_TO_MESSAGES);
-                            dactyl.echoerr("E492: Not an editor command: " + line);
-                        }
-                        else {
-                            if (command.name == "finish")
-                                break;
-                            else if (command.hereDoc) {
-                                // check for a heredoc
-                                let matches = args.match(/(.*)<<\s*(\S+)$/);
-
-                                if (matches) {
-                                    args = matches[1];
-                                    heredocEnd = RegExp("^" + matches[2] + "$", "m");
-                                    if (matches[1])
-                                        heredoc = matches[1] + "\n";
-                                    continue;
-                                }
-                            }
-
-                            execute(args);
-                        }
-                    }
+                    if (!/^\s*(".*)?$/.test(line))
+                        dactyl.execute(line, null, true);
                 }
-
-                // if no heredoc-end delimiter is found before EOF then
-                // process the heredoc anyway - Vim compatible ;-)
-                if (heredocEnd)
-                    execute(heredoc);
             }
 
             if (this._scriptNames.indexOf(file.path) == -1)
@@ -428,6 +404,7 @@ lookup:
         finally {
             defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
             this.sourcing = wasSourcing;
+            this.readHeredoc = readHeredoc;
         }
     },
 

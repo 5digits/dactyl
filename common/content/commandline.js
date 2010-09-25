@@ -138,7 +138,7 @@ const CommandLine = Module("commandline", {
         this._currentCommand = null;
 
         // save the arguments for the inputMultiline method which are needed in the event handler
-        this._multilineRegexp = null;
+        this._multilineEnd = null;
         this._multilineCallback = null;
 
         this._input = {};
@@ -581,11 +581,11 @@ const CommandLine = Module("commandline", {
      * which matches the given regular expression. Then execute the
      * callback with that string as a parameter.
      *
-     * @param {RegExp} untilRegexp
+     * @param {string} end
      * @param {function(string)} callbackFunc
      */
     // FIXME: Buggy, especially when pasting. Shouldn't use a RegExp.
-    inputMultiline: function inputMultiline(untilRegexp, callbackFunc) {
+    inputMultiline: function inputMultiline(end, callbackFunc) {
         // Kludge.
         let cmd = !this.widgets.command.collapsed && this.command;
         modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE);
@@ -593,7 +593,7 @@ const CommandLine = Module("commandline", {
             this._echoLine(cmd, this.HL_NORMAL);
 
         // save the arguments, they are needed in the event handler onEvent
-        this._multilineRegexp = untilRegexp;
+        this._multilineEnd = "\n" + end + "\n";
         this._multilineCallback = callbackFunc;
 
         this.widgets.multilineInput.collapsed = false;
@@ -702,9 +702,10 @@ const CommandLine = Module("commandline", {
         if (event.type == "keypress") {
             let key = events.toString(event);
             if (events.isAcceptKey(key)) {
-                let text = this.widgets.multilineInput.value.substr(0, this.widgets.multilineInput.selectionStart);
-                if (text.match(this._multilineRegexp)) {
-                    text = text.replace(this._multilineRegexp, "");
+                let text = "\n" + this.widgets.multilineInput.value.substr(0, this.widgets.multilineInput.selectionStart);
+                let index = text.indexOf(this._multilineEnd);
+                if (index >= 0) {
+                    text = text.substring(1, index);
                     modes.pop();
                     this.widgets.multilineInput.collapsed = true;
                     this._multilineCallback.call(this, text);

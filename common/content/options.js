@@ -434,7 +434,7 @@ const Option = Class("Option", {
         } while (value.length);
         return res;
     },
-    quote: function quote(str) Commands.quoteArg[/[\s"'\\,]|^$/.test(str) ? "'" : ""](str),
+    quote: function quote(str) Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) ? "'" : ""](str),
 
     ops: {
         boolean: function (operator, values, scope, invert) {
