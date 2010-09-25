@@ -110,7 +110,7 @@
             document syntax. For example, the following,
         </p>
 
-        <code><ex>:jsavascript</ex> &lt;&lt;<em>EOF</em>
+        <code><ex>:javascript</ex> &lt;&lt;<em>EOF</em>
 <kwd>for each</kwd> (<kwd>var</kwd> tab <kwd>in</kwd> tabs.visibleTabs)
     tab.linkedBrowser.reload();
 <em>EOF</em></code>
