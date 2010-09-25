@@ -379,6 +379,8 @@ lookup:
 
                 let iter = Iterator(lines);
                 for (let [i, line] in iter) {
+                    if (this.sourcing.finished)
+                        break;
                     this.sourcing.line = i + 1;
                     // skip line comments and blank lines
                     line = line.replace(/\r$/, "");
@@ -535,7 +537,10 @@ lookup:
         // NOTE: this command is only used in :source
         commands.add(["fini[sh]"],
             "Stop sourcing a script file",
-            function () { dactyl.echoerr("E168: :finish used outside of a sourced file"); },
+            function () { 
+                dactyl.assert(io.sourcing, "E168: :finish used outside of a sourced file");
+                io.sourcing.finished = true;
+            },
             { argCount: "0" });
 
         commands.add(["pw[d]"],
