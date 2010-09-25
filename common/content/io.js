@@ -212,7 +212,7 @@ const IO = Module("io", {
         commandline.inputMultiline(end,
             function (res) { args = res; });
         while (args === undefined)
-            dactyl.threadYield(true);
+            util.threadYield(true);
         return args;
     },
 
