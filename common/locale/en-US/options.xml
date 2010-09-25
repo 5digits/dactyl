@@ -51,10 +51,11 @@
     <dd>
         A comma-separated list of regular expressions. Expressions may be
         prefixed with a <em>!</em>, in which case the match will be negated. A
-        literal <em>!</em> at the begining of the expression may be matched with
-        <em>[!]</em>.  Generally, the first matching regular expression is
-        used. Any comma appearing within single or double quotes, or prefixed
-        with a <em>\</em>, will not be treated as an item separator.
+        literal <em>!</em> at the begining of the expression may be matched
+        with <em>[!]</em> or by placing the regular expression in quotes.
+        Generally, the first matching regular expression is used. Any comma
+        appearing within single or double quotes, or prefixed with a
+        <em>\</em>, will not be treated as an item separator.
     </dd>
 
     <dt/><dd tag="regexmap"/>
@@ -559,10 +560,14 @@
     <tags>'eht' 'extendedhinttags'</tags>
     <spec>'extendedhinttags' 'eht'</spec>
     <strut/>
-    <type>string</type>
-    <default>&hinttags;</default>
+    <type>regexmap</type>
+    <default>[iI]:'//img | //xhtml:img'</default>
     <description>
-        <p>The XPath string of hintable elements activated by <k>;</k>.</p>
+        <p>
+            Defines specialized XPath expressions for arbitrary
+            <t>extended-hints</t> modes. If no matches are found, the value of
+            <o>hinttags</o> is used.
+        </p>
     </description>
 </item>
 
@@ -756,7 +761,12 @@
     <type>string</type>
     <default>&hinttags;</default>
     <description>
-        <p>XPath string of hintable elements activated by <k>f</k> and <k>F</k></p>
+        <p>
+            The XPath string used to select for
+            <link topic="hints">hinting</link>. Can be overridden for
+            individual <t>extended-hints</t> modes with the
+            <o>extendedhinttags</o> option.
+        </p>
     </description>
 </item>
 

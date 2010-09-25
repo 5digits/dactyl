@@ -32,6 +32,8 @@
       operators, and = sign may no longer be quoted. This will break
       certain automatically-generated configuration files.
       See :help stringlist
+    * IMPORTANT: 'extendedhinttags' is now a regexmap rather than a
+      string.
     * Added 'altwildmode' and <A-Tab> commandline key binding.
     * Added 'autocomplete' option for specifying which completion
       groups should be auto-completed.

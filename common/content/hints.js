@@ -42,31 +42,30 @@ const Hints = Module("hints", {
 
         const Mode = Hints.Mode;
         Mode.defaultValue("tags", function () function () options["hinttags"]);
-        function extended() options["extendedhinttags"];
-        function images() util.makeXPath(["img"]);
+        Mode.prototype.__defineGetter__("xpath", function ()
+            options.get("extendedhinttags").getKey(this.name, this.tags()));
 
-        this._hintModes = {
-            ";": Mode("Focus hint",                         function (elem) buffer.focusElement(elem),                              extended),
-            "?": Mode("Show information for hint",          function (elem) buffer.showElementInfo(elem),                           extended),
-            s: Mode("Save hint",                            function (elem) buffer.saveLink(elem, true)),
-            a: Mode("Save hint with prompt",                function (elem) buffer.saveLink(elem, false)),
-            f: Mode("Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]),
-            o: Mode("Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB)),
-            t: Mode("Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB)),
-            b: Mode("Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB)),
-            w: Mode("Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW),             extended),
-            F: Mode("Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F"); }),
-            O: Mode("Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX)),
-            T: Mode("Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX)),
-            W: Mode("Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX)),
-            v: Mode("View hint source",                     function (elem, loc) buffer.viewSource(loc, false),                     extended),
-            V: Mode("View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true),                      extended),
-            y: Mode("Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true)),
-            Y: Mode("Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true),    extended),
-            c: Mode("Open context menu",                    function (elem) buffer.openContextMenu(elem),                           extended),
-            i: Mode("Show image",                           function (elem) dactyl.open(elem.src),                                  images),
-            I: Mode("Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB),                  images)
-        };
+        this._hintModes = {};
+        this.addMode(";", "Focus hint",                           function (elem) buffer.focusElement(elem));
+        this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
+        this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, true));
+        this.addMode("a", "Save hint with prompt",                function (elem) buffer.saveLink(elem, false));
+        this.addMode("f", "Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]);
+        this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
+        this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
+        this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
+        this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
+        this.addMode("F", "Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F"); });
+        this.addMode("O", "Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
+        this.addMode("T", "Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
+        this.addMode("W", "Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
+        this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
+        this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
+        this.addMode("y", "Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true));
+        this.addMode("Y", "Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true));
+        this.addMode("c", "Open context menu",                    function (elem) buffer.openContextMenu(elem));
+        this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
+        this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
     },
 
     /**
@@ -260,7 +259,7 @@ const Hints = Module("hints", {
 
         let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint"/>, doc);
 
-        let res = util.evaluateXPath(this._hintMode.tags(), doc, null, true);
+        let res = util.evaluateXPath(this._hintMode.xpath, doc, null, true);
 
         let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
         let start = this._pageHints.length;
@@ -722,7 +721,7 @@ const Hints = Module("hints", {
      * @optional
      */
     addMode: function (mode, prompt, action, tags) {
-        this._hintModes[mode] = Hints.Mode.apply(Hints.Mode, Array.slice(arguments, 1));
+        this._hintModes[mode] = Hints.Mode.apply(Hints.Mode, arguments);
     },
 
     /**
@@ -1014,7 +1013,7 @@ const Hints = Module("hints", {
         return -1;
     },
 
-    Mode: Struct("prompt", "action", "tags")
+    Mode: Struct("name", "prompt", "action", "tags")
 }, {
     mappings: function () {
         var myModes = config.browserModes;
@@ -1069,7 +1068,7 @@ const Hints = Module("hints", {
 
         options.add(["extendedhinttags", "eht"],
             "XPath string of hintable elements activated by ';'",
-            "string", DEFAULT_HINTTAGS,
+            "regexmap", "[iI]:" + Option.quote(util.makeXPath(["img"])),
             { validator: checkXPath });
 
         options.add(["hinttags", "ht"],

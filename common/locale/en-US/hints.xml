@@ -116,17 +116,11 @@
             <li tag=";I"><em>I</em> to open an image in a new tab.</li>
         </ul>
 
-        <!-- TODO: These are completely arbitrary and need to be
-           - changed before release. Hopefully they will be...
-           -->
         <p>
             Of the previous modes, the value of the <o>hinttags</o>
-            option is used to choose the highlighted elements for
-            the modes, <k>;;</k>, <k>;?</k>, <k>;w</k>, <k>;v</k>,
-            <k>;V</k>, <k>;Y</k> and <k>;c</k>. The value of
-            <o>extendedhinttags</o> is used to choose the elements
-            for, <k>;s</k>, <k>;a</k>, <k>;o</k>, <k>;t</k>,
-            <k>;b</k>, <k>;O</k>, <k>;T</k>, <k>;W</k>, <k>;y</k>,
+            option is used to choose the highlighted elements,
+            unless an override can be found in
+            <o>extendedhinttags</o>.
         </p>
     </description>
 </item>

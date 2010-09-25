@@ -372,15 +372,15 @@ const Option = Class("Option", {
      */
     SCOPE_BOTH: 3,
 
-    parseRegex: function (val, result) {
-        let [, bang, val] = /^(!?)(.*)/.exec(val);
-        let re = RegExp(val);
+    parseRegex: function (value, result) {
+        let [, bang, val] = /^(!?)(.*)/.exec(value);
+        let re = RegExp(Option.dequote(val));
         re.bang = bang;
         re.result = arguments.length == 2 ? result : !bang;
         re.toString = function () Option.unparseRegex(this);
         return re;
     },
-    unparseRegex: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m)) +
+    unparseRegex: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m), /^!|:/) +
         (typeof re.result == "string" ? ":" + Option.quote(re.result) : ""),
 
     getKey: {
@@ -399,7 +399,7 @@ const Option = Class("Option", {
     joinValues: {
         charlist:    function (vals) Commands.quote(vals.join("")),
         stringlist:  function (vals) vals.map(Option.quote).join(","),
-        stringmap:   function (vals) [Option.quote(k) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
+        stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
         regexlist:   function (vals) vals.join(","),
         get regexmap() this.regexlist
     },
@@ -409,11 +409,20 @@ const Option = Class("Option", {
         boolean:    function (value) Option.dequote(value) == "true" || value == true ? true : false,
         charlist:   function (value) Array.slice(Option.dequote(value)),
         stringlist: function (value) (value === "") ? [] : Option.splitList(value),
-        stringmap:  function (value) array(util.split(v, /:/g, 2) for (v in values(Option.splitList(value)))).toObject(),
-        regexlist:  function (value) (value === "") ? [] : Option.splitList(value).map(Option.parseRegex),
-        regexmap:   function (value) Option.splitList(value)
-                                           .map(function (v) util.split(v, /:/g, 2))
-                                           .map(function ([k, v]) v != null ? Option.parseRegex(k, v) : Option.parseRegex(".?", k))
+        regexlist:  function (value) (value === "") ? [] : Option.splitList(value, true).map(Option.parseRegex),
+        stringmap:  function (value) array.toObject(
+            Option.splitList(value, true).map(function (v) {
+                let [count, key, quote] = Commands.parseArg(v, /:/);
+                return [key, Option.dequote(v.substr(count + 1))]
+            })),
+        regexmap:   function (value)
+            Option.splitList(value, true).map(function (v) {
+                let [count, re, quote] = Commands.parseArg(v, /:/, true);
+                v = Option.dequote(v.substr(count + 1));
+                if (count === v.length)
+                    [v, re] = [re, ".?"];
+                return Option.parseRegex(re, v);
+            })
     },
 
     dequote: function (value) {
@@ -422,20 +431,20 @@ const Option = Class("Option", {
         Option._splitAt = 0;
         return arg;
     },
-    splitList: function (value) {
+    splitList: function (value, keepQuotes) {
         let res = [];
         Option._splitAt = 0;
         do {
             if (count !== undefined)
                 Option._splitAt += count + 1;
-            var [count, arg, quote] = Commands.parseArg(value, /,/);
+            var [count, arg, quote] = Commands.parseArg(value, /,/, keepQuotes);
             Option._quote = quote; // FIXME
             res.push(arg);
             value = value.slice(count + 1);
         } while (value.length);
         return res;
     },
-    quote: function quote(str) Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) ? "'" : ""](str),
+    quote: function quote(str, re) Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str) ? "'" : ""](str, re),
 
     ops: {
         boolean: function (operator, values, scope, invert) {
