@@ -395,7 +395,7 @@
     <tags>$CDPATH</tags>
     <tags>'cd' 'cdpath'</tags>
     <spec>'cdpath' 'cd'</spec>
-    <type>string</type>
+    <type>stringlist</type>
     <default type="plain">equivalent to <em>$CDPATH</em> or <str>.</str></default>
     <description>
         <p>
