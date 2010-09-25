@@ -39,7 +39,8 @@ const JavaScript = Module("javascript", {
             return;
 
         let seen = {};
-        for (let key in properties(obj, !toplevel)) {
+        let globals = values(toplevel && Class.objectGlobal(obj) === obj ? JavaScript.globalNames : []);
+        for (let key in iterAll(globals, properties(obj, !toplevel))) {
             set.add(seen, key);
             yield key;
         }
@@ -586,6 +587,17 @@ const JavaScript = Module("javascript", {
      * @see JavaScript.setCompleter
      */
     completers: {},
+
+    /**
+     * A list of properties of the global object which are not
+     * enumerable by any standard method.
+     */
+    globalNames: ["Array", "Boolean", "Date", "Error", "EvalError",
+        "Function", "Infinity", "Math", "NaN", "Number", "Object",
+        "RangeError", "ReferenceError", "RegExp", "String",
+        "SyntaxError", "TypeError", "URIError", "decodeURI",
+        "decodeURIComponent", "encodeURI", "encodeURIComponent", "eval",
+        "isFinite", "isNaN", "parseFloat", "parseInt", "undefined"],
 
     /**
      * Installs argument string completers for a set of functions.

@@ -103,7 +103,7 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
             function (key, event, arg) {
                 if (event == name)
                     params.action.apply(params, arg);
-            }, Module.callerGlobal(params.action));
+            }, Class.objectGlobal(params.action));
 
         if (params.privateEnter || params.privateLeave)
             storage.addObserver("private-mode",
@@ -111,7 +111,7 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
                     let meth = params[arg ? "privateEnter" : "privateLeave"];
                     if (meth)
                         meth.call(params);
-                }, Module.callerGlobal(params.action));
+                }, Class.objectGlobal(params.action));
     },
 
     observe: {

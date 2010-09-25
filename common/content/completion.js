@@ -347,9 +347,15 @@ const CompletionContext = Class("CompletionContext", {
             this.lastActivated = this.top.runCount;
         }
         if (!this.itemCache[this.key]) {
-            let res = this._generate.call(this);
-            if (res != null)
-                this.itemCache[this.key] = res;
+            try {
+                let res = this._generate.call(this);
+                if (res != null)
+                    this.itemCache[this.key] = res;
+            }
+            catch (e) {
+                dactyl.reportError(e);
+                this.message = "Error: " + e;
+            }
         }
         return this.itemCache[this.key];
     },

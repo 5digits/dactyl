@@ -5,7 +5,8 @@
 "use strict";
 
 (function () {
-    const modules = {};
+    const jsmodules = {}
+    const modules = { __proto__: jsmodules };
     const BASE = "chrome://dactyl/content/";
 
     modules.modules = modules;
@@ -27,7 +28,7 @@
             }
         }
         try {
-            Components.utils.import("resource://dactyl/" + script + ".jsm", modules);
+            Components.utils.import("resource://dactyl/" + script + ".jsm", jsmodules);
         }
         catch (e) {
             dump("dactyl: Loading script " + script + ": " + e.result + " " + e + "\n");

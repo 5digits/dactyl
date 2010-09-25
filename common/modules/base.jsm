@@ -734,8 +734,9 @@ function Module(name, prototype) {
     defineModule.modules.push(instance);
     return module;
 }
+
 if (Cu.getGlobalForObject)
-    Module.callerGlobal = function (caller) {
+    Class.objectGlobal = function (caller) {
         try {
             return Cu.getGlobalForObject(caller);
         }
@@ -744,7 +745,7 @@ if (Cu.getGlobalForObject)
         }
     };
 else
-    Module.callerGlobal = function (caller) {
+    Class.objectGlobal = function (caller) {
         while (caller.__parent__)
             caller = caller.__parent__;
         return caller;
