@@ -104,7 +104,7 @@ const Styles = Module("Styles", {
             filter = filter.split(",");
         if (name && name in names) {
             var sheet = names[name];
-            sheet.filter = filter;
+            sheet.sites = filter;
             sheet.css = String(css);
         }
         else {
