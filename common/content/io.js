@@ -322,14 +322,8 @@ lookup:
             };
 
             if (!file.exists() || !file.isReadable() || file.isDirectory()) {
-                if (!silent) {
-                    if (file.exists() && file.isDirectory())
-                        dactyl.echomsg("Cannot source a directory: " + filename.quote(), 0);
-                    else
-                        dactyl.echomsg("could not source: " + filename.quote(), 1);
-                    dactyl.echoerr("E484: Can't open file " + filename);
-                }
-
+                if (!silent)
+                    dactyl.echoerr("E484: Can't open file " + filename.quote());
                 return;
             }
 
