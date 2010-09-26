@@ -1,1 +1,1 @@
-au BufNewFile,BufRead *pentadactylrc* set filetype=pentadactyl
+au BufNewFile,BufRead *pentadactylrc*,*.penta set filetype=pentadactyl

@@ -71,7 +71,7 @@ syn match pentadactylOption "\<\%(no\|inv\)\=\%(smartcase\|scs\|strictfocus\|sf\
 syn match pentadactylSetMod "\%(\<[a-z_]\+\)\@<=&" contained
 
 syn region pentadactylJavaScript start="\%(^\s*\%(javascript\|js\)\s\+\)\@<=" end="$" contains=@javascriptTop keepend oneline
-syn region pentadactylJavaScript matchgroup=pentadactylJavascriptDelimiter
+syn region pentadactylJavaScript matchgroup=pentadactylJavaScriptDelimiter
     \ start="\%(^\s*\%(javascript\|js\)\s\+\)\@<=<<\s*\z(\h\w*\)"hs=s+2 end="^\z1$" contains=@javascriptTop fold
 
 let s:cssRegionStart = '\%(^\s*sty\%[le]!\=\s\+\%(-\%(n\|name\)\%(\s\+\|=\)\S\+\s\+\)\=[^-]\S\+\s\+\)\@<='
@@ -86,14 +86,14 @@ syn keyword pentadactylTodo FIXME NOTE TODO XXX contained
 
 syn region pentadactylString start="\z(["']\)" end="\z1" skip="\\\\\|\\\z1" oneline
 
-syn match   pentadactylLineComment +^\s*".*$+ contains=pentadactylTodo,@Spell
+syn match pentadactylLineComment +^\s*".*$+ contains=pentadactylTodo,@Spell
 
 " NOTE: match vim.vim highlighting group names
 hi def link pentadactylAutoCmd               pentadactylCommand
 hi def link pentadactylAutoEvent             Type
 hi def link pentadactylCommand               Statement
 hi def link pentadactylComment               Comment
-hi def link pentadactylJavascriptDelimiter   Delimiter
+hi def link pentadactylJavaScriptDelimiter   Delimiter
 hi def link pentadactylCssDelimiter          Delimiter
 hi def link pentadactylNotation              Special
 hi def link pentadactylLineComment           Comment

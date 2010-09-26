@@ -72,7 +72,7 @@ syn match xulmusOption "\<\%(no\|inv\)\=\%(online\|visualbell\|vb\|usermode\|um\
 syn match xulmusSetMod "\%(\<[a-z_]\+\)\@<=&" contained
 
 syn region xulmusJavaScript start="\%(^\s*\%(javascript\|js\)\s\+\)\@<=" end="$" contains=@javascriptTop keepend oneline
-syn region xulmusJavaScript matchgroup=xulmusJavascriptDelimiter
+syn region xulmusJavaScript matchgroup=xulmusJavaScriptDelimiter
     \ start="\%(^\s*\%(javascript\|js\)\s\+\)\@<=<<\s*\z(\h\w*\)"hs=s+2 end="^\z1$" contains=@javascriptTop fold
 
 let s:cssRegionStart = '\%(^\s*sty\%[le]!\=\s\+\%(-\%(n\|name\)\%(\s\+\|=\)\S\+\s\+\)\=[^-]\S\+\s\+\)\@<='
@@ -94,7 +94,7 @@ hi def link xulmusAutoCmd               xulmusCommand
 hi def link xulmusAutoEvent             Type
 hi def link xulmusCommand               Statement
 hi def link xulmusComment               Comment
-hi def link xulmusJavascriptDelimiter   Delimiter
+hi def link xulmusJavaScriptDelimiter   Delimiter
 hi def link xulmusCssDelimiter          Delimiter
 hi def link xulmusNotation              Special
 hi def link xulmusLineComment           Comment
