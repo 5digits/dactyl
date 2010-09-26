@@ -154,12 +154,22 @@
             CSS rule set (e.g., <tt>body { color: blue; }</tt>).
         </p>
 
-        <p>
-            If <a>name</a> (short option: <em>-n</em>) is provided, any existing style with the same
-            name is overridden, and the style may later be deleted using <a>name</a>. If
-            <em>-append</em> (short option: <em>-a</em>) is provided along with <em>-name</em>, <oa>css</oa> and
-            <a>filter</a> are appended to its current value.
-        </p>
+        <p>The following options are available:</p>
+        <dl>
+            <dt>-append</dt>
+            <dd>If provided along with <em>-name</em>, <oa>css</oa> and
+                <a>filter</a> are appended to its current value. (short name: <em>-a</em>)</dd>
+
+            <dt>-agent</dt>
+            <dd>If provided, the style is installed as an Agent sheet, which
+                applies to contents user interface widgets as well as normal
+                elements. (short name <em>-A</em>)</dd>
+
+            <dt>-name=<a>name</a></dt>
+            <dd>If provided, any existing style with the same name is overridden, and the style may later be deleted using <a>name</a>.
+                (short name <em>-n</em>)</dd>
+
+        </dl>
 
         <p>If <oa>css</oa> isn't provided, matching styles are listed.</p>
     </description>

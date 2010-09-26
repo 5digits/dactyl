@@ -104,8 +104,9 @@ const Styles = Module("Styles", {
             filter = filter.split(",");
         if (name && name in names) {
             var sheet = names[name];
-            sheet.sites = filter;
+            sheet.agent = agent;
             sheet.css = String(css);
+            sheet.sites = filter;
         }
         else {
             sheet = Sheet(name, this._id++, filter.filter(util.identity), String(css), system, agent);
@@ -127,7 +128,7 @@ const Styles = Module("Styles", {
      * @param {string or number} sheet The sheet to retrieve. Strings indicate
      *     sheet names, while numbers indicate indices.
      */
-    get: function getget(system, sheet) {
+    get: function get(system, sheet) {
         let sheets = system ? this.systemSheets : this.userSheets;
         let names = system ? this.systemNames : this.userNames;
         if (typeof sheet === "number")
@@ -288,7 +289,7 @@ const Styles = Module("Styles", {
                             css = sheet.css + " " + css;
                         }
                     }
-                    styles.addSheet(false, name, filter, css);
+                    styles.addSheet(false, name, filter, css, args["-agent"]);
                 }
             },
             {
@@ -307,13 +308,14 @@ const Styles = Module("Styles", {
                 hereDoc: true,
                 literal: 1,
                 options: [
+                    { names: ["-agent", "-A"],  description: "Apply style as an Agent sheet" },
+                    { names: ["-append", "-a"], description: "Append site filter and css to an existing, matching sheet" },
                     {
                         names: ["-name", "-n"],
                         description: "The name of this stylesheet",
                         completer: function () [[k, v.css] for ([k, v] in Iterator(styles.userNames))],
                         type: modules.CommandOption.STRING
-                    },
-                    { names: ["-append", "-a"], description: "Append site filter and css to an existing, matching sheet" }
+                    }
                 ],
                 serialize: function () [
                     {
