@@ -593,16 +593,21 @@ const JavaScript = Module("javascript", {
      * enumerable by any standard method.
      */
     globalNames: array.uniq([
-        "Array", "ArrayBuffer", "AttributeName", "Boolean", "Date", "Error",
-        "EvalError", "Function", "Infinity", "Iterator", "JSON", "Math", "NaN",
-        "Namespace", "Number", "Object", "QName", "RangeError",
-        "ReferenceError", "RegExp", "StopIteration", "String", "Error",
-        "EvalError", "InternalError", "RangeError", "ReferenceError",
-        "SyntaxError", "TypeError", "URIError", "decodeURI", "XML", "XMLList",
-        "decodeURIComponent", "encodeURI", "encodeURIComponent", "eval",
-        "isFinite", "isNaN", "isXMLName", "parseFloat", "parseInt", "undefined",
-        "uneval", "Int8Array", "Uint8Array", "Int16Array", "Uint16Array",
-        "Int32Array", "Uint32Array", "Float32Array", "Float64Array", "Proxy",
+        "Array", "ArrayBuffer", "AttributeName", "Boolean",
+        "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
+        "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date",
+        "Error", "EvalError", "Float32Array", "Float64Array", "Function",
+        "HTMLDelElement", "HTMLInsElement", "Infinity",
+        "InnerModalContentWindow", "InnerWindow", "Int16Array", "Int32Array",
+        "Int8Array", "InternalError", "Iterator", "JSON", "KeyboardEvent",
+        "Math", "NaN", "Namespace", "Number", "Object", "Proxy", "QName",
+        "ROCSSPrimitiveValue", "RangeError", "ReferenceError", "RegExp",
+        "StopIteration", "String", "SyntaxError", "TypeError", "URIError",
+        "Uint16Array", "Uint32Array", "Uint8Array", "XML",
+        "XMLHttpProgressEvent", "XMLList", "XMLSerializer", "XULControllers",
+        "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent",
+        "eval", "isFinite", "isNaN", "isXMLName", "parseFloat", "parseInt",
+        "undefined", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
      .filter(function (k) k in window)),
