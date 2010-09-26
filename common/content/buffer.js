@@ -1325,11 +1325,12 @@ const Buffer = Module("buffer", {
                 <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
                 { next.call(this, item, text) }
             </>);
-            context.process[1] = function (item, text) template.highlightURL(text);
+            context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
 
             context.anchored = false;
             context.keys = { text: "text", description: "url", icon: "icon" };
             context.compare = CompletionContext.Sort.number;
+            context.filters = [CompletionContext.Filter.textDescription];
 
             for (let [id, vals] in Iterator(tabGroups))
                 context.fork(id, 0, this, function (context, [name, browsers]) {
