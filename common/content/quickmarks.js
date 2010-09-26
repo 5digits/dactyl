@@ -73,8 +73,8 @@ const QuickMarks = Module("quickmarks", {
      * Opens the URL referenced by the specified <b>qmark</b>.
      *
      * @param {string} qmark The quickmark to open.
-     * @param {number} where A constant describing where to open the page.
-     *     See {@link Dactyl#open}.
+     * @param {object} where A set of parameters specifying how to open the
+     *     URL. See {@link Dactyl#open}.
      */
     jumpTo: function jumpTo(qmark, where) {
         let url = this._qmarks.get(qmark);

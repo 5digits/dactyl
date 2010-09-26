@@ -798,7 +798,7 @@ const Dactyl = Module("dactyl", {
      *     either a string, which will be passed to
      *     {@see Dactyl#stringToURLArray}, or an array in the same format as
      *     would be returned by the same.
-     * @param {object} params A set of parameters specifing to open the
+     * @param {object} params A set of parameters specifying how to open the
      *     URLs. The following properties are recognized:
      *
      *      • background   If true, new tabs are opened in the background.
