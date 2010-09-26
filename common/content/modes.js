@@ -129,6 +129,8 @@ const Modes = Module("modes", {
 
     get mainMode() this._modeMap[this._main],
 
+    get topOfStack() this._modeStack[this._modeStack.length - 1],
+
     addMode: function (name, extended, options) {
         let disp = name.replace("_", " ", "g");
         this[name] = 1 << this._lastMode++;
@@ -179,12 +181,19 @@ const Modes = Module("modes", {
         this.show();
     },
 
+    save: function (id, value, obj, prop) {
+        if (this.topOfStack)
+            this.topOfStack[2][id] = { value: value, obj: obj, prop: prop };
+    },
+
     // helper function to set both modes in one go
     // if silent == true, you also need to take care of the mode handling changes yourself
     set: function (mainMode, extendedMode, silent, stack) {
         silent = (silent || this._main == mainMode && this._extended == extendedMode);
         // if a this._main mode is set, the this._extended is always cleared
         let oldMain = this._main, oldExtended = this._extended;
+        if (!stack && mainMode != null)
+            this.modeStack = [];
         if (typeof extendedMode === "number")
             this._extended = extendedMode;
         if (typeof mainMode === "number") {
@@ -195,6 +204,8 @@ const Modes = Module("modes", {
             if (this._main != oldMain)
                 this._handleModeChange(oldMain, mainMode, oldExtended);
         }
+        if (mainMode != null && !(stack && stack.pop))
+            this._modeStack.push([this._main, this._extended, {}]);
         dactyl.triggerObserver("modeChange", [oldMain, oldExtended], [this._main, this._extended], stack);
 
         if (!silent)
@@ -202,16 +213,18 @@ const Modes = Module("modes", {
     },
 
     push: function (mainMode, extendedMode, silent) {
-        this._modeStack.push([this._main, this._extended]);
-        this.set(mainMode, extendedMode, silent, { push: this._modeStack[this._modeStack.length - 1] });
+        this.set(mainMode, extendedMode, silent, { push: this.topOfStack });
     },
 
     pop: function (silent) {
         let a = this._modeStack.pop();
-        if (a)
-            this.set(a[0], a[1], silent, { pop: a });
-        else
+        if (!this.topOfStack)
             this.reset(silent);
+        else {
+            this.set(this.topOfStack[0], this.topOfStack[1], silent, { pop: a });
+            for (let [k, { obj, prop, value }] in Iterator(this.topOfStack[2]))
+                obj[prop] = value;
+        }
     },
 
     // TODO: Deprecate this in favor of addMode? --Kris
@@ -256,6 +269,7 @@ const Modes = Module("modes", {
 
     get extended() this._extended,
     set extended(value) { this.set(null, value); }
+}, {
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

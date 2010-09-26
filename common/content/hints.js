@@ -33,9 +33,8 @@ const Hints = Module("hints", {
 
         this._resizeTimer = Timer(100, 500, function () {
             if (self._top && (modes.extended & modes.HINTS)) {
-                let win = self._top;
                 self._removeHints(0, true);
-                self._generate(win);
+                self._generate(self._top);
                 self._showHints();
             }
         });
@@ -55,7 +54,7 @@ const Hints = Module("hints", {
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
         this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
-        this.addMode("F", "Open multiple hints in tabs",          function (elem) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F"); });
+        this.addMode("F", "Open multiple hints in tabs",          function (elem, l, c, top) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F", null, top); });
         this.addMode("O", "Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
         this.addMode("T", "Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
         this.addMode("W", "Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
@@ -247,10 +246,6 @@ const Hints = Module("hints", {
     _generate: function (win) {
         if (!win)
             win = window.content;
-        if (!this._top) {
-            this._top = win;
-            win.addEventListener("resize", this._resizeTimer.closure.tell, true);
-        }
 
         let doc = win.document;
         let height = win.innerHeight;
@@ -419,10 +414,6 @@ const Hints = Module("hints", {
     _removeHints: function (timeout, slight) {
         let firstElem = this._validHints[0] || null;
 
-        if (this._top)
-            this._top.removeEventListener("resize", this._resizeTimer.closure.tell, true);
-        this._top = null;
-
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
@@ -481,6 +472,7 @@ const Hints = Module("hints", {
         let timeout = followFirst || events.feedingKeys ? 0 : 500;
         let activeIndex = (this._hintNumber ? this._hintNumber - 1 : 0);
         let elem = this._validHints[activeIndex];
+        let top = this._top;
         this._removeHints(timeout);
 
         if (timeout == 0)
@@ -490,7 +482,7 @@ const Hints = Module("hints", {
         this.timeout(function () {
             if (modes.extended & modes.HINTS)
                 modes.pop();
-            this._hintMode.action(elem, elem.href || "", this._extendedhintCount);
+            this._hintMode.action(elem, elem.href || "", this._extendedhintCount, top);
         }, timeout);
         return true;
     },
@@ -772,6 +764,9 @@ const Hints = Module("hints", {
         this.prevInput = "";
         this._canUpdate = false;
 
+        this._top = win || content;
+        this._top.addEventListener("resize", this._resizeTimer.closure.tell, true);
+
         this._generate(win);
 
         // get all keys from the input queue
@@ -794,6 +789,10 @@ const Hints = Module("hints", {
      * Cancel all hinting.
      */
     hide: function () {
+        if (this._top)
+            this._top.removeEventListener("resize", this._resizeTimer.closure.tell, true);
+        this._top = null;
+
         this._removeHints(0);
     },
 
@@ -911,7 +910,7 @@ const Hints = Module("hints", {
 
     //}}}
 }, {
-    get translitTable() function () {
+    translitTable: Class.memoize(function () {
         const table = {};
         [
             [0x00c0, 0x00c6, ["A"]], [0x00c7, 0x00c7, ["C"]],
@@ -978,19 +977,17 @@ const Hints = Module("hints", {
             [0xfb00, 0xfb06, ["ff", "fi", "fl", "ffi", "ffl", "st", "st"]],
             [0xff21, 0xff3a, "A"], [0xff41, 0xff5a, "a"]
         ].forEach(function (start, stop, val) {
-            if (typeof a[2] != "string")
-                for (i=start; i <= stop; i++)
+            if (typeof val != "string")
+                for (let i=start; i <= stop; i++)
                     table[String.fromCharCode(i)] = val[(i - start) % val.length];
             else {
                 let n = val.charCodeAt(0);
-                for (i=start; i <= stop; i++)
+                for (let i=start; i <= stop; i++)
                     table[String.fromCharCode(i)] = String.fromCharCode(n + i - start);
             }
         });
-
-        delete this.translitTable;
-        return this.translitTable = table;
-    },
+        return table;
+    }),
     indexOf: function indexOf(dest, src) {
         let table = this.translitTable;
         var end = dest.length - src.length;

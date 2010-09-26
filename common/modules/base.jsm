@@ -141,16 +141,17 @@ defineModule("base", {
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
         "Struct", "StructBase", "Timer", "UTF8", "XPCOMUtils", "array",
         "call", "callable", "curry", "debuggerProperties", "defineModule",
-        "endModule", "extend", "forEach", "isArray", "isGenerator",
-        "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
-        "keys", "memoize", "properties", "requiresMainThread", "set",
-        "update", "values"
+        "endModule", "forEach", "isArray", "isGenerator", "isinstance",
+        "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
+        "memoize", "properties", "requiresMainThread", "set", "update",
+        "values"
     ],
     use: ["services"]
 });
 
 function Runnable(self, func, args) {
     return {
+        __proto__: Runnable.prototype,
         QueryInterface: XPCOMUtils.generateQI([Ci.nsIRunnable]),
         run: function () { func.apply(self, args || []); }
     };
@@ -399,13 +400,13 @@ function isSubclass(targ, src) {
  * @param {object|string|[object|string]} src The types to check targ against.
  * @returns {boolean}
  */
+const isinstance_types = {
+    boolean: Boolean,
+    string: String,
+    function: Function,
+    number: Number
+}
 function isinstance(targ, src) {
-    const types = {
-        boolean: Boolean,
-        string: String,
-        function: Function,
-        number: Number
-    }
     src = Array.concat(src);
     for (var i = 0; i < src.length; i++) {
         if (typeof src[i] === "string") {
@@ -415,7 +416,7 @@ function isinstance(targ, src) {
         else {
             if (targ instanceof src[i])
                 return true;
-            var type = types[typeof targ];
+            var type = isinstance_types[typeof targ];
             if (type && isSubclass(src[i], type))
                 return true;
         }
@@ -474,7 +475,7 @@ function call(fn) {
  * value of the property.
  */
 function memoize(obj, key, getter) {
-    obj.__defineGetter__(key, function () (
+    obj.__defineGetter__(key, function replace() (
         Class.replaceProperty(this, key, null),
         Class.replaceProperty(this, key, getter.call(this, key))));
 }
@@ -566,6 +567,8 @@ function update(target) {
         let src = arguments[i];
         Object.getOwnPropertyNames(src || {}).forEach(function (k) {
             let desc = Object.getOwnPropertyDescriptor(src, k);
+            if (desc.value && desc.value instanceof Class.Property)
+                desc = desc.value.init(k);
             if (desc.value && callable(desc.value) && Object.getPrototypeOf(target)) {
                 let func = desc.value;
                 desc.value.superapply = function (self, args)
@@ -577,33 +580,6 @@ function update(target) {
         });
     }
     return target;
-}
-
-/**
- * Extends a subclass with a superclass. The subclass's
- * prototype is replaced with a new object, which inherits
- * from the superclass's prototype, {@see update}d with the
- * members of 'overrides'.
- *
- * @param {function} subclass
- * @param {function} superclass
- * @param {Object} overrides @optional
- */
-function extend(subclass, superclass, overrides) {
-    subclass.superclass = superclass;
-
-    try {
-        subclass.prototype = Object.create(superclass.prototype);
-    }
-    catch(e) {
-        dump(e + "\n" + String.replace(e.stack, /^/gm, "    ") + "\n\n");
-    }
-    update(subclass.prototype, overrides);
-    subclass.prototype.constructor = subclass;
-    subclass.prototype._class_ = subclass;
-
-    if (superclass.prototype.constructor === objproto.constructor)
-        superclass.prototype.constructor = superclass;
 }
 
 /**
@@ -666,13 +642,13 @@ function Class() {
     else {
         let superc = superclass;
         superclass = function Shim() {};
-        extend(superclass, superc, {
+        Class.extend(superclass, superc, {
             init: superc
         });
         superclass.__proto__ = superc;
     }
 
-    extend(Constructor, superclass, args[0]);
+    Class.extend(Constructor, superclass, args[0]);
     update(Constructor, args[1]);
     Constructor.__proto__ = superclass;
     args = args.slice(2);
@@ -683,11 +659,68 @@ function Class() {
     });
     return Constructor;
 }
-Class.replaceProperty = function (obj, prop, value) {
+/**
+ * @class Class.Property
+ * A class which, when assigned to a property in a Class's prototype
+ * or class property object, defines that property's descriptor
+ * rather than its value. When the init argument is a function, that
+ * function is passed the property's name and must return a property
+ * descriptor object. When it is an object, that object is used as
+ * the property descriptor.
+ *
+ * @param {function|Object} desc The property descriptor or a
+ *      function which returns the same.
+ */
+Class.Property = function Property(desc) ({ __proto__: Property.prototype, init: callable(desc) ? desc : function () desc });
+/**
+ * Extends a subclass with a superclass. The subclass's
+ * prototype is replaced with a new object, which inherits
+ * from the superclass's prototype, {@see update}d with the
+ * members of 'overrides'.
+ *
+ * @param {function} subclass
+ * @param {function} superclass
+ * @param {Object} overrides @optional
+ */
+Class.extend = function extend(subclass, superclass, overrides) {
+    subclass.superclass = superclass;
+
+    try {
+        subclass.prototype = Object.create(superclass.prototype);
+    }
+    catch(e) {
+        dump(e + "\n" + String.replace(e.stack, /^/gm, "    ") + "\n\n");
+    }
+    update(subclass.prototype, overrides);
+    subclass.prototype.constructor = subclass;
+    subclass.prototype._class_ = subclass;
+
+    if (superclass.prototype.constructor === objproto.constructor)
+        superclass.prototype.constructor = superclass;
+}
+
+/**
+ * Memoizes the value of a class property to the falue returned by
+ * the passed function the first time the property is accessed.
+ *
+ * @param {function(string)} getter The function which returns the
+ *      property's value.
+ * @return {Class.Property}
+ */
+Class.memoize = function memoize(getter)
+    Class.Property(function (key) ({
+        configurable: true,
+        enumerable: true,
+        get: function replace() (
+        Class.replaceProperty(this, key, null),
+        Class.replaceProperty(this, key, getter.call(this, key)))
+    }));
+
+Class.replaceProperty = function replaceProperty(obj, prop, value) {
     Object.defineProperty(obj, prop, { configurable: true, enumerable: true, value: value, writable: true });
     return value;
 };
-Class.toString = function () "[class " + this.className + "]";
+Class.toString = function toString() "[class " + this.className + "]";
 Class.prototype = {
     /**
      * Initializes new instances of this class. Called automatically

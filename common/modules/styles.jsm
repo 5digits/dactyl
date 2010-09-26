@@ -256,7 +256,33 @@ const Styles = Module("Styles", {
             context.title = ["Site"];
             context.completions = [[s, ""] for ([, s] in Iterator(styles.sites))];
         });
-    }
+    },
+
+    propertyPattern: (function () {
+        const string = /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/.source;
+        return RegExp(String.replace(<![CDATA[
+            (?:
+                (\s*)
+                ([-a-z]*)
+                (?:
+                    \s* : \s* (
+                        (?:
+                            [-\w]
+                            (?:
+                                \s* \( \s*
+                                    (?: S | [^)]*  )
+                                \s* (?: \) | $)
+                            )?
+                            \s*
+                            | \s* S \s* | [^;}]*
+                        )*
+                    )
+                )?
+            )
+            (\s* (?: ; | $) )
+        ]]>, /S/g, string).replace(/\s*/g, ""),
+        "gi");
+    })()
 }, {
     commands: function (dactyl, modules, window) {
         const commands = modules.commands;
@@ -383,35 +409,13 @@ const Styles = Module("Styles", {
     },
     completion: function (dactyl, modules, window) {
         const names = Array.slice(util.computedStyle(window.document.createElement("div")));
-        const string = /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/.source;
-        const pattern = RegExp(String.replace(<![CDATA[
-            (?:
-                (\s*)
-                ([-a-z]*)
-                (?:
-                    \s* : \s* (
-                        (?:
-                            [-\w]
-                            (?:
-                                \s* \( \s*
-                                    (?: S | [^)]*  )
-                                \s* (?: \) | $)
-                            )?
-                            \s*
-                            | \s* S \s* | [^;}]*
-                        )*
-                    )
-                )?
-            )
-            (\s* (?: ; | $) )
-        ]]>, /S/g, string).replace(/\s*/g, ""), "gi");
         modules.completion.css = function (context) {
-            context.title = ["Property"];
+            context.title = ["CSS Property"];
             context.keys = { text: function (p) p + ":", description: function () "" };
 
-            pattern.lastIndex = 0;
+            Styles.propertyPattern.lastIndex = 0;
             let match, lastMatch;
-            while ((!match || match[0]) && (match = pattern.exec(context.filter)) && (match[0].length || !lastMatch))
+            while ((!match || match[0]) && (match = Styles.propertyPattern.exec(context.filter)) && (match[0].length || !lastMatch))
                 lastMatch = match;
             if (lastMatch != null && !lastMatch[3] && !lastMatch[4]) {
                 context.advance(lastMatch.index + lastMatch[1].length)

@@ -110,26 +110,6 @@ const CommandLine = Module("commandline", {
         this._startHints = false; // whether we're waiting to start hints mode
         this._lastSubstring = "";
 
-        memoize(this, "widgets", function () {
-            let widgets = {
-                commandline: document.getElementById("dactyl-commandline"),
-                prompt: document.getElementById("dactyl-commandline-prompt"),
-                command: document.getElementById("dactyl-commandline-command"),
-
-                message: document.getElementById("dactyl-message"),
-
-                multilineOutput: document.getElementById("dactyl-multiline-output"),
-                multilineInput: document.getElementById("dactyl-multiline-input")
-            };
-
-            widgets.command.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
-            widgets.message.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
-            widgets.mowContainer = widgets.multilineOutput.parentNode;
-
-            widgets.multilineOutput.contentDocument.body.id = "dactyl-multiline-output-content";
-            return widgets;
-        });
-
         // we need to save the mode which were in before opening the command line
         // this is then used if we focus the command line again without the "official"
         // way of calling "open"
@@ -343,6 +323,26 @@ const CommandLine = Module("commandline", {
             node.style.opacity = this._quiet || this._silent ? "0" : "";
         }, this);
     },
+
+    widgets: Class.memoize(function () {
+        let widgets = {
+            commandline: document.getElementById("dactyl-commandline"),
+            prompt: document.getElementById("dactyl-commandline-prompt"),
+            command: document.getElementById("dactyl-commandline-command"),
+
+            message: document.getElementById("dactyl-message"),
+
+            multilineOutput: document.getElementById("dactyl-multiline-output"),
+            multilineInput: document.getElementById("dactyl-multiline-input")
+        };
+
+        widgets.command.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
+        widgets.message.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
+        widgets.mowContainer = widgets.multilineOutput.parentNode;
+
+        widgets.multilineOutput.contentDocument.body.id = "dactyl-multiline-output-content";
+        return widgets;
+    }),
 
     // @param type can be:
     //  "submit": when the user pressed enter in the command line

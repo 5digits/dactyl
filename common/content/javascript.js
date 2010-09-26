@@ -592,7 +592,7 @@ const JavaScript = Module("javascript", {
      * A list of properties of the global object which are not
      * enumerable by any standard method.
      */
-    globalNames: array.uniq([
+    globalNames: Class.memoize(function () array.uniq([
         "Array", "ArrayBuffer", "AttributeName", "Boolean",
         "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
         "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date",
@@ -610,7 +610,7 @@ const JavaScript = Module("javascript", {
         "undefined", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
-     .filter(function (k) k in window)),
+     .filter(function (k) k in window))),
 
     /**
      * Installs argument string completers for a set of functions.
