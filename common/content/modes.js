@@ -121,7 +121,7 @@ const Modes = Module("modes", {
 
     NONE: 0,
 
-    __iterator__: function () array.itervalues(this.all),
+    __iterator__: function () array.iterValues(this.all),
 
     get all() this._mainModes.slice(),
 

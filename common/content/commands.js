@@ -323,7 +323,7 @@ const Commands = Module("commands", {
     /** @property {Iterator(Command)} @private */
     __iterator__: function () {
         let sorted = this._exCommands.sort(function (a, b) a.name > b.name);
-        return array.itervalues(sorted);
+        return array.iterValues(sorted);
     },
 
     /** @property {string} The last executed Ex command line. */
@@ -548,7 +548,7 @@ const Commands = Module("commands", {
             argCount = "*";
 
         var args = []; // parsed options
-        args.__iterator__ = function () array.iteritems(this);
+        args.__iterator__ = function () array.iterItems(this);
         args.string = str; // for access to the unparsed string
         args.literalArg = "";
 
@@ -855,7 +855,7 @@ const Commands = Module("commands", {
     removeUserCommand: function (name) {
         let cmd = this.get(name);
         dactyl.assert(cmd.user, "E184: No such user-defined command: " + name);
-        for (let name in array.itervalues(cmd.names))
+        for (let name in array.iterValues(cmd.names))
             delete this._exMap[name];
         this._exCommands = this._exCommands.filter(function (c) c != cmd);
     },

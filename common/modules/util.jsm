@@ -548,7 +548,7 @@ const Util = Module("Util", {
                 if (color)
                     return <span highlight="HelpXMLBlock"><span highlight="HelpXMLTagStart">&lt;{
                             namespaced(elem)} {
-                                template.map(array.itervalues(elem.attributes),
+                                template.map(array.iterValues(elem.attributes),
                                     function (attr)
                                         <span highlight="HelpXMLAttribute">{namespaced(attr)}</span> +
                                         <span highlight="HelpXMLString">{attr.value}</span>,
@@ -560,7 +560,7 @@ const Util = Module("Util", {
 
                 let tag = "<" + [namespaced(elem)].concat(
                     [namespaced(a) + "=" +  template.highlight(a.value, true)
-                     for ([i, a] in array.iteritems(elem.attributes))]).join(" ");
+                     for ([i, a] in array.iterItems(elem.attributes))]).join(" ");
                 return tag + (hasChildren ? "/>" : ">...</" + namespaced(elem) + ">");
             }
             catch (e) {

@@ -1732,7 +1732,7 @@ const ItemList = Class("ItemList", {
 
             for (let [i, row] in Iterator(context.getRows(start, end, this._doc)))
                 nodes[i] = row;
-            for (let [i, row] in array.iteritems(nodes)) {
+            for (let [i, row] in array.iterItems(nodes)) {
                 if (!row)
                     continue;
                 let display = (i >= start && i < end);

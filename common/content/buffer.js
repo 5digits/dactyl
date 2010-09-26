@@ -84,7 +84,7 @@ const Buffer = Module("buffer", {
             const ACCESS_READ = Ci.nsICache.ACCESS_READ;
             let cacheKey = doc.location.toString().replace(/#.*$/, "");
 
-            for (let proto in array.itervalues(["HTTP", "FTP"])) {
+            for (let proto in array.iterValues(["HTTP", "FTP"])) {
                 try {
                     var cacheEntryDescriptor = services.get("cache").createSession(proto, 0, true)
                                                        .openCacheEntry(cacheKey, ACCESS_READ, false);
@@ -1022,7 +1022,7 @@ const Buffer = Module("buffer", {
         if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
             return win;
 
-        for (let frame in array.itervalues(win.frames))
+        for (let frame in array.iterValues(win.frames))
             if (frame.scrollMaxX > 0 || frame.scrollMaxY > 0)
                 return frame;
 
@@ -1335,7 +1335,7 @@ const Buffer = Module("buffer", {
                 context.fork(id, 0, this, function (context, [name, browsers]) {
                     context.title = [name || "Buffers"];
                     context.generate = function ()
-                        util.map(array.itervalues(browsers), function ([i, browser]) {
+                        util.map(array.iterValues(browsers), function ([i, browser]) {
                             let indicator = " ";
                             if (i == tabs.index())
                                indicator = "%"

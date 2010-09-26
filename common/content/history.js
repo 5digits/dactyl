@@ -45,7 +45,7 @@ const History = Module("history", {
         let sh = window.getWebNavigation().sessionHistory;
         let obj = [];
         obj.index = sh.index;
-        obj.__iterator__ = function () array.iteritems(this);
+        obj.__iterator__ = function () array.iterItems(this);
         for (let i in util.range(0, sh.count)) {
             obj[i] = update(Object.create(sh.getEntryAtIndex(i, false)),
                             { index: i });

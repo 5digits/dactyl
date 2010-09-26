@@ -455,7 +455,7 @@ const RangeFind = Class("RangeFind", {
             let pageStart = RangeFind.endpoint(pageRange, true);
             let pageEnd = RangeFind.endpoint(pageRange, false);
 
-            for (let frame in array.itervalues(win.frames)) {
+            for (let frame in array.iterValues(win.frames)) {
                 let range = doc.createRange();
                 if (util.computedStyle(frame.frameElement).visibility == "visible") {
                     range.selectNode(frame.frameElement);
@@ -577,11 +577,11 @@ const RangeFind = Class("RangeFind", {
     },
 
     addListeners: function () {
-        for (let range in array.itervalues(this.ranges))
+        for (let range in array.iterValues(this.ranges))
             range.window.addEventListener("unload", this.closure.onUnload, true);
     },
     purgeListeners: function () {
-        for (let range in array.itervalues(this.ranges))
+        for (let range in array.iterValues(this.ranges))
             range.window.removeEventListener("unload", this.closure.onUnload, true);
     },
     onUnload: function (event) {

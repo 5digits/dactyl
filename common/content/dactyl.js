@@ -509,7 +509,7 @@ const Dactyl = Module("dactyl", {
             // Find the tags in the document.
             function addTags(file, doc) {
                 for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                    for (let tag in array((elem.value || elem.textContent).split(/\s+/)).compact().itervalues())
+                    for (let tag in array((elem.value || elem.textContent).split(/\s+/)).compact().iterValues())
                         tagMap[tag] = file;
             }
 
@@ -592,7 +592,7 @@ const Dactyl = Module("dactyl", {
                         if (node instanceof HTMLHtmlElement)
                             data.push(" xmlns=" + XHTML.uri.quote());
 
-                        for (let { name, value } in array.itervalues(node.attributes)) {
+                        for (let { name, value } in array.iterValues(node.attributes)) {
                             if (name == "dactyl:highlight") {
                                 name = "class";
                                 value = "hl-" + value;

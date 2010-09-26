@@ -342,7 +342,7 @@ set.remove = function (set, key) {
  */
 function iter(obj) {
     if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
-        return array.iteritems(obj);
+        return array.iterItems(obj);
     if (obj instanceof Ci.nsIDOMNamedNodeMap)
         return (function () {
             for (let i = 0; i < obj.length; i++)
@@ -899,7 +899,7 @@ const array = Class("array", Array, {
 
         return {
             __proto__: ary,
-            __iterator__: function () this.iteritems(),
+            __iterator__: function () this.iterItems(),
             __noSuchMethod__: function (meth, args) {
                 var res = array[meth].apply(null, [this.array].concat(args));
                 if (isArray(res))
@@ -966,7 +966,7 @@ const array = Class("array", Array, {
      * @param {Array} ary
      * @returns {Iterator(Object)}
      */
-    itervalues: function itervalues(ary) {
+    iterValues: function iterValues(ary) {
         let length = ary.length;
         for (let i = 0; i < length; i++)
             yield ary[i];
@@ -978,7 +978,7 @@ const array = Class("array", Array, {
      * @param {Array} ary
      * @returns {Iterator([{number}, {Object}])}
      */
-    iteritems: function iteritems(ary) {
+    iterItems: function iterItems(ary) {
         let length = ary.length;
         for (let i = 0; i < length; i++)
             yield [i, ary[i]];

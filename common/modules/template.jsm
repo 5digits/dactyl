@@ -20,7 +20,7 @@ const Template = Module("Template", {
 
     map: function map(iter, func, sep, interruptable) {
         if (iter.length) // FIXME: Kludge?
-            iter = array.itervalues(iter);
+            iter = array.iterValues(iter);
         let ret = <></>;
         let n = 0;
         for each (let i in Iterator(iter)) {
