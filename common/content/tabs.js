@@ -471,7 +471,7 @@ const Tabs = Module("tabs", {
             }
 
             if (url.indexOf(buffer) >= 0 || title.indexOf(lowerBuffer) >= 0)
-                matches.push(index);
+                matches.push(browser);
         }
 
         if (matches.length == 0)
