@@ -764,14 +764,7 @@ const CommandLine = Module("commandline", {
         if (event.type == "click" && event.target instanceof HTMLAnchorElement) {
             function openLink(where) {
                 event.preventDefault();
-                // FIXME: Why is this needed? --djk
-                //      : It seems to be a hack so that AnchorElements
-                //        don't need their URLs in their @href and their
-                //        text content. I'd rather be rid of it. --Kris
-                if (event.target.getAttribute("href") == "#")
-                    dactyl.open(event.target.textContent, where);
-                else
-                    dactyl.open(event.target.href, where);
+                dactyl.open(event.target.href, where);
             }
 
             switch (key) {
