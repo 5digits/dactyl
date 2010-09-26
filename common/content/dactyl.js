@@ -1225,7 +1225,8 @@ const Dactyl = Module("dactyl", {
                     let class_ = dir.map(function (dir) "html|html > xul|scrollbar[orient=" + dir + "]");
 
                     styles.addSheet(true, "scrollbar", "*",
-                            class_.length ? class_.join(", ") + " { visibility: collapse !important; }" : "");
+                            class_.length ? class_.join(", ") + " { visibility: collapse !important; }" : "",
+                            true);
 
                     options.safeSetPref("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
                                         "See 'guioptions' scrollbar flags.");
