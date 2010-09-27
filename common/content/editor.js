@@ -381,7 +381,7 @@ const Editor = Module("editor", {
      */
     expandAbbreviation: function (mode) {
         let textbox   = Editor.getEditor();
-        if (!textbox)
+        if (!(textbox && textbox.value))
             return false;
         let text      = textbox.value;
         let currStart = textbox.selectionStart;

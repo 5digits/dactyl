@@ -8,6 +8,157 @@
 
 /** @scope modules */
 
+const CommandWidgets = Class("CommandWidgets", {
+    init: function () {
+        const self = this;
+        this.elements = {};
+        this.addElem({
+            name: "container",
+            noValue: true
+        });
+        this.addElem({
+            name: "commandline",
+            getValue: function () this.command,
+            getGroup: function () options.get("guioptions").has("C") ? this.commandbar : this.statusbar,
+            noValue: true,
+        });
+        this.addElem({
+            name: "command",
+            id: "commandline-command",
+            get: function (elem) {
+                // The long path is because of complications with the
+                // completion preview.
+                try {
+                    return elem.inputField.editor.rootElement.firstChild.textContent;
+                }
+                catch (e) {
+                    return elem.value;
+                }
+            },
+            getElement: CommandWidgets.getEditor,
+            getGroup: function (value) this.activeGroup.commandline,
+            onChange: function (elem) {
+                elem.selectionStart = elem.value.length;
+                elem.selectionEnd = elem.value.length;
+            },
+            onVisibility: function (elem, visible) visible && elem.focus()
+        });
+        this.addElem({
+            name: "prompt",
+            id: "commandline-prompt",
+            defaultGroup: "CmdPrompt",
+            getGroup: function () this.activeGroup.commandline
+        });
+        this.addElem({
+            name: "message",
+            defaultGroup: "Normal",
+            getElement: CommandWidgets.getEditor,
+            getGroup: function (value) {
+                if (this.command && !options.get("guioptions").has("M"))
+                    return this.statusbar;
+                let statusElem = this.statusbar.message;
+                if (value && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
+                    return this.commandbar;
+                return this.activeGroup.mode;
+            }
+        });
+        this.addElem({
+            name: "mode",
+            defaultGroup: "ModeMsg",
+            getGroup: function (value) {
+                if (!options.get("guioptions").has("M"))
+                    if (this.commandbar.container.clientHeight == 0 ||
+                        value && !this.commandbar.commandline.collapsed)
+                        return this.statusbar;
+                return this.commandbar;
+            }
+        });
+    },
+    addElem: function (obj) {
+        const self = this;
+        this.elements[obj.name] = obj;
+        function get(id) obj.getElement ? obj.getElement(id) : document.getElementById(id);
+        this.active.__defineGetter__(obj.name, function () self.activeGroup[obj.name][obj.name]);
+        this.activeGroup.__defineGetter__(obj.name, function () self.getGroup(obj.name));
+        memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-" + (obj.id || obj.name)));
+        memoize(this.commandbar, obj.name, function () get("dactyl-" + (obj.id || obj.name)));
+
+        if (!obj.noValue)
+            Object.defineProperty(this, obj.name, Modes.boundProperty({
+                get: function () {
+                    let elem = self.getGroup(obj.name, obj.value)[obj.name];
+                    if (obj.value != null)
+                        return [obj.value[0], obj.get ? obj.get.call(this, elem) : elem.value]
+                    return null;
+                },
+                set: function (val) {
+                    if (val != null && !isArray(val))
+                        val = [obj.defaultGroup || "", val];
+                    obj.value = val;
+
+                    [this.commandbar, this.statusbar].forEach(function (nodeSet) {
+                        let elem = nodeSet[obj.name];
+                        if (val != null) {
+                            highlight.highlightNode(elem, (val[0] != null ? val[0] : obj.defaultGroup)
+                                    .split(/\s/).filter(util.identity)
+                                    .map(function (g) g + " " + nodeSet.group + g)
+                                    .join(" "));
+                            elem.value = val[1];
+                            if (obj.onChange)
+                                obj.onChange.call(this, elem);
+                        }
+                    }, this);
+
+                    this.updateVisibility();
+                    return val;
+                }
+        }).init(obj.name));
+    },
+    getGroup: function (name, value) {
+        if (!statusline.visible)
+            return this.commandbar;
+        return this.elements[name].getGroup.call(this, arguments.length > 1 ? value : this[name]);
+    },
+    updateVisibility: function () {
+        for (let elem in values(this.elements))
+            if (elem.getGroup) {
+                let value = elem.getValue ? elem.getValue.call(this)
+                          : elem.noValue || this[elem.name];
+
+                let activeGroup = this.getGroup(elem.name, value);
+                for (let group in values([this.commandbar, this.statusbar])) {
+                    let meth, node = group[elem.name];
+                    let visible = (value && group === activeGroup);
+                    if (!node.collapsed == !visible) {
+                        node.collapsed = !visible;
+                        if (elem.onVisibility)
+                            elem.onVisibility.call(this, node, visible);
+                    }
+                }
+            }
+    },
+
+    active: Class.memoize(Object),
+    activeGroup: Class.memoize(Object),
+    commandbar: Class.memoize(function () ({ group: "Cmd" })),
+    statusbar: Class.memoize(function ()  ({ group: "Status" })),
+    completionList: Class.memoize(function () document.getElementById("dactyl-completions")),
+    completionContainer: Class.memoize(function () this.completionList.parentNode),
+    multilineOutput: Class.memoize(function () {
+        let elem = document.getElementById("dactyl-multiline-output");
+        elem.contentDocument.body.id = "dactyl-multiline-output-content";
+        return elem;
+    }),
+    multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
+    mowContainer: Class.memoize(function () this.multilineOutput.parentNode)
+}, {
+    getEditor: function (id) {
+        let elem = document.getElementById(id);
+        elem.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
+        return elem;
+    }
+});
+
 /**
  * This class is used for prompting of user input and echoing of messages.
  *
@@ -103,7 +254,12 @@ const CommandLine = Module("commandline", {
         ////////////////////// VARIABLES ///////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////{{{
 
-        memoize(this, "_completionList", function () ItemList("dactyl-completions"));
+        this.__defineGetter__("_completionList", function () {
+            let node = this.widgets.active.commandline;
+            if (!node._completionList)
+                node._completionList = ItemList("dactyl-completions-" + node.id);
+            return node._completionList;
+        });
         this._completions = null;
         this._history = null;
 
@@ -114,7 +270,6 @@ const CommandLine = Module("commandline", {
         // this is then used if we focus the command line again without the "official"
         // way of calling "open"
         this._currentExtendedMode = null; // the extended mode which we last openend the command line for
-        this._currentPrompt = null;
         this._currentCommand = null;
 
         // save the arguments for the inputMultiline method which are needed in the event handler
@@ -170,15 +325,6 @@ const CommandLine = Module("commandline", {
         }
     },
 
-
-    /**
-     * Highlight the messageBox according to <b>group</b>.
-     */
-    set highlightGroup(group) {
-        highlight.highlightNode(this.widgets.message, group);
-    },
-    get highlightGroup() this.widgets.message.getAttributeNS(NS.uri, "highlight"),
-
     /**
      * Determines whether the command line should be visible.
      *
@@ -186,31 +332,6 @@ const CommandLine = Module("commandline", {
      */
     get commandVisible() modes.main == modes.COMMAND_LINE &&
             !(modes.extended & (modes.INPUT_MULTILINE | modes.OUTPUT_MULTILINE)),
-
-    /**
-     * Set the command-line prompt.
-     *
-     * @param {string} val
-     * @param {string} highlightGroup
-     */
-    _setPrompt: function (val, highlightGroup) {
-        this.widgets.prompt.value = val;
-        this.widgets.prompt.size = val.length;
-        this.widgets.prompt.collapsed = (val == "");
-        highlight.highlightNode(this.widgets.prompt, highlightGroup || commandline.HL_NORMAL);
-    },
-
-    /**
-     * Set the command-line input value. The caret is reset to the
-     * end of the line.
-     *
-     * @param {string} cmd
-     */
-    _setCommand: function (cmd) {
-        this.widgets.command.value = cmd;
-        this.widgets.command.selectionStart = cmd.length;
-        this.widgets.command.selectionEnd = cmd.length;
-    },
 
     /**
      * Display a message in the command-line area.
@@ -221,15 +342,14 @@ const CommandLine = Module("commandline", {
      *     messages move to the MOW.
      */
     _echoLine: function echoLine(str, highlightGroup, forceSingle) {
-        this.highlightGroup = highlightGroup;
-        this.widgets.message.value = str;
+        this.widgets.message = str ? [highlightGroup, str] : null;
 
         dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
 
         if (!this.commandVisible)
             commandline.hide();
 
-        let field = this.widgets.message.inputField;
+        let field = this.widgets.active.message.inputField;
         if (!forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth)
             this._echoMultiline(<span highlight="Message">{str}</span>, highlightGroup);
     },
@@ -319,30 +439,14 @@ const CommandLine = Module("commandline", {
     get quiet() this._quiet,
     set quiet(val) {
         this._quiet = val;
-        Array.forEach(this.widgets.commandline.childNodes, function (node) {
-            node.style.opacity = this._quiet || this._silent ? "0" : "";
+        ["commandbar", "statusbar"].forEach(function (nodeSet) {
+            Array.forEach(this.widgets[nodeSet].commandline.childNodes, function (node) {
+                node.style.opacity = this._quiet || this._silent ? "0" : "";
+            }, this);
         }, this);
     },
 
-    widgets: Class.memoize(function () {
-        let widgets = {
-            commandline: document.getElementById("dactyl-commandline"),
-            prompt: document.getElementById("dactyl-commandline-prompt"),
-            command: document.getElementById("dactyl-commandline-command"),
-
-            message: document.getElementById("dactyl-message"),
-
-            multilineOutput: document.getElementById("dactyl-multiline-output"),
-            multilineInput: document.getElementById("dactyl-multiline-input")
-        };
-
-        widgets.command.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
-        widgets.message.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
-        widgets.mowContainer = widgets.multilineOutput.parentNode;
-
-        widgets.multilineOutput.contentDocument.body.id = "dactyl-multiline-output-content";
-        return widgets;
-    }),
+    widgets: Class.memoize(function () CommandWidgets()),
 
     // @param type can be:
     //  "submit": when the user pressed enter in the command line
@@ -371,19 +475,11 @@ const CommandLine = Module("commandline", {
         }
     },
 
-    get command() {
-        try {
-            // The long path is because of complications with the
-            // completion preview.
-            return this.widgets.command.inputField.editor.rootElement.firstChild.textContent;
-        }
-        catch (e) {
-            return this.widgets.command.value;
-        }
+    hideCompletions: function hideCompletions() {
+        for (let nodeSet in values([this.widgets.statusbar, this.widgets.commandbar]))
+            if (nodeSet.commandline._completionList)
+                nodeSet.commandline._completionList.hide();
     },
-    set command(cmd) this.widgets.command.value = cmd,
-
-    get message() this.widgets.message.value,
 
     /**
      * Open the command line. The main mode is set to
@@ -398,21 +494,18 @@ const CommandLine = Module("commandline", {
     open: function open(prompt, cmd, extendedMode) {
         // save the current prompts, we need it later if the command widget
         // receives focus without calling the this.open() method
-        this._currentPrompt = prompt || "";
         this._currentCommand = cmd || "";
         this._currentExtendedMode = extendedMode || null;
         this._keepCommand = false;
 
-        this._setPrompt(this._currentPrompt);
-        this._setCommand(this._currentCommand);
-        this.widgets.commandline.collapsed = false;
-
         modes.set(modes.COMMAND_LINE, this._currentExtendedMode);
 
-        this.widgets.command.focus();
+        this.widgets.active.commandline.collapsed = false;
+        this.widgets.prompt = prompt;
+        this.widgets.command = cmd || "";
 
-        this._history = CommandLine.History(this.widgets.command.inputField, (modes.extended == modes.EX) ? "command" : "search");
-        this._completions = CommandLine.Completions(this.widgets.command.inputField);
+        this._history = CommandLine.History(this.widgets.active.command.inputField, (modes.extended == modes.EX) ? "command" : "search");
+        this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
 
         // open the completion list automatically if wanted
         if (cmd.length)
@@ -442,7 +535,7 @@ const CommandLine = Module("commandline", {
         dactyl.focusContent(false);
 
         this.widgets.multilineInput.collapsed = true;
-        this._completionList.hide();
+        this.hideCompletions();
 
         if (!this._keepCommand || this._silent || this._quiet) {
             this.widgets.mowContainer.collapsed = true;
@@ -454,6 +547,17 @@ const CommandLine = Module("commandline", {
             commandline.updateMorePrompt();
         }
         this._keepCommand = false;
+    },
+
+    get command() {
+        if (this.widgets.command)
+            return this._lastCommand = this.widgets.command[1];
+        return this._lastCommand;
+    },
+    set command(val) {
+        if (this.widgets.command)
+            return this.widgets.command = val;
+        return this._lastCommand = val;
     },
 
     /**
@@ -473,7 +577,7 @@ const CommandLine = Module("commandline", {
      * are under it.
      */
     hide: function hide() {
-        this.widgets.commandline.collapsed = true;
+        this.widgets.command = null;
     },
 
     /**
@@ -524,16 +628,16 @@ const CommandLine = Module("commandline", {
         if (single)
             this._lastEcho = null;
         else {
-            if (this.widgets.message.value == this._lastEcho)
+            if (this.widgets.message && this.widgets.message[1] == this._lastEcho)
                 this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
-                                    this.highlightGroup);
+                                    this.widgets.message[0]);
             this._lastEcho = (action == this._echoLine) && str;
         }
 
         // TODO: this is all a bit convoluted - clean up.
         // assume that FORCE_MULTILINE output is fully styled
         if (!(flags & this.FORCE_MULTILINE) && !single
-            && (!this.widgets.mowContainer.collapsed || this.widgets.message.value == this._lastEcho)) {
+            && (!this.widgets.mowContainer.collapsed || this.widgets.message && this.widgets.message[1] == this._lastEcho)) {
 
             highlightGroup += " Message";
             action = this._echoMultiline;
@@ -575,12 +679,11 @@ const CommandLine = Module("commandline", {
         modes.push(modes.COMMAND_LINE, modes.PROMPT);
         this._currentExtendedMode = modes.PROMPT;
 
-        this._setPrompt(prompt, extra.promptHighlight || this.HL_QUESTION);
-        this._setCommand(extra.default || "");
-        this.widgets.commandline.collapsed = false;
-        this.widgets.command.focus();
+        this.widgets.prompt = !prompt ? null : [extra.promptHighlight || "Question", prompt];
+        this.widgets.command = extra.default || "";
+        this.widgets.active.commandline.collapsed = false;
 
-        this._completions = CommandLine.Completions(this.widgets.command.inputField);
+        this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
     },
 
     readHeredoc: function (end) {
@@ -603,7 +706,7 @@ const CommandLine = Module("commandline", {
     // FIXME: Buggy, especially when pasting. Shouldn't use a RegExp.
     inputMultiline: function inputMultiline(end, callbackFunc) {
         // Kludge.
-        let cmd = !this.widgets.command.collapsed && this.command;
+        let cmd = !this.widgets.active.command.collapsed && this.command;
         modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE);
         if (cmd != false)
             this._echoLine(cmd, this.HL_NORMAL);
@@ -634,12 +737,12 @@ const CommandLine = Module("commandline", {
             if (event.type == "blur") {
                 // prevent losing focus, there should be a better way, but it just didn't work otherwise
                 this.timeout(function () {
-                    if (this.commandVisible && event.originalTarget == this.widgets.command.inputField)
-                        this.widgets.command.inputField.focus();
+                    if (this.commandVisible && event.originalTarget == this.widgets.active.command.inputField)
+                        this.widgets.active.command.inputField.focus();
                 }, 0);
             }
             else if (event.type == "focus") {
-                if (!this.commandVisible && event.target == this.widgets.command.inputField) {
+                if (!this.commandVisible && event.target == this.widgets.active.command.inputField) {
                     event.target.blur();
                     dactyl.beep();
                 }
@@ -662,7 +765,7 @@ const CommandLine = Module("commandline", {
                     let mode = this._currentExtendedMode; // save it here, as modes.pop() resets it
                     this._keepCommand = !userContext.hidden_option_no_command_afterimage;
                     this._currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
-                    modes.pop(!this._silent);
+                    modes.pop();
                     commandline.triggerCallback("submit", mode, command);
                 }
                 // user pressed <Up> or <Down> arrow to cycle history completion
@@ -946,7 +1049,7 @@ const CommandLine = Module("commandline", {
     },
 
     getSpaceNeeded: function getSpaceNeeded() {
-        let rect = this.widgets.commandline.getBoundingClientRect();
+        let rect = this.widgets.commandbar.commandline.getBoundingClientRect();
         let offset = rect.bottom - window.innerHeight;
         return Math.max(0, offset);
     },
@@ -960,21 +1063,19 @@ const CommandLine = Module("commandline", {
      *     and what they do.
      */
     updateMorePrompt: function updateMorePrompt(force, showHelp) {
-        if (this.widgets.mowContainer.collapsed) {
-            this._echoLine("", this.HL_NORMAL);
-            return;
-        }
+        if (this.widgets.mowContainer.collapsed)
+            return this.widgets.message = null;
 
         let win = this.widgets.multilineOutput.contentWindow;
         function isScrollable() !win.scrollMaxY == 0;
         function atEnd() win.scrollY / win.scrollMaxY >= 1;
 
         if (showHelp)
-            this._echoLine("-- More -- SPACE/d/j: screen/page/line down, b/u/k: up, q: quit", this.HL_MOREMSG, true);
+            this.widgets.message = ["MoreMsg", "-- More -- SPACE/d/j: screen/page/line down, b/u/k: up, q: quit"];
         else if (force || (options["more"] && isScrollable() && !atEnd()))
-            this._echoLine("-- More --", this.HL_MOREMSG, true);
+            this.widgets.message = ["MoreMsg", "-- More --"];
         else
-            this._echoLine("Press ENTER or type command to continue", this.HL_QUESTION, true);
+            this.widgets.message = ["Question", "Press ENTER or type command to continue"];
     },
 
     /**
@@ -994,7 +1095,7 @@ const CommandLine = Module("commandline", {
             availableHeight += parseFloat(this.widgets.mowContainer.height);
         availableHeight -= extra || 0;
 
-        doc.body.style.minWidth = this.widgets.commandline.scrollWidth + "px";
+        doc.body.style.minWidth = this.widgets.commandbar.commandline.scrollWidth + "px";
         this.widgets.mowContainer.height = Math.min(doc.height, availableHeight) + "px";
         this.timeout(function ()
             this.widgets.mowContainer.height = Math.min(doc.height, availableHeight) + "px",
@@ -1158,7 +1259,7 @@ const CommandLine = Module("commandline", {
             // The second line is a hack to deal with some substring
             // preview corner cases.
             let value = this.prefix + completion + this.suffix;
-            commandline.widgets.command.value = value;
+            commandline.widgets.active.command.value = value;
             this.editor.selection.focusNode.textContent = value;
 
             // Reset the caret to one position after the completion.
@@ -1168,8 +1269,8 @@ const CommandLine = Module("commandline", {
 
         get caret() this.editor.selection.focusOffset,
         set caret(offset) {
-            commandline.widgets.command.selectionStart = offset;
-            commandline.widgets.command.selectionEnd = offset;
+            commandline.widgets.active.command.selectionStart = offset;
+            commandline.widgets.active.command.selectionEnd = offset;
         },
 
         get start() this.context.allItems.start,
@@ -1245,9 +1346,9 @@ const CommandLine = Module("commandline", {
             }
             else if (this.removeSubstring) {
                 let str = this.removeSubstring;
-                let cmd = commandline.widgets.command.value;
+                let cmd = commandline.widgets.active.command.value;
                 if (cmd.substr(cmd.length - str.length) == str)
-                    commandline.widgets.command.value = cmd.substr(0, cmd.length - str.length);
+                    commandline.widgets.active.command.value = cmd.substr(0, cmd.length - str.length);
             }
             delete this.removeSubstring;
         },
@@ -1601,6 +1702,7 @@ const ItemList = Class("ItemList", {
         this._container = iframe.parentNode;
 
         this._doc.body.id = id + "-content";
+        this._doc.body.className = iframe.className + "-content";
         this._doc.body.appendChild(this._doc.createTextNode(""));
         this._doc.body.style.borderTop = "1px solid black"; // FIXME: For cases where completions/MOW are shown at once, or ls=0. Should use :highlight.
 

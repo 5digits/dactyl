@@ -568,7 +568,7 @@ function update(target) {
         Object.getOwnPropertyNames(src || {}).forEach(function (k) {
             let desc = Object.getOwnPropertyDescriptor(src, k);
             if (desc.value && desc.value instanceof Class.Property)
-                desc = desc.value.init(k);
+                desc = desc.value.init(k) || desc.value;
             if (desc.value && callable(desc.value) && Object.getPrototypeOf(target)) {
                 let func = desc.value;
                 desc.value.superapply = function (self, args)
@@ -663,15 +663,15 @@ function Class() {
  * @class Class.Property
  * A class which, when assigned to a property in a Class's prototype
  * or class property object, defines that property's descriptor
- * rather than its value. When the init argument is a function, that
- * function is passed the property's name and must return a property
- * descriptor object. When it is an object, that object is used as
- * the property descriptor.
+ * rather than its value. If the desc object has an init property, it
+ * will be called with the property's name before the descriptor is
+ * assigned.
  *
- * @param {function|Object} desc The property descriptor or a
- *      function which returns the same.
+ * @param {Object} desc The property descriptor.
  */
-Class.Property = function Property(desc) ({ __proto__: Property.prototype, init: callable(desc) ? desc : function () desc });
+Class.Property = function Property(desc) update(
+    Object.create(Property.prototype), desc);
+Class.Property.prototype.init = function () {};
 /**
  * Extends a subclass with a superclass. The subclass's
  * prototype is replaced with a new object, which inherits
@@ -708,13 +708,15 @@ Class.extend = function extend(subclass, superclass, overrides) {
  * @return {Class.Property}
  */
 Class.memoize = function memoize(getter)
-    Class.Property(function (key) ({
+    Class.Property({
         configurable: true,
         enumerable: true,
-        get: function replace() (
-        Class.replaceProperty(this, key, null),
-        Class.replaceProperty(this, key, getter.call(this, key)))
-    }));
+        init: function (key) {
+            this.get = function replace() (
+                Class.replaceProperty(this, key, null),
+                Class.replaceProperty(this, key, getter.call(this, key)))
+        }
+    });
 
 Class.replaceProperty = function replaceProperty(obj, prop, value) {
     Object.defineProperty(obj, prop, { configurable: true, enumerable: true, value: value, writable: true });

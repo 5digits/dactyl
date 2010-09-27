@@ -27,6 +27,8 @@ const Modes = Module("modes", {
         this._lastMode = 0;
         this._modeMap = {};
 
+        this.boundProperties = {};
+
         // main modes, only one should ever be active
         this.addMode("NORMAL",   { char: "n", display: -1 });
         this.addMode("INSERT",   { char: "i", input: true });
@@ -168,11 +170,10 @@ const Modes = Module("modes", {
 
     // show the current mode string in the command line
     show: function () {
-        let msg = "";
+        let msg = null;
         if (options["showmode"])
             msg = this._getModeMessage();
-
-        commandline.echo(msg, "ModeMsg", commandline.FORCE_SINGLELINE);
+        commandline.widgets.mode = msg || null;
     },
 
     // add/remove always work on the this._extended mode only
@@ -181,19 +182,30 @@ const Modes = Module("modes", {
         this.show();
     },
 
-    save: function (id, value, obj, prop) {
-        if (this.topOfStack)
-            this.topOfStack[2][id] = { value: value, obj: obj, prop: prop };
+    save: function (id, obj, prop) {
+        this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop };
     },
 
     // helper function to set both modes in one go
     // if silent == true, you also need to take care of the mode handling changes yourself
     set: function (mainMode, extendedMode, silent, stack) {
+
+        if (!stack && mainMode != null)
+            this._modeStack = [];
+
+        let push = mainMode != null && !(stack && stack.pop);
+        if (push && this.topOfStack)
+            for (let [id, { obj, prop }] in Iterator(this.boundProperties)) {
+                if (!obj.get())
+                    delete this.boundProperties(id);
+                else
+                    this.topOfStack[2][id] = { obj: obj.get(), prop: prop, value: obj.get()[prop] };
+            }
+
         silent = (silent || this._main == mainMode && this._extended == extendedMode);
         // if a this._main mode is set, the this._extended is always cleared
         let oldMain = this._main, oldExtended = this._extended;
-        if (!stack && mainMode != null)
-            this.modeStack = [];
+
         if (typeof extendedMode === "number")
             this._extended = extendedMode;
         if (typeof mainMode === "number") {
@@ -270,6 +282,26 @@ const Modes = Module("modes", {
     get extended() this._extended,
     set extended(value) { this.set(null, value); }
 }, {
+    cacheId: 0,
+    boundProperty: function boundProperty(desc) {
+        let id = this.cacheId++, value;
+        return Class.Property(update({
+            enumerable: true,
+            configurable: true,
+            init: function (prop) update(this, {
+                get: function () {
+                    if (desc.get)
+                        var val = desc.get.call(this, value);
+                    return val === undefined ? value : val;
+                },
+                set: function (val) {
+                    value = desc.set.call(this, val);
+                    value = value === undefined ? val : value;
+                    modes.save(id, this, prop)
+                }
+            })
+        }, desc));
+    }
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

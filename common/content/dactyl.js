@@ -94,22 +94,27 @@ const Dactyl = Module("dactyl", {
         postCommands: null
     },
 
-    registerObserver: function (type, callback) {
+    registerObserver: function (type, callback, weak) {
         if (!(type in this.observers))
             this.observers[type] = [];
-        this.observers[type].push(callback);
+        this.observers[type].push(weak ? Cu.getWeakReference(callback) : { get: function () callback });
     },
 
     unregisterObserver: function (type, callback) {
         if (type in this.observers)
-            this.observers[type] = this.observers[type].filter(function (c) c != callback);
+            this.observers[type] = this.observers[type].filter(function (c) c.get() != callback);
     },
 
     // TODO: "zoom": if the zoom value of the current buffer changed
     triggerObserver: function (type) {
         let args = Array.slice(arguments, 1);
-        for (let [, func] in Iterator(this.observers[type] || []))
-            func.apply(null, args);
+        if (type in this.observers)
+            this.observers[type] = this.observers[type].filter(function (callback) {
+                if (callback.get()) {
+                    callback.get().apply(null, args);
+                    return true;
+                }
+            });
     },
 
     /**
@@ -1199,6 +1204,15 @@ const Dactyl = Module("dactyl", {
             "boolean", false);
 
         const groups = {
+            commandline: {
+                opts: {
+                    M: ["Always show messages outside of the status line"],
+                    C: ["Always show the command-line outside of the status line"],
+                },
+                setter: function (opts) {
+                    commandline.widgets.updateVisibility();
+                }
+            },
             config: {
                 opts: config.guioptions,
                 setter: function (opts) {

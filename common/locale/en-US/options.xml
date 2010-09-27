@@ -631,14 +631,16 @@
         <p>Supported characters:</p>
 
         <dl>
-            <dt>m</dt>      <dd>Menubar</dd>
-            <dt>T</dt>      <dd>Toolbar</dd>
             <dt>B</dt>      <dd>Bookmark bar</dd>
-            <dt>n</dt>      <dd>Tab number</dd>
+            <dt>C</dt>      <dd>Always show the command-line outside of the status line</dd>
+            <dt>M</dt>      <dd>Always show messages outside of the status line</dd>
             <dt>N</dt>      <dd>Tab number over image</dd>
+            <dt>T</dt>      <dd>Toolbar</dd>
             <dt>b</dt>      <dd>Bottom scrollbar</dd>
-            <dt>r</dt>      <dd>Right scrollbar</dd>
             <dt>l</dt>      <dd>Left scrollbar (<em>l</em> and <em>r</em> are mutually exclusive)</dd>
+            <dt>m</dt>      <dd>Menubar</dd>
+            <dt>n</dt>      <dd>Tab number</dd>
+            <dt>r</dt>      <dd>Right scrollbar</dd>
         </dl>
 
         <p>See also <o>showtabline</o>.</p>

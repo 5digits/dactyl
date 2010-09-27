@@ -11,15 +11,16 @@
 const StatusLine = Module("statusline", {
     init: function () {
         this._statusLine = document.getElementById("status-bar");
-        this._statusBar = document.getElementById("addon-bar") || this._statusLine;
-        this._statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
+        this.statusBar = document.getElementById("addon-bar") || this._statusLine;
+        this.statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
 
         // our status bar fields
-        this.widgets = array(["status", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"]
+        this.widgets = array(["container", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"]
                     .map(function (field) [field, document.getElementById("dactyl-statusline-field-" + field)]))
                     .toObject();
+        this.widgets.status = this.widgets.container;
 
-        if (this._statusBar.localName == "toolbar") {
+        if (this.statusBar.localName == "toolbar") {
             styles.addSheet(true, "addon-bar", config.styleableChrome, <css><![CDATA[
                 #status-bar { margin-top: 0 !important; }
                 #addon-bar { padding: 0 !important; min-height: 18px !important; }
@@ -30,6 +31,8 @@ const StatusLine = Module("statusline", {
             parent.insertBefore(this.widgets.status, parent.firstChild);
         }
     },
+
+    get visible() !this.statusBar.collapsed,
 
     /**
      * Update the status bar to indicate how secure the website is:
@@ -274,12 +277,12 @@ const StatusLine = Module("statusline", {
             {
                 setter: function setter(value) {
                     if (value == 0)
-                        statusline._statusBar.collapsed = true;
+                        statusline.statusBar.collapsed = true;
                     else if (value == 1)
                         dactyl.echoerr("show status line only with > 1 window not implemented yet");
                     else
-                        statusline._statusBar.collapsed = false;
-
+                        statusline.statusBar.collapsed = false;
+                    commandline.widgets.updateVisibility();
                     return value;
                 },
                 completer: function completer(context) [

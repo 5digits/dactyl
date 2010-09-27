@@ -19,6 +19,8 @@
         backspace.
       - Supports reverse incremental search.
     * Multiple Ex commands may now be separated by |
+    * Command-line is now hidden by default. Added C and M to
+      'guioptions'.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
     * IMPORTANT: 'loadplugins' is now a regexlist option rather than
@@ -34,6 +36,7 @@
       See :help stringlist
     * IMPORTANT: 'extendedhinttags' is now a regexmap rather than a
       string.
+    * IMPORTANT: 'guioptions' default value has changed.
     * Added 'altwildmode' and <A-Tab> commandline key binding.
     * Added 'autocomplete' option for specifying which completion
       groups should be auto-completed.

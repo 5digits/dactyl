@@ -69,14 +69,20 @@
 @-moz-document
     url-prefix(chrome://) {
 
+[dactyl|highlight~=CmdLine] {
+    background: inherit;
+    color: inherit;
+}
+
 .dactyl-container > * {
     font-family: inherit;
 }
 
-#dactyl-completions {
+.dactyl-completions {
     -moz-user-focus: ignore;
     overflow: -moz-scrollbars-none !important; /* does not seem to work fully */
     border-width: 0px !important;
+    border-top: 1px solid black !important;
     /*-moz-appearance: none !important; /* prevent an ugly 3D border */
 }
 
@@ -113,20 +119,20 @@ statusbarpanel {
     display: none;
 }
 
-#dactyl-commandline-prompt {
+.dactyl-commandline-prompt {
     background-color: inherit;
     margin: 0px;
     padding: 0px;
 }
-#dactyl-commandline-command {
+.dactyl-commandline-command {
     background-color: inherit;
     color: inherit;
     margin: 0px;
 }
-#dactyl-commandline-command html|*:focus {
+.dactyl-commandline-command html|*:focus {
     outline-width: 0px !important
 }
-#dactyl-commandline-command .textbox-search-icons {
+.dactyl-commandline-command .textbox-search-icons {
     visibility: collapse !important;
 }
 #dactyl-message {
@@ -140,7 +146,7 @@ statusbarpanel {
 
 /* MOW */
 
-#dactyl-completions,
+.dactyl-completions,
 #dactyl-multiline-output,
 #dactyl-multiline-input {
     overflow: hidden;
@@ -148,7 +154,7 @@ statusbarpanel {
     color: black;
 }
 
-#dactyl-completions-content,
+.dactyl-completions-content,
 #dactyl-multiline-output-content,
 #dactyl-multiline-input {
     white-space: pre;
@@ -161,15 +167,15 @@ statusbarpanel {
     font: inherit;
 }
 
-#dactyl-completions-content table,
+.dactyl-completions-content table,
 #dactyl-multiline-output-content table {
     white-space: inherit;
     border-spacing: 0px;
 }
 
-#dactyl-completions-content td,
+.dactyl-completions-content td,
 #dactyl-multiline-output-content td,
-#dactyl-completions-content th,
+.dactyl-completions-content th,
 #dactyl-multiline-output-content th {
     padding: 0px 2px;
 }

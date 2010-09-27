@@ -156,7 +156,7 @@ const Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["<C-l>"],
             "Redraw the screen",
-            function () { dactyl.execute("redraw"); });
+            function () { commands.get("redraw").action(); });
     },
 
     commands: function () {
@@ -188,7 +188,9 @@ const Browser = Module("browser", {
             function () {
                 window.QueryInterface(Ci.nsIInterfaceRequestor)
                       .getInterface(Ci.nsIDOMWindowUtils).redraw();
-                modes.show();
+                commandline.widgets.message = null;
+                if (modes.main != modes.COMMAND_LINE)
+                    commandline.widgets.command = null;
             },
             { argCount: "0" });
     }

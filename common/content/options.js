@@ -147,6 +147,8 @@ const Option = Class("Option", {
 
         this.hasChanged = true;
         this.setFrom = null;
+
+        dactyl.triggerObserver("options." + this.name, newValues);
     },
 
     /**
