@@ -1328,7 +1328,7 @@ const Buffer = Module("buffer", {
             context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
 
             context.anchored = false;
-            context.keys = { text: "text", description: "url", icon: "icon" };
+            context.keys = { text: "text", description: "url", icon: "icon", id: "id", command: function () "tabs.select" };
             context.compare = CompletionContext.Sort.number;
             context.filters = [CompletionContext.Filter.textDescription];
 
@@ -1349,6 +1349,7 @@ const Buffer = Module("buffer", {
 
                             return {
                                 text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
+                                id: i - 1,
                                 url: url,
                                 indicator: indicator,
                                 icon: tab.image || DEFAULT_FAVICON

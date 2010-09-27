@@ -33,6 +33,9 @@ const Tabs = Module("tabs", {
         if (config.hasTabbrowser)
             config.tabStrip.collapsed = true; // FIXME: see 'stal' comment
 
+        dactyl.commands["tabs.select"] = function (event) {
+            tabs.select(event.originalTarget.getAttribute("identifier"));
+        };
     },
 
     _updateTabCount: function () {

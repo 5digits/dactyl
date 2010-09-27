@@ -50,7 +50,8 @@ const Template = Module("Template", {
 
     bookmarkDescription: function (item, text)
     <>
-        <a href={item.item.url} highlight="URL">{text || ""}</a>&#xa0;
+        <a xmlns:dactyl={NS} identifier={item.id} dactyl:command={item.command}
+           href={item.item.url} highlight="URL">{text || ""}</a>&#xa0;
         {
             !(item.extra && item.extra.length) ? "" :
             <span class="extra-info">

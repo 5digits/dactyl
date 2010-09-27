@@ -811,16 +811,16 @@ const Util = Module("Util", {
             return doc.createTextNode(String(node));
         case "element":
             let domnode = doc.createElementNS(node.namespace(), node.localName());
-            for each (let attr in node.@*)
+            for each (let attr in node.@*::*)
                 if (attr.name() != "highlight")
-                    domnode.setAttributeNS(attr.namespace(), attr.name(), String(attr));
+                    domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
                 else {
                     domnode.setAttributeNS(NS.uri, "highlight", String(attr));
                     for each (let h in String.split(attr, " "))
                         highlight.loaded[h] = true;
                 }
 
-            for each (let child in node.*)
+            for each (let child in node.*::*)
                 domnode.appendChild(xmlToDom(child, doc, nodes));
             if (nodes && node.@key)
                 nodes[node.@key] = domnode;

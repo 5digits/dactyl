@@ -877,10 +877,10 @@ const CommandLine = Module("commandline", {
 
             switch (key) {
             case "<LeftMouse>":
-                if (event.originalTarget.getAttributeNS(NS.uri, "highlight") == "URL buffer-list") {
-                    event.preventDefault();
-                    tabs.select(parseInt(event.originalTarget.parentNode.parentNode.firstChild.textContent, 10) - 1);
-                }
+                event.preventDefault();
+                let command = event.originalTarget.getAttributeNS(NS.uri, "command");
+                if (command && dactyl.commands[command])
+                    return dactyl.commands[command](event);
                 else
                     openLink(dactyl.CURRENT_TAB);
                 break;

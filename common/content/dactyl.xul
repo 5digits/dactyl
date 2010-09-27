@@ -11,8 +11,8 @@
 <!DOCTYPE overlay SYSTEM "dactyl.dtd" [
     <!ENTITY and "&amp;&amp;">
     <!ENTITY dactyl.content "chrome://dactyl/content/">
-    <!ENTITY commandline "window.dactyl &and; dactyl.modules.commandline">
-    <!ENTITY events "if (window.dactyl &and; dactyl.modules.loaded.events) dactyl.modules.events">
+    <!ENTITY commandline "if (window.dactyl) return dactyl.modules.commandline">
+    <!ENTITY events "if (window.dactyl &and; dactyl.modules.loaded.events) return dactyl.modules.events">
     <!ENTITY status "dactyl-statusline-field-">
 ]>
 

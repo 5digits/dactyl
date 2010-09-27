@@ -31,8 +31,9 @@ const Dactyl = Module("dactyl", {
         // cheap attempt at compatibility
         window.liberator = this;
         modules.liberator = this;
-        this.observers = {};
+        this.commands = {};
         this.modules = modules;
+        this.observers = {};
 
         // NOTE: services.get("profile").selectedProfile.name doesn't return
         // what you might expect. It returns the last _actively_ selected
