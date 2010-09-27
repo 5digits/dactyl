@@ -349,7 +349,7 @@ const CommandLine = Module("commandline", {
         dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
 
         if (!this.commandVisible)
-            commandline.hide();
+            this.hide();
 
         let field = this.widgets.active.message.inputField;
         if (!forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth)
@@ -366,6 +366,9 @@ const CommandLine = Module("commandline", {
     _echoMultiline: function echoMultiline(str, highlightGroup) {
         let doc = this.widgets.multilineOutput.contentDocument;
         let win = this.widgets.multilineOutput.contentWindow;
+
+        if (!this.commandVisible)
+            this.hide();
 
         dactyl.triggerObserver("echoMultiline", str, highlightGroup);
 
