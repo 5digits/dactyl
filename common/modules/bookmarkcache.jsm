@@ -38,8 +38,13 @@ const BookmarkCache = Module("BookmarkCache", {
 
     _deleteBookmark: function deleteBookmark(id) {
         let length = this.bookmarks.length;
-        this.bookmarks = this.bookmarks.filter(function (item) item.id != id);
-        return this.bookmarks.length < length;
+        let result;
+        this.bookmarks = this.bookmarks.filter(function (item) {
+            if (item.id == id)
+                result = item;
+            return item.id != id;
+        });
+        return result;
     },
 
     _loadBookmark: function loadBookmark(node) {
@@ -126,8 +131,9 @@ const BookmarkCache = Module("BookmarkCache", {
         }
     },
     onItemRemoved: function onItemRemoved(itemId, folder, index) {
-        if (this._deleteBookmark(itemId))
-            storage.fireEvent(name, "remove", itemId);
+        let result = this._deleteBookmark(itemId);
+        if (result)
+            storage.fireEvent(name, "remove", result);
     },
     onItemChanged: function onItemChanged(itemId, property, isAnnotation, value) {
         if (isAnnotation)
@@ -136,9 +142,10 @@ const BookmarkCache = Module("BookmarkCache", {
         if (bookmark) {
             if (property == "tags")
                 value = tagging.getTagsForURI(util.newURI(bookmark.url), {});
-            if (property in bookmark)
+            if (property in bookmark) {
                 bookmark[property] = value;
-            storage.fireEvent(name, "change", itemId);
+                storage.fireEvent(name, "change", { __proto__: bookmark, changed: property });
+            }
         }
     },
     QueryInterface: XPCOMUtils.generateQI([Ci.nsINavBookmarkObserver])

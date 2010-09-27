@@ -12,8 +12,8 @@ const DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
 const Bookmarks = Module("bookmarks", {
     init: function () {
         storage.addObserver("bookmark-cache", function (key, event, arg) {
-            if (event == "add")
-                autocommands.trigger("BookmarkAdd", arg);
+            if (["add", "change", "remove"].indexOf(event) >= 0)
+                autocommands.trigger("Bookmark" + event[0].toUpperCase() + event.substr(1), arg);
             statusline.updateUrl();
         }, window);
     },
@@ -43,6 +43,10 @@ const Bookmarks = Module("bookmarks", {
                         break;
                     }
 
+            if (tags) {
+                PlacesUtils.tagging.untagURI(uri, null);
+                PlacesUtils.tagging.tagURI(uri, tags);
+            }
             if (id == undefined)
                 id = services.get("bookmarks").insertBookmark(
                          services.get("bookmarks")[starOnly ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
@@ -52,10 +56,6 @@ const Bookmarks = Module("bookmarks", {
 
             if (keyword)
                 services.get("bookmarks").setKeywordForBookmark(id, keyword);
-            if (tags) {
-                PlacesUtils.tagging.untagURI(uri, null);
-                PlacesUtils.tagging.tagURI(uri, tags);
-            }
         }
         catch (e) {
             dactyl.log(e, 0);

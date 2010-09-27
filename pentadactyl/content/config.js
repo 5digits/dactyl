@@ -11,6 +11,8 @@ const Config = Module("config", ConfigBase, {
 
     autocommands: {
         BookmarkAdd: "Triggered after a page is bookmarked",
+        BookmarkChange: "Triggered after a page's bookmark is changed",
+        BookmarkRemove: "Triggered after a page's bookmark is removed",
         ColorScheme: "Triggered after a color scheme has been loaded",
         DOMLoad: "Triggered when a page's DOM content has fully loaded",
         DownloadPost: "Triggered when a download has completed",
