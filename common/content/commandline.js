@@ -40,6 +40,8 @@ const CommandWidgets = Class("CommandWidgets", {
             onChange: function (elem) {
                 elem.selectionStart = elem.value.length;
                 elem.selectionEnd = elem.value.length;
+                if (!elem.collapsed)
+                    elem.focus();
             },
             onVisibility: function (elem, visible) visible && elem.focus()
         });
