@@ -1619,8 +1619,8 @@ const CommandLine = Module("commandline", {
         mappings.add([modes.NORMAL],
             ["g<"], "Redisplay the last command output",
             function () {
-                dactyl.assert(this._lastMowOutput);
-                this._echoMultiline(this._lastMowOutput, commandline.HL_NORMAL);
+                dactyl.assert(commandline._lastMowOutput, "No previous command output");
+                commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
             });
     },
     options: function () {
