@@ -285,7 +285,7 @@ lookup:
 
         dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options.get("runtimepath").value, 2);
 
-        outer:
+    outer:
         for (let [, dir] in Iterator(dirs)) {
             for (let [, path] in Iterator(paths)) {
                 let file = File.joinPaths(dir, path, this.cwd);
@@ -581,9 +581,11 @@ lookup:
 
         commands.add(["runt[ime]"],
             "Source the specified file from each directory in 'runtimepath'",
-            function (args) { io.sourceFromRuntimePath(args, args.bang); }, {
+            function (args) { io.sourceFromRuntimePath(args, args.bang); },
+            {
                 argCount: "+",
-                bang: true
+                bang: true,
+                completer: function (context) completion.runtime(context)
             }
         );
 
@@ -678,9 +680,9 @@ lookup:
 
         // TODO: support file:// and \ or / path separators on both platforms
         // if "tail" is true, only return names without any directory components
-        completion.file = function file(context, full) {
+        completion.file = function file(context, full, dir) {
             // dir == "" is expanded inside readDirectory to the current dir
-            let [dir] = context.filter.match(/^(?:.*[\/\\])?/);
+            [dir] = (dir || context.filter).match(/^(?:.*[\/\\])?/);
 
             if (!full)
                 context.advance(dir.length);
@@ -710,6 +712,16 @@ lookup:
                 catch (e) {}
                 return [];
             };
+        };
+
+        completion.runtime = function (context) {
+            for (let [, dir] in Iterator(options["runtimepath"]))
+                context.fork(dir, 0, this, function (context) {
+                    dir = dir.replace("/+$", "") + "/";
+                    completion.file(context, true, dir + context.filter);
+                    context.title[0] = dir;
+                    context.keys.text = function (f) f.path.substr(dir.length);
+                });
         };
 
         completion.shellCommand = function shellCommand(context) {
