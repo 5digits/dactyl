@@ -156,6 +156,10 @@ Dactyl.prototype = {
         return fakeChannel(uri);
     }
 };
+try {
+    Dactyl.prototype.__proto__ = Cc["@dactyl.googlecode.com/base/dactyl"].getService().wrappedJSObject;
+}
+catch (e) {}
 
 function AboutHandler() {}
 AboutHandler.prototype = {
