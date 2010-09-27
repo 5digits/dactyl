@@ -403,7 +403,7 @@ const Bookmarks = Module("bookmarks", {
             {
                 argCount: "?",
                 bang: true,
-                completer: function completer(context)
+                completer: function completer(context, args)
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] }),
                 domains: function (args) array.compact(args.map(util.getHost)),
                 literal: 0,
