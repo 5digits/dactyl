@@ -437,11 +437,11 @@ const Option = Class("Option", {
         let res = [];
         Option._splitAt = 0;
         do {
-            if (count !== undefined)
-                Option._splitAt += count + 1;
             var [count, arg, quote] = Commands.parseArg(value, /,/, keepQuotes);
             Option._quote = quote; // FIXME
             res.push(arg);
+            if (value.length > count)
+                Option._splitAt += count + 1;
             value = value.slice(count + 1);
         } while (value.length);
         return res;
@@ -1395,7 +1395,6 @@ const Options = Module("options", {
                 newValues = Option.splitList(context.filter);
                 // Fallthrough
             case "stringlist":
-                var target = newValues.pop() || "";
                 break;
             case "stringmap":
             case "regexmap":
@@ -1406,7 +1405,7 @@ const Options = Module("options", {
             }
             // TODO: Highlight when invalid
             context.advance(Option._splitAt);
-            context.filter = target != null ? target : Option.dequote(context.filter);
+            context.filter = Option.dequote(context.filter);
 
             context.title = ["Option Value"];
             context.quote = Commands.complQuote[Option._quote] || Commands.complQuote[""]
