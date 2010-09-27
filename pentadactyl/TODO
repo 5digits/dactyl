@@ -34,7 +34,6 @@ BUGS:
 
 FEATURES:
 9 Add quoting help tag
-9 Support multiple bookmarks, -keyword, -tags in :delbmarks
 8 Document Caret and Visual modes.
 8 finish :help TODOs
 8 fix local options

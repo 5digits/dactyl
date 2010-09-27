@@ -96,10 +96,14 @@ const Bookmarks = Module("bookmarks", {
     // returns number of deleted bookmarks
     remove: function remove(url) {
         try {
-            let uri = util.newURI(url);
-            let bmarks = services.get("bookmarks")
-                                 .getBookmarkIdsForURI(uri, {})
-                                 .filter(bookmarkcache.closure.isRegularBookmark);
+            if (isArray(url))
+                var bmarks = url;
+            else {
+                let uri = util.newURI(url);
+                var bmarks = services.get("bookmarks")
+                                     .getBookmarkIdsForURI(uri, {})
+                                     .filter(bookmarkcache.closure.isRegularBookmark);
+            }
             bmarks.forEach(services.get("bookmarks").removeItem);
             return bmarks.length;
         }
@@ -382,10 +386,16 @@ const Bookmarks = Module("bookmarks", {
                             }
                         });
                 else {
-                    let url = args[0] || buffer.URL;
-                    let deletedCount = bookmarks.remove(url);
+                    if (!(args.length || args["-tags"] || args["-keyword"] || args["-title"]))
+                        var deletedCount = bookmarks.remove(buffer.URL);
+                    else {
+                        let context = CompletionContext(args.join(" "));
+                        context.fork("bookmark", 0, completion, "bookmark",
+                                     args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
+                        var deletedCount = bookmarks.remove(context.allItems.items.map(function (item) item.item.id));
+                    }
 
-                    dactyl.echomsg({ domains: [util.getHost(url)], message: deletedCount + " bookmark(s) with url " + url.quote() + " deleted" },
+                    dactyl.echomsg({ message: deletedCount + " bookmark(s) deleted" },
                                    1, commandline.FORCE_SINGLELINE);
                 }
 
@@ -393,8 +403,12 @@ const Bookmarks = Module("bookmarks", {
             {
                 argCount: "?",
                 bang: true,
-                completer: function completer(context) completion.bookmark(context),
-                literal: 0
+                completer: function completer(context)
+                    completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] }),
+                domains: function (args) array.compact(args.map(util.getHost)),
+                literal: 0,
+                options: [tags, title, keyword],
+                privateData: true
             });
     },
     mappings: function () {
@@ -457,11 +471,10 @@ const Bookmarks = Module("bookmarks", {
         completion.bookmark = function bookmark(context, tags, extra) {
             context.title = ["Bookmark", "Title"];
             context.format = bookmarks.format;
-            for (let val in Iterator(extra || [])) {
-                let [k, v] = val; // Need block scope here for the closure
+            forEach(iter(extra || {}), function ([k, v]) {
                 if (v)
                     context.filters.push(function (item) this.matchString(v, item[k]));
-            }
+            });
             context.completions = bookmarkcache.bookmarks;
             completion.urls(context, tags);
         };

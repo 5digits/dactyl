@@ -41,6 +41,7 @@
     * Added 'autocomplete' option for specifying which completion
       groups should be auto-completed.
     * Added 'banghist' option.
+    * Added -keyword, -tags, -title to :delbmarks
     * Added 'hintkeys' option.
     * Replaced 'focuscontent' with 'strictfocus'.
     * Added 'wildanchor' option.

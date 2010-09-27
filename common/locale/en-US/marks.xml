@@ -120,10 +120,18 @@
         <p>The bookmarks may also be filtered via the following options,</p>
 
         <dl>
-            <dt>-tag</dt>
+            <dt>-keyword</dt>
+            <dd>
+                The bookmark's keyword (short name <em>-k</em>).
+            </dd>
+            <dt>-tags</dt>
             <dd>
                 A comma-separated list of tags, all of which must be
                 present for a match (short name <em>-T</em>).
+            </dd>
+            <dt>-title</dt>
+            <dd>
+                The title of the bookmark (short name <em>-t</em>).
             </dd>
             <dt>-max</dt>
             <dd>
@@ -144,6 +152,8 @@
             If omitted, <oa>url</oa> defaults to the URL of the
             current buffer.
         </p>
+
+        <p>Accepts the same options as :bmarks.</p>
 
         <p>If <oa>!</oa> is specified then all bookmarks will be deleted.</p>
     </description>
