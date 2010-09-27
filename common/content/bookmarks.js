@@ -243,7 +243,7 @@ const Bookmarks = Module("bookmarks", {
     },
 
     // if openItems is true, open the matching bookmarks items in tabs rather than display
-    list: function list(filter, tags, openItems, maxItems) {
+    list: function list(filter, tags, openItems, maxItems, extra) {
         // FIXME: returning here doesn't make sense
         //   Why the hell doesn't it make sense? --Kris
         // Because it unconditionally bypasses the final error message
@@ -251,8 +251,8 @@ const Bookmarks = Module("bookmarks", {
         // short it breaks the :bmarks command which doesn't make much
         // sense to me but I'm old-fashioned. --djk
         if (!openItems)
-            return completion.listCompleter("bookmark", filter, maxItems, tags);
-        let items = completion.runCompleter("bookmark", filter, maxItems, tags);
+            return completion.listCompleter("bookmark", filter, maxItems, tags, extra);
+        let items = completion.runCompleter("bookmark", filter, maxItems, tags, extra);
 
         if (items.length)
             return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
@@ -290,8 +290,9 @@ const Bookmarks = Module("bookmarks", {
                 args.completeFilter = have.pop();
 
                 let prefix = filter.substr(0, filter.length - args.completeFilter.length);
-                let tags = array.uniq(array.flatten([b.tags for ([k, b] in Iterator(bookmarkcache.bookmarks))]));
+                let tags = array.uniq(array.flatten([b.tags for ([k, b] in Iterator(bookmarkcache.bookmarks)) if (b.tags)]));
 
+                context.keys = { text: 0, description: 1 };
                 return [[prefix + tag, tag] for ([i, tag] in Iterator(tags)) if (have.indexOf(tag) < 0)];
             },
             type: CommandOption.LIST
@@ -314,8 +315,6 @@ const Bookmarks = Module("bookmarks", {
             names: ["-keyword", "-k"],
             description: "Keyword by which this bookmark may be opened (:open {keyword})",
             completer: function keyword(context, args) {
-                if (!args.bang)
-                    return [];
                 context.keys.text = "keyword";
                 return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: context.filter, title: args["-title"] });
             },
@@ -355,16 +354,17 @@ const Bookmarks = Module("bookmarks", {
         commands.add(["bmarks"],
             "List or open multiple bookmarks",
             function (args) {
-                bookmarks.list(args.join(" "), args["-tags"] || [], args.bang, args["-max"]);
+                bookmarks.list(args.join(" "), args["-tags"] || [], args.bang, args["-max"],
+                               { keyword: args["-keyword"], title: args["-title"] });
             },
             {
                 bang: true,
                 completer: function completer(context, args) {
                     context.quote = null;
                     context.filter = args.join(" ");
-                    completion.bookmark(context, args["-tags"]);
+                    completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
                 },
-                options: [tags,
+                options: [tags, keyword, title,
                     {
                         names: ["-max", "-m"],
                         description: "The maximum number of items to list or open",
@@ -472,8 +472,8 @@ const Bookmarks = Module("bookmarks", {
             context.title = ["Bookmark", "Title"];
             context.format = bookmarks.format;
             forEach(iter(extra || {}), function ([k, v]) {
-                if (v)
-                    context.filters.push(function (item) this.matchString(v, item[k]));
+                if (v != null)
+                    context.filters.push(function (item) item.item[k] != null && this.matchString(v, item.item[k]));
             });
             context.completions = bookmarkcache.bookmarks;
             completion.urls(context, tags);
