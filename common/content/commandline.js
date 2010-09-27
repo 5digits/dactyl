@@ -18,8 +18,8 @@ const CommandWidgets = Class("CommandWidgets", {
         });
         this.addElem({
             name: "commandline",
-            getValue: function () this.command,
             getGroup: function () options.get("guioptions").has("C") ? this.commandbar : this.statusbar,
+            getValue: function () this.command,
             noValue: true,
         });
         this.addElem({
@@ -129,7 +129,7 @@ const CommandWidgets = Class("CommandWidgets", {
                 for (let group in values([this.commandbar, this.statusbar])) {
                     let meth, node = group[elem.name];
                     let visible = (value && group === activeGroup);
-                    if (!node.collapsed == !visible) {
+                    if (node && !node.collapsed == !visible) {
                         node.collapsed = !visible;
                         if (elem.onVisibility)
                             elem.onVisibility.call(this, node, visible);

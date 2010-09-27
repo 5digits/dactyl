@@ -157,7 +157,8 @@ const QuickMarks = Module("quickmarks", {
         commands.add(["qmarks"],
             "Show all QuickMarks",
             function (args) {
-                args = args[0];
+                dactyl.dump(args);
+                args = args[0] || "";
 
                 // ignore invalid qmark characters unless there are no valid qmark chars
                 dactyl.assert(!args || /[a-zA-Z0-9]/.test(args), "E283: No QuickMarks matching " + args.quote());

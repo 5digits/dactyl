@@ -442,20 +442,28 @@ const CompletionContext = Class("CompletionContext", {
             this.processor[0] = function (item, text) self.process[0].call(self, item,
                     template.highlightFilter(item.text, self.filter));
 
-        // Item prototypes
-        let proto = this.proto;
-        if (!this.cache.constructed)
-            this.cache.constructed = items.map(function (item) Object.create(proto, { item: { value: item, enumerable: true } }));
+        try {
+            // Item prototypes
+            let proto = this.proto;
+            if (!this.cache.constructed)
+                this.cache.constructed = items.map(function (item) Object.create(proto, { item: { value: item, enumerable: true } }));
 
-        // Filters
-        let filtered = this.filterFunc(this.cache.constructed);
-        if (this.maxItems)
-            filtered = filtered.slice(0, this.maxItems);
+            // Filters
+                let filtered = this.filterFunc(this.cache.constructed);
+                if (this.maxItems)
+                    filtered = filtered.slice(0, this.maxItems);
 
-        // Sorting
-        if (this.sortResults && this.compare)
-            filtered.sort(this.compare);
-        return this.cache.filtered = filtered;
+            // Sorting
+            if (this.sortResults && this.compare)
+                filtered.sort(this.compare);
+
+            return this.cache.filtered = filtered;
+        }
+        catch (e) {
+            this.message = "Error: " + e;
+            dactyl.reportError(e);
+            return [];
+        }
     },
 
     get substrings() {
