@@ -38,7 +38,7 @@
 
 <item>
     <tags>a :bma :bmark</tags>
-    <spec>:bma<oa>rk</oa><oa>!</oa> <oa>-title=...</oa> <oa>-keyword=...</oa> <oa>-tag=tag,...</oa> <oa>url</oa></spec>
+    <spec>:bma<oa>rk</oa><oa>!</oa> <oa>-title=...</oa> <oa>-keyword=...</oa> <oa>-tags=tag,...</oa> <oa>url</oa></spec>
     <spec>a</spec>
     <description>
         <p>Add a bookmark.</p>
@@ -53,7 +53,7 @@
                 <oa>url</oa> otherwise.
                 (short name <em>-t</em>)
             </dd>
-            <dt>-tag</dt>
+            <dt>-tags</dt>
             <dd>
                 Comma-separated list of tags for grouping and later
                 access (short name <em>-T</em>).
