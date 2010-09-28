@@ -48,8 +48,6 @@ const Tabs = Module("tabs", {
         modes.reset();
         statusline.updateTabCount(true);
         this.updateSelectionHistory();
-        if (options["focuscontent"])
-            this.timeout(function () { dactyl.focusContent(true); }, 10); // just make sure, that no widget has focus
     },
 
     get allTabs() Array.slice(config.tabbrowser.tabContainer.childNodes),
@@ -58,7 +56,7 @@ const Tabs = Module("tabs", {
      * @property {Object} The previously accessed tab or null if no tab
      *     other than the current one has been accessed.
      */
-    get alternate() this._alternates[1],
+    get alternate() this.allTabs.indexOf(this._alternates[1]) > -1 ? this._alternates[1] : null,
 
     /**
      * @property {Iterator(Object)} A genenerator that returns all browsers
@@ -315,8 +313,10 @@ const Tabs = Module("tabs", {
         let next = index + (focusLeftTab ? -count : count);
         if (!(next in tabs))
             next = index + (focusLeftTab ? 1 : -1);
-        if (next in tabs)
+        if (next in tabs) {
+            this._alternates[0] = tabs[next];
             config.tabbrowser.mTabContainer.selectedItem = tabs[next];
+        }
 
         if (focusLeftTab)
             tabs.slice(Math.max(0, index + 1 - count), index + 1).forEach(config.removeTab);
@@ -384,15 +384,6 @@ const Tabs = Module("tabs", {
     selectAlternateTab: function () {
         dactyl.assert(tabs.alternate != null && tabs.getTab() != tabs.alternate,
             "E23: No alternate page");
-
-        // NOTE: this currently relies on v.tabs.index() returning the
-        // currently selected tab index when passed null
-        let index = tabs.index(tabs.alternate);
-
-        // TODO: since a tab close is more like a bdelete for us we
-        // should probably reopen the closed tab when a 'deleted'
-        // alternate is selected
-        dactyl.assert(index >= 0, "E86: Buffer does not exist");  // TODO: This should read "Buffer N does not exist"
         tabs.select(tabs.alternate);
     },
 
@@ -497,6 +488,12 @@ const Tabs = Module("tabs", {
      * @see tabs#alternate
      */
     updateSelectionHistory: function (tabs) {
+        if (!tabs) {
+            if (this.getTab() == this._alternates[0]
+                || this.alternate && this.allTabs.indexOf(this._alternates[0]) == -1
+                || this.alternate && config.tabbrowser._removingTabs && config.tabbrowser._removingTabs.indexOf(this._alternates[0]) >= 0)
+                tabs = [this.getTab(), this.alternate];
+        }
         this._alternates = tabs || [this.getTab(), this._alternates[0]];
     }
 }, {

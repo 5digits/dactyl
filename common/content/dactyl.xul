@@ -100,7 +100,7 @@
               style="background: inherit;" id="&status;container" flex="1" hidden="false" align="center">
             <stack orient="horizontal" align="stretch"       flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
                 <textbox class="plain" id="&status;url"      flex="1" readonly="false" crop="end"/>
-                <textbox class="plain" id="&status;mode"     flex="0" readonly="true"  crop="end" collapsed="true"/>
+                <textbox class="plain" id="&status;mode"     flex="1" readonly="true"  crop="end" collapsed="true"/>
                 <textbox class="plain" id="&status;message"  flex="1" readonly="true" collapsed="true" dactyl:highlight="Normal StatusNormal"/>
 
                 <hbox id="&status;commandline" hidden="false" class="dactyl-container" dactyl:highlight="Normal StatusNormal" collapsed="true">
