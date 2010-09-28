@@ -678,8 +678,6 @@ lookup:
             context.generate = function () lines.map(function (line) (line.match(/([^=]+)=(.+)/) || []).slice(1));
         };
 
-        // TODO: support file:// and \ or / path separators on both platforms
-        // if "tail" is true, only return names without any directory components
         completion.file = function file(context, full, dir) {
             // dir == "" is expanded inside readDirectory to the current dir
             [dir] = (dir || context.filter).match(/^(?:.*[\/\\])?/);
