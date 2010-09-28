@@ -770,7 +770,7 @@ const CommandLine = Module("commandline", {
                 // FIXME: <Esc> should trigger "cancel" event
                 if (events.isAcceptKey(key)) {
                     let mode = this._currentExtendedMode; // save it here, as modes.pop() resets it
-                    this._keepCommand = !userContext.hidden_option_no_command_afterimage;
+                    this._keepCommand = !userContext.hidden_option_command_afterimage;
                     this._currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
                     modes.pop();
                     commandline.triggerCallback("submit", mode, command);
