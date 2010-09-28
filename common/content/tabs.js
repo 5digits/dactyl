@@ -1014,20 +1014,33 @@ const Tabs = Module("tabs", {
             });
 
         if (config.hasTabbrowser) {
+            let activateGroups = [
+                ["addons", ":addo[ns] command"],
+                ["bookmarks", "Tabs loaded from bookmarks", "loadBookmarksInBackground"],
+                ["diverted", "Links with targets set to new tabs", "loadDivertedInBackground"],
+                ["downloads", ":downl[oads] command"],
+                ["extoptions", ":exto[ptions] command"],
+                ["help", ":h[elp] command"],
+                ["homepage", "gH mapping"],
+                ["links", "Middle- or Control-clicked links", "loadInBackground"],
+                ["quickmark", "go and gn mappings"],
+                ["tabopen", ":tabopen[!] command"],
+                ["paste", "P and gP mappings"]
+            ];
             options.add(["activate", "act"],
                 "Define when tabs are automatically activated",
-                "stringlist", "addons,downloads,extoptions,help,homepage,quickmark,tabopen,paste",
+                "stringlist", [g[0] for (g in values(activateGroups)) if (!g[2] || !options.getPref("browser.tabs." + g[2]))].join(","),
                 {
-                    completer: function (context) [
-                        ["addons", ":addo[ns] command"],
-                        ["downloads", ":downl[oads] command"],
-                        ["extoptions", ":exto[ptions] command"],
-                        ["help", ":h[elp] command"],
-                        ["homepage", "gH mapping"],
-                        ["quickmark", "go and gn mappings"],
-                        ["tabopen", ":tabopen[!] command"],
-                        ["paste", "P and gP mappings"]
-                    ]
+                    completer: function (context) activateGroups,
+                    setter: function (newValues) {
+                        let valueSet = set(newValues);
+                        for (let group in values(activateGroups))
+                            if (group[2])
+                                options.safeSetPref("browser.tabs." + group[2],
+                                                    !(valueSet["all"] || valueSet[group[0]]),
+                                                    "See the 'activate' option");
+                        return newValues;
+                    }
                 });
 
             options.add(["newtab"],

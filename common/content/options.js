@@ -847,8 +847,10 @@ const Options = Module("options", {
         return this._loadPreference(name, forcedDefault);
     },
 
-    _checkPrefSafe: function (name, message) {
+    _checkPrefSafe: function (name, message, value) {
         let curval = this._loadPreference(name, null, false);
+        if (arguments.length > 2 && curval === value)
+            return;
         let defval = this._loadPreference(name, null, true);
         let saved  = this._loadPreference(Options.SAVED + name);
 
@@ -881,7 +883,7 @@ const Options = Module("options", {
      * @param {value} value The new preference value.
      */
     safeSetPref: function (name, value, message) {
-        this._checkPrefSafe(name, message);
+        this._checkPrefSafe(name, message, value);
         this._storePreference(name, value);
         this._storePreference(Options.SAVED + name, value);
     },

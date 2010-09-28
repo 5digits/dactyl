@@ -330,10 +330,13 @@
         <dl>
             <dt>all</dt>           <dd>Activate all items.</dd>
             <dt>addons</dt>        <dd><ex>:addo<oa>ns</oa></ex> command</dd>
+            <dt>bookmarks</dt>     <dd>Tabs loaded from bookmarks</dd>
+            <dt>diverted</dt>      <dd>Links with targets set to new tabs</dd>
             <dt>downloads</dt>     <dd><ex>:downl<oa>oads</oa></ex> command</dd>
             <dt>extoptions</dt>    <dd><ex>:exto<oa>ptions</oa></ex> command</dd>
             <dt>help</dt>          <dd><ex>:h<oa>elp</oa></ex> command</dd>
             <dt>homepage</dt>      <dd><k>gH</k> mapping</dd>
+            <dt>links</dt>         <dd>Middle- or Control-clicked links</dd>
             <dt>quickmark</dt>     <dd><k>go</k> and <k>gn</k> mappings</dd>
             <dt>tabopen</dt>       <dd><ex>:tabopen<oa>!</oa></ex> command</dd>
             <dt>paste</dt>         <dd><k>P</k> and <k>gP</k> mappings</dd>
