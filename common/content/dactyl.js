@@ -124,7 +124,6 @@ const Dactyl = Module("dactyl", {
      * 'visualbell' option.
      */
     beep: requiresMainThread(function () {
-        dactyl.dumpStack();
         // FIXME: popups clear the command line
         if (options["visualbell"]) {
             // flash the visual bell

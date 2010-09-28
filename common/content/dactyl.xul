@@ -33,7 +33,8 @@
         </keyset>
 
         <popupset>
-            <panel id="dactyl-visualbell" dactyl:highlight="Bell"/>
+            <panel id="dactyl-visualbell" dactyl:highlight="Bell"
+                   noautohide="true" noautofocus="true"/>
         </popupset>
 
         <!--this notifies us also of focus events in the XUL

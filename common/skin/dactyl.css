@@ -69,6 +69,10 @@
 @-moz-document
     url-prefix(chrome://) {
 
+[dactyl|highlight~=Bell] {
+    -moz-appearance: none;
+}
+
 [dactyl|highlight~=CmdLine] {
     background: inherit;
     color: inherit;
