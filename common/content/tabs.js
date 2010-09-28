@@ -393,7 +393,7 @@ const Tabs = Module("tabs", {
         // should probably reopen the closed tab when a 'deleted'
         // alternate is selected
         dactyl.assert(index >= 0, "E86: Buffer does not exist");  // TODO: This should read "Buffer N does not exist"
-        tabs.select(index);
+        tabs.select(tabs.alternate);
     },
 
     /**
