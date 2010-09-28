@@ -23,7 +23,6 @@ BUGS:
 - the :help version-information page is no longer generated
 
 (recent Mercurial regressions):
-9 about:pentadactyl is currently about:undefined
 
 FEATURES:
 9 Add quoting help tag

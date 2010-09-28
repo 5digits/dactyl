@@ -1939,7 +1939,7 @@ const Dactyl = Module("dactyl", {
             dactyl.version = addon.version + " (created: @DATE@)";
         });
 
-        services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl");
+        services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
 
         let commandline = services.get("commandLineHandler").optionValue;
         if (commandline) {

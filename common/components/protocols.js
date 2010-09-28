@@ -20,6 +20,8 @@ const NS_BINDING_ABORTED = 0x804b0002;
 const nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
 
 const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
+    .getBranch("extensions.dactyl.");
 
 let channel = Components.classesByID["{61ba33c0-3031-11d3-8cd0-0060b0fc14a3}"]
                         .getService(Ci.nsIProtocolHandler)
@@ -88,7 +90,6 @@ ChromeData.prototype = {
 };
 
 function Dactyl() {
-    Dactyl.prototype.__proto__ = Cc["@dactyl.googlecode.com/base/dactyl"].getService().wrappedJSObject;
     this.wrappedJSObject = this;
 
     this.HELP_TAGS = {};
@@ -110,6 +111,11 @@ Dactyl.prototype = {
             return Dactyl.instance.QueryInterface(iid);
         }
     },
+
+    appName: prefs.getComplexValue("appName", Ci.nsISupportsString).data,
+    name: prefs.getComplexValue("name", Ci.nsISupportsString).data,
+    idName: prefs.getComplexValue("idName", Ci.nsISupportsString).data,
+    host: prefs.getComplexValue("host", Ci.nsISupportsString).data,
 
     init: function (obj) {
         for each (let prop in ["HELP_TAGS", "FILE_MAP", "OVERLAY_MAP"]) {
@@ -156,19 +162,15 @@ Dactyl.prototype = {
         return fakeChannel(uri);
     }
 };
-try {
-    Dactyl.prototype.__proto__ = Cc["@dactyl.googlecode.com/base/dactyl"].getService().wrappedJSObject;
-}
-catch (e) {}
 
 function AboutHandler() {}
 AboutHandler.prototype = {
 
-    classDescription: "About " + Dactyl.prototype.name + " Page",
+    classDescription: "About " + Dactyl.prototype.appName + " Page",
 
     classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
 
-    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.appName,
+    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.name,
 
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
 
