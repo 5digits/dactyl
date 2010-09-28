@@ -48,6 +48,9 @@ const Option = Class("Option", {
         if (this.type in Option.joinValues)
             this.joinValues = Option.joinValues[this.type];
 
+        if (this.type in Option.testValues)
+            this.testValues = Option.testValues[this.type];
+
         this._op = Option.ops[this.type];
 
         if (arguments.length > 3) {
@@ -325,6 +328,8 @@ const Option = Class("Option", {
      */
     setter: null,
 
+    testValues: function (values, validator) validator(values),
+
     /**
      * @property {function} The function called to validate the option's value
      *     when set.
@@ -383,7 +388,7 @@ const Option = Class("Option", {
         return re;
     },
     unparseRegex: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m), /^!|:/) +
-        (typeof re.result == "string" ? ":" + Option.quote(re.result) : ""),
+        (typeof re.result === "string" ? ":" + Option.quote(re.result) : ""),
 
     getKey: {
         stringlist: function (k) this.values.indexOf(k) >= 0,
@@ -425,6 +430,12 @@ const Option = Class("Option", {
                     [v, re] = [re, ".?"];
                 return Option.parseRegex(re, v);
             })
+    },
+
+    testValues: {
+        regexmap:   function (vals, validator) vals.every(function (re) validator(re.result)),
+        stringlist: function (vals, validator) vals.every(validator, this),
+        stringmap:  function (vals, validator) array(values(vals)).every(validator, this)
     },
 
     dequote: function (value) {
@@ -556,6 +567,12 @@ const Option = Class("Option", {
         if (this.type == "regexmap")
             return Array.concat(values).every(function (re) res.some(function (item) item[0] == re.result));
         return Array.concat(values).every(function (value) res.some(function (item) item[0] == value));
+    },
+
+    validateXPath: function (values) {
+        let evaluator = XPathEvaluator();
+        return this.testValues(values,
+            function (value) evaluator.createExpression(value, util.evaluateXPath.resolver));
     }
 });
 

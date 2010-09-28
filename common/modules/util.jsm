@@ -275,34 +275,36 @@ const Util = Module("Util", {
      * @param {boolean} asIterator Whether to return the results as an
      *     XPath iterator.
      */
-    evaluateXPath: function (expression, doc, elem, asIterator) {
-        if (!doc)
-            doc = util.activeWindow.content.document;
-        if (!elem)
-            elem = doc;
-        if (isArray(expression))
-            expression = util.makeXPath(expression);
+    evaluateXPath: (function () {
+        function evaluateXPath(expression, doc, elem, asIterator) {
+            if (!doc)
+                doc = util.activeWindow.content.document;
+            if (!elem)
+                elem = doc;
+            if (isArray(expression))
+                expression = util.makeXPath(expression);
 
-        let result = doc.evaluate(expression, elem,
-            function lookupNamespaceURI(prefix) {
-                return {
-                    xul: XUL.uri,
-                    xhtml: XHTML.uri,
-                    xhtml2: "http://www.w3.org/2002/06/xhtml2",
-                    dactyl: NS.uri
-                }[prefix] || null;
-            },
-            asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-            null
-        );
+            let result = doc.evaluate(expression, elem,
+                evaluateXPath.resolver,
+                asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                null
+            );
 
-        return Object.create(result, {
-            __iterator__: {
-                value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
-                                  : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
-            }
-        });
-    },
+            return Object.create(result, {
+                __iterator__: {
+                    value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
+                                      : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
+                }
+            });
+        }
+        evaluateXPath.resolver = function lookupNamespaceURI(prefix) ({
+                xul: XUL.uri,
+                xhtml: XHTML.uri,
+                xhtml2: "http://www.w3.org/2002/06/xhtml2",
+                dactyl: NS.uri
+            }[prefix] || null);
+        return evaluateXPath;
+    })(),
 
     extend: function extend(dest) {
         Array.slice(arguments, 1).filter(util.identity).forEach(function (src) {

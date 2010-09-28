@@ -1639,11 +1639,13 @@ const Buffer = Module("buffer", {
     options: function () {
         options.add(["nextpattern"],
             "Patterns to use when guessing the 'next' page in a document sequence",
-            "stringlist", UTF8("\\bnext\\b,^>$,^(>>|»)$,^(>|»),(>|»)$,\\bmore\\b"));
+            "stringlist", UTF8("\\bnext\\b,^>$,^(>>|»)$,^(>|»),(>|»)$,\\bmore\\b"),
+            { validator: Option.validateXPath });
 
         options.add(["previouspattern"],
             "Patterns to use when guessing the 'previous' page in a document sequence",
-            "stringlist", UTF8("\\bprev|previous\\b,^<$,^(<<|«)$,^(<|«),(<|«)$"));
+            "stringlist", UTF8("\\bprev|previous\\b,^<$,^(<<|«)$,^(<|«),(<|«)$"),
+            { validator: Option.validateXPath });
 
         options.add(["pageinfo", "pa"],
             "Desired info in the :pageinfo output",

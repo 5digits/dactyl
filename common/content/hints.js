@@ -1053,25 +1053,15 @@ const Hints = Module("hints", {
             util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
                             "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @role='link']"]);
 
-        function checkXPath(val) {
-            try {
-                util.evaluateXPath(val, document.implementation.createDocument("", "", null));
-                return true;
-            }
-            catch (e) {
-                return false;
-            }
-        }
-
         options.add(["extendedhinttags", "eht"],
             "XPath string of hintable elements activated by ';'",
             "regexmap", "[iI]:" + Option.quote(util.makeXPath(["img"])),
-            { validator: checkXPath });
+            { validator: Option.validateXPath });
 
         options.add(["hinttags", "ht"],
             "XPath string of hintable elements activated by 'f' and 'F'",
             "string", DEFAULT_HINTTAGS,
-            { validator: checkXPath });
+            { validator: Option.validateXPath });
 
         options.add(["hintkeys", "hk"],
             "The keys used to label and select hints",
