@@ -555,12 +555,12 @@ const CommandLine = Module("commandline", {
     },
 
     get command() {
-        if (this.widgets.command)
+        if (this.commandVisible && this.widgets.command)
             return this._lastCommand = this.widgets.command[1];
         return this._lastCommand;
     },
     set command(val) {
-        if (this.widgets.command)
+        if (this.commandVisible)
             return this.widgets.command = val;
         return this._lastCommand = val;
     },
