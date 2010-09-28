@@ -35,15 +35,22 @@
         <popupset>
             <panel id="dactyl-visualbell" dactyl:highlight="Bell"
                    noautohide="true" noautofocus="true"/>
+
+            <menupopup id="dactyl-contextmenu"
+                       onpopupshowing="return event.target != this || document.popupNode instanceof HTMLAnchorElement;">
+                <menuitem id="dactyl-context-copylink"
+                          label="Copy Link Location"
+                          oncommand="goDoCommand('cmd_copyLink');"/>
+            </menupopup>
         </popupset>
 
         <!--this notifies us also of focus events in the XUL
             from: http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands !-->
         <!-- I don't think we really need this. ––Kris -->
         <commandset id="onPentadactylFocus" commandupdater="true" events="focus"
-            oncommandupdate="&events;.onFocusChange(event);"/>
+                    oncommandupdate="&events;.onFocusChange(event);"/>
         <commandset id="onPentadactylSelect" commandupdater="true" events="select"
-            oncommandupdate="&events;.onSelectionChange(event);"/>
+                    oncommandupdate="&events;.onSelectionChange(event);"/>
     </window>
 
     <vbox id="browser-bottombox">
@@ -51,20 +58,21 @@
              therefore we need to put them into a <vbox> for which that works just fine -->
         <vbox class="dactyl-container" hidden="false" collapsed="true">
             <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
-                flex="1" hidden="false" collapsed="false"
-                onclick="&commandline;.onMultilineOutputEvent(event)"/>
+                    flex="1" hidden="false" collapsed="false"
+                    contextmenu="dactyl-contextmenu"
+                    onclick="&commandline;.onMultilineOutputEvent(event)"/>
         </vbox>
 
         <vbox class="dactyl-container" hidden="false" collapsed="true">
             <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="chrome://dactyl/content/buffer.xhtml"
-                flex="1" hidden="false" collapsed="false"
-                onclick="&commandline;.onMultilineOutputEvent(event)"/>
+                    flex="1" hidden="false" collapsed="false"
+                    onclick="&commandline;.onMultilineOutputEvent(event)"/>
         </vbox>
 
         <vbox id="dactyl-completions-&status;commandline-container" class="dactyl-container" hidden="false" collapsed="true" insertbefore="addon-bar,status-bar">
             <iframe class="dactyl-completions" id="dactyl-completions-&status;commandline" src="chrome://dactyl/content/buffer.xhtml"
-                flex="1" hidden="false" collapsed="false"
-                onclick="&commandline;.onMultilineOutputEvent(event)"/>
+                    flex="1" hidden="false" collapsed="false"
+                    onclick="&commandline;.onMultilineOutputEvent(event)"/>
         </vbox>
 
         <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" dactyl:highlight="CmdLine CmdCmdLine">
@@ -74,8 +82,8 @@
             <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" dactyl:highlight="Normal CmdNormal" collapsed="true">
                 <label   id="dactyl-commandline-prompt"  class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
                 <textbox id="dactyl-commandline-command" class="dactyl-commandline-command plain" flex="1" type="input" timeout="100"
-                    oninput="&commandline;.onEvent(event);" onkeyup="&commandline;.onEvent(event);"
-                    onfocus="&commandline;.onEvent(event);" onblur="&commandline;.onEvent(event);"/>
+                         oninput="&commandline;.onEvent(event);" onkeyup="&commandline;.onEvent(event);"
+                         onfocus="&commandline;.onEvent(event);" onblur="&commandline;.onEvent(event);"/>
             </hbox>
         </stack>
 
@@ -98,8 +106,8 @@
                 <hbox id="&status;commandline" hidden="false" class="dactyl-container" dactyl:highlight="Normal StatusNormal" collapsed="true">
                     <label id="&status;commandline-prompt"    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
                     <textbox id="&status;commandline-command" class="dactyl-commandline-command plain" flex="1" type="text" timeout="100"
-                        oninput="&commandline;.onEvent(event);" onkeyup="&commandline;.onEvent(event);"
-                        onfocus="&commandline;.onEvent(event);" onblur="&commandline;.onEvent(event);"/>
+                             oninput="&commandline;.onEvent(event);" onkeyup="&commandline;.onEvent(event);"
+                             onfocus="&commandline;.onEvent(event);" onblur="&commandline;.onEvent(event);"/>
                 </hbox>
             </stack>
             <label class="plain" id="&status;inputbuffer"    flex="0"/>

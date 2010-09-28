@@ -149,6 +149,8 @@ const CommandWidgets = Class("CommandWidgets", {
     multilineOutput: Class.memoize(function () {
         let elem = document.getElementById("dactyl-multiline-output");
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
+        document.getElementById("dactyl-context-copylink").style.listStyleImage = 
+            util.computedStyle(document.getElementById("context-copylink")).listStyleImage;
         return elem;
     }),
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
@@ -883,23 +885,22 @@ const CommandLine = Module("commandline", {
                     return dactyl.commands[command](event);
                 else
                     openLink(dactyl.CURRENT_TAB);
-                break;
+                return false;
             case "<MiddleMouse>":
             case "<C-LeftMouse>":
             case "<C-M-LeftMouse>":
                 openLink({ where: dactyl.NEW_TAB, background: true });
-                break;
+                return false;
             case "<S-MiddleMouse>":
             case "<C-S-LeftMouse>":
             case "<C-M-S-LeftMouse>":
                 openLink({ where: dactyl.NEW_TAB, background: false });
-                break;
+                return false;
             case "<S-LeftMouse>":
                 openLink(dactyl.NEW_WINDOW);
-                break;
+                return false;
             }
-
-            return;
+            return true;
         }
 
         if (this._startHints) {
