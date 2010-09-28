@@ -154,26 +154,26 @@ const ConfigBase = Class(ModuleBase, {
         Enabled      color: blue;
         Disabled     color: red;
 
-        !Normal          color: black   !important; background: white   !important; font-weight: normal !important;
-        !StatusNormal    color: inherit !important; background: inherit !important;
-        ErrorMsg         color: white   !important; background: red     !important; font-weight: bold !important;
-        InfoMsg          color: black   !important; background: white   !important;
-        StatusInfoMsg    color: inherit !important; background: inherit !important;
-        LineNr           color: orange  !important; background: white   !important;
-        ModeMsg          color: black   !important; background: white   !important;
-        StatusModeMsg    color: inherit !important; background: inherit !important;
-        MoreMsg          color: green   !important; background: white   !important;
-        StatusMoreMsg                               background: inherit !important;
-        Message          white-space: normal; min-width: 100%; padding-left: 2em; text-indent: -2em; display: block;
-        NonText          color: blue; min-height: 16px; padding-left: 2px;
-        *Preview         color: gray;
-        Question         color: green   !important; background: white   !important; font-weight: bold !important;
-        StatusQuestion   color: green   !important; background: inherit !important;
-        WarningMsg       color: red     !important; background: white   !important;
-        StatusWarningMsg color: red     !important; background: inherit !important;
+        !Normal           color: black   !important; background: white   !important; font-weight: normal !important;
+        !StatusNormal     color: inherit !important; background: inherit !important;
+        ErrorMsg          color: white   !important; background: red     !important; font-weight: bold !important;
+        InfoMsg           color: black   !important; background: white   !important;
+        StatusInfoMsg     color: inherit !important; background: inherit !important;
+        LineNr            color: orange  !important; background: white   !important;
+        ModeMsg           color: black   !important; background: white   !important;
+        StatusModeMsg     color: inherit !important; background: inherit !important;
+        MoreMsg           color: green   !important; background: white   !important;
+        StatusMoreMsg                                background: inherit !important;
+        Message           white-space: normal; min-width: 100%; padding-left: 2em; text-indent: -2em; display: block;
+        NonText           color: blue; min-height: 16px; padding-left: 2px;
+        *Preview          color: gray;
+        Question          color: green   !important; background: white   !important; font-weight: bold !important;
+        StatusQuestion    color: green   !important; background: inherit !important;
+        WarningMsg        color: red     !important; background: white   !important;
+        StatusWarningMsg  color: red     !important; background: inherit !important;
 
-        !CmdLine;>*      font-family: monospace !important; padding: 1px !important;
-        !StatusCmdLine>* color: white; background: black; font-weight: normal;
+        !CmdLine;>*       font-family: monospace !important; padding: 1px !important;
+        // !StatusCmdLine>*  color: white; background: black; font-weight: normal;
         CmdPrompt;.dactyl-commandline-prompt
         CmdInput;.dactyl-commandline-command
         CmdOutput    white-space: pre;

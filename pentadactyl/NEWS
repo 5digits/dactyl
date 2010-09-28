@@ -21,11 +21,16 @@
     * Multiple Ex commands may now be separated by |
     * Command-line is now hidden by default. Added C and M to
       'guioptions'.
+    * JavaScript completion improvements, including:
+      - The prototype of the function whose arguments are currently
+	being typed is displayed during completion.
+      - Non-enumerable global properties are now completed for the
+	global object, including XMLHttpRequest and encodeURI.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
     * IMPORTANT: 'loadplugins' is now a regexlist option rather than
       a boolean.
-    * IMPORTANT: Single quotes no longer treat \s specially.
+    * IMPORTANT: Single quotes no longer treat \ specially.
       I.e., 'fo\o''bar' ≡ fo\o'bar
     * IMPORTANT: 'cdpath' and 'runtimepath' no longer treat ",,"
       specially. Use "." instead.
@@ -37,7 +42,7 @@
     * IMPORTANT: 'extendedhinttags' is now a regexmap rather than a
       string.
     * IMPORTANT: 'guioptions' default value has changed.
-    * Added 'altwildmode' and <A-Tab> commandline key binding.
+    * Added 'altwildmode' and <A-Tab> command-line key binding.
     * Added 'autocomplete' option for specifying which completion
       groups should be auto-completed.
     * Added 'banghist' option.
@@ -71,8 +76,4 @@
         updates, rewrites, and formatting improvements.
     * Remove :edit, :tabedit, and :winedit aliases.
     * Remove :play.
-    * Add 'jsdebugger' option - switch on/off javascript debugger
-      service.
-    * Add "addons", "downloads", "extoptions" and "help" to the
-      'activate' option.
 
