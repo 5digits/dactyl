@@ -1224,10 +1224,10 @@ const Options = Module("options", {
                             })
                         }
                         </table>;
-                    if (str.*.length())
-                        dactyl.echo(str, commandline.FORCE_MULTILINE);
-                    else
+                    if (str.text().length() == str.*.length())
                         dactyl.echomsg("No variables found");
+                    else
+                        dactyl.echo(str, commandline.FORCE_MULTILINE);
                     return;
                 }
 
