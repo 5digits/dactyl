@@ -1194,8 +1194,8 @@ const Commands = Module("commands", {
         "":  quote("",  "|\\\\\\s'\"")
     };
     Commands.complQuote = {
-        '"': ['"', Commands.quoteArg['"'], '"'],
-        "'": ["'", Commands.quoteArg["'"], "'"],
+        '"': ['"', quote("", Commands.quoteArg['"'].list), '"'],
+        "'": ["'", quote("", Commands.quoteArg["'"].list), "'"],
         "":  ["", Commands.quoteArg[""], ""]
     };
 
