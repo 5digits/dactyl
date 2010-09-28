@@ -462,19 +462,15 @@ const Tabs = Module("tabs", {
         matches = [];
         let lowerBuffer = buffer.toLowerCase();
         let first = tabs.index() + (reverse ? 0 : 1);
-        let nbrowsers = config.tabbrowser.browsers.length;
-        for (let [i, ] in tabs.browsers) {
-            let index = (i + first) % nbrowsers;
-            let browser = config.tabbrowser.getBrowserAtIndex(index);
-            let url = browser.contentDocument.location.href;
-            let title = browser.contentDocument.title.toLowerCase();
-            if (url == buffer) {
-                tabs.select(index, false);
-                return;
-            }
+        let allTabs = tabs.allTabs;
+        for (let [i, ] in Iterator(tabs.allTabs)) {
+            let tab = allTabs[(i + first) % allTabs.length];
+            let url = tab.linkedBrowser.contentDocument.location.href;
+            if (url == buffer)
+                return tabs.select(index, false);
 
-            if (url.indexOf(buffer) >= 0 || title.indexOf(lowerBuffer) >= 0)
-                matches.push(browser);
+            if (url.indexOf(buffer) >= 0 || tab.label.toLowerCase().indexOf(lowerBuffer) >= 0)
+                matches.push(tab);
         }
 
         if (matches.length == 0)
@@ -485,9 +481,7 @@ const Tabs = Module("tabs", {
             let index = (count - 1) % matches.length;
             if (reverse)
                 index = matches.length - count;
-
-            index = Array.indexOf(config.tabbrowser.browsers, matches[index]);
-            tabs.select(index, false);
+            tabs.select(matches[index], false);
         }
     },
 
