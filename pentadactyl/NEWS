@@ -23,9 +23,12 @@
       'guioptions'.
     * JavaScript completion improvements, including:
       - The prototype of the function whose arguments are currently
-	being typed is displayed during completion.
+        being typed is displayed during completion.
       - Non-enumerable global properties are now completed for the
-	global object, including XMLHttpRequest and encodeURI.
+        global object, including XMLHttpRequest and encodeURI.
+    * The concept of completion contexts is now exposed to the user
+      (see :h :contexts), allowing for powerful and fine-grained
+      completion system customisation.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
     * IMPORTANT: 'loadplugins' is now a regexlist option rather than
@@ -76,6 +79,6 @@
       - Add basic plugin authorship documentation.
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements.
-    * Remove :edit, :tabedit, and :winedit aliases.
-    * Remove :play.
+    * Removed :edit, :tabedit, and :winedit aliases.
+    * Removed :play.
 
