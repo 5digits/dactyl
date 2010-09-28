@@ -234,8 +234,13 @@ const Option = Class("Option", {
         if (newValues == null)
             return "Operator " + operator + " not supported for option type " + this.type;
 
-        if (!this.isValidValue(newValues))
-            return this.invalidArgument(str || this.joinValues(values), operator);
+        try {
+            if (!this.isValidValue(newValues))
+                return this.invalidArgument(str || this.joinValues(values), operator);
+        }
+        catch (e) {
+            return this.invalidArgument(str || this.joinValues(values), operator) + ": " + e.message;
+        }
 
         this.setValues(newValues, scope);
         return null;
@@ -549,6 +554,12 @@ const Option = Class("Option", {
             }
             return null;
         }
+    },
+
+    validIf: function (test, error) {
+        if (test)
+            return true;
+        throw Error(error);
     },
 
     // TODO: Run this by default?

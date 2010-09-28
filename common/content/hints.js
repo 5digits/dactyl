@@ -1072,7 +1072,8 @@ const Hints = Module("hints", {
                     ["asdfg;lkjh", "Home Row"]],
                 validator: function (value) {
                     let values = events.fromString(value).map(events.closure.toString);
-                    return array.uniq(values).length === values.length;
+                    return Option.validIf(array.uniq(values).length === values.length,
+                                          "Duplicate keys not allowed")
                 }
             });
 

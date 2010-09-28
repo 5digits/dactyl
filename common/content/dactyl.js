@@ -1183,7 +1183,8 @@ const Dactyl = Module("dactyl", {
                     options.safeSetPref("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
                                         "See 'guioptions' scrollbar flags.");
                 },
-                validator: function (opts) (opts.indexOf("l") < 0 || opts.indexOf("r") < 0)
+                validator: function (opts) Option.validIf(!(opts.indexOf("l") >= 0 && opts.indexOf("r") >= 0),
+                                                          UTF8("Only one of ‘l’ or ‘r’ allowed"))
             },
             tab: {
                 feature: "tabs",
@@ -1271,7 +1272,7 @@ const Dactyl = Module("dactyl", {
         options.add(["verbose", "vbs"],
             "Define which info messages are displayed",
             "number", 1,
-            { validator: function (value) value >= 0 && value <= 15 });
+            { validator: function (value) Option.validIf(value >= 0 && value <= 15, "Value must be between 0 and 15") });
 
         options.add(["visualbell", "vb"],
             "Use visual bell instead of beeping on errors",
