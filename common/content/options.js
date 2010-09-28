@@ -1204,22 +1204,24 @@ const Options = Module("options", {
             }
         }
 
+        // TODO: deprecated. This needs to support "g:"-prefixed globals at a
+        // minimum for now.  The coderepos plugins make extensive use of global
+        // variables.
         commands.add(["let"],
             "Set or list a variable",
             function (args) {
-                args = args[0];
-
-                if (!args) {
+                args = args.literalArg.trim();
+                function fmt(value) (typeof value == "number" ?   "#" :
+                                     typeof value == "function" ? "*" :
+                                                                  " ") + value;
+                if (!args || args == "g:") {
                     let str =
                         <table>
                         {
                             template.map(dactyl.globalVariables, function ([i, value]) {
-                                let prefix = typeof value == "number"   ? "#" :
-                                             typeof value == "function" ? "*" :
-                                                                          " ";
                                 return <tr>
                                             <td style="width: 200px;">{i}</td>
-                                            <td>{prefix}{value}</td>
+                                            <td>{fmt(value)}</td>
                                        </tr>;
                             })
                         }
@@ -1231,49 +1233,41 @@ const Options = Module("options", {
                     return;
                 }
 
-                // 1 - type, 2 - name, 3 - +-., 4 - expr
-                let matches = args.match(/([$@&])?([\w:]+)\s*([-+.])?=\s*(.+)/);
+                let matches = args.match(/^([a-z]:)?([\w]+)(?:\s*([-+.])?=\s*(.*)?)?$/);
                 if (matches) {
-                    let [, type, name, stuff, expr] = matches;
-                    if (!type) {
-                        let reference = dactyl.variableReference(name);
-                        dactyl.assert(reference[0] || !stuff,
-                            "E121: Undefined variable: " + name);
+                    let [, scope, name, op, expr] = matches;
+                    let fullName = (scope || "") + name;
 
-                        expr = dactyl.evalExpression(expr);
-                        dactyl.assert(expr !== undefined, "E15: Invalid expression: " + expr);
+                    dactyl.assert(scope == "g:" || scope == null,
+                        "E461: Illegal variable name: " + scope + name);
+                    dactyl.assert(dactyl.globalVariables.hasOwnProperty(name) || (expr && !op),
+                        "E121: Undefined variable: " + fullName);
 
-                        if (!reference[0]) {
-                            if (reference[2] == "g")
-                                reference[0] = dactyl.globalVariables;
-                            else
-                                return; // for now
+                    if (!expr)
+                        dactyl.echo(fullName + "\t\t" + fmt(dactyl.globalVariables[name]));
+                    else {
+                        try {
+                            var newValue = dactyl.userEval(expr);
                         }
+                        catch (e) {}
+                        dactyl.assert(newValue !== undefined,
+                            "E15: Invalid expression: " + expr);
 
-                        if (stuff) {
-                            if (stuff == "+")
-                                reference[0][reference[1]] += expr;
-                            else if (stuff == "-")
-                                reference[0][reference[1]] -= expr;
-                            else if (stuff == ".")
-                                reference[0][reference[1]] += expr.toString();
+                        let value = newValue;
+                        if (op) {
+                            value = dactyl.globalVariables[name];
+                            if (op == "+")
+                                value += newValue;
+                            else if (op == "-")
+                                value -= newValue;
+                            else if (op == ".")
+                                value += String(newValue);
                         }
-
-                        else
-                            reference[0][reference[1]] = expr;
-                     }
+                        dactyl.globalVariables[name] = value;
+                    }
                 }
-                // 1 - name
-                else if ((matches = args.match(/^\s*([\w:]+)\s*$/))) {
-                    let reference = dactyl.variableReference(matches[1]);
-                    dactyl.assert(reference[0], "E121: Undefined variable: " + matches[1]);
-
-                    let value = reference[0][reference[1]];
-                    let prefix = typeof value == "number"   ? "#" :
-                                 typeof value == "function" ? "*" :
-                                                              " ";
-                    dactyl.echo(reference[1] + "\t\t" + prefix + value);
-                }
+                else
+                    dactyl.echoerr("E18: Unexpected characters in :let");
             },
             {
                 literal: 0
@@ -1338,18 +1332,20 @@ const Options = Module("options", {
                 }, params.extra || {}));
         });
 
+        // TODO: deprecated. This needs to support "g:"-prefixed globals at a
+        // minimum for now.
         commands.add(["unl[et]"],
             "Delete a variable",
             function (args) {
                 for (let [, name] in args) {
-                    let reference = dactyl.variableReference(name);
-                    if (!reference[0]) {
+                    name = name.replace(/^g:/, ""); // throw away the scope prefix
+                    if (!dactyl.globalVariables.hasOwnProperty(name)) {
                         if (!args.bang)
                             dactyl.echoerr("E108: No such variable: " + name);
                         return;
                     }
 
-                    delete reference[0][reference[1]];
+                    delete dactyl.globalVariables[name];
                 }
             },
             {

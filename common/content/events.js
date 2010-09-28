@@ -919,7 +919,7 @@ const Events = Module("events", {
                 if (modes.extended & modes.HINTS) {
                     // under HINT mode, certain keys are redirected to hints.onEvent
                     if (key == "<Return>" || key == "<Tab>" || key == "<S-Tab>"
-                        || key == mappings.getMapLeader()
+                        || key == mappings.mapLeader
                         || (key == "<BS>" && hints.prevInput == "number")
                         || (hints.isHintKey(key) && !hints.escNumbers)) {
                         hints.onEvent(event);

@@ -93,7 +93,7 @@ const Hints = Module("hints", {
      * Display the current status to the user.
      */
     _updateStatusline: function () {
-        statusline.updateInputBuffer((hints.escNumbers ? mappings.getMapLeader() : "") +
+        statusline.updateInputBuffer((hints.escNumbers ? mappings.mapLeader : "") +
                                      (this._hintNumber ? this.getHintString(this._hintNumber) : ""));
     },
 
@@ -849,7 +849,7 @@ const Hints = Module("hints", {
             }
             break;
 
-       case mappings.getMapLeader():
+       case mappings.mapLeader:
            hints.escNumbers = !hints.escNumbers;
            if (hints.escNumbers && this._usedTabKey)
                this._hintNumber = 0;

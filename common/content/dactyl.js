@@ -341,46 +341,6 @@ const Dactyl = Module("dactyl", {
             ") { " + arguments[arguments.length - 1] + " })");
     },
 
-    // partial sixth level expression evaluation
-    // TODO: what is that really needed for, and where could it be used?
-    //       Or should it be removed? (c) Viktor
-    //       Better name?  See other dactyl.userEval()
-    //       I agree, the name is confusing, and so is the
-    //           description --Kris
-    evalExpression: function (str) {
-        str = str.trim(); // XXX
-
-        let matches = str.match(/^&(\w+)/);
-        if (matches) {
-            let opt = this.options.get(matches[1]);
-
-            dactyl.assert(opt, "E113: Unknown option: " + matches[1]);
-
-            let type = opt.type;
-            let value = opt.getter();
-
-            if (type != "boolean" && type != "number")
-                value = value.toString();
-
-            return value;
-        }
-        // String
-        else if ((matches = str.match(/^(['"])([^\1]*?[^\\]?)\1/))) {
-            return matches[2].toString();
-        }
-        // Number
-        else if ((matches = str.match(/^(\d+)$/)))
-            return parseInt(matches[1], 10);
-
-        let reference = this.variableReference(str);
-
-        if (!reference[0])
-            this.echoerr("E121: Undefined variable: " + str);
-        else
-            return reference[0][reference[1]];
-        return null;
-    },
-
     /**
      * Execute an Ex command string. E.g. ":zoom 300".
      *
@@ -1111,29 +1071,6 @@ const Dactyl = Module("dactyl", {
             dactyl.reportError(e, true);
             return [];
         }
-    },
-
-    variableReference: function (string) {
-        if (!string)
-            return [null, null, null];
-
-        let matches = string.match(/^([bwtglsv]):(\w+)/);
-        if (matches) { // Variable
-            // Other variables should be implemented
-            if (matches[1] == "g") {
-                if (matches[2] in this.globalVariables)
-                    return [this.globalVariables, matches[2], matches[1]];
-                else
-                    return [null, matches[2], matches[1]];
-            }
-        }
-        else { // Global variable
-            if (string in this.globalVariables)
-                return [this.globalVariables, string, "g"];
-            else
-                return [null, string, "g"];
-        }
-        throw Error("What the fuck?");
     },
 
     /**
