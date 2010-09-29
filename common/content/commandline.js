@@ -546,7 +546,6 @@ const CommandLine = Module("commandline", {
         this.hideCompletions();
 
         if (!this._keepCommand || this._silent || this._quiet) {
-            dactyl.dumpStack();
             this.widgets.mowContainer.collapsed = true;
             commandline.updateMorePrompt();
             this.hide();
