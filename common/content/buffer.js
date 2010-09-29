@@ -1185,7 +1185,7 @@ const Buffer = Module("buffer", {
         commands.add(["pagest[yle]", "pas"],
             "Select the author style sheet to apply",
             function (args) {
-                let arg = args.literalArg;
+                let arg = args[0] || "";
 
                 let titles = buffer.alternateStyleSheets.map(function (stylesheet) stylesheet.title);
 

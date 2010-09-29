@@ -1344,7 +1344,7 @@ const Dactyl = Module("dactyl", {
         commands.add(["em[enu]"],
             "Execute the specified menu item from the command line",
             function (args) {
-                let arg = args.literalArg;
+                let arg = args[0] || "";
                 let items = Dactyl.getMenuItems();
 
                 dactyl.assert(items.some(function (i) i.fullMenuPath == arg),
@@ -1364,7 +1364,7 @@ const Dactyl = Module("dactyl", {
             "Execute the argument as an Ex command",
             function (args) {
                 try {
-                    let cmd = dactyl.userEval(args[0]);
+                    let cmd = dactyl.userEval(args[0] || "");
                     dactyl.execute(cmd, null, true);
                 }
                 catch (e) {
@@ -1689,7 +1689,7 @@ const Dactyl = Module("dactyl", {
 
         commands.add(["norm[al]"],
             "Execute Normal mode commands",
-            function (args) { events.feedkeys(args[0], args.bang); },
+            function (args) { events.feedkeys(args[0] || "", args.bang); },
             {
                 argCount: "+",
                 bang: true,
@@ -1730,7 +1730,7 @@ const Dactyl = Module("dactyl", {
             let tbcmd = function (names, desc, action, filter) {
                 commands.add(names, desc,
                     function (args) {
-                        let toolbar = findToolbar(args[0]);
+                        let toolbar = findToolbar(args[0] || "");
                         dactyl.assert(toolbar, "E474: Invalid argument");
                         action(toolbar);
                     }, {
@@ -1759,7 +1759,7 @@ const Dactyl = Module("dactyl", {
             function (args) {
                 let count = args.count;
                 let special = args.bang;
-                args = args[0];
+                args = args[0] || "";
 
                 if (args[0] == ":")
                     var method = function () dactyl.execute(args, null, true);
@@ -1848,7 +1848,7 @@ const Dactyl = Module("dactyl", {
                 try {
                     vbs.set(args.count || 1);
                     vbs.setFrom = null;
-                    dactyl.execute(args[0], null, true);
+                    dactyl.execute(args[0] || "", null, true);
                 }
                 finally {
                     vbs.set(value);

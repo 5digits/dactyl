@@ -117,7 +117,7 @@ const History = Module("history", {
         commands.add(["ba[ck]"],
             "Go back in the browser history",
             function (args) {
-                let url = args.literalArg;
+                let url = args[0];
 
                 if (args.bang)
                     history.goToStart();

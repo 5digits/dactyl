@@ -1562,7 +1562,7 @@ const CommandLine = Module("commandline", {
             commands.add([command.name],
                 command.description,
                 function (args) {
-                    let str = CommandLine.echoArgumentToString(args[0], true);
+                    let str = CommandLine.echoArgumentToString(args[0] || "", true);
                     if (str != null)
                         command.action(str);
                 }, {
@@ -1597,7 +1597,7 @@ const CommandLine = Module("commandline", {
         commands.add(["sil[ent]"],
             "Run a command silently",
             function (args) {
-                commandline.runSilently(function () dactyl.execute(args[0], null, true));
+                commandline.runSilently(function () dactyl.execute(args[0] || "", null, true));
             }, {
                 completer: function (context) completion.ex(context),
                 literal: 0,

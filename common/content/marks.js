@@ -225,7 +225,7 @@ const Marks = Module("marks", {
             "Delete the specified marks",
             function (args) {
                 let special = args.bang;
-                args = args[0];
+                args = args[0] || "";
 
                 // assert(special ^ args)
                 dactyl.assert( special ||  args, "E471: Argument required");
@@ -256,7 +256,7 @@ const Marks = Module("marks", {
         commands.add(["ma[rk]"],
             "Mark current location within the web page",
             function (args) {
-                let mark = args[0];
+                let mark = args[0] || "";
                 dactyl.assert(mark.length <= 1, "E488: Trailing characters");
                 dactyl.assert(/[a-zA-Z]/.test(mark),
                     "E191: Argument must be a letter or forward/backward quote");
@@ -268,7 +268,7 @@ const Marks = Module("marks", {
         commands.add(["marks"],
             "Show all location marks of current web page",
             function (args) {
-                args = args[0];
+                args = args[0] || "";
 
                 // ignore invalid mark characters unless there are no valid mark chars
                 dactyl.assert(!args || /[a-zA-Z]/.test(args),

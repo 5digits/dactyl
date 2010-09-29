@@ -503,7 +503,7 @@ lookup:
         commands.add(["cd", "chd[ir]"],
             "Change the current directory",
             function (args) {
-                let arg = args.literalArg;
+                let arg = args[0];
 
                 if (!arg)
                     arg = "~";
@@ -618,7 +618,7 @@ lookup:
         commands.add(["!", "run"],
             "Run a command",
             function (args) {
-                let arg = args.literalArg;
+                let arg = args[0] || "";
 
                 // :!! needs to be treated specially as the command parser sets the
                 // bang flag but removes the ! from arg

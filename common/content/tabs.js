@@ -511,7 +511,7 @@ const Tabs = Module("tabs", {
             function (args) {
                 let special = args.bang;
                 let count   = args.count;
-                let arg     = args.literalArg;
+                let arg     = args[0] || "";
 
                 if (arg) {
                     let removed = 0;
@@ -568,7 +568,7 @@ const Tabs = Module("tabs", {
                 let alternate = tabs.alternate;
 
                 try {
-                    dactyl.execute(args[0], null, true);
+                    dactyl.execute(args[0] || "", null, true);
                 }
                 finally {
                     tabs.updateSelectionHistory([tabs.getTab(), alternate]);
@@ -587,7 +587,7 @@ const Tabs = Module("tabs", {
                 try {
                     var force = dactyl.forceNewTab;
                     dactyl.forceNewTab = true;
-                    dactyl.execute(args[0], null, true);
+                    dactyl.execute(args[0] || "", null, true);
                 }
                 finally {
                     dactyl.forceNewTab = force;
@@ -604,7 +604,7 @@ const Tabs = Module("tabs", {
             function (args) {
                 for (let i = 0; i < tabs.count; i++) {
                     tabs.select(i);
-                    dactyl.execute(args[0], null, true);
+                    dactyl.execute(args[0] || "", null, true);
                 }
             }, {
                 argCount: "1",
@@ -683,7 +683,7 @@ const Tabs = Module("tabs", {
                 function (args) {
                     let special = args.bang;
                     let count   = args.count;
-                    let arg     = args.literalArg;
+                    let arg     = args[0];
 
                     // if a numeric arg is specified any count is ignored; if a
                     // count and non-numeric arg are both specified then E488
@@ -706,7 +706,7 @@ const Tabs = Module("tabs", {
 
             commands.add(["buffers", "files", "ls", "tabs"],
                 "Show a list of all buffers",
-                function (args) { tabs.list(args.literalArg); }, {
+                function (args) { tabs.list(args[0] || ""); }, {
                     argCount: "?",
                     literal: 0
                 });

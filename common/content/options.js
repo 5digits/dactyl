@@ -1240,8 +1240,8 @@ const Options = Module("options", {
         commands.add(["let"],
             "Set or list a variable",
             function (args) {
-                args = args.literalArg.trim();
-                function fmt(value) (typeof value == "number" ?   "#" :
+                args = (args[0] || "").trim();
+                function fmt(value) (typeof value == "number"   ? "#" :
                                      typeof value == "function" ? "*" :
                                                                   " ") + value;
                 if (!args || args == "g:") {

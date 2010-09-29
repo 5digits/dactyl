@@ -230,8 +230,8 @@ const Abbreviations = Module("abbreviations", {
             commands.add([ch ? ch + "a[bbrev]" : "ab[breviate]"],
                 "Abbreviate a key sequence" + modeDescription,
                 function (args) {
-                    let [,, lhs,, rhs] = splitAbbrev(args[0]);
-                    dactyl.assert(lhs, "E474: Invalid argument");
+                    let [,, lhs,, rhs] = splitAbbrev(args[0] || "");
+                    dactyl.assert(lhs != null, "E474: Invalid argument");
 
                     if (rhs) {
                         if (args["-javascript"]) {
