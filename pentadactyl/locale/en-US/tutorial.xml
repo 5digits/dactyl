@@ -372,9 +372,9 @@
     &dactyl.appName; has an energetic and growing user base. If you've run into a problem
     that you can't seem to solve with &dactyl.appName;, or if you think you might have
     found a bug, please let us know! There is support available on the
-    <link target="http://code.google.com/p/pentadactyl-labs/w/list?q=label%3Aproject-pentadactyl">wiki</link>
-    or in the <link target="irc://irc.freenode.net/pentadactyl">#pentadactyl</link> IRC
-    channel on <link target="http://freenode.net/">freenode</link>.
+    <link href="http://code.google.com/p/dactyl/w/list?q=label%3Aproject-&dactyl.name;">wiki</link>
+    or in the <link href="irc://irc.oftc.net/pentadactyl">#pentadactyl</link> IRC
+    channel on <link href="http://oftc.net/">OFTC</link>.
 </p>
 
 <p>
@@ -382,7 +382,7 @@
     hear from you as well. Developers work on &dactyl.appName; whenever possible, but we
     are neither infinite nor omnipotent; please bear with us. If you can't wait for
     us to get around to it, rest assured patches are welcome! See the
-    <t>developer</t> page for more information.
+    <link topic="developer">developer</link> page for more information.
 </p>
 
 </document>
