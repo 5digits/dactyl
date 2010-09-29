@@ -546,6 +546,7 @@ const CommandLine = Module("commandline", {
         this.hideCompletions();
 
         if (!this._keepCommand || this._silent || this._quiet) {
+            dactyl.dumpStack();
             this.widgets.mowContainer.collapsed = true;
             commandline.updateMorePrompt();
             this.hide();
@@ -908,6 +909,9 @@ const CommandLine = Module("commandline", {
             }
             return true;
         }
+
+        if (event instanceof MouseEvent)
+            return;
 
         if (this._startHints) {
             statusline.updateInputBuffer("");
