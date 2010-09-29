@@ -6,7 +6,8 @@ BUILD_DATE    = $(shell date "+%Y/%m/%d %H:%M:%S")
 BASE          = $(TOP)/../common
 GOOGLE_PROJ   = dactyl
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
-VERSION	      = $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf)
+VERSION	      = $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
+UUID   	      = $(shell sed -n 's/.*em:id\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 
 LOCALEDIR     = locale
 DOC_FILES     = $(wildcard $(LOCALEDIR)/*/*.xml)
@@ -37,15 +38,18 @@ RDF_IN        = $(RDF).in
 
 BUILD_DIR     = build.$(VERSION).$(OS)
 
-AWK  = awk
-CURL = curl
-B64ENCODE = base64
+AWK       ?= awk
+B64ENCODE ?= base64
+CURL      ?= curl
+FIREFOX   ?= firefox
+PROFILES  ?= $(HOME)/.mozilla/firefox
+export PROFILES
 
 .SILENT:
 
 #### rules
 
-TARGETS = all help info jar xpi install clean distclean $(JAR)
+TARGETS = all help info jar xpi install clean distclean install installxpi $(JAR)
 $(TARGETS:%=\%.%):
 	echo MAKE $* $(@:$*.%=%)
 	$(MAKE) -C $* $(@:$*.%=%)
@@ -56,14 +60,18 @@ all: help
 help:
 	@echo "$(NAME) $(VERSION) build"
 	@echo
-	@echo "  make help      - display this help"
-	@echo "  make info      - show some info about the system"
-	@echo "  make jar       - build a JAR ($(JAR))"
-	@echo "  make xpi       - build an XPI ($(XPI_NAME))"
-	@echo "  make release   - updates update.rdf (this is not for you)"
-	@echo "  make release   - uploads to Google Code (this is not for you)"
-	@echo "  make clean     - clean up"
-	@echo "  make distclean - clean up more"
+	@echo "  make help       - display this help"
+	@echo "  make info       - show some info about the system"
+	@echo "  make jar        - build a JAR ($(JAR))"
+	@echo "  make xpi        - build an XPI ($(XPI_NAME))"
+	@echo "  make installxpi - build an XPI and install it to your profile"
+	@echo "  make install    - installs this source tree directly to your Firefox profile"
+	@echo '                    set $$PROFILE to select a profile and $$PROFILES to change'
+	@echo '                    the directory where profiles are searched for'
+	@echo "  make release    - updates update.rdf (this is not for you)"
+	@echo "  make dist       - uploads to Google Code (this is not for you)"
+	@echo "  make clean      - clean up"
+	@echo "  make distclean  - clean up more"
 	@echo
 	@echo "running some commands with V=1 will show more build details"
 
@@ -98,6 +106,23 @@ dist: $(XPI)
 		-H "Authorization: Basic $$auth"				\
 		-i "$(GOOGLE)" | sed -n '/^Location/{p;q;}'
 
+install:
+	profile=$${PROFILE:-$$(sed 's/^$$/\#/' $(PROFILES)/profiles.ini |\
+		awk -v"profile=$(PROFILE)" \
+			'BEGIN { RS="#" } index("\n" profile "\n", $$0) || !profile && /\nDefault=1/' |\
+		awk -F= '{ args[$$1] = $$2 } \
+		END {\
+			if (args["IsRelative"]) print ENVIRON["PROFILES"] "/" args["Path"];\
+			else print args["Path"]\
+		}')}; \
+	ext="$$profile/extensions/$(UUID)"; \
+	rm -f "$$ext.xpi"; \
+	rm -rf "$$ext"; \
+	echo "Installing to $$ext"; \
+	pwd >$$ext
+installxpi: xpi
+	$(FIREFOX) $(XPI)
+
 $(RDF): $(RDF_IN) Makefile
 	@echo "Preparing release..."
 	$(SED) -e "s,@VERSION@,$(VERSION),g" \
@@ -120,7 +145,7 @@ $(XPI): $(JAR)
 	mkdir -p $(XPI_PATH)
 	$(AWK) -v 'name=$(NAME)' -f $(BASE)/process_manifest.awk $(TOP)/chrome.manifest >$(XPI_PATH)/chrome.manifest
 	$(MAKE_JAR) "$(XPI)" "$(XPI_BASES)" "$(XPI_DIRS)" "$(XPI_TEXTS)" "$(XPI_BINS)" "$(XPI_FILES)"
-	@echo "SUCCESS: $@"
+	@echo "Built XPI: $@"
 
 #### jar
 
