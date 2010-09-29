@@ -404,7 +404,8 @@ const CommandLine = Module("commandline", {
         win.focus();
 
         this._startHints = false;
-        modes.set(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
+        if (!(modes.extended & modes.OUTPUT_MULTILINE))
+            modes.set(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
         commandline.updateMorePrompt();
     },
 
@@ -567,6 +568,13 @@ const CommandLine = Module("commandline", {
         return this._lastCommand = val;
     },
 
+    clear: function () {
+        if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
+            this.widgets.message = null;
+        if (modes.main != modes.COMMAND_LINE)
+            this.widgets.command = null;
+    },
+
     /**
      * Displays the multi-line output of a command, preceded by the last
      * executed ex command string.
@@ -638,20 +646,18 @@ const CommandLine = Module("commandline", {
             if (this.widgets.message && this.widgets.message[1] == this._lastEcho)
                 this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
                                     this.widgets.message[0]);
+
+            if (!(flags & this.FORCE_MULTILINE) && !this.widgets.mowContainer.collapsed) {
+                highlightGroup += " Message";
+                action = this._echoMultiline;
+            }
             this._lastEcho = (action == this._echoLine) && str;
-        }
-
-        // TODO: this is all a bit convoluted - clean up.
-        // assume that FORCE_MULTILINE output is fully styled
-        if (!(flags & this.FORCE_MULTILINE) && !single
-            && (!this.widgets.mowContainer.collapsed || this.widgets.message && this.widgets.message[1] == this._lastEcho)) {
-
-            highlightGroup += " Message";
-            action = this._echoMultiline;
         }
 
         if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || typeof str == "xml") && !(flags & this.FORCE_SINGLELINE))
             action = this._echoMultiline;
+
+        this._lastClearable = action === this._echoLine && String(str);
 
         if (action)
             action.call(this, str, highlightGroup, single);

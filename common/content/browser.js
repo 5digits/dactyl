@@ -188,9 +188,7 @@ const Browser = Module("browser", {
             function () {
                 window.QueryInterface(Ci.nsIInterfaceRequestor)
                       .getInterface(Ci.nsIDOMWindowUtils).redraw();
-                commandline.widgets.message = null;
-                if (modes.main != modes.COMMAND_LINE)
-                    commandline.widgets.command = null;
+                commandline.clear();
             },
             { argCount: "0" });
     }

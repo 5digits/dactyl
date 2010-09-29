@@ -638,7 +638,7 @@ const Events = Module("events", {
             else
                 dactyl.echo("Waiting for page to load...", commandline.DISALLOW_MULTILINE);
         }
-        modes.show();
+        commandline.clear();
 
         // TODO: allow macros to be continued when page does not fully load with an option
         let ret = (buffer.loaded == 1);
