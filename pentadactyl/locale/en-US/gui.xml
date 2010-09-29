@@ -24,6 +24,7 @@
     <dt>openfile</dt>        <dd>Open the file selector dialog</dd>
     <dt>pageinfo</dt>        <dd>Show information about the current page</dd>
     <dt>pagesource</dt>      <dd>View page source</dd>
+    <dt>passwords</dt>       <dd>Passwords dialog</dd>
     <dt>places</dt>          <dd>Places Organizer: Manage your bookmarks and history</dd>
     <dt>preferences</dt>     <dd>Show &dactyl.host; preferences dialog</dd>
     <dt>printpreview</dt>    <dd>Preview the page before printing</dd>
@@ -33,6 +34,7 @@
     <dt>savepage</dt>        <dd>Save page to disk</dd>
     <dt>searchengines</dt>   <dd>Manage installed search engines</dd>
     <dt>selectionsource</dt> <dd>View selection source</dd>
+    <dt>venkman</dt>         <dd>The JavaScript debugger</dd>
 </dl>
 
 </overlay>
