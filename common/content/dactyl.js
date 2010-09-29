@@ -1315,11 +1315,6 @@ const Dactyl = Module("dactyl", {
             },
             { argCount: "0" });
 
-        commands.add(["beep"],
-            "Play a system beep", // Play? Wrong word. Implies some kind of musicality. --Kris
-            function () { dactyl.beep(); },
-            { argCount: "0" });
-
         commands.add(["dia[log]"],
             "Open a " + config.appName + " dialog",
             function (args) {

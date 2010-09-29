@@ -14,19 +14,6 @@
 <h2 tag="various">Various commands</h2>
 
 <item>
-    <tags>:beep</tags>
-    <strut/>
-    <spec>:beep</spec>
-    <description>
-        <p>
-            Play a system beep. This should not be used for any purpose other
-            than testing the visual bell or annoying your co-workers.
-        </p>
-    </description>
-</item>
-
-
-<item>
     <tags>:contexts</tags>
     <spec>:contexts <a>ex-command</a></spec>
     <description>

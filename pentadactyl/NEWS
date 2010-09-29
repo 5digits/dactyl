@@ -80,6 +80,7 @@
       - Add basic plugin authorship documentation.
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements.
+    * Removed :beep
     * Removed :edit, :tabedit, and :winedit aliases.
     * Removed :play.
 

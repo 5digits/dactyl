@@ -235,7 +235,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:autocmd</ex></dt> <dd>Execute commands automatically on events</dd>
     <dt><ex>:back</ex></dt> <dd>Go back in the browser history</dd>
     <dt><ex>:bdelete</ex></dt> <dd>Delete current buffer</dd>
-    <dt><ex>:beep</ex></dt> <dd>Play a system beep</dd>
     <dt><ex>:bmark</ex></dt> <dd>Add a bookmark</dd>
     <dt><ex>:bmarks</ex></dt> <dd>List or open multiple bookmarks</dd>
     <dt><ex>:buffer</ex></dt> <dd>Switch to a buffer</dd>
