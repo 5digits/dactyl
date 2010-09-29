@@ -1330,7 +1330,7 @@ const Dactyl = Module("dactyl", {
                     config.dialogs[dialog][1]();
                 }
                 catch (e) {
-                    dactyl.echoerr("Error opening " + arg.quote() + ": " + e);
+                    dactyl.echoerr("Error opening " + dialog.quote() + ": " + (e.message || e));
                 }
             }, {
                 argCount: "1",

@@ -68,6 +68,8 @@ const Config = Module("config", ConfigBase, {
             function () { window.BrowserPageInfo(); }],
         pagesource: ["View page source",
             function () { window.BrowserViewSourceOfDocument(content.document); }],
+        passwords: ["Passwords dialog",
+ 	           function () { window.openDialog("chrome://passwordmgr/content/passwordManager.xul"); }],
         places: ["Places Organizer: Manage your bookmarks and history",
             function () { PlacesCommandHook.showPlacesOrganizer(ORGANIZER_ROOT_BOOKMARKS); }],
         preferences: ["Show Firefox preferences dialog",
@@ -85,7 +87,9 @@ const Config = Module("config", ConfigBase, {
         searchengines: ["Manage installed search engines",
             function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
         selectionsource: ["View selection source",
-            function () { buffer.viewSelectionSource(); }]
+            function () { buffer.viewSelectionSource(); }],
+        venkman: ["The JavaScript debugger",
+            function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); start_venkman() }]
     },
 
     features: [
