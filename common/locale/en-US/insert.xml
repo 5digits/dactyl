@@ -8,7 +8,7 @@
     title="&dactyl.appName; Insert Mode"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
-<h1 tag="Insert-mode Insert mode-insert">Insert mode</h1>
+<h1 tag="insert-mode insert mode-insert">Insert mode</h1>
 <toc start="2"/>
 
 <!-- TODO: This makes no sense. Rewrite. -->

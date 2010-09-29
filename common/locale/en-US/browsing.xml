@@ -340,7 +340,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>
             For example, at the URL
             <tt>http://www.example.com/dir1/dir2/file.htm</tt>,
-            <k>2gu</k> opens <tt>http://www.example.com/dir1/</tt>.
+            2<k>gu</k> opens <tt>http://www.example.com/dir1/</tt>.
         </p>
     </description>
 </item>

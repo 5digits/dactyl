@@ -22,14 +22,7 @@ const nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
 const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
     .getBranch("extensions.dactyl.");
-
-let channel = Components.classesByID["{61ba33c0-3031-11d3-8cd0-0060b0fc14a3}"]
-                        .getService(Ci.nsIProtocolHandler)
-                        .newChannel(ioService.newURI("chrome://dactyl/content/data", null, null))
-                        .QueryInterface(Ci.nsIRequest);
-const systemPrincipal = channel.owner;
-channel.cancel(NS_BINDING_ABORTED);
-channel = null;
+const systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {
@@ -154,6 +147,8 @@ Dactyl.prototype = {
                 return makeChannel(url, uri);
             case "help-tag":
                 let tag = decodeURIComponent(uri.path.substr(1));
+                if (tag in this.FILE_MAP)
+                    return redirect("dactyl://help/" + tag, uri);
                 if (tag in this.HELP_TAGS)
                     return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
             }

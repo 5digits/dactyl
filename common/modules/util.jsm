@@ -275,7 +275,7 @@ const Util = Module("Util", {
      * @param {boolean} asIterator Whether to return the results as an
      *     XPath iterator.
      */
-    evaluateXPath: (function () {
+    evaluateXPath: update(
         function evaluateXPath(expression, doc, elem, asIterator) {
             if (!doc)
                 doc = util.activeWindow.content.document;
@@ -296,15 +296,15 @@ const Util = Module("Util", {
                                       : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
                 }
             });
-        }
-        evaluateXPath.resolver = function lookupNamespaceURI(prefix) ({
-                xul: XUL.uri,
-                xhtml: XHTML.uri,
-                xhtml2: "http://www.w3.org/2002/06/xhtml2",
-                dactyl: NS.uri
-            }[prefix] || null);
-        return evaluateXPath;
-    })(),
+        },
+        {
+            resolver: function lookupNamespaceURI(prefix) ({
+                    xul: XUL.uri,
+                    xhtml: XHTML.uri,
+                    xhtml2: "http://www.w3.org/2002/06/xhtml2",
+                    dactyl: NS.uri
+                }[prefix] || null)
+        }),
 
     extend: function extend(dest) {
         Array.slice(arguments, 1).filter(util.identity).forEach(function (src) {

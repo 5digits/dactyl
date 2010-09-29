@@ -264,7 +264,7 @@
 <p>&dactyl.host; options can be viewed and set with the following commands:</p>
 
 <item>
-    <tags>:prefs :preferences</tags>
+    <tags>:pref :prefs :preferences</tags>
     <spec>:pref<oa>erences</oa></spec>
     <description>
         <p>
@@ -277,7 +277,7 @@
 </item>
 
 <item>
-    <tags>:prefs! :preferences!</tags>
+    <tags>:pref! :prefs! :preferences!</tags>
     <spec>:pref<oa>erences</oa>!</spec>
     <description>
         <p>
@@ -1401,7 +1401,7 @@
 
 
 <item>
-    <tags>'verbose', 'vbs'</tags>
+    <tags>'vbs' 'verbose'</tags>
     <spec>'verbose' 'vbs'</spec>
     <type>number</type>
     <default>1</default>

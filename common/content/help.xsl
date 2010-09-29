@@ -359,7 +359,15 @@
     </xsl:template>
 
     <xsl:template match="dactyl:link" mode="help-2">
-        <a href="{@topic}">
+        <a>
+            <xsl:choose>
+                <xsl:when test="regexp:match(@topic, '^([a-zA-Z]*:|[^/]*#|/)', '')">
+                    <xsl:attribute name="href"><xsl:value-of select="@topic"/></xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:attribute name="href"><xsl:value-of select="concat('dactyl://help-tag/', @topic)"/></xsl:attribute>
+                </xsl:otherwise>
+            </xsl:choose>
             <xsl:if test="regexp:match(@topic, '^[a-zA-Z]*:', '')
                     and not(starts-with(@topic, 'mailto:'))">
                 <xsl:attribute name="rel">external</xsl:attribute>

@@ -507,13 +507,14 @@ const Dactyl = Module("dactyl", {
                 '<?xml version="1.0"?>\n' +
                 '<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>\n' +
                 '<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">\n' +
+                unescape(encodeURI( // UTF-8 handling hack.
                 <document xmlns={NS}
                     name="plugins" title={config.appName + " Plugins"}>
                     <h1 tag="using-plugins">Using Plugins</h1>
                     <toc start="2"/>
 
                     {body}
-                </document>.toXMLString();
+                </document>.toXMLString()));
             fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
             addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
@@ -551,7 +552,7 @@ const Dactyl = Module("dactyl", {
             function fix(node) {
                 switch(node.nodeType) {
                     case Node.ELEMENT_NODE:
-                        if (node instanceof HTMLScriptElement)
+                        if (isinstance(node, [HTMLBaseElement, HTMLScriptElement]))
                             return;
 
                         data.push("<"); data.push(node.localName);
@@ -565,10 +566,13 @@ const Dactyl = Module("dactyl", {
                                 set.add(styles, value);
                             }
                             if (name == "href") {
-                                if (value.indexOf("dactyl://help-tag/") == 0)
-                                    value = services.get("io").newChannel(value, null, null).originalURI.path.substr(1);
-                                if (!/[#\/]/.test(value))
-                                    value += ".xhtml";
+                                value = node.href;
+                                if (value.indexOf("dactyl://help-tag/") == 0) {
+                                    let uri = services.get("io").newChannel(value, null, null).originalURI;
+                                    value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
+                                }
+                                if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
+                                    value = value.replace(/(#|$)/, ".xhtml$1");
                             }
                             if (name == "src" && value.indexOf(":") > 0) {
                                 chrome[value] = value.replace(/.*\//, "");;

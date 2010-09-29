@@ -48,7 +48,7 @@
         <p>
             Opens the &dactyl.host; addon manager, where extensions and themes
             may be installed, removed, disabled, and configured. See also
-            <ex>:extensions</ex>, <ex>:extinstall</ex>, <ex>:extoptions</ex>,
+            <ex>:extensions</ex>, <ex>:extadd</ex>, <ex>:extoptions</ex>,
             <ex>:extenable</ex>, <ex>:extdisable</ex>, and <ex>:extdelete</ex>.
         </p>
     </description>

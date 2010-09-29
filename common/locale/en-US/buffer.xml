@@ -219,7 +219,7 @@
         <p>
             Scroll window downwards by the amount specified in the
             <o>scroll</o> option. With <oa>count</oa>, scroll as if
-            <o>scroll</o> were set to <o>count</o>.
+            <o>scroll</o> were set to <oa>count</oa>.
         </p>
     </description>
 </item>
@@ -233,7 +233,7 @@
         <p>
             Scroll window upwards by the amount specified in the
             <o>scroll</o> option. With <oa>count</oa>, scroll as if
-            <o>scroll</o> were set to <o>count</o>.
+            <o>scroll</o> were set to <oa>count</oa>.
         </p>
     </description>
 </item>

@@ -178,7 +178,7 @@
             line, you can use,
         </p>
 
-        <code><ex>js</ex> &lt;&lt;<em>EOF</em>
+        <code><ex>:js</ex> &lt;&lt;<em>EOF</em>
 <hl key="Object">var</hl> hello = <hl key="Key">function</hl> () {
     alert(<str>Hello world</str>);
 }
