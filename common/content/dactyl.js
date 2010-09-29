@@ -1442,34 +1442,24 @@ const Dactyl = Module("dactyl", {
             [AddonManager.ERROR_CORRUPT_FILE,    "The file appears to be corrupt"],
             [AddonManager.ERROR_FILE_ACCESS,     "There was an error accessing the filesystem"]]);
 
+        function listener(action, event)
+            function addonListener(install) {
+                dactyl[install.error ? "echoerr" : "echomsg"](
+                    "Add-on " + action + " " + event + ": " + (install.name || install.sourceURI.spec) +
+                    (install.error ? ": " + addonErrors[install.error] : ""));
+            }
         const addonListener = {
-            onNewInstall: function (install) {},
-            onDownloadStarted: function (install) {
-                dactyl.echomsg("Add-on download started: " + (install.name || install.sourceURI.spec));
-            },
-            onDownloadProgress: function (install) {},
-            onDownloadEnded: function (install) {
-                dactyl.echomsg("Add-on download complete: " + (install.name || install.sourceURI.spec));
-            },
-            onDownloadCancelled: function (install) {
-                dactyl.echomsg("Add-on download cancelled: " + (install.name || install.sourceURI.spec));
-            },
-            onDownloadFailed: function (install) {
-                dactyl.echoerr("Add-on download failed: " + (install.name || install.sourceURI.spec) + ": " +
-                               addonErrors[install.error]);
-            },
-            onInstallStarted: function (install) {},
-            onInstallEnded: function (install, addon) {
-                dactyl.echomsg("Add-on installation complete: " + (install.name || install.sourceURI.spec));
-            },
-            onInstallCancelled: function (install) {
-                dactyl.echomsg("Add-on installation cancelled: " + (install.name || install.sourceURI.spec));
-            },
-            onInstallFailed: function (install) {
-                dactyl.echoerr("Add-on installation failed: " + (install.name || install.sourceURI.spec) + ": " +
-                               addonErrors[install.error]);
-            },
-            onExternalInstall: function (addon, existingAddon, needsRestart) {}
+            onNewInstall:      function (install) {},
+            onExternalInstall: function (addon, existingAddon, needsRestart) {},
+            onDownloadStarted:   listener("download", "started"),
+            onDownloadEnded:     listener("download", "complete"),
+            onDownloadCancelled: listener("download", "cancelled"),
+            onDownloadFailed:    listener("download", "failed"),
+            onDownloadProgress:  function (install) {},
+            onInstallStarted:   function (install) {},
+            onInstallEnded:     listener("installation", "complete"),
+            onInstallCancelled: listener("installation", "cancelled"),
+            onInstallFailed:    listener("installation", "failed")
         };
 
         ///////////////////////////////////////////////////////////////////////////
@@ -1502,7 +1492,8 @@ const Dactyl = Module("dactyl", {
                 completer: function (context) {
                     context.filters.push(function ({ item }) item.isDirectory() || /\.xpi$/.test(item.leafName));
                     completion.file(context);
-                }
+                },
+                literal: 0
             });
 
         // TODO: handle extension dependencies
