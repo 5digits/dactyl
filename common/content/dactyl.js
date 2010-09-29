@@ -1444,7 +1444,9 @@ const Dactyl = Module("dactyl", {
 
         const addonListener = {
             onNewInstall: function (install) {},
-            onDownloadStarted: function (install) {},
+            onDownloadStarted: function (install) {
+                dactyl.echomsg("Add-on download started: " + (install.name || install.sourceURI.spec));
+            },
             onDownloadProgress: function (install) {},
             onDownloadEnded: function (install) {
                 dactyl.echomsg("Add-on download complete: " + (install.name || install.sourceURI.spec));
