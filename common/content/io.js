@@ -362,11 +362,15 @@ lookup:
 
                 this.readHeredoc = function (end) {
                     let res = [];
-                    for (let [i, line] in iter)
-                        if (line === end)
-                            return res.join("\n");
-                        else
-                            res.push(line);
+                    try {
+                        while (true)
+                            let ([i, line] = iter.next()) {
+                                if (line === end)
+                                    return res.join("\n");
+                                res.push(line);
+                            }
+                    }
+                    catch (e if e instanceof StopIteration) {}
                     dactyl.assert(false, "Unexpected end of file waiting for " + end);
                 };
 
