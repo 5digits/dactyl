@@ -73,40 +73,6 @@ const Events = Module("events", {
             count: null             // parsed count from the input buffer
         };
 
-        // load all macros
-        // util.timeout needed since io. is loaded after events.
-        this.timeout(function () {
-            try {
-                let dirs = io.getRuntimeDirectories("macros");
-
-                if (dirs.length > 0) {
-                    for (let [, dir] in Iterator(dirs)) {
-                        dactyl.echomsg('Searching for "macros/*" in ' + dir.path.quote(), 2);
-                        dactyl.log("Sourcing macros directory: " + dir.path + "...", 3);
-
-                        for (let file in dir.iterDirectory()) {
-                            if (file.exists() && !file.isDirectory() && file.isReadable() &&
-                                RegExp("^[\\w_-]+(\\." + config.fileExtension + ")?$", "i").test(file.leafName)) {
-                                let name = file.leafName.replace(RegExp("\\." + config.fileExtension + "$", "i"), "");
-                                this._macros.set(name, {
-                                    keys: file.read().split("\n")[0],
-                                    timeRecorded: file.lastModifiedTime
-                                });
-
-                                dactyl.log("Macro " + name + " added: " + this._macros.get(name).keys, 5);
-                            }
-                        }
-                    }
-                }
-                else
-                    dactyl.log("No user macros directory found", 3);
-            }
-            catch (e) {
-                // thrown if directory does not exist
-                dactyl.log("Error sourcing macros directory: " + e, 9);
-            }
-        }, 100);
-
         this._activeMenubar = false;
         this.addSessionListener(window, "DOMMenuBarActive", this.closure.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.closure.onDOMMenuBarInactive, true);
@@ -209,12 +175,8 @@ const Events = Module("events", {
                 return false;
             }
         }
-        else {
-            if (macro.length == 1)
-                this._lastMacro = macro.toLowerCase(); // XXX: sets last played macro, even if it does not yet exist
-            else
-                this._lastMacro = macro; // e.g. long names are case sensitive
-        }
+        else
+            this._lastMacro = macro.toLowerCase(); // XXX: sets last played macro, even if it does not yet exist
 
         if (this._macros.get(this._lastMacro)) {
             // make sure the page is stopped before starting to play the macro
@@ -228,13 +190,9 @@ const Events = Module("events", {
             res = events.feedkeys(this._macros.get(this._lastMacro).keys, { noremap: true });
             modes.isReplaying = false;
         }
-        else {
-            if (this._lastMacro.length == 1)
-                // TODO: ignore this like Vim?
-                dactyl.echoerr("Exxx: Register '" + this._lastMacro + "' not set");
-            else
-                dactyl.echoerr("Exxx: Named macro '" + this._lastMacro + "' not set");
-        }
+        else
+            // TODO: ignore this like Vim?
+            dactyl.echoerr("Exxx: Register '" + this._lastMacro + "' not set");
         return res;
     },
 
