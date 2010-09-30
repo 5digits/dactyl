@@ -51,7 +51,7 @@
     <dd>
         A comma-separated list of regular expressions. Expressions may be
         prefixed with a <em>!</em>, in which case the match will be negated. A
-        literal <em>!</em> at the begining of the expression may be matched
+        literal <em>!</em> at the beginning of the expression may be matched
         with <em>[!]</em> or by placing the regular expression in quotes.
         Generally, the first matching regular expression is used. Any comma
         appearing within single or double quotes, or prefixed with a
@@ -376,7 +376,7 @@
         </p>
 
         <example>
-            To enable autocompletion for everything but <ex>:history</ex> or
+            To enable auto-completion for everything but <ex>:history</ex> or
             <ex>:bmarks</ex>, you would choose a value such as
             <str delim="'">!/ex/bmarks,.?</str>
         </example>
@@ -401,7 +401,7 @@
     <default>on</default>
     <description>
         <p>
-            Replace occurences of ! with the previous command when
+            Replace occurrences of ! with the previous command when
             executing external commands.
         </p>
     </description>
@@ -641,7 +641,7 @@
             <dt>T</dt>      <dd>Toolbar</dd>
             <dt>b</dt>      <dd>Bottom scrollbar</dd>
             <dt>l</dt>      <dd>Left scrollbar (<em>l</em> and <em>r</em> are mutually exclusive)</dd>
-            <dt>m</dt>      <dd>Menubar</dd>
+            <dt>m</dt>      <dd>Menu bar</dd>
             <dt>n</dt>      <dd>Tab number</dd>
             <dt>r</dt>      <dd>Right scrollbar</dd>
         </dl>
@@ -682,7 +682,7 @@
         </p>
 
         <dl>
-            <dt>value</dt>      <dd>The hint is the value displayed in a text input, or the selected option for a dropdown.</dd>
+            <dt>value</dt>      <dd>The hint is the value displayed in a text input, or the selected option for a drop-down.</dd>
             <dt>label</dt>      <dd>The value of an explicit label for the input; this will not match most manually added labels that are found on sites.</dd>
             <dt>name </dt>      <dd>The name of the input will be used; although the name is not designed for user consumption, it is frequently very similar to the label.</dd>
         </dl>
@@ -742,7 +742,7 @@
             <dt>firstletters</dt>
             <dd>
                 Behaves like wordstartswith, but non-matching words
-                aren't overleaped.
+                aren't skipped.
             </dd>
             <dt>custom</dt>
             <dd>
@@ -1113,7 +1113,7 @@
     <tags>'previouspattern'</tags>
     <spec>'previouspattern'</spec>
     <type>stringlist</type>
-    <default><![CDATA[\bprev|previous\b,^<$,^(<<|«)$,^(<|«),(<|«)$]]></default>
+    <default><![CDATA['\bprev|previous\b',^<$,'^(<<|«)$','^(<|«)','(<|«)$']]></default>
     <description>
         <p>
             Patterns to use when guessing the previous page in a document
@@ -1552,7 +1552,7 @@
     <default><![CDATA[[.,!?:;\\/"^$%&?()[\]{}<>#*+|=~ _-]]]></default>
     <description>
         <p>
-            A regular expression which defines how words are split for the
+            A regular expression which defines how words are split for
             the <o>hintmatching</o> types <str>wordstartswith</str> and
             <str>firstletters</str>. Words are split on each occurrence of the
             given pattern.

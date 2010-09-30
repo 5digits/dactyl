@@ -453,12 +453,14 @@ const Option = Class("Option", {
         let res = [];
         Option._splitAt = 0;
         do {
+            if (count !== undefined)
+                value = value.slice(1);
             var [count, arg, quote] = Commands.parseArg(value, /,/, keepQuotes);
             Option._quote = quote; // FIXME
             res.push(arg);
             if (value.length > count)
                 Option._splitAt += count + 1;
-            value = value.slice(count + 1);
+            value = value.slice(count);
         } while (value.length);
         return res;
     },
@@ -494,22 +496,26 @@ const Option = Class("Option", {
         },
 
         stringmap: function (operator, values, scope, invert) {
-            values = Array.concat(values);
-            orig = [k + ":" + v for ([k, v] in Iterator(this.values))];
+            let res = update({}, this.values);
 
             switch (operator) {
+            // The result is the same.
             case "+":
-                return array.uniq(Array.concat(orig, values), true);
             case "^":
-                // NOTE: Vim doesn't prepend if there's a match in the current value
-                return array.uniq(Array.concat(values, orig), true);
+                return update(res, values);
             case "-":
-                return orig.filter(function (item) values.indexOf(item) == -1);
+                for (let [k, v] in Iterator(values))
+                    if (v === res[k])
+                        delete res[k];
+                return res;
             case "=":
                 if (invert) {
-                    let keepValues = orig.filter(function (item) values.indexOf(item) == -1);
-                    let addValues  = values.filter(function (item) self.values.indexOf(item) == -1);
-                    return addValues.concat(keepValues);
+                    for (let [k, v] in Iterator(values))
+                        if (v === res[k])
+                            delete res[k];
+                        else
+                            res[k] = v;
+                    return res;
                 }
                 return values;
             }
@@ -1412,6 +1418,7 @@ const Options = Module("options", {
                 return;
             }
 
+            let extra = {};
             switch (opt.type) {
             case "boolean":
                 if (!completer)
@@ -1425,8 +1432,13 @@ const Options = Module("options", {
             case "stringmap":
             case "regexmap":
                 let vals = Option.splitList(context.filter);
-                target = vals.pop() || "";
-                Option._splitAt += target.indexOf(":") ? target.indexOf(":") + 1 : 0;
+                let target = vals.pop() || "";
+                let [count, key, quote] = Commands.parseArg(target, /:/, true);
+                let split = Option._splitAt;
+                extra.key = Option.dequote(key);
+                extra.value = count < target.length ? Option.dequote(target.substr(count + 1)) : null;
+                extra.values = opt.parseValues(vals.join(","));
+                Option._splitAt = split + (extra.value == null ? 0 : count + 1);
                 break;
             }
             // TODO: Highlight when invalid
@@ -1445,7 +1457,7 @@ const Options = Module("options", {
                     context.filters.push(function (i) curValues.indexOf(i.text) > -1);
             }
 
-            let res = completer.call(opt, context);
+            let res = completer.call(opt, context, extra);
             if (res)
                 context.completions = res;
         };

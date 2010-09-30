@@ -170,14 +170,9 @@ const Command = Class("Command", {
      * @see Commands#parseArgs
      */
     parseArgs: function (args, complete, extra) commands.parseArgs(args, {
-        allowUnknownOptions: !!this.allowUnknownOptions,
-        argCount: this.argCount,
+        __proto__: this,
         complete: complete,
-        extra: extra,
-        hereDoc: this.hereDoc,
-        keepQuotes: !!this.keepQuotes,
-        literal: this.literal,
-        options: this.options
+        extra: extra
     }),
 
     /**
