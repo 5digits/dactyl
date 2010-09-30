@@ -124,7 +124,7 @@ install:
 	rm -f "$$ext.xpi"; \
 	rm -rf "$$ext"; \
 	echo "Installing to $$ext"; \
-	pwd >$$ext
+	pwd >"$$ext"
 installxpi: xpi
 	$(FIREFOX) $(XPI)
 
