@@ -358,9 +358,9 @@ const JavaScript = Module("javascript", {
         let args = {
             completer: compl,
             anchored: true,
-            filter: string || "",
+            filter: last == null ? key : string,
             last: last,
-            prefix: key || ""
+            prefix: last != null ? key : ""
         };
 
         this.context.forceAnchored = true;
