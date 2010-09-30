@@ -65,12 +65,14 @@
 
         <vbox class="dactyl-container" hidden="false" collapsed="true">
             <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="chrome://dactyl/content/buffer.xhtml"
+                    contextmenu="dactyl-contextmenu"
                     flex="1" hidden="false" collapsed="false"
                     onclick="&commandline;.onMultilineOutputEvent(event)"/>
         </vbox>
 
         <vbox id="dactyl-completions-&status;commandline-container" class="dactyl-container" hidden="false" collapsed="true" insertbefore="addon-bar,status-bar">
             <iframe class="dactyl-completions" id="dactyl-completions-&status;commandline" src="chrome://dactyl/content/buffer.xhtml"
+                    contextmenu="dactyl-contextmenu"
                     flex="1" hidden="false" collapsed="false"
                     onclick="&commandline;.onMultilineOutputEvent(event)"/>
         </vbox>
