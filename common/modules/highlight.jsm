@@ -244,7 +244,7 @@ const Highlights = Module("Highlight", {
             },
             {
                 argCount: "1",
-                completer: function (context) completion.colorScheme(context)
+                completer: function (context) modules.completion.colorScheme(context)
             });
 
         commands.add(["hi[ghlight]"],
