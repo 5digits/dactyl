@@ -299,12 +299,16 @@ const JavaScript = Module("javascript", {
         context.itemCache = context.parent.itemCache;
         context.key = args.name + args.last;
 
-        if (args.last != null)
-            context.quote = [args.last, function (text) util.escapeString(text.substr(args.offset), ""), args.last];
-        else // We're not looking for a quoted string, so filter out anything that's not a valid identifier
+        if (args.last == null)
+            // We're not looking for a quoted string, so filter out anything that's not a valid identifier
             context.filters.push(function (item) /^[a-zA-Z_$][\w$]*$/.test(item.text));
+        else {
+            context.quote = [args.last, function (text) util.escapeString(text, ""), args.last];
+            if (args.prefix)
+                context.filters.push(function (item) item.item.indexOf(args.prefix) === 0);
+        }
 
-        args.completer.call(self, context, args.obj);
+        args.completer.call(self, context, args);
     },
 
     _complete: function (objects, key, compl, string, last) {
@@ -315,7 +319,7 @@ const JavaScript = Module("javascript", {
 
         let orig = compl;
         if (!compl) {
-            compl = function (context, obj, recurse) {
+            compl = function (context, args, recurse) {
 
                 context.process[1] = function highlight(item, v)
                     template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true);
@@ -332,8 +336,8 @@ const JavaScript = Module("javascript", {
                     return isnan(b.key) - isnan(a.key) || compare(a, b);
                 };
                 context.keys = {
-                    text: util.identity,
-                    description: function (item) self.getKey(obj, item),
+                    text: args.prefix ? function (text) text.substr(args.prefix.length) : util.identity,
+                    description: function (item) self.getKey(args.obj, item),
                     key: function (item) {
                         if (!isNaN(key))
                             return parseInt(key);
@@ -345,18 +349,18 @@ const JavaScript = Module("javascript", {
 
                 if (!context.anchored) // We've already listed anchored matches, so don't list them again here.
                     context.filters.push(function (item) util.compareIgnoreCase(item.text.substr(0, this.filter.length), this.filter));
-                if (obj == self.cache.evalContext)
+                if (args.obj == self.cache.evalContext)
                     context.regenerate = true;
-                context.generate = function () self.objectKeys(obj, !recurse);
+                context.generate = function () self.objectKeys(args.obj, !recurse);
             };
         }
 
         let args = {
             completer: compl,
             anchored: true,
-            filter: key + (string || ""),
+            filter: string || "",
             last: last,
-            offset: key.length
+            prefix: key || ""
         };
 
         this.context.forceAnchored = true;
@@ -402,7 +406,7 @@ const JavaScript = Module("javascript", {
         if (this._last == "")
             return "";
         // After the opening [ upto the opening ", plus '' to take care of any operators before it
-        let key = this._str.substring(this._get(-2, 0, "statements"), this._get(-1, null, "offset")) + "''";
+        let key = this._str.substring(this._get(-2, null, "offset") + 1, this._get(-1, null, "offset")) + "''";
         // Now eval the key, to process any referenced variables.
         return this.evalled(key);
     },
@@ -440,6 +444,8 @@ const JavaScript = Module("javascript", {
             prev = v + 1;
         }
 
+        // If this is a function argument, try to get the function's
+        // prototype and show it.
         try {
             let i = (this._get(-2) && this._get(-2).char == "(") ? -2 : -1;
             if (this._get(i).char == "(") {
@@ -483,7 +489,7 @@ const JavaScript = Module("javascript", {
 
                 // Yes. If the [ starts at the beginning of a logical
                 // statement, we're in an array literal, and we're done.
-                 if (this._get(-3, 0, "statements") == this._get(-2).offset)
+                if (this._get(-3, 0, "statements") == this._get(-2).offset)
                     return null;
 
                 // Beginning of the statement upto the opening [

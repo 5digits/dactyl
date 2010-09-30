@@ -567,9 +567,9 @@ function update(target) {
         let src = arguments[i];
         Object.getOwnPropertyNames(src || {}).forEach(function (k) {
             let desc = Object.getOwnPropertyDescriptor(src, k);
-            if (desc.value && desc.value instanceof Class.Property)
+            if (desc.value instanceof Class.Property)
                 desc = desc.value.init(k) || desc.value;
-            if (desc.value && callable(desc.value) && Object.getPrototypeOf(target)) {
+            if (typeof desc.value == "function" && Object.getPrototypeOf(target)) {
                 let func = desc.value;
                 desc.value.superapply = function (self, args)
                     Object.getPrototypeOf(target)[k].apply(self, args);
