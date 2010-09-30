@@ -25,7 +25,7 @@
     <description>
         <p>
             Load a color scheme. <a>name</a> is found by searching the <o>runtimepath</o> for the
-            first file matching <tt>colors/<a>name</a>.vimp</tt>.
+            first file matching <tt>colors/<a>name</a>.&dactyl.fileExt;</tt>.
         </p>
 
         <p>

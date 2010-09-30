@@ -112,9 +112,9 @@
         <p>
             All directories in <o>runtimepath</o> are searched for a
             ‘plugins’ subdirectory and all yet unloaded plugins are loaded.
-            For each plugins directory, all <tt>*.{js,vimp}</tt> files (including
-            those in further subdirectories) are sourced alphabetically. No
-            plugins will be sourced if,
+            For each plugins directory, all <tt>*.{js,&dactyl.fileExt;}</tt>
+            files (including those in further subdirectories) are sourced
+            alphabetically. No plugins will be sourced if,
         </p>
 
         <ul>

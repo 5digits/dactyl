@@ -86,8 +86,8 @@ const Events = Module("events", {
 
                         for (let file in dir.iterDirectory()) {
                             if (file.exists() && !file.isDirectory() && file.isReadable() &&
-                                /^[\w_-]+(\.vimp)?$/i.test(file.leafName)) {
-                                let name = file.leafName.replace(/\.vimp$/i, "");
+                                RegExp("^[\\w_-]+(\\." + config.fileExtension + ")?$", "i").test(file.leafName)) {
+                                let name = file.leafName.replace(RegExp("\\." + config.fileExtension + "$", "i"), "");
                                 this._macros.set(name, {
                                     keys: file.read().split("\n")[0],
                                     timeRecorded: file.lastModifiedTime

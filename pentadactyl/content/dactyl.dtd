@@ -13,6 +13,7 @@
 <!ENTITY dactyl.maillist "pentadactyl@googlegroups.com">
 <!ENTITY dactyl.host "&brandShortName;">
 <!ENTITY dactyl.hostbin "firefox">
+<!ENTITY dactyl.fileExt "penta">
 <!ENTITY dactyl.statusBefore "statusbar-display">
 <!ENTITY dactyl.statusAfter "">
 

@@ -721,12 +721,12 @@ const Dactyl = Module("dactyl", {
             return;
         }
 
-        dactyl.echomsg('Searching for "plugins/**/*.{js,vimp}" in '
+        dactyl.echomsg('Searching for "plugins/**/*.{js,' + config.fileExtension + '}" in '
                             + [dir.path.replace(/.plugins$/, "") for ([, dir] in Iterator(dirs))]
                                 .join(",").quote(), 2);
 
         dirs.forEach(function (dir) {
-            dactyl.echomsg("Searching for " + (dir.path + "/**/*.{js,vimp}").quote(), 3);
+            dactyl.echomsg("Searching for " + (dir.path + "/**/*.{js," + config.fileExtension + "}").quote(), 3);
             sourceDirectory(dir);
         });
     },
@@ -1238,7 +1238,7 @@ const Dactyl = Module("dactyl", {
 
         options.add(["loadplugins", "lpl"],
             "A regex list that defines which plugins are loaded at startup and via :loadplugins",
-            "regexlist", "'\\.(js|vimp)$'");
+            "regexlist", "'\\.(js|" + config.fileExtension + ")$'");
 
         options.add(["titlestring"],
             "Change the title of the window",

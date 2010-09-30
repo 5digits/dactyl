@@ -238,7 +238,7 @@ const Highlights = Module("Highlight", {
                 if (scheme == "default")
                     highlight.clear();
                 else
-                    dactyl.assert(modules.io.sourceFromRuntimePath(["colors/" + scheme + ".vimp"]),
+                    dactyl.assert(modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + modules.config.fileExtension]),
                         "E185: Cannot find color scheme " + scheme);
                 modules.autocommands.trigger("ColorScheme", { name: scheme });
             },
@@ -313,13 +313,14 @@ const Highlights = Module("Highlight", {
     },
     completion: function (dactyl, modules) {
         const completion = modules.completion;
+        const config = modules.config;
         completion.colorScheme = function colorScheme(context) {
             context.title = ["Color Scheme", "Runtime Path"];
-            context.keys = { text: function (f) f.leafName.replace(/\.vimp$/, ""), description: ".parent.path" };
+            context.keys = { text: function (f) f.leafName.replace(RegExp("\\." + config.fileExtension + "$"), ""), description: ".parent.path" };
             context.completions = array.flatten(
                 modules.io.getRuntimeDirectories("colors").map(
                     function (dir) dir.readDirectory().filter(
-                        function (file) /\.vimp$/.test(file.leafName))));
+                        function (file) RegExp("\\." + config.fileExtension + "$").test(file.leafName))));
 
         };
 

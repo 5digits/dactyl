@@ -918,7 +918,7 @@
     <tags>'noloadplugins' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
     <type>regexlist</type>
-    <default>\.(js|vimp)$</default>
+    <default>\.(js|&dactyl.fileExt;)$</default>
     <description>
         <p>
             A regular expression list that defines which plugins are loaded at
@@ -937,7 +937,7 @@
             omit in your <tt><t>&dactyl.name;rc</t></tt> using something like
             the below:
         </p>
-        <code><ex>:set loadplugins=</ex>!<str delim="'">foo|bar</str>,<str delim="'">\.(js|vimp)$</str></code>
+        <code><ex>:set loadplugins=</ex>!<str delim="'">foo|bar</str>,<str delim="'">\.(js|&dactyl.fileExt;)$</str></code>
         <p>
             That will load all plugins but <em>foo</em> and <em>bar</em>.
         </p>

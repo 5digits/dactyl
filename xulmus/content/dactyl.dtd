@@ -8,6 +8,7 @@
 <!ENTITY dactyl.idName "XULMUS">
 <!ENTITY dactyl.host "&brandShortName;">
 <!ENTITY dactyl.hostbin "songbird">
+<!ENTITY dactyl.fileExt "xulmus">
 <!ENTITY dactyl.statusBefore "statusbar-display">
 <!ENTITY dactyl.statusAfter "">
 

@@ -24,7 +24,7 @@ const Config = Module("config", ConfigBase, {
     },
     /*** required options, no checks done if they really exist, so be careful ***/
     name: "Xulmus",
-    hostApplication: "Songbird",
+    host: "Songbird",
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
     features: ["bookmarks", "hints", "marks", "history", "quickmarks", "session", "tabs", "player"],

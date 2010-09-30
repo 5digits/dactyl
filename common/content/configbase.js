@@ -80,15 +80,21 @@ const ConfigBase = Class(ModuleBase, {
      */
     features: [],
 
+    /**
+     * @property {string} The file extension used for command script files.
+     *     This is the name string sans "dactyl".
+     */
+    get fileExtension() this.name.slice(0, -6),
+
     guioptions: {},
 
     hasTabbrowser: false,
 
     /**
      * @property {string} The name of the application that hosts the
-     *     “liberated” application. E.g., "Firefox" or "Xulrunner".
+     *     extension. E.g., "Firefox" or "XULRunner".
      */
-    hostApplication: null,
+    host: null,
 
     /**
      * @property {Object} A map between key names for key events should be ignored,
@@ -109,7 +115,7 @@ const ConfigBase = Class(ModuleBase, {
     modes: [],
 
     /**
-     * @property {string} The name of “liberated” application.
+     * @property {string} The name of the extension.
      *    Required.
      */
     name: null,

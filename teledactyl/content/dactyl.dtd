@@ -8,6 +8,7 @@
 <!ENTITY dactyl.appName "Teledactyl">
 <!ENTITY dactyl.host "&brandShortName;">
 <!ENTITY dactyl.hostbin "thunderbird">
+<!ENTITY dactyl.fileExt "tele">
 <!ENTITY dactyl.statusBefore "">
 <!ENTITY dactyl.statusAfter "statusTextBox">
 
