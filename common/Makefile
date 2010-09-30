@@ -41,9 +41,6 @@ BUILD_DIR     = build.$(VERSION).$(OS)
 AWK       ?= awk
 B64ENCODE ?= base64
 CURL      ?= curl
-FIREFOX   ?= firefox
-PROFILES  ?= $(HOME)/.mozilla/firefox
-export PROFILES
 
 .SILENT:
 
@@ -66,8 +63,8 @@ help:
 	@echo "  make xpi        - build an XPI ($(XPI_NAME))"
 	@echo "  make installxpi - build an XPI and install it to your profile"
 	@echo "  make install    - installs this source tree directly to your Firefox profile"
-	@echo '                    set $$PROFILE to select a profile and $$PROFILES to change'
-	@echo '                    the directory where profiles are searched for'
+	@echo '                    set $$PROFILE to select a profile and $$PROFILEPATHS to change'
+	@echo '                    the directory where profiles are searched'
 	@echo "  make release    - updates update.rdf (this is not for you)"
 	@echo "  make dist       - uploads to Google Code (this is not for you)"
 	@echo "  make clean      - clean up"
@@ -107,14 +104,22 @@ dist: $(XPI)
 		-i "$(GOOGLE)" | sed -n '/^Location/{p;q;}'
 
 install:
-	profile=$${PROFILE:-$$(sed 's/^$$/\#/' $(PROFILES)/profiles.ini |\
+	export dir; \
+	for dir in $(PROFILEPATHS); do \
+		test -f "$$dir/profiles.ini" && break; \
+	done; \
+	profile=$${PROFILE:-$$(sed 's/^$$/\#/' "$$dir/profiles.ini" |\
 		awk -v"profile=$(PROFILE)" \
 			'BEGIN { RS="#" } index("\n" profile "\n", $$0) || !profile && /\nDefault=1/' |\
 		awk -F= '{ args[$$1] = $$2 } \
 		END {\
-			if (args["IsRelative"]) print ENVIRON["PROFILES"] "/" args["Path"];\
+			if (args["IsRelative"]) print ENVIRON["dir"] "/" args["Path"];\
 			else print args["Path"]\
 		}')}; \
+	if ! test -d "$$profile"; then \
+		echo >&2 "Can't locate profile directory"; \
+		exit 1; \
+	fi; \
 	ext="$$profile/extensions/$(UUID)"; \
 	rm -f "$$ext.xpi"; \
 	rm -rf "$$ext"; \
