@@ -25,7 +25,7 @@
 </p>
 
 <p>
-    Included among the several command-line modes are ex command
+    Included among the several command-line modes are Ex command
     mode (the standard mode for entering commands), find mode (for
     searching the current page), prompt mode (for selecting files,
     confirming actions), and hint mode (for selecting links and
@@ -38,7 +38,7 @@
     <spec>:</spec>
     <description>
         <p>
-            Opens the command-line in ex mode. This is the mode used
+            Opens the command-line in Ex mode. This is the mode used
             for entering the various commands listed in
             <t>ex-cmd-index</t>.
         </p>

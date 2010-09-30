@@ -49,7 +49,7 @@
         <dl tag="autocommand-list"/>
 
         <p>
-            For ex <oa>cmd</oa>s, the following keywords are
+            For Ex <oa>cmd</oa>s, the following keywords are
             replaced with the appropriate value before the commands
             are executed. For JavaScript commands, they may be
             accessed as ordinary variables, sans angle brackets.

@@ -13,7 +13,7 @@
 
 <p>
     Much of the power of &dactyl.appName; lies in its scriptable expression
-    evaluation. &dactyl.appName; understands two kinds of expressions: ex
+    evaluation. &dactyl.appName; understands two kinds of expressions: Ex
     commands, and JavaScript. Ex commands are simple, easy to type, and
     readily accessible from the <t>command-line</t>. They form a core part of
     the user interface. JavaScript, on the other hand, is much less
@@ -74,7 +74,7 @@
     <spec>:exe<oa>cute</oa> <a>expr</a></spec>
     <description>
         <p>
-            Execute the ex command string that results from the evaluation of
+            Execute the Ex command string that results from the evaluation of
             the JavaScript expression <a>expr</a>. For example,
         </p>
         <code><ex>:execute "open " + content.location.host</ex></code>
