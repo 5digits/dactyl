@@ -260,11 +260,6 @@ const AutoCommands = Module("autocommands", {
         completion.autocmdEvent = function autocmdEvent(context) {
             context.completions = Iterator(config.autocommands);
         };
-
-        completion.macro = function macro(context) {
-            context.title = ["Macro", "Keys"];
-            context.completions = [item for (item in events.getMacros())];
-        };
     },
     javascript: function () {
         JavaScript.setCompleter(this.get, [function () Iterator(config.autocommands)]);

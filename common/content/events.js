@@ -204,7 +204,7 @@ const Events = Module("events", {
      */
     getMacros: function (filter) {
         let re = RegExp(filter || "");
-        return ([k, m.keys] for ([k, m] in this._macros) if (re.test(macro)));
+        return ([k, m.keys] for ([k, m] in events._macros) if (re.test(k)));
     },
 
     /**
@@ -1104,6 +1104,12 @@ const Events = Module("events", {
                 argCount: "?",
                 completer: function (context) completion.macro(context)
             });
+    },
+    completion: function () {
+        completion.macro = function macro(context) {
+            context.title = ["Macro", "Keys"];
+            context.completions = [item for (item in events.getMacros())];
+        };
     },
     mappings: function () {
         mappings.add(modes.all,
