@@ -367,7 +367,7 @@ const JavaScript = Module("javascript", {
         // TODO: Make this a generic completion helper function.
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1], this._top.offset, this, this._fill,
-                update(args, {
+                update({}, args, {
                     obj: obj[0],
                     name: obj[1]
                 }));
@@ -377,7 +377,7 @@ const JavaScript = Module("javascript", {
 
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1] + "/prototypes", this._top.offset, this, this._fill,
-                update(args, {
+                update({}, args, {
                     obj: obj[0],
                     name: obj[1] + " (prototypes)",
                     completer: function (a, b) compl(a, b, true)
@@ -385,7 +385,7 @@ const JavaScript = Module("javascript", {
 
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1] + "/substrings", this._top.offset, this, this._fill,
-                update(args, {
+                update({}, args, {
                     obj: obj[0],
                     name: obj[1] + " (substrings)",
                     anchored: false,
@@ -394,7 +394,7 @@ const JavaScript = Module("javascript", {
 
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1] + "/prototypes/substrings", this._top.offset, this, this._fill,
-                update(args, {
+                update({}, args, {
                     obj: obj[0],
                     name: obj[1] + " (prototype substrings)",
                     anchored: false,
