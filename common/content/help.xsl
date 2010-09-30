@@ -126,14 +126,15 @@
                 <xsl:copy-of select="$root/node()"/>
             </dactyl:document>
         </xsl:variable>
+        <xsl:variable name="root2" select="exsl:node-set($doc2)/dactyl:document"/>
 
         <html dactyl:highlight="Help">
             <head>
-                <title><xsl:value-of select="@title"/></title>
+                <title><xsl:value-of select="/dactyl:document/@title"/></title>
                 <script type="text/javascript" src="chrome://dactyl/content/help.js"/>
             </head>
             <body dactyl:highlight="HelpBody">
-                <xsl:apply-templates select="exsl:node-set($doc2)/dactyl:document/node()" mode="help-1"/>
+                <xsl:apply-templates select="$root2/node()|$root2/@*" mode="help-1"/>
             </body>
         </html>
     </xsl:template>
