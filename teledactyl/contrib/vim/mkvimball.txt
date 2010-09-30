@@ -1,2 +1,2 @@
-syntax/muttator.vim
-ftdetect/muttator.vim
+syntax/teledactyl.vim
+ftdetect/teledactyl.vim

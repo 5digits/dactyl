@@ -1,6 +1,6 @@
-VIMBALL = muttator.vba
+VIMBALL = teledactyl.vba
 
-vimball: mkvimball.txt syntax/muttator.vim ftdetect/muttator.vim
+vimball: mkvimball.txt syntax/teledactyl.vim ftdetect/teledactyl.vim
 	-echo '%MkVimball! ${VIMBALL} .' | vim -u NORC -N -e -s mkvimball.txt
 
 all: vimball
