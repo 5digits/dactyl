@@ -301,7 +301,7 @@ const Dactyl = Module("dactyl", {
      *     should be loaded.
      */
     loadScript: function (uri, context) {
-        services.get("subscriptLoader").loadSubScript(uri, context);
+        services.get("subscriptLoader").loadSubScript(uri, context, File.defaultEncoding);
     },
 
     userEval: function (str, context) {

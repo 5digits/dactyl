@@ -17,7 +17,7 @@
     modules.load = function load(script) {
         for (let [i, base] in Iterator(prefix)) {
             try {
-                loader.loadSubScript(base + script + ".js", modules);
+                loader.loadSubScript(base + script + ".js", modules, "UTF-8");
                 return;
             }
             catch (e) {
