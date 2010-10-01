@@ -1066,14 +1066,14 @@ const Commands = Module("commands", {
 
                     if (cmds.length > 0)
                         commandline.commandOutput(
-                            template.tabular(["", "Name", "Args", "Range", "Complete", "Definition"], ["padding-right: 2em;"]),
+                            template.tabular(["", "Name", "Args", "Range", "Complete", "Definition"], ["padding-right: 2em;"],
                                 ([cmd.bang ? "!" : " ",
                                   cmd.name,
                                   cmd.argCount,
                                   cmd.count ? "0c" : "",
                                   completerToString(cmd.completer),
                                   cmd.replacementText || "function () { ... }"]
-                                 for ([, cmd] in Iterator(cmds))));
+                                 for ([, cmd] in Iterator(cmds)))));
                     else
                         dactyl.echomsg("No user-defined commands found");
                 }
