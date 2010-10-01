@@ -58,7 +58,7 @@ let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "full
     \ "ignorecase", "ic", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "showmode",
     \ "smd", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match teledactylOption "\<\%(no\|inv\)\=\%(' .
-    \ join(s:toggleOptions, '\|') . 
+    \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=teledactylSetMod'
 
 syn match teledactylSetMod "\%(\<[a-z_]\+\)\@<=&" contained

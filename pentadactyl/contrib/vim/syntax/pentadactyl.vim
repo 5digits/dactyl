@@ -63,7 +63,7 @@ let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "flas
     \ "online", "private", "pornmode", "showmode", "smd", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell",
     \ "vb"]
 execute 'syn match pentadactylOption "\<\%(no\|inv\)\=\%(' .
-    \ join(s:toggleOptions, '\|') . 
+    \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=pentadactylSetMod'
 
 syn match pentadactylSetMod "\%(\<[a-z_]\+\)\@<=&" contained
