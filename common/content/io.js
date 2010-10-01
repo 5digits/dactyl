@@ -772,7 +772,7 @@ lookup:
 
         options.add(["banghist", "bh"],
             "Replace occurences of ! with the previous command when executing external commands",
-            "banghist", true);
+            "boolean", true);
 
         options.add(["fileencoding", "fenc"],
             "Sets the character encoding of read and written files",
