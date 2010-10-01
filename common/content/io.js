@@ -729,7 +729,7 @@ lookup:
         completion.shellCommand = function shellCommand(context) {
             context.title = ["Shell Command", "Path"];
             context.generate = function () {
-                let dirNames = services.get("environment").get("PATH").split(RegExp(dactyl.has("WINNT") ? ";" : ":"));
+                let dirNames = services.get("environment").get("PATH").split(dactyl.has("WINNT") ? ";" : ":");
                 let commands = [];
 
                 for (let [, dirName] in Iterator(dirNames)) {
