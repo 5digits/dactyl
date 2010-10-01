@@ -248,6 +248,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:colorscheme</ex></dt> <dd>Load a color scheme</dd>
     <dt><ex>:comclear</ex></dt> <dd>Delete all user-defined commands</dd>
     <dt><ex>:command</ex></dt> <dd>List and define commands</dd>
+    <dt><ex>:contexts</ex></dt> <dd>List the completion contexts used during completion of an Ex command</dd>
     <dt><ex>:cunabbrev</ex></dt> <dd>Remove an abbreviation in Command-line mode</dd>
     <dt><ex>:cunmap</ex></dt> <dd>Remove a mapping in Command-line mode</dd>
     <dt><ex>:delbmarks</ex></dt> <dd>Delete a bookmark</dd>
@@ -380,6 +381,9 @@ This file contains a list of all available commands, mappings and options.
 
 <dl>
     <dt><o>activate</o></dt> <dd>Define when tabs are automatically activated</dd>
+    <dt><o>altwildmode</o></dt> <dd>Define how command line completion works when the Alt key is pressed</dd>
+    <dt><o>autocomplete</o></dt> <dd>Automatically update the completion list on any key press</dd>
+    <dt><o>banghist</o></dt> <dd>Replace occurences of ! with the previous command when executing external commands</dd>
     <dt><o>cdpath</o></dt> <dd>List of directories searched when executing <ex>:cd</ex></dd>
     <dt><o>complete</o></dt> <dd>Items which are completed at the <ex>:open</ex> prompts</dd>
     <dt><o>defsearch</o></dt> <dd>Set the default search engine</dd>
@@ -395,6 +399,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>guioptions</o></dt> <dd>Show or hide certain GUI elements like the menu or toolbar</dd>
     <dt><o>helpfile</o></dt> <dd>Name of the main help file</dd>
     <dt><o>hintinputs</o></dt> <dd>How text input fields are hinted</dd>
+    <dt><o>hintkeys</o></dt> <dd>The keys used to label and select hints</dd>
     <dt><o>hintmatching</o></dt> <dd>How links are matched</dd>
     <dt><o>hinttags</o></dt> <dd>XPath string of hintable elements activated by <k>f</k> and <k>F</k></dd>
     <dt><o>hinttimeout</o></dt> <dd>Timeout before automatically following a non-unique numerical hint</dd>
@@ -403,6 +408,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>ignorecase</o></dt> <dd>Ignore case in search patterns</dd>
     <dt><o>incsearch</o></dt> <dd>Show where the search pattern matches as it is typed</dd>
     <dt><o>insertmode</o></dt> <dd>Use Insert mode as the default for text areas</dd>
+    <dt><o>jsdebugger</o></dt> <dd>Use the JavaScript debugger service for JavaScript completion</dd>
     <dt><o>laststatus</o></dt> <dd>Show the status line</dd>
     <dt><o>linksearch</o></dt> <dd>Limit the search to hyperlink text</dd>
     <dt><o>loadplugins</o></dt> <dd>Load plugin scripts when starting up</dd>

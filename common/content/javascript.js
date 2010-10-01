@@ -654,7 +654,7 @@ const JavaScript = Module("javascript", {
     },
     options: function () {
         options.add(["jsdebugger", "jsd"],
-            "Switch on/off jsdebugger",
+            "Use the JavaScript debugger service for JavaScript completion",
             "boolean", false, {
                 setter: function (value) {
                     services.get("debugger")[value ? "on" : "off"]();

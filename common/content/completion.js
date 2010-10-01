@@ -839,7 +839,7 @@ const Completion = Module("completion", {
 }, {
     commands: function () {
         commands.add(["contexts"],
-            "List the completion contexts used during completion of an ex command",
+            "List the completion contexts used during completion of an Ex command",
             function (args) {
                 commandline.commandOutput(
                     <div highlight="Completions">
