@@ -3,7 +3,7 @@
 <?xml-stylesheet href="chrome://pentadactyl/skin/about.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
-<page id="about-&dactyl.name;" orient="vertical"
+<page id="about-&dactyl.name;" orient="vertical" title="About &dactyl.appName;"
       xmlns="&xmlns.xul;" xmlns:html="&xmlns.html;">
 
   <html:link rel="icon" href="chrome://&dactyl.name;/skin/icon.png"
@@ -25,7 +25,7 @@ type :help version-&dactyl.version;&lt;<span class="key">Enter</span>>  for vers
       </div>
     <spring flex="1"/>
   </hbox>
-  <spring flex="1"/>        
+  <spring flex="1"/>
 </page>
 
 <!-- vim: set sw=2 sts=2 et: -->
