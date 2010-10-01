@@ -784,12 +784,14 @@ const Commands = Module("commands", {
         str.replace(/\s*".*$/, "");
 
         // 0 - count, 1 - cmd, 2 - special, 3 - args
-        let matches = str.match(/^([:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?\s*)(.*?)?$/);
+        let matches = str.match(/^([:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?(\s*))(.*?)?$/);
         //var matches = str.match(/^:*(\d+|%)?([a-zA-Z]+|!)(!)?(?:\s*(.*?)\s*)?$/);
         if (!matches)
             return [null, null, null, null];
 
-        let [, spec, count, cmd, special, args] = matches;
+        let [, spec, count, cmd, special, space, args] = matches;
+        if (/\w/.test(cmd) && args && !space)
+            args = null;
 
         // parse count
         if (count)
@@ -811,7 +813,7 @@ const Commands = Module("commands", {
                 var context = complete.fork("args", len);
             }
 
-            if (command && /\w[!\s]/.test(str))
+            if (command && (!complete || /\w[!\s]/.test(str)))
                 args = command.parseArgs(args, context, { count: count, bang: bang });
             else
                 args = commands.parseArgs(args, { extra: { count: count, bang: bang } });
@@ -826,13 +828,16 @@ const Commands = Module("commands", {
     _subCommands: function (command) {
         let commands = [command];
         while (command = commands.shift())
-            for (let [command, args] in this.parseCommands(command)) {
-                if (command) {
-                    yield [command, args];
-                    if (command.subCommand && args[command.subCommand])
-                        commands.push(args[command.subCommand]);
+            try {
+                for (let [command, args] in this.parseCommands(command)) {
+                    if (command) {
+                        yield [command, args];
+                        if (command.subCommand && args[command.subCommand])
+                            commands.push(args[command.subCommand]);
+                    }
                 }
             }
+            catch (e) {}
     },
 
     /** @property */
@@ -953,7 +958,7 @@ const Commands = Module("commands", {
             let cmdContext = context.fork(command.name, prefix.length);
             try {
                 if (!cmdContext.waitingForTab) {
-                    if (!args.completeOpt && command.completer) {
+                    if (!args.completeOpt && command.completer && args.completeStart != null) {
                         cmdContext.advance(args.completeStart);
                         cmdContext.quote = args.quote;
                         cmdContext.filter = args.completeFilter;

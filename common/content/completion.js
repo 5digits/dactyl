@@ -60,7 +60,7 @@ const CompletionContext = Class("CompletionContext", {
             self.__defineGetter__("value", function () this.top.value);
 
             self.offset = parent.offset;
-            self.advance(offset);
+            self.advance(offset || 0);
 
             /**
              * @property {boolean} Specifies that this context is not finished
@@ -449,9 +449,9 @@ const CompletionContext = Class("CompletionContext", {
                 this.cache.constructed = items.map(function (item) Object.create(proto, { item: { value: item, enumerable: true } }));
 
             // Filters
-                let filtered = this.filterFunc(this.cache.constructed);
-                if (this.maxItems)
-                    filtered = filtered.slice(0, this.maxItems);
+            let filtered = this.filterFunc(this.cache.constructed);
+            if (this.maxItems)
+                filtered = filtered.slice(0, this.maxItems);
 
             // Sorting
             if (this.sortResults && this.compare)
