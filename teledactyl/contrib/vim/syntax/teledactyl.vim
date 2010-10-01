@@ -19,25 +19,25 @@ unlet b:current_syntax
 
 syn match teledactylCommandStart "\%(^\s*:\=\)\@<=" nextgroup=teledactylCommand,teledactylAutoCmd
 
-syn keyword teledactylCommand ab[breviate] ab[clear] addo[ns] addr[essbook] bN[ext] bd[elete] beep bf[irst] bl[ast] bn[ext]
-    \ bp[revious] br[ewind] bufd[o] bun[load] bw[ipeout] ca[bbrev] cabc[lear] cd chd[ir] cm[ap] cmapc[lear] cno[remap]
-    \ colo[rscheme] com[mand] comc[lear] contexts con[tact] contacts copy[to] cu[nmap] cuna[bbrev] delc[ommand] delm[arks]
-    \ delmac[ros] dels[tyle] dia[log] do[autocmd] doautoa[ll] ec[ho] echoe[rr] echom[sg] em[enu] empty[trash] exe[cute] exta[dd]
-    \ extd[isable] extde[lete] exte[nable] extens[ions] exto[ptions] extp[references] exts exu[sage] fini[sh] frameo[nly]
-    \ get[messages] go[to] h[elp] helpa[ll] ha[rdcopy] hi[ghlight] ia[bbrev] iabc[lear] im[ap] imapc[lear] ino[remap] iu[nmap]
-    \ iuna[bbrev] javas[cript] js keepa[lt] let loadplugins lpl m[ail] ma[rk] macros map mapc[lear] marks mes[sages] messc[lear]
-    \ mkt[eledactylrc] mm[ap] mmapc[lear] mno[remap] move[to] mu[nmap] nm[ap] nmapc[lear] nno[remap] noh[lsearch] no[remap]
-    \ norm[al] nu[nmap] optionu[sage] pa[geinfo] pagest[yle] pas pref[erences] prefs pw[d] q[uit] re[load] res[tart] run
-    \ runt[ime] sav[eas] scrip[tnames] se[t] setg[lobal] setl[ocal] sil[ent] so[urce] st[op] sty[le] styd[isable]
-    \ styled[isable] stye[nable] stylee[nable] styt[oggle] stylet[oggle] tN[ext] t[open] tab tabN[ext] tabc[lose] tabd[o]
-    \ tabfir[st] tabl[ast] tabn[ext] tabp[revious] tabr[ewind] tbh[ide] tbs[how] tbt[oggle] time tn[ext] toolbarh[ide]
-    \ toolbars[how] toolbart[oggle] tp[revious] una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap]
-    \ vmapc[lear] vno[remap] vu[nmap] w[rite] zo[om]
+syn keyword teledactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] bd[elete] bw[ipeout] bun[load] tabc[lose]
+    \ ca[bbrev] cabc[lear] cd chd[ir] cm[ap] cmapc[lear] cno[remap] colo[rscheme] comc[lear] com[mand] con[tact] contacts
+    \ addr[essbook] contexts copy[to] cuna[bbrev] cunm[ap] delc[ommand] delmac[ros] delm[arks] dels[tyle] dia[log] doautoa[ll]
+    \ do[autocmd] ec[ho] echoe[rr] echom[sg] em[enu] empty[trash] exe[cute] exta[dd] extde[lete] extd[isable] exte[nable]
+    \ extens[ions] exts exto[ptions] extp[references] exu[sage] fini[sh] frameo[nly] get[messages] go[to] ha[rdcopy] h[elp]
+    \ helpa[ll] hi[ghlight] ia[bbrev] iabc[lear] im[ap] imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js keepa[lt] let
+    \ loadplugins lpl macros m[ail] map mapc[lear] ma[rk] marks mes[sages] messc[lear] mkt[eledactylrc] move[to] nm[ap]
+    \ nmapc[lear] nno[remap] noh[lsearch] no[remap] norm[al] nunm[ap] optionu[sage] pa[geinfo] pagest[yle] pas pref[erences] prefs
+    \ pw[d] q[uit] re[load] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames] se[t] setg[lobal] setl[ocal] sil[ent] so[urce]
+    \ st[op] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab tabd[o] bufd[o] tabl[ast]
+    \ bl[ast] tabn[ext] tn[ext] bn[ext] tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st]
+    \ br[ewind] bf[irst] time una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear]
+    \ vno[remap] vunm[ap] zo[om]
     \ contained
 
 syn match teledactylCommand "!" contained
 
 syn keyword teledactylAutoCmd au[tocmd] contained nextgroup=teledactylAutoEventList skipwhite
+
 syn keyword teledactylAutoEvent DOMLoad FolderLoad PageLoadPre PageLoad Enter Leave LeavePre contained
 
 syn match teledactylAutoEventList "\(\a\+,\)*\a\+" contained contains=teledactylAutoEvent
@@ -45,25 +45,21 @@ syn match teledactylAutoEventList "\(\a\+,\)*\a\+" contained contains=teledactyl
 syn region teledactylSet matchgroup=teledactylCommand start="\%(^\s*:\=\)\@<=\<\%(setl\%[ocal]\|setg\%[lobal]\|set\=\)\=\>"
     \ end="$" keepend oneline contains=teledactylOption,teledactylString
 
-syn keyword teledactylOption altwildmode awim archivefolder autocomplete au banghist bh cdpath cd complete cpt editor
-    \ eventignore ei extendedhinttags eht fileencoding fenc followhints fh guioptions go helpfile hf hintinputs hin hintkeys hk
-    \ hintmatching hm hinttags ht hinttimeout hto history hi laststatus ls layout maxitems messages msgs nextpattern pageinfo pa
-    \ previouspattern runtimepath rtp scroll scr shell sh shellcmdflag shcf showstatuslinks ssli showtabline stal smtpserver smtp
-    \ suggestengines titlestring urlseparator verbose vbs wildanchor wia wildcase wic wildignore wig wildmode wim wildoptions wop
-    \ wildsort wis wordseparators wsp
+syn keyword teledactylOption altwildmode awim archivefolder autocomplete au nobanghist nobh cdpath cd complete cpt editor
+    \ noerrorbells noeb eventignore ei noexrc noex extendedhinttags eht fileencoding fenc followhints fh nofullscreen nofs
+    \ guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm hinttags ht hinttimeout hto history hi nohlsearch nohls
+    \ noignorecase noic noincsearch nois noinsertmode noim nojsdebugger nojsd laststatus ls layout nolinksearch nolks loadplugins
+    \ lpl maxitems messages msgs nomore nextpattern pageinfo pa previouspattern runtimepath rtp scroll scr shell sh shellcmdflag
+    \ shcf noshowmode nosmd showstatuslinks ssli showtabline stal nosmartcase noscs nostrictfocus nosf titlestring nousermode noum
+    \ verbose vbs novisualbell novb wildanchor wia wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=teledactylSetMod
 
-" toggle options
-syn match teledactylOption "\<\%(no\|inv\)\=\%(autoexternal\|errorbells\|eb\|exrc\|ex\|focuscontent\|fc\|fullscreen\|fs\)\>!\="
-    \ contained nextgroup=teledactylSetMod
-syn match teledactylOption "\<\%(no\|inv\)\=\%(hlsearch\|hls\|ignorecase\|ic\|incsearch\|is\|insertmode\|im\)\>!\="
-    \ contained nextgroup=teledactylSetMod
-syn match teledactylOption "\<\%(no\|inv\)\=\%(jsdebugger\|jsd\|linksearch\|lks\|loadplugins\|lpl\|more\|online\)\>!\="
-    \ contained nextgroup=teledactylSetMod
-syn match teledactylOption "\<\%(no\|inv\)\=\%(showmode\|smd\|smartcase\|scs\|strictfocus\|sf\|usermode\|um\)\>!\="
-    \ contained nextgroup=teledactylSetMod
-syn match teledactylOption "\<\%(no\|inv\)\=\%(visualbell\|vb\)\>!\="
-    \ contained nextgroup=teledactylSetMod
+let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlsearch", "hls",
+    \ "ignorecase", "ic", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "showmode",
+    \ "smd", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+execute 'syn match teledactylOption "\<\%(no\|inv\)\=\%(' .
+    \ join(s:toggleOptions, '\|') . 
+    \ '\)\>!\=" contained nextgroup=teledactylSetMod'
 
 syn match teledactylSetMod "\%(\<[a-z_]\+\)\@<=&" contained
 
@@ -86,18 +82,18 @@ syn region teledactylString start="\z(["']\)" end="\z1" skip="\\\\\|\\\z1" oneli
 syn match teledactylLineComment +^\s*".*$+ contains=teledactylTodo,@Spell
 
 " NOTE: match vim.vim highlighting group names
-hi def link teledactylAutoCmd             teledactylCommand
-hi def link teledactylAutoEvent           Type
-hi def link teledactylCommand             Statement
-hi def link teledactylComment             Comment
-hi def link teledactylJavaScriptDelimiter Delimiter
-hi def link teledactylCssDelimiter        Delimiter
-hi def link teledactylNotation            Special
-hi def link teledactylLineComment         Comment
-hi def link teledactylOption              PreProc
-hi def link teledactylSetMod              teledactylOption
-hi def link teledactylString              String
-hi def link teledactylTodo                Todo
+hi def link teledactylAutoCmd               teledactylCommand
+hi def link teledactylAutoEvent             Type
+hi def link teledactylCommand               Statement
+hi def link teledactylComment               Comment
+hi def link teledactylJavaScriptDelimiter   Delimiter
+hi def link teledactylCssDelimiter          Delimiter
+hi def link teledactylNotation              Special
+hi def link teledactylLineComment           Comment
+hi def link teledactylOption                PreProc
+hi def link teledactylSetMod                teledactylOption
+hi def link teledactylString                String
+hi def link teledactylTodo                  Todo
 
 let b:current_syntax = "teledactyl"
 
