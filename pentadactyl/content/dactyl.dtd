@@ -1,24 +1,15 @@
 
-<!ENTITY % dactylBranding SYSTEM "chrome://branding/locale/brand.dtd">
-%dactylBranding;
-
 <!ENTITY dactyl.mainWindow "main-window">
 <!ENTITY dactyl.commandContainer "browser-bottombox">
-<!ENTITY dactyl.name "pentadactyl">
-<!ENTITY dactyl.version "1.0">
-<!ENTITY dactyl.idName "PENTADACTYL">
-<!ENTITY dactyl.appName "Pentadactyl">
-<!ENTITY dactyl.apphome "http://dactyl.sf.net/">
-<!ENTITY dactyl.code "http://code.google.com/p/dactyl/">
-<!ENTITY dactyl.plugins "http://dactyl.sf.net/&dactyl.name;/plugins">
-<!ENTITY dactyl.maillist "pentadactyl@googlegroups.com">
-<!ENTITY dactyl.host "&brandShortName;">
-<!ENTITY dactyl.hostbin "firefox">
-<!ENTITY dactyl.fileExt "penta">
 <!ENTITY dactyl.statusBefore "statusbar-display">
 <!ENTITY dactyl.statusAfter "">
 
-<!ENTITY xmlns.dactyl "http://vimperator.org/namespaces/liberator">
-<!ENTITY xmlns.html   "http://www.w3.org/1999/xhtml">
-<!ENTITY xmlns.xul    "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<!ENTITY dactyl.appName "Pentadactyl">
+<!ENTITY dactyl.idName "PENTADACTYL">
+<!ENTITY dactyl.name "pentadactyl">
+<!ENTITY dactyl.fileExt "penta">
+<!ENTITY dactyl.hostbin "firefox">
+
+<!ENTITY % dactylBase SYSTEM "chrome://dactyl/content/base.dtd">
+%dactylBase;
 

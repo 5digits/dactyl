@@ -39,6 +39,9 @@
 
     let prefix = [BASE];
 
+    modules.load("services");
+    prefix.unshift("chrome://" + modules.services.get("dactyl:").name + "/content/");
+
     ["base",
      "modules",
      "storage",
@@ -63,13 +66,11 @@
      "marks",
      "modes",
      "options",
-     "services",
      "statusline",
      "styles",
      "template"
      ].forEach(modules.load);
 
-    prefix.unshift("chrome://" + modules.services.get("dactyl:").name + "/content/");
     modules.Config.prototype.scripts.forEach(modules.load);
 })();
 

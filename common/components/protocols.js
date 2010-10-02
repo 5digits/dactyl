@@ -26,6 +26,8 @@ const systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPr
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {
+    if (url == null)
+        return fakeChannel();
     if (typeof url == "function")
         url = dataURL.apply(null, url());
     let uri = ioService.newURI(url, null, null);
@@ -83,12 +85,15 @@ ChromeData.prototype = {
 };
 
 function Dactyl() {
+    const self = this;
     this.wrappedJSObject = this;
 
     this.HELP_TAGS = {};
     this.FILE_MAP = {};
     this.OVERLAY_MAP = {};
     this.addonID = this.name + "@dactyl.googlecode.com";
+
+    this.pages = {};
 }
 Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
@@ -106,9 +111,12 @@ Dactyl.prototype = {
     },
 
     appName: prefs.getComplexValue("appName", Ci.nsISupportsString).data,
-    name: prefs.getComplexValue("name", Ci.nsISupportsString).data,
-    idName: prefs.getComplexValue("idName", Ci.nsISupportsString).data,
+    fileExt: prefs.getComplexValue("fileExt", Ci.nsISupportsString).data,
     host: prefs.getComplexValue("host", Ci.nsISupportsString).data,
+    hostbin: prefs.getComplexValue("hostbin", Ci.nsISupportsString).data,
+    idName: prefs.getComplexValue("idName", Ci.nsISupportsString).data,
+    name: prefs.getComplexValue("name", Ci.nsISupportsString).data,
+    get version() prefs.getComplexValue("version", Ci.nsISupportsString).data,
 
     init: function (obj) {
         for each (let prop in ["HELP_TAGS", "FILE_MAP", "OVERLAY_MAP"]) {
@@ -135,16 +143,17 @@ Dactyl.prototype = {
 
     newChannel: function (uri) {
         try {
-            if (!("all" in this.FILE_MAP))
+            if (uri.host != "content" && !("all" in this.FILE_MAP))
                 return redirect(uri.spec, uri, 1);
 
+            let path = decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""));
             switch(uri.host) {
+            case "content":
+                return makeChannel(this.pages[path], uri);
             case "help":
-                let url = this.FILE_MAP[decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""))];
-                return makeChannel(url, uri);
+                return makeChannel(this.FILE_MAP[path], uri);
             case "help-overlay":
-                url = this.OVERLAY_MAP[decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""))];
-                return makeChannel(url, uri);
+                return makeChannel(this.OVERLAY_MAP[path], uri);
             case "help-tag":
                 let tag = decodeURIComponent(uri.path.substr(1));
                 if (tag in this.FILE_MAP)

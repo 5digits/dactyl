@@ -1929,6 +1929,7 @@ const Dactyl = Module("dactyl", {
         AddonManager.getAddonByID(services.get("dactyl:").addonID, function (addon) {
             // @DATE@ token replaced by the Makefile
             // TODO: Find it automatically
+            options.setPref("extensions.dactyl.version", addon.version);
             dactyl.version = addon.version + " (created: @DATE@)";
         });
 

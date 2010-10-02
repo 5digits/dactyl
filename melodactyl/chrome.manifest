@@ -9,7 +9,6 @@ resource dactyl             ../common/modules/
 skin     dactyl classic/1.0 ../common/skin/
 
 override chrome://dactyl/content/dactyl.dtd chrome://melodactyl/content/dactyl.dtd
-override chrome://dactyl/content/config.js	  chrome://melodactyl/content/config.js
 
 overlay  chrome://songbird/content/xul/layoutBaseOverlay.xul chrome://melodactyl/content/melodactyl.xul
 overlay  chrome://songbird/content/xul/layoutBaseOverlay.xul chrome://dactyl/content/dactyl.xul

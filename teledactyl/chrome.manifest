@@ -8,7 +8,6 @@ resource dactyl             ../common/modules/
 skin     dactyl classic/1.0 ../common/skin/
 
 override chrome://dactyl/content/dactyl.dtd chrome://teledactyl/content/dactyl.dtd
-override chrome://dactyl/content/config.js	  chrome://teledactyl/content/config.js
 
 overlay  chrome://messenger/content/messenger.xul chrome://dactyl/content/dactyl.xul
 overlay  chrome://messenger/content/messenger.xul chrome://teledactyl/content/teledactyl.xul

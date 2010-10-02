@@ -168,13 +168,13 @@
 
 <p>
     Please send comments, questions, or patches to the
-    <link topic="mailto:&dactyl.maillist;">mailing list</link>,
+    <link topic="&dactyl.list.href;">mailing list</link>,
     where we will do our best to answer any inquiries. You can also
     check the
     <link topic="http://code.google.com/p/dactyl/wiki">wiki</link> or
     <link topic="http://dactyl.sourceforge.net/pentadactyl/faq">FAQ</link>.
     Issue reports can be entered in the
-    <link topic="http://code.google.com/p/dactyl/issues/list">issue tracker</link>.
+    <link topic="&dactyl.issues;">issue tracker</link>.
 </p>
 
 </document>

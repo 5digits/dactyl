@@ -1,19 +1,15 @@
 
-<!ENTITY % dactylBranding SYSTEM "chrome://branding/locale/brand.dtd">
-%dactylBranding;
-
 <!ENTITY dactyl.mainWindow "messengerWindow">
 <!ENTITY dactyl.commandContainer "&dactyl.mainWindow;">
-<!ENTITY dactyl.name "teledactyl">
-<!ENTITY dactyl.idName "TELEDACTYL">
-<!ENTITY dactyl.appName "Teledactyl">
-<!ENTITY dactyl.host "&brandShortName;">
-<!ENTITY dactyl.hostbin "thunderbird">
-<!ENTITY dactyl.fileExt "tele">
 <!ENTITY dactyl.statusBefore "">
 <!ENTITY dactyl.statusAfter "statusTextBox">
 
-<!ENTITY xmlns.dactyl "http://vimperator.org/namespaces/liberator">
-<!ENTITY xmlns.html   "http://www.w3.org/1999/xhtml">
-<!ENTITY xmlns.xul    "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<!ENTITY dactyl.name "teledactyl">
+<!ENTITY dactyl.idName "TELEDACTYL">
+<!ENTITY dactyl.appName "Teledactyl">
+<!ENTITY dactyl.hostbin "thunderbird">
+<!ENTITY dactyl.fileExt "tele">
+
+<!ENTITY % dactylBase SYSTEM "chrome://dactyl/content/base.dtd">
+%dactylBase;
 
