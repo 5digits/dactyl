@@ -417,7 +417,7 @@ const Dactyl = Module("dactyl", {
      * @returns {string}
      */
     findHelp: function (topic, unchunked) {
-        if (topic in services.get("dactyl:").FILE_MAP)
+        if (!unchunked && topic in services.get("dactyl:").FILE_MAP)
             return topic;
         unchunked = !!unchunked;
         let items = completion._runCompleter("help", topic, null, unchunked).items;
