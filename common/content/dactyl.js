@@ -481,12 +481,13 @@ const Dactyl = Module("dactyl", {
             // Scrape the list of help files from all.xml
             // Manually process main and overlay files, since XSLTProcessor and
             // XMLHttpRequest don't allow access to chrome documents.
-            tagMap.all = "all";
+            tagMap["all"] = tagMap["all.xml"] = "all";
             let files = findHelpFile("all").map(function (doc)
                     [f.value for (f in util.evaluateXPath("//dactyl:include/@href", doc))]);
 
             // Scrape the tags from the rest of the help files.
             array.flatten(files).forEach(function (file) {
+                tagMap[file + ".xml"] = file;
                 findHelpFile(file).forEach(function (doc) {
                     addTags(file, doc);
                 });
