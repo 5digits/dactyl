@@ -316,7 +316,7 @@ const CompletionContext = Class("CompletionContext", {
     get message() this._message || (this.waitingForTab ? "Waiting for <Tab>" : null),
     set message(val) this._message = val,
 
-    get proto() {
+    get itemPrototype() {
         let res = {};
         function result(quote) {
             yield ["result", quote ? function () quote[0] + quote[1](this.text) + quote[2]
@@ -444,9 +444,9 @@ const CompletionContext = Class("CompletionContext", {
 
         try {
             // Item prototypes
-            let proto = this.proto;
+            let proto = this.itemPrototype;
             if (!this.cache.constructed)
-                this.cache.constructed = items.map(function (item) Object.create(proto, { item: { value: item, enumerable: true } }));
+                this.cache.constructed = items.map(function (item) ({ __proto__: proto, item: item }));
 
             // Filters
             let filtered = this.filterFunc(this.cache.constructed);

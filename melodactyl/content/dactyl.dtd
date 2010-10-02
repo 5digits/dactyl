@@ -3,6 +3,7 @@
 %dactylBranding;
 
 <!ENTITY dactyl.mainWindow "mainplayer">
+<!ENTITY dactyl.commandContainer "&dactyl.mainWindow;">
 <!ENTITY dactyl.name "xulmus">
 <!ENTITY dactyl.appName "Xulmus">
 <!ENTITY dactyl.idName "XULMUS">

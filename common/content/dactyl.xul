@@ -53,9 +53,8 @@
                     oncommandupdate="&events;.onSelectionChange(event);"/>
     </window>
 
-    <vbox id="browser-bottombox">
-        <!-- As of Firefox 3.1pre, iframe.height changes do not seem to have immediate effect,
-             therefore we need to put them into a <vbox> for which that works just fine -->
+    <vbox id="&dactyl.commandContainer;">
+
         <vbox class="dactyl-container" hidden="false" collapsed="true">
             <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
                     flex="1" hidden="false" collapsed="false"

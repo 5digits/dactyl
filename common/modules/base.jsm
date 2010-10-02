@@ -572,7 +572,8 @@ function update(target) {
             if (typeof desc.value == "function" && Object.getPrototypeOf(target)) {
                 let func = desc.value;
                 desc.value.superapply = function (self, args)
-                    Object.getPrototypeOf(target)[k].apply(self, args);
+                    let (meth = Object.getPrototypeOf(target)[k])
+                        meth && meth.apply(self, args);
                 desc.value.supercall = function (self)
                     func.superapply(self, Array.slice(arguments, 1));
             }

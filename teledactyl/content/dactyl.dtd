@@ -3,6 +3,7 @@
 %dactylBranding;
 
 <!ENTITY dactyl.mainWindow "messengerWindow">
+<!ENTITY dactyl.commandContainer "&dactyl.mainWindow;">
 <!ENTITY dactyl.name "teledactyl">
 <!ENTITY dactyl.idName "TELEDACTYL">
 <!ENTITY dactyl.appName "Teledactyl">

@@ -117,24 +117,20 @@ const Bookmarks = Module("bookmarks", {
     // also ensures that each search engine has a Dactyl-friendly alias
     getSearchEngines: function getSearchEngines() {
         let searchEngines = [];
+        let aliases = {};
         for (let [, engine] in Iterator(services.get("browserSearch").getVisibleEngines({}))) {
             let alias = engine.alias;
-            if (!alias || !/^[a-z0-9_-]+$/.test(alias))
+            if (!alias || !/^[a-z_-]+$/.test(alias))
                 alias = engine.name.replace(/^\W*([a-zA-Z_-]+).*/, "$1").toLowerCase();
             if (!alias)
                 alias = "search"; // for search engines which we can't find a suitable alias
 
-            // make sure we can use search engines which would have the same alias (add numbers at the end)
-            let newAlias = alias;
-            for (let j = 1; j <= 10; j++) { // <=10 is intentional
-                if (!searchEngines.some(function (item) item[0] == newAlias))
-                    break;
-
-                newAlias = alias + j;
-            }
-            // only write when it changed, writes are really slow
-            if (engine.alias != newAlias)
-                engine.alias = newAlias;
+            if (set.has(aliases, alias))
+                alias += ++aliases[alias];
+            else
+                aliases[alias] = 0;
+            if (engine.alias != alias)
+                engine.alias = alias;
 
             searchEngines.push([engine.alias, engine.description, engine.iconURI && engine.iconURI.spec]);
         }

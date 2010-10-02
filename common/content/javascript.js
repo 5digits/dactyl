@@ -610,10 +610,10 @@ const JavaScript = Module("javascript", {
         "ROCSSPrimitiveValue", "RangeError", "ReferenceError", "RegExp",
         "StopIteration", "String", "SyntaxError", "TypeError", "URIError",
         "Uint16Array", "Uint32Array", "Uint8Array", "XML",
-        "XMLHttpProgressEvent", "XMLList", "XMLSerializer", "XULControllers",
-        "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent",
-        "eval", "isFinite", "isNaN", "isXMLName", "parseFloat", "parseInt",
-        "undefined", "uneval"
+        "XMLHttpProgressEvent", "XMLList", "XMLSerializer", "XPCNativeWrapper",
+        "XPCSafeJSWrapper", "XULControllers", "decodeURI", "decodeURIComponent",
+        "encodeURI", "encodeURIComponent", "eval", "isFinite", "isNaN",
+        "isXMLName", "parseFloat", "parseInt", "undefined", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
      .filter(function (k) k in window))),

@@ -3,6 +3,7 @@
 %dactylBranding;
 
 <!ENTITY dactyl.mainWindow "main-window">
+<!ENTITY dactyl.commandContainer "browser-bottom-box">
 <!ENTITY dactyl.name "pentadactyl">
 <!ENTITY dactyl.version "1.0">
 <!ENTITY dactyl.idName "PENTADACTYL">

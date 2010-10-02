@@ -44,7 +44,7 @@ const Config = Module("config", ConfigBase, {
     // focusContent() focuses this widget gSongbirdWindowController takes care of the focus.
     get visualbellWindow() document.getElementById(this.mainWindowId),
 
-    styleableChrome: ["chrome://gonzo/content/xul/mainplayer.xul"],
+    styleableChrome: ["chrome://purplerain/content/xul/mainplayer.xul"],
 
     autocommands: {
         BookmarkAdd: "Triggered after a page is bookmarked",
