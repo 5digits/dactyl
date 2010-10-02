@@ -22,7 +22,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><k name="C-]" mode="i"/></dt> <dd>Expand an Insert-mode abbreviation</dd>
 </dl>
 
-
 <h2 tag="normal-index">Normal mode</h2>
 
 <dl>
@@ -42,28 +41,23 @@ This file contains a list of all available commands, mappings and options.
     <dt><k name="C-z"/></dt> <dd>Temporarily ignore all &dactyl.appName; key bindings</dd>
 </dl>
 
-
 <dl>
     <dt><k name="Esc"/></dt> <dd>Focus content</dd>
 </dl>
 
-
 <dl>
     <dt><k name="F1"/></dt> <dd>Open help window</dd>
 </dl>
-
 
 <dl>
     <dt><k name="S-Tab"/></dt> <dd>Rewind keyboard focus</dd>
     <dt><k name="Tab"/></dt> <dd>Advance keyboard focus</dd>
 </dl>
 
-
 <dl>
     <dt><k>0</k></dt> <dd>Scroll to the absolute left of the document</dd>
     <dt><k>$</k></dt> <dd>Scroll to the absolute right of the document</dd>
 </dl>
-
 
 <dl>
     <dt><k>A</k></dt> <dd>Toggle bookmarked state of current URL</dd>
@@ -82,7 +76,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><k>Y</k></dt> <dd>Copy selected text or current word</dd>
     <dt><k>W</k></dt> <dd>Open one or more URLs in a new window, based on current location</dd>
 </dl>
-
 
 <dl>
     <dt><k>a</k></dt> <dd>Open a prompt to bookmark the current URL</dd>
@@ -106,21 +99,17 @@ This file contains a list of all available commands, mappings and options.
     <dt><k>w</k></dt> <dd>Open one or more URLs in a new window</dd>
 </dl>
 
-
 <dl>
     <dt><k>;</k></dt> <dd>Start an extended hint mode</dd>
 </dl>
-
 
 <dl>
     <dt><k>:</k></dt> <dd>Enter Command-line mode</dd>
 </dl>
 
-
 <dl>
     <dt><k>~</k></dt> <dd>Open home directory</dd>
 </dl>
-
 
 <dl>
     <dt><k>/</k></dt> <dd>Search forward for a pattern</dd>
@@ -129,27 +118,22 @@ This file contains a list of all available commands, mappings and options.
     <dt><k>#</k></dt> <dd>Find word under cursor backwards</dd>
 </dl>
 
-
 <dl>
     <dt><k>N%</k></dt> <dd>Scroll to <a>count</a> percent of the document</dd>
 </dl>
-
 
 <dl>
     <dt><k>'</k></dt> <dd>Jump to the mark</dd>
 </dl>
 
-
 <dl>
     <dt><k>@</k></dt> <dd>Play a macro</dd>
 </dl>
-
 
 <dl>
     <dt><k>.</k></dt> <dd>Repeat the last keyboard command</dd>
     <dt><k>@:</k></dt> <dd>Repeat the last Ex command <oa>count</oa> times</dd>
 </dl>
-
 
 <dl>
     <dt><k>]f</k></dt> <dd>Focus next frame</dd>
@@ -157,7 +141,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><k>]] </k></dt> <dd>Follow the link labeled 'next' or '>' if it exists</dd>
     <dt><k>[[ </k></dt> <dd>Follow the link labeled 'prev', 'previous' or '&lt;' if it exists</dd>
 </dl>
-
 
 <dl>
     <dt><k>g$</k></dt> <dd>Go to the last tab</dd>
@@ -181,7 +164,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><k>gu</k></dt> <dd>Go to parent directory</dd>
 </dl>
 
-
 <dl>
     <dt><k>ZQ</k></dt> <dd>Quit and don't save the session</dd>
     <dt><k>ZZ</k></dt> <dd>Quit and save the session</dd>
@@ -197,24 +179,20 @@ This file contains a list of all available commands, mappings and options.
     <dt><k>zz</k></dt> <dd>Set text zoom value of current web page</dd>
 </dl>
 
-
 <h2 tag="ex-edit-index">Command-line editing</h2>
 
 <dl>
     <dt><k name="C-c" mode="c"/></dt> <dd>Quit Command-line mode without executing</dd>
 </dl>
 
-
 <dl>
     <dt><k name="C-]" mode="c"/></dt> <dd>Expand a command-line abbreviation</dd>
 </dl>
-
 
 <dl>
     <dt><k name="Up" mode="c"/></dt> <dd>Recall the previous command line from the history list which matches the current command line</dd>
     <dt><k name="Down" mode="c"/></dt> <dd>Recall the next command line from the history list which matches the current command line</dd>
 </dl>
-
 
 <dl>
     <dt><k name="Tab" mode="c"/></dt> <dd>Complete the word in front of the cursor according to the behavior specified in <o>wildmode</o></dd>
@@ -222,7 +200,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><k name="A-Tab" mode="c"/></dt> <dd>Complete the word in front of the cursor according to the behavior specified in <o>altwildmode</o></dd>
     <dt><k name="A-S-Tab" mode="c"/></dt> <dd>Complete the previous full match when <o>altwildmode</o> contains "full"</dd>
 </dl>
-
 
 <h2 tag="ex-cmd-index :index">Ex commands</h2>
 
@@ -376,7 +353,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:zoom</ex></dt> <dd>Set zoom value of current web page</dd>
 </dl>
 
-
 <h2 tag="option-index">Options</h2>
 
 <dl>
@@ -446,6 +422,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>wordseparators</o></dt> <dd>How words are split for hintmatching</dd>
 </dl>
 
-
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

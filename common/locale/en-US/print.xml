@@ -23,7 +23,6 @@
     </description>
 </item>
 
-
 <item>
     <spec>:ha<oa>rdcopy</oa><oa>!</oa> ><a>filename</a></spec>
     <description>
@@ -32,7 +31,6 @@
         <note>Not available on Windows.</note>
     </description>
 </item>
-
 
 <h2 tag="&dactyl.host;-print-dialogs">&dactyl.host; printing dialogs</h2>
 
@@ -50,4 +48,5 @@
 </p>
 
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

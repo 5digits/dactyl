@@ -30,7 +30,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:norm :normal</tags>
     <spec>:norm<oa>al</oa><oa>!</oa> <a>keys</a></spec>
@@ -45,7 +44,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<C-l> CTRL-L :redr :redraw]]></tags>
     <strut/>
@@ -54,7 +52,6 @@
         <p>Redraws the screen. Useful for updating the screen during the execution of a script or function.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:run :! :!cmd</tags>
@@ -70,7 +67,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:!!</tags>
     <spec>:!!</spec>
@@ -78,7 +74,6 @@
         <p>Repeat last <ex>:!<a>cmd</a></ex>.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:sil :silent</tags>
@@ -92,7 +87,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:verb :verbose</tags>
     <spec>:<oa>count</oa>verb<oa>ose</oa> <a>command</a></spec>
@@ -103,7 +97,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:ve :version</tags>
@@ -221,7 +214,6 @@
     </description>
 </item>
 
-
 <h2 tag="online-help">Online help</h2>
 
 <item>
@@ -238,7 +230,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:helpall :helpa help-all</tags>
     <spec>:helpa<oa>ll</oa> <oa>subject</oa></spec>
@@ -248,7 +239,6 @@
         <p>See <ex>:help</ex>.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:exu :exusage</tags>
@@ -261,7 +251,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:optionu :optionusage</tags>
     <spec>:optionu<oa>sage</oa><oa>!</oa></spec>
@@ -272,7 +261,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:viu :viusage</tags>
@@ -285,8 +273,6 @@
     </description>
 </item>
 
-
-
 <tags>42</tags>
 
 <p>
@@ -294,7 +280,6 @@
     the only person who knew what this question really was about is now dead,
     unfortunately. So now you might wonder what the meaning of death is...
 </p>
-
 
 <h2 tag="uncategorized">Uncategorized help</h2>
 
@@ -310,7 +295,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<Insert> i]]></tags>
     <strut/>
@@ -324,6 +308,6 @@
     </description>
 </item>
 
-
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

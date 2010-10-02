@@ -149,7 +149,7 @@ const CommandWidgets = Class("CommandWidgets", {
     multilineOutput: Class.memoize(function () {
         let elem = document.getElementById("dactyl-multiline-output");
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
-        document.getElementById("dactyl-context-copylink").style.listStyleImage = 
+        document.getElementById("dactyl-context-copylink").style.listStyleImage =
             util.computedStyle(document.getElementById("context-copylink")).listStyleImage;
         return elem;
     }),

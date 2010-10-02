@@ -343,9 +343,7 @@
     <em>Tutorial</em> link to return.
 </p>
 
-
 <!-- TODO: other sections? -->
-
 
 <h2 tag="removal">Get me out of here!</h2>
 
@@ -364,7 +362,6 @@
     Alternatively, you can do this the old-fashioned way: re-enable the menubar,
     as above, with <ex>:set go+=m</ex>, and select <em>Add-ons</em> from the <em>Tools</em> menu.
 </p>
-
 
 <h2 tag="support">I'm interested… but lost!</h2>
 
@@ -386,4 +383,5 @@
 </p>
 
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

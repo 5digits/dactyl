@@ -196,16 +196,16 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
         triggers to toggle the playing of animation on the current page.
     </p>
     <item>
-	<tags>'flashblock' 'fb'</tags>
-	<spec>'flashblock' 'fb'</spec>
+        <tags>'flashblock' 'fb'</tags>
+        <spec>'flashblock' 'fb'</spec>
         <type>boolean</type>
         <default>true</default>
-	<description>
+        <description>
             <p>
                 Controls the blocking of flash animations. When true, place
                 holders are substituted for flash animations on untrusted sites.
             </p>
-	</description>
+        </description>
     </item>
     <escape><oa>...</oa>
 <hl key="HelpXMLTagEnd">&lt;/plugin></hl></escape>;</xml-block>

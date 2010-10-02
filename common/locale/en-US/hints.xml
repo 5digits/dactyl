@@ -19,7 +19,7 @@
     narrow them down. While the default action is to click the
     selected link, other actions are available, including saving the
     resulting link, copying its URL, or saving an image. For each
-    of these actions, only the  set of applicable elements is
+    of these actions, only the set of applicable elements is
     highlighted.
 </p>
 
@@ -56,7 +56,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>F</tags>
     <strut/>
@@ -71,8 +70,6 @@
         </p>
     </description>
 </item>
-
-
 
 <item>
     <tags>extended-hints</tags>
@@ -126,4 +123,5 @@
 </item>
 
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

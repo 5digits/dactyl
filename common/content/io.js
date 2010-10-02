@@ -541,7 +541,7 @@ lookup:
         // NOTE: this command is only used in :source
         commands.add(["fini[sh]"],
             "Stop sourcing a script file",
-            function () { 
+            function () {
                 dactyl.assert(io.sourcing, "E168: :finish used outside of a sourced file");
                 io.sourcing.finished = true;
             },

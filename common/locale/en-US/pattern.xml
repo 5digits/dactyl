@@ -73,7 +73,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>?</tags>
     <spec>?<a>pattern</a><oa>?</oa><k name="CR"/></spec>
@@ -81,7 +80,6 @@
         <p>Search backward for <a>pattern</a>, in exactly the same manner as <k>/</k>.</p>
     </description>
 </item>
-
 
 <item>
     <tags>n</tags>
@@ -91,7 +89,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>N</tags>
     <spec>N</spec>
@@ -99,7 +96,6 @@
         <p>Find previous. Repeat the last search in the opposite direction.</p>
     </description>
 </item>
-
 
 <item>
     <tags>*</tags>
@@ -109,7 +105,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>#</tags>
     <spec>#</spec>
@@ -117,7 +112,6 @@
         <p>Search backward for the previous occurence of the word under cursor.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:noh :nohlsearch</tags>
@@ -133,4 +127,5 @@
 </item>
 
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

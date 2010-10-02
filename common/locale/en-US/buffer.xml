@@ -33,7 +33,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[g<C-g>]]></tags>
     <spec>g&lt;C-g></spec>
@@ -41,7 +40,6 @@
         <p>Print file information. Same as <ex>:pa<oa>geinfo</oa></ex>.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:pa :pageinfo</tags>
@@ -55,7 +53,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>gf</tags>
     <strut/>
@@ -67,7 +64,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>gF</tags>
@@ -84,7 +80,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:vie :viewsource</tags>
     <spec>:vie<oa>wsource</oa><oa>!</oa> <oa>url</oa></spec>
@@ -97,7 +92,6 @@
         </p>
     </description>
 </item>
-
 
 <h2 tag="motion scrolling">Motion commands</h2>
 
@@ -113,7 +107,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>$</tags>
     <spec>$</spec>
@@ -121,7 +114,6 @@
         <p>Scroll to the absolute right of the document</p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<Home> gg]]></tags>
@@ -136,7 +128,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<End> G]]></tags>
     <strut/>
@@ -149,7 +140,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>N%</tags>
     <spec><a>count</a>%</spec>
@@ -157,7 +147,6 @@
         <p>Scroll to <a>count</a> percent of the document.</p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<Left> h]]></tags>
@@ -171,7 +160,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<C-e> <Down> j]]></tags>
     <strut/>
@@ -183,7 +171,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<C-y> <Up> k]]></tags>
@@ -197,7 +184,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<Right> l]]></tags>
     <strut/>
@@ -209,7 +195,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<C-d>]]></tags>
@@ -224,7 +209,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<C-u>]]></tags>
     <strut/>
@@ -238,7 +222,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<S-Space> <PageUp> <C-b>]]></tags>
     <strut/>
@@ -250,7 +233,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<Space> <PageDown> <C-f>]]></tags>
@@ -264,7 +246,6 @@
     </description>
 </item>
 
-
 <h2 tag="jumping">Jumping to elements</h2>
 
 <item>
@@ -275,7 +256,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<S-Tab>]]></tags>
     <spec>&lt;S-Tab></spec>
@@ -283,7 +263,6 @@
         <p>Rewind keyboard focus to the previous element.</p>
     </description>
 </item>
-
 
 <item>
     <tags>gi</tags>
@@ -298,7 +277,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>]f</tags>
     <strut/>
@@ -311,7 +289,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>[f</tags>
@@ -326,7 +303,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>]]</tags>
     <strut/>
@@ -340,7 +316,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>[[</tags>
     <strut/>
@@ -353,7 +328,6 @@
         </p>
     </description>
 </item>
-
 
 <h2 tag="zooming zoom">Zooming</h2>
 
@@ -395,7 +369,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>zm</tags>
     <strut/>
@@ -405,7 +378,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>- zo</tags>
     <spec><oa>count</oa>zo</spec>
@@ -414,7 +386,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>zr</tags>
     <spec><oa>count</oa>zr</spec>
@@ -422,7 +393,6 @@
         <p>Reduce text zoom of current web page by a larger amount. Mnemonic: zoom reduce.</p>
     </description>
 </item>
-
 
 <item>
     <tags>zz</tags>
@@ -437,7 +407,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>ZI zI</tags>
     <spec><oa>count</oa>ZI</spec>
@@ -445,7 +414,6 @@
         <p>Enlarge full zoom of current web page. Mnemonic: zoom in.</p>
     </description>
 </item>
-
 
 <item>
     <tags>ZM zM</tags>
@@ -456,7 +424,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>ZO zO</tags>
     <spec><oa>count</oa>ZO</spec>
@@ -465,7 +432,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>ZR zR</tags>
     <spec><oa>count</oa>ZR</spec>
@@ -473,7 +439,6 @@
         <p>Reduce full zoom of current web page by a larger amount. Mnemonic: zoom reduce.</p>
     </description>
 </item>
-
 
 <item>
     <tags>ZZ zZ</tags>
@@ -486,7 +451,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:zo :zoom</tags>
@@ -507,7 +471,6 @@
     </description>
 </item>
 
-
 <h2 tag="frames">Working with frames</h2>
 
 <item>
@@ -517,7 +480,6 @@
         <p>Show only the current frame's page.</p>
     </description>
 </item>
-
 
 <h2 tag="copying yanking">Copying text</h2>
 
@@ -535,7 +497,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>Y</tags>
     <spec>Y</spec>
@@ -543,7 +504,6 @@
         <p>Copy currently selected text to the system clipboard.</p>
     </description>
 </item>
-
 
 <h2 tag="alternate-stylesheet">Alternate style sheets</h2>
 
@@ -564,7 +524,6 @@ selecting their favorite.
         <p>All author styling can be removed by setting the <o>usermode</o> option.</p>
     </description>
 </item>
-
 
 </document>
 

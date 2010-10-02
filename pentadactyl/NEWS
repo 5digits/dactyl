@@ -74,7 +74,7 @@
     * Page zoom information is now shown in the status bar, and
       change in zoom status no longer appears in :messages.
     * Added ZO, ZI, ZM, and ZR as aliases for zO, zI, zM, and zR.
-    * Completion list now behaves better when the multi-line output 
+    * Completion list now behaves better when the multi-line output
       window is displayed.
     * Major help system improvements:
       - Plugins may now provide full-fledged ':help' documentation.

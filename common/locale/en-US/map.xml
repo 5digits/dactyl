@@ -100,7 +100,6 @@
     </description>
 </item>
 
-
 <h3 tag=":map-options">Map options</h3>
 <p>
     Any of the map commands may be given the following options:
@@ -117,7 +116,6 @@
     <dt>-nopersist</dt> <dd>Do not save this mapping to an auto-generated rc file (short name <em>-n</em>)</dd>
     <dt>-silent</dt> <dd>Do not echo any generated keys to the command-line (short name <em>-s</em>, also <em>&lt;silent></em> for Vim compatibility)</dd>
 </dl>
-
 
 <item>
     <tags>:no :noremap</tags>
@@ -143,7 +141,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:unm :unmap</tags>
     <spec>:map <a>lhs</a> <a>rhs</a></spec>
@@ -159,7 +156,6 @@
         <p>Remove the mapping of <a>lhs</a> for the applicable mode(s).</p>
     </description>
 </item>
-
 
 <item>
     <tags>:mapc :mapclear</tags>
@@ -179,7 +175,6 @@
     </description>
 </item>
 
-
 <item>
     <spec>:map</spec>
     <spec>:nm<oa>ap</oa></spec>
@@ -190,7 +185,6 @@
         <p>List all mappings for the applicable mode(s).</p>
     </description>
 </item>
-
 
 <item>
     <tags>:map_l</tags>
@@ -207,8 +201,6 @@
         <p>List all mappings starting with <a>lhs</a> for the applicable mode(s).</p>
     </description>
 </item>
-
-
 
 <h3 tag=":map-arguments">Special arguments</h3>
 
@@ -343,7 +335,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<CR> map_return]]></tags>
     <strut/>
@@ -356,7 +347,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<Leader> mapleader \]]></tags>
@@ -376,7 +366,6 @@
         <code><ex>:map ,h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
     </description>
 </item>
-
 
 <h2 tag="abbreviations">Abbreviations</h2>
 
@@ -430,7 +419,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:ca :cabbrev</tags>
     <spec>:ca<oa>bbrev</oa> <a>lhs</a> <a>rhs</a></spec>
@@ -445,7 +433,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:ia :iabbrev</tags>
     <spec>:ia<oa>bbrev</oa> <a>lhs</a> <a>rhs</a></spec>
@@ -459,7 +446,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:una :unabbreviate</tags>
     <spec>:una<oa>bbreviate</oa> <a>lhs</a></spec>
@@ -467,7 +453,6 @@
         <p>Remove an abbreviation.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:cuna :cunabbrev</tags>
@@ -481,7 +466,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:iuna :iunabbrev</tags>
     <spec>:iuna<oa>bbrev</oa> <a>lhs</a></spec>
@@ -494,7 +478,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:abc :abclear</tags>
     <spec>:abc<oa>lear</oa></spec>
@@ -502,7 +485,6 @@
         <p>Remove all abbreviations.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:cabc :cabclear</tags>
@@ -512,7 +494,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:iabc :iabclear</tags>
     <spec>:iabc<oa>lear</oa></spec>
@@ -520,7 +501,6 @@
         <p>Remove all abbreviations for Insert mode.</p>
     </description>
 </item>
-
 
 <h2 tag="user-commands">User-defined commands</h2>
 
@@ -543,14 +523,12 @@
     </description>
 </item>
 
-
 <item>
     <spec>:com<oa>mand</oa> <a>cmd</a></spec>
     <description>
         <p>List all user-defined commands that start with <a>cmd</a>.</p>
     </description>
 </item>
-
 
 <item>
     <spec>:com<oa>mand</oa><oa>!</oa> <oa><a>attr</a>…</oa> <a>cmd</a> <a>rep</a></spec>
@@ -704,7 +682,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:comc :comclear</tags>
     <spec>:comc<oa>lear</oa></spec>
@@ -712,7 +689,6 @@
         <p>Delete all user-defined commands.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:delc :delcommand</tags>
@@ -722,7 +698,6 @@
     </description>
 </item>
 
-
 <h2 tag="command-examples">Examples</h2>
 
 <p>Add a :Google command to search via google:</p>
@@ -731,4 +706,5 @@
 <!-- TODO: add decent examples -->
 
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

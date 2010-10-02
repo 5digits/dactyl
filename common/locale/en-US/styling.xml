@@ -35,7 +35,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:hi :highlight</tags>
     <spec>:hi<oa>ghlight</oa><oa>!</oa> <a>group</a><oa>selector</oa></spec>
@@ -130,7 +129,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:highlight-clear</tags>
     <spec>:hi<oa>ghlight</oa> clear <oa>group</oa></spec>
@@ -141,7 +139,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:sty :style</tags>
@@ -175,7 +172,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:dels :delstyle</tags>
     <spec>:dels<oa>tyle</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
@@ -198,7 +194,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:styleenable :stylee</tags>
     <tags>:styenable :stye</tags>
@@ -207,7 +202,6 @@
         <p>Enable any matching styles. Arguments are the same as for <ex>:delstyle</ex>.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:styledisable :styled</tags>
@@ -218,7 +212,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:styletoggle :stylet</tags>
     <tags>:stytoggle :styt</tags>
@@ -228,7 +221,6 @@
     </description>
 </item>
 
-
-
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

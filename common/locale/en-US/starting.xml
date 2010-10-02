@@ -32,7 +32,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>++cmd</tags>
     <spec>++cmd <a>command</a></spec>
@@ -45,7 +44,6 @@
         <p>This option can be specified multiple times.</p>
     </description>
 </item>
-
 
 <item>
     <tags>+u</tags>
@@ -60,7 +58,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>++noplugin</tags>
     <spec>++noplugin</spec>
@@ -68,7 +65,6 @@
         <p>Prevents plugin scripts from being loaded at startup. See <o>loadplugins</o>.</p>
     </description>
 </item>
-
 
 <h2 tag="initialization startup">Initialization</h2>
 
@@ -164,7 +160,6 @@
     </description>
 </item>
 
-
 <h2 tag="restarting">Restarting</h2>
 
 <item>
@@ -175,7 +170,6 @@
     </description>
 </item>
 
-
-
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

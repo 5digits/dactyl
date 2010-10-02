@@ -32,7 +32,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>@:</tags>
     <strut/>
@@ -41,8 +40,6 @@
         <p>Repeat the last Ex command <oa>count</oa> times.</p>
     </description>
 </item>
-
-
 
 <h2 tag="macros complex-repeat">Macros</h2>
 
@@ -60,7 +57,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:macros</tags>
     <spec>:mac<oa>ros</oa> <oa>pat</oa></spec>
@@ -71,7 +67,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:delmac :delmacros</tags>
@@ -85,7 +80,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>@</tags>
     <spec><oa>count</oa>@<a>a-z0-9</a></spec>
@@ -97,7 +91,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>@@</tags>
     <spec><oa>count</oa>@@</spec>
@@ -105,8 +98,6 @@
         <p>Replay the last executed macro <oa>count</oa> times.</p>
     </description>
 </item>
-
-
 
 <h2 tag="using-scripts">Using scripts</h2>
 
@@ -156,14 +147,14 @@
             and <em>modules</em> objects are accessible to your script as
             global variables.
         </p>
-            
+
         <p>
             Files in <em>~/.&dactyl.name;/plugins</em> may additionally be
             accessed in <em>plugins.<a>filename</a></em> where <a>filename</a>
             is the last component of the file's path stripped of any
             extensions, with all hyphens stripped and any letter following a
             hyphen capitalized.  So, the file
-            <em>~/.&dactyl.name;/plugins/foo-bar.js</em> may be accessed as 
+            <em>~/.&dactyl.name;/plugins/foo-bar.js</em> may be accessed as
             <em>plugins.fooBar</em>. See also <t>writing-plugins</t>
         </p>
 
@@ -186,7 +177,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:lpl :loadplugins</tags>
     <strut/>
@@ -204,7 +194,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:ru :runtime</tags>
     <spec>:runt<oa>ime</oa><oa>!</oa> <a>file</a> …</spec>
@@ -219,7 +208,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:scrip :scriptnames</tags>
     <spec>:scrip<oa>tnames</oa></spec>
@@ -227,7 +215,6 @@
         <p>List all sourced script names, in the order they were first sourced.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:fini :finish</tags>
@@ -240,7 +227,6 @@
         </p>
     </description>
 </item>
-
 
 <h2 tag="profile profiling">Profiling</h2>
 
@@ -265,4 +251,5 @@
 </item>
 
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

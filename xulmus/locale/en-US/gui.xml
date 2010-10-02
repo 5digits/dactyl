@@ -44,9 +44,9 @@
     <spec>:displaypane <a>pane</a></spec>
     <description>
         <p>
-	    Open the specified display pane. <a>pane</a> is any of "service
-	    pane left", "service pane bottom", "content pane bottom" or "right
-	    sidebar".
+            Open the specified display pane. <a>pane</a> is any of "service
+            pane left", "service pane bottom", "content pane bottom" or "right
+            sidebar".
         </p>
     </description>
 </item>

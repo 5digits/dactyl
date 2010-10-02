@@ -37,7 +37,6 @@
     </description>
 </item>
 
-
 <h2 tag="dialogs">Dialogs</h2>
 
 <item>
@@ -54,7 +53,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:dia :dialog</tags>
     <spec>:dia<oa>log</oa> <oa>&dactyl.host;-dialog</oa></spec>
@@ -64,7 +62,6 @@
         <dl tag="dialog-list"/>
     </description>
 </item>
-
 
 <item>
     <tags>:dl :downl :downloads</tags>
@@ -79,7 +76,6 @@
     </description>
 </item>
 
-
 <h2 tag="extensions add-ons">Add-ons</h2>
 
 <item>
@@ -93,7 +89,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:extde :extdelete</tags>
     <spec>:extde<oa>lete</oa> <a>extension</a></spec>
@@ -105,7 +100,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:extd :extdisable</tags>
@@ -119,7 +113,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:exte :extenable</tags>
     <spec>:exte<oa>nable</oa> <a>extension</a></spec>
@@ -132,7 +125,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:exts :extens :extensions</tags>
     <spec>:extens<oa>ions</oa></spec>
@@ -141,7 +133,6 @@
         <p>List all installed extensions.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:exto :extoptions</tags>
@@ -156,7 +147,6 @@
     </description>
 </item>
 
-
 <h2 tag="sidebar">Sidebar</h2>
 
 <item>
@@ -166,7 +156,6 @@
         <p>Close the sidebar window.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:sbope :sbopen :sb :sbar :sideb :sidebar</tags>
@@ -179,7 +168,6 @@
         </p>
     </description>
 </item>
-
 
 <h2 tag="status-line status-bar">Status line</h2>
 
@@ -248,7 +236,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:tbh :tbhide :toolbarh  :toolbarhide</tags>
     <spec>:toolbarhide <a>name</a></spec>
@@ -257,7 +244,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:tbt :tbtoggle :toolbart :toolbartoggle</tags>
     <spec>:toolbartoggle <a>name</a></spec>
@@ -265,7 +251,6 @@
         <p>Toggles the named toolbar.</p>
     </description>
 </item>
-
 
 </document>
 

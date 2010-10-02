@@ -31,7 +31,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[send-key <C-v> CTRL-V]]></tags>
     <spec>CTRL-V</spec>
@@ -41,7 +40,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <h2 tag="opening">Opening web pages</h2>
 
@@ -104,7 +102,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>t :t :tabopen :tabnew</tags>
     <spec>:tabopen<oa>!</oa> <oa>arg1</oa>, <oa>arg2</oa>, …</spec>
@@ -118,7 +115,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>T</tags>
     <spec>T</spec>
@@ -128,7 +124,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:tabdu :tabduplicate</tags>
@@ -142,7 +137,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>O</tags>
     <spec>O</spec>
@@ -152,7 +146,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>w :winopen :wopen</tags>
@@ -166,7 +159,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>W</tags>
     <spec>W</spec>
@@ -176,7 +168,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<MiddleMouse> p]]></tags>
@@ -192,7 +183,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>P</tags>
     <strut/>
@@ -207,7 +197,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>gP</tags>
     <strut/>
@@ -220,7 +209,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[<C-x>]]></tags>
@@ -236,7 +224,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<C-a>]]></tags>
     <strut/>
@@ -249,7 +236,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>~</tags>
     <spec>~</spec>
@@ -257,7 +243,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>Open home directory. Equivalent to <ex>:open ~/</ex></p>
     </description>
 </item>
-
 
 <h2 tag="navigating">Navigating</h2>
 
@@ -276,7 +261,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[L <C-i> CTRL-i :fo :fw :forward]]></tags>
     <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
@@ -292,7 +276,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>:ju :jumps</tags>
     <spec>:ju<oa>mps</oa></spec>
@@ -307,7 +290,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>gh</tags>
     <spec>gh</spec>
@@ -315,7 +297,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>Go home. Opens the homepage in the current tab.</p>
     </description>
 </item>
-
 
 <item>
     <tags>gH</tags>
@@ -329,7 +310,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>gu</tags>
@@ -345,7 +325,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>gU</tags>
     <spec>gU</spec>
@@ -360,7 +339,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <h2 tag="reloading">Reloading</h2>
 
 <item>
@@ -371,7 +349,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>R</tags>
     <spec>R</spec>
@@ -379,7 +356,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>Reload the current web page without using the cache.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:re :reload</tags>
@@ -392,7 +368,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>:reloada :reloadall</tags>
     <spec>:reloada<oa>ll</oa><oa>!</oa></spec>
@@ -403,7 +378,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <h2 tag="stopping">Stopping</h2>
 
@@ -417,7 +391,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>:stopa :stopall</tags>
     <spec>:stopa<oa>ll</oa></spec>
@@ -425,7 +398,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>Stop loading all web pages.</p>
     </description>
 </item>
-
 
 <h2 tag="writing save-file">Writing</h2>
 
@@ -443,7 +415,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <h2 tag="quitting save-session">Quitting</h2>
 
 <item>
@@ -458,7 +429,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>:qa :qall :quita :quitall</tags>
     <strut/>
@@ -471,7 +441,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>:wc :wclose :winc :winclose</tags>
     <spec>:winc<oa>lose</oa></spec>
@@ -480,7 +449,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>:winon :winonly</tags>
     <spec>:winon<oa>ly</oa></spec>
@@ -488,7 +456,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>Close all windows but the current.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:xa :xall :wq :wqa :wqall</tags>
@@ -504,7 +471,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>ZQ</tags>
     <spec>ZQ</spec>
@@ -512,7 +478,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>Quit and don't save the session. Works like <ex>:qall</ex>.</p>
     </description>
 </item>
-
 
 <item>
     <tags>ZZ</tags>
@@ -524,7 +489,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
-
 
 <h2 tag="current-directory">The current directory</h2>
 
@@ -541,7 +505,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-
 <item>
     <tags>:pw :pwd</tags>
     <spec>:pw<oa>d</oa></spec>
@@ -549,7 +512,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         <p>Print the current directory name.</p>
     </description>
 </item>
-
 
 </document>
 

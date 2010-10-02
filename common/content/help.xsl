@@ -411,7 +411,7 @@
             <xsl:apply-templates select="@*" mode="help-1"/>
             <div style="clear: both;"/>
             <span dactyl:highlight="HelpNote">Note:</span>
-            <xsl:text> </xsl:text> 
+            <xsl:text> </xsl:text>
             <xsl:apply-templates select="node()" mode="help-1"/>
         </p>
     </xsl:template>
@@ -420,7 +420,7 @@
             <xsl:apply-templates select="@*" mode="help-1"/>
             <div style="clear: both;"/>
             <span dactyl:highlight="HelpWarning">Warning:</span>
-            <xsl:text> </xsl:text> 
+            <xsl:text> </xsl:text>
             <xsl:apply-templates select="node()" mode="help-1"/>
         </p>
     </xsl:template>

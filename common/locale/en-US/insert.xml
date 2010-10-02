@@ -27,8 +27,6 @@
     </description>
 </item>
 
-
-
 <h2 tag="ins-special-keys">Insert-mode special keys</h2>
 
 <item>
@@ -58,6 +56,6 @@
     </description>
 </item>
 
-
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

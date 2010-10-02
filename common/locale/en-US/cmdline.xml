@@ -45,7 +45,6 @@
     </description>
 </item>
 
-
 <h2 tag="cmdline-editing">Command-line editing</h2>
 
 <item>
@@ -56,7 +55,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[c_<C-]>]]></tags>
     <spec>&lt;C-]></spec>
@@ -64,7 +62,6 @@
         <p>Expand a command-line abbreviation.</p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[c_<Up>]]></tags>
@@ -78,7 +75,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[c_<Down>]]></tags>
     <strut/>
@@ -91,7 +87,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[c_<S-Up> c_<PageUp>]]></tags>
     <spec>&lt;S-Up></spec>
@@ -102,7 +97,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[c_<S-Down> c_<PageDown>]]></tags>
     <spec>&lt;S-Down></spec>
@@ -111,7 +105,6 @@
         <p>Recall the next command line from the history list.</p>
     </description>
 </item>
-
 
 <h2 tag="cmdline-completion">Command-line completion</h2>
 
@@ -129,7 +122,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[c_<S-Tab>]]></tags>
     <strut/>
@@ -138,7 +130,6 @@
         <p>Complete the previous full match when <o>wildmode</o> contains <str>full</str>.</p>
     </description>
 </item>
-
 
 <item>
     <tags><![CDATA[c_<A-Tab>]]></tags>
@@ -152,7 +143,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[c_<A-S-Tab>]]></tags>
     <strut/>
@@ -161,7 +151,6 @@
         <p>The <k name="S-Tab" mode="c"/> equivalent for <o>altwildmode</o>.</p>
     </description>
 </item>
-
 
 </document>
 

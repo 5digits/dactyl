@@ -47,7 +47,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:keepa :keepalt</tags>
     <spec>:keepa<oa>lt</oa> <a>cmd</a></spec>
@@ -55,7 +54,6 @@
         <p>Execute a command without changing the current alternate buffer.</p>
     </description>
 </item>
-
 
 <h2 tag="opening-tabs">Opening tabs</h2>
 
@@ -71,7 +69,6 @@
     </description>
 </item>
 
-
 <item>
     <!-- TODO: move this somewhere more appropriate -->
     <tags>:window :wind</tags>
@@ -83,7 +80,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:tabdu :tabduplicate</tags>
@@ -115,7 +111,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>gB</tags>
     <strut/>
@@ -126,7 +121,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>gt</tags>
@@ -140,7 +134,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<C-PageDown> <C-Tab> <C-n>]]></tags>
     <strut/>
@@ -153,7 +146,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<C-PageUp> <C-S-Tab> <C-p> gT]]></tags>
     <strut/>
@@ -165,7 +157,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:tabn :tabnext</tags>
@@ -181,7 +172,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>:bN :bNext :bp :bprevious</tags>
@@ -200,7 +190,6 @@
     </description>
 </item>
 
-
 <item>
     <tags><![CDATA[<C-6> <C-^>]]></tags>
     <spec><oa>count</oa>&lt;C-^></spec>
@@ -211,7 +200,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>b :b :buffer</tags>
@@ -238,7 +226,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>g^ g0</tags>
     <spec>g0</spec>
@@ -256,7 +243,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>g$ :bl :blast :tabl :tablast</tags>
     <spec>:tabl<oa>ast</oa></spec>
@@ -266,7 +252,6 @@
         <p>Switch to the last tab.</p>
     </description>
 </item>
-
 
 <item>
     <tags>:tabde :tabdetach</tags>
@@ -281,7 +266,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:taba :tabattach</tags>
     <spec>:taba<oa>ttach</oa> <a>window-index</a> <oa>buffer-index</oa></spec>
@@ -295,7 +279,6 @@
         </p>
     </description>
 </item>
-
 
 <h2 tag="reordering-tabs">Reordering tabs</h2>
 
@@ -313,8 +296,6 @@
         </p>
     </description>
 </item>
-
-
 
 <h2 tag="closing-tabs">Closing tabs</h2>
 
@@ -338,7 +319,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>D</tags>
     <spec><oa>count</oa>D</spec>
@@ -347,7 +327,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:tabo :tabonly</tags>
     <spec>:tabo<oa>nly</oa></spec>
@@ -355,7 +334,6 @@
         <p>Close all buffers other than the currently visible tab.</p>
     </description>
 </item>
-
 
 <item>
     <tags>u :u :undo</tags>
@@ -370,7 +348,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>:undoa :undoall</tags>
     <spec>:undoa<oa>ll</oa></spec>
@@ -378,8 +355,6 @@
         <p>Restore all closed tabs in the closed tabs list.</p>
     </description>
 </item>
-
-
 
 <h2 tag="looping-over-tabs">Looping over tabs</h2>
 
@@ -400,6 +375,6 @@
     </description>
 </item>
 
-
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->

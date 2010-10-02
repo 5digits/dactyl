@@ -422,7 +422,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'cpt' 'complete'</tags>
     <spec>'complete' 'cpt'</spec>
@@ -454,7 +453,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'ds' 'defsearch'</tags>
     <spec>'defsearch' 'ds'</spec>
@@ -477,7 +475,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'editor'</tags>
     <spec>'editor'</spec>
@@ -498,7 +495,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'enc' 'encoding'</tags>
     <spec>'encoding'</spec>
@@ -511,7 +507,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'noeb' 'noerrorbells'</tags>
@@ -527,7 +522,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'ei' 'eventignore'</tags>
     <spec>'eventignore'</spec>
@@ -541,7 +535,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'noex' 'noexrc'</tags>
@@ -558,7 +551,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'eht' 'extendedhinttags'</tags>
     <spec>'extendedhinttags' 'eht'</spec>
@@ -574,7 +566,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'fenc' 'fileencoding'</tags>
     <spec>'fileencoding'</spec>
@@ -587,7 +578,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'fh' 'followhints'</tags>
@@ -607,7 +597,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'nofs' 'nofullscreen'</tags>
     <tags>'fs' 'fullscreen'</tags>
@@ -621,7 +610,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'go' 'guioptions'</tags>
@@ -653,7 +641,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'hf' 'helpfile'</tags>
     <spec>'helpfile' 'hf'</spec>
@@ -666,7 +653,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'hin' 'hintinputs'</tags>
@@ -689,7 +675,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'hk' 'hintkeys'</tags>
     <spec>'hintkeys' 'hk'</spec>
@@ -705,7 +690,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'hm' 'hintmatching'</tags>
@@ -759,7 +743,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'ht' 'hinttags'</tags>
     <spec>'hinttags' 'ht'</spec>
@@ -775,7 +758,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'hto' 'hinttimeout'</tags>
     <spec>'hinttimeout' 'hto'</spec>
@@ -790,7 +772,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'hi' 'history'</tags>
     <spec>'history' 'hi'</spec>
@@ -804,7 +785,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'nohls' 'nohlsearch'</tags>
     <tags>'hls' 'hlsearch'</tags>
@@ -815,7 +795,6 @@
         <p>Highlight previous search pattern matches.</p>
     </description>
 </item>
-
 
 <item>
     <tags>'noic' 'noignorecase'</tags>
@@ -828,7 +807,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'nois' 'noincsearch'</tags>
     <tags>'is' 'incsearch'</tags>
@@ -839,7 +817,6 @@
         <p>Show the first match for a search pattern as it is typed.</p>
     </description>
 </item>
-
 
 <item>
     <tags>'noim' 'noinsertmode'</tags>
@@ -861,7 +838,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'jsd' 'jsdebugger'</tags>
     <spec>'jsdebugger' 'jsd'</spec>
@@ -873,7 +849,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'ls' 'laststatus'</tags>
@@ -895,7 +870,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'nolks' 'nolinksearch'</tags>
     <tags>'lks' 'linksearch'</tags>
@@ -911,7 +885,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'nolpl' 'lpl'</tags>
@@ -952,7 +925,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'maxitems'</tags>
     <spec>'maxitems'</spec>
@@ -963,7 +935,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'msgs' 'messages'</tags>
     <spec>'messages' 'msgs'</spec>
@@ -973,7 +944,6 @@
         <p>Maximum number of messages to store in the message history.</p>
     </description>
 </item>
-
 
 <item>
     <tags>'nomore' 'more'</tags>
@@ -987,7 +957,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'newtab'</tags>
@@ -1017,7 +986,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'nextpattern'</tags>
     <spec>'nextpattern'</spec>
@@ -1034,7 +1002,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'noonline' 'online'</tags>
     <spec>'online'</spec>
@@ -1047,7 +1014,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'pageinfo' 'pa'</tags>
@@ -1072,7 +1038,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'pps' 'popups'</tags>
@@ -1108,7 +1073,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'previouspattern'</tags>
     <spec>'previouspattern'</spec>
@@ -1124,7 +1088,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'noprivate' 'private'</tags>
@@ -1142,7 +1105,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>$&dactyl.idName;_RUNTIME</tags>
@@ -1178,7 +1140,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'si' 'sanitizeitems'</tags>
     <spec>'sanitizeitems' 'si'</spec>
@@ -1192,7 +1153,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'sts' 'sanitizetimespan'</tags>
@@ -1217,7 +1177,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'scr' 'scroll'</tags>
     <spec>'scroll' 'scr'</spec>
@@ -1234,7 +1193,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'shell' 'sh'</tags>
     <spec>'shell' 'sh'</spec>
@@ -1244,7 +1202,6 @@
         <p>Shell to use for executing <ex>:!</ex> and <ex>:run</ex> commands.</p>
     </description>
 </item>
-
 
 <item>
     <tags>'shellcmdflag' 'shcf'</tags>
@@ -1257,7 +1214,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'nosmd' 'noshowmode'</tags>
     <tags>'smd' 'showmode'</tags>
@@ -1268,7 +1224,6 @@
         <p>Show the current mode in the command line.</p>
     </description>
 </item>
-
 
 <item>
     <tags>'ssli' 'showstatuslinks'</tags>
@@ -1292,7 +1247,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'stal' 'showtabline'</tags>
     <spec>'showtabline' 'stal'</spec>
@@ -1311,7 +1265,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'noscs' 'nosmartcase'</tags>
     <tags>'scs' 'smartcase'</tags>
@@ -1327,7 +1280,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'nosf' 'nostrictfocus'</tags>
     <tags>'sf' 'strictfocus'</tags>
@@ -1340,7 +1292,6 @@
         </p>
     </description>
 </item>
-
 
 <item>
     <tags>'suggestengines'</tags>
@@ -1355,7 +1306,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'titlestring'</tags>
     <spec>'titlestring'</spec>
@@ -1369,7 +1319,6 @@
         <example><ex>:set titlestring=<str>Mozilla &dactyl.host;</str></ex></example>
     </description>
 </item>
-
 
 <item>
     <tags>'urlseparator'</tags>
@@ -1387,7 +1336,6 @@
     </description>
 </item>
 
-
 <item>
     <tags>'noum' 'nousermode'</tags>
     <tags>'um' 'usermode'</tags>
@@ -1398,7 +1346,6 @@
         <p>Show current website with minimal styling.</p>
     </description>
 </item>
-
 
 <item>
     <tags>'vbs' 'verbose'</tags>
@@ -1416,7 +1363,6 @@
         <!-- TODO: list levels and associated messages -->
     </description>
 </item>
-
 
 <item>
     <tags>'novb' 'novisualbell'</tags>
@@ -1561,4 +1507,5 @@
 </item>
 
 </document>
+
 <!-- vim:se sts=4 sw=4 et: -->
