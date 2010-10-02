@@ -4,14 +4,19 @@
 
 <!ENTITY dactyl.mainWindow "mainplayer">
 <!ENTITY dactyl.commandContainer "&dactyl.mainWindow;">
-<!ENTITY dactyl.name "xulmus">
-<!ENTITY dactyl.appName "Xulmus">
-<!ENTITY dactyl.idName "XULMUS">
-<!ENTITY dactyl.host "&brandShortName;">
-<!ENTITY dactyl.hostbin "songbird">
-<!ENTITY dactyl.fileExt "xulmus">
 <!ENTITY dactyl.statusBefore "statusbar-display">
 <!ENTITY dactyl.statusAfter "">
+<!ENTITY dactyl.name "melodactyl">
+<!ENTITY dactyl.appName "Melodactyl">
+<!ENTITY dactyl.idName "MELODACTYL">
+<!ENTITY dactyl.fileExt "melo">
+<!ENTITY dactyl.host "&brandShortName;">
+<!ENTITY dactyl.hostbin "songbird">
+
+<!ENTITY dactyl.code "http://code.google.com/p/dactyl/">
+<!ENTITY dactyl.maillist "pentadactyl@googlegroups.com">
+<!ENTITY dactyl.plugins "http://dactyl.sf.net/&dactyl.name;/plugins">
+<!ENTITY dactyl.version "1.0">
 
 <!ENTITY xmlns.dactyl "http://vimperator.org/namespaces/liberator">
 <!ENTITY xmlns.html   "http://www.w3.org/1999/xhtml">

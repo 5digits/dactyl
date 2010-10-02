@@ -22,16 +22,13 @@ const Config = Module("config", ConfigBase, {
             SBGetBrowser().mCurrentBrowser.stop();
         };
     },
-    /*** required options, no checks done if they really exist, so be careful ***/
-    name: "Xulmus",
-    host: "Songbird",
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
     features: ["bookmarks", "hints", "marks", "history", "quickmarks", "session", "tabs", "player"],
     defaults: {
         guioptions: "mprb",
         showtabline: 2,
-        titlestring: "Xulmus"
+        get titlestring() config.name
     },
 
     guioptions: {
