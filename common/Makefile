@@ -6,7 +6,7 @@ BUILD_DATE    = $(shell date "+%Y/%m/%d %H:%M:%S")
 BASE          = $(TOP)/../common
 GOOGLE_PROJ   = dactyl
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
-VERSION	      = $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
+VERSION	     ?= $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 UUID   	      = $(shell sed -n 's/.*em:id\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 
 LOCALEDIR     = locale
@@ -108,14 +108,15 @@ install:
 	for dir in $(PROFILEPATHS); do \
 		test -f "$$dir/profiles.ini" && break; \
 	done; \
-	profile=$${PROFILE:-$$(sed 's/^$$/\#/' "$$dir/profiles.ini" |\
+	profile=$$(sed 's/^$$/\#/' "$$dir/profiles.ini" |\
 		awk -v"profile=$(PROFILE)" \
-			'BEGIN { RS="#" } index("\n" profile "\n", $$0) || !profile && /\nDefault=1/' |\
+			'BEGIN { RS="#" } \
+			index($$0, "\nName=" profile "\n") || !profile && /\nDefault=1/' |\
 		awk -F= '{ args[$$1] = $$2 } \
 		END {\
 			if (args["IsRelative"]) print ENVIRON["dir"] "/" args["Path"];\
 			else print args["Path"]\
-		}')}; \
+		}'); \
 	if ! test -d "$$profile"; then \
 		echo >&2 "Can't locate profile directory"; \
 		exit 1; \

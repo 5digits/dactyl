@@ -1405,7 +1405,7 @@ const Options = Module("options", {
         completion.optionValue = function (context, name, op, curValue, completer) {
             let opt = options.get(name);
             completer = completer || opt.completer;
-            if (!completer)
+            if (!completer || !opt)
                 return;
 
             try {
