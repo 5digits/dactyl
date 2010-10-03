@@ -502,7 +502,6 @@ const Buffer = Module("buffer", {
      * @param {Node} elem The element to focus.
      */
     focusElement: function (elem) {
-        let doc = window.content.document;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         win.dactylFocusAllowed = true;
 
@@ -520,7 +519,7 @@ const Buffer = Module("buffer", {
                 try {
                     let [x, y] = elem.getAttribute("coords").split(",").map(parseFloat);
 
-                    elem.dispatchEvent(events.create(doc, "mouseover", { screenX: x, screenY: y }));
+                    elem.dispatchEvent(events.create(elem.ownerDocument, "mouseover", { screenX: x, screenY: y }));
                 }
                 catch (e) {}
             }
@@ -913,7 +912,7 @@ const Buffer = Module("buffer", {
         // copied (and tuned somebit) from browser.jar -> nsContextMenu.js
         let focusedWindow = document.commandDispatcher.focusedWindow;
         if (focusedWindow == window)
-            focusedWindow = content;
+            focusedWindow = buffer.focusedFrame;
 
         let docCharset = null;
         if (focusedWindow)
@@ -1107,11 +1106,11 @@ const Buffer = Module("buffer", {
     },
 
     findScrollableWindow: function findScrollableWindow() {
-        let win = buffer.focusedFrame;
+        win = window.document.commandDispatcher.focusedWindow;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
-        win = window.document.commandDispatcher.focusedWindow;
+        let win = buffer.focusedFrame;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
@@ -1292,7 +1291,7 @@ const Buffer = Module("buffer", {
                 if (options["usermode"])
                     options["usermode"] = false;
 
-                window.stylesheetSwitchAll(window.content, arg);
+                window.stylesheetSwitchAll(buffer.focusedFrame, arg);
             },
             {
                 argCount: "?",
