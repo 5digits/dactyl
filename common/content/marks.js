@@ -12,7 +12,7 @@
  */
 const Marks = Module("marks", {
     init: function init() {
-        function replacer(key, val) val instanceof Node ? null : val;
+        function replacer(key, val) val instanceof Ci.nsISupports ? null : val;
         this._localMarks = storage.newMap("local-marks", { privateData: true, replacer: replacer, store: true });
         this._urlMarks = storage.newMap("url-marks", { privateData: true, replacer: replacer, store: true });
 
@@ -57,7 +57,7 @@ const Marks = Module("marks", {
         let position = { x: x, y: y };
 
         if (Marks.isURLMark(mark)) {
-            let res = this._urlMarks.set(mark, { location: doc.URL, position: position, tab: tabs.getTab(), timestamp: Date.now()*1000 });
+            let res = this._urlMarks.set(mark, { location: doc.URL, position: position, tab: Cu.getWeakReference(tabs.getTab()), timestamp: Date.now()*1000 });
             if (!silent)
                 dactyl.log("Adding URL mark: " + Marks.markToString(mark, res), 5);
         }
@@ -107,18 +107,19 @@ const Marks = Module("marks", {
 
         if (Marks.isURLMark(mark)) {
             let slice = this._urlMarks.get(mark);
-            if (slice && slice.tab && slice.tab.linkedBrowser) {
-                if (slice.tab.parentNode != config.browser.tabContainer) {
+            let tab = slice && slice.tab && slice.tab.get();
+            if (tab && tab.linkedBrowser) {
+                if (tab.parentNode != config.browser.tabContainer) {
                     this._pendingJumps.push(slice);
                     // NOTE: this obviously won't work on generated pages using
                     // non-unique URLs :(
                     dactyl.open(slice.location, dactyl.NEW_TAB);
                     return;
                 }
-                let index = tabs.index(slice.tab);
+                let index = tabs.index(tab);
                 if (index != -1) {
                     tabs.select(index);
-                    let win = slice.tab.linkedBrowser.contentWindow;
+                    let win = tab.linkedBrowser.contentWindow;
                     if (win.location.href != slice.location) {
                         this._pendingJumps.push(slice);
                         win.location.href = slice.location;
@@ -180,10 +181,11 @@ const Marks = Module("marks", {
     },
 }, {
     markToString: function markToString(name, mark) {
+        let tab = mark.tab && mark.tab.get();
         return name + ", " + mark.location +
                 ", (" + Math.round(mark.position.x * 100) +
                 "%, " + Math.round(mark.position.y * 100) + "%)" +
-                (("tab" in mark) ? ", tab: " + tabs.index(mark.tab) : "");
+                (tab ? ", tab: " + tabs.index(tab) : "");
     },
 
     isLocalMark: function isLocalMark(mark) /^['`a-z]$/.test(mark),

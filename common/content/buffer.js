@@ -440,10 +440,13 @@ const Buffer = Module("buffer", {
     /**
      * @property {Window} Returns the currently focused frame.
      */
-    get focusedFrame()
-        (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame,
-    set focusedFrame(frame)
-        (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame = frame,
+    get focusedFrame() {
+        let frame = (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame;
+        return frame && frame.get();
+    },
+    set focusedFrame(frame) {
+        (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame = Cu.getWeakReference(frame);
+    },
 
     /**
      * Returns the currently selected word. If the selection is
