@@ -152,7 +152,7 @@ const Dactyl = Module("dactyl", {
      * @returns {string}
      */
     clipboardRead: function clipboardRead() {
-        let str;
+        let str = null;
 
         try {
             const clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
@@ -175,10 +175,7 @@ const Dactyl = Module("dactyl", {
                 str = data.data.substring(0, dataLen.value / 2);
             }
         }
-        catch (e) {
-            dactyl.reportError(e, true);
-        }
-
+        catch (e) {}
         return str;
     },
 
