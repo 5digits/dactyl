@@ -31,7 +31,10 @@ const Tabs = Module("tabs", {
         // hide tabs initially to prevent flickering when 'stal' would hide them
         // on startup
         if (config.hasTabbrowser)
-            config.tabStrip.collapsed = true; // FIXME: see 'stal' comment
+            config.tabStrip.collapsed = true;
+
+        this.tabStyle = styles.addSheet(true, "tab-strip-hiding", config.styleableChrome,
+                                        "", false, true)
 
         dactyl.commands["tabs.select"] = function (event) {
             tabs.select(event.originalTarget.getAttribute("identifier"));
@@ -983,24 +986,19 @@ const Tabs = Module("tabs", {
             "number", config.defaults["showtabline"],
             {
                 setter: function (value) {
-                    // FIXME: we manipulate mTabContainer underneath mStrip so we
-                    // don't have to fight against the host app's attempts to keep
-                    // it open - hack! Adding a filter watch to mStrip is probably
-                    // the cleanest solution.
                     let tabStrip = config.tabStrip;
 
-                    if (value == 0)
-                        tabStrip.collapsed = true;
+                    if (value == 0) {
+                        tabs.tabStyle.css = "#" + tabStrip.id + " { visibility: collapse; }"
+                        tabs.tabStyle.enabled = true;
+                    }
                     else {
-                        // FIXME: Why are we preferring our own created preference
-                        // here? --djk
-                        let pref = "browser.tabStrip.autoHide";
-                        if (options.getPref(pref) == null) // Try for FF 3.0 & 3.1
-                            pref = "browser.tabs.autoHide";
-                        options.safeSetPref(pref, value == 1, "See 'showtabline' option.");
-                        tabStrip.collapsed = false;
+                        options.safeSetPref("browser.tabs.autoHide", value == 1,
+                                            "See 'showtabline' option.");
+                        tabs.tabStyle.enabled = false;
                     }
 
+                    tabStrip.collapsed = false;
                     return value;
                 },
                 completer: function (context) [
