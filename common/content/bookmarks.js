@@ -298,8 +298,11 @@ const Bookmarks = Module("bookmarks", {
             names: ["-title", "-t"],
             description: "Bookmark page title or description",
             completer: function title(context, args) {
+                let frames = buffer.allFrames();
                 if (!args.bang)
-                    return [[content.document.title, "Current Page Title"]];
+                    return  [
+                        [win.document.title, frames.length == 1 ? "Current Location" : "Frame: " + win.location.href]
+                        for ([, win] in Iterator(frames))];
                 context.keys.text = "title";
                 context.keys.description = "url";
                 return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: args["-keyword"], title: context.filter });
@@ -339,7 +342,10 @@ const Bookmarks = Module("bookmarks", {
                 completer: function (context, args) {
                     if (!args.bang) {
                         context.title = ["Page URL"];
-                        context.completions = [[content.document.documentURI, "Current Location"]];
+                        let frames = buffer.allFrames();
+                        context.completions = [
+                            [win.document.documentURI, frames.length == 1 ? "Current Location" : "Frame: " + win.document.title]
+                            for ([, win] in Iterator(frames))];
                         return;
                     }
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
