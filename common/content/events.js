@@ -693,6 +693,21 @@ const Events = Module("events", {
         }
     },
 
+    /**
+     * Ensures that the currently focused element is visible and blurs
+     * it if it's not.
+     */
+    checkFocus: function () {
+        if (dactyl.focus) {
+            let rect = dactyl.focus.getBoundingClientRect();
+            if (!rect.width || !rect.height) {
+                dactyl.focus.blur();
+                // onFocusChange needs to die.
+                this.onFocusChange();
+            }
+        }
+    },
+
     // TODO: Merge with onFocusChange
     onFocus: function (event) {
         let elem = event.originalTarget;
@@ -1156,6 +1171,11 @@ const Events = Module("events", {
                     ;
             },
             { arg: true, count: true });
+    },
+    options: function () {
+        options.add(["strictfocus", "sf"],
+            "Prevent scripts from focusing input elements without user intervention",
+            "boolean", true);
     },
     sanitizer: function () {
         sanitizer.addItem("macros", {

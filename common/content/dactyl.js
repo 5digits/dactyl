@@ -1222,6 +1222,7 @@ const Dactyl = Module("dactyl", {
                     for (let [, group] in Iterator(groups))
                         if (!group.feature || dactyl.has(group.feature))
                             group.setter(value);
+                    events.checkFocus();
                     return value;
                 },
                 completer: function (context) {
@@ -1715,12 +1716,13 @@ const Dactyl = Module("dactyl", {
                 "./*[@toolbarname=" + util.escapeString(name, "'") + "]",
                 document, toolbox).snapshotItem(0);
 
-            let tbcmd = function (names, desc, action, filter) {
+            let toolbarCommand = function (names, desc, action, filter) {
                 commands.add(names, desc,
                     function (args) {
                         let toolbar = findToolbar(args[0] || "");
                         dactyl.assert(toolbar, "E474: Invalid argument");
                         action(toolbar);
+                        events.checkFocus();
                     }, {
                         argcount: "1",
                         completer: function (context) {
@@ -1732,13 +1734,13 @@ const Dactyl = Module("dactyl", {
                     });
             };
 
-            tbcmd(["toolbars[how]", "tbs[how]"], "Show the named toolbar",
+            toolbarCommand(["toolbars[how]", "tbs[how]"], "Show the named toolbar",
                 function (toolbar) toolbar.collapsed = false,
                 function (item) item.item.collapsed);
-            tbcmd(["toolbarh[ide]", "tbh[ide]"], "Hide the named toolbar",
+            toolbarCommand(["toolbarh[ide]", "tbh[ide]"], "Hide the named toolbar",
                 function (toolbar) toolbar.collapsed = true,
                 function (item) !item.item.collapsed);
-            tbcmd(["toolbart[oggle]", "tbt[oggle]"], "Toggle the named toolbar",
+            toolbarCommand(["toolbart[oggle]", "tbt[oggle]"], "Toggle the named toolbar",
                 function (toolbar) toolbar.collapsed = !toolbar.collapsed);
         }
 

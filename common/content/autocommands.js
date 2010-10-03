@@ -271,10 +271,6 @@ const AutoCommands = Module("autocommands", {
             {
                 completer: function () Iterator(update({ all: "All Events" }, config.autocommands))
             });
-
-        options.add(["strictfocus", "sf"],
-            "Prevent scripts from focusing input elements without user intervention",
-            "boolean", true);
     }
 });
 
