@@ -962,7 +962,7 @@ const array = Class("array", Array, {
             },
             array: ary,
             toString: function () this.array.toString(),
-            concat: function () this.array.concat.apply(this.array, arguments),
+            concat: function () this.__noSuchMethod__("concat", Array.slice(arguments)),
             filter: function () this.__noSuchMethod__("filter", Array.slice(arguments)),
             map: function () this.__noSuchMethod__("map", Array.slice(arguments))
         };

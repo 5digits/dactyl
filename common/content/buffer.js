@@ -348,8 +348,8 @@ const Buffer = Module("buffer", {
      * @property {Node} The last focused input field in the buffer. Used
      *     by the "gi" key binding.
      */
-    get lastInputField() window.content.document.lastInputField || null,
-    set lastInputField(value) { window.content.document.lastInputField = value; },
+    get lastInputField() this.localStore.lastInputField && this.localStore.lastInputField.get() || null,
+    set lastInputField(value) { this.localStore.lastInputField = value && Cu.getWeakReference(value); },
 
     /**
      * @property {string} The current top-level document's URL.
@@ -1609,24 +1609,30 @@ const Buffer = Module("buffer", {
         mappings.add(myModes, ["gi"],
             "Focus last used input field",
             function (count) {
-                if (count < 1 && buffer.lastInputField)
-                    buffer.focusElement(buffer.lastInputField);
-                else {
+                let elem = buffer.lastInputField;
+
+                if (count >= 1 || !elem || !Events.isContentNode(elem)) {
                     let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
 
-                    let elements = [m for (m in util.evaluateXPath(xpath))].filter(function (elem) {
+                    let frames = array([buffer.focusedFrame].concat(
+                        buffer.allFrames().filter(function (f) f != buffer.focusedFrame)));
+
+                    let elements = frames.map(function (win) [m for (m in util.evaluateXPath(xpath, win.document))])
+                            .flatten().filter(function (elem) {
+
                         if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(Events.editableInputs, elem.type))
                             return false;
+
                         let computedStyle = util.computedStyle(elem);
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none" &&
                             computedStyle.MozUserFocus != "ignore";
                     });
 
                     dactyl.assert(elements.length > 0);
-                    let elem = elements[Math.constrain(count, 1, elements.length) - 1];
-                    buffer.focusElement(elem);
-                    util.scrollIntoView(elem);
+                    elem = elements[Math.constrain(count, 1, elements.length) - 1];
                 }
+                buffer.focusElement(elem);
+                util.scrollIntoView(elem);
             },
             { count: true });
 
