@@ -185,26 +185,27 @@ const Buffer = Module("buffer", {
 
         if (event.originalTarget instanceof HTMLDocument) {
             let doc = event.originalTarget;
-            // document is part of a frameset
-            if (doc.defaultView.frameElement) {
-                // hacky way to get rid of "Transferring data from ..." on sites with frames
-                // when you click on a link inside a frameset, because asyncUpdateUI
-                // is not triggered there (Gecko bug?)
-                this.timeout(function () { statusline.updateUrl(); }, 10);
-                return;
-            }
-
-            // code which should happen for all (also background) newly loaded tabs goes here:
 
             // mark the buffer as loaded, we can't use buffer.loaded
             // since that always refers to the current buffer, while doc can be
             // any buffer, even in a background tab
             doc.pageIsFullyLoaded = 1;
 
-            if (doc != config.browser.contentDocument)
-                dactyl.echomsg({ domains: [util.getHost(doc.location.href)], message: "Background tab loaded: " + doc.title || doc.location.href }, 3);
+            if (doc.defaultView.frameElement) {
+                // document is part of a frameset
 
-            this._triggerLoadAutocmd("PageLoad", doc);
+                // hacky way to get rid of "Transferring data from ..." on sites with frames
+                // when you click on a link inside a frameset, because asyncUpdateUI
+                // is not triggered there (Gecko bug?)
+                this.timeout(function () { statusline.updateUrl(); }, 10);
+            }
+            else {
+                // code which should happen for all (also background) newly loaded tabs goes here:
+                if (doc != config.browser.contentDocument)
+                    dactyl.echomsg({ domains: [util.getHost(doc.location.href)], message: "Background tab loaded: " + doc.title || doc.location.href }, 3);
+
+                this._triggerLoadAutocmd("PageLoad", doc);
+            }
         }
     },
 
@@ -225,7 +226,7 @@ const Buffer = Module("buffer", {
                 // This fires when the load event is initiated
                 // only thrown for the current tab, not when another tab changes
                 if (flags & Ci.nsIWebProgressListener.STATE_START) {
-                    buffer.loaded = 0;
+                    webProgress.DOMWindow.document.pageIsFullyLoaded = 0;
                     statusline.updateProgress(0);
 
                     autocommands.trigger("PageLoadPre", { url: buffer.URL });
@@ -238,7 +239,7 @@ const Buffer = Module("buffer", {
                     }
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
-                    buffer.loaded = (status == 0 ? 1 : 2);
+                    webProgress.DOMWindow.document.pageIsFullyLoaded = (status == 0 ? 1 : 2);
                     statusline.updateUrl();
                 }
             }
@@ -328,14 +329,10 @@ const Buffer = Module("buffer", {
      *         1 - Fully loaded.
      *         2 - Load failed.
      */
-    get loaded() {
-        if (window.content.document.pageIsFullyLoaded !== undefined)
-            return window.content.document.pageIsFullyLoaded;
-        return 0; // in doubt return "loading"
-    },
-    set loaded(value) {
-        window.content.document.pageIsFullyLoaded = value;
-    },
+    get loaded()
+        Math.min.apply(Math,
+            buffer.allFrames().map(function (frame)
+                frame.document.pageIsFullyLoaded || 0)),
 
     /**
      * @property {Object} The local state store for the currently selected
