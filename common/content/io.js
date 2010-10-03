@@ -657,15 +657,12 @@ lookup:
     completion: function () {
         completion.charset = function (context) {
             context.anchored = false;
-            let bundle = services.get("stringBundle").createBundle(
-                "chrome://global/locale/charsetTitles.properties");
+            let service = services.get("charset");
             context.keys = {
                 text: util.identity,
-                description: function (charset) bundle.GetStringFromName(charset.toLowerCase() + ".title")
+                description: function (charset) service.getCharsetTitle(charset)
             };
-            context.generate = function () array("more1 more2 more3 more4 more5 unicode".split(" "))
-                    .map(function (key) options.getPref("intl.charsetmenu.browser." + key).split(', '))
-                    .flatten().uniq().array;
+            context.generate = function () iter(service.getDecoderList());
         };
 
         completion.directory = function directory(context, full) {

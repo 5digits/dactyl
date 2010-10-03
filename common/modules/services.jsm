@@ -22,6 +22,7 @@ const Services = Module("Services", {
         this.add("bookmarks",           "@mozilla.org/browser/nav-bookmarks-service;1",     Ci.nsINavBookmarksService);
         this.add("browserSearch",       "@mozilla.org/browser/search-service;1",            Ci.nsIBrowserSearchService);
         this.add("cache",               "@mozilla.org/network/cache-service;1",             Ci.nsICacheService);
+        this.add("charset",             "@mozilla.org/charset-converter-manager;1",         Ci.nsICharsetConverterManager);
         this.add("console",             "@mozilla.org/consoleservice;1",                    Ci.nsIConsoleService);
         this.add("dactyl:",             "@mozilla.org/network/protocol;1?name=dactyl");
         this.add("debugger",            "@mozilla.org/js/jsd/debugger-service;1",           Ci.jsdIDebuggerService);
