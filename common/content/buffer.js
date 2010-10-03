@@ -22,8 +22,6 @@ const Buffer = Module("buffer", {
         this.pageInfo = {};
 
         this.addPageInfoSection("f", "Feeds", function (verbose) {
-            let doc = window.content.document;
-
             const feedTypes = {
                 "application/rss+xml": "RSS",
                 "application/atom+xml": "Atom",
@@ -62,15 +60,20 @@ const Buffer = Module("buffer", {
             }
 
             let nFeed = 0;
-            for (let link in util.evaluateXPath(["link[@href and (@rel='feed' or (@rel='alternate' and @type))]"], doc)) {
-                let rel = link.rel.toLowerCase();
-                let feed = { title: link.title, href: link.href, type: link.type || "" };
-                if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
-                    nFeed++;
-                    let type = feedTypes[feed.type] || "RSS";
-                    if (verbose)
-                        yield [feed.title, template.highlightURL(feed.href, true) + <span class="extra-info">&#xa0;({type})</span>];
+            for (let [i, win] in Iterator(buffer.allFrames())) {
+                let doc = win.document;
+
+                for (let link in util.evaluateXPath(["link[@href and (@rel='feed' or (@rel='alternate' and @type))]"], doc)) {
+                    let rel = link.rel.toLowerCase();
+                    let feed = { title: link.title, href: link.href, type: link.type || "" };
+                    if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
+                        nFeed++;
+                        let type = feedTypes[feed.type] || "RSS";
+                        if (verbose)
+                            yield [feed.title, template.highlightURL(feed.href, true) + <span class="extra-info">&#xa0;({type})</span>];
+                    }
                 }
+
             }
 
             if (!verbose && nFeed)
@@ -78,7 +81,7 @@ const Buffer = Module("buffer", {
         });
 
         this.addPageInfoSection("g", "General Info", function (verbose) {
-            let doc = window.content.document;
+            let doc = buffer.focusedFrame.document;
 
             // get file size
             const ACCESS_READ = Ci.nsICache.ACCESS_READ;
@@ -134,7 +137,7 @@ const Buffer = Module("buffer", {
 
         this.addPageInfoSection("m", "Meta Tags", function (verbose) {
             // get meta tag data, sort and put into pageMeta[]
-            let metaNodes = window.content.document.getElementsByTagName("meta");
+            let metaNodes = buffer.focusedFrame.document.getElementsByTagName("meta");
 
             return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
                         .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
@@ -305,7 +308,7 @@ const Buffer = Module("buffer", {
      *     buffer. Only returns style sheets for the 'screen' media type.
      */
     get alternateStyleSheets() {
-        let stylesheets = window.getAllStyleSheets(window.content);
+        let stylesheets = window.getAllStyleSheets(buffer.focusedFrame);
 
         return stylesheets.filter(
             function (stylesheet) /^(screen|all|)$/i.test(stylesheet.media.mediaText) && !/^\s*$/.test(stylesheet.title)
