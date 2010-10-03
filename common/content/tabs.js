@@ -1055,7 +1055,7 @@ const Tabs = Module("tabs", {
                     ]
                 });
 
-            // TODO: Is this really applicable to Xulmus?
+            // TODO: Is this really applicable to Melodactyl?
             options.add(["popups", "pps"],
                 "Where to show requested popup windows",
                 "stringlist", "tab",

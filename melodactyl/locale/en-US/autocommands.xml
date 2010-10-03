@@ -25,9 +25,9 @@
     <dt>StreamPause</dt>   <dd>Triggered after a stream has paused</dd>
     <dt>StreamEnd</dt>     <dd>Triggered after a stream has ended</dd>
     <dt>StreamStop</dt>    <dd>Triggered after a stream has stopped</dd>
-    <dt>XulmusEnter</dt>   <dd>Triggered after Songbird starts</dd>
-    <dt>XulmusLeavePre</dt><dd>Triggered before exiting Songbird, just before destroying each module</dd>
-    <dt>XulmusLeave</dt>   <dd>Triggered before exiting Songbird</dd>
+    <dt>Enter</dt>         <dd>Triggered after Songbird starts</dd>
+    <dt>LeavePre</dt>      <dd>Triggered before exiting Songbird, just before destroying each module</dd>
+    <dt>Leave</dt>         <dd>Triggered before exiting Songbird</dd>
 </dl>
 
 <dl tag="autocommand-args" replace="autocommand-args">

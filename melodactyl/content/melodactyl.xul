@@ -1,50 +1,50 @@
 <?xml version="1.0"?>
 
 <?xml-stylesheet href="chrome://browser/skin/" type="text/css"?>
-<?xml-stylesheet href="chrome://xulmus/skin/xulmus.css" type="text/css"?>
+<?xml-stylesheet href="chrome://melodactyl/skin/melodactyl.css" type="text/css"?>
 
-<overlay id="xulmus"
+<overlay id="melodactyl"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:nc="http://home.netscape.com/NC-rdf#"
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <menupopup id="viewSidebarMenu">
-        <menuitem observes="xulmus-viewAddonsSidebar" label="Add-ons" accesskey="A"/>
-        <menuitem observes="xulmus-viewConsoleSidebar" label="Console" accesskey="C"/>
-        <menuitem observes="xulmus-viewDownloadsSidebar" label="Downloads" accesskey="D"/>
-        <menuitem observes="xulmus-viewPreferencesSidebar" label="Preferences" accesskey="P"/>
+        <menuitem observes="melodactyl-viewAddonsSidebar" label="Add-ons" accesskey="A"/>
+        <menuitem observes="melodactyl-viewConsoleSidebar" label="Console" accesskey="C"/>
+        <menuitem observes="melodactyl-viewDownloadsSidebar" label="Downloads" accesskey="D"/>
+        <menuitem observes="melodactyl-viewPreferencesSidebar" label="Preferences" accesskey="P"/>
     </menupopup>
 
     <broadcasterset id="mainBroadcasterSet">
-        <broadcaster id="xulmus-viewAddonsSidebar"
+        <broadcaster id="melodactyl-viewAddonsSidebar"
             autoCheck="false"
             type="checkbox"
             group="sidebar"
             sidebarurl="chrome://mozapps/content/extensions/extensions.xul"
             sidebartitle="Add-ons"
-            oncommand="toggleSidebar('xulmus-viewAddonsSidebar');"/>
-        <broadcaster id="xulmus-viewConsoleSidebar"
+            oncommand="toggleSidebar('melodactyl-viewAddonsSidebar');"/>
+        <broadcaster id="melodactyl-viewConsoleSidebar"
             autoCheck="false"
             type="checkbox"
             group="sidebar"
             sidebarurl="chrome://global/content/console.xul"
             sidebartitle="Console"
-            oncommand="toggleSidebar('xulmus-viewConsoleSidebar');"/>
-        <broadcaster id="xulmus-viewDownloadsSidebar"
+            oncommand="toggleSidebar('melodactyl-viewConsoleSidebar');"/>
+        <broadcaster id="melodactyl-viewDownloadsSidebar"
             autoCheck="false"
             type="checkbox"
             group="sidebar"
             sidebarurl="chrome://mozapps/content/downloads/downloads.xul"
             sidebartitle="Downloads"
-            oncommand="toggleSidebar('xulmus-viewDownloadsSidebar');"/>
-        <broadcaster id="xulmus-viewPreferencesSidebar"
+            oncommand="toggleSidebar('melodactyl-viewDownloadsSidebar');"/>
+        <broadcaster id="melodactyl-viewPreferencesSidebar"
             autoCheck="false"
             type="checkbox"
             group="sidebar"
             sidebarurl="about:config"
             sidebartitle="Preferences"
-            oncommand="toggleSidebar('xulmus-viewPreferencesSidebar');"/>
+            oncommand="toggleSidebar('melodactyl-viewPreferencesSidebar');"/>
     </broadcasterset>
 
 </overlay>

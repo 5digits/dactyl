@@ -1,4 +1,4 @@
-DIRS = teledactyl pentadactyl xulmus
+DIRS = teledactyl pentadactyl melodactyl
 TARGETS = clean distclean doc help info jar release xpi
 .SILENT:
 

@@ -12,7 +12,7 @@
 //   - integrate with the Clear Private Data dialog?
 
 // FIXME:
-//   - finish 1.9.0 support if we're going to support sanitizing in Xulmus
+//   - finish 1.9.0 support if we're going to support sanitizing in Melodactyl
 
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("sanitizer", {
