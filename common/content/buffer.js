@@ -932,11 +932,12 @@ const Buffer = Module("buffer", {
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
     viewSource: function (url, useExternalEditor) {
-        url = url || buffer.URI;
+        let doc = tabs.localStore.focusedFrame.document;
 
         if (useExternalEditor)
-            editor.editFileExternally(url);
+            this.viewSourceExternally(url || doc);
         else {
+            url = url || doc.location.href;
             const PREFIX = "view-source:";
             if (url.indexOf(PREFIX) == 0)
                 url = url.substr(PREFIX.length);
@@ -950,6 +951,92 @@ const Buffer = Module("buffer", {
                 dactyl.open(url, { hide: true });
         }
     },
+
+    /**
+     * Launches an editor to view the source of the given document. The
+     * contents of the document are saved to a temporary local file and
+     * removed when the editor returns. This function returns
+     * immediately.
+     *
+     * @param {Document} doc The document to view.
+     */
+    /*
+     * Derived from code in Mozilla, ©2005 Jason Barnabe,
+     * Tri-licensed under MPL 1.1/GPL 2.0/LGPL 2.1
+     * Portions copyright Kris Maglione licensable under the
+     * MIT license.
+     */
+    viewSourceExternally: Class("viewSourceExternally", 
+        XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
+        init: function (doc) {
+            let url = isString(doc) ? doc : doc.location.href;
+            let charset = isString(doc) ? null : doc.characterSet;
+
+            let webNav = window.getWebNavigation();
+            try {
+                webNav = doc.defaultView.QueryInterface(Ci.nsIInterfaceRequestor)
+                            .getInterface(nsIWebNavigation);
+            }
+            catch (e) {}
+            let descriptor = null;
+            try {
+                descriptor = webNav.QueryInterface(Ci.nsIWebPageDescriptor).currentDescriptor;
+            }
+            catch (e) {}
+
+            let uri = util.newURI(url, charset);
+            if (uri.scheme == "file")
+                editor.editFileExternally(uri.QueryInterface(Ci.nsIFileURL).file.path);
+            else {
+                if (descriptor) {
+                    // we'll use nsIWebPageDescriptor to get the source because it may
+                    // not have to refetch the file from the server
+                    // XXXbz this is so broken...  This code doesn't set up this docshell
+                    // at all correctly; if somehow the view-source stuff managed to
+                    // execute script we'd be in big trouble here, I suspect.
+
+                    this.docShell = Cc["@mozilla.org/docshell;1"].createInstance(Ci.nsIBaseWindow)
+                            .QueryInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsIWebPageDescriptor)
+                            .QueryInterface(Ci.nsIWebProgress);
+                    this.docShell.create();
+                    this.docShell.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+                    this.docShell.loadPage(descriptor, Ci.nsIWebPageDescriptor.DISPLAY_AS_SOURCE);
+                }
+                else {
+                    this.file = io.createTempFile();
+                    var webBrowserPersist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                            .createInstance(Ci.nsIWebBrowserPersist);
+                    webBrowserPersist.persistFlags = Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+                    webBrowserPersist.progressListener = this;
+                    webBrowserPersist.saveURI(uri, null, null, null, null, this.file);
+                }
+            }
+            return null;
+        },
+
+        destroy: function() {
+            if (this.docShell)
+                this.docShell.destroy();
+        },
+
+        onStateChange: function(progress, request, flag, status) {
+            // once it's done loading...
+            if ((flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0) {
+                try {
+                    if (this.docShell) {
+                        this.file = io.createTempFile();
+                        this.file.write(this.docShell.document.body.textContent);
+                    }
+                    editor.editFileExternally(this.file.path);
+                    this.file.remove(false);
+                }
+                finally {
+                    this.destroy();
+                }
+            }
+            return 0;
+        }
+    }),
 
     /**
      * Increases the zoom level of the current buffer.

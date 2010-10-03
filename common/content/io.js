@@ -11,12 +11,13 @@
 
 plugins.contexts = {};
 function Script(file) {
-    let self = plugins.contexts[file.path];
+    let self = plugins[file.path];
     if (self) {
         if (self.onUnload)
             self.onUnload();
         return self;
-     }
+    }
+    else
     self = { __proto__: plugins };
     plugins.contexts[file.path] = self;
     plugins[file.path] = self;
@@ -203,6 +204,8 @@ const IO = Module("io", {
 
         file.append(config.tempFile);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, parseInt('0600', 8));
+        Cc["@mozilla.org/uriloader/external-helper-app-service;1"]
+            .getService(Ci.nsPIExternalAppLauncher).deleteTemporaryFileOnExit(file);
 
         return io.File(file);
     },
@@ -657,12 +660,11 @@ lookup:
     completion: function () {
         completion.charset = function (context) {
             context.anchored = false;
-            let service = services.get("charset");
             context.keys = {
                 text: util.identity,
-                description: function (charset) service.getCharsetTitle(charset)
+                description: services.get("charset").getCharsetTitle
             };
-            context.generate = function () iter(service.getDecoderList());
+            context.generate = function () iter(services.get("charset").getDecoderList());
         };
 
         completion.directory = function directory(context, full) {

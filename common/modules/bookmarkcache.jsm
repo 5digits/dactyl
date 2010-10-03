@@ -24,7 +24,7 @@ const history   = services.get("history");
 const tagging   = services.get("tagging");
 const name      = "bookmark-cache";
 
-const BookmarkCache = Module("BookmarkCache", {
+const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     init: function init() {
         bookmarks.addObserver(this, false);
     },
@@ -116,11 +116,6 @@ const BookmarkCache = Module("BookmarkCache", {
         return bookmarks;
     },
 
-    onBeforeItemRemoved: function () {},
-    onBeginUpdateBatch:  function () {},
-    onEndUpdateBatch:    function () {},
-    onItemVisited:       function () {},
-    onItemMoved:         function () {},
     onItemAdded: function onItemAdded(itemId, folder, index) {
         if (bookmarks.getItemType(itemId) == bookmarks.TYPE_BOOKMARK) {
             if (this.isBookmark(itemId)) {
@@ -147,8 +142,7 @@ const BookmarkCache = Module("BookmarkCache", {
                 storage.fireEvent(name, "change", { __proto__: bookmark, changed: property });
             }
         }
-    },
-    QueryInterface: XPCOMUtils.generateQI([Ci.nsINavBookmarkObserver])
+    }
 }, {
     getFavicon: function getFavicon(uri) {
         try {

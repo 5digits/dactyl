@@ -73,9 +73,7 @@
         <p>
             View source with an external editor. Opens the source
             code of the current web site with the external editor
-            specified by the <o>editor</o> option. The external
-            editor must be able to download and open files from a
-            remote URL.
+            specified by the <o>editor</o> option.
         </p>
     </description>
 </item>

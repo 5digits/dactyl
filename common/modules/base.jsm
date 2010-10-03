@@ -139,12 +139,11 @@ defineModule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
-        "Struct", "StructBase", "Timer", "UTF8", "XPCOMUtils", "array",
+        "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "array",
         "call", "callable", "curry", "debuggerProperties", "defineModule",
         "endModule", "forEach", "isArray", "isGenerator", "isinstance",
         "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
-        "memoize", "properties", "requiresMainThread", "set", "update",
-        "values"
+        "memoize", "properties", "requiresMainThread", "set", "update", "values"
     ],
     use: ["services"]
 });
@@ -698,6 +697,25 @@ Class.extend = function extend(subclass, superclass, overrides) {
 
     if (superclass.prototype.constructor === objproto.constructor)
         superclass.prototype.constructor = superclass;
+}
+
+/**
+ * A base class generator for classes which impliment XPCOM interfaces.
+ *
+ * @param {nsIIID|[nsIJSIID]} interfaces The interfaces which the class
+ *      implements.
+ * @param {Class} superClass A super class. @optional
+ * @returns {Class}
+ */
+function XPCOM(interfaces, superClass) {
+    interfaces = Array.concat(interfaces);
+    let shim = interfaces.reduce(function (shim, iface) shim.QueryInterface(iface),
+                                 Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance());
+    let res = Class("XPCOM(" + interfaces + ")", superClass || Class, update(
+        array([k, v === undefined || callable(v) ? function stub() null : v] for ([k, v] in Iterator(shim))).toObject(),
+        { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
+    shim = interfaces = null;
+    return res;
 }
 
 /**

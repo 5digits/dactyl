@@ -19,7 +19,7 @@ BUGS:
 - :sidebar improvements (:sidebar! Downloads while downloads is open should refocus the sidebar)
 - ;s saves the page rather than the image
 - RC file is sourced once per window
-- :undo seems to be effected by the tabstrip state
+- :undo seems to be affected by the tabstrip state
 - the :help version-information page is no longer generated
 
 (recent Mercurial regressions):

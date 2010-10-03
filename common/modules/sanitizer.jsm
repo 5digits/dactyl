@@ -29,7 +29,7 @@ Range.prototype.contains = function (date)
 Range.prototype.__defineGetter__("isEternity", function () this.max == null && this.min == null);
 Range.prototype.__defineGetter__("isSession", function () this.max == null && this.min == sanitizer.sessionStart);
 
-const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
+const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference], tmp.Sanitizer), {
     sessionStart: Date.now() * 1000,
 
     init: function () {
@@ -89,8 +89,6 @@ const Sanitizer = Module("sanitizer", tmp.Sanitizer, {
         });
         util.addObserver(this);
     },
-
-    QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver, Ci.nsISupportsWeakReference]),
 
     addItem: function addItem(name, params) {
         if (params.description)

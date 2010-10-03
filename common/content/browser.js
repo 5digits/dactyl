@@ -188,6 +188,7 @@ const Browser = Module("browser", {
             function () {
                 window.QueryInterface(Ci.nsIInterfaceRequestor)
                       .getInterface(Ci.nsIDOMWindowUtils).redraw();
+                statusline.updateUrl();
                 commandline.clear();
             },
             { argCount: "0" });
