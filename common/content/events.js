@@ -732,7 +732,7 @@ const Events = Module("events", {
         let elem = window.document.commandDispatcher.focusedElement;
 
         if (win && win.top == content && dactyl.has("tabs"))
-            tabs.localStore.focusedFrame = win;
+            buffer.focusedFrame = win;
 
         try {
             if (elem && elem.readOnly)

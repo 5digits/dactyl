@@ -427,7 +427,7 @@ const Editor = Module("editor", {
                     let sel = controller.getSelection(controller.SELECTION_NORMAL);
                     if (!sel.rangeCount) // Hack.
                         sel.addRange(RangeFind.endpoint(
-                            RangeFind.nodeRange(tabs.localStore.focusedFrame.document.documentElement),
+                            RangeFind.nodeRange(buffer.focusedFrame.document.documentElement),
                             true));
                     while (count--)
                         controller[caretModeMethod](caretModeArg, false);

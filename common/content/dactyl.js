@@ -388,7 +388,7 @@ const Dactyl = Module("dactyl", {
                 gDBView.selection.select(i);
             }
             else if (this.has("tabs")) {
-                let frame = tabs.localStore.focusedFrame;
+                let frame = buffer.focusedFrame;
                 if (frame && frame.top == window.content)
                     elem = frame;
             }

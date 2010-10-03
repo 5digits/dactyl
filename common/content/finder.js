@@ -302,7 +302,7 @@ const RangeFind = Class("RangeFind", {
     get searchString() this.lastString,
 
     get selectedRange() {
-        let selection = (tabs.localStore.focusedFrame || content).getSelection();
+        let selection = (buffer.focusedFrame || content).getSelection();
         return (selection.rangeCount ? selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
     },
     set selectedRange(range) {

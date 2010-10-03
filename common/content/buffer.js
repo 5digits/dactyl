@@ -344,8 +344,6 @@ const Buffer = Module("buffer", {
         return content.dactylStore;
     },
 
-
-
     /**
      * @property {Node} The last focused input field in the buffer. Used
      *     by the "gi" key binding.
@@ -440,6 +438,14 @@ const Buffer = Module("buffer", {
     },
 
     /**
+     * @property {Window} Returns the currently focused frame.
+     */
+    get focusedFrame()
+        (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame,
+    set focusedFrame(frame)
+        (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame = frame,
+
+    /**
      * Returns the currently selected word. If the selection is
      * null, it tries to guess the word that the caret is
      * positioned in.
@@ -451,7 +457,7 @@ const Buffer = Module("buffer", {
     // FIXME: getSelection() doesn't always preserve line endings, see:
     // https://www.mozdev.org/bugs/show_bug.cgi?id=19303
     getCurrentWord: function () {
-        let win = tabs.localStore.focusedFrame || content;
+        let win = buffer.focusedFrame || content;
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
@@ -932,7 +938,7 @@ const Buffer = Module("buffer", {
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
     viewSource: function (url, useExternalEditor) {
-        let doc = tabs.localStore.focusedFrame.document;
+        let doc = buffer.focusedFrame.document;
 
         if (useExternalEditor)
             this.viewSourceExternally(url || doc);
@@ -1219,7 +1225,7 @@ const Buffer = Module("buffer", {
         commands.add(["frameo[nly]"],
             "Show only the current frame's page",
             function (args) {
-                dactyl.open(tabs.localStore.focusedFrame.document.documentURI);
+                dactyl.open(buffer.focusedFrame.document.documentURI);
             },
             { argCount: "0" });
 
