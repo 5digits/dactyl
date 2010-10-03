@@ -36,8 +36,7 @@ const Marks = Module("marks", {
         return lmarks.concat(umarks).sort(function (a, b) String.localeCompare(a[0], b[0]));
     },
 
-    // FIXME: Frameset
-    get localURI() window.content.document.documentURI,
+    get localURI() buffer.focusedFrame.document.documentURI,
 
     /**
      * Add a named mark for the current buffer, at its current position.
@@ -49,16 +48,9 @@ const Marks = Module("marks", {
      * @param {string} mark The mark name.
      * @param {boolean} silent Whether to output error messages.
      */
-    // TODO: add support for frameset pages
     add: function (mark, silent) {
-        let win = window.content;
+        let win = buffer.focusedFrame;
         let doc = win.document;
-
-        if (doc.body && doc.body instanceof HTMLFrameSetElement) {
-            if (!silent)
-                dactyl.echoerr("Marks support for frameset pages not implemented yet");
-            return;
-        }
 
         let x = win.scrollMaxX ? win.pageXOffset / win.scrollMaxX : 0;
         let y = win.scrollMaxY ? win.pageYOffset / win.scrollMaxY : 0;

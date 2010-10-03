@@ -1107,7 +1107,11 @@ const Buffer = Module("buffer", {
     },
 
     findScrollableWindow: function findScrollableWindow() {
-        let win = window.document.commandDispatcher.focusedWindow;
+        let win = buffer.focusedFrame;
+        if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
+            return win;
+
+        win = window.document.commandDispatcher.focusedWindow;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
