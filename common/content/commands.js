@@ -790,7 +790,7 @@ const Commands = Module("commands", {
             return [null, null, null, null];
 
         let [, spec, count, cmd, special, space, args] = matches;
-        if (/\w/.test(cmd) && args && !space)
+        if (/\w/.test(cmd) && args && !(space || args[0] == "|"))
             args = null;
 
         // parse count
@@ -805,8 +805,11 @@ const Commands = Module("commands", {
     parseCommands: function (str, complete) {
         do {
             let [count, cmd, bang, args, len] = commands.parseCommand(str);
-            if (cmd == null)
+            if (cmd == null) {
+                yield [null, { commandString: str }];
                 return;
+            }
+
             let command = commands.get(cmd);
             if (command && complete) {
                 complete.fork(command.name);
