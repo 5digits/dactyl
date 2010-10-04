@@ -195,7 +195,15 @@ Shim.prototype = {
     contractID:       "@dactyl.googlecode.com/base/xpc-interface-shim",
     classID:          Components.ID("{f4506a17-5b4d-4cd9-92d4-2eb4630dc388}"),
     classDescription: "XPCOM empty interface shim",
-    QueryInterface:   function () this
+    QueryInterface:   function (iid) {
+        if (iid.equals(Ci.nsISecurityCheckedComponent))
+            throw Components.results.NS_ERROR_NO_INTERFACE;
+        return this
+    },
+    getHelperForLanguage: function () null,
+    getInterfaces: function (count) {
+        count.value = 0;
+    }
 };
 
 if (XPCOMUtils.generateNSGetFactory)

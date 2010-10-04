@@ -751,7 +751,7 @@ const Events = Module("events", {
                 return;
             }
 
-            if (elem instanceof HTMLTextAreaElement || (elem && elem.contentEditable == "true")) {
+            if (elem instanceof HTMLTextAreaElement || (elem && util.computedStyle(elem).MozUserModify == "read-write")) {
                 if (options["insertmode"])
                     modes.set(modes.INSERT);
                 else if (elem.selectionEnd - elem.selectionStart > 0)

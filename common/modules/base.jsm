@@ -715,10 +715,13 @@ Class.extend = function extend(subclass, superclass, overrides) {
  */
 function XPCOM(interfaces, superClass) {
     interfaces = Array.concat(interfaces);
+
     let shim = interfaces.reduce(function (shim, iface) shim.QueryInterface(iface),
                                  Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance());
+
     let res = Class("XPCOM(" + interfaces + ")", superClass || Class, update(
-        array([k, v === undefined || callable(v) ? function stub() null : v] for ([k, v] in Iterator(shim))).toObject(),
+        array([k, v === undefined || callable(v) ? function stub() null : v]
+               for ([k, v] in Iterator(shim))).toObject(),
         { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
     shim = interfaces = null;
     return res;

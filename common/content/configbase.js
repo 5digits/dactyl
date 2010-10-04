@@ -179,7 +179,6 @@ const ConfigBase = Class(ModuleBase, {
         StatusWarningMsg  color: red     !important; background: inherit !important;
 
         !CmdLine;>*       font-family: monospace !important; padding: 1px !important;
-        // !StatusCmdLine>*  color: white; background: black; font-weight: normal;
         CmdPrompt;.dactyl-commandline-prompt
         CmdInput;.dactyl-commandline-command
         CmdOutput    white-space: pre;

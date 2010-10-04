@@ -78,6 +78,11 @@
     color: inherit;
 }
 
+label[collapsed=true] {
+    height: 0px;
+    width: 0px;
+}
+
 .dactyl-container > * {
     font-family: inherit;
 }
