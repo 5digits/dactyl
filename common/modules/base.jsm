@@ -181,12 +181,18 @@ function debuggerProperties(obj) {
  * @default false
  * @returns {Generator}
  */
+function prototype(obj)
+    obj.__proto__ || Object.getPrototypeOf(obj) || 
+    XPCNativeWrapper.unwrap(obj).__proto__ ||
+    Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
 function properties(obj, prototypes, debugger_) {
     let orig = obj;
     let seen = {};
-    for (; obj; obj = prototypes && obj.__proto__) {
+
+    for (; obj; obj = prototypes && prototype(obj)) {
         try {
-            var iter = (!debugger_ || !services.get("debugger").isOn) && values(Object.getOwnPropertyNames(obj));
+            if (!debugger_ || !services.get("debugger").isOn)
+                var iter = values(Object.getOwnPropertyNames(obj));
         }
         catch (e) {}
         if (!iter)
