@@ -433,7 +433,9 @@ lookup:
         function escape(str) '"' + str.replace(/[\\"$]/g, "\\$&") + '"';
 
         return this.withTempFiles(function (stdin, stdout, cmd) {
-            if (input)
+            if (input instanceof File)
+                stdin = input;
+            else if (input)
                 stdin.write(input);
 
             // TODO: implement 'shellredir'

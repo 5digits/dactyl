@@ -415,6 +415,26 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
+<item>
+    <spec>:write >> <a>file</a></spec>
+    <description>
+        <p>
+            Appends the current web page to the file <a>file</a>. The given
+            file must already exist.
+        </p>
+    </description>
+</item>
+
+<item>
+    <spec>:write !<a>cmd</a></spec>
+    <description>
+        <p>
+            Writes the current web page to <a>cmd</a> and prints the command's
+            output.
+        </p>
+    </description>
+</item>
+
 <h2 tag="quitting save-session">Quitting</h2>
 
 <item>

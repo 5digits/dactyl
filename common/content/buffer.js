@@ -976,9 +976,11 @@ const Buffer = Module("buffer", {
      */
     viewSourceExternally: Class("viewSourceExternally",
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
-        init: function (doc) {
+        init: function (doc, callback) {
             let url = isString(doc) ? doc : doc.location.href;
             let charset = isString(doc) ? null : doc.characterSet;
+            this.callback = callback ||
+                function (file) editor.editFileExternally(file.path);
 
             let webNav = window.getWebNavigation();
             try {
@@ -994,7 +996,7 @@ const Buffer = Module("buffer", {
 
             let uri = util.newURI(url, charset);
             if (uri.scheme == "file")
-                editor.editFileExternally(uri.QueryInterface(Ci.nsIFileURL).file.path);
+                this.callback(File(uri.QueryInterface(Ci.nsIFileURL).file));
             else {
                 if (descriptor) {
                     // we'll use nsIWebPageDescriptor to get the source because it may
@@ -1035,7 +1037,7 @@ const Buffer = Module("buffer", {
                         this.file = io.createTempFile();
                         this.file.write(this.docShell.document.body.textContent);
                     }
-                    editor.editFileExternally(this.file.path);
+                    this.callback(this.file);
                     this.file.remove(false);
                 }
                 finally {
@@ -1318,7 +1320,25 @@ const Buffer = Module("buffer", {
                 let chosenData = null;
                 let filename = args[0];
 
+                let command = commandline.command;
                 if (filename) {
+                    if (filename[0] == "!")
+                        return buffer.viewSourceExternally(buffer.focusedFrame.document,
+                            function (file) {
+                                let output = io.system(filename.substr(1), file);
+                                commandline.command = command;
+                                commandline.commandOutput(<span highlight="CmdOutput">{output}</span>);
+                            });
+
+                    if (/^>>/.test(filename)) {
+                        let file = io.File(filename.replace(/^>>\s*/, ""));
+                        dactyl.assert(file.exists() && file.isWritable(), file.path.quote() + ": E212: Can't open file for writing");
+                        return buffer.viewSourceExternally(buffer.focusedFrame.document,
+                            function (tmpFile) {
+                                file.write(tmpFile.read(), ">>");
+                            });
+                    }
+
                     let file = io.File(filename);
 
                     dactyl.assert(!file.exists() || args.bang,
@@ -1347,7 +1367,14 @@ const Buffer = Module("buffer", {
             {
                 argCount: "?",
                 bang: true,
-                completer: function (context) completion.file(context)
+                completer: function (context) {
+                    if (context.filter[0] == "!")
+                        return;
+                    if (/^>>/.test(context.filter))
+                        context.advance(/^>>\s*/.exec(context.filter)[0].length);
+                    return completion.file(context)
+                },
+                literal: 0
             });
 
         commands.add(["st[op]"],
