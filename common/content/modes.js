@@ -212,6 +212,8 @@ const Modes = Module("modes", {
     },
 
     reset: function () {
+        if (this._modeStack.length == 1 && this.topOfStack.params.restore)
+            this.topOfStack.params.restore(this.topOfStack);
         while (this._modeStack.length > 1)
             this.pop();
     },
