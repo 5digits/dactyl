@@ -34,7 +34,9 @@ const Tabs = Module("tabs", {
             config.tabStrip.collapsed = true;
 
         this.tabStyle = styles.addSheet(true, "tab-strip-hiding", config.styleableChrome,
-                                        "", false, true)
+                                        (config.tabStrip.id ? "#" + config.tabStrip.id : ".tabbrowser-strip") +
+                                            "{ visibility: collapse; }",
+                                        false, true)
 
         dactyl.commands["tabs.select"] = function (event) {
             tabs.select(event.originalTarget.getAttribute("identifier"));
@@ -988,10 +990,8 @@ const Tabs = Module("tabs", {
                 setter: function (value) {
                     let tabStrip = config.tabStrip;
 
-                    if (value == 0) {
-                        tabs.tabStyle.css = "#" + tabStrip.id + " { visibility: collapse; }"
+                    if (value == 0)
                         tabs.tabStyle.enabled = true;
-                    }
                     else {
                         options.safeSetPref("browser.tabs.autoHide", value == 1,
                                             "See 'showtabline' option.");
