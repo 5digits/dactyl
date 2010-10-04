@@ -753,7 +753,11 @@ const Hints = Module("hints", {
         this._hintMode = this._hintModes[minor];
         dactyl.assert(this._hintMode);
 
-        commandline.input(this._hintMode.prompt + ": ", null, { onChange: this.closure._onInput });
+        commandline.input(this._hintMode.prompt + ": ", null, {
+            extended: modes.HINTS,
+            leave: function () { hints.hide(); },
+            onChange: this.closure._onInput
+        });
         modes.extended = modes.HINTS;
 
         this.hintKeys = events.fromString(options["hintkeys"]).map(events.closure.toString);

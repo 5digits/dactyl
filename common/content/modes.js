@@ -50,6 +50,17 @@ const Modes = Module("modes", {
         this.addMode("MENU", true); // a popupmenu is active
         this.addMode("LINE", true); // linewise visual mode
         this.addMode("PROMPT", true);
+
+        this.push(this.NORMAL, 0, {
+            restore: function (prev) {
+                // disable caret mode when we want to switch to normal mode
+                if (options.getPref("accessibility.browsewithcaret"))
+                    options.setPref("accessibility.browsewithcaret", false);
+
+                statusline.updateUrl();
+                dactyl.focusContent(true);
+            }
+        });
     },
 
     _getModeMessage: function () {
@@ -73,52 +84,6 @@ const Modes = Module("modes", {
         if (this._main in this._modeMap && typeof this._modeMap[this._main].display == "function")
             return "-- " + this._modeMap[this._main].display() + ext;
         return macromode;
-    },
-
-    // NOTE: Pay attention that you don't run into endless loops
-    // Usually you should only indicate to leave a special mode like HINTS
-    // by calling modes.reset() and adding the stuff which is needed
-    // for its cleanup here
-    _handleModeChange: function (oldMode, newMode, oldExtended) {
-
-        switch (oldMode) {
-        case modes.TEXTAREA:
-        case modes.INSERT:
-            editor.unselectText();
-            break;
-
-        case modes.VISUAL:
-            if (newMode == modes.CARET) {
-                try { // clear any selection made; a simple if (selection) does not work
-                    let selection = window.content.getSelection();
-                    selection.collapseToStart();
-                }
-                catch (e) {}
-            }
-            else
-                editor.unselectText();
-            break;
-
-        case modes.CUSTOM:
-            plugins.stop();
-            break;
-
-        case modes.COMMAND_LINE:
-            // clean up for HINT mode
-            if (oldExtended & modes.HINTS)
-                hints.hide();
-            commandline.close();
-            break;
-        }
-
-        if (newMode == modes.NORMAL) {
-            // disable caret mode when we want to switch to normal mode
-            if (options.getPref("accessibility.browsewithcaret"))
-                options.setPref("accessibility.browsewithcaret", false);
-
-            statusline.updateUrl();
-            dactyl.focusContent(true);
-        }
     },
 
     NONE: 0,
@@ -188,21 +153,27 @@ const Modes = Module("modes", {
 
     // helper function to set both modes in one go
     // if silent == true, you also need to take care of the mode handling changes yourself
-    set: function (mainMode, extendedMode, silent, stack) {
+    set: function (mainMode, extendedMode, params, stack) {
+        params = params || {};
 
         if (!stack && mainMode != null)
-            this._modeStack = [];
+            this.reset();
 
-        let push = mainMode != null && !(stack && stack.pop);
-        if (push && this.topOfStack)
+        let push = mainMode != null && !(stack && stack.pop) &&
+            Modes.StackElem(mainMode, extendedMode || this.NONE, params, {});
+        if (push && this.topOfStack) {
+            if (this.topOfStack.params.save)
+                this.topOfStack.params.save(push);
+
             for (let [id, { obj, prop }] in Iterator(this.boundProperties)) {
                 if (!obj.get())
                     delete this.boundProperties(id);
                 else
-                    this.topOfStack[2][id] = { obj: obj.get(), prop: prop, value: obj.get()[prop] };
+                    this.topOfStack.saved[id] = { obj: obj.get(), prop: prop, value: obj.get()[prop] };
             }
+        }
 
-        silent = (silent || this._main == mainMode && this._extended == extendedMode);
+        let silent = this._main === mainMode && this._extended === extendedMode;
         // if a this._main mode is set, the this._extended is always cleared
         let oldMain = this._main, oldExtended = this._extended;
 
@@ -211,50 +182,38 @@ const Modes = Module("modes", {
         if (typeof mainMode === "number") {
             this._main = mainMode;
             if (!extendedMode)
-                this._extended = modes.NONE;
-
-            if (this._main != oldMain)
-                this._handleModeChange(oldMain, mainMode, oldExtended);
+                this._extended = this.NONE;
         }
-        if (mainMode != null && !(stack && stack.pop))
-            this._modeStack.push([this._main, this._extended, {}]);
+
+        if (push)
+            this._modeStack.push(push);
+
         dactyl.triggerObserver("modeChange", [oldMain, oldExtended], [this._main, this._extended], stack);
 
         if (!silent)
             this.show();
     },
 
-    push: function (mainMode, extendedMode, silent) {
-        this.set(mainMode, extendedMode, silent, { push: this.topOfStack });
+    push: function (mainMode, extendedMode, params) {
+        this.set(mainMode, extendedMode, params, { push: this.topOfStack });
     },
 
-    pop: function (silent) {
+    pop: function () {
         let a = this._modeStack.pop();
-        if (!this.topOfStack)
-            this.reset(silent);
-        else {
-            this.set(this.topOfStack[0], this.topOfStack[1], silent, { pop: a });
-            for (let [k, { obj, prop, value }] in Iterator(this.topOfStack[2]))
-                obj[prop] = value;
-        }
+        if (a.params.leave)
+            a.params.leave(this.topOfStack);
+
+        this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params, { pop: a });
+        if (this.topOfStack.params.restore)
+            this.topOfStack.params.restore(a);
+
+        for (let [k, { obj, prop, value }] in Iterator(this.topOfStack.saved))
+            obj[prop] = value;
     },
 
-    // TODO: Deprecate this in favor of addMode? --Kris
-    //       Ya --djk
-    setCustomMode: function (modestr, oneventfunc, stopfunc) {
-        // TODO this.plugin[id]... ('id' maybe submode or what..)
-        plugins.mode = modestr;
-        plugins.onEvent = oneventfunc;
-        plugins.stop = stopfunc;
-    },
-
-    // keeps recording state
-    reset: function (silent) {
-        this._modeStack = [];
-        if (config.isComposeWindow)
-            this.set(modes.COMPOSE, modes.NONE, silent);
-        else
-            this.set(modes.NORMAL, modes.NONE, silent);
+    reset: function () {
+        while (this._modeStack.length > 1)
+            this.pop();
     },
 
     remove: function (mode) {
@@ -282,8 +241,10 @@ const Modes = Module("modes", {
     get extended() this._extended,
     set extended(value) { this.set(null, value); }
 }, {
+    StackElem: Struct("main", "extended", "params", "saved"),
     cacheId: 0,
     boundProperty: function boundProperty(desc) {
+        desc = desc || {};
         let id = this.cacheId++, value;
         return Class.Property(update({
             enumerable: true,
@@ -295,8 +256,9 @@ const Modes = Module("modes", {
                     return val === undefined ? value : val;
                 },
                 set: function (val) {
-                    value = desc.set.call(this, val);
-                    value = value === undefined ? val : value;
+                    if (desc.set)
+                        value = desc.set.call(this, val);
+                    value = !desc.set || value === undefined ? val : value;
                     modes.save(id, this, prop)
                 }
             })

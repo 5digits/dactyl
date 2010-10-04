@@ -779,7 +779,7 @@ Class.prototype = {
         const self = this;
         let notify = { notify: function notify(timer) { callback.call(self) } };
         let timer = services.create("timer");
-        timer.initWithCallback(notify, timeout, timer.TYPE_ONE_SHOT);
+        timer.initWithCallback(notify, timeout || 0, timer.TYPE_ONE_SHOT);
         return timer;
     }
 };

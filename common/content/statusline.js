@@ -169,26 +169,31 @@ const StatusLine = Module("statusline", {
      *    A number n <= 0   - Displayed as a "Loading" message.
      *    Any other number  - The progress is cleared.
      */
-    updateProgress: function updateProgress(progress) {
-        if (!progress)
-            progress = "";
+    progress: Modes.boundProperty({
+        set: function setProgress(progress) {
+            if (!progress)
+                progress = "";
 
-        if (typeof progress == "string")
-            this.widgets.progress.value = progress;
-        else if (typeof progress == "number") {
-            let progressStr = "";
-            if (progress <= 0)
-                progressStr = "[ Loading...         ]";
-            else if (progress < 1) {
-                progress = Math.floor(progress * 20);
-                progressStr = "["
-                    + "====================".substr(0, progress)
-                    + ">"
-                    + "                    ".substr(0, 19 - progress)
-                    + "]";
+            if (typeof progress == "string")
+                this.widgets.progress.value = progress;
+            else if (typeof progress == "number") {
+                let progressStr = "";
+                if (progress <= 0)
+                    progressStr = "[ Loading...         ]";
+                else if (progress < 1) {
+                    progress = Math.floor(progress * 20);
+                    progressStr = "["
+                        + "====================".substr(0, progress)
+                        + ">"
+                        + "                    ".substr(0, 19 - progress)
+                        + "]";
+                }
+                this.widgets.progress.value = progressStr;
             }
-            this.widgets.progress.value = progressStr;
         }
+    }),
+    updateProgress: function updateProgress(progress) {
+        this.progress = progress;
     },
 
     /**

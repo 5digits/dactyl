@@ -224,15 +224,6 @@ const CommandLine = Module("commandline", {
         ////////////////////// TIMERS //////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////{{{
 
-        this._statusTimer = Timer(5, 100, function statusTell() {
-            if (self._completions == null)
-                return;
-            if (self._completions.selected == null)
-                statusline.updateProgress("");
-            else
-                statusline.updateProgress("match " + (self._completions.selected + 1) + " of " + self._completions.items.length);
-        });
-
         this._autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
             dactyl.trapErrors(function () {
                 if (!events.feedingKeys && self._completions && options["autocomplete"].length) {
@@ -241,6 +232,15 @@ const CommandLine = Module("commandline", {
                         self._completions.itemList.show();
                 }
             });
+        });
+
+        this._statusTimer = Timer(5, 100, function statusTell() {
+            if (self._completions == null)
+                return;
+            if (self._completions.selected == null)
+                statusline.progess = "";
+            else
+                statusline.progress = "match " + (self._completions.selected + 1) + " of " + self._completions.items.length;
         });
 
         // This timer just prevents <Tab>s from queueing up when the
@@ -253,6 +253,8 @@ const CommandLine = Module("commandline", {
                     self._completions.tab(event.shiftKey, event.altKey && options["altwildmode"]);
             });
         });
+
+        this._timers = [this._autocompleteTimer, this._statusTimer, this._tabTimer];
 
         /////////////////////////////////////////////////////////////////////////////}}}
         ////////////////////// VARIABLES ///////////////////////////////////////////////
@@ -273,8 +275,7 @@ const CommandLine = Module("commandline", {
         // we need to save the mode which were in before opening the command line
         // this is then used if we focus the command line again without the "official"
         // way of calling "open"
-        this._currentExtendedMode = null; // the extended mode which we last openend the command line for
-        this._currentCommand = null;
+        this.currentExtendedMode = null; // the extended mode which we last openend the command line for
 
         // save the arguments for the inputMultiline method which are needed in the event handler
         this._multilineEnd = null;
@@ -374,6 +375,10 @@ const CommandLine = Module("commandline", {
 
         dactyl.triggerObserver("echoMultiline", str, highlightGroup);
 
+        this._startHints = false;
+        if (!(modes.extended & modes.OUTPUT_MULTILINE))
+            modes.push(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
+
         // If it's already XML, assume it knows what it's doing.
         // Otherwise, white space is significant.
         // The problem elsewhere is that E4X tends to insert new lines
@@ -403,9 +408,6 @@ const CommandLine = Module("commandline", {
 
         win.focus();
 
-        this._startHints = false;
-        if (!(modes.extended & modes.OUTPUT_MULTILINE))
-            modes.set(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
         commandline.updateMorePrompt();
     },
 
@@ -483,11 +485,25 @@ const CommandLine = Module("commandline", {
         }
     },
 
-    hideCompletions: function hideCompletions() {
+    hideCompletions: function () {
         for (let nodeSet in values([this.widgets.statusbar, this.widgets.commandbar]))
             if (nodeSet.commandline._completionList)
                 nodeSet.commandline._completionList.hide();
     },
+
+    currentExtendedMode: Modes.boundProperty(),
+    _keepCommand: Modes.boundProperty(),
+
+    multilineInputVisible: Modes.boundProperty({
+        set: function (value) {
+            this.widgets.multilineInput.collapsed = !value;
+        }
+    }),
+    multilineOutputVisible: Modes.boundProperty({
+        set: function (value) {
+            this.widgets.mowContainer.collapsed = !value;
+        }
+    }),
 
     /**
      * Open the command line. The main mode is set to
@@ -500,13 +516,14 @@ const CommandLine = Module("commandline", {
      * @param {number} extendedMode
      */
     open: function open(prompt, cmd, extendedMode) {
-        // save the current prompts, we need it later if the command widget
-        // receives focus without calling the this.open() method
-        this._currentCommand = cmd || "";
-        this._currentExtendedMode = extendedMode || null;
-        this._keepCommand = false;
+        modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
+            leave: function (newMode) {
+                commandline.leave(newMode);
+            }
+        });
 
-        modes.set(modes.COMMAND_LINE, this._currentExtendedMode);
+        this.currentExtendedMode = extendedMode || null;
+        this._keepCommand = false;
 
         this.widgets.active.commandline.collapsed = false;
         this.widgets.prompt = prompt;
@@ -517,44 +534,27 @@ const CommandLine = Module("commandline", {
 
         // open the completion list automatically if wanted
         if (cmd.length)
-            commandline.triggerCallback("change", this._currentExtendedMode, cmd);
+            commandline.triggerCallback("change", this.currentExtendedMode, cmd);
     },
 
     /**
-     * Closes the command line. This is ordinarily triggered automatically
-     * by a mode change. Will not hide the command line immediately if
-     * called directly after a successful command, otherwise it will.
+     * Called when leaving a command-line mode.
      */
-    close: function close() {
-        let mode = this._currentExtendedMode;
-        this._currentExtendedMode = null;
-        commandline.triggerCallback("cancel", mode);
+    leave: function leave() {
+        commandline.triggerCallback("cancel", this.currentExtendedMode);
 
+        this._timers.forEach(function (timer) timer.reset());
         if (this._completions)
             this._completions.previewClear();
         if (this._history)
             this._history.save();
-
         this.resetCompletions(); // cancels any asynchronous completion still going on, must be before we set completions = null
-        this._completions = null;
-        this._history = null;
-
-        statusline.updateProgress(""); // we may have a "match x of y" visible
-        dactyl.focusContent(false);
-
-        this.widgets.multilineInput.collapsed = true;
         this.hideCompletions();
 
         if (!this._keepCommand || this._silent || this._quiet) {
-            this.widgets.mowContainer.collapsed = true;
             commandline.updateMorePrompt();
             this.hide();
         }
-        if (!this.widgets.mowContainer.collapsed) {
-            modes.set(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
-            commandline.updateMorePrompt();
-        }
-        this._keepCommand = false;
     },
 
     get command() {
@@ -573,6 +573,8 @@ const CommandLine = Module("commandline", {
             this.widgets.message = null;
         if (modes.main != modes.COMMAND_LINE)
             this.widgets.command = null;
+        if (modes.extended != modes.OUTPUT_MULTILINE)
+            this.multilineOutputVisible = false;
     },
 
     /**
@@ -689,8 +691,16 @@ const CommandLine = Module("commandline", {
             cancel: extra.onCancel
         };
 
-        modes.push(modes.COMMAND_LINE, modes.PROMPT);
-        this._currentExtendedMode = modes.PROMPT;
+        modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended, {
+            leave: function (newMode) {
+                commandline.leave(newMode);
+                if (extra.leave)
+                    extra.leave(newMode);
+            },
+            restore: function (newMode) { extra.restore && extra.restore(newMode) },
+            save: function (newMode) { extra.save && extra.save(newMode) }
+        });
+        this.currentExtendedMode = modes.PROMPT;
 
         this.widgets.prompt = !prompt ? null : [extra.promptHighlight || "Question", prompt];
         this.widgets.command = extra.default || "";
@@ -728,7 +738,7 @@ const CommandLine = Module("commandline", {
         this._multilineEnd = "\n" + end + "\n";
         this._multilineCallback = callbackFunc;
 
-        this.widgets.multilineInput.collapsed = false;
+        this.multilineInputVisible = true;
         this.widgets.multilineInput.value = "";
         this._autosizeMultilineInputWidget();
 
@@ -762,22 +772,22 @@ const CommandLine = Module("commandline", {
             }
             else if (event.type == "input") {
                 this.resetCompletions();
-                commandline.triggerCallback("change", this._currentExtendedMode, command);
+                commandline.triggerCallback("change", this.currentExtendedMode, command);
             }
             else if (event.type == "keypress") {
                 let key = events.toString(event);
                 if (this._completions)
                     this._completions.previewClear();
-                if (!this._currentExtendedMode)
+                if (!this.currentExtendedMode)
                     return;
 
                 // user pressed <Enter> to carry out a command
                 // user pressing <Esc> is handled in the global onEscape
                 // FIXME: <Esc> should trigger "cancel" event
                 if (events.isAcceptKey(key)) {
-                    let mode = this._currentExtendedMode; // save it here, as modes.pop() resets it
                     this._keepCommand = userContext.hidden_option_command_afterimage;
-                    this._currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
+                    let mode = this.currentExtendedMode;
+                    this.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
                     modes.pop();
                     commandline.triggerCallback("submit", mode, command);
                 }
@@ -804,7 +814,7 @@ const CommandLine = Module("commandline", {
 
                     // and blur the command line if there is no text left
                     if (command.length == 0) {
-                        commandline.triggerCallback("cancel", this._currentExtendedMode);
+                        commandline.triggerCallback("cancel", this.currentExtendedMode);
                         modes.pop();
                     }
                 }
@@ -838,14 +848,13 @@ const CommandLine = Module("commandline", {
                 let index = text.indexOf(this._multilineEnd);
                 if (index >= 0) {
                     text = text.substring(1, index);
+                    let callback = this._multilineCallback;
                     modes.pop();
-                    this.widgets.multilineInput.collapsed = true;
-                    this._multilineCallback.call(this, text);
+                    callback.call(this, text);
                 }
             }
             else if (events.isCancelKey(key)) {
                 modes.pop();
-                this.widgets.multilineInput.collapsed = true;
             }
         }
         else if (event.type == "blur") {
@@ -1117,7 +1126,7 @@ const CommandLine = Module("commandline", {
             0);
 
         doc.body.style.minWidth = "";
-        this.widgets.mowContainer.collapsed = false;
+        this.multilineOutputVisible = true;
     },
 
     resetCompletions: function resetCompletions() {
@@ -1185,7 +1194,7 @@ const CommandLine = Module("commandline", {
          */
         replace: function (val) {
             this.input.value = val;
-            commandline.triggerCallback("change", commandline._currentExtendedMode, val, "history");
+            commandline.triggerCallback("change", commandline.currentExtendedMode, val, "history");
         },
 
         /**
@@ -1299,7 +1308,7 @@ const CommandLine = Module("commandline", {
         complete: function complete(show, tabPressed) {
             this.context.reset();
             this.context.tabPressed = tabPressed;
-            commandline.triggerCallback("complete", commandline._currentExtendedMode, this.context);
+            commandline.triggerCallback("complete", commandline.currentExtendedMode, this.context);
             this.context.updateAsync = true;
             this.reset(show, tabPressed);
             this.wildIndex = 0;

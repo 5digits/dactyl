@@ -16,6 +16,28 @@ const Editor = Module("editor", {
         //
         this._lastFindChar = null;
         this._lastFindCharFunc = null;
+
+        // Hack?
+        dactyl.registerObserver("modeChange", function (oldMode, newMode, stack) {
+            switch (oldMode[0]) {
+            case modes.TEXTAREA:
+            case modes.INSERT:
+                editor.unselectText();
+                break;
+
+            case modes.VISUAL:
+                if (newMode[0] == modes.CARET) {
+                    try { // clear any selection made; a simple if (selection) does not work
+                        let selection = window.content.getSelection();
+                        selection.collapseToStart();
+                    }
+                    catch (e) {}
+                }
+                else
+                    editor.unselectText();
+                break;
+            }
+        });
     },
 
     line: function () {
