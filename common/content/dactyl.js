@@ -617,7 +617,7 @@ const Dactyl = Module("dactyl", {
     },
 
     /**
-     * Generates a help entry.
+     * Generates a help entry and writes it to the clipboard.
      *
      * @param {Command|Map|Option} obj A dactyl <b>Command</b>,
      *     <b>Map</b> or <b>Option</b> object
@@ -642,7 +642,7 @@ const Dactyl = Module("dactyl", {
         let br = <>
                     </>;
 
-        return <>
+        dactyl.clipboardWrite(<>
             <item>
                 <tags>{template.map(obj.names, tag, " ")}</tags>
                 <spec>{spec((obj.specs || obj.names)[0])}</spec>{
@@ -654,7 +654,7 @@ const Dactyl = Module("dactyl", {
                         extraHelp ? br+extraHelp : "" }{
                         !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }
                 </description>
-            </item></>.toXMLString();
+            </item></>.toXMLString(), true);
     },
 
 

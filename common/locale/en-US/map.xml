@@ -349,19 +349,19 @@
 </item>
 
 <item>
-    <tags><![CDATA[<Leader> mapleader \]]></tags>
+    <tags><![CDATA[<Leader> \]]></tags>
     <strut/>
     <spec>&lt;Leader></spec>
     <description>
         <p>
-            Expands to the value of the ‘mapleader’ variable in key mapping. If
-            ‘mapleader’ is unset or empty then ‘\’ is used. For example, by default,
+            A pseudo-key which expands to the value of the <o>mapleader</o>
+            option. For example, by default,
         </p>
         <code><ex>:map <k name="Leader"/>h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
         <p>works like</p>
         <code><ex>:map \h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
         <p>but after</p>
-        <code><ex>:let mapleader = <str>,</str></ex></code>
+        <code><ex>:set mapleader=<str>,</str></ex></code>
         <p>it works like</p>
         <code><ex>:map ,h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
     </description>

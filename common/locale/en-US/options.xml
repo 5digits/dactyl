@@ -926,6 +926,16 @@
 </item>
 
 <item>
+    <tags>'ml' 'mapleader'</tags>
+    <spec>'mapleader'</spec>
+    <type>string</type>
+    <default>\</default>
+    <description>
+        <p>Defines the replacement keys for the <k name="Leader"/> pseudo-key.</p>
+    </description>
+</item>
+
+<item>
     <tags>'maxitems'</tags>
     <spec>'maxitems'</spec>
     <type>number</type>

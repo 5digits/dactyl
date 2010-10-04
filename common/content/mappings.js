@@ -174,7 +174,7 @@ const Mappings = Module("mappings", {
         }
     },
 
-    _expandLeader: function (keyString) keyString.replace(/<Leader>/i, mappings.mapLeader),
+    _expandLeader: function (keyString) keyString.replace(/<Leader>/i, options["mapleader"]),
 
     // Return all mappings present in all @modes
     _mappingsIterator: function (modes, stack) {
@@ -288,15 +288,6 @@ const Mappings = Module("mappings", {
 
         return matches;
     },
-
-    /*
-     * @property {string} The map leader string used to replace the special
-     *     token "<Leader>" when user mappings are defined.
-     */
-    get mapLeader() dactyl.globalVariables["mapleader"] || "\\",
-    /** @deprecated */
-    getMapLeader: function () this.mapLeader,
-
 
     /**
      * Returns whether there is a user-defined mapping <b>cmd</b> for the
@@ -589,6 +580,11 @@ const Mappings = Module("mappings", {
             this._main[mode] = [];
             this._user[mode] = [];
         }
+    },
+    options: function () {
+        options.add(["mapleader", "ml"],
+            "Defines the replacement keys for the <Leader> pseudo-key",
+            "string", "\\");
     }
 });
 

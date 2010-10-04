@@ -46,6 +46,8 @@
     * IMPORTANT: 'extendedhinttags' is now a regexmap rather than a
       string.
     * IMPORTANT: 'guioptions' default value has changed.
+    * IMPORTANT: 'mapleader' is now an option rather than a :let
+      variable.
     * Added g; continued extended hint mode and removed ;F
     * Added "bookmarks", "diverted", and "links" to 'activate'
       option
