@@ -983,7 +983,7 @@ const Buffer = Module("buffer", {
             let webNav = window.getWebNavigation();
             try {
                 webNav = doc.defaultView.QueryInterface(Ci.nsIInterfaceRequestor)
-                            .getInterface(nsIWebNavigation);
+                            .getInterface(Ci.nsIWebNavigation);
             }
             catch (e) {}
             let descriptor = null;
@@ -1007,14 +1007,14 @@ const Buffer = Module("buffer", {
                             .QueryInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsIWebPageDescriptor)
                             .QueryInterface(Ci.nsIWebProgress);
                     this.docShell.create();
-                    this.docShell.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
-                    this.docShell.loadPage(descriptor, Ci.nsIWebPageDescriptor.DISPLAY_AS_SOURCE);
+                    this.docShell.addProgressListener(this, this.docShell.NOTIFY_STATE_DOCUMENT);
+                    this.docShell.loadPage(descriptor, this.docShell.DISPLAY_AS_SOURCE);
                 }
                 else {
                     this.file = io.createTempFile();
                     var webBrowserPersist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
                             .createInstance(Ci.nsIWebBrowserPersist);
-                    webBrowserPersist.persistFlags = Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+                    webBrowserPersist.persistFlags = webBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
                     webBrowserPersist.progressListener = this;
                     webBrowserPersist.saveURI(uri, null, null, null, null, this.file);
                 }
