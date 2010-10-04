@@ -100,7 +100,6 @@
             <li tag=";t"><em>t</em> to open its location in a new tab</li>
             <li tag=";b"><em>b</em> to open its location in a new background tab</li>
             <li tag=";w"><em>w</em> to open its destination in a new window</li>
-            <li tag=";F"><em>F</em> to follow a sequence of <k name="CR"/>-delimited hints in background tabs</li>
             <li tag=";O"><em>O</em> to generate an <ex>:open</ex> with hint's URL (like <k>;O</k>)</li>
             <li tag=";T"><em>T</em> to generate a <ex>:tabopen</ex> with hint's URL (like <k>;T</k>)</li>
             <li tag=";W"><em>W</em> to generate a <ex>:winopen</ex> with hint's URL</li>
@@ -118,6 +117,21 @@
             option is used to choose the highlighted elements,
             unless an override can be found in
             <o>extendedhinttags</o>.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>g;</tags>
+    <strut/>
+    <spec>g;<a>mode</a><a>hint</a></spec>
+    <description>
+        <p>
+            Start an extended hint mode and stay there until
+            <k name="Esc"/> is pressed. Like <k>;</k>, except that
+            after a hint is selected, hints remain visible so that
+            another one can be selected with the same action as the
+            first.
         </p>
     </description>
 </item>

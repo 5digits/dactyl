@@ -54,7 +54,6 @@ const Hints = Module("hints", {
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
         this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
-        this.addMode("F", "Open multiple hints in tabs",          function (elem, l, c, top) { buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB); hints.show("F", null, top); });
         this.addMode("O", "Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
         this.addMode("T", "Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
         this.addMode("W", "Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
@@ -72,12 +71,7 @@ const Hints = Module("hints", {
      */
     _reset: function (slight) {
         if (!slight) {
-            statusline.updateInputBuffer("");
-            this._hintString = "";
-            this._hintNumber = 0;
-            this._usedTabKey = false;
-            this.prevInput = "";
-            this.escNumbers = false;
+            this.__reset();
             this._canUpdate = false;
         }
         this._pageHints = [];
@@ -87,6 +81,15 @@ const Hints = Module("hints", {
         if (this._activeTimeout)
             this._activeTimeout.cancel();
         this._activeTimeout = null;
+    },
+    __reset: function () {
+        statusline.updateInputBuffer("");
+        this._hintString = "";
+        this._hintNumber = 0;
+        this._usedTabKey = false;
+        this.prevInput = "";
+        this.escNumbers = false;
+        commandline.command = "";
     },
 
     /**
@@ -245,7 +248,7 @@ const Hints = Module("hints", {
      */
     _generate: function (win) {
         if (!win)
-            win = window.content;
+            win = this._top;
 
         let doc = win.document;
         let height = win.innerHeight;
@@ -473,15 +476,21 @@ const Hints = Module("hints", {
         let activeIndex = (this._hintNumber ? this._hintNumber - 1 : 0);
         let elem = this._validHints[activeIndex];
         let top = this._top;
-        this._removeHints(timeout);
-
-        if (timeout == 0)
-            // force a possible mode change, based on whether an input field has focus
-            events.onFocusChange();
+        if (this._continue) {
+            this.__reset();
+            this._showHints();
+        }
+        else {
+            this._removeHints(timeout);
+            if (timeout == 0)
+                // force a possible mode change, based on whether an input field has focus
+                events.onFocusChange();
+        }
 
         this.timeout(function () {
-            if (modes.extended & modes.HINTS)
+            if ((modes.extended & modes.HINTS) && !this._continue)
                 modes.pop();
+            commandline._lastEcho = null; // Hack.
             this._hintMode.action(elem, elem.href || "", this._extendedhintCount, top);
         }, timeout);
         return true;
@@ -746,10 +755,10 @@ const Hints = Module("hints", {
      * Updates the display of hints.
      *
      * @param {string} minor Which hint mode to use.
-     * @param {string} filter The filter to use.
-     * @param {Object} win The window in which we are showing hints.
+     * @param {Object} opts Extra options.
      */
-    show: function (minor, filter, win) {
+    show: function (minor, opts) {
+        opts = opts || {};
         this._hintMode = this._hintModes[minor];
         dactyl.assert(this._hintMode);
 
@@ -762,16 +771,17 @@ const Hints = Module("hints", {
 
         this.hintKeys = events.fromString(options["hintkeys"]).map(events.closure.toString);
         this._submode = minor;
-        this._hintString = filter || "";
+        this._hintString = opts.filter || "";
         this._hintNumber = 0;
         this._usedTabKey = false;
         this.prevInput = "";
         this._canUpdate = false;
+        this._continue = Boolean(opts.continue);
 
-        this._top = win || content;
+        this._top = opts.window || window.content;
         this._top.addEventListener("resize", this._resizeTimer.closure.tell, true);
 
-        this._generate(win);
+        this._generate();
 
         // get all keys from the input queue
         util.threadYield(true);
@@ -783,7 +793,7 @@ const Hints = Module("hints", {
             dactyl.beep();
             modes.pop();
         }
-        else if (this._validHints.length == 1)
+        else if (this._validHints.length == 1 && !this._continue)
             this._processHints(false);
         else // Ticket #185
             this._checkUnique();
@@ -1034,22 +1044,31 @@ const Hints = Module("hints", {
         // does. --tpp
         mappings.add(myModes, ["F"],
             "Start QuickHint mode, but open link in a new tab",
-            function () { hints.show(options.getPref("browser.tabs.loadInBackground") ? "b" : "t"); });
+            function () { hints.show(options.get("activate").has("links") ? "t" : "b"); });
+
+        function inputOpts(opts) ({
+            promptHighlight: "Normal",
+            completer: function (context) {
+                context.compare = function () 0;
+                context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints._hintModes))];
+            },
+            onAccept: function (arg) { arg && util.timeout(function () hints.show(arg, opts), 0); },
+            onChange: function () { modes.pop(); },
+            onCancel: function (arg) { arg && util.timeout(function () hints.show(arg, opts), 0); }
+        });
 
         mappings.add(myModes, [";"],
             "Start an extended hint mode",
             function (count) {
                 this._extendedhintCount = count;
-                commandline.input(";", null,
-                    {
-                        promptHighlight: "Normal",
-                        completer: function (context) {
-                            context.compare = function () 0;
-                            context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints._hintModes))];
-                        },
-                        onChange: function () { modes.pop(); },
-                        onCancel: function (arg) { arg && util.timeout(function () hints.show(arg), 0); }
-                    });
+                commandline.input(";", null, inputOpts());
+            }, { count: true });
+
+        mappings.add(myModes, ["g;"],
+            "Start an extended hint mode and stay there until <Esc> is pressed",
+            function (count) {
+                this._extendedhintCount = count;
+                commandline.input("g;", null, inputOpts({ continue: true }));
             }, { count: true });
     },
     options: function () {

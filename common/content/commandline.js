@@ -685,7 +685,7 @@ const CommandLine = Module("commandline", {
         extra = extra || {};
 
         this._input = {
-            submit: callback,
+            submit: callback || extra.onAccept,
             change: extra.onChange,
             complete: extra.completer,
             cancel: extra.onCancel
@@ -924,7 +924,7 @@ const CommandLine = Module("commandline", {
         if (this._startHints) {
             statusline.updateInputBuffer("");
             this._startHints = false;
-            hints.show(key, undefined, win);
+            hints.show(key, { window: win });
             return;
         }
 

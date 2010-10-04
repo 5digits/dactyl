@@ -46,6 +46,7 @@
     * IMPORTANT: 'extendedhinttags' is now a regexmap rather than a
       string.
     * IMPORTANT: 'guioptions' default value has changed.
+    * Added g; continued extended hint mode and removed ;F
     * Added "bookmarks", "diverted", and "links" to 'activate'
       option
     * Added 'altwildmode' and <A-Tab> command-line key binding.
