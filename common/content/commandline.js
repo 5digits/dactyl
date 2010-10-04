@@ -225,7 +225,7 @@ const CommandLine = Module("commandline", {
         /////////////////////////////////////////////////////////////////////////////{{{
 
         this._autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
-            dactyl.trapErrors(function () {
+            dactyl.trapErrors(function _autocompleteTell() {
                 if (!events.feedingKeys && self._completions && options["autocomplete"].length) {
                     self._completions.complete(true, false);
                     if (self._completions)
@@ -492,6 +492,8 @@ const CommandLine = Module("commandline", {
     },
 
     currentExtendedMode: Modes.boundProperty(),
+    _completions: Modes.boundProperty(),
+    _history: Modes.boundProperty(),
     _lastClearable: Modes.boundProperty(),
     _keepCommand: Modes.boundProperty(),
 
