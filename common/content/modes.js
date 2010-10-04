@@ -156,7 +156,7 @@ const Modes = Module("modes", {
     set: function (mainMode, extendedMode, params, stack) {
         params = params || {};
 
-        if (!stack && mainMode != null)
+        if (!stack && mainMode != null && this._modeStack.length > 1)
             this.reset();
 
         let push = mainMode != null && !(stack && stack.pop) &&

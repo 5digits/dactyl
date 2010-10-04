@@ -492,6 +492,7 @@ const CommandLine = Module("commandline", {
     },
 
     currentExtendedMode: Modes.boundProperty(),
+    _lastClearable: Modes.boundProperty(),
     _keepCommand: Modes.boundProperty(),
 
     multilineInputVisible: Modes.boundProperty({
