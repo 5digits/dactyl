@@ -14,6 +14,12 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 let objproto = Object.prototype;
 let hasOwnProperty = objproto.hasOwnProperty;
 
+if (!XPCNativeWrapper.unwrap)
+    XPCNativeWrapper.unwrap = function (obj) {
+        if (hasOwnProperty.call(obj, "wrappedJSObject"))
+            return obj.wrappedJSObject;
+        return obj;
+    }
 if (!Object.create)
     Object.create = function (proto, props) {
         let obj = { __proto__: proto };
