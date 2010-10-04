@@ -25,6 +25,19 @@ const FailedAssertion = Class("FailedAssertion", Error, {
     }
 });
 
+deprecated.seen = {};
+function deprecated(fn)
+    function deprecatedMethod() {
+        let frame = Components.stack.caller;
+        let caller = frame.filename + ":" + frame.lineNumber;
+        if (frame.filename != "chrome://dactyl/content/javascript.js" &&
+            !set.add(deprecated.seen, caller))
+            dactyl.echoerr(caller + ": " +
+                (this.className || this.constructor.className) + "." + fn.name +
+                " is deprecated");
+        return fn.apply(this, arguments);
+    }
+
 const Dactyl = Module("dactyl", {
     init: function () {
         window.dactyl = this;
@@ -689,7 +702,10 @@ const Dactyl = Module("dactyl", {
      *
      * These are set and accessed with the "g:" prefix.
      */
-    globalVariables: {},
+    _globalVariables: {},
+    globalVariables: Class.Property({
+        get: deprecated(function globalVariables() this._globalVariables)
+    }),
 
     loadPlugins: function () {
         function sourceDirectory(dir) {

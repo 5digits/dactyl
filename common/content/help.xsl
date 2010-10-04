@@ -406,6 +406,14 @@
         <span dactyl:highlight="HelpOptionalArg">[<xsl:apply-templates select="@*|node()" mode="help-1"/>]</span>
     </xsl:template>
 
+    <xsl:template match="dactyl:deprecated" mode="help-2">
+        <p style="clear: both;">
+            <xsl:apply-templates select="@*" mode="help-1"/>
+            <span dactyl:highlight="HelpWarning">Deprecated:</span>
+            <xsl:text> </xsl:text>
+            <xsl:apply-templates select="node()" mode="help-1"/>
+        </p>
+    </xsl:template>
     <xsl:template match="dactyl:note" mode="help-2">
         <p style="clear: both;">
             <xsl:apply-templates select="@*" mode="help-1"/>

@@ -974,7 +974,7 @@ const Buffer = Module("buffer", {
      * Portions copyright Kris Maglione licensable under the
      * MIT license.
      */
-    viewSourceExternally: Class("viewSourceExternally", 
+    viewSourceExternally: Class("viewSourceExternally",
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function (doc) {
             let url = isString(doc) ? doc : doc.location.href;

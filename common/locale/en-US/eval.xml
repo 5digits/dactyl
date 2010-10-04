@@ -140,6 +140,9 @@
     <spec>:let <a>var-name</a></spec>
     <spec>:let</spec>
     <description>
+        <deprecated>All scripts which make use of <ex>:let</ex> should be
+            updated to use the simpler and more powerful options system
+            instead.</deprecated>
         <p>
             Sets or lists a variable. Sets the variable <a>var-name</a> to the value of the
             expression <a>expr1</a>. If no expression is given, the value of the variable is
@@ -153,6 +156,9 @@
     <tags>:unl :unlet</tags>
     <spec>:unl<oa>et</oa><oa>!</oa> <a>name</a> …</spec>
     <description>
+        <deprecated>All scripts which make use of <ex>:let</ex> should be
+            updated to use the simpler and more powerful options system
+            instead.</deprecated>
         <p>
             Deletes the named variables. When <oa>!</oa> is given, no error
             message is output for non-existing variables.

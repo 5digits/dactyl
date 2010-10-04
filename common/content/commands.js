@@ -131,6 +131,11 @@ const Command = Class("Command", {
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
     execute: function (args, modifiers) {
+        if (this.deprecated) {
+            let loc = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
+            dactyl.echoerr(loc + ":" + this.name + " is deprecated");
+        }
+
         let self = this;
         modifiers = modifiers || {};
 

@@ -1246,6 +1246,7 @@ const Options = Module("options", {
         commands.add(["let"],
             "Set or list a variable",
             function (args) {
+                let globalVariables = dactyl._globalVariables;
                 args = (args[0] || "").trim();
                 function fmt(value) (typeof value == "number"   ? "#" :
                                      typeof value == "function" ? "*" :
@@ -1254,7 +1255,7 @@ const Options = Module("options", {
                     let str =
                         <table>
                         {
-                            template.map(dactyl.globalVariables, function ([i, value]) {
+                            template.map(globalVariables, function ([i, value]) {
                                 return <tr>
                                             <td style="width: 200px;">{i}</td>
                                             <td>{fmt(value)}</td>
@@ -1276,11 +1277,11 @@ const Options = Module("options", {
 
                     dactyl.assert(scope == "g:" || scope == null,
                         "E461: Illegal variable name: " + scope + name);
-                    dactyl.assert(dactyl.globalVariables.hasOwnProperty(name) || (expr && !op),
+                    dactyl.assert(globalVariables.hasOwnProperty(name) || (expr && !op),
                         "E121: Undefined variable: " + fullName);
 
                     if (!expr)
-                        dactyl.echo(fullName + "\t\t" + fmt(dactyl.globalVariables[name]));
+                        dactyl.echo(fullName + "\t\t" + fmt(globalVariables[name]));
                     else {
                         try {
                             var newValue = dactyl.userEval(expr);
@@ -1291,7 +1292,7 @@ const Options = Module("options", {
 
                         let value = newValue;
                         if (op) {
-                            value = dactyl.globalVariables[name];
+                            value = globalVariables[name];
                             if (op == "+")
                                 value += newValue;
                             else if (op == "-")
@@ -1299,13 +1300,14 @@ const Options = Module("options", {
                             else if (op == ".")
                                 value += String(newValue);
                         }
-                        dactyl.globalVariables[name] = value;
+                        globalVariables[name] = value;
                     }
                 }
                 else
                     dactyl.echoerr("E18: Unexpected characters in :let");
             },
             {
+                deprecated: true,
                 literal: 0
             }
         );
@@ -1386,7 +1388,8 @@ const Options = Module("options", {
             },
             {
                 argCount: "+",
-                bang: true
+                bang: true,
+                deprecated: true
             });
     },
     completion: function () {
