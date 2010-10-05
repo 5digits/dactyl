@@ -1307,7 +1307,7 @@ const Options = Module("options", {
                     dactyl.echoerr("E18: Unexpected characters in :let");
             },
             {
-                deprecated: true,
+                deprecated: "Please use the options system instead",
                 literal: 0
             }
         );
@@ -1389,7 +1389,7 @@ const Options = Module("options", {
             {
                 argCount: "+",
                 bang: true,
-                deprecated: true
+                deprecated: "Please use the options system instead"
             });
     },
     completion: function () {

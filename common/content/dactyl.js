@@ -25,16 +25,14 @@ const FailedAssertion = Class("FailedAssertion", Error, {
     }
 });
 
-deprecated.seen = {};
-function deprecated(fn)
+deprecated.seen = { "chrome://dactyl/content/javascript.js": true };
+function deprecated(reason, fn)
     function deprecatedMethod() {
         let frame = Components.stack.caller;
-        let caller = frame.filename + ":" + frame.lineNumber;
-        if (frame.filename != "chrome://dactyl/content/javascript.js" &&
-            !set.add(deprecated.seen, caller))
-            dactyl.echoerr(caller + ": " +
+        if (!set.add(deprecated.seen, frame.filename))
+            dactyl.echoerr(frame.filename + ":" + frame.lineNumber + ": " +
                 (this.className || this.constructor.className) + "." + fn.name +
-                " is deprecated");
+                " is deprecated: " + reason);
         return fn.apply(this, arguments);
     }
 
@@ -691,7 +689,8 @@ const Dactyl = Module("dactyl", {
      */
     _globalVariables: {},
     globalVariables: Class.Property({
-        get: deprecated(function globalVariables() this._globalVariables)
+        get: deprecated("Please use the options system instead",
+            function globalVariables() this._globalVariables)
     }),
 
     loadPlugins: function () {

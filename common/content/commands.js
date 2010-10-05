@@ -131,9 +131,10 @@ const Command = Class("Command", {
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
     execute: function (args, modifiers) {
-        if (this.deprecated) {
+        if (this.deprecated && !set.add(this.complained, io.sourcing ? io.sourcing.file : "[Command Line]")) {
             let loc = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
-            dactyl.echoerr(loc + ":" + this.name + " is deprecated");
+            dactyl.echoerr(loc + ":" + this.name + " is deprecated" +
+                           (isString(this.deprecated) ? ": " + this.deprecated : ""));
         }
 
         let self = this;
@@ -179,6 +180,8 @@ const Command = Class("Command", {
         complete: complete,
         extra: extra
     }),
+
+    complained: Class.memoize(function () ({})),
 
     /**
      * @property {string[]} All of this command's name specs. e.g., "com[mand]"
