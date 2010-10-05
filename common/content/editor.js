@@ -348,28 +348,45 @@ const Editor = Module("editor", {
                     tmpBg = "yellow";
                     textBox.style.backgroundColor = "#bbbbbb";
                 }
+                else
+                    var editor = GetCurrentEditor();
 
                 if (!tmpfile.write(text))
                     throw Error("Input contains characters not valid in the current " +
                                 "file encoding");
 
-                this.editFileExternally(tmpfile.path);
+                let lastUpdate = Date.now();
+                function update(force) {
+                    if (force !== true && tmpfile.lastModifiedTime <= lastUpdate)
+                        return;
+                    lastUpdate = Date.now();
 
+                    let val = tmpfile.read();
+                    if (textBox)
+                        textBox.value = val;
+                    else {
+                        let wholeDocRange = editor.document.createRange();
+                        let rootNode = editor.rootElement.QueryInterface(Ci.nsIDOMNode);
+                        wholeDocRange.selectNodeContents(rootNode);
+                        editor.selection.addRange(wholeDocRange);
+                        editor.selection.deleteFromDocument();
+                        editor.insertText(val);
+                    }
+                }
+
+                let timer = services.create("timer");
+                timer.initWithCallback({ notify: update }, 100, timer.TYPE_REPEATING_SLACK);
+
+                try {
+                    this.editFileExternally(tmpfile.path);
+                } finally {
+                    timer.cancel();
+                }
+
+                update(true);
                 if (textBox)
                     textBox.removeAttribute("readonly");
 
-                let val = tmpfile.read();
-                if (textBox)
-                    textBox.value = val;
-                else {
-                    let editor = GetCurrentEditor();
-                    let wholeDocRange = editor.document.createRange();
-                    let rootNode = editor.rootElement.QueryInterface(Ci.nsIDOMNode);
-                    wholeDocRange.selectNodeContents(rootNode);
-                    editor.selection.addRange(wholeDocRange);
-                    editor.selection.deleteFromDocument();
-                    editor.insertText(val);
-                }
             }, this);
             if (res == false)
                 throw Error("Couldn't create temporary file");

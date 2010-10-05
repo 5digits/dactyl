@@ -1037,8 +1037,11 @@ const Buffer = Module("buffer", {
                         this.file = io.createTempFile();
                         this.file.write(this.docShell.document.body.textContent);
                     }
-                    this.callback(this.file);
-                    this.file.remove(false);
+                    try {
+                        this.callback(this.file);
+                    } finally {
+                        this.file.remove(false);
+                    }
                 }
                 finally {
                     this.destroy();
