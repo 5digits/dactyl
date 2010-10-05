@@ -760,7 +760,7 @@ const CommandLine = Module("commandline", {
 
         for (let [, node] in iter(event.target.childNodes)) {
             let group = node.getAttributeNS(NS, "group");
-            node.hidden = group && !groups.split(/\s+/).some(function (g) enabled[g]);
+            node.hidden = group && !group.split(/\s+/).some(function (g) enabled[g]);
         }
         return true;
     },
