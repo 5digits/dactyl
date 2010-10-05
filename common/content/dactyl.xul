@@ -37,10 +37,16 @@
                    noautohide="true" noautofocus="true"/>
 
             <menupopup id="dactyl-contextmenu"
-                       onpopupshowing="return event.target != this || document.popupNode instanceof HTMLAnchorElement;">
+                       onpopupshowing="return (event.target != this || dactyl.modules.commandline.onContext(event));">
                 <menuitem id="dactyl-context-copylink"
-                          label="Copy Link Location"
+                          label="Copy Link Location" dactyl:group="link"
                           oncommand="goDoCommand('cmd_copyLink');"/>
+                <menuitem id="dactyl-context-copy"
+                          label="Copy" dactyl:group="selection"
+                          command="cmd_copy"/>
+                <menuitem id="dactyl-context-selectall"
+                          label="Select All"
+                          command="cmd_selectAll"/>
             </menupopup>
         </popupset>
 

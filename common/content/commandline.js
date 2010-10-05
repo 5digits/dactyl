@@ -149,8 +149,10 @@ const CommandWidgets = Class("CommandWidgets", {
     multilineOutput: Class.memoize(function () {
         let elem = document.getElementById("dactyl-multiline-output");
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
-        document.getElementById("dactyl-context-copylink").style.listStyleImage =
-            util.computedStyle(document.getElementById("context-copylink")).listStyleImage;
+        ["copy", "copylink", "selectall"].forEach(function (id) {
+            document.getElementById("dactyl-context-" + id).style.listStyleImage =
+                util.computedStyle(document.getElementById("context-" + id)).listStyleImage;
+        });
         return elem;
     }),
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
@@ -746,6 +748,19 @@ const CommandLine = Module("commandline", {
         this._autosizeMultilineInputWidget();
 
         this.timeout(function () { this.widgets.multilineInput.focus(); }, 10);
+    },
+
+    onContext: function onContext(event) {
+        let enabled = {
+            link: window.document.popupNode instanceof HTMLAnchorElement,
+            selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
+        };
+
+        for (let [, node] in iter(event.target.childNodes)) {
+            let group = node.getAttributeNS(NS, "group");
+            node.hidden = group && !groups.split(/\s+/).some(function (g) enabled[g]);
+        }
+        return true;
     },
 
     /**
