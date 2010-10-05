@@ -1335,10 +1335,14 @@ const Buffer = Module("buffer", {
 
                     if (/^>>/.test(filename)) {
                         let file = io.File(filename.replace(/^>>\s*/, ""));
-                        dactyl.assert(file.exists() && file.isWritable(), file.path.quote() + ": E212: Can't open file for writing");
+                        dactyl.assert(args.bang || file.exists() && file.isWritable(), file.path.quote() + ": E212: Can't open file for writing");
                         return buffer.viewSourceExternally(buffer.focusedFrame.document,
                             function (tmpFile) {
-                                file.write(tmpFile.read(), ">>");
+                                try {
+                                    file.write(tmpFile.read(), ">>");
+                                } catch (e) {
+                                    dactyl.echoerr(file.path.quote() + ": E212: Can't open file for writing");
+                                }
                             });
                     }
 

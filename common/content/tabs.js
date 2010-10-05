@@ -182,9 +182,8 @@ const Tabs = Module("tabs", {
             TabView._initFrame();
         let iframe = document.getElementById("tab-view");
         this._groups = this._groups = iframe ? iframe.contentWindow : null;
-        if (this._groups)
-            while (!this._groups.TabItems)
-                util.threadYield(false, true);
+        while (this._groups && !this._groups.TabItems)
+            util.threadYield(false, true);
         return this._groups;
     },
 
