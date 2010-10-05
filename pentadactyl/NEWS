@@ -61,6 +61,7 @@
     * Added 'hintkeys' option.
     * Added "transliterated" option to 'hintmatching'.
     * Replaced 'focuscontent' with 'strictfocus'.
+    * Changed 'urlseparator' default value to '|'
     * Added 'wildanchor' option.
     * Added -javascript option to :abbrev and :map.
     * Added several new options to :map.

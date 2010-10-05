@@ -51,10 +51,6 @@ const Browser = Module("browser", {
                 },
                 completer: function (context) completion.charset(context)
             });
-
-        options.add(["urlseparator"],
-            "Set the separator regex used to separate multiple URL args",
-            "string", ",\\s");
     },
 
     mappings: function () {
