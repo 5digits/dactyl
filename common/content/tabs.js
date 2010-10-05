@@ -21,12 +21,13 @@ const Tabs = Module("tabs", {
         this._lastBufferSwitchArgs = "";
         this._lastBufferSwitchSpecial = true;
 
-        let fragment = dactyl.has("Darwin") ? "tab-mac" : "tab";
-        this.tabBinding = styles.addSheet(true, "tab-binding", "chrome://browser/content/browser.xul",
-                ".tabbrowser-tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#" + fragment + ") !important; }" +
+        this.tabBinding = styles.addSheet(true, "tab-binding", "chrome://browser/content/browser.xul", String.replace(<![CDATA[
+                xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab-3) !important; }
+                #TabsToolbar > xul|tabs > xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab-4) !important; }
                 // FIXME: better solution for themes?
-                ".tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }",
-                false, true);
+                .tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }
+        ]]>, /tab-./g, function (m) dactyl.has("Darwin") ? "tab-mac" : m),
+        false, true);
 
         // hide tabs initially to prevent flickering when 'stal' would hide them
         // on startup
