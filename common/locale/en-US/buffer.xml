@@ -439,9 +439,9 @@
 </item>
 
 <item>
-    <tags>ZZ zZ</tags>
+    <tags>zZ</tags>
     <strut/>
-    <spec><oa>count</oa>ZZ</spec>
+    <spec><oa>count</oa>zZ</spec>
     <description>
         <p>
             Set full zoom value of current web page. Zoom value can be between 30 and

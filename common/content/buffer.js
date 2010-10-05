@@ -1402,11 +1402,7 @@ const Buffer = Module("buffer", {
                 else if (/^\d+$/.test(arg))
                     level = parseInt(arg, 10);
                 else if (/^[+-]\d+$/.test(arg)) {
-                    if (args.bang)
-                        level = buffer.fullZoom + parseInt(arg, 10);
-                    else
-                        level = buffer.textZoom + parseInt(arg, 10);
-
+                    level = this.zoomLevel + parseInt(arg, 10);
                     // relative args shouldn't take us out of range
                     level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
@@ -1730,7 +1726,7 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["zz"],
             "Set text zoom value of current web page",
-            function (count) { buffer.textZoom = count > 1 ? count : 100; },
+            function (count) { Buffer.setZoom(count > 1 ? count : 100, false) },
             { count: true });
 
         mappings.add(myModes, ["ZI", "zI"],
@@ -1755,7 +1751,7 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["zZ"],
             "Set full zoom value of current web page",
-            function (count) { buffer.fullZoom = count > 1 ? count : 100; },
+            function (count) { Buffer.setZoom(count > 1 ? count : 100, true) },
             { count: true });
 
         // page info
