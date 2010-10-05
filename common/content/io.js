@@ -386,7 +386,7 @@ lookup:
 
                         if (!/^\s*(".*)?$/.test(line))
                             try {
-                                dactyl.execute(line, { setFrom: file }, true);
+                                dactyl.execute(line, { setFrom: file });
                             }
                             catch (e) {
                                 dactyl.echoerr("Error detected while processing " + file.path);
