@@ -341,79 +341,6 @@ const CommandLine = Module("commandline", {
             !(modes.extended & (modes.INPUT_MULTILINE | modes.OUTPUT_MULTILINE)),
 
     /**
-     * Display a message in the command-line area.
-     *
-     * @param {string} str
-     * @param {string} highlightGroup
-     * @param {boolean} forceSingle If provided, don't let over-long
-     *     messages move to the MOW.
-     */
-    _echoLine: function echoLine(str, highlightGroup, forceSingle) {
-        this.widgets.message = str ? [highlightGroup, str] : null;
-
-        dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
-
-        if (!this.commandVisible)
-            this.hide();
-
-        let field = this.widgets.active.message.inputField;
-        if (!forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth)
-            this._echoMultiline(<span highlight="Message">{str}</span>, highlightGroup);
-    },
-
-    /**
-     * Display a multiline message.
-     *
-     * @param {string} str
-     * @param {string} highlightGroup
-     */
-    // TODO: resize upon a window resize
-    _echoMultiline: function echoMultiline(str, highlightGroup) {
-        let doc = this.widgets.multilineOutput.contentDocument;
-        let win = this.widgets.multilineOutput.contentWindow;
-
-        if (!this.commandVisible)
-            this.hide();
-
-        dactyl.triggerObserver("echoMultiline", str, highlightGroup);
-
-        this._startHints = false;
-        if (!(modes.extended & modes.OUTPUT_MULTILINE))
-            modes.push(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
-
-        // If it's already XML, assume it knows what it's doing.
-        // Otherwise, white space is significant.
-        // The problem elsewhere is that E4X tends to insert new lines
-        // after interpolated data.
-        XML.ignoreWhitespace = false;
-        XML.prettyPrinting = false;
-        let style = typeof str === "string" ? "pre" : "nowrap";
-        this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{str}</div>;
-        let output = util.xmlToDom(this._lastMowOutput, doc);
-
-        // FIXME: need to make sure an open MOW is closed when commands
-        //        that don't generate output are executed
-        if (this.widgets.mowContainer.collapsed)
-            doc.body.innerHTML = "";
-
-        doc.body.appendChild(output);
-
-        commandline.updateOutputHeight(true);
-
-        if (options["more"] && win.scrollMaxY > 0) {
-            // start the last executed command's output at the top of the screen
-            let elements = doc.getElementsByClassName("ex-command-output");
-            elements[elements.length - 1].scrollIntoView(true);
-        }
-        else
-            win.scrollTo(0, doc.height);
-
-        win.focus();
-
-        commandline.updateMorePrompt();
-    },
-
-    /**
      * Ensure that the multiline input widget is the correct size.
      */
     _autosizeMultilineInputWidget: function () {
@@ -603,6 +530,81 @@ const CommandLine = Module("commandline", {
     },
 
     /**
+     * Display a message in the command-line area.
+     *
+     * @param {string} str
+     * @param {string} highlightGroup
+     * @param {boolean} forceSingle If provided, don't let over-long
+     *     messages move to the MOW.
+     */
+    _echoLine: function echoLine(str, highlightGroup, forceSingle) {
+        this.widgets.message = str ? [highlightGroup, str] : null;
+
+        dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
+
+        if (!this.commandVisible)
+            this.hide();
+
+        let field = this.widgets.active.message.inputField;
+        if (!forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth) {
+            this.widgets.message = null;
+            this._echoMultiline(<span highlight="Message">{str}</span>, highlightGroup);
+        }
+    },
+
+    /**
+     * Display a multiline message.
+     *
+     * @param {string} str
+     * @param {string} highlightGroup
+     */
+    // TODO: resize upon a window resize
+    _echoMultiline: function echoMultiline(str, highlightGroup) {
+        let doc = this.widgets.multilineOutput.contentDocument;
+        let win = this.widgets.multilineOutput.contentWindow;
+
+        if (!this.commandVisible)
+            this.hide();
+
+        dactyl.triggerObserver("echoMultiline", str, highlightGroup);
+
+        this._startHints = false;
+        if (!(modes.extended & modes.OUTPUT_MULTILINE))
+            modes.push(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
+
+        // If it's already XML, assume it knows what it's doing.
+        // Otherwise, white space is significant.
+        // The problem elsewhere is that E4X tends to insert new lines
+        // after interpolated data.
+        XML.ignoreWhitespace = false;
+        XML.prettyPrinting = false;
+        let style = typeof str === "string" ? "pre" : "nowrap";
+        this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{str}</div>;
+        let output = util.xmlToDom(this._lastMowOutput, doc);
+
+        // FIXME: need to make sure an open MOW is closed when commands
+        //        that don't generate output are executed
+        if (this.widgets.mowContainer.collapsed)
+            doc.body.innerHTML = "";
+
+        doc.body.appendChild(output);
+
+        commandline.updateOutputHeight(true);
+
+        if (options["more"] && win.scrollMaxY > 0) {
+            // start the last executed command's output at the top of the screen
+            let elements = doc.getElementsByClassName("ex-command-output");
+            elements[elements.length - 1].scrollIntoView(true);
+        }
+        else
+            win.scrollTo(0, doc.height);
+
+        win.focus();
+
+        commandline.updateMorePrompt();
+    },
+
+    /**
      * Output the given string onto the command line. With no flags, the
      * message will be shown in the status line if it's short enough to
      * fit, and contains no new lines, and isn't XML. Otherwise, it will be
@@ -647,6 +649,9 @@ const CommandLine = Module("commandline", {
         let single = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
         let action = this._echoLine;
 
+        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || typeof str == "xml") && !(flags & this.FORCE_SINGLELINE))
+            action = this._echoMultiline;
+
         if (single)
             this._lastEcho = null;
         else {
@@ -654,15 +659,12 @@ const CommandLine = Module("commandline", {
                 this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
                                     this.widgets.message[0]);
 
-            if (!(flags & this.FORCE_MULTILINE) && !this.widgets.mowContainer.collapsed) {
+            if (action == this._echoLine && !(flags & this.FORCE_MULTILINE) && !this.widgets.mowContainer.collapsed) {
                 highlightGroup += " Message";
                 action = this._echoMultiline;
             }
             this._lastEcho = (action == this._echoLine) && str;
         }
-
-        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || typeof str == "xml") && !(flags & this.FORCE_SINGLELINE))
-            action = this._echoMultiline;
 
         this._lastClearable = action === this._echoLine && String(str);
 
