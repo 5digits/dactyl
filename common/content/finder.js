@@ -275,7 +275,7 @@ const RangeFind = Class("RangeFind", {
         this.matchCase = Boolean(matchCase);
         this.regex = Boolean(regex);
 
-        this.ranges = this.makeFrameList(content);
+        this.ranges = this.makeFrameList(window.content);
 
         this.reset();
 
@@ -302,7 +302,7 @@ const RangeFind = Class("RangeFind", {
     get searchString() this.lastString,
 
     get selectedRange() {
-        let selection = (buffer.focusedFrame || content).getSelection();
+        let selection = (buffer.focusedFrame || window.content).getSelection();
         return (selection.rangeCount ? selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
     },
     set selectedRange(range) {

@@ -339,9 +339,9 @@ const Buffer = Module("buffer", {
      *     tab.
      */
     get localStore() {
-        if (!content.dactylStore)
-            content.dactylStore = {};
-        return content.dactylStore;
+        if (!window.content.dactylStore)
+            window.content.dactylStore = {};
+        return window.content.dactylStore;
     },
 
     /**
@@ -460,7 +460,7 @@ const Buffer = Module("buffer", {
     // FIXME: getSelection() doesn't always preserve line endings, see:
     // https://www.mozdev.org/bugs/show_bug.cgi?id=19303
     getCurrentWord: function () {
-        let win = buffer.focusedFrame || content;
+        let win = buffer.focusedFrame || window.content;
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
@@ -774,7 +774,7 @@ const Buffer = Module("buffer", {
      */
     scrollTo: function (x, y) {
         marks.add("'", true);
-        content.scrollTo(x, y);
+        window.content.scrollTo(x, y);
     },
 
     /**
@@ -884,8 +884,8 @@ const Buffer = Module("buffer", {
     showPageInfo: function (verbose, sections) {
         // Ctrl-g single line output
         if (!verbose) {
-            let file = content.document.location.pathname.split("/").pop() || "[No Name]";
-            let title = content.document.title || "[No Title]";
+            let file = window.content.document.location.pathname.split("/").pop() || "[No Name]";
+            let title = window.content.document.title || "[No Title]";
 
             let info = template.map("gf",
                 function (opt) template.map(buffer.pageInfo[opt][0](), util.identity, ", "),
@@ -1153,8 +1153,8 @@ const Buffer = Module("buffer", {
             return elem;
         }
 
-        if (content.getSelection().rangeCount)
-            var elem = find(content.getSelection().getRangeAt(0).startContainer);
+        if (window.content.getSelection().rangeCount)
+            var elem = find(window.content.getSelection().getRangeAt(0).startContainer);
         if (!(elem instanceof Element)) {
             let doc = Buffer.findScrollableWindow().document;
             elem = find(doc.body || doc.getElementsByTagName("body")[0] ||

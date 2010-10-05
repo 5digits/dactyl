@@ -149,7 +149,7 @@ const Browser = Module("browser", {
         mappings.add([modes.NORMAL], ["gU"],
             "Go to the root of the website",
             function () {
-                let uri = content.document.location;
+                let uri = window.content.document.location;
                 dactyl.assert(!/(about|mailto):/.test(uri.protocol)); // exclude these special protocols for now
                 dactyl.open(uri.protocol + "//" + (uri.host || "") + "/");
             });

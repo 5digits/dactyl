@@ -16,7 +16,13 @@
         return sandbox;
     }
     const jsmodules = {};
-    const modules = { __proto__: jsmodules, jsmodules: jsmodules, newContext: newContext, window: window };
+    const modules = {
+        __proto__: jsmodules,
+        get content() window.content,
+        jsmodules: jsmodules,
+        newContext: newContext,
+        window: window
+    };
     modules.modules = modules;
 
     const BASE = "chrome://dactyl/content/";

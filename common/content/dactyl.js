@@ -595,7 +595,7 @@ const Dactyl = Module("dactyl", {
                         data.push(<>{node.textContent}</>.toXMLString());
                 }
             }
-            fix(content.document.documentElement);
+            fix(window.content.document.documentElement);
             addDataEntry(file + ".xhtml", data.join(""));
         }
 
