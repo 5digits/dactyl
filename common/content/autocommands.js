@@ -36,7 +36,7 @@ const AutoCommands = Module("autocommands", {
             dactyl.log("DEPRECATED: the events list arg to autocommands.add() should be an array of event names");
         }
         events.forEach(function (event) {
-            this._store.push(AutoCommand(event, RegExp(regex), cmd));
+            this._store.push(AutoCommand(event, Option.parseRegex(regex), cmd));
         }, this);
     },
 
@@ -121,7 +121,7 @@ const AutoCommands = Module("autocommands", {
         let url = args.url || "";
 
         for (let [, autoCmd] in Iterator(autoCmds)) {
-            if (autoCmd.pattern.test(url)) {
+            if (autoCmd.pattern.test(url) ^ !autoCmd.pattern.result) {
                 if (!lastPattern || lastPattern.source != autoCmd.pattern.source)
                     dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.pattern.source.quote(), 8);
 
@@ -143,7 +143,7 @@ const AutoCommands = Module("autocommands", {
     }
 }, {
     matchAutoCmd: function (autoCmd, event, regex) {
-        return (!event || autoCmd.event == event) && (!regex || autoCmd.pattern.source == regex);
+        return (!event || autoCmd.event == event) && (!regex || String(autoCmd.pattern) == regex);
     }
 }, {
     commands: function () {
@@ -154,7 +154,7 @@ const AutoCommands = Module("autocommands", {
                 let events = [];
 
                 try {
-                    RegExp(regex);
+                    Option.parseRegex(regex);
                 }
                 catch (e) {
                     dactyl.assert(false, "E475: Invalid argument: " + regex);
@@ -170,7 +170,7 @@ const AutoCommands = Module("autocommands", {
                         "E216: No such group or event: " + event);
                 }
 
-                if (cmd) { // add new command, possibly removing all others with the same event/pattern
+                if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
                         autocommands.remove(event, regex);
                     if (args["-javascript"])
@@ -183,7 +183,7 @@ const AutoCommands = Module("autocommands", {
 
                     if (args.bang) {
                         // TODO: "*" only appears to work in Vim when there is a {group} specified
-                        if (args[0] != "*" || regex)
+                        if (args[0] != "*" || args.length > 1)
                             autocommands.remove(event, regex); // remove all
                     }
                     else
@@ -252,7 +252,8 @@ const AutoCommands = Module("autocommands", {
                         autocommands.trigger(event, { url: defaultURL });
                 }, {
                     argCount: "*", // FIXME: kludged for proper error message should be "1".
-                    completer: function (context) completion.autocmdEvent(context)
+                    completer: function (context) completion.autocmdEvent(context),
+                    keepQuotes: true
                 });
         });
     },

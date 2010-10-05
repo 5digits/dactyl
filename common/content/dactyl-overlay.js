@@ -20,8 +20,7 @@
         __proto__: jsmodules,
         get content() window.content,
         jsmodules: jsmodules,
-        newContext: newContext,
-        window: window
+        newContext: newContext
     };
     modules.modules = modules;
 

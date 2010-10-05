@@ -478,7 +478,7 @@ const JavaScript = Module("javascript", {
             let string = this._str.substring(this._get(-1).offset + 1, this._lastIdx);
             // This is definitely a properly quoted string.
             // Just eval it normally.
-            string = eval(this._last + string + this._last);
+            string = window.eval(this._last + string + this._last);
 
             // Is this an object accessor?
             if (this._get(-2).char == "[") { // Are we inside of []?
@@ -536,7 +536,7 @@ const JavaScript = Module("javascript", {
                 args.push(key + string);
 
                 let compl = function (context, obj) {
-                    let res = completer.call(self, context, funcName, obj, args);
+                    let res = completer.call(this, context, funcName, obj, args);
                     if (res)
                         context.completions = res;
                 };

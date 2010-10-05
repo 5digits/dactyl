@@ -30,13 +30,14 @@
         </p>
 
         <p>
-            When <oa>cmd</oa> is given, add it to the list of
-            commands to be executed when <oa>events</oa> occur for
-            pages matching the regular expression <oa>pat</oa>. If
-            the <em>-javascript</em> (short name <em>-js</em>)
-            option is given, <oa>cmd</oa> is interpreted as
-            JavaScript code. Otherwise, it is interpreted as an ex
-            command.
+            When <oa>cmd</oa> is given, add it to the list of commands to be
+            executed when <oa>events</oa> occur for pages matching the regular
+            expression <oa>pat</oa>.  If <oa>pat</oa> is preceded by an
+            unquoted <em>!</em>, then the autocommand is executed only for
+            pages not matching the following regular expression.  If the
+            <em>-javascript</em> (short name <em>-js</em>) option is given,
+            <oa>cmd</oa> is interpreted as JavaScript code. Otherwise, it is
+            interpreted as an ex command.
         </p>
 
         <note>
