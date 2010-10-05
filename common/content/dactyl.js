@@ -1269,9 +1269,9 @@ const Dactyl = Module("dactyl", {
                 }
             });
 
-        options.add(["urlseparator"],
+        options.add(["urlseparator", "us"],
             "Set the separator regex used to separate multiple URL args",
-            "string", "|");
+            "string", "\\|");
 
         options.add(["verbose", "vbs"],
             "Define which info messages are displayed",

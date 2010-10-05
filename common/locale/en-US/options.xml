@@ -1334,7 +1334,7 @@
     <tags>'us' 'urlseparator'</tags>
     <spec>'urlseparator'</spec>
     <type>string</type>
-    <default>|</default>
+    <default>\\|</default>
     <description>
         <p>
             The regular expression used to split URL lists in commands
