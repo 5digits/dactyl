@@ -9,19 +9,29 @@ text=$4
 bin=$5
 shift 5;
 files="$@"
+HG=${HG:-hg}
 
 stage="$top/${jar%.*}"
 mkdir -p $stage
 
-if hg root >/dev/null 2>&1
+sed=$(which sed)
+if [ "xoo" = x$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ]
+then sed() { $sed -E "$@"; }
+else sed() { $sed -r "$@"; }
+fi
+
+if $HG root >/dev/null 2>&1
 then
-    root="$(hg root)"
-    mf="$(hg --config ui.debug=false --config ui.verbose=false manifest)"
+    root="$($HG root)"
+    which cygpath >/dev/null 2>&1 && root=$(cygpath $root)
+
+    mf="$($HG --config ui.debug=false --config ui.verbose=false manifest)"
     find=$(which find)
     find() {
         $find "$@" -name '*.jar'
-        echo "$mf" | sed -n "s!$(pwd | sed "s!$root/\?!!")/\?!!p" |
+        echo "$mf" | sed -n "s!$(pwd | sed "s!$root/?!!")/?!!p" |
             grep "^$1"
+        exit 1
     }
 fi
 
