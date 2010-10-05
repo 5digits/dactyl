@@ -412,7 +412,7 @@ const RangeFind = Class("RangeFind", {
     },
 
     iter: function (word) {
-        let saved = ["range", "lastRange", "lastString"].map(function (s) [s, this[s]], this);
+        let saved = ["lastRange", "lastString", "range"].map(function (s) [s, this[s]], this);
         try {
             this.range = this.ranges[0];
             this.lastRange = null;

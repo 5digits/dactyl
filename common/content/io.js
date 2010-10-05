@@ -317,104 +317,102 @@ lookup:
      * @param {boolean} silent Whether errors should be reported.
      */
     source: function (filename, silent) {
-        let wasSourcing = this.sourcing;
-        let readHeredoc = this.readHeredoc;
         defineModule.loadLog.push("sourcing " + filename);
         let time = Date.now();
-        try {
-            var file = io.File(filename);
-            this.sourcing = {
-                file: file.path,
-                line: 0
-            };
-
-            if (!file.exists() || !file.isReadable() || file.isDirectory()) {
-                if (!silent)
-                    dactyl.echoerr("E484: Can't open file " + filename.quote());
-                return;
-            }
-
-            dactyl.echomsg("sourcing " + filename.quote(), 2);
-
-            let uri = services.get("io").newFileURI(file);
-
-            // handle pure JavaScript files specially
-            if (/\.js$/.test(filename)) {
-                try {
-                    dactyl.loadScript(uri.spec, Script(file));
-                    dactyl.helpInitialized = false;
-                }
-                catch (e) {
-                    if (isString(e))
-                        e = { message: e };
-                    let err = new Error();
-                    for (let [k, v] in Iterator(e))
-                        err[k] = v;
-                    err.echoerr = <>{file.path}:{e.lineNumber}: {e}</>;
-                    throw err;
-                }
-            }
-            else if (/\.css$/.test(filename))
-                storage.styles.registerSheet(uri.spec, false, true);
-            else {
-                let heredoc = "";
-                let heredocEnd = null; // the string which ends the heredoc
-                let str = file.read();
-                let lines = str.split(/\r\n|[\r\n]/);
-
-                this.readHeredoc = function (end) {
-                    let res = [];
-                    try {
-                        io.sourcing.line++;
-                        while (true)
-                            let ([i, line] = iter.next()) {
-                                if (line === end)
-                                    return res.join("\n");
-                                res.push(line);
-                            }
-                    }
-                    catch (e if e instanceof StopIteration) {}
-                    dactyl.assert(false, "Unexpected end of file waiting for " + end);
+        this.withSavedValues(["readHeredoc", "sourcing"], function () {
+            try {
+                var file = io.File(filename);
+                this.sourcing = {
+                    file: file.path,
+                    line: 0
                 };
 
-                let iter = Iterator(lines);
-                for (let [i, line] in iter) {
-                    if (this.sourcing.finished)
-                        break;
-                    this.sourcing.line = i + 1;
-                    // skip line comments and blank lines
-                    line = line.replace(/\r$/, "");
-
-                    if (!/^\s*(".*)?$/.test(line))
-                        try {
-                            dactyl.execute(line, { setFrom: file }, true);
-                        }
-                        catch (e) {
-                            dactyl.echoerr("Error detected while processing " + file.path);
-                            dactyl.echomsg("line\t" + this.sourcing.line + ":");
-                            dactyl.reportError(e, true);
-                        }
+                if (!file.exists() || !file.isReadable() || file.isDirectory()) {
+                    if (!silent)
+                        dactyl.echoerr("E484: Can't open file " + filename.quote());
+                    return;
                 }
+
+                dactyl.echomsg("sourcing " + filename.quote(), 2);
+
+                let uri = services.get("io").newFileURI(file);
+
+                // handle pure JavaScript files specially
+                if (/\.js$/.test(filename)) {
+                    try {
+                        dactyl.loadScript(uri.spec, Script(file));
+                        dactyl.helpInitialized = false;
+                    }
+                    catch (e) {
+                        if (isString(e))
+                            e = { message: e };
+                        let err = new Error();
+                        for (let [k, v] in Iterator(e))
+                            err[k] = v;
+                        err.echoerr = <>{file.path}:{e.lineNumber}: {e}</>;
+                        throw err;
+                    }
+                }
+                else if (/\.css$/.test(filename))
+                    storage.styles.registerSheet(uri.spec, false, true);
+                else {
+                    let heredoc = "";
+                    let heredocEnd = null; // the string which ends the heredoc
+                    let str = file.read();
+                    let lines = str.split(/\r\n|[\r\n]/);
+
+                    this.readHeredoc = function (end) {
+                        let res = [];
+                        try {
+                            io.sourcing.line++;
+                            while (true)
+                                let ([i, line] = iter.next()) {
+                                    if (line === end)
+                                        return res.join("\n");
+                                    res.push(line);
+                                }
+                        }
+                        catch (e if e instanceof StopIteration) {}
+                        dactyl.assert(false, "Unexpected end of file waiting for " + end);
+                    };
+
+                    let iter = Iterator(lines);
+                    for (let [i, line] in iter) {
+                        if (this.sourcing.finished)
+                            break;
+                        this.sourcing.line = i + 1;
+                        // skip line comments and blank lines
+                        line = line.replace(/\r$/, "");
+
+                        if (!/^\s*(".*)?$/.test(line))
+                            try {
+                                dactyl.execute(line, { setFrom: file }, true);
+                            }
+                            catch (e) {
+                                dactyl.echoerr("Error detected while processing " + file.path);
+                                dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                                dactyl.reportError(e, true);
+                            }
+                    }
+                }
+
+                if (this._scriptNames.indexOf(file.path) == -1)
+                    this._scriptNames.push(file.path);
+
+                dactyl.echomsg("finished sourcing " + filename.quote(), 2);
+
+                dactyl.log("Sourced: " + filename, 3);
             }
-
-            if (this._scriptNames.indexOf(file.path) == -1)
-                this._scriptNames.push(file.path);
-
-            dactyl.echomsg("finished sourcing " + filename.quote(), 2);
-
-            dactyl.log("Sourced: " + filename, 3);
-        }
-        catch (e) {
-            dactyl.reportError(e);
-            let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
-            if (!silent)
-                dactyl.echoerr(message);
-        }
-        finally {
-            defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
-            this.sourcing = wasSourcing;
-            this.readHeredoc = readHeredoc;
-        }
+            catch (e) {
+                dactyl.reportError(e);
+                let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
+                if (!silent)
+                    dactyl.echoerr(message);
+            }
+            finally {
+                defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
+            }
+        });
     },
 
     // TODO: when https://bugzilla.mozilla.org/show_bug.cgi?id=68702 is

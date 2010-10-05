@@ -330,7 +330,7 @@ const Dactyl = Module("dactyl", {
      */
     userFunc: function () {
         return this.userEval(
-            "(function (" +
+            "(function userFunction(" +
             Array.slice(arguments, 0, -1).join(", ") +
             ") { " + arguments[arguments.length - 1] + " })");
     },
@@ -344,7 +344,7 @@ const Dactyl = Module("dactyl", {
      * @param {boolean} silent Whether the command should be echoed on the
      *     command line.
      */
-    execute: function (str, modifiers, silent) {
+    execute: function (str, modifiers, silent, sourcing) {
         // skip comments and blank lines
         if (/^\s*("|$)/.test(str))
             return;
@@ -359,7 +359,10 @@ const Dactyl = Module("dactyl", {
             if (!silent)
                 commandline.command = str.replace(/^\s*:\s*/, "");
 
-            command.execute(args, modifiers);
+            io.withSavedValues(["sourcing"], function () {
+                io.sourcing = sourcing || io.sourcing;
+                command.execute(args, modifiers);
+            });
         }
     },
 

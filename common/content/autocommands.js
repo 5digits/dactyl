@@ -128,16 +128,7 @@ const AutoCommands = Module("autocommands", {
                 lastPattern = autoCmd.pattern;
                 dactyl.echomsg("autocommand " + autoCmd.command, 9);
 
-                if (typeof autoCmd.command == "function") {
-                    try {
-                        autoCmd.command.call(autoCmd, args);
-                    }
-                    catch (e) {
-                        dactyl.echoerr(e);
-                    }
-                }
-                else
-                    dactyl.execute(commands.replaceTokens(autoCmd.command, args), null, true);
+                autoCmd.command(args);
             }
         }
     }
@@ -173,8 +164,16 @@ const AutoCommands = Module("autocommands", {
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
                         autocommands.remove(event, regex);
-                    if (args["-javascript"])
+                    if (args["-javascript"]) {
                         cmd = dactyl.userFunc("args", "with(args) {" + cmd + "}");
+                        cmd.toString = function toString() "-javascript " + cmd.source;
+                    }
+                    else {
+                        cmd = function cmd(args) dactyl.execute(commands.replaceTokens(cmd.source, args), null, true, cmd.sourcing);
+                        cmd.sourcing = io.sourcing && update({}, io.sourcing);
+                        cmd.toString = function toString() cmd.source;
+                    }
+                    cmd.source = args[2];
                     autocommands.add(events, regex, cmd);
                 }
                 else {

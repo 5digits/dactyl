@@ -404,14 +404,10 @@ const CommandLine = Module("commandline", {
     },
 
     runSilently: function (func, self) {
-        let wasSilent = this._silent;
-        this._silent = true;
-        try {
+        this.withSavedValues(["_silent"], function () {
+            this._silent = true;
             func.call(self);
-        }
-        finally {
-            this._silent = wasSilent;
-        }
+        });
     },
 
     hideCompletions: function () {

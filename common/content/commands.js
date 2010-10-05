@@ -997,7 +997,7 @@ const Commands = Module("commands", {
                 count: this.count && args.count
             };
 
-            dactyl.execute(commands.replaceTokens(this.replacementText, tokens));
+            dactyl.execute(commands.replaceTokens(this.replacementText, tokens), null, true, this.sourcing);
         }
 
         // TODO: offer completion.ex?
@@ -1062,7 +1062,8 @@ const Commands = Module("commands", {
                                         bang: bangOpt,
                                         count: countOpt,
                                         completer: completeFunc,
-                                        replacementText: args.literalArg
+                                        replacementText: args.literalArg,
+                                        sourcing: io.sourcing && update({}, io.sourcing)
                                     }, args.bang);
 
                     if (!added)

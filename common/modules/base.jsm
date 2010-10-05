@@ -764,6 +764,16 @@ Class.prototype = {
      */
     init: function () {},
 
+    withSavedValues: function (names, callback, self) {
+        let vals = names.map(function (name) this[name], this);
+        try {
+            return callback.call(self || this);
+        }
+        finally {
+            names.forEach(function (name, i) this[name] = vals[i], this);
+        }
+    },
+
     toString: function () "[instance " + this.constructor.className + "]",
 
     /**

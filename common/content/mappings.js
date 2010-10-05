@@ -384,9 +384,9 @@ const Mappings = Module("mappings", {
                     }
                     else if (args["-ex"]) {
                         rhs = ["-ex", rhs];
-                        action = function (count) {
-                            dactyl.execute(commands.replaceTokens(rhs[1], { count: count }));
-                        };
+                        action = function action(count)
+                            dactyl.execute(commands.replaceTokens(rhs[1], { count: count }), null, true, action.sourcing);
+                        action.sourcing = io.sourcing && update({}, io.sourcing);
                     }
                     else {
                         rhs = [events.canonicalKeys(rhs)];
