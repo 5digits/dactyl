@@ -1263,7 +1263,7 @@
     <type>number</type>
     <default>2</default>
     <description>
-        <p>Controls when to the tab line is shown.</p>
+        <p>Controls when the tab line is shown.</p>
 
         <p>Possible values are:</p>
 

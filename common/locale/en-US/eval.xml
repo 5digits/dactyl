@@ -156,7 +156,7 @@
     <tags>:unl :unlet</tags>
     <spec>:unl<oa>et</oa><oa>!</oa> <a>name</a> …</spec>
     <description>
-        <deprecated>All scripts which make use of <ex>:let</ex> should be
+        <deprecated>All scripts which make use of <ex>:unlet</ex> should be
             updated to use the simpler and more powerful options system
             instead.</deprecated>
         <p>

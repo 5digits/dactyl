@@ -618,7 +618,7 @@ const JavaScript = Module("javascript", {
         "isXMLName", "parseFloat", "parseInt", "undefined", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
-     .concat(JavaScript.magicalnames)
+     .concat(JavaScript.magicalNames)
      .filter(function (k) k in window))),
 
     /**
