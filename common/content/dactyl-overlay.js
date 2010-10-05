@@ -7,8 +7,6 @@
 (function () {
     function newContext(proto) {
         let sandbox = Components.utils.Sandbox(window);
-        if (jsmodules.__proto__ != window)
-            jsmodules.__proto__ = window;
         // Hack:
         sandbox.Object = jsmodules.Object;
         sandbox.Math = jsmodules.Math;

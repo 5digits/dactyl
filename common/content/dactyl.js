@@ -13,7 +13,7 @@ XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
 const plugins = { __proto__: modules };
-memoize(modules, "userContext", function () newContext(modules));;
+const userContext = newContext(modules);
 
 const EVAL_ERROR = "__dactyl_eval_error";
 const EVAL_RESULT = "__dactyl_eval_result";
@@ -1920,6 +1920,7 @@ const Dactyl = Module("dactyl", {
         };
     },
     load: function () {
+        jsmodules.__proto__ = window;
         dactyl.triggerObserver("load");
 
         dactyl.log("All modules loaded", 3);
