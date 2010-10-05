@@ -124,7 +124,7 @@ const Services = Module("Services", {
 }, {
 }, {
     init: function (dactyl, modules) {
-        if (!this.get("extensionManager"))
+        if (!modules.AddonManager && !this.get("extensionManager"))
             Components.utils.import("resource://gre/modules/AddonManager.jsm", modules);
     },
     javascript: function (dactyl, modules) {

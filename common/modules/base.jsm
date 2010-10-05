@@ -66,7 +66,7 @@ if (!Object.getOwnPropertyDescriptor)
         return desc;
     };
 if (!Object.getOwnPropertyNames)
-    Object.getOwnPropertyNames = function getOwnPropertyNames(obj) {
+    Object.getOwnPropertyNames = function getOwnPropertyNames(obj, _debugger) {
         // This is an ugly and unfortunately necessary hack.
         if (hasOwnProperty.call(obj, "__iterator__")) {
             var oldIter = obj.__iterator__;

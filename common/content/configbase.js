@@ -105,7 +105,7 @@ const ConfigBase = Class(ModuleBase, {
     /**
      * @property {string} The ID of the application's main XUL window.
      */
-    mainWindowId: document.documentElement.id,
+    mainWindowId: window.document.documentElement.id,
 
     /**
      * @property {[[]]} An array of application specific mode specifications.
@@ -133,7 +133,7 @@ const ConfigBase = Class(ModuleBase, {
      */
     scripts: [],
 
-    tabStrip: Class.memoize(function () document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
+    tabStrip: Class.memoize(function () window.document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
 
     /**
      * @property {string} The leaf name of any temp files created by

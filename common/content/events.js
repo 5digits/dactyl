@@ -731,7 +731,7 @@ const Events = Module("events", {
         let win  = window.document.commandDispatcher.focusedWindow;
         let elem = window.document.commandDispatcher.focusedElement;
 
-        if (win && win.top == content && dactyl.has("tabs"))
+        if (win && win.top == window.content && dactyl.has("tabs"))
             buffer.focusedFrame = win;
 
         try {

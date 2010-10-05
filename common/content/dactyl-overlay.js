@@ -5,12 +5,21 @@
 "use strict";
 
 (function () {
-    const jsmodules = {}
-    const modules = { __proto__: jsmodules };
-    const BASE = "chrome://dactyl/content/";
-
+    function newContext(proto) {
+        let sandbox = Components.utils.Sandbox(window);
+        if (jsmodules.__proto__ != window)
+            jsmodules.__proto__ = window;
+        // Hack:
+        sandbox.Object = jsmodules.Object;
+        sandbox.Math = jsmodules.Math;
+        sandbox.__proto__ = proto || modules;
+        return sandbox;
+    }
+    const jsmodules = {};
+    const modules = { __proto__: jsmodules, jsmodules: jsmodules, newContext: newContext, window: window };
     modules.modules = modules;
 
+    const BASE = "chrome://dactyl/content/";
     const loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                              .getService(Components.interfaces.mozIJSSubScriptLoader);
 

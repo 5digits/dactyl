@@ -9,7 +9,7 @@
 
 /** @scope modules */
 
-plugins.contexts = {};
+plugins.contexts = plugins;
 function Script(file) {
     let self = plugins[file.path];
     if (self) {
@@ -19,11 +19,10 @@ function Script(file) {
     }
     else
     self = { __proto__: plugins };
-    plugins.contexts[file.path] = self;
     plugins[file.path] = self;
     self.NAME = file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
     self.PATH = file.path;
-    self.__context__ = self;
+    self.CONTEXT = self;
 
     // This belongs elsewhere
     if (io.getRuntimeDirectories("plugins").some(
@@ -366,6 +365,7 @@ lookup:
                 this.readHeredoc = function (end) {
                     let res = [];
                     try {
+                        io.sourcing.line++;
                         while (true)
                             let ([i, line] = iter.next()) {
                                 if (line === end)

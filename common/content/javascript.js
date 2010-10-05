@@ -38,12 +38,12 @@ const JavaScript = Module("javascript", {
         if (obj == null)
             return;
 
-        let seen = {};
-        let globals = values(toplevel && Class.objectGlobal(obj) === obj ? JavaScript.globalNames : []);
-        for (let key in iterAll(globals, properties(obj, !toplevel))) {
-            set.add(seen, key);
-            yield key;
-        }
+        let seen = isinstance(obj, ["Sandbox"]) ? set(JavaScript.magicalNames) : {};
+        let globals = values(toplevel && window === obj ? JavaScript.globalNames : []);
+        for (let key in iterAll(globals, properties(obj, !toplevel)))
+            if (!set.add(seen, key))
+                yield key;
+
         // Properties aren't visible in an XPCNativeWrapper until
         // they're accessed.
         for (let key in properties(this.getKey(obj, "wrappedJSObject"), !toplevel))
@@ -58,7 +58,7 @@ const JavaScript = Module("javascript", {
         // Things we can dereference
         if (!obj || ["object", "string", "function"].indexOf(typeof obj) == -1)
             return [];
-        if (modules.isPrototypeOf(obj) && !toplevel)
+        if (jsmodules.isPrototypeOf(obj) && !toplevel)
             return [];
 
         let completions = [k for (k in this.iter(obj, toplevel))];
@@ -76,7 +76,7 @@ const JavaScript = Module("javascript", {
 
         context[JavaScript.EVAL_TMP] = tmp;
         try {
-            return cache[key] = dactyl.userEval(arg, context);
+            return cache[key] = dactyl.userEval(arg, context, "[Command Line Completion]", 1);
         }
         catch (e) {
             this.context.message = "Error: " + e;
@@ -308,7 +308,7 @@ const JavaScript = Module("javascript", {
                 context.filters.push(function (item) item.item.indexOf(args.prefix) === 0);
         }
 
-        args.completer.call(self, context, args);
+        args.completer.call(this, context, args);
     },
 
     _complete: function (objects, key, compl, string, last) {
@@ -428,7 +428,7 @@ const JavaScript = Module("javascript", {
         }
 
         this.context.getCache("evalled", Object);
-        this.context.getCache("evalContext", function () ({ __proto__: userContext }));
+        this.context.getCache("evalContext", function () newContext(userContext));
 
         // Okay, have parse stack. Figure out what we're completing.
 
@@ -594,6 +594,8 @@ const JavaScript = Module("javascript", {
      */
     completers: {},
 
+    magicalNames: Class.memoize(function () Object.getOwnPropertyNames(Cu.Sandbox(window), true).sort()),
+
     /**
      * A list of properties of the global object which are not
      * enumerable by any standard method.
@@ -616,6 +618,7 @@ const JavaScript = Module("javascript", {
         "isXMLName", "parseFloat", "parseInt", "undefined", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
+     .concat(JavaScript.magicalnames)
      .filter(function (k) k in window))),
 
     /**

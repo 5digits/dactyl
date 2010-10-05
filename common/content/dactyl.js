@@ -13,7 +13,7 @@ XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
 const plugins = { __proto__: modules };
-const userContext = { __proto__: modules };
+memoize(modules, "userContext", function () newContext(modules));;
 
 const EVAL_ERROR = "__dactyl_eval_error";
 const EVAL_RESULT = "__dactyl_eval_result";
@@ -314,29 +314,16 @@ const Dactyl = Module("dactyl", {
         services.get("subscriptLoader").loadSubScript(uri, context, File.defaultEncoding);
     },
 
-    userEval: function (str, context) {
-        try {
-            if (!context)
-                context = userContext;
-            context[EVAL_ERROR] = null;
-            context[EVAL_STRING] = str;
-            context[EVAL_RESULT] = null;
-            this.loadScript("chrome://dactyl/content/eval.js", context);
-            if (context[EVAL_ERROR]) {
-                try {
-                    context[EVAL_ERROR].fileName = io.sourcing.file;
-                    context[EVAL_ERROR].lineNumber += io.sourcing.line;
-                }
-                catch (e) {}
-                throw context[EVAL_ERROR];
-            }
-            return context[EVAL_RESULT];
-        }
-        finally {
-            delete context[EVAL_ERROR];
-            delete context[EVAL_RESULT];
-            delete context[EVAL_STRING];
-        }
+    userEval: function (str, context, fileName, lineNumber) {
+        if (fileName == null)
+            if (io.sourcing)
+                ({ file: fileName, line: lineNumber }) = io.sourcing;
+            else if (String.indexOf(commandline.command, str) > -1)
+                [fileName, lineNumber] = ["[Command Line]", 1];
+
+        if (!context)
+            context = userContext;
+        return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
     },
 
     /**
@@ -885,11 +872,7 @@ const Dactyl = Module("dactyl", {
 
     pluginFiles: {},
 
-    // namespace for plugins/scripts. Actually (only) the active plugin must/can set a
-    // v.plugins.mode = <str> string to show on v.modes.CUSTOM
-    // v.plugins.stop = <func> hooked on a v.modes.reset()
-    // v.plugins.onEvent = <func> function triggered, on keypresses (unless <esc>) (see events.js)
-    plugins: plugins,
+    get plugins() plugins,
 
     /**
      * Quit the host application, no matter how many tabs/windows are open.

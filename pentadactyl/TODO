@@ -39,7 +39,6 @@ FEATURES:
 8 <C-o>/<C-i> should work as in vim (i.e., save page positions as well as
   locations in the history list).
 8 jump to the next heading with ]h, next image ]i, previous textbox [t and so on
-8 pipe selected text/link/website to an external command
 7 use ctrl-n/p in insert mode for word completion
 7 implement QuickFix window based on ItemList
 7 wherever possible: get rid of dialogs and ask console-like dialog questions
