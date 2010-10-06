@@ -795,7 +795,7 @@ const Commands = Module("commands", {
         let matches = str.match(/^([:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?(\s*))(.*?)?$/);
         //var matches = str.match(/^:*(\d+|%)?([a-zA-Z]+|!)(!)?(?:\s*(.*?)\s*)?$/);
         if (!matches)
-            return [null, null, null, null];
+            return [];
 
         let [, spec, count, cmd, special, space, args] = matches;
         if (/\w/.test(cmd) && args && !(space || args[0] == "|"))
@@ -813,18 +813,19 @@ const Commands = Module("commands", {
     parseCommands: function (str, complete) {
         do {
             let [count, cmd, bang, args, len] = commands.parseCommand(str);
-            if (cmd == null) {
+            let command = commands.get(cmd || "");
+
+            if (command == null) {
                 yield [null, { commandString: str }];
                 return;
             }
 
-            let command = commands.get(cmd);
-            if (command && complete) {
+            if (complete) {
                 complete.fork(command.name);
                 var context = complete.fork("args", len);
             }
 
-            if (command && (!complete || /\w[!\s]/.test(str)))
+            if (!complete || /\w[!\s]/.test(str))
                 args = command.parseArgs(args, context, { count: count, bang: bang });
             else
                 args = commands.parseArgs(args, { extra: { count: count, bang: bang } });
