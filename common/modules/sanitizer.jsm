@@ -65,6 +65,8 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
         this.addItem("sitesettings", {
             description: "Site preferences",
             action: function (range, host) {
+                if (range.isSession)
+                    return;
                 if (host) {
                     for (let p in Sanitizer.iterPermissions(host)) {
                         services.get("permissions").remove(util.createURI(p.host), p.type);
