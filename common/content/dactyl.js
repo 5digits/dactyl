@@ -496,7 +496,7 @@ const Dactyl = Module("dactyl", {
 
             let body = XML();
             for (let [, context] in Iterator(plugins.contexts))
-                if (context.INFO instanceof XML)
+                if (context && context.INFO instanceof XML)
                     body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
                         context.INFO;
 

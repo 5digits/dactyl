@@ -9,25 +9,26 @@
 
 /** @scope modules */
 
-plugins.contexts = plugins;
+plugins.contexts = {};
 function Script(file) {
     let self = plugins[file.path];
     if (self) {
         if (self.onUnload)
             self.onUnload();
-        return self;
     }
-    else
-    self = { __proto__: plugins };
-    plugins[file.path] = self;
-    self.NAME = file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
-    self.PATH = file.path;
-    self.CONTEXT = self;
+    else {
+        self = { __proto__: plugins };
+        plugins[file.path] = self;
+        self.NAME = file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
+        self.PATH = file.path;
+        self.CONTEXT = self;
 
-    // This belongs elsewhere
-    if (io.getRuntimeDirectories("plugins").some(
-            function (dir) dir.contains(file, false)))
-        plugins[self.NAME] = self;
+        // This belongs elsewhere
+        if (io.getRuntimeDirectories("plugins").some(
+                function (dir) dir.contains(file, false)))
+            plugins[self.NAME] = self;
+    }
+    plugins.contexts[file.path] = self;
     return self;
 }
 
