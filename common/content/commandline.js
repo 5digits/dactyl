@@ -423,14 +423,10 @@ const CommandLine = Module("commandline", {
     _keepCommand: Modes.boundProperty(),
 
     multilineInputVisible: Modes.boundProperty({
-        set: function (value) {
-            this.widgets.multilineInput.collapsed = !value;
-        }
+        set: function (value) { this.widgets.multilineInput.collapsed = !value; }
     }),
     multilineOutputVisible: Modes.boundProperty({
-        set: function (value) {
-            this.widgets.mowContainer.collapsed = !value;
-        }
+        set: function (value) { this.widgets.mowContainer.collapsed = !value; }
     }),
 
     /**
@@ -445,9 +441,7 @@ const CommandLine = Module("commandline", {
      */
     open: function open(prompt, cmd, extendedMode) {
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
-            leave: function (newMode) {
-                commandline.leave(newMode);
-            }
+            leave: commandline.closure.leave
         });
 
         this.currentExtendedMode = extendedMode || null;
@@ -729,10 +723,9 @@ const CommandLine = Module("commandline", {
      * @param {string} end
      * @param {function(string)} callbackFunc
      */
-    // FIXME: Buggy, especially when pasting. Shouldn't use a RegExp.
+    // FIXME: Buggy, especially when pasting.
     inputMultiline: function inputMultiline(end, callbackFunc) {
-        // Kludge.
-        let cmd = !this.widgets.active.command.collapsed && this.command;
+        let cmd = this.command;
         modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE);
         if (cmd != false)
             this._echoLine(cmd, this.HL_NORMAL);

@@ -148,6 +148,9 @@ const Modes = Module("modes", {
     },
 
     save: function (id, obj, prop) {
+        if (!(id in this.boundProperties))
+            for (let elem in values(this._modeStack))
+                elem.saved[id] = { obj: obj, prop: prop, value: obj[prop] };
         this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop };
     },
 
@@ -258,10 +261,10 @@ const Modes = Module("modes", {
                     return val === undefined ? value : val;
                 },
                 set: function (val) {
+                    modes.save(id, this, prop)
                     if (desc.set)
                         value = desc.set.call(this, val);
                     value = !desc.set || value === undefined ? val : value;
-                    modes.save(id, this, prop)
                 }
             })
         }, desc));

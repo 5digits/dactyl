@@ -237,7 +237,7 @@ const Dactyl = Module("dactyl", {
      * @param {number} frames The number of frames to print.
      */
     dumpStack: function dumpStack(msg, frames) {
-        let stack = Error().stack.replace(/(?:.*\n){2}/, "");
+        let stack = Error().stack.replace(/(?:.*\n){1}/, "");
         if (frames != null)
             [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
         dactyl.dump((msg || "Stack") + "\n" + stack + "\n");
