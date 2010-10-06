@@ -240,7 +240,6 @@ const Config = Module("config", ConfigBase, {
             });
     },
     completion: function () {
-        dactyl.dump("Load completion\n");
         var searchRunning = false; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
         completion.location = function location(context) {
             if (!services.get("autoCompleteSearch"))

@@ -62,6 +62,8 @@ const JavaScript = Module("javascript", {
             return [];
 
         let completions = [k for (k in this.iter(obj, toplevel))];
+        if (obj == modules) // Hack.
+            completions = completions.concat([k for (k in this.iter(jsmodules, toplevel))]);
         return completions;
     },
 

@@ -6,7 +6,8 @@
 
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("services", {
-    exports: ["Services", "services"]
+    exports: ["Services", "services"],
+    use: ["util"]
 });
 
 /**
@@ -72,7 +73,7 @@ const Services = Module("Services", {
         }
         catch (e) {
             // dactyl.log() is not defined at this time, so just dump any error
-            dump("Service creation failed for '" + classes + "': " + e + "\n");
+            util.dump("Service creation failed for '" + classes + "': " + e + "\n");
             return null;
         }
     },

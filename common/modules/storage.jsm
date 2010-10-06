@@ -299,7 +299,7 @@ const File = Class("File", {
                     file.initWithPath(expandedPath);
             }
             catch (e) {
-                dump("dactyl: " + e + "\n" + String.replace(e.stack, /^/gm, "dactyl:  ") + "\n");
+                util.reportError(e);
                 return null;
             }
         }

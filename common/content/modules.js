@@ -82,7 +82,6 @@ window.addEventListener("load", function onLoad() {
         });
     });
 
-    function dump(str) window.dump(String.replace(str, /\n?$/, "\n").replace(/^/m, services.get("dactyl:").name + ": "));
     const start = Date.now();
     const deferredInit = { load: [] };
     const seen = set();
@@ -136,7 +135,7 @@ window.addEventListener("load", function onLoad() {
                 fn();
         }
         catch (e) {
-            dump("Loading " + (module && module.className) + ": " + e + "\n" + (e.stack || ""));
+            util.dump("Loading " + (module && module.className) + ": " + e + "\n" + (e.stack || ""));
         }
         return modules[module.className];
     }
@@ -145,7 +144,7 @@ window.addEventListener("load", function onLoad() {
     deferredInit["load"].forEach(call);
     modules.times = update({}, defineModule.times);
 
-    dump("Loaded in " + (Date.now() - start) + "ms");
+    util.dump("Loaded in " + (Date.now() - start) + "ms");
 }, false);
 
 window.addEventListener("unload", function onUnload() {

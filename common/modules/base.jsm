@@ -137,7 +137,10 @@ function require(obj, name, from) {
     }
     catch (e) {
         dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n");
-        dump("    " + e.fileName + ":" + e.lineNumber + ": " + e +"\n");
+        if (loaded.util)
+            util.reportError(e);
+        else
+            dump("    " + e.fileName + ":" + e.lineNumber + ": " + e +"\n");
     }
 }
 
@@ -151,7 +154,7 @@ defineModule("base", {
         "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
         "memoize", "properties", "requiresMainThread", "set", "update", "values"
     ],
-    use: ["services"]
+    use: ["services", "util"]
 });
 
 function Runnable(self, func, args) {
@@ -697,12 +700,7 @@ Class.Property.prototype.init = function () {};
 Class.extend = function extend(subclass, superclass, overrides) {
     subclass.superclass = superclass;
 
-    try {
-        subclass.prototype = Object.create(superclass.prototype);
-    }
-    catch(e) {
-        dump(e + "\n" + String.replace(e.stack, /^/gm, "    ") + "\n\n");
-    }
+    subclass.prototype = Object.create(superclass.prototype);
     update(subclass.prototype, overrides);
     subclass.prototype.constructor = subclass;
     subclass.prototype._class_ = subclass;

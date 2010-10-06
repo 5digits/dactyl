@@ -157,7 +157,6 @@ const QuickMarks = Module("quickmarks", {
         commands.add(["qmarks"],
             "Show all QuickMarks",
             function (args) {
-                dactyl.dump(args);
                 args = args[0] || "";
 
                 // ignore invalid qmark characters unless there are no valid qmark chars

@@ -57,7 +57,6 @@ const Util = Module("Util", {
                 if (observers[target])
                     observers[target].call(obj, subject, data);
             });
-        this.dactyl.dump(String(obj), obj instanceof Ci.nsIObserver);
         register("addObserver");
     },
 
@@ -229,9 +228,6 @@ const Util = Module("Util", {
     /**
      * Prints a message to the console. If <b>msg</b> is an object it is
      * pretty printed.
-     *
-     * NOTE: the "browser.dom.window.dump.enabled" preference needs to be
-     * set.
      *
      * @param {string|Object} msg The message to print.
      */
@@ -676,6 +672,8 @@ const Util = Module("Util", {
         }
     },
 
+    maxErrors: 15,
+    errors: Class.memoize(function () []),
     reportError: function (error) {
         if (Cu.reportError)
             Cu.reportError(error);
@@ -686,16 +684,16 @@ const Util = Module("Util", {
                 stack: <>{String.replace(error.stack || Error().stack, /^/mg, "\t")}</>
             });
 
-            let errors = storage.newArray("errors", { store: false });
-            errors.toString = function () [String(v[0]) + "\n" + v[1] for ([k, v] in this)].join("\n\n");
-            errors.push([new Date, obj + obj.stack]);
+            this.errors.push([new Date, obj + "\n" + obj.stack]);
+            this.errors = this.errors.slice(-this.maxErrors);
+            this.errors.toString = function () [k + "\n" + v for ([k, v] in array.iterValues(this))].join("\n\n");
 
-            util.dump(String(error));
-            util.dump(obj);
-            util.dump("");
+            this.dump(String(error));
+            this.dump(obj);
+            this.dump("");
         }
         catch (e) {
-            dump(e);
+            this.dump(e);
         }
     },
 

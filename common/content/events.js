@@ -88,7 +88,7 @@ const Events = Module("events", {
     },
 
     destroy: function () {
-        dactyl.dump("Removing all event listeners");
+        util.dump("Removing all event listeners");
         for (let args in values(this.sessionListeners))
             args[0].removeEventListener.apply(args[0], args.slice(1));
     },
@@ -571,7 +571,7 @@ const Events = Module("events", {
      * @returns {boolean}
      */
     waitForPageLoad: function () {
-        //dactyl.dump("start waiting in loaded state: " + buffer.loaded);
+        //util.dump("start waiting in loaded state: " + buffer.loaded);
         util.threadYield(true); // clear queue
 
         if (buffer.loaded == 1)
@@ -584,7 +584,7 @@ const Events = Module("events", {
         while (now = Date.now(), now < end) {
             util.threadYield();
             //if ((now - start) % 1000 < 10)
-            //    dactyl.dump("waited: " + (now - start) + " ms");
+            //    util.dump("waited: " + (now - start) + " ms");
 
             if (!events.feedingKeys)
                 return false;
@@ -602,7 +602,7 @@ const Events = Module("events", {
         let ret = (buffer.loaded == 1);
         if (!ret)
             dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
-        //dactyl.dump("done waiting: " + ret);
+        //util.dump("done waiting: " + ret);
 
         // sometimes the input widget had focus when replaying a macro
         // maybe this call should be moved somewhere else?

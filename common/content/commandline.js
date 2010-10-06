@@ -1964,7 +1964,7 @@ const ItemList = Class("ItemList", {
         //if (index == 0)
         //    this.start = now;
         //if (index == Math.min(len - 1, 100))
-        //    dactyl.dump({ time: Date.now() - this.start });
+        //    util.dump({ time: Date.now() - this.start });
     },
 
     onEvent: function onEvent(event) false

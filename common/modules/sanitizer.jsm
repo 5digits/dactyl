@@ -153,7 +153,8 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             catch (e) {
                 errors = errors || {};
                 errors[itemName] = e;
-                dump("Error sanitizing " + itemName + ": " + e + "\n" + e.stack + "\n");
+                util.dump("Error sanitizing " + itemName);
+                util.reportError(e);
             }
         }
 
@@ -172,7 +173,8 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             catch (e) {
                 errors = errors || {};
                 errors[itemName] = e;
-                dump("Error sanitizing " + itemName + ": " + e + "\n" + e.stack + "\n");
+                util.dump("Error sanitizing " + itemName);
+                util.reportError(e);
             }
         return errors;
     }

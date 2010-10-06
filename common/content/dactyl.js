@@ -59,7 +59,7 @@ const Dactyl = Module("dactyl", {
         autocommands.trigger("LeavePre", {});
         storage.saveAll();
         dactyl.triggerObserver("shutdown", null);
-        dactyl.dump("All dactyl modules destroyed\n");
+        util.dump("All dactyl modules destroyed\n");
         autocommands.trigger("Leave", {});
     },
 
@@ -1897,7 +1897,7 @@ const Dactyl = Module("dactyl", {
             dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
             dactyl.commandLineOptions.postCommands = args["+c"];
             dactyl.commandLineOptions.preCommands = args["++cmd"];
-            dactyl.dump("Processing command-line option: " + commandline);
+            util.dump("Processing command-line option: " + commandline);
         }
 
         dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);
