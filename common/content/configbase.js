@@ -160,6 +160,24 @@ const ConfigBase = Class(ModuleBase, {
         Enabled      color: blue;
         Disabled     color: red;
 
+        // Hack to give these groups slightly higher precedence
+        // than their unadorned variants.
+        //
+        CmdNormal;[dactyl|highlight]
+        StatusNormal;[dactyl|highlight]
+        CmdErrorMsg;[dactyl|highlight]
+        StatusErrorMsg;[dactyl|highlight]
+        CmdInfoMsg;[dactyl|highlight]
+        StatusInfoMsg;[dactyl|highlight]
+        CmdModeMsg;[dactyl|highlight]
+        StatusModeMsg;[dactyl|highlight]
+        CmdMoreMsg;[dactyl|highlight]
+        StatusMoreMsg;[dactyl|highlight]
+        CmdQuestion;[dactyl|highlight]
+        StatusQuestion;[dactyl|highlight]
+        CmdWarningMsg;[dactyl|highlight]
+        StatusWarningMsg;[dactyl|highlight]
+
         !Normal           color: black   !important; background: white   !important; font-weight: normal !important;
         !StatusNormal     color: inherit !important; background: inherit !important;
         ErrorMsg          color: white   !important; background: red     !important; font-weight: bold !important;

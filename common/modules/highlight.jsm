@@ -73,11 +73,13 @@ const Highlights = Module("Highlight", {
         let old = this.highlight[obj.class];
         this.highlight[obj.class] = obj;
         // This *must* come before any other property changes.
-        if (old)
+        if (old) {
+            obj.selector = old.selector;
             obj.style = old.style;
+        }
 
-        if (/^[>+ ]/.test(obj.selector))
-            obj.selector = this.selector(obj.class) + obj.selector;
+        if (/^[[>+ ]/.test(args[1]))
+            obj.selector = this.selector(obj.class) + args[1];
         if (old && old.value != old.default)
             obj.value = old.style;
 
