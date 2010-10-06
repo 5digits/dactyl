@@ -227,6 +227,38 @@ const Util = Module("Util", {
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
 
     /**
+     * Prints a message to the console. If <b>msg</b> is an object it is
+     * pretty printed.
+     *
+     * NOTE: the "browser.dom.window.dump.enabled" preference needs to be
+     * set.
+     *
+     * @param {string|Object} msg The message to print.
+     */
+    dump: function dump_() {
+        let msg = Array.map(arguments, function (msg) {
+            if (typeof msg == "object")
+                msg = util.objectToString(msg);
+            return msg;
+        }).join(", ");
+        msg = String.replace(msg, /\n?$/, "\n");
+        dump(msg.replace(/^./gm, services.get("dactyl:").name + ": $&"));
+    },
+
+    /**
+     * Dumps a stack trace to the console.
+     *
+     * @param {string} msg The trace message.
+     * @param {number} frames The number of frames to print.
+     */
+    dumpStack: function dumpStack(msg, frames) {
+        let stack = Error().stack.replace(/(?:.*\n){1}/, "");
+        if (frames != null)
+            [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
+        util.dump((msg || "Stack") + "\n" + stack + "\n");
+    },
+
+    /**
      * Converts HTML special characters in <b>str</b> to the equivalent HTML
      * entities.
      *
@@ -641,6 +673,29 @@ const Util = Module("Util", {
         else {
             while (start > end)
                 yield start += step;
+        }
+    },
+
+    reportError: function (error) {
+        if (Cu.reportError)
+            Cu.reportError(error);
+
+        try {
+            let obj = update({}, error, {
+                toString: function () String(error),
+                stack: <>{String.replace(error.stack || Error().stack, /^/mg, "\t")}</>
+            });
+
+            let errors = storage.newArray("errors", { store: false });
+            errors.toString = function () [String(v[0]) + "\n" + v[1] for ([k, v] in this)].join("\n\n");
+            errors.push([new Date, obj + obj.stack]);
+
+            util.dump(String(error));
+            util.dump(obj);
+            util.dump("");
+        }
+        catch (e) {
+            dump(e);
         }
     },
 

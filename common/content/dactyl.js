@@ -211,37 +211,10 @@ const Dactyl = Module("dactyl", {
         }
     },
 
-    /**
-     * Prints a message to the console. If <b>msg</b> is an object it is
-     * pretty printed.
-     *
-     * NOTE: the "browser.dom.window.dump.enabled" preference needs to be
-     * set.
-     *
-     * @param {string|Object} msg The message to print.
-     */
-    dump: function dump() {
-        let msg = Array.map(arguments, function (msg) {
-            if (typeof msg == "object")
-                msg = util.objectToString(msg);
-            return msg;
-        }).join(", ");
-        msg = String.replace(msg, /\n?$/, "\n");
-        window.dump(msg.replace(/^./gm, ("config" in modules && config.name) + ": $&"));
-    },
-
-    /**
-     * Dumps a stack trace to the console.
-     *
-     * @param {string} msg The trace message.
-     * @param {number} frames The number of frames to print.
-     */
-    dumpStack: function dumpStack(msg, frames) {
-        let stack = Error().stack.replace(/(?:.*\n){1}/, "");
-        if (frames != null)
-            [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
-        dactyl.dump((msg || "Stack") + "\n" + stack + "\n");
-    },
+    dump: deprecated("Use util.dump instead",
+                     function dump() util.dump.apply(util, arguments)),
+    dumpStack: deprecated("Use util.dumpStack instead",
+                          function dumpStack() util.dumpStack.apply(util, arguments)),
 
     /**
      * Outputs a plain message to the command line.
@@ -1001,29 +974,7 @@ const Dactyl = Module("dactyl", {
             return;
         if (echo)
             dactyl.echoerr(error);
-
-        if (Cu.reportError)
-            Cu.reportError(error);
-
-        try {
-            let obj = {
-                toString: function () String(error),
-                stack: <>{String.replace(error.stack || Error().stack, /^/mg, "\t")}</>
-            };
-            for (let [k, v] in Iterator(error)) {
-                if (!(k in obj))
-                    obj[k] = v;
-            }
-            if (dactyl.storeErrors) {
-                let errors = storage.newArray("errors", { store: false });
-                errors.toString = function () [String(v[0]) + "\n" + v[1] for ([k, v] in this)].join("\n\n");
-                errors.push([new Date, obj + obj.stack]);
-            }
-            dactyl.dump(String(error));
-            dactyl.dump(obj);
-            dactyl.dump("");
-        }
-        catch (e) { window.dump(e); }
+        util.reportError(error);
     },
 
     /**
