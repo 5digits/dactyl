@@ -30,7 +30,7 @@ const Modes = Module("modes", {
         this.boundProperties = {};
 
         // main modes, only one should ever be active
-        this.addMode("NORMAL",   { char: "n", display: -1 });
+        this.addMode("NORMAL",   { char: "n", display: null });
         this.addMode("INSERT",   { char: "i", input: true });
         this.addMode("VISUAL",   { char: "v", display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : "") });
         this.addMode("COMMAND_LINE", { char: "c", input: true });
@@ -118,7 +118,8 @@ const Modes = Module("modes", {
             this.modeChars[mode.char].push(mode);
         }
 
-        mode.display = mode.display || function () disp;
+        if (mode.display !== null)
+            mode.display = function () disp;
         this._modeMap[name] = mode;
         this._modeMap[this[name]] = mode;
         if (!extended)
