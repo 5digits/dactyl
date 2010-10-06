@@ -351,7 +351,6 @@ const Dactyl = Module("dactyl", {
 
         modifiers = modifiers || {};
 
-        let err = null;
         for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
             if (command === null)
                 throw FailedAssertion("E492: Not a " + config.appName + " command: " + args.commandString);
