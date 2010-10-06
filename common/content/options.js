@@ -646,13 +646,15 @@ const Options = Module("options", {
 
     observe: function (subject, topic, data) {
         if (topic == "nsPref:changed") {
-            // subject is the nsIPrefBranch we're observing (after appropriate QI)
-            // data is the name of the pref that's been changed (relative to subject)
-            switch (data) {
-            case "accessibility.browsewithcaret":
-                let value = options.getPref("accessibility.browsewithcaret", false);
-                dactyl.mode = value ? modes.CARET : modes.NORMAL;
-                break;
+            let observers = this._observers[data];
+            if (observers) {
+                let value = options.getPref(data, false);
+                this._observers[data] = observers.filter(function (callback) {
+                    if (!callback.get())
+                        return false;
+                    dactyl.trapErrors(callback.get(), null, value);
+                    return true;
+                });
             }
         }
     },
@@ -796,6 +798,20 @@ const Options = Module("options", {
 
         commandline.commandOutput(
             template.options(config.host + " Options", prefs()));
+    },
+
+    _observers: Class.memoize(function () ({})),
+    /**
+     * Adds a new preference observer for the given preference.
+     *
+     * @param {string} pref The preference to observe.
+     * @param {function(object)} callback The callback, called with the
+     *    new value of the preference whenever it changes.
+     */
+    observePref: function (pref, callback, weak) {
+        if (!this._observers[pref])
+            this._observers[pref] = [];
+        this._observers[pref].push(weak ? Cu.getWeakReference(callback) : { get: function () callback });
     },
 
     /**

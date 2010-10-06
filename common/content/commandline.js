@@ -441,7 +441,10 @@ const CommandLine = Module("commandline", {
      */
     open: function open(prompt, cmd, extendedMode) {
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
-            leave: commandline.closure.leave
+            leave: function (params) {
+                if (params.pop)
+                    commandline.leave();
+            }
         });
 
         this.currentExtendedMode = extendedMode || null;
@@ -689,13 +692,12 @@ const CommandLine = Module("commandline", {
         };
 
         modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended, {
-            leave: function (newMode) {
-                commandline.leave(newMode);
+            enter: function (stack) { extra.enter && extra.enter(stack); },
+            leave: function (stack) {
+                commandline.leave(stack);
                 if (extra.leave)
-                    extra.leave(newMode);
-            },
-            restore: function (newMode) { extra.restore && extra.restore(newMode) },
-            save: function (newMode) { extra.save && extra.save(newMode) }
+                    extra.leave(stack);
+            }
         });
         this.currentExtendedMode = modes.PROMPT;
 

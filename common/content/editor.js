@@ -16,29 +16,10 @@ const Editor = Module("editor", {
         //
         this._lastFindChar = null;
         this._lastFindCharFunc = null;
-
-        // Hack?
-        dactyl.registerObserver("modeChange", function (oldMode, newMode, stack) {
-            switch (oldMode[0]) {
-            case modes.TEXTAREA:
-            case modes.INSERT:
-                editor.unselectText();
-                break;
-
-            case modes.VISUAL:
-                if (newMode[0] == modes.CARET) {
-                    try { // clear any selection made; a simple if (selection) does not work
-                        let selection = window.content.getSelection();
-                        selection.collapseToStart();
-                    }
-                    catch (e) {}
-                }
-                else
-                    editor.unselectText();
-                break;
-            }
-        });
     },
+
+    get isCaret() modes.getStack(1).main === modes.CARET,
+    get isTextArea() modes.getStack(1).main === modes.TEXTAREA,
 
     line: function () {
         let line = 1;
@@ -60,12 +41,15 @@ const Editor = Module("editor", {
         return col;
     },
 
-    unselectText: function () {
+    unselectText: function (toEnd) {
         let elem = dactyl.focus;
         // A error occurs if the element has been removed when "elem.selectionStart" is executed.
         try {
             if (elem && elem.selectionEnd)
-                elem.selectionEnd = elem.selectionStart;
+                if (toEnd)
+                    elem.selectionStart = elem.selectionEnd;
+                else
+                    elem.selectionEnd = elem.selectionStart;
         }
         catch (e) {}
     },
@@ -75,7 +59,7 @@ const Editor = Module("editor", {
         return text.substring(Editor.getEditor().selectionStart, Editor.getEditor().selectionEnd);
     },
 
-    pasteClipboard: function () {
+    pasteClipboard: function (clipboard, toStart) {
         if (dactyl.has("WINNT")) {
             this.executeCommand("cmd_paste");
             return;
@@ -85,7 +69,7 @@ const Editor = Module("editor", {
         let elem = dactyl.focus;
 
         if (elem.setSelectionRange) {
-            let text = dactyl.clipboardRead();
+            let text = dactyl.clipboardRead(clipboard);
             if (!text)
                 return;
 
@@ -101,7 +85,7 @@ const Editor = Module("editor", {
             let tempStr2 = text;
             let tempStr3 = elem.value.substring(rangeEnd);
             elem.value = tempStr1 + tempStr2 + tempStr3;
-            elem.selectionStart = rangeStart + tempStr2.length;
+            elem.selectionStart = rangeStart + (toStart ? 0 : tempStr2.length);
             elem.selectionEnd = elem.selectionStart;
 
             elem.scrollTop = curTop;
@@ -153,7 +137,8 @@ const Editor = Module("editor", {
             count--;
         }
 
-        modes.set(modes.VISUAL, modes.TEXTAREA);
+        if (modes.main != modes.VISUAL)
+            modes.push(modes.VISUAL);
 
         switch (motion) {
         case "j":
@@ -204,16 +189,16 @@ const Editor = Module("editor", {
         switch (cmd) {
         case "d":
             this.executeCommand("cmd_delete", 1);
-            // need to reset the mode as the visual selection changes it
-            modes.main = modes.TEXTAREA;
+            modes.pop(modes.TEXTAREA);
             break;
         case "c":
             this.executeCommand("cmd_delete", 1);
-            modes.set(modes.INSERT, modes.TEXTAREA);
+            modes.pop(modes.TEXTAREA);
+            modes.push(modes.INSERT);
             break;
         case "y":
             this.executeCommand("cmd_copy", 1);
-            this.unselectText();
+            modes.pop(modes.TEXTAREA);
             break;
 
         default:
@@ -457,19 +442,37 @@ const Editor = Module("editor", {
             if (hasCount)
                 extraInfo.count = true;
 
+            function caretExecute(arg, again) {
+                function fixSelection() {
+                    sel.removeAllRanges();
+                    sel.addRange(RangeFind.endpoint(
+                        RangeFind.nodeRange(buffer.focusedFrame.document.documentElement),
+                        true));
+                }
+
+                let controller = buffer.selectionController;
+                let sel = controller.getSelection(controller.SELECTION_NORMAL);
+                if (!sel.rangeCount) // Hack.
+                    fixSelection();
+
+                try {
+                    controller[caretModeMethod](caretModeArg, arg);
+                }
+                catch (e) {
+                    dactyl.assert(again && e.result === Cr.NS_ERROR_FAILURE);
+                    fixSelection();
+                    caretExecute(arg, false);
+                }
+                return false;
+            }
+
             mappings.add([modes.CARET], keys, "",
                 function (count) {
                     if (typeof count != "number" || count < 1)
                         count = 1;
 
-                    let controller = buffer.selectionController;
-                    let sel = controller.getSelection(controller.SELECTION_NORMAL);
-                    if (!sel.rangeCount) // Hack.
-                        sel.addRange(RangeFind.endpoint(
-                            RangeFind.nodeRange(buffer.focusedFrame.document.documentElement),
-                            true));
                     while (count--)
-                        controller[caretModeMethod](caretModeArg, false);
+                        caretExecute(false, true);
                 },
                 extraInfo);
 
@@ -479,15 +482,15 @@ const Editor = Module("editor", {
                         count = 1;
 
                     let controller = buffer.selectionController;
-                    while (count--) {
-                        if (modes.extended & modes.TEXTAREA) {
+                    while (count-- && modes.main == modes.VISUAL) {
+                        if (editor.isTextArea) {
                             if (typeof visualTextareaCommand == "function")
                                 visualTextareaCommand();
                             else
                                 editor.executeCommand(visualTextareaCommand);
                         }
                         else
-                            controller[caretModeMethod](caretModeArg, true);
+                            caretExecute(true, true);
                     }
                 },
                 extraInfo);
@@ -508,7 +511,7 @@ const Editor = Module("editor", {
                 function (count) {
                     commands.forEach(function (cmd)
                         editor.executeCommand(cmd, 1));
-                    modes.set(modes.INSERT, modes.TEXTAREA);
+                    modes.push(modes.INSERT);
                 });
         }
 
@@ -608,7 +611,7 @@ const Editor = Module("editor", {
 
         mappings.add([modes.INSERT],
             ["<C-t>"], "Edit text field in Vi mode",
-            function () { dactyl.mode = modes.TEXTAREA; });
+            function () { modes.push(modes.TEXTAREA); });
 
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand insert mode abbreviation",
@@ -628,7 +631,7 @@ const Editor = Module("editor", {
             ["u"], "Undo",
             function (count) {
                 editor.executeCommand("cmd_undo", count);
-                dactyl.mode = modes.TEXTAREA;
+                editor.unselectText();
             },
             { count: true });
 
@@ -636,7 +639,7 @@ const Editor = Module("editor", {
             ["<C-r>"], "Redo",
             function (count) {
                 editor.executeCommand("cmd_redo", count);
-                dactyl.mode = modes.TEXTAREA;
+                editor.unselectText();
             },
             { count: true });
 
@@ -648,7 +651,7 @@ const Editor = Module("editor", {
             ["o"], "Open line below current",
             function (count) {
                 editor.executeCommand("cmd_endLine", 1);
-                modes.set(modes.INSERT, modes.TEXTAREA);
+                modes.push(modes.INSERT);
                 events.feedkeys("<Return>");
             });
 
@@ -656,7 +659,7 @@ const Editor = Module("editor", {
             ["O"], "Open line above current",
             function (count) {
                 editor.executeCommand("cmd_beginLine", 1);
-                modes.set(modes.INSERT, modes.TEXTAREA);
+                modes.push(modes.INSERT);
                 events.feedkeys("<Return>");
                 editor.executeCommand("cmd_linePrevious", 1);
             });
@@ -674,7 +677,7 @@ const Editor = Module("editor", {
         // visual mode
         mappings.add([modes.CARET, modes.TEXTAREA],
             ["v"], "Start visual mode",
-            function (count) { modes.set(modes.VISUAL, dactyl.mode); });
+            function (count) { modes.push(modes.VISUAL); });
 
         mappings.add([modes.VISUAL],
             ["v"], "End visual mode",
@@ -683,7 +686,7 @@ const Editor = Module("editor", {
         mappings.add([modes.TEXTAREA],
             ["V"], "Start visual line mode",
             function (count) {
-                modes.set(modes.VISUAL, modes.TEXTAREA | modes.LINE);
+                modes.push(modes.VISUAL, modes.LINE);
                 editor.executeCommand("cmd_beginLine", 1);
                 editor.executeCommand("cmd_selectLineNext", 1);
             });
@@ -691,17 +694,17 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL],
             ["c", "s"], "Change selected text",
             function (count) {
-                dactyl.assert(modes.extended & modes.TEXTAREA);
+                dactyl.assert(editor.isTextArea);
                 editor.executeCommand("cmd_cut");
-                modes.set(modes.INSERT, modes.TEXTAREA);
+                modes.replace(modes.VISUAL);
             });
 
         mappings.add([modes.VISUAL],
             ["d"], "Delete selected text",
             function (count) {
-                if (modes.extended & modes.TEXTAREA) {
+                if (editor.isTextArea) {
                     editor.executeCommand("cmd_cut");
-                    modes.set(modes.TEXTAREA);
+                    modes.pop();
                 }
                 else
                     dactyl.beep();
@@ -710,9 +713,9 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL],
             ["y"], "Yank selected text",
             function (count) {
-                if (modes.extended & modes.TEXTAREA) {
+                if (editor.isTextArea) {
                     editor.executeCommand("cmd_copy");
-                    modes.set(modes.TEXTAREA);
+                    modes.pop();
                 }
                 else
                     dactyl.clipboardWrite(buffer.getCurrentWord(), true);
@@ -721,12 +724,12 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL, modes.TEXTAREA],
             ["p"], "Paste clipboard contents",
             function (count) {
-                dactyl.assert(!(modes.extended & modes.CARET));
+                dactyl.assert(!editor.isCaret);
                 if (!count)
                     count = 1;
                 while (count--)
                     editor.executeCommand("cmd_paste");
-                dactyl.mode = modes.TEXTAREA;
+                modes.pop(modes.TEXTAREA);
             });
 
         // finding characters
@@ -786,7 +789,7 @@ const Editor = Module("editor", {
                         text.substring(pos + 1);
                     editor.moveToPosition(pos + 1, true, false);
                 }
-                modes.set(modes.TEXTAREA);
+                modes.pop(modes.TEXTAREA);
             },
             { count: true });
     },

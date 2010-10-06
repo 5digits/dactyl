@@ -1532,11 +1532,7 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["i", "<Insert>"],
             "Start caret mode",
-            function () {
-                // setting this option notifies an observer which takes care of the
-                // mode setting
-                options.setPref("accessibility.browsewithcaret", true);
-            });
+            function () { modes.push(modes.CARET); });
 
         mappings.add(myModes, ["<C-c>"],
             "Stop loading the current web page",

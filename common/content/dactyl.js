@@ -162,7 +162,7 @@ const Dactyl = Module("dactyl", {
      *
      * @returns {string}
      */
-    clipboardRead: function clipboardRead() {
+    clipboardRead: function clipboardRead(getClipboard) {
         let str = null;
 
         try {
@@ -171,7 +171,7 @@ const Dactyl = Module("dactyl", {
 
             transferable.addDataFlavor("text/unicode");
 
-            if (clipboard.supportsSelectionClipboard())
+            if (!getClipboard && clipboard.supportsSelectionClipboard())
                 clipboard.getData(transferable, clipboard.kSelectionClipboard);
             else
                 clipboard.getData(transferable, clipboard.kGlobalClipboard);

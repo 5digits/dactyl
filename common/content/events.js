@@ -76,11 +76,11 @@ const Events = Module("events", {
         this._activeMenubar = false;
         this.addSessionListener(window, "DOMMenuBarActive", this.closure.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.closure.onDOMMenuBarInactive, true);
-        this.addSessionListener(window, "focus", this.wrapListener(this.closure.onFocus), true);
-        this.addSessionListener(window, "keydown", this.wrapListener(this.closure.onKeyUpOrDown), true);
-        this.addSessionListener(window, "keypress", this.wrapListener(this.closure.onKeyPress), true);
-        this.addSessionListener(window, "keyup", this.wrapListener(this.closure.onKeyUpOrDown), true);
-        this.addSessionListener(window, "mousedown", this.wrapListener(this.closure.onMouseDown), true);
+        this.addSessionListener(window, "focus", this.wrapListener(this.onFocus), true);
+        this.addSessionListener(window, "keydown", this.wrapListener(this.onKeyUpOrDown), true);
+        this.addSessionListener(window, "keypress", this.wrapListener(this.onKeyPress), true);
+        this.addSessionListener(window, "keyup", this.wrapListener(this.onKeyUpOrDown), true);
+        this.addSessionListener(window, "mousedown", this.wrapListener(this.onMouseDown), true);
         this.addSessionListener(window, "popuphidden", this.closure.onPopupHidden, true);
         this.addSessionListener(window, "popupshown", this.closure.onPopupShown, true);
         this.addSessionListener(window, "resize", this.closure.onResize, true);
@@ -90,7 +90,8 @@ const Events = Module("events", {
     destroy: function () {
         util.dump("Removing all event listeners");
         for (let args in values(this.sessionListeners))
-            args[0].removeEventListener.apply(args[0], args.slice(1));
+            if (args[0].get())
+                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
     },
 
     /**
@@ -105,7 +106,8 @@ const Events = Module("events", {
      */
     addSessionListener: function (target, event, callback, capture) {
         let args = Array.slice(arguments, 0);
-        target.addEventListener.apply(args[0], args.slice(1));
+        args[0].addEventListener.apply(args[0], args.slice(1));
+        args[0] = Cu.getWeakReference(args[0]);
         this.sessionListeners.push(args);
     },
 
@@ -113,6 +115,7 @@ const Events = Module("events", {
      * Wraps an event listener to ensure that errors are reported.
      */
     wrapListener: function wrapListener(method, self) {
+        self = self || this;
         return function (event) {
             try {
                 method.apply(self, arguments);
@@ -625,69 +628,17 @@ const Events = Module("events", {
      *  The global escape key handler. This is called in ALL modes.
      */
     onEscape: function () {
-        if (modes.passNextKey)
-            return;
-
-        if (modes.passAllKeys) {
-            modes.passAllKeys = false;
-            return;
-        }
-
         switch (dactyl.mode) {
-        case modes.NORMAL:
-            // clear any selection made
-            let selection = window.content.getSelection();
-            try { // a simple if (selection) does not seem to work
-                selection.collapseToStart();
-            }
-            catch (e) {}
-
-            modes.reset();
-            break;
-
-        case modes.VISUAL:
-            if (modes.extended & modes.TEXTAREA)
-                dactyl.mode = modes.TEXTAREA;
-            else if (modes.extended & modes.CARET)
-                dactyl.mode = modes.CARET;
-            break;
-
-        case modes.CARET:
-            // setting this option will trigger an observer which will
-            // take care of all other details like setting the NORMAL
-            // mode
-            options.setPref("accessibility.browsewithcaret", false);
-            break;
-
-        case modes.TEXTAREA:
-            // TODO: different behaviour for text areas and other input
-            // fields seems unnecessarily complicated. If the user
-            // likes Vi-mode then they probably like it for all input
-            // fields, if not they can enter it explicitly for only
-            // text areas.  The mode name TEXTAREA is confusing and
-            // would be better replaced with something indicating that
-            // it's a Vi editing mode. Extended modes really need to be
-            // displayed too. --djk
-            function isInputField() {
-                let elem = dactyl.focus;
-                return elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type)
-                    || elem instanceof HTMLIsIndexElement;
-            }
-
-            if (options["insertmode"] || isInputField())
-                dactyl.mode = modes.INSERT;
-            else
-                modes.reset();
-            break;
-
+        case modes.COMMAND_LINE:
         case modes.INSERT:
-            if ((modes.extended & modes.TEXTAREA))
-                dactyl.mode = modes.TEXTAREA;
-            else
-                modes.reset();
+        case modes.PASS_THROUGH:
+        case modes.QUOTE:
+        case modes.TEXTAREA:
+        case modes.VISUAL:
+            modes.pop();
             break;
 
-        default: // HINTS, CUSTOM or COMMAND_LINE
+        default:
             modes.reset();
             break;
         }
@@ -752,12 +703,15 @@ const Events = Module("events", {
             }
 
             if (elem instanceof HTMLTextAreaElement || (elem && util.computedStyle(elem).MozUserModify == "read-write")) {
+                if (modes.main === modes.VISUAL && elem.selectionEnd == elem.selectionStart)
+                    modes.pop();
                 if (options["insertmode"])
                     modes.set(modes.INSERT);
-                else if (elem.selectionEnd - elem.selectionStart > 0)
-                    modes.set(modes.VISUAL, modes.TEXTAREA);
-                else
-                    modes.main = modes.TEXTAREA;
+                else {
+                    modes.set(modes.TEXTAREA);
+                    if (elem.selectionEnd - elem.selectionStart > 0)
+                        modes.push(modes.VISUAL);
+                }
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
                 return;
@@ -772,7 +726,7 @@ const Events = Module("events", {
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
                 util.threadYield(true);
 
-            if (dactyl.mode & (modes.EMBED | modes.INSERT | modes.TEXTAREA | modes.VISUAL))
+            if (modes.getMode(modes.main).ownsFocus)
                  modes.reset();
         }
         finally {
@@ -784,7 +738,7 @@ const Events = Module("events", {
     // the commandline has focus
     // TODO: ...help me...please...
     onKeyPress: function (event) {
-        function isEscapeKey(key) key == "<Esc>" || key == "<C-[>";
+        function isEscape(key) key == "<Esc>" || key == "<C-[>";
 
         function killEvent() {
             event.preventDefault();
@@ -802,7 +756,7 @@ const Events = Module("events", {
                 dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
                 return killEvent();
             }
-            else if (!mappings.hasMap(dactyl.mode, this._input.buffer + key))
+            else if (!mappings.hasMap(mode, this._input.buffer + key))
                 this._macros.set(this._currentMacro, {
                     keys: this._macros.get(this._currentMacro, {}).keys + key,
                     timeRecorded: Date.now()
@@ -832,6 +786,7 @@ const Events = Module("events", {
 
         try {
             let stop = false;
+            let mode = modes.main;
 
             let win = document.commandDispatcher.focusedWindow;
             if (win && win.document && "designMode" in win.document && win.document.designMode == "on" && !config.isComposeWindow)
@@ -839,20 +794,19 @@ const Events = Module("events", {
             // menus have their own command handlers
             if (modes.extended & modes.MENU)
                 stop = true;
+            else if (modes.main == modes.PASS_THROUGH)
+                // let flow continue to handle these keys to cancel escape-all-keys mode
+                stop = !isEscape(key) && key != "<C-v>"
             // handle Escape-one-key mode (Ctrl-v)
-            else if (modes.passNextKey && !modes.passAllKeys) {
-                modes.passNextKey = false;
-                stop = true;
+            else if (modes.main == modes.QUOTE) {
+                stop = modes.getStack(1).main !== modes.PASS_THROUGH || isEscape(key);
+                // We need to preserve QUOTE mode until the escape
+                // handler to escape the <Esc> key
+                if (!stop || !isEscape(key))
+                    modes.pop();
+                mode = modes.getStack(1).main;
             }
             // handle Escape-all-keys mode (Ctrl-q)
-            else if (modes.passAllKeys) {
-                if (modes.passNextKey)
-                    modes.passNextKey = false; // and then let flow continue
-                else if (isEscapeKey(key) || key == "<C-v>")
-                    ; // let flow continue to handle these keys to cancel escape-all-keys mode
-                else
-                    stop = true;
-            }
 
             if (stop) {
                 this._input.buffer = "";
@@ -862,7 +816,7 @@ const Events = Module("events", {
             stop = true; // set to false if we should NOT consume this event but let the host app handle it
 
             // just forward event without checking any mappings when the MOW is open
-            if (dactyl.mode == modes.COMMAND_LINE && (modes.extended & modes.OUTPUT_MULTILINE)) {
+            if (mode == modes.COMMAND_LINE && (modes.extended & modes.OUTPUT_MULTILINE)) {
                 commandline.onMultilineOutputEvent(event);
                 return killEvent();
             }
@@ -871,16 +825,16 @@ const Events = Module("events", {
             // they are without beeping also fixes key navigation in combo
             // boxes, submitting forms, etc.
             // FIXME: breaks iabbr for now --mst
-            if (key in config.ignoreKeys && (config.ignoreKeys[key] & dactyl.mode)) {
+            if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode)) {
                 this._input.buffer = "";
                 return null;
             }
 
             // TODO: handle middle click in content area
 
-            if (!isEscapeKey(key)) {
+            if (!isEscape(key)) {
                 // custom mode...
-                if (dactyl.mode == modes.CUSTOM) {
+                if (mode == modes.CUSTOM) {
                     plugins.onEvent(event);
                     return killEvent();
                 }
@@ -910,15 +864,17 @@ const Events = Module("events", {
             // whatever reason).  if that happens to be correct, well..
             // XXX: why not just do that as well for HINTS mode actually?
 
-            if (dactyl.mode == modes.CUSTOM)
+            if (mode == modes.CUSTOM)
                 return null;
+
+            let mainMode = modes.getMode(mode);
 
             let inputStr = this._input.buffer + key;
             let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
             let candidateCommand = inputStr.substr(countStr.length);
-            let map = mappings[event.noremap ? "getDefault" : "get"](dactyl.mode, candidateCommand);
+            let map = mappings[event.noremap ? "getDefault" : "get"](mode, candidateCommand);
 
-            let candidates = mappings.getCandidates(dactyl.mode, candidateCommand);
+            let candidates = mappings.getCandidates(mode, candidateCommand);
             if (candidates.length == 0 && !map) {
                 map = this._input.pendingMap;
                 this._input.pendingMap = null;
@@ -929,7 +885,7 @@ const Events = Module("events", {
             // counts must be at the start of a complete mapping (10j -> go 10 lines down)
             if (countStr && !candidateCommand) {
                 // no count for insert mode mappings
-                if (!modes.mainMode.count || modes.mainMode.input)
+                if (!mainMode.count || mainMode.input)
                     stop = false;
                 else
                     this._input.buffer = inputStr;
@@ -938,7 +894,7 @@ const Events = Module("events", {
                 this._input.buffer = "";
                 let map = this._input.pendingArgMap;
                 this._input.pendingArgMap = null;
-                if (!isEscapeKey(key)) {
+                if (!isEscape(key)) {
                     if (modes.isReplaying && !this.waitForPageLoad())
                         return null;
                     map.execute(null, this._input.count, key);
@@ -957,7 +913,7 @@ const Events = Module("events", {
                     this._input.pendingArgMap = map;
                 }
                 else if (this._input.pendingMotionMap) {
-                    if (!isEscapeKey(key))
+                    if (!isEscape(key))
                         this._input.pendingMotionMap.execute(candidateCommand, this._input.count, null);
                     this._input.pendingMotionMap = null;
                 }
@@ -974,14 +930,14 @@ const Events = Module("events", {
                         stop = false;
                 }
             }
-            else if (mappings.getCandidates(dactyl.mode, candidateCommand).length > 0 && !event.skipmap) {
+            else if (mappings.getCandidates(mode, candidateCommand).length > 0 && !event.skipmap) {
                 this._input.pendingMap = map;
                 this._input.buffer += key;
             }
             else { // if the key is neither a mapping nor the start of one
                 // the mode checking is necessary so that things like g<esc> do not beep
                 if (this._input.buffer != "" && !event.skipmap &&
-                    (dactyl.mode & (modes.INSERT | modes.COMMAND_LINE | modes.TEXTAREA)))
+                    (mode & (modes.INSERT | modes.COMMAND_LINE | modes.TEXTAREA)))
                     events.feedkeys(this._input.buffer, { noremap: true, skipmap: true });
 
                 this._input.buffer = "";
@@ -989,17 +945,17 @@ const Events = Module("events", {
                 this._input.pendingMotionMap = null;
                 this._input.pendingMap = null;
 
-                if (!isEscapeKey(key)) {
+                if (!isEscape(key)) {
                     // allow key to be passed to the host app if we can't handle it
-                    stop = (dactyl.mode == modes.TEXTAREA);
+                    stop = (mode == modes.TEXTAREA);
 
-                    if (dactyl.mode == modes.COMMAND_LINE) {
+                    if (mode == modes.COMMAND_LINE) {
                         if (!(modes.extended & modes.INPUT_MULTILINE))
                             dactyl.trapErrors(function () {
                                 commandline.onEvent(event); // reroute event in command line mode
                             });
                     }
-                    else if (!modes.mainMode.input)
+                    else if (!mainMode.input)
                         dactyl.beep();
                 }
             }
@@ -1019,9 +975,8 @@ const Events = Module("events", {
 
     // this is need for sites like msn.com which focus the input field on keydown
     onKeyUpOrDown: function (event) {
-        if (modes.passNextKey ^ modes.passAllKeys || Events.isInputElemFocused())
-            return;
-        event.stopPropagation();
+        if (!Events.isInputElemFocused() && !modes.passThrough)
+            event.stopPropagation();
     },
 
     onMouseDown: function (event) {
@@ -1052,20 +1007,18 @@ const Events = Module("events", {
     },
 
     onSelectionChange: function (event) {
-        let couldCopy = false;
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
-        if (controller && controller.isCommandEnabled("cmd_copy"))
-            couldCopy = true;
+        let couldCopy = controller && controller.isCommandEnabled("cmd_copy");
 
-        if (dactyl.mode != modes.VISUAL) {
-            if (couldCopy) {
-                if ((dactyl.mode == modes.TEXTAREA ||
-                     (modes.extended & modes.TEXTAREA))
-                        && !options["insertmode"])
-                    modes.set(modes.VISUAL, modes.TEXTAREA);
-                else if (dactyl.mode == modes.CARET)
-                    modes.set(modes.VISUAL, modes.CARET);
-            }
+        if (dactyl.mode === modes.VISUAL) {
+            if (!couldCopy)
+                modes.pop(); // Really not ideal.
+        }
+        else if (couldCopy) {
+            if (modes.main == modes.TEXTAREA && !options["insertmode"])
+                modes.push(modes.VISUAL);
+            else if (dactyl.mode == modes.CARET)
+                modes.push(modes.VISUAL);
         }
         // XXX: disabled, as i think automatically starting visual caret mode does more harm than help
         // else
@@ -1144,11 +1097,11 @@ const Events = Module("events", {
 
         mappings.add(modes.all,
             ["<C-z>"], "Temporarily ignore all " + config.appName + " key bindings",
-            function () { modes.passAllKeys = true; });
+            function () { modes.push(modes.PASS_THROUGH); });
 
         mappings.add(modes.all,
             ["<C-v>"], "Pass through next key",
-            function () { modes.passNextKey = true; });
+            function () { modes.push(modes.QUOTE); });
 
         mappings.add(modes.all,
             ["<Nop>"], "Do nothing",
