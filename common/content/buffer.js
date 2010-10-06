@@ -742,12 +742,10 @@ const Buffer = Module("buffer", {
         count = count || 1;
         let win = Buffer.findScrollableWindow();
 
-        Buffer.checkScrollYBounds(win, direction);
-
         if (options["scroll"] > 0)
             this.scrollLines(options["scroll"] * direction);
-        else // scroll half a page down in pixels
-            win.scrollBy(0, win.innerHeight / 2 * direction);
+        else
+            this.scrollPages(direction / 2);
     },
 
     _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
@@ -1107,12 +1105,6 @@ const Buffer = Module("buffer", {
         Buffer.setZoom(Math.round(values[i] * 100), fullZoom);
     },
 
-    checkScrollYBounds: function checkScrollYBounds(win, direction) {
-        // NOTE: it's possible to have scrollY > scrollMaxY - FF bug?
-        if (direction > 0 && win.scrollY >= win.scrollMaxY || direction < 0 && win.scrollY == 0)
-            dactyl.beep();
-    },
-
     findScrollableWindow: function findScrollableWindow() {
         win = window.document.commandDispatcher.focusedWindow;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
@@ -1176,8 +1168,12 @@ const Buffer = Module("buffer", {
         else
             throw Error();
 
-        elem.scrollTop += number * increment;
+        if (number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight)
+            elem.scrollTop += number * increment;
+        else
+            dactyl.beep();
     },
+
     scrollHorizontal: function scrollHorizontal(elem, increment, number) {
         elem = elem || Buffer.findScrollable(number, true);
         let fontSize = parseInt(util.computedStyle(elem).fontSize);
@@ -1188,7 +1184,10 @@ const Buffer = Module("buffer", {
         else
             throw Error();
 
-        elem.scrollLeft += number * increment;
+        if (number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth)
+            elem.scrollLeft += number * increment;
+        else
+            dactyl.beep();
     },
 
     scrollElemToPercent: function scrollElemToPercent(elem, horizontal, vertical) {
