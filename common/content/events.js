@@ -793,15 +793,14 @@ const Events = Module("events", {
 
         let key = events.toString(event);
         if (!key)
-             return;
+             return null;
 
         if (modes.isRecording) {
             if (key == "q" && !modes.mainMode.input) { // TODO: should not be hardcoded
                 modes.isRecording = false;
                 dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro, {}).keys, 9);
                 dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
-                killEvent();
-                return;
+                return killEvent();
             }
             else if (!mappings.hasMap(dactyl.mode, this._input.buffer + key))
                 this._macros.set(this._currentMacro, {
@@ -828,8 +827,7 @@ const Events = Module("events", {
             else
                 events.duringFeed.push(event);
 
-            killEvent();
-            return;
+            return killEvent();
         }
 
         try {
@@ -858,7 +856,7 @@ const Events = Module("events", {
 
             if (stop) {
                 this._input.buffer = "";
-                return;
+                return null;
             }
 
             stop = true; // set to false if we should NOT consume this event but let the host app handle it
@@ -866,7 +864,7 @@ const Events = Module("events", {
             // just forward event without checking any mappings when the MOW is open
             if (dactyl.mode == modes.COMMAND_LINE && (modes.extended & modes.OUTPUT_MULTILINE)) {
                 commandline.onMultilineOutputEvent(event);
-                throw killEvent();
+                return killEvent();
             }
 
             // XXX: ugly hack for now pass certain keys to the host app as
@@ -875,7 +873,7 @@ const Events = Module("events", {
             // FIXME: breaks iabbr for now --mst
             if (key in config.ignoreKeys && (config.ignoreKeys[key] & dactyl.mode)) {
                 this._input.buffer = "";
-                return;
+                return null;
             }
 
             // TODO: handle middle click in content area
@@ -884,7 +882,7 @@ const Events = Module("events", {
                 // custom mode...
                 if (dactyl.mode == modes.CUSTOM) {
                     plugins.onEvent(event);
-                    throw killEvent();
+                    return killEvent();
                 }
 
                 // All of these special cases for hint mode are driving
@@ -897,11 +895,11 @@ const Events = Module("events", {
                         || (hints.isHintKey(key) && !hints.escNumbers)) {
                         hints.onEvent(event);
                         this._input.buffer = "";
-                        throw killEvent();
+                        return killEvent();
                     }
 
                     // others are left to generate the 'input' event or handled by the host app
-                    return;
+                    return null;
                 }
             }
 
@@ -913,7 +911,7 @@ const Events = Module("events", {
             // XXX: why not just do that as well for HINTS mode actually?
 
             if (dactyl.mode == modes.CUSTOM)
-                return;
+                return null;
 
             let inputStr = this._input.buffer + key;
             let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
@@ -942,7 +940,7 @@ const Events = Module("events", {
                 this._input.pendingArgMap = null;
                 if (!isEscapeKey(key)) {
                     if (modes.isReplaying && !this.waitForPageLoad())
-                        return;
+                        return null;
                     map.execute(null, this._input.count, key);
                 }
             }
@@ -969,7 +967,7 @@ const Events = Module("events", {
                 }
                 else {
                     if (modes.isReplaying && !this.waitForPageLoad())
-                        throw killEvent();
+                        return killEvent();
 
                     let ret = map.execute(null, this._input.count);
                     if (map.route && ret)
@@ -993,7 +991,7 @@ const Events = Module("events", {
 
                 if (!isEscapeKey(key)) {
                     // allow key to be passed to the host app if we can't handle it
-                    stop = false;
+                    stop = (dactyl.mode == modes.TEXTAREA);
 
                     if (dactyl.mode == modes.COMMAND_LINE) {
                         if (!(modes.extended & modes.INPUT_MULTILINE))
@@ -1010,8 +1008,7 @@ const Events = Module("events", {
                 killEvent();
         }
         catch (e) {
-            if (e !== undefined)
-                dactyl.reportError(e);
+            dactyl.reportError(e);
         }
         finally {
             let motionMap = (this._input.pendingMotionMap && this._input.pendingMotionMap.names[0]) || "";
