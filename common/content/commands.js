@@ -917,7 +917,7 @@ const Commands = Module("commands", {
             if ((res = re2.exec(str)))
                 arg += keepQuotes ? res[0] : res[2].replace(/\\(.)/g, "$1");
             else if ((res = /^(")((?:[^\\"]|\\.)*)("?)/.exec(str)))
-                arg += keepQuotes ? res[0] : window.eval(res[0] + (res[3] ? "" : '"'));
+                arg += keepQuotes ? res[0] : JSON.parse(res[0] + (res[3] ? "" : '"'));
             else if ((res = /^(')((?:[^']|'')*)('?)/.exec(str)))
                 arg += keepQuotes ? res[0] : res[2].replace("''", "'", "g");
             else

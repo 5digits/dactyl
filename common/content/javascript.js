@@ -478,9 +478,7 @@ const JavaScript = Module("javascript", {
             // The top of the stack is the sting we're completing.
             // Wrap it in its delimiters and eval it to process escape sequences.
             let string = this._str.substring(this._get(-1).offset + 1, this._lastIdx);
-            // This is definitely a properly quoted string.
-            // Just eval it normally.
-            string = window.eval(this._last + string + this._last);
+            string = JSON.parse(this._last + string + this._last);
 
             // Is this an object accessor?
             if (this._get(-2).char == "[") { // Are we inside of []?
