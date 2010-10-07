@@ -54,10 +54,10 @@ syn keyword melodactylOption activate act altwildmode awim autocomplete au noban
     \ ds editor encoding enc noerrorbells noeb eventignore ei noexrc noex extendedhinttags eht fileencoding fenc followhints fh
     \ nofullscreen nofs guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm hinttags ht hinttimeout hto history
     \ hi nohlsearch nohls noignorecase noic noincsearch nois noinsertmode noim nojsdebugger nojsd laststatus ls nolinksearch nolks
-    \ loadplugins lpl maxitems messages msgs nomore newtab nextpattern noonline pageinfo pa popups pps previouspattern runtimepath
-    \ rtp scroll scr shell sh shellcmdflag shcf noshowmode nosmd showstatuslinks ssli showtabline stal nosmartcase noscs
-    \ nostrictfocus nosf suggestengines titlestring urlseparator nousermode noum verbose vbs novisualbell novb wildanchor wia
-    \ wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
+    \ loadplugins lpl mapleader ml maxitems messages msgs nomore newtab nextpattern noonline pageinfo pa popups pps
+    \ previouspattern runtimepath rtp scroll scr shell sh shellcmdflag shcf noshowmode nosmd showstatuslinks ssli showtabline stal
+    \ nosmartcase noscs nostrictfocus nosf suggestengines titlestring urlseparator nousermode noum verbose vbs novisualbell novb
+    \ wildanchor wia wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=melodactylSetMod
 
 let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlsearch", "hls",
