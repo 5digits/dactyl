@@ -232,15 +232,7 @@ const Util = Module("Util", {
      *
      * @param {string|Object} msg The message to print.
      */
-    dump: function dump_() {
-        let msg = Array.map(arguments, function (msg) {
-            if (typeof msg == "object")
-                msg = util.objectToString(msg);
-            return msg;
-        }).join(", ");
-        msg = String.replace(msg, /\n?$/, "\n");
-        dump(msg.replace(/^./gm, services.get("dactyl:").name + ": $&"));
-    },
+    dump: defineModule.dump,
 
     /**
      * Dumps a stack trace to the console.

@@ -112,7 +112,19 @@ function defineModule(name, params) {
 }
 
 defineModule.loadLog = [];
-Object.defineProperty(defineModule.loadLog, "push", { value: function (val) { dump(val + "\n"); this[this.length] = val; } });
+Object.defineProperty(defineModule.loadLog, "push", {
+    value: function (val) { defineModule.dump(val + "\n"); this[this.length] = val; }
+});
+defineModule.dump = function dump_() {
+    let msg = Array.map(arguments, function (msg) {
+        if (loaded.util && typeof msg == "object")
+            msg = util.objectToString(msg);
+        return msg;
+    }).join(", ");
+    let name = loaded.services ? services.get("dactyl:").name : "dactyl";
+    dump(String.replace(msg, /\n?$/, "\n")
+               .replace(/^./gm, name + ": $&"));
+}
 defineModule.modules = [];
 defineModule.times = { all: 0 };
 defineModule.time = function time(major, minor, func, self) {
@@ -130,9 +142,9 @@ defineModule.time = function time(major, minor, func, self) {
 
 function endModule() {
     defineModule.loadLog.push("endModule " + currentModule.NAME);
-    loaded[currentModule.NAME] = 1;
     for(let [, mod] in Iterator(use[currentModule.NAME] || []))
         require(mod, currentModule.NAME, "use");
+    loaded[currentModule.NAME] = 1;
 }
 
 function require(obj, name, from) {
@@ -141,11 +153,11 @@ function require(obj, name, from) {
         Cu.import("resource://dactyl/" + name + ".jsm", obj);
     }
     catch (e) {
-        dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n");
+        defineModule.dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n");
         if (loaded.util)
             util.reportError(e);
         else
-            dump("    " + e.fileName + ":" + e.lineNumber + ": " + e +"\n");
+            defineModule.dump("    " + e.fileName + ":" + e.lineNumber + ": " + e +"\n");
     }
 }
 
@@ -165,10 +177,10 @@ defineModule("base", {
 function Runnable(self, func, args) {
     return {
         __proto__: Runnable.prototype,
-        QueryInterface: XPCOMUtils.generateQI([Ci.nsIRunnable]),
         run: function () { func.apply(self, args || []); }
     };
 }
+Runnable.prototype.QueryInterface = XPCOMUtils.generateQI([Ci.nsIRunnable]);
 
 /**
  * Returns a list of all of the top-level properties of an object, by
