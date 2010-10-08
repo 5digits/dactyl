@@ -62,7 +62,7 @@ const Config = Module("config", ConfigBase, {
         // we switch to -- MESSAGE -- mode for Teledactyl when the main HTML widget gets focus
         if (win && win.document instanceof HTMLDocument || dactyl.focus instanceof HTMLAnchorElement) {
             if (config.isComposeWindow)
-                modes.set(modes.INSERT, modes.TEXTAREA);
+                modes.set(modes.INSERT, modes.TEXT_EDIT);
             else if (dactyl.mode != modes.MESSAGE)
                 dactyl.mode = modes.MESSAGE;
         }

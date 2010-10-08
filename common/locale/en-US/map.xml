@@ -236,7 +236,7 @@
 :nmap  :nnoremap  :nunmap  :nmapclear – Normal mode
 :vmap  :vnoremap  :vunmap  :vmapclear – Visual mode
 :imap  :inoremap  :iunmap  :imapclear – Insert mode
-:tmap  :tnoremap  :tunmap  :tmapclear – TextArea mode
+:tmap  :tnoremap  :tunmap  :tmapclear – Text Edit mode
 :cmap  :cnoremap  :cunmap  :cmapclear – Command-line mode
 </code>
 
