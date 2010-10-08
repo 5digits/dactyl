@@ -58,7 +58,7 @@ const Modes = Module("modes", {
                     this.pref = false;
             }
         });
-        this.addMode("TEXTAREA", { char: "i", ownsFocus: true });
+        this.addMode("TEXT_EDIT", { char: "t", ownsFocus: true });
         this.addMode("EMBED",    { input: true, ownsFocus: true });
         this.addMode("PASS_THROUGH");
         this.addMode("QUOTE",    {

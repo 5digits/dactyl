@@ -19,7 +19,7 @@ const Editor = Module("editor", {
     },
 
     get isCaret() modes.getStack(1).main === modes.CARET,
-    get isTextArea() modes.getStack(1).main === modes.TEXTAREA,
+    get isTextEdit() modes.getStack(1).main === modes.TEXT_EDIT,
 
     line: function () {
         let line = 1;
@@ -189,16 +189,16 @@ const Editor = Module("editor", {
         switch (cmd) {
         case "d":
             this.executeCommand("cmd_delete", 1);
-            modes.pop(modes.TEXTAREA);
+            modes.pop(modes.TEXT_EDIT);
             break;
         case "c":
             this.executeCommand("cmd_delete", 1);
-            modes.pop(modes.TEXTAREA);
+            modes.pop(modes.TEXT_EDIT);
             modes.push(modes.INSERT);
             break;
         case "y":
             this.executeCommand("cmd_copy", 1);
-            modes.pop(modes.TEXTAREA);
+            modes.pop(modes.TEXT_EDIT);
             break;
 
         default:
@@ -436,8 +436,8 @@ const Editor = Module("editor", {
     mappings: function () {
         var myModes = [modes.INSERT, modes.COMMAND_LINE];
 
-        // add mappings for commands like h,j,k,l,etc. in CARET, VISUAL and TEXTAREA mode
-        function addMovementMap(keys, hasCount, caretModeMethod, caretModeArg, textareaCommand, visualTextareaCommand) {
+        // add mappings for commands like h,j,k,l,etc. in CARET, VISUAL and TEXT_EDIT mode
+        function addMovementMap(keys, hasCount, caretModeMethod, caretModeArg, textEditCommand, visualTextEditCommand) {
             let extraInfo = {};
             if (hasCount)
                 extraInfo.count = true;
@@ -483,11 +483,11 @@ const Editor = Module("editor", {
 
                     let controller = buffer.selectionController;
                     while (count-- && modes.main == modes.VISUAL) {
-                        if (editor.isTextArea) {
-                            if (typeof visualTextareaCommand == "function")
-                                visualTextareaCommand();
+                        if (editor.isTextEdit) {
+                            if (typeof visualTextEditCommand == "function")
+                                visualTextEditCommand();
                             else
-                                editor.executeCommand(visualTextareaCommand);
+                                editor.executeCommand(visualTextEditCommand);
                         }
                         else
                             caretExecute(true, true);
@@ -495,19 +495,19 @@ const Editor = Module("editor", {
                 },
                 extraInfo);
 
-            mappings.add([modes.TEXTAREA], keys, "",
+            mappings.add([modes.TEXT_EDIT], keys, "",
                 function (count) {
                     if (typeof count != "number" || count < 1)
                         count = 1;
 
-                    editor.executeCommand(textareaCommand, count);
+                    editor.executeCommand(textEditCommand, count);
                 },
                 extraInfo);
         }
 
-        // add mappings for commands like i,a,s,c,etc. in TEXTAREA mode
+        // add mappings for commands like i,a,s,c,etc. in TEXT_EDIT mode
         function addBeginInsertModeMap(keys, commands) {
-            mappings.add([modes.TEXTAREA], keys, "",
+            mappings.add([modes.TEXT_EDIT], keys, "",
                 function (count) {
                     commands.forEach(function (cmd)
                         editor.executeCommand(cmd, 1));
@@ -516,7 +516,7 @@ const Editor = Module("editor", {
         }
 
         function addMotionMap(key) {
-            mappings.add([modes.TEXTAREA], [key],
+            mappings.add([modes.TEXT_EDIT], [key],
                 "Motion command",
                 function (motion, count) { editor.executeCommandWithMotion(key, motion, count); },
                 { count: true, motion: true });
@@ -532,7 +532,7 @@ const Editor = Module("editor", {
                 editor.executeCommand("cmd_selectLineNext");
         }
 
-        //             KEYS                          COUNT  CARET                   TEXTAREA            VISUAL_TEXTAREA
+        //             KEYS                          COUNT  CARET                   TEXT_EDIT            VISUAL_TEXT_EDIT
         addMovementMap(["k", "<Up>"],                true,  "lineMove", false,      "cmd_linePrevious", selectPreviousLine);
         addMovementMap(["j", "<Down>", "<Return>"],  true,  "lineMove", true,       "cmd_lineNext",     selectNextLine);
         addMovementMap(["h", "<Left>", "<BS>"],      true,  "characterMove", false, "cmd_charPrevious", "cmd_selectCharPrevious");
@@ -612,8 +612,8 @@ const Editor = Module("editor", {
         mappings.add([modes.INSERT],
             ["<C-t>"], "Edit text field in Vi mode",
             function () {
-                if (!editor.isTextArea)
-                    modes.push(modes.TEXTAREA);
+                if (!editor.isTextEdit)
+                    modes.push(modes.TEXT_EDIT);
                 else
                     dactyl.beep();
             });
@@ -631,8 +631,8 @@ const Editor = Module("editor", {
             ["<C-]>", "<C-5>"], "Expand insert mode abbreviation",
             function () { editor.expandAbbreviation(modes.INSERT); });
 
-        // textarea mode
-        mappings.add([modes.TEXTAREA],
+        // text edit mode
+        mappings.add([modes.TEXT_EDIT],
             ["u"], "Undo",
             function (count) {
                 editor.executeCommand("cmd_undo", count);
@@ -640,7 +640,7 @@ const Editor = Module("editor", {
             },
             { count: true });
 
-        mappings.add([modes.TEXTAREA],
+        mappings.add([modes.TEXT_EDIT],
             ["<C-r>"], "Redo",
             function (count) {
                 editor.executeCommand("cmd_redo", count);
@@ -648,11 +648,11 @@ const Editor = Module("editor", {
             },
             { count: true });
 
-        mappings.add([modes.TEXTAREA],
+        mappings.add([modes.TEXT_EDIT],
             ["D"], "Delete the characters under the cursor until the end of the line",
             function () { editor.executeCommand("cmd_deleteToEndOfLine"); });
 
-        mappings.add([modes.TEXTAREA],
+        mappings.add([modes.TEXT_EDIT],
             ["o"], "Open line below current",
             function (count) {
                 editor.executeCommand("cmd_endLine", 1);
@@ -660,7 +660,7 @@ const Editor = Module("editor", {
                 events.feedkeys("<Return>");
             });
 
-        mappings.add([modes.TEXTAREA],
+        mappings.add([modes.TEXT_EDIT],
             ["O"], "Open line above current",
             function (count) {
                 editor.executeCommand("cmd_beginLine", 1);
@@ -669,18 +669,18 @@ const Editor = Module("editor", {
                 editor.executeCommand("cmd_linePrevious", 1);
             });
 
-        mappings.add([modes.TEXTAREA],
+        mappings.add([modes.TEXT_EDIT],
             ["X"], "Delete character to the left",
             function (count) { editor.executeCommand("cmd_deleteCharBackward", count); },
             { count: true });
 
-        mappings.add([modes.TEXTAREA],
+        mappings.add([modes.TEXT_EDIT],
             ["x"], "Delete character to the right",
             function (count) { editor.executeCommand("cmd_deleteCharForward", count); },
             { count: true });
 
         // visual mode
-        mappings.add([modes.CARET, modes.TEXTAREA],
+        mappings.add([modes.CARET, modes.TEXT_EDIT],
             ["v"], "Start visual mode",
             function (count) { modes.push(modes.VISUAL); });
 
@@ -688,7 +688,7 @@ const Editor = Module("editor", {
             ["v"], "End visual mode",
             function (count) { events.onEscape(); });
 
-        mappings.add([modes.TEXTAREA],
+        mappings.add([modes.TEXT_EDIT],
             ["V"], "Start visual line mode",
             function (count) {
                 modes.push(modes.VISUAL, modes.LINE);
@@ -699,15 +699,15 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL],
             ["c", "s"], "Change selected text",
             function (count) {
-                dactyl.assert(editor.isTextArea);
+                dactyl.assert(editor.isTextEdit);
                 editor.executeCommand("cmd_cut");
-                modes.replace(modes.INSERT, modes.TEXTAREA);
+                modes.replace(modes.INSERT, modes.TEXT_EDIT);
             });
 
         mappings.add([modes.VISUAL],
             ["d"], "Delete selected text",
             function (count) {
-                if (editor.isTextArea) {
+                if (editor.isTextEdit) {
                     editor.executeCommand("cmd_cut");
                     modes.pop();
                 }
@@ -718,7 +718,7 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL],
             ["y"], "Yank selected text",
             function (count) {
-                if (editor.isTextArea) {
+                if (editor.isTextEdit) {
                     editor.executeCommand("cmd_copy");
                     modes.pop();
                 }
@@ -726,7 +726,7 @@ const Editor = Module("editor", {
                     dactyl.clipboardWrite(buffer.getCurrentWord(), true);
             });
 
-        mappings.add([modes.VISUAL, modes.TEXTAREA],
+        mappings.add([modes.VISUAL, modes.TEXT_EDIT],
             ["p"], "Paste clipboard contents",
             function (count) {
                 dactyl.assert(!editor.isCaret);
@@ -734,11 +734,11 @@ const Editor = Module("editor", {
                     count = 1;
                 while (count--)
                     editor.executeCommand("cmd_paste");
-                modes.pop(modes.TEXTAREA);
+                modes.pop(modes.TEXT_EDIT);
             });
 
         // finding characters
-        mappings.add([modes.TEXTAREA, modes.VISUAL],
+        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["f"], "Move to a character on the current line after the cursor",
             function (count, arg) {
                 let pos = editor.findCharForward(arg, count);
@@ -747,7 +747,7 @@ const Editor = Module("editor", {
             },
             { arg: true, count: true });
 
-        mappings.add([modes.TEXTAREA, modes.VISUAL],
+        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["F"], "Move to a charater on the current line before the cursor",
             function (count, arg) {
                 let pos = editor.findCharBackward(arg, count);
@@ -756,7 +756,7 @@ const Editor = Module("editor", {
             },
             { arg: true, count: true });
 
-        mappings.add([modes.TEXTAREA, modes.VISUAL],
+        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["t"], "Move before a character on the current line",
             function (count, arg) {
                 let pos = editor.findCharForward(arg, count);
@@ -765,7 +765,7 @@ const Editor = Module("editor", {
             },
             { arg: true, count: true });
 
-        mappings.add([modes.TEXTAREA, modes.VISUAL],
+        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["T"], "Move before a character on the current line, backwards",
             function (count, arg) {
                 let pos = editor.findCharBackward(arg, count);
@@ -774,8 +774,8 @@ const Editor = Module("editor", {
             },
             { arg: true, count: true });
 
-            // textarea and visual mode
-        mappings.add([modes.TEXTAREA, modes.VISUAL],
+            // text edit and visual mode
+        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["~"], "Switch case of the character under the cursor and move the cursor to the right",
             function (count) {
                 if (modes.main == modes.VISUAL)
@@ -794,7 +794,7 @@ const Editor = Module("editor", {
                         text.substring(pos + 1);
                     editor.moveToPosition(pos + 1, true, false);
                 }
-                modes.pop(modes.TEXTAREA);
+                modes.pop(modes.TEXT_EDIT);
             },
             { count: true });
     },

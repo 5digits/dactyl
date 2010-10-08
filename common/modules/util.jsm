@@ -74,7 +74,7 @@ const Util = Module("Util", {
         if (services.get("threadManager").isMainThread)
             callback.call(self);
         else
-            mainThread.dispatch(Runnable(self, callback), mainThread.DISPATCH_NORMAL);
+            mainThread.dispatch(Runnable(self, callback, Array.slice(arguments, 2)), mainThread.DISPATCH_NORMAL);
     },
 
     /**

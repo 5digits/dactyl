@@ -633,7 +633,7 @@ const Events = Module("events", {
         case modes.INSERT:
         case modes.PASS_THROUGH:
         case modes.QUOTE:
-        case modes.TEXTAREA:
+        case modes.TEXT_EDIT:
         case modes.VISUAL:
             modes.pop();
             break;
@@ -708,7 +708,7 @@ const Events = Module("events", {
                 if (options["insertmode"])
                     modes.set(modes.INSERT);
                 else {
-                    modes.set(modes.TEXTAREA);
+                    modes.set(modes.TEXT_EDIT);
                     if (elem.selectionEnd - elem.selectionStart > 0)
                         modes.push(modes.VISUAL);
                 }
@@ -937,7 +937,7 @@ const Events = Module("events", {
             else { // if the key is neither a mapping nor the start of one
                 // the mode checking is necessary so that things like g<esc> do not beep
                 if (this._input.buffer != "" && !event.skipmap &&
-                    (mode & (modes.INSERT | modes.COMMAND_LINE | modes.TEXTAREA)))
+                    (mode & (modes.INSERT | modes.COMMAND_LINE | modes.TEXT_EDIT)))
                     events.feedkeys(this._input.buffer, { noremap: true, skipmap: true });
 
                 this._input.buffer = "";
@@ -947,7 +947,7 @@ const Events = Module("events", {
 
                 if (!isEscape(key)) {
                     // allow key to be passed to the host app if we can't handle it
-                    stop = (mode == modes.TEXTAREA);
+                    stop = (mode == modes.TEXT_EDIT);
 
                     if (mode == modes.COMMAND_LINE) {
                         if (!(modes.extended & modes.INPUT_MULTILINE))
@@ -1015,7 +1015,7 @@ const Events = Module("events", {
                 modes.pop(); // Really not ideal.
         }
         else if (couldCopy) {
-            if (modes.main == modes.TEXTAREA && !options["insertmode"])
+            if (modes.main == modes.TEXT_EDIT && !options["insertmode"])
                 modes.push(modes.VISUAL);
             else if (dactyl.mode == modes.CARET)
                 modes.push(modes.VISUAL);
@@ -1091,7 +1091,7 @@ const Events = Module("events", {
             ["<Tab>"], "Advance keyboard focus",
             function () { document.commandDispatcher.advanceFocus(); });
 
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET, modes.INSERT, modes.TEXTAREA],
+        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET, modes.INSERT, modes.TEXT_EDIT],
             ["<S-Tab>"], "Rewind keyboard focus",
             function () { document.commandDispatcher.rewindFocus(); });
 
