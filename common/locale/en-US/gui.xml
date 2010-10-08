@@ -81,6 +81,7 @@
 <item>
     <tags>:exta :extadd</tags>
     <spec>:exta<oa>dd</oa> <a>file|url</a></spec>
+    <strut/>
     <description>
         <p>
             Install an extension. <a>file|uri</a> must be the local file
@@ -93,6 +94,7 @@
     <tags>:extde :extdelete</tags>
     <spec>:extde<oa>lete</oa> <a>extension</a></spec>
     <spec>:extde<oa>lete</oa>!</spec>
+    <strut/>
     <description>
         <p>
             Uninstall an extension. <a>extension</a> is the extension's name. When <oa>!</oa> is given
@@ -105,6 +107,7 @@
     <tags>:extd :extdisable</tags>
     <spec>:extd<oa>isable</oa> <a>extension</a></spec>
     <spec>:extd<oa>isable</oa>!</spec>
+    <strut/>
     <description>
         <p>
             Disable an extension. <a>extension</a> is the extension's name. When <oa>!</oa> is given
@@ -117,6 +120,7 @@
     <tags>:exte :extenable</tags>
     <spec>:exte<oa>nable</oa> <a>extension</a></spec>
     <spec>:exte<oa>nable</oa>!</spec>
+    <strut/>
     <description>
         <p>
             Enable an extension. <a>extension</a> is the extension's name. When <oa>!</oa> is given all
@@ -129,6 +133,7 @@
     <tags>:exts :extens :extensions</tags>
     <spec>:extens<oa>ions</oa></spec>
     <spec>:exts</spec>
+    <strut/>
     <description>
         <p>List all installed extensions.</p>
     </description>
@@ -143,6 +148,17 @@
         <p>
             Open the preferences dialog for an extension. If <oa>!</oa> is given, open a dialog,
             otherwise open a buffer. See also <o>newtab</o>.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:extu :extupdate</tags>
+    <spec>:extu<oa>pdate</oa><oa>!</oa> <a>extension</a></spec>
+    <description>
+        <p>
+            Update an extension. When <oa>!</oa> is given, update all
+            extensions.
         </p>
     </description>
 </item>
