@@ -294,7 +294,7 @@ const Dactyl = Module("dactyl", {
 
         if (!context)
             context = userContext;
-        return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
+        return Cu.evalInSandbox("with (window) {" + str + "}", context, "1.8", fileName, lineNumber);
     },
 
     /**
@@ -1876,7 +1876,6 @@ const Dactyl = Module("dactyl", {
         };
     },
     load: function () {
-        jsmodules.__proto__ = window;
         dactyl.triggerObserver("load");
 
         dactyl.log("All modules loaded", 3);
