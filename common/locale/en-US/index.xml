@@ -16,7 +16,7 @@ This file contains a list of all available commands, mappings and options.
 <h2 tag="insert-index">Insert mode</h2>
 
 <dl>
-    <dt><k mode="i">i</k></dt> <dd>Start Insert mode in text areas when <o>insertmode</o> is not set</dd>
+    <dt><k mode="t">i</k></dt> <dd>Start Insert mode in text areas when <o>insertmode</o> is not set</dd>
     <dt><k name="C-i" mode="i"/></dt> <dd>Launch the external editor</dd>
     <dt><k name="C-t" mode="i"/></dt> <dd>Enter TextEdit mode</dd>
     <dt><k name="C-]" mode="i"/></dt> <dd>Expand an Insert-mode abbreviation</dd>
