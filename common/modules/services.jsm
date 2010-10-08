@@ -3,7 +3,7 @@
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
 "use strict";
-
+try {
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("services", {
     exports: ["Services", "services"],
@@ -136,6 +136,6 @@ const Services = Module("Services", {
 
 endModule();
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+} catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:
