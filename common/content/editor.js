@@ -611,7 +611,12 @@ const Editor = Module("editor", {
 
         mappings.add([modes.INSERT],
             ["<C-t>"], "Edit text field in Vi mode",
-            function () { modes.push(modes.TEXTAREA); });
+            function () {
+                if (!editor.isTextArea)
+                    modes.push(modes.TEXTAREA);
+                else
+                    dactyl.beep();
+            });
 
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand insert mode abbreviation",
