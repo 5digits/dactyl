@@ -345,13 +345,15 @@ lookup:
                         dactyl.helpInitialized = false;
                     }
                     catch (e) {
-                        if (isString(e))
-                            e = { message: e };
-                        let err = new Error();
-                        for (let [k, v] in Iterator(e))
-                            err[k] = v;
-                        err.echoerr = <>{file.path}:{e.lineNumber}: {e}</>;
-                        throw err;
+                        if (e.fileName)
+                            try {
+                                e.fileName = e.fileName.replace(/^(chrome|resource):.*? -> /, "");
+                                if (e.fileName == uri.spec)
+                                    e.fileName = filename;
+                                e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>
+                            }
+                            catch (e) {}
+                        throw e;
                     }
                 }
                 else if (/\.css$/.test(filename))
