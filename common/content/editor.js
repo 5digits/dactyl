@@ -696,7 +696,7 @@ const Editor = Module("editor", {
             function (count) {
                 dactyl.assert(editor.isTextArea);
                 editor.executeCommand("cmd_cut");
-                modes.replace(modes.VISUAL);
+                modes.replace(modes.INSERT, modes.TEXTAREA);
             });
 
         mappings.add([modes.VISUAL],
