@@ -25,16 +25,16 @@ const FailedAssertion = Class("FailedAssertion", Error, {
     }
 });
 
-deprecated.seen = { "chrome://dactyl/content/javascript.js": true };
-function deprecated(reason, fn)
+function deprecated(reason, fn) update(
     function deprecatedMethod() {
         let frame = Components.stack.caller;
-        if (!set.add(deprecated.seen, frame.filename))
+        if (!set.add(deprecatedMethod.seen, frame.filename))
             dactyl.echoerr(frame.filename + ":" + frame.lineNumber + ": " +
                 (this.className || this.constructor.className) + "." + fn.name +
                 " is deprecated: " + reason);
         return fn.apply(this, arguments);
-    }
+    },
+    { seen: { "chrome://dactyl/content/javascript.js": true } });
 
 const Dactyl = Module("dactyl", {
     init: function () {

@@ -10,6 +10,11 @@ const Cr = Components.results;
 const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+try {
+    var ctypes;
+    Components.utils.import("resource://gre/modules/ctypes.jsm");
+}
+catch (e) {}
 
 let objproto = Object.prototype;
 let hasOwnProperty = objproto.hasOwnProperty;
@@ -149,7 +154,7 @@ defineModule("base", {
     exports: [
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "array",
-        "call", "callable", "curry", "debuggerProperties", "defineModule",
+        "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "endModule", "forEach", "isArray", "isGenerator", "isinstance",
         "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
         "memoize", "properties", "requiresMainThread", "set", "update", "values"
@@ -356,6 +361,20 @@ set.remove = function (set, key) {
  * @returns {Generator}
  */
 function iter(obj) {
+    if (ctypes && obj instanceof ctypes.CData) {
+        while (obj.constructor instanceof ctypes.PointerType)
+            obj = obj.contents;
+        if (obj.constructor instanceof ctypes.ArrayType)
+            return array.iterItems(obj);
+        if (obj.constructor instanceof ctypes.StructType)
+            return (function () {
+                for (let prop in values(obj.constructor.fields))
+                    let ([name, type] = Iterator(prop).next()) {
+                        yield [name, obj[name]];
+                    }
+            })();
+        obj = {};
+    }
     if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
         return array.iterItems(obj);
     if (obj instanceof Ci.nsIDOMNamedNodeMap)

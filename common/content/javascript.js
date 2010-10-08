@@ -358,8 +358,6 @@ const JavaScript = Module("javascript", {
         }
 
         let args = {
-            completer: compl,
-            anchored: true,
             filter: last == null ? key : string,
             last: last,
             prefix: last != null ? key : ""
@@ -369,39 +367,42 @@ const JavaScript = Module("javascript", {
         // TODO: Make this a generic completion helper function.
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1], this._top.offset, this, this._fill,
-                update({}, args, {
+                update({
                     obj: obj[0],
-                    name: obj[1]
-                }));
+                    name: obj[1],
+                    anchored: true,
+                    completer: compl
+                }, args));
 
         if (orig)
             return;
 
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1] + "/prototypes", this._top.offset, this, this._fill,
-                update({}, args, {
+                update({
                     obj: obj[0],
                     name: obj[1] + " (prototypes)",
+                    anchored: true,
                     completer: function (a, b) compl(a, b, true)
-                }));
+                }, args));
 
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1] + "/substrings", this._top.offset, this, this._fill,
-                update({}, args, {
+                update({
                     obj: obj[0],
                     name: obj[1] + " (substrings)",
                     anchored: false,
                     completer: compl
-                }));
+                }, args));
 
         for (let [, obj] in Iterator(objects))
             this.context.fork(obj[1] + "/prototypes/substrings", this._top.offset, this, this._fill,
-                update({}, args, {
+                update({
                     obj: obj[0],
                     name: obj[1] + " (prototype substrings)",
                     anchored: false,
                     completer: function (a, b) compl(a, b, true)
-                }));
+                }, args));
     },
 
     _getKey: function () {
