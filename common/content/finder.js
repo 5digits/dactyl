@@ -114,8 +114,6 @@ const RangeFinder = Module("rangefinder", {
         if (options["hlsearch"])
             this.highlight();
         this.rangeFind.focus();
-
-        modes.reset();
     },
 
     // Called when the search is canceled - for example if someone presses
