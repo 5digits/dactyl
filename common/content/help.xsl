@@ -232,8 +232,12 @@
         <xsl:variable name="type" select="preceding-sibling::dactyl:type[1] | following-sibling::dactyl:type[1]"/>
         <span dactyl:highlight="HelpDefault">(default:<xsl:text> </xsl:text>
             <xsl:choose>
-                <xsl:when test="starts-with($type, 'string') or starts-with($type, 'regex')">
+                <xsl:when test="$type = 'string'">
                     <span dactyl:highlight="HelpString"><xsl:apply-templates mode="help-1"/></span>
+                </xsl:when>
+                <xsl:when test="contains($type, 'list') or contains($type, 'map')">
+                    <span dactyl:highlight="HelpString" delim=""><xsl:apply-templates mode="help-1"/></span>
+                    <xsl:if test=". = ''">(empty)</xsl:if>
                 </xsl:when>
                 <xsl:otherwise>
                     <span>

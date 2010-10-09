@@ -320,7 +320,7 @@
     <spec>'activate' 'act'</spec>
     <type>stringlist</type>
     <default>addons,downloads,extoptions,help,
-           homepage,quickmark,tabopen,paste</default>
+          homepage,quickmark,tabopen,paste</default>
     <description>
         <p>
             A list of items which, when opened in a new tab, are
@@ -556,7 +556,11 @@
     <spec>'extendedhinttags' 'eht'</spec>
     <strut/>
     <type>regexmap</type>
-    <default>[iI]:'//img | //xhtml:img'</default>
+    <default>[iI]:'//img | //xhtml:img',
+          [OTivVWy]:'//a[@href]     | //xhtml:a[@href]    |
+                     //area[@href]  | //xhtml:area[@href] |
+                     //img[@src]    | //xhtml:img[@src]   |
+                     //iframe[@src] | //xhtml:iframe[@src]'</default>
     <description>
         <p>
             Defines specialized XPath expressions for arbitrary
@@ -891,7 +895,7 @@
     <tags>'noloadplugins' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
     <type>regexlist</type>
-    <default>\.(js|&dactyl.fileExt;)$</default>
+    <default>'\.(js|&dactyl.fileExt;)$'</default>
     <description>
         <p>
             A regular expression list that defines which plugins are loaded at
@@ -1000,7 +1004,7 @@
     <tags>'nextpattern'</tags>
     <spec>'nextpattern'</spec>
     <type>stringlist</type>
-    <default>\bnext,^>$,^(>>|»)$,^(>|»),(>|»)$,\bmore\b</default>
+    <default>'\bnext',^>$,'^(>>|»)$','^(>|»)','(>|»)$','\bmore\b'</default>
     <description>
         <p>
             Patterns to use when guessing the next page in a document
@@ -1393,7 +1397,7 @@
     <tags>'wia' 'wildanchor'</tags>
     <spec>'wildanchor' 'wia'</spec>
     <type>regexlist</type>
-    <default>!/ex/(back|buffer|ext|forward|help|undo)</default>
+    <default>!'/ex/(back|buffer|ext|forward|help|undo)'</default>
     <description>
         <p>
             Regular expression list defining which completion groups show only
