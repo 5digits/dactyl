@@ -47,6 +47,14 @@ const QuickMarks = Module("quickmarks", {
     },
 
     /**
+     * Returns the URL of the given QuickMark, or null if none exists.
+     *
+     * @param {string} mark The mark to find.
+     * @returns {string} The mark's URL.
+     */
+    get: function (mark) this._qmarks.get(mark) || null,
+
+    /**
      * Deletes the specified quickmarks. The <b>filter</b> is a list of
      * quickmarks and ranges are supported. Eg. "ab c d e-k".
      *
@@ -77,7 +85,7 @@ const QuickMarks = Module("quickmarks", {
      *     URL. See {@link Dactyl#open}.
      */
     jumpTo: function jumpTo(qmark, where) {
-        let url = this._qmarks.get(qmark);
+        let url = this.get(qmark);
 
         if (url)
             dactyl.open(url, where);
@@ -148,8 +156,17 @@ const QuickMarks = Module("quickmarks", {
             {
                 argCount: "+",
                 completer: function (context, args) {
-                    if (args.length == 2)
-                        return completion.url(context);
+                    if (args.length == 1)
+                        return completion.quickmark(context);
+                    if (args.length == 2) {
+                        context.fork("current", 0, this, function (context) {
+                            context.title = ["Extra Completions"];
+                            context.completions = [
+                                [quickmarks.get(args[0]), "Current Value"]
+                            ].filter(function ([k, v]) k);
+                        });
+                        context.fork("url", 0, completion, "url");
+                    }
                 },
                 literal: 1
             });
@@ -167,6 +184,12 @@ const QuickMarks = Module("quickmarks", {
             }, {
                 literal: 0
             });
+    },
+    completion: function () {
+        completion.quickmark = function (context) {
+            context.title = ["QuickMark", "URL"];
+            context.generate = function () Iterator(quickmarks._qmarks);
+        }
     },
     mappings: function () {
         var myModes = config.browserModes;
