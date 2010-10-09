@@ -440,6 +440,8 @@ const CommandLine = Module("commandline", {
      * @param {number} extendedMode
      */
     open: function open(prompt, cmd, extendedMode) {
+        this.widgets.message = null;
+
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
             leave: function (params) {
                 if (params.pop)
@@ -556,6 +558,7 @@ const CommandLine = Module("commandline", {
         let doc = this.widgets.multilineOutput.contentDocument;
         let win = this.widgets.multilineOutput.contentWindow;
 
+        this.widgets.message = null;
         if (!this.commandVisible)
             this.hide();
 

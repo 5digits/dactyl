@@ -175,7 +175,8 @@ const Modes = Module("modes", {
         let msg = null;
         if (options["showmode"])
             msg = this._getModeMessage();
-        commandline.widgets.mode = msg || null;
+        if (loaded.commandline)
+            commandline.widgets.mode = msg || null;
     },
 
     // add/remove always work on the this._extended mode only
@@ -199,8 +200,21 @@ const Modes = Module("modes", {
         if (!stack && mainMode != null && this._modeStack.length > 1)
             this.reset();
 
+        let oldMain = this._main, oldExtended = this._extended;
+
+        if (typeof extendedMode === "number")
+            this._extended = extendedMode;
+        if (typeof mainMode === "number") {
+            this._main = mainMode;
+            if (!extendedMode)
+                this._extended = this.NONE;
+        }
+
+        if (stack && stack.pop && stack.pop.params.leave)
+            stack.pop.params.leave(stack, this.topOfStack);
+
         let push = mainMode != null && !(stack && stack.pop) &&
-            Modes.StackElem(mainMode, extendedMode || this.NONE, params, {});
+            Modes.StackElem(this._main, this._extended, params, {});
         if (push && this.topOfStack) {
             if (this.topOfStack.params.leave)
                 this.topOfStack.params.leave({ push: push }, push);
@@ -212,18 +226,6 @@ const Modes = Module("modes", {
             }
         }
 
-        let silent = this._main === mainMode && this._extended === extendedMode;
-        // if a this._main mode is set, the this._extended is always cleared
-        let oldMain = this._main, oldExtended = this._extended;
-
-        if (typeof extendedMode === "number")
-            this._extended = extendedMode;
-        if (typeof mainMode === "number") {
-            this._main = mainMode;
-            if (!extendedMode)
-                this._extended = this.NONE;
-        }
-
         let prev = stack && stack.pop || this.topOfStack;
         if (push)
             this._modeStack.push(push);
@@ -232,9 +234,7 @@ const Modes = Module("modes", {
                                          prev);
 
         dactyl.triggerObserver("modeChange", [oldMain, oldExtended], [this._main, this._extended], stack);
-
-        if (!silent)
-            this.show();
+        this.show();
     },
 
     push: function (mainMode, extendedMode, params) {
@@ -244,9 +244,6 @@ const Modes = Module("modes", {
     pop: function (mode) {
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
-            if (a.params.leave)
-                a.params.leave({ pop: a }, this.topOfStack);
-
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params, { pop: a });
 
             for (let [k, { obj, prop, value }] in Iterator(this.topOfStack.saved))
@@ -325,7 +322,7 @@ const Modes = Module("modes", {
 }, {
     options: function () {
         options.observePref("accessibility.browsewithcaret", function (value) {
-            if (!value && modes.topOfStack.main === modes.CARET)
+            if (!value && modes.main === modes.CARET)
                 modes.pop();
             if (value && modes.main === modes.NORMAL)
                 modes.push(modes.CARET);

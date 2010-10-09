@@ -1020,12 +1020,6 @@ const Events = Module("events", {
             else if (dactyl.mode == modes.CARET)
                 modes.push(modes.VISUAL);
         }
-        // XXX: disabled, as i think automatically starting visual caret mode does more harm than help
-        // else
-        // {
-        //     if (!couldCopy && modes.extended & modes.CARET)
-        //         dactyl.mode = modes.CARET;
-        // }
     }
 }, {
     editableInputs: set(["date", "datetime", "datetime-local", "email", "file",
