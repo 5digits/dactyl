@@ -373,7 +373,7 @@ set.remove = function (set, key) {
  * @returns {Generator}
  */
 function iter(obj) {
-    if (ctypes && obj instanceof ctypes.CData) {
+    if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;
         if (obj.constructor instanceof ctypes.ArrayType)
