@@ -58,7 +58,8 @@ const Bookmarks = Module("bookmarks", {
             if (!id)
                 return false;
 
-            PlacesUtils.setPostDataForBookmark(id, post);
+            if (post !== undefined)
+                PlacesUtils.setPostDataForBookmark(id, post);
             if (keyword)
                 services.get("bookmarks").setKeywordForBookmark(id, keyword);
         }
@@ -359,7 +360,7 @@ const Bookmarks = Module("bookmarks", {
                     force: args.bang,
                     starOnly: false,
                     keyword: args["-keyword"] || null,
-                    post: args["-post"] || null,
+                    post: args["-post"],
                     tags: args["-tags"] || [],
                     title: args["-title"] || (args.length === 0 ? buffer.title : null),
                     url: args.length === 0 ? buffer.URL : args[0]

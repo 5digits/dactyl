@@ -334,11 +334,11 @@ const Hints = Module("hints", {
      * @param {boolean} active Whether it is the currently active hint or not.
      */
     _setClass: function (elem, active) {
-        let prefix = (elem.getAttributeNS(NS.uri, "class") || "") + " ";
+        let prefix = (elem.getAttributeNS(NS, "class") || "") + " ";
         if (active)
-            elem.setAttributeNS(NS.uri, "highlight", prefix + "HintActive");
+            elem.setAttributeNS(NS, "highlight", prefix + "HintActive");
         else
-            elem.setAttributeNS(NS.uri, "highlight", prefix + "HintElem");
+            elem.setAttributeNS(NS, "highlight", prefix + "HintElem");
     },
 
     /**
@@ -363,7 +363,7 @@ const Hints = Module("hints", {
                     hint.imgSpan.style.display = (valid ? "" : "none");
 
                 if (!valid) {
-                    hint.elem.removeAttributeNS(NS.uri, "highlight");
+                    hint.elem.removeAttributeNS(NS, "highlight");
                     continue inner;
                 }
 
@@ -399,7 +399,7 @@ const Hints = Module("hints", {
             // FIXME: Broken for imgspans.
             for (let [, { doc: doc }] in Iterator(this._docs)) {
                 for (let elem in util.evaluateXPath("//*[@dactyl:highlight and @number]", doc)) {
-                    let group = elem.getAttributeNS(NS.uri, "highlight");
+                    let group = elem.getAttributeNS(NS, "highlight");
                     css.push(highlight.selector(group) + "[number=" + elem.getAttribute("number").quote() + "] { " + elem.style.cssText + " }");
                 }
             }
@@ -418,20 +418,11 @@ const Hints = Module("hints", {
      *     hint disappears.
      */
     _removeHints: function (timeout, slight) {
-        let firstElem = this._validHints[0] || null;
-
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
-            for (let i in util.range(start, end + 1)) {
-                let hint = this._pageHints[i];
-                if (!timeout || hint.elem != firstElem)
-                    hint.elem.removeAttributeNS(NS.uri, "highlight");
-            }
-
-            // animate the disappearance of the first hint
-            if (timeout && firstElem)
-                this.timeout(function () { firstElem.removeAttributeNS(NS.uri, "highlight"); }, timeout);
+            for (let i in util.range(start, end + 1))
+                this._pageHints[i].elem.removeAttributeNS(NS, "highlight");
         }
         styles.removeSheet(true, "hint-positions");
 
@@ -479,6 +470,7 @@ const Hints = Module("hints", {
         let activeIndex = (this._hintNumber ? this._hintNumber - 1 : 0);
         let elem = this._validHints[activeIndex];
         let top = this._top;
+
         if (this._continue) {
             this.__reset();
             if (this._validHints.length <= 1)
@@ -486,10 +478,16 @@ const Hints = Module("hints", {
         }
         else {
             this._removeHints(timeout);
-            if (timeout == 0)
-                // force a possible mode change, based on whether an input field has focus
-                events.onFocusChange();
         }
+
+        let n = 3;
+        (function next() {
+            this._setClass(elem, n % 2);
+            if (n--)
+                this.timeout(next, 50);
+            else if (!this._top)
+                elem.removeAttributeNS(NS, "highlight");
+        }).call(this);
 
         this.timeout(function () {
             if ((modes.extended & modes.HINTS) && !this._continue)
@@ -512,7 +510,9 @@ const Hints = Module("hints", {
         if (this._hintNumber > 0 && this._hintNumber * this.hintKeys.length <= this._validHints.length) {
             let timeout = options["hinttimeout"];
             if (timeout > 0)
-                this._activeTimeout = this.timeout(function () { this._processHints(true); }, timeout);
+                this._activeTimeout = this.timeout(function () {
+                    this._processHints(true);
+                }, timeout);
         }
         else // we have a unique hint
             this._processHints(true);
@@ -903,6 +903,7 @@ const Hints = Module("hints", {
                 dactyl.assert(this._hintNumber != 0);
 
                 this._checkUnique();
+                return;
             }
         }
 
