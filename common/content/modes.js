@@ -185,6 +185,9 @@ const Modes = Module("modes", {
         this.show();
     },
 
+    delayed: [],
+    delay: function (callback, self) { this.delayed.push([callback, self]) },
+
     save: function (id, obj, prop) {
         if (!(id in this.boundProperties))
             for (let elem in values(this._modeStack))
@@ -226,9 +229,18 @@ const Modes = Module("modes", {
             }
         }
 
+        this.delayed.forEach(function ([fn, self]) fn.call(self));
+        this.delayed = [];
+
         let prev = stack && stack.pop || this.topOfStack;
         if (push)
             this._modeStack.push(push);
+
+        if (stack && stack.pop) {
+            for (let [k, { obj, prop, value }] in Iterator(this.topOfStack.saved))
+                obj[prop] = value;
+        }
+
         if (this.topOfStack.params.enter && prev)
             this.topOfStack.params.enter(push ? { push: push } : stack || {},
                                          prev);
@@ -244,10 +256,8 @@ const Modes = Module("modes", {
     pop: function (mode) {
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
-            this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params, { pop: a });
-
-            for (let [k, { obj, prop, value }] in Iterator(this.topOfStack.saved))
-                obj[prop] = value;
+            this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
+                     { pop: a });
 
             if (mode == null)
                 return;

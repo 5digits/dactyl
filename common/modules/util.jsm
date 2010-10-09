@@ -244,7 +244,7 @@ const Util = Module("Util", {
         let stack = Error().stack.replace(/(?:.*\n){2}/, "");
         if (frames != null)
             [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
-        util.dump((msg || "Stack") + "\n" + stack + "\n");
+        util.dump((arguments.length == 0 ? "Stack" : msg) + "\n" + stack + "\n");
     },
 
     /**

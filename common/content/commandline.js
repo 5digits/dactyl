@@ -479,8 +479,10 @@ const CommandLine = Module("commandline", {
         this.hideCompletions();
 
         if (!this._keepCommand || this._silent || this._quiet) {
-            commandline.updateMorePrompt();
-            this.hide();
+            modes.delay(function () {
+                this.updateMorePrompt();
+                this.hide();
+            }, this);
         }
     },
 
@@ -490,7 +492,7 @@ const CommandLine = Module("commandline", {
         return this._lastCommand;
     },
     set command(val) {
-        if (this.commandVisible)
+        if (this.commandVisible && (modes.extended & modes.EX))
             return this.widgets.command = val;
         return this._lastCommand = val;
     },

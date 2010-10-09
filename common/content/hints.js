@@ -72,7 +72,14 @@ const Hints = Module("hints", {
     _reset: function (slight) {
         if (!slight) {
             this.__reset();
+            this.prevInput = "";
+            this.escNumbers = false;
+            this._usedTabKey = false;
             this._canUpdate = false;
+            this._hintNumber = 0;
+            this._hintString = "";
+            statusline.updateInputBuffer("");
+            commandline.command = "";
         }
         this._pageHints = [];
         this._validHints = [];
@@ -83,13 +90,8 @@ const Hints = Module("hints", {
         this._activeTimeout = null;
     },
     __reset: function () {
-        statusline.updateInputBuffer("");
-        this._hintString = "";
-        this._hintNumber = 0;
-        this._usedTabKey = false;
-        this.prevInput = "";
-        this.escNumbers = false;
-        commandline.command = "";
+        if (!this._usedTabKey)
+            this._hintNumber = 0;
     },
 
     /**
@@ -478,7 +480,8 @@ const Hints = Module("hints", {
         let top = this._top;
         if (this._continue) {
             this.__reset();
-            this._showHints();
+            if (this._validHints.length <= 1)
+                this._showHints();
         }
         else {
             this._removeHints(timeout);
@@ -491,7 +494,8 @@ const Hints = Module("hints", {
             if ((modes.extended & modes.HINTS) && !this._continue)
                 modes.pop();
             commandline._lastEcho = null; // Hack.
-            this._hintMode.action(elem, elem.href || "", this._extendedhintCount, top);
+            this._hintMode.action(elem, elem.href || elem.src || "",
+                                  this._extendedhintCount, top);
         }, timeout);
         return true;
     },
@@ -764,7 +768,10 @@ const Hints = Module("hints", {
 
         commandline.input(this._hintMode.prompt + ": ", null, {
             extended: modes.HINTS,
-            leave: function () { hints.hide(); },
+            leave: function (stack) {
+                if (!stack.push)
+                    hints.hide();
+            },
             onChange: this.closure._onInput
         });
         modes.extended = modes.HINTS;
@@ -1078,7 +1085,9 @@ const Hints = Module("hints", {
 
         options.add(["extendedhinttags", "eht"],
             "XPath string of hintable elements activated by ';'",
-            "regexmap", "[iI]:" + Option.quote(util.makeXPath(["img"])),
+            "regexmap", "[iI]:" + Option.quote(util.makeXPath(["img"])) +
+                       ",[OTivVWy]:" + Option.quote(util.makeXPath(
+                            ["{a,area}[@href]", "{img,iframe}[@src]"])),
             { validator: Option.validateXPath });
 
         options.add(["hinttags", "ht"],
