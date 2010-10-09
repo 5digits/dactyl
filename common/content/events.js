@@ -746,7 +746,7 @@ const Events = Module("events", {
                 return;
             }
 
-            if(isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
+            if (isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
                 dactyl.mode = modes.EMBED;
                 return;
             }
@@ -1027,7 +1027,7 @@ const Events = Module("events", {
     onMouseDown: function (event) {
         let elem = event.target;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        for(; win; win = win != win.parent && win.parent)
+        for (; win; win = win != win.parent && win.parent)
             win.dactylFocusAllowed = true;
     },
 

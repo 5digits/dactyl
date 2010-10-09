@@ -98,10 +98,10 @@ function defineModule(name, params) {
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
     defineModule.loadLog.push("defineModule " + name);
-    for(let [, mod] in Iterator(params.require || []))
+    for (let [, mod] in Iterator(params.require || []))
         require(module, mod);
 
-    for(let [, mod] in Iterator(params.use || []))
+    for (let [, mod] in Iterator(params.use || []))
         if (loaded.hasOwnProperty(mod))
             require(module, mod, "use");
         else {
@@ -142,7 +142,7 @@ defineModule.time = function time(major, minor, func, self) {
 
 function endModule() {
     defineModule.loadLog.push("endModule " + currentModule.NAME);
-    for(let [, mod] in Iterator(use[currentModule.NAME] || []))
+    for (let [, mod] in Iterator(use[currentModule.NAME] || []))
         require(mod, currentModule.NAME, "use");
     loaded[currentModule.NAME] = 1;
 }
@@ -208,7 +208,7 @@ function debuggerProperties(obj) {
  * @returns {Generator}
  */
 function prototype(obj)
-    obj.__proto__ || Object.getPrototypeOf(obj) || 
+    obj.__proto__ || Object.getPrototypeOf(obj) ||
     XPCNativeWrapper.unwrap(obj).__proto__ ||
     Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
 function properties(obj, prototypes, debugger_) {
@@ -1128,7 +1128,7 @@ const array = Class("array", Array, {
      */
     zip: function zip(ary1, ary2) {
         let res = [];
-        for(let [i, item] in Iterator(ary1))
+        for (let [i, item] in Iterator(ary1))
             res.push([item, i in ary2 ? ary2[i] : ""]);
         return res;
     }

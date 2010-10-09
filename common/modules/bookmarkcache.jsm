@@ -10,7 +10,6 @@ defineModule("bookmarkcache", {
     require: ["services", "storage", "util"]
 });
 
-
 const Bookmark = Struct("url", "title", "icon", "keyword", "tags", "id");
 const Keyword = Struct("keyword", "title", "icon", "url");
 Bookmark.defaultValue("icon", function () BookmarkCache.getFavicon(this.url));

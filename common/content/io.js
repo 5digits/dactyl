@@ -67,7 +67,6 @@ const IO = Module("io", {
         services.get("downloadManager").addListener(this.downloadListener);
     },
 
-
     // TODO: there seems to be no way, short of a new component, to change
     // the process's CWD - see https://bugzilla.mozilla.org/show_bug.cgi?id=280953
     /**

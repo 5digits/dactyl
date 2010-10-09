@@ -27,7 +27,7 @@ const Util = Module("Util", {
     dactyl: {
         __noSuchMethod__: function (meth, args) {
             let win = util.activeWindow;
-            if(win && win.dactyl)
+            if (win && win.dactyl)
                 return win.dactyl[meth].apply(win.dactyl, args);
             return null;
         }
