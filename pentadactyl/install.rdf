@@ -6,10 +6,25 @@
         em:name="Pentadactyl"
         em:version="1.0b3pre"
         em:description="Firefox for Vim and Links addicts"
-        em:creator="Kris Maglione"
         em:homepageURL="http://dactyl.sourceforge.net/pentadactyl"
         em:iconURL="chrome://pentadactyl/skin/icon.png"
         em:optionsURL="chrome://dactyl/content/preferences.xul">
+
+        <em:creator>Kris Maglione, Doug Kearns</em:creator>
+        <em:developer>Štěpán Němec</em:developer>
+
+        <em:contributor>anekos</em:contributor>
+        <em:contributor>teramako</em:contributor>
+        <em:contributor>Viktor Kojouharov (Виктор Кожухаров)</em:contributor>
+        <em:contributor>Marco Candrian</em:contributor>
+        <em:contributor>Daniel Bainton</em:contributor>
+        <em:contributor>Konstantin Stepanov</em:contributor>
+        <em:contributor>Tim Hammerquist</em:contributor>
+        <em:contributor>Ted Pavlic</em:contributor>
+        <em:contributor>janus_wel</em:contributor>
+        <em:contributor>Martin Stubenschrott</em:contributor>
+        <em:contributor>Conrad Irwin</em:contributor>
+
         <em:targetApplication>
             <Description
                 em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"

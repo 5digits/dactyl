@@ -1025,6 +1025,25 @@ const Dactyl = Module("dactyl", {
         }
     },
 
+    wrapCallback: function (callback, self) {
+        self = self || this;
+        let save = ["forceNewTab", "forceNewWindow"];
+        let saved = save.map(function (p) dactyl[p]);
+        return function wrappedCallback() {
+            let vals = save.map(function (p) dactyl[p]);
+            saved.forEach(function (p, i) dactyl[save[i]] = p);
+            try {
+                return callback.apply(self, arguments);
+            }
+            catch (e) {
+                dactyl.reportError(e, true);
+            }
+            finally {
+                vals.forEach(function (p, i) dactyl[save[i]] = p);
+            }
+        }
+    },
+
     /**
      * @property {Window[]} Returns an array of all the host application's
      *     open windows.
@@ -1415,6 +1434,34 @@ const Dactyl = Module("dactyl", {
             onInstallFailed:    listener("installation", "failed")
         };
 
+        const updateAddons = Class("UpgradeListener", {
+            init: function init(addons) {
+                this.remaining = addons;
+                this.upgrade = [];
+                dactyl.echomsg("Checking updates for addons: " + addons.map(function (a) a.name).join(", "));
+                for (let addon in values(addons))
+                    addon.findUpdates(this, AddonManager.UPDATE_WHEN_USER_REQUESTED, null, null);
+            },
+            addonListener: {
+                __proto__: addonListener,
+                onDownloadStarted: function () {},
+                onDownloadEnded: function () {}
+            },
+            onUpdateAvailable: function (addon, install) {
+                this.upgrade.push(addon);
+                install.addListener(this.addonListener);
+                install.install();
+            },
+            onUpdateFinished: function (addon, error) {
+                this.remaining = this.remaining.filter(function (a) a != addon);
+                if (!this.remaining.length)
+                    dactyl.echomsg(
+                        this.upgrade.length
+                            ? "Installing updates for addons: " + this.upgrade.map(function (i) i.name).join(", ")
+                            : "No addon updates found");
+            }
+        });
+
         ///////////////////////////////////////////////////////////////////////////
 
         function callResult(method) {
@@ -1470,6 +1517,13 @@ const Dactyl = Module("dactyl", {
                 action: function (addon) addon.userDisabled = true,
                 filter: function ({ item }) !item.userDisabled,
                 perm: "disable"
+            },
+            {
+                name: "extu[update]",
+                description: "Update an extension",
+                actions: updateAddons,
+                filter: function ({ item }) !item.userDisabled,
+                perm: "upgrade"
             }
         ].forEach(function (command) {
             let perm = AddonManager["PERM_CAN_" + command.perm.toUpperCase()];
@@ -1483,13 +1537,16 @@ const Dactyl = Module("dactyl", {
                     else
                         dactyl.assert(name, "E471: Argument required");
 
-                    AddonManager.getAddonsByTypes(["extension"], function (list) {
+                    AddonManager.getAddonsByTypes(["extension"], dactyl.wrapCallback(function (list) {
                         if (!args.bang)
                             list = list.filter(function (extension) extension.name == name);
                         if (!args.bang && !list.every(ok))
                             return dactyl.echoerr("Permission denied");
-                        list.forEach(command.action);
-                    });
+                        if (command.actions)
+                            command.actions(list);
+                        else
+                            list.forEach(command.action);
+                    }));
                 }, {
                     argCount: "?", // FIXME: should be "1"
                     bang: true,
@@ -1506,16 +1563,15 @@ const Dactyl = Module("dactyl", {
         commands.add(["exto[ptions]", "extp[references]"],
             "Open an extension's preference dialog",
             function (args) {
-                let tab = dactyl.forceNewTab;
-                AddonManager.getAddonsByTypes(["extension"], function (list) {
+                AddonManager.getAddonsByTypes(["extension"], dactyl.wrapCallback(function (list) {
                     list = list.filter(function (extension) extension.name == args[0]);
                     if (!list.length || !list[0].optionsURL)
                         dactyl.echoerr("E474: Invalid argument");
                     else if (args.bang)
                         window.openDialog(list[0].optionsURL, "_blank", "chrome");
                     else
-                        dactyl.open(list[0].optionsURL, { from: "extoptions", where: tab && dactyl.NEW_TAB });
-                });
+                        dactyl.open(list[0].optionsURL, { from: "extoptions" });
+                }));
             }, {
                 argCount: "1",
                 bang: true,

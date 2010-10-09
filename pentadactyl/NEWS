@@ -58,6 +58,7 @@
     * Added BookmarkChange, BookmarkRemove autocommands.
     * Added -keyword, -tags, -title to :delbmarks.
     * Added "passwords" and "venkman" dialogs to :dialog.
+    * Added :extupdate command
     * Added 'hintkeys' option.
     * Added "transliterated" option to 'hintmatching'.
     * Replaced 'focuscontent' with 'strictfocus'.
