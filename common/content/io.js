@@ -391,9 +391,11 @@ lookup:
                                 dactyl.execute(line, { setFrom: file });
                             }
                             catch (e) {
-                                dactyl.echoerr("Error detected while processing " + file.path);
-                                dactyl.echomsg("line\t" + this.sourcing.line + ":");
-                                dactyl.reportError(e, true);
+                                if (!silent) {
+                                    dactyl.echoerr("Error detected while processing " + file.path);
+                                    dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                                    dactyl.reportError(e, true);
+                                }
                             }
                     }
                 }
@@ -406,7 +408,8 @@ lookup:
                 dactyl.log("Sourced: " + filename, 3);
             }
             catch (e) {
-                dactyl.reportError(e);
+                if (!(e instanceof FailedAssertion))
+                    dactyl.reportError(e);
                 let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
                 if (!silent)
                     dactyl.echoerr(message);
