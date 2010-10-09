@@ -38,7 +38,6 @@ CommandOption.defaultValue("description", function () "");
 CommandOption.defaultValue("type", function () CommandOption.NOARG);
 CommandOption.defaultValue("multiple", function () false);
 update(CommandOption, {
-    // FIXME: remove later, when our option handler is better
     /**
      * @property {number} The option argument is unspecified. Any argument
      *     is accepted and caller is responsible for parsing the return

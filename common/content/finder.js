@@ -121,7 +121,6 @@ const RangeFinder = Module("rangefinder", {
     // Called when the search is canceled - for example if someone presses
     // escape while typing a search
     onCancel: function () {
-        // TODO: code to reposition the document to the place before search started
         if (this.rangeFind)
             this.rangeFind.cancel();
     },
@@ -154,11 +153,9 @@ const RangeFinder = Module("rangefinder", {
         modes.addMode("FIND_BACKWARD", true);
     },
     commandline: function () {
-        // Event handlers for search - closure is needed
         commandline.registerCallback("change", modes.FIND_FORWARD, this.closure.onKeyPress);
         commandline.registerCallback("submit", modes.FIND_FORWARD, this.closure.onSubmit);
         commandline.registerCallback("cancel", modes.FIND_FORWARD, this.closure.onCancel);
-        // TODO: allow advanced myModes in register/triggerCallback
         commandline.registerCallback("change", modes.FIND_BACKWARD, this.closure.onKeyPress);
         commandline.registerCallback("submit", modes.FIND_BACKWARD, this.closure.onSubmit);
         commandline.registerCallback("cancel", modes.FIND_BACKWARD, this.closure.onCancel);

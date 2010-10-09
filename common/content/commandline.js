@@ -548,7 +548,6 @@ const CommandLine = Module("commandline", {
      * @param {string} str
      * @param {string} highlightGroup
      */
-    // TODO: resize upon a window resize
     _echoMultiline: function echoMultiline(str, highlightGroup) {
         let doc = this.widgets.multilineOutput.contentDocument;
         let win = this.widgets.multilineOutput.contentWindow;

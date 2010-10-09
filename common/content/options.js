@@ -1150,7 +1150,6 @@ const Options = Module("options", {
                         if (options["verbose"] > 0 && option.setFrom)
                             msg += "\n        Last set from " + option.setFrom.path;
 
-                        // FIXME: Message highlight group wrapping messes up the indent up for multi-arg verbose :set queries
                         dactyl.echo(<span highlight="CmdOutput">{msg}</span>);
                     }
                 }

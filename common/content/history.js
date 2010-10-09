@@ -55,7 +55,6 @@ const History = Module("history", {
         return obj;
     },
 
-    // TODO: better names
     stepTo: function stepTo(steps) {
         let start = 0;
         let end = window.getWebNavigation().sessionHistory.count - 1;

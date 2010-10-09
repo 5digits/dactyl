@@ -914,18 +914,6 @@ const Hints = Module("hints", {
             this._processHints(followFirst);
         }
     }
-
-    // FIXME: add resize support
-    // window.addEventListener("resize", onResize, null);
-
-    // function onResize(event)
-    // {
-    //     if (event)
-    //         doc = event.originalTarget;
-    //     else
-    //         doc = window.content.document;
-    // }
-
     //}}}
 }, {
     translitTable: Class.memoize(function () {
