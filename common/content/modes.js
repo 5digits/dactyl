@@ -265,8 +265,10 @@ const Modes = Module("modes", {
     },
 
     replace: function (mode, oldMode) {
-        // TODO: This should really be done in one step.
-        this.pop(oldMode);
+        while (oldMode && this._modeStack.length > 1 && this.main != oldMode)
+            this.pop();
+
+        this.set(mode, null, null, { push: this.topOfStack, pop: this._modeStack.pop() });
         this.push(mode);
     },
 

@@ -701,7 +701,7 @@ const Editor = Module("editor", {
             function (count) {
                 dactyl.assert(editor.isTextEdit);
                 editor.executeCommand("cmd_cut");
-                modes.replace(modes.INSERT, modes.TEXT_EDIT);
+                modes.push(modes.INSERT);
             });
 
         mappings.add([modes.VISUAL],
