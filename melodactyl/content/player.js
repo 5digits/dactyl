@@ -3,7 +3,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
-
+"use strict";
 
 const Player = Module("player", {
     init: function init() {
