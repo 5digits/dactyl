@@ -1519,7 +1519,7 @@ const Dactyl = Module("dactyl", {
                 perm: "disable"
             },
             {
-                name: "extu[update]",
+                name: "extu[pdate]",
                 description: "Update an extension",
                 actions: updateAddons,
                 filter: function ({ item }) !item.userDisabled,
