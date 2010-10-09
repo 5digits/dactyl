@@ -292,8 +292,12 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 "Set the 'private browsing' option",
                 "boolean", false,
                 {
-                    setter: function (value) services.get("privateBrowsing").privateBrowsingEnabled = value,
-                    getter: function () services.get("privateBrowsing").privateBrowsingEnabled
+                    initialValue: true,
+                    getter: function () services.get("privateBrowsing").privateBrowsingEnabled,
+                    setter: function (value) {
+                        if (services.get("privateBrowsing").privateBrowsingEnabled != value)
+                            services.get("privateBrowsing").privateBrowsingEnabled = value
+                    }
                 });
 
         options.add(["sanitizeitems", "si"],
