@@ -100,7 +100,7 @@ const ConfigBase = Class(ModuleBase, {
      * @property {Object} A map between key names for key events should be ignored,
      *     and a mask of the modes in which they should be ignored.
      */
-    ignoreKeys: {}, // XXX: be aware you can't put useful values in here, as "modes.NORMAL" etc. are not defined at this time
+    ignoreKeys: {}, // NOTE: be aware you can't put useful values in here, as "modes.NORMAL" etc. are not defined at this time
 
     /**
      * @property {string} The ID of the application's main XUL window.

@@ -689,7 +689,7 @@ const Events = Module("events", {
             if (elem && elem.readOnly)
                 return;
 
-            if (elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type) ||
+            if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
                 elem instanceof HTMLSelectElement) {
                 dactyl.mode = modes.INSERT;
                 if (hasHTMLDocument(win))
@@ -697,7 +697,7 @@ const Events = Module("events", {
                 return;
             }
 
-            if(isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
+            if (isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
                 dactyl.mode = modes.EMBED;
                 return;
             }
@@ -982,7 +982,7 @@ const Events = Module("events", {
     onMouseDown: function (event) {
         let elem = event.target;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        for(; win; win = win != win.parent && win.parent)
+        for (; win; win = win != win.parent && win.parent)
             win.dactylFocusAllowed = true;
     },
 
@@ -1022,9 +1022,6 @@ const Events = Module("events", {
         }
     }
 }, {
-    editableInputs: set(["date", "datetime", "datetime-local", "email", "file",
-                         "month", "number", "password", "range", "search",
-                         "tel", "text", "time", "url", "week"]),
     isContentNode: function (node) {
         let win = (node.ownerDocument || node).defaultView;
         for (; win; win = win.parent != win && win.parent)
@@ -1034,7 +1031,7 @@ const Events = Module("events", {
     },
     isInputElemFocused: function () {
         let elem = dactyl.focus;
-        return elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type) ||
+        return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
                isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
                                  HTMLObjectElement, HTMLTextAreaElement]);
     }

@@ -294,7 +294,8 @@ const Dactyl = Module("dactyl", {
 
         if (!context)
             context = userContext;
-        return Cu.evalInSandbox("with (window) {" + str + "}", context, "1.8", fileName, lineNumber);
+        context[EVAL_STRING] = str;
+        return Cu.evalInSandbox("with (window) { eval(" + EVAL_STRING + ") }", context, "1.8", fileName, lineNumber);
     },
 
     /**
@@ -630,7 +631,6 @@ const Dactyl = Module("dactyl", {
             </item></>.toXMLString(), true);
     },
 
-
     /**
      * Opens the help page containing the specified <b>topic</b> if it
      * exists.
@@ -824,7 +824,7 @@ const Dactyl = Module("dactyl", {
                     break;
                 }
             }
-            catch(e) {}
+            catch (e) {}
             // Unfortunately, failed page loads throw exceptions and
             // cause a lot of unwanted noise. This solution means that
             // any genuine errors go unreported.

@@ -32,6 +32,10 @@ const Bookmarks = Module("bookmarks", {
 
     // if starOnly = true it is saved in the unfiledBookmarksFolder, otherwise in the bookmarksMenuFolder
     add: function add(starOnly, title, url, keyword, tags, force) {
+        // FIXME
+        if (isObject(starOnly))
+            var { starOnly, title, url, keyword, tags, post, force } = starOnly;
+
         try {
             let uri = util.createURI(url);
             if (!force && bookmarks.isBookmarked(uri.spec))
@@ -54,6 +58,7 @@ const Bookmarks = Module("bookmarks", {
             if (!id)
                 return false;
 
+            PlacesUtils.setPostDataForBookmark(id, post);
             if (keyword)
                 services.get("bookmarks").setKeywordForBookmark(id, keyword);
         }
@@ -63,6 +68,17 @@ const Bookmarks = Module("bookmarks", {
         }
 
         return true;
+    },
+
+    addSearchKeyword: function (elem) {
+        let [url, post] = util.parseForm(elem);
+        let options = { "-title": "Search " + elem.ownerDocument.title };
+        if (post != null)
+            options["-post"] = post;
+
+        commandline.open(":",
+            commands.commandToString({ command: "bmark", options: options, arguments: [url] }) + " -keyword ",
+            modes.EX);
     },
 
     toggle: function toggle(url) {
@@ -104,11 +120,16 @@ const Bookmarks = Module("bookmarks", {
                                      .getBookmarkIdsForURI(uri, {})
                                      .filter(bookmarkcache.closure.isRegularBookmark);
             }
-            bmarks.forEach(services.get("bookmarks").removeItem);
+            bmarks.forEach(function (id) {
+                let bmark = bookmarkcache.bookmarks[id];
+                if (bmark)
+                    PlacesUtils.tagging.untagURI(util.newURI(bmark.url), null);
+                services.get("bookmarks").removeItem(id);
+            });
             return bmarks.length;
         }
         catch (e) {
-            dactyl.reportError(e);
+            dactyl.reportError(e, true);
             return 0;
         }
     },
@@ -132,7 +153,7 @@ const Bookmarks = Module("bookmarks", {
             if (engine.alias != alias)
                 engine.alias = alias;
 
-            searchEngines.push([engine.alias, engine.description, engine.iconURI && engine.iconURI.spec]);
+            searchEngines.push({ keyword: engine.alias, title: engine.description, icon: engine.iconURI && engine.iconURI.spec });
         }
 
         return searchEngines;
@@ -286,10 +307,9 @@ const Bookmarks = Module("bookmarks", {
                 args.completeFilter = have.pop();
 
                 let prefix = filter.substr(0, filter.length - args.completeFilter.length);
-                let tags = array.uniq(array.flatten([b.tags for ([k, b] in Iterator(bookmarkcache.bookmarks)) if (b.tags)]));
-
-                context.keys = { text: 0, description: 1 };
-                return [[prefix + tag, tag] for ([i, tag] in Iterator(tags)) if (have.indexOf(tag) < 0)];
+                context.generate = function () array(b.tags for (b in bookmarkcache) if (b.tags)).flatten().uniq().array;
+                context.keys = { text: function (tag) prefix + tag, description: util.identity };
+                context.filters.push(function (tag) have.indexOf(tag) < 0);
             },
             type: CommandOption.LIST
         };
@@ -310,6 +330,17 @@ const Bookmarks = Module("bookmarks", {
             type: CommandOption.STRING
         };
 
+        const post = {
+            names: ["-post", "-p"],
+            description: "Bookmark POST data",
+            completer: function post(context, args) {
+                context.keys.text = "post";
+                context.keys.description = "url";
+                return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: args["-keyword"], post: context.filter });
+            },
+            type: CommandOption.STRING
+        };
+
         const keyword = {
             names: ["-keyword", "-k"],
             description: "Keyword by which this bookmark may be opened (:open {keyword})",
@@ -324,18 +355,23 @@ const Bookmarks = Module("bookmarks", {
         commands.add(["bma[rk]"],
             "Add a bookmark",
             function (args) {
-                let url = args.length == 0 ? buffer.URL : args[0];
-                let title = args["-title"] || (args.length == 0 ? buffer.title : null);
-                let keyword = args["-keyword"] || null;
-                let tags = args["-tags"] || [];
+                let opts = {
+                    force: args.bang,
+                    starOnly: false,
+                    keyword: args["-keyword"] || null,
+                    post: args["-post"] || null,
+                    tags: args["-tags"] || [],
+                    title: args["-title"] || (args.length === 0 ? buffer.title : null),
+                    url: args.length === 0 ? buffer.URL : args[0]
+                };
 
-                if (bookmarks.add(false, title, url, keyword, tags, args.bang)) {
-                    let extra = (title == url) ? "" : " (" + title + ")";
-                    dactyl.echomsg({ domains: [util.getHost(url)], message: "Added bookmark: " + url + extra },
+                if (bookmarks.add(opts)) {
+                    let extra = (opts.title == opts.url) ? "" : " (" + opts.title + ")";
+                    dactyl.echomsg({ domains: [util.getHost(opts.url)], message: "Added bookmark: " + opts.url + extra },
                                    1, commandline.FORCE_SINGLELINE);
                 }
                 else
-                    dactyl.echoerr("Exxx: Could not add bookmark " + title.quote(), commandline.FORCE_SINGLELINE);
+                    dactyl.echoerr("Exxx: Could not add bookmark " + opts.title.quote(), commandline.FORCE_SINGLELINE);
             }, {
                 argCount: "?",
                 bang: true,
@@ -350,7 +386,7 @@ const Bookmarks = Module("bookmarks", {
                     }
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
                 },
-                options: [title, tags, keyword]
+                options: [keyword, title, tags, post]
             });
 
         commands.add(["bmarks"],
@@ -383,7 +419,7 @@ const Bookmarks = Module("bookmarks", {
                     commandline.input("This will delete all bookmarks. Would you like to continue? (yes/[no]) ",
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
-                                bookmarkcache.bookmarks.forEach(function (bmark) { services.get("bookmarks").removeItem(bmark.id); });
+                                Object.keys(bookmarkcache.bookmarks).forEach(function (id) { services.get("bookmarks").removeItem(id); });
                                 dactyl.echomsg("All bookmarks deleted", 1, commandline.FORCE_SINGLELINE);
                             }
                         });
@@ -477,7 +513,7 @@ const Bookmarks = Module("bookmarks", {
                 if (v != null)
                     context.filters.push(function (item) item.item[k] != null && this.matchString(v, item.item[k]));
             });
-            context.completions = bookmarkcache.bookmarks;
+            context.generate = function () values(bookmarkcache.bookmarks);
             completion.urls(context, tags);
         };
 
@@ -487,8 +523,8 @@ const Bookmarks = Module("bookmarks", {
             let engines = bookmarks.getSearchEngines();
 
             context.title = ["Search Keywords"];
-            context.completions = keywords.concat(engines);
-            context.keys = { text: 0, description: 1, icon: 2 };
+            context.completions = array(values(keywords)).concat(engines).array;
+            context.keys = { text: "keyword", description: "title", icon: "icon" };
 
             if (!space || noSuggest)
                 return;
@@ -496,7 +532,7 @@ const Bookmarks = Module("bookmarks", {
             context.fork("suggest", keyword.length + space.length, this, "searchEngineSuggest",
                     keyword, true);
 
-            let item = keywords.filter(function (k) k.keyword == keyword)[0];
+            let item = keywords[keyword];
             if (item && item.url.indexOf("%s") > -1)
                 context.fork("keyword/" + keyword, keyword.length + space.length, null, function (context) {
                     context.format = history.format;

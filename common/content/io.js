@@ -67,7 +67,6 @@ const IO = Module("io", {
         services.get("downloadManager").addListener(this.downloadListener);
     },
 
-
     // TODO: there seems to be no way, short of a new component, to change
     // the process's CWD - see https://bugzilla.mozilla.org/show_bug.cgi?id=280953
     /**
@@ -392,9 +391,11 @@ lookup:
                                 dactyl.execute(line, { setFrom: file });
                             }
                             catch (e) {
-                                dactyl.echoerr("Error detected while processing " + file.path);
-                                dactyl.echomsg("line\t" + this.sourcing.line + ":");
-                                dactyl.reportError(e, true);
+                                if (!silent) {
+                                    dactyl.echoerr("Error detected while processing " + file.path);
+                                    dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                                    dactyl.reportError(e, true);
+                                }
                             }
                     }
                 }
@@ -407,7 +408,8 @@ lookup:
                 dactyl.log("Sourced: " + filename, 3);
             }
             catch (e) {
-                dactyl.reportError(e);
+                if (!(e instanceof FailedAssertion))
+                    dactyl.reportError(e);
                 let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
                 if (!silent)
                     dactyl.echoerr(message);

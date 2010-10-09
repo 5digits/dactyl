@@ -46,18 +46,6 @@
         <p>The following options are available,</p>
 
         <dl>
-            <dt>-title</dt>
-            <dd>
-                The title of the bookmark.
-                Defaults to the page title, if available, or
-                <oa>url</oa> otherwise.
-                (short name <em>-t</em>)
-            </dd>
-            <dt>-tags</dt>
-            <dd>
-                Comma-separated list of tags for grouping and later
-                access (short name <em>-T</em>).
-            </dd>
             <dt>-keyword</dt>
             <dd>
                 A keyword which may be used to open the bookmark via
@@ -66,6 +54,23 @@
                 replaced by any text following the keyword when it
                 is opened.
                 (short name <em>-k</em>)
+            </dd>
+            <dt>-post</dt>
+            <dd>
+                Data to be POSTed to the server when the bookmark is
+                opened.
+            </dd>
+            <dt>-tags</dt>
+            <dd>
+                Comma-separated list of tags for grouping and later
+                access (short name <em>-T</em>).
+            </dd>
+            <dt>-title</dt>
+            <dd>
+                The title of the bookmark.
+                Defaults to the page title, if available, or
+                <oa>url</oa> otherwise.
+                (short name <em>-t</em>)
             </dd>
         </dl>
 

@@ -1649,7 +1649,7 @@ const Buffer = Module("buffer", {
                     let elements = frames.map(function (win) [m for (m in util.evaluateXPath(xpath, win.document))])
                             .flatten().filter(function (elem) {
 
-                        if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(Events.editableInputs, elem.type))
+                        if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(util.editableInputs, elem.type))
                             return false;
 
                         let computedStyle = util.computedStyle(elem);

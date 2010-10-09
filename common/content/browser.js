@@ -13,7 +13,6 @@
  */
 const Browser = Module("browser", {
 }, {
-    // TODO: support 'nrformats'? -> probably not worth it --mst
     incrementURL: function (count) {
         let matches = buffer.URL.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
@@ -122,10 +121,8 @@ const Browser = Module("browser", {
                     }
                 }
 
-                if (count < 1)
-                    count = 1;
+                count = Math.max(count, 1);
 
-                // XXX
                 let url = buffer.URL;
                 for (let i = 0; i < count; i++) {
                     if (isDirectory(url))

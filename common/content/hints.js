@@ -54,9 +54,10 @@ const Hints = Module("hints", {
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
         this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
-        this.addMode("O", "Generate an ':open URL' using hint",   function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
-        this.addMode("T", "Generate a ':tabopen URL' using hint", function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
-        this.addMode("W", "Generate a ':winopen URL' using hint", function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
+        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
+        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
+        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
+        this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
         this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
         this.addMode("y", "Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true));
@@ -128,7 +129,7 @@ const Hints = Module("hints", {
 
         let type = elem.type;
 
-        if (elem instanceof HTMLInputElement && set.has(Events.editableInputs, elem.type))
+        if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type))
             return [elem.value, false];
         else {
             for (let [, option] in Iterator(options["hintinputs"])) {
@@ -494,8 +495,9 @@ const Hints = Module("hints", {
             if ((modes.extended & modes.HINTS) && !this._continue)
                 modes.pop();
             commandline._lastEcho = null; // Hack.
-            this._hintMode.action(elem, elem.href || elem.src || "",
-                                  this._extendedhintCount, top);
+            dactyl.trapErrors(this._hintMode.action, this._hintMode,
+                              elem, elem.href || elem.src || "",
+                              this._extendedhintCount, top);
         }, timeout);
         return true;
     },
@@ -766,7 +768,7 @@ const Hints = Module("hints", {
         this._hintMode = this._hintModes[minor];
         dactyl.assert(this._hintMode);
 
-        commandline.input(this._hintMode.prompt + ": ", null, {
+        commandline.input(UTF8(this._hintMode.prompt) + ": ", null, {
             extended: modes.HINTS,
             leave: function (stack) {
                 if (!stack.push)
@@ -917,18 +919,6 @@ const Hints = Module("hints", {
             this._processHints(followFirst);
         }
     }
-
-    // FIXME: add resize support
-    // window.addEventListener("resize", onResize, null);
-
-    // function onResize(event)
-    // {
-    //     if (event)
-    //         doc = event.originalTarget;
-    //     else
-    //         doc = window.content.document;
-    // }
-
     //}}}
 }, {
     translitTable: Class.memoize(function () {
@@ -1087,7 +1077,9 @@ const Hints = Module("hints", {
             "XPath string of hintable elements activated by ';'",
             "regexmap", "[iI]:" + Option.quote(util.makeXPath(["img"])) +
                        ",[OTivVWy]:" + Option.quote(util.makeXPath(
-                            ["{a,area}[@href]", "{img,iframe}[@src]"])),
+                            ["{a,area}[@href]", "{img,iframe}[@src]"])) +
+                       ",[S]:" + Option.quote(util.makeXPath(
+                            ["input[not(@type='hidden')]", "textarea", "button", "select"])),
             { validator: Option.validateXPath });
 
         options.add(["hinttags", "ht"],
