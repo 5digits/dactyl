@@ -18,6 +18,7 @@ const Services = Module("Services", {
         this.classes = {};
         this.services = {};
 
+        this.add("annotation",          "@mozilla.org/browser/annotation-service;1",        Ci.nsIAnnotationService);
         this.add("appStartup",          "@mozilla.org/toolkit/app-startup;1",               Ci.nsIAppStartup);
         this.add("autoCompleteSearch",  "@mozilla.org/autocomplete/search;1?name=history",  Ci.nsIAutoCompleteSearch);
         this.add("bookmarks",           "@mozilla.org/browser/nav-bookmarks-service;1",     Ci.nsINavBookmarksService);

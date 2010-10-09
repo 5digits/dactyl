@@ -294,7 +294,8 @@ const Dactyl = Module("dactyl", {
 
         if (!context)
             context = userContext;
-        return Cu.evalInSandbox("with (window) {" + str + "}", context, "1.8", fileName, lineNumber);
+        context[EVAL_STRING] = str;
+        return Cu.evalInSandbox("with (window) { eval(" + EVAL_STRING + ") }", context, "1.8", fileName, lineNumber);
     },
 
     /**

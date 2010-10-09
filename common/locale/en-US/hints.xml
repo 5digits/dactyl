@@ -100,9 +100,10 @@
             <li tag=";t"><em>t</em> to open its location in a new tab</li>
             <li tag=";b"><em>b</em> to open its location in a new background tab</li>
             <li tag=";w"><em>w</em> to open its destination in a new window</li>
-            <li tag=";O"><em>O</em> to generate an <ex>:open</ex> with hint's URL (like <k>;O</k>)</li>
-            <li tag=";T"><em>T</em> to generate a <ex>:tabopen</ex> with hint's URL (like <k>;T</k>)</li>
-            <li tag=";W"><em>W</em> to generate a <ex>:winopen</ex> with hint's URL</li>
+            <li tag=";O"><em>O</em> to generate an <ex>:open</ex> prompt with hint’s URL</li>
+            <li tag=";T"><em>T</em> to generate a <ex>:tabopen</ex> prompt with hint’s URL (like <k>;O</k>)</li>
+            <li tag=";W"><em>W</em> to generate a <ex>:winopen</ex> prompt with hint’s URL (like <k>;T</k>)</li>
+            <li tag=";S"><em>S</em> to add a search keyword for the hint’s form</li>
             <li tag=";v"><em>v</em> to view its destination source</li>
             <li tag=";V"><em>V</em> to view its destination source in the external editor</li>
             <li tag=";y"><em>y</em> to yank its destination location</li>

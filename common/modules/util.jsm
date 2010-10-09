@@ -246,6 +246,10 @@ const Util = Module("Util", {
         util.dump((msg || "Stack") + "\n" + stack + "\n");
     },
 
+    editableInputs: set(["date", "datetime", "datetime-local", "email", "file",
+                         "month", "number", "password", "range", "search",
+                         "tel", "text", "time", "url", "week"]),
+
     /**
      * Converts HTML special characters in <b>str</b> to the equivalent HTML
      * entities.
@@ -521,9 +525,7 @@ const Util = Module("Util", {
      * @returns {nsIURI}
      */
     // FIXME: createURI needed too?
-    newURI: function (uri) {
-        return services.get("io").newURI(uri, null, null);
-    },
+    newURI: function (uri, charset, base) services.get("io").newURI(uri, charset, base),
 
     /**
      * Pretty print a JavaScript object. Use HTML markup to color certain items
@@ -639,6 +641,50 @@ const Util = Module("Util", {
         }
         string += template.map(keys.sort(compare), function (f) f[1]);
         return color ? string : [s for each (s in string)].join("");
+    },
+
+    /**
+     * Parses the fields of a form and returns a URL/POST-data pair
+     * that is the equivalent of submitting the form.
+     *
+     * @param {nsINode} field One of the fields of the given form.
+     */
+    // Nuances gleaned from browser.jar/content/browser/browser.js
+    parseForm: function parseForm(field) {
+        function encode(name, value, param) {
+            if (param)
+                value = "%s";
+            if (post)
+                return name + "=" + value;
+            return encodeURIComponent(name) + "=" + (param ? value : encodeURIComponent(value));
+        }
+
+        let form = field.form;
+        let doc = form.ownerDocument;
+        let charset = doc.charset;
+        let uri = util.newURI(doc.baseURI.replace(/\?.*/, ""), charset);
+        let url = util.newURI(form.action, charset, uri).spec;
+
+        let post = form.method.toUpperCase() == "POST";
+
+        let elems = [];
+        if (field instanceof Ci.nsIDOMHTMLInputElement && field.type == "submit")
+            elems.push(encode(field.name, field.value));
+
+        for (let [,elem] in iter(form.elements)) {
+            if (set.has(util.editableInputs, elem.type)
+                    || /^(?:hidden|textarea)$/.test(elem.type)
+                    || elem.checked && /^(?:checkbox|radio)$/.test(elem.type))
+                elems.push(encode(elem.name, elem.value, elem === field));
+            else if (elem instanceof Ci.nsIDOMHTMLSelectElement) {
+                for (let [,opt] in Iterator(elem.options))
+                    if (opt.selected)
+                        elems.push(encode(elem.name, opt.value));
+            }
+        }
+        if (post)
+            return [url, elems.map(encodeURIComponent).join('&'), elems];
+        return [url + "?" + elems.join('&'), null];
     },
 
     /**

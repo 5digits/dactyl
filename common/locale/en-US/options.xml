@@ -560,7 +560,12 @@
           [OTivVWy]:'//a[@href]     | //xhtml:a[@href]    |
                      //area[@href]  | //xhtml:area[@href] |
                      //img[@src]    | //xhtml:img[@src]   |
-                     //iframe[@src] | //xhtml:iframe[@src]'</default>
+                     //iframe[@src] | //xhtml:iframe[@src]',
+          [S]:'//input[not(@type=''hidden'')]       |
+               //xhtml:input[not(@type=''hidden'')] |
+               //textarea  | //xhtml:textarea |
+               //button    | //xhtml:button   |
+               //select    | //xhtml:select' </default>
     <description>
         <p>
             Defines specialized XPath expressions for arbitrary
