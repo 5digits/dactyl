@@ -90,18 +90,16 @@
 
 <p>Enable <em>passthrough</em> mode on all Google sites:</p>
 
-<code><ex>:autocmd LocationChange .* js modes.passAllKeys = /google\.com/.test(buffer.URL)</ex></code>
+<code><ex>:autocmd LocationChange</ex> <str delim="'">google\.com</str> <hl key="HelpArg">-js</hl> modes.push(modes.PASS_THROUGH)</code>
 
 <p>Enable <em>passthrough</em> mode on <em>some</em> Google sites:</p>
 
-<code><ex>:autocmd LocationChange .* js modes.passAllKeys = /(www|mail)\.google\.com/.test(buffer.URL)</ex></code>
+<code><ex>:autocmd LocationChange</ex> <str delim="'">(www|mail)\.google\.com</str> <hl key="HelpArg">-js</hl> modes.push(modes.PASS_THROUGH)</code>
 
 <p>Set the filetype to mail when editing email at Gmail:</p>
 
-<code><!-- Why is the XSLT processor mangling newlines? -->
-<ex>:autocmd LocationChange !'mail\.google\.com'</ex> <ex>:set editor=<str>gvim -f</str></ex>
-<ex>:autocmd LocationChange 'mail\.google\.com'</ex> <ex>:set editor=<str>gvim -f -c 'set ft=mail'</str></ex>
-</code>
+<code><ex>:autocmd LocationChange</ex> !<str delim="'">mail\.google\.com</str> <ex>:set editor=<str>gvim -f</str></ex>
+<ex>:autocmd LocationChange</ex> <str delim="'">mail\.google\.com</str> <ex>:set editor=<str>gvim -f -c 'set ft=mail'</str></ex></code>
 
 </document>
 

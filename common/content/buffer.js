@@ -271,7 +271,9 @@ const Buffer = Module("buffer", {
             statusline.updateUrl();
             statusline.updateProgress();
 
-            autocommands.trigger("LocationChange", { url: buffer.URL });
+            util.timeout(function () {
+                autocommands.trigger("LocationChange", { url: buffer.URL });
+            });
 
             // if this is not delayed we get the position of the old buffer
             util.timeout(function () {
