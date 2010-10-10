@@ -7,7 +7,7 @@
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
-<include href="tutorial" tag="tutorial.html" insertafter="intro.html" />
+<include href="tutorial" tag="tutorial.xml" insertafter="intro.xml" />
 
 </overlay>
 
