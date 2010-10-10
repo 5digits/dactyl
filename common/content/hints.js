@@ -96,8 +96,13 @@ const Hints = Module("hints", {
     __reset: function () {
         if (!this._usedTabKey) {
             this._hintNumber = 0;
-            this._updateStatusline();
         }
+        if (this.__continue && this._validHints.length <= 1) {
+            this._hintString = "";
+            commandline.command = this._hintString;
+            this._showHints();
+        }
+        this._updateStatusline();
     },
 
     /**
@@ -424,6 +429,7 @@ const Hints = Module("hints", {
      */
     _removeHints: function (timeout, slight) {
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
+            util.dump(String(doc), start, end);
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1))
@@ -476,21 +482,18 @@ const Hints = Module("hints", {
         let elem = this._validHints[activeIndex];
         let top = this._top;
 
-        if (this._continue) {
+        if (this._continue)
             this.__reset();
-            if (this._validHints.length <= 1)
-                this._showHints();
-        }
-        else {
+        else
             this._removeHints(timeout);
-        }
 
         let n = 5;
         (function next() {
             this._setClass(elem, n % 2);
+            util.dump(n, String(this._top));
             if (n--)
                 this.timeout(next, 50);
-            else if (!this._top)
+            else if (!this._validHints.some(function (h) h.elem == elem))
                 elem.removeAttributeNS(NS, "highlight");
         }).call(this);
 
