@@ -347,8 +347,10 @@ const Hints = Module("hints", {
         let prefix = (elem.getAttributeNS(NS, "class") || "") + " ";
         if (active)
             elem.setAttributeNS(NS, "highlight", prefix + "HintActive");
-        else
+        else if (active != null)
             elem.setAttributeNS(NS, "highlight", prefix + "HintElem");
+        else
+            elem.removeAttributeNS(NS, "highlight");
     },
 
     /**
@@ -429,7 +431,6 @@ const Hints = Module("hints", {
      */
     _removeHints: function (timeout, slight) {
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
-            util.dump(String(doc), start, end);
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1))
@@ -489,12 +490,10 @@ const Hints = Module("hints", {
 
         let n = 5;
         (function next() {
-            this._setClass(elem, n % 2);
-            util.dump(n, String(this._top));
+            let hinted = n || this._validHints.some(function (e) e === elem);
+            this._setClass(elem, n ? n % 2 : !hinted ? null : this._validHints[Math.max(0, this._hintNumber-1)] === elem);
             if (n--)
                 this.timeout(next, 50);
-            else if (!this._validHints.some(function (h) h.elem == elem))
-                elem.removeAttributeNS(NS, "highlight");
         }).call(this);
 
         this.timeout(function () {

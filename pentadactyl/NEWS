@@ -21,6 +21,13 @@
     * Multiple Ex commands may now be separated by |
     * Command-line is now hidden by default. Added C and M to
       'guioptions'.
+    * Hint mode improvements, including:
+      - Added g; continued extended hint mode, which allows
+	selecting multiple hints. Removed ;F
+      - Hints are now updated after scrolling and window resizing.
+      - Added ;S mode for creating search keywords.
+      - Added 'hintkeys' option.
+      - Added "transliterated" option to 'hintmatching'.
     * JavaScript completion improvements, including:
       - The prototype of the function whose arguments are currently
         being typed is displayed during completion.
@@ -48,7 +55,6 @@
     * IMPORTANT: 'guioptions' default value has changed.
     * IMPORTANT: 'mapleader' is now an option rather than a :let
       variable.
-    * Added g; continued extended hint mode and removed ;F
     * Added "bookmarks", "diverted", and "links" to 'activate'
       option
     * Added 'altwildmode' and <A-Tab> command-line key binding.
@@ -59,8 +65,6 @@
     * Added -keyword, -tags, -title to :delbmarks.
     * Added "passwords" and "venkman" dialogs to :dialog.
     * Added :extupdate command
-    * Added 'hintkeys' option.
-    * Added "transliterated" option to 'hintmatching'.
     * Replaced 'focuscontent' with 'strictfocus'.
     * Changed 'urlseparator' default value to '|'
     * Added 'wildanchor' option.
