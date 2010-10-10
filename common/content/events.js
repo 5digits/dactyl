@@ -47,17 +47,16 @@ const Events = Module("events", {
         this._code_key = {};
         this._key_code = {};
 
-        for (let [k, v] in Iterator(KeyEvent))
-            if (/^DOM_VK_(?![A-Z0-9]$)/.test(k)) {
-                k = k.substr(7).toLowerCase();
-                let names = [k.replace(/(^|_)(.)/g, function (m, n1, n2) n2.toUpperCase())
-                              .replace(/^NUMPAD/, "k")];
-                if (k in this._keyTable)
-                    names = this._keyTable[k];
-                this._code_key[v] = names[0];
-                for (let [, name] in Iterator(names))
-                    this._key_code[name.toLowerCase()] = v;
-            }
+        for (let [k, v] in Iterator(KeyEvent)) {
+            k = k.substr(7).toLowerCase();
+            let names = [k.replace(/(^|_)(.)/g, function (m, n1, n2) n2.toUpperCase())
+                          .replace(/^NUMPAD/, "k")];
+            if (k in this._keyTable)
+                names = this._keyTable[k];
+            this._code_key[v] = names[0];
+            for (let [, name] in Iterator(names))
+                this._key_code[name.toLowerCase()] = v;
+        }
 
         // HACK: as Gecko does not include an event for <, we must add this in manually.
         if (!("<" in this._key_code)) {
@@ -374,7 +373,7 @@ const Events = Module("events", {
      * @param {string} keys The string to parse.
      * @returns {Array[Object]}
      */
-    fromString: function (input) {
+    fromString: function (input, unknownOk) {
         let out = [];
 
         let re = RegExp("<.*?>?>|[^<]|<(?!.*>)", "g");
@@ -388,9 +387,10 @@ const Events = Module("events", {
                 let [match, modifier, keyname] = evt_str.match(/^<((?:[CSMA]-)*)(.+?)>$/i) || [false, '', ''];
                 modifier = modifier.toUpperCase();
                 keyname = keyname.toLowerCase();
+                evt_obj.dactylKeyname = keyname;
 
                 if (keyname && !(keyname.length == 1 && modifier.length == 0 || // disallow <> and <a>
-                    !(keyname.length == 1 || this._key_code[keyname] || keyname == "nop" || /mouse$/.test(keyname)))) { // disallow <misteak>
+                    !(unknownOk || keyname.length == 1 || this._key_code[keyname] || keyname == "nop" || /mouse$/.test(keyname)))) { // disallow <misteak>
                     evt_obj.ctrlKey  = /C-/.test(modifier);
                     evt_obj.altKey   = /A-/.test(modifier);
                     evt_obj.shiftKey = /S-/.test(modifier);
@@ -504,7 +504,7 @@ const Events = Module("events", {
             else if (charCode > 0) {
                 key = String.fromCharCode(charCode);
 
-                if (key in this._key_code) {
+                if (!/^[a-z0-9]$/i.test(key) && key in this._key_code) {
                     // a named charcode key (<Space> and <lt>) space can be shifted, <lt> must be forced
                     if ((key.match(/^\s$/) && event.shiftKey) || event.dactylShift)
                         modifier += "S-";
@@ -786,7 +786,7 @@ const Events = Module("events", {
 
         try {
             let stop = false;
-            let mode = modes.main;
+            let mode = modes.getStack(0);
 
             let win = document.commandDispatcher.focusedWindow;
             if (win && win.document && "designMode" in win.document && win.document.designMode == "on" && !config.isComposeWindow)
@@ -804,7 +804,7 @@ const Events = Module("events", {
                 // handler to escape the <Esc> key
                 if (!stop || !isEscape(key))
                     modes.pop();
-                mode = modes.getStack(1).main;
+                mode = modes.getStack(1);
             }
             // handle Escape-all-keys mode (Ctrl-q)
 
@@ -815,66 +815,32 @@ const Events = Module("events", {
 
             stop = true; // set to false if we should NOT consume this event but let the host app handle it
 
-            // just forward event without checking any mappings when the MOW is open
-            if (mode == modes.COMMAND_LINE && (modes.extended & modes.OUTPUT_MULTILINE)) {
-                commandline.onMultilineOutputEvent(event);
-                return killEvent();
-            }
-
             // XXX: ugly hack for now pass certain keys to the host app as
             // they are without beeping also fixes key navigation in combo
             // boxes, submitting forms, etc.
             // FIXME: breaks iabbr for now --mst
-            if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode)) {
+            if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode.main)) {
                 this._input.buffer = "";
                 return null;
             }
 
-            // TODO: handle middle click in content area
+            if (mode.params.onEvent) {
+                this._input.buffer = "";
+                // Bloody hell.
+                if (key === "<C-h>")
+                    key = event.dactylString = "<BS>";
 
-            if (!isEscape(key)) {
-                // custom mode...
-                if (mode == modes.CUSTOM) {
-                    plugins.onEvent(event);
-                    return killEvent();
-                }
-
-                // All of these special cases for hint mode are driving
-                // me insane! -Kris
-                if (modes.extended & modes.HINTS) {
-                    // under HINT mode, certain keys are redirected to hints.onEvent
-                    if (key == "<Return>" || key == "<Tab>" || key == "<S-Tab>"
-                        || key == options["mapleader"]
-                        || (key == "<BS>" && hints.prevInput == "number")
-                        || (hints.isHintKey(key) && !hints.escNumbers)) {
-                        hints.onEvent(event);
-                        this._input.buffer = "";
-                        return killEvent();
-                    }
-
-                    // others are left to generate the 'input' event or handled by the host app
-                    return null;
-                }
-            }
-
-            // FIXME (maybe): (is an ESC or C-] here): on HINTS mode, it enters
-            // into 'if (map && !skipMap) below. With that (or however) it
-            // triggers the onEscape part, where it resets mode. Here I just
-            // return true, with the effect that it also gets to there (for
-            // whatever reason).  if that happens to be correct, well..
-            // XXX: why not just do that as well for HINTS mode actually?
-
-            if (mode == modes.CUSTOM)
+                if (mode.params.onEvent(event) === false)
+                    killEvent();
                 return null;
-
-            let mainMode = modes.getMode(mode);
+            }
 
             let inputStr = this._input.buffer + key;
             let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
             let candidateCommand = inputStr.substr(countStr.length);
-            let map = mappings[event.noremap ? "getDefault" : "get"](mode, candidateCommand);
+            let map = mappings[event.noremap ? "getDefault" : "get"](mode.main, candidateCommand);
 
-            let candidates = mappings.getCandidates(mode, candidateCommand);
+            let candidates = mappings.getCandidates(mode.main, candidateCommand);
             if (candidates.length == 0 && !map) {
                 map = this._input.pendingMap;
                 this._input.pendingMap = null;
@@ -885,7 +851,7 @@ const Events = Module("events", {
             // counts must be at the start of a complete mapping (10j -> go 10 lines down)
             if (countStr && !candidateCommand) {
                 // no count for insert mode mappings
-                if (!mainMode.count || mainMode.input)
+                if (!mode.mainMode.count || mode.mainMode.input)
                     stop = false;
                 else
                     this._input.buffer = inputStr;
@@ -930,14 +896,14 @@ const Events = Module("events", {
                         stop = false;
                 }
             }
-            else if (mappings.getCandidates(mode, candidateCommand).length > 0 && !event.skipmap) {
+            else if (mappings.getCandidates(mode.main, candidateCommand).length > 0 && !event.skipmap) {
                 this._input.pendingMap = map;
                 this._input.buffer += key;
             }
             else { // if the key is neither a mapping nor the start of one
                 // the mode checking is necessary so that things like g<esc> do not beep
                 if (this._input.buffer != "" && !event.skipmap &&
-                    (mode & (modes.INSERT | modes.COMMAND_LINE | modes.TEXT_EDIT)))
+                    (mode.main & (modes.INSERT | modes.COMMAND_LINE | modes.TEXT_EDIT)))
                     events.feedkeys(this._input.buffer, { noremap: true, skipmap: true });
 
                 this._input.buffer = "";
@@ -947,15 +913,15 @@ const Events = Module("events", {
 
                 if (!isEscape(key)) {
                     // allow key to be passed to the host app if we can't handle it
-                    stop = (mode == modes.TEXT_EDIT);
+                    stop = (mode.main === modes.TEXT_EDIT);
 
-                    if (mode == modes.COMMAND_LINE) {
+                    if (mode.main === modes.COMMAND_LINE) {
                         if (!(modes.extended & modes.INPUT_MULTILINE))
                             dactyl.trapErrors(function () {
                                 commandline.onEvent(event); // reroute event in command line mode
                             });
                     }
-                    else if (!mainMode.input)
+                    else if (!mode.mainMode.input)
                         dactyl.beep();
                 }
             }

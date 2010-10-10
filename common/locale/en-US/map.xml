@@ -48,7 +48,7 @@
     common modes,
 </p>
 
-<dl>
+<dl dt="width: 8em;">
     <dt>n</dt> <dd>Normal mode: When browsing normally</dd>
     <dt>v</dt> <dd>Visual mode: When selecting text with the cursor keys</dd>
     <dt>i</dt> <dd>Insert mode: When interacting with text fields on a website</dd>
@@ -108,7 +108,7 @@
     Any of the map commands may be given the following options:
 </p>
 
-<dl>
+<dl dt="width: 12em;">
     <dt></dt> <dd></dd>
 
     <dt>-builtin</dt> <dd>Execute this mapping as if there were no user-defined mappings (short name <em>-b</em>)</dd>
@@ -303,7 +303,7 @@
     sequences are interpreted as described,
 </p>
 
-<dl>
+<dl dt="width: 10em;">
     <dt><k>xc</k></dt>
     <dd>Type the ‘X’ key followed by the ‘C’ key</dd>
 

@@ -25,8 +25,8 @@
     achieve special effects. These options come in 8 forms:
 </p>
 
-<dl>
-    <dt>boolean</dt>       <dd>Can only be on or off</dd>
+<dl dt="width: 10em;">
+    <dt>boolean</dt>       <dd>Can only be <hl key="Boolean">on</hl> or <hl key="Boolean">off</hl></dd>
     <dt>number</dt>        <dd>A numeric value</dd>
     <dt>string</dt>        <dd>A string value</dd>
 
@@ -44,7 +44,7 @@
 
     <dt/><dd tag="stringmap"/>
     <dt>stringmap</dt>
-    <dd>A comma-separated list of key-value pairs, e.g., <str>key:val,foo:bar</str></dd>
+    <dd>A comma-separated list of key-value pairs, e.g., <str delim="">key:val,foo:bar</str></dd>
 
     <dt/><dd tag="regexlist"/>
     <dt>regexlist</dt>
@@ -430,7 +430,7 @@
     <description>
         <p>Items which are completed at the <ex>:open</ex> prompts. Available items:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt>s</dt> <dd>Search engines and keyword URLs</dd>
             <dt>f</dt> <dd>Local files</dd>
             <dt>l</dt> <dd>&dactyl.host; location bar entries (bookmarks and history sorted in an intelligent way)</dd>
@@ -598,7 +598,7 @@
 
         <p>Possible values:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt>0</dt>      <dd>Follow the first hint as soon as typed text uniquely identifies it.</dd>
             <dt>1</dt>      <dd>Follow the selected hint on <k name="Return"/>.</dd>
             <dt>2</dt>      <dd>Follow the selected hint on <k name="Return"/> only if it's been <k name="Tab" mode="c"/>-selected.</dd>
@@ -630,7 +630,7 @@
 
         <p>Supported characters:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt>B</dt>      <dd>Bookmark bar</dd>
             <dt>C</dt>      <dd>Always show the command-line outside of the status line</dd>
             <dt>M</dt>      <dd>Always show messages outside of the status line</dd>
@@ -676,7 +676,7 @@
             given, and the first successful value is used.
         </p>
 
-        <dl>
+        <dl dt="width: 8em;">
             <dt>value</dt>      <dd>The hint is the value displayed in a text input, or the selected option for a drop-down.</dd>
             <dt>label</dt>      <dd>The value of an explicit label for the input; this will not match most manually added labels that are found on sites.</dd>
             <dt>name </dt>      <dd>The name of the input will be used; although the name is not designed for user consumption, it is frequently very similar to the label.</dd>
@@ -869,7 +869,7 @@
 
         <p>Possible values:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt>0</dt>      <dd>Never</dd>
             <dt>1</dt>      <dd>Only if there are multiple windows</dd>
             <dt>2</dt>      <dd>Always</dd>
@@ -1045,7 +1045,7 @@
 
         <p>Items available by default:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt>g</dt>      <dd>General info</dd>
             <dt>f</dt>      <dd>Feeds</dd>
             <dt>m</dt>      <dd>Meta tags</dd>
@@ -1073,7 +1073,7 @@
 
         <p>Possible values are:</p>
 
-        <dl>
+        <dl dt="width: 8em;">
             <dt>tab</dt>            <dd>Open pop-ups in a new tab</dd>
             <dt>window</dt>         <dd>Open pop-ups in a new window</dd>
             <dt>resized</dt>        <dd>Open resized pop-ups in a new window</dd>
@@ -1185,7 +1185,7 @@
             deleted. The value must be of the one of:
         </p>
 
-        <dl>
+        <dl dt="width: 8em;">
             <dt>all</dt>       <dd>Everything</dd>
             <dt>session</dt>   <dd>The current session</dd>
             <dt><a>n</a>m</dt> <dd>Past <a>n</a> Minutes</dd>
@@ -1258,7 +1258,7 @@
 
         <p>Possible values are:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt>0</dt> <dd>Don't show link destination</dd>
             <dt>1</dt> <dd>Show the link's destination in the <t>status-line</t></dd>
             <dt>2</dt> <dd>Show the link's destination in the <t>command-line</t></dd>
@@ -1276,7 +1276,7 @@
 
         <p>Possible values are:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt>0</dt>      <dd>Never show tab line</dd>
             <dt>1</dt>      <dd>Show tab line only if more than one tab is open</dd>
             <dt>2</dt>      <dd>Always show tab line</dd>
