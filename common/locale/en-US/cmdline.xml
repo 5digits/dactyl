@@ -152,6 +152,7 @@
     </description>
 </item>
 
+
 <h2 tag="cmdline-lines">Ex command lines</h2>
 
 <item>
@@ -212,7 +213,73 @@
             </ul>
         </p>
     </description>
-    </item>
+</item>
+
+<h3 tag="cmdline-arguments">Ex command-line arguments</h3>
+
+<p>
+    Most Ex commands accept a number of options and arguments. Arguments and
+    options are generally separated by spaces, and treat a number of
+    characters, including <em>\</em>, <em>'</em>, <em>"</em>, and <em>|</em>,
+    specially.  Moreover, certain arguments have their own special characters.
+    For instance, when using <ex>:set</ex> to change a <t>stringlist</t>
+    option, the comma character is used to separate elements of said list. Or
+    when calling <ex>:autocmd</ex>, the pattern given may be negated by
+    prefixing it with a <em>!</em>. In order to use these characters in
+    command arguments, stripped of their special meaning, they must be quoted.
+</p>
+
+<p tag="cmdline-quoting quoting">
+    &dactyl.appName; offers four distinct quoting styles, each with its own
+    distinct advantages and disadvantages. The first, and most basic, is the
+    automatic quoting applied to the commands listed in <ex>:bar</ex>. When
+    any of these commands is invoked, their final argument is always
+    interpreted literally. No characters have special meaning whatsoever, and
+    no care need be taken to quote anything. Additionally, the following three
+    optional quoting characters are available:
+</p>
+
+<dl>
+    <dt>\</dt>
+    <dd>
+        This is the most basic quoting character. When it is encountered
+        outside of single or double quotes, it forces the next character to be
+        interpreted literally. So, for instance, <tt>\\</tt> ⇒ <tt>\</tt>, 
+        <tt>\'</tt> ⇒ <tt>'</tt>, <tt>\a</tt> ⇒ <tt>a</tt>, and
+        <tt>\␣</tt> ⇒ <tt>␣</tt>.
+    </dd>
+    <dt>'</dt>
+    <dd>
+        Any character inside single quotes aside from the ' character itself
+        is interpreted literally. To include a literal single quote, it must
+        be doubled. So, <code>'foo\ ''bar\\ baz\' ⇒ foo\ 'bar\\ baz\</code>
+    </dd>
+    <dt>"</dt>
+    <dd>
+        Any character inside of double quotes except for <em>"</em> and
+        <em>\</em> is interpreted literally. A literal double quote may be
+        included by preceding it with a backslash. Any other occurrence of a
+        backslash starts an escape sequence as in JavaScript strings. Among
+        the available escape sequences are:
+        <dl>
+            <dt>\n</dt> <dd>A newline character.</dd>
+            <dt>\t</dt> <dd>A tab character.</dd>
+            <dt>\0nn</dt> <dd>Where each <em>n</em> is a digit between 0 and 7, represents an octal character code.</dd>
+            <dt>\xdd</dt> <dd>Where each <em>d</em> is a digit between 0 and F, represents a hexidecimal character code.</dd>
+            <dt>\uxxxx</dt> <dd>Where each <em>x</em> is a digit between 0 and F, a Unicode character at code-point <em>xxxx</em>.</dd>
+        </dl>
+    </dd>
+</dl>
+
+<p tag="cmdline-options">
+    Many Ex commands accept option arguments in addition to regular arguments.
+    Option arguments begin with a hyphen (<em>-</em>), and often have a short
+    form and a long form, such as <em>-name</em> and <em>-n</em>. Most options
+    accept arguments, which come after the option separated by either a space
+    or an equal sign. For instance, the following three forms,
+    <ex>-name=<str>foo</str></ex>, <ex>-name <str>foo</str></ex>, and
+    <ex>-n <str>foo</str></ex>, are all acceptable and entirely equivalent.
+</p>
 
 </document>
 

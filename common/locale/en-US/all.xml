@@ -12,29 +12,29 @@
 
 <toc/>
 
-<include href="intro" tag="intro.html"/>
-<include href="starting" tag="starting.html"/>
-<include href="browsing" tag="browsing.html"/>
-<include href="buffer" tag="buffer.html"/>
-<include href="cmdline" tag="cmdline.html"/>
-<include href="insert" tag="insert.html"/>
-<include href="options" tag="options.html"/>
-<include href="pattern" tag="pattern.html"/>
-<include href="tabs" tag="tabs.html"/>
-<include href="hints" tag="hints.html"/>
-<include href="map" tag="map.html"/>
-<include href="eval" tag="eval.html"/>
-<include href="marks" tag="marks.html"/>
-<include href="repeat" tag="repeat.html"/>
-<include href="autocommands" tag="autocommands.html"/>
-<include href="print" tag="print.html"/>
-<include href="gui" tag="gui.html"/>
-<include href="styling" tag="styling.html"/>
-<include href="message" tag="message.html"/>
-<include href="developer" tag="developer.html"/>
-<include href="various" tag="various.html"/>
-<include href="plugins" tag="plugins.html"/>
-<include href="index" tag="index.html"/>
+<include href="intro" tag="intro.xml"/>
+<include href="starting" tag="starting.xml"/>
+<include href="browsing" tag="browsing.xml"/>
+<include href="buffer" tag="buffer.xml"/>
+<include href="cmdline" tag="cmdline.xml"/>
+<include href="insert" tag="insert.xml"/>
+<include href="options" tag="options.xml"/>
+<include href="pattern" tag="pattern.xml"/>
+<include href="tabs" tag="tabs.xml"/>
+<include href="hints" tag="hints.xml"/>
+<include href="map" tag="map.xml"/>
+<include href="eval" tag="eval.xml"/>
+<include href="marks" tag="marks.xml"/>
+<include href="repeat" tag="repeat.xml"/>
+<include href="autocommands" tag="autocommands.xml"/>
+<include href="print" tag="print.xml"/>
+<include href="gui" tag="gui.xml"/>
+<include href="styling" tag="styling.xml"/>
+<include href="message" tag="message.xml"/>
+<include href="developer" tag="developer.xml"/>
+<include href="various" tag="various.xml"/>
+<include href="plugins" tag="plugins.xml"/>
+<include href="index" tag="index.xml"/>
 
 </document>
 

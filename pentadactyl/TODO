@@ -25,7 +25,6 @@ BUGS:
 (recent Mercurial regressions):
 
 FEATURES:
-9 Add quoting help tag
 8 Document Caret and Visual modes.
 8 replace global variables with plugin scoped user options
 8 fix local options
