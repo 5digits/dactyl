@@ -197,27 +197,30 @@
 <item>
     <tags>:styleenable :stylee</tags>
     <tags>:styenable :stye</tags>
+    <strut/>
     <spec>:styled<oa>isable</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
-        <p>Enable any matching styles. Arguments are the same as for <ex>:delstyle</ex>.</p>
+        <p>Enable any matching styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
 </item>
 
 <item>
     <tags>:styledisable :styled</tags>
     <tags>:stydisable :styd</tags>
+    <strut/>
     <spec>:stylee<oa>nable</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
-        <p>Disable any matching styles. Arguments are the same as for <ex>:delstyle</ex>.</p>
+        <p>Disable any matching styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
 </item>
 
 <item>
     <tags>:styletoggle :stylet</tags>
     <tags>:stytoggle :styt</tags>
+    <strut/>
     <spec>:stylet<oa>oggle</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
-        <p>Toggle any matching styles. Arguments are the same as for <ex>:delstyle</ex>.</p>
+        <p>Toggle any matching styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
 </item>
 

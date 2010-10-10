@@ -40,7 +40,7 @@
 
         <p>A buffer may be marked with one of the following indicators:</p>
 
-        <dl>
+        <dl dt="width: 6em;">
             <dt><hl key="Indicator">%</hl></dt><dd>The current buffer</dd>
             <dt><hl key="Indicator">#</hl></dt><dd>The alternate buffer for <ex>:e #</ex> and <k name="C-^"/></dd>
         </dl>

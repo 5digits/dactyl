@@ -45,7 +45,7 @@
 
         <p>The following options are available,</p>
 
-        <dl>
+        <dl dt="width: 8em;">
             <dt>-keyword</dt>
             <dd>
                 A keyword which may be used to open the bookmark via
@@ -124,7 +124,7 @@
 
         <p>The bookmarks may also be filtered via the following options,</p>
 
-        <dl>
+        <dl dt="width: 8em;">
             <dt>-keyword</dt>
             <dd>
                 The bookmark's keyword (short name <em>-k</em>).
@@ -273,7 +273,7 @@
 
         <p>The pages may also be filtered via the following options,</p>
 
-        <dl>
+        <dl dt="width: 8em;">
             <dt>-max</dt>
             <dd>
                 The maximum number of items to list or open

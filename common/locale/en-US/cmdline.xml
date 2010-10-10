@@ -164,7 +164,7 @@
             given in a single command line and will be executed consecutively.
             <em>|</em> can be included as an argument to a command by escaping
             it with a backslash. E.g.
-            <code><ex>:map \| :echo "bar"<k name="CR"/></ex></code>
+            <code><ex>:map \|</ex> <ex>:echo <str>bar</str></ex><k name="CR"/></code>
 
             Several commands process the entire command line string literally.
             These commands will include any <em>|</em> as part of their
@@ -239,7 +239,7 @@
     optional quoting characters are available:
 </p>
 
-<dl>
+<dl dt="width: 8em;">
     <dt>\</dt>
     <dd>
         This is the most basic quoting character. When it is encountered
@@ -261,7 +261,7 @@
         included by preceding it with a backslash. Any other occurrence of a
         backslash starts an escape sequence as in JavaScript strings. Among
         the available escape sequences are:
-        <dl>
+        <dl dt="width: 8em;">
             <dt>\n</dt> <dd>A newline character.</dd>
             <dt>\t</dt> <dd>A tab character.</dd>
             <dt>\0nn</dt> <dd>Where each <em>n</em> is a digit between 0 and 7, represents an octal character code.</dd>

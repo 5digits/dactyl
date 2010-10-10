@@ -352,8 +352,8 @@
 
     <xsl:template match="dactyl:dl" mode="help-2">
         <dl>
-            <column/>
-            <column/>
+            <column style="{@dt}"/>
+            <column style="{@dd}"/>
             <xsl:for-each select="dactyl:dt">
                 <tr>
                     <xsl:apply-templates select="." mode="help-1"/>
