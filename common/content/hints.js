@@ -38,6 +38,9 @@ const Hints = Module("hints", {
                 self._showHints();
             }
         });
+        let appContent = document.getElementById("appcontent");
+        if (appContent)
+            events.addSessionListener(appContent, "scroll", this._resizeTimer.closure.tell, false);
 
         const Mode = Hints.Mode;
         Mode.defaultValue("tags", function () function () options["hinttags"]);
@@ -91,8 +94,10 @@ const Hints = Module("hints", {
         this._activeTimeout = null;
     },
     __reset: function () {
-        if (!this._usedTabKey)
+        if (!this._usedTabKey) {
             this._hintNumber = 0;
+            this._updateStatusline();
+        }
     },
 
     /**
@@ -480,7 +485,7 @@ const Hints = Module("hints", {
             this._removeHints(timeout);
         }
 
-        let n = 3;
+        let n = 5;
         (function next() {
             this._setClass(elem, n % 2);
             if (n--)
