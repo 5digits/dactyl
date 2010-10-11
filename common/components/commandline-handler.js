@@ -47,4 +47,4 @@ if (XPCOMUtils.generateNSGetFactory)
 else
     const NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
 
-// vim: set ft=javascript fdm=marker sw=4 ts=4 et:
+// vim: set fdm=marker sw=4 ts=4 et:

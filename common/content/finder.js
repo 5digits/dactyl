@@ -632,10 +632,11 @@ const RangeFind = Class("RangeFind", {
         get selection() {
             try {
                 return this.selectionController.getSelection(Ci.nsISelectionController.SELECTION_NORMAL)
-            } catch (e) {
+            }
+            catch (e) {
                 return null;
-            }}
-
+            }
+        }
     }),
 	contains: function (range, r)
 		range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&

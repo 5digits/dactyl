@@ -362,7 +362,8 @@ const Editor = Module("editor", {
 
                 try {
                     this.editFileExternally(tmpfile.path);
-                } finally {
+                }
+                finally {
                     timer.cancel();
                 }
 

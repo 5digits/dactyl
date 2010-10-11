@@ -668,4 +668,6 @@ const JavaScript = Module("javascript", {
                 getter: function () services.get("debugger").isOn
             });
     }
-})
+});
+
+// vim: set fdm=marker sw=4 ts=4 et:

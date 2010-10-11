@@ -1035,12 +1035,12 @@ const Buffer = Module("buffer", {
             return null;
         },
 
-        destroy: function() {
+        destroy: function () {
             if (this.docShell)
                 this.docShell.destroy();
         },
 
-        onStateChange: function(progress, request, flag, status) {
+        onStateChange: function (progress, request, flag, status) {
             // once it's done loading...
             if ((flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0) {
                 try {
@@ -1050,7 +1050,8 @@ const Buffer = Module("buffer", {
                     }
                     try {
                         this.callback(this.file);
-                    } finally {
+                    }
+                    finally {
                         this.file.remove(false);
                     }
                 }
@@ -1352,7 +1353,8 @@ const Buffer = Module("buffer", {
                             function (tmpFile) {
                                 try {
                                     file.write(tmpFile.read(), ">>");
-                                } catch (e) {
+                                }
+                                catch (e) {
                                     dactyl.echoerr(file.path.quote() + ": E212: Can't open file for writing");
                                 }
                             });
