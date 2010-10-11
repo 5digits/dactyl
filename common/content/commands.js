@@ -654,7 +654,7 @@ const Commands = Module("commands", {
         outer:
         while (i < str.length || complete) {
             var argStart = i;
-            let re = /^\s*/gy;
+            let re = /\s*/gy;
             re.lastIndex = i;
             i += re.exec(str)[0].length;
 
@@ -764,7 +764,7 @@ const Commands = Module("commands", {
                 if (complete)
                     args.completeArg = args.length;
 
-                let re = /^(?:\s*(?=\n)|\s*)([^]*)/gy;
+                let re = /(?:\s*(?=\n)|\s*)([^]*)/gy;
                 re.lastIndex = argStart || 0;
                 sub = re.exec(str)[1];
 

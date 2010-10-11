@@ -493,6 +493,11 @@ const Dactyl = Module("dactyl", {
             this.helpInitialized = true;
         }
     },
+    stringifyXML: function (xml) {
+        XML.prettyPrinting = false;
+        XML.ignoreWhitespace = false;
+        return UTF8(xml.toXMLString());
+    },
 
     exportHelp: function (path) {
         const FILE = io.File(path);
