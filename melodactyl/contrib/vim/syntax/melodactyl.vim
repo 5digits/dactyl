@@ -50,14 +50,12 @@ syn match melodactylAutoEventList "\(\a\+,\)*\a\+" contained contains=melodactyl
 syn region melodactylSet matchgroup=melodactylCommand start="\%(^\s*:\=\)\@<=\<\%(setl\%[ocal]\|setg\%[lobal]\|set\=\)\=\>"
     \ end="$" keepend oneline contains=melodactylOption,melodactylString
 
-syn keyword melodactylOption activate act altwildmode awim autocomplete au nobanghist nobh cdpath cd complete cpt defsearch
-    \ ds editor encoding enc noerrorbells noeb eventignore ei noexrc noex extendedhinttags eht fileencoding fenc followhints fh
-    \ nofullscreen nofs guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm hinttags ht hinttimeout hto history
-    \ hi nohlsearch nohls noignorecase noic noincsearch nois noinsertmode noim nojsdebugger nojsd laststatus ls nolinksearch nolks
-    \ loadplugins lpl mapleader ml maxitems messages msgs nomore newtab nextpattern noonline pageinfo pa popups pps
-    \ previouspattern runtimepath rtp scroll scr shell sh shellcmdflag shcf noshowmode nosmd showstatuslinks ssli showtabline stal
-    \ nosmartcase noscs nostrictfocus nosf suggestengines titlestring urlseparator nousermode noum verbose vbs novisualbell novb
-    \ wildanchor wia wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
+syn keyword melodactylOption activate act altwildmode awim autocomplete au cdpath cd complete cpt defsearch ds editor
+    \ encoding enc eventignore ei extendedhinttags eht fileencoding fenc followhints fh guioptions go helpfile hf hintinputs hin
+    \ hintkeys hk hintmatching hm hinttags ht hinttimeout hto history hi laststatus ls loadplugins lpl mapleader ml maxitems
+    \ messages msgs newtab nextpattern pageinfo pa popups pps previouspattern runtimepath rtp scroll scr shell sh shellcmdflag
+    \ shcf showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator us verbose vbs wildanchor wia
+    \ wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=melodactylSetMod
 
 let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlsearch", "hls",
