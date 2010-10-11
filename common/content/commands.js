@@ -791,7 +791,7 @@ const Commands = Module("commands", {
         str.replace(/\s*".*$/, "");
 
         // 0 - count, 1 - cmd, 2 - special, 3 - args
-        let matches = str.match(/^([:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?(\s*))(.*?)?$/);
+        let matches = str.match(/^([:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?(\s*))((?:.|\n)*?)?$/);
         //var matches = str.match(/^:*(\d+|%)?([a-zA-Z]+|!)(!)?(?:\s*(.*?)\s*)?$/);
         if (!matches)
             return [];
@@ -1103,21 +1103,21 @@ const Commands = Module("commands", {
                         completion.ex(context);
                 },
                 options: [
-                    { names: ["-bang"],  description: "Command may be proceeded by a !" },
-                    { names: ["-count"], description: "Command may be preceeded by a count" },
+                    { names: ["-bang", "-b"],  description: "Command may be proceeded by a !" },
+                    { names: ["-count", "-c"], description: "Command may be preceeded by a count" },
                     {
-                        names: ["-description"],
+                        names: ["-description", "-desc", "-d"],
                         description: "A user-visible description of the command",
                         type: CommandOption.STRING
                     }, {
                         // TODO: "E180: invalid complete value: " + arg
-                        names: ["-complete"],
+                        names: ["-complete", "-C"],
                         description: "The argument completion function",
                         completer: function (context) [[k, ""] for ([k, v] in Iterator(completeOptionMap))],
                         type: CommandOption.STRING,
                         validator: function (arg) arg in completeOptionMap || /custom,\w+/.test(arg),
                     }, {
-                        names: ["-nargs"],
+                        names: ["-nargs", "-a"],
                         description: "The allowed number of arguments",
                         completer: [["0", "No arguments are allowed (default)"],
                                     ["1", "One argument is allowed"],

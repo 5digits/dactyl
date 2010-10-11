@@ -358,10 +358,7 @@ lookup:
                 else if (/\.css$/.test(filename))
                     storage.styles.registerSheet(uri.spec, false, true);
                 else {
-                    let heredoc = "";
-                    let heredocEnd = null; // the string which ends the heredoc
-                    let str = file.read();
-                    let lines = str.split(/\r\n|[\r\n]/);
+                    let lines = file.read().split(/\r\n|[\r\n]/);
 
                     this.readHeredoc = function (end) {
                         let res = [];
@@ -382,21 +379,26 @@ lookup:
                     for (let [i, line] in iter) {
                         if (this.sourcing.finished)
                             break;
+
                         this.sourcing.line = i + 1;
-                        // skip line comments and blank lines
+
+                        // Deal with editors from Silly OSs.
                         line = line.replace(/\r$/, "");
 
-                        if (!/^\s*(".*)?$/.test(line))
-                            try {
-                                dactyl.execute(line, { setFrom: file });
+                        // Process escaped new lines
+                        for (; i < lines.length && /^\s*\\/.test(lines[i + 1]); i++)
+                            line += "\n" + iter.next()[1].replace(/^\s*\\/, "");
+
+                        try {
+                            dactyl.execute(line, { setFrom: file });
+                        }
+                        catch (e) {
+                            if (!silent) {
+                                dactyl.echoerr("Error detected while processing " + file.path);
+                                dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                                dactyl.reportError(e, true);
                             }
-                            catch (e) {
-                                if (!silent) {
-                                    dactyl.echoerr("Error detected while processing " + file.path);
-                                    dactyl.echomsg("line\t" + this.sourcing.line + ":");
-                                    dactyl.reportError(e, true);
-                                }
-                            }
+                        }
                     }
                 }
 

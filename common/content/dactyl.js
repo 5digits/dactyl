@@ -2022,17 +2022,7 @@ const Dactyl = Module("dactyl", {
             // all gui options to their default values, if they have not been
             // set before by any RC file
             for (let option in values(options.needInit))
-                // FIXME:
-                // 'encoding' option should not be set at this timing.
-                // Probably a wrong value is set into the option,
-                // if current page's encoding is not UTF-8.
-                try {
-                    if (option.name != "encoding");
-                        option.value = option.value;
-                }
-                catch (e) {
-                    dactyl.reportError(e);
-                }
+                option.initValue();
 
             if (dactyl.commandLineOptions.postCommands)
                 dactyl.commandLineOptions.postCommands.forEach(function (cmd) {

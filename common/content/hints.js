@@ -83,7 +83,7 @@ const Hints = Module("hints", {
             this._hintNumber = 0;
             this._hintString = "";
             statusline.updateInputBuffer("");
-            commandline.command = "";
+            commandline.widgets.command = "";
         }
         this._pageHints = [];
         this._validHints = [];
@@ -99,7 +99,7 @@ const Hints = Module("hints", {
         }
         if (this.__continue && this._validHints.length <= 1) {
             this._hintString = "";
-            commandline.command = this._hintString;
+            commandline.widgets.command = this._hintString;
             this._showHints();
         }
         this._updateStatusline();
