@@ -153,7 +153,7 @@ const ConfigBase = Class(ModuleBase, {
         Null         color: blue;
         Number       color: blue;
         Object       color: maroon;
-        String       color: green;
+        String       color: green; white-space: pre;
 
         Key          font-weight: bold;
 

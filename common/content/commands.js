@@ -413,6 +413,64 @@ const Commands = Module("commands", {
     },
 
     /**
+     * Executes an Ex command script.
+     *
+     * @param {string} string A string containing the commands to execute.
+     * @param {object} tokens An optional object containing tokens to be
+     *      interpolated into the command string.
+     * @param {object} args Optional arguments object to be passed to
+     *      command actions.
+     * @param {object} sourcing An object containing information about
+     *      the file that is being or has been sourced to obtain the
+     *      command string.
+     */
+    execute: function (string, tokens, silent, args, sourcing) {
+        io.withSavedValues(["readHeredoc", "sourcing"], function () {
+            this.sourcing = update({}, sourcing);
+
+            args = update({ setFrom: this.file }, args || {});
+
+            if (tokens)
+                string = commands.replaceTokens(string, tokens);
+
+            let lines = string.split(/\r\n|[\r\n]/);
+
+            this.readHeredoc = function (end) {
+                let res = [];
+                this.sourcing.line++;
+                while (++i < lines.length) {
+                    if (lines[i] === end)
+                        return res.join("\n");
+                    res.push(lines[i]);
+                }
+                dactyl.assert(false, "Unexpected end of file waiting for " + end);
+            };
+
+            for (var i = 0; i < lines.length && !this.sourcing.finished; i++) {
+                // Deal with editors from Silly OSs.
+                let line = lines[i].replace(/\r$/, "");
+
+                this.sourcing.line = sourcing.line + i;
+
+                // Process escaped new lines
+                while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
+                    line += "\n" + lines[++i].replace(/^\s*\\/, "");
+
+                try {
+                    dactyl.execute(line, args);
+                }
+                catch (e) {
+                    if (!silent) {
+                        dactyl.echoerr("Error detected while processing " + this.sourcing.file);
+                        dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                        dactyl.reportError(e, true);
+                    }
+                }
+            }
+        });
+    },
+
+    /**
      * Returns the command with matching <b>name</b>.
      *
      * @param {string} name The name of the command to return. This can be
@@ -595,9 +653,11 @@ const Commands = Module("commands", {
 
         outer:
         while (i < str.length || complete) {
-            // skip whitespace
-            while (/\s/.test(str[i]) && i < str.length)
-                i++;
+            var argStart = i;
+            let re = /^\s*/gy;
+            re.lastIndex = i;
+            i += re.exec(str)[0].length;
+
             if (str[i] == "|") {
                 args.string = str.slice(0, i);
                 args.trailing = str.slice(i + 1);
@@ -700,14 +760,20 @@ const Commands = Module("commands", {
                     complete.highlight(i, sub.length, "SPELLCHECK");
             }
 
-            if (args.length == literal) {
+            if (args.length === literal) {
                 if (complete)
                     args.completeArg = args.length;
+
+                let re = /^(?:\s*(?=\n)|\s*)([^]*)/gy;
+                re.lastIndex = argStart || 0;
+                sub = re.exec(str)[1];
+
                 // Hack.
                 if (sub.substr(0, 2) === "<<" && hereDoc)
                     let ([count, arg] = getNextArg(sub)) {
                         sub = arg + sub.substr(count);
                     }
+
                 args.literalArg = sub;
                 args.push(sub);
                 args.quote = null;
@@ -997,7 +1063,7 @@ const Commands = Module("commands", {
                 count: this.count && args.count
             };
 
-            dactyl.execute(commands.replaceTokens(this.replacementText, tokens), null, true, this.sourcing);
+            commands.execute(this.replacementText, tokens, false, null, this.sourcing);
         }
 
         // TODO: offer completion.ex?

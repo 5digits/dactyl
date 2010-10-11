@@ -1994,7 +1994,7 @@ const Dactyl = Module("dactyl", {
                         dactyl.execute(init);
                     else {
                         if (rcFile) {
-                            io.source(rcFile.path, true);
+                            io.source(rcFile.path, false);
                             services.get("environment").set("MY_" + config.idName + "RC", rcFile.path);
                         }
                         else
