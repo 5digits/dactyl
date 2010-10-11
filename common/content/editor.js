@@ -303,9 +303,7 @@ const Editor = Module("editor", {
         if (!options["editor"])
             return;
 
-        let textBox = null;
-        if (!(config.isComposeWindow))
-            textBox = dactyl.focus;
+        let textBox = config.isComposeWindow ? null : dactyl.focus;
 
         if (!forceEditing && textBox && textBox.type == "password") {
             commandline.input("Editing a password field externally will reveal the password. Would you like to continue? (yes/[no]): ",
