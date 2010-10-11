@@ -1272,7 +1272,6 @@ const CommandLine = Module("commandline", {
             this.wildtypes = this.wildmode.value;
             this.itemList = commandline._completionList;
             this.itemList.setItems(this.context);
-            this.reset();
         },
 
         UP: {},
@@ -1901,10 +1900,11 @@ const ItemList = Class("ItemList", {
     show: function show() { this._container.collapsed = false; },
     visible: function visible() !this._container.collapsed,
 
-    reset: function () {
+    reset: function (brief) {
         this._startIndex = this._endIndex = this._selIndex = -1;
         this._div = null;
-        this.selectItem(-1);
+        if (!brief)
+            this.selectItem(-1);
     },
 
     // if @param selectedItem is given, show the list and select that item
@@ -1915,7 +1915,7 @@ const ItemList = Class("ItemList", {
             this._minHeight = 0;
         this._startIndex = this._endIndex = this._selIndex = -1;
         this._items = newItems;
-        this.reset();
+        this.reset(true);
         if (typeof selectedItem == "number") {
             this.selectItem(selectedItem);
             this.show();

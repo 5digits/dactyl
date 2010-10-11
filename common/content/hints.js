@@ -10,7 +10,7 @@
 /** @instance hints */
 
 const Hints = Module("hints", {
-    init: function () {
+    init: function init() {
         const self = this;
 
         this._hintMode = null;
@@ -73,7 +73,7 @@ const Hints = Module("hints", {
     /**
      * Reset hints, so that they can be cleanly used again.
      */
-    _reset: function (slight) {
+    _reset: function _reset(slight) {
         if (!slight) {
             this.__reset();
             this.prevInput = "";
@@ -93,7 +93,7 @@ const Hints = Module("hints", {
             this._activeTimeout.cancel();
         this._activeTimeout = null;
     },
-    __reset: function () {
+    __reset: function __reset() {
         if (!this._usedTabKey) {
             this._hintNumber = 0;
         }
@@ -108,7 +108,7 @@ const Hints = Module("hints", {
     /**
      * Display the current status to the user.
      */
-    _updateStatusline: function () {
+    _updateStatusline: function _updateStatusline() {
         statusline.updateInputBuffer((hints.escNumbers ? options["mapleader"] : "") +
                                      (this._hintNumber ? this.getHintString(this._hintNumber) : ""));
     },
@@ -128,7 +128,7 @@ const Hints = Module("hints", {
      *
      * @returns [text, showText]
      */
-    _getInputHint: function (elem, doc) {
+    _getInputHint: function _getInputHint(elem, doc) {
         // <input type="submit|button|reset"/>   Always use the value
         // <input type="radio|checkbox"/>        Use the value if it is not numeric or label or name
         // <input type="password"/>              Never use the value, use label or name
@@ -184,7 +184,7 @@ const Hints = Module("hints", {
      * @param {number} topPos The top offset of the image.
      * @returns [leftPos, topPos] The updated offsets.
      */
-    _getAreaOffset: function (elem, leftPos, topPos) {
+    _getAreaOffset: function _getAreaOffset(elem, leftPos, topPos) {
         try {
             // Need to add the offset to the area element.
             // Always try to find the top-left point, as per dactyl default.
@@ -238,7 +238,7 @@ const Hints = Module("hints", {
     },
 
     // the containing block offsets with respect to the viewport
-    _getContainerOffsets: function (doc) {
+    _getContainerOffsets: function _getContainerOffsets(doc) {
         let body = doc.body || doc.documentElement;
         // TODO: getComputedStyle returns null for Facebook channel_iframe doc - probable Gecko bug.
         let style = util.computedStyle(body);
@@ -259,7 +259,7 @@ const Hints = Module("hints", {
      * @param {Window} win The window for which to generate hints.
      * @default window.content
      */
-    _generate: function (win) {
+    _generate: function _generate(win) {
         if (!win)
             win = this._top;
 
@@ -327,7 +327,7 @@ const Hints = Module("hints", {
      * @param {number} newId The hint to make active.
      * @param {number} oldId The currently active hint.
      */
-    _showActiveHint: function (newId, oldId) {
+    _showActiveHint: function _showActiveHint(newId, oldId) {
         let oldElem = this._validHints[oldId - 1];
         if (oldElem)
             this._setClass(oldElem, false);
@@ -343,7 +343,7 @@ const Hints = Module("hints", {
      * @param {Object} elem The element to toggle.
      * @param {boolean} active Whether it is the currently active hint or not.
      */
-    _setClass: function (elem, active) {
+    _setClass: function _setClass(elem, active) {
         let prefix = (elem.getAttributeNS(NS, "class") || "") + " ";
         if (active)
             elem.setAttributeNS(NS, "highlight", prefix + "HintActive");
@@ -356,7 +356,7 @@ const Hints = Module("hints", {
     /**
      * Display the hints in pageHints that are still valid.
      */
-    _showHints: function () {
+    _showHints: function _showHints() {
         let hintnum = 1;
         let validHint = this._hintMatcher(this._hintString.toLowerCase());
         let activeHint = this._hintNumber || 1;
@@ -429,7 +429,7 @@ const Hints = Module("hints", {
      * @param {number} timeout The number of milliseconds before the active
      *     hint disappears.
      */
-    _removeHints: function (timeout, slight) {
+    _removeHints: function _removeHints(timeout, slight) {
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
@@ -451,7 +451,7 @@ const Hints = Module("hints", {
      *     link (when 'followhints' is 1 or 2)
      *
      */
-    _processHints: function (followFirst) {
+    _processHints: function _processHints(followFirst) {
         if (this._validHints.length == 0) {
             dactyl.beep();
             return false;
@@ -507,7 +507,7 @@ const Hints = Module("hints", {
         return true;
     },
 
-    _checkUnique: function () {
+    _checkUnique: function _checkUnique() {
         if (this._hintNumber == 0)
             return;
         dactyl.assert(this._hintNumber <= this._validHints.length);
@@ -533,7 +533,7 @@ const Hints = Module("hints", {
      *
      * @param {Event} event The keypress event.
      */
-    _onInput: function (event) {
+    _onInput: function _onInput(event) {
         this.prevInput = "text";
 
         // clear any timeout which might be active after pressing a number
@@ -556,7 +556,7 @@ const Hints = Module("hints", {
      * @param {string} hintString The currently typed hint.
      * @returns {hintMatcher}
      */
-    _hintMatcher: function (hintString) { //{{{
+    _hintMatcher: function _hintMatcher(hintString) { //{{{
         /**
          * Divide a string by a regular expression.
          *
@@ -745,7 +745,7 @@ const Hints = Module("hints", {
      * @param {number} n The number to transform.
      * @returns {string}
      */
-    getHintString: function (n) {
+    getHintString: function getHintString(n) {
         let res = [], len = this.hintKeys.length;
         do {
             res.push(this.hintKeys[n % len]);
@@ -762,9 +762,9 @@ const Hints = Module("hints", {
      * @param {string} key The key to test.
      * @returns {boolean} Whether the key represents a hint number.
      */
-    isHintKey: function (key) this.hintKeys.indexOf(key) >= 0,
+    isHintKey: function isHintKey(key) this.hintKeys.indexOf(key) >= 0,
 
-    open: function (mode, opts) {
+    open: function open(mode, opts) {
         this._extendedhintCount = opts.count;
         commandline.input(";", null, {
             promptHighlight: "Normal",
@@ -784,7 +784,7 @@ const Hints = Module("hints", {
      * @param {string} minor Which hint mode to use.
      * @param {Object} opts Extra options.
      */
-    show: function (minor, opts) {
+    show: function show(minor, opts) {
         opts = opts || {};
         this._hintMode = this._hintModes[minor];
         dactyl.assert(this._hintMode);
@@ -833,7 +833,7 @@ const Hints = Module("hints", {
     /**
      * Cancel all hinting.
      */
-    hide: function () {
+    hide: function hide() {
         if (this._top)
             this._top.removeEventListener("resize", this._resizeTimer.closure.tell, true);
         this._top = null;
@@ -846,7 +846,7 @@ const Hints = Module("hints", {
      *
      * @param {Event} event The event to handle.
      */
-    onEvent: function (event) {
+    onEvent: function onEvent(event) {
         let key = events.toString(event);
         let followFirst = false;
 

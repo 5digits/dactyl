@@ -115,7 +115,7 @@ const Events = Module("events", {
      */
     wrapListener: function wrapListener(method, self) {
         self = self || this;
-        return function (event) {
+        return function wrappedListener(event) {
             try {
                 method.apply(self, arguments);
             }
@@ -447,7 +447,7 @@ const Events = Module("events", {
      * @param {Event} event
      * @returns {string}
      */
-    toString: function (event) {
+    toString: function toString(event) {
         if (!event)
             return "[instance events]";
 
@@ -660,7 +660,7 @@ const Events = Module("events", {
     },
 
     // TODO: Merge with onFocusChange
-    onFocus: function (event) {
+    onFocus: function onFocus(event) {
         let elem = event.originalTarget;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
@@ -672,7 +672,7 @@ const Events = Module("events", {
     // argument "event" is deliberately not used, as i don't seem to have
     // access to the real focus target
     // Huh? --djk
-    onFocusChange: function (event) {
+    onFocusChange: function onFocusChange(event) {
         // command line has it's own focus change handler
         if (dactyl.mode == modes.COMMAND_LINE)
             return;
@@ -737,7 +737,7 @@ const Events = Module("events", {
     // this keypress handler gets always called first, even if e.g.
     // the commandline has focus
     // TODO: ...help me...please...
-    onKeyPress: function (event) {
+    onKeyPress: function onKeyPress(event) {
         function isEscape(key) key == "<Esc>" || key == "<C-[>";
 
         function killEvent() {
@@ -940,31 +940,31 @@ const Events = Module("events", {
     },
 
     // this is need for sites like msn.com which focus the input field on keydown
-    onKeyUpOrDown: function (event) {
+    onKeyUpOrDown: function onKeyUpOrDown(event) {
         if (!Events.isInputElemFocused() && !modes.passThrough)
             event.stopPropagation();
     },
 
-    onMouseDown: function (event) {
+    onMouseDown: function onMouseDown(event) {
         let elem = event.target;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         for (; win; win = win != win.parent && win.parent)
             win.dactylFocusAllowed = true;
     },
 
-    onPopupShown: function (event) {
+    onPopupShown: function onPopupShown(event) {
         if (event.originalTarget.localName == "tooltip" || event.originalTarget.id == "dactyl-visualbell")
             return;
         modes.add(modes.MENU);
     },
 
-    onPopupHidden: function () {
+    onPopupHidden: function onPopupHidden() {
         // gContextMenu is set to NULL, when a context menu is closed
         if (window.gContextMenu == null && !this._activeMenubar)
             modes.remove(modes.MENU);
     },
 
-    onResize: function (event) {
+    onResize: function onResize(event) {
         if (window.fullScreen != this._fullscreen) {
             this._fullscreen = window.fullScreen;
             dactyl.triggerObserver("fullscreen", this._fullscreen);
@@ -972,7 +972,7 @@ const Events = Module("events", {
         }
     },
 
-    onSelectionChange: function (event) {
+    onSelectionChange: function onSelectionChange(event) {
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
         let couldCopy = controller && controller.isCommandEnabled("cmd_copy");
 
@@ -988,14 +988,14 @@ const Events = Module("events", {
         }
     }
 }, {
-    isContentNode: function (node) {
+    isContentNode: function isContentNode(node) {
         let win = (node.ownerDocument || node).defaultView;
         for (; win; win = win.parent != win && win.parent)
             if (win == window.content)
                 return true;
         return false;
     },
-    isInputElemFocused: function () {
+    isInputElemFocused: function isInputElemFocused() {
         let elem = dactyl.focus;
         return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
                isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,

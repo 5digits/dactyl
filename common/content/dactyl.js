@@ -952,7 +952,7 @@ const Dactyl = Module("dactyl", {
      * @param {function} func The function to call
      * @param {object} self The 'this' object for the function.
      */
-    trapErrors: function (func, self) {
+    trapErrors: function trapErrors(func, self) {
         try {
             return func.apply(self || this, Array.slice(arguments, 2));
         }
@@ -968,7 +968,7 @@ const Dactyl = Module("dactyl", {
      *
      * @param {Object} error The error object.
      */
-    reportError: function (error, echo) {
+    reportError: function reportError(error, echo) {
         if (error instanceof FailedAssertion) {
             if (error.message)
                 dactyl.echoerr(error.message);
