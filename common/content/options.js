@@ -71,6 +71,10 @@ const Option = Class("Option", {
             this.globalValue = this.parseValues(this.defaultValue);
     },
 
+    initValue: function () {
+        dactyl.trapErrors(function () this.values = this.values, this);
+    },
+
     /** @property {value} The option's global value. @see #scope */
     get globalValue() options.store.get(this.name, {}).value,
     set globalValue(val) { options.store.set(this.name, { value: val, time: Date.now() }); },
@@ -685,8 +689,11 @@ const Options = Module("options", {
         memoize(this._optionMap, name, function () Option(names, description, type, defaultValue, extraInfo));
         for (let alias in values(names.slice(1)))
             memoize(this._optionMap, alias, closure);
-        if (extraInfo.setter)
-            memoize(this.needInit, this.needInit.length, closure);
+        if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
+            if (dactyl.initialized)
+                closure().initValue();
+            else
+                memoize(this.needInit, this.needInit.length, closure);
 
         // quickly access options with options["wildmode"]:
         this.__defineGetter__(name, function () this._optionMap[name].values);

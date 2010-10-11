@@ -169,7 +169,7 @@ const AutoCommands = Module("autocommands", {
                         cmd.toString = function toString() "-javascript " + cmd.source;
                     }
                     else {
-                        cmd = function cmd(args) dactyl.execute(commands.replaceTokens(cmd.source, args), null, true, cmd.sourcing);
+                        cmd = function cmd(args) commands.execute(cmd.source, args, false, null, cmd.sourcing);
                         cmd.sourcing = io.sourcing && update({}, io.sourcing);
                         cmd.toString = function toString() cmd.source;
                     }

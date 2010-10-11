@@ -18,7 +18,12 @@
       - Backtracks to the first successful match after pressing
         backspace.
       - Supports reverse incremental search.
-    * Multiple Ex commands may now be separated by |
+    * Ex command parsing improvements, including:
+      - Multiple Ex commands may now be separated by |
+      - Commands can continue over multiple lines in RC files by
+        prefixing the continues lines with a \
+      - The \ character is no longer treated specially within single
+	quotes, i.e., 'fo\o''bar' ⇒ fo\o'bar
     * Command-line is now hidden by default. Added C and M to
       'guioptions'.
     * Hint mode improvements, including:
@@ -41,8 +46,6 @@
       directory in 'runtimepath' rather than 'plugin/'.
     * IMPORTANT: 'loadplugins' is now a regexlist option rather than
       a boolean.
-    * IMPORTANT: Single quotes no longer treat \ specially.
-      I.e., 'fo\o''bar' ≡ fo\o'bar
     * IMPORTANT: 'cdpath' and 'runtimepath' no longer treat ",,"
       specially. Use "." instead.
     * IMPORTANT: Option value quoting has changed. List options will
