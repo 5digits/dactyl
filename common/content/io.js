@@ -362,32 +362,24 @@ lookup:
 
                     this.readHeredoc = function (end) {
                         let res = [];
-                        try {
-                            io.sourcing.line++;
-                            while (true)
-                                let ([i, line] = iter.next()) {
-                                    if (line === end)
-                                        return res.join("\n");
-                                    res.push(line);
-                                }
+                        io.sourcing.line++;
+                        while (++i < lines.length) {
+                            if (lines[i] === end)
+                                return res.join("\n");
+                            res.push(lines[i]);
                         }
-                        catch (e if e instanceof StopIteration) {}
                         dactyl.assert(false, "Unexpected end of file waiting for " + end);
                     };
 
-                    let iter = Iterator(lines);
-                    for (let [i, line] in iter) {
-                        if (this.sourcing.finished)
-                            break;
+                    for (var i = 0; i < lines.length && !this.sourcing.finished; i++) {
+                        // Deal with editors from Silly OSs.
+                        let line = lines[i].replace(/\r$/, "");
 
                         this.sourcing.line = i + 1;
 
-                        // Deal with editors from Silly OSs.
-                        line = line.replace(/\r$/, "");
-
                         // Process escaped new lines
-                        for (; i < lines.length && /^\s*\\/.test(lines[i + 1]); i++)
-                            line += "\n" + iter.next()[1].replace(/^\s*\\/, "");
+                        while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
+                            line += "\n" + lines[++i].replace(/^\s*\\/, "");
 
                         try {
                             dactyl.execute(line, { setFrom: file });
