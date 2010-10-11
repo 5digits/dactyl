@@ -126,7 +126,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
         "browser:purge-session-history": function (subject, data) {
             // See above.
             if (!this.sanitizing)
-                this.sanitizeItems(null, Range(this.sessionStart/1000), null);
+                this.sanitizeItems(null, Range(this.sessionStart), null);
         },
         "private-browsing": function (subject, data) {
             if (data == "enter")
