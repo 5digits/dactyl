@@ -1171,7 +1171,7 @@ const Options = Module("options", {
                             msg = "  " + option.name + "=" + opt.optionValue;
 
                         if (options["verbose"] > 0 && option.setFrom)
-                            msg += "\n        Last set from " + option.setFrom.path;
+                            msg += "\n        Last set from " + option.setFrom;
 
                         dactyl.echo(<span highlight="CmdOutput">{msg}</span>);
                     }

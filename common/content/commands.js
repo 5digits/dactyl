@@ -428,7 +428,7 @@ const Commands = Module("commands", {
         io.withSavedValues(["readHeredoc", "sourcing"], function () {
             this.sourcing = update({}, sourcing);
 
-            args = update({ setFrom: this.file }, args || {});
+            args = update({ setFrom: this.sourcing.file }, args || {});
 
             if (tokens)
                 string = commands.replaceTokens(string, tokens);
