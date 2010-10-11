@@ -3,8 +3,7 @@
 
 <!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd" [
   <!ENTITY hinttags "//*[@onclick or @onmouseover or @onmousedown or
-               @onmouseup or @oncommand or
-               @class='lk' or @role='link'] |
+               @onmouseup or @oncommand or @role='link'] |
            //input[not(@type='hidden')] | //a | //area |
            //iframe | //textarea | //button | //select |
            //xhtml:input[not(@type='hidden')] | //xhtml:a |
@@ -319,8 +318,8 @@
     <tags>'act' 'activate'</tags>
     <spec>'activate' 'act'</spec>
     <type>stringlist</type>
-    <default>addons,downloads,extoptions,help,
-          homepage,quickmark,tabopen,paste</default>
+    <default>addons,bookmarks,diverted,downloads,extoptions,help,homepage,
+        quickmark,tabopen,paste</default>
     <description>
         <p>
             A list of items which, when opened in a new tab, are
@@ -625,7 +624,7 @@
     <tags>'go' 'guioptions'</tags>
     <spec>'guioptions' 'go'</spec>
     <type>charlist</type>
-    <default>rb</default>
+    <default>rbC</default> <!-- TODO: make this config specific -->
     <description>
         <p>Show or hide certain GUI elements.</p>
 
@@ -1422,7 +1421,7 @@
     <tags>'wic' 'wildcase'</tags>
     <spec>'wildcase' 'wic'</spec>
     <type>regexmap</type>
-    <default>smart</default>
+    <default>.?:smart</default>
     <description>
         <p>
             Defines how completions are matched with regard to character case.
