@@ -440,8 +440,13 @@ const CommandLine = Module("commandline", {
      * @param {number} extendedMode
      */
     open: function open(prompt, cmd, extendedMode) {
+        this.widgets.message = null;
+
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
-            leave: commandline.closure.leave
+            leave: function (params) {
+                if (params.pop)
+                    commandline.leave();
+            }
         });
 
         this.currentExtendedMode = extendedMode || null;
@@ -474,8 +479,10 @@ const CommandLine = Module("commandline", {
         this.hideCompletions();
 
         if (!this._keepCommand || this._silent || this._quiet) {
-            commandline.updateMorePrompt();
-            this.hide();
+            modes.delay(function () {
+                this.updateMorePrompt();
+                this.hide();
+            }, this);
         }
     },
 
@@ -485,7 +492,7 @@ const CommandLine = Module("commandline", {
         return this._lastCommand;
     },
     set command(val) {
-        if (this.commandVisible)
+        if (this.commandVisible && (modes.extended & modes.EX))
             return this.widgets.command = val;
         return this._lastCommand = val;
     },
@@ -552,6 +559,7 @@ const CommandLine = Module("commandline", {
         let doc = this.widgets.multilineOutput.contentDocument;
         let win = this.widgets.multilineOutput.contentWindow;
 
+        this.widgets.message = null;
         if (!this.commandVisible)
             this.hide();
 
@@ -559,7 +567,9 @@ const CommandLine = Module("commandline", {
 
         this._startHints = false;
         if (!(modes.extended & modes.OUTPUT_MULTILINE))
-            modes.push(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE);
+            modes.push(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE, {
+                onEvent: this.closure.onMultilineOutputEvent
+            });
 
         // If it's already XML, assume it knows what it's doing.
         // Otherwise, white space is significant.
@@ -687,15 +697,13 @@ const CommandLine = Module("commandline", {
             cancel: extra.onCancel
         };
 
-        modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended, {
-            leave: function (newMode) {
-                commandline.leave(newMode);
-                if (extra.leave)
-                    extra.leave(newMode);
-            },
-            restore: function (newMode) { extra.restore && extra.restore(newMode) },
-            save: function (newMode) { extra.save && extra.save(newMode) }
-        });
+        modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended,
+                   update(Object.create(extra), {
+                       leave: function leave(stack) {
+                           commandline.leave(stack);
+                           leave.supercall(this, stack);
+                       }
+                   }));
         this.currentExtendedMode = modes.PROMPT;
 
         this.widgets.prompt = !prompt ? null : [extra.promptHighlight || "Question", prompt];
@@ -927,14 +935,7 @@ const CommandLine = Module("commandline", {
         }
 
         if (event instanceof MouseEvent)
-            return;
-
-        if (this._startHints) {
-            statusline.updateInputBuffer("");
-            this._startHints = false;
-            hints.show(key, { window: win });
-            return;
-        }
+            return false;
 
         function isScrollable() !win.scrollMaxY == 0;
         function atEnd() win.scrollY / win.scrollMaxY >= 1;
@@ -946,7 +947,7 @@ const CommandLine = Module("commandline", {
 
         case ":":
             commandline.open(":", "", modes.EX);
-            return;
+            return false;
 
         // down a line
         case "j":
@@ -1058,9 +1059,8 @@ const CommandLine = Module("commandline", {
             break;
 
         case ";":
-            statusline.updateInputBuffer(";");
-            this._startHints = true;
-            break;
+            hints.open(";", { window: win });
+            return false;
 
         // unmapped key
         default:
@@ -1078,6 +1078,7 @@ const CommandLine = Module("commandline", {
         }
         else
             commandline.updateMorePrompt(showMorePrompt, showMoreHelpPrompt);
+        return false;
     },
 
     getSpaceNeeded: function getSpaceNeeded() {

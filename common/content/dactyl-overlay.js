@@ -13,7 +13,7 @@
         sandbox.__proto__ = proto || modules;
         return sandbox;
     }
-    const jsmodules = { dump: function dump_(arg) window.dump("dactyl: " + arg + "\n") };
+    const jsmodules = {};
     const modules = {
         __proto__: jsmodules,
         get content() window.content,

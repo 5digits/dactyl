@@ -52,6 +52,7 @@
     <dt>n</dt> <dd>Normal mode: When browsing normally</dd>
     <dt>v</dt> <dd>Visual mode: When selecting text with the cursor keys</dd>
     <dt>i</dt> <dd>Insert mode: When interacting with text fields on a website</dd>
+    <dt>t</dt> <dd>TextEdit mode: When editing text fields in Vim-like NORMAL mode</dd>
     <dt>c</dt> <dd>Command-line mode: When typing into the &dactyl.appName; command line</dd>
 </dl>
 
@@ -82,6 +83,8 @@
     <spec>:vm<oa>ap</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:im :imap</tags>
     <spec>:im<oa>ap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <tags>:tm :tmap</tags>
+    <spec>:tm<oa>ap</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:cm :cmap</tags>
     <spec>:cm<oa>ap</oa> <a>lhs</a> <a>rhs</a></spec>
     <description>
@@ -126,6 +129,8 @@
     <spec>:vn<oa>oremap</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:ino :inoremap</tags>
     <spec>:ino<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <tags>:tno :tnoremap</tags>
+    <spec>:tno<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:cno :cnoremap</tags>
     <spec>:cno<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
     <description>
@@ -150,6 +155,8 @@
     <spec>:vun<oa>map</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:iu :iunmap</tags>
     <spec>:iu<oa>nmap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <tags>:tu :tunmap</tags>
+    <spec>:tu<oa>nmap</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:cu :cunmap</tags>
     <spec>:cu<oa>nmap</oa> <a>lhs</a> <a>rhs</a></spec>
     <description>
@@ -166,6 +173,8 @@
     <spec>:vmapc<oa>lear</oa></spec>
     <tags>:imapc :imapclear</tags>
     <spec>:imapc<oa>lear</oa></spec>
+    <tags>:tmapc :tmapclear</tags>
+    <spec>:tmapc<oa>lear</oa></spec>
     <tags>:cmapc :cmapclear</tags>
     <spec>:cmapc<oa>lear</oa></spec>
     <description>
@@ -180,6 +189,7 @@
     <spec>:nm<oa>ap</oa></spec>
     <spec>:vm<oa>ap</oa></spec>
     <spec>:im<oa>ap</oa></spec>
+    <spec>:tm<oa>ap</oa></spec>
     <spec>:cm<oa>ap</oa></spec>
     <description>
         <p>List all mappings for the applicable mode(s).</p>
@@ -195,6 +205,8 @@
     <spec>:vm<oa>ap</oa> <a>lhs</a></spec>
     <tags>:imap_l</tags>
     <spec>:im<oa>ap</oa> <a>lhs</a></spec>
+    <tags>:tmap_l</tags>
+    <spec>:tm<oa>ap</oa> <a>lhs</a></spec>
     <tags>:cmap_l</tags>
     <spec>:cm<oa>ap</oa> <a>lhs</a></spec>
     <description>
@@ -224,6 +236,7 @@
 :nmap  :nnoremap  :nunmap  :nmapclear – Normal mode
 :vmap  :vnoremap  :vunmap  :vmapclear – Visual mode
 :imap  :inoremap  :iunmap  :imapclear – Insert mode
+:tmap  :tnoremap  :tunmap  :tmapclear – Text Edit mode
 :cmap  :cnoremap  :cunmap  :cmapclear – Command-line mode
 </code>
 

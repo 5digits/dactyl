@@ -154,7 +154,8 @@
 
 <item>
     <tags>:extu :extupdate</tags>
-    <spec>:extu<oa>pdate</oa><oa>!</oa> <a>extension</a></spec>
+    <spec>:extu<oa>pdate</oa> <a>extension</a></spec>
+    <spec>:extu<oa>pdate</oa>!</spec>
     <description>
         <p>
             Update an extension. When <oa>!</oa> is given, update all

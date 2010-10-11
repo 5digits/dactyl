@@ -271,7 +271,9 @@ const Buffer = Module("buffer", {
             statusline.updateUrl();
             statusline.updateProgress();
 
-            autocommands.trigger("LocationChange", { url: buffer.URL });
+            util.timeout(function () {
+                autocommands.trigger("LocationChange", { url: buffer.URL });
+            });
 
             // if this is not delayed we get the position of the old buffer
             util.timeout(function () {
@@ -1532,11 +1534,7 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["i", "<Insert>"],
             "Start caret mode",
-            function () {
-                // setting this option notifies an observer which takes care of the
-                // mode setting
-                options.setPref("accessibility.browsewithcaret", true);
-            });
+            function () { modes.push(modes.CARET); });
 
         mappings.add(myModes, ["<C-c>"],
             "Stop loading the current web page",

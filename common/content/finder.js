@@ -114,8 +114,6 @@ const RangeFinder = Module("rangefinder", {
         if (options["hlsearch"])
             this.highlight();
         this.rangeFind.focus();
-
-        modes.reset();
     },
 
     // Called when the search is canceled - for example if someone presses
@@ -186,14 +184,14 @@ const RangeFinder = Module("rangefinder", {
             ["N"], "Find previous",
             function () { rangefinder.findAgain(true); });
 
-        mappings.add(myModes.concat([modes.CARET, modes.TEXTAREA]), ["*"],
+        mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["*"],
             "Find word under cursor",
             function () {
                 rangefinder.find(buffer.getCurrentWord(), false);
                 rangefinder.findAgain();
             });
 
-        mappings.add(myModes.concat([modes.CARET, modes.TEXTAREA]), ["#"],
+        mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["#"],
             "Find word under cursor backwards",
             function () {
                 rangefinder.find(buffer.getCurrentWord(), true);

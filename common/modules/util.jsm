@@ -57,6 +57,7 @@ const Util = Module("Util", {
                 if (observers[target])
                     observers[target].call(obj, subject, data);
             });
+        obj.observe.unRegister = function () register("removeObserver");
         register("addObserver");
     },
 
@@ -73,7 +74,7 @@ const Util = Module("Util", {
         if (services.get("threadManager").isMainThread)
             callback.call(self);
         else
-            mainThread.dispatch(Runnable(self, callback), mainThread.DISPATCH_NORMAL);
+            mainThread.dispatch(Runnable(self, callback, Array.slice(arguments, 2)), mainThread.DISPATCH_NORMAL);
     },
 
     /**
@@ -240,10 +241,10 @@ const Util = Module("Util", {
      * @param {number} frames The number of frames to print.
      */
     dumpStack: function dumpStack(msg, frames) {
-        let stack = Error().stack.replace(/(?:.*\n){1}/, "");
+        let stack = Error().stack.replace(/(?:.*\n){2}/, "");
         if (frames != null)
             [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
-        util.dump((msg || "Stack") + "\n" + stack + "\n");
+        util.dump((arguments.length == 0 ? "Stack" : msg) + "\n" + stack + "\n");
     },
 
     editableInputs: set(["date", "datetime", "datetime-local", "email", "file",

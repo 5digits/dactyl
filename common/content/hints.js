@@ -97,7 +97,7 @@ const Hints = Module("hints", {
         if (!this._usedTabKey) {
             this._hintNumber = 0;
         }
-        if (this.__continue && this._validHints.length <= 1) {
+        if (this._continue && this._validHints.length <= 1) {
             this._hintString = "";
             commandline.widgets.command = this._hintString;
             this._showHints();
@@ -764,6 +764,20 @@ const Hints = Module("hints", {
      */
     isHintKey: function (key) this.hintKeys.indexOf(key) >= 0,
 
+    open: function (mode, opts) {
+        this._extendedhintCount = opts.count;
+        commandline.input(";", null, {
+            promptHighlight: "Normal",
+            completer: function (context) {
+                context.compare = function () 0;
+                context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints._hintModes))];
+            },
+            onAccept: function (arg) { arg && util.timeout(function () hints.show(arg, opts), 0); },
+            get onCancel() this.onAccept,
+            onChange: function () { modes.pop(); }
+        });
+    },
+
     /**
      * Updates the display of hints.
      *
@@ -777,8 +791,12 @@ const Hints = Module("hints", {
 
         commandline.input(UTF8(this._hintMode.prompt) + ": ", null, {
             extended: modes.HINTS,
-            leave: function () { hints.hide(); },
-            onChange: this.closure._onInput
+            leave: function (stack) {
+                if (!stack.push)
+                    hints.hide();
+            },
+            onChange: this.closure._onInput,
+            onEvent: this.closure.onEvent
         });
         modes.extended = modes.HINTS;
 
@@ -860,9 +878,12 @@ const Hints = Module("hints", {
             }
             this._showActiveHint(this._hintNumber, oldId);
             this._updateStatusline();
-            return;
+            return false;
 
         case "<BS>":
+            if (this.prevInput !== "number")
+                return true;
+
             if (this._hintNumber > 0 && !this._usedTabKey) {
                 this._hintNumber = Math.floor(this._hintNumber / this.hintKeys.length);
                 if (this._hintNumber == 0)
@@ -882,10 +903,10 @@ const Hints = Module("hints", {
                this._hintNumber = 0;
 
            this._updateStatusline();
-           return;
+           return false;
 
         default:
-            if (this.isHintKey(key)) {
+            if (!this.escNumbers && this.isHintKey(key)) {
                 this.prevInput = "number";
 
                 let oldHintNumber = this._hintNumber;
@@ -910,8 +931,9 @@ const Hints = Module("hints", {
                 dactyl.assert(this._hintNumber != 0);
 
                 this._checkUnique();
-                return;
+                return false;
             }
+            return true;
         }
 
         this._updateStatusline();
@@ -923,6 +945,7 @@ const Hints = Module("hints", {
             this._showHints();
             this._processHints(followFirst);
         }
+        return false;
     }
     //}}}
 }, {
@@ -1048,30 +1071,15 @@ const Hints = Module("hints", {
             "Start QuickHint mode, but open link in a new tab",
             function () { hints.show(options.get("activate").has("links") ? "t" : "b"); });
 
-        function inputOpts(opts) ({
-            promptHighlight: "Normal",
-            completer: function (context) {
-                context.compare = function () 0;
-                context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints._hintModes))];
-            },
-            onAccept: function (arg) { arg && util.timeout(function () hints.show(arg, opts), 0); },
-            onChange: function () { modes.pop(); },
-            onCancel: function (arg) { arg && util.timeout(function () hints.show(arg, opts), 0); }
-        });
-
         mappings.add(myModes, [";"],
             "Start an extended hint mode",
-            function (count) {
-                this._extendedhintCount = count;
-                commandline.input(";", null, inputOpts());
-            }, { count: true });
+            function (count) { hints.open(";", { count: count }); },
+            { count: true });
 
         mappings.add(myModes, ["g;"],
             "Start an extended hint mode and stay there until <Esc> is pressed",
-            function (count) {
-                this._extendedhintCount = count;
-                commandline.input("g;", null, inputOpts({ continue: true }));
-            }, { count: true });
+            function (count) { hints.open("g;", { continue: true, count: count }); },
+            { count: true });
     },
     options: function () {
         const DEFAULT_HINTTAGS =
