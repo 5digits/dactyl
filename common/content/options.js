@@ -42,11 +42,11 @@ const Option = Class("Option", {
         if (this.type in Option.getKey)
             this.getKey = Option.getKey[this.type];
 
-        if (this.type in Option.parseValues)
-            this.parseValues = Option.parseValues[this.type];
+        if (this.type in Option.parse)
+            this.parse = Option.parse[this.type];
 
-        if (this.type in Option.joinValues)
-            this.joinValues = Option.joinValues[this.type];
+        if (this.type in Option.stringify)
+            this.stringify = Option.stringify[this.type];
 
         if (this.type in Option.testValues)
             this.testValues = Option.testValues[this.type];
@@ -56,8 +56,7 @@ const Option = Class("Option", {
         if (arguments.length > 3) {
             if (this.type == "string")
                 defaultValue = Commands.quote(defaultValue);
-            this.defaultValues = this.parseValues(defaultValue)
-            this.defaultValue = this.joinValues(this.defaultValues);
+            this.defaultValue = this.parse(defaultValue)
         }
 
         if (extraInfo)
@@ -68,12 +67,14 @@ const Option = Class("Option", {
             this.names = array([name, "no" + name] for (name in values(names))).flatten().array;
 
         if (this.globalValue == undefined && !this.initialValue)
-            this.globalValue = this.parseValues(this.defaultValue);
+            this.globalValue = this.defaultValue;
     },
 
     initValue: function () {
-        dactyl.trapErrors(function () this.values = this.values, this);
+        dactyl.trapErrors(function () this.value = this.value, this);
     },
+
+    get isDefault() this.stringify(this.value) === this.stringify(this.defaultValue),
 
     /** @property {value} The option's global value. @see #scope */
     get globalValue() options.store.get(this.name, {}).value,
@@ -86,7 +87,7 @@ const Option = Class("Option", {
      * @param {value} value The option value.
      * @returns {value|string[]}
      */
-    parseValues: function (value) Option.dequote(value),
+    parse: function (value) Option.dequote(value),
 
     /**
      * Returns <b>values</b> packed in the appropriate format for the option
@@ -95,11 +96,7 @@ const Option = Class("Option", {
      * @param {value|string[]} values The option value.
      * @returns {value}
      */
-    joinValues: function (vals) Commands.quote(vals),
-
-    /** @property {value|string[]} The option value or array of values. */
-    get values() this.getValues(this.scope),
-    set values(values) this.setValues(values, this.scope),
+    stringify: function (vals) Commands.quote(vals),
 
     /**
      * Returns the option's value as an array of parsed values if the option
@@ -109,7 +106,7 @@ const Option = Class("Option", {
      *     {@link Option#scope}).
      * @returns {value|string[]}
      */
-    getValues: function (scope) {
+    get: function (scope) {
         if (scope) {
             if ((scope & this.scope) == 0) // option doesn't exist in this scope
                 return null;
@@ -137,7 +134,7 @@ const Option = Class("Option", {
      * @param {number} scope The scope to apply these values to (see
      *     {@link Option#scope}).
      */
-    setValues: function (newValues, scope, skipGlobal) {
+    set: function (newValues, scope, skipGlobal) {
         scope = scope || this.scope;
         if ((scope & this.scope) == 0) // option doesn't exist in this scope
             return;
@@ -158,27 +155,14 @@ const Option = Class("Option", {
         dactyl.triggerObserver("options." + this.name, newValues);
     },
 
-    /**
-     * Returns the value of the option in the specified <b>scope</b>. The
-     * (@link Option#getter) callback, if it exists, is invoked with this value
-     * before it is returned.
-     *
-     * @param {number} scope The scope to return this value from (see
-     *     {@link Option#scope}).
-     * @returns {value}
-     */
-    get: function (scope) this.joinValues(this.getValues(scope)),
-
-    /**
-     * Sets the option value to <b>newValue</b> for the specified <b>scope</b>.
-     * The (@link Option#setter) callback, if it exists, is invoked with
-     * <b>newValue</b>.
-     *
-     * @param {value} newValue The option's new value.
-     * @param {number} scope The scope to apply this value to (see
-     *     {@link Option#scope}).
-     */
-    set: function (newValue, scope) this.setValues(this.parseValues(newValue), scope),
+    getValues: deprecated("Please use Option#get instead", "get", "getValues"),
+    setValues: deprecated("Please use Option#set instead", "set", "setValues"),
+    joinValues: deprecated("Please use Option#stringify instead", "stringify", "joinValues"),
+    parseValues: deprecated("Please use Option#parse instead", "parse", "parseValues"),
+    values: Class.Property({
+        get: deprecated("Please use Option#value instead", function values() this.value),
+        set: deprecated("Please use Option#value instead", function values(val) this.value = val)
+    }),
 
     /**
      * @property {value} The option's current value. The option's local value,
@@ -196,7 +180,7 @@ const Option = Class("Option", {
      *
      * @returns {boolean}
      */
-    has: function () Array.some(arguments, function (val) this.values.indexOf(val) >= 0, this),
+    has: function () Array.some(arguments, function (val) this.value.indexOf(val) >= 0, this),
 
     /**
      * Returns whether this option is identified by <b>name</b>.
@@ -240,13 +224,13 @@ const Option = Class("Option", {
 
         try {
             if (!this.isValidValue(newValues))
-                return this.invalidArgument(str || this.joinValues(values), operator);
+                return this.invalidArgument(str || this.stringify(values), operator);
         }
         catch (e) {
-            return this.invalidArgument(str || this.joinValues(values), operator) + ": " + e.message;
+            return this.invalidArgument(str || this.stringify(values), operator) + ": " + e.message;
         }
 
-        this.setValues(newValues, scope);
+        this.set(newValues, scope);
         return null;
     },
 
@@ -400,11 +384,11 @@ const Option = Class("Option", {
         (typeof re.result === "string" ? ":" + Option.quote(re.result) : ""),
 
     getKey: {
-        stringlist: function (k) this.values.indexOf(k) >= 0,
+        stringlist: function (k) this.value.indexOf(k) >= 0,
         get charlist() this.stringlist,
 
         regexlist: function (k, default_) {
-            for (let re in values(this.values))
+            for (let re in values(this.value))
                 if (re.test(k))
                     return re.result;
             return arguments.length > 1 ? default_ : null;
@@ -412,7 +396,7 @@ const Option = Class("Option", {
         get regexmap() this.regexlist
     },
 
-    joinValues: {
+    stringify: {
         charlist:    function (vals) Commands.quote(vals.join("")),
         stringlist:  function (vals) vals.map(Option.quote).join(","),
         stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
@@ -420,7 +404,7 @@ const Option = Class("Option", {
         get regexmap() this.regexlist
     },
 
-    parseValues: {
+    parse: {
         number:     function (value) Number(Option.dequote(value)),
         boolean:    function (value) Option.dequote(value) == "true" || value == true ? true : false,
         charlist:   function (value) Array.slice(Option.dequote(value)),
@@ -456,7 +440,7 @@ const Option = Class("Option", {
     splitList: function (value, keepQuotes) {
         let res = [];
         Option._splitAt = 0;
-        do {
+        while (value.length) {
             if (count !== undefined)
                 value = value.slice(1);
             var [count, arg, quote] = Commands.parseArg(value, /,/, keepQuotes);
@@ -465,7 +449,7 @@ const Option = Class("Option", {
             if (value.length > count)
                 Option._splitAt += count + 1;
             value = value.slice(count);
-        } while (value.length);
+        }
         return res;
     },
     quote: function quote(str, re) Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str) ? "'" : ""](str, re),
@@ -500,7 +484,7 @@ const Option = Class("Option", {
         },
 
         stringmap: function (operator, values, scope, invert) {
-            let res = update({}, this.values);
+            let res = update({}, this.value);
 
             switch (operator) {
             // The result is the same.
@@ -527,20 +511,19 @@ const Option = Class("Option", {
         },
 
         stringlist: function (operator, values, scope, invert) {
-            const self = this;
             values = Array.concat(values);
             switch (operator) {
             case "+":
-                return array.uniq(Array.concat(this.values, values), true);
+                return array.uniq(Array.concat(this.value, values), true);
             case "^":
                 // NOTE: Vim doesn't prepend if there's a match in the current value
-                return array.uniq(Array.concat(values, this.values), true);
+                return array.uniq(Array.concat(values, this.value), true);
             case "-":
-                return this.values.filter(function (item) values.indexOf(item) == -1);
+                return this.value.filter(function (item) values.indexOf(item) == -1);
             case "=":
                 if (invert) {
-                    let keepValues = this.values.filter(function (item) values.indexOf(item) == -1);
-                    let addValues  = values.filter(function (item) self.values.indexOf(item) == -1);
+                    let keepValues = this.value.filter(function (item) values.indexOf(item) == -1);
+                    let addValues  = values.filter(function (item) this.value.indexOf(item) == -1, this);
                     return addValues.concat(keepValues);
                 }
                 return values;
@@ -633,7 +616,7 @@ const Options = Module("options", {
             // Trigger any setters.
             let opt = options.get(option);
             if (event == "change" && opt)
-                opt.setValues(opt.globalValue, Option.SCOPE_GLOBAL, true);
+                opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
         }, window);
 
         this._branch = services.get("pref").getBranch("").QueryInterface(Ci.nsIPrefBranch2);
@@ -696,8 +679,8 @@ const Options = Module("options", {
                 memoize(this.needInit, this.needInit.length, closure);
 
         // quickly access options with options["wildmode"]:
-        this.__defineGetter__(name, function () this._optionMap[name].values);
-        this.__defineSetter__(name, function (value) { this._optionMap[name].values = value; });
+        this.__defineGetter__(name, function () this._optionMap[name].value);
+        this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
     },
 
     /**
@@ -741,9 +724,9 @@ const Options = Module("options", {
         function opts(opt) {
             for (let opt in Iterator(options)) {
                 let option = {
-                    isDefault: opt.value === opt.defaultValue,
+                    isDefault: opt.isDefault,
                     name:      opt.name,
-                    default:   opt.defaultValue,
+                    default:   opt.stringify(opt.defaultValue),
                     pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
                     value:     <></>
                 };
@@ -759,7 +742,7 @@ const Options = Module("options", {
                     option.default = (option.default ? "" : "no") + opt.name;
                 }
                 else
-                    option.value = <>={template.highlight(opt.value)}</>;
+                    option.value = <>={template.highlight(opt.stringify(opt.value))}</>;
                 yield option;
             }
         };
@@ -870,9 +853,8 @@ const Options = Module("options", {
             ret.value = "";
 
         ret.optionValue = ret.option.get(ret.scope);
-        ret.optionValues = ret.option.getValues(ret.scope);
 
-        ret.values = ret.option.parseValues(ret.value);
+        ret.values = ret.option.parse(ret.value);
 
         return ret;
     },
@@ -1168,7 +1150,7 @@ const Options = Module("options", {
                         if (option.type == "boolean")
                             var msg = (opt.optionValue ? "  " : "no") + option.name;
                         else
-                            msg = "  " + option.name + "=" + opt.optionValue;
+                            msg = "  " + option.name + "=" + opt.option.stringify(opt.optionValue);
 
                         if (options["verbose"] > 0 && option.setFrom)
                             msg += "\n        Last set from " + option.setFrom;
@@ -1183,7 +1165,8 @@ const Options = Module("options", {
                         opt.values = !opt.unsetBoolean;
                     }
                     try {
-                        var res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert, opt.value);
+                        var res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert,
+                                                opt.value);
                     }
                     catch (e) {
                         res = e;
@@ -1357,7 +1340,7 @@ const Options = Module("options", {
                                                                : opt.name + "=" + opt.value]
                         }
                         for (opt in options)
-                        if (!opt.getter && opt.value !== opt.defaultValue && (opt.scope & Option.SCOPE_GLOBAL))
+                        if (!opt.getter && opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
                     ]
                 }
             }
@@ -1421,8 +1404,8 @@ const Options = Module("options", {
             context.completions = options;
             if (prefix == "inv")
                 context.keys.text = function (opt)
-                    opt.type == "boolean" || isArray(opt.values) ? opt.names.map(function (n) "inv" + n)
-                                                                 : opt.names;
+                    opt.type == "boolean" || isArray(opt.value) ? opt.names.map(function (n) "inv" + n)
+                                                                : opt.names;
             if (scope)
                 context.filters.push(function ({ item }) item.scope & scope);
         };
@@ -1434,8 +1417,8 @@ const Options = Module("options", {
                 return;
 
             try {
-                var curValues = curValue != null ? opt.parseValues(curValue) : opt.values;
-                var newValues = opt.parseValues(context.filter);
+                var curValues = curValue != null ? opt.parse(curValue) : opt.value;
+                var newValues = opt.parse(context.filter);
             }
             catch (e) {
                 context.message = "Error: " + e;
@@ -1462,7 +1445,7 @@ const Options = Module("options", {
                 let split = Option._splitAt;
                 extra.key = Option.dequote(key);
                 extra.value = count < target.length ? Option.dequote(target.substr(count + 1)) : null;
-                extra.values = opt.parseValues(vals.join(","));
+                extra.values = opt.parse(vals.join(","));
                 Option._splitAt = split + (extra.value == null ? 0 : count + 1);
                 break;
             }
@@ -1507,7 +1490,7 @@ const Options = Module("options", {
                     for (let opt in values(options._options))
                         if (timespan.contains(opt.lastSet * 1000) && opt.domains)
                             try {
-                                opt.values = opt.filterDomain(host, opt.values);
+                                opt.value = opt.filterDomain(host, opt.value);
                             }
                             catch (e) {
                                 dactyl.reportError(e);
@@ -1515,7 +1498,7 @@ const Options = Module("options", {
             },
             privateEnter: function () {
                 for (let opt in values(options._options))
-                    if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.values)))
+                    if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.value)))
                         opt.oldValue = opt.value;
             },
             privateLeave: function () {

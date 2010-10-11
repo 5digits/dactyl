@@ -1269,7 +1269,7 @@ const CommandLine = Module("commandline", {
             this.editor = input.editor;
             this.selected = null;
             this.wildmode = options.get("wildmode");
-            this.wildtypes = this.wildmode.values;
+            this.wildtypes = this.wildmode.value;
             this.itemList = commandline._completionList;
             this.itemList.setItems(this.context);
             this.reset();

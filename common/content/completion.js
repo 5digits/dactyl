@@ -874,7 +874,7 @@ const Completion = Module("completion", {
                 return first == val || second == val;
             },
             has: function () {
-                test = function (val) this.values.some(function (value) this.checkHas(value, val), this);
+                test = function (val) this.value.some(function (value) this.checkHas(value, val), this);
                 return Array.some(arguments, test, this);
             }
         };
@@ -901,7 +901,7 @@ const Completion = Module("completion", {
 
         options.add(["wildcase", "wic"],
             "Completion case matching mode",
-            "regexmap", "smart",
+            "regexmap", ".?:smart",
             {
                 completer: function () [
                     ["smart", "Case is significant when capital letters are typed"],

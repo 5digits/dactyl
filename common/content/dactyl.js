@@ -25,16 +25,19 @@ const FailedAssertion = Class("FailedAssertion", Error, {
     }
 });
 
-function deprecated(reason, fn) update(
-    function deprecatedMethod() {
-        let frame = Components.stack.caller;
-        if (!set.add(deprecatedMethod.seen, frame.filename))
-            dactyl.echoerr(frame.filename + ":" + frame.lineNumber + ": " +
-                (this.className || this.constructor.className) + "." + fn.name +
-                " is deprecated: " + reason);
-        return fn.apply(this, arguments);
-    },
-    { seen: { "chrome://dactyl/content/javascript.js": true } });
+function deprecated(reason, fn, name)
+    let (func = (callable(fn) ? fn : function () this[fn].apply(this, arguments)))
+        update(function deprecatedMethod() {
+            let frame = Components.stack.caller;
+            if (!set.add(deprecatedMethod.seen, frame.filename))
+                dactyl.echoerr(
+                    frame.filename.replace(/^.*? -> /, "") +
+                           ":" + frame.lineNumber + ": " +
+                    (this.className || this.constructor.className) + "." +
+                    (fn.name || name) + " is deprecated: " + reason);
+            return func.apply(this, arguments);
+        },
+        { seen: { "chrome://dactyl/content/javascript.js": true } });
 
 const Dactyl = Module("dactyl", {
     init: function () {
@@ -243,7 +246,8 @@ const Dactyl = Module("dactyl", {
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
         else if (isinstance(str, ["Error"]))
-            str = str.fileName + ":" + str.lineNumber + ": " + str;
+            str = str.fileName.replace(/^.*? -> /, "")
+                + ":" + str.lineNumber + ": " + str;
 
         if (options["errorbells"])
             dactyl.beep();
@@ -619,7 +623,7 @@ const Dactyl = Module("dactyl", {
                 <spec>{spec((obj.specs || obj.names)[0])}</spec>{
                 !obj.type ? "" : <>
                 <type>{obj.type}</type>
-                <default>{obj.defaultValue}</default></>}
+                <default>{opt.stringify(obj.defaultValue)}</default></>}
                 <description>{
                     obj.description ? br+<p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
                         extraHelp ? br+extraHelp : "" }{
