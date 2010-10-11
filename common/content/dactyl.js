@@ -893,7 +893,7 @@ const Dactyl = Module("dactyl", {
             urls = [str];
 
         return urls.map(function (url) {
-            if (/^(\.{0,2}|~)\//.test(url)) {
+            if (/^(\.{0,2}|~)(\/|$)/.test(url)) {
                 try {
                     // Try to find a matching file.
                     let file = io.File(url);

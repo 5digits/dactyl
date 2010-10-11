@@ -94,7 +94,7 @@ const Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["~"],
             "Open home directory",
-            function () { dactyl.open("~"); });
+            function () { dactyl.open("~/"); });
 
         mappings.add([modes.NORMAL], ["gh"],
             "Open homepage",

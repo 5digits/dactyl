@@ -965,7 +965,7 @@ const Commands = Module("commands", {
     }
 }, {
     // returns [count, parsed_argument]
-    parseArg: function (str, sep, keepQuotes) {
+    parseArg: function parseArg(str, sep, keepQuotes) {
         let arg = "";
         let quote = null;
         let len = str.length;
