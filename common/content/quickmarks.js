@@ -41,7 +41,7 @@ const QuickMarks = Module("quickmarks", {
     find: function find(url) {
         let res = [];
         for (let [k, v] in this._qmarks)
-            if (dactyl.stringToURLArray(v).some(function (u) String.replace(u, /#.*/, "") == url))
+            if (dactyl.parseURLs(v).some(function (u) String.replace(u, /#.*/, "") == url))
                 res.push(k);
         return res;
     },

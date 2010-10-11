@@ -155,10 +155,10 @@ const Option = Class("Option", {
         dactyl.triggerObserver("options." + this.name, newValues);
     },
 
-    getValues: deprecated("Please use Option#get instead", "get", "getValues"),
-    setValues: deprecated("Please use Option#set instead", "set", "setValues"),
-    joinValues: deprecated("Please use Option#stringify instead", "stringify", "joinValues"),
-    parseValues: deprecated("Please use Option#parse instead", "parse", "parseValues"),
+    getValues: deprecated("Please use Option#get instead", "get"),
+    setValues: deprecated("Please use Option#set instead", "set"),
+    joinValues: deprecated("Please use Option#stringify instead", "stringify"),
+    parseValues: deprecated("Please use Option#parse instead", "parse"),
     values: Class.Property({
         get: deprecated("Please use Option#value instead", function values() this.value),
         set: deprecated("Please use Option#value instead", function values(val) this.value = val)

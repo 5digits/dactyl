@@ -25,19 +25,24 @@ const FailedAssertion = Class("FailedAssertion", Error, {
     }
 });
 
-function deprecated(reason, fn, name)
-    let (func = (callable(fn) ? fn : function () this[fn].apply(this, arguments)))
-        update(function deprecatedMethod() {
-            let frame = Components.stack.caller;
-            if (!set.add(deprecatedMethod.seen, frame.filename))
-                dactyl.echoerr(
-                    frame.filename.replace(/^.*? -> /, "") +
-                           ":" + frame.lineNumber + ": " +
-                    (this.className || this.constructor.className) + "." +
-                    (fn.name || name) + " is deprecated: " + reason);
-            return func.apply(this, arguments);
-        },
-        { seen: { "chrome://dactyl/content/javascript.js": true } });
+function deprecated(reason, fn) {
+    let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
+    function deprecatedMethod() {
+        let frame = Components.stack.caller;
+        if (!set.add(deprecatedMethod.seen, frame.filename))
+            dactyl.echoerr(
+                frame.filename.replace(/^.*? -> /, "") +
+                       ":" + frame.lineNumber + ": " +
+                (this.className || this.constructor.className) + "." +
+                (fn.name || name) + " is deprecated: " + reason);
+        return func.apply(this, arguments);
+    }
+    deprecatedMethod.seen = { "chrome://dactyl/content/javascript.js": true };
+    return callable(fn) ? deprecatedMethod : Class.Property({
+        get: function () deprecatedMethod,
+        init: function (prop) { name = prop }
+    });
+}
 
 const Dactyl = Module("dactyl", {
     init: function () {
@@ -746,7 +751,7 @@ const Dactyl = Module("dactyl", {
      *
      * @param {string|Array} urls A representation of the URLs to open. May be
      *     either a string, which will be passed to
-     *     {@see Dactyl#stringToURLArray}, or an array in the same format as
+     *     {@see Dactyl#parseURLs}, or an array in the same format as
      *     would be returned by the same.
      * @param {object} params A set of parameters specifying how to open the
      *     URLs. The following properties are recognized:
@@ -770,7 +775,7 @@ const Dactyl = Module("dactyl", {
      */
     open: function (urls, params, force) {
         if (typeof urls == "string")
-            urls = dactyl.stringToURLArray(urls);
+            urls = dactyl.parseURLs(urls);
 
         if (urls.length > 20 && !force)
             return commandline.input("This will open " + urls.length + " new tabs. Would you like to continue? (yes/[no]) ",
@@ -884,7 +889,8 @@ const Dactyl = Module("dactyl", {
      * @param {string} str
      * @returns {string[]}
      */
-    stringToURLArray: function stringToURLArray(str) {
+    stringToURLArray: deprecated("Please use dactyl.parseURLs instead", "parseURLs"),
+    parseURLs: function parseURLs(str) {
         let urls;
 
         if (options["urlseparator"])

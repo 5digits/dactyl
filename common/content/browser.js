@@ -94,7 +94,7 @@ const Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["~"],
             "Open home directory",
-            function () { dactyl.open("~/"); });
+            function () { dactyl.open("~"); });
 
         mappings.add([modes.NORMAL], ["gh"],
             "Open homepage",
@@ -170,7 +170,7 @@ const Browser = Module("browser", {
                     dactyl.open("about:blank");
             }, {
                 completer: function (context) completion.url(context),
-                domains: function (args) array.compact(dactyl.stringToURLArray(args[0] || "").map(
+                domains: function (args) array.compact(dactyl.parseURLs(args[0] || "").map(
                     function (url) util.getHost(url))),
                 literal: 0,
                 privateData: true
