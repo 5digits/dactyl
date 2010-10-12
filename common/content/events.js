@@ -741,6 +741,8 @@ const Events = Module("events", {
         function isEscape(key) key == "<Esc>" || key == "<C-[>";
 
         function killEvent() {
+            if (/key|input/.test(event.type))
+                util.dumpStack();
             event.preventDefault();
             event.stopPropagation();
         }
@@ -869,6 +871,7 @@ const Events = Module("events", {
             // only follow a map if there isn't a longer possible mapping
             // (allows you to do :map z yy, when zz is a longer mapping than z)
             else if (map && !event.skipmap && candidates.length == 0) {
+                util.dump(map, this._input);
                 this._input.pendingMap = null;
                 this._input.count = parseInt(countStr, 10);
                 if (isNaN(this._input.count))

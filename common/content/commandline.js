@@ -852,6 +852,9 @@ const CommandLine = Module("commandline", {
         catch (e) {
             dactyl.reportError(e, true);
         }
+        finally {
+            return true;
+        }
     },
 
     /**
@@ -1644,7 +1647,8 @@ const CommandLine = Module("commandline", {
             ["<Space>", '"', "'"], "Expand command line abbreviation",
             function () {
                 commandline.resetCompletions();
-                return editor.expandAbbreviation(modes.COMMAND_LINE);
+                editor.expandAbbreviation(modes.COMMAND_LINE);
+                return true;
             },
             { route: true });
 

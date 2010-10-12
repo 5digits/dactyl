@@ -417,7 +417,6 @@ const Editor = Module("editor", {
             textbox.selectionStart = currStart - len + abbrText.length;
             textbox.selectionEnd   = currEnd   - len + abbrText.length;
         }
-
         return true;
     },
 }, {
