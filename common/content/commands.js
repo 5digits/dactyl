@@ -975,7 +975,7 @@ const Commands = Module("commands", {
         let quote = null;
         let len = str.length;
 
-        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[a-fA-F]{4}|(.))/g, function (m, n1) n1 || m);
+        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}|(.))/g, function (m, n1) n1 || m);
 
         // Fix me.
         if (isString(sep))
