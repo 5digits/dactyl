@@ -1124,8 +1124,15 @@ const Dactyl = Module("dactyl", {
             "Allow reading of an RC file in the current directory",
             "boolean", false);
 
-        const groups = {
-            commandline: {
+        options.add(["fullscreen", "fs"],
+            "Show the current window fullscreen",
+            "boolean", false, {
+                setter: function (value) window.fullScreen = value,
+                getter: function () window.fullScreen
+            });
+
+        const groups = [
+            {
                 opts: {
                     c: ["Always show the command-line, even when empty"],
                     C: ["Always show the command-line outside of the status line"],
@@ -1135,7 +1142,7 @@ const Dactyl = Module("dactyl", {
                     commandline.widgets.updateVisibility();
                 }
             },
-            config: {
+            {
                 opts: config.guioptions,
                 setter: function (opts) {
                     for (let [opt, [, ids]] in Iterator(this.opts)) {
@@ -1147,7 +1154,7 @@ const Dactyl = Module("dactyl", {
                     }
                 }
             },
-            scroll: {
+            {
                 opts: {
                     r: ["Right Scrollbar", "vertical"],
                     l: ["Left Scrollbar", "vertical"],
@@ -1170,7 +1177,7 @@ const Dactyl = Module("dactyl", {
                 validator: function (opts) Option.validIf(!(opts.indexOf("l") >= 0 && opts.indexOf("r") >= 0),
                                                           UTF8("Only one of ‘l’ or ‘r’ allowed"))
             },
-            tab: {
+            {
                 feature: "tabs",
                 opts: {
                     n: ["Tab number", highlight.selector("TabNumber")],
@@ -1186,32 +1193,21 @@ const Dactyl = Module("dactyl", {
                     statusline.updateTabCount();
                 }
             }
-        };
-
-        options.add(["fullscreen", "fs"],
-            "Show the current window fullscreen",
-            "boolean", false, {
-                setter: function (value) window.fullScreen = value,
-                getter: function () window.fullScreen
-            });
+        ].filter(function (group) !group.feature || dactyl.has(group.feature));
 
         options.add(["guioptions", "go"],
             "Show or hide certain GUI elements like the menu or toolbar",
             "charlist", config.defaults.guioptions || "", {
+                completer: function (context)
+                    array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
                 setter: function (value) {
-                    for (let [, group] in Iterator(groups))
-                        if (!group.feature || dactyl.has(group.feature))
-                            group.setter(value);
+                    for (let group in values(groups))
+                        group.setter(value);
                     events.checkFocus();
                     return value;
                 },
-                completer: function (context) {
-                    let opts = [v.opts for ([k, v] in Iterator(groups)) if (!v.feature || dactyl.has(v.feature))];
-                    opts = opts.map(function (opt) [[k, v[0]] for ([k, v] in Iterator(opt))]);
-                    return array.flatten(opts);
-                },
                 validator: function (val) Option.validateCompleter.call(this, val) &&
-                        [v for ([k, v] in Iterator(groups))].every(function (g) !g.validator || g.validator(val))
+                        groups.every(function (g) !g.validator || g.validator(val))
             });
 
         options.add(["helpfile", "hf"],

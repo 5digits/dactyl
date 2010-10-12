@@ -272,8 +272,10 @@ const CompletionContext = Class("CompletionContext", {
 
     get completions() this._completions || [],
     set completions(items) {
+        if (items && isArray(items.array))
+            items = items.array;
         // Accept a generator
-        if (items && !(isArray(items) || isArray(items.__proto__)))
+        if (!isArray(items))
             items = [x for (x in Iterator(items || []))];
         if (this._completions !== items) {
             delete this.cache.filtered;

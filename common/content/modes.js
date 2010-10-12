@@ -43,7 +43,8 @@ const Modes = Module("modes", {
                     editor.unselectText();
             }
         });
-        this.addMode("COMMAND_LINE", { char: "c", input: true });
+        this.addMode("COMMAND_LINE", { char: "c", input: true,
+            display: function () modes.extended & modes.OUTPUT_MULTILINE ? null : this.disp });
         this.addMode("CARET", {}, {
             get pref()    options.getPref("accessibility.browsewithcaret"),
             set pref(val) options.setPref("accessibility.browsewithcaret", val),
@@ -112,7 +113,7 @@ const Modes = Module("modes", {
 
         let val = this._modeMap[this._main].display();
         if (val)
-            return "-- " + this._modeMap[this._main].display() + ext;
+            return "-- " + val + ext;
         return macromode;
     },
 
