@@ -19,6 +19,8 @@ const JavaScript = Module("javascript", {
         this._lastIdx = 0;
 
         this._cacheKey = null;
+
+        this._nullSandbox = Cu.Sandbox("about:blank");
     },
 
     get completers() JavaScript.completers, // For backward compatibility
@@ -478,8 +480,8 @@ const JavaScript = Module("javascript", {
 
             // The top of the stack is the sting we're completing.
             // Wrap it in its delimiters and eval it to process escape sequences.
-            let string = this._str.substring(this._get(-1).offset + 1, this._lastIdx);
-            string = JSON.parse(this._last + string + this._last);
+            let string = this._str.substring(this._get(-1).offset + 1, this._lastIdx).replace(/((?:\\\\)*)\\/, "$1");
+            string = Cu.evalInSandbox(this._last + string + this._last, this._nullSandbox);
 
             // Is this an object accessor?
             if (this._get(-2).char == "[") { // Are we inside of []?

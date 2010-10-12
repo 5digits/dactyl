@@ -975,6 +975,8 @@ const Commands = Module("commands", {
         let quote = null;
         let len = str.length;
 
+        function fixEscapes(str) str.replace(/\\(?:["\\\/bfnrt]|u[a-fA-F]{4}|(.))/g, function (m, n1) n1 || m);
+
         // Fix me.
         if (isString(sep))
             sep = RegExp(sep);
@@ -987,7 +989,7 @@ const Commands = Module("commands", {
             if ((res = re2.exec(str)))
                 arg += keepQuotes ? res[0] : res[2].replace(/\\(.)/g, "$1");
             else if ((res = /^(")((?:[^\\"]|\\.)*)("?)/.exec(str)))
-                arg += keepQuotes ? res[0] : JSON.parse(res[0] + (res[3] ? "" : '"'));
+                arg += keepQuotes ? res[0] : JSON.parse(fixEscapes(res[0]) + (res[3] ? "" : '"'));
             else if ((res = /^(')((?:[^']|'')*)('?)/.exec(str)))
                 arg += keepQuotes ? res[0] : res[2].replace("''", "'", "g");
             else
@@ -1003,7 +1005,9 @@ const Commands = Module("commands", {
         return [len - str.length, arg, quote];
     },
 
-    quote: function quote(str) Commands.quoteArg[/[\s"'\\]|^$/.test(str) ? "'" : ""](str)
+    quote: function quote(str) Commands.quoteArg[/[\s"'\\]|^$/.test(str)
+            ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
+            : ""](str)
 }, {
     completion: function () {
         completion.command = function command(context) {

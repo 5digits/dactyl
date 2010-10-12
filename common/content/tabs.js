@@ -1034,7 +1034,7 @@ const Tabs = Module("tabs", {
                         for (let group in values(activateGroups))
                             if (group[2])
                                 options.safeSetPref("browser.tabs." + group[2],
-                                                    !(valueSet["all"] || valueSet[group[0]]),
+                                                    !(valueSet["all"] ^ valueSet[group[0]]),
                                                     "See the 'activate' option");
                         return newValues;
                     }

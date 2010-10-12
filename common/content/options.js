@@ -377,9 +377,7 @@ const Option = Class("Option", {
     SCOPE_BOTH: 3,
 
     has: {
-        toggleAll: function toggleAll() toggleAll.supercall(this, "all")
-            ? Array.some(arguments, function (val) this.value.indexOf(val) === -1, this)
-            : toggleAll.superapply(this, arguments),
+        toggleAll: function toggleAll() toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments),
     },
 
     parseRegex: function (value, result, flags) {
@@ -473,7 +471,10 @@ const Option = Class("Option", {
         }
         return res;
     },
-    quote: function quote(str, re) Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str) ? "'" : ""](str, re),
+    quote: function quote(str, re)
+        Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str)
+            ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
+            : ""](str, re),
 
     ops: {
         boolean: function (operator, values, scope, invert) {

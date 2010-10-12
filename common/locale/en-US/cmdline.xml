@@ -259,13 +259,11 @@
         Any character inside of double quotes except for <em>"</em> and
         <em>\</em> is interpreted literally. A literal double quote may be
         included by preceding it with a backslash. Any other occurrence of a
-        backslash starts an escape sequence as in JavaScript strings. Among
-        the available escape sequences are:
+        backslash starts an escape sequence as in JSON strings.
+        Among the available escape sequences are:
         <dl dt="width: 8em;">
             <dt>\n</dt> <dd>A newline character.</dd>
             <dt>\t</dt> <dd>A tab character.</dd>
-            <dt>\0nn</dt> <dd>Where each <em>n</em> is a digit between 0 and 7, represents an octal character code.</dd>
-            <dt>\xdd</dt> <dd>Where each <em>d</em> is a digit between 0 and F, represents a hexidecimal character code.</dd>
             <dt>\uxxxx</dt> <dd>Where each <em>x</em> is a digit between 0 and F, a Unicode character at code-point <em>xxxx</em>.</dd>
         </dl>
     </dd>
