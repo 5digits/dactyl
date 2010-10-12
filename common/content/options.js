@@ -53,14 +53,14 @@ const Option = Class("Option", {
 
         this._op = Option.ops[this.type];
 
+        if (extraInfo)
+            update(this, extraInfo);
+
         if (arguments.length > 3) {
             if (this.type == "string")
                 defaultValue = Commands.quote(defaultValue);
             this.defaultValue = this.parse(defaultValue)
         }
-
-        if (extraInfo)
-            update(this, extraInfo);
 
         // add no{option} variant of boolean {option} to this.names
         if (this.type == "boolean")
@@ -372,11 +372,11 @@ const Option = Class("Option", {
      */
     SCOPE_BOTH: 3,
 
-    parseRegex: function (value, result) {
+    parseRegex: function (value, result, flags) {
         let [, bang, val] = /^(!?)(.*)/.exec(value);
-        let re = RegExp(Option.dequote(val));
+        let re = RegExp(Option.dequote(val), flags);
         re.bang = bang;
-        re.result = arguments.length == 2 ? result : !bang;
+        re.result = result !== undefined ? result : !bang;
         re.toString = function () Option.unparseRegex(this);
         return re;
     },
@@ -398,31 +398,42 @@ const Option = Class("Option", {
 
     stringify: {
         charlist:    function (vals) Commands.quote(vals.join("")),
+
         stringlist:  function (vals) vals.map(Option.quote).join(","),
+
         stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
+
         regexlist:   function (vals) vals.join(","),
         get regexmap() this.regexlist
     },
 
     parse: {
         number:     function (value) Number(Option.dequote(value)),
+
         boolean:    function (value) Option.dequote(value) == "true" || value == true ? true : false,
+
         charlist:   function (value) Array.slice(Option.dequote(value)),
+
         stringlist: function (value) (value === "") ? [] : Option.splitList(value),
-        regexlist:  function (value) (value === "") ? [] : Option.splitList(value, true).map(Option.parseRegex),
+
+        regexlist:  function (value) (value === "") ? [] :
+            Option.splitList(value, true)
+                  .map(function (re) Option.parseRegex(re, undefined, this.regexFlags), this),
+
         stringmap:  function (value) array.toObject(
             Option.splitList(value, true).map(function (v) {
                 let [count, key, quote] = Commands.parseArg(v, /:/);
                 return [key, Option.dequote(v.substr(count + 1))]
             })),
+
         regexmap:   function (value)
             Option.splitList(value, true).map(function (v) {
                 let [count, re, quote] = Commands.parseArg(v, /:/, true);
                 v = Option.dequote(v.substr(count + 1));
                 if (count === v.length)
                     [v, re] = [re, ".?"];
-                return Option.parseRegex(re, v);
-            })
+                return Option.parseRegex(re, v, this.regexFlags);
+            }, this)
     },
 
     testValues: {

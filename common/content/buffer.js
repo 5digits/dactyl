@@ -427,15 +427,18 @@ const Buffer = Module("buffer", {
     },
 
     /**
-     * Returns a list of all frames in the given current buffer.
+     * Returns a list of all frames in the given window or current buffer.
      */
-    allFrames: function (win) {
+    allFrames: function (win, focusedFirst) {
         let frames = [];
         (function rec(frame) {
             if (frame.document.body instanceof HTMLBodyElement)
                 frames.push(frame);
             Array.forEach(frame.frames, rec);
         })(win || window.content);
+        if (focusedFirst)
+            return frames.filter(function (f) f === buffer.focusedFrame).concat(
+                    frames.filter(function (f) f !== buffer.focusedFrame))
         return frames;
     },
 
@@ -532,59 +535,66 @@ const Buffer = Module("buffer", {
     },
 
     /**
-     * Tries to guess links the like of "next" and "prev". Though it has a
-     * singularly horrendous name, it turns out to be quite useful.
+     * Find the counth last link on a page matching one of the given
+     * regular expressions, or with a @rel or @rev attribute matching
+     * the given relation. Each frame is searched beginning with the
+     * last link and progressing to the first, once checking for
+     * matching @rel or @rev properties, and then once for each given
+     * regular expression. The first match is returned. All frames of
+     * the page are searched, beginning with the currently focused.
      *
-     * @param {string} rel The relationship to look for. Looks for
-     *     links with matching @rel or @rev attributes, and,
-     *     failing that, looks for an option named rel +
-     *     "pattern", and finds the last link matching that
-     *     RegExp.
+     * If follow is true, the link is followed.
+     *
+     * @param {string} rel The relationship to look for.
+     * @param {[RegExp]} regexps The regular expressions to search for.
+     * @param {number} count The nth matching link to follow.
+     * @param {bool} follow Whether to follow the matching link.
+     * @param {string} path The XPath to use for the search. @optional
      */
-    followDocumentRelationship: function (rel) {
-        let regexes = options[rel + "pattern"].map(function (re) RegExp(re, "i"));
+    followDocumentRelationship: deprecated("Please use buffer.findLink instead",
+        function followDocumentRelationship(rel) {
+            this.findLink(rel, options[rel + "pattern"], 0, true);
+        }),
+    findLink: function (rel, regexps, count, follow, path) {
+        path = path || options.get("hinttags").defaultValue;
 
         function followFrame(frame) {
             function iter(elems) {
                 for (let i = 0; i < elems.length; i++)
-                    if (elems[i].rel.toLowerCase() == rel || elems[i].rev.toLowerCase() == rel)
+                    if (elems[i].rel.toLowerCase() === rel || elems[i].rev.toLowerCase() === rel)
                         yield elems[i];
             }
 
             // <link>s have higher priority than normal <a> hrefs
             let elems = frame.document.getElementsByTagName("link");
-            for (let elem in iter(elems)) {
-                dactyl.open(elem.href);
-                return true;
-            }
+            for (let elem in iter(elems))
+                yield elem;
 
             // no links? ok, look for hrefs
             elems = frame.document.getElementsByTagName("a");
-            for (let elem in iter(elems)) {
-                buffer.followLink(elem, dactyl.CURRENT_TAB);
-                return true;
-            }
+            for (let elem in iter(elems))
+                yield elem;
 
-            let res = util.evaluateXPath(options.get("hinttags").defaultValue, frame.document);
-            for (let [, regex] in Iterator(regexes)) {
+            let res = util.evaluateXPath(path, frame.document);
+            for (let regex in values(regexps)) {
                 for (let i in util.range(res.snapshotLength, 0, -1)) {
                     let elem = res.snapshotItem(i);
-                    if (regex.test(elem.textContent) || regex.test(elem.title) ||
-                            Array.some(elem.childNodes, function (child) regex.test(child.alt))) {
-                        buffer.followLink(elem, dactyl.CURRENT_TAB);
-                        return true;
-                    }
+                    if (regex.test(elem.textContent) === regex.result || regex.test(elem.title) === regex.result ||
+                            Array.some(elem.childNodes, function (child) regex.test(child.alt) === regex.result))
+                        yield elem;
                 }
             }
-            return false;
         }
 
-        let ret = followFrame(window.content);
-        if (!ret)
-            // only loop through frames if the main content didn't match
-            ret = Array.some(buffer.allFrames().frames, followFrame);
+        for (let frame in values(buffer.allFrames(null, true)))
+            for (let elem in followFrame(frame))
+                if (count-- === 0) {
+                    if (follow)
+                        buffer.followLink(elem, dactyl.CURRENT_TAB);
+                    return elem;
+                }
 
-        if (!ret)
+        if (follow)
             dactyl.beep();
     },
 
@@ -601,11 +611,12 @@ const Buffer = Module("buffer", {
         let offsetX = 1;
         let offsetY = 1;
 
-        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement])) {
-            buffer.focusElement(elem);
-            return;
-        }
-        else if (elem instanceof HTMLAreaElement) { // for imagemap
+        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
+            return buffer.focusElement(elem);
+        if (isinstance(elem, HTMLLinkElement))
+            return dactyl.open(elem.href, where);
+
+        if (elem instanceof HTMLAreaElement) { // for imagemap
             let coords = elem.getAttribute("coords").split(",");
             offsetX = Number(coords[0]) + 1;
             offsetY = Number(coords[1]) + 1;
@@ -1619,12 +1630,16 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["]]"],
             "Follow the link labeled 'next' or '>' if it exists",
-            function (count) { buffer.followDocumentRelationship("next"); },
+            function (count) {
+                buffer.findLink("next", options["nextpattern"], (count || 1) - 1, true);
+            },
             { count: true });
 
         mappings.add(myModes, ["[["],
             "Follow the link labeled 'prev', 'previous' or '<' if it exists",
-            function (count) { buffer.followDocumentRelationship("previous"); },
+            function (count) {
+                buffer.findLink("previous", options["previouspattern"], (count || 1) - 1, true);
+            },
             { count: true });
 
         mappings.add(myModes, ["gf"],
@@ -1643,11 +1658,10 @@ const Buffer = Module("buffer", {
                 if (count >= 1 || !elem || !Events.isContentNode(elem)) {
                     let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
 
-                    let frames = array([buffer.focusedFrame].concat(
-                        buffer.allFrames().filter(function (f) f != buffer.focusedFrame)));
+                    let frames = buffer.allFrames(null, true);
 
-                    let elements = frames.map(function (win) [m for (m in util.evaluateXPath(xpath, win.document))])
-                            .flatten().filter(function (elem) {
+                    let elements = array.flatten(frames.map(function (win) [m for (m in util.evaluateXPath(xpath, win.document))]))
+                                        .filter(function (elem) {
 
                         if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(util.editableInputs, elem.type))
                             return false;
@@ -1771,11 +1785,13 @@ const Buffer = Module("buffer", {
     options: function () {
         options.add(["nextpattern"],
             "Patterns to use when guessing the 'next' page in a document sequence",
-            "stringlist", UTF8("'\\bnext\\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\\bmore\\b'"));
+            "regexlist", UTF8("'\\bnext\\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\\bmore\\b'"),
+            { regexFlags: "i" });
 
         options.add(["previouspattern"],
             "Patterns to use when guessing the 'previous' page in a document sequence",
-            "stringlist", UTF8("'\\bprev|previous\\b',^<$,^(<<|«)$,^(<|«),(<|«)$"));
+            "regexlist", UTF8("'\\bprev|previous\\b',^<$,^(<<|«)$,^(<|«),(<|«)$"),
+            { regexFlags: "i" });
 
         options.add(["pageinfo", "pa"],
             "Desired info in the :pageinfo output",
