@@ -21,7 +21,15 @@ const Modes = Module("modes", {
         this._isRecording = false;
         this._isReplaying = false; // playing a macro
 
-        this._modeStack = [];
+        this._modeStack = update([], {
+            pop: function pop() {
+                if (this.length <= 1) {
+                    util.dumpStack("Trying to pop last element in mode stack");
+                    throw Error("Trying to pop last element in mode stack");
+                }
+                return pop.superapply(this, arguments);
+            }
+        });
 
         this._mainModes = [this.NONE];
         this._lastMode = 0;
@@ -191,7 +199,7 @@ const Modes = Module("modes", {
 
     save: function (id, obj, prop) {
         if (!(id in this.boundProperties))
-            for (let elem in values(this._modeStack))
+            for (let elem in array.iterValues(this._modeStack))
                 elem.saved[id] = { obj: obj, prop: prop, value: obj[prop] };
         this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop };
     },
@@ -269,7 +277,8 @@ const Modes = Module("modes", {
         while (oldMode && this._modeStack.length > 1 && this.main != oldMode)
             this.pop();
 
-        this.set(mode, null, null, { push: this.topOfStack, pop: this._modeStack.pop() });
+        if (this._modeStack.length > 1)
+            this.set(mode, null, null, { push: this.topOfStack, pop: this._modeStack.pop() });
         this.push(mode);
     },
 
