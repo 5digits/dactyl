@@ -1025,7 +1025,7 @@ const Tabs = Module("tabs", {
             ];
             options.add(["activate", "act"],
                 "Define when tabs are automatically activated",
-                "stringlist", [g[0] for (g in values(activateGroups)) if (!g[2] || !options.getPref("browser.tabs." + g[2]))].join(","),
+                "stringlist", [g[0] for (g in values(activateGroups.slice(1))) if (!g[2] || !options.getPref("browser.tabs." + g[2]))].join(","),
                 {
                     completer: function (context) activateGroups,
                     has: Option.has.toggleAll,
