@@ -376,6 +376,12 @@ const Option = Class("Option", {
      */
     SCOPE_BOTH: 3,
 
+    has: {
+        toggleAll: function toggleAll() toggleAll.supercall(this, "all")
+            ? Array.some(arguments, function (val) this.value.indexOf(val) === -1, this)
+            : toggleAll.superapply(this, arguments),
+    },
+
     parseRegex: function (value, result, flags) {
         let [, bang, val] = /^(!?)(.*)/.exec(value);
         let re = RegExp(Option.dequote(val), flags);

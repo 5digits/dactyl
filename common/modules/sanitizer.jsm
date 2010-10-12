@@ -228,13 +228,14 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 let items = args.slice();
                 if (args.bang) {
                     dactyl.assert(args.length == 0, "E488: Trailing characters");
-                    items = modules.options.get("sanitizeitems").values;
+                    items = Object.keys(sanitizer.itemDescriptions).filter(
+                        function (k) modules.options.get("sanitizeitems").has(k));
                 }
                 else
                     dactyl.assert(modules.options.get("sanitizeitems").validator(items), "Valid items required");
 
-                if (items[0] == "all")
-                    items = Object.keys(sanitizer.itemDescriptions);
+                if (items.indexOf("all") >= 0)
+                    items = Object.keys(sanitizer.itemDescriptions).filter(function (k) items.indexOf(k) === -1);
 
                 sanitizer.range = range;
                 sanitizer.ignoreTimespan = range.min == null;
@@ -305,9 +306,9 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             "stringlist", "all",
             {
                 completer: function (value) Iterator(sanitizer.itemDescriptions),
+                has: modules.Option.has.toggleAll,
                 validator: function (values) values.length &&
-                    values.every(function (val) set.has(sanitizer.itemDescriptions, val)) &&
-                    (values.length == 1 || !values.some(function (val) val == "all"))
+                    values.every(function (val) val === "all" || set.has(sanitizer.itemDescriptions, val))
             });
 
         options.add(["sanitizetimespan", "sts"],

@@ -797,9 +797,9 @@ const Dactyl = Module("dactyl", {
                                                   : params.where == dactyl.NEW_BACKGROUND_TAB;
 
         if (params.from && dactyl.has("tabs")) {
-            if (!params.where && options.get("newtab").has("all", params.from))
+            if (!params.where && options.get("newtab").has(params.from))
                 where = dactyl.NEW_TAB;
-            background ^= !options.get("activate").has("all", params.from);
+            background ^= !options.get("activate").has(params.from);
         }
 
         if (urls.length == 0)

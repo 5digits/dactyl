@@ -110,7 +110,7 @@ const AutoCommands = Module("autocommands", {
      * @param {Object} args The args to pass to each autocommand.
      */
     trigger: function (event, args) {
-        if (options.get("eventignore").has("all", event))
+        if (options.get("eventignore").has(event))
             return;
 
         let autoCmds = this._store.filter(function (autoCmd) autoCmd.event == event);
@@ -269,7 +269,8 @@ const AutoCommands = Module("autocommands", {
             "List of autocommand event names which should be ignored",
             "stringlist", "",
             {
-                completer: function () Iterator(update({ all: "All Events" }, config.autocommands))
+                completer: function () Iterator(update({ all: "All Events" }, config.autocommands)),
+                has: Option.has.toggleAll
             });
     }
 });

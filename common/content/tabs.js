@@ -784,7 +784,7 @@ const Tabs = Module("tabs", {
                     let tab = tabs.getTab();
 
                     let activate = args.bang ? true : false;
-                    if (options.get("activate").has("tabopen", "all"))
+                    if (options.get("activate").has("tabopen"))
                         activate = !activate;
 
                     for (let i in util.range(0, Math.max(1, args.count)))
@@ -1010,6 +1010,7 @@ const Tabs = Module("tabs", {
 
         if (config.hasTabbrowser) {
             let activateGroups = [
+                ["all", "Activate everything"],
                 ["addons", ":addo[ns] command"],
                 ["bookmarks", "Tabs loaded from bookmarks", "loadBookmarksInBackground"],
                 ["diverted", "Links with targets set to new tabs", "loadDivertedInBackground"],
@@ -1027,6 +1028,7 @@ const Tabs = Module("tabs", {
                 "stringlist", [g[0] for (g in values(activateGroups)) if (!g[2] || !options.getPref("browser.tabs." + g[2]))].join(","),
                 {
                     completer: function (context) activateGroups,
+                    has: Option.has.toggleAll,
                     setter: function (newValues) {
                         let valueSet = set(newValues);
                         for (let group in values(activateGroups))
@@ -1050,7 +1052,8 @@ const Tabs = Module("tabs", {
                         ["help", ":h[elp] command"],
                         ["javascript", ":javascript! or :js! command"],
                         ["prefs", ":pref[erences]! or :prefs! command"]
-                    ]
+                    ],
+                    has: Option.has.toggleAll
                 });
 
             // TODO: Is this really applicable to Melodactyl?
