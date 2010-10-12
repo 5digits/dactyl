@@ -1253,7 +1253,7 @@ const Options = Module("options", {
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
-                let have = set([i.text for (i in context.allItems)]);
+                let have = set([i.text for (i in values(context.allItems.items))]);
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
                 context.maxItems = optcontext.maxItems;
@@ -1261,7 +1261,7 @@ const Options = Module("options", {
                 context.filters.push(function (i) !set.has(have, i.text));
                 completion.optionValue(context, opt.name, opt.operator, null,
                                        function (context) {
-                                           context.generate = function () option.values.map(function (o) [o, ""]);
+                                           context.generate = function () option.value.map(function (o) [o, ""]);
                                        });
                 context.title = ["Current values"];
             }
