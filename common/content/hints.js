@@ -713,8 +713,8 @@ const Hints = Module("hints", {
 
         switch (options["hintmatching"][0]) {
         case "contains"      : return containsMatcher(hintString);
-        case "wordstartswith": return wordStartsWithMatcher(hintString, /*allowWordOverleaping=*/ true);
-        case "firstletters"  : return wordStartsWithMatcher(hintString, /*allowWordOverleaping=*/ false);
+        case "wordstartswith": return wordStartsWithMatcher(hintString, true);
+        case "firstletters"  : return wordStartsWithMatcher(hintString, false);
         case "custom"        : return dactyl.plugins.customHintMatcher(hintString);
         default              : dactyl.echoerr("Invalid hintmatching type: " + hintMatching);
         }
@@ -735,6 +735,7 @@ const Hints = Module("hints", {
      * @optional
      */
     addMode: function (mode, prompt, action, tags) {
+        arguments[1] = UTF8(prompt);
         this._hintModes[mode] = Hints.Mode.apply(Hints.Mode, arguments);
     },
 
