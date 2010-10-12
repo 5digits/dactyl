@@ -637,6 +637,7 @@
             <dt>N</dt>      <dd>Tab number over image</dd>
             <dt>T</dt>      <dd>Toolbar</dd>
             <dt>b</dt>      <dd>Bottom scrollbar</dd>
+            <dt>c</dt>      <dd>Always show messages outside of the status line</dd>
             <dt>l</dt>      <dd>Left scrollbar (<em>l</em> and <em>r</em> are mutually exclusive)</dd>
             <dt>m</dt>      <dd>Menu bar</dd>
             <dt>n</dt>      <dd>Tab number</dd>

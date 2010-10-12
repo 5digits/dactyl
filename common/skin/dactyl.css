@@ -77,6 +77,10 @@
     background: inherit;
     color: inherit;
 }
+[dactyl|highlight~=CmdLine],
+[dactyl|highlight~=CmdLine] > [dactyl|highlight~=CmdLine] {
+    padding: 0px !important;
+}
 
 label[collapsed=true] {
     height: 0px;

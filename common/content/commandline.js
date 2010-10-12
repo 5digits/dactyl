@@ -19,8 +19,12 @@ const CommandWidgets = Class("CommandWidgets", {
         this.addElem({
             name: "commandline",
             getGroup: function () options.get("guioptions").has("C") ? this.commandbar : this.statusbar,
-            getValue: function () this.command,
-            noValue: true,
+            getValue: function () this.command
+        });
+        this.addElem({
+            name: "strut",
+            getGroup: function () this.commandbar,
+            getValue: function () options.get("guioptions").has("c")
         });
         this.addElem({
             name: "command",
@@ -85,7 +89,7 @@ const CommandWidgets = Class("CommandWidgets", {
         memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-" + (obj.id || obj.name)));
         memoize(this.commandbar, obj.name, function () get("dactyl-" + (obj.id || obj.name)));
 
-        if (!obj.noValue)
+        if (!(obj.noValue || obj.getValue))
             Object.defineProperty(this, obj.name, Modes.boundProperty({
                 get: function () {
                     let elem = self.getGroup(obj.name, obj.value)[obj.name];
@@ -543,7 +547,7 @@ const CommandLine = Module("commandline", {
             this.hide();
 
         let field = this.widgets.active.message.inputField;
-        if (!forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth) {
+        if (field.value && !forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth) {
             this.widgets.message = null;
             this._echoMultiline(<span highlight="Message">{str}</span>, highlightGroup);
         }
@@ -658,7 +662,7 @@ const CommandLine = Module("commandline", {
                 this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
                                     this.widgets.message[0]);
 
-            if (action == this._echoLine && !(flags & this.FORCE_MULTILINE) && !this.widgets.mowContainer.collapsed) {
+            if (action === this._echoLine && !(flags & this.FORCE_MULTILINE) && !this.widgets.mowContainer.collapsed) {
                 highlightGroup += " Message";
                 action = this._echoMultiline;
             }

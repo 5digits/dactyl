@@ -83,6 +83,7 @@
         </vbox>
 
         <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" dactyl:highlight="CmdLine CmdCmdLine">
+            <textbox class="plain" id="dactyl-strut"   flex="1" crop="end" collapsed="true"/>
             <textbox class="plain" id="dactyl-mode"    flex="1" crop="end"/>
             <textbox class="plain" id="dactyl-message" flex="1" readonly="true"/>
 
@@ -106,9 +107,13 @@
         <hbox insertbefore="&dactyl.statusBefore;" insertafter="&dactyl.statusAfter;"
               style="background: inherit;" id="&status;container" flex="1" hidden="false" align="center">
             <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
-                <textbox class="plain" id="&status;url"     flex="1" readonly="true" crop="end"/>
-                <label   class="plain" id="&status;mode"    flex="1"                 crop="end" collapsed="true"/>
-                <textbox class="plain" id="&status;message" flex="1" readonly="true" crop="end" collapsed="true" dactyl:highlight="Normal StatusNormal"/>
+                <hbox class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
+                    <label class="plain" id="&status;mode"          crop="end" collapsed="true"/>
+                    <stack flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
+                        <textbox class="plain" id="&status;url"     crop="end" flex="1" readonly="true"/>
+                        <textbox class="plain" id="&status;message" crop="end" flex="1" readonly="true" dactyl:highlight="Normal StatusNormal"/>
+                    </stack>
+                </hbox>
 
                 <hbox id="&status;commandline" hidden="false" class="dactyl-container" dactyl:highlight="Normal StatusNormal" collapsed="true">
                     <label id="&status;commandline-prompt"    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>

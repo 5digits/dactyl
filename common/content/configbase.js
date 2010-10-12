@@ -185,7 +185,7 @@ const ConfigBase = Class(ModuleBase, {
         StatusInfoMsg     color: inherit !important; background: inherit !important;
         LineNr            color: orange  !important; background: white   !important;
         ModeMsg           color: black   !important; background: white   !important;
-        StatusModeMsg     color: inherit !important; background: inherit !important;
+        StatusModeMsg     color: inherit !important; background: inherit !important; padding-right: 1em;
         MoreMsg           color: green   !important; background: white   !important;
         StatusMoreMsg                                background: inherit !important;
         Message           white-space: normal; min-width: 100%; padding-left: 2em; text-indent: -2em; display: block;

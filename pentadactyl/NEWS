@@ -18,13 +18,14 @@
       - Backtracks to the first successful match after pressing
         backspace.
       - Supports reverse incremental search.
+      - Input boxes are not focused when matches are highlighted.
     * Ex command parsing improvements, including:
       - Multiple Ex commands may now be separated by |
       - Commands can continue over multiple lines in RC files by
         prefixing the continuation lines with a \
       - The \ character is no longer treated specially within single
         quotes, i.e., 'fo\o''bar' ⇒ fo\o'bar
-    * Command line is now hidden by default. Added C and M to
+    * Command line is now hidden by default. Added c, C, and M to
       'guioptions'.
     * Hint mode improvements, including:
       - Added g; continued extended hint mode, which allows

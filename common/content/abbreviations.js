@@ -15,9 +15,7 @@ const Abbreviation = Class("Abbreviation", {
         this.rhs = rhs;
     },
 
-    equals: function (other) {
-        return this.lhs == other.lhs && this.rhs == other.rhs;
-    },
+    equals: function (other) this.lhs == other.lhs && this.rhs == other.rhs,
 
     expand: function (editor) String(callable(this.rhs) ? this.rhs(editor) : this.rhs),
 
