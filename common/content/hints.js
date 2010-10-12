@@ -259,14 +259,32 @@ const Hints = Module("hints", {
      * @param {Window} win The window for which to generate hints.
      * @default window.content
      */
-    _generate: function _generate(win) {
+    _generate: function _generate(win, offsets) {
         if (!win)
             win = this._top;
 
         let doc = win.document;
-        let height = win.innerHeight;
-        let width  = win.innerWidth;
+        if (!doc.body && !doc.document)
+            return;
+
         let [offsetX, offsetY] = this._getContainerOffsets(doc);
+
+        offsets = offsets || { left: 0, right: 0, top: 0, bottom: 0 };
+        offsets.right  = win.innerWidth  - offsets.right;
+        offsets.bottom = win.innerHeight - offsets.bottom;
+
+        function isVisible(elem) {
+            let rect = elem.getBoundingClientRect();
+            if (!rect || !rect.width || !rect.height ||
+                rect.top > offsets.bottom || rect.bottom < offsets.top ||
+                rect.left > offsets.right || rect.right < offsets.left)
+                return false;
+
+            let computedStyle = doc.defaultView.getComputedStyle(elem, null);
+            if (computedStyle.visibility != "visible" || computedStyle.display == "none")
+                return false;
+            return true;
+        }
 
         let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint"/>, doc);
 
@@ -277,13 +295,7 @@ const Hints = Module("hints", {
         for (let elem in res) {
             let hint = { elem: elem, showText: false };
 
-            // TODO: for iframes, this calculation is wrong
-            let rect = elem.getBoundingClientRect();
-            if (!rect || !rect.width || !rect.height || rect.top > height || rect.bottom < 0 || rect.left > width || rect.right < 0)
-                continue;
-
-            let computedStyle = doc.defaultView.getComputedStyle(elem, null);
-            if (computedStyle.visibility != "visible" || computedStyle.display == "none")
+            if (!isVisible(elem))
                 continue;
 
             if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
@@ -293,7 +305,7 @@ const Hints = Module("hints", {
 
             hint.span = baseNodeAbsolute.cloneNode(true);
 
-            rect = elem.getClientRects()[0] || rect;
+            let rect = elem.getClientRects()[0] || elem.getBoundingClientRect();
             let leftPos = Math.max((rect.left + offsetX), offsetX);
             let topPos  = Math.max((rect.top + offsetY), offsetY);
 
@@ -313,8 +325,17 @@ const Hints = Module("hints", {
             this._docs.push({ doc: doc, start: start, end: this._pageHints.length - 1 });
         }
 
-        // also _generate hints for frames
-        Array.forEach(win.frames, this.closure._generate);
+        Array.forEach(win.frames, function (f) {
+            if (isVisible(f.frameElement)) {
+                let rect = f.frameElement.getBoundingClientRect();
+                this._generate(f, {
+                    left: Math.max(offsets.left - rect.left, 0),
+                    right: Math.max(rect.right - offsets.right, 0),
+                    top: Math.max(offsets.top - rect.top, 0),
+                    bottom: Math.max(rect.bottom - offsets.bottom, 0)
+                });
+            }
+        }, this);
 
         return true;
     },
