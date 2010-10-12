@@ -73,7 +73,7 @@
     <dt>Items</dt><dd/>
     <dt>item</dt>       <dd>A help entry (HelpItem)</dd>
     <dt>&tab;tags</dt>  <dd>See the 'Tagging' section (HelpTags)</dd>
-    <dt>&tab;spec</dt>  <dd>The specification for this item, such as an example command-line. (HelpSpec)</dd>
+    <dt>&tab;spec</dt>  <dd>The specification for this item, such as an example command line. (HelpSpec)</dd>
     <dt>&tab;strut</dt> <dd>A horizontal formatting strut which ensures that all previous &lt;tags> and &lt;spec> elements appear above the ones that follow.</dd>
     <dt>&tab;type</dt>  <dd>For options, the type of the option.
                             <em>number</em>, <em>boolean</em>, <em>string</em>, <em>stringlist</em>, or <em>charlist</em>.

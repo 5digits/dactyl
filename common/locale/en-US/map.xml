@@ -40,7 +40,7 @@
 <p>
     causes “<ex>:echo Date()<k name="CR"/></ex>” to be typed out
     whenever <k name="F2"/> is pressed, thus echoing the full date
-    to the command-line.
+    to the command line.
 </p>
 
 <p tag=":map-modes">
@@ -117,7 +117,7 @@
     <dt>-javascript</dt> <dd>Execute <a>rhs</a> as JavaScript rather than keys (short names <em>-js</em>, <em>-j</em>)</dd>
     <dt>-modes</dt> <dd>Create this mapping in the given modes (short names <em>-mode</em>, <em>-m</em>)</dd>
     <dt>-nopersist</dt> <dd>Do not save this mapping to an auto-generated rc file (short name <em>-n</em>)</dd>
-    <dt>-silent</dt> <dd>Do not echo any generated keys to the command-line (short name <em>-s</em>, also <em>&lt;silent></em> for Vim compatibility)</dd>
+    <dt>-silent</dt> <dd>Do not echo any generated keys to the command line (short name <em>-s</em>, also <em>&lt;silent></em> for Vim compatibility)</dd>
 </dl>
 
 <item>
@@ -520,7 +520,7 @@
 <p>
     Defining new commands is perhaps the most straightforward way of
     repeating commonly used actions. User-defined commands may be
-    entered from the command-line or scripts exactly like standard
+    entered from the command line or scripts exactly like standard
     commands, and may similarly accept arguments, options, counts,
     and <oa>!</oa>s, as well as provide command-line completion.
     These commands may be defined as either ordinary,

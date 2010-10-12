@@ -15,11 +15,11 @@
     Much of the power of &dactyl.appName; lies in its scriptable expression
     evaluation. &dactyl.appName; understands two kinds of expressions: Ex
     commands, and JavaScript. Ex commands are simple, easy to type, and
-    readily accessible from the <t>command-line</t>. They form a core part of
-    the user interface. JavaScript, on the other hand, is much less
-    straightforward, but allows for any number of complex actions to be
-    executed, with full access to all of the internals of &dactyl.appName; and
-    &dactyl.host;. Both expression evaluation methods support sophisticated
+    readily accessible from the <link topic="command-line">command line</link>.
+    They form a core part of the user interface. JavaScript, on the other hand,
+    is much less straightforward, but allows for any number of complex actions
+    to be executed, with full access to all of the internals of &dactyl.appName;
+    and &dactyl.host;. Both expression evaluation methods support sophisticated
     expression completion, including option lists and descriptions thereof,
     along with paren matching and syntax error highlighting.
 </p>
@@ -33,7 +33,7 @@
             string, in which case it is shown in the statusline, or any
             arbitrary JavaScript expression. If the expression results in
             anything other than a string, it is pretty-printed in a multiline
-            frame just above the command-line. The output depends on the type
+            frame just above the command line. The output depends on the type
             of object. Functions display their source, DOM nodes display the
             pretty-printed XML of the top-level node, XML literals are
             rendered as page content, and all other objects display their

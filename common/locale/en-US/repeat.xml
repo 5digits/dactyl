@@ -162,11 +162,11 @@
 
         <p>
             Ex command files are executed as if each line were entered into
-            the <t>command-line</t> individually. Additionally, certain
-            commands support the same ‘here document’ syntax supported by most
-            Unix shells and by the <t>command-line</t>. So, to execute a
-            JavaScript statement which does not comfortably fit on a single
-            line, you can use,
+            the <link topic="command-line">command line</link> individually.
+            Additionally, certain commands support the same ‘here document’
+            syntax supported by most Unix shells and by the <link topic="command-line">command line</link>.
+            So, to execute a JavaScript statement which does not comfortably fit
+            on a single line, you can use
         </p>
 
         <code><ex>:js</ex> &lt;&lt;<em>EOF</em>

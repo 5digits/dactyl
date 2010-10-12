@@ -45,7 +45,7 @@
     </description>
 </item>
 
-<h2 tag="cmdline-editing">Command-line editing</h2>
+<h2 tag="cmdline-editing">Command line editing</h2>
 
 <item>
     <tags><![CDATA[c_<C-c>]]></tags>
@@ -69,7 +69,7 @@
     <spec>&lt;Up></spec>
     <description>
         <p>
-            Recall from command history the previous command-line
+            Recall from command history the previous command line
             which begins with the current input value.
         </p>
     </description>
@@ -81,7 +81,7 @@
     <spec>&lt;Down></spec>
     <description>
         <p>
-            Recall from command history the next command-line
+            Recall from command history the next command line
             which begins with the current input value.
         </p>
     </description>
@@ -215,7 +215,7 @@
     </description>
 </item>
 
-<h3 tag="cmdline-arguments">Ex command-line arguments</h3>
+<h3 tag="cmdline-arguments">Ex command line arguments</h3>
 
 <p>
     Most Ex commands accept a number of options and arguments. Arguments and
