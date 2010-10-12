@@ -273,7 +273,7 @@ const CompletionContext = Class("CompletionContext", {
     get completions() this._completions || [],
     set completions(items) {
         // Accept a generator
-        if (!(isArray(items) || isArray(items.__proto__)))
+        if (items && !(isArray(items) || isArray(items.__proto__)))
             items = [x for (x in Iterator(items || []))];
         if (this._completions !== items) {
             delete this.cache.filtered;
@@ -892,7 +892,7 @@ const Completion = Module("completion", {
             "Items which are completed at the :open prompts",
             "charlist", typeof(config.defaults["complete"]) == "string" ? config.defaults["complete"] : "slf",
             {
-                completer: function (context) array(values(completion.urlCompleters))
+                completer: function (context) values(completion.urlCompleters)
             });
 
         options.add(["wildanchor", "wia"],

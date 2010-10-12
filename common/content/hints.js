@@ -1122,7 +1122,7 @@ const Hints = Module("hints", {
         options.add(["followhints", "fh"],
             // FIXME: this description isn't very clear but I can't think of a
             // better one right now.
-            "Change the behaviour of <Return> in hint mode",
+            "Change the behavior of <Return> in hint mode",
             "number", 0,
             {
                 completer: function () [
@@ -1141,7 +1141,7 @@ const Hints = Module("hints", {
                     ["wordstartswith", "The typed characters are split on whitespace. The resulting groups must all match the beginings of words, in order."],
                     ["firstletters",   "Behaves like wordstartswith, but all groups much match a sequence of words."],
                     ["custom",         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)"],
-                    ["transliterated", UTF8("When true, special latin characters are translated to their ascii equivalent (e.g., é -> e)")]
+                    ["transliterated", UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")]
                 ]
             });
 
