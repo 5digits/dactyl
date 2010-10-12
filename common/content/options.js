@@ -8,6 +8,8 @@
 
 /** @scope modules */
 
+let ValueError = Class("ValueError", Error);
+
 // do NOT create instances of this class yourself, use the helper method
 // options.add() instead
 /**
@@ -227,6 +229,8 @@ const Option = Class("Option", {
                 return this.invalidArgument(str || this.stringify(values), operator);
         }
         catch (e) {
+            if (!(e instanceof ValueError))
+                dactyl.reportError(e);
             return this.invalidArgument(str || this.stringify(values), operator) + ": " + e.message;
         }
 
@@ -563,7 +567,7 @@ const Option = Class("Option", {
     validIf: function (test, error) {
         if (test)
             return true;
-        throw Error(error);
+        throw ValueError(error);
     },
 
     // TODO: Run this by default?

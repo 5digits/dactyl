@@ -597,8 +597,12 @@ const CompletionContext = Class("CompletionContext", {
 
         if (!context.autoComplete && !context.tabPressed && context.editor)
             context.waitingForTab = true;
-        else if (completer)
-            return completer.apply(self || this, [context].concat(Array.slice(arguments, fork.length)));
+        else if (completer) {
+            let res = completer.apply(self || this, [context].concat(Array.slice(arguments, fork.length)));
+            if (res && !isArray(res) && !isArray(res.__proto__))
+                return [k for (k in res)];
+            return res;
+        }
         if (completer)
             return null;
         return context;
