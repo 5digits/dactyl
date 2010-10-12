@@ -426,6 +426,7 @@ const Commands = Module("commands", {
      */
     execute: function (string, tokens, silent, args, sourcing) {
         io.withSavedValues(["readHeredoc", "sourcing"], function () {
+            sourcing = sourcing || { file: "[Command Line]", line: 1 };
             this.sourcing = update({}, sourcing);
 
             args = update({ setFrom: this.sourcing.file }, args || {});
@@ -460,9 +461,13 @@ const Commands = Module("commands", {
                     dactyl.execute(line, args);
                 }
                 catch (e) {
-                    if (!silent) {
-                        dactyl.echoerr("Error detected while processing " + this.sourcing.file);
-                        dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                    if (!silent || silent === "loud") {
+                        if (silent !== "loud")
+                            e.message = this.sourcing.file + ":" + this.sourcing.line + ": " + e.message;
+                        else {
+                            dactyl.echoerr("Error detected while processing " + this.sourcing.file);
+                            dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                        }
                         dactyl.reportError(e, true);
                     }
                 }

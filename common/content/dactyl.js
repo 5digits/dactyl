@@ -2013,7 +2013,7 @@ const Dactyl = Module("dactyl", {
                     if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
                         let localRCFile = io.getRCFile(io.cwd);
                         if (localRCFile && !localRCFile.equals(rcFile))
-                            io.source(localRCFile.path, true);
+                            io.source(localRCFile.path, false);
                     }
                 }
 
