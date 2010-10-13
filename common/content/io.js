@@ -731,7 +731,7 @@ lookup:
         }
 
         options.add(["banghist", "bh"],
-            "Replace occurences of ! with the previous command when executing external commands",
+            "Replace occurrences of ! with the previous command when executing external commands",
             "boolean", true);
 
         options.add(["fileencoding", "fenc"],

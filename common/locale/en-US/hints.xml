@@ -31,7 +31,7 @@
     <description>
         <p>
             Start <t>QuickHint</t> mode. In this mode, every clickable
-            element (as definied by the <o>hinttags</o> option) is
+            element (as defined by the <o>hinttags</o> option) is
             highlighted and numbered.  Elements can be selected
             either by typing their number, or by typing part of
             their text to narrow down the result. When an element

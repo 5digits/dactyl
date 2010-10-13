@@ -101,7 +101,7 @@
     <tags>*</tags>
     <spec>*</spec>
     <description short="true">
-        <p>Search forward for the next occurence of the word under cursor.</p>
+        <p>Search forward for the next occurrence of the word under cursor.</p>
     </description>
 </item>
 
@@ -109,7 +109,7 @@
     <tags>#</tags>
     <spec>#</spec>
     <description short="true">
-        <p>Search backward for the previous occurence of the word under cursor.</p>
+        <p>Search backward for the previous occurrence of the word under cursor.</p>
     </description>
 </item>
 
