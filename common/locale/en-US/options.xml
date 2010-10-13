@@ -255,7 +255,7 @@
 <p tag="expand-environment-var expand-env :set_env">
     Environment variables are expanded for path options like <o>cdpath</o> and
     <o>runtimepath</o>. The variable notation is <em>$VAR</em> (terminated by a non-word
-    character) or <em>$<a>VAR</a></em>. <em>%VAR%</em> is also supported on Windows.
+    character) or <em>${VAR}</em>. <em>%VAR%</em> is also supported on Windows.
 </p>
 
 <h2 tag="&dactyl.host;-options preferences">Setting &dactyl.host; options</h2>
