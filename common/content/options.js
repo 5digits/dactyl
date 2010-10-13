@@ -1359,7 +1359,7 @@ const Options = Module("options", {
                         {
                             command: this.name,
                             literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
-                                                               : opt.name + "=" + opt.value]
+                                                               : opt.name + "=" + opt.stringify(opt.value)]
                         }
                         for (opt in options)
                         if (!opt.getter && opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
