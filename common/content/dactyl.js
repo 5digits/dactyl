@@ -1445,6 +1445,8 @@ const Dactyl = Module("dactyl", {
 
         const updateAddons = Class("UpgradeListener", {
             init: function init(addons) {
+                dactyl.assert(!addons.length || addons[0].findUpdates,
+                              "Not available on " + config.host + " " + services.get("runtime").version);
                 this.remaining = addons;
                 this.upgrade = [];
                 dactyl.echomsg("Checking updates for addons: " + addons.map(function (a) a.name).join(", "));
