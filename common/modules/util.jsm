@@ -860,7 +860,7 @@ const Util = Module("Util", {
             cont = false;
             str = str.replace(resep, function (match, before) {
                 results.push(before);
-                cont = true;
+                cont = match !== "";
                 return "";
             });
         }
