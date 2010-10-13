@@ -1362,7 +1362,7 @@ const Options = Module("options", {
                                                                : opt.name + "=" + opt.stringify(opt.value)]
                         }
                         for (opt in options)
-                        if (!opt.getter && opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
+                        if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
                     ]
                 }
             }
