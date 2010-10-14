@@ -1245,8 +1245,10 @@ const Commands = Module("commands", {
         commands.add(["y[ank]"],
             "Yanks the output of the given command to the clipboard",
             function (args) {
-                dactyl.clipboardWrite(
-                    commandline.withOutputToString(commands.execute, commands, args[0]));
+                let res = commandline.withOutputToString(commands.execute, commands, args[0]);
+                dactyl.clipboardWrite(res);
+                let lines = res.split("\n").length;
+                dactyl.echomsg("Yanked " + lines + " line" + (lines == 1 ? "" : "s"));
             },
             {
                 completer: function (context) completion.ex(context),
