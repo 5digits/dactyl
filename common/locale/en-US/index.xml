@@ -401,6 +401,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>private</o></dt> <dd>Set the 'private browsing' option</dd>
     <dt><o>runtimepath</o></dt> <dd>List of directories searched for runtime files</dd>
     <dt><o>sanitizeitems</o></dt> <dd>The default list of private items to sanitize</dd>
+    <dt><o>sanitizeshutdown</o></dt> <dd>The items to sanitize automatically at shutdown</dd>
     <dt><o>sanitizetimespan</o></dt> <dd>The default sanitizer time span</dd>
     <dt><o>scroll</o></dt> <dd>Number of lines to scroll with <k name="C-u"/> and <k name="C-d"/> commands</dd>
     <dt><o>shell</o></dt> <dd>Shell to use for executing <ex>:!</ex> and <ex>:run</ex> commands</dd>
