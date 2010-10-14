@@ -1,12 +1,13 @@
 // Copyright (c) 2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 // Copyright (c) 2009 by Prathyush Thota <prathyushthota@gmail.com>
-// Copyright (c) 2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2009-2010 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2009-2010 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-Components.utils.import("resource://gre/modules/utils.js"); // XXX
+Components.utils.import("resource://gre/modules/utils.js"); // XXX: PlacesUtils
 
 const Config = Module("config", ConfigBase, {
     init: function init() {
@@ -103,12 +104,14 @@ const Config = Module("config", ConfigBase, {
             function () { SBSubscribe(); }]
     },
 
-    focusChange: function () {
+    // TODO: clean this up
+    focusChange: function (win) {
         // Switch to -- PLAYER -- mode for Songbird Media Player.
         if (config.isPlayerWindow)
-            dactyl.mode = modes.PLAYER;
+            modes.set(modes.PLAYER);
         else
-            dactyl.mode = modes.NORMAL;
+            if (modes.main == modes.PLAYER)
+                modes.pop();
     },
 
     hasTabbrowser: true,
@@ -268,6 +271,7 @@ const Config = Module("config", ConfigBase, {
             "<Up>": modes.NORMAL | modes.INSERT,
             "<Down>": modes.NORMAL | modes.INSERT
         };
+        config.modes.forEach(function (mode) { modes.addMode.apply(modes, mode); }); // XXX
     },
     options: function () {
         // TODO: SB doesn't explicitly support an offline mode. Should we? --djk
