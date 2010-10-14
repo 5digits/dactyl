@@ -291,7 +291,7 @@ const Buffer = Module("buffer", {
             setOverLink.superapply(this, arguments);
             switch (options["showstatuslinks"]) {
             case 1:
-                statusline.updateUrl(link && "Link: " + link);
+                statusline.updateUrl(link ? "Link: " + link : null);
                 break;
             case 2:
                 if (link)
