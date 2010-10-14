@@ -10,6 +10,7 @@ BUGS:
   - command-line option handling is broken in Melodactyl only - it used to work.
 
 FEATURES:
+9 Bookmarks are now only supported in SB via an addon.
 9 '?' - Reusing '/'.
 8 Merge with SongBird's sanitizer implementation.
 8 Playlist/SmartPlaylist operations & meta-data operations.

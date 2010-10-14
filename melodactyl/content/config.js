@@ -66,7 +66,6 @@ const Config = Module("config", ConfigBase, {
         Leave: "Triggered before exiting Songbird",
     },
 
-    // TODO: remove those which don't make sense, can't be provided.
     dialogs: {
         about: ["About Songbird",
             function () { window.openDialog("chrome://songbird/content/xul/about.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
@@ -84,16 +83,12 @@ const Config = Module("config", ConfigBase, {
             function () { try { window.inspectDOMDocument(content.document); } catch (e) { dactyl.echoerr("DOM Inspector extension not installed"); } }],
         downloads: ["Manage Downloads",
             function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
-        jumpto: ["Jump to a media item",
-            function () { onJumpToFileKey(); }],
         newsmartplaylist: ["Open the file selector dialog",
             function () { SBNewSmartPlaylist(); }],
         openfile: ["Open the file selector dialog",
             function () { SBFileOpen(); }],
         pagesource: ["View page source",
             function () { window.BrowserViewSourceOfDocument(content.document); }],
-        places: ["Places Organizer: Manage your bookmarks and history",
-            function () { PlacesCommandHook.showPlacesOrganizer(ORGANIZER_ROOT_BOOKMARKS); }],
         preferences: ["Show Songbird preferences dialog",
             function () { window.openPreferences(); }],
         printsetup: ["Setup the page size and orientation before printing",
