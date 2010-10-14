@@ -842,7 +842,7 @@ const Options = Module("options", {
                             },
                             { promptHighlight: "WarningMsg" });
                     else if (name == "all")
-                        command.commandOutput(prefs.list(onlyNonDefault, ""));
+                        commandline.commandOutput(prefs.list(onlyNonDefault, ""));
                     else if (reset)
                         prefs.reset(name);
                     else if (invertBoolean)
@@ -859,7 +859,7 @@ const Options = Module("options", {
                         prefs.set(name, value);
                     }
                     else
-                        command.commandOutput(prefs.list(onlyNonDefault, ""));
+                        commandline.commandOutput(prefs.list(onlyNonDefault, name));
                     return;
                 }
 
