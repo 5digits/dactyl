@@ -41,7 +41,7 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
         .map(function (s) bookmarks[s]),
 
     _deleteBookmark: function deleteBookmark(id) {
-        let result = this.bookmarks[item.id] || null;
+        let result = this.bookmarks[id] || null;
         delete this.bookmarks[id];
         return result;
     },

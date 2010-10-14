@@ -1175,6 +1175,16 @@
 </item>
 
 <item>
+    <tags>'sanitizeshutdown' 'ss'</tags>
+    <spec>'sanitizeshutdown'</spec>
+    <type>stringlist</type>
+    <default/>
+    <description>
+        <p>The items to sanitize automatically at shutdown.</p>
+    </description>
+</item>
+
+<item>
     <tags>'sts' 'sanitizetimespan'</tags>
     <spec>'sanitizetimespan' 'sts'</spec>
     <strut/>

@@ -11,8 +11,6 @@ defineModule("storage", {
     require: ["services", "util"]
 });
 
-var prefService = services.get("pref").getBranch("extensions.dactyl.datastore.");
-
 const win32 = /^win(32|nt)$/i.test(services.get("runtime").OS);
 
 function getFile(name) {
@@ -21,38 +19,19 @@ function getFile(name) {
     return File(file);
 }
 
-function getCharPref(name) {
+function loadData(name, store, type) {
     try {
-        return prefService.getComplexValue(name, Ci.nsISupportsString).data;
-    }
-    catch (e) {}
-}
-
-function setCharPref(name, value) {
-    var str = Cc['@mozilla.org/supports-string;1'].createInstance(Ci.nsISupportsString);
-    str.data = value;
-    return prefService.setComplexValue(name, Ci.nsISupportsString, str);
-}
-
-function loadPref(name, store, type) {
-    try {
-        if (store)
-            var pref = getCharPref(name);
-        if (!pref && storage.infoPath)
+        if (storage.infoPath)
             var file = getFile(name).read();
-        if (pref || file)
-            var result = services.get("json").decode(pref || file);
-        if (pref) {
-            prefService.clearUserPref(name);
-            savePref({ name: name, store: true, serial: pref });
-        }
+        if (file)
+            var result = services.get("json").decode(file);
         if (result instanceof type)
             return result;
     }
     catch (e) {}
 }
 
-function savePref(obj) {
+function saveData(obj) {
     if (obj.privateData && storage.privateMode)
         return;
     if (obj.store && storage.infoPath)
@@ -78,7 +57,7 @@ const StoreBase = Class("StoreBase", {
         this._object = this._load() || this._constructor();
         this.fireEvent("change", null);
     },
-    save: function () { savePref(this); },
+    save: function () { saveData(this); },
 });
 
 const ArrayStore = Class("ArrayStore", StoreBase, {
@@ -175,7 +154,7 @@ const Storage = Module("Storage", {
         if (!(key in keys) || params.reload || this.alwaysReload[key]) {
             if (key in this && !(params.reload || this.alwaysReload[key]))
                 throw Error();
-            let load = function () loadPref(key, params.store, params.type || myObject);
+            let load = function () loadData(key, params.store, params.type || myObject);
             keys[key] = new constructor(key, params.store, load, params);
             keys[key].timer = new Timer(1000, 10000, function () storage.save(key));
             this.__defineGetter__(key, function () keys[key]);
@@ -243,12 +222,12 @@ const Storage = Module("Storage", {
     },
 
     save: function save(key) {
-        savePref(keys[key]);
+        saveData(keys[key]);
     },
 
     saveAll: function storeAll() {
         for each (let obj in keys)
-            savePref(obj);
+            saveData(obj);
     },
 
     _privateMode: false,

@@ -993,8 +993,8 @@ const Tabs = Module("tabs", {
                     if (value == 0)
                         tabs.tabStyle.enabled = true;
                     else {
-                        options.safeSetPref("browser.tabs.autoHide", value == 1,
-                                            "See 'showtabline' option.");
+                        prefs.safeSet("browser.tabs.autoHide", value == 1,
+                                      "See 'showtabline' option.");
                         tabs.tabStyle.enabled = false;
                     }
 
@@ -1025,7 +1025,7 @@ const Tabs = Module("tabs", {
             ];
             options.add(["activate", "act"],
                 "Define when tabs are automatically activated",
-                "stringlist", [g[0] for (g in values(activateGroups.slice(1))) if (!g[2] || !options.getPref("browser.tabs." + g[2]))].join(","),
+                "stringlist", [g[0] for (g in values(activateGroups.slice(1))) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
                 {
                     completer: function (context) activateGroups,
                     has: Option.has.toggleAll,
@@ -1033,9 +1033,9 @@ const Tabs = Module("tabs", {
                         let valueSet = set(newValues);
                         for (let group in values(activateGroups))
                             if (group[2])
-                                options.safeSetPref("browser.tabs." + group[2],
-                                                    !(valueSet["all"] ^ valueSet[group[0]]),
-                                                    "See the 'activate' option");
+                                prefs.safeSet("browser.tabs." + group[2],
+                                              !(valueSet["all"] ^ valueSet[group[0]]),
+                                              "See the 'activate' option");
                         return newValues;
                     }
                 });
@@ -1072,10 +1072,10 @@ const Tabs = Module("tabs", {
                                 restriction = 2;
                         }
 
-                        options.safeSetPref("browser.link.open_newwindow", open,
-                                            "See 'popups' option.");
-                        options.safeSetPref("browser.link.open_newwindow.restriction", restriction,
-                                            "See 'popups' option.");
+                        prefs.safeSet("browser.link.open_newwindow", open,
+                                      "See 'popups' option.");
+                        prefs.safeSet("browser.link.open_newwindow.restriction", restriction,
+                                      "See 'popups' option.");
                         return values;
                     },
                     completer: function (context) [

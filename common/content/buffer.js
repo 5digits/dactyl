@@ -289,19 +289,16 @@ const Buffer = Module("buffer", {
         },
         setOverLink: function setOverLink(link, b) {
             setOverLink.superapply(this, arguments);
-            let ssli = options["showstatuslinks"];
-            if (link && ssli) {
-                if (ssli == 1)
-                    statusline.updateUrl("Link: " + link);
-                else if (ssli == 2)
+            switch (options["showstatuslinks"]) {
+            case 1:
+                statusline.updateUrl(link && "Link: " + link);
+                break;
+            case 2:
+                if (link)
                     dactyl.echo("Link: " + link, commandline.DISALLOW_MULTILINE);
-            }
-
-            if (link == "") {
-                if (ssli == 1)
-                    statusline.updateUrl();
-                else if (ssli == 2)
+                else
                     commandline.clear();
+                break;
             }
         },
     }),
@@ -644,8 +641,8 @@ const Buffer = Module("buffer", {
 
         buffer.focusElement(elem);
 
-        options.withContext(function () {
-            options.setPref("browser.tabs.loadInBackground", true);
+        prefs.withContext(function () {
+            prefs.set("browser.tabs.loadInBackground", true);
             ["mousedown", "mouseup", "click"].forEach(function (event) {
                 elem.dispatchEvent(events.create(doc, event, {
                     screenX: offsetX, screenY: offsetY,
@@ -690,7 +687,7 @@ const Buffer = Module("buffer", {
         try {
             window.urlSecurityCheck(url, doc.nodePrincipal);
             // we always want to save that link relative to the current working directory
-            options.setPref("browser.download.lastDir", io.cwd);
+            prefs.set("browser.download.lastDir", io.cwd);
             window.saveURL(url, text, null, true, skipPrompt, makeURI(url, doc.characterSet));
         }
         catch (e) {
@@ -1262,17 +1259,17 @@ const Buffer = Module("buffer", {
                 dactyl.assert(!arg || arg[0] == ">" && !dactyl.has("WINNT"),
                     "E488: Trailing characters");
 
-                options.withContext(function () {
+                prefs.withContext(function () {
                     if (arg) {
-                        options.setPref("print.print_to_file", "true");
-                        options.setPref("print.print_to_filename", io.File(arg.substr(1)).path);
+                        prefs.set("print.print_to_file", "true");
+                        prefs.set("print.print_to_filename", io.File(arg.substr(1)).path);
                         dactyl.echomsg("Printing to file: " + arg.substr(1));
                     }
                     else
                         dactyl.echomsg("Sending to printer...");
 
-                    options.setPref("print.always_print_silent", args.bang);
-                    options.setPref("print.show_print_progress", !args.bang);
+                    prefs.set("print.always_print_silent", args.bang);
+                    prefs.set("print.show_print_progress", !args.bang);
 
                     config.browser.contentWindow.print();
                 });
@@ -1371,7 +1368,7 @@ const Buffer = Module("buffer", {
                 // if browser.download.useDownloadDir = false then the "Save As"
                 // dialog is used with this as the default directory
                 // TODO: if we're going to do this shouldn't it be done in setCWD or the value restored?
-                options.setPref("browser.download.lastDir", io.cwd);
+                prefs.set("browser.download.lastDir", io.cwd);
 
                 try {
                     var contentDisposition = window.content

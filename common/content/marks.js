@@ -288,6 +288,8 @@ const Marks = Module("marks", {
     sanitizer: function () {
         sanitizer.addItem("marks", {
             description: "Local and URL marks",
+            persistent: true,
+            contains: ["history"],
             action: function (timespan, host) {
                 function matchhost(url) !host || util.isDomainURL(url, host);
                 function match(marks) (k for ([k, v] in Iterator(marks)) if (timespan.contains(v.timestamp) && matchhost(v.location)));

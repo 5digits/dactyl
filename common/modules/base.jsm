@@ -129,7 +129,11 @@ defineModule.modules = [];
 defineModule.times = { all: 0 };
 defineModule.time = function time(major, minor, func, self) {
     let time = Date.now();
-    let res = func.apply(self, Array.slice(arguments, 4));
+    try {
+        var res = func.apply(self, Array.slice(arguments, 4));
+    } catch (e) {
+        loaded.util && util.reportError(e);
+    }
     let delta = Date.now() - time;
     defineModule.times.all += delta;
     defineModule.times[major] = (defineModule.times[major] || 0) + delta;
@@ -157,7 +161,7 @@ function require(obj, name, from) {
         if (loaded.util)
             util.reportError(e);
         else
-            defineModule.dump("    " + e.fileName + ":" + e.lineNumber + ": " + e +"\n");
+            defineModule.dump("    " + (e.filename || e.fileName) + ":" + e.lineNumber + ": " + e +"\n");
     }
 }
 
@@ -169,7 +173,8 @@ defineModule("base", {
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "endModule", "forEach", "isArray", "isGenerator", "isinstance",
         "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
-        "memoize", "properties", "requiresMainThread", "set", "update", "values"
+        "memoize", "properties", "requiresMainThread", "set", "update", "values",
+        "withCallerGlobal"
     ],
     use: ["services", "util"]
 });
@@ -217,7 +222,7 @@ function properties(obj, prototypes, debugger_) {
 
     for (; obj; obj = prototypes && prototype(obj)) {
         try {
-            if (!debugger_ || !services.get("debugger").isOn)
+            if (sandbox.Object.getOwnPropertyNames || !debugger_ || !services.get("debugger").isOn)
                 var iter = values(Object.getOwnPropertyNames(obj));
         }
         catch (e) {}
@@ -588,6 +593,21 @@ function requiresMainThread(callback)
             mainThread.dispatch(Runnable(this, callback, arguments), mainThread.DISPATCH_NORMAL);
     }
 
+let sandbox = Cu.Sandbox(this);
+sandbox.__proto__ = this;
+/**
+ * Wraps a function so that when called, the global object of the caller
+ * is prepended to its arguments.
+ */
+// Hack to get around lack of access to caller in strict mode.
+const withCallerGlobal = Cu.evalInSandbox(<![CDATA[
+    (function withCallerGlobal(fn)
+        function withCallerGlobal_wrapped()
+            fn.apply(this,
+                     [Class.objectGlobal(withCallerGlobal_wrapped.caller)]
+                        .concat(Array.slice(arguments))))
+]]>, Cu.Sandbox(this), "1.8");
+
 /**
  * Updates an object with the properties of another object. Getters
  * and setters are copied as expected. Moreover, any function
@@ -894,6 +914,8 @@ let StructBase = Class("StructBase", Array, {
     },
 
     clone: function clone() this.constructor.apply(null, this.slice()),
+
+    toString: function () Class.prototype.toString.apply(this, arguments),
 
     // Iterator over our named members
     __iterator__: function () {

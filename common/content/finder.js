@@ -200,9 +200,9 @@ const RangeFinder = Module("rangefinder", {
 
     },
     options: function () {
-        // options.safeSetPref("accessibility.typeaheadfind.autostart", false);
+        // prefs.safeSet("accessibility.typeaheadfind.autostart", false);
         // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
-        options.safeSetPref("accessibility.typeaheadfind", false);
+        prefs.safeSet("accessibility.typeaheadfind", false);
 
         options.add(["hlsearch", "hls"],
             "Highlight previous search pattern matches",

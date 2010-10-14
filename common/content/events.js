@@ -756,7 +756,7 @@ const Events = Module("events", {
                 dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
                 return killEvent();
             }
-            else if (!mappings.hasMap(mode, this._input.buffer + key))
+            else if (!mappings.hasMap(modes.main, this._input.buffer + key))
                 this._macros.set(this._currentMacro, {
                     keys: this._macros.get(this._currentMacro, {}).keys + key,
                     timeRecorded: Date.now()
@@ -1087,6 +1087,7 @@ const Events = Module("events", {
     sanitizer: function () {
         sanitizer.addItem("macros", {
             description: "Saved macros",
+            persistent: true,
             action: function (timespan, host) {
                 if (!host)
                     for (let [k, m] in events._macros)

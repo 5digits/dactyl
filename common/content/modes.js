@@ -54,8 +54,8 @@ const Modes = Module("modes", {
         this.addMode("COMMAND_LINE", { char: "c", input: true,
             display: function () modes.extended & modes.OUTPUT_MULTILINE ? null : this.disp });
         this.addMode("CARET", {}, {
-            get pref()    options.getPref("accessibility.browsewithcaret"),
-            set pref(val) options.setPref("accessibility.browsewithcaret", val),
+            get pref()    prefs.get("accessibility.browsewithcaret"),
+            set pref(val) prefs.set("accessibility.browsewithcaret", val),
             enter: function (stack) {
                 if (stack.pop && !this.pref)
                     modes.pop();
@@ -88,8 +88,8 @@ const Modes = Module("modes", {
 
         this.push(this.NORMAL, 0, {
             enter: function (stack, prev) {
-                if (options.getPref("accessibility.browsewithcaret"))
-                    options.setPref("accessibility.browsewithcaret", false);
+                if (prefs.get("accessibility.browsewithcaret"))
+                    prefs.set("accessibility.browsewithcaret", false);
 
                 statusline.updateUrl();
                 if (prev.mainMode.input || prev.mainMode.ownsFocus)
@@ -180,7 +180,7 @@ const Modes = Module("modes", {
         [m for (m in values(this._modeMap)) if (Object.keys(obj).every(function (k) obj[k] == (m[k] || false)))],
 
     // show the current mode string in the command line
-    show: function () {
+    show: function show() {
         let msg = null;
         if (options["showmode"])
             msg = this._getModeMessage();
@@ -189,7 +189,7 @@ const Modes = Module("modes", {
     },
 
     // add/remove always work on the this._extended mode only
-    add: function (mode) {
+    add: function add(mode) {
         this._extended |= mode;
         this.show();
     },
@@ -197,7 +197,7 @@ const Modes = Module("modes", {
     delayed: [],
     delay: function (callback, self) { this.delayed.push([callback, self]) },
 
-    save: function (id, obj, prop) {
+    save: function save(id, obj, prop) {
         if (!(id in this.boundProperties))
             for (let elem in array.iterValues(this._modeStack))
                 elem.saved[id] = { obj: obj, prop: prop, value: obj[prop] };
@@ -206,7 +206,7 @@ const Modes = Module("modes", {
 
     // helper function to set both modes in one go
     // if silent == true, you also need to take care of the mode handling changes yourself
-    set: function (mainMode, extendedMode, params, stack) {
+    set: function set(mainMode, extendedMode, params, stack) {
         params = params || this.getMode(mainMode || this.main).params;
 
         if (!stack && mainMode != null && this._modeStack.length > 1)
@@ -258,11 +258,18 @@ const Modes = Module("modes", {
         this.show();
     },
 
-    push: function (mainMode, extendedMode, params) {
+    push: function push(mainMode, extendedMode, params) {
         this.set(mainMode, extendedMode, params, { push: this.topOfStack });
     },
 
-    pop: function (mode) {
+    onCaretChange: function onPrefChange(value) {
+        if (!value && modes.main === modes.CARET)
+            modes.pop();
+        if (value && modes.main === modes.NORMAL)
+            modes.push(modes.CARET);
+    },
+
+    pop: function pop(mode) {
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
@@ -273,7 +280,7 @@ const Modes = Module("modes", {
         }
     },
 
-    replace: function (mode, oldMode) {
+    replace: function replace(mode, oldMode) {
         while (oldMode && this._modeStack.length > 1 && this.main != oldMode)
             this.pop();
 
@@ -282,14 +289,14 @@ const Modes = Module("modes", {
         this.push(mode);
     },
 
-    reset: function () {
+    reset: function reset() {
         if (this._modeStack.length == 1 && this.topOfStack.params.enter)
             this.topOfStack.params.enter({}, this.topOfStack);
         while (this._modeStack.length > 1)
             this.pop();
     },
 
-    remove: function (mode) {
+    remove: function remove(mode) {
         if (this._extended & mode) {
             this._extended &= ~mode;
             this.show();
@@ -342,13 +349,8 @@ const Modes = Module("modes", {
         }, desc));
     }
 }, {
-    options: function () {
-        options.observePref("accessibility.browsewithcaret", function (value) {
-            if (!value && modes.main === modes.CARET)
-                modes.pop();
-            if (value && modes.main === modes.NORMAL)
-                modes.push(modes.CARET);
-        });
+    prefs: function () {
+        prefs.watch("accessibility.browsewithcaret", modes.closure.onCaretChange);
     }
 });
 

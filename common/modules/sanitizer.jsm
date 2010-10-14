@@ -17,11 +17,12 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
-    require: ["services", "storage", "util"]
+    require: ["services", "storage", "template", "util"]
 });
 
 let tmp = {};
 services.get("subscriptLoader").loadSubScript("chrome://browser/content/sanitize.js", tmp);
+tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
 const Range = Struct("min", "max");
 Range.prototype.contains = function (date)
@@ -29,32 +30,67 @@ Range.prototype.contains = function (date)
 Range.prototype.__defineGetter__("isEternity", function () this.max == null && this.min == null);
 Range.prototype.__defineGetter__("isSession", function () this.max == null && this.min == sanitizer.sessionStart);
 
+const Item = Class("Item", {
+    init: function (name) {
+        this.name = name;
+    },
+
+    // Hack for completion:
+    "0": Class.Property({ get: function () this.name }),
+    "1": Class.Property({ get: function () this.description }),
+
+    get cpdPref() (this.builtin ? "" : Item.PREFIX) + Item.BRANCH + Sanitizer.argToPref(this.name),
+    get shutdownPref() (this.builtin ? "" : Item.PREFIX) + Item.SHUTDOWN_BRANCH + Sanitizer.argToPref(this.name),
+    get cpd() prefs.get(this.cpdPref),
+    get shutdown() prefs.get(this.shutdownPref),
+
+    shouldSanitize: function (shutdown) (!shutdown || this.builtin || this.persistent) &&
+        prefs.get(shutdown ? this.shutdownPref : this.pref)
+}, {
+    PREFIX: "extensions.dactyl.",
+    BRANCH: "privacy.cpd.",
+    SHUTDOWN_BRANCH: "privacy.clearOnShutdown."
+});
+
 const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference], tmp.Sanitizer), {
     sessionStart: Date.now() * 1000,
 
     init: function () {
+        const self = this;
+
+        util.addObserver(this);
+
         services.add("contentprefs", "@mozilla.org/content-pref/service;1", Ci.nsIContentPrefService);
         services.add("cookies",      "@mozilla.org/cookiemanager;1",        [Ci.nsICookieManager, Ci.nsICookieManager2,
                                                                              Ci.nsICookieService]);
         services.add("loginmanager", "@mozilla.org/login-manager;1",        Ci.nsILoginManager);
         services.add("permissions",  "@mozilla.org/permissionmanager;1",    Ci.nsIPermissionManager);
 
-        this.itemOverrides = {};
-        this.itemDescriptions = {
-            all: "Sanitize all items",
-            // Builtin items
-            cache: "Cache",
-            downloads: "Download history",
-            formdata: "Saved form and search history",
-            history: "Browsing history",
-            offlineapps: "Offline website data",
-            passwords: "Saved passwords",
-            sessions: "Authenticated sessions",
+        this.itemMap = {
+            __iterator__: function () {
+                // For platforms without getOwnPropertyNames :(
+                for (let p in properties(this))
+                    if (p !== "__iterator__")
+                        yield this[p]
+            }
         };
+
+        this.addItem("all", { description: "Sanitize all items", shouldSanitize: function () false });
+        // Builtin items
+        this.addItem("cache",       { builtin: true, description: "Cache" });
+        this.addItem("downloads",   { builtin: true, description: "Download history" });
+        this.addItem("formdata",    { builtin: true, description: "Saved form and search history" });
+        this.addItem("history",     { builtin: true, description: "Browsing history", sessionHistory: true });
+        this.addItem("offlineapps", { builtin: true, description: "Offline website data" });
+        this.addItem("passwords",   { builtin: true, description: "Saved passwords" });
+        this.addItem("sessions",    { builtin: true, description: "Authenticated sessions" });
+
         // These builtin methods don't support hosts or otherwise have
         // insufficient granularity
         this.addItem("cookies", {
+            builtin: true,
             description: "Cookies",
+            persistent: true,
             action: function (range, host) {
                 for (let c in Sanitizer.iterCookies(host))
                     if (range.contains(c.creationTime) || timespan.isSession && c.isSession)
@@ -63,7 +99,9 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             override: true
         });
         this.addItem("sitesettings", {
+            builtin: true,
             description: "Site preferences",
+            persistent: true,
             action: function (range, host) {
                 if (range.isSession)
                     return;
@@ -89,21 +127,95 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             },
             override: true
         });
-        util.addObserver(this);
+
+        function ourItems(persistent) [
+            item for (item in self.itemMap)
+            if (!item.builtin && (!persistent || item.persistent))
+        ];
+
+        function prefOverlay(branch, persistent, local) update(Object.create(local), {
+            before: array.toObject([
+                [branch.substr(Item.PREFIX.length) + "history",
+                    <preferences xmlns={XUL}>{
+                      template.map(ourItems(persistent), function (item)
+                        <preference type="bool" id={branch + item.name} name={branch + item.name}/>)
+                    }</preferences>.*::*]
+            ]),
+            init: function init(win) {
+                let pane = win.document.getElementById("SanitizeDialogPane");
+                for (let [,pref] in iter(pane.preferences))
+                    pref.updateElements();
+                init.superapply(this, arguments);
+            }
+        });
+
+        let (branch = Item.PREFIX + Item.SHUTDOWN_BRANCH) {
+            util.overlayWindow("chrome://browser/content/preferences/sanitize.xul",
+                               function (win) prefOverlay(branch, true, {
+                append: {
+                    SanitizeDialogPane:
+                        <groupbox orient="horizontal" xmlns={XUL}>
+                          <caption label={services.get("dactyl:").appName + " (see :help privacy)"}/>
+                          <grid flex="1">
+                            <columns><column flex="1"/><column flex="1"/></columns>
+                            <rows>{
+                              let (items = ourItems(true))
+                                 template.map(util.range(0, Math.ceil(items.length/2)), function (i)
+                                   <row xmlns={XUL}>{
+                                     template.map(items.slice(i*2, i*2+2), function (item)
+                                       <checkbox xmlns={XUL} label={item.description} preference={branch + item.name}/>)
+                                   }</row>)
+                            }</rows>
+                          </grid>
+                        </groupbox>
+                },
+            }));
+        }
+        let (branch = Item.PREFIX + Item.BRANCH) {
+            util.overlayWindow("chrome://browser/content/sanitize.xul",
+                               function (win) prefOverlay(branch, false, {
+                append: {
+                    itemList: <>
+                        <listitem xmlns={XUL} label="See :help privacy for the following:" disabled="true" style="font-style: italic; font-weight: bold;"/>
+                        {
+                          template.map(ourItems(), function ([item, desc])
+                            <listitem xmlns={XUL} type="checkbox"
+                                      label={services.get("dactyl:").appName + " " + desc}
+                                      preference={branch + item}
+                                      onsyncfrompreference="return gSanitizePromptDialog.onReadGeneric();"/>)
+                        }  
+                    </>
+                },
+                init: function (win) {
+                    let elem =  win.document.getElementById("itemList");
+                    elem.setAttribute("rows", elem.itemCount);
+                    win.Sanitizer = Class("Sanitizer", win.Sanitizer, {
+                        sanitize: function sanitize() {
+                            self.withSavedValues(["sanitizing"], function () {
+                                self.sanitizing = true;
+                                sanitize.superapply(this, arguments);
+                                sanitizer.sanitizeItems([item.name for (item in self.itemMap) if (item.shouldSanitize(false))],
+                                                        Range.fromArray(this.range || []));
+                            }, this);
+                        }
+                    });
+                }
+            }));
+        }
     },
 
     addItem: function addItem(name, params) {
-        if (params.description)
-            this.itemDescriptions[name] = params.description;
-        if (params.override)
-            set.add(this.itemOverrides, name);
+        this.itemMap[name] = update(this.itemMap[name] || Item(name),
+            array([k, v] for ([k, v] in Iterator(params)) if (!callable(v))).toObject());
 
-        name = "clear-" + name;
-        storage.addObserver("sanitizer",
-            function (key, event, arg) {
-                if (event == name)
-                    params.action.apply(params, arg);
-            }, Class.objectGlobal(params.action));
+        let names = set([name].concat(params.contains || []).map(function (e) "clear-" + e));
+        if (params.action)
+            storage.addObserver("sanitizer",
+                function (key, event, arg) {
+                    if (event in names)
+                        params.action.apply(params, arg);
+                },
+                Class.objectGlobal(params.action));
 
         if (params.privateEnter || params.privateLeave)
             storage.addObserver("private-mode",
@@ -111,12 +223,13 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     let meth = params[arg ? "privateEnter" : "privateLeave"];
                     if (meth)
                         meth.call(params);
-                }, Class.objectGlobal(params.action));
+                },
+                Class.objectGlobal(params.action));
     },
 
     observe: {
-        "browser:purge-domain-data": function (subject, data) {
-            storage.fireEvent("sanitize", "domain", data);
+        "browser:purge-domain-data": function (subject, host) {
+            storage.fireEvent("sanitize", "domain", host);
             // If we're sanitizing, our own sanitization functions will already
             // be called, and with much greater granularity. Only process this
             // event if it's triggered externally.
@@ -126,7 +239,11 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
         "browser:purge-session-history": function (subject, data) {
             // See above.
             if (!this.sanitizing)
-                this.sanitizeItems(null, Range(this.sessionStart), null);
+                this.sanitizeItems(null, Range(this.sessionStart), null, "sessionHistory");
+        },
+        "quit-application-granted": function (subject, data) {
+            if (!this.sanitizeItems(null, Range(), null, "shutdown"))
+                this.ranAtShutdown = true;
         },
         "private-browsing": function (subject, data) {
             if (data == "enter")
@@ -137,50 +254,57 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
         }
     },
 
-    sanitize: function (items, range) {
-        this.sanitizing = true;
-        let errors = this.sanitizeItems(items, range, null);
+    get ranAtShutdown()    prefs.get(Item.PREFIX + "didSanitizeOnShutdown"),
+    set ranAtShutdown(val) prefs.set(Item.PREFIX + "didSanitizeOnShutdown", Boolean(val)),
+    get runAtShutdown()    prefs.get("privacy.sanitize.sanitizeOnShutdown"),
+    set runAtShutdown(val) prefs.set("privacy.sanitize.sanitizeOnShutdown", Boolean(val)),
 
-        for (let itemName in values(items)) {
-            try {
-                let item = this.items[Sanitizer.argToPref(itemName)];
-                if (item && !this.itemOverrides[itemName]) {
-                    item.range = range;
-                    if ("clear" in item && item.canClear)
-                        item.clear();
+    sanitize: function (items, range)
+        this.withSavedValues(["sanitizing"], function () {
+            this.sanitizing = true;
+            let errors = this.sanitizeItems(items, range, null);
+
+            for (let itemName in values(items)) {
+                try {
+                    let item = this.items[Sanitizer.argToPref(itemName)];
+                    if (item && !this.itemMap[itemName].override) {
+                        item.range = range;
+                        if ("clear" in item && item.canClear)
+                            item.clear();
+                    }
+                }
+                catch (e) {
+                    errors = errors || {};
+                    errors[itemName] = e;
+                    util.dump("Error sanitizing " + itemName);
+                    util.reportError(e);
                 }
             }
-            catch (e) {
-                errors = errors || {};
-                errors[itemName] = e;
-                util.dump("Error sanitizing " + itemName);
-                util.reportError(e);
-            }
-        }
+            return errors;
+        }),
 
-        this.sanitizing = false;
-        return errors;
-    },
+    sanitizeItems: function (items, range, host, key)
+        this.withSavedValues(["sanitizing"], function () {
+            this.sanitizing = true;
+            if (items == null)
+                items = Object.keys(this.itemMap);
 
-    sanitizeItems: function (items, range, host) {
-        if (items == null)
-            items = Object.keys(this.itemDescriptions);
-        let errors;
-        for (let itemName in values(items))
-            try {
-                storage.fireEvent("sanitizer", "clear-" + itemName, [range, host]);
-            }
-            catch (e) {
-                errors = errors || {};
-                errors[itemName] = e;
-                util.dump("Error sanitizing " + itemName);
-                util.reportError(e);
-            }
-        return errors;
-    }
+            let errors;
+            for (let itemName in values(items))
+                try {
+                    if (!key || this.itemMap[itemName][key])
+                        storage.fireEvent("sanitizer", "clear-" + itemName, [range, host]);
+                }
+                catch (e) {
+                    errors = errors || {};
+                    errors[itemName] = e;
+                    util.dump("Error sanitizing " + itemName);
+                    util.reportError(e);
+                }
+            return errors;
+        })
 }, {
     argPrefMap: {
-        commandline:  "commandLine",
         offlineapps:  "offlineApps",
         sitesettings: "siteSettings",
     },
@@ -198,6 +322,11 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 yield p;
     }
 }, {
+    load: function (dactyl, modules, window) {
+        if (sanitizer.runAtShutdown && !sanitizer.ranAtShutdown)
+            sanitizer.sanitizeItems(null, Range(), null, "shutdown");
+        sanitizer.ranAtShutdown = false;
+    },
     autocommands: function (dactyl, modules, window) {
         storage.addObserver("private-mode",
             function (key, event, value) {
@@ -305,10 +434,34 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             "The default list of private items to sanitize",
             "stringlist", "all",
             {
-                completer: function (value) Iterator(sanitizer.itemDescriptions),
+                completer: function (value) sanitizer.itemMap,
                 has: modules.Option.has.toggleAll,
                 validator: function (values) values.length &&
-                    values.every(function (val) val === "all" || set.has(sanitizer.itemDescriptions, val))
+                    values.every(function (val) val === "all" || set.has(sanitizer.itemMap, val))
+            });
+
+        options.add(["sanitizeshutdown", "ss"],
+            "The items to sanitize automatically at shutdown",
+            "stringlist", "",
+            {
+                initialValue: true,
+                completer: function () [i for (i in sanitizer.itemMap) if (i.persistent || i.builtin)],
+                getter: function () !sanitizer.runAtShutdown ? [] : [
+                    item.name for (item in sanitizer.itemMap)
+                    if (item.shouldSanitize(true))
+                ],
+                setter: function (values) {
+                    if (values.length === 0)
+                        sanitizer.runAtShutdown = false;
+                    else {
+                        sanitizer.runAtShutdown = true;
+                        let have = set(values);
+                        for (let item in sanitizer.itemMap)
+                            prefs.set(item.shutdownPref,
+                                      Boolean(set.has(have, item.name) ^ set.has(have, "all")));
+                    }
+                    return values;
+                }
             });
 
         options.add(["sanitizetimespan", "sts"],

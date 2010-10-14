@@ -19,12 +19,6 @@ const EVAL_ERROR = "__dactyl_eval_error";
 const EVAL_RESULT = "__dactyl_eval_result";
 const EVAL_STRING = "__dactyl_eval_string";
 
-const FailedAssertion = Class("FailedAssertion", Error, {
-    init: function (message) {
-        this.message = message;
-    }
-});
-
 function deprecated(reason, fn) {
     let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
     function deprecatedMethod() {
@@ -633,13 +627,13 @@ const Dactyl = Module("dactyl", {
                 <spec>{spec((obj.specs || obj.names)[0])}</spec>{
                 !obj.type ? "" : <>
                 <type>{obj.type}</type>
-                <default>{opt.stringify(obj.defaultValue)}</default></>}
+                <default>{obj.stringDefaultValue}</default></>}
                 <description>{
                     obj.description ? br+<p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
                         extraHelp ? br+extraHelp : "" }{
                         !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }
                 </description>
-            </item></>.toXMLString(), true);
+            </item></>.toXMLString().replace(/^ {12}/gm, ""), true);
     },
 
     /**
@@ -734,7 +728,7 @@ const Dactyl = Module("dactyl", {
 
         // options does not exist at the very beginning
         if (modules.options)
-            verbose = options.getPref("extensions.dactyl.loglevel", 0);
+            verbose = prefs.get("extensions.dactyl.loglevel", 0);
 
         if (level > verbose)
             return;
@@ -821,8 +815,8 @@ const Dactyl = Module("dactyl", {
                     if (!dactyl.has("tabs"))
                         return open(urls, dactyl.NEW_WINDOW);
 
-                    options.withContext(function () {
-                        options.setPref("browser.tabs.loadInBackground", true);
+                    prefs.withContext(function () {
+                        prefs.set("browser.tabs.loadInBackground", true);
                         browser.loadOneTab(url, null, null, postdata, background);
                     });
                     break;
@@ -870,9 +864,9 @@ const Dactyl = Module("dactyl", {
     quit: function (saveSession, force) {
         // TODO: Use safeSetPref?
         if (saveSession)
-            options.setPref("browser.startup.page", 3); // start with saved session
+            prefs.set("browser.startup.page", 3); // start with saved session
         else
-            options.setPref("browser.startup.page", 1); // start with default homepage session
+            prefs.set("browser.startup.page", 1); // start with default homepage session
 
         if (force)
             services.get("appStartup").quit(Ci.nsIAppStartup.eForceQuit);
@@ -939,18 +933,7 @@ const Dactyl = Module("dactyl", {
         });
     },
 
-    /*
-     * Tests a condition and throws a FailedAssertion error on
-     * failure.
-     *
-     * @param {boolean} condition The condition to test.
-     * @param {string} message The message to present to the
-     *     user on failure.
-     */
-    assert: function (condition, message) {
-        if (!condition)
-            throw new FailedAssertion(message);
-    },
+    get assert() util.assert,
 
     /**
      * Traps errors in the called function, possibly reporting them.
@@ -1171,8 +1154,8 @@ const Dactyl = Module("dactyl", {
                             class_.length ? class_.join(", ") + " { visibility: collapse !important; }" : "",
                             true);
 
-                    options.safeSetPref("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
-                                        "See 'guioptions' scrollbar flags.");
+                    prefs.safeSet("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
+                                  "See 'guioptions' scrollbar flags.");
                 },
                 validator: function (opts) Option.validIf(!(opts.indexOf("l") >= 0 && opts.indexOf("r") >= 0),
                                                           UTF8("Only one of ‘l’ or ‘r’ allowed"))
@@ -1264,8 +1247,8 @@ const Dactyl = Module("dactyl", {
             "boolean", false,
             {
                 setter: function (value) {
-                    options.safeSetPref("accessibility.typeaheadfind.enablesound", !value,
-                                        "See 'visualbell' option");
+                    prefs.safeSet("accessibility.typeaheadfind.enablesound", !value,
+                                  "See 'visualbell' option");
                     return value;
                 }
             });
@@ -1950,7 +1933,7 @@ const Dactyl = Module("dactyl", {
         AddonManager.getAddonByID(services.get("dactyl:").addonID, function (addon) {
             // @DATE@ token replaced by the Makefile
             // TODO: Find it automatically
-            options.setPref("extensions.dactyl.version", addon.version);
+            prefs.set("extensions.dactyl.version", addon.version);
             dactyl.version = addon.version + " (created: @DATE@)";
         });
 
@@ -1970,10 +1953,10 @@ const Dactyl = Module("dactyl", {
 
         // first time intro message
         const firstTime = "extensions." + config.name + ".firsttime";
-        if (options.getPref(firstTime, true)) {
+        if (prefs.get(firstTime, true)) {
             util.timeout(function () {
                 dactyl.help();
-                options.setPref(firstTime, false);
+                prefs.set(firstTime, false);
             }, 1000);
         }
 

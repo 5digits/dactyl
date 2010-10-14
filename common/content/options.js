@@ -76,7 +76,7 @@ const Option = Class("Option", {
         dactyl.trapErrors(function () this.value = this.value, this);
     },
 
-    get isDefault() this.stringify(this.value) === this.stringify(this.defaultValue),
+    get isDefault() this.stringValue === this.stringDefaultValue,
 
     /** @property {value} The option's global value. @see #scope */
     get globalValue() options.store.get(this.name, {}).value,
@@ -173,6 +173,11 @@ const Option = Class("Option", {
      */
     get value() this.get(),
     set value(val) this.set(val),
+
+    get stringValue() this.stringify(this.value),
+    set stringValue(value) this.value = this.parse(value),
+
+    get stringDefaultValue() this.stringify(this.defaultValue),
 
     getKey: function (key) undefined,
 
@@ -610,28 +615,6 @@ const Options = Module("options", {
         this.needInit = [];
         this._options = [];
         this._optionMap = {};
-        this._prefContexts = [];
-
-        for (let [, pref] in Iterator(this.allPrefs(Options.OLD_SAVED))) {
-            let saved = Options.SAVED + pref.substr(Options.OLD_SAVED.length);
-            if (!this.getPref(saved))
-                this.setPref(saved, this.getPref(pref));
-            this.resetPref(pref);
-        }
-
-        // Host application preferences which need to be changed to work well with
-        //
-
-        // Work around the popup blocker
-        // TODO: Make this work like safeSetPref
-        var popupAllowedEvents = this._loadPreference("dom.popup_allowed_events", "change click dblclick mouseup reset submit");
-        if (!/keypress/.test(popupAllowedEvents)) {
-            this._storePreference("dom.popup_allowed_events", popupAllowedEvents + " keypress");
-            dactyl.registerObserver("shutdown", function () {
-                if (this._loadPreference("dom.popup_allowed_events", "") == popupAllowedEvents + " keypress")
-                    this._storePreference("dom.popup_allowed_events", popupAllowedEvents);
-            });
-        }
 
         storage.newMap("options", { store: false });
         storage.addObserver("options", function optionObserver(key, event, option) {
@@ -640,33 +623,11 @@ const Options = Module("options", {
             if (event == "change" && opt)
                 opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
         }, window);
-
-        this._branch = services.get("pref").getBranch("").QueryInterface(Ci.nsIPrefBranch2);
-        this._branch.addObserver("", this, false);
-    },
-
-    destroy: function () {
-        this._branch.removeObserver("", this);
     },
 
     /** @property {Iterator(Option)} @private */
     __iterator__: function ()
         values(this._options.sort(function (a, b) String.localeCompare(a.name, b.name))),
-
-    observe: function (subject, topic, data) {
-        if (topic == "nsPref:changed") {
-            let observers = this._observers[data];
-            if (observers) {
-                let value = options.getPref(data, false);
-                this._observers[data] = observers.filter(function (callback) {
-                    if (!callback.get())
-                        return false;
-                    dactyl.trapErrors(callback.get(), null, value);
-                    return true;
-                });
-            }
-        }
-    },
 
     /**
      * Adds a new option.
@@ -705,13 +666,18 @@ const Options = Module("options", {
         this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
     },
 
-    /**
-     * Returns the names of all preferences.
-     *
-     * @param {string} branch The branch in which to search preferences.
-     *     @default ""
-     */
-    allPrefs: function (branch) services.get("pref").getChildList(branch || "", { value: 0 }),
+    allPrefs: deprecated("Please use prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
+    getPref: deprecated("Please use prefs.get", function getPref() prefs.get.apply(prefs, arguments)),
+    invertPref: deprecated("Please use prefs.invert", function invertPref() prefs.invert.apply(prefs, arguments)),
+    listPrefs: deprecated("Please use prefs.list", function listPrefs() { commandline.commandOutput(prefs.list.apply(prefs, arguments)) }),
+    observePref: deprecated("Please use prefs.observe", function observePref() prefs.observe.apply(prefs, arguments)),
+    popContext: deprecated("Please use prefs.popContext", function popContext() prefs.popContext.apply(prefs, arguments)),
+    pushContext: deprecated("Please use prefs.pushContext", function pushContext() prefs.pushContext.apply(prefs, arguments)),
+    resetPref: deprecated("Please use prefs.reset", function resetPref() prefs.reset.apply(prefs, arguments)),
+    safeResetPref: deprecated("Please use prefs.safeReset", function safeResetPref() prefs.safeReset.apply(prefs, arguments)),
+    safeSetPref: deprecated("Please use prefs.safeSet", function safeSetPref() prefs.safeSet.apply(prefs, arguments)),
+    setPref: deprecated("Please use prefs.set", function setPref() prefs.set.apply(prefs, arguments)),
+    withContext: deprecated("Please use prefs.withContext", function withContext() prefs.withContext.apply(prefs, arguments)),
 
     /**
      * Returns the option with <b>name</b> in the specified <b>scope</b>.
@@ -748,7 +714,7 @@ const Options = Module("options", {
                 let option = {
                     isDefault: opt.isDefault,
                     name:      opt.name,
-                    default:   opt.stringify(opt.defaultValue),
+                    default:   opt.stringDefaultValue,
                     pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
                     value:     <></>
                 };
@@ -764,66 +730,12 @@ const Options = Module("options", {
                     option.default = (option.default ? "" : "no") + opt.name;
                 }
                 else
-                    option.value = <>={template.highlight(opt.stringify(opt.value))}</>;
+                    option.value = <>={template.highlight(opt.stringValue)}</>;
                 yield option;
             }
         };
 
         commandline.commandOutput(template.options("Options", opts()));
-    },
-
-    /**
-     * Lists all preferences matching <b>filter</b> or only those with
-     * changed values if <b>onlyNonDefault</b> is specified.
-     *
-     * @param {boolean} onlyNonDefault Limit the list to prefs with a
-     *     non-default value.
-     * @param {string} filter The list filter. A null filter lists all
-     *     prefs.
-     * @optional
-     */
-    listPrefs: function (onlyNonDefault, filter) {
-        if (!filter)
-            filter = "";
-
-        let prefArray = options.allPrefs();
-        prefArray.sort();
-        function prefs() {
-            for (let [, pref] in Iterator(prefArray)) {
-                let userValue = services.get("pref").prefHasUserValue(pref);
-                if (onlyNonDefault && !userValue || pref.indexOf(filter) == -1)
-                    continue;
-
-                let value = options.getPref(pref);
-
-                let option = {
-                    isDefault: !userValue,
-                    default:   options._loadPreference(pref, null, true),
-                    value:     <>={template.highlight(value, true, 100)}</>,
-                    name:      pref,
-                    pre:       "\u00a0\u00a0" // Unicode nonbreaking space.
-                };
-
-                yield option;
-            }
-        };
-
-        commandline.commandOutput(
-            template.options(config.host + " Options", prefs()));
-    },
-
-    _observers: Class.memoize(function () ({})),
-    /**
-     * Adds a new preference observer for the given preference.
-     *
-     * @param {string} pref The preference to observe.
-     * @param {function(object)} callback The callback, called with the
-     *    new value of the preference whenever it changes.
-     */
-    observePref: function (pref, callback, weak) {
-        if (!this._observers[pref])
-            this._observers[pref] = [];
-        this._observers[pref].push(weak ? Cu.getWeakReference(callback) : { get: function () callback });
     },
 
     /**
@@ -895,204 +807,8 @@ const Options = Module("options", {
     },
 
     /** @property {Object} The options store. */
-    get store() storage.options,
-
-    /**
-     * Returns the value of the preference <b>name</b>.
-     *
-     * @param {string} name The preference name.
-     * @param {value} forcedDefault The default value for this
-     *     preference. Used for internal dactyl preferences.
-     */
-    getPref: function (name, forcedDefault) {
-        return this._loadPreference(name, forcedDefault);
-    },
-
-    _checkPrefSafe: function (name, message, value) {
-        let curval = this._loadPreference(name, null, false);
-        if (arguments.length > 2 && curval === value)
-            return;
-        let defval = this._loadPreference(name, null, true);
-        let saved  = this._loadPreference(Options.SAVED + name);
-
-        if (saved == null && curval != defval || curval != saved) {
-            let msg = "Warning: setting preference " + name + ", but it's changed from its default value.";
-            if (message)
-                msg += " " + message;
-            dactyl.echomsg(msg);
-        }
-    },
-
-    /**
-     * Resets the preference <b>name</b> to </b>value</b> but warns the user
-     * if the value is changed from its default.
-     *
-     * @param {string} name The preference name.
-     * @param {value} value The new preference value.
-     */
-    safeResetPref: function (name, message) {
-        this._checkPrefSafe(name, message);
-        this.resetPref(name);
-        this.resetPref(Options.SAVED + name);
-    },
-
-    /**
-     * Sets the preference <b>name</b> to </b>value</b> but warns the user
-     * if the value is changed from its default.
-     *
-     * @param {string} name The preference name.
-     * @param {value} value The new preference value.
-     */
-    safeSetPref: function (name, value, message) {
-        this._checkPrefSafe(name, message, value);
-        this._storePreference(name, value);
-        this._storePreference(Options.SAVED + name, value);
-    },
-
-    /**
-     * Sets the preference <b>name</b> to </b>value</b>.
-     *
-     * @param {string} name The preference name.
-     * @param {value} value The new preference value.
-     */
-    setPref: function (name, value) {
-        this._storePreference(name, value);
-    },
-
-    /**
-     * Resets the preference <b>name</b> to its default value.
-     *
-     * @param {string} name The preference name.
-     */
-    resetPref: function (name) {
-        try {
-            services.get("pref").clearUserPref(name);
-        }
-        catch (e) {} // ignore - thrown if not a user set value
-    },
-
-    /**
-     * Toggles the value of the boolean preference <b>name</b>.
-     *
-     * @param {string} name The preference name.
-     */
-    invertPref: function (name) {
-        if (services.get("pref").getPrefType(name) == Ci.nsIPrefBranch.PREF_BOOL)
-            this.setPref(name, !this.getPref(name));
-        else
-            dactyl.echoerr("E488: Trailing characters: " + name + "!");
-    },
-
-    /**
-     * Pushes a new preference context onto the context stack.
-     *
-     * @see #withContext
-     */
-    pushContext: function () {
-        this._prefContexts.push({});
-    },
-
-    /**
-     * Pops the top preference context from the stack.
-     *
-     * @see #withContext
-     */
-    popContext: function () {
-        for (let [k, v] in Iterator(this._prefContexts.pop()))
-            this._storePreference(k, v);
-    },
-
-    /**
-     * Executes <b>func</b> with a new preference context. When <b>func</b>
-     * returns, the context is popped and any preferences set via
-     * {@link #setPref} or {@link #invertPref} are restored to their
-     * previous values.
-     *
-     * @param {function} func The function to call.
-     * @param {Object} func The 'this' object with which to call <b>func</b>
-     * @see #pushContext
-     * @see #popContext
-     */
-    withContext: function (func, self) {
-        try {
-            this.pushContext();
-            return func.call(self);
-        }
-        finally {
-            this.popContext();
-        }
-    },
-
-    _storePreference: function (name, value) {
-        if (this._prefContexts.length) {
-            let val = this._loadPreference(name, null);
-            if (val != null)
-                this._prefContexts[this._prefContexts.length - 1][name] = val;
-        }
-
-        let type = services.get("pref").getPrefType(name);
-        switch (typeof value) {
-        case "string":
-            if (type == Ci.nsIPrefBranch.PREF_INVALID || type == Ci.nsIPrefBranch.PREF_STRING) {
-                let supportString = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
-                supportString.data = value;
-                services.get("pref").setComplexValue(name, Ci.nsISupportsString, supportString);
-            }
-            else if (type == Ci.nsIPrefBranch.PREF_INT)
-                dactyl.echoerr("E521: Number required after =: " + name + "=" + value);
-            else
-                dactyl.echoerr("E474: Invalid argument: " + name + "=" + value);
-            break;
-        case "number":
-            if (type == Ci.nsIPrefBranch.PREF_INVALID || type == Ci.nsIPrefBranch.PREF_INT)
-                services.get("pref").setIntPref(name, value);
-            else
-                dactyl.echoerr("E474: Invalid argument: " + name + "=" + value);
-            break;
-        case "boolean":
-            if (type == Ci.nsIPrefBranch.PREF_INVALID || type == Ci.nsIPrefBranch.PREF_BOOL)
-                services.get("pref").setBoolPref(name, value);
-            else if (type == Ci.nsIPrefBranch.PREF_INT)
-                dactyl.echoerr("E521: Number required after =: " + name + "=" + value);
-            else
-                dactyl.echoerr("E474: Invalid argument: " + name + "=" + value);
-            break;
-        default:
-            dactyl.echoerr("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
-        }
-    },
-
-    _loadPreference: function (name, forcedDefault, defaultBranch) {
-        let defaultValue = null; // XXX
-        if (forcedDefault != null) // this argument sets defaults for non-user settable options (like extensions.history.comp_history)
-            defaultValue = forcedDefault;
-
-        let branch = defaultBranch ? services.get("pref").getDefaultBranch("") : services.get("pref");
-        let type = services.get("pref").getPrefType(name);
-        try {
-            switch (type) {
-            case Ci.nsIPrefBranch.PREF_STRING:
-                let value = branch.getComplexValue(name, Ci.nsISupportsString).data;
-                // try in case it's a localized string (will throw an exception if not)
-                if (!services.get("pref").prefIsLocked(name) && !services.get("pref").prefHasUserValue(name) &&
-                    RegExp("chrome://.+/locale/.+\\.properties").test(value))
-                        value = branch.getComplexValue(name, Ci.nsIPrefLocalizedString).data;
-                return value;
-            case Ci.nsIPrefBranch.PREF_INT:
-                return branch.getIntPref(name);
-            case Ci.nsIPrefBranch.PREF_BOOL:
-                return branch.getBoolPref(name);
-            default:
-                return defaultValue;
-            }
-        }
-        catch (e) {
-            return defaultValue;
-        }
-    }
+    get store() storage.options
 }, {
-    SAVED: "extensions.dactyl.saved.",
-    OLD_SAVED: "dactyl.saved."
 }, {
     commands: function () {
         function setAction(args, modifiers) {
@@ -1121,16 +837,16 @@ const Options = Module("options", {
                         commandline.input("Warning: Resetting all preferences may make " + config.host + " unusable. Continue (yes/[no]): ",
                             function (resp) {
                                 if (resp == "yes")
-                                    for (let pref in values(options.allPrefs()))
-                                        options.resetPref(pref);
+                                    for (let pref in values(prefs.getNames()))
+                                        prefs.reset(pref);
                             },
                             { promptHighlight: "WarningMsg" });
                     else if (name == "all")
-                        options.listPrefs(onlyNonDefault, "");
+                        command.commandOutput(prefs.list(onlyNonDefault, ""));
                     else if (reset)
-                        options.resetPref(name);
+                        prefs.reset(name);
                     else if (invertBoolean)
-                        options.invertPref(name);
+                        prefs.toggle(name);
                     else if (valueGiven) {
                         if (value == undefined)
                             value = "";
@@ -1140,10 +856,10 @@ const Options = Module("options", {
                             value = false;
                         else if (/^\d+$/.test(value))
                             value = parseInt(value, 10);
-                        options.setPref(name, value);
+                        prefs.set(name, value);
                     }
                     else
-                        options.listPrefs(onlyNonDefault, name);
+                        command.commandOutput(prefs.list(onlyNonDefault, ""));
                     return;
                 }
 
@@ -1208,8 +924,8 @@ const Options = Module("options", {
                     context.advance(filter.length);
                     filter = filter.substr(0, filter.length - 1);
                     context.completions = [
-                            [options._loadPreference(filter, null, false), "Current Value"],
-                            [options._loadPreference(filter, null, true), "Default Value"]
+                            [prefs.get(filter), "Current Value"],
+                            [prefs.getDefault(filter), "Default Value"]
                     ].filter(function ([k]) k != null && k.length < 200);
                     return null;
                 }
@@ -1241,8 +957,8 @@ const Options = Module("options", {
                 context.fork("default", 0, this, function (context) {
                     context.title = ["Extra Completions"];
                     context.completions = [
-                            [option.value, "Current value"],
-                            [option.defaultValue, "Default value"]
+                            [option.stringValue, "Current value"],
+                            [option.stringValue, "Default value"]
                     ].filter(function (f) f[0] !== "" && String(f[0]).length < 200);
                     context.quote = ["", util.identity, ""];
                 });
@@ -1359,7 +1075,7 @@ const Options = Module("options", {
                         {
                             command: this.name,
                             literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
-                                                               : opt.name + "=" + opt.stringify(opt.value)]
+                                                               : opt.name + "=" + opt.stringValue]
                         }
                         for (opt in options)
                         if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
@@ -1491,18 +1207,9 @@ const Options = Module("options", {
             if (res)
                 context.completions = res;
         };
-
-        completion.preference = function preference(context) {
-            context.anchored = false;
-            context.title = [config.host + " Preference", "Value"];
-            context.keys = { text: function (item) item, description: function (item) options.getPref(item) };
-            context.completions = options.allPrefs();
-        };
     },
     javascript: function () {
         JavaScript.setCompleter(this.get, [function () ([o.name, o.description] for (o in options))]);
-        JavaScript.setCompleter([this.getPref, this.safeSetPref, this.setPref, this.resetPref, this.invertPref],
-                [function (context) (context.anchored=false, options.allPrefs().map(function (pref) [pref, ""]))]);
     },
     sanitizer: function () {
         sanitizer.addItem("options", {

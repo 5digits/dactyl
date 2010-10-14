@@ -8,6 +8,13 @@
     * Significant completion speed improvements, especially for
       JavaScript.
     * Greatly improved private mode support and :sanitize command.
+      - Full integration with Firefox data clearing dialogs.
+      - Support for sanitizing items at shutdown.
+      - Fine-grained control over what data is sanitized and for
+        what timespan.
+      - Support for sanitizing reference to particular hosts,
+        everywhere from command-line and message history to option
+	values and cookies.
     * New and much more powerful incremental search implementation.
       Improvements over the standard Firefox find include:
       - Starts at the cursor position in the currently selected

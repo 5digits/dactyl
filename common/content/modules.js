@@ -91,8 +91,8 @@ window.addEventListener("load", function onLoad() {
     function init(module) {
         function init(func, mod)
             function () defineModule.time(module.className || module.constructor.className, mod,
-                                       func, module,
-                                       dactyl, modules, window);
+                                          func, module,
+                                          dactyl, modules, window);
 
         set.add(loaded, module.constructor.className);
         for (let [mod, func] in Iterator(module.INIT)) {

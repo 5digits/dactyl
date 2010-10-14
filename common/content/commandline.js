@@ -1690,6 +1690,7 @@ const CommandLine = Module("commandline", {
     sanitizer: function () {
         sanitizer.addItem("commandline", {
             description: "Command-line and search history",
+            persistent: true,
             action: function (timespan, host) {
                 if (!host)
                     storage["history-search"].mutate("filter", function (item) !timespan.contains(item.timestamp));
