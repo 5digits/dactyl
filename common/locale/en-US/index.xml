@@ -390,6 +390,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>laststatus</o></dt> <dd>Show the status line</dd>
     <dt><o>linksearch</o></dt> <dd>Limit the search to hyperlink text</dd>
     <dt><o>loadplugins</o></dt> <dd>Load plugin scripts when starting up</dd>
+    <dt><o>mapleader</o></dt> <dd>Defines the replacement keys for the <k name="Leader"/> pseudo-key</dd>
     <dt><o>maxitems</o></dt> <dd>Maximum number of items to display at once in a listing</dd>
     <dt><o>messages</o></dt> <dd>Number of messages to store in the message history</dd>
     <dt><o>more</o></dt> <dd>Pause the message list window when more than one screen of listings is displayed</dd>
@@ -418,6 +419,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>usermode</o></dt> <dd>Show current website with a minimal style sheet to make it easily accessible</dd>
     <dt><o>verbose</o></dt> <dd>Define which info messages are displayed</dd>
     <dt><o>visualbell</o></dt> <dd>Use visual bell instead of beeping on errors</dd>
+    <dt><o>wildanchor</o></dt> <dd>Regexp list defining which contexts require matches anchored to the begining of the result</dd>
     <dt><o>wildcase</o></dt> <dd>Completion case matching mode</dd>
     <dt><o>wildignore</o></dt> <dd>List of file patterns to ignore when completing files</dd>
     <dt><o>wildmode</o></dt> <dd>Define how command-line completion works</dd>
