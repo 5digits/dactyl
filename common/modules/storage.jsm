@@ -282,7 +282,7 @@ const File = Class("File", {
                 return null;
             }
         }
-        let self = XPCSafeJSObjectWrapper(file);
+        let self = XPCNativeWrapper(file);
         self.__proto__ = File.prototype;
         return self;
     },

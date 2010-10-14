@@ -147,11 +147,13 @@ const Highlights = Module("Highlight", {
      *
      * @param {string} class
      */
-    selector: function (class_)
-        class_.replace(/(^|\s)([A-Z]\w+)\b/g,
+    selector: function (class_) {
+        const self = this;
+        return class_.replace(/(^|\s)([A-Z]\w+)\b/g,
                 function (m, n1, hl) n1 +
-                    (this.highlight[hl] && this.highlight[hl].class != class_
-                        ? this.highlight[hl] : "[dactyl|highlight~=" + hl + "]")),
+                    (self.highlight[hl] && self.highlight[hl].class != class_
+                        ? self.highlight[hl] : "[dactyl|highlight~=" + hl + "]"));
+    },
 
     /**
      * Clears all highlighting rules. Rules with default values are

@@ -160,7 +160,7 @@ const IO = Module("io", {
     getRuntimeDirectories: function (name) {
         let dirs = options["runtimepath"];
 
-        dirs = dirs.map(function (dir) File.joinPaths(dir, name, this.cwd))
+        dirs = dirs.map(function (dir) File.joinPaths(dir, name, this.cwd), this)
                    .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
         return dirs;
     },
