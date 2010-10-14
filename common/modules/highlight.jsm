@@ -152,7 +152,7 @@ const Highlights = Module("Highlight", {
         return class_.replace(/(^|\s)([A-Z]\w+)\b/g,
                 function (m, n1, hl) n1 +
                     (self.highlight[hl] && self.highlight[hl].class != class_
-                        ? self.highlight[hl] : "[dactyl|highlight~=" + hl + "]"));
+                        ? self.highlight[hl].selector : "[dactyl|highlight~=" + hl + "]"));
     },
 
     /**
