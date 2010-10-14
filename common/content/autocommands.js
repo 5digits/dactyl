@@ -31,10 +31,6 @@ const AutoCommands = Module("autocommands", {
      * @param {string} cmd The Ex command to run.
      */
     add: function (events, regex, cmd) {
-        if (typeof events == "string") {
-            events = events.split(",");
-            dactyl.log("DEPRECATED: the events list arg to autocommands.add() should be an array of event names");
-        }
         events.forEach(function (event) {
             this._store.push(AutoCommand(event, Option.parseRegex(regex), cmd));
         }, this);

@@ -130,7 +130,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
 
         function ourItems(persistent) [
             item for (item in self.itemMap)
-            if (!item.builtin && (!persistent || item.persistent))
+            if (!item.builtin && (!persistent || item.persistent) && item.name !== "all")
         ];
 
         function prefOverlay(branch, persistent, local) update(Object.create(local), {

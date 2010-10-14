@@ -525,7 +525,7 @@ lookup:
                 let file = io.File(filename);
 
                 dactyl.assert(!file.exists() || args.bang,
-                    "E189: " + filename.quote() + " exists (add ! to override)");
+                              "E189: " + filename.quote() + " exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
                 let lines = [cmd.serialize().map(commands.commandToString) for (cmd in commands) if (cmd.serialize)];
