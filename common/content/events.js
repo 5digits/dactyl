@@ -76,7 +76,9 @@ const Events = Module("events", {
         this.addSessionListener(window, "DOMMenuBarActive", this.closure.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.closure.onDOMMenuBarInactive, true);
         this.addSessionListener(window, "focus", this.wrapListener(this.onFocus), true);
+        this.addSessionListener(window, "keydown", this.wrapListener(this.onKeyUpOrDown), true);
         this.addSessionListener(window, "keypress", this.wrapListener(this.onKeyPress), true);
+        this.addSessionListener(window, "keyup", this.wrapListener(this.onKeyUpOrDown), true);
         this.addSessionListener(window, "mousedown", this.wrapListener(this.onMouseDown), true);
         this.addSessionListener(window, "popuphidden", this.closure.onPopupHidden, true);
         this.addSessionListener(window, "popupshown", this.closure.onPopupShown, true);
@@ -600,7 +602,6 @@ const Events = Module("events", {
         let ret = (buffer.loaded == 1);
         if (!ret)
             dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
-        //util.dump("done waiting: " + ret);
 
         // sometimes the input widget had focus when replaying a macro
         // maybe this call should be moved somewhere else?
@@ -682,6 +683,10 @@ const Events = Module("events", {
 
         try {
             if (elem && elem.readOnly)
+                return;
+
+            if (Events.isContentNode(elem) && !buffer.focusAllowed(win)
+                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
                 return;
 
             if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
@@ -783,6 +788,8 @@ const Events = Module("events", {
             let stop = false;
             let mode = modes.getStack(0);
 
+            util.dump(String(mode), key);
+
             let win = document.commandDispatcher.focusedWindow;
             if (win && win.document && "designMode" in win.document && win.document.designMode == "on" && !config.isComposeWindow)
                 stop = true;
@@ -802,6 +809,8 @@ const Events = Module("events", {
                 mode = modes.getStack(1);
             }
             // handle Escape-all-keys mode (Ctrl-q)
+
+            util.dump(String(mode), key, stop);
 
             if (stop) {
                 this._input.buffer = "";
@@ -932,6 +941,14 @@ const Events = Module("events", {
             if (!(modes.extended & modes.HINTS))
                 statusline.updateInputBuffer(motionMap + this._input.buffer);
         }
+    },
+
+    onKeyUpOrDown: function onKeyUpOrDown(event) {
+        // Prevent certain sites from transferring focus to an input box
+        // before we get a chance to process our key bindings on the
+        // "keypress" event.
+        if (!Events.isInputElemFocused() && !modes.passThrough)
+            event.stopPropagation();
     },
 
     onMouseDown: function onMouseDown(event) {

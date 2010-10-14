@@ -135,6 +135,8 @@ const Modes = Module("modes", {
 
     get mainMode() this._modeMap[this._main],
 
+    get passThrough() !!(this.main & (this.PASS_THROUGH|this.QUOTE)) ^ (this.getStack(1).main === this.PASS_THROUGH),
+
     get topOfStack() this._modeStack[this._modeStack.length - 1],
 
     addMode: function (name, extended, options, params) {
@@ -258,10 +260,6 @@ const Modes = Module("modes", {
         this.show();
     },
 
-    push: function push(mainMode, extendedMode, params) {
-        this.set(mainMode, extendedMode, params, { push: this.topOfStack });
-    },
-
     onCaretChange: function onPrefChange(value) {
         if (!value && modes.main === modes.CARET)
             modes.pop();
@@ -269,7 +267,12 @@ const Modes = Module("modes", {
             modes.push(modes.CARET);
     },
 
+    push: function push(mainMode, extendedMode, params) {
+        this.set(mainMode, extendedMode, params, { push: this.topOfStack });
+    },
+
     pop: function pop(mode) {
+        util.dumpStack(mode);
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
