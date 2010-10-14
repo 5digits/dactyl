@@ -4,6 +4,9 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+if (this.XPCSafeJSObjectWrapper == null)
+    this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
+
 const myObject = Object;
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("storage", {
@@ -282,7 +285,7 @@ const File = Class("File", {
                 return null;
             }
         }
-        let self = XPCNativeWrapper(file);
+        let self = XPCSafeJSObjectWrapper(file);
         self.__proto__ = File.prototype;
         return self;
     },
