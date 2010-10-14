@@ -154,7 +154,7 @@ const Config = Module("config", ConfigBase, {
             "<Down>": modes.NORMAL | modes.INSERT
         };
     },
-    optons: function () {
+    options: function () {
         // FIXME: comment obviously incorrect
         // 0: never automatically edit externally
         // 1: automatically edit externally when message window is shown the first time
