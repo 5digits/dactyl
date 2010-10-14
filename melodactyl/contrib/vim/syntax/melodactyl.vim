@@ -24,16 +24,18 @@ syn keyword melodactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[c
     \ comc[lear] com[mand] contexts cuna[bbrev] cunm[ap] delbm[arks] delc[ommand] delmac[ros] delm[arks] delqm[arks] dels[tyle]
     \ dia[log] displayp[ane] dp[ane] dpope[n] doautoa[ll] do[autocmd] downl[oads] dl dpcl[ose] ec[ho] echoe[rr] echom[sg] em[enu]
     \ exe[cute] exta[dd] extde[lete] extd[isable] exte[nable] extens[ions] exts exto[ptions] extp[references] extu[pdate]
-    \ exu[sage] fini[sh] fo[rward] fw frameo[nly] ha[rdcopy] h[elp] helpa[ll] hi[ghlight] hist[ory] hs ia[bbrev] iabc[lear] im[ap]
-    \ imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js ju[mps] keepa[lt] let loadplugins lpl macros map mapc[lear]
-    \ ma[rk] marks mes[sages] messc[lear] mkm[elodactylrc] nm[ap] nmapc[lear] nno[remap] noh[lsearch] no[remap] norm[al] nunm[ap]
-    \ o[pen] optionu[sage] pa[geinfo] pagest[yle] pas pref[erences] prefs pw[d] qma[rk] qmarks q[uit] quita[ll] qa[ll] redr[aw]
-    \ re[load] reloada[ll] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames] se[t] setg[lobal] setl[ocal] sil[ent] so[urce]
-    \ st[op] stopa[ll] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab taba[ttach]
-    \ tabde[tach] tabd[o] bufd[o] tabdu[plicate] tabl[ast] bl[ast] tabm[ove] tabn[ext] tn[ext] bn[ext] tabo[nly] tabopen t[open]
-    \ tabnew tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind] bf[irst] time
-    \ toolbarh[ide] tbh[ide] toolbars[how] tbs[how] toolbart[oggle] tbt[oggle] una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion]
-    \ vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vunm[ap] wqa[ll] wq xa[ll] zo[om]
+    \ exu[sage] f[ilter] fini[sh] fo[rward] fw frameo[nly] ha[rdcopy] h[elp] helpa[ll] hi[ghlight] hist[ory] hs ia[bbrev]
+    \ iabc[lear] im[ap] imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js ju[mps] keepa[lt] let load loadplugins lpl
+    \ macros map mapc[lear] ma[rk] marks mediav[iew] mes[sages] messc[lear] mkm[elodactylrc] nm[ap] nmapc[lear] nno[remap]
+    \ noh[lsearch] no[remap] norm[al] nunm[ap] o[pen] optionu[sage] pa[geinfo] pagest[yle] pas playern[ext] playerpa[use]
+    \ playerp[lay] playerpr[ev] players[top] pref[erences] prefs pw[d] qma[rk] qmarks qu[eue] q[uit] quita[ll] qa[ll] redr[aw]
+    \ re[load] reloada[ll] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames] see[k] se[t] setg[lobal] setl[ocal] sil[ent]
+    \ sort[view] so[urce] st[op] stopa[ll] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle] styt[oggle]
+    \ tab taba[ttach] tabde[tach] tabd[o] bufd[o] tabdu[plicate] tabl[ast] bl[ast] tabm[ove] tabn[ext] tn[ext] bn[ext] tabo[nly]
+    \ tabopen t[open] tabnew tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind]
+    \ bf[irst] time tm[ap] tmapc[lear] tno[remap] toolbarh[ide] tbh[ide] toolbars[how] tbs[how] toolbart[oggle] tbt[oggle]
+    \ tunm[ap] una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vol[ume]
+    \ vunm[ap] wqa[ll] wq xa[ll] zo[om]
     \ contained
 
 syn match melodactylCommand "!" contained
@@ -60,7 +62,7 @@ syn keyword melodactylOption activate act altwildmode awim autocomplete au cdpat
 
 let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlsearch", "hls",
     \ "ignorecase", "ic", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "online",
-    \ "showmode", "smd", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+    \ "showmode", "smd", "shuffle", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match melodactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=melodactylSetMod'

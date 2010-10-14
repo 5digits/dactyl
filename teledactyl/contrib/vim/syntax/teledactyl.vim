@@ -19,17 +19,18 @@ unlet b:current_syntax
 
 syn match teledactylCommandStart "\%(^\s*:\=\)\@<=" nextgroup=teledactylCommand,teledactylAutoCmd
 
-syn keyword teledactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] bd[elete] bw[ipeout] bun[load] tabc[lose] ca[bbrev]
-    \ cabc[lear] cd chd[ir] cm[ap] cmapc[lear] cno[remap] colo[rscheme] comc[lear] com[mand] con[tact] contacts addr[essbook] contexts
-    \ copy[to] cuna[bbrev] cunm[ap] delc[ommand] delmac[ros] delm[arks] dels[tyle] dia[log] doautoa[ll] do[autocmd] ec[ho] echoe[rr]
-    \ echom[sg] em[enu] empty[trash] exe[cute] exta[dd] extde[lete] extd[isable] exte[nable] extens[ions] exts exto[ptions]
-    \ extp[references]  extu[pdate] exu[sage] fini[sh] frameo[nly] get[messages] go[to] ha[rdcopy] h[elp] helpa[ll] hi[ghlight]
-    \ ia[bbrev] iabc[lear] im[ap] imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js keepa[lt] let loadplugins lpl macros
-    \ m[ail] map mapc[lear] ma[rk] marks mes[sages] messc[lear] mkt[eledactylrc] move[to] nm[ap] nmapc[lear] nno[remap] noh[lsearch]
-    \ no[remap] norm[al] nunm[ap] optionu[sage] pa[geinfo] pagest[yle] pas pref[erences] prefs pw[d] q[uit] re[load] res[tart] runt[ime]
-    \ sav[eas] w[rite] scrip[tnames] se[t] setg[lobal] setl[ocal] sil[ent] so[urce] st[op] sty[le] styled[isable] styd[isable]
-    \ stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab tabd[o] bufd[o] tabl[ast] bl[ast] tabn[ext] tn[ext] bn[ext] tabp[revious]
-    \ tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind] bf[irst] time una[bbreviate] unl[et] unm[ap]
+syn keyword teledactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] bd[elete] bw[ipeout] bun[load] tabc[lose]
+    \ ca[bbrev] cabc[lear] cd chd[ir] cm[ap] cmapc[lear] cno[remap] colo[rscheme] comc[lear] com[mand] con[tact] contacts
+    \ addr[essbook] contexts copy[to] cuna[bbrev] cunm[ap] delc[ommand] delmac[ros] delm[arks] dels[tyle] dia[log] doautoa[ll]
+    \ do[autocmd] ec[ho] echoe[rr] echom[sg] em[enu] empty[trash] exe[cute] exta[dd] extde[lete] extd[isable] exte[nable]
+    \ extens[ions] exts exto[ptions] extp[references] extu[pdate] exu[sage] fini[sh] frameo[nly] get[messages] go[to] ha[rdcopy]
+    \ h[elp] helpa[ll] hi[ghlight] ia[bbrev] iabc[lear] im[ap] imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js
+    \ keepa[lt] let loadplugins lpl macros m[ail] map mapc[lear] ma[rk] marks mes[sages] messc[lear] mkt[eledactylrc] move[to]
+    \ nm[ap] nmapc[lear] nno[remap] noh[lsearch] no[remap] norm[al] nunm[ap] optionu[sage] pa[geinfo] pagest[yle] pas
+    \ pref[erences] prefs pw[d] q[uit] re[load] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames] se[t] setg[lobal] setl[ocal]
+    \ sil[ent] so[urce] st[op] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab tabd[o]
+    \ bufd[o] tabl[ast] bl[ast] tabn[ext] tn[ext] bn[ext] tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext]
+    \ tabr[ewind] tabfir[st] br[ewind] bf[irst] time tm[ap] tmapc[lear] tno[remap] tunm[ap] una[bbreviate] unl[et] unm[ap]
     \ verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vunm[ap] zo[om]
     \ contained
 

@@ -23,7 +23,7 @@ syn keyword pentadactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[
     \ tabc[lose] bma[rk] bmarks b[uffer] buffers files ls tabs ca[bbrev] cabc[lear] cd chd[ir] cm[ap] cmapc[lear] cno[remap]
     \ colo[rscheme] comc[lear] com[mand] contexts cuna[bbrev] cunm[ap] delbm[arks] delc[ommand] delmac[ros] delm[arks] delqm[arks]
     \ dels[tyle] dia[log] doautoa[ll] do[autocmd] downl[oads] dl ec[ho] echoe[rr] echom[sg] em[enu] exe[cute] exta[dd] extde[lete]
-    \ extd[isable] exte[nable] extens[ions] exts exto[ptions] extp[references]  extu[pdate] exu[sage] fini[sh] fo[rward] fw
+    \ extd[isable] exte[nable] extens[ions] exts exto[ptions] extp[references] extu[pdate] exu[sage] fini[sh] fo[rward] fw
     \ frameo[nly] ha[rdcopy] h[elp] helpa[ll] hi[ghlight] hist[ory] hs ia[bbrev] iabc[lear] im[ap] imapc[lear] ino[remap]
     \ iuna[bbrev] iunm[ap] javas[cript] js ju[mps] keepa[lt] let loadplugins lpl macros map mapc[lear] ma[rk] marks mes[sages]
     \ messc[lear] mkp[entadactylrc] nm[ap] nmapc[lear] nno[remap] noh[lsearch] no[remap] norm[al] nunm[ap] o[pen] optionu[sage]
@@ -32,9 +32,10 @@ syn keyword pentadactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[
     \ sbope[n] sil[ent] so[urce] st[op] stopa[ll] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle]
     \ styt[oggle] tab taba[ttach] tabde[tach] tabd[o] bufd[o] tabdu[plicate] tabl[ast] bl[ast] tabm[ove] tabn[ext] tn[ext] bn[ext]
     \ tabo[nly] tabopen t[open] tabnew tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st]
-    \ br[ewind] bf[irst] time toolbarh[ide] tbh[ide] toolbars[how] tbs[how] toolbart[oggle] tbt[oggle] una[bbreviate] u[ndo]
-    \ undoa[ll] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vunm[ap] winc[lose]
-    \ wc[lose] wind[ow] winon[ly] wino[pen] wo[pen] wqa[ll] wq xa[ll] zo[om]
+    \ br[ewind] bf[irst] time tm[ap] tmapc[lear] tno[remap] toolbarh[ide] tbh[ide] toolbars[how] tbs[how] toolbart[oggle]
+    \ tbt[oggle] tunm[ap] una[bbreviate] u[ndo] undoa[ll] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap]
+    \ vmapc[lear] vno[remap] vunm[ap] winc[lose] wc[lose] wind[ow] winon[ly] wino[pen] wo[pen] wqa[ll] wq xa[ll] zo[om]
+    \ run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[ck] bd[elete] bw[ipeout] bun[load]
     \ contained
 
 syn match pentadactylCommand "!" contained
