@@ -94,9 +94,8 @@ const Hints = Module("hints", {
         this._activeTimeout = null;
     },
     __reset: function __reset() {
-        if (!this._usedTabKey) {
+        if (!this._usedTabKey)
             this._hintNumber = 0;
-        }
         if (this._continue && this._validHints.length <= 1) {
             this._hintString = "";
             commandline.widgets.command = this._hintString;
@@ -378,6 +377,7 @@ const Hints = Module("hints", {
      * Display the hints in pageHints that are still valid.
      */
     _showHints: function _showHints() {
+        util.dumpStack();
         let hintnum = 1;
         let validHint = this._hintMatcher(this._hintString.toLowerCase());
         let activeHint = this._hintNumber || 1;
@@ -451,6 +451,7 @@ const Hints = Module("hints", {
      *     hint disappears.
      */
     _removeHints: function _removeHints(timeout, slight) {
+        util.dump("_removeHints", timeout, slight);
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
@@ -856,6 +857,7 @@ const Hints = Module("hints", {
      * Cancel all hinting.
      */
     hide: function hide() {
+        this._continue = false;
         if (this._top)
             this._top.removeEventListener("resize", this._resizeTimer.closure.tell, true);
         this._top = null;
