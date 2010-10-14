@@ -318,8 +318,8 @@
     <tags>'act' 'activate'</tags>
     <spec>'activate' 'act'</spec>
     <type>stringlist</type>
-    <default>addons,bookmarks,diverted,downloads,extoptions,help,homepage,
-        quickmark,tabopen,paste</default>
+    <default>addons,bookmarks,diverted,downloads,extoptions,
+          help,homepage,quickmark,tabopen,paste</default>
     <description>
         <p>
             A list of items which, when opened in a new tab, are
