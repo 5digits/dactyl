@@ -157,7 +157,7 @@ const Command = Class("Command", {
      */
     hasName: function (name) {
         return this.specs.some(function (spec) {
-            let [, head, tail] = spec.match(/([^[]+)(?:\[(.*)])?/);
+            let [, head, tail] = /([^[]+)(?:\[(.*)])?/.exec(spec);
             return name.indexOf(head) == 0 && (head + (tail || "")).indexOf(name) == 0;
         });
     },
@@ -292,7 +292,7 @@ const Command = Class("Command", {
      */
     parseSpecs: function parseSpecs(specs) {
         return specs.map(function (spec) {
-            let [, head, tail] = spec.match(/([^[]+)(?:\[(.*)])?/);
+            let [, head, tail] = /([^[]+)(?:\[(.*)])?/.exec(spec);
             return tail ? [head + tail, head] : [head];
         });
     }
