@@ -282,7 +282,7 @@ const Config = Module("config", ConfigBase, {
                 setter: function (value) {
                     const ioService = services.get("io");
                     ioService.offline = !value;
-                    options.setPref("browser.offline", ioService.offline);
+                    prefs.set("browser.offline", ioService.offline);
                     return value;
                 },
                 getter: function () !services.get("io").offline
