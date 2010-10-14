@@ -17,10 +17,6 @@ const Config = Module("config", ConfigBase, {
         window.toJavaScriptConsole = function () {
             toOpenWindowByType("global:console", "chrome://global/content/console.xul");
         };
-
-        window.BrowserStop = function () {
-            SBGetBrowser().mCurrentBrowser.stop();
-        };
     },
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
