@@ -1,8 +1,7 @@
 from mercurial import util
 import os
 
-def fix_symlinks(repo, hooktype, parent1, **kwargs):
-    print map(repr, (repo, hooktype, parent1, kwargs))
+def fix_symlinks(ui, repo, hooktype, parent1, **kwargs):
     revert = hooktype in ('precommit', 'preupdate')
     ctxt = repo[parent1]
     for filename in ctxt:
