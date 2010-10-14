@@ -538,7 +538,7 @@ const CommandLine = Module("commandline", {
      * @param {boolean} forceSingle If provided, don't let over-long
      *     messages move to the MOW.
      */
-    _echoLine: function echoLine(str, highlightGroup, forceSingle) {
+    _echoLine: function echoLine(str, highlightGroup, forceSingle, silent) {
         this.widgets.message = str ? [highlightGroup, str] : null;
 
         dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
@@ -549,7 +549,7 @@ const CommandLine = Module("commandline", {
         let field = this.widgets.active.message.inputField;
         if (field.value && !forceSingle && field.editor.rootElement.scrollWidth > field.scrollWidth) {
             this.widgets.message = null;
-            this._echoMultiline(<span highlight="Message">{str}</span>, highlightGroup);
+            this._echoMultiline(<span highlight="Message">{str}</span>, highlightGroup, true);
         }
     },
 
@@ -559,15 +559,13 @@ const CommandLine = Module("commandline", {
      * @param {string} str
      * @param {string} highlightGroup
      */
-    _echoMultiline: function echoMultiline(str, highlightGroup) {
+    _echoMultiline: function echoMultiline(str, highlightGroup, silent) {
         let doc = this.widgets.multilineOutput.contentDocument;
         let win = this.widgets.multilineOutput.contentWindow;
 
         this.widgets.message = null;
         if (!this.commandVisible)
             this.hide();
-
-        dactyl.triggerObserver("echoMultiline", str, highlightGroup);
 
         this._startHints = false;
         if (!(modes.extended & modes.OUTPUT_MULTILINE))
@@ -584,6 +582,9 @@ const CommandLine = Module("commandline", {
         let style = typeof str === "string" ? "pre" : "nowrap";
         this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{str}</div>;
         let output = util.xmlToDom(this._lastMowOutput, doc);
+
+        if (!silent)
+            dactyl.triggerObserver("echoMultiline", str, highlightGroup, output);
 
         // FIXME: need to make sure an open MOW is closed when commands
         //        that don't generate output are executed
@@ -660,7 +661,7 @@ const CommandLine = Module("commandline", {
         else {
             if (this.widgets.message && this.widgets.message[1] == this._lastEcho)
                 this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
-                                    this.widgets.message[0]);
+                                    this.widgets.message[0], true);
 
             if (action === this._echoLine && !(flags & this.FORCE_MULTILINE) && !this.widgets.mowContainer.collapsed) {
                 highlightGroup += " Message";
@@ -1153,6 +1154,17 @@ const CommandLine = Module("commandline", {
         }
         if (this._history)
             this._history.reset();
+    },
+
+    withOutputToString: function (fn, self) {
+        let buffer = [];
+        dactyl.registerObserver("echoLine", observe, true);
+        dactyl.registerObserver("echoMultiline", observe, true);
+        function observe(str, highlight, dom) {
+            buffer.push(dom ? dom.textContent : str)
+        }
+        dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
+        return buffer.join("\n");
     }
 }, {
     /**

@@ -210,6 +210,7 @@
                 <li><ex>:vmap</ex></li>
                 <li><ex>:vnoremap</ex></li>
                 <li><ex>:winopen</ex></li>
+                <li><ex>:yank</ex></li>
             </ul>
         </p>
     </description>

@@ -110,6 +110,14 @@
     </description>
 </item>
 
+<item>
+    <tags>:yank :y</tags>
+    <spec>:y[ank] <a>cmd</a></spec>
+    <description>
+        <p>Yanks the output of the given command to the clipboard.</p>
+    </description>
+</item>
+
 <h2 tag="privacy">Privacy and sensitive information</h2>
 
 <p>

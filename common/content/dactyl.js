@@ -621,7 +621,7 @@ const Dactyl = Module("dactyl", {
         let br = <>
                     </>;
 
-        dactyl.clipboardWrite(<>
+        return <>
             <item>
                 <tags>{template.map(obj.names, tag, " ")}</tags>
                 <spec>{spec((obj.specs || obj.names)[0])}</spec>{
@@ -633,7 +633,7 @@ const Dactyl = Module("dactyl", {
                         extraHelp ? br+extraHelp : "" }{
                         !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }
                 </description>
-            </item></>.toXMLString().replace(/^ {12}/gm, ""), true);
+            </item></>.toXMLString().replace(/^ {12}/gm, "");
     },
 
     /**

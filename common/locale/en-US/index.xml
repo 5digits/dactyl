@@ -351,6 +351,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:winonly</ex></dt> <dd>Close all other windows</dd>
     <dt><ex>:winopen</ex></dt> <dd>Open one or more URLs in a new window</dd>
     <dt><ex>:wqall</ex></dt> <dd>Save the session and quit</dd>
+    <dt><ex>:yank</ex></dt> <dd>Yanks the output of the given command to the clipboard.</dd>
     <dt><ex>:zoom</ex></dt> <dd>Set zoom value of current web page</dd>
 </dl>
 

@@ -1241,6 +1241,17 @@ const Commands = Module("commands", {
                 argCount: "1",
                 completer: function (context) completion.userCommand(context)
             });
+
+        commands.add(["y[ank]"],
+            "Yanks the output of the given command to the clipboard",
+            function (args) {
+                dactyl.clipboardWrite(
+                    commandline.withOutputToString(commands.execute, commands, args[0]));
+            },
+            {
+                completer: function (context) completion.ex(context),
+                literal: 0
+            });
     },
     javascript: function () {
         JavaScript.setCompleter([this.get, this.removeUserCommand],
