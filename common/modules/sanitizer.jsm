@@ -242,7 +242,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 this.sanitizeItems(null, Range(this.sessionStart), null, "sessionHistory");
         },
         "quit-application-granted": function (subject, data) {
-            if (!this.sanitizeItems(null, Range(), null, "shutdown"))
+            if (this.runAtShutdown && !this.sanitizeItems(null, Range(), null, "shutdown"))
                 this.ranAtShutdown = true;
         },
         "private-browsing": function (subject, data) {
