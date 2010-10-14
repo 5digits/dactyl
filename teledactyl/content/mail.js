@@ -883,8 +883,7 @@ const Mail = Module("mail", {
             "Set the archive folder",
             "string", "Archive",
             {
-                completer: function (context) completion.mailFolder(context),
-                validator: Option.validateCompleter
+                completer: function (context) completion.mailFolder(context)
             });
 
         // TODO: generate the possible values dynamically from the menu
@@ -907,8 +906,7 @@ const Mail = Module("mail", {
                     ["classic",  "Classic View"],
                     ["wide",     "Wide View"],
                     ["vertical", "Vertical View"]
-                ],
-                validator: Option.validateCompleter
+                ]
             });
 
         options.add(["smtpserver", "smtp"],
@@ -921,8 +919,7 @@ const Mail = Module("mail", {
                     services.get("smtpService").defaultServer = server;
                     return value;
                 },
-                completer: function (context) [[s.key, s.serverURI] for ([, s] in Iterator(mail.smtpServers))],
-                validator: Option.validateCompleter
+                completer: function (context) [[s.key, s.serverURI] for ([, s] in Iterator(mail.smtpServers))]
             });
 
         /*options.add(["threads"],

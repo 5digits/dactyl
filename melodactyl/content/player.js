@@ -782,8 +782,7 @@ const Player = Module("player", {
                     ["0", "Repeat none"],
                     ["1", "Repeat one"],
                     ["2", "Repeat all"]
-                ],
-                validator: Option.validateCompleter
+                ]
             });
 
         options.add(["shuffle"],
