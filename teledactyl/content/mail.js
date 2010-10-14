@@ -423,8 +423,8 @@ const Mail = Module("mail", {
                 let mailargs = {};
                 mailargs.to =          args.join(", ");
                 mailargs.subject =     args["-subject"];
-                mailargs.bcc =         args["-bcc"];
-                mailargs.cc =          args["-cc"];
+                mailargs.bcc =         args["-bcc"] || [];
+                mailargs.cc =          args["-cc"] || [];
                 mailargs.body =        args["-text"];
                 mailargs.attachments = args["-attachment"] || [];
 
@@ -441,11 +441,14 @@ const Mail = Module("mail", {
                 mail.composeNewMail(mailargs);
             },
             {
-                options: [[["-subject", "-s"],    commands.OPTION_STRING],
-                          [["-attachment", "-a"], commands.OPTION_LIST],
-                          [["-bcc", "-b"],        commands.OPTION_STRING],
-                          [["-cc", "-c"],         commands.OPTION_STRING],
-                          [["-text", "-t"],       commands.OPTION_STRING]]
+                // TODO: completers, validators - whole shebang. Do people actually use this? --djk
+                options: [
+                    { names: ["-subject", "-s"],     type: CommandOption.STRING, description: "Subject line"},
+                    { names: ["-attachment", "-a"],  type: CommandOption.LIST,   description: "List of attachments"},
+                    { names: ["-bcc", "-b"],         type: CommandOption.LIST,   description: "Blind Carbon Copy addresses"},
+                    { names: ["-cc", "-c"],          type: CommandOption.LIST,   description: "Carbon Copy addresses"},
+                    { names: ["-text", "-t"],        type: CommandOption.STRING, description: "Message body"}
+                ]
             });
 
         commands.add(["copy[to]"],

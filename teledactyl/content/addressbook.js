@@ -107,9 +107,9 @@ const Addressbook = Module("addressbook", {
             },
             {
                 argCount: "+",
-                options: [[["-firstname", "-f"], commands.OPTION_STRING],
-                          [["-lastname", "-l"],  commands.OPTION_STRING],
-                          [["-name", "-n"],      commands.OPTION_STRING]]
+                options: [{ names: ["-firstname", "-f"], type: CommandOption.STRING, description: "The first name of the contact"   },
+                          { names: ["-lastname", "-l"],  type: CommandOption.STRING, description: "The last name of the contact"    },
+                          { names: ["-name", "-n"],      type: CommandOption.STRING, description: "The display name of the contact" }]
             });
 
         commands.add(["contacts", "addr[essbook]"],

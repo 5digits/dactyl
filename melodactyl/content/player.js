@@ -582,9 +582,14 @@ const Player = Module("player", {
                 {
                     argCount: "1",
                     completer: function (context) completion.mediaListSort(context),
-                    options: [[["-order", "-o"], commands.OPTION_STRING,
-                        function (arg) /^(up|down)$/.test(arg),
-                        function () [["up", "Sort in ascending order"], ["down", "Sort in descending order"]]]]
+                    options: [
+                        {
+                            names: ["-order", "-o"], type: CommandOption.STRING,
+                            description: "Specify the sorting order of the given field",
+                            validator: function (arg) /^(up|down)$/.test(arg),
+                            completer: function () [["up", "Sort in ascending order"], ["down", "Sort in descending order"]]
+                        }
+                    ]
                 });
 
         // FIXME: use :add -q like cmus? (not very vim-like are it's multi-option commands) --djk
