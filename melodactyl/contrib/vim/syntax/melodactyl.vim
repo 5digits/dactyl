@@ -28,14 +28,14 @@ syn keyword melodactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[c
     \ iabc[lear] im[ap] imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js ju[mps] keepa[lt] let load loadplugins lpl
     \ macros map mapc[lear] ma[rk] marks mediav[iew] mes[sages] messc[lear] mkm[elodactylrc] nm[ap] nmapc[lear] nno[remap]
     \ noh[lsearch] no[remap] norm[al] nunm[ap] o[pen] optionu[sage] pa[geinfo] pagest[yle] pas playern[ext] playerpa[use]
-    \ playerp[lay] playerpr[ev] players[top] pref[erences] prefs pw[d] qma[rk] qmarks qu[eue] q[uit] quita[ll] qa[ll] redr[aw]
-    \ re[load] reloada[ll] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames] see[k] se[t] setg[lobal] setl[ocal] sil[ent]
-    \ sort[view] so[urce] st[op] stopa[ll] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle] styt[oggle]
-    \ tab taba[ttach] tabde[tach] tabd[o] bufd[o] tabdu[plicate] tabl[ast] bl[ast] tabm[ove] tabn[ext] tn[ext] bn[ext] tabo[nly]
-    \ tabopen t[open] tabnew tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind]
-    \ bf[irst] time tm[ap] tmapc[lear] tno[remap] toolbarh[ide] tbh[ide] toolbars[how] tbs[how] toolbart[oggle] tbt[oggle]
-    \ tunm[ap] una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vol[ume]
-    \ vunm[ap] wqa[ll] wq xa[ll] zo[om]
+    \ playerp[lay] playerpr[ev] players[top] pm[ap] pmapc[lear] pno[remap] pref[erences] prefs punm[ap] pw[d] qma[rk] qmarks
+    \ qu[eue] q[uit] quita[ll] qa[ll] redr[aw] re[load] reloada[ll] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames] see[k]
+    \ se[t] setg[lobal] setl[ocal] sil[ent] sort[view] so[urce] st[op] stopa[ll] sty[le] styled[isable] styd[isable] stylee[nable]
+    \ stye[nable] stylet[oggle] styt[oggle] tab taba[ttach] tabde[tach] tabd[o] bufd[o] tabdu[plicate] tabl[ast] bl[ast] tabm[ove]
+    \ tabn[ext] tn[ext] bn[ext] tabo[nly] tabopen t[open] tabnew tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext]
+    \ tabr[ewind] tabfir[st] br[ewind] bf[irst] time tm[ap] tmapc[lear] tno[remap] toolbarh[ide] tbh[ide] toolbars[how] tbs[how]
+    \ toolbart[oggle] tbt[oggle] tunm[ap] una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap]
+    \ vmapc[lear] vno[remap] vol[ume] vunm[ap] wqa[ll] wq xa[ll] y[ank] zo[om]
     \ contained
 
 syn match melodactylCommand "!" contained
@@ -55,9 +55,9 @@ syn region melodactylSet matchgroup=melodactylCommand start="\%(^\s*:\=\)\@<=\<\
 syn keyword melodactylOption activate act altwildmode awim autocomplete au cdpath cd complete cpt defsearch ds editor
     \ encoding enc eventignore ei extendedhinttags eht fileencoding fenc followhints fh guioptions go helpfile hf hintinputs hin
     \ hintkeys hk hintmatching hm hinttags ht hinttimeout hto history hi laststatus ls loadplugins lpl mapleader ml maxitems
-    \ messages msgs newtab nextpattern pageinfo pa popups pps previouspattern runtimepath rtp scroll scr shell sh shellcmdflag
-    \ shcf showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator us verbose vbs wildanchor wia
-    \ wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
+    \ messages msgs newtab nextpattern pageinfo pa popups pps previouspattern repeat runtimepath rtp scroll scr shell sh
+    \ shellcmdflag shcf showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator us verbose vbs wildanchor
+    \ wia wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=melodactylSetMod
 
 let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlsearch", "hls",

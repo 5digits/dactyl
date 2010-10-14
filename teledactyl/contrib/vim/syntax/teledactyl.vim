@@ -31,7 +31,7 @@ syn keyword teledactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] bd[e
     \ sil[ent] so[urce] st[op] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab tabd[o]
     \ bufd[o] tabl[ast] bl[ast] tabn[ext] tn[ext] bn[ext] tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext]
     \ tabr[ewind] tabfir[st] br[ewind] bf[irst] time tm[ap] tmapc[lear] tno[remap] tunm[ap] una[bbreviate] unl[et] unm[ap]
-    \ verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vunm[ap] zo[om]
+    \ verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vunm[ap] y[ank] zo[om]
     \ contained
 
 syn match teledactylCommand "!" contained
@@ -53,9 +53,9 @@ syn keyword teledactylOption altwildmode awim archivefolder autocomplete au cdpa
     \ wsp
     \ contained nextgroup=teledactylSetMod
 
-let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlsearch", "hls",
-    \ "ignorecase", "ic", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "showmode",
-    \ "smd", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+let s:toggleOptions = ["autoexternal", "ae", "banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs",
+    \ "hlsearch", "hls", "ignorecase", "ic", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks",
+    \ "more", "online", "showmode", "smd", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match teledactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=teledactylSetMod'

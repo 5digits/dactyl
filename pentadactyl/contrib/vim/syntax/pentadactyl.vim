@@ -34,8 +34,7 @@ syn keyword pentadactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[
     \ tabo[nly] tabopen t[open] tabnew tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st]
     \ br[ewind] bf[irst] time tm[ap] tmapc[lear] tno[remap] toolbarh[ide] tbh[ide] toolbars[how] tbs[how] toolbart[oggle]
     \ tbt[oggle] tunm[ap] una[bbreviate] u[ndo] undoa[ll] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap]
-    \ vmapc[lear] vno[remap] vunm[ap] winc[lose] wc[lose] wind[ow] winon[ly] wino[pen] wo[pen] wqa[ll] wq xa[ll] zo[om]
-    \ run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[ck] bd[elete] bw[ipeout] bun[load]
+    \ vmapc[lear] vno[remap] vunm[ap] winc[lose] wc[lose] wind[ow] winon[ly] wino[pen] wo[pen] wqa[ll] wq xa[ll] y[ank] zo[om]
     \ contained
 
 syn match pentadactylCommand "!" contained
