@@ -893,7 +893,7 @@ const Options = Module("options", {
                         if (options["verbose"] > 0 && option.setFrom)
                             msg += "\n        Last set from " + option.setFrom;
 
-                        dactyl.echo(<span highlight="CmdOutput">{msg}</span>);
+                        dactyl.echo(<span highlight="CmdOutput Message">{msg}</span>);
                     }
                 }
                 // write access
