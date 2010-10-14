@@ -76,9 +76,7 @@ const Events = Module("events", {
         this.addSessionListener(window, "DOMMenuBarActive", this.closure.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.closure.onDOMMenuBarInactive, true);
         this.addSessionListener(window, "focus", this.wrapListener(this.onFocus), true);
-        this.addSessionListener(window, "keydown", this.wrapListener(this.onKeyUpOrDown), true);
         this.addSessionListener(window, "keypress", this.wrapListener(this.onKeyPress), true);
-        this.addSessionListener(window, "keyup", this.wrapListener(this.onKeyUpOrDown), true);
         this.addSessionListener(window, "mousedown", this.wrapListener(this.onMouseDown), true);
         this.addSessionListener(window, "popuphidden", this.closure.onPopupHidden, true);
         this.addSessionListener(window, "popupshown", this.closure.onPopupShown, true);
@@ -574,7 +572,6 @@ const Events = Module("events", {
      * @returns {boolean}
      */
     waitForPageLoad: function () {
-        //util.dump("start waiting in loaded state: " + buffer.loaded);
         util.threadYield(true); // clear queue
 
         if (buffer.loaded == 1)
@@ -586,8 +583,6 @@ const Events = Module("events", {
         let now;
         while (now = Date.now(), now < end) {
             util.threadYield();
-            //if ((now - start) % 1000 < 10)
-            //    util.dump("waited: " + (now - start) + " ms");
 
             if (!events.feedingKeys)
                 return false;
@@ -937,12 +932,6 @@ const Events = Module("events", {
             if (!(modes.extended & modes.HINTS))
                 statusline.updateInputBuffer(motionMap + this._input.buffer);
         }
-    },
-
-    // this is need for sites like msn.com which focus the input field on keydown
-    onKeyUpOrDown: function onKeyUpOrDown(event) {
-        if (!Events.isInputElemFocused() && !modes.passThrough)
-            event.stopPropagation();
     },
 
     onMouseDown: function onMouseDown(event) {
