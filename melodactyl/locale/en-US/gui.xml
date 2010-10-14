@@ -31,7 +31,7 @@
     <dt>subscribe</dt>       <dd>Add a new subscription</dd>
 </dl>
 
-<item replace="sbcl">
+<item replace=":sbcl">
     <tags>:dpcl :dpclose</tags>
     <spec>:dpcl<oa>ose</oa> <a>pane</a></spec>
     <description>
@@ -40,7 +40,7 @@
 </item>
 
 <item replace=":sbope">
-    <tags>:dpope :dpopen :dp :dpane :dislplayp :dislplaypane</tags>
+    <tags>:dpope :dpopen :dp :dpane :displayp :displaypane</tags>
     <spec>:displaypane <a>pane</a></spec>
     <description>
         <p>
