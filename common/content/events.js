@@ -788,8 +788,6 @@ const Events = Module("events", {
             let stop = false;
             let mode = modes.getStack(0);
 
-            util.dump(String(mode), key);
-
             let win = document.commandDispatcher.focusedWindow;
             if (win && win.document && "designMode" in win.document && win.document.designMode == "on" && !config.isComposeWindow)
                 stop = true;
@@ -809,8 +807,6 @@ const Events = Module("events", {
                 mode = modes.getStack(1);
             }
             // handle Escape-all-keys mode (Ctrl-q)
-
-            util.dump(String(mode), key, stop);
 
             if (stop) {
                 this._input.buffer = "";

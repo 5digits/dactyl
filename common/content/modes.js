@@ -272,7 +272,6 @@ const Modes = Module("modes", {
     },
 
     pop: function pop(mode) {
-        util.dumpStack(mode);
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
