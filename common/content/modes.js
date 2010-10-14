@@ -207,7 +207,6 @@ const Modes = Module("modes", {
     },
 
     // helper function to set both modes in one go
-    // if silent == true, you also need to take care of the mode handling changes yourself
     set: function set(mainMode, extendedMode, params, stack) {
         params = params || this.getMode(mainMode || this.main).params;
 
