@@ -83,7 +83,6 @@ const Events = Module("events", {
         this.addSessionListener(window, "popuphidden", this.closure.onPopupHidden, true);
         this.addSessionListener(window, "popupshown", this.closure.onPopupShown, true);
         this.addSessionListener(window, "resize", this.closure.onResize, true);
-
     },
 
     destroy: function () {
@@ -658,9 +657,8 @@ const Events = Module("events", {
     // TODO: Merge with onFocusChange
     onFocus: function onFocus(event) {
         let elem = event.originalTarget;
-        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
-        if (Events.isContentNode(elem) && !buffer.focusAllowed(win)
+        if (Events.isContentNode(elem) && !buffer.focusAllowed(elem)
             && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
             elem.blur();
     },
@@ -683,10 +681,6 @@ const Events = Module("events", {
 
         try {
             if (elem && elem.readOnly)
-                return;
-
-            if (Events.isContentNode(elem) && !buffer.focusAllowed(win)
-                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
                 return;
 
             if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
