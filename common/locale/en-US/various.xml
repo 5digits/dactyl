@@ -221,6 +221,38 @@
     </description>
 </item>
 
+<h3 tag="cookie-settings">Cookie Settings</h3>
+<item>
+    <tags>:cookies :ck</tags>
+    <spec>:cookies <a>host</a> <oa>action</oa> …</spec>
+    <description>
+        <p>
+            Manage cookies for <a>host</a>. Additionally, the completion
+            list will show you information about the cookies and
+            permissions for the current page.
+        </p>
+
+        <p>Available actions:</p>
+
+        <dl>
+            <dt>unset</dt>            <dd>Unset special permissions for <a>host</a></dd>
+            <dt>allow</dt>            <dd>Allow cookies from <a>host</a></dd>
+            <dt>deny</dt>             <dd>Deny cookies from <a>host</a></dd>
+            <dt>session</dt>          <dd>Allow cookies from <a>host</a> for the current session</dd>
+            <dt>list</dt>             <dd>List all cookies for <a>host</a></dd>
+            <dt>clear</dt>            <dd>Clear all cookies for <a>host</a></dd>
+            <dt>clear-persistent</dt> <dd>Clear all persistent cookies for <a>host</a></dd>
+            <dt>clear-session</dt>    <dd>Clear all session cookies for <a>host</a></dd>
+        </dl>
+
+        <p>
+            If no <oa>action</oa> is given, the value of <o>cookies</o> is used.
+        </p>
+
+        <example>:map -b c :cookies <k name="A-Tab"/></example>
+    </description>
+</item>
+
 <h2 tag="online-help">Online help</h2>
 
 <item>

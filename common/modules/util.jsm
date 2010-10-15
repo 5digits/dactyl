@@ -268,10 +268,14 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     domToString: function (node) {
         this._div.appendChild(this._div.ownerDocument.importNode(node, true));
-        let sel = this._div.ownerDocument.defaultView.getSelection();
-        sel.removeAllRanges();
-        sel.selectAllChildren(this._div);
-        let res = sel.toString();
+        if (/^pre(-wrap)?$/.test(this.computedStyle(this._div.lastChild).whiteSpace))
+            var res = this._div.textContent;
+        else {
+            let sel = this._div.ownerDocument.defaultView.getSelection();
+            sel.removeAllRanges();
+            sel.selectAllChildren(this._div);
+            var res = sel.toString();
+        }
         while (this._div.firstChild)
             this._div.removeChild(this._div.firstChild);
         return res;
@@ -730,6 +734,12 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         }
     },
 
+    overlayWindow: function (url, fn) {
+        Array.concat(url).forEach(function (url) {
+            this.overlays[url] = fn;
+        }, this);
+    },
+
     /**
      * Parses the fields of a form and returns a URL/POST-data pair
      * that is the equivalent of submitting the form.
@@ -797,6 +807,26 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         }
     },
 
+    /**
+     * An interruptible generator that returns all values between <b>start</b>
+     * and <b>end</b>. The thread yields every <b>time</b> milliseconds.
+     *
+     * @param {number} start The interval's start value.
+     * @param {number} end The interval's end value.
+     * @param {number} time The time in milliseconds between thread yields.
+     * @returns {Iterator(Object)}
+     */
+    interruptibleRange: function interruptibleRange(start, end, time) {
+        let endTime = Date.now() + time;
+        while (start < end) {
+            if (Date.now() > endTime) {
+                util.threadYield(true, true);
+                endTime = Date.now() + time;
+            }
+            yield start++;
+        }
+    },
+
     maxErrors: 15,
     errors: Class.memoize(function () []),
     reportError: function (error) {
@@ -823,29 +853,26 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * An interruptible generator that returns all values between <b>start</b>
-     * and <b>end</b>. The thread yields every <b>time</b> milliseconds.
+     * Given a domain, returns an array of all non-toplevel subdomains
+     * of that domain.
      *
-     * @param {number} start The interval's start value.
-     * @param {number} end The interval's end value.
-     * @param {number} time The time in milliseconds between thread yields.
-     * @returns {Iterator(Object)}
+     * @param {string} host The host for which to find subdomains.
+     * @returns {[string]}
      */
-    interruptibleRange: function interruptibleRange(start, end, time) {
-        let endTime = Date.now() + time;
-        while (start < end) {
-            if (Date.now() > endTime) {
-                util.threadYield(true, true);
-                endTime = Date.now() + time;
-            }
-            yield start++;
-        }
-    },
+    subdomains: function subdomains(host) {
+        if (/(^|\.)\d+$|:.*:/.test(host))
+            // IP address or similar
+            return [host];
 
-    overlayWindow: function (url, fn) {
-        Array.concat(url).forEach(function (url) {
-            this.overlays[url] = fn;
-        }, this);
+        let base = host.replace(/.*\.(.+?\..+?)$/, "$1");
+        try {
+            base = services.get("tld").getBaseDomainFromHost(host);
+        }
+        catch (e) {}
+
+        let ary = host.split(".");
+        ary = [ary.slice(i).join(".") for (i in util.range(ary.length - 1, 0, -1))];
+        return ary.filter(function (h) h.length >= base.length);
     },
 
     /**

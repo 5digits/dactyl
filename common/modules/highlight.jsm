@@ -32,7 +32,7 @@ Highlight.defaultValue("baseClass", function () /^(\w*)/.exec(this.class)[0]);
 Highlight.defaultValue("selector", function () highlight.selector(this.class));
 Highlight.defaultValue("sites", function ()
     this.base ? this.base.sites
-              : ["chrome://dactyl/*", "dactyl:*", "file://*"].concat(
+              : ["chrome://dactyl/*", "dactyl:*", "file://*", "resource://gre-resources/hiddenWindow.html"].concat(
                     highlight.styleableChrome));
 Highlight.defaultValue("style", function ()
     styles.addSheet(true, "highlight:" + this.class, this.sites, this.css, this.agent, true));

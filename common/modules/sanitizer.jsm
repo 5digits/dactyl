@@ -8,8 +8,6 @@
 // TODO:
 //   - fix Sanitize autocommand
 //   - add warning for TIMESPAN_EVERYTHING?
-//   - respect privacy.clearOnShutdown et al or recommend Leave autocommand?
-//   - integrate with the Clear Private Data dialog?
 
 // FIXME:
 //   - finish 1.9.0 support if we're going to support sanitizing in Melodactyl
@@ -304,6 +302,24 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             return errors;
         })
 }, {
+    PERMS: {
+        unset:   0,
+        allow:   1,
+        deny:    2,
+        session: 8,
+    },
+    UNPERMS: Class.memoize(function () array.toObject([[v, k] for ([k, v] in Iterator(this.PERMS))])),
+    COMMANDS: {
+        unset:   "Unset",
+        allow:   "Allowed",
+        deny:    "Denied",
+        session: "Allowed for the current session",
+        list:    "List all cookies for domain",
+        clear:   "Clear all cookies for domain",
+        "clear-persistent": "Clear all persistent cookies for domain",
+        "clear-session":    "Clear all session cookies for domain",
+    },
+
     argPrefMap: {
         offlineapps:  "offlineApps",
         sitesettings: "siteSettings",
@@ -414,6 +430,93 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 ],
                 privateData: true
             });
+
+
+            function getPerms(host) {
+                let uri = util.createURI(host);
+                if (uri)
+                    return Sanitizer.UNPERMS[services.get("permissions").testPermission(uri, "cookie")];
+                return "unset";
+            }
+            function setPerms(host, perm) {
+                let uri = util.createURI(host);
+                services.get("permissions").remove(uri, "cookie");
+                services.get("permissions").add(uri, "cookie", Sanitizer.PERMS[perm]);
+            }
+            commands.addUserCommand(["cookies", "ck"],
+                "Change cookie permissions for sites.",
+                function (args) {
+                    let host = args.shift();
+                    let session = true;
+                    if (!args.length)
+                        args = modules.options["cookies"];
+
+                    for (let [,cmd] in Iterator(args))
+                        switch (cmd) {
+                        case "clear":
+                            for (let c in Sanitizer.iterCookies(host))
+                                services.get("cookies").remove(c.host, c.name, c.path, false);
+                            break;
+                        case "clear-persistent":
+                            session = false;
+                        case "clear-session":
+                            for (let c in Sanitizer.iterCookies(host))
+                                if (c.isSession == session)
+                                    services.get("cookies").remove(c.host, c.name, c.path, false);
+                            return;
+
+                        case "list":
+                            modules.commandLine.commandOutput(template.tabular(
+                                ["Host", "Session", "Path", "Value"], ["padding-right: 1em", "padding-right: 1em", "padding-right: 1em"],
+                                ([c.host,
+                                  <span highlight={c.isSession ? "Enabled" : "Disabled"}>{c.isSession ? "session" : "persistent"}</span>,
+                                  c.path,
+                                  c.value]
+                                  for (c in Sanitizer.iterCookies(host)))));
+                            return;
+                        default:
+                            util.assert(cmd in Sanitizer.PERMS, "Invalid argument");
+                            setPerms(host, cmd);
+                        }
+                }, {
+                    argCount: "+",
+                    completer: function (context, args) {
+                        switch (args.completeArg) {
+                        case 0: 
+                            modules.completion.visibleHosts(context);
+                            context.title[1] = "Current Permissions";
+                            context.keys.description = function desc(host) {
+                                let count = [0, 0];
+                                for (let c in Sanitizer.iterCookies(host))
+                                    count[c.isSession + 0]++;
+                                return <>{Sanitizer.COMMANDS[getPerms(host)]} (session: {count[1]} persistent: {count[0]})</>;
+                            }
+                            break;
+                        case 1:
+                            context.completions = Sanitizer.COMMANDS;
+                            break;
+                        }
+                    },
+                }, true);
+    },
+    completion: function (dactyl, modules, window) {
+        modules.completion.visibleHosts = function completeHosts(context) {
+            let res = [], seen = {};
+            (function rec(frame) {
+                try {
+                    res = res.concat(util.subdomains(frame.location.host));
+                } catch (e) {}
+                Array.forEach(frame.frames, rec);
+            })(window.content);
+            if (context.filter && !res.some(function (host) host.indexOf(context.filter) >= 0))
+                res.push(context.filter);
+
+            context.title = ["Domain"];
+            context.anchored = false;
+            context.compare = modules.CompletionContext.Sort.unsorted;
+            context.keys = { text: util.identity, description: util.identity };
+            context.completions = res.filter(function (h) !set.add(seen, h));
+        };
     },
     options: function (dactyl, modules) {
         const options = modules.options;
@@ -427,7 +530,8 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     setter: function (value) {
                         if (services.get("privateBrowsing").privateBrowsingEnabled != value)
                             services.get("privateBrowsing").privateBrowsingEnabled = value
-                    }
+                    },
+                    persist: false
                 });
 
         options.add(["sanitizeitems", "si"],
@@ -480,6 +584,55 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     ]
                 },
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
+            });
+
+ 
+        options.add(["cookies", "ck"],
+            "The default mode for newly added cookie permissions",
+            "stringlist", "session",
+            { completer: function (context) iter(Sanitizer.COMMANDS) });
+        options.add(["cookieaccept", "ca"],
+            "When to accept cookies",
+            "string", "all",
+            {
+                PREF: "network.cookie.cookieBehavior",
+                completer: function (context) [
+                    ["all", "Accept all cookies"],
+                    ["samesite", "Accept all non-third-party cookies"],
+                    ["none", "Accept no cookies"]
+                ],
+                getter: function () (this.completer()[prefs.get(this.PREF)] || ["all"])[0],
+                setter: function (val) {
+                    prefs.set(this.PREF, this.completer().map(function (i) i[0]).indexOf(val));
+                    return val;
+                },
+                initialValue: true,
+                persist: false
+            });
+        options.add(["cookielifetime", "cl"],
+            "The lifetime for which to accept cookies",
+            "string", "default", {
+                PREF: "network.cookie.lifetimePolicy",
+                PREF_DAYS: "network.cookie.lifetime.days",
+                completer: function (context) [
+                    ["default", "The lifetime requested by the setter"],
+                    ["prompt",  "Always prompt for a lifetime"],
+                    ["session", "The current session"]
+                ],
+                getter: function () (this.completer()[prefs.get(this.PREF)]
+                        || [prefs.get(this.PREF_DAYS)])[0],
+                setter: function (value) {
+                    let val = this.completer().map(function (i) i[0]).indexOf(value);
+                    if (val > -1)
+                        prefs.set(this.PREF, val);
+                    else {
+                        prefs.set(this.PREF, 3);
+                        prefs.set(this.PREF_DAYS, parseInt(value));
+                    }
+                },
+                initialValue: true,
+                persist: false,
+                validator: function (val) parseInt(val) == val || modules.Option.validateCompleter.call(this, val)
             });
     }
 });

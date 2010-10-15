@@ -1571,8 +1571,6 @@ const CommandLine = Module("commandline", {
 
         if (typeof arg === "object")
             arg = util.objectToString(arg, useColor);
-        else if (typeof arg === "string" && /\n/.test(arg))
-            arg = <span highlight="CmdOutput">{arg}</span>;
         else
             arg = String(arg);
 
@@ -1983,7 +1981,8 @@ const ItemList = Class("ItemList", {
         this._fill(newOffset);
         if (index >= 0) {
             this._getCompletion(index).setAttribute("selected", "true");
-            util.scrollIntoView(this._getCompletion(index));
+            if (this._container.height != 0)
+                util.scrollIntoView(this._getCompletion(index));
         }
 
         //if (index == 0)

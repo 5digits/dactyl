@@ -733,8 +733,11 @@ const Completion = Module("completion", {
         let context = CompletionContext(filter);
         context.maxItems = maxItems;
         let res = context.fork.apply(context, ["run", 0, this, name].concat(Array.slice(arguments, 3)));
-        if (res) // FIXME
-            return { items: res.map(function (i) ({ item: i })) };
+        if (res) {
+            if (Components.stack.caller.name === "runCompleter") // FIXME
+                return { items: res.map(function (i) ({ item: i })) };
+            context.contexts["/run"].completions = res;
+        }
         context.wait(true);
         return context.allItems;
     },

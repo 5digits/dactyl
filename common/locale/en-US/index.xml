@@ -226,6 +226,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:comclear</ex></dt> <dd>Delete all user-defined commands</dd>
     <dt><ex>:command</ex></dt> <dd>List and define commands</dd>
     <dt><ex>:contexts</ex></dt> <dd>List the completion contexts used during completion of an Ex command</dd>
+    <dt><ex>:cookies</ex></dt> <dd>Change cookie permissions for sites</dd>
     <dt><ex>:cunabbrev</ex></dt> <dd>Remove an abbreviation in Command-line mode</dd>
     <dt><ex>:cunmap</ex></dt> <dd>Remove a mapping in Command-line mode</dd>
     <dt><ex>:delbmarks</ex></dt> <dd>Delete a bookmark</dd>
@@ -364,6 +365,9 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>banghist</o></dt> <dd>Replace occurrences of ! with the previous command when executing external commands</dd>
     <dt><o>cdpath</o></dt> <dd>List of directories searched when executing <ex>:cd</ex></dd>
     <dt><o>complete</o></dt> <dd>Items which are completed at the <ex>:open</ex> prompts</dd>
+    <dt><o>cookieaccept</o></dt> <dd>When to accept cookies</dd>
+    <dt><o>cookielifetime</o></dt> <dd>The lifetime for which to accept cookies</dd>
+    <dt><o>cookies</o></dt> <dd>The default mode for newly added cookie permissions</dd>
     <dt><o>defsearch</o></dt> <dd>Set the default search engine</dd>
     <dt><o>editor</o></dt> <dd>Set the external text editor</dd>
     <dt><o>encoding</o></dt> <dd>Changes the character encoding of the current buffer</dd>

@@ -603,16 +603,27 @@ const Dactyl = Module("dactyl", {
      * @param {XMLList} extraHelp Extra help text beyond the description.
      * @returns {string}
      */
-    generateHelp: function generateHelp(obj, extraHelp) {
+    generateHelp: function generateHelp(obj, extraHelp, str) {
         default xml namespace = "";
-        let spec = util.identity;
-        let tag = util.identity;
-        if (obj instanceof Command)
+
+        let link, tag, spec;
+        link = tag = spec = util.identity;
+        let args = null;
+
+        if (obj instanceof Command) {
             tag = spec = function (cmd) <>:{cmd}</>;
-        else if (obj instanceof Map && obj.count)
+            link = function (cmd) <ex>:{cmd}</ex>
+            args = obj.parseArgs("", CompletionContext(str || ""));
+        }
+        else if (obj instanceof Map && obj.count) {
             spec = function (map) <><oa>count</oa>{map}</>;
-        else if (obj instanceof Option)
+            link = function (map) let (res = /^<(.*?)>(.*?)/.exec(map))
+                res ? <k name={res[1]}>{res[2]}</k> : <k>{map}</k>;
+        }
+        else if (obj instanceof Option) {
             tag = spec = function (opt) <>'{opt}'</>;
+            link = function (opt) <o>{opt}</o>;
+        }
 
         XML.prettyPrinting = false;
         XML.ignoreWhitespace = false;
@@ -621,7 +632,17 @@ const Dactyl = Module("dactyl", {
         let br = <>
                     </>;
 
+        if (obj.completer)
+            var completions = let (br = br + <>    </>) <>
+                    <dl>{ br +
+                        template.map(
+                            completion._runCompleter(obj.completer, "", null, args).items,
+                            function (i) <><dt>{i.text}</dt> <dd>{i.description}</dd></>,
+                            br) }
+                    </dl></>;
+
         return <>
+                <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd>
             <item>
                 <tags>{template.map(obj.names, tag, " ")}</tags>
                 <spec>{spec((obj.specs || obj.names)[0])}</spec>{
@@ -631,7 +652,8 @@ const Dactyl = Module("dactyl", {
                 <description>{
                     obj.description ? br+<p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
                         extraHelp ? br+extraHelp : "" }{
-                        !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }
+                        !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }{
+                        completions ? br + completions : "" }
                 </description>
             </item></>.toXMLString().replace(/^ {12}/gm, "");
     },

@@ -761,28 +761,6 @@ Class.extend = function extend(subclass, superclass, overrides) {
 }
 
 /**
- * A base class generator for classes which impliment XPCOM interfaces.
- *
- * @param {nsIIID|[nsIJSIID]} interfaces The interfaces which the class
- *      implements.
- * @param {Class} superClass A super class. @optional
- * @returns {Class}
- */
-function XPCOM(interfaces, superClass) {
-    interfaces = Array.concat(interfaces);
-
-    let shim = interfaces.reduce(function (shim, iface) shim.QueryInterface(iface),
-                                 Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance());
-
-    let res = Class("XPCOM(" + interfaces + ")", superClass || Class, update(
-        array([k, v === undefined || callable(v) ? function stub() null : v]
-               for ([k, v] in Iterator(shim))).toObject(),
-        { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
-    shim = interfaces = null;
-    return res;
-}
-
-/**
  * Memoizes the value of a class property to the falue returned by
  * the passed function the first time the property is accessed.
  *
@@ -842,6 +820,28 @@ Class.prototype = {
         return timer;
     }
 };
+
+/**
+ * A base class generator for classes which impliment XPCOM interfaces.
+ *
+ * @param {nsIIID|[nsIJSIID]} interfaces The interfaces which the class
+ *      implements.
+ * @param {Class} superClass A super class. @optional
+ * @returns {Class}
+ */
+function XPCOM(interfaces, superClass) {
+    interfaces = Array.concat(interfaces);
+
+    let shim = interfaces.reduce(function (shim, iface) shim.QueryInterface(iface),
+                                 Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance());
+
+    let res = Class("XPCOM(" + interfaces + ")", superClass || Class, update(
+        array([k, v === undefined || callable(v) ? function stub() null : v]
+               for ([k, v] in Iterator(shim))).toObject(),
+        { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
+    shim = interfaces = null;
+    return res;
+}
 
 /**
  * Constructs a mew Module class and instantiates an instance into the current

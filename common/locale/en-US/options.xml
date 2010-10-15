@@ -423,6 +423,52 @@
 </item>
 
 <item>
+    <tags>'cookieaccept' 'ca'</tags>
+    <spec>'cookieaccept'</spec>
+    <type>string</type>
+    <default>all</default>
+    <description>
+        <p>When to accept cookies.</p>
+
+        <dl>
+            <dt>all</dt>      <dd>Accept all cookies</dd>
+            <dt>none</dt>     <dd>Accept no cookies</dd>
+            <dt>samesite</dt> <dd>Accept all non-third-party cookies</dd>
+        </dl>
+    </description>
+</item>
+
+<item>
+    <tags>'cl' 'cookielifetime'</tags>
+    <spec>'cookielifetime'</spec>
+    <type>string</type>
+    <default>default</default>
+    <description>
+        <p>
+            The lifetime for which to accept cookies. The available
+            options are:
+        </p>
+        <dl>
+            <dt>default</dt>     <dd>The lifetime requested by the setter</dd>
+            <dt>prompt</dt>      <dd>Always prompt for a lifetime</dd>
+            <dt>session</dt>     <dd>The current session</dd>
+            <dt><a>days</a></dt> <dd>When a number is given, it is
+                interpreted as the number of days for which to keep
+                cookies</dd>
+        </dl>
+    </description>
+</item>
+
+<item>
+    <tags>'ck' 'cookies'</tags>
+    <spec>'cookies' 'ck'</spec>
+    <type>stringlist</type> <default>session</default>
+    <description>
+        <p>The default action for the <ex>:cookies</ex> command.</p>
+    </description>
+</item>
+
+<item>
     <tags>'cpt' 'complete'</tags>
     <spec>'complete' 'cpt'</spec>
     <type>charlist</type>
