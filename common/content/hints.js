@@ -377,7 +377,6 @@ const Hints = Module("hints", {
      * Display the hints in pageHints that are still valid.
      */
     _showHints: function _showHints() {
-        util.dumpStack();
         let hintnum = 1;
         let validHint = this._hintMatcher(this._hintString.toLowerCase());
         let activeHint = this._hintNumber || 1;
@@ -451,7 +450,6 @@ const Hints = Module("hints", {
      *     hint disappears.
      */
     _removeHints: function _removeHints(timeout, slight) {
-        util.dump("_removeHints", timeout, slight);
         for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);

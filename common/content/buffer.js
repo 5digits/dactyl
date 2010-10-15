@@ -496,7 +496,7 @@ const Buffer = Module("buffer", {
      */
     focusAllowed: function (elem) {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        return !options["strictfocus"] || elem.dactylFocusAllowed;
+        return !options["strictfocus"] || win.dactylFocusAllowed;
     },
 
     /**
@@ -1013,9 +1013,7 @@ const Buffer = Module("buffer", {
                     // at all correctly; if somehow the view-source stuff managed to
                     // execute script we'd be in big trouble here, I suspect.
 
-                    this.docShell = Cc["@mozilla.org/docshell;1"].createInstance(Ci.nsIBaseWindow)
-                            .QueryInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsIWebPageDescriptor)
-                            .QueryInterface(Ci.nsIWebProgress);
+                    this.docShell = services.create("docshell");
                     this.docShell.create();
                     this.docShell.addProgressListener(this, this.docShell.NOTIFY_STATE_DOCUMENT);
                     this.docShell.loadPage(descriptor, this.docShell.DISPLAY_AS_SOURCE);

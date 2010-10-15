@@ -43,6 +43,10 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         this.addObserver(this);
         this.overlays = {};
+
+        let doc = services.get("appShell").hiddenDOMWindow.document;
+        this._div = this.xmlToDom(<div xmlns={XHTML}/>, doc);
+        doc.body.appendChild(this._div);
     },
 
     // FIXME: Only works for Pentadactyl
@@ -261,6 +265,17 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     dequote: function dequote(pattern, chars)
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
+
+    domToString: function (node) {
+        this._div.appendChild(this._div.ownerDocument.importNode(node, true));
+        let sel = this._div.ownerDocument.defaultView.getSelection();
+        sel.removeAllRanges();
+        sel.selectAllChildren(this._div);
+        let res = sel.toString();
+        while (this._div.firstChild)
+            this._div.removeChild(this._div.firstChild);
+        return res;
+    },
 
     /**
      * Prints a message to the console. If <b>msg</b> is an object it is

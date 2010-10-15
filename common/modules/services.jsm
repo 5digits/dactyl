@@ -19,6 +19,7 @@ const Services = Module("Services", {
         this.services = {};
 
         this.add("annotation",          "@mozilla.org/browser/annotation-service;1",        Ci.nsIAnnotationService);
+        this.add("appShell",            "@mozilla.org/appshell/appShellService;1",          Ci.nsIAppShellService);
         this.add("appStartup",          "@mozilla.org/toolkit/app-startup;1",               Ci.nsIAppStartup);
         this.add("autoCompleteSearch",  "@mozilla.org/autocomplete/search;1?name=history",  Ci.nsIAutoCompleteSearch);
         this.add("bookmarks",           "@mozilla.org/browser/nav-bookmarks-service;1",     Ci.nsINavBookmarksService);
@@ -54,6 +55,9 @@ const Services = Module("Services", {
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
 
+
+        this.addClass("docshell",   "@mozilla.org/docshell;1",                   [Ci.nsIBaseWindow, Ci.nsIWebNavigation,
+                                                                                  Ci.nsIWebPageDescriptor, Ci.nsIWebProgress]);
         this.addClass("file",       "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
         this.addClass("file:",      "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
         this.addClass("find",       "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
