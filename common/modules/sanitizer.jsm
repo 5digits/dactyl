@@ -443,7 +443,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 services.get("permissions").remove(uri, "cookie");
                 services.get("permissions").add(uri, "cookie", Sanitizer.PERMS[perm]);
             }
-            commands.addUserCommand(["cookies", "ck"],
+            commands.add(["cookies", "ck"],
                 "Change cookie permissions for sites.",
                 function (args) {
                     let host = args.shift();
@@ -497,7 +497,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                             break;
                         }
                     },
-                }, true);
+                });
     },
     completion: function (dactyl, modules, window) {
         modules.completion.visibleHosts = function completeHosts(context) {

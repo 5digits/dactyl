@@ -8,11 +8,12 @@
 
 /** @scope modules */
 
-// Do NOT create instances of this class yourself, use the helper method
-// commands.add() instead
 
 /**
  * A structure representing the options available for a command.
+ *
+ * Do NOT create instances of this class yourself, use the helper method
+ * {@see Commands#add} instead
  *
  * @property {[string]} names An array of option names. The first name
  *     is the canonical option name.
@@ -334,7 +335,7 @@ const Commands = Module("commands", {
     _addCommand: function (args, replace) {
         let names = array.flatten(Command.parseSpecs(args[0]));
         dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
-                      "E182: Can't replace non-user command: " + args[0]);
+                      "E182: Can't replace non-user command: " + args[0][0]);
         if (!replace || !(args[3] && args[3].user))
             dactyl.assert(!names.some(function (name) name in this._exMap, this),
                           "Not replacing command " + args[0]);
@@ -937,9 +938,9 @@ const Commands = Module("commands", {
     removeUserCommand: function (name) {
         let cmd = this.get(name);
         dactyl.assert(cmd.user, "E184: No such user-defined command: " + name);
-        for (let name in array.iterValues(cmd.names))
+        this._exCommands = this._exCommands.filter(function (c) c !== cmd);
+        for (let name in values(cmd.names))
             delete this._exMap[name];
-        this._exCommands = this._exCommands.filter(function (c) c != cmd);
     },
 
     // FIXME: still belong here? Also used for autocommand parameters.

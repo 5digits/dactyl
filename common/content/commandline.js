@@ -663,7 +663,8 @@ const CommandLine = Module("commandline", {
                 this._echoMultiline(<span highlight="Message">{this._lastEcho}</span>,
                                     this.widgets.message[0], true);
 
-            if (action === this._echoLine && !(flags & this.FORCE_MULTILINE) && !this.widgets.mowContainer.collapsed) {
+            if (action === this._echoLine && !(flags & this.FORCE_MULTILINE)
+                && !(dactyl.fullyInitialized && this.widgets.mowContainer.collapsed)) {
                 highlightGroup += " Message";
                 action = this._echoMultiline;
             }

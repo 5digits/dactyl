@@ -2045,6 +2045,7 @@ const Dactyl = Module("dactyl", {
                     dactyl.execute(cmd);
                 });
 
+            dactyl.fullyInitialized = true;
             dactyl.triggerObserver("enter", null);
             autocommands.trigger("Enter", {});
         }, 0);
