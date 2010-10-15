@@ -1932,8 +1932,10 @@ const ItemList = Class("ItemList", {
     setItems: function setItems(newItems, selectedItem) {
         if (this._selItem > -1)
             this._getCompletion(this._selItem).removeAttribute("selected");
-        if (this._container.collapsed)
+        if (this._container.collapsed) {
             this._minHeight = 0;
+            this._container.height = 0;
+        }
         this._startIndex = this._endIndex = this._selIndex = -1;
         this._items = newItems;
         this.reset(true);
