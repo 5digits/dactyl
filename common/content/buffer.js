@@ -481,10 +481,7 @@ const Buffer = Module("buffer", {
             controller.setCaretEnabled(caretmode);
             return String.match(selection, /\w*/)[0];
         }
-        if (util.computedStyle(range.startContainer).whiteSpace == "pre"
-            && util.computedStyle(range.endContainer).whiteSpace == "pre")
-            return String(range);
-        return String(selection);
+        return util.domToString(range);
     },
 
     /**

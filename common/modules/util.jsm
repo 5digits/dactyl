@@ -43,10 +43,6 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         this.addObserver(this);
         this.overlays = {};
-
-        let doc = services.get("appShell").hiddenDOMWindow.document;
-        this._div = this.xmlToDom(<div xmlns={XHTML}/>, doc);
-        doc.body.appendChild(this._div);
     },
 
     // FIXME: Only works for Pentadactyl
@@ -267,18 +263,29 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
 
     domToString: function (node) {
-        this._div.appendChild(this._div.ownerDocument.importNode(node, true));
-        if (/^pre(-wrap)?$/.test(this.computedStyle(this._div.lastChild).whiteSpace))
-            var res = this._div.textContent;
-        else {
-            let sel = this._div.ownerDocument.defaultView.getSelection();
-            sel.removeAllRanges();
-            sel.selectAllChildren(this._div);
-            var res = sel.toString();
+        if (node instanceof Ci.nsISelection && node.isCollapsed)
+            return "";
+
+        if (node instanceof Ci.nsIDOMNode) {
+            let range = node.ownerDocument.createRange();
+            range.selectNode(node);
+            node = range;
         }
-        while (this._div.firstChild)
-            this._div.removeChild(this._div.firstChild);
-        return res;
+        let doc = (node.getRangeAt ? node.getRangeAt(0) : node).startContainer.ownerDocument;
+
+        let encoder = services.create("htmlEncoder");
+        encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
+        if (node instanceof Ci.nsISelection)
+            encoder.setSelection(node);
+        else if (node instanceof Ci.nsIDOMRange)
+            encoder.setRange(node);
+
+        let str = services.create("string");
+        str.data = encoder.encodeToString();
+
+        let [result, length] = [{}, {}];
+        services.create("htmlConverter").convert("text/html", str, str.data.length*2, "text/unicode", result, length);
+        return result.value.QueryInterface(Ci.nsISupportsString).data;
     },
 
     /**

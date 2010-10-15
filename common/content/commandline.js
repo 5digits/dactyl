@@ -583,15 +583,15 @@ const CommandLine = Module("commandline", {
         this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{str}</div>;
         let output = util.xmlToDom(this._lastMowOutput, doc);
 
-        if (!silent)
-            dactyl.triggerObserver("echoMultiline", str, highlightGroup, output);
-
         // FIXME: need to make sure an open MOW is closed when commands
         //        that don't generate output are executed
         if (this.widgets.mowContainer.collapsed)
             doc.body.innerHTML = "";
 
         doc.body.appendChild(output);
+
+        if (!silent)
+            dactyl.triggerObserver("echoMultiline", str, highlightGroup, output);
 
         commandline.updateOutputHeight(true);
 
@@ -1162,11 +1162,9 @@ const CommandLine = Module("commandline", {
         dactyl.registerObserver("echoLine", observe, true);
         dactyl.registerObserver("echoMultiline", observe, true);
         function observe(str, highlight, dom) {
-            if (!observe.done)
-                buffer.push(dom ? util.domToString(dom) : str)
+            buffer.push(dom ? util.domToString(dom) : str)
         }
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
-        observe.done = true;
         return buffer.join("\n");
     }
 }, {

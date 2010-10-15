@@ -56,15 +56,18 @@ const Services = Module("Services", {
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
 
 
-        this.addClass("docshell",   "@mozilla.org/docshell;1",                   [Ci.nsIBaseWindow, Ci.nsIWebNavigation,
-                                                                                  Ci.nsIWebPageDescriptor, Ci.nsIWebProgress]);
-        this.addClass("file",       "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
-        this.addClass("file:",      "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
-        this.addClass("find",       "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
-        this.addClass("process",    "@mozilla.org/process/util;1",               Ci.nsIProcess);
-        this.addClass("timer",      "@mozilla.org/timer;1",                      Ci.nsITimer);
-        this.addClass("xmlhttp",    "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
-        this.addClass("zipWriter",  "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
+        this.addClass("docshell",     "@mozilla.org/docshell;1",                   [Ci.nsIBaseWindow, Ci.nsIWebNavigation,
+                                                                                    Ci.nsIWebPageDescriptor, Ci.nsIWebProgress]);
+        this.addClass("file",         "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
+        this.addClass("file:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
+        this.addClass("find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
+        this.addClass("htmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
+        this.addClass("htmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
+        this.addClass("process",      "@mozilla.org/process/util;1",               Ci.nsIProcess);
+        this.addClass("string",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
+        this.addClass("timer",        "@mozilla.org/timer;1",                      Ci.nsITimer);
+        this.addClass("xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
+        this.addClass("zipWriter",    "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
     },
 
     _create: function (classes, ifaces, meth) {
