@@ -526,8 +526,8 @@ function call(fn) {
  */
 function memoize(obj, key, getter) {
     obj.__defineGetter__(key, function replace() (
-        Class.replaceProperty(this, key, null),
-        Class.replaceProperty(this, key, getter.call(this, key))));
+        Class.replaceProperty(this.instance || this, key, null),
+        Class.replaceProperty(this.instance || this, key, getter.call(this, key))));
 }
 
 /**
@@ -684,19 +684,8 @@ function Class() {
         (function constructor() {
             let self = Object.create(Constructor.prototype, {
                 constructor: { value: Constructor },
-                closure: {
-                    configurable: true,
-                    get: function () {
-                        function closure(fn) function () fn.apply(self, arguments);
-                        for (let k in iterAll(properties(this),
-                                              properties(this, true)))
-                            if (!this.__lookupGetter__(k) && callable(this[k]))
-                                closure[k] = closure(self[k]);
-                        Object.defineProperty(this, "closure", { value: closure });
-                        return closure;
-                    }
-                }
             });
+            self.instance = self;
             var res = self.init.apply(self, arguments);
             return res !== undefined ? res : self;
         })]]>,
@@ -820,6 +809,14 @@ Class.prototype = {
         return timer;
     }
 };
+memoize(Class.prototype, "closure", function () {
+    const self = this;
+    function closure(fn) function () fn.apply(self, arguments);
+    for (let k in iterAll(properties(this), properties(this, true)))
+        if (!this.__lookupGetter__(k) && callable(this[k]))
+            closure[k] = closure(this[k]);
+    return closure;
+});
 
 /**
  * A base class generator for classes which impliment XPCOM interfaces.

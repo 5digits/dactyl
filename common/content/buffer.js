@@ -982,73 +982,41 @@ const Buffer = Module("buffer", {
     viewSourceExternally: Class("viewSourceExternally",
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function (doc, callback) {
-            let url = isString(doc) ? doc : doc.location.href;
-            let charset = isString(doc) ? null : doc.characterSet;
             this.callback = callback ||
                 function (file) editor.editFileExternally(file.path);
 
-            let webNav = window.getWebNavigation();
-            try {
-                webNav = doc.defaultView.QueryInterface(Ci.nsIInterfaceRequestor)
-                            .getInterface(Ci.nsIWebNavigation);
-            }
-            catch (e) {}
-            let descriptor = null;
-            try {
-                descriptor = webNav.QueryInterface(Ci.nsIWebPageDescriptor).currentDescriptor;
-            }
-            catch (e) {}
-
+            let url = isString(doc) ? doc : doc.location.href;
             let uri = util.newURI(url, charset);
+            let charset = isString(doc) ? null : doc.characterSet;
+
+            if (!isString(doc))
+                return io.withTempFiles(function (temp) {
+                    let encoder = services.create("htmlEncoder");
+                    encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
+                    temp.write(encoder.encodeToString(), ">");
+                    this.callback(temp);
+                }, this);
+
             if (uri.scheme == "file")
                 this.callback(File(uri.QueryInterface(Ci.nsIFileURL).file));
             else {
-                if (descriptor) {
-                    // we'll use nsIWebPageDescriptor to get the source because it may
-                    // not have to refetch the file from the server
-                    // XXXbz this is so broken...  This code doesn't set up this docshell
-                    // at all correctly; if somehow the view-source stuff managed to
-                    // execute script we'd be in big trouble here, I suspect.
-
-                    this.docShell = services.create("docshell");
-                    this.docShell.create();
-                    this.docShell.addProgressListener(this, this.docShell.NOTIFY_STATE_DOCUMENT);
-                    this.docShell.loadPage(descriptor, this.docShell.DISPLAY_AS_SOURCE);
-                }
-                else {
-                    this.file = io.createTempFile();
-                    var webBrowserPersist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
-                            .createInstance(Ci.nsIWebBrowserPersist);
-                    webBrowserPersist.persistFlags = webBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
-                    webBrowserPersist.progressListener = this;
-                    webBrowserPersist.saveURI(uri, null, null, null, null, this.file);
-                }
+                this.file = io.createTempFile();
+                var webBrowserPersist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                        .createInstance(Ci.nsIWebBrowserPersist);
+                webBrowserPersist.persistFlags = webBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+                webBrowserPersist.progressListener = this;
+                webBrowserPersist.saveURI(uri, null, null, null, null, this.file);
             }
             return null;
         },
 
-        destroy: function () {
-            if (this.docShell)
-                this.docShell.destroy();
-        },
-
         onStateChange: function (progress, request, flag, status) {
-            // once it's done loading...
             if ((flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0) {
                 try {
-                    if (this.docShell) {
-                        this.file = io.createTempFile();
-                        this.file.write(this.docShell.document.body.textContent);
-                    }
-                    try {
-                        this.callback(this.file);
-                    }
-                    finally {
-                        this.file.remove(false);
-                    }
+                    this.callback(this.file);
                 }
                 finally {
-                    this.destroy();
+                    this.file.remove(false);
                 }
             }
             return 0;
@@ -1344,7 +1312,7 @@ const Buffer = Module("buffer", {
                         return buffer.viewSourceExternally(buffer.focusedFrame.document,
                             function (tmpFile) {
                                 try {
-                                    file.write(tmpFile.read(), ">>");
+                                    file.write(tmpFile, ">>");
                                 }
                                 catch (e) {
                                     dactyl.echoerr(file.path.quote() + ": E212: Can't open file for writing");
@@ -1355,7 +1323,7 @@ const Buffer = Module("buffer", {
                     let file = io.File(filename);
 
                     dactyl.assert(!file.exists() || args.bang,
-                        "E13: File exists (add ! to override)");
+                                  "E13: File exists (add ! to override)");
 
                     chosenData = { file: file, uri: window.makeURI(doc.location.href, doc.characterSet) };
                 }
@@ -1366,16 +1334,16 @@ const Buffer = Module("buffer", {
                 prefs.set("browser.download.lastDir", io.cwd);
 
                 try {
-                    var contentDisposition = window.content
-                                                   .QueryInterface(Ci.nsIInterfaceRequestor)
+                    var contentDisposition = window.content.QueryInterface(Ci.nsIInterfaceRequestor)
                                                    .getInterface(Ci.nsIDOMWindowUtils)
                                                    .getDocumentMetadata("content-disposition");
                 }
                 catch (e) {}
 
                 window.internalSave(doc.location.href, doc, null, contentDisposition,
-                    doc.contentType, false, null, chosenData, doc.referrer ?
-                    window.makeURI(doc.referrer) : null, true);
+                                    doc.contentType, false, null, chosenData,
+                                    doc.referrer ? window.makeURI(doc.referrer) : null,
+                                    true);
             },
             {
                 argCount: "?",

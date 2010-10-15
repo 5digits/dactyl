@@ -286,7 +286,7 @@ const File = Class("File", {
             }
         }
         let self = XPCSafeJSObjectWrapper(file);
-        self.__proto__ = File.prototype;
+        self.__proto__ = this;
         return self;
     },
 
@@ -310,22 +310,32 @@ const File = Class("File", {
      */
     read: function (encoding) {
         let ifstream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
-        let icstream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
-
-        if (!encoding)
-            encoding = File.defaultEncoding;
 
         ifstream.init(this, -1, 0, 0);
-        icstream.init(ifstream, encoding, 4096, Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER); // 4096 bytes buffering
 
-        let buffer = [];
-        let str = {};
-        while (icstream.readString(4096, str) != 0)
-            buffer.push(str.value);
-
-        icstream.close();
-        ifstream.close();
-        return buffer.join("");
+        try {
+            if (encoding instanceof Ci.nsIOutputStream) {
+                let l, len = 0;
+                while ((l = encoding.writeFrom(ifstream, 4096)) != 0)
+                    len += l;
+                return len;
+            }
+            else {
+                var icstream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
+                icstream.init(ifstream, encoding || File.defaultEncoding, 4096, // 4096 bytes buffering
+                              Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+                let buffer = [];
+                let str = {};
+                while (icstream.readString(4096, str) != 0)
+                    buffer.push(str.value);
+                return buffer.join("");
+            }
+        }
+        finally {
+            if (icstream)
+                icstream.close();
+            ifstream.close();
+        }
     },
 
     /**
@@ -376,6 +386,8 @@ const File = Class("File", {
             stream.init(ofstream, encoding, 0, defaultChar);
             return stream;
         }
+        if (buf instanceof File)
+            buf = buf.read();
 
         if (!encoding)
             encoding = File.defaultEncoding;
@@ -391,18 +403,18 @@ const File = Class("File", {
             this.create(this.NORMAL_FILE_TYPE, perms);
 
         ofstream.init(this, mode, perms, 0);
-        let ocstream = getStream(0);
         try {
-            ocstream.writeString(buf);
-        }
-        catch (e) {
-            if (e.result == Cr.NS_ERROR_LOSS_OF_SIGNIFICANT_DATA) {
-                ocstream = getStream("?".charCodeAt(0));
+            if (callable(buf))
+                buf(ofstream.QueryInterface(Ci.nsIOutputStream));
+            else {
+                var ocstream = getStream(0);
                 ocstream.writeString(buf);
-                return false;
             }
-            else
-                throw e;
+        }
+        catch (e if callable(buf) && e.result == Cr.NS_ERROR_LOSS_OF_SIGNIFICANT_DATA) {
+            ocstream = getStream("?".charCodeAt(0));
+            ocstream.writeString(buf);
+            return false;
         }
         finally {
             try {
