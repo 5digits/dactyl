@@ -26,7 +26,7 @@ const FailedAssertion = Class("FailedAssertion", Error, {
     }
 });
 
-function wrapCallback(fn) 
+function wrapCallback(fn)
     fn.wrapper = function wrappedCallback () {
         try {
             return fn.apply(this, arguments);
@@ -1292,7 +1292,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
                 this._prefContexts[this._prefContexts.length - 1][name] = val;
         }
 
-        function assertType(needType) 
+        function assertType(needType)
             util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
                 type === Ci.nsIPrefBranch.PREF_INT
                                 ? "E521: Number required after =: " + name + "=" + value

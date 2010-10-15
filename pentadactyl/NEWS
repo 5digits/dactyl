@@ -1,4 +1,4 @@
-1.0b2:
+1.0b3pre:
     * Extensive Firefox 4 support, including:
       - Tabs in :buffer completions and listings are grouped
         by panorama groups.
@@ -14,7 +14,7 @@
         what timespan.
       - Support for sanitizing reference to particular hosts,
         everywhere from command-line and message history to option
-	values and cookies.
+        values and cookies.
     * New and much more powerful incremental search implementation.
       Improvements over the standard Firefox find include:
       - Starts at the cursor position in the currently selected
@@ -73,6 +73,7 @@
       groups should be auto-completed.
     * Added 'banghist' option.
     * Added BookmarkChange, BookmarkRemove autocommands.
+    * Added :cookies, 'cookies', 'cookieaccept', and 'cookielifetime'.
     * Added -keyword, -tags, -title to :delbmarks.
     * Added "passwords" and "venkman" dialogs to :dialog.
     * Added :extupdate command.

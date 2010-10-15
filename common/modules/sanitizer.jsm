@@ -181,7 +181,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                                       label={services.get("dactyl:").appName + " " + desc}
                                       preference={branch + item}
                                       onsyncfrompreference="return gSanitizePromptDialog.onReadGeneric();"/>)
-                        }  
+                        }
                     </>
                 },
                 init: function (win) {
@@ -482,7 +482,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     argCount: "+",
                     completer: function (context, args) {
                         switch (args.completeArg) {
-                        case 0: 
+                        case 0:
                             modules.completion.visibleHosts(context);
                             context.title[1] = "Current Permissions";
                             context.keys.description = function desc(host) {
@@ -586,7 +586,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
             });
 
- 
+
         options.add(["cookies", "ck"],
             "The default mode for newly added cookie permissions",
             "stringlist", "session",
