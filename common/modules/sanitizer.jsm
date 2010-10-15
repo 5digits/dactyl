@@ -466,7 +466,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                             return;
 
                         case "list":
-                            modules.commandLine.commandOutput(template.tabular(
+                            modules.commandline.commandOutput(template.tabular(
                                 ["Host", "Session", "Path", "Value"], ["padding-right: 1em", "padding-right: 1em", "padding-right: 1em"],
                                 ([c.host,
                                   <span highlight={c.isSession ? "Enabled" : "Disabled"}>{c.isSession ? "session" : "persistent"}</span>,
