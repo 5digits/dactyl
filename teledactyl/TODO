@@ -9,6 +9,7 @@ BUGS:
 - 'autoexternal' doesn't work
 
 FEATURES:
+9 check autocmd Events - which are applicable etc.
 9 edit messages with vim
 8 the archives need to be mailbox specific
   - currently it archives mail to the first Archive folder found
