@@ -300,7 +300,7 @@ const Tabs = Module("tabs", {
      */
     // FIXME: what is quitOnLastTab {1,2} all about then, eh? --djk
     remove: function (tab, count, focusLeftTab, quitOnLastTab) {
-        count = Math.max(count, 1);
+        count = count || 1;
 
         if (quitOnLastTab >= 1 && this.count <= count) {
             if (dactyl.windows.length > 1)
