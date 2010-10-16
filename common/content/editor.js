@@ -624,7 +624,6 @@ const Editor = Module("editor", {
         mappings.add([modes.INSERT],
             ["<Tab>"], "Expand insert mode abbreviation",
             function () {
-                util.dumpStack("\n\n\n<Tab>");
                 editor.expandAbbreviation(modes.INSERT);
                 document.commandDispatcher.advanceFocus();
             });

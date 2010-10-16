@@ -104,33 +104,35 @@ dist: $(XPI)
 		-i "$(GOOGLE)" | sed -n '/^Location/{p;q;}'
 
 install:
-	export dir; \
-	for dir in $(PROFILEPATHS); do \
-		test -f "$$dir/profiles.ini" && break; \
-	done; \
-	profile=$$(sed 's/^$$/\#/' "$$dir/profiles.ini" |\
-		awk -v"profile=$(PROFILE)" \
-			'BEGIN { RS="#" } \
-			index($$0, "\nName=" profile "\n") { print; exit } \
-			!profile && /\nName=default\n/ { args["name=default"] = $$0 } \
-			!profile && /\nDefault=1/ { args["default=1"] = $$0 } \
+	export dir; 								\
+	for dir in $(PROFILEPATHS); do 						\
+		test -f "$$dir/profiles.ini" && break; 				\
+	done; 									\
+										\
+	profile=$$(sed 's/^$$/\#/' "$$dir/profiles.ini" |			\
+		awk -v"profile=$(PROFILE)" 					\
+			'BEGIN { RS="#" } 					\
+			index($$0, "\nName=" profile "\n") { print; exit } 	\
+			!profile && /\nName=default\n/ { args["name=default"] = $$0 } 	\
+			!profile && /\nDefault=1/ { args["default=1"] = $$0 } 	\
 			END { if (args["default=1"]) print args["default=1"]; else print args["name=default"] }' |\
-		awk -F= '{ args[$$1] = $$2 } \
+		awk -F= '{ args[$$1] = $$2 } 					\
 		END {\
-			if (args["IsRelative"]) print ENVIRON["dir"] "/" args["Path"];\
-			else print args["Path"]\
-		}'); \
-	if ! test -d "$$profile"; then \
-		echo >&2 "Can't locate profile directory"; \
-		exit 1; \
-	fi; \
-	ext="$$profile/extensions/$(UUID)"; \
-	rm -f "$$ext.xpi"; \
-	rm -rf "$$ext"; \
-	echo "Installing to $$ext"; \
-	if which cygpath >/dev/null 2>&1; \
-	then cygpath -wa .; \
-	else pwd; \
+			if (args["IsRelative"]) print ENVIRON["dir"] "/" args["Path"];	\
+			else print args["Path"]					\
+		}'); 								\
+										\
+	if ! test -d "$$profile"; then 						\
+		echo >&2 "Can't locate profile directory"; 			\
+		exit 1; 							\
+	fi; 									\
+										\
+	ext="$$profile/extensions/$(UUID)"; 					\
+	rm -rf "$$ext.xpi" "$$ext"; 						\
+	echo "Installing to $$ext"; 						\
+	if which cygpath >/dev/null 2>&1; 					\
+	then cygpath -wa .; 							\
+	else pwd; 								\
 	fi >"$$ext"
 installxpi: xpi
 	$(FIREFOX) $(XPI)

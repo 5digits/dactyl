@@ -263,8 +263,6 @@ const Hints = Module("hints", {
             win = this._top;
 
         let doc = win.document;
-        if (!doc.body && !doc.document)
-            return;
 
         let [offsetX, offsetY] = this._getContainerOffsets(doc);
 
