@@ -293,22 +293,10 @@ const Tabs = Module("tabs", {
      * @param {Object} tab The tab to remove.
      * @param {number} count How many tabs to remove.
      * @param {boolean} focusLeftTab Focus the tab to the left of the removed tab.
-     * @param {number} quitOnLastTab Whether to quit if the tab being
-     *     deleted is the only tab in the tab list:
-     *         1 - quit without saving session
-     *         2 - quit and save session
      */
-    // FIXME: what is quitOnLastTab {1,2} all about then, eh? --djk
-    remove: function (tab, count, focusLeftTab, quitOnLastTab) {
+    remove: function (tab, count, focusLeftTab) {
         count = count || 1;
-
-        if (quitOnLastTab >= 1 && this.count <= count) {
-            if (dactyl.windows.length > 1)
-                window.close();
-            else
-                dactyl.quit(quitOnLastTab == 2);
-            return;
-        }
+        let res = this.count > count;
 
         let tabs = this.visibleTabs;
         if (tabs.indexOf(tab) < 0)
@@ -327,6 +315,7 @@ const Tabs = Module("tabs", {
             tabs.slice(Math.max(0, index + 1 - count), index + 1).forEach(config.removeTab);
         else
             tabs.slice(index, index + count).forEach(config.removeTab);
+        return res;
     },
 
     /**
@@ -557,7 +546,7 @@ const Tabs = Module("tabs", {
                         dactyl.echoerr("E94: No matching tab for " + arg);
                 }
                 else // just remove the current tab
-                    tabs.remove(tabs.getTab(), Math.max(count, 1), special, 0);
+                    tabs.remove(tabs.getTab(), Math.max(count, 1), special);
             }, {
                 argCount: "?",
                 bang: true,
@@ -945,12 +934,12 @@ const Tabs = Module("tabs", {
 
             mappings.add([modes.NORMAL], ["d"],
                 "Delete current buffer",
-                function (count) { tabs.remove(tabs.getTab(), count, false, 0); },
+                function (count) { tabs.remove(tabs.getTab(), count, false); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["D"],
                 "Delete current buffer, focus tab to the left",
-                function (count) { tabs.remove(tabs.getTab(), count, true, 0); },
+                function (count) { tabs.remove(tabs.getTab(), count, true); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["gb"],

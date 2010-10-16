@@ -1719,8 +1719,10 @@ const Dactyl = Module("dactyl", {
         commands.add(["q[uit]"],
             dactyl.has("tabs") ? "Quit current tab" : "Quit application",
             function (args) {
-                if (dactyl.has("tabs"))
-                    tabs.remove(config.browser.mCurrentTab, 1, false, 1);
+                if (dactyl.has("tabs") && tabs.remove(config.browser.mCurrentTab, 1, false))
+                    return;
+                else if (dactyl.windows.length > 1)
+                    window.close();
                 else
                     dactyl.quit(false, args.bang);
             }, {
