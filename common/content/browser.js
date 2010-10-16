@@ -112,15 +112,12 @@ const Browser = Module("browser", {
             function (count) {
                 count = Math.max(count, 1);
                 let url = util.newURI(buffer.URL);
-                let path = url.path;
 
-                while (count-- && path != "/")
-                    path = path.replace(/[^\/]+\/?$/, "")
+                while (count-- && url.path != "/")
+                    url.path = url.path.replace(/[^\/]+\/?$/, "")
 
-                let newUrl = url.prePath + path
-
-                if (newUrl != buffer.URL)
-                    dactyl.open(newUrl);
+                if (url.spec != buffer.URL)
+                    dactyl.open(url.spec);
                 else
                     dactyl.beep();
             },
