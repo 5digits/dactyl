@@ -519,7 +519,10 @@ const CommandLine = Module("commandline", {
     commandOutput: function (xml) {
         XML.ignoreWhitespace = false;
         XML.prettyPrinting = false;
-        this.echo(<>:{this.command}<br/>{xml}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+        if (this.command)
+            this.echo(<>:{this.command}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+        this.echo(xml, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+        this.command = null;
     },
 
     /**

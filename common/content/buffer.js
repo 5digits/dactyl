@@ -359,10 +359,7 @@ const Buffer = Module("buffer", {
      * @property {string} The current top-level document's URL, sans any
      *     fragment identifier.
      */
-    get URI() {
-        let loc = window.content.location;
-        return loc.href.substr(0, loc.href.length - loc.hash.length);
-    },
+    get URI() window.content.document.documentURI,
 
     /**
      * @property {number} The buffer's height in pixels.
