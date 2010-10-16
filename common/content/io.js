@@ -528,7 +528,7 @@ lookup:
                               "E189: " + filename.quote() + " exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
-                let lines = [cmd.serialize().map(commands.commandToString) for (cmd in commands) if (cmd.serialize)];
+                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands) if (cmd.serialize)];
                 lines = array.flatten(lines);
 
                 lines.unshift('"' + dactyl.version + "\n");

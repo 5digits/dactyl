@@ -409,7 +409,9 @@ const Commands = Module("commands", {
 
         let str = args.literalArg;
         if (str)
-            res.push(/\n/.test(str) ? "<<EOF\n" + str.replace(/\n$/, "") + "\nEOF" : str);
+            res.push(!/\n/.test(str) ? str :
+                     this.hereDoc    ? "<<EOF\n" + str.replace(/\n$/, "") + "\nEOF"
+                                     : str.replace(/\n/, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
         return res.join(" ");
     },
 
