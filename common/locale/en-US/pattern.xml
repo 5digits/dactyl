@@ -27,7 +27,7 @@
     </li>
     <li>
         Backtracks to the first successful match after pressing backspace,
-        unlike &dactyl.host;, which will always continue from the last match..
+        unlike &dactyl.host;, which will always continue from the last match.
     </li>
     <li>
         Supports reverse incremental search.

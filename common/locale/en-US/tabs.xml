@@ -323,7 +323,7 @@
     <tags>D</tags>
     <spec><oa>count</oa>D</spec>
     <description short="true">
-        <p>Like <k>d</k> but selects the tab to the left of the deleted tabs after deletion..</p>
+        <p>Like <k>d</k> but selects the tab to the left of the deleted tabs after deletion.</p>
     </description>
 </item>
 

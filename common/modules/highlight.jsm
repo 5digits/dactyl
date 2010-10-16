@@ -197,7 +197,7 @@ const Highlights = Module("Highlight", {
      *   CSSLines  ::= CSSLine | CSSLine "\n" CSSLines
      *
      * Where Class is the name of the sheet, Selector is the CSS
-     * selector for the style, Site is the comma-separated list of site
+     * selector for the style, Sites is the comma-separated list of site
      * filters to apply the style to.
      *
      * If Selector is not provided, it defaults to [dactyl|highlight~={Class}].
