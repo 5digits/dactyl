@@ -304,6 +304,9 @@
     <tags>:tabc :tabclose</tags>
     <tags>:bun :bunload :bw :bwipeout :bd :bdelete</tags>
     <spec>:<oa>count</oa>bd<oa>elete</oa><oa>!</oa> <oa>arg</oa></spec>
+    <spec>:<oa>count</oa>bun<oa>load</oa><oa>!</oa> <oa>arg</oa></spec>
+    <spec>:<oa>count</oa>bw<oa>ipeout</oa><oa>!</oa> <oa>arg</oa></spec>
+    <spec>:<oa>count</oa>tabc<oa>lose</oa><oa>!</oa> <oa>arg</oa></spec>
     <spec><oa>count</oa>d</spec>
     <description>
         <p>
