@@ -110,32 +110,19 @@ const Browser = Module("browser", {
         mappings.add([modes.NORMAL], ["gu"],
             "Go to parent directory",
             function (count) {
-                function isDirectory(url) {
-                    if (/^file:\/|^\//.test(url)) {
-                        let file = io.File(url);
-                        return file.exists() && file.isDirectory();
-                    }
-                    else {
-                        // for all other locations just check if the URL ends with /
-                        return /\/$/.test(url);
-                    }
-                }
-
                 count = Math.max(count, 1);
+                let url = util.newURI(buffer.URL);
+                let path = url.path;
 
-                let url = buffer.URL;
-                for (let i = 0; i < count; i++) {
-                    if (isDirectory(url))
-                        url = url.replace(/^(.*?:)(.*?)([^\/]+\/*)$/, "$1$2/");
-                    else
-                        url = url.replace(/^(.*?:)(.*?)(\/+[^\/]+)$/, "$1$2/");
-                }
-                url = url.replace(/^(.*:\/+.*?)\/+$/, "$1/"); // get rid of more than 1 / at the end
+                while (count-- && path != "/")
+                    path = path.replace(/[^\/]+\/?$/, "")
 
-                if (url == buffer.URL)
-                    dactyl.beep();
+                let newUrl = url.prePath + path
+
+                if (newUrl != buffer.URL)
+                    dactyl.open(newUrl);
                 else
-                    dactyl.open(url);
+                    dactyl.beep();
             },
             { count: true });
 
