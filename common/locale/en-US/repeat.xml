@@ -275,7 +275,7 @@
 <code>    <html:span style="color: #444">        " This is a comment</html:span>
     foo bar <html:span style="color: #444">" This is a comment</html:span>
             <str> This is not a comment</str>
-    foo bar <str> This is not a cumment</str>
+    foo bar <str> This is not a comment</str>
 </code>
 
 <h2 tag="profile profiling">Profiling</h2>

@@ -21,7 +21,7 @@
     to be executed, with full access to all of the internals of &dactyl.appName;
     and &dactyl.host;. Both expression evaluation methods support sophisticated
     expression completion, including option lists and descriptions thereof,
-    along with paren matching and syntax error highlighting.
+    along with parentheses matching and syntax error highlighting.
 </p>
 
 <h2 tag="javascript-evaluation">JavaScript evaluation</h2>
@@ -32,9 +32,9 @@
     <description>
         <p>
             Echo a JavaScript expression. <a>expr</a> may be a simple quoted
-            string, in which case it is shown in the statusline, or any
+            string, in which case it is shown in the &tag.status-line;, or any
             arbitrary JavaScript expression. If the expression results in
-            anything other than a string, it is pretty-printed in a multiline
+            anything other than a string, it is pretty-printed in a multi-line
             frame just above the command line. The output depends on the type
             of object. Functions display their source, DOM nodes display the
             pretty-printed XML of the top-level node, XML literals are
@@ -52,7 +52,7 @@
     <description>
         <p>
             Echo the expression as an error message. Just like <ex>:ec<oa>ho</oa></ex> but echoes
-            the result highlighted as ErrorMsg and saves it to the message history.
+            the result highlighted as with the ErrorMsg group and saves it to the message history.
         </p>
     </description>
 </item>
@@ -76,7 +76,7 @@
             Execute the Ex command string that results from the evaluation of
             the JavaScript expression <a>expr</a>. For example,
         </p>
-        <code><ex>:execute "open " + content.location.host</ex></code>
+        <code><ex>:execute <str>open </str> + content.location.host</ex></code>
         <p>
             opens the homepage of the currently opened site.
         </p>
@@ -104,7 +104,7 @@
         </example>
 
         <p>
-            Moreover, multiline scripts can be executed with shell-like here
+            Moreover, multi-line scripts can be executed with shell-like here
             document syntax. For example, the following,
         </p>
 
@@ -124,7 +124,7 @@
             string function arguments. The completion code is designed to be
             both as safe and as powerful as possible. Expressions in a given
             command-line session will only be evaluated once, and, with
-            autocompletion turned on, any completion which requires a function
+            auto-completion turned on, any completion which requires a function
             to be executed requires an explicit <k name="Tab" mode="c"/> press
             to commence.
         </p>
