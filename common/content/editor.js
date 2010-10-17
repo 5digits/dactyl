@@ -60,7 +60,7 @@ const Editor = Module("editor", {
     },
 
     pasteClipboard: function (clipboard, toStart) {
-        if (dactyl.has("WINNT")) {
+        if (util.isOS("WINNT")) {
             this.executeCommand("cmd_paste");
             return;
         }

@@ -26,7 +26,7 @@ const Tabs = Module("tabs", {
                 #TabsToolbar > xul|tabs > xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab-4) !important; }
                 // FIXME: better solution for themes?
                 .tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }
-        ]]></>, /tab-./g, function (m) dactyl.has("Darwin") ? "tab-mac" : m),
+        ]]></>, /tab-./g, function (m) util.isOS("Darwin") ? "tab-mac" : m),
         false, true);
 
         // hide tabs initially to prevent flickering when 'stal' would hide them

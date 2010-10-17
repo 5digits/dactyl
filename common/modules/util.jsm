@@ -527,6 +527,18 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     isDomainURL: function isDomainURL(url, domain) util.isSubdomain(util.getHost(url), domain),
 
     /**
+     * Returns true if 'os' matches Dactyl's notion of the current operating
+     * system platform. This is one of "WINNT", "Darwin" or "Unix".
+     *
+     * @param {string} os The OS platform to test.
+     * @returns {boolean}
+     */
+    isOS: function isOS(os) {
+        let OS = services.get("runtime").OS;
+        return (OS == "WINNT" || OS == "Darwin") ? os == OS : os == "Unix";
+    },
+
+    /**
      * Returns true if 'host' is a subdomain of 'domain'.
      *
      * @param {string} host The host to check.

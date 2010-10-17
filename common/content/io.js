@@ -180,7 +180,7 @@ const IO = Module("io", {
         let rcFile1 = File.joinPaths(dir, "." + config.name + "rc", this.cwd);
         let rcFile2 = File.joinPaths(dir, "_" + config.name + "rc", this.cwd);
 
-        if (dactyl.has("WINNT"))
+        if (util.isOS("WINNT"))
             [rcFile1, rcFile2] = [rcFile2, rcFile1];
 
         if (rcFile1.exists() && rcFile1.isFile())
@@ -230,9 +230,9 @@ const IO = Module("io", {
         if (File.isAbsolutePath(program))
             file = io.File(program, true);
         else {
-            let dirs = services.get("environment").get("PATH").split(dactyl.has("WINNT") ? ";" : ":");
+            let dirs = services.get("environment").get("PATH").split(util.isOS("WINNT") ? ";" : ":");
             // Windows tries the CWD first TODO: desirable?
-            if (dactyl.has("WINNT"))
+            if (util.isOS("WINNT"))
                 dirs = [io.cwd].concat(dirs);
 
 lookup:
@@ -244,7 +244,7 @@ lookup:
 
                     // TODO: couldn't we just palm this off to the start command?
                     // automatically try to add the executable path extensions on windows
-                    if (dactyl.has("WINNT")) {
+                    if (util.isOS("WINNT")) {
                         let extensions = services.get("environment").get("PATHEXT").split(";");
                         for (let [, extension] in Iterator(extensions)) {
                             file = File.joinPaths(dir, program + extension, io.cwd);
@@ -398,7 +398,7 @@ lookup:
                 stdin.write(input);
 
             // TODO: implement 'shellredir'
-            if (dactyl.has("WINNT")) {
+            if (util.isOS("WINNT")) {
                 command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(options["shell"], options["shellcmdflag"].split(/\s+/).concat(command), true);
             }
@@ -452,7 +452,7 @@ lookup:
         const rtpvar = config.idName + "_RUNTIME";
         let rtp = services.get("environment").get(rtpvar);
         if (!rtp) {
-            rtp = "~/" + (dactyl.has("WINNT") ? "" : ".") + config.name;
+            rtp = "~/" + (util.isOS("WINNT") ? "" : ".") + config.name;
             services.get("environment").set(rtpvar, rtp);
         }
         return rtp;
@@ -634,7 +634,7 @@ lookup:
         };
 
         completion.environment = function environment(context) {
-            let command = dactyl.has("WINNT") ? "set" : "env";
+            let command = util.isOS("WINNT") ? "set" : "env";
             let lines = io.system(command).split("\n");
             lines.pop();
 
@@ -689,7 +689,7 @@ lookup:
         completion.shellCommand = function shellCommand(context) {
             context.title = ["Shell Command", "Path"];
             context.generate = function () {
-                let dirNames = services.get("environment").get("PATH").split(dactyl.has("WINNT") ? ";" : ":");
+                let dirNames = services.get("environment").get("PATH").split(util.isOS("WINNT") ? ";" : ":");
                 let commands = [];
 
                 for (let [, dirName] in Iterator(dirNames)) {
@@ -719,7 +719,7 @@ lookup:
     },
     options: function () {
         var shell, shellcmdflag;
-        if (dactyl.has("WINNT")) {
+        if (util.isOS("WINNT")) {
             shell = "cmd.exe";
             // TODO: setting 'shell' to "something containing sh" updates
             // 'shellcmdflag' appropriately at startup on Windows in Vim

@@ -1112,12 +1112,6 @@ const Dactyl = Module("dactyl", {
             dactyl.help(tag);
     }
 }, {
-    config: function () {
-        // TODO: is the OS really a config feature? I think not. --djk
-        let os = services.get("runtime").OS;
-        config.features.push(os == "WINNT" || os == "Darwin" ? os : "Unix");
-    },
-
     // Only general options are added here, which are valid for all Dactyl extensions
     options: function () {
         options.add(["errorbells", "eb"],
