@@ -52,7 +52,7 @@
                 the URL bar or <ex>:open</ex> prompt. If the
                 <oa>url</oa> contains the string <em>%s</em> it is
                 replaced by any text following the keyword when it
-                is opened.
+                is opened. See also <k>;S</k>.
                 (short name <em>-k</em>)
             </dd>
             <dt>-post</dt>
