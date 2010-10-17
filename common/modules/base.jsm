@@ -819,7 +819,7 @@ memoize(Class.prototype, "closure", function () {
 });
 
 /**
- * A base class generator for classes which impliment XPCOM interfaces.
+ * A base class generator for classes which implement XPCOM interfaces.
  *
  * @param {nsIIID|[nsIJSIID]} interfaces The interfaces which the class
  *      implements.

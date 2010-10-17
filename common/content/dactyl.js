@@ -1417,7 +1417,7 @@ const Dactyl = Module("dactyl", {
                     });
                 },
                 getInstallForURL: function (url, callback, mimetype) {
-                    dactyl.assert(false, "Install by URL not implimented");
+                    dactyl.assert(false, "Install by URL not implemented");
                 },
             };
 
