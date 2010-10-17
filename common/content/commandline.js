@@ -153,9 +153,11 @@ const CommandWidgets = Class("CommandWidgets", {
     multilineOutput: Class.memoize(function () {
         let elem = document.getElementById("dactyl-multiline-output");
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
-        ["copy", "copylink", "selectall"].forEach(function (id) {
-            document.getElementById("dactyl-context-" + id).style.listStyleImage =
-                util.computedStyle(document.getElementById("context-" + id)).listStyleImage;
+        ["copy", "copylink", "selectall"].forEach(function (tail) {
+            // some host apps use "hostPrefixContext-copy" ids
+            let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
+            document.getElementById("dactyl-context-" + tail).style.listStyleImage =
+                util.computedStyle(util.evaluateXPath(xpath, document).snapshotItem(0)).listStyleImage;
         });
         return elem;
     }),
