@@ -145,8 +145,12 @@ const Command = Class("Command", {
         if (args.bang && !this.bang)
             throw FailedAssertion("E477: No ! allowed");
 
+
         dactyl.trapErrors(function exec(command) {
-            this.action(args, modifiers);
+            if (this.always)
+                this.always(args, modifiers);
+            if (!io.sourcing || !io.sourcing.noExecute)
+                this.action(args, modifiers);
         }, this);
     },
 
@@ -1243,6 +1247,62 @@ const Commands = Module("commands", {
             }, {
                 argCount: "1",
                 completer: function (context) completion.userCommand(context)
+            });
+
+        function checkStack(cmd) {
+            util.assert(io.sourcing && io.sourcing.stack &&
+                        io.sourcing.stack[cmd] && io.sourcing.stack[cmd].length,
+                        "Invalid use of conditional");
+        }
+        function pop(cmd) {
+            checkStack(cmd);
+            return io.sourcing.stack[cmd].pop();
+        }
+        function push(cmd, value) {
+            util.assert(io.sourcing, "Invalid use of conditional");
+            if (arguments.length < 2)
+                value = io.sourcing.noExecute;
+            io.sourcing.stack = io.sourcing.stack || {};
+            io.sourcing.stack[cmd] = (io.sourcing.stack[cmd] || []).concat([value])
+        }
+
+        commands.add(["if"],
+            "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
+            function (args) { io.sourcing.noExecute = !dactyl.userEval(args[0]); },
+            {
+                always: function (args) { push("if") },
+                argCount: "1",
+                literal: 0
+            });
+        commands.add(["elsei[f]", "elif"],
+            "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
+            function (args) {},
+            {
+                always: function (args) {
+                    checkStack("if");
+                    io.sourcing.noExecute = io.sourcing.stack.if.slice(-1)[0] ||
+                        !io.sourcing.noExecute || !dactyl.userEval(args[0]);
+                },
+                argCount: "1",
+                literal: 0
+            });
+        commands.add(["el[se]"],
+            "Execute commands until the next :endif only if the previous conditionals were not executed",
+            function (args) {},
+            {
+                always: function (args) {
+                    checkStack("if");
+                    io.sourcing.noExecute = io.sourcing.stack.if.slice(-1)[0] ||
+                        !io.sourcing.noExecute;
+                },
+                argCount: "0"
+            });
+        commands.add(["en[dif]", "fi"],
+            "Ends a string of :if/:elseif/:else conditionals",
+            function (args) {},
+            {
+                always: function (args) { io.sourcing.noExecute = pop("if") },
+                argCount: "0"
             });
 
         commands.add(["y[ank]"],

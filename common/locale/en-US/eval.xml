@@ -24,6 +24,8 @@
     along with paren matching and syntax error highlighting.
 </p>
 
+<h2 tag="javascript-evaluation">JavaScript evaluation</h2>
+
 <item>
     <tags>:ec :echo</tags>
     <spec>:ec<oa>ho</oa> <a>expr</a></spec>
@@ -134,6 +136,8 @@
     </description>
 </item>
 
+<h2 tag="global-variables">Global Variables</h2>
+
 <item>
     <tags>:let</tags>
     <spec>:let <a>var-name</a> [+-.]= <a>expr1</a></spec>
@@ -162,6 +166,55 @@
         <p>
             Deletes the named variables. When <oa>!</oa> is given, no error
             message is output for non-existing variables.
+        </p>
+    </description>
+</item>
+
+<h2 tag="conditionals">Conditionals</h2>
+
+<item>
+    <tags>:if</tags>
+    <spec>:if <a>expr</a></spec>
+    <description>
+        <p>
+            Execute commands until the next <ex>:elseif</ex>, <ex>:else</ex>,
+            or <ex>:endif</ex> only if the JavaScript expression <a>expr</a>
+            evaluates to a true value.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:endif :en :fi</tags>
+    <spec>:en<oa>dif</oa></spec>
+    <description>
+        <p>
+            Ends a string of <ex>:if</ex>/<ex>:elseif</ex>/<ex>:else</ex>
+            conditionals.
+        </p>
+    </description>
+</item>
+
+
+<item>
+    <tags>:elseif :elsei :elif</tags>
+    <spec>:elsei<oa>f</oa> <a>expr</a></spec>
+    <description>
+        <p>
+            Execute commands until the next <ex>:elseif</ex>, <ex>:else</ex>,
+            or <ex>:endif</ex> only if the JavaScript expression <a>expr</a>
+            evaluates to a true value.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:else :el</tags>
+    <spec>:el<oa>se</oa></spec>
+    <description>
+        <p>
+            Execute commands until the next <ex>:endif</ex> only if the
+            previous conditionals were not executed.
         </p>
     </description>
 </item>

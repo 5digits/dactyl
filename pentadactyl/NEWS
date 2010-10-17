@@ -78,6 +78,7 @@
     * Added "passwords" and "venkman" dialogs to :dialog.
     * Added :extupdate command.
     * Replaced 'focuscontent' with 'strictfocus'.
+    * Add :if/:elseif/:else/:endif conditionals.
     * Changed 'urlseparator' default value to '|'.
     * Added 'wildanchor' option.
     * Added -javascript option to :abbrev and :map.

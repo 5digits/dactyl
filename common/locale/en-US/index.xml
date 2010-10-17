@@ -242,7 +242,10 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:echo</ex></dt> <dd>Echo the expression</dd>
     <dt><ex>:echoerr</ex></dt> <dd>Echo the expression as an error message</dd>
     <dt><ex>:echomsg</ex></dt> <dd>Echo the expression as an informational message</dd>
+    <dt><ex>:else</ex></dt> <dd>Execute commands until the next <ex>:endif</ex> only if the previous conditionals were not executed</dd>
+    <dt><ex>:elseif</ex></dt> <dd>Execute commands until the next :elseif, <ex>:else</ex>, or :endif only if the argument returns true</dd>
     <dt><ex>:emenu</ex></dt> <dd>Execute the specified menu item from the command line</dd>
+    <dt><ex>:endif</ex></dt> <dd>Ends a string of <ex>:if</ex>/<ex>:elseif</ex>/<ex>:else</ex> conditionals</dd>
     <dt><ex>:execute</ex></dt> <dd>Execute the argument as an Ex command</dd>
     <dt><ex>:extadd</ex></dt> <dd>Install an extension</dd>
     <dt><ex>:extdelete</ex></dt> <dd>Uninstall an extension</dd>
@@ -262,6 +265,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:history</ex></dt> <dd>Show recently visited URLs</dd>
     <dt><ex>:iabbrev</ex></dt> <dd>Abbreviate a key sequence in Insert mode</dd>
     <dt><ex>:iabclear</ex></dt> <dd>Remove all abbreviations in Insert mode</dd>
+    <dt><ex>:if</ex></dt> <dd>Execute commands until the next <ex>:elseif</ex>, <ex>:else</ex>, or <ex>:endif</ex> only if the argument returns true</dd>
     <dt><ex>:imap</ex></dt> <dd>Map a key sequence in Insert mode</dd>
     <dt><ex>:imapclear</ex></dt> <dd>Remove all mappings in Insert mode</dd>
     <dt><ex>:inoremap</ex></dt> <dd>Map a key sequence without remapping keys in Insert mode</dd>

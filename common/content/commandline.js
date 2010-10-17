@@ -1165,7 +1165,7 @@ const CommandLine = Module("commandline", {
         dactyl.registerObserver("echoLine", observe, true);
         dactyl.registerObserver("echoMultiline", observe, true);
         function observe(str, highlight, dom) {
-            buffer.push(dom ? util.domToString(dom) : str)
+            buffer.push(dom && !isString(str) ? util.domToString(dom) : str)
         }
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
         return buffer.join("\n");

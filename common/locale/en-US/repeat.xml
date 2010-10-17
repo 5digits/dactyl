@@ -169,6 +169,8 @@
             on a single line, you can use
         </p>
 
+        <p>See also <t>ex-scripts</t> below.</p>
+
         <code><ex>:js</ex> &lt;&lt;<em>EOF</em>
 <hl key="Object">var</hl> hello = <hl key="Key">function</hl> () {
     alert(<str>Hello world</str>);
@@ -227,6 +229,54 @@
         </p>
     </description>
 </item>
+
+<h3 tag="ex-scripts">Ex Command Scripts</h3>
+
+<p>
+    Ex command scripts are similar to both entering commands on the
+    <link topic="command-line">command line</link> and to Vim
+    scripts, but with some notable differences.
+</p>
+
+<p tag="multiline-commands">
+    Commands in Ex command scripts can span multiple lines by
+    prefixing the second and further lines with a <em>\</em>
+    character. For instance, the following all define commands whose
+    definitions span multiple lines.
+</p>
+
+<code><ex>:command!</ex> <em>foo</em>
+        \ <em>-description</em> <str>A command that frobs bars</str>
+        \ <ex>:javascript</ex> frob(content.bar)</code>
+
+<code><ex>:style</ex> <em>-name</em> <str>foo</str>
+     \ <str delim="'">foobar.com</str>
+     \ p:first-line { <em>font-variant:</em> <str delim="">small-caps</str>; }
+     \ div#side-bar > :first-child { <em>display</em>: <str delim="">none</str>; }</code>
+
+<code><ex>:command</ex> <em>do-some-stuff</em>
+        \ <em>-description</em> <str>A command does some stuff in JavaScript</str>
+        \ <ex>:javascript</ex> &lt;&lt;<em>EOF</em>
+        \     window.do(<str>some</str>);
+        \     window.do(<str>stuff</str>);
+        \<em>EOF</em></code>
+
+<code><ex>:command</ex> <em>do-some-stuff</em>
+        \ <em>-description</em> <str>A command does some stuff in JavaScript</str>
+        \ <ex>:javascript</ex>
+        \\    window.do(<str>some</str>);
+        \\    window.do(<str>stuff</str>);</code>
+
+<p tag="comments">
+    Lines may be commented out by prefixing them with a <em>"</em>
+    character.
+</p>
+
+<code>    <html:span style="color: #444">        " This is a comment</html:span>
+    foo bar <html:span style="color: #444">" This is a comment</html:span>
+            <str> This is not a comment</str>
+    foo bar <str> This is not a cumment</str>
+</code>
 
 <h2 tag="profile profiling">Profiling</h2>
 
