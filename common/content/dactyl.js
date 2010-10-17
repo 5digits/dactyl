@@ -307,9 +307,8 @@ const Dactyl = Module("dactyl", {
      */
     userFunc: function () {
         return this.userEval(
-            "(function userFunction(" +
-            Array.slice(arguments, 0, -1).join(", ") +
-            ") { " + arguments[arguments.length - 1] + " })");
+            "(function userFunction(" + Array.slice(arguments, 0, -1).join(", ") + ")" +
+            " { " + arguments[arguments.length - 1] + " })");
     },
 
     /**

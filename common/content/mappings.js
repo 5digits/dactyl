@@ -181,7 +181,7 @@ const Mappings = Module("mappings", {
         modes = modes.slice();
         return (map for ([i, map] in Iterator(stack[modes.shift()].sort(function (m1, m2) String.localeCompare(m1.name, m2.name))))
             if (map.rhs && modes.every(function (mode) stack[mode].
-                    some(function (m) m.rhs && array.equals(m.rhs, map.rhs) && m.name == map.name))))
+                    some(function (m) m.rhs && m.rhs === map.rhs && m.name === map.name))))
     },
 
     // NOTE: just normal mode for now
@@ -347,7 +347,7 @@ const Mappings = Module("mappings", {
                         <tr>
                             <td>{modeSign} {name}</td>
                             <td>{map.noremap ? "*" : " "}</td>
-                            <td>{map.rhs ? map.rhs.join(" ") : "function () { ... }"}</td>
+                            <td>{map.rhs || map.action.toSource()}</td>
                         </tr>))
                 }
                 </table>;
@@ -361,7 +361,6 @@ const Mappings = Module("mappings", {
 }, {
 }, {
     commands: function () {
-        const stockDescription = "User defined mapping";
         function addMapCommands(ch, mapmodes, modeDescription) {
             // 0 args -> list all maps
             // 1 arg  -> list the maps starting with args
@@ -374,35 +373,20 @@ const Mappings = Module("mappings", {
                 }
 
                 let [lhs, rhs] = args;
+                if (noremap)
+                    args["-builtin"] = true;
 
                 if (!rhs) // list the mapping
                     mappings.list(mapmodes, mappings._expandLeader(lhs));
                 else {
-                    if (args["-javascript"]) {
-                        rhs = ["-javascript", rhs];
-                        var action = dactyl.userFunc("count", rhs);
-                    }
-                    else if (args["-ex"]) {
-                        rhs = ["-ex", rhs];
-                        action = function action(count) commands.execute(rhs[1], { count: count },
-                                                                         false, null, action.sourcing);
-                        action.sourcing = io.sourcing && update({}, io.sourcing);
-                    }
-                    else {
-                        rhs = [events.canonicalKeys(rhs)];
-                        action = function (count) {
-                            events.feedkeys(commands.replaceTokens(rhs[0], { count: count }),
-                                    this.noremap, this.silent);
-                        };
-                    }
-
                     mappings.addUserMap(mapmodes, [lhs],
-                        args["-description"] || stockDescription,
-                        action, {
+                        args["-description"],
+                        Command.bindMacro(args, "-keys", ["count"]),
+                        {
                             count: args["-count"],
-                            rhs: rhs,
-                            noremap: "-builtin" in args || noremap,
+                            noremap: "-builtin" in args,
                             persist: !args["-nopersist"],
+                            get rhs() String(this.action),
                             silent: "-silent" in args
                         });
                 }
@@ -451,8 +435,9 @@ const Mappings = Module("mappings", {
                         },
                         {
                             names: ["-description", "-d"],
-                            type: CommandOption.STRING,
-                            description: "A description of this mapping"
+                            description: "A description of this mapping",
+                            default: "User defined mapping",
+                            type: CommandOption.STRING
                         },
                         {
                             names: ["-ex", "-e"],
@@ -485,14 +470,13 @@ const Mappings = Module("mappings", {
                                 command: this.name,
                                 options: array([
                                     ["-modes", uniqueModes(map.modes)],
-                                    map.noremap && ["-builtin"],
-                                    map.description != stockDescription && ["-description", map.description],
-                                    map.rhs.length > 1 && [map.rhs[0]],
+                                    ["-description", map.description],
                                     map.silent && ["-silent"]])
                                     .filter(util.identity)
                                     .toObject(),
                                 arguments: [map.names[0]],
-                                literalArg: map.rhs[map.rhs.length - 1]
+                                literalArg: map.rhs,
+                                ignoreDefaults: true
                             }
                             for (map in userMappings())
                             if (map.persist)

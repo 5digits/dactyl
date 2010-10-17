@@ -25,6 +25,7 @@
  *         (@link CommandOption.FLOAT),
  *         (@link CommandOption.LIST),
  *         (@link CommandOption.ANY)
+ * @property {object} default The option's default value
  * @property {function} validator A validator function
  * @property {function (CompletionContext, object)} completer A list of
  *    completions, or a completion function which will be passed a
@@ -285,7 +286,44 @@ const Command = Class("Command", {
      */
     replacementText: null
 }, {
-    bindMacro: function (args, default_) {
+    bindMacro: function (args, default_, params) {
+        let makeParams = function makeParams()
+            let (args = arguments)
+                params.map(function (name, i) [name, args[i]]).toObject();
+        if (callable(params))
+            makeParams = params;
+        else
+            params = array(params);
+
+        let rhs = args.literalArg;
+        let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce(function (a, b) args[b] ? b : a, default_);
+        switch (type) {
+        case "-builtin":
+            let noremap = true;
+            /* fallthrough */
+        case "-keys":
+            let silent = args["-silent"];
+            rhs = events.canonicalKeys(rhs);
+            var action = function action(count)
+                events.feedkeys(commands.replaceTokens(rhs, { count: count }),
+                                noremap, silent);
+            break;
+        case "-ex":
+            action = function action() commands.execute(rhs, makeParams.apply(this, arguments),
+                                                        false, null, action.sourcing);
+            action.sourcing = io.sourcing && update({}, io.sourcing);
+            break;
+        case "-javascript":
+            if (callable(params))
+                action = dactyl.userEval("(function action() { with (action.makeParams.apply(this, arguments)) {" + args.literalArg + "} })")
+            else
+                action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
+            action.makeParams = makeParams;
+            break;
+        }
+        action.toString = function toString() (type === default_ ? "" : type + " ") + rhs;
+        args = null;
+        return action;
     },
 
     // TODO: do we really need more than longNames as a convenience anyway?
@@ -389,7 +427,6 @@ const Commands = Module("commands", {
     addUserCommand: function (names, description, action, extra, replace) {
         extra = extra || {};
         extra.user = true;
-        description = description || "User defined command";
 
         return this._addCommand([names, description, action, extra], replace);
     },
@@ -404,7 +441,13 @@ const Commands = Module("commands", {
     commandToString: function (args) {
         let res = [args.command + (args.bang ? "!" : "")];
 
+        let defaults = {};
+        if (args.ignoreDefaults)
+            defaults = array(this.options).map(function (opt) [opt.names[0], opt.default]).toObject();
+
         for (let [opt, val] in Iterator(args.options || {})) {
+            if (val != null && defaults[opt] === val)
+                continue;
             let chr = /^-.$/.test(opt) ? " " : "=";
             if (val != null)
                 opt += chr + Commands.quote(val);
@@ -416,8 +459,8 @@ const Commands = Module("commands", {
         let str = args.literalArg;
         if (str)
             res.push(!/\n/.test(str) ? str :
-                     this.hereDoc    ? "<<EOF\n" + str.replace(/\n$/, "") + "\nEOF"
-                                     : str.replace(/\n/, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
+                     this.hereDoc    ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
+                                     : String.replace(str, /\n/, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
         return res.join(" ");
     },
 
@@ -848,6 +891,10 @@ const Commands = Module("commands", {
                  args.length > 1 && /^[01?]$/.test(argCount))
             fail("E488: Trailing characters");
 
+        for (let opt in values(options))
+            if (set.has(opt, "default") && args[opt.names[0]] === undefined)
+                args[opt.names[0]] = opt.default;
+
         return args;
     },
 
@@ -970,8 +1017,10 @@ const Commands = Module("commands", {
             if (token == "lt") // Don't quote, as in Vim (but, why so in Vim? You'd think people wouldn't say <q-lt> if they didn't want it)
                 return "<";
             let res = tokens[token];
-            if (res == undefined) // Ignore anything undefined
+            if (res === undefined) // Ignore anything undefined
                 res = "<" + token + ">";
+            if (res === null)
+                res = "";
             if (quote && typeof res != "number")
                 return Commands.quoteArg['"'](res);
             return res;
@@ -1074,16 +1123,6 @@ const Commands = Module("commands", {
     },
 
     commands: function () {
-        function userCommand(args, modifiers) {
-            let tokens = {
-                args:  this.argCount && args.string,
-                bang:  this.bang && args.bang ? "!" : "",
-                count: this.count && args.count
-            };
-
-            commands.execute(this.replacementText, tokens, false, null, this.sourcing);
-        }
-
         // TODO: offer completion.ex?
         //     : make this config specific
         var completeOptionMap = {
@@ -1108,12 +1147,7 @@ const Commands = Module("commands", {
                 dactyl.assert(!/\W/.test(cmd || ''), "E182: Invalid command name");
 
                 if (args.literalArg) {
-                    let nargsOpt       = args["-nargs"] || "0";
-                    let bangOpt        = "-bang"  in args;
-                    let countOpt       = "-count" in args;
-                    let descriptionOpt = args["-description"] || "User-defined command";
-                    let completeOpt    = args["-complete"];
-
+                    let completeOpt  = args["-complete"];
                     let completeFunc = null; // default to no completion for user commands
 
                     if (completeOpt) {
@@ -1140,12 +1174,19 @@ const Commands = Module("commands", {
                     }
 
                     let added = commands.addUserCommand([cmd],
-                                    descriptionOpt,
-                                    userCommand, {
-                                        argCount: nargsOpt,
-                                        bang: bangOpt,
-                                        count: countOpt,
+                                    args["-description"],
+                                    Command.bindMacro(args, "-ex",
+                                        function makeParams(args, modifiers) ({
+                                            args:  this.argCount && args.string,
+                                            bang:  this.bang && args.bang ? "!" : "",
+                                            count: this.count && args.count
+                                        })),
+                                    {
+                                        argCount: args["-nargs"],
+                                        bang: args["-bang"],
+                                        count: args["-count"],
                                         completer: completeFunc,
+                                        persist: !args["-nopersist"],
                                         replacementText: args.literalArg,
                                         sourcing: io.sourcing && update({}, io.sourcing)
                                     }, args.bang);
@@ -1190,16 +1231,20 @@ const Commands = Module("commands", {
                     { names: ["-bang", "-b"],  description: "Command may be proceeded by a !" },
                     { names: ["-count", "-c"], description: "Command may be preceeded by a count" },
                     {
-                        names: ["-description", "-desc", "-d"],
-                        description: "A user-visible description of the command",
-                        type: CommandOption.STRING
-                    }, {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],
                         description: "The argument completion function",
                         completer: function (context) [[k, ""] for ([k, v] in Iterator(completeOptionMap))],
                         type: CommandOption.STRING,
                         validator: function (arg) arg in completeOptionMap || /custom,\w+/.test(arg),
+                    }, {
+                        names: ["-description", "-desc", "-d"],
+                        description: "A user-visible description of the command",
+                        default: "User-defined command",
+                        type: CommandOption.STRING
+                    }, {
+                        names: ["-javascript", "-js", "-j"],
+                        description: "Execute this mapping as JavaScript rather than keys"
                     }, {
                         names: ["-nargs", "-a"],
                         description: "The allowed number of arguments",
@@ -1208,9 +1253,13 @@ const Commands = Module("commands", {
                                     ["*", "Zero or more arguments are allowed"],
                                     ["?", "Zero or one argument is allowed"],
                                     ["+", "One or more arguments are allowed"]],
+                        default: "0",
                         type: CommandOption.STRING,
                         validator: function (arg) /^[01*?+]$/.test(arg)
-                    },
+                    }, {
+                        names: ["-nopersist", "-n"],
+                        description: "Do not save this command to an auto-generated RC file"
+                    }
                 ],
                 literal: 1,
                 serialize: function () [ {
@@ -1220,13 +1269,13 @@ const Commands = Module("commands", {
                             [[v, typeof cmd[k] == "boolean" ? null : cmd[k]]
                              // FIXME: this map is expressed multiple times
                              for ([k, v] in Iterator({ argCount: "-nargs", bang: "-bang", count: "-count", description: "-description" }))
-                             // FIXME: add support for default values to parseArgs
-                             if (k in cmd && cmd[k] != "0" && cmd[k] != "User-defined command")]),
+                             if (cmd[k])]),
                         arguments: [cmd.name],
-                        literalArg: cmd.replacementText
+                        literalArg: cmd.action,
+                        ignoreDefaults: true
                     }
                     for ([k, cmd] in Iterator(commands._exCommands))
-                    if (cmd.user && cmd.replacementText)
+                    if (cmd.user && cmd.persist)
                 ]
             });
 

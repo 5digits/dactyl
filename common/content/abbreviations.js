@@ -232,11 +232,8 @@ const Abbreviations = Module("abbreviations", {
                     dactyl.assert(lhs != null, "E474: Invalid argument");
 
                     if (rhs) {
-                        if (args["-javascript"]) {
-                            let expr = rhs;
-                            rhs = dactyl.userFunc("editor", expr);
-                            rhs.toString = function () expr;
-                        }
+                        if (args["-javascript"])
+                            rhs = Command.bindMacro({ literalArg: rhs }, "-javascript", ["editor"]);
                         abbreviations.add(modes, lhs, rhs);
                     }
                     else {
@@ -258,7 +255,8 @@ const Abbreviations = Module("abbreviations", {
                             return completion.javascript(context);
                     },
                     literal: 0,
-                    serial: function () [ {
+                    serialize: function () [
+                        {
                             command: this.name,
                             arguments: [abbr.lhs],
                             literalArg: abbr.rhs,
