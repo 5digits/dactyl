@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/help.dtd">
 
 <document
     name="styling"
@@ -94,7 +94,7 @@
             <dt>Null</dt>              <dd>A JavaScript Null object</dd>
             <dt>Number</dt>            <dd>A JavaScript Number object</dd>
             <dt>Object</dt>            <dd>A JavaScript Object</dd>
-            <dt>Preview</dt>           <dd>The completion preview displayed in the <link topic="command-line">command line</link></dd>
+            <dt>Preview</dt>           <dd>The completion preview displayed in the &tag.command-line;</dd>
             <dt>Question</dt>          <dd>A prompt for a decision</dd>
             <dt>Search</dt>            <dd>Highlighted search results in a web page</dd>
             <dt>StatusLine</dt>        <dd>The status bar</dd>

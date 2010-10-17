@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/help.dtd">
 
 <document
     name="repeat"
@@ -162,9 +162,9 @@
 
         <p>
             Ex command files are executed as if each line were entered into
-            the <link topic="command-line">command line</link> individually.
+            the &tag.command-line; individually.
             Additionally, certain commands support the same ‘here document’
-            syntax supported by most Unix shells and by the <link topic="command-line">command line</link>.
+            syntax supported by most Unix shells and by the &tag.command-line;.
             So, to execute a JavaScript statement which does not comfortably fit
             on a single line, you can use
         </p>
@@ -234,7 +234,7 @@
 
 <p>
     Ex command scripts are similar to both entering commands on the
-    <link topic="command-line">command line</link> and to Vim
+    &tag.command-line; and to Vim
     scripts, but with some notable differences.
 </p>
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd" [
+<!DOCTYPE document SYSTEM "chrome://dactyl/content/help.dtd" [
   <!ENTITY hinttags "//*[@onclick or @onmouseover or @onmousedown or
                @onmouseup or @oncommand or @role='link'] |
            //input[not(@type='hidden')] | //a | //area |
@@ -366,7 +366,7 @@
             Enables automatic completion for completion groups matching the
             given regular expressions. When automatic completion is enabled,
             the completion list is automatically opened when the
-            <link topic="command-line">command line</link> is focused.
+            &tag.command-line; is focused.
             Thereafter, any key press triggers a completion update for the
             matching groups (hereafter ‘contexts’). Non-matching contexts will
             only be updated when the <k name="Tab" mode="c"/> key is pressed.
@@ -1317,8 +1317,8 @@
 
         <dl dt="width: 6em;">
             <dt>0</dt> <dd>Don't show link destination</dd>
-            <dt>1</dt> <dd>Show the link's destination in the <link topic="status-line">status line</link></dd>
-            <dt>2</dt> <dd>Show the link's destination in the <link topic="command-line">command line</link></dd>
+            <dt>1</dt> <dd>Show the link's destination in the &tag.status-line;</dd>
+            <dt>2</dt> <dd>Show the link's destination in the &tag.command-line;</dd>
         </dl>
     </description>
 </item>
