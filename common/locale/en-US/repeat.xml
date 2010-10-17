@@ -254,14 +254,14 @@
      \ p<str delim="">:first-line</str> { <em>font-variant</em>: <str delim="">small-caps</str>; }
      \ div<em>#side-bar</em> > <str delim="">:first-child</str> { <em>display</em>: <str delim="">none</str>; }</code>
 
-<code><ex>:command</ex> <str delim="">do-some-stuff</str>
+<code><ex>:command!</ex> <str delim="">do-some-stuff</str>
         \ <em>-description</em> <str>A command which does some stuff in JavaScript</str>
         \ <ex>:javascript</ex> &lt;&lt;<em>EOF</em>
         \     window.do(<str>some</str>);
         \     window.do(<str>stuff</str>);
         \<em>EOF</em></code>
 
-<code><ex>:command</ex> <str delim="">do-some-stuff</str>
+<code><ex>:command!</ex> <str delim="">do-some-stuff</str>
         \ <em>-description</em> <str>A command which does some stuff in JavaScript</str>
         \ <ex>:javascript</ex>
         \\    window.do(<str>some</str>);

@@ -285,6 +285,8 @@ const Command = Class("Command", {
      */
     replacementText: null
 }, {
+    bindMacro: function (args, default_) {
+    },
 
     // TODO: do we really need more than longNames as a convenience anyway?
     /**

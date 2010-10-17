@@ -1626,8 +1626,9 @@ const Buffer = Module("buffer", {
                             return false;
 
                         let computedStyle = util.computedStyle(elem);
+                        let rect = elem.getBoundingClientRect();
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none" &&
-                            computedStyle.MozUserFocus != "ignore";
+                            computedStyle.MozUserFocus != "ignore" && rect.width && rect.height;
                     });
 
                     dactyl.assert(elements.length > 0);
