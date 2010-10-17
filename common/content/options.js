@@ -957,7 +957,7 @@ const Options = Module("options", {
                     context.title = ["Extra Completions"];
                     context.completions = [
                             [option.stringValue, "Current value"],
-                            [option.stringValue, "Default value"]
+                            [option.stringDefaultValue, "Default value"]
                     ].filter(function (f) f[0] !== "" && String(f[0]).length < 200);
                     context.quote = ["", util.identity, ""];
                 });
