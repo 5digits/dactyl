@@ -258,9 +258,7 @@ const Styles = Module("Styles", {
         });
     },
 
-    propertyPattern: (function () {
-        const string = /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/.source;
-        return RegExp(String.replace(<![CDATA[
+    propertyPattern: util.regexp(<![CDATA[
             (?:
                 (\s*)
                 ([-a-z]*)
@@ -270,19 +268,18 @@ const Styles = Module("Styles", {
                             [-\w]
                             (?:
                                 \s* \( \s*
-                                    (?: S | [^)]*  )
+                                    (?: <string> | [^)]*  )
                                 \s* (?: \) | $)
                             )?
                             \s*
-                            | \s* S \s* | [^;}]*
+                            | \s* <string> \s* | [^;}]*
                         )*
                     )
                 )?
             )
             (\s* (?: ; | $) )
-        ]]>, /S/g, string).replace(/\s*/g, ""),
-        "gi");
-    })()
+        ]]>, "gi",
+        { string: /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/ })
 }, {
     commands: function (dactyl, modules, window) {
         const commands = modules.commands;

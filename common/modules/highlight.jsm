@@ -164,14 +164,14 @@ const Highlights = Module("Highlight", {
             this.set(k, null, true);
     },
 
-    groupRegexp:  RegExp(String.replace(<![CDATA[
+    groupRegexp: util.regexp(<![CDATA[
         ^
         (\s* (?:\S|\s\S)+ \s+)
         \{ ([^}]*) \}
         \s*
         $
-    ]]>, /\s*/g, ""), "gm"),
-    sheetRegexp: RegExp(String.replace(<![CDATA[
+    ]]>, "gm"),
+    sheetRegexp: util.regexp(<![CDATA[
         ^\s*
         !? \*?
              ( (?:[^;\s]|\s\S)+ )
@@ -179,7 +179,7 @@ const Highlights = Module("Highlight", {
         (?:; ( (?:[^ \s]|\s\S)+ )  )?
         \s*  (.*)
         $
-    ]]>, /\s*/g, "")),
+    ]]>),
 
     /**
      * Bulk loads new CSS rules, in the format of,

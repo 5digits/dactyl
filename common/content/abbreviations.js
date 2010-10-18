@@ -72,16 +72,23 @@ const Abbreviations = Module("abbreviations", {
         // TODO: Make keyword definition closer to Vim's default keyword
         //       definition (which differs across platforms).
 
-        let nonkw = "\\s\"'";
-        let keyword = "[^" + nonkw + "]";
-        let nonkeyword = "[" + nonkw + "]";
+        let params = { // This is most definitely not Vim compatible.
+            keyword:    /[^\s"']/,
+            nonkeyword: /[   "']/
+        };
 
-        let fullId = keyword + "+";
-        let endId = nonkeyword + "+" + keyword;
-        let nonId = "\\S*" + nonkeyword;
-
-        // Used in add and expand
-        this._match = fullId + "|" + endId + "|" + nonId;
+        this._match = util.regexp(<><![CDATA[
+            (^ | \s | <nonkeyword>) (<keyword>+             )$ | // full-id
+            (^ | \s | <keyword>   ) (<nonkeyword>+ <keyword>)$ | // end-id
+            (^ | \s               ) (\S* <nonkeyword>       )$   // non-id
+        ]]></>, "", params);
+        this._check = util.regexp(<><![CDATA[
+            ^ (?:
+              <keyword>+              | // full-id
+              <nonkeyword>+ <keyword> | // end-id
+              \S* <nonkeyword>          // non-id
+            ) $
+        ]]></>, "", params);
     },
 
     /**
@@ -117,9 +124,9 @@ const Abbreviations = Module("abbreviations", {
      * @returns {Abbreviation}
      */
     match: function (mode, text) {
-        let match = text.match(RegExp('(' + abbreviations._match + ')$'));
+        let match = this._match.exec(text);
         if (match)
-            return abbreviations.get(mode, match[0]);
+            return abbreviations.get(mode, match[2] || match[4] || match[6]);
         return null;
     },
 
@@ -222,22 +229,19 @@ const Abbreviations = Module("abbreviations", {
             modes.sort();
             modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";
 
-            // Why? --Kris
-            function splitAbbrev(abbrev) abbrev.match(RegExp("^(\\s*)($|" + abbreviations._match + ")(?:\\s*$|(\\s+)(.*))")) || [];
-
             commands.add([ch ? ch + "a[bbrev]" : "ab[breviate]"],
                 "Abbreviate a key sequence" + modeDescription,
                 function (args) {
-                    let [,, lhs,, rhs] = splitAbbrev(args[0] || "");
-                    dactyl.assert(lhs != null, "E474: Invalid argument");
+                    let [lhs, rhs] = args;
+                    dactyl.assert(!args.length || abbreviations._check.test(lhs),
+                                  "E474: Invalid argument");
 
-                    if (rhs) {
+                    if (!rhs)
+                        abbreviations.list(modes, lhs || "");
+                    else {
                         if (args["-javascript"])
                             rhs = Command.bindMacro({ literalArg: rhs }, "-javascript", ["editor"]);
                         abbreviations.add(modes, lhs, rhs);
-                    }
-                    else {
-                        abbreviations.list(modes, lhs || "");
                     }
                 }, {
                     options: [
@@ -247,14 +251,12 @@ const Abbreviations = Module("abbreviations", {
                         }
                     ],
                     completer: function (context, args) {
-                        let [, sp1, lhs, sp2, rhs] = splitAbbrev(args[0]);
-                        if (rhs == null)
+                        if (args.length == 1)
                             return completion.abbreviation(context, args, modes)
-                        context.advance((sp1 + lhs + sp2).length);
-                        if (args["-javascript"])
+                        else if (args["-javascript"])
                             return completion.javascript(context);
                     },
-                    literal: 0,
+                    literal: 1,
                     serialize: function () [
                         {
                             command: this.name,

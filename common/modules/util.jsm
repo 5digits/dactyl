@@ -846,6 +846,30 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         }
     },
 
+    /**
+     * Creates a new RegExp object based on the value of expr stripped
+     * of all white space and interpolated with the values from tokens.
+     * If tokens, any string in the form of <key> in expr is replaced
+     * with the value of the property, 'key', from tokens, if that
+     * property exists. If the property value is itself a RegExp, its
+     * source is substituted rather than its string value.
+     *
+     * Additionally, expr is stripped of all JavaScript comments.
+     *
+     * This is similar to Perl's extended regular expression format.
+     *
+     * @param {string|XML} expr The expression to compile into a RegExp.
+     * @param {string} flags Flags to apply to the new RegExp.
+     * @param {object} tokens The tokens to substitute. @optional
+     */
+    regexp: function (expr, flags, tokens) {
+        if (tokens)
+            expr = String.replace(expr, /<(\w+)>/g, function (m, n1) set.has(tokens, n1) ? tokens[n1].source || tokens[n1] : m);
+        expr = String.replace(expr, /\/\/[^\n]*|\/\*[^]*?\*\//gm, "")
+                     .replace(/\s+/g, "");
+        return RegExp(expr, flags);
+    },
+
     maxErrors: 15,
     errors: Class.memoize(function () []),
     reportError: function (error) {
