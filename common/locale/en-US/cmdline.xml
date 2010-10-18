@@ -184,9 +184,11 @@
                 <li><ex>:echo</ex></li>
                 <li><ex>:echoerr</ex></li>
                 <li><ex>:echomsg</ex></li>
+                <li><ex>:elseif</ex></li>
                 <li><ex>:execute</ex></li>
                 <li><ex>:highlight</ex></li>
                 <li><ex>:iabbrev</ex></li>
+                <li><ex>:if</ex></li>
                 <li><ex>:imap</ex></li>
                 <li><ex>:inoremap</ex></li>
                 <li><ex>:javascript</ex></li>
