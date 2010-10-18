@@ -528,6 +528,8 @@ function memoize(obj, key, getter) {
     obj.__defineGetter__(key, function replace() (
         Class.replaceProperty(this.instance || this, key, null),
         Class.replaceProperty(this.instance || this, key, getter.call(this, key))));
+    obj.__defineSetter__(key, function replace(val)
+        Class.replaceProperty(this.instance || this, key, val));
 }
 
 /**

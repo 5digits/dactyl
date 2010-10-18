@@ -258,6 +258,31 @@ const Command = Class("Command", {
     optionMap: Class.memoize(function () array(this.options)
                 .map(function (opt) opt.names.map(function (name) [name, opt]))
                 .flatten.toObject()),
+    newArgs: function () {
+        let res = [];
+        res.__proto__ = this.argsPrototype;
+        return res;
+    },
+    argsPrototype: Class.memoize(function () update([],
+            array([opt, opt.default] for (opt in values(this.options)) if (set.has(opt, "default")))
+                .toObject(),
+            {
+                __iterator__: function () array.iterItems(this),
+                command: this,
+                get literalArg() this.command.literal != null && this[this.command.literal] || "",
+                // TODO: string: Class.memoize(function () { ... }),
+                verify: function verify() {
+                    if (this.argCount) {
+                        dactyl.assert((this.length > 0 || !/^[1+]$/.test(this.command.argCount)) &&
+                                      (this.literal == null || !/[1+]/.test(this.command.argCount) || /\S/.test(this.literalArg || "")),
+                                      "E471: Argument required");
+
+                        dactyl.assert((this.length == 0 || this.command.argCount !== "0") &&
+                                      (this.length <= 1 || !/^[01?]$/.test(this.command.argCount)),
+                                      "E488: Trailing characters");
+                    }
+                }
+            })),
     /**
      * @property {boolean|function(args)} When true, invocations of this
      *     command may contain private data which should be purged from
@@ -355,35 +380,26 @@ const ex = {
         let cmd = commands.get(meth);
         dactyl.assert(cmd, "No such command");
 
+        let res = cmd.newArgs();
         if (isObject(args[0]))
             for (let [k, v] in Iterator(args.shift()))
                 if (k == "!")
-                    args.bang = v;
+                    res.bang = v;
                 else if (k == "#")
-                    args.count = v;
+                    res.count = v;
                 else {
                     let opt = cmd.optionMap["-" + k];
                     let val = opt.type && opt.type.parse(v);
                     dactyl.assert(val != null && (typeof val !== "number" || !isNaN(val)),
                                   "No such option: " + k);
-                    args[opt.names[0]] = val;
+                    res[opt.names[0]] = val;
                 }
-        if (cmd.literal != null)
-            args.literalArg = args[cmd.literal];
+        for (let [i, val] in array.iterItems(args))
+            res[i] = String(val);
 
-        // FIXME: Duplicated in parseArgs.
+        res.verify();
 
-        dactyl.assert((args.length > 0 || !/^[1+]$/.test(this.argCount)) &&
-                      (this.literal == null || !/[1+]/.test(this.argCount) || /\S/.test(args.literalArg || "")),
-                      "E471: Argument required");
-
-        // This logic eludes me... --Kris
-        dactyl.assert((args.length == 0 || this.argCount !== "0") &&
-                      (args.length <= 1 || !/^[01?]$/.test(this.argCount)),
-                      "E488: Trailing characters");
-
-        // TODO: memoize(args, "string", function () { ... });
-        return cmd.execute(args);
+        return cmd.execute(res);
     }
 };
 
@@ -683,261 +699,253 @@ const Commands = Module("commands", {
      * @returns {Args}
      */
     parseArgs: function (str, params) {
-        function getNextArg(str) {
-            if (str.substr(0, 2) === "<<" && hereDoc) {
-                let arg = /^<<(\S*)/.exec(str)[1];
-                let count = arg.length + 2;
-                if (complete)
-                    return [count, "", ""]
-                return [count, io.readHeredoc(arg), ""];
+        try {
+            function getNextArg(str) {
+                if (str.substr(0, 2) === "<<" && hereDoc) {
+                    let arg = /^<<(\S*)/.exec(str)[1];
+                    let count = arg.length + 2;
+                    if (complete)
+                        return [count, "", ""]
+                    return [count, io.readHeredoc(arg), ""];
+                }
+                let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
+                if (quote == "\\" && !complete)
+                    return [,,,"Trailing \\"];
+                if (quote && !complete)
+                    return [,,,"E114: Missing quote: " + quote];
+                return [count, arg, quote];
             }
-            let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
-            if (quote == "\\" && !complete)
-                return [,,,"Trailing \\"];
-            if (quote && !complete)
-                return [,,,"E114: Missing quote: " + quote];
-            return [count, arg, quote];
-        }
 
-        var { allowUnknownOptions, argCount, complete, extra, hereDoc, literal, options, keepQuotes } = params || {};
+            var { allowUnknownOptions, argCount, complete, extra, hereDoc, literal, options, keepQuotes } = params || {};
 
-        if (!options)
-            options = [];
+            if (!options)
+                options = [];
 
-        if (!argCount)
-            argCount = "*";
+            if (!argCount)
+                argCount = "*";
 
-        var args = []; // parsed options
-        args.__iterator__ = function () array.iterItems(this);
-        args.string = str; // for access to the unparsed string
-        args.literalArg = "";
+            var args = (params.newArgs || Array).call(params); // parsed options
+            args.string = str; // for access to the unparsed string
 
-        // FIXME!
-        for (let [k, v] in Iterator(extra || []))
-            args[k] = v;
+            // FIXME!
+            for (let [k, v] in Iterator(extra || []))
+                args[k] = v;
 
-        var invalid = false;
-        // FIXME: best way to specify these requirements?
-        var onlyArgumentsRemaining = allowUnknownOptions || options.length == 0; // after a -- has been found
-        var arg = null;
-        var count = 0; // the length of the argument
-        var i = 0;
-        var completeOpts;
+            var invalid = false;
+            // FIXME: best way to specify these requirements?
+            var onlyArgumentsRemaining = allowUnknownOptions || options.length == 0; // after a -- has been found
+            var arg = null;
+            var count = 0; // the length of the argument
+            var i = 0;
+            var completeOpts;
 
-        // XXX
-        function matchOpts(arg) {
-            // Push possible option matches into completions
-            if (complete && !onlyArgumentsRemaining)
-                completeOpts = options.filter(function (opt) opt.multiple || !(opt.names[0] in args));
-        }
-        function resetCompletions() {
-            completeOpts = null;
-            args.completeArg = null;
-            args.completeOpt = null;
-            args.completeFilter = null;
-            args.completeStart = i;
-            args.quote = Commands.complQuote[""];
-        }
-        if (complete) {
-            resetCompletions();
-            matchOpts("");
-            args.completeArg = 0;
-        }
-
-        function fail(error) {
-            if (complete)
-                complete.message = error;
-            else
-                dactyl.assert(false, error);
-        }
-
-        outer:
-        while (i < str.length || complete) {
-            var argStart = i;
-            let re = /\s*/gy;
-            re.lastIndex = i;
-            i += re.exec(str)[0].length;
-
-            if (str[i] == "|") {
-                args.string = str.slice(0, i);
-                args.trailing = str.slice(i + 1);
-                break;
+            // XXX
+            function matchOpts(arg) {
+                // Push possible option matches into completions
+                if (complete && !onlyArgumentsRemaining)
+                    completeOpts = options.filter(function (opt) opt.multiple || !(opt.names[0] in args));
             }
-            if (i == str.length && !complete)
-                break;
-
-            if (complete)
+            function resetCompletions() {
+                completeOpts = null;
+                args.completeArg = null;
+                args.completeOpt = null;
+                args.completeFilter = null;
+                args.completeStart = i;
+                args.quote = Commands.complQuote[""];
+            }
+            if (complete) {
                 resetCompletions();
-
-            var sub = str.substr(i);
-            if ((!onlyArgumentsRemaining) && /^--(\s|$)/.test(sub)) {
-                onlyArgumentsRemaining = true;
-                i += 2;
-                continue;
+                matchOpts("");
+                args.completeArg = 0;
             }
 
-            var optname = "";
-            if (!onlyArgumentsRemaining) {
-                for (let [, opt] in Iterator(options)) {
-                    for (let [, optname] in Iterator(opt.names)) {
-                        if (sub.indexOf(optname) == 0) {
-                            invalid = false;
-                            arg = null;
-                            quote = null;
-                            count = 0;
-                            let sep = sub[optname.length];
-                            if (sep == "=" || /\s/.test(sep) && opt.type != CommandOption.NOARG) {
-                                [count, arg, quote, error] = getNextArg(sub.substr(optname.length + 1));
-                                dactyl.assert(!error, error);
+            function fail(error) {
+                if (complete)
+                    complete.message = error;
+                else
+                    dactyl.assert(false, error);
+            }
 
-                                // if we add the argument to an option after a space, it MUST not be empty
-                                if (sep != "=" && !quote && arg.length == 0)
-                                    arg = null;
+            outer:
+            while (i < str.length || complete) {
+                var argStart = i;
+                let re = /\s*/gy;
+                re.lastIndex = i;
+                i += re.exec(str)[0].length;
 
-                                count++; // to compensate the "=" character
-                            }
-                            else if (!/\s/.test(sep) && sep != undefined) // this isn't really an option as it has trailing characters, parse it as an argument
-                                invalid = true;
+                if (str[i] == "|") {
+                    args.string = str.slice(0, i);
+                    args.trailing = str.slice(i + 1);
+                    break;
+                }
+                if (i == str.length && !complete)
+                    break;
 
-                            if (complete && !/[\s=]/.test(sep))
-                                matchOpts(sub);
+                if (complete)
+                    resetCompletions();
 
-                            let context = null;
-                            if (!complete && quote)
-                                fail("Invalid argument for option " + optname);
+                var sub = str.substr(i);
+                if ((!onlyArgumentsRemaining) && /^--(\s|$)/.test(sub)) {
+                    onlyArgumentsRemaining = true;
+                    i += 2;
+                    continue;
+                }
 
-                            if (!invalid) {
-                                if (complete && count > 0) {
-                                    args.completeStart += optname.length + 1;
-                                    args.completeOpt = opt;
-                                    args.completeFilter = arg;
-                                    args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
+                var optname = "";
+                if (!onlyArgumentsRemaining) {
+                    for (let [, opt] in Iterator(options)) {
+                        for (let [, optname] in Iterator(opt.names)) {
+                            if (sub.indexOf(optname) == 0) {
+                                invalid = false;
+                                arg = null;
+                                quote = null;
+                                count = 0;
+                                let sep = sub[optname.length];
+                                if (sep == "=" || /\s/.test(sep) && opt.type != CommandOption.NOARG) {
+                                    [count, arg, quote, error] = getNextArg(sub.substr(optname.length + 1));
+                                    dactyl.assert(!error, error);
+
+                                    // if we add the argument to an option after a space, it MUST not be empty
+                                    if (sep != "=" && !quote && arg.length == 0)
+                                        arg = null;
+
+                                    count++; // to compensate the "=" character
                                 }
-                                if (!complete || arg != null) {
-                                    if (opt.type) {
-                                        let orig = arg;
-                                        arg = opt.type.parse(arg);
-                                        if (arg == null || (typeof arg == "number" && isNaN(arg))) {
-                                            if (!complete || orig != "" || args.completeStart != str.length)
-                                                fail("Invalid argument for " + opt.type.description + " option: " + optname);
-                                            if (complete)
-                                                complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
+                                else if (!/\s/.test(sep) && sep != undefined) // this isn't really an option as it has trailing characters, parse it as an argument
+                                    invalid = true;
+
+                                if (complete && !/[\s=]/.test(sep))
+                                    matchOpts(sub);
+
+                                let context = null;
+                                if (!complete && quote)
+                                    fail("Invalid argument for option " + optname);
+
+                                if (!invalid) {
+                                    if (complete && count > 0) {
+                                        args.completeStart += optname.length + 1;
+                                        args.completeOpt = opt;
+                                        args.completeFilter = arg;
+                                        args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
+                                    }
+                                    if (!complete || arg != null) {
+                                        if (opt.type) {
+                                            let orig = arg;
+                                            arg = opt.type.parse(arg);
+                                            if (arg == null || (typeof arg == "number" && isNaN(arg))) {
+                                                if (!complete || orig != "" || args.completeStart != str.length)
+                                                    fail("Invalid argument for " + opt.type.description + " option: " + optname);
+                                                if (complete)
+                                                    complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
+                                            }
+                                        }
+
+                                        // we have a validator function
+                                        if (typeof opt.validator == "function") {
+                                            if (opt.validator.call(this, arg) == false) {
+                                                fail("Invalid argument for option: " + optname);
+                                                if (complete) // Always true.
+                                                    complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
+                                            }
                                         }
                                     }
 
-                                    // we have a validator function
-                                    if (typeof opt.validator == "function") {
-                                        if (opt.validator.call(this, arg) == false) {
-                                            fail("Invalid argument for option: " + optname);
-                                            if (complete) // Always true.
-                                                complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
-                                        }
-                                    }
+                                    // option allowed multiple times
+                                    if (opt.multiple)
+                                        args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
+                                    else
+                                        args[opt.names[0]] = opt.type == CommandOption.NOARG || arg;
+
+                                    i += optname.length + count;
+                                    if (i == str.length)
+                                        break outer;
+                                    continue outer;
                                 }
-
-                                // option allowed multiple times
-                                if (opt.multiple)
-                                    args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
-                                else
-                                    args[opt.names[0]] = opt.type == CommandOption.NOARG || arg;
-
-                                i += optname.length + count;
-                                if (i == str.length)
-                                    break outer;
-                                continue outer;
+                                // if it is invalid, just fall through and try the next argument
                             }
-                            // if it is invalid, just fall through and try the next argument
                         }
                     }
                 }
-            }
 
-            matchOpts(sub);
+                matchOpts(sub);
 
-            if (complete) {
-                if (argCount == "0" || args.length > 0 && (/[1?]/.test(argCount)))
-                    complete.highlight(i, sub.length, "SPELLCHECK");
-            }
+                if (complete) {
+                    if (argCount == "0" || args.length > 0 && (/[1?]/.test(argCount)))
+                        complete.highlight(i, sub.length, "SPELLCHECK");
+                }
 
-            if (args.length === literal) {
+                if (args.length === literal) {
+                    if (complete)
+                        args.completeArg = args.length;
+
+                    let re = /(?:\s*(?=\n)|\s*)([^]*)/gy;
+                    re.lastIndex = argStart || 0;
+                    sub = re.exec(str)[1];
+
+                    // Hack.
+                    if (sub.substr(0, 2) === "<<" && hereDoc)
+                        let ([count, arg] = getNextArg(sub)) {
+                            sub = arg + sub.substr(count);
+                        }
+
+                    args.push(sub);
+                    args.quote = null;
+                    break;
+                }
+
+                // if not an option, treat this token as an argument
+                let [count, arg, quote, error] = getNextArg(sub);
+                dactyl.assert(!error, error);
+
+                if (complete) {
+                    args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
+                    args.completeFilter = arg || "";
+                }
+                else if (count == -1)
+                    fail("Error parsing arguments: " + arg);
+                else if (!onlyArgumentsRemaining && /^-/.test(arg))
+                    fail("Invalid option: " + arg);
+
+                if (arg != null)
+                    args.push(arg);
                 if (complete)
-                    args.completeArg = args.length;
+                    args.completeArg = args.length - 1;
 
-                let re = /(?:\s*(?=\n)|\s*)([^]*)/gy;
-                re.lastIndex = argStart || 0;
-                sub = re.exec(str)[1];
-
-                // Hack.
-                if (sub.substr(0, 2) === "<<" && hereDoc)
-                    let ([count, arg] = getNextArg(sub)) {
-                        sub = arg + sub.substr(count);
-                    }
-
-                args.literalArg = sub;
-                args.push(sub);
-                args.quote = null;
-                break;
+                i += count;
+                if (count <= 0 || i == str.length)
+                    break;
             }
 
-            // if not an option, treat this token as an argument
-            let [count, arg, quote, error] = getNextArg(sub);
-            dactyl.assert(!error, error);
-
-            if (complete) {
-                args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
-                args.completeFilter = arg || "";
+            if (complete && args.trailing == null) {
+                if (args.completeOpt) {
+                    let opt = args.completeOpt;
+                    let context = complete.fork(opt.names[0], args.completeStart);
+                    context.filter = args.completeFilter;
+                    if (typeof opt.completer == "function")
+                        var compl = opt.completer(context, args);
+                    else
+                        compl = opt.completer || [];
+                    context.title = [opt.names[0]];
+                    context.quote = args.quote;
+                    if (compl)
+                        context.completions = compl;
+                }
+                complete.advance(args.completeStart);
+                complete.keys = { text: "names", description: "description" };
+                complete.title = ["Options"];
+                if (completeOpts)
+                    complete.completions = completeOpts;
             }
-            else if (count == -1)
-                fail("Error parsing arguments: " + arg);
-            else if (!onlyArgumentsRemaining && /^-/.test(arg))
-                fail("Invalid option: " + arg);
 
-            if (arg != null)
-                args.push(arg);
-            if (complete)
-                args.completeArg = args.length - 1;
+            if (args.verify)
+                args.verify();
 
-            i += count;
-            if (count <= 0 || i == str.length)
-                break;
+            return args;
         }
-
-        if (complete && args.trailing == null) {
-            if (args.completeOpt) {
-                let opt = args.completeOpt;
-                let context = complete.fork(opt.names[0], args.completeStart);
-                context.filter = args.completeFilter;
-                if (typeof opt.completer == "function")
-                    var compl = opt.completer(context, args);
-                else
-                    compl = opt.completer || [];
-                context.title = [opt.names[0]];
-                context.quote = args.quote;
-                if (compl)
-                    context.completions = compl;
-            }
-            complete.advance(args.completeStart);
-            complete.keys = { text: "names", description: "description" };
-            complete.title = ["Options"];
-            if (completeOpts)
-                complete.completions = completeOpts;
+        catch (e if complete && e instanceof FailedAssertion) {
+            complete.message = e;
+            return args;
         }
-
-        // check for correct number of arguments
-        if (args.length == 0 && /^[1+]$/.test(argCount) ||
-                literal != null && /[1+]/.test(argCount) && !/\S/.test(args.literalArg || "")) {
-            if (!complete)
-                fail("E471: Argument required");
-        }
-        else if (args.length == 1 && (argCount == "0") ||
-                 args.length > 1 && /^[01?]$/.test(argCount))
-            fail("E488: Trailing characters");
-
-        for (let opt in values(options))
-            if (set.has(opt, "default") && args[opt.names[0]] === undefined)
-                args[opt.names[0]] = opt.default;
-
-        return args;
     },
 
     /**
