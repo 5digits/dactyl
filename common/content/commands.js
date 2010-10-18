@@ -35,13 +35,16 @@
  * @property {boolean} multiple Whether this option can be specified multiple times
  * @property {string} description A description of the option
  */
+
 const CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description");
 CommandOption.defaultValue("description", function () "");
 CommandOption.defaultValue("type", function () CommandOption.NOARG);
 CommandOption.defaultValue("multiple", function () false);
+
+const ArgType = Struct("description", "parse");
 update(CommandOption, {
     /**
-     * @property {number} The option argument is unspecified. Any argument
+     * @property {object} The option argument is unspecified. Any argument
      *     is accepted and caller is responsible for parsing the return
      *     value.
      * @final
@@ -49,36 +52,36 @@ update(CommandOption, {
     ANY: 0,
 
     /**
-     * @property {number} The option doesn't accept an argument.
+     * @property {object} The option doesn't accept an argument.
      * @final
      */
-    NOARG: 1,
+    NOARG: ArgType("no arg",  function (arg) !arg || null),
     /**
-     * @property {number} The option accepts a boolean argument.
+     * @property {object} The option accepts a boolean argument.
      * @final
      */
-    BOOL: 2,
+    BOOL: ArgType("boolean", function (val) Commands.parseBool(val)),
     /**
-     * @property {number} The option accepts a string argument.
+     * @property {object} The option accepts a string argument.
      * @final
      */
-    STRING: 3,
+    STRING: ArgType("string", function (val) val),
     /**
-     * @property {number} The option accepts an integer argument.
+     * @property {object} The option accepts an integer argument.
      * @final
      */
-    INT: 4,
+    INT: ArgType("int", parseInt),
     /**
-     * @property {number} The option accepts a float argument.
+     * @property {object} The option accepts a float argument.
      * @final
      */
-    FLOAT: 5,
+    FLOAT: ArgType("float", parseFloat),
     /**
-     * @property {number} The option accepts a string list argument.
+     * @property {object} The option accepts a string list argument.
      *     E.g. "foo,bar"
      * @final
      */
-    LIST: 6
+    LIST: ArgType("list", function (arg) arg && arg.split(/\s*,\s*/))
 });
 
 /**
@@ -252,6 +255,9 @@ const Command = Class("Command", {
      * @see Commands@parseArguments
      */
     options: [],
+    optionMap: Class.memoize(function () array(this.options)
+                .map(function (opt) opt.names.map(function (name) [name, opt]))
+                .flatten.toObject()),
     /**
      * @property {boolean|function(args)} When true, invocations of this
      *     command may contain private data which should be purged from
@@ -343,10 +349,47 @@ const Command = Class("Command", {
     }
 });
 
+// Prototype.
+const ex = {
+    __noSuchMethod__: function (meth, args) {
+        let cmd = commands.get(meth);
+        dactyl.assert(cmd, "No such command");
+
+        if (isObject(args[0]))
+            for (let [k, v] in Iterator(args.shift()))
+                if (k == "!")
+                    args.bang = v;
+                else if (k == "#")
+                    args.count = v;
+                else {
+                    let opt = cmd.optionMap["-" + k];
+                    let val = opt.type && opt.type.parse(v);
+                    dactyl.assert(val != null && (typeof val !== "number" || !isNaN(val)),
+                                  "No such option: " + k);
+                    args[opt.names[0]] = val;
+                }
+        if (cmd.literal != null)
+            args.literalArg = args[cmd.literal];
+
+        // FIXME: Duplicated in parseArgs.
+
+        dactyl.assert((args.length > 0 || !/^[1+]$/.test(this.argCount)) &&
+                      (this.literal == null || !/[1+]/.test(this.argCount) || /\S/.test(args.literalArg || "")),
+                      "E471: Argument required");
+
+        // This logic eludes me... --Kris
+        dactyl.assert((args.length == 0 || this.argCount !== "0") &&
+                      (args.length <= 1 || !/^[01?]$/.test(this.argCount)),
+                      "E488: Trailing characters");
+
+        // TODO: memoize(args, "string", function () { ... });
+        return cmd.execute(args);
+    }
+};
+
 /**
  * @instance commands
  */
-const ArgType = Struct("description", "parse");
 const Commands = Module("commands", {
     init: function () {
         this._exCommands = [];
@@ -771,13 +814,12 @@ const Commands = Module("commands", {
                                     args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
                                 }
                                 if (!complete || arg != null) {
-                                    let type = Commands.argTypes[opt.type];
-                                    if (type) {
+                                    if (opt.type) {
                                         let orig = arg;
-                                        arg = type.parse(arg);
+                                        arg = opt.type.parse(arg);
                                         if (arg == null || (typeof arg == "number" && isNaN(arg))) {
                                             if (!complete || orig != "" || args.completeStart != str.length)
-                                                fail("Invalid argument for " + type.description + " option: " + optname);
+                                                fail("Invalid argument for " + opt.type.description + " option: " + optname);
                                             if (complete)
                                                 complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
                                         }
@@ -1420,15 +1462,6 @@ const Commands = Module("commands", {
             return false;
         return NaN;
     };
-    Commands.argTypes = [
-        null,
-        ArgType("no arg",  function (arg) !arg || null),
-        ArgType("boolean", Commands.parseBool),
-        ArgType("string",  function (val) val),
-        ArgType("int",     parseInt),
-        ArgType("float",   parseFloat),
-        ArgType("list",    function (arg) arg && arg.split(/\s*,\s*/))
-    ];
 })();
 
 // vim: set fdm=marker sw=4 ts=4 et:

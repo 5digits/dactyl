@@ -133,7 +133,7 @@ const Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["<C-l>"],
             "Redraw the screen",
-            function () { commands.get("redraw").action(); });
+            function () { ex.redraw(); });
     },
 
     commands: function () {
