@@ -141,7 +141,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             ]),
             init: function init(win) {
                 let pane = win.document.getElementById("SanitizeDialogPane");
-                for (let [,pref] in iter(pane.preferences))
+                for (let [, pref] in iter(pane.preferences))
                     pref.updateElements();
                 init.superapply(this, arguments);
             }
@@ -158,9 +158,9 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                             <columns><column flex="1"/><column flex="1"/></columns>
                             <rows>{
                               let (items = ourItems(true))
-                                 template.map(util.range(0, Math.ceil(items.length/2)), function (i)
+                                 template.map(util.range(0, Math.ceil(items.length / 2)), function (i)
                                    <row xmlns={XUL}>{
-                                     template.map(items.slice(i*2, i*2+2), function (item)
+                                     template.map(items.slice(i * 2, i * 2 + 2), function (item)
                                        <checkbox xmlns={XUL} label={item.description} preference={branch + item.name}/>)
                                    }</row>)
                             }</rows>
@@ -431,7 +431,6 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 privateData: true
             });
 
-
             function getPerms(host) {
                 let uri = util.createURI(host);
                 if (uri)
@@ -451,7 +450,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     if (!args.length)
                         args = modules.options["cookies"];
 
-                    for (let [,cmd] in Iterator(args))
+                    for (let [, cmd] in Iterator(args))
                         switch (cmd) {
                         case "clear":
                             for (let c in Sanitizer.iterCookies(host))
@@ -586,11 +585,11 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
             });
 
-
         options.add(["cookies", "ck"],
             "The default mode for newly added cookie permissions",
             "stringlist", "session",
             { completer: function (context) iter(Sanitizer.COMMANDS) });
+
         options.add(["cookieaccept", "ca"],
             "When to accept cookies",
             "string", "all",
@@ -609,6 +608,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 initialValue: true,
                 persist: false
             });
+
         options.add(["cookielifetime", "cl"],
             "The lifetime for which to accept cookies",
             "string", "default", {
