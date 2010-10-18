@@ -1267,7 +1267,7 @@ const Commands = Module("commands", {
                     if (args.completeArg == 0)
                         completion.userCommand(context);
                     else
-                        completion.ex(context);
+                        args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
                 options: [
                     { names: ["-bang", "-b"],  description: "Command may be proceeded by a !" },
