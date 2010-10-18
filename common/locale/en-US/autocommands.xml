@@ -90,11 +90,11 @@
 
 <p>Enable <em>passthrough</em> mode on all Google sites:</p>
 
-<code><ex>:autocmd LocationChange</ex> <str delim="'">google\.com</str> <hl key="HelpArg">-js</hl> modes.push(modes.PASS_THROUGH)</code>
+<code><ex>:autocmd LocationChange</ex> <str delim="'">google\.com</str> <hl key="HelpArg">-js</hl> modes.set(modes.PASS_THROUGH)</code>
 
 <p>Enable <em>passthrough</em> mode on <em>some</em> Google sites:</p>
 
-<code><ex>:autocmd LocationChange</ex> <str delim="'">(www|mail)\.google\.com</str> <hl key="HelpArg">-js</hl> modes.push(modes.PASS_THROUGH)</code>
+<code><ex>:autocmd LocationChange</ex> <str delim="'">(www|mail)\.google\.com</str> <hl key="HelpArg">-js</hl> modes.set(modes.PASS_THROUGH)</code>
 
 <p>Set the filetype to mail when editing email at Gmail:</p>
 
