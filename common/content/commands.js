@@ -1286,7 +1286,7 @@ const Commands = Module("commands", {
                         type: CommandOption.STRING
                     }, {
                         names: ["-javascript", "-js", "-j"],
-                        description: "Execute this mapping as JavaScript rather than keys"
+                        description: "Execute the definition as JavaScript rather than Ex commands"
                     }, {
                         names: ["-nargs", "-a"],
                         description: "The allowed number of arguments",
