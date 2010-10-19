@@ -749,7 +749,7 @@ const Editor = Module("editor", {
             { arg: true, count: true });
 
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
-            ["F"], "Move to a charater on the current line before the cursor",
+            ["F"], "Move to a character on the current line before the cursor",
             function (count, arg) {
                 let pos = editor.findCharBackward(arg, count);
                 if (pos >= 0)
