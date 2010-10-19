@@ -1001,7 +1001,7 @@ const Commands = Module("commands", {
                 var context = complete.fork("args", len);
             }
 
-            if (!complete || /\w[!\s]/.test(str))
+            if (!complete || /(\w|^)[!\s]/.test(str))
                 args = command.parseArgs(args, context, { count: count, bang: bang });
             else
                 args = commands.parseArgs(args, { extra: { count: count, bang: bang } });

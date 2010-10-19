@@ -282,7 +282,7 @@ const File = Class("File", {
             }
             catch (e) {
                 util.reportError(e);
-                return null;
+                return File.DoesNotExist(e);
             }
         }
         let self = XPCSafeJSObjectWrapper(file);
@@ -489,6 +489,11 @@ const File = Class("File", {
         return this.PATH_SEP = f.path.substr(f.parent.path.length, 1);
     },
 
+    DoesNotExist: function (error) ({
+        exists: function () false,
+        __noSuchMethod__: function () { throw error || Error("Does not exist"); }
+    }),
+
     defaultEncoding: "UTF-8",
 
     expandPath: function (path, relative) {
@@ -543,7 +548,7 @@ const File = Class("File", {
             path.appendRelativePath(this.expandPath(tail, true));
         }
         catch (e) {
-            return { exists: function () false, __noSuchMethod__: function () { throw e; } };
+            return File.DoesNotExist(e);
         }
         return path;
     },
