@@ -903,7 +903,7 @@ const Commands = Module("commands", {
                 }
                 else if (count == -1)
                     fail("Error parsing arguments: " + arg);
-                else if (!onlyArgumentsRemaining && /^-/.test(arg))
+                else if (!onlyArgumentsRemaining && sub[0] === "-")
                     fail("Invalid option: " + arg);
 
                 if (arg != null)
@@ -1113,7 +1113,7 @@ const Commands = Module("commands", {
         return [len - str.length, arg, quote];
     },
 
-    quote: function quote(str) Commands.quoteArg[/[\s"'\\]|^$/.test(str)
+    quote: function quote(str) Commands.quoteArg[/[\s"'\\]|^$|^-/.test(str)
             ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
             : ""](str)
 }, {
