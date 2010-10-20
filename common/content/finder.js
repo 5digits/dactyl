@@ -577,7 +577,10 @@ const RangeFind = Class("RangeFind", {
     },
     purgeListeners: function () {
         for (let range in array.iterValues(this.ranges))
-            range.window.removeEventListener("unload", this.closure.onUnload, true);
+            try {
+                range.window.removeEventListener("unload", this.closure.onUnload, true);
+            }
+            catch (e if e.result === Cr.NS_ERROR_FAILURE) {}
     },
     onUnload: function (event) {
         this.purgeListeners();
