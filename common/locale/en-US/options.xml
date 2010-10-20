@@ -1408,7 +1408,7 @@
             are never split. With the default value, the following will open
             three URLs in the current tab and two new background tabs,
         </p>
-        <code><ex>:open google Linux, wikipedia Arch Linux, imdb March of the Penguins</ex></code>
+        <code><ex>:open google Linux | wikipedia Arch Linux | imdb March of the Penguins</ex></code>
     </description>
 </item>
 
