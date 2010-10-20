@@ -414,7 +414,14 @@ const Hints = Module("hints", {
                 }
 
                 let str = this.getHintString(hintnum);
-                hint.span.setAttribute("number", hint.showText ? str + ": " + hint.text.substr(0, 50) : str);
+                let prefix = "";
+                if (hint.elem instanceof HTMLInputElement)
+                    if (hint.elem.type === "radio")
+                        prefix = hint.elem.checked ? "⊙ " : "○ ";
+                    else if (hint.elem.type === "checkbox")
+                        prefix = hint.elem.checked ? "☑ " : "☐ ";
+
+                hint.span.setAttribute("number", str + (hint.showText ? ": " + prefix + hint.text.substr(0, 50) : ""));
                 if (hint.imgSpan)
                     hint.imgSpan.setAttribute("number", str);
                 else
@@ -521,6 +528,8 @@ const Hints = Module("hints", {
             dactyl.trapErrors(this._hintMode.action, this._hintMode,
                               elem, elem.href || elem.src || "",
                               this._extendedhintCount, top);
+            if (this._continue && this._top)
+                this._showHints();
         }, timeout);
         return true;
     },

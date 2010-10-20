@@ -16,7 +16,7 @@ const RangeFinder = Module("rangefinder", {
         let backwards = mode == modes.FIND_BACKWARD;
         commandline.open(backwards ? "?" : "/", "", mode);
 
-        if (this.rangeFind && this.rangeFind.window.get() == window)
+        if (this.rangeFind && this.rangeFind.window.get() === window)
             this.rangeFind.reset();
         this.find("", backwards);
     },
@@ -127,9 +127,8 @@ const RangeFinder = Module("rangefinder", {
     set rangeFind(val) buffer.localStore.rangeFind = val,
 
     /**
-     * Highlights all occurrences of <b>str</b> in the buffer.
-     *
-     * @param {string} str The string to highlight.
+     * Highlights all occurrences of the last searched for string in the
+     * current buffer.
      */
     highlight: function () {
         if (this.rangeFind)
@@ -157,7 +156,6 @@ const RangeFinder = Module("rangefinder", {
         commandline.registerCallback("change", modes.FIND_BACKWARD, this.closure.onKeyPress);
         commandline.registerCallback("submit", modes.FIND_BACKWARD, this.closure.onSubmit);
         commandline.registerCallback("cancel", modes.FIND_BACKWARD, this.closure.onCancel);
-
     },
     commands: function () {
         commands.add(["noh[lsearch]"],
@@ -321,7 +319,7 @@ const RangeFind = Class("RangeFind", {
         let doc = range.startContainer.ownerDocument;
         let win = doc.defaultView;
         let ranges = this.ranges.filter(function (r)
-            r.window == win && RangeFind.contains(r.range, range));
+            r.window === win && RangeFind.contains(r.range, range));
 
         if (this.backward)
             return ranges[ranges.length - 1];

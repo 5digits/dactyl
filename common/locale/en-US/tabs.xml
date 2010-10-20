@@ -324,16 +324,18 @@
 
 <item>
     <tags>D</tags>
+    <strut/>
     <spec><oa>count</oa>D</spec>
-    <description short="true">
+    <description>
         <p>Like <k>d</k> but selects the tab to the left of the deleted tabs after deletion.</p>
     </description>
 </item>
 
 <item>
     <tags>:tabo :tabonly</tags>
+    <strut/>
     <spec>:tabo<oa>nly</oa></spec>
-    <description short="true">
+    <description>
         <p>Close all buffers other than the currently visible tab.</p>
     </description>
 </item>
