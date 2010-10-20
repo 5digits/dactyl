@@ -899,7 +899,7 @@ const Completion = Module("completion", {
 
         options.add(["complete", "cpt"],
             "Items which are completed at the :open prompts",
-            "charlist", typeof(config.defaults["complete"]) == "string" ? config.defaults["complete"] : "slf",
+            "charlist", config.defaults.complete == null ? "slf" : config.defaults.complete,
             {
                 completer: function (context) values(completion.urlCompleters)
             });
