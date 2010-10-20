@@ -8,6 +8,7 @@
     title="&dactyl.appName; Command-line"
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
+
 <h1 tag="command-line-mode command-line mode-cmdline">Command-line mode</h1>
 <toc start="2"/>
 
@@ -247,7 +248,7 @@
     <dd>
         This is the most basic quoting character. When it is encountered
         outside of single or double quotes, it forces the next character to be
-        interpreted literally. So, for instance, <tt>\\</tt> ⇒ <tt>\</tt>, 
+        interpreted literally. So, for instance, <tt>\\</tt> ⇒ <tt>\</tt>,
         <tt>\'</tt> ⇒ <tt>'</tt>, <tt>\a</tt> ⇒ <tt>a</tt>, and
         <tt>\␣</tt> ⇒ <tt>␣</tt>.
     </dd>

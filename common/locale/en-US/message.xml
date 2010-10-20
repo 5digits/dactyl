@@ -9,6 +9,7 @@
     xmlns="&xmlns.dactyl;"
     xmlns:dactyl="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
+
 <h1 tag="messages">Error and informational messages</h1>
 
 <tags>message-history</tags>

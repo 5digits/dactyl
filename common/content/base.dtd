@@ -11,6 +11,7 @@
 <!ENTITY dactyl.plugins "http://dactyl.sf.net/&dactyl.name;/plugins">
 <!ENTITY dactyl.list.mailto "&dactyl.name;@googlegroups.com">
 <!ENTITY dactyl.list.href "http://groups.google.com/group/&dactyl.name;">
+<!ENTITY dactyl.faq "&dactyl.home;&dactyl.name;/faq">
 
 <!ENTITY xmlns.dactyl "http://vimperator.org/namespaces/liberator">
 <!ENTITY xmlns.html   "http://www.w3.org/1999/xhtml">
