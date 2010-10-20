@@ -297,8 +297,7 @@ const Dactyl = Module("dactyl", {
 
         if (!context)
             context = userContext;
-        context[EVAL_STRING] = str;
-        return Cu.evalInSandbox("with (window) { this.eval(" + EVAL_STRING + ") }", context, "1.8", fileName, lineNumber);
+        return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
     },
 
     /**
@@ -1976,9 +1975,6 @@ const Dactyl = Module("dactyl", {
             }, 1000);
         }
 
-        // always start in normal mode
-        modes.reset();
-
         // TODO: we should have some class where all this guioptions stuff fits well
         // Dactyl.hideGUI();
 
@@ -1992,6 +1988,8 @@ const Dactyl = Module("dactyl", {
         util.timeout(function () {
             let init = services.get("environment").get(config.idName + "_INIT");
             let rcFile = io.getRCFile("~");
+
+            jsmodules.__proto__ = (window.XPCSafeJSObjectWrapper || XPCNativeWrapper)(window);
 
             try {
                 if (dactyl.commandLineOptions.rcFile) {
