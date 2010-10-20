@@ -1,5 +1,5 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
-// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2007-2010 by Doug Kearns <dougkearns@gmail.com>
 // Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -13,6 +13,20 @@
  */
 const Browser = Module("browser", {
 }, {
+    climbUrlPath: function (count) {
+        try {
+            var url = util.newURI(buffer.URL).QueryInterface(Ci.nsIURL);
+        }
+        catch (e) {}
+        dactyl.assert(url);
+
+        while (count-- && url.path != "/")
+            url.path = url.path.replace(/[^\/]+\/?$/, "")
+
+        dactyl.assert(url.spec != buffer.URL);
+        dactyl.open(url.spec);
+    },
+
     incrementURL: function (count) {
         let matches = buffer.URL.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
@@ -109,27 +123,12 @@ const Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["gu"],
             "Go to parent directory",
-            function (count) {
-                count = Math.max(count, 1);
-                let url = util.newURI(buffer.URL);
-
-                while (count-- && url.path != "/")
-                    url.path = url.path.replace(/[^\/]+\/?$/, "")
-
-                if (url.spec != buffer.URL)
-                    dactyl.open(url.spec);
-                else
-                    dactyl.beep();
-            },
+            function (count) { Browser.climbUrlPath(Math.max(count, 1)); },
             { count: true });
 
         mappings.add([modes.NORMAL], ["gU"],
             "Go to the root of the website",
-            function () {
-                let uri = window.content.document.location;
-                dactyl.assert(!/(about|mailto):/.test(uri.protocol)); // exclude these special protocols for now
-                dactyl.open(uri.protocol + "//" + (uri.host || "") + "/");
-            });
+            function () { Browser.climbUrlPath(-1); });
 
         mappings.add([modes.NORMAL], ["<C-l>"],
             "Redraw the screen",
