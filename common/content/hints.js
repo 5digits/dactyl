@@ -414,14 +414,16 @@ const Hints = Module("hints", {
                 }
 
                 let str = this.getHintString(hintnum);
-                let prefix = "";
+                let text = [];
                 if (hint.elem instanceof HTMLInputElement)
                     if (hint.elem.type === "radio")
-                        prefix = hint.elem.checked ? "⊙ " : "○ ";
+                        text.push(UTF8(hint.elem.checked ? "⊙ " : "○ "));
                     else if (hint.elem.type === "checkbox")
-                        prefix = hint.elem.checked ? "☑ " : "☐ ";
+                        text.push(UTF8(hint.elem.checked ? "☑ " : "☐ "));
+                if (hint.showText)
+                    text.push(hint.text.substr(0, 50));
 
-                hint.span.setAttribute("number", str + (hint.showText ? ": " + prefix + hint.text.substr(0, 50) : ""));
+                hint.span.setAttribute("number", str + (text.length ? ": " + text.join(" ") : ""));
                 if (hint.imgSpan)
                     hint.imgSpan.setAttribute("number", str);
                 else
