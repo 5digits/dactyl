@@ -136,10 +136,7 @@ const QuickMarks = Module("quickmarks", {
             },
             {
                 bang: true,
-                completer: function (context) {
-                    context.title = ["QuickMark", "URL"];
-                    context.completions = this._qmarks;
-                },
+                completer: function (context) completion.quickmark(context),
                 literal: 0
             });
 
