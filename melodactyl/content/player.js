@@ -447,8 +447,8 @@ const Player = Module("player", {
 
                     SBGetBrowser().loadMediaList(LibraryUtils.mainLibrary, null, null, view,
                                                      "chrome://songbird/content/mediapages/filtersPage.xul");
-                    // TODO: make this this.focusTrack work ?
-                    this.focusTrack(view.getItemByIndex(0));
+                    // TODO: make this player.focusTrack work ?
+                    player.focusTrack(view.getItemByIndex(0));
                 },
                 {
                     argCount: "1",
@@ -466,7 +466,7 @@ const Player = Module("player", {
                     for ([, playlist] in Iterator(player.getPlaylists())) {
                         if (util.compareIgnoreCase(arg, playlist.name) == 0) {
                             SBGetBrowser().loadMediaList(playlist);
-                            this.focusTrack(this._currentView.getItemByIndex(0));
+                            player.focusTrack(player._currentView.getItemByIndex(0));
                             return;
                         }
                     }
