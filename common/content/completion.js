@@ -524,15 +524,15 @@ const CompletionContext = Class("CompletionContext", {
     },
 
     /**
-     * Advances the context <b>count</b> characters. {@link #filter} is
-     * advanced to match. If {@link #quote} is non-null, its prefix and suffix
-     * are set to the null-string.
+     * Advances the context *count* characters. {@link #filter} is advanced to
+     * match. If {@link #quote} is non-null, its prefix and suffix are set to
+     * the null-string.
      *
      * This function is still imperfect for quoted strings. When
      * {@link #quote} is non-null, it adjusts the count based on the quoted
-     * size of the <b>count</b>-character substring of the filter, which is
-     * accurate so long as unquoting and quoting a string will always map to
-     * the original quoted string, which is often not the case.
+     * size of the *count*-character substring of the filter, which is accurate
+     * so long as unquoting and quoting a string will always map to the
+     * original quoted string, which is often not the case.
      *
      * @param {number} count The number of characters to advance the context.
      */
@@ -556,8 +556,8 @@ const CompletionContext = Class("CompletionContext", {
     },
 
     /**
-     * Gets a key from {@link #cache}, setting it to <b>defVal</b> if it
-     * doesn't already exists.
+     * Gets a key from {@link #cache}, setting it to *defVal* if it doesn't
+     * already exists.
      *
      * @param {string} key
      * @param defVal

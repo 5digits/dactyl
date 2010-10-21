@@ -356,7 +356,7 @@ const File = Class("File", {
     },
 
     /**
-     * Writes the string <b>buf</b> to this file.
+     * Writes the string *buf* to this file.
      *
      * @param {string} buf The file content.
      * @param {string|number} mode The file access mode, a bitwise OR of

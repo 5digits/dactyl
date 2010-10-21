@@ -28,8 +28,8 @@ const Library = Module("library", {
 
     // FIXME: Prathyush do we really want to remove duplicates? If so, why not tracks too? --djk
     /**
-     * Returns an array of all the album names for <b>artist</b> in the
-     * main library.
+     * Returns an array of all the album names for *artist* in the main
+     * library.
      *
      * @param {string} artist The artist's name.
      * @returns {string[]}
@@ -41,8 +41,8 @@ const Library = Module("library", {
     },
 
     /**
-     * Returns an array of all the track names for <b>artist</b> and
-     * <b>album</b> in the main library.
+     * Returns an array of all the track names for *artist* and *album* in the
+     * main library.
      *
      * @param {string} artist The artist's name.
      * @param {string} album The album's name.

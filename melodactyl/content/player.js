@@ -22,8 +22,7 @@ const Player = Module("player", {
     },
 
     /**
-     * Moves the track position <b>interval</b> milliseconds forwards or
-     * backwards.
+     * Moves the track position *interval* milliseconds forwards or backwards.
      *
      * @param {number} interval The time interval (ms) to move the track
      *     position.
@@ -176,22 +175,20 @@ const Player = Module("player", {
     },
 
     /**
-     *  Seeks forward <b>interval</b> milliseconds in the currently playing
-     *  track.
+     * Seeks forward *interval* milliseconds in the currently playing track.
      *
-     *  @param {number} interval The time interval (ms) to advance the
-     *      current track.
+     * @param {number} interval The time interval (ms) to advance the
+     *     current track.
      */
     seekForward: function seekForward(interval) {
         this._seek(interval, true);
     },
 
     /**
-     *  Seeks backwards <b>interval</b> milliseconds in the currently
-     *  playing track.
+     * Seeks backwards *interval* milliseconds in the currently playing track.
      *
-     *  @param {number} interval The time interval (ms) to rewind the
-     *      current track.
+     * @param {number} interval The time interval (ms) to rewind the
+     *     current track.
      */
     seekBackward: function seekBackward(interval) {
         this._seek(interval, false);
@@ -236,7 +233,7 @@ const Player = Module("player", {
     },
 
     /**
-     * Searches the current media view for <b>str</b>
+     * Searches the current media view for *str*
      *
      * @param {string} str The search string.
      */
@@ -349,7 +346,7 @@ const Player = Module("player", {
     },
 
     /**
-     * Plays the media item at <b>index</b> in <b>playlist</b>.
+     * Plays the media item at *index* in *playlist*.
      *
      * @param {sbIMediaList} playlist
      * @param {number} index
@@ -370,8 +367,8 @@ const Player = Module("player", {
     },
 
     /**
-     * Loads the the specified media page into <b>view</b> with the given
-     * <b>list</b> of media items.
+     * Loads the the specified media page into *view* with the given *list* of
+     * media items.
      *
      * @param {sbIMediaPage} page
      * @param {sbIMediaList} list
@@ -383,7 +380,7 @@ const Player = Module("player", {
     },
 
     /**
-     * Applys the specified <b>rating<b> to <b>mediaItem<b>.
+     * Applys the specified *rating* to *mediaItem*.
      *
      * @param {sbIMediaItem} mediaItem The media item to rate.
      * @param {number} rating The star rating (1-5).
@@ -395,8 +392,8 @@ const Player = Module("player", {
     // TODO: add more fields, and generate the list dynamically. PT should the
     // available fields reflect only the visible view fields or offer others? --djk
     /**
-     * Sorts the current media view by <b>field</b> in the order specified by
-     * <b>ascending</b>.
+     * Sorts the current media view by *field* in the order specified by
+     * *ascending*.
      *
      * @param {string} field The sort field.
      * @param {boolean} ascending If true sort in ascending order, otherwise in

@@ -163,7 +163,7 @@ const Config = Module("config", ConfigBase, {
     },
 
     /**
-     * Opens the display panel with the specified <b>id<b>.
+     * Opens the display panel with the specified *id*.
      *
      * @param {string} id The ID of the display pane.
      */
@@ -183,7 +183,7 @@ const Config = Module("config", ConfigBase, {
     },
 
     /**
-     * Closes the display panel with the specified <b>id</b>
+     * Closes the display panel with the specified *id*
      *
      * @param {string} id The ID of the display pane.
      */

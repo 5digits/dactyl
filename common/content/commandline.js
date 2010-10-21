@@ -436,10 +436,10 @@ const CommandLine = Module("commandline", {
     }),
 
     /**
-     * Open the command line. The main mode is set to
-     * COMMAND_LINE, the extended mode to <b>extendedMode</b>.
-     * Further, callbacks defined for <b>extendedMode</b> are
-     * triggered as appropriate (see {@link #registerCallback}).
+     * Open the command line. The main mode is set to COMMAND_LINE, the
+     * extended mode to *extendedMode*. Further, callbacks defined for
+     * *extendedMode* are triggered as appropriate
+     * (see {@link #registerCallback}).
      *
      * @param {string} prompt
      * @param {string} cmd

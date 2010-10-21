@@ -266,7 +266,7 @@ function values(obj) {
  *
  * @param {object} iter The iterator.
  * @param {function} fn The callback.
- * @param {object} self The this object for 'fn'.
+ * @param {object} self The this object for *fn*.
  */
 function forEach(iter, fn, self) {
     for (let val in iter)
@@ -733,7 +733,7 @@ Class.Property.prototype.init = function () {};
  * Extends a subclass with a superclass. The subclass's
  * prototype is replaced with a new object, which inherits
  * from the superclass's prototype, {@see update}d with the
- * members of 'overrides'.
+ * members of *overrides*.
  *
  * @param {function} subclass
  * @param {function} superclass
@@ -795,12 +795,12 @@ Class.prototype = {
     toString: function () "[instance " + this.constructor.className + "]",
 
     /**
-     * Executes 'callback' after 'timeout' milliseconds. The value of
-     * 'this' is preserved in the invocation of 'callback'.
+     * Executes *callback* after *timeout* milliseconds. The value of
+     * 'this' is preserved in the invocation of *callback*.
      *
-     * @param {function} callback The function to call after 'timeout'
+     * @param {function} callback The function to call after *timeout*
      * @param {number} timeout The time, in milliseconds, to wait
-     *     before calling 'callback'.
+     *     before calling *callback*.
      * @returns {nsITimer} The timer which backs this timeout.
      */
     timeout: function (callback, timeout) {
@@ -1114,9 +1114,8 @@ const array = Class("array", Array, {
     },
 
     /**
-     * Filters out all duplicates from an array. If
-     * <b>unsorted</b> is false, the array is sorted before
-     * duplicates are removed.
+     * Filters out all duplicates from an array. If *unsorted* is false, the
+     * array is sorted before duplicates are removed.
      *
      * @param {Array} ary
      * @param {boolean} unsorted

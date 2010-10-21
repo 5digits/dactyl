@@ -21,9 +21,8 @@ const AutoCommands = Module("autocommands", {
     __iterator__: function () array.iterValues(this._store),
 
     /**
-     * Adds a new autocommand. <b>cmd</b> will be executed when one of the
-     * specified <b>events</b> occurs and the URL of the applicable buffer
-     * matches <b>regex</b>.
+     * Adds a new autocommand. *cmd* will be executed when one of the specified
+     * *events* occurs and the URL of the applicable buffer matches *regex*.
      *
      * @param {Array} events The array of event names for which this
      *     autocommand should be executed.
@@ -37,8 +36,7 @@ const AutoCommands = Module("autocommands", {
     },
 
     /**
-     * Returns all autocommands with a matching <b>event</b> and
-     * <b>regex</b>.
+     * Returns all autocommands with a matching *event* and *regex*.
      *
      * @param {string} event The event name filter.
      * @param {string} regex The URL pattern filter.
@@ -49,8 +47,7 @@ const AutoCommands = Module("autocommands", {
     },
 
     /**
-     * Deletes all autocommands with a matching <b>event</b> and
-     * <b>regex</b>.
+     * Deletes all autocommands with a matching *event* and *regex*.
      *
      * @param {string} event The event name filter.
      * @param {string} regex The URL pattern filter.
@@ -60,8 +57,7 @@ const AutoCommands = Module("autocommands", {
     },
 
     /**
-     * Lists all autocommands with a matching <b>event</b> and
-     * <b>regex</b>.
+     * Lists all autocommands with a matching *event* and *regex*.
      *
      * @param {string} event The event name filter.
      * @param {string} regex The URL pattern filter.
@@ -98,9 +94,8 @@ const AutoCommands = Module("autocommands", {
     },
 
     /**
-     * Triggers the execution of all autocommands registered for
-     * <b>event</b>. A map of <b>args</b> is passed to each autocommand
-     * when it is being executed.
+     * Triggers the execution of all autocommands registered for *event*. A map
+     * of *args* is passed to each autocommand when it is being executed.
      *
      * @param {string} event The event to fire.
      * @param {Object} args The args to pass to each autocommand.

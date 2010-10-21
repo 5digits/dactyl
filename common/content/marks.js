@@ -71,8 +71,8 @@ const Marks = Module("marks", {
     },
 
     /**
-     * Remove all marks matching <b>filter</b>. If <b>special</b> is
-     * given, removes all local marks.
+     * Remove all marks matching *filter*. If *special* is given, removes all
+     * local marks.
      *
      * @param {string} filter A string containing one character for each
      *     mark to be removed.
@@ -144,7 +144,7 @@ const Marks = Module("marks", {
     },
 
     /**
-     * List all marks matching <b>filter</b>.
+     * List all marks matching *filter*.
      *
      * @param {string} filter
      */

@@ -164,9 +164,8 @@ const Styles = Module("Styles", {
 
     /**
      * Remove a style sheet. See {@link #addSheet} for parameters.
-     * In cases where <b>filter</b> is supplied, the given filters
-     * are removed from matching sheets. If any remain, the sheet is
-     * left in place.
+     * In cases where *filter* is supplied, the given filters are removed from
+     * matching sheets. If any remain, the sheet is left in place.
      *
      * @param {boolean} system
      * @param {string} name

@@ -159,7 +159,7 @@ const Command = Class("Command", {
     },
 
     /**
-     * Returns whether this command may be invoked via <b>name</b>.
+     * Returns whether this command may be invoked via *name*.
      *
      * @param {string} name The candidate name.
      * @returns {boolean}
@@ -292,10 +292,9 @@ const Command = Class("Command", {
      */
     privateData: true,
     /**
-     * @property {function} Should return an array of <b>Object</b>s suitable
-     *     to be passed to {@link Commands#commandToString}, one for each past
-     *     invocation which should be restored on subsequent @dactyl
-     *     startups.
+     * @property {function} Should return an array of *Object*s suitable to be
+     *     passed to {@link Commands#commandToString}, one for each past
+     *     invocation which should be restored on subsequent @dactyl startups.
      */
     serialize: null,
     /**
@@ -305,7 +304,7 @@ const Command = Class("Command", {
      */
     subCommand: null,
     /**
-     * @property {boolean} Specifies whether this is a user command.  User
+     * @property {boolean} Specifies whether this is a user command. User
      *     commands may be created by plugins, or directly by users, and,
      *     unlike basic commands, may be overwritten. Users and plugin authors
      *     should create only user commands.
@@ -587,7 +586,7 @@ const Commands = Module("commands", {
     },
 
     /**
-     * Returns the command with matching <b>name</b>.
+     * Returns the command with matching *name*.
      *
      * @param {string} name The name of the command to return. This can be
      *     any of the command's names.
@@ -598,7 +597,7 @@ const Commands = Module("commands", {
     },
 
     /**
-     * Returns the user-defined command with matching <b>name</b>.
+     * Returns the user-defined command with matching *name*.
      *
      * @param {string} name The name of the command to return. This can be
      *     any of the command's names.
@@ -619,7 +618,7 @@ const Commands = Module("commands", {
 
     /**
      * Returns true if a command invocation contains a URL referring to the
-     * domain 'host'.
+     * domain *host*.
      *
      * @param {string} command
      * @param {string} host
@@ -663,13 +662,13 @@ const Commands = Module("commands", {
     //     especially since it is further augmented for use in
     //     Command#action etc.
     /**
-     * Parses <b>str</b> for options and plain arguments.
+     * Parses *str* for options and plain arguments.
      *
-     * The returned <b>Args</b> object is an augmented array of arguments.
-     * Any key/value pairs of <b>extra</b> will be available and the
+     * The returned *Args* object is an augmented array of arguments.
+     * Any key/value pairs of *extra* will be available and the
      * following additional properties:
      *     -opt       - the value of the option -opt if specified
-     *     string     - the original argument string <b>str</b>
+     *     string     - the original argument string *str*
      *     literalArg - any trailing literal argument
      *
      * Quoting rules:
@@ -1035,7 +1034,7 @@ const Commands = Module("commands", {
     get quoteArg() Commands.quoteArg, // XXX: better somewhere else?
 
     /**
-     * Remove the user-defined command with matching <b>name</b>.
+     * Remove the user-defined command with matching *name*.
      *
      * @param {string} name The name of the command to remove. This can be
      *     any of the command's names.
@@ -1050,12 +1049,11 @@ const Commands = Module("commands", {
 
     // FIXME: still belong here? Also used for autocommand parameters.
     /**
-     * Returns a string with all tokens in <b>string</b> matching "<key>"
-     * replaced with "value". Where "key" is a property of the specified
-     * <b>tokens</b> object and "value" is the corresponding value. The
-     * <lt> token can be used to include a literal "<" in the returned
-     * string. Any tokens prefixed with "q-" will be quoted except for
-     * <q-lt> which is treated like <lt>.
+     * Returns a string with all tokens in *string* matching "<key>" replaced
+     * with "value". Where "key" is a property of the specified *tokens* object
+     * and "value" is the corresponding value. The <lt> token can be used to
+     * include a literal "<" in the returned string. Any tokens prefixed with
+     * "q-" will be quoted except for <q-lt> which is treated like <lt>.
      *
      * @param {string} str The string with tokens to replace.
      * @param {Object} tokens A map object whose keys are replaced with its

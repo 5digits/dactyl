@@ -14,7 +14,7 @@
  *
  * @param {number[]} modes The modes in which this mapping is active.
  * @param {string[]} keys The key sequences which are bound to
- *     <b>action</b>.
+ *     *action*.
  * @param {string} description A short one line description of the key mapping.
  * @param {function} action The action invoked by each key sequence.
  * @param {Object} extraInfo An optional extra configuration hash. The
@@ -83,7 +83,7 @@ const Map = Class("Map", {
 
     /**
      * Returns whether this mapping can be invoked by a key sequence matching
-     * <b>name</b>.
+     * *name*.
      *
      * @param {string} name The name to query.
      * @returns {boolean}
@@ -190,8 +190,7 @@ const Mappings = Module("mappings", {
 
     // used by :mkpentadactylrc to save mappings
     /**
-     * Returns a user-defined mappings iterator for the specified
-     * <b>mode</b>.
+     * Returns a user-defined mappings iterator for the specified *mode*.
      *
      * @param {number} mode The mode to return mappings from.
      * @returns {Iterator(Map)}
@@ -202,8 +201,7 @@ const Mappings = Module("mappings", {
      * Adds a new default key mapping.
      *
      * @param {number[]} modes The modes that this mapping applies to.
-     * @param {string[]} keys The key sequences which are bound to
-     *     <b>action</b>.
+     * @param {string[]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
      * @param {Object} extra An optional extra configuration hash.
@@ -217,8 +215,7 @@ const Mappings = Module("mappings", {
      * Adds a new user-defined key mapping.
      *
      * @param {number[]} modes The modes that this mapping applies to.
-     * @param {string[]} keys The key sequences which are bound to
-     *     <b>action</b>.
+     * @param {string[]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
      * @param {Object} extra An optional extra configuration hash (see
@@ -241,7 +238,7 @@ const Mappings = Module("mappings", {
     },
 
     /**
-     * Returns the map from <b>mode</b> named <b>cmd</b>.
+     * Returns the map from *mode* named *cmd*.
      *
      * @param {number} mode The mode to search.
      * @param {string} cmd The map name to match.
@@ -253,7 +250,7 @@ const Mappings = Module("mappings", {
     },
 
     /**
-     * Returns the default map from <b>mode</b> named <b>cmd</b>.
+     * Returns the default map from *mode* named *cmd*.
      *
      * @param {number} mode The mode to search.
      * @param {string} cmd The map name to match.
@@ -266,7 +263,7 @@ const Mappings = Module("mappings", {
 
     /**
      * Returns an array of maps with names starting with but not equal to
-     * <b>prefix</b>.
+     * *prefix*.
      *
      * @param {number} mode The mode to search.
      * @param {string} prefix The map prefix string to match.
@@ -290,8 +287,8 @@ const Mappings = Module("mappings", {
     },
 
     /**
-     * Returns whether there is a user-defined mapping <b>cmd</b> for the
-     * specified <b>mode</b>.
+     * Returns whether there is a user-defined mapping *cmd* for the specified
+     * *mode*.
      *
      * @param {number} mode The mode to search.
      * @param {string} cmd The candidate key mapping.
@@ -300,7 +297,7 @@ const Mappings = Module("mappings", {
     hasMap: function (mode, cmd) this._user[mode].some(function (map) map.hasName(cmd)),
 
     /**
-     * Remove the user-defined mapping named <b>cmd</b> for <b>mode</b>.
+     * Remove the user-defined mapping named *cmd* for *mode*.
      *
      * @param {number} mode The mode to search.
      * @param {string} cmd The map name to match.
@@ -310,7 +307,7 @@ const Mappings = Module("mappings", {
     },
 
     /**
-     * Remove all user-defined mappings for <b>mode</b>.
+     * Remove all user-defined mappings for *mode*.
      *
      * @param {number} mode The mode to remove all mappings from.
      */
@@ -319,8 +316,8 @@ const Mappings = Module("mappings", {
     },
 
     /**
-     * Lists all user-defined mappings matching <b>filter</b> for the
-     * specified <b>modes</b>.
+     * Lists all user-defined mappings matching *filter* for the specified
+     * *modes*.
      *
      * @param {number[]} modes An array of modes to search.
      * @param {string} filter The filter string to match.

@@ -20,9 +20,8 @@ const QuickMarks = Module("quickmarks", {
     },
 
     /**
-     * Adds a new quickmark with name <b>qmark</b> referencing
-     * the URL <b>location</b>. Any existing quickmark with the same name
-     * will be replaced.
+     * Adds a new quickmark with name *qmark* referencing the URL *location*.
+     * Any existing quickmark with the same name will be replaced.
      *
      * @param {string} qmark The name of the quickmark {A-Z}.
      * @param {string} location The URL accessed by this quickmark.
@@ -55,8 +54,8 @@ const QuickMarks = Module("quickmarks", {
     get: function (mark) this._qmarks.get(mark) || null,
 
     /**
-     * Deletes the specified quickmarks. The <b>filter</b> is a list of
-     * quickmarks and ranges are supported. Eg. "ab c d e-k".
+     * Deletes the specified quickmarks. The *filter* is a list of quickmarks
+     * and ranges are supported. Eg. "ab c d e-k".
      *
      * @param {string} filter The list of quickmarks to delete.
      *
@@ -78,7 +77,7 @@ const QuickMarks = Module("quickmarks", {
     },
 
     /**
-     * Opens the URL referenced by the specified <b>qmark</b>.
+     * Opens the URL referenced by the specified *qmark*.
      *
      * @param {string} qmark The quickmark to open.
      * @param {object} where A set of parameters specifying how to open the
@@ -94,7 +93,7 @@ const QuickMarks = Module("quickmarks", {
     },
 
     /**
-     * Lists all quickmarks matching <b>filter</b> in the message window.
+     * Lists all quickmarks matching *filter* in the message window.
      *
      * @param {string} filter The list of quickmarks to display. Eg. "abc"
      * Ranges are not supported.

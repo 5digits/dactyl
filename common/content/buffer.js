@@ -656,7 +656,7 @@ const Buffer = Module("buffer", {
             .QueryInterface(Ci.nsISelectionController),
 
     /**
-     * Opens the appropriate context menu for <b>elem</b>.
+     * Opens the appropriate context menu for *elem*.
      *
      * @param {Node} elem The context element.
      */
@@ -697,7 +697,7 @@ const Buffer = Module("buffer", {
     },
 
     /**
-     * Scrolls the buffer laterally <b>cols</b> columns.
+     * Scrolls the buffer laterally *cols* columns.
      *
      * @param {number} cols The number of columns to scroll. A positive
      *     value scrolls right and a negative value left.
@@ -714,7 +714,7 @@ const Buffer = Module("buffer", {
     },
 
     /**
-     * Scrolls the buffer vertically <b>lines</b> rows.
+     * Scrolls the buffer vertically *lines* rows.
      *
      * @param {number} lines The number of lines to scroll. A positive
      *     value scrolls down and a negative value up.
@@ -724,7 +724,7 @@ const Buffer = Module("buffer", {
     },
 
     /**
-     * Scrolls the buffer vertically <b>pages</b> pages.
+     * Scrolls the buffer vertically *pages* pages.
      *
      * @param {number} pages The number of pages to scroll. A positive
      *     value scrolls down and a negative value up.
@@ -934,8 +934,8 @@ const Buffer = Module("buffer", {
 
     /**
      * Opens a viewer to inspect the source of the current buffer or the
-     * specified <b>url</b>. Either the default viewer or the configured
-     * external editor is used.
+     * specified *url*. Either the default viewer or the configured external
+     * editor is used.
      *
      * @param {string} url The URL of the source.
      * @default The current buffer.

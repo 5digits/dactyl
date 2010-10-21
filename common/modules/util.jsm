@@ -146,7 +146,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Returns a shallow copy of <b>obj</b>.
+     * Returns a shallow copy of *obj*.
      *
      * @param {Object} obj
      * @returns {Object}
@@ -162,7 +162,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     /**
      * Clips a string to a given length. If the input string is longer
-     * than <b>length</b>, an ellipsis is appended.
+     * than *length*, an ellipsis is appended.
      *
      * @param {string} str The string to truncate.
      * @param {number} length The length of the returned string.
@@ -289,8 +289,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Prints a message to the console. If <b>msg</b> is an object it is
-     * pretty printed.
+     * Prints a message to the console. If *msg* is an object it is pretty
+     * printed.
      *
      * @param {string|Object} msg The message to print.
      */
@@ -314,7 +314,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                          "tel", "text", "time", "url", "week"]),
 
     /**
-     * Converts HTML special characters in <b>str</b> to the equivalent HTML
+     * Converts HTML special characters in *str* to the equivalent HTML
      * entities.
      *
      * @param {string} str
@@ -325,7 +325,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Escapes Regular Expression special characters in <b>str</b>.
+     * Escapes Regular Expression special characters in *str*.
      *
      * @param {string} str
      * @returns {string}
@@ -335,9 +335,9 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Escapes quotes, newline and tab characters in <b>str</b>. The returned
-     * string is delimited by <b>delimiter</b> or " if <b>delimiter</b> is not
-     * specified. {@see String#quote}.
+     * Escapes quotes, newline and tab characters in *str*. The returned string
+     * is delimited by *delimiter* or " if *delimiter* is not specified.
+     * {@see String#quote}.
      *
      * @param {string} str
      * @param {string} delimiter
@@ -358,7 +358,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {Document} doc The document to evaluate the expression in.
      * @default The current document.
      * @param {Node} elem The context element.
-     * @default <b>doc</b>
+     * @default *doc*
      * @param {boolean} asIterator Whether to return the results as an
      *     XPath iterator.
      */
@@ -410,11 +410,11 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Converts <b>bytes</b> to a pretty printed data size string.
+     * Converts *bytes* to a pretty printed data size string.
      *
      * @param {number} bytes The number of bytes.
      * @param {string} decimalPlaces The number of decimal places to use if
-     *     <b>humanReadable</b> is true.
+     *     *humanReadable* is true.
      * @param {boolean} humanReadable Use byte multiples.
      * @returns {string}
      */
@@ -465,10 +465,10 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Sends a synchronous or asynchronous HTTP request to <b>url</b> and
-     * returns the XMLHttpRequest object. If <b>callback</b> is specified the
-     * request is asynchronous and the <b>callback</b> is invoked with the
-     * object as its argument.
+     * Sends a synchronous or asynchronous HTTP request to *url* and returns
+     * the XMLHttpRequest object. If *callback* is specified the request is
+     * asynchronous and the *callback* is invoked with the object as its
+     * argument.
      *
      * @param {string} url
      * @param {function(XMLHttpRequest)} callback
@@ -518,7 +518,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     }),
 
     /**
-     * Returns true if 'url' is in the domain 'domain'.
+     * Returns true if *url* is in the domain *domain*.
      *
      * @param {string} url
      * @param {string} domain
@@ -527,7 +527,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     isDomainURL: function isDomainURL(url, domain) util.isSubdomain(util.getHost(url), domain),
 
     /**
-     * Returns true if 'os' matches Dactyl's notion of the current operating
+     * Returns true if *os* matches Dactyl's notion of the current operating
      * system platform. This is one of "WINNT", "Darwin" or "Unix".
      *
      * @param {string} os The OS platform to test.
@@ -539,7 +539,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Returns true if 'host' is a subdomain of 'domain'.
+     * Returns true if *host* is a subdomain of *domain*.
      *
      * @param {string} host The host to check.
      * @param {string} domain The base domain to check the host agains.
@@ -577,8 +577,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Returns the array that results from applying <b>func</b> to each
-     * property of <b>obj</b>.
+     * Returns the array that results from applying *func* to each property of
+     * *obj*.
      *
      * @param {Object} obj
      * @param {function} func
@@ -604,7 +604,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     /**
      * Pretty print a JavaScript object. Use HTML markup to color certain items
-     * if <b>color</b> is true.
+     * if *color* is true.
      *
      * @param {Object} object The object to pretty print.
      * @param {boolean} color Whether the output should be colored.
@@ -804,8 +804,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * A generator that returns the values between <b>start</b> and <b>end</b>,
-     * in <b>step</b> increments.
+     * A generator that returns the values between *start* and *end*, in *step*
+     * increments.
      *
      * @param {number} start The interval's start value.
      * @param {number} end The interval's end value.
@@ -827,8 +827,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * An interruptible generator that returns all values between <b>start</b>
-     * and <b>end</b>. The thread yields every <b>time</b> milliseconds.
+     * An interruptible generator that returns all values between *start* and
+     * *end*. The thread yields every *time* milliseconds.
      *
      * @param {number} start The interval's start value.
      * @param {number} end The interval's end value.
@@ -945,7 +945,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
            .QueryInterface(Ci.nsISelectionController),
 
     /**
-     * Suspend execution for at least 'delay' milliseconds. Functions by
+     * Suspend execution for at least *delay* milliseconds. Functions by
      * yielding execution to the next item in the main event queue, and
      * so may lead to unexpected call graphs, and long delays if another
      * handler yields execution while waiting.
@@ -976,7 +976,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Behaves like String.split, except that when 'limit' is reached,
+     * Behaves like String.split, except that when *limit* is reached,
      * the trailing element contains the entire trailing portion of the
      * string.
      *
@@ -1146,8 +1146,8 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
     },
 
     /**
-     * Lists all preferences matching <b>filter</b> or only those with
-     * changed values if <b>onlyNonDefault</b> is specified.
+     * Lists all preferences matching *filter* or only those with changed
+     * values if *onlyNonDefault* is specified.
      *
      * @param {boolean} onlyNonDefault Limit the list to prefs with a
      *     non-default value.
@@ -1230,8 +1230,8 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
     },
 
     /**
-     * Resets the preference <b>name</b> to </b>value</b> but warns the user
-     * if the value is changed from its default.
+     * Resets the preference *name* to *value* but warns the user if the value
+     * is changed from its default.
      *
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
@@ -1243,8 +1243,8 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
     },
 
     /**
-     * Sets the preference <b>name</b> to </b>value</b> but warns the user
-     * if the value is changed from its default.
+     * Sets the preference *name* to *value* but warns the user if the value is
+     * changed from its default.
      *
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
@@ -1256,7 +1256,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
     },
 
     /**
-     * Sets the preference <b>name</b> to </b>value</b>.
+     * Sets the preference *name* to *value*.
      *
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
@@ -1266,7 +1266,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
     },
 
     /**
-     * Resets the preference <b>name</b> to its default value.
+     * Resets the preference *name* to its default value.
      *
      * @param {string} name The preference name.
      */
@@ -1278,7 +1278,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
     },
 
     /**
-     * Toggles the value of the boolean preference <b>name</b>.
+     * Toggles the value of the boolean preference *name*.
      *
      * @param {string} name The preference name.
      */
@@ -1308,13 +1308,12 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
     },
 
     /**
-     * Executes <b>func</b> with a new preference context. When <b>func</b>
-     * returns, the context is popped and any preferences set via
-     * {@link #setPref} or {@link #invertPref} are restored to their
-     * previous values.
+     * Executes *func* with a new preference context. When *func* returns, the
+     * context is popped and any preferences set via {@link #setPref} or
+     * {@link #invertPref} are restored to their previous values.
      *
      * @param {function} func The function to call.
-     * @param {Object} func The 'this' object with which to call <b>func</b>
+     * @param {Object} func The 'this' object with which to call *func*
      * @see #pushContext
      * @see #popContext
      */
@@ -1415,8 +1414,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
 const GlobalMath = Math;
 var Math = update(Object.create(GlobalMath), {
     /**
-     * Returns the specified <b>value</b> constrained to the range <b>min</b> -
-     * <b>max</b>.
+     * Returns the specified *value* constrained to the range *min* - *max*.
      *
      * @param {number} value The value to constrain.
      * @param {number} min The minimum constraint.

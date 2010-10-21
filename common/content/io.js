@@ -135,7 +135,7 @@ const IO = Module("io", {
     sourcing: null,
 
     /**
-     * Expands "~" and environment variables in <b>path</b>.
+     * Expands "~" and environment variables in *path*.
      *
      * "~" is expanded to to the value of $HOME. On Windows if this is not
      * set then the following are tried in order:
@@ -152,7 +152,7 @@ const IO = Module("io", {
     expandPath: File.expandPath,
 
     /**
-     * Returns all directories named <b>name<b/> in 'runtimepath'.
+     * Returns all directories named *name* in 'runtimepath'.
      *
      * @param {string} name
      * @returns {nsIFile[])
@@ -166,7 +166,7 @@ const IO = Module("io", {
     },
 
     /**
-     * Returns the first user RC file found in <b>dir</b>.
+     * Returns the first user RC file found in *dir*.
      *
      * @param {string} dir The directory to search.
      * @param {boolean} always When true, return a path whether
@@ -217,7 +217,7 @@ const IO = Module("io", {
      * Runs an external program.
      *
      * @param {string} program The program to run.
-     * @param {string[]} args An array of arguments to pass to <b>program</b>.
+     * @param {string[]} args An array of arguments to pass to *program*.
      * @param {boolean} blocking Whether to wait until the process terminates.
      */
     blockingProcesses: [],
@@ -272,11 +272,10 @@ lookup:
 
     // FIXME: multiple paths?
     /**
-     * Sources files found in 'runtimepath'. For each relative path in
-     * <b>paths</b> each directory in 'runtimepath' is searched and if a
-     * matching file is found it is sourced. Only the first file found (per
-     * specified path) is sourced unless <b>all</b> is specified, then
-     * all found files are sourced.
+     * Sources files found in 'runtimepath'. For each relative path in *paths*
+     * each directory in 'runtimepath' is searched and if a matching file is
+     * found it is sourced. Only the first file found (per specified path) is
+     * sourced unless *all* is specified, then all found files are sourced.
      *
      * @param {string[]} paths An array of relative paths to source.
      * @param {boolean} all Whether all found files should be sourced.
@@ -311,7 +310,7 @@ lookup:
     },
 
     /**
-     * Reads Ex commands, JavaScript or CSS from <b>filename</b>.
+     * Reads Ex commands, JavaScript or CSS from *filename*.
      *
      * @param {string} filename The name of the file to source.
      * @param {boolean} silent Whether errors should be reported.
@@ -379,8 +378,8 @@ lookup:
     // TODO: when https://bugzilla.mozilla.org/show_bug.cgi?id=68702 is
     // fixed use that instead of a tmpfile
     /**
-     * Runs <b>command</b> in a subshell and returns the output in a
-     * string. The shell used is that specified by the 'shell' option.
+     * Runs *command* in a subshell and returns the output in a string. The
+     * shell used is that specified by the 'shell' option.
      *
      * @param {string} command The command to run.
      * @param {string} input Any input to be provided to the command on stdin.
@@ -422,14 +421,14 @@ lookup:
 
     /**
      * Creates a temporary file context for executing external commands.
-     * <b>func</b> is called with a temp file, created with
-     * {@link #createTempFile}, for each explicit argument. Ensures that
-     * all files are removed when <b>func</b> returns.
+     * *func* is called with a temp file, created with {@link #createTempFile},
+     * for each explicit argument. Ensures that all files are removed when
+     * *func* returns.
      *
      * @param {function} func The function to execute.
      * @param {Object} self The 'this' object used when executing func.
      * @returns {boolean} false if temp files couldn't be created,
-     *     otherwise, the return value of <b>func</b>.
+     *     otherwise, the return value of *func*.
      */
     withTempFiles: function (func, self) {
         let args = util.map(util.range(0, func.length), this.createTempFile);

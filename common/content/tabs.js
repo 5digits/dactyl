@@ -92,9 +92,8 @@ const Tabs = Module("tabs", {
     get visibleTabs() config.tabbrowser.visibleTabs || this.allTabs.filter(function (tab) !tab.hidden),
 
     /**
-     * Returns the local state store for the tab at the specified
-     * <b>tabIndex</b>. If <b>tabIndex</b> is not specified then the
-     * current tab is used.
+     * Returns the local state store for the tab at the specified *tabIndex*.
+     * If *tabIndex* is not specified then the current tab is used.
      *
      * @param {number} tabIndex
      * @returns {Object}
@@ -124,7 +123,7 @@ const Tabs = Module("tabs", {
     get closedTabs() services.get("json").decode(services.get("sessionStore").getClosedTabData(window)),
 
     /**
-     * Clones the specified <b>tab</b> and append it to the tab list.
+     * Clones the specified *tab* and append it to the tab list.
      *
      * @param {Object} tab The tab to clone.
      * @param {boolean} activate Whether to select the newly cloned tab.
@@ -140,8 +139,8 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Detaches the specified <b>tab</b> and open it in a new window. If no
-     * tab is specified the currently selected tab is detached.
+     * Detaches the specified *tab* and open it in a new window. If no tab is
+     * specified the currently selected tab is detached.
      *
      * @param {Object} tab The tab to detach.
      */
@@ -154,7 +153,7 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Returns the index of the tab containing <b>content</b>.
+     * Returns the index of the tab containing *content*.
      *
      * @param {Object} content Either a content window or a content
      *     document.
@@ -188,9 +187,8 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Returns the tab at the specified <b>index</b> or the currently
-     * selected tab if <b>index</b> is not specified. This is a 0-based
-     * index.
+     * Returns the tab at the specified *index* or the currently selected tab
+     * if *index* is not specified. This is a 0-based index.
      *
      * @param {number|Node} index The index of the tab required or the tab itself
      * @returns {Object}
@@ -204,9 +202,8 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Returns the index of <b>tab</b> or the index of the currently
-     * selected tab if <b>tab</b> is not specified. This is a 0-based
-     * index.
+     * Returns the index of *tab* or the index of the currently selected tab if
+     * *tab* is not specified. This is a 0-based index.
      *
      * @param {<xul:tab/>} tab A tab from the current tab list.
      * @param {boolean} visible Whether to consider only visible tabs.
@@ -255,7 +252,7 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Removes all tabs from the tab list except the specified <b>tab</b>.
+     * Removes all tabs from the tab list except the specified *tab*.
      *
      * @param {Object} tab The tab to keep.
      */
@@ -264,7 +261,7 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Lists all tabs matching <b>filter</b>.
+     * Lists all tabs matching *filter*.
      *
      * @param {string} filter A filter matching a substring of the tab's
      *     document title or URL.
@@ -278,9 +275,8 @@ const Tabs = Module("tabs", {
      *
      * @param {Object} tab The tab to move.
      * @param {string} spec See {@link Tabs.indexFromSpec}.
-     * @param {boolean} wrap Whether an out of bounds <b>spec</b> causes
-     *     the destination position to wrap around the start/end of the tab
-     *     list.
+     * @param {boolean} wrap Whether an out of bounds *spec* causes the
+     *     destination position to wrap around the start/end of the tab list.
      */
     move: function (tab, spec, wrap) {
         let index = tabs.indexFromSpec(spec, wrap);
@@ -288,7 +284,7 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Removes the specified <b>tab</b> from the tab list.
+     * Removes the specified *tab* from the tab list.
      *
      * @param {Object} tab The tab to remove.
      * @param {number} count How many tabs to remove.
@@ -357,12 +353,11 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Selects the tab at the position specified by <b>spec</b>.
+     * Selects the tab at the position specified by *spec*.
      *
      * @param {string} spec See {@link Tabs.indexFromSpec}
-     * @param {boolean} wrap Whether an out of bounds <b>spec</b> causes
-     *     the selection position to wrap around the start/end of the tab
-     *     list.
+     * @param {boolean} wrap Whether an out of bounds *spec* causes the
+     *     selection position to wrap around the start/end of the tab list.
      */
     select: function (spec, wrap) {
         let index = tabs.indexFromSpec(spec, wrap);
@@ -402,7 +397,7 @@ const Tabs = Module("tabs", {
     },
 
     /**
-     * Selects the tab containing the specified <b>buffer</b>.
+     * Selects the tab containing the specified *buffer*.
      *
      * @param {string} buffer A string which matches the URL or title of a
      *     buffer, if it is null, the last used string is used again.

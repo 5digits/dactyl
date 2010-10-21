@@ -158,7 +158,7 @@ const Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * Lists all abbreviations matching <b>modes</b> and <b>lhs</b>.
+     * Lists all abbreviations matching *modes* and *lhs*.
      *
      * @param {Array} list of mode.
      * @param {string} lhs The LHS of the abbreviation.
@@ -199,7 +199,7 @@ const Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * Removes all abbreviations specified <b>modes<b>.
+     * Removes all abbreviations specified *modes*.
      *
      * @param {Array} list of mode.
      */

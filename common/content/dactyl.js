@@ -193,8 +193,8 @@ const Dactyl = Module("dactyl", {
     },
 
     /**
-     * Copies a string to the system clipboard. If <b>verbose</b> is specified
-     * the copied string is also echoed to the command line.
+     * Copies a string to the system clipboard. If *verbose* is specified the
+     * copied string is also echoed to the command line.
      *
      * @param {string} str
      * @param {boolean} verbose
@@ -261,7 +261,7 @@ const Dactyl = Module("dactyl", {
      * @param {string} str The message to output.
      * @param {number} verbosity The messages log level (0 - 15). Only
      *     messages with verbosity less than or equal to the value of the
-     *     'verbosity' option will be output.
+     *     *verbosity* option will be output.
      * @param {number} flags These control the multiline message behaviour.
      *     See {@link CommandLine#echo}.
      */
@@ -276,8 +276,8 @@ const Dactyl = Module("dactyl", {
     },
 
     /**
-     * Loads and executes the script referenced by <b>uri</b> in the scope
-     * of the <b>context</b> object.
+     * Loads and executes the script referenced by *uri* in the scope of the
+     * *context* object.
      *
      * @param {string} uri The URI of the script to load. Should be a local
      *     chrome:, file:, or resource: URL.
@@ -372,7 +372,7 @@ const Dactyl = Module("dactyl", {
     },
 
     /**
-     * Returns whether this Dactyl extension supports <b>feature</b>.
+     * Returns whether this Dactyl extension supports *feature*.
      *
      * @param {string} feature The feature name.
      * @returns {boolean}
@@ -380,7 +380,7 @@ const Dactyl = Module("dactyl", {
     has: function (feature) config.features.indexOf(feature) >= 0,
 
     /**
-     * Returns the URL of the specified help <b>topic</b> if it exists.
+     * Returns the URL of the specified help *topic* if it exists.
      *
      * @param {string} topic The help topic to lookup.
      * @param {boolean} unchunked Whether to search the unchunked help page.
@@ -597,8 +597,8 @@ const Dactyl = Module("dactyl", {
     /**
      * Generates a help entry and writes it to the clipboard.
      *
-     * @param {Command|Map|Option} obj A dactyl <b>Command</b>,
-     *     <b>Map</b> or <b>Option</b> object
+     * @param {Command|Map|Option} obj A dactyl *Command*, *Map* or *Option*
+     *     object
      * @param {XMLList} extraHelp Extra help text beyond the description.
      * @returns {string}
      */
@@ -658,8 +658,7 @@ const Dactyl = Module("dactyl", {
     },
 
     /**
-     * Opens the help page containing the specified <b>topic</b> if it
-     * exists.
+     * Opens the help page containing the specified *topic* if it exists.
      *
      * @param {string} topic The help topic to open.
      * @param {boolean} unchunked Whether to use the unchunked help page.
@@ -735,9 +734,8 @@ const Dactyl = Module("dactyl", {
     // TODO: add proper level constants
     /**
      * Logs a message to the JavaScript error console. Each message has an
-     * associated log level. Only messages with a log level less than or
-     * equal to <b>level</b> will be printed. If <b>msg</b> is an object,
-     * it is pretty printed.
+     * associated log level. Only messages with a log level less than or equal
+     * to *level* will be printed. If *msg* is an object, it is pretty printed.
      *
      * @param {string|Object} msg The message to print.
      * @param {number} level The logging level 0 - 15.
@@ -896,7 +894,7 @@ const Dactyl = Module("dactyl", {
     },
 
     /**
-     * Returns an array of URLs parsed from <b>str</b>.
+     * Returns an array of URLs parsed from *str*.
      *
      * Given a string like 'google bla, www.osnews.com' return an array
      * ['www.google.com/search?q=bla', 'www.osnews.com']

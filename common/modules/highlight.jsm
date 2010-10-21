@@ -210,7 +210,7 @@ const Highlights = Module("Highlight", {
      *
      * If Star is provided, the style is applied as an agent sheet.
      *
-     * The new styles are lazily activated unless Bang or 'eager' is
+     * The new styles are lazily activated unless Bang or *eager* is
      * provided. See {@link Util#xmlToDom}.
      *
      * @param {string} css The rules to load. See {@link Highlights#css}.

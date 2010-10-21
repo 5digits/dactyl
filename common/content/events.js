@@ -198,7 +198,7 @@ const Events = Module("events", {
     },
 
     /**
-     * Returns all macros matching <b>filter</b>.
+     * Returns all macros matching *filter*.
      *
      * @param {string} filter A regular expression filter string. A null
      *     filter selects all macros.
@@ -209,7 +209,7 @@ const Events = Module("events", {
     },
 
     /**
-     * Deletes all macros matching <b>filter</b>.
+     * Deletes all macros matching *filter*.
      *
      * @param {string} filter A regular expression filter string. A null
      *     filter deletes all macros.
@@ -549,8 +549,8 @@ const Events = Module("events", {
     },
 
     /**
-     * Whether <b>key</b> is a key code defined to accept/execute input on
-     * the command line.
+     * Whether *key* is a key code defined to accept/execute input on the
+     * command line.
      *
      * @param {string} key The key code to test.
      * @returns {boolean}
@@ -558,8 +558,8 @@ const Events = Module("events", {
     isAcceptKey: function (key) key == "<Return>" || key == "<C-j>" || key == "<C-m>",
 
     /**
-     * Whether <b>key</b> is a key code defined to reject/cancel input on
-     * the command line.
+     * Whether *key* is a key code defined to reject/cancel input on the
+     * command line.
      *
      * @param {string} key The key code to test.
      * @returns {boolean}
