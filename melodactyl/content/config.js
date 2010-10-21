@@ -194,16 +194,15 @@ const Config = Module("config", ConfigBase, {
             document.getElementById(id).hide();
     },
 
-    // FIXME: best way to format these args? Hyphenated? One word like :dialog?
     /**
      * @property {object} A map of display pane command argument strings to
      *     panel element IDs.
      */
     displayPanes: {
-        "service pane left": "servicepane",
-        "content pane bottom": "displaypane_contentpane_bottom",
-        "service pane bottom": "displaypane_servicepane_bottom",
-        "right sidebar": "displaypane_right_sidebar"
+        "leftservice"  : "servicepane",
+        "bottomcontent": "displaypane_contentpane_bottom",
+        "bottomservice": "displaypane_servicepane_bottom",
+        "rightsidebar" : "displaypane_right_sidebar"
     }
 }, {
     commands: function () {

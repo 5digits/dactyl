@@ -7,9 +7,9 @@ BUGS:
   - :open songbird-internal-search searchString (broken because SB intercepts queries to this engine)
   - <C-^> only works between browser tabs not the media tab
   - numbered tabs
-  - command-line option handling is broken in Melodactyl only - it used to work.
 
 FEATURES:
+9 Clean up NEWS
 9 Bookmarks are now only supported in SB via an addon.
 9 '?' - Reusing '/'.
 8 Merge with SongBird's sanitizer implementation.

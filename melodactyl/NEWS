@@ -1,22 +1,17 @@
-2009-XX-XX:
-    * version 0.2pre
+0.1a1pre:
+    * :displaypane arguments changed to "leftservice", "bottomservice",
+      "bottomcontent" or "rightsidebar"
     * asciidoc is no longer required to build Melodactyl
     * The help system is newly modularized
-    * add [c]:silent[c]
-    * add [j]$MY_MELODACTYLRC[j]
-    * add [m]'[m] and [m]"[m] local marks
-    * add [m]w[m] and [m]W[m] Normal mode mappings for symmetry with [m]o[m]/[m]O[m] and [m]t[m]/[m]T[m]
-    * add [c]:messclear[c]
+    * add :silent
+    * add $MY_MELODACTYLRC
+    * add ' and " local marks
+    * add w and W Normal mode mappings for symmetry with o/O and t/T
+    * add :messclear
     * add 'maxitems'
-    * [c]:dialog {subscribe|newsmartplaylist}[c]
-    * add [c]:displaypane[c] and [c]:dpclose[c]
-    * rename [c]:filter[c] to [c]:queue[c] and [c]:Filter[c] to [c]:filter[c]
+    * :dialog {subscribe|newsmartplaylist}
+    * add :displaypane and :dpclose
+    * rename :filter to :queue and :Filter to :filter
     * add 'repeat' and 'shuffle'
     * add 'jsdebugger' option - switch on/off javascript debugger service
     * add "addons", "downloads", "extoptions" and "help" to the 'activate' option.
-
-2009-03-28:
-    * version 0.1
-    * first public release
-
-// vim: set filetype=asciidoc:
