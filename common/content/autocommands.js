@@ -215,10 +215,8 @@ const AutoCommands = Module("autocommands", {
                 // TODO: Perhaps this should take -args to pass to the command?
                 function (args) {
                     // Vim compatible
-                    if (args.length == 0) {
-                        dactyl.echomsg("No matching autocommands");
-                        return;
-                    }
+                    if (args.length == 0)
+                        return void dactyl.echomsg("No matching autocommands");
 
                     let [event, url] = args;
                     let defaultURL = url || buffer.URL;

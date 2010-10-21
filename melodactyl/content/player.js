@@ -444,17 +444,14 @@ const Player = Module("player", {
         commands.add(["f[ilter]"],
                 "Filter tracks based on keywords {genre/artist/album/track}",
                 function (args) {
-                    let library = LibraryUtils.mainLibrary;
                     let view = LibraryUtils.createStandardMediaListView(LibraryUtils.mainLibrary, args.literalArg);
 
-                    if (view.length == 0)
-                        dactyl.echoerr("No Tracks matching the keywords");
-                    else {
-                         SBGetBrowser().loadMediaList(LibraryUtils.mainLibrary, null, null, view,
-                                                         "chrome://songbird/content/mediapages/filtersPage.xul");
-                         // TODO: make this this.focusTrack work ?
-                         this.focusTrack(view.getItemByIndex(0));
-                    }
+                    dactyl.assert(view.length, "No matching tracks");
+
+                    SBGetBrowser().loadMediaList(LibraryUtils.mainLibrary, null, null, view,
+                                                     "chrome://songbird/content/mediapages/filtersPage.xul");
+                    // TODO: make this this.focusTrack work ?
+                    this.focusTrack(view.getItemByIndex(0));
                 },
                 {
                     argCount: "1",
@@ -469,16 +466,13 @@ const Player = Module("player", {
 
                 if (arg) {
                     // load the selected playlist/smart playlist
-                    let playlists = player.getPlaylists();
-
-                    for ([i, list] in Iterator(playlists)) {
-                        if (util.compareIgnoreCase(arg, list.name) == 0) {
-                            SBGetBrowser().loadMediaList(playlists[i]);
+                    for ([, playlist] in Iterator(player.getPlaylists())) {
+                        if (util.compareIgnoreCase(arg, playlist.name) == 0) {
+                            SBGetBrowser().loadMediaList(playlist);
                             this.focusTrack(this._currentView.getItemByIndex(0));
                             return;
                         }
                     }
-
                     dactyl.echoerr("E475: Invalid argument: " + arg);
                 }
                 else {
@@ -519,8 +513,8 @@ const Player = Module("player", {
                 let arg = args[0];
 
                 // intentionally supports 999:99:99
-                if (!/^[+-]?(\d+[smh]?|(\d+:\d\d:|\d+:)?\d{2})$/.test(arg))
-                    return void dactyl.echoerr("E475: Invalid argument: " + arg);
+                dactyl.assert(/^[+-]?(\d+[smh]?|(\d+:\d\d:|\d+:)?\d{2})$/.test(arg),
+                    "E475: Invalid argument: " + arg);
 
                 function ms(t, m) Math.abs(parseInt(t, 10) * { s: 1000, m: 60000, h: 3600000 }[m])
 
@@ -548,22 +542,19 @@ const Player = Module("player", {
             "Change the current media view",
             function (args) {
                 // FIXME: is this a SB restriction? --djk
-                if (!SBGetBrowser().currentMediaPage)
-                    return void dactyl.echoerr("Exxx: Can only set the media view from the media tab"); // XXX
+                dactyl.assert(SBGetBrowser().currentMediaPage,
+                    "Exxx: Can only set the media view from the media tab"); // XXX
 
                 let arg = args[0];
 
                 if (arg) {
-                    let pages = player.getMediaPages();
-
-                    for ([, page] in Iterator(pages)) {
+                    for ([, page] in Iterator(player.getMediaPages())) {
                         if (util.compareIgnoreCase(arg, page.contentTitle) == 0) {
                             player.loadMediaPage(page, SBGetBrowser().currentMediaListView.mediaList,
                                     SBGetBrowser().currentMediaListView);
                             return;
                         }
                     }
-
                     dactyl.echoerr("E475: Invalid argument: " + arg);
                 }
             },
@@ -628,8 +619,7 @@ const Player = Module("player", {
             function (args) {
                 let arg = args[0];
 
-                if (!/^[+-]?\d+$/.test(arg))
-                    return void dactyl.echoerr("E488: Trailing characters");
+                dactyl.assert(/^[+-]?\d+$/.test(arg), "E488: Trailing characters");
 
                 let level = parseInt(arg, 10) / 100;
 

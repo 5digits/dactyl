@@ -211,12 +211,8 @@ const Config = Module("config", ConfigBase, {
             "Close a display pane",
             function (args) {
                 let arg = args.literalArg;
-
-                if (arg in Config.displayPanes)
-                    Config.closeDisplayPane(Config.displayPanes[arg]);
-                else
-                    dactyl.echoerr("E475: Invalid argument: " + arg);
-
+                dactyl.assert(arg in Config.displayPanes, "E475: Invalid argument: " + arg);
+                Config.closeDisplayPane(Config.displayPanes[arg]);
             },
             {
                 argCount: "1",
@@ -229,12 +225,9 @@ const Config = Module("config", ConfigBase, {
             "Open a display pane",
             function (args) {
                 let arg = args.literalArg;
-
-                if (arg in Config.displayPanes)
-                    Config.openDisplayPane(Config.displayPanes[arg]);
-                    // TODO: focus when we have better key handling of these extended modes
-                else
-                    dactyl.echoerr("E475: Invalid argument: " + arg);
+                dactyl.assert(arg in Config.displayPanes, "E475: Invalid argument: " + arg);
+                // TODO: focus when we have better key handling of these extended modes
+                Config.openDisplayPane(Config.displayPanes[arg]);
             },
             {
                 argCount: "1",
