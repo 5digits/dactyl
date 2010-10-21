@@ -14,11 +14,8 @@
 const Browser = Module("browser", {
 }, {
     climbUrlPath: function (count) {
-        try {
-            var url = util.newURI(buffer.URL).QueryInterface(Ci.nsIURL);
-        }
-        catch (e) {}
-        dactyl.assert(url);
+        let url = util.newURI(buffer.URL);
+        dactyl.assert(url instanceof Ci.nsIURL);
 
         while (count-- && url.path != "/")
             url.path = url.path.replace(/[^\/]+\/?$/, "")
