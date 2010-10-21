@@ -621,9 +621,11 @@ const RangeFind = Class("RangeFind", {
         },
 
         deselect: function () {
-            this.selection.removeAllRanges();
-            if (this.initialSelection)
-                this.selection.addRange(this.initialSelection);
+            if (this.selection) {
+                this.selection.removeAllRanges();
+                if (this.initialSelection)
+                    this.selection.addRange(this.initialSelection);
+            }
         },
 
         get selectionController() this.docShell
