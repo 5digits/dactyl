@@ -1380,7 +1380,7 @@ const Buffer = Module("buffer", {
                 else if (/^\d+$/.test(arg))
                     level = parseInt(arg, 10);
                 else if (/^[+-]\d+$/.test(arg)) {
-                    level = this.zoomLevel + parseInt(arg, 10);
+                    level = buffer.zoomLevel + parseInt(arg, 10);
                     // relative args shouldn't take us out of range
                     level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
