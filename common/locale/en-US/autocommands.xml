@@ -38,7 +38,7 @@
             pages not matching the following regular expression.  If the
             <em>-javascript</em> (short name <em>-js</em>) option is given,
             <oa>cmd</oa> is interpreted as JavaScript code. Otherwise, it is
-            interpreted as an ex command.
+            interpreted as an Ex command.
         </p>
 
         <note>
