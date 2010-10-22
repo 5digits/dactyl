@@ -54,7 +54,7 @@ const RangeFinder = Module("rangefinder", {
         if (!this.rangeFind
             || this.rangeFind.window.get() != window
             || linksOnly  != !!this.rangeFind.elementPath
-            || regexp      != this.rangeFind.regex
+            || regexp     != this.rangeFind.regex
             || matchCase  != this.rangeFind.matchCase
             || !!backward != this.rangeFind.reverse) {
 

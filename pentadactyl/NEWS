@@ -52,7 +52,7 @@
     * IMPORTANT: Command script files now use the *.penta file extension.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
-    * IMPORTANT: 'loadplugins' is now a regexlist option rather than
+    * IMPORTANT: 'loadplugins' is now a regexplist option rather than
       a boolean.
     * IMPORTANT: 'cdpath' and 'runtimepath' no longer treat ",,"
       specially. Use "." instead.
@@ -61,7 +61,7 @@
       operators, and = sign may no longer be quoted. This will break
       certain automatically-generated configuration files.
       See :help stringlist
-    * IMPORTANT: 'extendedhinttags' is now a regexmap rather than a
+    * IMPORTANT: 'extendedhinttags' is now a regexpmap rather than a
       string.
     * IMPORTANT: 'guioptions' default value has changed.
     * IMPORTANT: 'mapleader' is now an option rather than a :let
