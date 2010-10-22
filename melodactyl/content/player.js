@@ -616,6 +616,7 @@ const Player = Module("player", {
             function (args) {
                 let arg = args[0];
 
+                dactyl.assert(arg, "E471: Argument required");
                 dactyl.assert(/^[+-]?\d+$/.test(arg), "E488: Trailing characters");
 
                 let level = parseInt(arg, 10) / 100;
