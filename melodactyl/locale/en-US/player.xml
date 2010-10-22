@@ -75,8 +75,8 @@
 </item>
 
 <item>
-    <tags>p_x</tags>
-    <spec>x</spec>
+    <tags>p_s</tags>
+    <spec>s</spec>
     <description>
         <p>
             Toggle shuffle mode.
