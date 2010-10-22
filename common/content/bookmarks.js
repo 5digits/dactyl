@@ -498,14 +498,10 @@ const Bookmarks = Module("bookmarks", {
              "Engine Alias which has a feature of suggest",
              "stringlist", "google",
              {
-                 completer: function completer(value) {
-                     let engines = services.get("browserSearch").getEngines({})
-                                           .filter(function (engine) engine.supportsResponseType("application/x-suggestions+json"));
-
-                     return engines.map(function (engine) [engine.alias, engine.description]);
-                 }
+                 completer: function completer(context) completion.searchEngine(context, true),
              });
     },
+
     completion: function () {
         completion.bookmark = function bookmark(context, tags, extra) {
             context.title = ["Bookmark", "Title"];
@@ -556,6 +552,15 @@ const Bookmarks = Module("bookmarks", {
                         }).filter(util.identity);
                     };
                 });
+        };
+
+        completion.searchEngine = function searchEngine(context, suggest) {
+             let engines = services.get("browserSearch").getEngines({});
+             if (suggest)
+                 engines = engines.filter(function (e) e.supportsResponseType("application/x-suggestions+json"));
+
+             context.title = ["Suggest Engine", "Description"];
+             context.completions = engines.map(function (e) [e.alias, e.description]);
         };
 
         completion.searchEngineSuggest = function searchEngineSuggest(context, engineAliases, kludge) {
