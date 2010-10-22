@@ -21,8 +21,8 @@
 
 <item>
     <tags>p_x :playerp :playerplay</tags>
-    <spec>:playerp<oa>lay</oa></spec>
-    <spec>x</spec>
+    <spec>:<oa>count</oa>playerp<oa>lay</oa></spec>
+    <spec><oa>count</oa>x</spec>
     <description>
         <p>
             Play the current track.
@@ -32,8 +32,8 @@
 
 <item>
     <tags>p_z :playerpr :playerprev</tags>
-    <spec>:playerpr<oa>ev</oa></spec>
-    <spec>z</spec>
+    <spec>:<oa>count</oa>playerpr<oa>ev</oa></spec>
+    <spec><oa>count</oa>z</spec>
     <description>
         <p>
             Play the previous track.

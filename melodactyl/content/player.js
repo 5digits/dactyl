@@ -122,17 +122,25 @@ const Player = Module("player", {
     },
 
     /**
-     * Plays the next media item in the current media view.
+     * Plays the *count*th next media item in the current media view.
+     *
+     * @param {number} count
      */
-    next: function next() {
-        ["cmd_control_next", "cmd_find_current_track"].forEach(gSongbirdWindowController.doCommand);
+    next: function next(count) {
+        for (let i = 0; i < count; i++)
+            gSongbirdWindowController.doCommand("cmd_control_next");
+        gSongbirdWindowController.doCommand("cmd_find_current_track");
     },
 
     /**
-     * Plays the previous media item in the current media view.
+     * Plays the *count*th previous media item in the current media view.
+     *
+     * @param {number} count
      */
-    previous: function previous() {
-        ["cmd_control_previous", "cmd_find_current_track"].forEach(gSongbirdWindowController.doCommand);
+    previous: function previous(count) {
+        for (let i = 0; i < count; i++)
+            gSongbirdWindowController.doCommand("cmd_control_previous");
+        gSongbirdWindowController.doCommand("cmd_find_current_track");
     },
 
     /**
@@ -494,11 +502,13 @@ const Player = Module("player", {
 
         commands.add(["playern[ext]"],
             "Play next track",
-            function () { player.next(); });
+            function (args) { player.next(Math.max(args.count, 1)); },
+            { count: true });
 
         commands.add(["playerpr[ev]"],
             "Play previous track",
-            function () { player.previous(); });
+            function (args) { player.previous(Math.max(args.count, 1)); },
+            { count: true });
 
         commands.add(["players[top]"],
             "Stop track",
@@ -671,23 +681,25 @@ const Player = Module("player", {
     mappings: function () {
         mappings.add([modes.PLAYER],
             ["x"], "Play track",
-            function () { player.play(); });
+            function () { ex.playerplay(); });
 
         mappings.add([modes.PLAYER],
             ["z"], "Previous track",
-            function () { player.previous(); });
+            function (count) { ex.playerprev({ "#": count }); },
+            { count: true });
 
         mappings.add([modes.PLAYER],
             ["c"], "Pause/unpause track",
-            function () { player.togglePlayPause(); });
+            function () { ex.playerpause(); });
 
         mappings.add([modes.PLAYER],
             ["b"], "Next track",
-            function () { player.next(); });
+            function (count) { ex.playernext({ "#": count }); },
+            { count: true });
 
         mappings.add([modes.PLAYER],
             ["v"], "Stop track",
-            function () { player.stop(); });
+            function () { ex.playerstop(); });
 
         mappings.add([modes.PLAYER],
             ["Q"], "Queue tracks by artist/album/track",

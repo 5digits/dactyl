@@ -1,4 +1,5 @@
 0.1a1pre:
+    * :playerprev and :playernext and equivalent mappings now accept a count.
     * :displaypane arguments changed to "leftservice", "bottomservice",
       "bottomcontent" or "rightsidebar"
     * asciidoc is no longer required to build Melodactyl
