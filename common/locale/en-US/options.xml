@@ -413,12 +413,16 @@
     <tags>'cd' 'cdpath'</tags>
     <spec>'cdpath' 'cd'</spec>
     <type>stringlist</type>
-    <default type="plain">equivalent to <em>$CDPATH</em> or <str>.</str></default>
+    <default type="plain">equivalent to <str>.</str> or <str>.,$CDPATH</str></default>
     <description>
         <p>
             List of directories searched when executing the <ex>:cd</ex>
             command. This is only used for relative paths; if an absolute path is
             specified, this option is ignored.
+        </p>
+        <p>
+            If the <em>CDPATH</em> environment variable is set this path list
+            is appended to the default value of <str>.</str>.
         </p>
     </description>
 </item>
