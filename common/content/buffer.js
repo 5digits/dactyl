@@ -332,6 +332,9 @@ const Buffer = Module("buffer", {
         Math.min.apply(Math,
             buffer.allFrames().map(function (frame)
                 frame.document.pageIsFullyLoaded || 0)),
+    set loaded(val)
+        buffer.allFrames().forEach(function (frame)
+            frame.document.pageIsFullyLoaded = val),
 
     /**
      * @property {Object} The local state store for the currently selected

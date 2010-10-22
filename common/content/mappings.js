@@ -419,16 +419,22 @@ const Mappings = Module("mappings", {
                     completer: function (context, args) {
                         if (args.length == 1)
                             return completion.userMapping(context, args, mapmodes);
-                        if (args["-javascript"])
-                            return completion.javascript(context);
-                        if (args["-ex"])
-                            return completion.ex(context);
+                        if (args.length == 2) {
+                            if (args["-javascript"])
+                                return completion.javascript(context);
+                            if (args["-ex"])
+                                return completion.ex(context);
+                        }
                     },
                     literal: 1,
                     options: [
                         {
                             names: ["-builtin", "-b"],
                             description: "Execute this mapping as if there were no user-defined mappings"
+                        },
+                        {
+                            names: ["-count", "-c"],
+                            description: "Accept a count before the requisite key press"
                         },
                         {
                             names: ["-description", "-d"],
