@@ -46,8 +46,8 @@
     <dt>stringmap</dt>
     <dd>A comma-separated list of key-value pairs, e.g., <str delim="">key:val,foo:bar</str></dd>
 
-    <dt/><dd tag="regexlist"/>
-    <dt>regexlist</dt>
+    <dt/><dd tag="regexplist"/>
+    <dt>regexplist</dt>
     <dd>
         A comma-separated list of regular expressions. Expressions may be
         prefixed with a <em>!</em>, in which case the match will be negated. A
@@ -58,10 +58,10 @@
         <em>\</em>, will not be treated as an item separator.
     </dd>
 
-    <dt/><dd tag="regexmap"/>
-    <dt>regexmap</dt>
+    <dt/><dd tag="regexpmap"/>
+    <dt>regexpmap</dt>
     <dd>
-        A combination of a <em>stringmap</em> and a <em>regexlist</em>. Each key
+        A combination of a <em>stringmap</em> and a <em>regexplist</em>. Each key
         in the <a>key</a>:<a>value</a> pair is a regexp. If the regexp begins with a
         <em>!</em>, the sense of the match is negated, such that a non-matching
         expression will be considered a match and <html:i>vice versa</html:i>.
@@ -360,7 +360,7 @@
 <item>
     <tags>'au' 'autocomplete'</tags>
     <spec>'autocomplete' 'au'</spec>
-    <type>regexlist</type>
+    <type>regexplist</type>
     <default>.*</default>
     <description>
         <p>
@@ -602,7 +602,7 @@
     <tags>'eht' 'extendedhinttags'</tags>
     <spec>'extendedhinttags' 'eht'</spec>
     <strut/>
-    <type>regexmap</type>
+    <type>regexpmap</type>
     <default>[iI]:'//img | //xhtml:img',
           [OTivVWy]:'//a[@href]     | //xhtml:a[@href]    |
                      //area[@href]  | //xhtml:area[@href] |
@@ -947,7 +947,7 @@
     <tags>'nolpl' 'lpl'</tags>
     <tags>'noloadplugins' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
-    <type>regexlist</type>
+    <type>regexplist</type>
     <default>'\.(js|&dactyl.fileExt;)$'</default>
     <description>
         <p>
@@ -974,7 +974,7 @@
         <p>
             Note that in the first expression of the latter example you don't
             need parentheses, as the <em>!</em> negates the whole of the
-            following expression (cf. <t>regexlist</t>).
+            following expression (cf. <t>regexplist</t>).
         </p>
         <p>
             See also <ex>:runtime</ex>.
@@ -1459,7 +1459,7 @@
 <item>
     <tags>'wia' 'wildanchor'</tags>
     <spec>'wildanchor' 'wia'</spec>
-    <type>regexlist</type>
+    <type>regexplist</type>
     <default>!'/ex/(back|buffer|ext|forward|help|undo)'</default>
     <description>
         <p>
@@ -1477,12 +1477,12 @@
 <item>
     <tags>'wic' 'wildcase'</tags>
     <spec>'wildcase' 'wic'</spec>
-    <type>regexmap</type>
+    <type>regexpmap</type>
     <default>.?:smart</default>
     <description>
         <p>
             Defines how completions are matched with regard to character case.
-            Keys in the <t>regexmap</t> refer to completion context names (see
+            Keys in the <t>regexpmap</t> refer to completion context names (see
             <ex>:contexts</ex>) for which the value applies. Possible values
             are:
         </p>
@@ -1498,7 +1498,7 @@
 <item>
     <tags>'wildignore' 'wig'</tags>
     <spec>'wildignore' 'wig'</spec>
-    <type>regexlist</type>
+    <type>regexplist</type>
     <default></default>
     <description>
         <p>
@@ -1553,7 +1553,7 @@
 <item>
     <tags>'wis' 'wildsort'</tags>
     <spec>'wildsort' 'wis'</spec>
-    <type>regexlist</type>
+    <type>regexplist</type>
     <default>.*</default>
     <description>
         <p>

@@ -1211,8 +1211,8 @@ const Dactyl = Module("dactyl", {
             "string", "intro");
 
         options.add(["loadplugins", "lpl"],
-            "A regex list that defines which plugins are loaded at startup and via :loadplugins",
-            "regexlist", "'\\.(js|" + config.fileExtension + ")$'");
+            "A regexp list that defines which plugins are loaded at startup and via :loadplugins",
+            "regexplist", "'\\.(js|" + config.fileExtension + ")$'");
 
         options.add(["titlestring"],
             "Change the title of the window",
@@ -1221,7 +1221,7 @@ const Dactyl = Module("dactyl", {
                 setter: function (value) {
                     let win = document.documentElement;
                     function updateTitle(old, current) {
-                        document.title = document.title.replace(RegExp("(.*)" + util.escapeRegex(old)), "$1" + current);
+                        document.title = document.title.replace(RegExp("(.*)" + util.escapeRegexp(old)), "$1" + current);
                     }
 
                     // TODO: remove this FF3.5 test when we no longer support 3.0
@@ -1247,7 +1247,7 @@ const Dactyl = Module("dactyl", {
             });
 
         options.add(["urlseparator", "us"],
-            "Set the separator regex used to separate multiple URL args",
+            "Set the separator regexp used to separate multiple URL args",
             "string", "\\|");
 
         options.add(["verbose", "vbs"],

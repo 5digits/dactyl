@@ -330,7 +330,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} str
      * @returns {string}
      */
-    escapeRegex: function escapeRegex(str) {
+    escapeRegexp: function escapeRegexp(str) {
         return str.replace(/([\\{}()[\].?*+])/g, "\\$1");
     },
 

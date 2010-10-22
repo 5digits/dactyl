@@ -761,7 +761,7 @@ lookup:
 
         options.add(["wildignore", "wig"],
             "List of file patterns to ignore when completing files",
-            "regexlist", "");
+            "regexplist", "");
     }
 });
 

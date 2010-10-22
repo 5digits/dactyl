@@ -833,7 +833,7 @@ const Completion = Module("completion", {
                     function (tok) contains(item.url, tok) ||
                                    contains(item.title, tok)));
 
-            let re = RegExp(tokens.filter(util.identity).map(util.escapeRegex).join("|"), "g");
+            let re = RegExp(tokens.filter(util.identity).map(util.escapeRegexp).join("|"), "g");
             function highlight(item, text, i) process[i].call(this, item, template.highlightRegexp(text, re));
             let process = context.process;
             context.process = [
@@ -895,7 +895,7 @@ const Completion = Module("completion", {
 
         options.add(["autocomplete", "au"],
             "Automatically update the completion list on any key press",
-            "regexlist", ".*");
+            "regexplist", ".*");
 
         options.add(["complete", "cpt"],
             "Items which are completed at the :open prompts",
@@ -906,11 +906,11 @@ const Completion = Module("completion", {
 
         options.add(["wildanchor", "wia"],
             "Regexp list defining which contexts require matches anchored to the beginning of the result",
-            "regexlist", "!/ex/(back|buffer|ext|forward|help|undo)");
+            "regexplist", "!/ex/(back|buffer|ext|forward|help|undo)");
 
         options.add(["wildcase", "wic"],
             "Completion case matching mode",
-            "regexmap", ".?:smart",
+            "regexpmap", ".?:smart",
             {
                 completer: function () [
                     ["smart", "Case is significant when capital letters are typed"],
@@ -926,7 +926,7 @@ const Completion = Module("completion", {
 
         options.add(["wildsort", "wis"],
             "Regexp list of which contexts to sort",
-            "regexlist", ".*");
+            "regexplist", ".*");
     }
 });
 

@@ -27,7 +27,7 @@ const RangeFinder = Module("rangefinder", {
 
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;
-        let regex = false;
+        let regexp = false;
         let matchCase = !(options["ignorecase"] || options["smartcase"] && !/[A-Z]/.test(str));
         let linksOnly = options["linksearch"];
 
@@ -41,9 +41,9 @@ const RangeFinder = Module("rangefinder", {
             else if (n1 == "L")
                 linksOnly = false;
             else if (n1 == "r")
-                regex = true;
+                regexp = true;
             else if (n1 == "R")
-                regex = false;
+                regexp = false;
             else
                 return m;
             return "";
@@ -54,13 +54,13 @@ const RangeFinder = Module("rangefinder", {
         if (!this.rangeFind
             || this.rangeFind.window.get() != window
             || linksOnly  != !!this.rangeFind.elementPath
-            || regex      != this.rangeFind.regex
+            || regexp      != this.rangeFind.regex
             || matchCase  != this.rangeFind.matchCase
             || !!backward != this.rangeFind.reverse) {
 
             if (this.rangeFind)
                 this.rangeFind.cancel();
-            this.rangeFind = RangeFind(matchCase, backward, linksOnly && options["hinttags"], regex);
+            this.rangeFind = RangeFind(matchCase, backward, linksOnly && options["hinttags"], regexp);
             this.rangeFind.highlighted = highlighted;
             this.rangeFind.selections = selections;
         }
@@ -259,14 +259,14 @@ const RangeFinder = Module("rangefinder", {
  * large amounts of data are concerned (e.g., for API documents).
  */
 const RangeFind = Class("RangeFind", {
-    init: function (matchCase, backward, elementPath, regex) {
+    init: function (matchCase, backward, elementPath, regexp) {
         this.window = Cu.getWeakReference(window);
         this.elementPath = elementPath || null;
         this.reverse = Boolean(backward);
 
         this.finder = services.create("find");
         this.matchCase = Boolean(matchCase);
-        this.regex = Boolean(regex);
+        this.regexp = Boolean(regexp);
 
         this.ranges = this.makeFrameList(window.content);
 
@@ -282,8 +282,8 @@ const RangeFind = Class("RangeFind", {
     get matchCase() this.finder.caseSensitive,
     set matchCase(val) this.finder.caseSensitive = Boolean(val),
 
-    get regex() this.finder.regularExpression || false,
-    set regex(val) {
+    get regexp() this.finder.regularExpression || false,
+    set regexp(val) {
         try {
             return this.finder.regularExpression = Boolean(val);
         }

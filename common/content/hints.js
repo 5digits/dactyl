@@ -630,7 +630,7 @@ const Hints = Module("hints", {
          */
         function wordStartsWithMatcher(hintString, allowWordOverleaping) { //{{{
             let hintStrings    = tokenize(/\s+/, hintString);
-            let wordSplitRegex = RegExp(options["wordseparators"]);
+            let wordSplitRegexp = RegExp(options["wordseparators"]);
 
             /**
              * Match a set of characters to the start of words.
@@ -728,7 +728,7 @@ const Hints = Module("hints", {
                 if (hintStrings.length == 1 && hintStrings[0].length == 0)
                     return true;
 
-                let words = tokenize(wordSplitRegex, linkText);
+                let words = tokenize(wordSplitRegexp, linkText);
                 if (hintStrings.length == 1)
                     return charsAtBeginningOfWords(hintStrings[0], words, allowWordOverleaping);
                 else
@@ -1119,7 +1119,7 @@ const Hints = Module("hints", {
 
         options.add(["extendedhinttags", "eht"],
             "XPath string of hintable elements activated by ';'",
-            "regexmap", "[iI]:" + Option.quote(util.makeXPath(["img"])) +
+            "regexpmap", "[iI]:" + Option.quote(util.makeXPath(["img"])) +
                        ",[OTivVWy]:" + Option.quote(util.makeXPath(
                             ["{a,area}[@href]", "{img,iframe}[@src]"])) +
                        ",[S]:" + Option.quote(util.makeXPath(

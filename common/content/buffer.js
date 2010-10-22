@@ -567,11 +567,11 @@ const Buffer = Module("buffer", {
                 yield elem;
 
             let res = util.evaluateXPath(path, frame.document);
-            for (let regex in values(regexps)) {
+            for (let regexp in values(regexps)) {
                 for (let i in util.range(res.snapshotLength, 0, -1)) {
                     let elem = res.snapshotItem(i);
-                    if (regex.test(elem.textContent) === regex.result || regex.test(elem.title) === regex.result ||
-                            Array.some(elem.childNodes, function (child) regex.test(child.alt) === regex.result))
+                    if (regexp.test(elem.textContent) === regexp.result || regexp.test(elem.title) === regexp.result ||
+                            Array.some(elem.childNodes, function (child) regexp.test(child.alt) === regexp.result))
                         yield elem;
                 }
             }
@@ -1745,13 +1745,13 @@ const Buffer = Module("buffer", {
     options: function () {
         options.add(["nextpattern"],
             "Patterns to use when guessing the 'next' page in a document sequence",
-            "regexlist", UTF8("'\\bnext\\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\\bmore\\b'"),
-            { regexFlags: "i" });
+            "regexplist", UTF8("'\\bnext\\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\\bmore\\b'"),
+            { regexpFlags: "i" });
 
         options.add(["previouspattern"],
             "Patterns to use when guessing the 'previous' page in a document sequence",
-            "regexlist", UTF8("'\\bprev|previous\\b',^<$,^(<<|«)$,^(<|«),(<|«)$"),
-            { regexFlags: "i" });
+            "regexplist", UTF8("'\\bprev|previous\\b',^<$,^(<<|«)$,^(<|«),(<|«)$"),
+            { regexpFlags: "i" });
 
         options.add(["pageinfo", "pa"],
             "Desired info in the :pageinfo output",

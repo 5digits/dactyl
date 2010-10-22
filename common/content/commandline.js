@@ -1657,7 +1657,7 @@ const CommandLine = Module("commandline", {
         //       At the moment, adding "<Tab>" breaks tab completion. Adding
         //       "<CR>" has no effect.
         // TODO: Make non-keyword recognition smarter so that there need not
-        //       be two lists of the same characters (one here and a regex in
+        //       be two lists of the same characters (one here and a regexp in
         //       mappings.js)
         mappings.add(myModes,
             ["<Space>", '"', "'"], "Expand command line abbreviation",

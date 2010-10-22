@@ -64,7 +64,7 @@
     <description>
         <p>
             List recorded macros matching the optional regular expression
-            <oa>pat</oa>. If no regex is given, list all macros.
+            <oa>pat</oa>. If no regexp is given, list all macros.
         </p>
     </description>
 </item>

@@ -22,52 +22,52 @@ const AutoCommands = Module("autocommands", {
 
     /**
      * Adds a new autocommand. *cmd* will be executed when one of the specified
-     * *events* occurs and the URL of the applicable buffer matches *regex*.
+     * *events* occurs and the URL of the applicable buffer matches *regexp*.
      *
      * @param {Array} events The array of event names for which this
      *     autocommand should be executed.
-     * @param {string} regex The URL pattern to match against the buffer URL.
+     * @param {string} regexp The URL pattern to match against the buffer URL.
      * @param {string} cmd The Ex command to run.
      */
-    add: function (events, regex, cmd) {
+    add: function (events, regexp, cmd) {
         events.forEach(function (event) {
-            this._store.push(AutoCommand(event, Option.parseRegex(regex), cmd));
+            this._store.push(AutoCommand(event, Option.parseRegexp(regexp), cmd));
         }, this);
     },
 
     /**
-     * Returns all autocommands with a matching *event* and *regex*.
+     * Returns all autocommands with a matching *event* and *regexp*.
      *
      * @param {string} event The event name filter.
-     * @param {string} regex The URL pattern filter.
+     * @param {string} regexp The URL pattern filter.
      * @returns {AutoCommand[]}
      */
-    get: function (event, regex) {
-        return this._store.filter(function (autoCmd) AutoCommands.matchAutoCmd(autoCmd, event, regex));
+    get: function (event, regexp) {
+        return this._store.filter(function (autoCmd) AutoCommands.matchAutoCmd(autoCmd, event, regexp));
     },
 
     /**
-     * Deletes all autocommands with a matching *event* and *regex*.
+     * Deletes all autocommands with a matching *event* and *regexp*.
      *
      * @param {string} event The event name filter.
-     * @param {string} regex The URL pattern filter.
+     * @param {string} regexp The URL pattern filter.
      */
-    remove: function (event, regex) {
-        this._store = this._store.filter(function (autoCmd) !AutoCommands.matchAutoCmd(autoCmd, event, regex));
+    remove: function (event, regexp) {
+        this._store = this._store.filter(function (autoCmd) !AutoCommands.matchAutoCmd(autoCmd, event, regexp));
     },
 
     /**
-     * Lists all autocommands with a matching *event* and *regex*.
+     * Lists all autocommands with a matching *event* and *regexp*.
      *
      * @param {string} event The event name filter.
-     * @param {string} regex The URL pattern filter.
+     * @param {string} regexp The URL pattern filter.
      */
-    list: function (event, regex) {
+    list: function (event, regexp) {
         let cmds = {};
 
         // XXX
         this._store.forEach(function (autoCmd) {
-            if (AutoCommands.matchAutoCmd(autoCmd, event, regex)) {
+            if (AutoCommands.matchAutoCmd(autoCmd, event, regexp)) {
                 cmds[autoCmd.event] = cmds[autoCmd.event] || [];
                 cmds[autoCmd.event].push(autoCmd);
             }
@@ -124,22 +124,22 @@ const AutoCommands = Module("autocommands", {
         }
     }
 }, {
-    matchAutoCmd: function (autoCmd, event, regex) {
-        return (!event || autoCmd.event == event) && (!regex || String(autoCmd.pattern) == regex);
+    matchAutoCmd: function (autoCmd, event, regexp) {
+        return (!event || autoCmd.event == event) && (!regexp || String(autoCmd.pattern) == regexp);
     }
 }, {
     commands: function () {
         commands.add(["au[tocmd]"],
             "Execute commands automatically on events",
             function (args) {
-                let [event, regex, cmd] = args;
+                let [event, regexp, cmd] = args;
                 let events = [];
 
                 try {
-                    Option.parseRegex(regex);
+                    Option.parseRegexp(regexp);
                 }
                 catch (e) {
-                    dactyl.assert(false, "E475: Invalid argument: " + regex);
+                    dactyl.assert(false, "E475: Invalid argument: " + regexp);
                 }
 
                 if (event) {
@@ -154,7 +154,7 @@ const AutoCommands = Module("autocommands", {
 
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
-                        autocommands.remove(event, regex);
+                        autocommands.remove(event, regexp);
                     if (args["-javascript"]) {
                         cmd = dactyl.userFunc("args", "with(args) {" + cmd + "}");
                         cmd.toString = function toString() "-javascript " + cmd.source;
@@ -165,7 +165,7 @@ const AutoCommands = Module("autocommands", {
                         cmd.toString = function toString() cmd.source;
                     }
                     cmd.source = args[2];
-                    autocommands.add(events, regex, cmd);
+                    autocommands.add(events, regexp, cmd);
                 }
                 else {
                     if (event == "*")
@@ -174,10 +174,10 @@ const AutoCommands = Module("autocommands", {
                     if (args.bang) {
                         // TODO: "*" only appears to work in Vim when there is a {group} specified
                         if (args[0] != "*" || args.length > 1)
-                            autocommands.remove(event, regex); // remove all
+                            autocommands.remove(event, regexp); // remove all
                     }
                     else
-                        autocommands.list(event, regex); // list all
+                        autocommands.list(event, regexp); // list all
                 }
             }, {
                 bang: true,

@@ -255,9 +255,9 @@ const Option = Class("Option", {
      *     "number"     - Integer, e.g., 1
      *     "string"     - String, e.g., "Pentadactyl"
      *     "charlist"   - Character list, e.g., "rb"
-     *     "regexlist"  - Regex list, e.g., "^foo,bar$"
+     *     "regexplist" - Regexp list, e.g., "^foo,bar$"
      *     "stringmap"  - String map, e.g., "key:v,foo:bar"
-     *     "regexmap"   - Regex map, e.g., "^key:v,foo$:bar"
+     *     "regexpmap"  - Regexp map, e.g., "^key:v,foo$:bar"
      */
     type: null,
 
@@ -384,28 +384,28 @@ const Option = Class("Option", {
         toggleAll: function toggleAll() toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments),
     },
 
-    parseRegex: function (value, result, flags) {
+    parseRegexp: function (value, result, flags) {
         let [, bang, val] = /^(!?)(.*)/.exec(value);
         let re = RegExp(Option.dequote(val), flags);
         re.bang = bang;
         re.result = result !== undefined ? result : !bang;
-        re.toString = function () Option.unparseRegex(this);
+        re.toString = function () Option.unparseRegexp(this);
         return re;
     },
-    unparseRegex: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m), /^!|:/) +
+    unparseRegexp: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m), /^!|:/) +
         (typeof re.result === "string" ? ":" + Option.quote(re.result) : ""),
 
     getKey: {
         stringlist: function (k) this.value.indexOf(k) >= 0,
         get charlist() this.stringlist,
 
-        regexlist: function (k, default_) {
+        regexplist: function (k, default_) {
             for (let re in values(this.value))
                 if (re.test(k))
                     return re.result;
             return arguments.length > 1 ? default_ : null;
         },
-        get regexmap() this.regexlist
+        get regexpmap() this.regexplist
     },
 
     stringify: {
@@ -415,8 +415,8 @@ const Option = Class("Option", {
 
         stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
 
-        regexlist:   function (vals) vals.join(","),
-        get regexmap() this.regexlist
+        regexplist:  function (vals) vals.join(","),
+        get regexpmap() this.regexplist
     },
 
     parse: {
@@ -428,9 +428,9 @@ const Option = Class("Option", {
 
         stringlist: function (value) (value === "") ? [] : Option.splitList(value),
 
-        regexlist:  function (value) (value === "") ? [] :
+        regexplist: function (value) (value === "") ? [] :
             Option.splitList(value, true)
-                  .map(function (re) Option.parseRegex(re, undefined, this.regexFlags), this),
+                  .map(function (re) Option.parseRegexp(re, undefined, this.regexpFlags), this),
 
         stringmap:  function (value) array.toObject(
             Option.splitList(value, true).map(function (v) {
@@ -438,18 +438,18 @@ const Option = Class("Option", {
                 return [key, Option.dequote(v.substr(count + 1))]
             })),
 
-        regexmap:   function (value)
+        regexpmap:  function (value)
             Option.splitList(value, true).map(function (v) {
                 let [count, re, quote] = Commands.parseArg(v, /:/, true);
                 v = Option.dequote(v.substr(count + 1));
                 if (count === v.length)
                     [v, re] = [re, ".?"];
-                return Option.parseRegex(re, v, this.regexFlags);
+                return Option.parseRegexp(re, v, this.regexpFlags);
             }, this)
     },
 
     testValues: {
-        regexmap:   function (vals, validator) vals.every(function (re) validator(re.result)),
+        regexpmap:  function (vals, validator) vals.every(function (re) validator(re.result)),
         stringlist: function (vals, validator) vals.every(validator, this),
         stringmap:  function (vals, validator) array(values(vals)).every(validator, this)
     },
@@ -557,8 +557,8 @@ const Option = Class("Option", {
             return null;
         },
         get charlist() this.stringlist,
-        get regexlist() this.stringlist,
-        get regexmap() this.stringlist,
+        get regexplist() this.stringlist,
+        get regexpmap() this.stringlist,
 
         string: function (operator, values, scope, invert) {
             switch (operator) {
@@ -593,7 +593,7 @@ const Option = Class("Option", {
         let res = context.fork("", 0, this, this.completer);
         if (!res)
             res = context.allItems.items.map(function (item) [item.text]);
-        if (this.type == "regexmap")
+        if (this.type == "regexpmap")
             return Array.concat(values).every(function (re) res.some(function (item) item[0] == re.result));
         return Array.concat(values).every(function (value) res.some(function (item) item[0] == value));
     },
@@ -1168,13 +1168,13 @@ const Options = Module("options", {
                 if (!completer)
                     completer = function () [["true", ""], ["false", ""]];
                 break;
-            case "regexlist":
+            case "regexplist":
                 newValues = Option.splitList(context.filter);
                 // Fallthrough
             case "stringlist":
                 break;
             case "stringmap":
-            case "regexmap":
+            case "regexpmap":
                 let vals = Option.splitList(context.filter);
                 let target = vals.pop() || "";
                 let [count, key, quote] = Commands.parseArg(target, /:/, true);
