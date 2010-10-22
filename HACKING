@@ -19,15 +19,6 @@ important, please ask.
 
 In general: Just look at the existing source code!
 
-We try to target experienced JavaScript developers who do not
-necessarily need to have a good understanding of Pentadactyl's source
-code, nor necessarily understand in-depth concepts of other
-languages like Lisp or Python.  Therefore, the coding style should
-feel natural to any JavaScript developer.  Of course, this does not
-mean, you have to avoid all new JavaScript features like list
-comprehension or generators.  Use them, when they make sense, but
-don't use them when the resulting code is hard to read.
-
 === The most important style issues are: ===
 
 * Use 4 spaces to indent things, no tabs, not 2, nor 8 spaces. If you use Vim,
