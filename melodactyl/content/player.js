@@ -207,21 +207,21 @@ const Player = Module("player", {
         let min = 0;
         let max = gMM.playbackControl.duration - 5000; // TODO: 5s buffer like cmus desirable?
 
-        gMM.playbackControl.position = util.Math.constrain(position, min, max);
+        gMM.playbackControl.position = Math.constrain(position, min, max);
     },
 
     /**
      * Increases the volume by 5% of the maximum volume.
      */
     increaseVolume: function increaseVolume() {
-        this.volume = util.Math.constrain(this.volume + 0.05, 0, 1);
+        this.volume = Math.constrain(this.volume + 0.05, 0, 1);
     },
 
     /**
      * Decreases the volume by 5% of the maximum volume.
      */
     decreaseVolume: function decreaseVolume() {
-        this.volume = util.Math.constrain(this.volume - 0.05, 0, 1);
+        this.volume = Math.constrain(this.volume - 0.05, 0, 1);
     },
 
     // TODO: Document what this buys us over and above cmd_find_current_track
@@ -623,7 +623,7 @@ const Player = Module("player", {
                 if (/^[+-]/.test(arg))
                     level = player.volume + level;
 
-                player.volume = util.Math.constrain(level, 0, 1);
+                player.volume = Math.constrain(level, 0, 1);
             },
             { argCount: "1" });
     },
