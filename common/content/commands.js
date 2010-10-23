@@ -1277,7 +1277,7 @@ const Commands = Module("commands", {
                 },
                 options: [
                     { names: ["-bang", "-b"],  description: "Command may be proceeded by a !" },
-                    { names: ["-count", "-c"], description: "Command may be preceeded by a count" },
+                    { names: ["-count", "-c"], description: "Command may be proceeded by a count" },
                     {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],

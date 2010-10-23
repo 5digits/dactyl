@@ -30,7 +30,7 @@ let ValueError = Class("ValueError", Error);
  *         privateData - see {@link Option#privateData}
  *         scope       - see {@link Option#scope}
  *         setter      - see {@link Option#setter}
- *         valdator    - see {@link Option#validator}
+ *         vaildator   - see {@link Option#validator}
  * @optional
  * @private
  */

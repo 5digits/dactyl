@@ -1414,7 +1414,7 @@ const Dactyl = Module("dactyl", {
             };
 
         const addonErrors = array.toObject([
-            [AddonManager.ERROR_NETWORK_FAILURE, "A network error occured"],
+            [AddonManager.ERROR_NETWORK_FAILURE, "A network error occurred"],
             [AddonManager.ERROR_INCORRECT_HASH,  "The downloaded file did not match the expected hash"],
             [AddonManager.ERROR_CORRUPT_FILE,    "The file appears to be corrupt"],
             [AddonManager.ERROR_FILE_ACCESS,     "There was an error accessing the filesystem"]]);

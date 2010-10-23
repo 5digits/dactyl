@@ -80,7 +80,7 @@ const StatusLine = Module("statusline", {
             // 1. decodeURI decodes %25 to %, which creates unintended
             //    encoding sequences.
             url = url.split("%25").map(function (url) {
-                    // Non-UTF-8 complient URLs cause "malformed URI sequence" errors.
+                    // Non-UTF-8 compliant URLs cause "malformed URI sequence" errors.
                     try {
                         return decodeURI(url);
                     }

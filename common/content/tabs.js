@@ -404,7 +404,7 @@ const Tabs = Module("tabs", {
      * @param {boolean} allowNonUnique Whether to select the first of
      *     multiple matches.
      * @param {number} count If there are multiple matches select the
-     *     count'th match.
+     *     *count*th match.
      * @param {boolean} reverse Whether to search the buffer list in
      *     reverse order.
      *

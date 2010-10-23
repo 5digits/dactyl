@@ -752,7 +752,7 @@ Class.extend = function extend(subclass, superclass, overrides) {
 }
 
 /**
- * Memoizes the value of a class property to the falue returned by
+ * Memoizes the value of a class property to the value returned by
  * the passed function the first time the property is accessed.
  *
  * @param {function(string)} getter The function which returns the

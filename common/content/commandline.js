@@ -283,7 +283,7 @@ const CommandLine = Module("commandline", {
         // we need to save the mode which were in before opening the command line
         // this is then used if we focus the command line again without the "official"
         // way of calling "open"
-        this.currentExtendedMode = null; // the extended mode which we last openend the command line for
+        this.currentExtendedMode = null; // the extended mode which we last opened the command line for
 
         // save the arguments for the inputMultiline method which are needed in the event handler
         this._multilineEnd = null;

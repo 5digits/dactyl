@@ -542,7 +542,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * Returns true if *host* is a subdomain of *domain*.
      *
      * @param {string} host The host to check.
-     * @param {string} domain The base domain to check the host agains.
+     * @param {string} domain The base domain to check the host against.
      * @returns {boolean}
      */
     isSubdomain: function isSubdomain(host, domain) {
