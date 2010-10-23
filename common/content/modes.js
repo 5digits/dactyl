@@ -246,10 +246,9 @@ const Modes = Module("modes", {
         if (push)
             this._modeStack.push(push);
 
-        if (stack && stack.pop) {
-            for (let [k, { obj, prop, value }] in Iterator(this.topOfStack.saved))
+        if (stack && stack.pop)
+            for (let { obj, prop, value } in values(this.topOfStack.saved))
                 obj[prop] = value;
-        }
 
         if (this.topOfStack.params.enter && prev)
             this.topOfStack.params.enter(push ? { push: push } : stack || {},

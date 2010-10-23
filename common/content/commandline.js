@@ -42,12 +42,13 @@ const CommandWidgets = Class("CommandWidgets", {
             getElement: CommandWidgets.getEditor,
             getGroup: function (value) this.activeGroup.commandline,
             onChange: function (elem) {
-                elem.selectionStart = elem.value.length;
-                elem.selectionEnd = elem.value.length;
-                if (!elem.collapsed)
+                if (!elem.collapsed && elem.inputField != dactyl.focus) {
+                    elem.selectionStart = elem.value.length;
+                    elem.selectionEnd = elem.value.length;
                     elem.focus();
+                }
             },
-            onVisibility: function (elem, visible) visible && elem.focus()
+            onVisibility: function (elem, visible) visible && elem.inputField != dactyl.focus && elem.focus()
         });
         this.addElem({
             name: "prompt",

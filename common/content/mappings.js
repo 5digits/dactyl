@@ -226,13 +226,12 @@ const Mappings = Module("mappings", {
         keys = keys.map(this._expandLeader);
         extra = extra || {};
         extra.user = true;
-        let map = Map(modes, keys, description || "User-defined mapping", action, extra);
+        let map = Map(modes, keys, description, action, extra);
 
         // remove all old mappings to this key sequence
-        for (let [, name] in Iterator(map.names)) {
+        for (let [, name] in Iterator(map.names))
             for (let [, mode] in Iterator(map.modes))
                 this._removeMap(mode, name);
-        }
 
         this._addMap(map);
     },
@@ -269,22 +268,11 @@ const Mappings = Module("mappings", {
      * @param {string} prefix The map prefix string to match.
      * @returns {Map[]}
      */
-    getCandidates: function (mode, prefix) {
-        let mappings = this._user[mode].concat(this._main[mode]);
-        let matches = [];
-
-        for (let [, map] in Iterator(mappings)) {
-            for (let [, name] in Iterator(map.names)) {
-                if (name.indexOf(prefix) == 0 && name.length > prefix.length) {
-                    // for < only return a candidate if it doesn't look like a <c-x> mapping
-                    if (prefix != "<" || !/^<.+>/.test(name))
-                        matches.push(map);
-                }
-            }
-        }
-
-        return matches;
-    },
+    getCandidates: function (mode, prefix)
+        this._user[mode].concat(this._main[mode])
+            .filter(function (map) map.names.some(
+                function (name) name.indexOf(prefix) == 0 && name.length > prefix.length
+                                && (prefix != "<" || !/^<.+>/.test(name)))),
 
     /**
      * Returns whether there is a user-defined mapping *cmd* for the specified
@@ -350,7 +338,7 @@ const Mappings = Module("mappings", {
                 </table>;
 
         // TODO: Move this to an ItemList to show this automatically
-        if (list.*.length() == list.text().length())
+        if (list.*.length() === list.text().length())
             dactyl.echomsg("No mapping found");
         else
             commandline.commandOutput(list);

@@ -13,7 +13,6 @@
 const Editor = Module("editor", {
     init: function () {
         // store our last search with f, F, t or T
-        //
         this._lastFindChar = null;
         this._lastFindCharFunc = null;
     },
@@ -348,10 +347,7 @@ const Editor = Module("editor", {
                     if (textBox)
                         textBox.value = val;
                     else {
-                        let wholeDocRange = editor.document.createRange();
-                        let rootNode = editor.rootElement.QueryInterface(Ci.nsIDOMNode);
-                        wholeDocRange.selectNodeContents(rootNode);
-                        editor.selection.addRange(wholeDocRange);
+                        editor.selection.addRange(RangeFind.nodeRange(editor.rootNode));
                         editor.selection.deleteFromDocument();
                         editor.insertText(val);
                     }
