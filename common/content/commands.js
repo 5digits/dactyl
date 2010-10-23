@@ -1276,8 +1276,8 @@ const Commands = Module("commands", {
                         args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
                 options: [
-                    { names: ["-bang", "-b"],  description: "Command may be proceeded by a !" },
-                    { names: ["-count", "-c"], description: "Command may be proceeded by a count" },
+                    { names: ["-bang", "-b"],  description: "Command may be followed by a !" },
+                    { names: ["-count", "-c"], description: "Command may be preceded by a count" },
                     {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],

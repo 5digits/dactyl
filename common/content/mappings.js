@@ -226,7 +226,7 @@ const Mappings = Module("mappings", {
         keys = keys.map(this._expandLeader);
         extra = extra || {};
         extra.user = true;
-        let map = Map(modes, keys, description || "User defined mapping", action, extra);
+        let map = Map(modes, keys, description || "User-defined mapping", action, extra);
 
         // remove all old mappings to this key sequence
         for (let [, name] in Iterator(map.names)) {
@@ -439,7 +439,7 @@ const Mappings = Module("mappings", {
                         {
                             names: ["-description", "-d"],
                             description: "A description of this mapping",
-                            default: "User defined mapping",
+                            default: "User-defined mapping",
                             type: CommandOption.STRING
                         },
                         {
