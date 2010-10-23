@@ -116,7 +116,7 @@ const Hints = Module("hints", {
      * Get a hint for "input", "textarea" and "select".
      *
      * Tries to use <label>s if possible but does not try to guess that a
-     * neighbouring element might look like a label. Only called by
+     * neighboring element might look like a label. Only called by
      * {@link #_generate}.
      *
      * If it finds a hint it returns it, if the hint is not the caption of the
@@ -215,7 +215,7 @@ const Hints = Module("hints", {
                 let curLeft = null;
                 let curDist = Infinity;
 
-                // Then find the closest vertex. (we could generalise to nearest point on an edge, but I doubt there is a need)
+                // Then find the closest vertex. (we could generalize to nearest point on an edge, but I doubt there is a need)
                 for (let i = 0; i < coords.length; i += 2) {
                     let leftOffset = coords[i] - leftBound;
                     let topOffset = coords[i + 1] - topBound;
@@ -297,6 +297,8 @@ const Hints = Module("hints", {
 
             if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
                 [hint.text, hint.showText] = this._getInputHint(elem, doc);
+            else if (elem.firstElementChild instanceof HTMLImageElement && /^\s*$/.test(elem.textContent))
+                [hint.text, hint.showText] = [elem.firstElementChild.alt || elem.firstElementChild.title, true];
             else
                 hint.text = elem.textContent.toLowerCase();
 
