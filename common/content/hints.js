@@ -481,16 +481,13 @@ const Hints = Module("hints", {
      *
      */
     _processHints: function _processHints(followFirst) {
-        if (this._validHints.length == 0) {
-            dactyl.beep();
-            return false;
-        }
+        dactyl.assert(this._validHints.length > 0);
 
         // This "followhints" option is *too* confusing. For me, and
         // presumably for users, too. --Kris
         if (options["followhints"] > 0) {
             if (!followFirst)
-                return false; // no return hit; don't examine uniqueness
+                return; // no return hit; don't examine uniqueness
 
             // OK. return hit. But there's more than one hint, and
             // there's no tab-selected current link. Do not follow in mode 2
@@ -501,10 +498,10 @@ const Hints = Module("hints", {
             let firstHref = this._validHints[0].getAttribute("href") || null;
             if (firstHref) {
                 if (this._validHints.some(function (e) e.getAttribute("href") != firstHref))
-                    return false;
+                    return;
             }
             else if (this._validHints.length > 1)
-                return false;
+                return;
         }
 
         let timeout = followFirst || events.feedingKeys ? 0 : 500;
@@ -535,7 +532,6 @@ const Hints = Module("hints", {
             if (this._continue && this._top)
                 this._showHints();
         }, timeout);
-        return true;
     },
 
     _checkUnique: function _checkUnique() {
