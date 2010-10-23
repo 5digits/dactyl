@@ -54,7 +54,7 @@ const RangeFinder = Module("rangefinder", {
         if (!this.rangeFind
             || this.rangeFind.window.get() != window
             || linksOnly  != !!this.rangeFind.elementPath
-            || regexp     != this.rangeFind.regex
+            || regexp     != this.rangeFind.regexp
             || matchCase  != this.rangeFind.matchCase
             || !!backward != this.rangeFind.reverse) {
 
@@ -522,10 +522,10 @@ const RangeFind = Class("RangeFind", {
         if (!this.matchCase)
             word = word.toLowerCase();
 
-        if (!again && (word == "" || word.indexOf(this.lastString) != 0 || this.backward)) {
+        if (!again && (word === "" || word.indexOf(this.lastString) !== 0 || this.backward)) {
             if (!private_)
                 this.range.deselect();
-            if (word == "")
+            if (word === "")
                 this.range.descroll();
             this.lastRange = this.startRange;
             this.range = this.ranges.first;

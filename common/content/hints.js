@@ -382,7 +382,7 @@ const Hints = Module("hints", {
         let activeHint = this._hintNumber || 1;
         this._validHints = [];
 
-        for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
+        for (let { doc, start, end } in values(this._docs)) {
             let [offsetX, offsetY] = this._getContainerOffsets(doc);
 
         inner:
@@ -438,7 +438,7 @@ const Hints = Module("hints", {
         if (options["usermode"]) {
             let css = [];
             // FIXME: Broken for imgspans.
-            for (let [, { doc: doc }] in Iterator(this._docs)) {
+            for (let { doc } in values(this._docs)) {
                 for (let elem in util.evaluateXPath("//*[@dactyl:highlight and @number]", doc)) {
                     let group = elem.getAttributeNS(NS, "highlight");
                     css.push(highlight.selector(group) + "[number=" + elem.getAttribute("number").quote() + "] { " + elem.style.cssText + " }");
@@ -459,7 +459,7 @@ const Hints = Module("hints", {
      *     hint disappears.
      */
     _removeHints: function _removeHints(timeout, slight) {
-        for (let [,{ doc: doc, start: start, end: end }] in Iterator(this._docs)) {
+        for (let { doc, start, end } in values(this._docs)) {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1))
