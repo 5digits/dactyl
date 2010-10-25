@@ -444,7 +444,7 @@ const Buffer = Module("buffer", {
      */
     get focusedFrame() {
         let frame = (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame;
-        return frame && frame.get();
+        return frame && frame.get() || content;
     },
     set focusedFrame(frame) {
         (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame = Cu.getWeakReference(frame);
@@ -508,13 +508,19 @@ const Buffer = Module("buffer", {
         win.dactylFocusAllowed = true;
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
-            elem.contentWindow.focus();
-        else if (elem instanceof HTMLInputElement && elem.type == "file") {
+            elem = elem.contentWindow;
+        elem.dactylFocusAllowed = true;
+
+        if (elem instanceof HTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);
             buffer.lastInputField = elem;
         }
         else {
             elem.focus();
+            if (elem instanceof Window && elem.getSelection() && !elem.getSelection().rangeCount)
+                elem.getSelection().addRange(RangeFind.endpoint(
+                    RangeFind.nodeRange(elem.document.body || elem.document.documentElement),
+                    true));
 
             // for imagemap
             if (elem instanceof HTMLAreaElement) {
@@ -1618,12 +1624,14 @@ const Buffer = Module("buffer", {
                 let elem = buffer.lastInputField;
 
                 if (count >= 1 || !elem || !Events.isContentNode(elem)) {
-                    let xpath = ["input", "textarea[not(@disabled) and not(@readonly)]"];
+                    let xpath = ["frame", "iframe", "input", "textarea[not(@disabled) and not(@readonly)]"];
 
                     let frames = buffer.allFrames(null, true);
 
                     let elements = array.flatten(frames.map(function (win) [m for (m in util.evaluateXPath(xpath, win.document))]))
                                         .filter(function (elem) {
+                        if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
+                            return Editor.getEditor(elem.contentWindow);
 
                         if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(util.editableInputs, elem.type))
                             return false;

@@ -485,8 +485,11 @@ function isObject(obj) typeof obj === "object" && obj != null;
  * any window, frame, namespace, or execution context, which
  * is not the case when using (obj instanceof Array).
  */
-const isArray = Array.isArray ||
-    function isArray(val) objproto.toString.call(val) == "[object Array]";
+const isArray =
+    Array.isArray
+        // This is bloody stupid.
+        ? function isArray(val) Array.isArray(val) || val && val.constructor && val.constructor.name === "Array"
+        : function isArray(val) objproto.toString.call(val) == "[object Array]";
 
 /**
  * Returns true if and only if its sole argument is an

@@ -348,6 +348,7 @@ const Dactyl = Module("dactyl", {
         if (window != services.get("windowWatcher").activeWindow)
             return;
 
+        let win = document.commandDispatcher.focusedWindow;
         let elem = config.mainWidget || window.content;
         // TODO: make more generic
         try {
@@ -357,16 +358,26 @@ const Dactyl = Module("dactyl", {
                     i = 0;
                 gDBView.selection.select(i);
             }
-            else if (this.has("tabs")) {
+            else {
                 let frame = buffer.focusedFrame;
-                if (frame && frame.top == window.content)
+                if (frame && frame.top == window.content && !Editor.getEditor(frame))
                     elem = frame;
             }
         }
         catch (e) {}
 
-        if (clearFocusedElement && dactyl.focus)
-            dactyl.focus.blur();
+        if (clearFocusedElement)
+            if (dactyl.focus)
+                dactyl.focus.blur();
+            else if (win) {
+                win.blur();
+                if (win.frameElement)
+                    win.frameElement.blur();
+            }
+
+        if (elem instanceof Window && Editor.getEditor(elem))
+            elem = window;
+
         if (elem && elem != dactyl.focus)
             elem.focus();
     },

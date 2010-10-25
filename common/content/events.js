@@ -659,8 +659,11 @@ const Events = Module("events", {
         let elem = event.originalTarget;
 
         if (Events.isContentNode(elem) && !buffer.focusAllowed(elem)
-            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
-            elem.blur();
+            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window]))
+            if (elem.frameElement)
+                dactyl.focusContent(true);
+            else
+                elem.blur();
     },
 
     // argument "event" is deliberately not used, as i don't seem to have
@@ -696,9 +699,12 @@ const Events = Module("events", {
                 return;
             }
 
-            if (elem instanceof HTMLTextAreaElement || (elem && util.computedStyle(elem).MozUserModify == "read-write")) {
+            if (elem instanceof HTMLTextAreaElement || (elem && util.computedStyle(elem).MozUserModify == "read-write")
+               || elem == null && win && Editor.getEditor(win)) {
+
                 if (modes.main === modes.VISUAL && elem.selectionEnd == elem.selectionStart)
                     modes.pop();
+
                 if (options["insertmode"])
                     modes.set(modes.INSERT);
                 else {
@@ -706,6 +712,7 @@ const Events = Module("events", {
                     if (elem.selectionEnd - elem.selectionStart > 0)
                         modes.push(modes.VISUAL);
                 }
+
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
                 return;
@@ -720,8 +727,8 @@ const Events = Module("events", {
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
                 util.threadYield(true);
 
-            if (modes.getMode(modes.main).ownsFocus)
-                 modes.reset();
+            while (modes.getMode(modes.main).ownsFocus)
+                 modes.pop();
         }
         finally {
             this._lastFocus = elem;
@@ -782,9 +789,6 @@ const Events = Module("events", {
             let stop = false;
             let mode = modes.getStack(0);
 
-            let win = document.commandDispatcher.focusedWindow;
-            if (win && win.document && "designMode" in win.document && win.document.designMode == "on" && !config.isComposeWindow)
-                stop = true;
             // menus have their own command handlers
             if (modes.extended & modes.MENU)
                 stop = true;
@@ -985,7 +989,7 @@ const Events = Module("events", {
     }
 }, {
     isContentNode: function isContentNode(node) {
-        let win = (node.ownerDocument || node).defaultView;
+        let win = (node.ownerDocument || node).defaultView || node;
         for (; win; win = win.parent != win && win.parent)
             if (win == window.content)
                 return true;

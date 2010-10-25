@@ -20,43 +20,14 @@ const Editor = Module("editor", {
     get isCaret() modes.getStack(1).main === modes.CARET,
     get isTextEdit() modes.getStack(1).main === modes.TEXT_EDIT,
 
-    line: function () {
-        let line = 1;
-        let text = Editor.getEditor().value;
-        for (let i = 0; i < Editor.getEditor().selectionStart; i++)
-            if (text[i] == "\n")
-                line++;
-        return line;
-    },
-
-    col: function () {
-        let col = 1;
-        let text = Editor.getEditor().value;
-        for (let i = 0; i < Editor.getEditor().selectionStart; i++) {
-            col++;
-            if (text[i] == "\n")
-                col = 1;
-        }
-        return col;
-    },
-
     unselectText: function (toEnd) {
-        let elem = dactyl.focus;
-        // A error occurs if the element has been removed when "elem.selectionStart" is executed.
         try {
-            if (elem && elem.selectionEnd)
-                if (toEnd)
-                    elem.selectionStart = elem.selectionEnd;
-                else
-                    elem.selectionEnd = elem.selectionStart;
+            Editor.getEditor(null).selection[toEnd ? "collapseToEnd" : "collapseToStart"]();
         }
-        catch (e) {}
+        catch (e) {};
     },
 
-    selectedText: function () {
-        let text = Editor.getEditor().value;
-        return text.substring(Editor.getEditor().selectionStart, Editor.getEditor().selectionEnd);
-    },
+    selectedText: function () String(Editor.getEditor(null).selection),
 
     pasteClipboard: function (clipboard, toStart) {
         if (util.isOS("WINNT")) {
@@ -98,10 +69,9 @@ const Editor = Module("editor", {
     // count is optional, defaults to 1
     executeCommand: function (cmd, count) {
         let controller = Editor.getController();
-        if (!controller || !controller.supportsCommand(cmd) || !controller.isCommandEnabled(cmd)) {
-            dactyl.beep();
-            return false;
-        }
+        dactyl.assert(controller &&
+                      controller.supportsCommand(cmd) &&
+                      controller.isCommandEnabled(cmd));
 
         if (typeof count != "number" || count < 1)
             count = 1;
@@ -116,13 +86,10 @@ const Editor = Module("editor", {
                 didCommand = true;
             }
             catch (e) {
-                if (!didCommand)
-                    dactyl.beep();
-                return false;
+                dactyl.assert(didCommand);
+                break;
             }
         }
-
-        return true;
     },
 
     // cmd = y, d, c
@@ -316,10 +283,12 @@ const Editor = Module("editor", {
         let text = ""; // XXX
         if (textBox)
             text = textBox.value;
-        else if (typeof GetCurrentEditor == "function") // Thunderbird composer
-            text = GetCurrentEditor().outputToString("text/plain", 2);
-        else
-            return;
+        else {
+            var editor = window.GetCurrentEditor ? GetCurrentEditor()
+                                                 : Editor.getEditor(document.commandDispatcher.focusedWindow);
+            dactyl.assert(editor);
+            text = Array.map(editor.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
+        }
 
         let oldBg, tmpBg;
         try {
@@ -330,8 +299,6 @@ const Editor = Module("editor", {
                     tmpBg = "yellow";
                     textBox.style.backgroundColor = "#bbbbbb";
                 }
-                else
-                    var editor = GetCurrentEditor();
 
                 if (!tmpfile.write(text))
                     throw Error("Input contains characters not valid in the current " +
@@ -347,9 +314,9 @@ const Editor = Module("editor", {
                     if (textBox)
                         textBox.value = val;
                     else {
-                        editor.selection.addRange(RangeFind.nodeRange(editor.rootNode));
-                        editor.selection.deleteFromDocument();
-                        editor.insertText(val);
+                        while (editor.rootElement.firstChild)
+                            editor.rootElement.removeChild(editor.rootElement.firstChild);
+                        editor.rootElement.innerHTML = val;
                     }
                 }
 
@@ -417,10 +384,25 @@ const Editor = Module("editor", {
         return true;
     },
 }, {
-    getEditor: function () dactyl.focus,
+    getEditor: function (elem) {
+        if (arguments.length === 0) {
+            dactyl.assert(dactyl.focus);
+            return dactyl.focus;
+        }
+
+        if (!elem)
+            elem = dactyl.focus || document.commandDispatcher.focusedWindow;
+        dactyl.assert(elem);
+
+        if (elem instanceof Element)
+            return elem.QueryInterface(Ci.nsIDOMNSEditableElement).editor;
+        return elem.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                   .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
+                   .getEditorForWindow(elem);
+    },
 
     getController: function () {
-        let ed = Editor.getEditor();
+        let ed = dactyl.focus;
         if (!ed || !ed.controllers)
             return null;
 

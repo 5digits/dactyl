@@ -262,7 +262,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     dequote: function dequote(pattern, chars)
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
 
-    domToString: function (node) {
+    domToString: function (node, html) {
         if (node instanceof Ci.nsISelection && node.isCollapsed)
             return "";
 
@@ -282,6 +282,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         let str = services.create("string");
         str.data = encoder.encodeToString();
+        if (html)
+            return str.data;
 
         let [result, length] = [{}, {}];
         services.create("htmlConverter").convert("text/html", str, str.data.length*2, "text/unicode", result, length);

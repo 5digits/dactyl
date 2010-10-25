@@ -257,15 +257,15 @@ const Command = Class("Command", {
     options: [],
     optionMap: Class.memoize(function () array(this.options)
                 .map(function (opt) opt.names.map(function (name) [name, opt]))
-                .flatten.toObject()),
+                .flatten().toObject()),
     newArgs: function () {
         let res = [];
         res.__proto__ = this.argsPrototype;
         return res;
     },
     argsPrototype: Class.memoize(function () update([],
-            array([opt, opt.default] for (opt in values(this.options)) if (set.has(opt, "default")))
-                .toObject(),
+            array(this.options).filter(function (opt) opt.default !== undefined)
+                               .map(function (opt) [opt.names[0], opt.default]).toObject(),
             {
                 __iterator__: function () array.iterItems(this),
                 command: this,
