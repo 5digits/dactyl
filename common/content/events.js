@@ -934,6 +934,10 @@ const Events = Module("events", {
             let motionMap = (this._input.pendingMotionMap && this._input.pendingMotionMap.names[0]) || "";
             if (!(modes.extended & modes.HINTS))
                 statusline.updateInputBuffer(motionMap + this._input.buffer);
+
+            // This is a stupid, silly, and revolting hack.
+            if (isEscape(key))
+                this.onEscape();
         }
     },
 
@@ -1034,10 +1038,6 @@ const Events = Module("events", {
         };
     },
     mappings: function () {
-        mappings.add(modes.all,
-            ["<Esc>", "<C-[>"], "Focus content",
-            function () { events.onEscape(); });
-
         // add the ":" mapping in all but insert mode mappings
         mappings.add(modes.matchModes({ extended: false, input: false }),
             [":"], "Enter command line mode",

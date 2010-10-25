@@ -26,11 +26,6 @@
     <script type="application/x-javascript;version=1.8" src="&dactyl.content;dactyl-overlay.js"/>
 
     <window id="&dactyl.mainWindow;">
-        <keyset id="mainKeyset">
-            <!-- Why do we need this? ––Kris -->
-            <key id="key_stop" keycode="VK_ESCAPE" oncommand="&events;.onEscape();"/>
-            <!-- other keys are handled inside the event loop in events.js -->
-        </keyset>
 
         <popupset>
             <panel id="dactyl-visualbell" dactyl:highlight="Bell"
