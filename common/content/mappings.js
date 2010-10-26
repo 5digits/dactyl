@@ -351,7 +351,7 @@ const Mappings = Module("mappings", {
             // 1 arg  -> list the maps starting with args
             // 2 args -> map arg1 to arg*
             function map(args, mapmodes, noremap) {
-                mapmodes = getModes(args, mapmodes);
+                mapmodes = getModes(args);
                 if (!args.length) {
                     mappings.list(mapmodes);
                     return;
@@ -394,8 +394,8 @@ const Mappings = Module("mappings", {
                         return mode.mask;
                 return null;
             }
-            function getModes(args, def)
-                array.uniq((args["-modes"] || def || ["n", "v"]).map(findMode));
+            function getModes(args)
+                array.uniq(args["-modes"].map(findMode));
             function uniqueModes(modes) {
                 modes = modes.map(modules.modes.closure.getMode);
                 let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
@@ -442,6 +442,7 @@ const Mappings = Module("mappings", {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
                             description: "Create this mapping in the given modes",
+                            default: mapmodes || ["n", "v"],
                             validator: function (list) !list || list.every(findMode),
                             completer: function () [[array.compact([mode.name.toLowerCase(), mode.char]), mode.disp]
                                                     for (mode in modes.mainModes)],

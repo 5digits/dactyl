@@ -642,16 +642,7 @@ const Dactyl = Module("dactyl", {
         let br = <>
                     </>;
 
-        if (obj.completer)
-            var completions = let (br = br + <>    </>) <>
-                    <dl>{ br +
-                        template.map(
-                            completion._runCompleter(obj.completer, "", null, args).items,
-                            function (i) <><dt>{i.text}</dt> <dd>{i.description}</dd></>,
-                            br) }
-                    </dl></>;
-
-        return <>
+        let res = <res>
                 <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd>
             <item>
                 <tags>{template.map(obj.names, tag, " ")}</tags>
@@ -662,10 +653,34 @@ const Dactyl = Module("dactyl", {
                 <description>{
                     obj.description ? br+<p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
                         extraHelp ? br+extraHelp : "" }{
-                        !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }{
-                        completions ? br + completions : "" }
+                        !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }
                 </description>
-            </item></>.toXMLString().replace(/^ {12}/gm, "");
+            </item></res>;
+
+        function add(ary) {
+            res.item.description.* += br +
+                let (br = br + <>    </>)
+                    <><dl>{ br + template.map(ary, function ([a, b]) <><dt>{a}</dt> <dd>{b}</dd></>, br) }
+                    </dl>
+                </>;
+        }
+
+        if (obj.completer)
+            add(completion._runCompleter(obj.completer, "", null, args).items
+                          .map(function (i) [i.text, i.description]));
+
+        if (obj.options && obj.options.some(function (o) o.description))
+            add(obj.options.filter(function (o) o.description)
+                   .map(function (o) [
+                        o.names[0],
+                        <>{o.description}{
+                            o.names.length == 1 ? "" :
+                                <> (short name: {
+                                    template.map(o.names.slice(1), function (n) <em>{n}</em>, <>, </>)
+                                })</>
+                        }</>
+                    ]));
+        return res.*.toXMLString().replace(/^ {12}/gm, "");;
     },
 
     /**

@@ -213,6 +213,8 @@ function debuggerProperties(obj) {
  * @returns {Generator}
  */
 function prototype(obj)
+    // Temporary hack:
+    typeof obj === "xml" || obj.__proto__ !== obj.__proto__ ? null :
     obj.__proto__ || Object.getPrototypeOf(obj) ||
     XPCNativeWrapper.unwrap(obj).__proto__ ||
     Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));

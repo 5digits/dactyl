@@ -195,11 +195,11 @@ const History = Module("history", {
 
         commands.add(["hist[ory]", "hs"],
             "Show recently visited URLs",
-            function (args) { history.list(args.join(" "), args.bang, args["-max"] || 1000); }, {
+            function (args) { history.list(args.join(" "), args.bang, args["-max"]); }, {
                 bang: true,
                 completer: function (context) { context.quote = null; completion.history(context); },
                 // completer: function (filter) completion.history(filter)
-                options: [{ names: ["-max", "-m"], description: "The maximum number of items to list", type: CommandOption.INT }],
+                options: [{ names: ["-max", "-m"], description: "The maximum number of items to list", default: 1000, type: CommandOption.INT }],
                 privateData: true
             });
     },

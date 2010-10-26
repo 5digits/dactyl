@@ -36,7 +36,7 @@
  * @property {string} description A description of the option
  */
 
-const CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description");
+const CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description", "default");
 CommandOption.defaultValue("description", function () "");
 CommandOption.defaultValue("type", function () CommandOption.NOARG);
 CommandOption.defaultValue("multiple", function () false);
