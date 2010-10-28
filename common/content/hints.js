@@ -1113,7 +1113,7 @@ const Hints = Module("hints", {
     options: function () {
         const DEFAULT_HINTTAGS =
             util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
-                            "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @role='link']"]);
+                            "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @tabindex or @role='link' or @role='button']"]);
 
         options.add(["extendedhinttags", "eht"],
             "XPath string of hintable elements activated by ';'",
