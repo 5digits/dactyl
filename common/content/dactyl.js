@@ -369,7 +369,7 @@ const Dactyl = Module("dactyl", {
         if (clearFocusedElement)
             if (dactyl.focus)
                 dactyl.focus.blur();
-            else if (win) {
+            else if (win && Editor.getEditor(win)) {
                 win.blur();
                 if (win.frameElement)
                     win.frameElement.blur();
