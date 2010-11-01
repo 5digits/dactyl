@@ -1245,7 +1245,7 @@ const Commands = Module("commands", {
                 else {
                     function completerToString(completer) {
                         if (completer)
-                            return [k for ([k, v] in Iterator(completeOptionMap)) if (completer == completion[v])][0] || "custom";
+                            return [k for ([k, v] in Iterator(completeOptionMap)) if (completer == completion.closure[v])][0] || "custom";
                         return "";
                     }
 
