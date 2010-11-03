@@ -250,10 +250,9 @@ const Events = Module("events", {
             util.threadYield(1, true);
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
-                delete evt_obj.type;
                 for (let type in values(["keydown", "keyup", "keypress"])) {
                     let elem = dactyl.focus || buffer.focusedFrame;
-                    let evt = events.create(doc, type, evt_obj);
+                    let evt = this.feedingEvent = update({}, evt_obj, { type: type });
 
                     if (isObject(noremap))
                         update(evt, noremap);
@@ -261,10 +260,10 @@ const Events = Module("events", {
                         evt.noremap = !!noremap;
                     evt.isMacro = true;
 
-                    // A special hack for dactyl-specific key names.
                     if (!evt_obj.dactylString && !evt_obj.dactylShift)
-                        elem.dispatchEvent(evt);
-                    else {
+                        window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                              .sendKeyEvent(type, evt.keyCode, evt.charCode, evt.modifiers);
+                    else { // A special hack for dactyl-specific key names.
                         evt.dactylString = evt_obj.dactylString; // for key-less keypress events e.g. <Nop>
                         evt.dactylShift = evt_obj.dactylShift; // for untypeable shift keys e.g. <S-1>
                         events.onKeyPress(evt);
@@ -281,6 +280,7 @@ const Events = Module("events", {
             }
         }
         finally {
+            this.feedingEvent = null;
             this.feedingKeys = wasFeeding;
             if (quiet)
                 commandline.quiet = wasQuiet;
@@ -436,6 +436,11 @@ const Events = Module("events", {
                 evt_obj.charCode = evt_obj.keyCode = 32; // <Space>
             if (evt_obj.keyCode == 60 || evt_obj.charCode == 60)
                 evt_obj.charCode = evt_obj.keyCode = 60; // <lt>
+
+            evt_obj.modifiers = (evt_obj.ctrlKey && Ci.nsIDOMNSEvent.CONTROL_MASK)
+                              | (evt_obj.altKey && Ci.nsIDOMNSEvent.ALT_MASK)
+                              | (evt_obj.shiftKey && Ci.nsIDOMNSEvent.SHIFT_MASK)
+                              | (evt_obj.metaKey && Ci.nsIDOMNSEvent.META_MASK);
 
             out.push(evt_obj);
         }
@@ -752,6 +757,9 @@ const Events = Module("events", {
             event.preventDefault();
             event.stopPropagation();
         }
+
+        if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity))
+            update(event, this.feedingEvent);
 
         let key = events.toString(event);
         if (!key)
