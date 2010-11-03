@@ -278,7 +278,7 @@
         return key.
     </li>
     <li><k name="BS"/> represents the backspace key.</li>
-    <li><k name="F1"/> through <k name="F12"/> work as expected</li>
+    <li><k name="F1"/> through <k name="F12"/> work as expected.</li>
     <li>
         <k name="K0"/> through <k name="K9"/> represent keys on the
         numeric keypad.
@@ -298,21 +298,26 @@
 <ol>
     <li><k name="C-␣"/>: The control or ctrl key.</li>
     <li><k name="A-␣"/>: The alt key.</li>
-    <li><k name="M-␣"/>: The meta key, windows key, or command key</li>
+    <li><k name="M-␣"/>: The meta key, windows key, or command key.</li>
     <li><k name="S-␣"/>: The shift key.</li>
 </ol>
 
 <p>
-    These prefixes man be combined however you see fit, though you
-    should note that within angle brackets all alphabetic characters
-    are read as lowercase. Uppercase characters can only be
-    specified with the <em>S-</em> modifier. The following key
-    sequences are interpreted as described,
+    These prefixes can be combined however you see fit.
+</p>
+
+<note>
+    Within angle brackets all alphabetic characters are read as lowercase.
+    Uppercase characters can only be specified with the <em>S-</em> modifier.
+</note>
+
+<p>
+    The following key sequences are interpreted as described:
 </p>
 
 <dl dt="width: 10em;">
     <dt><k>xc</k></dt>
-    <dd>Type the ‘X’ key followed by the ‘C’ key</dd>
+    <dd>Type the ‘X’ key followed by the ‘C’ key.</dd>
 
     <dt><k name="C-x">c</k></dt>
     <dd>
