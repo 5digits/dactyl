@@ -73,8 +73,7 @@ const Services = Module("Services", {
             let res = Cc[classes][meth || "getService"]();
             if (!ifaces)
                 return res.wrappedJSObject;
-            ifaces = Array.concat(ifaces);
-            ifaces.forEach(function (iface) res.QueryInterface(iface));
+            Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));
             return res;
         }
         catch (e) {

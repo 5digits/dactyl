@@ -250,24 +250,27 @@ const Events = Module("events", {
             util.threadYield(1, true);
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
-                let elem = dactyl.focus || window.content;
-                let evt = events.create(doc, "keypress", evt_obj);
+                delete evt_obj.type;
+                for (let type in values(["keydown", "keyup", "keypress"])) {
+                    let elem = dactyl.focus || buffer.focusedFrame;
+                    let evt = events.create(doc, type, evt_obj);
 
-                if (typeof noremap == "object")
-                    for (let [k, v] in Iterator(noremap))
-                        evt[k] = v;
-                else
-                    evt.noremap = !!noremap;
-                evt.isMacro = true;
-                // A special hack for dactyl-specific key names.
-                if (evt_obj.dactylString || evt_obj.dactylShift) {
-                    evt.dactylString = evt_obj.dactylString; // for key-less keypress events e.g. <Nop>
-                    evt.dactylShift = evt_obj.dactylShift; // for untypeable shift keys e.g. <S-1>
-                    events.onKeyPress(evt);
+                    if (isObject(noremap))
+                        update(evt, noremap);
+                    else
+                        evt.noremap = !!noremap;
+                    evt.isMacro = true;
+
+                    // A special hack for dactyl-specific key names.
+                    if (!evt_obj.dactylString && !evt_obj.dactylShift)
+                        elem.dispatchEvent(evt);
+                    else {
+                        evt.dactylString = evt_obj.dactylString; // for key-less keypress events e.g. <Nop>
+                        evt.dactylShift = evt_obj.dactylShift; // for untypeable shift keys e.g. <S-1>
+                        events.onKeyPress(evt);
+                        break;
+                    }
                 }
-
-                else
-                    elem.dispatchEvent(evt);
 
                 if (!this.feedingKeys)
                     break;
@@ -387,9 +390,11 @@ const Events = Module("events", {
                 modifier = modifier.toUpperCase();
                 keyname = keyname.toLowerCase();
                 evt_obj.dactylKeyname = keyname;
+                if (/^u[0-9a-f]+$/.test(keyname))
+                    keyname = String.fromCharCode(parseInt(keyname.substr(1), 16));
 
-                if (keyname && !(keyname.length == 1 && modifier.length == 0 || // disallow <> and <a>
-                    !(unknownOk || keyname.length == 1 || this._key_code[keyname] || keyname == "nop" || /mouse$/.test(keyname)))) { // disallow <misteak>
+                if (keyname && (unknownOk || keyname.length == 1 || /mouse$/.test(keyname) ||
+                                this._key_code[keyname] || keyname == "nop")) {
                     evt_obj.ctrlKey  = /C-/.test(modifier);
                     evt_obj.altKey   = /A-/.test(modifier);
                     evt_obj.shiftKey = /S-/.test(modifier);
@@ -448,7 +453,7 @@ const Events = Module("events", {
      */
     toString: function toString(event) {
         if (!event)
-            return "[instance events]";
+            return toString.supercall(this);
 
         if (event.dactylString)
             return event.dactylString;
@@ -515,6 +520,8 @@ const Events = Module("events", {
                     // or if the shift has been forced for a non-alphabetical character by the user while :map-ping
                     if ((key != key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey)) || event.dactylShift)
                         modifier += "S-";
+                    if (/^\s$/.test(key))
+                        key = let (s = charCode.toString(16)) "U" + "0000".substr(4 - s.length) + s;
                     else if (modifier.length == 0)
                         return key;
                 }

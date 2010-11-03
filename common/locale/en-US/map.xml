@@ -283,6 +283,11 @@
         <k name="K0"/> through <k name="K9"/> represent keys on the
         numeric keypad.
     </li>
+    <li>
+        <k name="Uxxxx"/>, where <em>xxxx</em> is any 4 hexadecimal
+        digits, represents the character at that Unicode codepoint.
+        For instance, <k name="U263a"/> represents ☺.
+    </li>
 </ul>
 
 <p>
@@ -298,7 +303,7 @@
 </ol>
 
 <p>
-    These prefixes can be combined however you see fit, though you
+    These prefixes man be combined however you see fit, though you
     should note that within angle brackets all alphabetic characters
     are read as lowercase. Uppercase characters can only be
     specified with the <em>S-</em> modifier. The following key
