@@ -811,7 +811,7 @@
     <default>&hinttags;</default>
     <description>
         <p>
-            The XPath string used to select for
+            The XPath string used to select elements for
             <link topic="hints">hinting</link>. Can be overridden for
             individual <t>extended-hints</t> modes with the
             <o>extendedhinttags</o> option.
