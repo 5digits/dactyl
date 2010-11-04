@@ -27,7 +27,7 @@ const Browser = Module("browser", {
     incrementURL: function (count) {
         let matches = buffer.URL.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
-        oldNum = matches[2];
+        let oldNum = matches[2];
 
         // disallow negative numbers as trailing numbers are often proceeded by hyphens
         let newNum = String(Math.max(parseInt(oldNum, 10) + count, 0));
