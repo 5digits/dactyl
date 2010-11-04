@@ -11,12 +11,6 @@
 
 /** @instance editor */
 const Editor = Module("editor", {
-    init: function () {
-        // store our last search with f, F, t or T
-        this._lastFindChar = null;
-        this._lastFindCharFunc = null;
-    },
-
     get isCaret() modes.getStack(1).main === modes.CARET,
     get isTextEdit() modes.getStack(1).main === modes.TEXT_EDIT,
 
@@ -209,9 +203,6 @@ const Editor = Module("editor", {
         if (!Editor.getEditor())
             return -1;
 
-        this._lastFindChar = ch;
-        this._lastFindCharFunc = this.findCharForward;
-
         let text = Editor.getEditor().value;
         // XXX
         if (count == null)
@@ -234,9 +225,6 @@ const Editor = Module("editor", {
     findCharBackward: function (ch, count) {
         if (!Editor.getEditor())
             return -1;
-
-        this._lastFindChar = ch;
-        this._lastFindCharFunc = this.findCharBackward;
 
         let text = Editor.getEditor().value;
         // XXX
