@@ -407,6 +407,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>nextpattern</o></dt> <dd>Patterns to use when guessing the 'next' page in a document sequence</dd>
     <dt><o>online</o></dt> <dd>Set the 'work offline' option</dd>
     <dt><o>pageinfo</o></dt> <dd>Desired info in the <ex>:pageinfo</ex> output</dd>
+    <dt><o>passkeys</o></dt> <dd>Pass certain keys through directly for the given URLs</dd>
     <dt><o>popups</o></dt> <dd>Where to show requested popup windows</dd>
     <dt><o>previouspattern</o></dt> <dd>Patterns to use when guessing the 'previous' page in a document sequence</dd>
     <dt><o>private</o></dt> <dd>Set the 'private browsing' option</dd>

@@ -645,7 +645,7 @@ const Dactyl = Module("dactyl", {
         let res = <res>
                 <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd>
             <item>
-                <tags>{template.map(obj.names, tag, " ")}</tags>
+                <tags>{template.map(obj.names.reverse, tag, " ")}</tags>
                 <spec>{spec((obj.specs || obj.names)[0])}</spec>{
                 !obj.type ? "" : <>
                 <type>{obj.type}</type>

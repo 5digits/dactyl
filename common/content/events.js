@@ -818,6 +818,8 @@ const Events = Module("events", {
                     modes.pop();
                 mode = modes.getStack(1);
             }
+            else if (!event.isMacro && !event.noremap && options.get("passkeys").has(events.toString(event)))
+                stop = true;
             // handle Escape-all-keys mode (Ctrl-q)
 
             if (stop) {
@@ -959,7 +961,7 @@ const Events = Module("events", {
         // Prevent certain sites from transferring focus to an input box
         // before we get a chance to process our key bindings on the
         // "keypress" event.
-        if (!Events.isInputElemFocused() && !modes.passThrough)
+        if (!Events.isInputElemFocused() && !modes.passThrough && !options.get("passkeys").has(events.toString(event)))
             event.stopPropagation();
     },
 
@@ -1094,6 +1096,24 @@ const Events = Module("events", {
             { arg: true, count: true });
     },
     options: function () {
+        options.add(["passkeys", "pk"],
+            "Pass certain keys through directly for the given URLs",
+            "regexpmap", "", {
+                has: function (key) {
+                    let url = buffer.URI;
+                    for (let re in values(this.value))
+                        if (re.test(url) && re.result.some(function (k) k === key))
+                            return true;
+                    return false;
+                },
+                setter: function (values) {
+                    values.forEach(function (re) {
+                        re.result = events.fromString(re.result).map(events.closure.toString);
+                        re.result.toString = function toString() this.join("");
+                    });
+                    return values;
+                }
+            });
         options.add(["strictfocus", "sf"],
             "Prevent scripts from focusing input elements without user intervention",
             "boolean", true);

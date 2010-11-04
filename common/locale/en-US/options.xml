@@ -1087,9 +1087,8 @@
 </item>
 
 <item>
-    <tags>'pageinfo' 'pa'</tags>
+    <tags>'pa' 'pageinfo'</tags>
     <spec>'pageinfo' 'pa'</spec>
-
     <type>charlist</type>
     <default>gfm</default>
     <description>
@@ -1107,6 +1106,23 @@
             The order of the options defines the order in which they appear in
             the result.
         </p>
+    </description>
+</item>
+
+<item>
+    <tags>'pk' 'passkeys'</tags>
+    <spec>'passkeys' 'pk'</spec>
+    <type>regexpmap</type>
+    <default/>
+    <description>
+        <p>
+            Pass certain keys through directly for the given URLs.
+            For any page with a URL matching a given regexp, all key
+            events for keys listed in that regexp's value are passed
+            through directly to &dactyl.host;, and are not processed
+            by &dactyl.appName; in any way.
+        </p>
+        <example><ex>:set passkeys+=</ex><str delim="'">https://mail\.google\.com/</str>:<str delim="">jk<k name="Return"/></str></example>
     </description>
 </item>
 
