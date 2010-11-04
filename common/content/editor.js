@@ -662,8 +662,8 @@ const Editor = Module("editor", {
             function (count) { modes.push(modes.VISUAL); });
 
         mappings.add([modes.VISUAL],
-            ["v"], "End visual mode",
-            function (count) { events.onEscape(); });
+            ["v", "V"], "End visual mode",
+            function (count) { events.onEscape(); }); // XXX
 
         mappings.add([modes.TEXT_EDIT],
             ["V"], "Start visual line mode",
