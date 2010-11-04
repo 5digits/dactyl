@@ -149,7 +149,7 @@ const Editor = Module("editor", {
 
         default:
             dactyl.beep();
-            return false;
+            return;
         }
 
         switch (cmd) {
@@ -169,9 +169,7 @@ const Editor = Module("editor", {
 
         default:
             dactyl.beep();
-            return false;
         }
-        return true;
     },
 
     // This function will move/select up to given "pos"
@@ -355,8 +353,6 @@ const Editor = Module("editor", {
                     util.timeout(next, 100);
             })();
         }
-
-        return;
     },
 
     /**
@@ -368,7 +364,7 @@ const Editor = Module("editor", {
     expandAbbreviation: function (mode) {
         let textbox   = Editor.getEditor();
         if (!(textbox && textbox.value))
-            return false;
+            return;
         let text      = textbox.value;
         let currStart = textbox.selectionStart;
         let currEnd   = textbox.selectionEnd;
@@ -381,7 +377,6 @@ const Editor = Module("editor", {
             textbox.selectionStart = currStart - len + abbrText.length;
             textbox.selectionEnd   = currEnd   - len + abbrText.length;
         }
-        return true;
     },
 }, {
     getEditor: function (elem) {
@@ -439,7 +434,6 @@ const Editor = Module("editor", {
                     fixSelection();
                     caretExecute(arg, false);
                 }
-                return false;
             }
 
             mappings.add([modes.CARET], keys, "",
