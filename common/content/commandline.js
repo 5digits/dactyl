@@ -100,7 +100,7 @@ const CommandWidgets = Class("CommandWidgets", {
                 get: function () {
                     let elem = self.getGroup(obj.name, obj.value)[obj.name];
                     if (obj.value != null)
-                        return [obj.value[0], obj.get ? obj.get.call(this, elem) : elem.value]
+                        return [obj.value[0], obj.get ? obj.get.call(this, elem) : elem.value];
                     return null;
                 },
                 set: function (val) {
@@ -1181,7 +1181,7 @@ const CommandLine = Module("commandline", {
         dactyl.registerObserver("echoLine", observe, true);
         dactyl.registerObserver("echoMultiline", observe, true);
         function observe(str, highlight, dom) {
-            buffer.push(dom && !isString(str) ? util.domToString(dom) : str)
+            buffer.push(dom && !isString(str) ? util.domToString(dom) : str);
         }
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
         return buffer.join("\n");

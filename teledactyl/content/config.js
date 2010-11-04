@@ -18,7 +18,7 @@ const Config = Module("config", ConfigBase, {
         PageLoad: "Triggered when a page gets (re)loaded/opened",
         Enter: "Triggered after Thunderbird starts",
         Leave: "Triggered before exiting Thunderbird",
-        LeavePre: "Triggered before exiting Thunderbird",
+        LeavePre: "Triggered before exiting Thunderbird"
     },
 
     get browser() getBrowser(),

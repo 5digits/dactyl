@@ -830,7 +830,7 @@ const Events = Module("events", {
                 stop = true;
             else if (modes.main == modes.PASS_THROUGH)
                 // let flow continue to handle these keys to cancel escape-all-keys mode
-                stop = !isEscape(key) && key != "<C-v>"
+                stop = !isEscape(key) && key != "<C-v>";
             // handle Escape-one-key mode (Ctrl-v)
             else if (modes.main == modes.QUOTE) {
                 stop = !shouldPass() && (modes.getStack(1).main !== modes.PASS_THROUGH || isEscape(key));

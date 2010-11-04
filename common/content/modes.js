@@ -197,7 +197,7 @@ const Modes = Module("modes", {
     },
 
     delayed: [],
-    delay: function (callback, self) { this.delayed.push([callback, self]) },
+    delay: function (callback, self) { this.delayed.push([callback, self]); },
 
     save: function save(id, obj, prop) {
         if (!(id in this.boundProperties))
@@ -340,7 +340,7 @@ const Modes = Module("modes", {
                     return val === undefined ? value : val;
                 },
                 set: function (val) {
-                    modes.save(id, this, prop)
+                    modes.save(id, this, prop);
                     if (desc.set)
                         value = desc.set.call(this, val);
                     value = !desc.set || value === undefined ? val : value;

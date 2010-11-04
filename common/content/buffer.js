@@ -435,7 +435,7 @@ const Buffer = Module("buffer", {
         })(win || window.content);
         if (focusedFirst)
             return frames.filter(function (f) f === buffer.focusedFrame).concat(
-                    frames.filter(function (f) f !== buffer.focusedFrame))
+                    frames.filter(function (f) f !== buffer.focusedFrame));
         return frames;
     },
 
@@ -1357,7 +1357,7 @@ const Buffer = Module("buffer", {
                         return;
                     if (/^>>/.test(context.filter))
                         context.advance(/^>>\s*/.exec(context.filter)[0].length);
-                    return completion.file(context)
+                    return completion.file(context);
                 },
                 literal: 0
             });
@@ -1710,7 +1710,7 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["zz"],
             "Set text zoom value of current web page",
-            function (count) { Buffer.setZoom(count > 1 ? count : 100, false) },
+            function (count) { Buffer.setZoom(count > 1 ? count : 100, false); },
             { count: true });
 
         mappings.add(myModes, ["ZI", "zI"],
@@ -1735,7 +1735,7 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["zZ"],
             "Set full zoom value of current web page",
-            function (count) { Buffer.setZoom(count > 1 ? count : 100, true) },
+            function (count) { Buffer.setZoom(count > 1 ? count : 100, true); },
             { count: true });
 
         // page info

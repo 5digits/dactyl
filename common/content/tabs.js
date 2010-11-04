@@ -37,7 +37,7 @@ const Tabs = Module("tabs", {
         this.tabStyle = styles.addSheet(true, "tab-strip-hiding", config.styleableChrome,
                                         (config.tabStrip.id ? "#" + config.tabStrip.id : ".tabbrowser-strip") +
                                             "{ visibility: collapse; }",
-                                        false, true)
+                                        false, true);
 
         dactyl.commands["tabs.select"] = function (event) {
             tabs.select(event.originalTarget.getAttribute("identifier"));

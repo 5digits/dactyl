@@ -632,7 +632,7 @@ const RangeFind = Class("RangeFind", {
                     .QueryInterface(Ci.nsISelectionController),
         get selection() {
             try {
-                return this.selectionController.getSelection(Ci.nsISelectionController.SELECTION_NORMAL)
+                return this.selectionController.getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
             }
             catch (e) {
                 return null;
@@ -649,10 +649,11 @@ const RangeFind = Class("RangeFind", {
     },
     equal: function (r1, r2) {
         try {
-                return !r1.compareBoundaryPoints(r1.START_TO_START, r2) && !r1.compareBoundaryPoints(r1.END_TO_END, r2)
+            return !r1.compareBoundaryPoints(r1.START_TO_START, r2) && !r1.compareBoundaryPoints(r1.END_TO_END, r2);
         }
-        catch (e) {}
-        return false;
+        catch (e) {
+            return false;
+        }
     },
     nodeRange: function (node) {
         let range = node.ownerDocument.createRange();

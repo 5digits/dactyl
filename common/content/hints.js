@@ -1139,7 +1139,7 @@ const Hints = Module("hints", {
                 validator: function (value) {
                     let values = events.fromString(value).map(events.closure.toString);
                     return Option.validIf(array.uniq(values).length === values.length,
-                                          "Duplicate keys not allowed")
+                                            "Duplicate keys not allowed");
                 }
             });
 

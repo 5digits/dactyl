@@ -694,7 +694,7 @@ const Editor = Module("editor", {
             function (count) {
                 dactyl.assert(!editor.isCaret);
                 if (!count)
-                    count = 1
+                    count = 1;
                 while (count--)
                     editor.executeCommand("cmd_paste", count);
                 modes.pop(modes.TEXT_EDIT);

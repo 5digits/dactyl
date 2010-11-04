@@ -60,7 +60,7 @@ const Config = Module("config", ConfigBase, {
         StreamStop: "Triggered after a stream has stopped",
         Enter: "Triggered after Songbird starts",
         LeavePre: "Triggered before exiting Songbird, just before destroying each module",
-        Leave: "Triggered before exiting Songbird",
+        Leave: "Triggered before exiting Songbird"
     },
 
     dialogs: {

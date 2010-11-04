@@ -61,7 +61,7 @@ const Option = Class("Option", {
         if (arguments.length > 3) {
             if (this.type == "string")
                 defaultValue = Commands.quote(defaultValue);
-            this.defaultValue = this.parse(defaultValue)
+            this.defaultValue = this.parse(defaultValue);
         }
 
         // add no{option} variant of boolean {option} to this.names
@@ -434,7 +434,7 @@ const Option = Class("Option", {
         stringmap:  function (value) array.toObject(
             Option.splitList(value, true).map(function (v) {
                 let [count, key, quote] = Commands.parseArg(v, /:/);
-                return [key, Option.dequote(v.substr(count + 1))]
+                return [key, Option.dequote(v.substr(count + 1))];
             })),
 
         regexpmap:  function (value)
@@ -667,7 +667,7 @@ const Options = Module("options", {
     allPrefs: deprecated("Please use prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
     getPref: deprecated("Please use prefs.get", function getPref() prefs.get.apply(prefs, arguments)),
     invertPref: deprecated("Please use prefs.invert", function invertPref() prefs.invert.apply(prefs, arguments)),
-    listPrefs: deprecated("Please use prefs.list", function listPrefs() { commandline.commandOutput(prefs.list.apply(prefs, arguments)) }),
+    listPrefs: deprecated("Please use prefs.list", function listPrefs() { commandline.commandOutput(prefs.list.apply(prefs, arguments)); }),
     observePref: deprecated("Please use prefs.observe", function observePref() prefs.observe.apply(prefs, arguments)),
     popContext: deprecated("Please use prefs.popContext", function popContext() prefs.popContext.apply(prefs, arguments)),
     pushContext: deprecated("Please use prefs.pushContext", function pushContext() prefs.pushContext.apply(prefs, arguments)),
@@ -1192,7 +1192,7 @@ const Options = Module("options", {
             context.filter = Option.dequote(context.filter);
 
             context.title = ["Option Value"];
-            context.quote = Commands.complQuote[Option._quote] || Commands.complQuote[""]
+            context.quote = Commands.complQuote[Option._quote] || Commands.complQuote[""];
             // Not Vim compatible, but is a significant enough improvement
             // that it's worth breaking compatibility.
             if (isArray(newValues)) {

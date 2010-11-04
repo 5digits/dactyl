@@ -723,7 +723,7 @@ const Commands = Module("commands", {
                     let arg = /^<<(\S*)/.exec(str)[1];
                     let count = arg.length + 2;
                     if (complete)
-                        return [count, "", ""]
+                        return [count, "", ""];
                     return [count, io.readHeredoc(arg), ""];
                 }
                 let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
@@ -1381,14 +1381,14 @@ const Commands = Module("commands", {
             if (arguments.length < 2)
                 value = io.sourcing.noExecute;
             io.sourcing.stack = io.sourcing.stack || {};
-            io.sourcing.stack[cmd] = (io.sourcing.stack[cmd] || []).concat([value])
+            io.sourcing.stack[cmd] = (io.sourcing.stack[cmd] || []).concat([value]);
         }
 
         commands.add(["if"],
             "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
             function (args) { io.sourcing.noExecute = !dactyl.userEval(args[0]); },
             {
-                always: function (args) { push("if") },
+                always: function (args) { push("if"); },
                 argCount: "1",
                 literal: 0
             });
@@ -1419,7 +1419,7 @@ const Commands = Module("commands", {
             "Ends a string of :if/:elseif/:else conditionals",
             function (args) {},
             {
-                always: function (args) { io.sourcing.noExecute = pop("if") },
+                always: function (args) { io.sourcing.noExecute = pop("if"); },
                 argCount: "0"
             });
 

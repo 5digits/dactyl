@@ -353,7 +353,7 @@ lookup:
                             e.fileName = e.fileName.replace(/^(chrome|resource):.*? -> /, "");
                             if (e.fileName == uri.spec)
                                 e.fileName = filename;
-                            e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>
+                            e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
                         }
                         catch (e) {}
                     throw e;

@@ -198,7 +198,7 @@ Shim.prototype = {
     QueryInterface:   function (iid) {
         if (iid.equals(Ci.nsISecurityCheckedComponent))
             throw Components.results.NS_ERROR_NO_INTERFACE;
-        return this
+        return this;
     },
     getHelperForLanguage: function () null,
     getInterfaces: function (count) {

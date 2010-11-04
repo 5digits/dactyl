@@ -34,7 +34,7 @@ function deprecated(reason, fn) {
     deprecatedMethod.seen = { "chrome://dactyl/content/javascript.js": true };
     return callable(fn) ? deprecatedMethod : Class.Property({
         get: function () deprecatedMethod,
-        init: function (prop) { name = prop }
+        init: function (prop) { name = prop; }
     });
 }
 
@@ -622,7 +622,7 @@ const Dactyl = Module("dactyl", {
 
         if (obj instanceof Command) {
             tag = spec = function (cmd) <>:{cmd}</>;
-            link = function (cmd) <ex>:{cmd}</ex>
+            link = function (cmd) <ex>:{cmd}</ex>;
             args = obj.parseArgs("", CompletionContext(str || ""));
         }
         else if (obj instanceof Map && obj.count) {

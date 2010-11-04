@@ -185,7 +185,7 @@ const QuickMarks = Module("quickmarks", {
         completion.quickmark = function (context) {
             context.title = ["QuickMark", "URL"];
             context.generate = function () Iterator(quickmarks._qmarks);
-        }
+        };
     },
     mappings: function () {
         var myModes = config.browserModes;

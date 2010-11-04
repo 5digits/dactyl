@@ -252,7 +252,7 @@ const Abbreviations = Module("abbreviations", {
                     ],
                     completer: function (context, args) {
                         if (args.length == 1)
-                            return completion.abbreviation(context, args, modes)
+                            return completion.abbreviation(context, args, modes);
                         else if (args["-javascript"])
                             return completion.javascript(context);
                     },
