@@ -592,7 +592,7 @@ const RangeFind = Class("RangeFind", {
             this.index = index;
 
             this.range = range;
-			this.document = range.startContainer.ownerDocument;
+            this.document = range.startContainer.ownerDocument;
             this.window = this.document.defaultView;
             this.docShell = this.window.QueryInterface(Ci.nsIInterfaceRequestor)
                                        .getInterface(Ci.nsIWebNavigation)
@@ -641,9 +641,9 @@ const RangeFind = Class("RangeFind", {
             }
         }
     }),
-	contains: function (range, r)
-		range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&
-		range.compareBoundaryPoints(range.END_TO_START, r) <= 0,
+    contains: function (range, r)
+        range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&
+        range.compareBoundaryPoints(range.END_TO_START, r) <= 0,
     endpoint: function (range, before) {
         range = range.cloneRange();
         range.collapse(before);

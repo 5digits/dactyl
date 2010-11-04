@@ -789,13 +789,13 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (field instanceof Ci.nsIDOMHTMLInputElement && field.type == "submit")
             elems.push(encode(field.name, field.value));
 
-        for (let [,elem] in iter(form.elements)) {
+        for (let [, elem] in iter(form.elements)) {
             if (set.has(util.editableInputs, elem.type)
                     || /^(?:hidden|textarea)$/.test(elem.type)
                     || elem.checked && /^(?:checkbox|radio)$/.test(elem.type))
                 elems.push(encode(elem.name, elem.value, elem === field));
             else if (elem instanceof Ci.nsIDOMHTMLSelectElement) {
-                for (let [,opt] in Iterator(elem.options))
+                for (let [, opt] in Iterator(elem.options))
                     if (opt.selected)
                         elems.push(encode(elem.name, opt.value));
             }

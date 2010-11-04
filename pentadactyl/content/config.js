@@ -70,7 +70,7 @@ const Config = Module("config", ConfigBase, {
         pagesource: ["View page source",
             function () { window.BrowserViewSourceOfDocument(content.document); }],
         passwords: ["Passwords dialog",
- 	           function () { window.openDialog("chrome://passwordmgr/content/passwordManager.xul"); }],
+            function () { window.openDialog("chrome://passwordmgr/content/passwordManager.xul"); }],
         places: ["Places Organizer: Manage your bookmarks and history",
             function () { PlacesCommandHook.showPlacesOrganizer(ORGANIZER_ROOT_BOOKMARKS); }],
         preferences: ["Show Firefox preferences dialog",

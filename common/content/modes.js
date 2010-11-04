@@ -322,7 +322,7 @@ const Modes = Module("modes", {
             modes.getMode(this.main).name +
             (!this.extended ? "" :
              "(" +
-              [modes.getMode(1<<i).name for (i in util.range(0, 32)) if (this.extended & (1<<i))].join("|") +
+              [modes.getMode(1 << i).name for (i in util.range(0, 32)) if (this.extended & (1 << i))].join("|") +
              ")") + "]";
         return struct;
     })(),

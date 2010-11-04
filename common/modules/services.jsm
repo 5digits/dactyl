@@ -55,7 +55,6 @@ const Services = Module("Services", {
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
 
-
         this.addClass("file",         "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
         this.addClass("file:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
         this.addClass("find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);

@@ -8,7 +8,6 @@
 
 /** @scope modules */
 
-
 /**
  * A structure representing the options available for a command.
  *
@@ -148,7 +147,6 @@ const Command = Class("Command", {
             throw FailedAssertion("E481: No range allowed");
         if (args.bang && !this.bang)
             throw FailedAssertion("E477: No ! allowed");
-
 
         dactyl.trapErrors(function exec(command) {
             if (this.always)
@@ -709,9 +707,9 @@ const Commands = Module("commands", {
                 }
                 let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
                 if (quote == "\\" && !complete)
-                    return [,,,"Trailing \\"];
+                    return [, , , "Trailing \\"];
                 if (quote && !complete)
-                    return [,,,"E114: Missing quote: " + quote];
+                    return [, , , "E114: Missing quote: " + quote];
                 return [count, arg, quote];
             }
 

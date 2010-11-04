@@ -527,7 +527,7 @@ const Dactyl = Module("dactyl", {
 
         let chrome = {};
         let styles = {};
-        for (let [file,] in Iterator(services.get("dactyl:").FILE_MAP)) {
+        for (let [file, ] in Iterator(services.get("dactyl:").FILE_MAP)) {
             dactyl.open("dactyl://help/" + file);
             dactyl.modules.events.waitForPageLoad();
             let data = [
@@ -1420,8 +1420,8 @@ const Dactyl = Module("dactyl", {
                 },
                 getAddonsByTypes: function (types, callback) {
                     let res = [];
-                    for (let [,type] in Iterator(types))
-                        for (let [,item] in Iterator(services.get("extensionManager")
+                    for (let [, type] in Iterator(types))
+                        for (let [, item] in Iterator(services.get("extensionManager")
                                     .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
                             res.push(this.getAddonByID(item));
                     callback(res);

@@ -504,7 +504,8 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             (function rec(frame) {
                 try {
                     res = res.concat(util.subdomains(frame.location.host));
-                } catch (e) {}
+                }
+                catch (e) {}
                 Array.forEach(frame.frames, rec);
             })(window.content);
             if (context.filter && !res.some(function (host) host.indexOf(context.filter) >= 0))

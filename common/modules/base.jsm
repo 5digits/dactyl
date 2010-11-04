@@ -134,7 +134,8 @@ defineModule.time = function time(major, minor, func, self) {
     let time = Date.now();
     try {
         var res = func.apply(self, Array.slice(arguments, 4));
-    } catch (e) {
+    }
+    catch (e) {
         loaded.util && util.reportError(e);
     }
     let delta = Date.now() - time;
