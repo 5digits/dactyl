@@ -703,7 +703,8 @@ const Editor = Module("editor", {
                 while (count--)
                     editor.executeCommand("cmd_paste");
                 modes.pop(modes.TEXT_EDIT);
-            });
+            },
+            { count: true });
 
         // finding characters
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
