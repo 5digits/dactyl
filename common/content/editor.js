@@ -612,7 +612,7 @@ const Editor = Module("editor", {
 
         // text edit mode
         mappings.add([modes.TEXT_EDIT],
-            ["u"], "Undo",
+            ["u"], "Undo changes",
             function (count) {
                 editor.executeCommand("cmd_undo", count);
                 editor.unselectText();
@@ -620,7 +620,7 @@ const Editor = Module("editor", {
             { count: true });
 
         mappings.add([modes.TEXT_EDIT],
-            ["<C-r>"], "Redo",
+            ["<C-r>"], "Redo undone changes",
             function (count) {
                 editor.executeCommand("cmd_redo", count);
                 editor.unselectText();
