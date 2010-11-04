@@ -393,7 +393,7 @@ const Option = Class("Option", {
         return re;
     },
     unparseRegexp: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m), /^!|:/) +
-        (typeof re.result === "string" ? ":" + Option.quote(re.result) : ""),
+        (typeof re.result === "boolean" ? "" : ":" + Option.quote(re.result)),
 
     getKey: {
         stringlist: function (k) this.value.indexOf(k) >= 0,
@@ -725,8 +725,10 @@ const Options = Module("options", {
                 if (opt.type == "boolean") {
                     if (!opt.value)
                         option.pre = "no";
-                    option.default = (option.default ? "" : "no") + opt.name;
+                    option.default = (opt.defaultValue ? "" : "no") + opt.name;
                 }
+                else if (isArray(opt.value))
+                    option.value = <>={template.map(opt.value, function (v) template.highlight(String(v)), <>,<span style="width: 0; display: inline-block"> </span></>)}</>;
                 else
                     option.value = <>={template.highlight(opt.stringValue)}</>;
                 yield option;

@@ -58,13 +58,13 @@ const JavaScript = Module("javascript", {
 
     objectKeys: function objectKeys(obj, toplevel) {
         // Things we can dereference
-        if (!obj || ["object", "string", "function"].indexOf(typeof obj) == -1)
+        if (!obj || ["object", "string", "function"].indexOf(typeof obj) === -1)
             return [];
         if (jsmodules.isPrototypeOf(obj) && !toplevel)
             return [];
 
         let completions = [k for (k in this.iter(obj, toplevel))];
-        if (obj == modules) // Hack.
+        if (obj === modules) // Hack.
             completions = completions.concat([k for (k in this.iter(jsmodules, toplevel))]);
         return completions;
     },
