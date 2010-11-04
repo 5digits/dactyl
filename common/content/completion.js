@@ -889,7 +889,7 @@ const Completion = Module("completion", {
         };
 
         options.add(["altwildmode", "awim"],
-            "Define how command line completion works when the Alt key is pressed",
+            "Define how command-line completion works when the Alt key is pressed",
             "stringlist", "list:full",
             wildmode);
 
@@ -920,7 +920,7 @@ const Completion = Module("completion", {
             });
 
         options.add(["wildmode", "wim"],
-            "Define how command line completion works",
+            "Define how command-line completion works",
             "stringlist", "list:full",
             wildmode);
 

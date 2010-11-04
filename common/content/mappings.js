@@ -453,7 +453,7 @@ const Mappings = Module("mappings", {
                         },
                         {
                             names: ["-silent", "-s", "<silent>", "<Silent>"],
-                            description: "Do not echo any generated keys to the command-line"
+                            description: "Do not echo any generated keys to the command line"
                         }
                     ],
                     serialize: function () {

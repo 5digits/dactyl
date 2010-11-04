@@ -1156,8 +1156,8 @@ const Dactyl = Module("dactyl", {
         const groups = [
             {
                 opts: {
-                    c: ["Always show the command-line, even when empty"],
-                    C: ["Always show the command-line outside of the status line"],
+                    c: ["Always show the command line, even when empty"],
+                    C: ["Always show the command line outside of the status line"],
                     M: ["Always show messages outside of the status line"]
                 },
                 setter: function (opts) {

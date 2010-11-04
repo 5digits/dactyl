@@ -1056,7 +1056,7 @@ const Events = Module("events", {
     mappings: function () {
         // add the ":" mapping in all but insert mode mappings
         mappings.add(modes.matchModes({ extended: false, input: false }),
-            [":"], "Enter command line mode",
+            [":"], "Enter command-line mode",
             function () { commandline.open(":", "", modes.EX); });
 
         // focus events

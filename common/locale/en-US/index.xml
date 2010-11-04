@@ -365,7 +365,7 @@ This file contains a list of all available commands, mappings and options.
 
 <dl>
     <dt><o>activate</o></dt> <dd>Define when tabs are automatically activated</dd>
-    <dt><o>altwildmode</o></dt> <dd>Define how command line completion works when the Alt key is pressed</dd>
+    <dt><o>altwildmode</o></dt> <dd>Define how command-line completion works when the Alt key is pressed</dd>
     <dt><o>autocomplete</o></dt> <dd>Automatically update the completion list on any key press</dd>
     <dt><o>banghist</o></dt> <dd>Replace occurrences of ! with the previous command when executing external commands</dd>
     <dt><o>cdpath</o></dt> <dd>List of directories searched when executing <ex>:cd</ex></dd>
