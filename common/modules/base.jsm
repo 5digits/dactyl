@@ -813,7 +813,7 @@ Class.prototype = {
      */
     timeout: function (callback, timeout) {
         const self = this;
-        let notify = { notify: function notify(timer) { try { callback.apply(self) } catch (e) { util.reportError(e) } } };
+        let notify = { notify: function notify(timer) { try { callback.apply(self); } catch (e) { util.reportError(e); } } };
         let timer = services.create("timer");
         timer.initWithCallback(notify, timeout || 0, timer.TYPE_ONE_SHOT);
         return timer;

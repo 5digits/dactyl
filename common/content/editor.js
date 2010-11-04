@@ -24,7 +24,7 @@ const Editor = Module("editor", {
         try {
             Editor.getEditor(null).selection[toEnd ? "collapseToEnd" : "collapseToStart"]();
         }
-        catch (e) {};
+        catch (e) {}
     },
 
     selectedText: function () String(Editor.getEditor(null).selection),
