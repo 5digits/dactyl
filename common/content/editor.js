@@ -588,10 +588,8 @@ const Editor = Module("editor", {
         mappings.add([modes.INSERT],
             ["<C-t>"], "Edit text field in Vi mode",
             function () {
-                if (!editor.isTextEdit)
-                    modes.push(modes.TEXT_EDIT);
-                else
-                    dactyl.beep();
+                dactyl.assert(!editor.isTextEdit)
+                modes.push(modes.TEXT_EDIT);
             });
 
         mappings.add([modes.INSERT],
@@ -686,12 +684,9 @@ const Editor = Module("editor", {
         mappings.add([modes.VISUAL],
             ["d"], "Delete selected text",
             function (count) {
-                if (editor.isTextEdit) {
-                    editor.executeCommand("cmd_cut");
-                    modes.pop();
-                }
-                else
-                    dactyl.beep();
+                dactyl.assert(editor.isTextEdit);
+                editor.executeCommand("cmd_cut");
+                modes.pop();
             });
 
         mappings.add([modes.VISUAL],
