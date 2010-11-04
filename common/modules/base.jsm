@@ -38,7 +38,10 @@ if (!Object.defineProperty)
         if ("value" in desc)
             if (desc.writable && !objproto.__lookupGetter__.call(obj, prop)
                               && !objproto.__lookupSetter__.call(obj, prop))
-                obj[prop] = value;
+                try {
+                    obj[prop] = value;
+                }
+                catch (e if e instanceof TypeError) {}
             else {
                 objproto.__defineGetter__.call(obj, prop, function () value);
                 if (desc.writable)

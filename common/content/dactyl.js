@@ -1003,7 +1003,7 @@ const Dactyl = Module("dactyl", {
      * @param {Object} error The error object.
      */
     reportError: function reportError(error, echo) {
-        if (error instanceof FailedAssertion) {
+        if (error instanceof FailedAssertion || error.message === "Interrupted") {
             if (error.message)
                 dactyl.echoerr(error.message);
             else

@@ -251,7 +251,6 @@ const Events = Module("events", {
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 for (let type in values(["keydown", "keyup", "keypress"])) {
-                    let elem = dactyl.focus || buffer.focusedFrame;
                     let evt = this.feedingEvent = update({}, evt_obj, { type: type });
 
                     if (isObject(noremap))

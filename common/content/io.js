@@ -265,7 +265,16 @@ lookup:
         let process = services.create("process");
 
         process.init(file);
-        process.run(blocking, args.map(String), args.length);
+        process.run(false, args.map(String), args.length);
+        try {
+            if (blocking)
+                while (process.isRunning)
+                    util.threadYield(false, true);
+        }
+        catch (e) {
+            process.kill();
+            throw e;
+        }
 
         return process.exitValue;
     },
@@ -588,19 +597,20 @@ lookup:
                 if (args.bang)
                     arg = "!" + arg;
 
-                // replaceable bang and no previous command?
-                dactyl.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
-                    "E34: No previous command");
-
                 // NOTE: Vim doesn't replace ! preceded by 2 or more backslashes and documents it - desirable?
                 // pass through a raw bang when escaped or substitute the last command
 
                 // This is an asinine and irritating feature when we have searchable
                 // command-line history. --Kris
-                if (options["banghist"])
+                if (options["banghist"]) {
+                    // replaceable bang and no previous command?
+                    dactyl.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
+                        "E34: No previous command");
+
                     arg = arg.replace(/(\\)*!/g,
                         function (m) /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)
                     );
+                }
 
                 io._lastRunCommand = arg;
 
