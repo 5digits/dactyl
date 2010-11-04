@@ -574,8 +574,7 @@ const Player = Module("player", {
         commands.add(["sort[view]"],
                 "Sort the current media view",
                 function (args) {
-                    let order = args["-order"] || "up";
-                    player.sortBy(args[0], order == "up");
+                    player.sortBy(args[0], args["-order"] == "up");
                 },
                 {
                     argCount: "1",
@@ -583,6 +582,7 @@ const Player = Module("player", {
                     options: [
                         {
                             names: ["-order", "-o"], type: CommandOption.STRING,
+                            default: "up",
                             description: "Specify the sorting order of the given field",
                             validator: function (arg) /^(up|down)$/.test(arg),
                             completer: function () [["up", "Sort in ascending order"], ["down", "Sort in descending order"]]
