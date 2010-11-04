@@ -231,25 +231,25 @@ const StatusLine = Module("statusline", {
             let win = document.commandDispatcher.focusedWindow;
             if (!win)
                 return;
-            win.scrollY;
+            win.scrollY; // intentional - see Kris
             percent = win.scrollY    == 0 ?  0 : // This prevents a forced rendering
                       win.scrollMaxY == 0 ? -1 : win.scrollY / win.scrollMaxY;
         }
 
-        let bufferPositionStr = "";
         percent = Math.round(percent * 100);
-        if (percent < 0)
-            bufferPositionStr = "All";
-        else if (percent == 0)
-            bufferPositionStr = "Top";
-        else if (percent >= 100)
-            bufferPositionStr = "Bot";
-        else if (percent < 10)
-            bufferPositionStr = " " + percent + "%";
-        else
-            bufferPositionStr = percent + "%";
 
-        this.widgets.bufferposition.value = bufferPositionStr;
+        if (percent < 0)
+            var position = "All";
+        else if (percent == 0)
+            position = "Top";
+        else if (percent >= 100)
+            position = "Bot";
+        else if (percent < 10)
+            position = " " + percent + "%";
+        else
+            position = percent + "%";
+
+        this.widgets.bufferposition.value = position;
     },
 
     /**
