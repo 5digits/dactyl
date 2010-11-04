@@ -553,7 +553,6 @@ const JavaScript = Module("javascript", {
             return null;
         }
 
-
         // str = "foo.bar.baz"
         // obj = "foo.bar"
         // key = "baz"
@@ -561,7 +560,6 @@ const JavaScript = Module("javascript", {
         // str = "foo"
         // obj = [modules, window]
         // key = "foo"
-
 
         let [offset, obj, key] = this._getObjKey(-1);
 
