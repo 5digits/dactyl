@@ -69,7 +69,8 @@ const Events = Module("events", {
             buffer: "",             // partial command storage
             pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
             pendingArgMap: null,    // pending map storage for commands like m{a-z}
-            count: null             // parsed count from the input buffer
+            count: null,            // parsed count from the input buffer
+            motionCount: null
         };
 
         this._activeMenubar = false;
@@ -884,9 +885,10 @@ const Events = Module("events", {
             // (allows you to do :map z yy, when zz is a longer mapping than z)
             else if (map && !event.skipmap && candidates.length == 0) {
                 this._input.pendingMap = null;
-                this._input.count = parseInt(countStr, 10);
-                if (isNaN(this._input.count))
-                    this._input.count = null;
+                let count = this._input.pendingMotionMap ? "motionCount" : "count";
+                this._input[count] = parseInt(countStr, 10);
+                if (isNaN(this._input[count]))
+                    this._input[count] = null;
                 this._input.buffer = "";
                 if (map.arg) {
                     this._input.buffer = inputStr;
@@ -894,8 +896,9 @@ const Events = Module("events", {
                 }
                 else if (this._input.pendingMotionMap) {
                     if (!isEscape(key))
-                        this._input.pendingMotionMap.execute(candidateCommand, this._input.count, null);
+                        this._input.pendingMotionMap.execute(candidateCommand, this._input.motionCount || this._input.count, null);
                     this._input.pendingMotionMap = null;
+                    this._input.motionCount = null;
                 }
                 // no count support for these commands yet
                 else if (map.motion) {
@@ -924,6 +927,7 @@ const Events = Module("events", {
                 this._input.pendingArgMap = null;
                 this._input.pendingMotionMap = null;
                 this._input.pendingMap = null;
+                this._input.motionCount = null;
 
                 if (!isEscape(key)) {
                     // allow key to be passed to the host app if we can't handle it
