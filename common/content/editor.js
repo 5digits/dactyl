@@ -524,7 +524,7 @@ const Editor = Module("editor", {
 
         addBeginInsertModeMap(["i", "<Insert>"], []);
         addBeginInsertModeMap(["a"],             ["cmd_charNext"]);
-        addBeginInsertModeMap(["I", "gI"],       ["cmd_beginLine"]);
+        addBeginInsertModeMap(["I"],             ["cmd_beginLine"]);
         addBeginInsertModeMap(["A"],             ["cmd_endLine"]);
         addBeginInsertModeMap(["s"],             ["cmd_deleteCharForward"]);
         addBeginInsertModeMap(["S"],             ["cmd_deleteToEndOfLine", "cmd_deleteToBeginningOfLine"]);
