@@ -27,16 +27,16 @@ const Browser = Module("browser", {
     incrementURL: function (count) {
         let matches = buffer.URL.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
+        oldNum = matches[2];
 
-        let [, pre, number, post] = matches;
-        let newNumber = parseInt(number, 10) + count;
-        let newNumberStr = String(newNumber > 0 ? newNumber : 0);
-        if (number.match(/^0/)) { // add 0009<C-a> should become 0010
-            while (newNumberStr.length < number.length)
-                newNumberStr = "0" + newNumberStr;
-        }
+        // disallow negative numbers as trailing numbers are often proceeded by hyphens
+        let newNum = String(Math.max(parseInt(oldNum, 10) + count, 0));
+        if (/^0/.test(oldNum))
+            while (newNum.length < oldNum.length)
+                newNum = "0" + newNum;
 
-        dactyl.open(pre + newNumberStr + post);
+        matches[2] = newNum;
+        dactyl.open(matches.slice(1).join(""));
     }
 }, {
     options: function () {
