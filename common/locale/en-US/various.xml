@@ -65,10 +65,6 @@
             the previous external command, so long as it is not preceded by a
             backslash and <o>banghist</o> is enabled.
         </p>
-        <note>
-            Do not run commands which require stdin or it will hang Firefox.
-            You can launch a process in the background (e.g. :! xterm &amp;).
-        </note>
     </description>
 </item>
 
