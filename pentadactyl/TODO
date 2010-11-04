@@ -38,6 +38,8 @@ FEATURES:
 8 <C-o>/<C-i> should work as in vim (i.e., save page positions as well as
   locations in the history list).
 8 jump to the next heading with ]h, next image ]i, previous textbox [t and so on
+7 Specify all INSERT mode mappings rather than falling through to the host apps
+  mystery meat mappings.
 7 consider generating most of :help :index
 7 use ctrl-n/p in insert mode for word completion
 7 implement QuickFix window based on ItemList
