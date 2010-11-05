@@ -1046,11 +1046,11 @@ const Hints = Module("hints", {
             [0xff21, 0xff3a, "A"], [0xff41, 0xff5a, "a"]
         ].forEach(function (start, stop, val) {
             if (typeof val != "string")
-                for (let i=start; i <= stop; i++)
+                for (let i = start; i <= stop; i++)
                     table[String.fromCharCode(i)] = val[(i - start) % val.length];
             else {
                 let n = val.charCodeAt(0);
-                for (let i=start; i <= stop; i++)
+                for (let i = start; i <= stop; i++)
                     table[String.fromCharCode(i)] = String.fromCharCode(n + i - start);
             }
         });
