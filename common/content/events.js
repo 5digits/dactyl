@@ -474,13 +474,15 @@ const Events = Module("events", {
             modifier += "M-";
 
         if (/^key/.test(event.type)) {
-            let charCode = event.type == "keyup" ? 0 : event.charCode;
+            let charCode = event.type == "keyup" ? 0 : event.charCode; // Why? --Kris
             if (charCode == 0) {
-                if (event.shiftKey)
-                    modifier += "S-";
-
                 if (event.keyCode in this._code_key)
                     key = this._code_key[event.keyCode];
+
+                if (event.shiftKey && (key.length > 1 || event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
+                    modifier += "S-";
+                if (!modifier && /^[a-z0-9]$/i.test(key))
+                    return key;
             }
             // [Ctrl-Bug] special handling of mysterious <C-[>, <C-\\>, <C-]>, <C-^>, <C-_> bugs (OS/X)
             //            (i.e., cntrl codes 27--31)
@@ -523,7 +525,7 @@ const Events = Module("events", {
                 else {
                     // a shift modifier is only allowed if the key is alphabetical and used in a C-A-M- mapping in the uppercase,
                     // or if the shift has been forced for a non-alphabetical character by the user while :map-ping
-                    if ((key != key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey)) || event.dactylShift)
+                    if (key != key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
                         modifier += "S-";
                     if (/^\s$/.test(key))
                         key = let (s = charCode.toString(16)) "U" + "0000".substr(4 - s.length) + s;
@@ -804,6 +806,10 @@ const Events = Module("events", {
             let stop = false;
             let mode = modes.getStack(0);
 
+            function shouldPass()
+                (!dactyl.focus || Events.isContentNode(dactyl.focus)) &&
+                options.get("passkeys").has(events.toString(event));
+
             // menus have their own command handlers
             if (modes.extended & modes.MENU)
                 stop = true;
@@ -812,14 +818,14 @@ const Events = Module("events", {
                 stop = !isEscape(key) && key != "<C-v>"
             // handle Escape-one-key mode (Ctrl-v)
             else if (modes.main == modes.QUOTE) {
-                stop = modes.getStack(1).main !== modes.PASS_THROUGH || isEscape(key);
+                stop = !shouldPass() && (modes.getStack(1).main !== modes.PASS_THROUGH || isEscape(key));
                 // We need to preserve QUOTE mode until the escape
                 // handler to escape the <Esc> key
                 if (!stop || !isEscape(key))
                     modes.pop();
                 mode = modes.getStack(1);
             }
-            else if (!event.isMacro && !event.noremap && options.get("passkeys").has(events.toString(event)))
+            else if (!event.isMacro && !event.noremap && shouldPass())
                 stop = true;
             // handle Escape-all-keys mode (Ctrl-q)
 
@@ -965,7 +971,19 @@ const Events = Module("events", {
         // Prevent certain sites from transferring focus to an input box
         // before we get a chance to process our key bindings on the
         // "keypress" event.
-        if (!Events.isInputElemFocused() && !modes.passThrough && !options.get("passkeys").has(events.toString(event)))
+
+        function shouldPass() // FIXME.
+            (!dactyl.focus || Events.isContentNode(dactyl.focus)) &&
+            options.get("passkeys").has(events.toString(event));
+
+        if (modes.main === modes.PASS_THROUGH ||
+            modes.main === modes.QUOTE
+                && modes.getStack(1).main !== modes.PASS_THROUGH
+                && !shouldPass() ||
+            !modes.passThrough && shouldPass())
+            return;
+
+        if (!Events.isInputElemFocused())
             event.stopPropagation();
     },
 
@@ -977,9 +995,8 @@ const Events = Module("events", {
     },
 
     onPopupShown: function onPopupShown(event) {
-        if (event.originalTarget.localName == "tooltip" || event.originalTarget.id == "dactyl-visualbell")
-            return;
-        modes.add(modes.MENU);
+        if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
+            modes.add(modes.MENU);
     },
 
     onPopupHidden: function onPopupHidden() {
