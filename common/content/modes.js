@@ -227,7 +227,7 @@ const Modes = Module("modes", {
             stack.pop.params.leave(stack, this.topOfStack);
 
         let push = mainMode != null && !(stack && stack.pop) &&
-            Modes.StackElem(this._main, this._extended, params, {});
+            Modes.StackElement(this._main, this._extended, params, {});
         if (push && this.topOfStack) {
             if (this.topOfStack.params.leave)
                 this.topOfStack.params.leave({ push: push }, push);
@@ -315,7 +315,7 @@ const Modes = Module("modes", {
     get extended() this._extended,
     set extended(value) { this.set(null, value); }
 }, {
-    StackElem: (function () {
+    StackElement: (function () {
         let struct = Struct("main", "extended", "params", "saved");
         struct.prototype.__defineGetter__("mainMode", function () modes.getMode(this.main));
         struct.prototype.toString = function () !loaded.modes ? this.main : "[mode " +

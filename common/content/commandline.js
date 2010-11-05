@@ -12,22 +12,22 @@ const CommandWidgets = Class("CommandWidgets", {
     init: function () {
         const self = this;
         this.elements = {};
-        this.addElem({
+        this.addElement({
             name: "container",
             noValue: true
         });
-        this.addElem({
+        this.addElement({
             name: "commandline",
             getGroup: function () options.get("guioptions").has("C") ? this.commandbar : this.statusbar,
             getValue: function () this.command
         });
-        this.addElem({
+        this.addElement({
             name: "strut",
             defaultGroup: "Normal",
             getGroup: function () this.commandbar,
             getValue: function () options.get("guioptions").has("c")
         });
-        this.addElem({
+        this.addElement({
             name: "command",
             id: "commandline-command",
             get: function (elem) {
@@ -55,13 +55,13 @@ const CommandWidgets = Class("CommandWidgets", {
             },
             onVisibility: function (elem, visible) visible && elem.focus()
         });
-        this.addElem({
+        this.addElement({
             name: "prompt",
             id: "commandline-prompt",
             defaultGroup: "CmdPrompt",
             getGroup: function () this.activeGroup.commandline
         });
-        this.addElem({
+        this.addElement({
             name: "message",
             defaultGroup: "Normal",
             getElement: CommandWidgets.getEditor,
@@ -74,7 +74,7 @@ const CommandWidgets = Class("CommandWidgets", {
                 return this.activeGroup.mode;
             }
         });
-        this.addElem({
+        this.addElement({
             name: "mode",
             defaultGroup: "ModeMsg",
             getGroup: function (value) {
@@ -86,7 +86,7 @@ const CommandWidgets = Class("CommandWidgets", {
             }
         });
     },
-    addElem: function (obj) {
+    addElement: function (obj) {
         const self = this;
         this.elements[obj.name] = obj;
         function get(id) obj.getElement ? obj.getElement(id) : document.getElementById(id);
