@@ -35,8 +35,6 @@ const JavaScript = Module("javascript", {
     },
 
     iter: function iter(obj, toplevel) {
-        "use strict";
-
         if (obj == null)
             return;
 
@@ -60,6 +58,8 @@ const JavaScript = Module("javascript", {
         // Things we can dereference
         if (!obj || ["object", "string", "function"].indexOf(typeof obj) === -1)
             return [];
+        if (isinstance(obj, ["Sandbox"]) && !toplevel) // Temporary hack.
+            return [];
         if (jsmodules.isPrototypeOf(obj) && !toplevel)
             return [];
 
@@ -79,8 +79,14 @@ const JavaScript = Module("javascript", {
             return cache[key];
 
         context[JavaScript.EVAL_TMP] = tmp;
+        context[JavaScript.EVAL_EXPORT] = function export(obj) cache[key] = obj;
         try {
-            return cache[key] = dactyl.userEval(arg, context, "[Command Line Completion]", 1);
+            if (tmp != null) // Temporary hack until bug 609949 is fixed.
+                dactyl.userEval(JavaScript.EVAL_EXPORT + "(" + arg + ")", context, "[Command Line Completion]", 1);
+            else
+                cache[key] = dactyl.userEval(arg, context, "[Command Line Completion]", 1);
+
+            return cache[key];
         }
         catch (e) {
             this.context.message = "Error: " + e;
@@ -585,6 +591,7 @@ const JavaScript = Module("javascript", {
     }
 }, {
     EVAL_TMP: "__dactyl_eval_tmp",
+    EVAL_EXPORT: "__dactyl_eval_export",
 
     /**
      * A map of argument completion functions for named methods. The

@@ -476,13 +476,14 @@ const Events = Module("events", {
         if (/^key/.test(event.type)) {
             let charCode = event.type == "keyup" ? 0 : event.charCode; // Why? --Kris
             if (charCode == 0) {
-                if (event.keyCode in this._code_key)
+                if (event.keyCode in this._code_key) {
                     key = this._code_key[event.keyCode];
 
-                if (event.shiftKey && (key.length > 1 || event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
-                    modifier += "S-";
-                if (!modifier && /^[a-z0-9]$/i.test(key))
-                    return key;
+                    if (event.shiftKey && (key.length > 1 || event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
+                        modifier += "S-";
+                    if (!modifier && /^[a-z0-9]$/i.test(key))
+                        return key;
+                }
             }
             // [Ctrl-Bug] special handling of mysterious <C-[>, <C-\\>, <C-]>, <C-^>, <C-_> bugs (OS/X)
             //            (i.e., cntrl codes 27--31)
