@@ -263,11 +263,12 @@ lookup:
         }
 
         let process = services.create("process");
+        let isMain = services.get("threadManager").isMainThread;
 
         process.init(file);
-        process.run(false, args.map(String), args.length);
+        process.run(blocking && !isMain, args.map(String), args.length);
         try {
-            if (blocking)
+            if (blocking && isMain)
                 while (process.isRunning)
                     util.threadYield(false, true);
         }
