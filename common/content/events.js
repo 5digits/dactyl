@@ -481,6 +481,8 @@ const Events = Module("events", {
 
                     if (event.shiftKey && (key.length > 1 || event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
                         modifier += "S-";
+                    else if (!modifier && key.length === 1 && !event.shiftKey)
+                        key = key.toLowerCase();
                     if (!modifier && /^[a-z0-9]$/i.test(key))
                         return key;
                 }
