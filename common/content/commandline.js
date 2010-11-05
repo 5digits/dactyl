@@ -23,6 +23,7 @@ const CommandWidgets = Class("CommandWidgets", {
         });
         this.addElem({
             name: "strut",
+            defaultGroup: "Normal",
             getGroup: function () this.commandbar,
             getValue: function () options.get("guioptions").has("c")
         });
@@ -107,7 +108,8 @@ const CommandWidgets = Class("CommandWidgets", {
                     [this.commandbar, this.statusbar].forEach(function (nodeSet) {
                         let elem = nodeSet[obj.name];
                         if (val != null) {
-                            highlight.highlightNode(elem, (val[0] != null ? val[0] : obj.defaultGroup)
+                            highlight.highlightNode(elem,
+                                (val[0] != null ? val[0] : obj.defaultGroup)
                                     .split(/\s/).filter(util.identity)
                                     .map(function (g) g + " " + nodeSet.group + g)
                                     .join(" "));
@@ -120,7 +122,14 @@ const CommandWidgets = Class("CommandWidgets", {
                     this.updateVisibility();
                     return val;
                 }
-        }).init(obj.name));
+            }).init(obj.name));
+        else if (obj.defaultGroup)
+            [this.commandbar, this.statusbar].forEach(function (nodeSet) {
+                let elem = nodeSet[obj.name];
+                if (elem)
+                    highlight.highlightNode(elem, obj.defaultGroup.split(/\s/)
+                                                     .map(function (g) g + " " + nodeSet.group + g).join(" "));
+            });
     },
     getGroup: function (name, value) {
         if (!statusline.visible)

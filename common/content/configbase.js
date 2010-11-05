@@ -162,7 +162,8 @@ const ConfigBase = Class(ModuleBase, {
 
         // Hack to give these groups slightly higher precedence
         // than their unadorned variants.
-        //
+        CmdCmdLine;[dactyl|highlight]>*
+        StatusCmdLine;[dactyl|highlight]>*
         CmdNormal;[dactyl|highlight]
         StatusNormal;[dactyl|highlight]
         CmdErrorMsg;[dactyl|highlight]
