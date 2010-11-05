@@ -11,6 +11,8 @@ ARCHITECTURE:
   Unfortunately, nearly all of the parsers are lacking in some way, bloated to
   hell, and/or lack support for JS 1.8. --Kris
 
+- unify the disgusting hodge podge of contract specification styles
+
 REFACTORING:
 - remove unnecessary usage of "self"
 

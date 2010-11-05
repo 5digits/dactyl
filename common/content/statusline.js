@@ -152,9 +152,10 @@ const StatusLine = Module("statusline", {
      * along with multi-key mappings.
      *
      * @param {string} buffer
+     * @optional
      */
     updateInputBuffer: function updateInputBuffer(buffer) {
-        if (!buffer || typeof buffer != "string")
+        if (buffer == null)
             buffer = "";
 
         this.widgets.inputbuffer.value = buffer;
@@ -199,10 +200,10 @@ const StatusLine = Module("statusline", {
     /**
      * Display the correct tabcount (e.g., [1/5]) on the status bar.
      *
-     * @param {bool} delayed When true, update count after a
-     *      brief timeout. Useful in the many cases when an
-     *      event that triggers an update is broadcast before
-     *      the tab state is fully updated.
+     * @param {boolean} delayed When true, update count after a brief timeout.
+     *     Useful in the many cases when an event that triggers an update is
+     *     broadcast before the tab state is fully updated.
+     * @optional
      */
     updateTabCount: function updateTabCount(delayed) {
         if (dactyl.has("tabs")) {
@@ -224,10 +225,11 @@ const StatusLine = Module("statusline", {
      * Display the main content's vertical scroll position in the status
      * bar.
      *
-     * @param {number} percent The position, as a percentage. @optional
+     * @param {number} percent The position, as a percentage.
+     * @optional
      */
     updateBufferPosition: function updateBufferPosition(percent) {
-        if (typeof percent != "number") {
+        if (percent == null) {
             let win = document.commandDispatcher.focusedWindow;
             if (!win)
                 return;
