@@ -263,7 +263,7 @@ lookup:
         }
 
         let process = services.create("process");
-        let isMain = services.get("threadManager").isMainThread;
+        let isMain = services.get("threading").isMainThread;
 
         process.init(file);
         process.run(blocking && !isMain, args.map(String), args.length);
@@ -294,7 +294,7 @@ lookup:
         let dirs = options["runtimepath"];
         let found = false;
 
-        dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options.get("runtimepath").value, 2);
+        dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options.get("runtimepath").stringValue, 2);
 
     outer:
         for (let [, dir] in Iterator(dirs)) {
@@ -407,7 +407,7 @@ lookup:
                 stdin.write(input);
 
             // TODO: implement 'shellredir'
-            if (util.isOS("WINNT")) {
+            if (util.isOS("WINNT") && !/sh/.test(options["shell"])) {
                 command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(options["shell"], options["shellcmdflag"].split(/\s+/).concat(command), true);
             }
@@ -421,10 +421,8 @@ lookup:
             let output = stdout.read();
             if (res > 0)
                 output += "\nshell returned " + res;
-            // if there is only one \n at the end, chop it off
-            else if (output && output.indexOf("\n") == output.length - 1)
-                output = output.substr(0, output.length - 1);
-
+            else if (output)
+                output = output.replace(/^(.*)\n$/, "$1");
             return output;
         }) || "";
     },
@@ -442,14 +440,13 @@ lookup:
      */
     withTempFiles: function (func, self) {
         let args = util.map(util.range(0, func.length), this.createTempFile);
-        if (!args.every(util.identity))
-            return false;
-
         try {
+            if (!args.every(util.identity))
+                return false;
             return func.apply(self || this, args);
         }
         finally {
-            args.forEach(function (f) f.remove(false));
+            args.forEach(function (f) f && f.remove(false));
         }
     }
 }, {
@@ -731,8 +728,6 @@ lookup:
         var shell, shellcmdflag;
         if (util.isOS("WINNT")) {
             shell = "cmd.exe";
-            // TODO: setting 'shell' to "something containing sh" updates
-            // 'shellcmdflag' appropriately at startup on Windows in Vim
             shellcmdflag = "/c";
         }
         else {
@@ -768,7 +763,14 @@ lookup:
 
         options.add(["shellcmdflag", "shcf"],
             "Flag passed to shell when executing :! and :run commands",
-            "string", shellcmdflag);
+            "string", shellcmdflag,
+            {
+                getter: function (value) {
+                    if (this.hasChanged || !util.isOS("WINNT"))
+                        return value;
+                    return /sh/.test(options["shell"]) ? "-c" : "/c";
+                }
+            });
 
         options.add(["wildignore", "wig"],
             "List of file patterns to ignore when completing files",

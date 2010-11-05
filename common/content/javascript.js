@@ -661,7 +661,8 @@ const JavaScript = Module("javascript", {
             "Use the JavaScript debugger service for JavaScript completion",
             "boolean", false, {
                 setter: function (value) {
-                    services.get("debugger")[value ? "on" : "off"]();
+                    if (services.get("debugger").isOn != value)
+                        services.get("debugger")[value ? "on" : "off"]();
                 },
                 getter: function () services.get("debugger").isOn
             });

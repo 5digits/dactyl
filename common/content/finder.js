@@ -594,8 +594,7 @@ const RangeFind = Class("RangeFind", {
             this.range = range;
             this.document = range.startContainer.ownerDocument;
             this.window = this.document.defaultView;
-            this.docShell = this.window.QueryInterface(Ci.nsIInterfaceRequestor)
-                                       .getInterface(Ci.nsIWebNavigation)
+            this.docShell = this.window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
                                        .QueryInterface(Ci.nsIDocShell);
 
             if (this.selection == null)
@@ -629,8 +628,7 @@ const RangeFind = Class("RangeFind", {
         },
 
         get selectionController() this.docShell
-                    .QueryInterface(Ci.nsIInterfaceRequestor)
-                    .getInterface(Ci.nsISelectionDisplay)
+                    .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
                     .QueryInterface(Ci.nsISelectionController),
         get selection() {
             try {

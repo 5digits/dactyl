@@ -106,8 +106,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @returns {function}
      */
     callInMainThread: function (callback, self) {
-        let mainThread = services.get("threadManager").mainThread;
-        if (services.get("threadManager").isMainThread)
+        let mainThread = services.get("threading").mainThread;
+        if (services.get("threading").isMainThread)
             callback.call(self);
         else
             mainThread.dispatch(Runnable(self, callback, Array.slice(arguments, 2)), mainThread.DISPATCH_NORMAL);
@@ -125,7 +125,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *
      */
     callAsync: function (thread, self, func) {
-        thread = thread || services.get("threadManager").newThread(0);
+        thread = thread || services.get("threading").newThread(0);
         thread.dispatch(Runnable(self, func, Array.slice(arguments, 3)), thread.DISPATCH_NORMAL);
     },
 
@@ -141,7 +141,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {function} func The function to execute.
      */
     callInThread: function (thread, func) {
-        thread = thread || services.get("threadManager").newThread(0);
+        thread = thread || services.get("threading").newThread(0);
         thread.dispatch(Runnable(null, func, Array.slice(arguments, 2)), thread.DISPATCH_SYNC);
     },
 
@@ -593,7 +593,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         return ary;
     },
 
-    newThread: function () services.get("threadManager").newThread(0),
+    newThread: function () services.get("threading").newThread(0),
 
     /**
      * Converts a URI string into a URI object.
@@ -940,10 +940,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @returns {nsISelectionController}
      */
     selectionController: function (win)
-        win.QueryInterface(Ci.nsIInterfaceRequestor)
-           .getInterface(Ci.nsIWebNavigation)
-           .QueryInterface(Ci.nsIInterfaceRequestor)
-           .getInterface(Ci.nsISelectionDisplay)
+        win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+           .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
            .QueryInterface(Ci.nsISelectionController),
 
     /**
@@ -955,7 +953,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {number} delay The time period for which to sleep in milliseconds.
      */
     sleep: function (delay) {
-        let mainThread = services.get("threadManager").mainThread;
+        let mainThread = services.get("threading").mainThread;
 
         let end = Date.now() + delay;
         while (Date.now() < end)
@@ -1034,7 +1032,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     threadYield: function (flush, interruptable) {
-        let mainThread = services.get("threadManager").mainThread;
+        let mainThread = services.get("threading").mainThread;
         /* FIXME */
         util.interrupted = false;
         do {

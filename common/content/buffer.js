@@ -660,8 +660,7 @@ const Buffer = Module("buffer", {
      *     controller.
      */
     get selectionController() config.browser.docShell
-            .QueryInterface(Ci.nsIInterfaceRequestor)
-            .getInterface(Ci.nsISelectionDisplay)
+            .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
             .QueryInterface(Ci.nsISelectionController),
 
     /**
@@ -1483,12 +1482,9 @@ const Buffer = Module("buffer", {
 
         config.browser.addProgressListener(this.progressListener, Ci.nsIWebProgress.NOTIFY_ALL);
         window.XULBrowserWindow = this.progressListener;
-        window.QueryInterface(Ci.nsIInterfaceRequestor)
-              .getInterface(Ci.nsIWebNavigation)
-              .QueryInterface(Ci.nsIDocShellTreeItem)
-              .treeOwner
-              .QueryInterface(Ci.nsIInterfaceRequestor)
-              .getInterface(Ci.nsIXULWindow)
+        window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+              .QueryInterface(Ci.nsIDocShellTreeItem).treeOwner
+              .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIXULWindow)
               .XULBrowserWindow = this.progressListener;
 
         let appContent = document.getElementById("appcontent");

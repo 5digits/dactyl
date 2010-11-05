@@ -50,7 +50,7 @@ const Services = Module("Services", {
         this.add("stylesheet",          "@mozilla.org/content/style-sheet-service;1",       Ci.nsIStyleSheetService);
         this.add("subscriptLoader",     "@mozilla.org/moz/jssubscript-loader;1",            Ci.mozIJSSubScriptLoader);
         this.add("tagging",             "@mozilla.org/browser/tagging-service;1",           Ci.nsITaggingService);
-        this.add("threadManager",       "@mozilla.org/thread-manager;1",                    Ci.nsIThreadManager);
+        this.add("threading",           "@mozilla.org/thread-manager;1",                    Ci.nsIThreadManager);
         this.add("urifixup",            "@mozilla.org/docshell/urifixup;1",                 Ci.nsIURIFixup);
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
@@ -69,7 +69,14 @@ const Services = Module("Services", {
 
     _create: function (classes, ifaces, meth) {
         try {
-            let res = Cc[classes][meth || "getService"]();
+            for (let i = 0; !res && i < 15; i++) // FIXME: Hack.
+                try {
+                    var res = Cc[classes][meth || "getService"]();
+                }
+                catch (e if e.result === Cr.NS_ERROR_XPC_BAD_OP_ON_WN_PROTO) {
+                    util.dump(String(e));
+                }
+
             if (!ifaces)
                 return res.wrappedJSObject;
             Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));

@@ -597,8 +597,8 @@ function curry(fn, length, self, acc) {
  */
 function requiresMainThread(callback)
     function wrapper() {
-        let mainThread = services.get("threadManager").mainThread;
-        if (services.get("threadManager").isMainThread)
+        let mainThread = services.get("threading").mainThread;
+        if (services.get("threading").isMainThread)
             callback.apply(this, arguments);
         else
             mainThread.dispatch(Runnable(this, callback, arguments), mainThread.DISPATCH_NORMAL);

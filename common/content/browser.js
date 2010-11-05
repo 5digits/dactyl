@@ -155,8 +155,8 @@ const Browser = Module("browser", {
         commands.add(["redr[aw]"],
             "Redraw the screen",
             function () {
-                window.QueryInterface(Ci.nsIInterfaceRequestor)
-                      .getInterface(Ci.nsIDOMWindowUtils).redraw();
+                window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                      .redraw();
                 statusline.updateUrl();
                 commandline.clear();
             },
