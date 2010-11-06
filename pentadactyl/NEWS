@@ -1,4 +1,4 @@
-1.0b3:
+1.0b4pre:
     * Extensive Firefox 4 support, including:
       - Tabs in :buffer completions and listings are grouped
         by panorama groups.
