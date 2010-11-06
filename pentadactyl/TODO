@@ -25,6 +25,7 @@ BUGS:
 (recent Mercurial regressions):
 
 FEATURES:
+8 registers
 8 Document Caret and Visual modes.
 8 replace global variables with plugin scoped user options
 8 fix local options
@@ -53,9 +54,6 @@ FEATURES:
 7 :grep support (needs location list)
 6 :mksession
 6 add [count] support to :b* and :tab* commands where missing
-6 registers
-  Here, unlike Vim, y and "*y would be equivalent. That is, the pasteboard would
-  always be the default register. --Ted
 6 check/correct spellings in insert mode with some mappings
 6 add more autocommands (TabClose, TabOpen, TabChanged etc)
 6 Use ctrl-w+j/k/w to switch between sidebar, content, preview window

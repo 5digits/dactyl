@@ -373,9 +373,8 @@ const Command = Class("Command", {
 
 // Prototype.
 const ex = {
-    __noSuchMethod__: function (meth, args) {
-        let cmd = commands.get(meth);
-        dactyl.assert(cmd, "No such command");
+    _args: function (cmd, args) {
+        args = Array.slice(args);
 
         let res = cmd.newArgs();
         if (isObject(args[0]))
@@ -393,11 +392,31 @@ const ex = {
                 }
         for (let [i, val] in array.iterItems(args))
             res[i] = String(val);
+        return res;
+    },
 
-        res.verify();
+    _complete: function (cmd)
+        function _complete(context, func, obj, args) {
+            args = ex._args(cmd, args);
+            args.completeArg = args.length - 1;
+            if (cmd.completer && args.length)
+                return cmd.completer(context, args);
+        },
 
-        return cmd.execute(res);
-    }
+    _run: function (name) {
+        let cmd = commands.get(name);
+        dactyl.assert(cmd, "No such command");
+
+        return update(function exCommand(options) {
+            let args = this._args(cmd, arguments);
+            args.verify();
+            return cmd.execute(args);
+        }, {
+            dactylCompleter: this._complete(cmd)
+        });
+    },
+
+    __noSuchMethod__: function (meth, args) this._run(meth).apply(this, args)
 };
 
 /**
@@ -439,9 +458,11 @@ const Commands = Module("commands", {
         if (!replace || !(args[3] && args[3].user))
             dactyl.assert(!names.some(function (name) name in this._exMap, this),
                           "Not replacing command " + args[0]);
-        for (let name in values(names))
+        for (let name in values(names)) {
+            ex.__defineGetter__(name, function () this._run(name));
             if (name in this._exMap)
                 commands.removeUserCommand(name);
+        }
 
         let name = names[0];
         let closure = function () commands._exMap[name];
