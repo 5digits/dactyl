@@ -504,7 +504,7 @@ lookup:
                 }
             }, {
                 argCount: "?",
-                completer: function (context) completion.directory(context, true),
+                completer: function (context) completion.directory(context, args, true),
                 literal: 0
             });
 
@@ -550,7 +550,7 @@ lookup:
             }, {
                 argCount: "*", // FIXME: should be "?" but kludged for proper error message
                 bang: true,
-                completer: function (context) completion.file(context, true)
+                completer: function (context) completion.file(context, args, true)
             });
 
         commands.add(["runt[ime]"],
@@ -582,7 +582,7 @@ lookup:
             }, {
                 argCount: "+", // FIXME: should be "1" but kludged for proper error message
                 bang: true,
-                completer: function (context) completion.file(context, true)
+                completer: function (context) completion.file(context, args, true)
             });
 
         commands.add(["!", "run"],
@@ -635,8 +635,8 @@ lookup:
             context.generate = function () iter(services.get("charset").getDecoderList());
         };
 
-        completion.directory = function directory(context, full) {
-            this.file(context, full);
+        completion.directory = function directory(context, args, full) {
+            this.file(context, args, full);
             context.filters.push(function ({ item }) item.isDirectory());
         };
 
@@ -649,7 +649,7 @@ lookup:
             context.generate = function () lines.map(function (line) (line.match(/([^=]+)=(.+)/) || []).slice(1));
         };
 
-        completion.file = function file(context, full, dir) {
+        completion.file = function file(context, args, full, dir) {
             // dir == "" is expanded inside readDirectory to the current dir
             [dir] = (dir || context.filter).match(/^(?:.*[\/\\])?/);
 
@@ -687,7 +687,7 @@ lookup:
             for (let [, dir] in Iterator(options["runtimepath"]))
                 context.fork(dir, 0, this, function (context) {
                     dir = dir.replace("/+$", "") + "/";
-                    completion.file(context, true, dir + context.filter);
+                    completion.file(context, args, true, dir + context.filter);
                     context.title[0] = dir;
                     context.keys.text = function (f) f.path.substr(dir.length);
                 });
@@ -711,16 +711,16 @@ lookup:
             };
         };
 
-        completion.addUrlCompleter("f", "Local files", function (context, full) {
+        completion.addUrlCompleter("f", "Local files", function (context, args, full) {
             if (/^(\.{0,2}|~)\/|^file:/.test(context.filter))
-                completion.file(context, full);
+                completion.file(context, args, full);
         });
     },
     javascript: function () {
         JavaScript.setCompleter([File, File.expandPath],
             [function (context, obj, args) {
                 context.quote[2] = "";
-                completion.file(context, true);
+                completion.file(context, args, true);
             }]);
 
     },

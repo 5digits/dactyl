@@ -939,7 +939,7 @@ const Options = Module("options", {
             if (context.filter.indexOf("=") == -1) {
                 if (false && prefix)
                     context.filters.push(function ({ item }) item.type == "boolean" || prefix == "inv" && isArray(item.values));
-                return completion.option(context, opt.scope, prefix);
+                return completion.option(context, args, opt.scope, prefix);
             }
 
             let option = opt.option;
@@ -965,7 +965,7 @@ const Options = Module("options", {
             }
 
             let optcontext = context.fork("values");
-            completion.optionValue(optcontext, opt.name, opt.operator);
+            completion.optionValue(optcontext, args, opt.name, opt.operator);
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
@@ -975,7 +975,7 @@ const Options = Module("options", {
                 context.maxItems = optcontext.maxItems;
 
                 context.filters.push(function (i) !set.has(have, i.text));
-                completion.optionValue(context, opt.name, opt.operator, null,
+                completion.optionValue(context, args, opt.name, opt.operator, null,
                                        function (context) {
                                            context.generate = function () option.value.map(function (o) [o, ""]);
                                        });
@@ -1136,7 +1136,7 @@ const Options = Module("options", {
             });
     },
     completion: function () {
-        completion.option = function option(context, scope, prefix) {
+        completion.option = function option(context, args, scope, prefix) {
             context.title = ["Option"];
             context.keys = { text: "names", description: "description" };
             context.completions = options;
@@ -1148,7 +1148,7 @@ const Options = Module("options", {
                 context.filters.push(function ({ item }) item.scope & scope);
         };
 
-        completion.optionValue = function (context, name, op, curValue, completer) {
+        completion.optionValue = function (context, args, name, op, curValue, completer) {
             let opt = options.get(name);
             completer = completer || opt.completer;
             if (!completer || !opt)

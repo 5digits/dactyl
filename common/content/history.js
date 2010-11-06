@@ -218,7 +218,7 @@ const History = Module("history", {
             ].slice(2);
         };
 
-        completion.history = function _history(context, maxItems) {
+        completion.history = function _history(context, args, maxItems) {
             context.format = history.format;
             context.title = ["History"];
             context.compare = CompletionContext.Sort.unsorted;

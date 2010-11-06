@@ -385,7 +385,7 @@ const Bookmarks = Module("bookmarks", {
                             for ([, win] in Iterator(frames))];
                         return;
                     }
-                    completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
+                    completion.bookmark(context, args, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
                 },
                 options: [keyword, title, tags, post]
             });
@@ -400,7 +400,7 @@ const Bookmarks = Module("bookmarks", {
                 bang: true,
                 completer: function completer(context, args) {
                     context.filter = args.join(" ");
-                    completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
+                    completion.bookmark(context, args, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
                 },
                 options: [tags, keyword, title,
                     {
@@ -442,7 +442,7 @@ const Bookmarks = Module("bookmarks", {
                 argCount: "?",
                 bang: true,
                 completer: function completer(context, args)
-                    completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] }),
+                    completion.bookmark(context, args, args["-tags"], { keyword: args["-keyword"], title: args["-title"] }),
                 domains: function (args) array.compact(args.map(util.getHost)),
                 literal: 0,
                 options: [tags, title, keyword],
@@ -487,8 +487,8 @@ const Bookmarks = Module("bookmarks", {
             "Set the default search engine",
             "string", "google",
             {
-                completer: function completer(context) {
-                    completion.search(context, true);
+                completer: function completer(context, args) {
+                    completion.search(context, args, true);
                     context.completions = [["", "Don't perform searches by default"]].concat(context.completions);
                 }
             });
@@ -497,12 +497,12 @@ const Bookmarks = Module("bookmarks", {
              "Engine Alias which has a feature of suggest",
              "stringlist", "google",
              {
-                 completer: function completer(context) completion.searchEngine(context, true),
+                 completer: function completer(context, args) completion.searchEngine(context, args, true),
              });
     },
 
     completion: function () {
-        completion.bookmark = function bookmark(context, tags, extra) {
+        completion.bookmark = function bookmark(context, args, tags, extra) {
             context.title = ["Bookmark", "Title"];
             context.format = bookmarks.format;
             forEach(iter(extra || {}), function ([k, v]) {
@@ -510,10 +510,10 @@ const Bookmarks = Module("bookmarks", {
                     context.filters.push(function (item) item.item[k] != null && this.matchString(v, item.item[k]));
             });
             context.generate = function () values(bookmarkcache.bookmarks);
-            completion.urls(context, tags);
+            completion.urls(context, args, tags);
         };
 
-        completion.search = function search(context, noSuggest) {
+        completion.search = function search(context, args, noSuggest) {
             let [, keyword, space, args] = context.filter.match(/^\s*(\S*)(\s*)(.*)$/);
             let keywords = bookmarks.getKeywords();
             let engines = bookmarks.getSearchEngines();
@@ -553,7 +553,7 @@ const Bookmarks = Module("bookmarks", {
                 });
         };
 
-        completion.searchEngine = function searchEngine(context, suggest) {
+        completion.searchEngine = function searchEngine(context, args, suggest) {
              let engines = services.get("browserSearch").getEngines({});
              if (suggest)
                  engines = engines.filter(function (e) e.supportsResponseType("application/x-suggestions+json"));
@@ -562,7 +562,7 @@ const Bookmarks = Module("bookmarks", {
              context.completions = engines.map(function (e) [e.alias, e.description]);
         };
 
-        completion.searchEngineSuggest = function searchEngineSuggest(context, engineAliases, kludge) {
+        completion.searchEngineSuggest = function searchEngineSuggest(context, args, engineAliases, kludge) {
             if (!context.filter)
                 return;
 

@@ -215,7 +215,6 @@ const Abbreviations = Module("abbreviations", {
 }, {
 }, {
     completion: function () {
-        // TODO: shouldn't all of these have a standard signature (context, args, ...)? --djk
         completion.abbreviation = function abbreviation(context, args, modes) {
             if (args.completeArg == 0) {
                 let abbrevs = abbreviations.merged.filter(function (abbr) abbr.inModes(modes));
