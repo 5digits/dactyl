@@ -360,7 +360,7 @@ lookup:
                 }
             }
             else if (/\.css$/.test(filename))
-                storage.styles.registerSheet(uri.spec, false, true);
+                styles.registerSheet(uri.spec, false, true);
             else {
                 commands.execute(file.read(), null, silent || "loud", null,
                     { file: file.path, line: 1 });
