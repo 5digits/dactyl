@@ -44,8 +44,11 @@ const CommandWidgets = Class("CommandWidgets", {
             getGroup: function (value) this.activeGroup.commandline,
             onChange: function (elem) {
                 if (elem.inputField != dactyl.focus) {
-                    elem.selectionStart = elem.value.length;
-                    elem.selectionEnd = elem.value.length;
+                    try {
+                        elem.selectionStart = elem.value.length;
+                        elem.selectionEnd = elem.value.length;
+                    }
+                    catch (e) {}
                 }
                 if (elem.collapsed)
                     elem.focus();

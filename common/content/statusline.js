@@ -32,7 +32,7 @@ const StatusLine = Module("statusline", {
         }
     },
 
-    get visible() !this.statusBar.collapsed,
+    get visible() !this.statusBar.collapsed && !this.statusBar.hidden,
 
     /**
      * Update the status bar to indicate how secure the website is:
