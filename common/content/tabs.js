@@ -1046,7 +1046,7 @@ const Tabs = Module("tabs", {
                 "stringlist", "tab",
                 {
                     setter: function (values) {
-                        let [open, restriction] = [1, 0];
+                        let open = 1, restriction = 0;
                         for (let [, opt] in Iterator(values)) {
                             if (opt == "tab")
                                 open = 3;

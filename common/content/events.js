@@ -289,7 +289,7 @@ const Events = Module("events", {
                 let duringFeed = this.duringFeed;
                 this.duringFeed = [];
                 for (let [, evt] in Iterator(duringFeed))
-                    evt.target.dispatchEvent(evt);
+                    events.dispatch(evt.target, evt);
             }
         }
     },
@@ -356,6 +356,18 @@ const Events = Module("events", {
      */
     canonicalKeys: function (keys) {
         return events.fromString(keys).map(events.closure.toString).join("");
+    },
+
+    /**
+     * Dispatches an event to an element as if it were a native event.
+     *
+     * @param {Node} target The DOM node to which to dispatch the event.
+     * @param {Event} event The event to dispatch.
+     */
+    dispatch: function (target, event) {
+        return target.ownerDocument.defaultView
+                     .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                     .dispatchDOMEventViaPresShell(target, event, true);
     },
 
     /**

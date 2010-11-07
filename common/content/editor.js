@@ -56,7 +56,7 @@ const Editor = Module("editor", {
             elem.scrollLeft = curLeft;
             let event = elem.ownerDocument.createEvent("Event");
             event.initEvent("input", true, false);
-            elem.dispatchEvent(event);
+            events.dispatch(elem, event);
         }
     },
 

@@ -527,7 +527,7 @@ const Buffer = Module("buffer", {
                 try {
                     let [x, y] = elem.getAttribute("coords").split(",").map(parseFloat);
 
-                    elem.dispatchEvent(events.create(elem.ownerDocument, "mouseover", { screenX: x, screenY: y }));
+                    events.dispatch(elem, events.create(elem.ownerDocument, "mouseover", { screenX: x, screenY: y }));
                 }
                 catch (e) {}
             }
@@ -608,8 +608,7 @@ const Buffer = Module("buffer", {
     followLink: function (elem, where) {
         let doc = elem.ownerDocument;
         let view = doc.defaultView;
-        let offsetX = 1;
-        let offsetY = 1;
+        let { left: offsetX, top: offsetY } = elem.getBoundingClientRect();
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
             return buffer.focusElement(elem);
@@ -646,10 +645,10 @@ const Buffer = Module("buffer", {
 
         prefs.withContext(function () {
             prefs.set("browser.tabs.loadInBackground", true);
-            ["mousedown", "mouseup", "click"].forEach(function (event) {
-                elem.dispatchEvent(events.create(doc, event, {
+            ["mousedown", "mouseup"].forEach(function (event) {
+                events.dispatch(elem, events.create(doc, event, {
                     screenX: offsetX, screenY: offsetY,
-                    ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: ctrlKey
+                    ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: false
                 }));
             });
         });
