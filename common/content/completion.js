@@ -52,9 +52,9 @@ const CompletionContext = Class("CompletionContext", {
              */
             self.parent = parent;
 
-            ["filters", "keys", "title", "quote"].forEach(function (key)
+            ["filters", "keys", "process", "title", "quote"].forEach(function (key)
                 self[key] = parent[key] && util.cloneObject(parent[key]));
-            ["anchored", "compare", "editor", "_filter", "filterFunc", "forceAnchored", "keys", "process", "top"].forEach(function (key)
+            ["anchored", "compare", "editor", "_filter", "filterFunc", "forceAnchored", "top"].forEach(function (key)
                 self[key] = parent[key]);
 
             self.__defineGetter__("value", function () this.top.value);
