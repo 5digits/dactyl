@@ -648,7 +648,7 @@ const Buffer = Module("buffer", {
             ["mousedown", "mouseup"].forEach(function (event) {
                 events.dispatch(elem, events.create(doc, event, {
                     screenX: offsetX, screenY: offsetY,
-                    ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: false
+                    ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: ctrlKey
                 }));
             });
         });
