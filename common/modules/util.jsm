@@ -528,16 +528,20 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     isDomainURL: function isDomainURL(url, domain) util.isSubdomain(util.getHost(url), domain),
 
-    /**
-     * Returns true if *os* matches Dactyl's notion of the current operating
-     * system platform. This is one of "WINNT", "Darwin" or "Unix".
-     *
-     * @param {string} os The OS platform to test.
-     * @returns {boolean}
-     */
-    isOS: function isOS(os) {
-        let OS = services.get("runtime").OS;
-        return (OS == "WINNT" || OS == "Darwin") ? os == OS : os == "Unix";
+    /** Dactyl's notion of the current operating system platform. */
+    OS: {
+        _arch: services.get("runtime").OS,
+        /**
+         * @property {string} The normalised name of the OS. This is one of
+         *     "Windows", "Mac OS X" or "Unix".
+         */
+        get name() this.isWindows ? "Windows" : this.isMacOSX ? "Mac OS X" : "Unix",
+        /** @property {boolean} True if the OS is Windows. */
+        get isWindows() this._arch == "WINNT",
+        /** @property {boolean} True if the OS is Mac OS X. */
+        get isMacOSX() this._arch == "Darwin",
+        /** @property {boolean} True if the OS is some other *nix variant. */
+        get isUnix() !this.isWindows && !this.isMacOSX
     },
 
     /**

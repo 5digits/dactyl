@@ -24,7 +24,7 @@ const Editor = Module("editor", {
     selectedText: function () String(Editor.getEditor(null).selection),
 
     pasteClipboard: function (clipboard, toStart) {
-        if (util.isOS("WINNT")) {
+        if (util.OS.isWindows) {
             this.executeCommand("cmd_paste");
             return;
         }

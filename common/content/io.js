@@ -180,7 +180,7 @@ const IO = Module("io", {
         let rcFile1 = File.joinPaths(dir, "." + config.name + "rc", this.cwd);
         let rcFile2 = File.joinPaths(dir, "_" + config.name + "rc", this.cwd);
 
-        if (util.isOS("WINNT"))
+        if (util.OS.isWindows)
             [rcFile1, rcFile2] = [rcFile2, rcFile1];
 
         if (rcFile1.exists() && rcFile1.isFile())
@@ -230,9 +230,9 @@ const IO = Module("io", {
         if (File.isAbsolutePath(program))
             file = io.File(program, true);
         else {
-            let dirs = services.get("environment").get("PATH").split(util.isOS("WINNT") ? ";" : ":");
+            let dirs = services.get("environment").get("PATH").split(util.OS.isWindows ? ";" : ":");
             // Windows tries the CWD first TODO: desirable?
-            if (util.isOS("WINNT"))
+            if (util.OS.isWindows)
                 dirs = [io.cwd].concat(dirs);
 
 lookup:
@@ -244,7 +244,7 @@ lookup:
 
                     // TODO: couldn't we just palm this off to the start command?
                     // automatically try to add the executable path extensions on windows
-                    if (util.isOS("WINNT")) {
+                    if (util.OS.isWindows) {
                         let extensions = services.get("environment").get("PATHEXT").split(";");
                         for (let [, extension] in Iterator(extensions)) {
                             file = File.joinPaths(dir, program + extension, io.cwd);
@@ -407,7 +407,7 @@ lookup:
                 stdin.write(input);
 
             // TODO: implement 'shellredir'
-            if (util.isOS("WINNT") && !/sh/.test(options["shell"])) {
+            if (util.OS.isWindows && !/sh/.test(options["shell"])) {
                 command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(options["shell"], options["shellcmdflag"].split(/\s+/).concat(command), true);
             }
@@ -458,7 +458,7 @@ lookup:
         const rtpvar = config.idName + "_RUNTIME";
         let rtp = services.get("environment").get(rtpvar);
         if (!rtp) {
-            rtp = "~/" + (util.isOS("WINNT") ? "" : ".") + config.name;
+            rtp = "~/" + (util.OS.isWindows ? "" : ".") + config.name;
             services.get("environment").set(rtpvar, rtp);
         }
         return rtp;
@@ -641,7 +641,7 @@ lookup:
         };
 
         completion.environment = function environment(context) {
-            let command = util.isOS("WINNT") ? "set" : "env";
+            let command = util.OS.isWindows ? "set" : "env";
             let lines = io.system(command).split("\n");
             lines.pop();
 
@@ -696,7 +696,7 @@ lookup:
         completion.shellCommand = function shellCommand(context) {
             context.title = ["Shell Command", "Path"];
             context.generate = function () {
-                let dirNames = services.get("environment").get("PATH").split(util.isOS("WINNT") ? ";" : ":");
+                let dirNames = services.get("environment").get("PATH").split(util.OS.isWindows ? ";" : ":");
                 let commands = [];
 
                 for (let [, dirName] in Iterator(dirNames)) {
@@ -726,7 +726,7 @@ lookup:
     },
     options: function () {
         var shell, shellcmdflag;
-        if (util.isOS("WINNT")) {
+        if (util.OS.isWindows) {
             shell = "cmd.exe";
             shellcmdflag = "/c";
         }
@@ -766,7 +766,7 @@ lookup:
             "string", shellcmdflag,
             {
                 getter: function (value) {
-                    if (this.hasChanged || !util.isOS("WINNT"))
+                    if (this.hasChanged || !util.OS.isWindows)
                         return value;
                     return /sh/.test(options["shell"]) ? "-c" : "/c";
                 }
