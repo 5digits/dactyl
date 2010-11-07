@@ -538,7 +538,7 @@ const CompletionContext = Class("CompletionContext", {
      */
     advance: function advance(count) {
         delete this._ignoreCase;
-        if (this.quote) {
+        if (this.quote && count) {
             count = this.quote[0].length + this.quote[1](this.filter.substr(0, count)).length;
             this.quote[0] = "";
             this.quote[2] = "";
@@ -606,13 +606,6 @@ const CompletionContext = Class("CompletionContext", {
         if (completer)
             return null;
         return context;
-    },
-
-    getText: function getText(item) {
-        let text = item[self.keys["text"]];
-        if (self.quote)
-            return self.quote(text);
-        return text;
     },
 
     highlight: function highlight(start, length, type) {

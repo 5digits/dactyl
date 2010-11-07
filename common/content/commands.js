@@ -408,11 +408,11 @@ const ex = {
         dactyl.assert(cmd, "No such command");
 
         return update(function exCommand(options) {
-            let args = this._args(cmd, arguments);
+            let args = ex._args(cmd, arguments);
             args.verify();
             return cmd.execute(args);
         }, {
-            dactylCompleter: this._complete(cmd)
+            dactylCompleter: ex._complete(cmd)
         });
     },
 

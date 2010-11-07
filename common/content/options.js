@@ -224,7 +224,6 @@ const Option = Class("Option", {
     op: function (operator, values, scope, invert, str) {
 
         let newValues = this._op(operator, values, scope, invert);
-
         if (newValues == null)
             return "Operator " + operator + " not supported for option type " + this.type;
 
@@ -538,6 +537,7 @@ const Option = Class("Option", {
 
         stringlist: function (operator, values, scope, invert) {
             values = Array.concat(values);
+
             switch (operator) {
             case "+":
                 return array.uniq(Array.concat(this.value, values), true);

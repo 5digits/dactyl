@@ -297,7 +297,7 @@ const Dactyl = Module("dactyl", {
 
         if (!context)
             context = userContext;
-        if (!window.XPCSafeJSObjectWrapper)
+        if (window.isPrototypeOf(modules))
             return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
         return Cu.evalInSandbox("with (window) { with (modules) { this.eval(" + str.quote() + ") } }", context, "1.8", fileName, lineNumber);
     },
@@ -2016,8 +2016,8 @@ const Dactyl = Module("dactyl", {
             let init = services.get("environment").get(config.idName + "_INIT");
             let rcFile = io.getRCFile("~");
 
-            if (!window.XPCSafeJSObjectWrapper)
-                jsmodules.__proto__ = XPCNativeWrapper(window);
+            if (dactyl.userEval('typeof document') === "undefined")
+                jsmodules.__proto__ = (window.XPCSafeJSObjectWrapper || XPCNativeWrapper)(window);
 
             try {
                 if (dactyl.commandLineOptions.rcFile) {

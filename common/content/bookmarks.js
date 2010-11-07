@@ -399,7 +399,6 @@ const Bookmarks = Module("bookmarks", {
             {
                 bang: true,
                 completer: function completer(context, args) {
-                    context.quote = null;
                     context.filter = args.join(" ");
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
                 },

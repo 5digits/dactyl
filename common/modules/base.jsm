@@ -1132,7 +1132,7 @@ const array = Class("array", Array, {
     uniq: function uniq(ary, unsorted) {
         let ret = [];
         if (unsorted) {
-            for (let [, item] in Iterator(ary))
+            for (let item in values(ary))
                 if (ret.indexOf(item) == -1)
                     ret.push(item);
         }
