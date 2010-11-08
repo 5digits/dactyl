@@ -365,7 +365,7 @@ const Events = Module("events", {
      * @param {Event} event The event to dispatch.
      */
     dispatch: Class.memoize(function ()
-        util.haveGecko("2.0")
+        util.haveGecko("2b")
             ? function (target, event) // This causes a crash on Gecko<2.0, it seems.
                     target.ownerDocument.defaultView
                           .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)

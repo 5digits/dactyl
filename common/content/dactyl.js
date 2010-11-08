@@ -767,21 +767,14 @@ const Dactyl = Module("dactyl", {
      * @param {number} level The logging level 0 - 15.
      */
     log: function (msg, level) {
-        let verbose = 0;
-        if (level == undefined)
-            level = 1;
+        let verbose = prefs.get("extensions.dactyl.loglevel", 0);
 
-        // options does not exist at the very beginning
-        if (modules.options)
-            verbose = prefs.get("extensions.dactyl.loglevel", 0);
+        if (!level || level <= verbose) {
+            if (isObject(msg))
+                msg = util.objectToString(msg, false);
 
-        if (level > verbose)
-            return;
-
-        if (typeof msg == "object")
-            msg = util.objectToString(msg, false);
-
-        services.get("console").logStringMessage(config.name + ": " + msg);
+            services.get("console").logStringMessage(config.name + ": " + msg);
+        }
     },
 
     /**
