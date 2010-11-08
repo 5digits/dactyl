@@ -1259,7 +1259,7 @@ const Buffer = Module("buffer", {
             {
                 argCount: "?",
                 completer: function (context) {
-                    completion.optionValue(context, args, "pageinfo", "+", "");
+                    completion.optionValue(context, "pageinfo", "+", "");
                     context.title = ["Page Info"];
                 }
             });
@@ -1374,7 +1374,7 @@ const Buffer = Module("buffer", {
             {
                 argCount: "?",
                 bang: true,
-                completer: function (context, args) completion.url(context, args, "bhf")
+                completer: function (context) completion.url(context, "bhf")
             });
 
         commands.add(["zo[om]"],

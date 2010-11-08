@@ -1685,7 +1685,7 @@ const Dactyl = Module("dactyl", {
                 }, {
                     argCount: "?",
                     bang: true,
-                    completer: function (context, args) completion.help(context, args, unchunked),
+                    completer: function (context) completion.help(context, unchunked),
                     literal: 0
                 });
         });
@@ -1937,7 +1937,7 @@ const Dactyl = Module("dactyl", {
             };
         };
 
-        completion.help = function help(context, args, unchunked) {
+        completion.help = function help(context, unchunked) {
             dactyl.initHelp();
             context.title = ["Help"];
             context.anchored = false;

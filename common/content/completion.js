@@ -765,7 +765,7 @@ const Completion = Module("completion", {
     // may consist of search engines, filenames, bookmarks and history,
     // depending on the 'complete' option
     // if the 'complete' argument is passed like "h", it temporarily overrides the complete option
-    url: function url(context, args, complete) {
+    url: function url(context, complete) {
         let numLocationCompletions = 0; // how many async completions did we already return to the caller?
         let start = 0;
         let skip = 0;
@@ -794,7 +794,7 @@ const Completion = Module("completion", {
         this.urlCompleters[opt] = completer;
     },
 
-    urls: function (context, args, tags) {
+    urls: function (context, tags) {
         let compare = String.localeCompare;
         let contains = String.indexOf;
         if (context.ignoreCase) {
