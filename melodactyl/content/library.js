@@ -37,7 +37,7 @@ const Library = Module("library", {
     getAlbums: function getAlbums(artist) {
         let albums = this._toJSArray(this.MAIN_LIBRARY.getItemsByProperty(SBProperties.artistName, artist))
                          .map(function (track) track.getProperty(SBProperties.albumName));
-        return util.Array.uniq(albums);
+        return array.uniq(albums);
     },
 
     /**

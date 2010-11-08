@@ -141,7 +141,7 @@ const Abbreviations = Module("abbreviations", {
         for (let [, mabbrevs] in Iterator(this.abbrevs))
             lhses = lhses.concat([key for (key in mabbrevs)]);
         lhses.sort();
-        lhses = util.Array.uniq(lhses);
+        lhses = array.uniq(lhses);
 
         for (let [, lhs] in Iterator(lhses)) {
             let exists = {};
