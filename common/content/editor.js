@@ -570,7 +570,8 @@ const Editor = Module("editor", {
             ["<S-Insert>"], "Insert clipboard/selection",
             function () { editor.pasteClipboard(); });
 
-        mappings.add(modes.getCharModes("i"),
+        // TODO: a better way to specify mode types
+        mappings.add(modes.getCharModes("i").concat(modes.TEXT_EDIT, modes.COMMAND_LINE),
             ["<C-i>"], "Edit text field with an external editor",
             function () { editor.editFieldExternally(); });
 

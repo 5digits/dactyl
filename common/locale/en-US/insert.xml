@@ -140,6 +140,14 @@
 
 <h2 tag="text-edit-mode text-edit tedit-mode">Text Edit mode</h2>
 
+<item>
+    <tags><![CDATA[t_<C-i>]]></tags>
+    <spec>&lt;C-i></spec>
+    <description short="true">
+        <p>Launch the external editor. See the <o>editor</o> option.</p>
+    </description>
+</item>
+
 <h3 tag="tedit-cursor-motions">Cursor motions</h3>
 
 <p>Left-right motions</p>

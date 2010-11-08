@@ -49,6 +49,14 @@
 <h2 tag="cmdline-editing">Command line editing</h2>
 
 <item>
+    <tags><![CDATA[c_<C-i>]]></tags>
+    <spec>&lt;C-i></spec>
+    <description short="true">
+        <p>Launch the external editor. See the <o>editor</o> option.</p>
+    </description>
+</item>
+
+<item>
     <tags><![CDATA[c_<C-c>]]></tags>
     <spec>&lt;C-c></spec>
     <description short="true">
