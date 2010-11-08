@@ -645,7 +645,8 @@ const Buffer = Module("buffer", {
 
         prefs.withContext(function () {
             prefs.set("browser.tabs.loadInBackground", true);
-            ["mousedown", "mouseup"].forEach(function (event) {
+            ["mousedown", "mouseup", "click"].slice(0, util.haveGecko("2.0") ? 2 : 3)
+                .forEach(function (event) {
                 events.dispatch(elem, events.create(doc, event, {
                     screenX: offsetX, screenY: offsetY,
                     ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: ctrlKey

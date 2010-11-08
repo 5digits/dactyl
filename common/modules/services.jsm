@@ -52,6 +52,7 @@ const Services = Module("Services", {
         this.add("tagging",             "@mozilla.org/browser/tagging-service;1",           Ci.nsITaggingService);
         this.add("threading",           "@mozilla.org/thread-manager;1",                    Ci.nsIThreadManager);
         this.add("urifixup",            "@mozilla.org/docshell/urifixup;1",                 Ci.nsIURIFixup);
+        this.add("versionCompare",      "@mozilla.org/xpcom/version-comparator;1",          Ci.nsIVersionComparator);
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
 

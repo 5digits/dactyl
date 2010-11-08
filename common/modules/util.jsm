@@ -467,6 +467,14 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
+     * Returns true if the current Gecko runtime is of the given version
+     * or greater.
+     *
+     * @param {string} ver The required version.
+     */
+    haveGecko: function (ver) services.get("versionCompare").compare(services.get("runtime").platformVersion, ver) >= 0,
+
+    /**
      * Sends a synchronous or asynchronous HTTP request to *url* and returns
      * the XMLHttpRequest object. If *callback* is specified the request is
      * asynchronous and the *callback* is invoked with the object as its

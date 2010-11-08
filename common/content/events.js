@@ -364,11 +364,13 @@ const Events = Module("events", {
      * @param {Node} target The DOM node to which to dispatch the event.
      * @param {Event} event The event to dispatch.
      */
-    dispatch: function (target, event) {
-        return target.ownerDocument.defaultView
-                     .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                     .dispatchDOMEventViaPresShell(target, event, true);
-    },
+    dispatch: Class.memoize(function ()
+        util.haveGecko("2.0")
+            ? function (target, event) // This causes a crash on Gecko<2.0, it seems.
+                    target.ownerDocument.defaultView
+                          .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                          .dispatchDOMEventViaPresShell(target, event, true)
+            : function (target, event) target.dispatchEvent(event)),
 
     /**
      * Converts an event string into an array of pseudo-event objects.
