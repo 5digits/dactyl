@@ -150,17 +150,17 @@
 
 <item>
     <tags>:unm :unmap</tags>
-    <spec>:map <a>lhs</a> <a>rhs</a></spec>
+    <spec>:unmap <a>lhs</a></spec>
     <tags>:nun :nunmap</tags>
-    <spec>:nun<oa>map</oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:nun<oa>map</oa> <a>lhs</a></spec>
     <tags>:vun :vunmap</tags>
-    <spec>:vun<oa>map</oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:vun<oa>map</oa> <a>lhs</a></spec>
     <tags>:iu :iunmap</tags>
-    <spec>:iu<oa>nmap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:iu<oa>nmap</oa> <a>lhs</a></spec>
     <tags>:tu :tunmap</tags>
-    <spec>:tu<oa>nmap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:tu<oa>nmap</oa> <a>lhs</a></spec>
     <tags>:cu :cunmap</tags>
-    <spec>:cu<oa>nmap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:cu<oa>nmap</oa> <a>lhs</a></spec>
     <description>
         <p>Remove the mapping of <a>lhs</a> for the applicable mode(s).</p>
     </description>
