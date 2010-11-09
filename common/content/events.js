@@ -693,7 +693,7 @@ const Events = Module("events", {
             && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window]))
             if (elem.frameElement)
                 dactyl.focusContent(true);
-            else
+            else if (!(elem instanceof Window) || Editor.getEditor(elem))
                 elem.blur();
     },
 
