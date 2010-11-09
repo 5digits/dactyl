@@ -28,7 +28,7 @@
     <window id="&dactyl.mainWindow;">
 
         <popupset>
-            <panel id="dactyl-visualbell" dactyl:highlight="Bell"
+            <panel id="dactyl-popup-bell" dactyl:highlight="Bell"
                    noautohide="true" noautofocus="true"/>
 
             <menupopup id="dactyl-contextmenu"
@@ -53,6 +53,10 @@
         <commandset id="onPentadactylSelect" commandupdater="true" events="select"
                     oncommandupdate="&events;.onSelectionChange(event);"/>
     </window>
+
+    <deck id="tab-view-deck">
+        <vbox id="dactyl-deck-bell" dactyl:highlight="Bell"/>
+    </deck>
 
     <vbox id="&dactyl.commandContainer;">
 

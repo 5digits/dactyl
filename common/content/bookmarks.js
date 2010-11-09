@@ -38,7 +38,7 @@ const Bookmarks = Module("bookmarks", {
 
         try {
             let uri = util.createURI(url);
-            if (!force && bookmarks.isBookmarked(uri.spec))
+            if (!force && this.isBookmarked(uri.spec))
                 for (let bmark in bookmarkcache)
                     if (bmark.url == uri.spec) {
                         var id = bmark.id;

@@ -139,16 +139,24 @@ const Dactyl = Module("dactyl", {
     beep: requiresMainThread(function () {
         if (options["visualbell"]) {
             // flash the visual bell
-            let popup = document.getElementById("dactyl-visualbell");
-            let win = config.visualbellWindow;
-            let rect = win.getBoundingClientRect();
-            let width = rect.right - rect.left;
-            let height = rect.bottom - rect.top;
+            let popup = document.getElementById("dactyl-deck-bell");
+            if (popup) {
+                let restore = popup.parentNode.selectedPanel;
+                popup.parentNode.selectedPanel = popup;
+                util.timeout(function () { popup.parentNode.selectedPanel = restore; }, 20);
+            }
+            else {
+                popup = document.getElementById("dactyl-popup-bell");
+                let win = config.visualbellWindow;
+                let rect = win.getBoundingClientRect();
+                let width = rect.right - rect.left;
+                let height = rect.bottom - rect.top;
 
-            // NOTE: this doesn't seem to work in FF3 with full box dimensions
-            popup.openPopup(win, "overlap", 1, 1, false, false);
-            popup.sizeTo(width - 2, height - 2);
-            util.timeout(function () { popup.hidePopup(); }, 20);
+                // NOTE: this doesn't seem to work in FF3 with full box dimensions
+                popup.openPopup(win, "overlap", 1, 1, false, false);
+                popup.sizeTo(width - 2, height - 2);
+                util.timeout(function () { popup.hidePopup(); }, 20);
+            }
         }
         else {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);
