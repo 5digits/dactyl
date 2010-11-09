@@ -382,9 +382,14 @@ const Editor = Module("editor", {
 
         if (elem instanceof Element)
             return elem.QueryInterface(Ci.nsIDOMNSEditableElement).editor;
-        return elem.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-                   .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
-                   .getEditorForWindow(elem);
+        try {
+            return elem.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                       .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
+                       .getEditorForWindow(elem);
+        }
+        catch (e) {
+            return null;
+        }
     },
 
     getController: function () {
