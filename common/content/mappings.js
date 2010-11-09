@@ -406,7 +406,7 @@ const Mappings = Module("mappings", {
             const opts = {
                     completer: function (context, args) {
                         if (args.length == 1)
-                            return completion.userMapping(context, args, mapmodes);
+                            return completion.userMapping(context, mapmodes);
                         if (args.length == 2) {
                             if (args["-javascript"])
                                 return completion.javascript(context);
@@ -515,7 +515,7 @@ const Mappings = Module("mappings", {
                 },
                 {
                     argCount: "1",
-                    completer: function (context, args) completion.userMapping(context, args, mapmodes)
+                    completer: function (context) completion.userMapping(context, mapmodes)
                 });
         }
 
@@ -528,14 +528,11 @@ const Mappings = Module("mappings", {
                                [mode.disp.toLowerCase()]);
     },
     completion: function () {
-        completion.userMapping = function userMapping(context, args, modes) {
+        completion.userMapping = function userMapping(context, modes) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
             modes = modes || [modules.modes.NORMAL];
-
-            if (args.completeArg == 0) {
-                let maps = [[m.names[0], ""] for (m in mappings.getUserIterator(modes))];
-                context.completions = maps;
-            }
+            let maps = [[m.names[0], ""] for (m in mappings.getUserIterator(modes))];
+            context.completions = maps;
         };
     },
     javascript: function () {

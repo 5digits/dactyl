@@ -851,7 +851,7 @@ const Completion = Module("completion", {
             },
             {
                 argCount: "*",
-                completer: function (context, args) {
+                completer: function (context) {
                     let PREFIX = "/ex/contexts";
                     context.fork("ex", 0, completion, "ex");
                     completion.contextList = [[k.substr(PREFIX.length), v.title[0]] for ([k, v] in iter(context.contexts)) if (k.substr(0, PREFIX.length) == PREFIX)];

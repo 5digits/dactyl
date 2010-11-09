@@ -487,7 +487,7 @@ const Player = Module("player", {
             },
             {
                 argCount: "?",
-                completer: function (context, args) completion.playlist(context, args),
+                completer: function (context, args) completion.playlist(context),
                 literal: 0
             });
 
@@ -617,7 +617,14 @@ const Player = Module("player", {
             },
             {
                 argCount: "+",
-                completer: function (context, args) completion.song(context, args)
+                completer: function (context, args) {
+                    if (args.completeArg == 0)
+                        completion.artist(context);
+                    else if (args.completeArg == 1)
+                        completion.album(context, args[0]);
+                    else if (args.completeArg == 2)
+                        completion.song(context, args[0], args[1]);
+                }
             });
 
         // TODO: maybe :vol! could toggle mute on/off? --djk
@@ -639,26 +646,17 @@ const Player = Module("player", {
             { argCount: "1" });
     },
     completion: function () {
-        completion.song = function song(context, args) {
-            // TODO: useful descriptions?
-            function map(list) list.map(function (i) [i, ""]);
-            let [artist, album] = [args[0], args[1]];
-
-            if (args.completeArg == 0) {
-                context.title = ["Artists"];
-                context.completions = map(library.getArtists());
-            }
-            else if (args.completeArg == 1) {
-                context.title = ["Albums by " + artist];
-                context.completions = map(library.getAlbums(artist));
-            }
-            else if (args.completeArg == 2) {
-                context.title = ["Tracks from " + album + " by " + artist];
-                context.completions = map(library.getTracks(artist, album));
-            }
+        completion.album = function album(context, artist) {
+            context.title = ["Album"];
+            context.completions = [[v, ""] for ([, v] in Iterator(library.getAlbums(artist)))];
         };
 
-        completion.playlist = function playlist(context, args) {
+        completion.artist = function artist(context) {
+            context.title = ["Artist"];
+            context.completions = [[v, ""] for ([, v] in Iterator(library.getArtists()))];
+        };
+
+        completion.playlist = function playlist(context) {
             context.title = ["Playlist", "Type"];
             context.keys = { text: "name", description: "type" };
             context.completions = player.getPlaylists();
@@ -676,6 +674,11 @@ const Player = Module("player", {
             context.anchored = false;
             context.completions = [["title", "Track name"], ["time", "Duration"], ["artist", "Artist name"],
                 ["album", "Album name"], ["genre", "Genre"], ["rating", "Rating"]]; // FIXME: generate this list dynamically - see #sortBy
+        };
+
+        completion.song = function album(context, artist, album) {
+            context.title = ["Song"];
+            context.completions = [[v, ""] for ([, v] in Iterator(library.getTracks(artist, album)))];
         };
     },
     mappings: function () {

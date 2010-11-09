@@ -1252,7 +1252,7 @@ const Commands = Module("commands", {
                                         argCount: args["-nargs"],
                                         bang: args["-bang"],
                                         count: args["-count"],
-                                        completer: completeFunc,
+                                        completer: function (context) completeFunc(context),
                                         persist: !args["-nopersist"],
                                         replacementText: args.literalArg,
                                         sourcing: io.sourcing && update({}, io.sourcing)

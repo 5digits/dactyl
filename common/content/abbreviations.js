@@ -215,12 +215,9 @@ const Abbreviations = Module("abbreviations", {
 }, {
 }, {
     completion: function () {
-        // TODO: shouldn't all of these have a standard signature (context, args, ...)? --djk
-        completion.abbreviation = function abbreviation(context, args, modes) {
-            if (args.completeArg == 0) {
-                let abbrevs = abbreviations.merged.filter(function (abbr) abbr.inModes(modes));
-                context.completions = [[abbr.lhs, abbr.rhs] for ([, abbr] in Iterator(abbrevs))];
-            }
+        completion.abbreviation = function abbreviation(context, modes) {
+            let abbrevs = abbreviations.merged.filter(function (abbr) abbr.inModes(modes));
+            context.completions = [[abbr.lhs, abbr.rhs] for ([, abbr] in Iterator(abbrevs))];
         };
     },
 
@@ -252,7 +249,7 @@ const Abbreviations = Module("abbreviations", {
                     ],
                     completer: function (context, args) {
                         if (args.length == 1)
-                            return completion.abbreviation(context, args, modes);
+                            return completion.abbreviation(context, modes);
                         else if (args["-javascript"])
                             return completion.javascript(context);
                     },
@@ -279,7 +276,7 @@ const Abbreviations = Module("abbreviations", {
                         return dactyl.echoerr("E24: No such abbreviation");
                 }, {
                     argCount: "1",
-                    completer: function (context, args) completion.abbreviation(context, args, modes),
+                    completer: function (context) completion.abbreviation(context, modes),
                     literal: 0
                 });
 

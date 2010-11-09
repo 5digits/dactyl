@@ -408,7 +408,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     {
                         names: ["-host", "-h"],
                         description: "Only sanitize items referring to listed host or hosts",
-                        completer: function (context, args) {
+                        completer: function (context) {
                             let hosts = context.filter.split(",");
                             context.advance(context.filter.length - hosts.pop().length);
                             context.filters.push(function (item)

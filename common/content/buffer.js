@@ -1205,7 +1205,7 @@ const Buffer = Module("buffer", {
 
             elem.value = file.path;
         }, {
-            completer: completion.file,
+            completer: function (context) completion.file(context),
             default: elem.value
         });
     }
