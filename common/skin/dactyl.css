@@ -70,7 +70,10 @@
     url-prefix(chrome://) {
 
 [dactyl|highlight~=Bell] {
-    -moz-appearance: none;
+    -moz-appearance: none !important;
+}
+window[dactyl|highlight~=Bell] > * {
+    visibility: hidden !important;
 }
 
 [dactyl|highlight~=CmdLine] {

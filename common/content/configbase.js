@@ -263,7 +263,7 @@ const ConfigBase = Class(ModuleBase, {
             right:    0     !important;
         }
 
-        !Bell         border: none; background-color: black;
+        !Bell         background-color: black !important;
         Hint;;* {
             /* This gets released into the wild, so everything is important */
             font: bold 10px monospace !important;

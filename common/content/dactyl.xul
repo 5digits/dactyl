@@ -28,9 +28,6 @@
     <window id="&dactyl.mainWindow;">
 
         <popupset>
-            <panel id="dactyl-popup-bell" dactyl:highlight="Bell"
-                   noautohide="true" noautofocus="true"/>
-
             <menupopup id="dactyl-contextmenu"
                        onpopupshowing="return (event.target != this || dactyl.modules.commandline.onContext(event));">
                 <menuitem id="dactyl-context-copylink"
