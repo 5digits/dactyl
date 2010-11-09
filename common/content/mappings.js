@@ -531,8 +531,7 @@ const Mappings = Module("mappings", {
         completion.userMapping = function userMapping(context, modes) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
             modes = modes || [modules.modes.NORMAL];
-            let maps = [[m.names[0], ""] for (m in mappings.getUserIterator(modes))];
-            context.completions = maps;
+            context.completions = [[m.names[0], ""] for (m in mappings.getUserIterator(modes))];
         };
     },
     javascript: function () {

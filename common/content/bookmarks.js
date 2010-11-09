@@ -135,12 +135,14 @@ const Bookmarks = Module("bookmarks", {
         }
     },
 
-    // TODO: add filtering
-    // also ensures that each search engine has a Dactyl-friendly alias
-    getSearchEngines: function getSearchEngines() {
+    getSearchEngine: function getSearchEngine(alias)
+        this.searchEngines.filter(function (e) e.alias === alias)[0],
+
+    getSearchEngines: deprecated("Please use bookmarks.searchEngines instead", function getSearchEngines() this.searchEngines),
+    get searchEngines() {
         let searchEngines = [];
         let aliases = {};
-        for (let [, engine] in Iterator(services.get("browserSearch").getVisibleEngines({}))) {
+        return services.get("browserSearch").getVisibleEngines({}).map(function (engine) {
             let alias = engine.alias;
             if (!alias || !/^[a-z_-]+$/.test(alias))
                 alias = engine.name.replace(/^\W*([a-zA-Z_-]+).*/, "$1").toLowerCase();
@@ -151,19 +153,15 @@ const Bookmarks = Module("bookmarks", {
                 alias += ++aliases[alias];
             else
                 aliases[alias] = 0;
-            if (engine.alias != alias)
-                engine.alias = alias;
 
-            searchEngines.push({ keyword: engine.alias, title: engine.description, icon: engine.iconURI && engine.iconURI.spec });
-        }
-
-        return searchEngines;
+            return { keyword: alias, __proto__: engine, title: engine.description, icon: engine.iconURI && engine.iconURI.spec };
+        });
     },
 
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
-        let engine = services.get("browserSearch").getEngineByAlias(engineName);
+        let engine = this.getSearchEngine(engineName);
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
         if (!queryURI)
@@ -172,27 +170,24 @@ const Bookmarks = Module("bookmarks", {
         function process(resp) {
             let results = [];
             try {
-                results = services.get("json").decode(resp.responseText)[1];
-                results = [[item, ""] for ([k, item] in Iterator(results)) if (typeof item == "string")];
+                results = JSON.parse(resp.responseText)[1].filter(isString);
             }
             catch (e) {}
-            if (!callback)
-                return results;
-            return callback(results);
+            if (callback)
+                return callback(results);
+            return results;
         }
 
         let resp = util.httpGet(queryURI, callback && process);
-        if (!callback)
-            return process(resp);
-        return null;
+        if (callback)
+            return null;
+        return process(resp);
     },
 
     // TODO: add filtering
     // format of returned array:
     // [keyword, helptext, url]
-    getKeywords: function getKeywords() {
-        return bookmarkcache.keywords;
-    },
+    getKeywords: function getKeywords() bookmarkcache.keywords,
 
     // full search string including engine name as first word in @param text
     // if @param useDefSearch is true, it uses the default search engine
@@ -200,10 +195,6 @@ const Bookmarks = Module("bookmarks", {
     //          if the search also requires a postData, [url, postData] is returned
     getSearchURL: function getSearchURL(text, useDefsearch) {
         let searchString = (useDefsearch ? options["defsearch"] + " " : "") + text;
-
-        // we need to make sure our custom alias have been set, even if the user
-        // did not :open <tab> once before
-        this.getSearchEngines();
 
         // ripped from Firefox
         function getShortcutOrURI(url) {
@@ -489,16 +480,14 @@ const Bookmarks = Module("bookmarks", {
             {
                 completer: function completer(context) {
                     completion.search(context, true);
-                    context.completions = [["", "Don't perform searches by default"]].concat(context.completions);
+                    context.completions = [{ keyword: "", title: "Don't perform searches by default" }].concat(context.completions);
                 }
             });
 
         options.add(["suggestengines"],
-             "Engine Alias which has a feature of suggest",
+             "Engine alias which provide search suggestions",
              "stringlist", "google",
-             {
-                 completer: function completer(context) completion.searchEngine(context, true),
-             });
+             { completer: function completer(context) completion.searchEngine(context, true), });
     },
 
     completion: function () {
@@ -516,7 +505,7 @@ const Bookmarks = Module("bookmarks", {
         completion.search = function search(context, noSuggest) {
             let [, keyword, space, args] = context.filter.match(/^\s*(\S*)(\s*)(.*)$/);
             let keywords = bookmarks.getKeywords();
-            let engines = bookmarks.getSearchEngines();
+            let engines = bookmarks.searchEngines;
 
             context.title = ["Search Keywords"];
             context.completions = array(values(keywords)).concat(engines).array;
@@ -579,6 +568,7 @@ const Bookmarks = Module("bookmarks", {
                 let ctxt = context.fork(name, 0);
 
                 ctxt.title = [engine.description + " Suggestions"];
+                ctxt.keys = { text: util.identity, description: function () "" };
                 ctxt.compare = CompletionContext.Sort.unsorted;
                 ctxt.incomplete = true;
                 bookmarks.getSuggestions(name, ctxt.filter, function (compl) {
