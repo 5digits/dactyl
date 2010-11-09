@@ -33,7 +33,7 @@ const Abbreviation = Class("Abbreviation", {
 }, {
     modeChar: function (_modes) {
         let result = "";
-        for ([, mode] in Iterator(_modes))
+        for (let [, mode] in Iterator(_modes))
             result += modes.getMode(mode).char;
         if (/^(ic|ci)$/(result))
             result = "!";
