@@ -557,7 +557,6 @@ const Bookmarks = Module("bookmarks", {
 
             let engineList = (engineAliases || options["suggestengines"].join(",") || "google").split(",");
 
-            let completions = [];
             engineList.forEach(function (name) {
                 let engine = services.get("browserSearch").getEngineByAlias(name);
                 if (!engine)
