@@ -94,7 +94,7 @@ const Abbreviations = Module("abbreviations", {
     /**
      * Adds a new abbreviation.
      *
-     * @param {Abbreviation}
+     * @param {Abbreviation} abbr The abbreviation to add.
      */
     add: function (abbr) {
         if (!(abbr instanceof Abbreviation))
@@ -108,10 +108,10 @@ const Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * Returns matched abbreviation.
+     * Returns the abbreviation with *lhs* in the given *mode*.
      *
-     * @param {mode}
-     * @param {string}
+     * @param {Mode} mode The mode of the abbreviation.
+     * @param {string} lhs The LHS of the abbreviation.
      */
     get: function (mode, lhs) {
         let abbrevs = this.abbrevs[mode];
@@ -119,7 +119,11 @@ const Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * Returns the abbreviation that matches the given text.
+     * Returns the abbreviation for the given *mode* if *text* matches the
+     * abbreviation expansion criteria.
+     *
+     * @param {Mode} mode The mode to search.
+     * @param {string} text The string to test against the expansion criteria.
      *
      * @returns {Abbreviation}
      */
@@ -131,7 +135,8 @@ const Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * The list of the abbreviations merged from each modes.
+     * @property {Abbreviation[]} The list of the abbreviations merged from
+     *     each mode.
      */
     get merged() {
         let result = [];
@@ -160,7 +165,7 @@ const Abbreviations = Module("abbreviations", {
     /**
      * Lists all abbreviations matching *modes* and *lhs*.
      *
-     * @param {Array} list of mode.
+     * @param {Array} modes List of modes.
      * @param {string} lhs The LHS of the abbreviation.
      */
     list: function (modes, lhs) {
@@ -182,9 +187,9 @@ const Abbreviations = Module("abbreviations", {
     /**
      * Remove the specified abbreviations.
      *
-     * @param {Array} list of mode.
-     * @param {string} lhs of abbreviation.
-     * @returns {boolean} did the deleted abbreviation exist?
+     * @param {Array} modes List of modes.
+     * @param {string} lhs The LHS of the abbreviation.
+     * @returns {boolean} Did the deleted abbreviation exist?
      */
     remove: function (modes, lhs) {
         let result = false;
@@ -199,9 +204,9 @@ const Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * Removes all abbreviations specified *modes*.
+     * Removes all abbreviations specified in *modes*.
      *
-     * @param {Array} list of mode.
+     * @param {Array} modes List of modes.
      */
     removeAll: function (modes) {
         for (let [, mode] in modes) {
