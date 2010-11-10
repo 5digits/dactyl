@@ -51,9 +51,11 @@
                     oncommandupdate="&events;.onSelectionChange(event);"/>
     </window>
 
+    <!--
     <deck id="tab-view-deck">
         <vbox id="dactyl-deck-bell" dactyl:highlight="Bell"/>
     </deck>
+    -->
 
     <vbox id="&dactyl.commandContainer;">
 

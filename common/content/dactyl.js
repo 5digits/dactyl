@@ -139,11 +139,13 @@ const Dactyl = Module("dactyl", {
     beep: requiresMainThread(function () {
         if (options["visualbell"]) {
             // flash the visual bell
-            let popup = document.getElementById("dactyl-deck-bell");
-            if (popup) {
-                let restore = popup.parentNode.selectedPanel;
-                popup.parentNode.selectedPanel = popup;
-                util.timeout(function () { popup.parentNode.selectedPanel = restore; }, 20);
+            let panel = document.getElementById("dactyl-deck-bell");
+            if (panel) {
+                let restore = panel.parentNode.selectedPanel;
+                if (restore !== panel) {
+                    panel.parentNode.selectedPanel = panel;
+                    util.timeout(function () { panel.parentNode.selectedPanel = restore; }, 20);
+                }
             }
             else {
                 highlight.highlightNode(document.documentElement, "Bell");
