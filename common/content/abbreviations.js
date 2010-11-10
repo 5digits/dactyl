@@ -216,8 +216,9 @@ const Abbreviations = Module("abbreviations", {
 }, {
     completion: function () {
         completion.abbreviation = function abbreviation(context, modes) {
-            let abbrevs = abbreviations.merged.filter(function (abbr) abbr.inModes(modes));
-            context.completions = [[abbr.lhs, abbr.rhs] for ([, abbr] in Iterator(abbrevs))];
+            let fn = modes ? function (abbr) abbr.inModes(modes) : util.identity;
+            context.keys = { text: "lhs" , description: "rhs" };
+            context.completions = abbreviations.merged.filter(fn);
         };
     },
 
