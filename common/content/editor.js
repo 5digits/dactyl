@@ -350,23 +350,22 @@ const Editor = Module("editor", {
      * Expands an abbreviation in the currently active textbox.
      *
      * @param {string} mode The mode filter.
-     * @see #addAbbreviation
+     * @see Abbreviation#expand
      */
     expandAbbreviation: function (mode) {
-        let textbox   = Editor.getEditor();
-        if (!(textbox && textbox.value))
+        let editor = Editor.getEditor();
+        if (!(editor && editor.value))
             return;
-        let text      = textbox.value;
-        let currStart = textbox.selectionStart;
-        let currEnd   = textbox.selectionEnd;
-        let abbrev    = abbreviations.match(mode, text.substring(0, currStart).replace(/.*\s/g, ""));
+        let text   = editor.value;
+        let start  = editor.selectionStart;
+        let end    = editor.selectionEnd;
+        let abbrev = abbreviations.match(mode, text.substring(0, start).replace(/.*\s/g, ""));
         if (abbrev) {
             let len = abbrev.lhs.length;
-            let abbrText = abbrev.expand(textbox);
-            text = text.substring(0, currStart - len) + abbrText + text.substring(currStart);
-            textbox.value = text;
-            textbox.selectionStart = currStart - len + abbrText.length;
-            textbox.selectionEnd   = currEnd   - len + abbrText.length;
+            let rhs = abbrev.expand(editor);
+            editor.value = text.substring(0, start - len) + rhs + text.substring(start);
+            editor.selectionStart = start - len + rhs.length;
+            editor.selectionEnd   = end   - len + rhs.length;
         }
     },
 }, {
