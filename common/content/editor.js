@@ -24,12 +24,12 @@ const Editor = Module("editor", {
     selectedText: function () String(Editor.getEditor(null).selection),
 
     pasteClipboard: function (clipboard, toStart) {
+        // TODO: I don't think this is needed anymore? --djk
         if (util.OS.isWindows) {
             this.executeCommand("cmd_paste");
             return;
         }
 
-        // FIXME: #93 (<s-insert> in the bottom of a long textarea bounces up)
         let elem = dactyl.focus;
 
         if (elem.setSelectionRange) {
@@ -37,23 +37,20 @@ const Editor = Module("editor", {
             if (!text)
                 return;
 
-            // clipboardRead would return 'undefined' if not checked
-            // dunno about .setSelectionRange
             // This is a hacky fix - but it works.
-            let curTop = elem.scrollTop;
-            let curLeft = elem.scrollLeft;
+            // <s-insert> in the bottom of a long textarea bounces up
+            let top = elem.scrollTop;
+            let left = elem.scrollLeft;
 
-            let rangeStart = elem.selectionStart; // caret position
-            let rangeEnd = elem.selectionEnd;
-            let tempStr1 = elem.value.substring(0, rangeStart);
-            let tempStr2 = text;
-            let tempStr3 = elem.value.substring(rangeEnd);
-            elem.value = tempStr1 + tempStr2 + tempStr3;
-            elem.selectionStart = rangeStart + (toStart ? 0 : tempStr2.length);
+            let start = elem.selectionStart; // caret position
+            let end = elem.selectionEnd;
+            elem.value = elem.value.substring(0, start) + text + elem.value.substring(end);
+            elem.selectionStart = start + (toStart ? 0 : text.length);
             elem.selectionEnd = elem.selectionStart;
 
-            elem.scrollTop = curTop;
-            elem.scrollLeft = curLeft;
+            elem.scrollTop = top;
+            elem.scrollLeft = left;
+
             let event = elem.ownerDocument.createEvent("Event");
             event.initEvent("input", true, false);
             events.dispatch(elem, event);
