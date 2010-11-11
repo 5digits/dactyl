@@ -256,7 +256,7 @@ const JavaScript = Module("javascript", {
     _getObj: function (frame, stop) {
         let statement = this._get(frame, 0, "statements") || 0; // Current statement.
         let prev = statement;
-        let obj = null;
+        let obj = window;
         let cacheKey;
         for (let [, dot] in Iterator(this._get(frame).dots.concat(stop))) {
             if (dot < statement)
