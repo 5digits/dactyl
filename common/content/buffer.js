@@ -270,6 +270,8 @@ const Buffer = Module("buffer", {
             onLocationChange.superapply(this, arguments);
             statusline.updateUrl();
             statusline.updateProgress();
+            for (let frame in values(buffer.allFrames()))
+                frame.dactylFocusAllowed = false;
 
             util.timeout(function () {
                 autocommands.trigger("LocationChange", { url: buffer.URL });

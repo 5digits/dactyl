@@ -690,11 +690,12 @@ const Events = Module("events", {
         let elem = event.originalTarget;
 
         if (Events.isContentNode(elem) && !buffer.focusAllowed(elem)
-            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window]))
+            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
             if (elem.frameElement)
                 dactyl.focusContent(true);
             else if (!(elem instanceof Window) || Editor.getEditor(elem))
                 elem.blur();
+        }
     },
 
     // argument "event" is deliberately not used, as i don't seem to have
@@ -709,6 +710,8 @@ const Events = Module("events", {
 
         let win  = window.document.commandDispatcher.focusedWindow;
         let elem = window.document.commandDispatcher.focusedElement;
+        if (elem == null && Editor.getEditor(win))
+            elem = win;
 
         if (win && win.top == window.content && dactyl.has("tabs"))
             buffer.focusedFrame = win;
@@ -718,7 +721,8 @@ const Events = Module("events", {
                 return;
 
             if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
-                elem instanceof HTMLSelectElement) {
+                elem instanceof HTMLSelectElement ||
+                elem instanceof Window && Editor.getEditor(elem)) {
                 dactyl.mode = modes.INSERT;
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
