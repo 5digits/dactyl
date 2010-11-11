@@ -73,7 +73,7 @@
     -moz-appearance: none !important;
 }
 window[dactyl|highlight~=Bell] > * {
-    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
 [dactyl|highlight~=CmdLine] {
