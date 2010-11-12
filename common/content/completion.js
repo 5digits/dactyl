@@ -287,7 +287,7 @@ const CompletionContext = Class("CompletionContext", {
         if (this._completions)
             this.hasItems = this._completions.length > 0;
         if (this.updateAsync && !this.noUpdate)
-            util.callInMainThread(function () { this.onUpdate(); }, this);
+            this.onUpdate();
     },
 
     get createRow() this._createRow || template.completionRow, // XXX
@@ -364,22 +364,6 @@ const CompletionContext = Class("CompletionContext", {
     set generate(arg) {
         this.hasItems = true;
         this._generate = arg;
-        if (this.background && this.regenerate) {
-            let lock = {};
-            this.cache.backgroundLock = lock;
-            this.incomplete = true;
-            let thread = this.getCache("backgroundThread", util.newThread);
-            util.callAsync(thread, this, function () {
-                if (this.cache.backgroundLock != lock)
-                    return;
-                let items = this.generate();
-                if (this.cache.backgroundLock != lock)
-                    return;
-                this.incomplete = false;
-                if (items != null)
-                    this.completions = items;
-            });
-        }
     },
 
     get ignoreCase() {
@@ -395,11 +379,11 @@ const CompletionContext = Class("CompletionContext", {
     set ignoreCase(val) this._ignoreCase = val,
 
     get items() {
-        if (!this.hasItems || this.backgroundLock)
+        if (!this.hasItems)
             return [];
 
         // Regenerate completions if we must
-        if (this.generate && !this.background) {
+        if (this.generate) {
             // XXX
             this.noUpdate = true;
             this.completions = this.generate();

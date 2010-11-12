@@ -98,54 +98,6 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Calls a function synchronously in the main thread. Return values are not
-     * preserved.
-     *
-     * @param {function} callback
-     * @param {object} self The this object for the call.
-     * @returns {function}
-     */
-    callInMainThread: function (callback, self) {
-        let mainThread = services.get("threading").mainThread;
-        if (services.get("threading").isMainThread)
-            callback.call(self);
-        else
-            mainThread.dispatch(Runnable(self, callback, Array.slice(arguments, 2)), mainThread.DISPATCH_NORMAL);
-    },
-
-    /**
-     * Calls a function asynchronously on a new thread.
-     *
-     * @param {nsIThread} thread The thread to call the function on. If no
-     *     thread is specified a new one is created.
-     * @optional
-     * @param {Object} self The 'this' object used when executing the
-     *     function.
-     * @param {function} func The function to execute.
-     *
-     */
-    callAsync: function (thread, self, func) {
-        thread = thread || services.get("threading").newThread(0);
-        thread.dispatch(Runnable(self, func, Array.slice(arguments, 3)), thread.DISPATCH_NORMAL);
-    },
-
-    /**
-     * Calls a function synchronously on a new thread.
-     *
-     * NOTE: Be sure to call GUI related methods like alert() or dump()
-     * ONLY in the main thread.
-     *
-     * @param {nsIThread} thread The thread to call the function on. If no
-     *     thread is specified a new one is created.
-     * @optional
-     * @param {function} func The function to execute.
-     */
-    callInThread: function (thread, func) {
-        thread = thread || services.get("threading").newThread(0);
-        thread.dispatch(Runnable(null, func, Array.slice(arguments, 2)), thread.DISPATCH_SYNC);
-    },
-
-    /**
      * Returns a shallow copy of *obj*.
      *
      * @param {Object} obj
@@ -604,8 +556,6 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             ary.push(func(i));
         return ary;
     },
-
-    newThread: function () services.get("threading").newThread(0),
 
     /**
      * Converts a URI string into a URI object.

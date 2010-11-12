@@ -177,7 +177,7 @@ defineModule("base", {
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "endModule", "forEach", "isArray", "isGenerator", "isinstance",
         "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
-        "memoize", "properties", "requiresMainThread", "set", "update", "values",
+        "memoize", "properties", "set", "update", "values",
         "withCallerGlobal"
     ],
     use: ["services", "util"]
@@ -586,22 +586,6 @@ function curry(fn, length, self, acc) {
         return curry(fn, length, self || this, args);
     };
 }
-
-/**
- * Wraps a function so that when called it will always run synchronously
- * in the main thread. Return values are not preserved.
- *
- * @param {function}
- * @returns {function}
- */
-function requiresMainThread(callback)
-    function wrapper() {
-        let mainThread = services.get("threading").mainThread;
-        if (services.get("threading").isMainThread)
-            callback.apply(this, arguments);
-        else
-            mainThread.dispatch(Runnable(this, callback, arguments), mainThread.DISPATCH_NORMAL);
-    }
 
 let sandbox = Cu.Sandbox(this);
 sandbox.__proto__ = this;

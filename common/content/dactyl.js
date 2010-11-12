@@ -136,7 +136,7 @@ const Dactyl = Module("dactyl", {
      * bell may be either audible or visual depending on the value of the
      * 'visualbell' option.
      */
-    beep: requiresMainThread(function () {
+    beep: function () {
         if (options["visualbell"]) {
             // flash the visual bell
             let panel = document.getElementById("dactyl-deck-bell");
@@ -156,7 +156,7 @@ const Dactyl = Module("dactyl", {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);
             soundService.beep();
         }
-    }),
+    },
 
     /**
      * Reads a string from the system clipboard.

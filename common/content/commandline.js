@@ -648,7 +648,7 @@ const CommandLine = Module("commandline", {
      *   commandline.FORCE_MULTILINE    - Forces the message to appear in
      *          the MOW.
      */
-    echo: requiresMainThread(function echo(str, highlightGroup, flags) {
+    echo: function echo(str, highlightGroup, flags) {
         // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
         if (this._silent)
             return;
@@ -694,7 +694,7 @@ const CommandLine = Module("commandline", {
 
         if (action)
             action.call(this, str, highlightGroup, single);
-    }),
+    },
 
     /**
      * Prompt the user. Sets modes.main to COMMAND_LINE, which the user may
