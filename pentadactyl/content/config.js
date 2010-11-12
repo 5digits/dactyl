@@ -46,7 +46,8 @@ const Config = Module("config", ConfigBase, {
         bookmarks: ["List your bookmarks",
             function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
         checkupdates: ["Check for updates",
-            function () { window.checkForUpdates(); }],
+            function () { window.checkForUpdates(); },
+            function () "checkForUpdates" in window],
         cleardata: ["Clear private data",
             function () { Cc["@mozilla.org/browser/browserglue;1"].getService(Ci.nsIBrowserGlue).sanitize(window || null); }],
         cookies: ["List your cookies",
@@ -56,7 +57,8 @@ const Config = Module("config", ConfigBase, {
         customizetoolbar: ["Customize the Toolbar",
             function () { window.BrowserCustomizeToolbar(); }],
         dominspector: ["DOM Inspector",
-            function () { try { window.inspectDOMDocument(content.document); } catch (e) { dactyl.echoerr("DOM Inspector extension not installed"); } }],
+            function () { window.inspectDOMDocument(content.document); },
+            function () "inspectDOMDocument" in window],
         downloads: ["Manage Downloads",
             function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
         history: ["List your history",
@@ -90,7 +92,8 @@ const Config = Module("config", ConfigBase, {
         selectionsource: ["View selection source",
             function () { buffer.viewSelectionSource(); }],
         venkman: ["The JavaScript debugger",
-            function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); start_venkman() }]
+            function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); start_venkman() },
+            function () "start_venkman" in window]
     },
 
     features: [

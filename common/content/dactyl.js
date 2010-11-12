@@ -1319,6 +1319,8 @@ const Dactyl = Module("dactyl", {
                 let dialog = args[0];
 
                 dactyl.assert(dialog in config.dialogs, "E475: Invalid argument: " + dialog);
+                dactyl.assert(!config.dialogs[dialog][2] || config.dialogs[dialog][2](),
+                              "Dialog " + dialog + " not available");
                 try {
                     config.dialogs[dialog][1]();
                 }
@@ -1916,7 +1918,8 @@ const Dactyl = Module("dactyl", {
     completion: function () {
         completion.dialog = function dialog(context) {
             context.title = ["Dialog"];
-            context.completions = [[k, v[0]] for ([k, v] in Iterator(config.dialogs))];
+            context.filters.push(function ({ item }) !item[2] || item[2]());
+            context.completions = [[k, v[0], v[2]] for ([k, v] in Iterator(config.dialogs))];
         };
 
         completion.extension = function extension(context) {
