@@ -111,23 +111,21 @@ const Bookmarks = Module("bookmarks", {
     },
 
     // returns number of deleted bookmarks
-    remove: function remove(url) {
+    remove: function remove(ids) {
         try {
-            if (isArray(url))
-                var bmarks = url;
-            else {
+            if (!isArray(ids)) {
                 let uri = util.newURI(url);
-                var bmarks = services.get("bookmarks")
-                                     .getBookmarkIdsForURI(uri, {})
-                                     .filter(bookmarkcache.closure.isRegularBookmark);
+                idw = services.get("bookmarks")
+                              .getBookmarkIdsForURI(uri, {})
+                              .filter(bookmarkcache.closure.isRegularBookmark);
             }
-            bmarks.forEach(function (id) {
+            ids.forEach(function (id) {
                 let bmark = bookmarkcache.bookmarks[id];
                 if (bmark)
                     PlacesUtils.tagging.untagURI(util.newURI(bmark.url), null);
                 services.get("bookmarks").removeItem(id);
             });
-            return bmarks.length;
+            return ids.length;
         }
         catch (e) {
             dactyl.reportError(e, true);

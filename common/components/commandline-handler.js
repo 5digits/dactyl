@@ -39,7 +39,9 @@ CommandLineHandler.prototype = {
         catch (e) {
             dump(name + ": option '-" + name + "' requires an argument\n");
         }
-    }
+    },
+
+    helpInfo: "  -" + name + " <opts>" + "             Additonal options for " + appName + " startup\n".substr(name.length)
 };
 
 if (XPCOMUtils.generateNSGetFactory)
