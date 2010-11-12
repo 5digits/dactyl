@@ -475,7 +475,12 @@ const CommandLine = Module("commandline", {
         this.widgets.prompt = prompt;
         this.widgets.command = cmd || "";
 
-        this._history = CommandLine.History(this.widgets.active.command.inputField, (modes.extended == modes.EX) ? "command" : "search");
+        let hist = // Hack:
+            extendedMode == modes.EX                                  ? "command" :
+            extendedMode & (modes.FIND_FORWARD | modes.FIND_BACKWARD) ? "search"  : null;
+
+        if (hist)
+            this._history = CommandLine.History(this.widgets.active.command.inputField, hist);
         this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
 
         // open the completion list automatically if wanted
