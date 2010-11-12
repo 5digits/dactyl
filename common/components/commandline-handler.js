@@ -41,7 +41,7 @@ CommandLineHandler.prototype = {
         }
     },
 
-    helpInfo: "  -" + name + " <opts>" + "             Additonal options for " + appName + " startup\n".substr(name.length)
+    helpInfo: "  -" + name + " <opts>" + "             Additional options for " + appName + " startup\n".substr(name.length)
 };
 
 if (XPCOMUtils.generateNSGetFactory)
