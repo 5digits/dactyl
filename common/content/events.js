@@ -13,8 +13,6 @@
  */
 const Events = Module("events", {
     init: function () {
-        const self = this;
-
         this._fullscreen = window.fullScreen;
         this._lastFocus = null;
         this._currentMacro = "";

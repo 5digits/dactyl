@@ -85,7 +85,6 @@ ChromeData.prototype = {
 };
 
 function Dactyl() {
-    const self = this;
     this.wrappedJSObject = this;
 
     this.HELP_TAGS = {};

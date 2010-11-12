@@ -553,7 +553,6 @@ const CompletionContext = Class("CompletionContext", {
     },
 
     getItems: function getItems(start, end) {
-        let self = this;
         let items = this.items;
         let step = start > end ? -1 : 1;
         start = Math.max(0, start || 0);

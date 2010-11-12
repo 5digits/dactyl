@@ -146,8 +146,6 @@ const JavaScript = Module("javascript", {
     },
 
     _buildStack: function (filter) {
-        let self = this;
-
         // Todo: Fix these one-letter variable names.
         this._i = 0;
         this._c = ""; // Current index and character, respectively.

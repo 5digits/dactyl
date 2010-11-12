@@ -10,7 +10,6 @@
 
 const CommandWidgets = Class("CommandWidgets", {
     init: function () {
-        const self = this;
         this.elements = {};
         this.addElement({
             name: "container",

@@ -140,7 +140,6 @@ const Command = Class("Command", {
                            (isString(this.deprecated) ? ": " + this.deprecated : ""));
         }
 
-        let self = this;
         modifiers = modifiers || {};
 
         if (args.count != null && !this.count)
