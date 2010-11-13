@@ -269,7 +269,7 @@ const Command = Class("Command", {
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
                 // TODO: string: Class.memoize(function () { ... }),
                 verify: function verify() {
-                    if (this.argCount) {
+                    if (this.command.argCount) {
                         dactyl.assert((this.length > 0 || !/^[1+]$/.test(this.command.argCount)) &&
                                       (this.literal == null || !/[1+]/.test(this.command.argCount) || /\S/.test(this.literalArg || "")),
                                       "E471: Argument required");
