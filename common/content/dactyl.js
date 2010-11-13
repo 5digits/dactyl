@@ -23,12 +23,12 @@ function deprecated(reason, fn) {
     let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
     function deprecatedMethod() {
         let frame = Components.stack.caller;
+        let obj = this.className || this.constructor.className;
         if (!set.add(deprecatedMethod.seen, frame.filename))
             dactyl.echoerr(
-                frame.filename.replace(/^.*? -> /, "") +
+                (frame.filename || "unknown").replace(/^.*? -> /, "") +
                        ":" + frame.lineNumber + ": " +
-                (this.className || this.constructor.className) + "." +
-                (fn.name || name) + " is deprecated: " + reason);
+                (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
     }
     deprecatedMethod.seen = { "chrome://dactyl/content/javascript.js": true };
@@ -42,8 +42,9 @@ const Dactyl = Module("dactyl", {
     init: function () {
         window.dactyl = this;
         // cheap attempt at compatibility
-        window.liberator = this;
-        modules.liberator = this;
+        let prop = { get: deprecated("Please use dactyl instead", function liberator() dactyl) };
+        Object.defineProperty(window, "liberator", prop);
+        Object.defineProperty(modules, "liberator", prop);
         this.commands = {};
         this.modules = modules;
         this.observers = {};
