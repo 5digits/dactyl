@@ -52,7 +52,7 @@ const CommandWidgets = Class("CommandWidgets", {
                 if (!elem.collapsed)
                     elem.focus();
             },
-            onVisibility: function (elem, visible) { visible && elem.focus() }
+            onVisibility: function (elem, visible) { visible && elem.focus(); }
         });
         this.addElement({
             name: "prompt",
