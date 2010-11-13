@@ -733,7 +733,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     parseForm: function parseForm(field) {
         function encode(name, value, param) {
             if (param)
-                value = "%s";
+                value = value + "%s";
             if (post)
                 return name + "=" + value;
             return encodeURIComponent(name) + "=" + (param ? value : encodeURIComponent(value));

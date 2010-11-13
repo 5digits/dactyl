@@ -30,11 +30,29 @@ const Bookmarks = Module("bookmarks", {
         return completion.runCompleter("bookmark", filter, maxItems, tags, extra);
     },
 
-    // if starOnly = true it is saved in the unfiledBookmarksFolder, otherwise in the bookmarksMenuFolder
-    add: function add(starOnly, title, url, keyword, tags, force) {
+    /**
+     * Adds a new bookmark. The first parameter should be an object with
+     * any of the following properties:
+     *
+     * @param {boolean} unfiled If true, the bookmark is added to the
+     *      Unfiled Bookmarks Folder.
+     * @param {string} title The title of the new bookmark.
+     * @param {string} url The URL of the new bookmark.
+     * @param {string} keyword The keyword of the new bookmark.
+     *      @optional
+     * @param {[string]} tags The tags for the new bookmark.
+     *      @optional
+     * @param {boolean} force If true, a new bookmark is always added.
+     *      Otherwise, if a bookmark for the given URL exists it is
+     *      updated instead.
+     *      @optional
+     * @returns {boolean} True if the bookmark was added or update
+     *      successfully.
+     */
+    add: function add(unfiled, title, url, keyword, tags, force) {
         // FIXME
-        if (isObject(starOnly))
-            var { starOnly, title, url, keyword, tags, post, force } = starOnly;
+        if (isObject(unfiled))
+            var { unfiled, title, url, keyword, tags, post, force } = unfiled;
 
         try {
             let uri = util.createURI(url);
@@ -53,7 +71,7 @@ const Bookmarks = Module("bookmarks", {
             }
             if (id == undefined)
                 id = services.get("bookmarks").insertBookmark(
-                         services.get("bookmarks")[starOnly ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
+                         services.get("bookmarks")[unfiled ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
                          uri, -1, title || url);
             if (!id)
                 return false;
@@ -71,6 +89,12 @@ const Bookmarks = Module("bookmarks", {
         return true;
     },
 
+    /**
+     * Opens the command line in Ex mode pre-filled with a :bmark
+     * command to add a new search keyword for the given form element.
+     *
+     * @param {Element} elem A form element for which to add a keyword.
+     */
     addSearchKeyword: function (elem) {
         let [url, post] = util.parseForm(elem);
         let options = { "-title": "Search " + elem.ownerDocument.title };
@@ -82,6 +106,16 @@ const Bookmarks = Module("bookmarks", {
             modes.EX);
     },
 
+    /**
+     * Toggles the bookmarked state of the given URL. If the URL is
+     * bookmarked, all bookmarks for said URL are removed.
+     * If it is not, a new bookmark is added to the Unfiled Bookmarks
+     * Folder. The new bookmark has the title of the current buffer if
+     * its URL is identical to *url*, otherwise its title will be the
+     * value of *url*.
+     *
+     * @param {string} url The URL of the bookmark to toggle.
+     */
     toggle: function toggle(url) {
         if (!url)
             return;
@@ -90,7 +124,7 @@ const Bookmarks = Module("bookmarks", {
         if (count > 0)
             dactyl.echomsg({ domains: [util.getHost(url)], message: "Removed bookmark: " + url });
         else {
-            let title = buffer.title || url;
+            let title = buffer.URL == url && buffer.title || url;
             let extra = "";
             if (title != url)
                 extra = " (" + title + ")";
@@ -99,6 +133,12 @@ const Bookmarks = Module("bookmarks", {
         }
     },
 
+    /**
+     * Returns true if the given URL is bookmarked and that bookmark is
+     * not a Live Bookmark.
+     *
+     * @param {string} url The URL of which to check the bookmarked state.
+     */
     isBookmarked: function isBookmarked(url) {
         try {
             return services.get("bookmarks")
@@ -110,7 +150,15 @@ const Bookmarks = Module("bookmarks", {
         }
     },
 
-    // returns number of deleted bookmarks
+    /**
+     * Remove a bookmark or bookmarks. If *ids* is an array, removes the
+     * bookmarks with those IDs. If it is a string, removes all
+     * bookmarks whose URLs match that string.
+     *
+     * @param {string|[number]} ids The IDs or URL of the bookmarks to
+     *      remove.
+     * @returns {number} The number of bookmarks removed.
+     */
     remove: function remove(ids) {
         try {
             if (!isArray(ids)) {
@@ -133,10 +181,21 @@ const Bookmarks = Module("bookmarks", {
         }
     },
 
+    /**
+     * Returns the search engine for the given alias.
+     *
+     * @param {string} alias The alias of the search engine to be returned.
+     * @returns {nsISearchEngine} The search engine.
+     */
     getSearchEngine: function getSearchEngine(alias)
-        this.searchEngines.filter(function (e) e.alias === alias)[0],
+        this.searchEngines.filter(function (e) e.keyword === alias)[0],
 
     getSearchEngines: deprecated("Please use bookmarks.searchEngines instead", function getSearchEngines() this.searchEngines),
+    /**
+     * Returns a list of all visible search engines in the search
+     * services, augmented with keyword, title, and icon properties for
+     * use in completion functions.
+     */
     get searchEngines() {
         let searchEngines = [];
         let aliases = {};
@@ -156,6 +215,22 @@ const Bookmarks = Module("bookmarks", {
         });
     },
 
+    /**
+     * Retrieves a list of search suggestions from the named search
+     * engine based on the given *query*. The results are always in the
+     * form of an array of strings. If *callback* is provided, the
+     * request is executed asynchronously and *callback* is called on
+     * completion. Otherwise, the request is executed synchronously and
+     * the results are returned.
+     *
+     * @param {string} engineName The name of the search engine from
+     *      which to request suggestions.
+     * @param {string} query The query string for which to request
+     *      suggestions.
+     * @param {function([string])} callback The function to call when
+     *      results are returned.
+     * @returns {[string] | null}
+     */
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
@@ -182,15 +257,26 @@ const Bookmarks = Module("bookmarks", {
         return process(resp);
     },
 
-    // TODO: add filtering
-    // format of returned array:
-    // [keyword, helptext, url]
+    /**
+     * Returns an array of bookmark keyword objects.
+     * @deprecated
+     */
     getKeywords: function getKeywords() bookmarkcache.keywords,
 
-    // full search string including engine name as first word in *text*
-    // if *useDefSearch* is true, it uses the default search engine
-    // @returns the url for the search string
-    //          if the search also requires a postData, [url, postData] is returned
+    /**
+     * Returns an array containing a search URL and POST data for the
+     * given search string. If *useDefsearch* is true, the string is
+     * always passed to the default search engine. If it is not, the
+     * search engine name is retrieved from the first space-separated
+     * token of the given string.
+     *
+     * Returns null if no search engine is found for the passed string.
+     *
+     * @param {string} text The text for which to retrieve a search URL.
+     * @param {boolean} useDefsearch Whether to use the default search
+     *      engine.
+     * @returns {[string, string | null] | null}
+     */
     getSearchURL: function getSearchURL(text, useDefsearch) {
         let searchString = (useDefsearch ? options["defsearch"] + " " : "") + text;
 
@@ -249,7 +335,20 @@ const Bookmarks = Module("bookmarks", {
         return url; // can be null
     },
 
-    // if openItems is true, open the matching bookmarks items in tabs rather than display
+    /**
+     * Lists all bookmarks whose URLs match *filter*, tags match *tags*,
+     * and other properties match the properties of *extra*. If
+     * *openItems* is true, the items are opened in tabs rather than
+     * listed.
+     *
+     * @param {string} filter A URL filter string which the URLs of all
+     *      matched items must contain.
+     * @param {[string]} tags An array of tags each of which all matched
+     *      items must contain.
+     * @param {boolean} openItems If true, items are opened rather than
+     *      listed.
+     * @param {object} extra Extra properties which must be matched.
+     */
     list: function list(filter, tags, openItems, maxItems, extra) {
         // FIXME: returning here doesn't make sense
         //   Why the hell doesn't it make sense? --Kris
@@ -347,7 +446,7 @@ const Bookmarks = Module("bookmarks", {
             function (args) {
                 let opts = {
                     force: args.bang,
-                    starOnly: false,
+                    unfiled: false,
                     keyword: args["-keyword"] || null,
                     post: args["-post"],
                     tags: args["-tags"] || [],
