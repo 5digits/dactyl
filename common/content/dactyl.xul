@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- ***** BEGIN LICENSE BLOCK ***** {{{
+<!--
  Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
+ Copyright (c) 2007-2009 by Kris Maglione <maglione.k at Gmail>
 
  This work is licensed for reuse under an MIT license. Details are
  given in the LICENSE.txt file included with this file.
-}}} ***** END LICENSE BLOCK ***** -->
+  -->
 
 <?xml-stylesheet href="chrome://dactyl/skin/dactyl.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "dactyl.dtd" [

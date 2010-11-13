@@ -225,7 +225,7 @@ const Dactyl = Module("dactyl", {
      * Outputs a plain message to the command line.
      *
      * @param {string} str The message to output.
-     * @param {number} flags These control the multiline message behaviour.
+     * @param {number} flags These control the multi-line message behavior.
      *     See {@link CommandLine#echo}.
      */
     echo: function echo(str, flags) {
@@ -237,7 +237,7 @@ const Dactyl = Module("dactyl", {
      * Outputs an error message to the command line.
      *
      * @param {string} str The message to output.
-     * @param {number} flags These control the multiline message behaviour.
+     * @param {number} flags These control the multi-line message behavior.
      *     See {@link CommandLine#echo}.
      */
     echoerr: function echoerr(str, flags) {
@@ -265,7 +265,7 @@ const Dactyl = Module("dactyl", {
      * @param {number} verbosity The messages log level (0 - 15). Only
      *     messages with verbosity less than or equal to the value of the
      *     *verbosity* option will be output.
-     * @param {number} flags These control the multiline message behaviour.
+     * @param {number} flags These control the multi-line message behavior.
      *     See {@link CommandLine#echo}.
      */
     echomsg: function (str, verbosity, flags) {

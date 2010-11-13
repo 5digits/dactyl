@@ -577,7 +577,7 @@ const CommandLine = Module("commandline", {
     },
 
     /**
-     * Display a multiline message.
+     * Display a multi-line message.
      *
      * @param {string} str
      * @param {string} highlightGroup
@@ -752,7 +752,7 @@ const CommandLine = Module("commandline", {
     },
 
     /**
-     * Get a multiline input from a user, up to but not including the line
+     * Get a multi-line input from a user, up to but not including the line
      * which matches the given regular expression. Then execute the
      * callback with that string as a parameter.
      *
@@ -915,7 +915,7 @@ const CommandLine = Module("commandline", {
     },
 
     /**
-     * Handle events when we are in multiline output mode, these come from
+     * Handle events when we are in multi-line output mode, these come from
      * dactyl when modes.extended & modes.MULTILINE_OUTPUT and also from
      * #dactyl-multiline-output in the XUL.
      *
@@ -1120,7 +1120,7 @@ const CommandLine = Module("commandline", {
     },
 
     /**
-     * Update or remove the multiline output widget's "MORE" prompt.
+     * Update or remove the multi-line output widget's "MORE" prompt.
      *
      * @param {boolean} force If true, "-- More --" is shown even if we're
      *     at the end of the output.
@@ -1269,7 +1269,7 @@ const CommandLine = Module("commandline", {
             }
 
             // search the history for the first item matching the current
-            // commandline string
+            // command-line string
             while (true) {
                 this.index += diff;
                 if (this.index < 0 || this.index > this.store.length) {

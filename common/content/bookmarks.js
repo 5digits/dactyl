@@ -187,8 +187,8 @@ const Bookmarks = Module("bookmarks", {
     // [keyword, helptext, url]
     getKeywords: function getKeywords() bookmarkcache.keywords,
 
-    // full search string including engine name as first word in @param text
-    // if @param useDefSearch is true, it uses the default search engine
+    // full search string including engine name as first word in *text*
+    // if *useDefSearch* is true, it uses the default search engine
     // @returns the url for the search string
     //          if the search also requires a postData, [url, postData] is returned
     getSearchURL: function getSearchURL(text, useDefsearch) {

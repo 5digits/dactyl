@@ -224,7 +224,7 @@ const Events = Module("events", {
     /**
      * Pushes keys onto the event queue from dactyl. It is similar to
      * Vim's feedkeys() method, but cannot cope with 2 partially-fed
-     * strings, you have to feed one parsable string.
+     * strings, you have to feed one parseable string.
      *
      * @param {string} keys A string like "2<C-f>" to push onto the event
      *     queue. If you want "<" to be taken literally, prepend it with a
@@ -343,7 +343,7 @@ const Events = Module("events", {
      * <C- > maps to <C-Space>, <S-a> maps to A
      * << maps to <lt><lt>
      *
-     * <S-@> is preserved, as in vim, to allow untypeable key-combinations
+     * <S-@> is preserved, as in Vim, to allow untypeable key-combinations
      * in macros.
      *
      * canonicalKeys(canonicalKeys(x)) == canonicalKeys(x) for all values
@@ -463,8 +463,6 @@ const Events = Module("events", {
      * Converts the specified event to a string in dactyl key-code
      * notation. Returns null for an unknown event.
      *
-     * E.g. pressing ctrl+n would result in the string "<C-n>".
-     *
      * @param {Event} event
      * @returns {string}
      */
@@ -503,7 +501,6 @@ const Events = Module("events", {
             //            (i.e., cntrl codes 27--31)
             // ---
             // For more information, see:
-            //     [*] Vimp FAQ: http://vimperator.org/trac/wiki/Pentadactyl/FAQ#WhydoesntC-workforEscMacOSX
             //     [*] Referenced mailing list msg: http://www.mozdev.org/pipermail/pentadactyl/2008-May/001548.html
             //     [*] Mozilla bug 416227: event.charCode in keypress handler has unexpected values on Mac for Ctrl with chars in "[ ] _ \"
             //         https://bugzilla.mozilla.org/show_bug.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&id=416227
@@ -516,7 +513,7 @@ const Events = Module("events", {
             // <C-C-]> if your fancy keyboard permits such things<?>), but
             // these <C-control> mappings are probably pathological (<C-Esc>
             // certainly is on Windows), and so it is probably
-            // harmless to remove the has("Darwin") if desired.
+            // harmless to remove the util.OS.isMacOSX if desired.
             //
             else if (util.OS.isMacOSX && event.ctrlKey && charCode >= 27 && charCode <= 31) {
                 if (charCode == 27) { // [Ctrl-Bug 1/5] the <C-[> bug
@@ -531,7 +528,7 @@ const Events = Module("events", {
                 key = String.fromCharCode(charCode);
 
                 if (!/^[a-z0-9]$/i.test(key) && key in this._key_code) {
-                    // a named charcode key (<Space> and <lt>) space can be shifted, <lt> must be forced
+                    // a named charCode key (<Space> and <lt>) space can be shifted, <lt> must be forced
                     if ((key.match(/^\s$/) && event.shiftKey) || event.dactylShift)
                         modifier += "S-";
 
@@ -769,7 +766,7 @@ const Events = Module("events", {
     },
 
     // this keypress handler gets always called first, even if e.g.
-    // the commandline has focus
+    // the command-line has focus
     // TODO: ...help me...please...
     onKeyPress: function onKeyPress(event) {
         function isEscape(key) key == "<Esc>" || key == "<C-[>";
@@ -787,7 +784,7 @@ const Events = Module("events", {
              return null;
 
         if (modes.isRecording) {
-            if (key == "q" && !modes.mainMode.input) { // TODO: should not be hardcoded
+            if (key == "q" && !modes.mainMode.input) { // TODO: should not be hard-coded
                 modes.isRecording = false;
                 dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro, {}).keys, 9);
                 dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
