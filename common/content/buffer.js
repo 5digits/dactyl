@@ -810,7 +810,8 @@ const Buffer = Module("buffer", {
      * Shifts the focus to another frame within the buffer. Each buffer
      * contains at least one frame.
      *
-     * @param {number} count The number of frames to skip through.
+     * @param {number} count The number of frames to skip through.  A negative
+     *     count skips backwards.
      */
     shiftFrameFocus: function (count) {
         if (!(window.content.document instanceof HTMLDocument))
