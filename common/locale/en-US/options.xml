@@ -1307,8 +1307,8 @@
     <tags>'ssli' 'showstatuslinks'</tags>
     <spec>'showstatuslinks' 'ssli'</spec>
     <strut/>
-    <type>number</type>
-    <default>1</default>
+    <type>string</type>
+    <default>status</default>
     <description>
         <p>
             When the mouse hovers over a link, or a link is otherwise focused,
@@ -1318,9 +1318,9 @@
         <p>Possible values are:</p>
 
         <dl dt="width: 6em;">
-            <dt>0</dt> <dd>Don't show link destination</dd>
-            <dt>1</dt> <dd>Show the link's destination in the &tag.status-line;</dd>
-            <dt>2</dt> <dd>Show the link's destination in the &tag.command-line;</dd>
+            <dt></dt> <dd>Don't show link destination</dd>
+            <dt>status</dt> <dd>Show the link's destination in the &tag.status-line;</dd>
+            <dt>command</dt> <dd>Show the link's destination in the &tag.command-line;</dd>
         </dl>
     </description>
 </item>

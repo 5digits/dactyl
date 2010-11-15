@@ -292,10 +292,10 @@ const Buffer = Module("buffer", {
         setOverLink: function setOverLink(link, b) {
             setOverLink.superapply(this, arguments);
             switch (options["showstatuslinks"]) {
-            case 1:
+            case "status":
                 statusline.updateUrl(link ? "Link: " + link : null);
                 break;
-            case 2:
+            case "command":
                 if (link)
                     dactyl.echo("Link: " + link, commandline.DISALLOW_MULTILINE);
                 else
@@ -1754,12 +1754,12 @@ const Buffer = Module("buffer", {
 
         options.add(["showstatuslinks", "ssli"],
             "Show the destination of the link under the cursor in the status bar",
-            "number", 1,
+            "string", "status",
             {
                 completer: function (context) [
-                    ["0", "Don't show link destination"],
-                    ["1", "Show the link in the status line"],
-                    ["2", "Show the link in the command line"]
+                    ["", "Don't show link destination"],
+                    ["status", "Show the link in the status line"],
+                    ["command", "Show the link in the command line"]
                 ]
             });
 

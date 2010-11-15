@@ -50,7 +50,8 @@
       (see :h :contexts), allowing for powerful and fine-grained
       completion system customization.
     * IMPORTANT: 'laststatus' has been replaced with the ‘s’ flag in
-      'guioptions'
+      'guioptions'.
+    * IMPORTANT: 'showstatuslinks' is not a string option.
     * IMPORTANT: Command script files now use the *.penta file extension.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
