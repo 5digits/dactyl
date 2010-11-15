@@ -458,7 +458,7 @@ const JavaScript = Module("javascript", {
         try {
             let i = (this._get(-2) && this._get(-2).char == "(") ? -2 : -1;
             if (this._get(i).char == "(") {
-                let [offset, obj, funcName] = this._getObjKey(i-1);
+                let [offset, obj, funcName] = this._getObjKey(i - 1);
                 if (obj.length) {
                     let func = obj[0][0][funcName];
                     if (callable(func)) {

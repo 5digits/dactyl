@@ -654,9 +654,9 @@ const Dactyl = Module("dactyl", {
                 <type>{obj.type}</type>
                 <default>{obj.stringDefaultValue}</default></>}
                 <description>{
-                    obj.description ? br+<p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
-                        extraHelp ? br+extraHelp : "" }{
-                        !(extraHelp || obj.description) ? br+<p>Sorry, no help available.</p> : "" }
+                    obj.description ? br + <p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
+                        extraHelp ? br + extraHelp : "" }{
+                        !(extraHelp || obj.description) ? br + <p>Sorry, no help available.</p> : "" }
                 </description>
             </item></res>;
 
