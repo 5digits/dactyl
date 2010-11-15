@@ -31,7 +31,7 @@ const Config = Module("config", ConfigBase, {
 
     defaults: {
         complete: "slf",
-        guioptions: "rbC",
+        guioptions: "bCrs",
         showtabline: 2,
         titlestring: "Pentadactyl"
     },

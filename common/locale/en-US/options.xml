@@ -675,7 +675,7 @@
     <tags>'go' 'guioptions'</tags>
     <spec>'guioptions' 'go'</spec>
     <type>charlist</type>
-    <default>rbC</default> <!-- TODO: make this config specific -->
+    <default>bCrs</default> <!-- TODO: make this config specific -->
     <description>
         <p>Show or hide certain GUI elements.</p>
 
@@ -693,6 +693,7 @@
             <dt>m</dt>      <dd>Menu bar</dd>
             <dt>n</dt>      <dd>Tab number</dd>
             <dt>r</dt>      <dd>Right scrollbar</dd>
+            <dt>s</dt>      <dd>Status bar</dd>
         </dl>
 
         <p>See also <o>showtabline</o>.</p>
@@ -908,26 +909,6 @@
         <p>
             Use the JavaScript debugger service for JavaScript completion.
         </p>
-    </description>
-</item>
-
-<item>
-    <tags>'ls' 'laststatus'</tags>
-    <spec>'laststatus' 'ls'</spec>
-    <type>number</type>
-    <default>2</default>
-    <description>
-        <p>Determines when the status line is shown.</p>
-
-        <p>Possible values:</p>
-
-        <dl dt="width: 6em;">
-            <dt>0</dt>      <dd>Never</dd>
-            <dt>1</dt>      <dd>Only if there are multiple windows</dd>
-            <dt>2</dt>      <dd>Always</dd>
-        </dl>
-
-        <note>laststatus=1 is not implemented.</note>
     </description>
 </item>
 

@@ -274,31 +274,6 @@ const StatusLine = Module("statusline", {
                 this.widgets.zoomlevel.value = " (" + percent + "%)";
         }
     }
-
-}, {
-}, {
-    options: function () {
-        options.add(["laststatus", "ls"],
-            "Show the status line",
-            "number", 2,
-            {
-                setter: function setter(value) {
-                    if (value == 0)
-                        statusline.statusBar.collapsed = true;
-                    else if (value == 1)
-                        dactyl.echoerr("show status line only with > 1 window not implemented yet");
-                    else
-                        statusline.statusBar.collapsed = false;
-                    commandline.widgets.updateVisibility();
-                    return value;
-                },
-                completer: function completer(context) [
-                    ["0", "Never display status line"],
-                    ["1", "Display status line only if there are multiple windows"],
-                    ["2", "Always display status line"]
-                ]
-            });
-    }
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:

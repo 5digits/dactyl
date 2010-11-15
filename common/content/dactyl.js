@@ -1161,7 +1161,9 @@ const Dactyl = Module("dactyl", {
                 }
             },
             {
-                opts: config.guioptions,
+                opts: update({
+                    s: ["Status bar", [statusline.statusBar.id]]
+                }, config.guioptions),
                 setter: function (opts) {
                     for (let [opt, [, ids]] in Iterator(this.opts)) {
                         ids.map(function (id) document.getElementById(id))

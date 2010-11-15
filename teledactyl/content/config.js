@@ -51,7 +51,7 @@ const Config = Module("config", ConfigBase, {
     },
 
     defaults: {
-        guioptions: "frb",
+        guioptions: "bfrs",
         showtabline: 1,
         titlestring: "Teledactyl"
     },

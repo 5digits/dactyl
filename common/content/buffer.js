@@ -811,7 +811,6 @@ const Buffer = Module("buffer", {
      * contains at least one frame.
      *
      * @param {number} count The number of frames to skip through.
-     * @param {boolean} forward The direction of motion.
      */
     shiftFrameFocus: function (count) {
         if (!(window.content.document instanceof HTMLDocument))
@@ -829,10 +828,6 @@ const Buffer = Module("buffer", {
                 rect.width && rect.height);
 
         // find the currently focused frame index
-        // TODO: If the window is a frameset then the first _frame_ should be
-        //       focused.  Since this is not the current FF behavior,
-        //       we initialize current to -1 so the first call takes us to the
-        //       first frame.
         let current = Math.max(0, frames.indexOf(buffer.focusedFrame));
 
         // calculate the next frame to focus
@@ -840,7 +835,6 @@ const Buffer = Module("buffer", {
         if (next < 0 || next >= frames.length)
             dactyl.beep();
         next = Math.constrain(next, 0, frames.length - 1);
-        util.dump(current, count, next, String(frames[next]));
 
         // focus next frame and scroll into view
         frames[next].focus();

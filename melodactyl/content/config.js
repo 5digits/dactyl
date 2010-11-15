@@ -23,7 +23,7 @@ const Config = Module("config", ConfigBase, {
     /*** optional options, there are checked for existence and a fallback provided  ***/
     features: ["bookmarks", "hints", "marks", "history", "quickmarks", "session", "tabs", "player"],
     defaults: {
-        guioptions: "mprb",
+        guioptions: "smprb",
         showtabline: 2,
         get titlestring() config.name
     },
