@@ -515,7 +515,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (host == null)
             return false;
         let idx = host.lastIndexOf(domain);
-        return idx > -1 && idx + domain.length == host.length && (idx == 0 || host[idx-1] == ".");
+        return idx > -1 && idx + domain.length == host.length && (idx == 0 || host[idx - 1] == ".");
     },
 
     /**
