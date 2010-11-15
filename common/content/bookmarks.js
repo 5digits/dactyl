@@ -162,8 +162,8 @@ const Bookmarks = Module("bookmarks", {
     remove: function remove(ids) {
         try {
             if (!isArray(ids)) {
-                let uri = util.newURI(url);
-                idw = services.get("bookmarks")
+                let uri = util.newURI(ids);
+                ids = services.get("bookmarks")
                               .getBookmarkIdsForURI(uri, {})
                               .filter(bookmarkcache.closure.isRegularBookmark);
             }
