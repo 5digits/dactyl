@@ -46,7 +46,7 @@ const Bookmarks = Module("bookmarks", {
      *      Otherwise, if a bookmark for the given URL exists it is
      *      updated instead.
      *      @optional
-     * @returns {boolean} True if the bookmark was added or update
+     * @returns {boolean} True if the bookmark was added or updated
      *      successfully.
      */
     add: function add(unfiled, title, url, keyword, tags, force) {

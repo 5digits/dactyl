@@ -1319,8 +1319,8 @@
 
         <dl dt="width: 6em;">
             <dt></dt> <dd>Don't show link destination</dd>
-            <dt>status</dt> <dd>Show the link's destination in the &tag.status-line;</dd>
-            <dt>command</dt> <dd>Show the link's destination in the &tag.command-line;</dd>
+            <dt>status</dt> <dd>Show the link destination in the &tag.status-line;</dd>
+            <dt>command</dt> <dd>Show the link destination in the &tag.command-line;</dd>
         </dl>
     </description>
 </item>
