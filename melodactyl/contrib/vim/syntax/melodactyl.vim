@@ -53,9 +53,9 @@ syn region melodactylSet matchgroup=melodactylCommand start="\%(^\s*:\=\)\@<=\<\
 
 syn keyword melodactylOption activate act altwildmode awim autocomplete au cdpath cd complete cpt defsearch ds editor
     \ encoding enc eventignore ei extendedhinttags eht fileencoding fenc followhints fh guioptions go helpfile hf hintinputs hin
-    \ hintkeys hk hintmatching hm hinttags ht hinttimeout hto history hi laststatus ls loadplugins lpl mapleader ml maxitems
-    \ messages msgs newtab nextpattern pageinfo pa passkeys pk popups pps previouspattern repeat runtimepath rtp scroll scr
-    \ shell sh shellcmdflag shcf showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator us verbose vbs
+    \ hintkeys hk hintmatching hm hinttags ht hinttimeout hto history hi loadplugins lpl mapleader ml maxitems messages msgs
+    \ newtab nextpattern pageinfo pa passkeys pk popups pps previouspattern repeat runtimepath rtp scroll scr shell sh
+    \ shellcmdflag shcf showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator urlsep us verbose vbs
     \ wildanchor wia wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=melodactylSetMod
 

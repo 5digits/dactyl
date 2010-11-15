@@ -54,10 +54,10 @@ syn region pentadactylSet matchgroup=pentadactylCommand start="\%(^\s*:\=\)\@<=\
 syn keyword pentadactylOption activate act altwildmode awim autocomplete au cdpath cd complete cpt cookieaccept ca
     \ cookielifetime cl cookies ck defsearch ds editor encoding enc eventignore ei extendedhinttags eht fileencoding fenc
     \ followhints fh guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm hinttags ht hinttimeout hto history hi
-    \ laststatus ls loadplugins lpl mapleader ml maxitems messages msgs newtab nextpattern pageinfo pa passkeys pk popups
-    \ pps previouspattern runtimepath rtp sanitizeitems si sanitizeshutdown ss sanitizetimespan sts scroll scr shell sh
-    \ shellcmdflag shcf showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator us verbose vbs wildanchor
-    \ wia wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
+    \ loadplugins lpl mapleader ml maxitems messages msgs newtab nextpattern pageinfo pa passkeys pk popups pps previouspattern
+    \ runtimepath rtp sanitizeitems si sanitizeshutdown ss sanitizetimespan sts scroll scr shell sh shellcmdflag shcf
+    \ showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator urlsep us verbose vbs wildanchor wia wildcase
+    \ wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=pentadactylSetMod
 
 let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "flashblock", "fb", "fullscreen", "fs", "hlsearch",

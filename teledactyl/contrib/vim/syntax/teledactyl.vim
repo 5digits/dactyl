@@ -48,10 +48,10 @@ syn region teledactylSet matchgroup=teledactylCommand start="\%(^\s*:\=\)\@<=\<\
 
 syn keyword teledactylOption altwildmode awim archivefolder autocomplete au cdpath cd complete cpt editor eventignore ei
     \ extendedhinttags eht fileencoding fenc followhints fh guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm
-    \ hinttags ht hinttimeout hto history hi laststatus ls layout loadplugins lpl mapleader ml maxitems messages msgs nextpattern
-    \ pageinfo pa passkeys pk previouspattern runtimepath rtp scroll scr shell sh shellcmdflag shcf showstatuslinks ssli
-    \ showtabline stal titlestring urlseparator us verbose vbs wildanchor wia wildcase wic wildignore wig wildmode wim wildsort
-    \ wis wordseparators wsp
+    \ hinttags ht hinttimeout hto history hi layout loadplugins lpl mapleader ml maxitems messages msgs nextpattern pageinfo pa
+    \ passkeys pk previouspattern runtimepath rtp scroll scr shell sh shellcmdflag shcf showstatuslinks ssli showtabline stal
+    \ titlestring urlseparator urlsep us verbose vbs wildanchor wia wildcase wic wildignore wig wildmode wim wildsort wis
+    \ wordseparators wsp
     \ contained nextgroup=teledactylSetMod
 
 let s:toggleOptions = ["autoexternal", "ae", "banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs",
