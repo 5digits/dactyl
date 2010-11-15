@@ -494,6 +494,8 @@ const Buffer = Module("buffer", {
      * @returns {boolean}
      */
     focusAllowed: function (elem) {
+        if (elem instanceof Window && !Editor.getEditor(window))
+            return true;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         return !options["strictfocus"] || win.dactylFocusAllowed;
     },
@@ -811,52 +813,34 @@ const Buffer = Module("buffer", {
      * @param {number} count The number of frames to skip through.
      * @param {boolean} forward The direction of motion.
      */
-    shiftFrameFocus: function (count, forward) {
+    shiftFrameFocus: function (count) {
         if (!(window.content.document instanceof HTMLDocument))
             return;
 
-        count = Math.max(count, 1);
         let frames = buffer.allFrames();
 
         if (frames.length == 0) // currently top is always included
             return;
 
-        // remove all unfocusable frames
-        // TODO: find a better way to do this - walking the tree is too slow
-        let start = document.commandDispatcher.focusedWindow;
-        frames = frames.filter(function (frame) {
-            frame.focus();
-            return document.commandDispatcher.focusedWindow == frame;
-        });
-        start.focus();
+        // remove all hidden frames
+        frames = frames.filter(function (frame) !(frame.document.body instanceof HTMLFrameSetElement))
+                       .filter(function (frame) !frame.frameElement ||
+            let (rect = frame.frameElement.getBoundingClientRect())
+                rect.width && rect.height);
 
         // find the currently focused frame index
         // TODO: If the window is a frameset then the first _frame_ should be
         //       focused.  Since this is not the current FF behavior,
         //       we initialize current to -1 so the first call takes us to the
         //       first frame.
-        let current = frames.indexOf(document.commandDispatcher.focusedWindow);
+        let current = Math.max(0, frames.indexOf(buffer.focusedFrame));
 
         // calculate the next frame to focus
-        let next = current;
-        if (forward) {
-            next = current + count;
-
-            if (next > frames.length - 1) {
-                if (current == frames.length - 1)
-                    dactyl.beep();
-                next = frames.length - 1; // still allow the frame indicator to be activated
-            }
-        }
-        else {
-            next = current - count;
-
-            if (next < 0) {
-                if (current == 0)
-                    dactyl.beep();
-                next = 0; // still allow the frame indicator to be activated
-            }
-        }
+        let next = current + count;
+        if (next < 0 || next >= frames.length)
+            dactyl.beep();
+        next = Math.constrain(next, 0, frames.length - 1);
+        util.dump(current, count, next, String(frames[next]));
 
         // focus next frame and scroll into view
         frames[next].focus();
@@ -866,7 +850,7 @@ const Buffer = Module("buffer", {
         // add the frame indicator
         let doc = frames[next].document;
         let indicator = util.xmlToDom(<div highlight="FrameIndicator"/>, doc);
-        doc.body.appendChild(indicator);
+        (doc.body || doc.documentElement || doc).appendChild(indicator);
 
         util.timeout(function () { doc.body.removeChild(indicator); }, 500);
 
@@ -1586,12 +1570,12 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["]f"],
             "Focus next frame",
-            function (count) { buffer.shiftFrameFocus(Math.max(count, 1), true); },
+            function (count) { buffer.shiftFrameFocus(Math.max(count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["[f"],
             "Focus previous frame",
-            function (count) { buffer.shiftFrameFocus(Math.max(count, 1), false); },
+            function (count) { buffer.shiftFrameFocus(-Math.max(count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["]]"],

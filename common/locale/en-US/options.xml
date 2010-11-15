@@ -616,7 +616,7 @@
                //xhtml:input[not(@type=''hidden'')] |
                //textarea  | //xhtml:textarea |
                //button    | //xhtml:button   |
-               //select    | //xhtml:select' </default>
+               //select    | //xhtml:select'</default>
     <description>
         <p>
             Defines specialized XPath expressions for arbitrary
@@ -796,7 +796,7 @@
             </dd>
             <dt>transliterated</dt>
             <dd>
-                Certain alphanumeric characters are translated into their
+                Certain alphanumeric characters are transliterated into their
                 unaccented equivalents, such that ‘euro’ will match 'æuró',
                 and ‘Ångström’ will match ‘angstrom’.
             </dd>
@@ -927,7 +927,7 @@
             <dt>2</dt>      <dd>Always</dd>
         </dl>
 
-        <note>laststatus=1 not implemented.</note>
+        <note>laststatus=1 is not implemented.</note>
     </description>
 </item>
 
@@ -1418,10 +1418,10 @@
 </item>
 
 <item>
-    <tags>'us' 'urlseparator'</tags>
+    <tags>'us' 'urlsep' 'urlseparator'</tags>
     <spec>'urlseparator'</spec>
     <type>string</type>
-    <default>\\|</default>
+    <default>\|</default>
     <description>
         <p>
             The regular expression used to split URL lists in commands

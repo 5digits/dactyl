@@ -364,11 +364,11 @@ const Bookmarks = Module("bookmarks", {
             return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0 && tags.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.quote() + " and string: " + filter.quote());
+            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.map(String.quote) + " and string: " + filter.quote());
         else if (filter.length > 0)
             dactyl.echoerr("E283: No bookmarks matching string: " + filter.quote());
         else if (tags.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.quote());
+            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.map(String.quote));
         else
             dactyl.echoerr("No bookmarks set");
         return null;

@@ -794,7 +794,7 @@ const Hints = Module("hints", {
 
     open: function open(mode, opts) {
         this._extendedhintCount = opts.count;
-        commandline.input(";", null, {
+        commandline.input(mode, null, {
             promptHighlight: "Normal",
             completer: function (context) {
                 context.compare = function () 0;
@@ -1086,16 +1086,6 @@ const Hints = Module("hints", {
             "Start QuickHint mode",
             function () { hints.show("o"); });
 
-        // At the moment, "F" calls
-        //    buffer.followLink(clicked_element, DO_WHAT_FIREFOX_DOES_WITH_CNTRL_CLICK)
-        // It is not clear that it shouldn't be:
-        //    buffer.followLink(clicked_element, !DO_WHAT_FIREFOX_DOES_WITH_CNTRL_CLICK)
-        // In fact, it might be nice if there was a "dual" to F (like H and
-        // gH, except that gF is already taken). --tpp
-        //
-        // Likewise, it might be nice to have a dactyl.NEW_FOREGROUND_TAB
-        // and then make dactyl.NEW_TAB always do what a Cntrl+Click
-        // does. --tpp
         mappings.add(myModes, ["F"],
             "Start QuickHint mode, but open link in a new tab",
             function () { hints.show(options.get("activate").has("links") ? "t" : "b"); });

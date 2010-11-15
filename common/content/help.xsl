@@ -233,7 +233,7 @@
         <span dactyl:highlight="HelpDefault">(default:<xsl:text> </xsl:text>
             <xsl:choose>
                 <xsl:when test="$type = 'string'">
-                    <span dactyl:highlight="HelpString"><xsl:apply-templates mode="help-1"/></span>
+                    <span dactyl:highlight="HelpString" delim="'"><xsl:apply-templates mode="help-1"/></span>
                 </xsl:when>
                 <xsl:when test="contains($type, 'list') or contains($type, 'map')">
                     <span dactyl:highlight="HelpString" delim=""><xsl:apply-templates mode="help-1"/></span>

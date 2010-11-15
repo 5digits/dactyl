@@ -166,7 +166,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                             }</rows>
                           </grid>
                         </groupbox>
-                },
+                }
             }));
         }
         let (branch = Item.PREFIX + Item.BRANCH) {
@@ -328,14 +328,18 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
 
     iterCookies: function iterCookies(host) {
-        for (let c in iter(services.get("cookies")))
-            if (c.QueryInterface(Ci.nsICookie2) && !host || util.isSubdomain(c.rawHost, host))
+        for (let c in iter(services.get("cookies"))) {
+            c.QueryInterface(Ci.nsICookie2);
+            if (!host || util.isSubdomain(c.rawHost, host))
                 yield c;
+        }
     },
     iterPermissions: function iterPermissions(host) {
-        for (let p in iter(services.get("permissions")))
-            if (p.QueryInterface(Ci.nsIPermission) && (!host || util.isSubdomain(p.host, host)))
+        for (let p in iter(services.get("permissions"))) {
+            p.QueryInterface(Ci.nsIPermission);
+            if (!host || util.isSubdomain(p.host, host))
                 yield p;
+        }
     }
 }, {
     load: function (dactyl, modules, window) {
@@ -443,7 +447,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 services.get("permissions").add(uri, "cookie", Sanitizer.PERMS[perm]);
             }
             commands.add(["cookies", "ck"],
-                "Change cookie permissions for sites.",
+                "Change cookie permissions for sites",
                 function (args) {
                     let host = args.shift();
                     let session = true;

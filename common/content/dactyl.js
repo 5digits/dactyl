@@ -150,7 +150,7 @@ const Dactyl = Module("dactyl", {
             }
             else {
                 highlight.highlightNode(document.documentElement, "Bell");
-                util.timeout(function () { document.documentElement.removeAttributeNS(NS, "highlight"); }, 20);
+                util.timeout(function () { document.documentElement.removeAttributeNS(NS, "highlight"); }, 5);
             }
         }
         else {
@@ -1268,7 +1268,7 @@ const Dactyl = Module("dactyl", {
                 }
             });
 
-        options.add(["urlseparator", "us"],
+        options.add(["urlseparator", "urlsep", "us"],
             "Set the separator regexp used to separate multiple URL args",
             "string", "\\|");
 
