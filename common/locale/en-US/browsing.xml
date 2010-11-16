@@ -46,7 +46,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
 <item>
     <tags>o :o :open</tags>
-    <spec>:o<oa>pen</oa> <oa>arg1</oa>, <oa>arg2</oa>, …</spec>
+    <spec>:o<oa>pen</oa> <oa>args</oa></spec>
     <spec>o</spec>
     <description>
         <p>
@@ -105,7 +105,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
 <item>
     <tags>t :t :tabopen :tabnew</tags>
-    <spec>:tabopen<oa>!</oa> <oa>arg1</oa>, <oa>arg2</oa>, …</spec>
+    <spec>:tabopen<oa>!</oa> <oa>args</oa></spec>
     <spec>t</spec>
     <description>
         <p>
@@ -150,7 +150,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
 <item>
     <tags>w :winopen :wopen</tags>
-    <spec>:wino<oa>pen</oa><oa>!</oa> <oa>arg1</oa>, <oa>arg2</oa>, …</spec>
+    <spec>:wino<oa>pen</oa><oa>!</oa> <oa>args</oa></spec>
     <spec>w</spec>
     <description>
         <p>
