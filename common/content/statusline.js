@@ -44,7 +44,8 @@ const StatusLine = Module("statusline", {
      *
      * @param {'extended'|'secure'|'broken'|'insecure'} type
      */
-    setClass: function setClass(type) {
+    set class(type) {
+        this._class = type;
         const highlightGroup = {
             extended: "StatusLineExtended",
             secure:   "StatusLineSecure",
@@ -54,6 +55,7 @@ const StatusLine = Module("statusline", {
 
         highlight.highlightNode(this._statusLine, highlightGroup[type]);
     },
+    get class() this._class,
 
     // update all fields of the statusline
     update: function update() {

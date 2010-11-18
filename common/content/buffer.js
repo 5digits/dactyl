@@ -85,7 +85,7 @@ const Buffer = Module("buffer", {
 
             // get file size
             const ACCESS_READ = Ci.nsICache.ACCESS_READ;
-            let cacheKey = doc.location.toString().replace(/#.*$/, "");
+            let cacheKey = doc.documentURI;
 
             for (let proto in array.iterValues(["HTTP", "FTP"])) {
                 try {
@@ -249,13 +249,13 @@ const Buffer = Module("buffer", {
             onSecurityChange.superapply(this, arguments);
             // TODO: do something useful with STATE_SECURE_MED and STATE_SECURE_LOW
             if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
-                statusline.setClass("insecure");
+                statusline.class = "insecure";
             else if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
-                statusline.setClass("broken");
+                statusline.class = "broken";
             else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
-                statusline.setClass("extended");
+                statusline.class = "extended";
             else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
-                statusline.setClass("secure");
+                statusline.class = "secure";
         },
         onStatusChange: function onStatusChange(webProgress, request, status, message) {
             onStatusChange.superapply(this, arguments);
@@ -1108,8 +1108,10 @@ const Buffer = Module("buffer", {
             return elem;
         }
 
-        if (buffer.focusedFrame.getSelection().rangeCount)
-            var elem = find(buffer.focusedFrame.getSelection().getRangeAt(0).startContainer);
+        let sel = buffer.focusedFrame.getSelection();
+        if (sel && sel.rangeCount)
+            var elem = find(sel.getRangeAt(0).startContainer);
+
         if (!(elem instanceof Element)) {
             let doc = Buffer.findScrollableWindow().document;
             elem = find(doc.body || doc.getElementsByTagName("body")[0] ||

@@ -172,6 +172,12 @@ const Modes = Module("modes", {
         dactyl.triggerObserver("mode-add", mode);
     },
 
+    dumpStack: function () {
+        util.dump("Mode stack:");
+        for (let [i, mode] in array.iterItems(this._modeStack))
+            util.dump("    " + i + ": " + mode);
+    },
+
     getMode: function (name) this._modeMap[name],
 
     getStack: function (idx) this._modeStack[this._modeStack.length - idx - 1] || this._modeStack[0],

@@ -115,9 +115,12 @@ install:
 			index($$0, "\nName=" profile "\n") { print; exit } 	\
 			!profile && /\nName=default\n/ { args["name=default"] = $$0 } 	\
 			!profile && /\nDefault=1/ { args["default=1"] = $$0 } 	\
-			END { if (args["default=1"]) print args["default=1"]; else print args["name=default"] }' |\
+			END {							\
+				if (args["default=1"]) print args["default=1"];	\
+				else print args["name=default"]			\
+			}' |							\
 		awk -F= '{ args[$$1] = $$2 } 					\
-		END {\
+		END {								\
 			if (args["IsRelative"]) print ENVIRON["dir"] "/" args["Path"];	\
 			else print args["Path"]					\
 		}'); 								\

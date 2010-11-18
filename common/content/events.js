@@ -718,7 +718,9 @@ const Events = Module("events", {
             if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
                 elem instanceof HTMLSelectElement ||
                 elem instanceof Window && Editor.getEditor(elem)) {
-                dactyl.mode = modes.INSERT;
+                if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
+                    modes.push(modes.INSERT);
+
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
                 return;
@@ -735,13 +737,14 @@ const Events = Module("events", {
                 if (modes.main === modes.VISUAL && elem.selectionEnd == elem.selectionStart)
                     modes.pop();
 
-                if (options["insertmode"])
-                    modes.set(modes.INSERT);
-                else {
-                    modes.set(modes.TEXT_EDIT);
-                    if (elem.selectionEnd - elem.selectionStart > 0)
-                        modes.push(modes.VISUAL);
-                }
+                if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
+                    if (options["insertmode"])
+                        modes.push(modes.INSERT);
+                    else {
+                        modes.push(modes.TEXT_EDIT);
+                        if (elem.selectionEnd - elem.selectionStart > 0)
+                            modes.push(modes.VISUAL);
+                    }
 
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
