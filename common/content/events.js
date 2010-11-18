@@ -352,8 +352,8 @@ const Events = Module("events", {
      * @param {string} keys Messy form.
      * @returns {string} Canonical form.
      */
-    canonicalKeys: function (keys) {
-        return events.fromString(keys).map(events.closure.toString).join("");
+    canonicalKeys: function (keys, unknownOk) {
+        return events.fromString(keys, unknownOk).map(events.closure.toString).join("");
     },
 
     /**
@@ -545,6 +545,8 @@ const Events = Module("events", {
                         return key;
                 }
             }
+            if (key == null)
+                key = event.dactylKeyname;
             if (key == null)
                 return null;
         }

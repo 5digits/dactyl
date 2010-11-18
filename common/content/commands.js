@@ -330,7 +330,7 @@ const Command = Class("Command", {
             /* fallthrough */
         case "-keys":
             let silent = args["-silent"];
-            rhs = events.canonicalKeys(rhs);
+            rhs = events.canonicalKeys(rhs, true);
             var action = function action(count)
                 events.feedkeys(commands.replaceTokens(rhs, { count: count }),
                                 noremap, silent);
