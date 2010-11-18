@@ -191,7 +191,7 @@ const ConfigBase = Class(ModuleBase, {
         StatusMoreMsg                                background: inherit !important;
         Message           white-space: pre-wrap !important; min-width: 100%; width: 100%; padding-left: 4em; text-indent: -4em; display: block;
         !Message String   white-space: pre-wrap;
-        NonText           color: blue; min-height: 16px; padding-left: 2px;
+        NonText           color: blue; background: transparent !important;
         *Preview          color: gray;
         Question          color: green   !important; background: white   !important; font-weight: bold !important;
         StatusQuestion    color: green   !important; background: inherit !important;

@@ -1823,9 +1823,9 @@ const ItemList = Class("ItemList", {
                 <div highlight="Completions">
                 {
                     template.map(util.range(0, options["maxitems"] * 2), function (i)
-                    <span highlight="CompItem">
-                        <li highlight="NonText">~</li>
-                    </span>)
+                    <div highlight="CompItem NonText">
+                        <li>~</li>
+                    </div>)
                 }
                 </div>
             </div>, this._divNodes);
