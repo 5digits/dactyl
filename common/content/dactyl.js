@@ -139,19 +139,21 @@ const Dactyl = Module("dactyl", {
      */
     beep: function () {
         if (options["visualbell"]) {
-            // flash the visual bell
-            let panel = document.getElementById("dactyl-deck-bell");
-            if (panel) {
-                let restore = panel.parentNode.selectedPanel;
-                if (restore !== panel) {
-                    panel.parentNode.selectedPanel = panel;
-                    util.timeout(function () { panel.parentNode.selectedPanel = restore; }, 20);
-                }
+            let bell  = document.getElementById("dactyl-bell");
+            let strut = document.getElementById("dactyl-bell-strut");
+            if (!bell) {
+                bell = document.documentElement.insertBefore(
+                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" id="dactyl-bell" highlight="Bell"/>, document),
+                    document.documentElement.firstChild);
+                strut = document.documentElement.appendChild(
+                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" id="dactyl-bell-strut"/>, document));
             }
-            else {
-                highlight.highlightNode(document.documentElement, "Bell");
-                util.timeout(function () { document.documentElement.removeAttributeNS(NS, "highlight"); }, 5);
-            }
+
+            bell.style.height = window.innerHeight + "px";
+            strut.style.marginBottom = -window.innerHeight + "px";
+            strut.style.display = bell.style.display = "";
+
+            util.timeout(function () { strut.style.display = bell.style.display = "none"; }, 20);
         }
         else {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);
