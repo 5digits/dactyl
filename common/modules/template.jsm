@@ -50,18 +50,17 @@ const Template = Module("Template", {
 
     bookmarkDescription: function (item, text)
     <>
-        <a xmlns:dactyl={NS} identifier={item.id} dactyl:command={item.command}
-           href={item.item.url} highlight="URL">{text || ""}</a>&#xa0;
         {
             !(item.extra && item.extra.length) ? "" :
-            <span class="extra-info">
+            <span highlight="URLExtra">
                 ({
                     template.map(item.extra, function (e)
                     <>{e[0]}: <span highlight={e[2]}>{e[1]}</span></>,
-                    <>&#xa0;</>/* Non-breaking space */)
-                })
-            </span>
+                    <>&#xa0;</>)
+                })&#xa0;</span>
         }
+        <a xmlns:dactyl={NS} identifier={item.id} dactyl:command={item.command}
+           href={item.item.url} highlight="URL">{text || ""}</a>
     </>,
 
     filter: function (str) <span highlight="Filter">{str}</span>,

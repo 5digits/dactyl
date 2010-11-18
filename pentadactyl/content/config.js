@@ -254,8 +254,11 @@ const Config = Module("config", ConfigBase, {
             context.filterFunc = null;
             context.hasItems = context.completions.length > 0; // XXX
             context.incomplete = true;
-            context.keys.icon = 2;
+
+            context.format = bookmarks.format;
+            context.keys.extra = function (item) (bookmarkcache.get(item.url) || {}).extra;
             context.title = ["Smart Completions"];
+
             context.cancel = function () {
                 if (searchRunning) {
                     services.get("autoCompleteSearch").stopSearch();
@@ -267,8 +270,8 @@ const Config = Module("config", ConfigBase, {
             let timer = new Timer(50, 100, function (result) {
                 context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
                 context.completions = [
-                    [result.getValueAt(i), result.getCommentAt(i), result.getImageAt(i)]
-                        for (i in util.range(0, result.matchCount))
+                    { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
+                    for (i in util.range(0, result.matchCount))
                 ];
             });
             services.get("autoCompleteSearch").startSearch(context.filter, "", context.result, {

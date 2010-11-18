@@ -251,6 +251,7 @@ const ConfigBase = Class(ModuleBase, {
         Title       color: magenta; background: white; font-weight: bold;
         URL         text-decoration: none; color: green; background: inherit;
         URL:hover   text-decoration: underline; cursor: pointer;
+        URLExtra    color: gray;
 
         FrameIndicator;;* {
             /* This gets released into the wild, so everything is important */

@@ -56,6 +56,14 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
         return Bookmark(node.uri, node.title, node.icon && node.icon.spec, post, keyword, tags, node.itemId);
     },
 
+    get: function (url) {
+        let ids = bookmarks.getBookmarkIdsForURI(util.newURI(url));
+        for (let id in values(ids))
+            if (id in this.bookmarks)
+                return this.bookmarks[id];
+        return null;
+    },
+
     readBookmark: function readBookmark(id) {
         return {
             itemId: id,

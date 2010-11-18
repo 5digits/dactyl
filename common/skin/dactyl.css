@@ -58,8 +58,6 @@
     width: 0px;
 }
 
-.extra-info { color: gray; }
-
 .times-executed, .time-average { color: green; }
 .time-total { color: red; }
 
