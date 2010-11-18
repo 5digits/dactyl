@@ -209,7 +209,7 @@ const ConfigBase = Class(ModuleBase, {
         CompTitle>*          padding: 0 .5ex;
         CompMsg              font-style: italic; margin-left: 16px;
         CompItem
-        CompItem:nth-child(2n+1)    background: #f2f2f2;
+        CompItem:nth-child(2n+1)    background: rgba(0, 0, 0, .04);
         CompItem[selected]   background: yellow;
         CompItem>*           padding: 0 .5ex;
         CompIcon             width: 16px; min-width: 16px; display: inline-block; margin-right: .5ex;
