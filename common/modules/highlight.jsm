@@ -78,7 +78,7 @@ const Highlights = Module("Highlight", {
             obj.style = old.style;
         }
 
-        if (/^[[>+ ]/.test(args[1]))
+        if (/^[[>+: ]/.test(args[1]))
             obj.selector = this.selector(obj.class) + args[1];
         if (old && old.value != old.default)
             obj.value = old.value;
