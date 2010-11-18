@@ -83,7 +83,7 @@ const Highlights = Module("Highlight", {
         if (old && old.value != old.default)
             obj.value = old.value;
 
-        if (!old && obj.base && obj.base.enabled)
+        if (!old && obj.base && obj.base.style.enabled)
             obj.style.enabled = true;
         else
             this.loaded.__defineSetter__(obj.class, function () {
