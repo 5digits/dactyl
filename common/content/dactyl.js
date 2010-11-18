@@ -485,9 +485,25 @@ const Dactyl = Module("dactyl", {
 
             let body = XML();
             for (let [, context] in Iterator(plugins.contexts))
-                if (context && context.INFO instanceof XML)
+                if (context && context.INFO instanceof XML) {
+                    let info = context.INFO;
+                    if (info.*.@lang.length()) {
+                        let langs = set([String(a) for each (a in info.*.@lang)]);
+                        let lang = [window.navigator.language,
+                                    window.navigator.language.replace(/-.*/, ""),
+                                    "en", "en-US", info.*.@lang[0]
+                                   ].filter(function (l) set.has(langs, l))[0];
+
+                        info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
+
+                        for each (let elem in info.NS::info)
+                            for each (let attr in ["@name", "@summary", "@href"])
+                                if (elem[attr].length())
+                                    info[attr] = elem[attr];
+                    }
                     body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
                         context.INFO;
+                }
 
             let help =
                 '<?xml version="1.0"?>\n' +

@@ -108,16 +108,23 @@
 </dl>
 <dl>
     <dt>Plugins</dt><dd/>
+    <dt>@lang</dt>             <dd>When applied to any element under
+        &lt;plugin>, that element is only visible for a specific
+        locale.</dd>
     <dt>plugin</dt>            <dd>The container tag used for describing a plugin.</dd>
     <dt>&tab;@name</dt>        <dd>The name of the plugin. Used as the plugin's help tag.</dd>
     <dt>&tab;@version</dt>     <dd>The plugin's version number.</dd>
     <dt>&tab;@href</dt>        <dd>The plugin's home page.</dd>
     <dt>&tab;@summary</dt>     <dd>A short description of the plugin, shown in its section head.</dd>
 
+    <dt>info</dt>              <dd>An element with the same
+        attributes as plugin, which may override the latter for
+        specific locales</dd>
+
     <dt>project</dt>           <dd>The project for which this plugin was intended.</dd>
     <dt>&tab;@name</dt>        <dd>The name of the project (i.e., <str>&dactyl.appName;</str>)</dd>
-    <dt>&tab;@minVersion</dt>  <dd>The minimum version of the project for which this plugin is intended to work.</dd>
-    <dt>&tab;@maxVersion</dt>  <dd>The maximum version of the project for which this plugin is intended to work.</dd>
+    <dt>&tab;@min-version</dt>  <dd>The minimum version of the project for which this plugin is intended to work.</dd>
+    <dt>&tab;@max-version</dt>  <dd>The maximum version of the project for which this plugin is intended to work.</dd>
 
     <dt>author</dt>            <dd>The plugin's author. May appear more than once.</dd>
     <dt>&tab;@href</dt>        <dd>The author's home page.</dd>
