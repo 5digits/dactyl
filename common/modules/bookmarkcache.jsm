@@ -57,7 +57,7 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
     },
 
     get: function (url) {
-        let ids = bookmarks.getBookmarkIdsForURI(util.newURI(url));
+        let ids = bookmarks.getBookmarkIdsForURI(util.newURI(url), {});
         for (let id in values(ids))
             if (id in this.bookmarks)
                 return this.bookmarks[id];
