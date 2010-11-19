@@ -573,14 +573,10 @@ const Tabs = Module("tabs", {
         commands.add(["tab"],
             "Execute a command and tell it to output in a new tab",
             function (args) {
-                try {
-                    var force = dactyl.forceNewTab;
-                    dactyl.forceNewTab = true;
-                    dactyl.execute(args[0] || "", null, true);
-                }
-                finally {
-                    dactyl.forceNewTab = force;
-                }
+                dactyl.withSavedValues(["forceNewTab"], function () {
+                    this.forceNewTab = true;
+                    this.execute(args[0] || "", null, true);
+                });
             }, {
                 argCount: "+",
                 completer: function (context) completion.ex(context),

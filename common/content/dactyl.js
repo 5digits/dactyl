@@ -2015,9 +2015,12 @@ const Dactyl = Module("dactyl", {
         // first time intro message
         const firstTime = "extensions." + config.name + ".firsttime";
         if (prefs.get(firstTime, true)) {
-            util.timeout(function () {
-                dactyl.help();
-                prefs.set(firstTime, false);
+            dactyl.timeout(function () {
+                this.withSavedValues(["forceNewTab"], function () {
+                    this.forceNewTab = true;
+                    this.help();
+                    prefs.set(firstTime, false);
+                });
             }, 1000);
         }
 

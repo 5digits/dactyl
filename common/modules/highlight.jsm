@@ -48,8 +48,7 @@ Highlight.prototype.toString = function ()
         .join("\n\t");
 
 /**
- * A class to manage highlighting rules. The parameters are the
- * standard parameters for any {@link Storage} object.
+ * A class to manage highlighting rules.
  *
  * @author Kris Maglione <maglione.k@gmail.com>
  */
@@ -147,13 +146,12 @@ const Highlights = Module("Highlight", {
      *
      * @param {string} class
      */
-    selector: function (class_) {
-        const self = this;
-        return class_.replace(/(^|\s)([A-Z]\w+)\b/g,
-                function (m, n1, hl) n1 +
-                    (self.highlight[hl] && self.highlight[hl].class != class_
-                        ? self.highlight[hl].selector : "[dactyl|highlight~=" + hl + "]"));
-    },
+    selector: function (class_)
+        let (self = this)
+           class_.replace(/(^|\s)([A-Z]\w+)\b/g,
+            function (m, n1, hl) n1 +
+                (self.highlight[hl] && self.highlight[hl].class != class_
+                    ? self.highlight[hl].selector : "[dactyl|highlight~=" + hl + "]")),
 
     /**
      * Clears all highlighting rules. Rules with default values are
@@ -185,7 +183,7 @@ const Highlights = Module("Highlight", {
      * Bulk loads new CSS rules, in the format of,
      *
      *   Rules     ::= Rule | Rule "\n" Rule
-     *   Rule      ::= Bang? Star? MatchSpec Space Space* Css
+     *   Rule      ::= Bang? Star? MatchSpec Space Space+ Css
      *               | Comment
      *   Comment   ::= Space* "//" *
      *   Bang      ::= "!"

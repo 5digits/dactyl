@@ -65,8 +65,7 @@ Sheet.prototype.__defineGetter__("fullCSS", function wrapCSS() {
 
 /**
  * Manages named and unnamed user style sheets, which apply to both
- * chrome and content pages. The parameters are the standard
- * parameters for any {@link Storage} object.
+ * chrome and content pages.
  *
  * @author Kris Maglione <maglione.k@gmail.com>
  */
@@ -387,9 +386,9 @@ const Styles = Module("Styles", {
                         names: ["-index", "-i"],
                         type: modules.CommandOption.INT,
                         completer: function (context) {
-                            context.compare = CompletionContext.Sort.number;
+                            context.compare = modules.CompletionContext.Sort.number;
                             return [[i, <>{sheet.sites.join(",")}: {sheet.css.replace("\n", "\\n")}</>]
-                                for ([i, sheet] in styles.userSheets)
+                                    for ([i, sheet] in styles.userSheets)
                                     if (!cmd.filter || cmd.filter(sheet))];
                         },
                     }, {
