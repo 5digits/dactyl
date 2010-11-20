@@ -251,7 +251,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     <tags><![CDATA[H <C-o> CTRL-O :ba :back]]></tags>
     <spec>:<oa>count</oa>ba<oa>ck</oa> <oa>url</oa></spec>
     <spec>:ba<oa>ck</oa>!</spec>
-    <spec>&lt;C-o></spec>
+    <spec><oa>count</oa>&lt;C-o></spec>
     <description>
         <p>
             Go <oa>count</oa> pages back in the browser history. If
@@ -266,7 +266,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     <tags><![CDATA[L <C-i> CTRL-I :fo :fw :forward]]></tags>
     <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
     <spec>:fo<oa>rward</oa>!</spec>
-    <spec>&lt;C-i></spec>
+    <spec><oa>count</oa>&lt;C-i></spec>
     <description>
         <p>
             Go <oa>count</oa> pages forward in the browser history.
