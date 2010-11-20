@@ -147,7 +147,7 @@ const Command = Class("Command", {
         if (args.bang && !this.bang)
             throw FailedAssertion("E477: No ! allowed");
 
-        dactyl.trapErrors(function exec(command) {
+        return !dactyl.trapErrors(function exec(command) {
             if (this.always)
                 this.always(args, modifiers);
             if (!io.sourcing || !io.sourcing.noExecute)

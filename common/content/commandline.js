@@ -1583,19 +1583,11 @@ const CommandLine = Module("commandline", {
         if (!arg)
             return "";
 
-        try {
-            arg = dactyl.userEval(arg);
-        }
-        catch (e) {
-            dactyl.echoerr(e);
-            return null;
-        }
-
-        if (typeof arg === "object")
+        arg = dactyl.userEval(arg);
+        if (isObject(arg))
             arg = util.objectToString(arg, useColor);
         else
             arg = String(arg);
-
         return arg;
     }
 }, {
@@ -1620,9 +1612,7 @@ const CommandLine = Module("commandline", {
             commands.add([command.name],
                 command.description,
                 function (args) {
-                    let str = CommandLine.echoArgumentToString(args[0] || "", true);
-                    if (str != null)
-                        command.action(str);
+                    command.action(CommandLine.echoArgumentToString(args[0] || "", true));
                 }, {
                     completer: function (context) completion.javascript(context),
                     literal: 0

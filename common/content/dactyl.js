@@ -143,10 +143,10 @@ const Dactyl = Module("dactyl", {
             let strut = document.getElementById("dactyl-bell-strut");
             if (!bell) {
                 bell = document.documentElement.insertBefore(
-                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" id="dactyl-bell" highlight="Bell"/>, document),
+                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" highlight="Bell" id="dactyl-bell"/>, document),
                     document.documentElement.firstChild);
                 strut = document.documentElement.appendChild(
-                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" id="dactyl-bell-strut"/>, document));
+                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" highlight="Bell" id="dactyl-bell-strut"/>, document));
             }
 
             bell.style.height = window.innerHeight + "px";
@@ -335,12 +335,14 @@ const Dactyl = Module("dactyl", {
 
         if (!silent)
             commandline.command = str.replace(/^\s*:\s*/, "");
+        let res = true;
         for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
             if (command === null)
                 throw FailedAssertion("E492: Not a " + config.appName + " command: " + args.commandString);
 
-            command.execute(args, modifiers);
+            res = res && command.execute(args, modifiers);
         }
+        return res;
     },
 
     /**
@@ -1006,7 +1008,7 @@ const Dactyl = Module("dactyl", {
         }
         catch (e) {
             dactyl.reportError(e, true);
-            return undefined;
+            return e;
         }
     },
 
@@ -1711,18 +1713,11 @@ const Dactyl = Module("dactyl", {
         commands.add(["javas[cript]", "js"],
             "Evaluate a JavaScript string",
             function (args) {
-                if (args.bang) { // open JavaScript console
+                if (args.bang) // open JavaScript console
                     dactyl.open("chrome://global/content/console.xul",
                         { from: "javascript" });
-                }
-                else {
-                    try {
-                        dactyl.userEval(args[0]);
-                    }
-                    catch (e) {
-                        dactyl.echoerr(e);
-                    }
-                }
+                else
+                    dactyl.userEval(args[0]);
             }, {
                 bang: true,
                 completer: function (context) completion.javascript(context),

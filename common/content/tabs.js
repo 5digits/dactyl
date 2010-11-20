@@ -569,7 +569,6 @@ const Tabs = Module("tabs", {
                 subCommand: 0
             });
 
-        // TODO: this should open in a new tab positioned directly after the current one, not at the end
         commands.add(["tab"],
             "Execute a command and tell it to output in a new tab",
             function (args) {
@@ -589,7 +588,8 @@ const Tabs = Module("tabs", {
             function (args) {
                 for (let i = 0; i < tabs.count; i++) {
                     tabs.select(i);
-                    dactyl.execute(args[0] || "", null, true);
+                    if (!dactyl.execute(args[0] || "", null, true))
+                        break;
                 }
             }, {
                 argCount: "1",
