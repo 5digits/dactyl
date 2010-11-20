@@ -21,7 +21,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
 <item>
     <tags><![CDATA[pass-through <C-z> CTRL-Z]]></tags>
-    <spec>CTRL-Z</spec>
+    <spec>&lt;C-z></spec>
     <description>
         <p>
             Pass all keys except for <k name="Esc"/> directly to
@@ -34,7 +34,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
 <item>
     <tags><![CDATA[send-key <C-v> CTRL-V]]></tags>
-    <spec>CTRL-V</spec>
+    <spec>&lt;C-v></spec>
     <description>
         <p>
             Pass the next key press directly to &dactyl.host;.
@@ -251,7 +251,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     <tags><![CDATA[H <C-o> CTRL-O :ba :back]]></tags>
     <spec>:<oa>count</oa>ba<oa>ck</oa> <oa>url</oa></spec>
     <spec>:ba<oa>ck</oa>!</spec>
-    <spec>CTRL-o</spec>
+    <spec>&lt;C-o></spec>
     <description>
         <p>
             Go <oa>count</oa> pages back in the browser history. If
@@ -263,10 +263,10 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[L <C-i> CTRL-i :fo :fw :forward]]></tags>
+    <tags><![CDATA[L <C-i> CTRL-I :fo :fw :forward]]></tags>
     <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
     <spec>:fo<oa>rward</oa>!</spec>
-    <spec>CTRL-i</spec>
+    <spec>&lt;C-i></spec>
     <description>
         <p>
             Go <oa>count</oa> pages forward in the browser history.

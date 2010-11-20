@@ -59,8 +59,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[i_<Ctrl-w>]]></tags>
-    <spec>&lt;Ctrl-w></spec>
+    <tags><![CDATA[i_<C-w>]]></tags>
+    <spec>&lt;C-w></spec>
     <description short="true">
         <p>
             Delete the previous word.
@@ -69,8 +69,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[i_<Ctrl-u>]]></tags>
-    <spec>&lt;Ctrl-u></spec>
+    <tags><![CDATA[i_<C-u>]]></tags>
+    <spec>&lt;C-u></spec>
     <description short="true">
         <p>
             Delete until the beginning of the current line.
@@ -79,8 +79,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[i_<Ctrl-k>]]></tags>
-    <spec>&lt;Ctrl-k></spec>
+    <tags><![CDATA[i_<C-k>]]></tags>
+    <spec>&lt;C-k></spec>
     <description short="true">
         <p>
             Delete until the end of the current line.
@@ -89,8 +89,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[i_<Ctrl-a>]]></tags>
-    <spec>&lt;Ctrl-a></spec>
+    <tags><![CDATA[i_<C-a>]]></tags>
+    <spec>&lt;C-a></spec>
     <description short="true">
         <p>
             Move cursor to the beginning of the current line.
@@ -99,8 +99,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[i_<Ctrl-e>]]></tags>
-    <spec>&lt;Ctrl-e></spec>
+    <tags><![CDATA[i_<C-e>]]></tags>
+    <spec>&lt;C-e></spec>
     <description short="true">
         <p>
             Move cursor to the end of the current line.
@@ -109,8 +109,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[i_<Ctrl-h>]]></tags>
-    <spec>&lt;Ctrl-h></spec>
+    <tags><![CDATA[i_<C-h>]]></tags>
+    <spec>&lt;C-h></spec>
     <description short="true">
         <p>
             Delete the character to the left.
@@ -119,8 +119,8 @@
 </item>
 
 <item>
-    <tags><![CDATA[i_<Ctrl-d>]]></tags>
-    <spec>&lt;Ctrl-d></spec>
+    <tags><![CDATA[i_<C-d>]]></tags>
+    <spec>&lt;C-d></spec>
     <description short="true">
         <p>
             Delete the character to the right.
