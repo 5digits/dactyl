@@ -826,6 +826,7 @@ const Events = Module("events", {
         try {
             let stop = false;
             let mode = modes.getStack(0);
+            var main = mode.main;
 
             function shouldPass()
                 (!dactyl.focus || Events.isContentNode(dactyl.focus)) &&
@@ -852,6 +853,7 @@ const Events = Module("events", {
 
             if (stop) {
                 this._input.buffer = "";
+                main = null;
                 return null;
             }
 
@@ -899,6 +901,7 @@ const Events = Module("events", {
                     this._input.buffer = inputStr;
             }
             else if (this._input.pendingArgMap) {
+                main = null;
                 this._input.buffer = "";
                 let map = this._input.pendingArgMap;
                 this._input.pendingArgMap = null;
@@ -932,12 +935,18 @@ const Events = Module("events", {
                     this._input.pendingMotionMap = map;
                 }
                 else {
-                    if (modes.isReplaying && !this.waitForPageLoad())
-                        return killEvent();
-
-                    let ret = map.execute(null, this._input.count);
-                    if (map.route && ret)
+                    // Hack.
+                    if (map.name == "<C-v>" && main === modes.QUOTE)
                         stop = false;
+                    else {
+                        if (modes.isReplaying && !this.waitForPageLoad())
+                            return killEvent();
+
+                        let ret = map.execute(null, this._input.count);
+                        if (map.route && ret)
+                            stop = false;
+                    }
+                    main = null;
                 }
             }
             else if (mappings.getCandidates(mode.main, candidateCommand).length > 0 && !event.skipmap) {
@@ -946,6 +955,7 @@ const Events = Module("events", {
             }
             else { // if the key is neither a mapping nor the start of one
                 // the mode checking is necessary so that things like g<esc> do not beep
+                main = null;
                 if (this._input.buffer != "" && !event.skipmap &&
                     (mode.main & (modes.INSERT | modes.COMMAND_LINE | modes.TEXT_EDIT)))
                     events.feedkeys(this._input.buffer, { noremap: true, skipmap: true });
@@ -985,6 +995,8 @@ const Events = Module("events", {
             // This is a stupid, silly, and revolting hack.
             if (isEscape(key))
                 this.onEscape();
+            if (main === modes.QUOTE)
+                modes.push(main);
         }
     },
 
