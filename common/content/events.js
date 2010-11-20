@@ -235,8 +235,6 @@ const Events = Module("events", {
      * @returns {boolean}
      */
     feedkeys: function (keys, noremap, quiet) {
-        let doc = window.document;
-        let view = window.document.defaultView;
 
         let wasFeeding = this.feedingKeys;
         this.feedingKeys = true;
@@ -258,15 +256,11 @@ const Events = Module("events", {
                         evt.noremap = !!noremap;
                     evt.isMacro = true;
 
+                    let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
                     if (!evt_obj.dactylString && !evt_obj.dactylShift)
-                        window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                              .sendKeyEvent(type, evt.keyCode, evt.charCode, evt.modifiers);
-                    else { // A special hack for dactyl-specific key names.
-                        evt.dactylString = evt_obj.dactylString; // for key-less keypress events e.g. <Nop>
-                        evt.dactylShift = evt_obj.dactylShift; // for untypeable shift keys e.g. <S-1>
-                        events.onKeyPress(evt);
-                        break;
-                    }
+                        events.dispatch(dactyl.focus || buffer.focusedFrame, event);
+                    else
+                        events.onKeyPress(event);
                 }
 
                 if (!this.feedingKeys)
