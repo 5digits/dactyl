@@ -364,6 +364,7 @@ const Events = Module("events", {
                 if (target instanceof Document)
                     target = target.documentElement;
                 dactyl.assert(target);
+
                 // This causes a crash on Gecko<2.0, it seems.
                 target.ownerDocument.defaultView
                       .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)

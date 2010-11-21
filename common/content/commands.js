@@ -760,7 +760,7 @@ const Commands = Module("commands", {
             function matchOpts(arg) {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
-                    completeOpts = options.filter(function (opt) opt.multiple || !(opt.names[0] in args));
+                    completeOpts = options.filter(function (opt) opt.multiple || !set.has(args, opt.names[0]));
             }
             function resetCompletions() {
                 completeOpts = null;
