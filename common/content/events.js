@@ -359,7 +359,7 @@ const Events = Module("events", {
     dispatch: Class.memoize(function ()
         util.haveGecko("2b")
             ? function (target, event) // This causes a crash on Gecko<2.0, it seems.
-                    target.ownerDocument.defaultView
+                    (target.ownerDocument || target.document || target).defaultView
                           .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                           .dispatchDOMEventViaPresShell(target, event, true)
             : function (target, event) target.dispatchEvent(event)),
