@@ -1157,11 +1157,13 @@ const Hints = Module("hints", {
             {
                 completer: function (context) [
                     ["contains",       "The typed characters are split on whitespace. The resulting groups must all appear in the hint."],
-                    ["wordstartswith", "The typed characters are split on whitespace. The resulting groups must all match the beginnings of words, in order."],
-                    ["firstletters",   "Behaves like wordstartswith, but all groups much match a sequence of words."],
                     ["custom",         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)"],
+                    ["firstletters",   "Behaves like wordstartswith, but all groups much match a sequence of words."],
+                    ["wordstartswith", "The typed characters are split on whitespace. The resulting groups must all match the beginnings of words, in order."],
                     ["transliterated", UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")]
-                ]
+                ],
+                validator: function (values) Option.validateCompleter.call(this, values) &&
+                    1 === values.reduce(function (acc, v) acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0), 0)
             });
 
         options.add(["wordseparators", "wsp"],
