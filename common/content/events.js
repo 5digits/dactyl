@@ -807,9 +807,6 @@ const Events = Module("events", {
                 });
         }
 
-        if (key == "<C-c>")
-            util.interrupted = true;
-
         // feedingKeys needs to be separate from interrupted so
         // we can differentiate between a recorded <C-c>
         // interrupting whatever it's started and a real <C-c>
@@ -861,6 +858,9 @@ const Events = Module("events", {
                 main = null;
                 return null;
             }
+
+            if (key == "<C-c>")
+                util.interrupted = true;
 
             stop = true; // set to false if we should NOT consume this event but let the host app handle it
 

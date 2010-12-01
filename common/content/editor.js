@@ -317,8 +317,6 @@ const Editor = Module("editor", {
                 }
 
                 update(true);
-                if (textBox)
-                    textBox.removeAttribute("readonly");
 
             }, this);
             if (res == false)
@@ -328,8 +326,12 @@ const Editor = Module("editor", {
             // Errors are unlikely, and our error messages won't
             // likely be any more helpful than that given in the
             // exception.
-            dactyl.echoerr(e);
+            dactyl.reportError(e, true);
             tmpBg = "red";
+        }
+        finally {
+            if (textBox)
+                textBox.removeAttribute("readonly");
         }
 
         // blink the textbox after returning
