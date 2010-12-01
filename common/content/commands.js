@@ -849,6 +849,12 @@ const Commands = Module("commands", {
                                         if (opt.type) {
                                             let orig = arg;
                                             arg = opt.type.parse(arg);
+
+                                            if (complete && isArray(arg)) {
+                                                args.completeFilter = arg[arg.length - 1];
+                                                args.completeStart += orig.length - args.completeFilter.length;
+                                            }
+
                                             if (arg == null || (typeof arg == "number" && isNaN(arg))) {
                                                 if (!complete || orig != "" || args.completeStart != str.length)
                                                     fail("Invalid argument for " + opt.type.description + " option: " + optname);
@@ -937,7 +943,10 @@ const Commands = Module("commands", {
                 if (args.completeOpt) {
                     let opt = args.completeOpt;
                     let context = complete.fork(opt.names[0], args.completeStart);
+                    let arg = args[opt.names[0]];
                     context.filter = args.completeFilter;
+                    if (isArray(arg))
+                        context.filters.push(function (item) arg.indexOf(item.text) === -1);
                     if (typeof opt.completer == "function")
                         var compl = opt.completer(context, args);
                     else

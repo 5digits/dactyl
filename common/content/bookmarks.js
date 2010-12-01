@@ -389,16 +389,8 @@ const Bookmarks = Module("bookmarks", {
             names: ["-tags", "-T"],
             description: "A comma-separated list of tags",
             completer: function tags(context, args) {
-                // TODO: Move the bulk of this to parseArgs.
-                let filter = context.filter;
-                let have = filter.split(",");
-
-                args.completeFilter = have.pop();
-
-                let prefix = filter.substr(0, filter.length - args.completeFilter.length);
                 context.generate = function () array(b.tags for (b in bookmarkcache) if (b.tags)).flatten().uniq().array;
-                context.keys = { text: function (tag) prefix + tag, description: util.identity };
-                context.filters.push(function (tag) have.indexOf(tag) < 0);
+                context.keys = { text: util.identity, description: util.identity };
             },
             type: CommandOption.LIST
         };

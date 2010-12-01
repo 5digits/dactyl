@@ -271,6 +271,9 @@ const Events = Module("events", {
                     break;
             }
         }
+        catch (e) {
+            util.reportError(e);
+        }
         finally {
             this.feedingEvent = null;
             this.feedingKeys = wasFeeding;

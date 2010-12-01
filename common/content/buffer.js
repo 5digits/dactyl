@@ -446,7 +446,7 @@ const Buffer = Module("buffer", {
      */
     get focusedFrame() {
         let frame = (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame;
-        return frame && frame.get() || content;
+        return frame && frame.get() || window.content;
     },
     set focusedFrame(frame) {
         (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame = Cu.getWeakReference(frame);
