@@ -926,7 +926,7 @@ const Options = Module("options", {
                     context.completions = [
                             [prefs.get(filter), "Current Value"],
                             [prefs.getDefault(filter), "Default Value"]
-                    ].filter(function ([k]) k != null && k.length < 200);
+                    ].filter(function (k) k[0] != null && String(k[0]).length < 200);
                     return null;
                 }
 
