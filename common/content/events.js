@@ -362,16 +362,13 @@ const Events = Module("events", {
     dispatch: Class.memoize(function ()
         util.haveGecko("2b")
             ? function (target, event) {
-                if (target instanceof Window)
-                    target = target.document;
-                if (target instanceof Document)
-                    target = target.documentElement;
-                dactyl.assert(target);
-
-                // This causes a crash on Gecko<2.0, it seems.
-                target.ownerDocument.defaultView
-                      .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                      .dispatchDOMEventViaPresShell(target, event, true)
+                if (target instanceof Element)
+                    // This causes a crash on Gecko<2.0, it seems.
+                    (target.ownerDocument || target.document || target).defaultView
+                           .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                           .dispatchDOMEventViaPresShell(target, event, true)
+                else
+                    target.dispatchEvent(event);
             }
             : function (target, event) target.dispatchEvent(event)),
 
