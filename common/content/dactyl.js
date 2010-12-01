@@ -48,15 +48,22 @@ const Dactyl = Module("dactyl", {
         this.commands = {};
         this.modules = modules;
         this.observers = {};
+    },
 
+    /** @property {string} The name of the current user profile. */
+    profileName: Class.memoize(function () {
         // NOTE: services.get("profile").selectedProfile.name doesn't return
         // what you might expect. It returns the last _actively_ selected
         // profile (i.e. via the Profile Manager or -P option) rather than the
         // current profile. These will differ if the current process was run
         // without explicitly selecting a profile.
-        /** @property {string} The name of the current user profile. */
-        this.profileName = services.get("directory").get("ProfD", Ci.nsIFile).leafName.replace(/^.+?\./, "");
-    },
+
+        let dir = services.get("directory").get("ProfD", Ci.nsIFile);
+        for (let prof in iter(services.get("profile").profiles))
+            if (prof.QueryInterface(Ci.nsIToolkitProfile).localDir.path === dir.path)
+                return prof.name;
+        return "unknown";
+    }),
 
     destroy: function () {
         autocommands.trigger("LeavePre", {});
