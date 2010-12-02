@@ -18,17 +18,13 @@ Bookmark.prototype.__defineGetter__("extra", function () [
                         ["tags",    this.tags.join(", "), "Tag"]
                     ].filter(function (item) item[1]));
 
-const annotation = services.annotation;
-const bookmarks  = services.bookmarks;
-const history    = services.history;
-const tagging    = services.tagging;
-const name       = "bookmark-cache";
+const name = "bookmark-cache";
 
 const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     POST: "bookmarkProperties/POSTData",
 
     init: function init() {
-        bookmarks.addObserver(this, false);
+        services.bookmarks.addObserver(this, false);
     },
 
     __iterator__: function () (val for ([, val] in Iterator(bookmarkcache.bookmarks))),
@@ -38,7 +34,7 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
     get keywords() array.toObject([[b.keyword, b] for (b in this) if (b.keyword)]),
 
     rootFolders: ["toolbarFolder", "bookmarksMenuFolder", "unfiledBookmarksFolder"]
-        .map(function (s) bookmarks[s]),
+        .map(function (s) services.bookmarks[s]),
 
     _deleteBookmark: function deleteBookmark(id) {
         let result = this.bookmarks[id] || null;
@@ -50,33 +46,31 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
         if (node.uri == null) // How does this happen?
             return false;
         let uri = util.newURI(node.uri);
-        let keyword = bookmarks.getKeywordForBookmark(node.itemId);
-        let tags = tagging.getTagsForURI(uri, {}) || [];
+        let keyword = services.bookmarks.getKeywordForBookmark(node.itemId);
+        let tags = services.tagging.getTagsForURI(uri, {}) || [];
         let post = BookmarkCache.getAnnotation(node.itemId, this.POST);
         return Bookmark(node.uri, node.title, node.icon && node.icon.spec, post, keyword, tags, node.itemId);
     },
 
     get: function (url) {
-        let ids = bookmarks.getBookmarkIdsForURI(util.newURI(url), {});
+        let ids = services.bookmarks.getBookmarkIdsForURI(util.newURI(url), {});
         for (let id in values(ids))
             if (id in this.bookmarks)
                 return this.bookmarks[id];
         return null;
     },
 
-    readBookmark: function readBookmark(id) {
-        return {
-            itemId: id,
-            uri:    bookmarks.getBookmarkURI(id).spec,
-            title:  bookmarks.getItemTitle(id)
-        };
-    },
+    readBookmark: function readBookmark(id) ({
+        itemId: id,
+        uri:    services.bookmarks.getBookmarkURI(id).spec,
+        title:  services.bookmarks.getItemTitle(id)
+    }),
 
     findRoot: function findRoot(id) {
         do {
             var root = id;
-            id = bookmarks.getFolderIdForItem(id);
-        } while (id != bookmarks.placesRoot && id != root);
+            id = services.bookmarks.getFolderIdForItem(id);
+        } while (id != services.bookmarks.placesRoot && id != root);
         return root;
     },
 
@@ -87,8 +81,8 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
             var root = id;
             if (services.livemark && services.livemark.isLivemark(id))
                 return false;
-            id = bookmarks.getFolderIdForItem(id);
-        } while (id != bookmarks.placesRoot && id != root);
+            id = services.bookmarks.getFolderIdForItem(id);
+        } while (id != services.bookmarks.placesRoot && id != root);
         return this.rootFolders.indexOf(root) >= 0;
     },
 
@@ -97,12 +91,12 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
         let bookmarks = {};
 
         let folders = this.rootFolders.slice();
-        let query = history.getNewQuery();
-        let options = history.getNewQueryOptions();
+        let query = services.history.getNewQuery();
+        let options = services.history.getNewQueryOptions();
         while (folders.length > 0) {
             query.setFolders(folders, 1);
             folders.shift();
-            let result = history.executeQuery(query, options);
+            let result = services.history.executeQuery(query, options);
             let folder = result.root;
             folder.containerOpen = true;
 
@@ -123,7 +117,7 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
     },
 
     onItemAdded: function onItemAdded(itemId, folder, index) {
-        if (bookmarks.getItemType(itemId) == bookmarks.TYPE_BOOKMARK) {
+        if (services.bookmarks.getItemType(itemId) == services.bookmarks.TYPE_BOOKMARK) {
             if (this.isBookmark(itemId)) {
                 let bmark = this._loadBookmark(this.readBookmark(itemId));
                 this.bookmarks[bmark.id] = bmark;
@@ -146,7 +140,7 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
         let bookmark = this.bookmarks[itemId];
         if (bookmark) {
             if (property == "tags")
-                value = tagging.getTagsForURI(util.newURI(bookmark.url), {});
+                value = services.tagging.getTagsForURI(util.newURI(bookmark.url), {});
             if (property in bookmark) {
                 bookmark[property] = value;
                 storage.fireEvent(name, "change", { __proto__: bookmark, changed: property });
@@ -155,11 +149,11 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
     }
 }, {
     getAnnotation: function getAnnotation(item, anno)
-        annotation.itemHasAnnotation(item, anno) ?
-        annotation.getItemAnnotation(item, anno) : null,
+        services.annotation.itemHasAnnotation(item, anno) ?
+        services.annotation.getItemAnnotation(item, anno) : null,
     getFavicon: function getFavicon(uri) {
         try {
-            return service.get("favicon").getFaviconImageForPage(util.newURI(uri)).spec;
+            return services.favicon.getFaviconImageForPage(util.newURI(uri)).spec;
         }
         catch (e) {
             return "";

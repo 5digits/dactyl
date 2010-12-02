@@ -11,7 +11,6 @@ defineModule("styles", {
     use: ["template"]
 });
 
-const sss = services.stylesheet;
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 const namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
                   "@namespace xul " + XUL.uri.quote() + ";\n" +
@@ -222,8 +221,10 @@ const Styles = Module("Styles", {
         let uri = services.io.newURI(url, null, null);
         if (reload)
             this.unregisterSheet(url, agent);
-        if (reload || !sss.sheetRegistered(uri, agent ? sss.AGENT_SHEET : sss.USER_SHEET))
-            sss.loadAndRegisterSheet(uri, agent ? sss.AGENT_SHEET : sss.USER_SHEET);
+
+        let type = services.stylesheet[agent ? "AGENT_SHEET" : "USER_SHEET"];
+        if (reload || !services.stylesheet.sheetRegistered(uri, type))
+            services.stylesheet.loadAndRegisterSheet(uri, type);
     },
 
     /**
@@ -234,8 +235,9 @@ const Styles = Module("Styles", {
      */
     unregisterSheet: function unregisterSheet(url, agent) {
         let uri = services.io.newURI(url, null, null);
-        if (sss.sheetRegistered(uri, agent ? sss.AGENT_SHEET : sss.USER_SHEET))
-            sss.unregisterSheet(uri, agent ? sss.AGENT_SHEET : sss.USER_SHEET);
+        let type = services.stylesheet[agent ? "AGENT_SHEET" : "USER_SHEET"];
+        if (services.stylesheet.sheetRegistered(uri, type))
+            services.stylesheet.unregisterSheet(uri, type);
     },
 }, {
     completeSite: function (context, content) {

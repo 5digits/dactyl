@@ -312,8 +312,7 @@ const Config = Module("config", ConfigBase, {
             "boolean", true,
             {
                 setter: function (value) {
-                    const ioService = services.io;
-                    if (ioService.offline == value)
+                    if (services.io.offline == value)
                         BrowserOffline.toggleOfflineStatus();
                     return value;
                 },
