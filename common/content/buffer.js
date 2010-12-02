@@ -89,7 +89,7 @@ const Buffer = Module("buffer", {
 
             for (let proto in array.iterValues(["HTTP", "FTP"])) {
                 try {
-                    var cacheEntryDescriptor = services.get("cache").createSession(proto, 0, true)
+                    var cacheEntryDescriptor = services.cache.createSession(proto, 0, true)
                                                        .openCacheEntry(cacheKey, ACCESS_READ, false);
                     break;
                 }
@@ -977,7 +977,7 @@ const Buffer = Module("buffer", {
 
             if (!isString(doc))
                 return io.withTempFiles(function (temp) {
-                    let encoder = services.create("htmlEncoder");
+                    let encoder = services.HtmlEncoder();
                     encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
                     temp.write(encoder.encodeToString(), ">");
                     this.callback(temp);

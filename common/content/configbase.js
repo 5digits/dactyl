@@ -12,10 +12,10 @@ const ConfigBase = Class(ModuleBase, {
      * initialization code. Must call superclass's init function.
      */
     init: function () {
-        this.name = services.get("dactyl:").name;
-        this.idName = services.get("dactyl:").idName;
-        this.appName = services.get("dactyl:").appName;
-        this.host = services.get("dactyl:").host;
+        this.name = services["dactyl:"].name;
+        this.idName = services["dactyl:"].idName;
+        this.appName = services["dactyl:"].appName;
+        this.host = services["dactyl:"].host;
 
         highlight.styleableChrome = this.styleableChrome;
         highlight.loadCSS(this.CSS);

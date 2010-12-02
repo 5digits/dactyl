@@ -120,7 +120,7 @@ const Tabs = Module("tabs", {
      * @property {Object[]} The array of closed tabs for the current
      *     session.
      */
-    get closedTabs() services.get("json").decode(services.get("sessionStore").getClosedTabData(window)),
+    get closedTabs() services.json.decode(services.sessionStore.getClosedTabData(window)),
 
     /**
      * Clones the specified *tab* and append it to the tab list.
@@ -148,7 +148,7 @@ const Tabs = Module("tabs", {
         if (!tab)
             tab = config.tabbrowser.mTabContainer.selectedItem;
 
-        services.get("windowWatcher")
+        services.windowWatcher
                 .openWindow(window, window.getBrowserURL(), null, "chrome,dialog=no,all", tab);
     },
 
@@ -490,8 +490,8 @@ const Tabs = Module("tabs", {
         if (!from)
             from = config.tabbrowser.mTabContainer.selectedItem;
 
-        let tabState = services.get("sessionStore").getTabState(from);
-        services.get("sessionStore").setTabState(to, tabState);
+        let tabState = services.sessionStore.getTabState(from);
+        services.sessionStore.setTabState(to, tabState);
     }
 }, {
     commands: function () {

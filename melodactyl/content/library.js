@@ -49,7 +49,7 @@ const Library = Module("library", {
      * @returns {string[]}
      */
     getTracks: function getTracks(artist, album) {
-        let properties = services.create("mutablePropertyArray");
+        let properties = services.MutablePropertyArray();
 
         properties.appendProperty(SBProperties.artistName, artist);
         properties.appendProperty(SBProperties.albumName, album);

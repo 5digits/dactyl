@@ -52,14 +52,14 @@ const Dactyl = Module("dactyl", {
 
     /** @property {string} The name of the current user profile. */
     profileName: Class.memoize(function () {
-        // NOTE: services.get("profile").selectedProfile.name doesn't return
+        // NOTE: services.profile.selectedProfile.name doesn't return
         // what you might expect. It returns the last _actively_ selected
         // profile (i.e. via the Profile Manager or -P option) rather than the
         // current profile. These will differ if the current process was run
         // without explicitly selecting a profile.
 
-        let dir = services.get("directory").get("ProfD", Ci.nsIFile);
-        for (let prof in iter(services.get("profile").profiles))
+        let dir = services.directory.get("ProfD", Ci.nsIFile);
+        for (let prof in iter(services.profile.profiles))
             if (prof.QueryInterface(Ci.nsIToolkitProfile).localDir.path === dir.path)
                 return prof.name;
         return "unknown";
@@ -297,7 +297,7 @@ const Dactyl = Module("dactyl", {
      *     should be loaded.
      */
     loadScript: function (uri, context) {
-        services.get("subscriptLoader").loadSubScript(uri, context, File.defaultEncoding);
+        services.subscriptLoader.loadSubScript(uri, context, File.defaultEncoding);
     },
 
     userEval: function (str, context, fileName, lineNumber) {
@@ -359,7 +359,7 @@ const Dactyl = Module("dactyl", {
      *     element.
      */
     focusContent: function (clearFocusedElement) {
-        if (window != services.get("windowWatcher").activeWindow)
+        if (window != services.windowWatcher.activeWindow)
             return;
 
         let win = document.commandDispatcher.focusedWindow;
@@ -412,7 +412,7 @@ const Dactyl = Module("dactyl", {
      * @returns {string}
      */
     findHelp: function (topic, unchunked) {
-        if (!unchunked && topic in services.get("dactyl:").FILE_MAP)
+        if (!unchunked && topic in services["dactyl:"].FILE_MAP)
             return topic;
         unchunked = !!unchunked;
         let items = completion._runCompleter("help", topic, null, unchunked).items;
@@ -444,11 +444,11 @@ const Dactyl = Module("dactyl", {
             }
 
             let namespaces = [config.name, "dactyl"];
-            services.get("dactyl:").init({});
+            services["dactyl:"].init({});
 
-            let tagMap = services.get("dactyl:").HELP_TAGS;
-            let fileMap = services.get("dactyl:").FILE_MAP;
-            let overlayMap = services.get("dactyl:").OVERLAY_MAP;
+            let tagMap = services["dactyl:"].HELP_TAGS;
+            let fileMap = services["dactyl:"].FILE_MAP;
+            let overlayMap = services["dactyl:"].OVERLAY_MAP;
 
             // Find help and overlay files with the given name.
             function findHelpFile(file) {
@@ -544,11 +544,11 @@ const Dactyl = Module("dactyl", {
         const TIME = Date.now();
 
         dactyl.initHelp();
-        let zip = services.create("zipWriter");
+        let zip = services.ZipWriter();
         zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
         function addURIEntry(file, uri)
             zip.addEntryChannel(PATH + file, TIME, 9,
-                services.get("io").newChannel(uri, null, null), false);
+                services.io.newChannel(uri, null, null), false);
         function addDataEntry(file, data) // Unideal to an extreme.
             addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
 
@@ -557,7 +557,7 @@ const Dactyl = Module("dactyl", {
 
         let chrome = {};
         let styles = {};
-        for (let [file, ] in Iterator(services.get("dactyl:").FILE_MAP)) {
+        for (let [file, ] in Iterator(services["dactyl:"].FILE_MAP)) {
             dactyl.open("dactyl://help/" + file);
             dactyl.modules.events.waitForPageLoad();
             let data = [
@@ -584,7 +584,7 @@ const Dactyl = Module("dactyl", {
                             if (name == "href") {
                                 value = node.href;
                                 if (value.indexOf("dactyl://help-tag/") == 0) {
-                                    let uri = services.get("io").newChannel(value, null, null).originalURI;
+                                    let uri = services.io.newChannel(value, null, null).originalURI;
                                     value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
                                 }
                                 if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
@@ -725,7 +725,7 @@ const Dactyl = Module("dactyl", {
         if (!topic) {
             let helpFile = unchunked ? "all" : options["helpfile"];
 
-            if (helpFile in services.get("dactyl:").FILE_MAP)
+            if (helpFile in services["dactyl:"].FILE_MAP)
                 dactyl.open("dactyl://help/" + helpFile, { from: "help" });
             else
                 dactyl.echomsg("Sorry, help file " + helpFile.quote() + " not found");
@@ -803,7 +803,7 @@ const Dactyl = Module("dactyl", {
             if (isObject(msg))
                 msg = util.objectToString(msg, false);
 
-            services.get("console").logStringMessage(config.name + ": " + msg);
+            services.console.logStringMessage(config.name + ": " + msg);
         }
     },
 
@@ -891,7 +891,7 @@ const Dactyl = Module("dactyl", {
 
                 case dactyl.NEW_WINDOW:
                     window.open();
-                    let win = services.get("windowMediator").getMostRecentWindow("navigator:browser");
+                    let win = services.windowMediator.getMostRecentWindow("navigator:browser");
                     win.loadURI(url, null, postdata);
                     browser = win.getBrowser();
                     break;
@@ -944,7 +944,7 @@ const Dactyl = Module("dactyl", {
         if (!saveSession && prefs.get(pref) >= 2)
             prefs.safeSet(pref, 1);
 
-        services.get("appStartup").quit(Ci.nsIAppStartup[force ? "eForceQuit" : "eAttemptQuit"]);
+        services.appStartup.quit(Ci.nsIAppStartup[force ? "eForceQuit" : "eAttemptQuit"]);
     },
 
     /**
@@ -971,7 +971,7 @@ const Dactyl = Module("dactyl", {
                     // Try to find a matching file.
                     let file = io.File(url);
                     if (file.exists() && file.isReadable())
-                        return services.get("io").newFileURI(file).spec;
+                        return services.io.newFileURI(file).spec;
                 }
                 catch (e) {}
             }
@@ -1052,7 +1052,7 @@ const Dactyl = Module("dactyl", {
         if (!canQuitApplication())
             return;
 
-        services.get("appStartup").quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
+        services.appStartup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
     },
 
     /**
@@ -1103,7 +1103,7 @@ const Dactyl = Module("dactyl", {
      * @property {Window[]} Returns an array of all the host application's
      *     open windows.
      */
-    get windows() [win for (win in iter(services.get("windowMediator").getEnumerator("navigator:browser")))],
+    get windows() [win for (win in iter(services.windowMediator.getEnumerator("navigator:browser")))],
 
 }, {
     // initially hide all GUI elements, they are later restored unless the user
@@ -1269,14 +1269,14 @@ const Dactyl = Module("dactyl", {
 
                     // TODO: remove this FF3.5 test when we no longer support 3.0
                     //     : make this a config feature
-                    if (services.get("privateBrowsing")) {
+                    if (services.privateBrowsing) {
                         let oldValue = win.getAttribute("titlemodifier_normal");
                         let suffix = win.getAttribute("titlemodifier_privatebrowsing").substr(oldValue.length);
 
                         win.setAttribute("titlemodifier_normal", value);
                         win.setAttribute("titlemodifier_privatebrowsing", value + suffix);
 
-                        if (services.get("privateBrowsing").privateBrowsingEnabled) {
+                        if (services.privateBrowsing.privateBrowsingEnabled) {
                             updateTitle(oldValue + suffix, value + suffix);
                             return value;
                         }
@@ -1399,18 +1399,18 @@ const Dactyl = Module("dactyl", {
                     callback = callback || util.identity;
                     let addon = id;
                     if (!isObject(addon))
-                        addon = services.get("extensionManager").getItemForID(id);
+                        addon = services.extensionManager.getItemForID(id);
                     if (!addon)
                         return callback(null);
                     addon = Object.create(addon);
 
                     function getRdfProperty(item, property) {
-                        let resource = services.get("rdf").GetResource("urn:mozilla:item:" + item.id);
+                        let resource = services.rdf.GetResource("urn:mozilla:item:" + item.id);
                         let value = "";
 
                         if (resource) {
-                            let target = services.get("extensionManager").datasource.GetTarget(resource,
-                                services.get("rdf").GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
+                            let target = services.extensionManager.datasource.GetTarget(resource,
+                                services.rdf.GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
                             if (target && target instanceof Ci.nsIRDFLiteral)
                                 value = target.Value;
                         }
@@ -1426,12 +1426,12 @@ const Dactyl = Module("dactyl", {
                     addon.isActive = getRdfProperty(addon, "isDisabled") != "true";
 
                     addon.uninstall = function () {
-                        services.get("extensionManager").uninstallItem(this.id);
+                        services.extensionManager.uninstallItem(this.id);
                     };
                     addon.appDisabled = false;
                     addon.__defineGetter__("userDisabled", function () getRdfProperty(addon, "userDisabled") === "true");
                     addon.__defineSetter__("userDisabled", function (val) {
-                        services.get("extensionManager")[val ? "disableItem" : "enableItem"](this.id);
+                        services.extensionManager[val ? "disableItem" : "enableItem"](this.id);
                     });
 
                     return callback(addon);
@@ -1439,7 +1439,7 @@ const Dactyl = Module("dactyl", {
                 getAddonsByTypes: function (types, callback) {
                     let res = [];
                     for (let [, type] in Iterator(types))
-                        for (let [, item] in Iterator(services.get("extensionManager")
+                        for (let [, item] in Iterator(services.extensionManager
                                     .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
                             res.push(this.getAddonByID(item));
                     callback(res);
@@ -1448,7 +1448,7 @@ const Dactyl = Module("dactyl", {
                     callback({
                         addListener: function () {},
                         install: function () {
-                            services.get("extensionManager").installItemFromFile(file, "app-profile");
+                            services.extensionManager.installItemFromFile(file, "app-profile");
                         }
                     });
                 },
@@ -1486,7 +1486,7 @@ const Dactyl = Module("dactyl", {
         const updateAddons = Class("UpgradeListener", {
             init: function init(addons) {
                 dactyl.assert(!addons.length || addons[0].findUpdates,
-                              "Not available on " + config.host + " " + services.get("runtime").version);
+                              "Not available on " + config.host + " " + services.runtime.version);
                 this.remaining = addons;
                 this.upgrade = [];
                 dactyl.echomsg("Checking updates for addons: " + addons.map(function (a) a.name).join(", "));
@@ -1953,7 +1953,7 @@ const Dactyl = Module("dactyl", {
             dactyl.initHelp();
             context.title = ["Help"];
             context.anchored = false;
-            context.completions = services.get("dactyl:").HELP_TAGS;
+            context.completions = services["dactyl:"].HELP_TAGS;
             if (unchunked)
                 context.keys = { text: 0, description: function () "all" };
         };
@@ -1983,17 +1983,17 @@ const Dactyl = Module("dactyl", {
 
         dactyl.log("All modules loaded", 3);
 
-        AddonManager.getAddonByID(services.get("dactyl:").addonID, function (addon) {
+        AddonManager.getAddonByID(services["dactyl:"].addonID, function (addon) {
             // @DATE@ token replaced by the Makefile
             // TODO: Find it automatically
             prefs.set("extensions.dactyl.version", addon.version);
             dactyl.version = addon.version + " (created: @DATE@)";
         });
 
-        if (!services.get("commandLineHandler"))
+        if (!services.commandLineHandler)
             services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
 
-        let commandline = services.get("commandLineHandler").optionValue;
+        let commandline = services.commandLineHandler.optionValue;
         if (commandline) {
             let args = dactyl.parseCommandLine(commandline);
             dactyl.commandLineOptions.rcFile = args["+u"];
@@ -2028,7 +2028,7 @@ const Dactyl = Module("dactyl", {
         // finally, read the RC file and source plugins
         // make sourcing asynchronous, otherwise commands that open new tabs won't work
         util.timeout(function () {
-            let init = services.get("environment").get(config.idName + "_INIT");
+            let init = services.environment.get(config.idName + "_INIT");
             let rcFile = io.getRCFile("~");
 
             if (dactyl.userEval('typeof document') === "undefined")
@@ -2046,7 +2046,7 @@ const Dactyl = Module("dactyl", {
                     else {
                         if (rcFile) {
                             io.source(rcFile.path, false);
-                            services.get("environment").set("MY_" + config.idName + "RC", rcFile.path);
+                            services.environment.set("MY_" + config.idName + "RC", rcFile.path);
                         }
                         else
                             dactyl.log("No user RC file found", 3);

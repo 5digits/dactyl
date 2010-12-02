@@ -124,7 +124,7 @@ defineModule.dump = function dump_() {
             msg = util.objectToString(msg);
         return msg;
     }).join(", ");
-    let name = loaded.services ? services.get("dactyl:").name : "dactyl";
+    let name = loaded.services ? services["dactyl:"].name : "dactyl";
     dump(String.replace(msg, /\n?$/, "\n")
                .replace(/^./gm, name + ": $&"));
 }
@@ -199,9 +199,9 @@ Runnable.prototype.QueryInterface = XPCOMUtils.generateQI([Ci.nsIRunnable]);
  * @returns [jsdIProperty]
  */
 function debuggerProperties(obj) {
-    if (loaded.services && services.get("debugger").isOn) {
+    if (loaded.services && services.debugger.isOn) {
         let ret = {};
-        services.get("debugger").wrapValue(obj).getProperties(ret, {});
+        services.debugger.wrapValue(obj).getProperties(ret, {});
         return ret.value;
     }
 }
@@ -227,7 +227,7 @@ function properties(obj, prototypes, debugger_) {
 
     for (; obj; obj = prototypes && prototype(obj)) {
         try {
-            if (sandbox.Object.getOwnPropertyNames || !debugger_ || !services.get("debugger").isOn)
+            if (sandbox.Object.getOwnPropertyNames || !debugger_ || !services.debugger.isOn)
                 var iter = values(Object.getOwnPropertyNames(obj));
         }
         catch (e) {}
@@ -798,7 +798,7 @@ Class.prototype = {
     timeout: function (callback, timeout) {
         const self = this;
         let notify = { notify: function notify(timer) { try { callback.apply(self); } catch (e) { util.reportError(e); } } };
-        let timer = services.create("timer");
+        let timer = services.Timer();
         timer.initWithCallback(notify, timeout || 0, timer.TYPE_ONE_SHOT);
         return timer;
     }
@@ -939,7 +939,7 @@ let StructBase = Class("StructBase", Array, {
 
 const Timer = Class("Timer", {
     init: function (minInterval, maxInterval, callback) {
-        this._timer = services.create("timer");
+        this._timer = services.Timer();
         this.callback = callback;
         this.minInterval = minInterval;
         this.maxInterval = maxInterval;

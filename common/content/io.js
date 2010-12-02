@@ -39,7 +39,7 @@ function Script(file) {
  */
 const IO = Module("io", {
     init: function () {
-        this._processDir = services.get("directory").get("CurWorkD", Ci.nsIFile);
+        this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
         this._cwd = this._processDir.path;
         this._oldcwd = null;
 
@@ -48,7 +48,7 @@ const IO = Module("io", {
 
         this.downloadListener = {
             onDownloadStateChange: function (state, download) {
-                if (download.state == services.get("downloadManager").DOWNLOAD_FINISHED) {
+                if (download.state == services.downloadManager.DOWNLOAD_FINISHED) {
                     let url   = download.source.spec;
                     let title = download.displayName;
                     let file  = download.targetFile.path;
@@ -64,7 +64,7 @@ const IO = Module("io", {
             onSecurityChange: function () {}
         };
 
-        services.get("downloadManager").addListener(this.downloadListener);
+        services.downloadManager.addListener(this.downloadListener);
     },
 
     // TODO: there seems to be no way, short of a new component, to change
@@ -112,7 +112,7 @@ const IO = Module("io", {
     },
 
     destroy: function () {
-        services.get("downloadManager").removeListener(this.downloadListener);
+        services.downloadManager.removeListener(this.downloadListener);
         for (let [, plugin] in Iterator(plugins.contexts))
             if (plugin.onUnload)
                 plugin.onUnload();
@@ -199,7 +199,7 @@ const IO = Module("io", {
      * @returns {File}
      */
     createTempFile: function () {
-        let file = services.get("directory").get("TmpD", Ci.nsIFile);
+        let file = services.directory.get("TmpD", Ci.nsIFile);
 
         file.append(config.tempFile);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, parseInt('0600', 8));
@@ -230,7 +230,7 @@ const IO = Module("io", {
         if (File.isAbsolutePath(program))
             file = io.File(program, true);
         else {
-            let dirs = services.get("environment").get("PATH").split(util.OS.isWindows ? ";" : ":");
+            let dirs = services.environment.get("PATH").split(util.OS.isWindows ? ";" : ":");
             // Windows tries the CWD first TODO: desirable?
             if (util.OS.isWindows)
                 dirs = [io.cwd].concat(dirs);
@@ -245,7 +245,7 @@ lookup:
                     // TODO: couldn't we just palm this off to the start command?
                     // automatically try to add the executable path extensions on windows
                     if (util.OS.isWindows) {
-                        let extensions = services.get("environment").get("PATHEXT").split(";");
+                        let extensions = services.environment.get("PATHEXT").split(";");
                         for (let [, extension] in Iterator(extensions)) {
                             file = File.joinPaths(dir, program + extension, io.cwd);
                             if (file.exists())
@@ -262,7 +262,7 @@ lookup:
             return -1;
         }
 
-        let process = services.create("process");
+        let process = services.Process();
 
         process.init(file);
         process.run(false, args.map(String), args.length);
@@ -338,7 +338,7 @@ lookup:
 
             dactyl.echomsg("sourcing " + filename.quote(), 2);
 
-            let uri = services.get("io").newFileURI(file);
+            let uri = services.io.newFileURI(file);
 
             // handle pure JavaScript files specially
             if (/\.js$/.test(filename)) {
@@ -455,10 +455,10 @@ lookup:
      */
     get runtimePath() {
         const rtpvar = config.idName + "_RUNTIME";
-        let rtp = services.get("environment").get(rtpvar);
+        let rtp = services.environment.get(rtpvar);
         if (!rtp) {
             rtp = "~/" + (util.OS.isWindows ? "" : ".") + config.name;
-            services.get("environment").set(rtpvar, rtp);
+            services.environment.set(rtpvar, rtp);
         }
         return rtp;
     },
@@ -629,9 +629,9 @@ lookup:
             context.anchored = false;
             context.keys = {
                 text: util.identity,
-                description: services.get("charset").getCharsetTitle
+                description: services.charset.getCharsetTitle
             };
-            context.generate = function () iter(services.get("charset").getDecoderList());
+            context.generate = function () iter(services.charset.getDecoderList());
         };
 
         completion.directory = function directory(context, full) {
@@ -695,7 +695,7 @@ lookup:
         completion.shellCommand = function shellCommand(context) {
             context.title = ["Shell Command", "Path"];
             context.generate = function () {
-                let dirNames = services.get("environment").get("PATH").split(util.OS.isWindows ? ";" : ":");
+                let dirNames = services.environment.get("PATH").split(util.OS.isWindows ? ";" : ":");
                 let commands = [];
 
                 for (let [, dirName] in Iterator(dirNames)) {
@@ -730,7 +730,7 @@ lookup:
             shellcmdflag = "/c";
         }
         else {
-            shell = services.get("environment").get("SHELL") || "sh";
+            shell = services.environment.get("SHELL") || "sh";
             shellcmdflag = "-c";
         }
 
@@ -747,7 +747,7 @@ lookup:
             });
         options.add(["cdpath", "cd"],
             "List of directories searched when executing :cd",
-            "stringlist", ["."].concat(services.get("environment").get("CDPATH").split(/[:;]/).filter(util.identity)).join(","),
+            "stringlist", ["."].concat(services.environment.get("CDPATH").split(/[:;]/).filter(util.identity)).join(","),
             { setter: function (value) File.expandPathList(value) });
 
         options.add(["runtimepath", "rtp"],

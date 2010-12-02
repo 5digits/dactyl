@@ -666,8 +666,8 @@ const CommandLine = Module("commandline", {
         }
 
         if ((flags & this.ACTIVE_WINDOW) &&
-            window != services.get("windowWatcher").activeWindow &&
-            services.get("windowWatcher").activeWindow.dactyl)
+            window != services.windowWatcher.activeWindow &&
+            services.windowWatcher.activeWindow.dactyl)
             return;
 
         if ((flags & this.DISALLOW_MULTILINE) && !this.widgets.mowContainer.collapsed)

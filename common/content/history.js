@@ -9,12 +9,12 @@
 const History = Module("history", {
     get format() bookmarks.format,
 
-    get service() services.get("history"),
+    get service() services.history,
 
     get: function get(filter, maxItems) {
         // no query parameters will get all history
-        let query = services.get("history").getNewQuery();
-        let options = services.get("history").getNewQueryOptions();
+        let query = services.history.getNewQuery();
+        let options = services.history.getNewQueryOptions();
 
         if (typeof filter == "string")
             filter = { searchTerms: filter };
@@ -26,7 +26,7 @@ const History = Module("history", {
             options.maxResults = maxItems;
 
         // execute the query
-        let root = services.get("history").executeQuery(query, options).root;
+        let root = services.history.executeQuery(query, options).root;
         root.containerOpen = true;
         let items = util.map(util.range(0, root.childCount), function (i) {
             let node = root.getChild(i);
@@ -50,7 +50,7 @@ const History = Module("history", {
             obj[i] = update(Object.create(sh.getEntryAtIndex(i, false)),
                             { index: i });
             memoize(obj[i], "icon",
-                function () services.get("favicon").getFaviconImageForPage(this.URI).spec);
+                function () services.favicon.getFaviconImageForPage(this.URI).spec);
         }
         return obj;
     },
@@ -213,7 +213,7 @@ const History = Module("history", {
             // FIXME: Schema-specific
             context.generate = function () [
                 Array.slice(row.rev_host).reverse().join("").slice(1)
-                for (row in iter(services.get("history").DBConnection
+                for (row in iter(services.history.DBConnection
                                          .createStatement("SELECT DISTINCT rev_host FROM moz_places;")))
             ].slice(2);
         };

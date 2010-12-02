@@ -370,7 +370,7 @@ const Player = Module("player", {
      */
     getMediaPages: function getMediaPages() {
         let list = SBGetBrowser().currentMediaPage.mediaListView.mediaList;
-        let pages = services.get("mediaPageManager").getAvailablePages(list);
+        let pages = services.mediaPageManager.getAvailablePages(list);
         return ArrayConverter.JSArray(pages).map(function (page) page.QueryInterface(Ci.sbIMediaPageInfo));
     },
 
@@ -383,7 +383,7 @@ const Player = Module("player", {
      * @param {sbIMediaView} view
      */
     loadMediaPage: function loadMediaPage(page, list, view) {
-        services.get("mediaPageManager").setPage(list, page);
+        services.mediaPageManager.setPage(list, page);
         SBGetBrowser().loadMediaList(list, null, null, view, null);
     },
 
@@ -409,7 +409,7 @@ const Player = Module("player", {
      */
     sortBy: function sortBy(field, ascending) {
         let order = ascending ? "a" : "d";
-        let properties = services.create("mutablePropertyArray");
+        let properties = services.MutablePropertyArray();
         properties.strict = false;
 
         switch (field) {
@@ -594,7 +594,7 @@ const Player = Module("player", {
         commands.add(["qu[eue]"],
             "Queue tracks by artist/album/track",
             function (args) {
-                let properties = services.create("mutablePropertyArray");
+                let properties = services.MutablePropertyArray();
 
                 // args
                 switch (args.length) {

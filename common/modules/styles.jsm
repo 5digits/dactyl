@@ -11,7 +11,7 @@ defineModule("styles", {
     use: ["template"]
 });
 
-const sss = services.get("stylesheet");
+const sss = services.stylesheet;
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 const namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
                   "@namespace xul " + XUL.uri.quote() + ";\n" +
@@ -219,7 +219,7 @@ const Styles = Module("Styles", {
      *     already registered.
      */
     registerSheet: function registerSheet(url, agent, reload) {
-        let uri = services.get("io").newURI(url, null, null);
+        let uri = services.io.newURI(url, null, null);
         if (reload)
             this.unregisterSheet(url, agent);
         if (reload || !sss.sheetRegistered(uri, agent ? sss.AGENT_SHEET : sss.USER_SHEET))
@@ -233,7 +233,7 @@ const Styles = Module("Styles", {
      * @param {boolean} agent If true, sheet is registered as an agent sheet.
      */
     unregisterSheet: function unregisterSheet(url, agent) {
-        let uri = services.get("io").newURI(url, null, null);
+        let uri = services.io.newURI(url, null, null);
         if (sss.sheetRegistered(uri, agent ? sss.AGENT_SHEET : sss.USER_SHEET))
             sss.unregisterSheet(uri, agent ? sss.AGENT_SHEET : sss.USER_SHEET);
     },

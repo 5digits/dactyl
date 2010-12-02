@@ -306,7 +306,7 @@ const Editor = Module("editor", {
                     }
                 }
 
-                let timer = services.create("timer");
+                let timer = services.Timer();
                 timer.initWithCallback({ notify: update }, 100, timer.TYPE_REPEATING_SLACK);
 
                 try {

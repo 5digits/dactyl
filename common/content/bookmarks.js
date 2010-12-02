@@ -61,7 +61,7 @@ const Bookmarks = Module("bookmarks", {
                     if (bmark.url == uri.spec) {
                         var id = bmark.id;
                         if (title)
-                            services.get("bookmarks").setItemTitle(id, title);
+                            services.bookmarks.setItemTitle(id, title);
                         break;
                     }
 
@@ -70,8 +70,8 @@ const Bookmarks = Module("bookmarks", {
                 PlacesUtils.tagging.tagURI(uri, tags);
             }
             if (id == undefined)
-                id = services.get("bookmarks").insertBookmark(
-                         services.get("bookmarks")[unfiled ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
+                id = services.bookmarks.insertBookmark(
+                         services.bookmarks[unfiled ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
                          uri, -1, title || url);
             if (!id)
                 return false;
@@ -79,7 +79,7 @@ const Bookmarks = Module("bookmarks", {
             if (post !== undefined)
                 PlacesUtils.setPostDataForBookmark(id, post);
             if (keyword)
-                services.get("bookmarks").setKeywordForBookmark(id, keyword);
+                services.bookmarks.setKeywordForBookmark(id, keyword);
         }
         catch (e) {
             dactyl.log(e, 0);
@@ -141,7 +141,7 @@ const Bookmarks = Module("bookmarks", {
      */
     isBookmarked: function isBookmarked(url) {
         try {
-            return services.get("bookmarks")
+            return services.bookmarks
                            .getBookmarkIdsForURI(makeURI(url), {})
                            .some(bookmarkcache.closure.isRegularBookmark);
         }
@@ -163,7 +163,7 @@ const Bookmarks = Module("bookmarks", {
         try {
             if (!isArray(ids)) {
                 let uri = util.newURI(ids);
-                ids = services.get("bookmarks")
+                ids = services.bookmarks
                               .getBookmarkIdsForURI(uri, {})
                               .filter(bookmarkcache.closure.isRegularBookmark);
             }
@@ -171,7 +171,7 @@ const Bookmarks = Module("bookmarks", {
                 let bmark = bookmarkcache.bookmarks[id];
                 if (bmark)
                     PlacesUtils.tagging.untagURI(util.newURI(bmark.url), null);
-                services.get("bookmarks").removeItem(id);
+                services.bookmarks.removeItem(id);
             });
             return ids.length;
         }
@@ -199,7 +199,7 @@ const Bookmarks = Module("bookmarks", {
     get searchEngines() {
         let searchEngines = [];
         let aliases = {};
-        return services.get("browserSearch").getVisibleEngines({}).map(function (engine) {
+        return services.browserSearch.getVisibleEngines({}).map(function (engine) {
             let alias = engine.alias;
             if (!alias || !/^[a-z_-]+$/.test(alias))
                 alias = engine.name.replace(/^\W*([a-zA-Z_-]+).*/, "$1").toLowerCase();
@@ -290,7 +290,7 @@ const Bookmarks = Module("bookmarks", {
                 param = url.substr(offset + 1);
             }
 
-            var engine = services.get("browserSearch").getEngineByAlias(keyword);
+            var engine = services.browserSearch.getEngineByAlias(keyword);
             if (engine) {
                 var submission = engine.getSubmission(param, null);
                 return [submission.uri.spec, submission.postData];
@@ -308,7 +308,7 @@ const Bookmarks = Module("bookmarks", {
                     [, shortcutURL, charset] = matches;
                 else {
                     try {
-                        charset = services.get("history").getCharsetForURI(window.makeURI(shortcutURL));
+                        charset = services.history.getCharsetForURI(window.makeURI(shortcutURL));
                     }
                     catch (e) {}
                 }
@@ -499,7 +499,7 @@ const Bookmarks = Module("bookmarks", {
                     commandline.input("This will delete all bookmarks. Would you like to continue? (yes/[no]) ",
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
-                                Object.keys(bookmarkcache.bookmarks).forEach(function (id) { services.get("bookmarks").removeItem(id); });
+                                Object.keys(bookmarkcache.bookmarks).forEach(function (id) { services.bookmarks.removeItem(id); });
                                 dactyl.echomsg("All bookmarks deleted", 1, commandline.FORCE_SINGLELINE);
                             }
                         });
@@ -632,7 +632,7 @@ const Bookmarks = Module("bookmarks", {
         };
 
         completion.searchEngine = function searchEngine(context, suggest) {
-             let engines = services.get("browserSearch").getEngines({});
+             let engines = services.browserSearch.getEngines({});
              if (suggest)
                  engines = engines.filter(function (e) e.supportsResponseType("application/x-suggestions+json"));
 
@@ -647,7 +647,7 @@ const Bookmarks = Module("bookmarks", {
             let engineList = (engineAliases || options["suggestengines"].join(",") || "google").split(",");
 
             engineList.forEach(function (name) {
-                let engine = services.get("browserSearch").getEngineByAlias(name);
+                let engine = services.browserSearch.getEngineByAlias(name);
                 if (!engine)
                     return;
                 let [, word] = /^\s*(\S+)/.exec(context.filter) || [];

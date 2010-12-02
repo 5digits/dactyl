@@ -18,10 +18,10 @@ Bookmark.prototype.__defineGetter__("extra", function () [
                         ["tags",    this.tags.join(", "), "Tag"]
                     ].filter(function (item) item[1]));
 
-const annotation = services.get("annotation");
-const bookmarks  = services.get("bookmarks");
-const history    = services.get("history");
-const tagging    = services.get("tagging");
+const annotation = services.annotation;
+const bookmarks  = services.bookmarks;
+const history    = services.history;
+const tagging    = services.tagging;
 const name       = "bookmark-cache";
 
 const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
@@ -85,7 +85,7 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
     isRegularBookmark: function isRegularBookmark(id) {
         do {
             var root = id;
-            if (services.get("livemark") && services.get("livemark").isLivemark(id))
+            if (services.livemark && services.livemark.isLivemark(id))
                 return false;
             id = bookmarks.getFolderIdForItem(id);
         } while (id != bookmarks.placesRoot && id != root);

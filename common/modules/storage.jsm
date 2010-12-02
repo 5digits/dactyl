@@ -14,7 +14,7 @@ defineModule("storage", {
     require: ["services", "util"]
 });
 
-const win32 = /^win(32|nt)$/i.test(services.get("runtime").OS);
+const win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 
 function getFile(name) {
     let file = storage.infoPath.clone();
@@ -27,7 +27,7 @@ function loadData(name, store, type) {
         if (storage.infoPath)
             var file = getFile(name).read();
         if (file)
-            var result = services.get("json").decode(file);
+            var result = services.json.decode(file);
         if (result instanceof type)
             return result;
     }
@@ -265,12 +265,12 @@ const Storage = Module("Storage", {
  */
 const File = Class("File", {
     init: function (path, checkPWD) {
-        let file = services.create("file");
+        let file = services.File();
 
         if (path instanceof Ci.nsIFile)
             file = path.QueryInterface(Ci.nsIFile);
         else if (/file:\/\//.test(path))
-            file = services.create("file:").getFileFromURLSpec(path);
+            file = services["File:"]().getFileFromURLSpec(path);
         else {
             try {
                 let expandedPath = File.expandPath(path);
@@ -484,7 +484,7 @@ const File = Class("File", {
      */
     get PATH_SEP() {
         delete this.PATH_SEP;
-        let f = services.get("directory").get("CurProcD", Ci.nsIFile);
+        let f = services.directory.get("CurProcD", Ci.nsIFile);
         f.append("foo");
         return this.PATH_SEP = f.path.substr(f.parent.path.length, 1);
     },
@@ -497,6 +497,7 @@ const File = Class("File", {
     defaultEncoding: "UTF-8",
 
     expandPath: function (path, relative) {
+        function getenv(name) services.environment.get(name);
 
         // expand any $ENV vars - this is naive but so is Vim and we like to be compatible
         // TODO: Vim does not expand variables set to an empty string (and documents it).
@@ -505,7 +506,7 @@ const File = Class("File", {
         function expand(path) path.replace(
             !win32 ? /\$(\w+)\b|\${(\w+)}/g
                    : /\$(\w+)\b|\${(\w+)}|%(\w+)%/g,
-            function (m, n1, n2, n3) services.get("environment").get(n1 || n2 || n3) || m
+            function (m, n1, n2, n3) getenv(n1 || n2 || n3) || m
         );
         path = expand(path);
 
@@ -513,12 +514,12 @@ const File = Class("File", {
         // Yuck.
         if (!relative && RegExp("~(?:$|[/" + util.escapeRegexp(File.PATH_SEP) + "])").test(path)) {
             // Try $HOME first, on all systems
-            let home = services.get("environment").get("HOME");
+            let home = getenv("HOME");
 
             // Windows has its own idiosyncratic $HOME variables.
-            if (win32 && (!home || !File(home) || !File(home).exists()))
-                home = services.get("environment").get("USERPROFILE") ||
-                       services.get("environment").get("HOMEDRIVE") + services.get("environment").get("HOMEPATH");
+            if (win32 && (!home || !File(home).exists()))
+                home = getenv("USERPROFILE") ||
+                       getenv("HOMEDRIVE") + getenv("HOMEPATH");
 
             path = home + path.substr(1);
         }
@@ -533,7 +534,7 @@ const File = Class("File", {
 
     isAbsolutePath: function (path) {
         try {
-            services.create("file").initWithPath(path);
+            services.File().initWithPath(path);
             return true;
         }
         catch (e) {

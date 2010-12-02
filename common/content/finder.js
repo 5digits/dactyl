@@ -264,7 +264,7 @@ const RangeFind = Class("RangeFind", {
         this.elementPath = elementPath || null;
         this.reverse = Boolean(backward);
 
-        this.finder = services.create("find");
+        this.finder = services.Find();
         this.matchCase = Boolean(matchCase);
         this.regexp = Boolean(regexp);
 

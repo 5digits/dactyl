@@ -15,11 +15,11 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
-    require: ["services", "storage", "template", "util"]
+    require: ["prefs", "services", "storage", "template", "util"]
 });
 
 let tmp = {};
-services.get("subscriptLoader").loadSubScript("chrome://browser/content/sanitize.js", tmp);
+services.subscriptLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
 tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
 const Range = Struct("min", "max");
@@ -92,7 +92,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             action: function (range, host) {
                 for (let c in Sanitizer.iterCookies(host))
                     if (range.contains(c.creationTime) || timespan.isSession && c.isSession)
-                        services.get("cookies").remove(c.host, c.name, c.path, false);
+                        services.cookies.remove(c.host, c.name, c.path, false);
             },
             override: true
         });
@@ -105,23 +105,23 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     return;
                 if (host) {
                     for (let p in Sanitizer.iterPermissions(host)) {
-                        services.get("permissions").remove(util.createURI(p.host), p.type);
-                        services.get("permissions").add(util.createURI(p.host), p.type, 0);
+                        services.permissions.remove(util.createURI(p.host), p.type);
+                        services.permissions.add(util.createURI(p.host), p.type, 0);
                     }
-                    for (let p in iter(services.get("contentprefs").getPrefs(util.createURI(host))))
-                        services.get("contentprefs").removePref(util.createURI(host), p.QueryInterface(Ci.nsIProperty).name);
+                    for (let p in iter(services.contentprefs.getPrefs(util.createURI(host))))
+                        services.contentprefs.removePref(util.createURI(host), p.QueryInterface(Ci.nsIProperty).name);
                 }
                 else {
                     // "Allow this site to open popups" ...
-                    services.get("permissions").removeAll();
+                    services.permissions.removeAll();
                     // Zoom level, ...
-                    services.get("contentprefs").removeGroupedPrefs();
+                    services.contentprefs.removeGroupedPrefs();
                 }
 
                 // "Never remember passwords" ...
-                for each (let domain in services.get("loginmanager").getAllDisabledHosts())
+                for each (let domain in services.loginmanager.getAllDisabledHosts())
                     if (!host || util.isSubdomain(domain, host))
-                        services.get("loginmanager").setLoginSavingEnabled(host, true);
+                        services.loginmanager.setLoginSavingEnabled(host, true);
             },
             override: true
         });
@@ -153,7 +153,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 append: {
                     SanitizeDialogPane:
                         <groupbox orient="horizontal" xmlns={XUL}>
-                          <caption label={services.get("dactyl:").appName + " (see :help privacy)"}/>
+                          <caption label={services["dactyl:"].appName + " (see :help privacy)"}/>
                           <grid flex="1">
                             <columns><column flex="1"/><column flex="1"/></columns>
                             <rows>{
@@ -178,7 +178,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                         {
                           template.map(ourItems(), function ([item, desc])
                             <listitem xmlns={XUL} type="checkbox"
-                                      label={services.get("dactyl:").appName + " " + desc}
+                                      label={services["dactyl:"].appName + " " + desc}
                                       preference={branch + item}
                                       onsyncfrompreference="return gSanitizePromptDialog.onReadGeneric();"/>)
                         }
@@ -328,14 +328,14 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
 
     iterCookies: function iterCookies(host) {
-        for (let c in iter(services.get("cookies"))) {
+        for (let c in iter(services.cookies)) {
             c.QueryInterface(Ci.nsICookie2);
             if (!host || util.isSubdomain(c.rawHost, host))
                 yield c;
         }
     },
     iterPermissions: function iterPermissions(host) {
-        for (let p in iter(services.get("permissions"))) {
+        for (let p in iter(services.permissions)) {
             p.QueryInterface(Ci.nsIPermission);
             if (!host || util.isSubdomain(p.host, host))
                 yield p;
@@ -393,7 +393,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     args["-host"].forEach(function (host) {
                         sanitizer.sanitizing = true;
                         if (items.indexOf("history") > -1)
-                            services.get("privateBrowsing").removeDataFromDomain(host);
+                            services.privateBrowsing.removeDataFromDomain(host);
                         sanitizer.sanitizeItems(items, range, host)
                     });
                 }
@@ -438,13 +438,13 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             function getPerms(host) {
                 let uri = util.createURI(host);
                 if (uri)
-                    return Sanitizer.UNPERMS[services.get("permissions").testPermission(uri, "cookie")];
+                    return Sanitizer.UNPERMS[services.permissions.testPermission(uri, "cookie")];
                 return "unset";
             }
             function setPerms(host, perm) {
                 let uri = util.createURI(host);
-                services.get("permissions").remove(uri, "cookie");
-                services.get("permissions").add(uri, "cookie", Sanitizer.PERMS[perm]);
+                services.permissions.remove(uri, "cookie");
+                services.permissions.add(uri, "cookie", Sanitizer.PERMS[perm]);
             }
             commands.add(["cookies", "ck"],
                 "Change cookie permissions for sites",
@@ -458,14 +458,14 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                         switch (cmd) {
                         case "clear":
                             for (let c in Sanitizer.iterCookies(host))
-                                services.get("cookies").remove(c.host, c.name, c.path, false);
+                                services.cookies.remove(c.host, c.name, c.path, false);
                             break;
                         case "clear-persistent":
                             session = false;
                         case "clear-session":
                             for (let c in Sanitizer.iterCookies(host))
                                 if (c.isSession == session)
-                                    services.get("cookies").remove(c.host, c.name, c.path, false);
+                                    services.cookies.remove(c.host, c.name, c.path, false);
                             return;
 
                         case "list":
@@ -524,16 +524,16 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
     },
     options: function (dactyl, modules) {
         const options = modules.options;
-        if (services.get("privateBrowsing"))
+        if (services.privateBrowsing)
             options.add(["private", "pornmode"],
                 "Set the 'private browsing' option",
                 "boolean", false,
                 {
                     initialValue: true,
-                    getter: function () services.get("privateBrowsing").privateBrowsingEnabled,
+                    getter: function () services.privateBrowsing.privateBrowsingEnabled,
                     setter: function (value) {
-                        if (services.get("privateBrowsing").privateBrowsingEnabled != value)
-                            services.get("privateBrowsing").privateBrowsingEnabled = value
+                        if (services.privateBrowsing.privateBrowsingEnabled != value)
+                            services.privateBrowsing.privateBrowsingEnabled = value
                     },
                     persist: false
                 });

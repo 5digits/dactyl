@@ -56,16 +56,16 @@ const Services = Module("Services", {
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
 
-        this.addClass("file",         "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
-        this.addClass("file:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
-        this.addClass("find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
-        this.addClass("htmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
-        this.addClass("htmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
-        this.addClass("process",      "@mozilla.org/process/util;1",               Ci.nsIProcess);
-        this.addClass("string",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
-        this.addClass("timer",        "@mozilla.org/timer;1",                      Ci.nsITimer);
-        this.addClass("xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
-        this.addClass("zipWriter",    "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
+        this.addClass("File",         "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
+        this.addClass("File:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
+        this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
+        this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
+        this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
+        this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess);
+        this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
+        this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer);
+        this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
+        this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
     },
 
     _create: function (classes, ifaces, meth) {
@@ -102,7 +102,9 @@ const Services = Module("Services", {
      */
     add: function (name, class_, ifaces, meth) {
         const self = this;
-        this.services.__defineGetter__(name, function () {
+        if (name in this && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
+            throw TypeError();
+        this.__defineGetter__(name, function () {
             delete this[name];
             return this[name] = self._create(class_, ifaces, meth);
         });
@@ -118,7 +120,7 @@ const Services = Module("Services", {
      */
     addClass: function (name, class_, ifaces) {
         const self = this;
-        return this.classes[name] = function () self._create(class_, ifaces, "createInstance");
+        return this[name] = function () self._create(class_, ifaces, "createInstance");
     },
 
     /**
@@ -126,14 +128,14 @@ const Services = Module("Services", {
      *
      * @param {string} name The class's cache key.
      */
-    create: function (name) this.classes[name](),
+    create: function (name) this[name[0].toUpperCase() + name.substr(1)],
 
     /**
      * Returns the cached service with the specified name.
      *
      * @param {string} name The service's cache key.
      */
-    get: function (name) this.services[name],
+    get: function (name) this[name],
 }, {
 }, {
     init: function (dactyl, modules) {

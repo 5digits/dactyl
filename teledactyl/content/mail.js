@@ -133,7 +133,7 @@ const Mail = Module("mail", {
 
     /** @property {nsISmtpServer[]} The list of configured SMTP servers. */
     get smtpServers() {
-        let servers = services.get("smtpService").smtpServers;
+        let servers = services.smtpService.smtpServers;
         let ret = [];
 
         while (servers.hasMoreElements()) {
@@ -914,12 +914,12 @@ const Mail = Module("mail", {
 
         options.add(["smtpserver", "smtp"],
             "Set the default SMTP server",
-            "string", services.get("smtpService").defaultServer.key, // TODO: how should we handle these persistent external defaults - "inherit" or null?
+            "string", services.smtpService.defaultServer.key, // TODO: how should we handle these persistent external defaults - "inherit" or null?
             {
-                getter: function () services.get("smtpService").defaultServer.key,
+                getter: function () services.smtpService.defaultServer.key,
                 setter: function (value) {
                     let server = mail.smtpServers.filter(function (s) s.key == value)[0];
-                    services.get("smtpService").defaultServer = server;
+                    services.smtpService.defaultServer = server;
                     return value;
                 },
                 completer: function (context) [[s.key, s.serverURI] for ([, s] in Iterator(mail.smtpServers))]

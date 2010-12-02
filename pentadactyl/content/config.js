@@ -247,7 +247,7 @@ const Config = Module("config", ConfigBase, {
     completion: function () {
         var searchRunning = false; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
         completion.location = function location(context) {
-            if (!services.get("autoCompleteSearch"))
+            if (!services.autoCompleteSearch)
                 return;
 
             context.anchored = false;
@@ -262,12 +262,12 @@ const Config = Module("config", ConfigBase, {
 
             context.cancel = function () {
                 if (searchRunning) {
-                    services.get("autoCompleteSearch").stopSearch();
+                    services.autoCompleteSearch.stopSearch();
                     searchRunning = false;
                 }
             };
             if (searchRunning)
-                services.get("autoCompleteSearch").stopSearch();
+                services.autoCompleteSearch.stopSearch();
             let timer = new Timer(50, 100, function (result) {
                 context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
                 context.completions = [
@@ -275,7 +275,7 @@ const Config = Module("config", ConfigBase, {
                     for (i in util.range(0, result.matchCount))
                 ];
             });
-            services.get("autoCompleteSearch").startSearch(context.filter, "", context.result, {
+            services.autoCompleteSearch.startSearch(context.filter, "", context.result, {
                 onSearchResult: function onSearchResult(search, result) {
                     timer.tell(result);
                     if (result.searchResult <= result.RESULT_SUCCESS) {
@@ -312,12 +312,12 @@ const Config = Module("config", ConfigBase, {
             "boolean", true,
             {
                 setter: function (value) {
-                    const ioService = services.get("io");
+                    const ioService = services.io;
                     if (ioService.offline == value)
                         BrowserOffline.toggleOfflineStatus();
                     return value;
                 },
-                getter: function () !services.get("io").offline
+                getter: function () !services.io.offline
             });
     }
 });

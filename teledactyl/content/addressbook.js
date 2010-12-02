@@ -21,7 +21,7 @@ const Addressbook = Module("addressbook", {
             return "";
     },
 
-    getDirectoryFromURI: function (uri) services.get("rdf").GetResource(uri).QueryInterface(Ci.nsIAbDirectory),
+    getDirectoryFromURI: function (uri) services.rdf.GetResource(uri).QueryInterface(Ci.nsIAbDirectory),
 
     add: function (address, firstName, lastName, displayName) {
         const personalAddressbookURI = "moz-abmdbdirectory://abook.mab";

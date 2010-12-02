@@ -172,7 +172,7 @@ const Config = Module("config", ConfigBase, {
             this.showServicePane(true);
         else {
             let pane = document.getElementById(id);
-            let manager = services.get("displayPaneManager");
+            let manager = services.displayPaneManager;
             let paneinfo = manager.getPaneInfo(pane._lastURL.stringValue);
 
             if (!paneinfo)
@@ -272,12 +272,12 @@ const Config = Module("config", ConfigBase, {
             "boolean", true,
             {
                 setter: function (value) {
-                    const ioService = services.get("io");
+                    const ioService = services.io;
                     ioService.offline = !value;
                     prefs.set("browser.offline", ioService.offline);
                     return value;
                 },
-                getter: function () !services.get("io").offline
+                getter: function () !services.io.offline
             });
     },
     services: function () {
