@@ -930,16 +930,17 @@ const Dactyl = Module("dactyl", {
      *    windows could be closed individually.
      */
     quit: function (saveSession, force) {
-        // TODO: Use safeSetPref?
-        if (saveSession)
-            prefs.set("browser.startup.page", 3); // start with saved session
-        else
-            prefs.set("browser.startup.page", 1); // start with default homepage session
+        if (!force && !canQuitApplication())
+            return;
 
-        if (force)
-            services.get("appStartup").quit(Ci.nsIAppStartup.eForceQuit);
-        else
-            window.goQuitApplication();
+        let pref = "browser.startup.page";
+        prefs.save(pref);
+        if (saveSession)
+            prefs.safeSet(pref, 3);
+        if (!saveSession && prefs.get(pref) >= 2)
+            prefs.safeSet(pref, 1);
+
+        services.get("appStartup").quit(Ci.nsIAppStartup[force ? "eForceQuit" : "eAttemptQuit"]);
     },
 
     /**
@@ -1044,23 +1045,10 @@ const Dactyl = Module("dactyl", {
      * Restart the host application.
      */
     restart: function () {
-        // notify all windows that an application quit has been requested.
-        var cancelQuit = Cc["@mozilla.org/supports-PRBool;1"].createInstance(Ci.nsISupportsPRBool);
-        services.get("observer").notifyObservers(cancelQuit, "quit-application-requested", null);
-
-        // something aborted the quit process.
-        if (cancelQuit.data)
+        if (!canQuitApplication())
             return;
 
-        // notify all windows that an application quit has been granted.
-        services.get("observer").notifyObservers(null, "quit-application-granted", null);
-
-        // enumerate all windows and call shutdown handlers
-        for (let win in iter(services.get("windowMediator").getEnumerator(null)))
-            if (("tryToClose" in win) && !win.tryToClose())
-                return;
-
-        services.get("appStartup").quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
+        services.get("appStartup").quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
     },
 
     /**
@@ -1323,11 +1311,10 @@ const Dactyl = Module("dactyl", {
             "Open the help page",
             function () { dactyl.help(); });
 
-        if (dactyl.has("session")) {
+        if (dactyl.has("session"))
             mappings.add([modes.NORMAL], ["ZQ"],
                 "Quit and don't save the session",
                 function () { dactyl.quit(false); });
-        }
 
         mappings.add([modes.NORMAL], ["ZZ"],
             "Quit and save the session",

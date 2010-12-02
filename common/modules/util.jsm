@@ -1069,6 +1069,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
 const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     SAVED: "extensions.dactyl.saved.",
+    RESTORE: "extensions.dactyl.restore.",
+
 
     init: function () {
         this._prefContexts = [];
@@ -1077,6 +1079,8 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
         this._branch = services.get("pref").getBranch("").QueryInterface(Ci.nsIPrefBranch2);
         this._branch.addObserver("", this, false);
         this._observers = {};
+
+        this.restore();
     },
 
     observe: {
@@ -1153,9 +1157,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
      * @param {value} defaultValue The value to return if the preference
      *     is unset.
      */
-    get: function (name, defaultValue) {
-        return this._load(name, defaultValue);
-    },
+    get: function (name, defaultValue) this._load(name, defaultValue),
 
     /**
      * Returns the default value of a preference
@@ -1164,9 +1166,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
      * @param {value} defaultValue The value to return if the preference
      *     has no default value.
      */
-    getDefault:  function (name, defaultValue) {
-        return this._load(name, defaultValue, true);
-    },
+    getDefault:  function (name, defaultValue) this._load(name, defaultValue, true),
 
     /**
      * Returns the names of all preferences.
@@ -1211,10 +1211,10 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
      */
-    safeSet: function (name, value, message) {
+    safeSet: function (name, value, message, skipSave) {
         this._checkSafe(name, message, value);
         this._store(name, value);
-        this._store(this.SAVED + name, value);
+        this[skipSave ? "reset" : "_store"](this.SAVED + name, value);
     },
 
     /**
@@ -1225,6 +1225,31 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
      */
     set: function (name, value) {
         this._store(name, value);
+    },
+
+    /**
+     * Saves the current value of a preference to be restored at next
+     * startup.
+     *
+     * @param {string} name The preference to save.
+     */
+    save: function (name) {
+        let val = this.get(name);
+        this.set(this.RESTORE + name, val);
+        this.safeSet(name, val);
+    },
+
+    /**
+     * Restores saved preferences in the given branch.
+     *
+     * @param {string} branch The branch from which to restore
+     *      preferences. @optional
+     */
+    restore: function (branch) {
+        this.getNames(this.RESTORE + (branch || "")).forEach(function (pref) {
+            this.safeSet(pref.substr(this.RESTORE.length), this.get(pref), null, true)
+            this.reset(pref);
+        }, this);
     },
 
     /**
