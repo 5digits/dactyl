@@ -828,7 +828,7 @@ const Options = Module("options", {
                     }
                     else {
                         var [matches, name, postfix, valueGiven, operator, value] =
-                        arg.match(/^\s*?([a-zA-Z0-9\.\-_{}]+)([?&!])?\s*(([-+^]?)=(.*))?\s*$/);
+                            arg.match(/^\s*?([a-zA-Z0-9\.\-_{}]+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/);
                         reset = (postfix == "&");
                         invertBoolean = (postfix == "!");
                     }
@@ -856,6 +856,11 @@ const Options = Module("options", {
                             value = false;
                         else if (/^\d+$/.test(value))
                             value = parseInt(value, 10);
+                        else
+                            value = Option.dequote(value);
+
+                        if (operator)
+                            value = Option.ops[typeof value].call({ value: prefs.get(name) }, operator, value);
                         prefs.set(name, value);
                     }
                     else
