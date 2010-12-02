@@ -60,7 +60,7 @@ const Dactyl = Module("dactyl", {
 
         let dir = services.directory.get("ProfD", Ci.nsIFile);
         for (let prof in iter(services.profile.profiles))
-            if (prof.QueryInterface(Ci.nsIToolkitProfile).localDir.path === dir.path)
+            if (prof.QueryInterface(Ci.nsIToolkitProfile).rootDir.path === dir.path)
                 return prof.name;
         return "unknown";
     }),
