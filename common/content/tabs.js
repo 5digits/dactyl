@@ -507,7 +507,7 @@ const Tabs = Module("tabs", {
                     let matches = arg.match(/^(\d+):?/);
 
                     if (matches) {
-                        tabs.remove(tabs.getTab(parseInt(matches[1], 10) - 1));
+                        config.removeTab(tabs.getTab(parseInt(matches[1], 10) - 1));
                         removed = 1;
                     }
                     else {
@@ -529,7 +529,7 @@ const Tabs = Module("tabs", {
 
                             if (host.indexOf(str) >= 0 || uri == str ||
                                 (special && (title.indexOf(str) >= 0 || uri.indexOf(str) >= 0))) {
-                                tabs.remove(tabs.getTab(i));
+                                config.removeTab(tabs.getTab(i));
                                 removed++;
                             }
                         }
