@@ -607,7 +607,7 @@ const JavaScript = Module("javascript", {
      * enumerable by any standard method.
      */
     globalNames: Class.memoize(function () array.uniq([
-        "Array", "ArrayBuffer", "AttributeName", "Boolean",
+        "Array", "ArrayBuffer", "AttributeName", "Boolean", "Components",
         "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
         "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date",
         "Error", "EvalError", "Float32Array", "Float64Array", "Function",

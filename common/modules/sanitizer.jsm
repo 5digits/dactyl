@@ -377,14 +377,14 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 let items = args.slice();
                 if (args.bang) {
                     dactyl.assert(args.length == 0, "E488: Trailing characters");
-                    items = Object.keys(sanitizer.itemDescriptions).filter(
+                    items = Object.keys(sanitizer.itemMap).filter(
                         function (k) modules.options.get("sanitizeitems").has(k));
                 }
                 else
                     dactyl.assert(modules.options.get("sanitizeitems").validator(items), "Valid items required");
 
                 if (items.indexOf("all") >= 0)
-                    items = Object.keys(sanitizer.itemDescriptions).filter(function (k) items.indexOf(k) === -1);
+                    items = Object.keys(sanitizer.itemMap).filter(function (k) items.indexOf(k) === -1);
 
                 sanitizer.range = range;
                 sanitizer.ignoreTimespan = range.min == null;

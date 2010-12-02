@@ -143,7 +143,7 @@ const Services = Module("Services", {
             Components.utils.import("resource://gre/modules/AddonManager.jsm", modules);
     },
     javascript: function (dactyl, modules) {
-        modules.JavaScript.setCompleter(this.get, [function () services.services]);
+        modules.JavaScript.setCompleter(this.get, [function () [[k, v] for ([k, v] in Iterator(services)) if (v instanceof Ci.nsISupports)]]);
         modules.JavaScript.setCompleter(this.create, [function () [[c, ""] for (c in services.classes)]]);
     }
 });

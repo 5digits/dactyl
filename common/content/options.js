@@ -752,7 +752,7 @@ const Options = Module("options", {
         let matches, prefix, postfix, valueGiven;
 
         [matches, prefix, ret.name, postfix, valueGiven, ret.operator, ret.value] =
-        args.match(/^\s*(no|inv)?([a-z_-]*?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
+        args.match(/^\s*(no|inv)?([a-z_.-]*?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
 
         ret.args = args;
         ret.onlyNonDefault = false; // used for :set to print non-default options
@@ -1089,9 +1089,7 @@ const Options = Module("options", {
                 },
                 update({
                     bang: true,
-                    completer: function (context, args) {
-                        return setCompleter(context, args);
-                    },
+                    completer: setCompleter,
                     domains: function (args) array.flatten(args.map(function (spec) {
                         try {
                             let opt = options.parseOpt(spec);

@@ -184,7 +184,7 @@ const Template = Module("Template", {
         let n = 0;
         for (let [i, length] in iter) {
             if (n++ > 50) // Prevent infinite loops.
-                return s + <>{str.substr(start)}</>;
+                break;
             XML.ignoreWhitespace = false;
             s += <>{str.substring(start, i)}</>;
             s += highlight(str.substr(i, length));
