@@ -930,7 +930,11 @@ const Dactyl = Module("dactyl", {
      *    windows could be closed individually.
      */
     quit: function (saveSession, force) {
-        if (!force && !canQuitApplication())
+        if (!force &&
+            prefs.withContext(function () {
+                prefs.set("browser.warnOnQuit", false);
+                return !canQuitApplication();
+            }))
             return;
 
         let pref = "browser.startup.page";
