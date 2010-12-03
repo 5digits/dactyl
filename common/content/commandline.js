@@ -837,13 +837,13 @@ const CommandLine = Module("commandline", {
                     commandline.triggerCallback("submit", mode, command);
                 }
                 // user pressed <Up> or <Down> arrow to cycle history completion
-                else if (/^<(Up|Down|S-Up|S-Down|PageUp|PageDown)>$/.test(key)) {
+                else if (/^<(Up|Down|S-Up|S-Down)>$/.test(key)) {
                     // prevent tab from moving to the next field
                     event.preventDefault();
                     event.stopPropagation();
 
                     dactyl.assert(this._history);
-                    this._history.select(/Up/.test(key), !/(Page|S-)/.test(key));
+                    this._history.select(/Up/.test(key), !/S-/.test(key));
                 }
                 // user pressed <Tab> to get completions of a command
                 else if (/^<(?:A-)?(?:S-)?Tab>$/.test(key)) {
@@ -1686,6 +1686,14 @@ const CommandLine = Module("commandline", {
                 dactyl.assert(commandline._lastMowOutput, "No previous command output");
                 commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
             });
+
+        mappings.add(myModes,
+            ["<C-p>", "<PageUp>"], "Recall the previous command line from the history list",
+            function () { events.feedkeys("<S-Up>"); });
+
+        mappings.add(myModes,
+            ["<C-n>", "<PageDown>"], "Recall the next command line from the history list",
+            function () { events.feedkeys("<S-Down>"); });
     },
     options: function () {
         options.add(["history", "hi"],

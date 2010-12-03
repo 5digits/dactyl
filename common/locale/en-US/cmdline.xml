@@ -97,7 +97,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<S-Up> c_<PageUp>]]></tags>
+    <tags><![CDATA[c_<C-p> c_<S-Up> c_<PageUp>]]></tags>
     <spec>&lt;S-Up></spec>
     <strut/>
     <spec>&lt;PageUp></spec>
@@ -107,7 +107,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[c_<S-Down> c_<PageDown>]]></tags>
+    <tags><![CDATA[c_<C-n> c_<S-Down> c_<PageDown>]]></tags>
     <spec>&lt;S-Down></spec>
     <spec>&lt;PageDown></spec>
     <description>
