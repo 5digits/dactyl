@@ -394,22 +394,20 @@ const Buffer = Module("buffer", {
      * @property {number} The buffer's horizontal scroll percentile.
      */
     get scrollXPercent() {
-        let win = Buffer.findScrollableWindow();
-        if (win.scrollMaxX > 0)
-            return Math.round(win.scrollX / win.scrollMaxX * 100);
-        else
+        let elem = Buffer.findScrollable(0, true);
+        if (elem.scrollWidth - elem.clientWidth === 0)
             return 0;
+        return elem.scrollLeft * 100 / (elem.scrollWidth - elem.clientWidth);
     },
 
     /**
      * @property {number} The buffer's vertical scroll percentile.
      */
     get scrollYPercent() {
-        let win = Buffer.findScrollableWindow();
-        if (win.scrollMaxY > 0)
-            return Math.round(win.scrollY / win.scrollMaxY * 100);
-        else
+        let elem = Buffer.findScrollable(0, false);
+        if (elem.scrollHeight - elem.clientHeight === 0)
             return 0;
+        return elem.scrollTop * 100 / (elem.scrollHeight - elem.clientHeight);
     },
 
     /**
@@ -705,7 +703,7 @@ const Buffer = Module("buffer", {
      * Scrolls to the bottom of the current buffer.
      */
     scrollBottom: function () {
-        Buffer.scrollToPercent(null, 100);
+        Buffer.scrollToPercent(null, null, 100);
     },
 
     /**
@@ -719,10 +717,10 @@ const Buffer = Module("buffer", {
     },
 
     /**
-     * Scrolls to the top of the current buffer.
+     * Scrolls to the end of the current buffer.
      */
     scrollEnd: function () {
-        Buffer.scrollToPercent(100, null);
+        Buffer.scrollToPercent(null, 100, null);
     },
 
     /**
@@ -777,7 +775,7 @@ const Buffer = Module("buffer", {
      * @param {number} y The vertical page percentile.
      */
     scrollToPercent: function (x, y) {
-        Buffer.scrollToPercent(x, y);
+        Buffer.scrollToPercent(null, x, y);
     },
 
     /**
@@ -795,14 +793,14 @@ const Buffer = Module("buffer", {
      * Scrolls the current buffer laterally to its leftmost.
      */
     scrollStart: function () {
-        Buffer.scrollToPercent(0, null);
+        Buffer.scrollToPercent(null, 0, null);
     },
 
     /**
      * Scrolls the current buffer vertically to the top.
      */
     scrollTop: function () {
-        Buffer.scrollToPercent(null, 0);
+        Buffer.scrollToPercent(null, null, 0);
     },
 
     // TODO: allow callback for filtering out unwanted frames? User defined?
@@ -1085,26 +1083,29 @@ const Buffer = Module("buffer", {
         return win;
     },
 
-    findScrollable: function findScrollable(dir, horizontal) {
+    isScrollable: function isScrollable(elem, dir, horizontal) {
         let pos = "scrollTop", size = "clientHeight", max = "scrollHeight", layoutSize = "offsetHeight",
             overflow = "overflowX", border1 = "borderTopWidth", border2 = "borderBottomWidth";
         if (horizontal)
             pos = "scrollLeft", size = "clientWidth", max = "scrollWidth", layoutSize = "offsetWidth",
             overflow = "overflowX", border1 = "borderLeftWidth", border2 = "borderRightWidth";
 
+        let style = util.computedStyle(elem);
+        let borderSize = parseInt(style[border1]) + parseInt(style[border2]);
+        let realSize = elem[size];
+        // Stupid Gecko eccentricities. May fail for quirks mode documents.
+        if (elem[size] + borderSize == elem[max] || elem[size] == 0) // Stupid, fallible heuristic.
+            return false;
+        if (style[overflow] == "hidden")
+            realSize += borderSize;
+        return dir < 0 && elem[pos] > 0 || dir > 0 && elem[pos] + realSize < elem[max] || !dir && realSize < elem[max];
+    },
+
+    findScrollable: function findScrollable(dir, horizontal) {
         function find(elem) {
-            for (; elem && elem.parentNode instanceof Element; elem = elem.parentNode) {
-                let style = util.computedStyle(elem);
-                let borderSize = parseInt(style[border1]) + parseInt(style[border2]);
-                let realSize = elem[size];
-                // Stupid Gecko eccentricities. May fail for quirks mode documents.
-                if (elem[size] + borderSize == elem[max] || elem[size] == 0) // Stupid, fallible heuristic.
-                    continue;
-                if (style[overflow] == "hidden")
-                    realSize += borderSize;
-                if (dir < 0 && elem[pos] > 0 || dir > 0 && elem[pos] + realSize < elem[max])
+            for (; elem && elem.parentNode instanceof Element; elem = elem.parentNode)
+                if (Buffer.isScrollable(elem, dir, horizontal))
                     break;
-            }
             return elem;
         }
 
@@ -1152,8 +1153,8 @@ const Buffer = Module("buffer", {
             dactyl.beep();
     },
 
-    scrollElemToPercent: function scrollElemToPercent(elem, horizontal, vertical) {
-        elem = elem || Buffer.findScrollable();
+    scrollToPercent: function scrollElemToPercent(elem, horizontal, vertical) {
+        elem = elem || Buffer.findScrollable(0, vertical == null);
         marks.add("'", true);
 
         if (horizontal != null)
@@ -1161,24 +1162,6 @@ const Buffer = Module("buffer", {
 
         if (vertical != null)
             elem.scrollTop = (elem.scrollHeight - elem.clientHeight) * (vertical / 100);
-    },
-
-    scrollToPercent: function scrollToPercent(horizontal, vertical) {
-        let win = Buffer.findScrollableWindow();
-        let h, v;
-
-        if (horizontal == null)
-            h = win.scrollX;
-        else
-            h = win.scrollMaxX / 100 * horizontal;
-
-        if (vertical == null)
-            v = win.scrollY;
-        else
-            v = win.scrollMaxY / 100 * vertical;
-
-        marks.add("'", true);
-        win.scrollTo(h, v);
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {
@@ -1529,19 +1512,19 @@ const Buffer = Module("buffer", {
 
         mappings.add(myModes, ["gg", "<Home>"],
             "Go to the top of the document",
-            function (count) { buffer.scrollToPercent(buffer.scrollXPercent, Math.max(count, 0)); },
+            function (count) { buffer.scrollToPercent(null, count != null ? count : 0); },
             { count: true });
 
         mappings.add(myModes, ["G", "<End>"],
             "Go to the end of the document",
-            function (count) { buffer.scrollToPercent(buffer.scrollXPercent, count != null ? count : 100); },
+            function (count) { buffer.scrollToPercent(null, count != null ? count : 100); },
             { count: true });
 
         mappings.add(myModes, ["%"],
             "Scroll to {count} percent of the document",
             function (count) {
                 dactyl.assert(count > 0 && count <= 100);
-                buffer.scrollToPercent(buffer.scrollXPercent, count);
+                buffer.scrollToPercent(null, count);
             },
             { count: true });
 

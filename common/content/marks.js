@@ -52,12 +52,10 @@ const Marks = Module("marks", {
         let win = buffer.focusedFrame;
         let doc = win.document;
 
-        let x = win.scrollMaxX ? win.pageXOffset / win.scrollMaxX : 0;
-        let y = win.scrollMaxY ? win.pageYOffset / win.scrollMaxY : 0;
-        let position = { x: x, y: y };
+        let position = { x: buffer.scrollXPercent / 100, y: buffer.scrollYPercent / 100 };
 
         if (Marks.isURLMark(mark)) {
-            let res = this._urlMarks.set(mark, { location: doc.URL, position: position, tab: Cu.getWeakReference(tabs.getTab()), timestamp: Date.now()*1000 });
+            let res = this._urlMarks.set(mark, { location: doc.documentURI, position: position, tab: Cu.getWeakReference(tabs.getTab()), timestamp: Date.now()*1000 });
             if (!silent)
                 dactyl.log("Adding URL mark: " + Marks.markToString(mark, res), 5);
         }
