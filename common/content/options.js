@@ -854,7 +854,7 @@ const Options = Module("options", {
                             value = true;
                         else if (value == "false")
                             value = false;
-                        else if (!isNaN(value))
+                        else if (!isNaN(value) && parseInt(value) === Number(value))
                             value = parseInt(value);
                         else
                             value = Option.dequote(value);
