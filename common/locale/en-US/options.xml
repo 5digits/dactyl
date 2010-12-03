@@ -1518,7 +1518,7 @@
             the following will ignore object files and Vim swap files:
         </p>
 
-        <code><ex>:set wildignore=<str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]<a>2</a>$</str></ex></code>
+        <code><ex>:set wildignore=<str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]{2}$</str></ex></code>
 
         <note>Unlike Vim, each pattern is a regular expression rather than a glob.</note>
     </description>
