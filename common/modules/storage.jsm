@@ -19,7 +19,7 @@ const win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 function loadData(name, store, type) {
     try {
         if (storage.infoPath)
-            var file = storage.infoPath.child(name);
+            var file = storage.infoPath.child(name).read();
         if (file)
             var result = services.json.decode(file);
         if (result instanceof type)

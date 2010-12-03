@@ -1116,9 +1116,9 @@ const Hints = Module("hints", {
         options.add(["extendedhinttags", "eht"],
             "XPath string of hintable elements activated by ';'",
             "regexpmap", "[iI]:" + xpath(["img"]) +
-                       ",[OTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
-                       ",[F]:" + xpath(["div", "span", "p", "body", "html"]) +
-                       ",[S]:" + xpath(["input[not(@type='hidden')]", "textarea", "button", "select"]),
+                        ",[OTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
+                        ",[F]:" + xpath(["div", "span", "p", "body", "html"]) +
+                        ",[S]:" + xpath(["input[not(@type='hidden')]", "textarea", "button", "select"]),
             { validator: Option.validateXPath });
 
         options.add(["hinttags", "ht"],
