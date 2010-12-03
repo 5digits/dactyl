@@ -364,23 +364,16 @@
     <default>.*</default>
     <description>
         <p>
-            Enables automatic completion for completion groups matching the
-            given regular expressions. When automatic completion is enabled,
-            the completion list is automatically opened when the
-            &tag.command-line; is focused.
+            Enables automatic completion for completion contexts (see
+            <ex>:contexts</ex>) matching the given regular expressions. When
+            automatic completion is enabled, the completion list is
+            automatically opened when the &tag.command-line; is focused.
             Thereafter, any key press triggers a completion update for the
-            matching groups (hereafter ‘contexts’). Non-matching contexts will
-            only be updated when the <k name="Tab" mode="c"/> key is pressed.
-            This option is useful for disabling auto-completion for
-            computationally intensive contexts that don't perform well when
-            your system is under load.
+            matching contexts. Non-matching contexts will only be updated when
+            the <k name="Tab" mode="c"/> key is pressed. This option is useful
+            for disabling auto-completion for computationally intensive
+            contexts that don't perform well when your system is under load.
         </p>
-
-        <example>
-            To enable auto-completion for everything but <ex>:history</ex> or
-            <ex>:bmarks</ex>, you would choose a value such as
-            <str delim="'">!/ex/bmarks,.?</str>
-        </example>
 
         <note>
             Completion contexts have names very much like Unix path names.
@@ -391,7 +384,20 @@
             so on.
         </note>
 
-        <p>See also <ex>:contexts</ex></p>
+        <example>
+            <p>
+                To enable auto-completion for everything but <ex>:history</ex> or
+                <ex>:bmarks</ex>, you would choose a value such as
+                <str delim="">!/ex/(bmarks|history),.?</str>
+            </p>
+
+            <p>
+                To go in the other direction, i.e. <em>only</em> enable
+                auto-completion for <ex>:bmarks</ex>, you have to jump through
+                some hoops, due to the way contexts work (see the note above):
+                <str delim="">/ex/(bmarks|history),^(/|/ex/?)$</str>
+            </p>
+        </example>
     </description>
 </item>
 
