@@ -17,7 +17,6 @@ REFACTORING:
 - remove unnecessary usage of "self"
 
 BUGS:
-- :viusage! doesn't work
 - insert abbreviations broken on <space>
 - :sidebar improvements (:sidebar! Downloads while downloads is open should refocus the sidebar)
 - ;s saves the page rather than the image
@@ -37,7 +36,7 @@ FEATURES:
 8 :redir and 'verbosefile'
 8 middleclick in content == p, and if command line is open, paste there the clipboard buffer
 8 all search commands should start searching from the top of the visible viewport
-8 <C-o>/<C-i> should work as in vim (i.e., save page positions as well as
+8 <C-o>/<C-i> should work as in Vim (i.e., save page positions as well as
   locations in the history list).
 8 jump to the next heading with ]h, next image ]i, previous textbox [t and so on
 7 add source location links to the output of certain commands (e.g. :viusage! or describe-key)

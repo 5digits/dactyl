@@ -1013,7 +1013,7 @@ function octal(decimal) parseInt(decimal, 8);
  */
 const array = Class("array", Array, {
     init: function (ary) {
-        if (isinstance(ary, ["Iterator", "Generator"]))
+        if (isinstance(ary, ["Iterator", "Generator"]) || "__iterator__" in ary)
             ary = [k for (k in ary)];
         else if (ary.length)
             ary = Array.slice(ary);

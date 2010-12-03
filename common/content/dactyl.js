@@ -1157,7 +1157,7 @@ const Dactyl = Module("dactyl", {
     // show a usage index either in the MOW or as a full help page
     showHelpIndex: function (tag, items, inMow) {
         if (inMow)
-            dactyl.echo(template.usage(items), commandline.FORCE_MULTILINE);
+            commandline.commandOutput(template.usage(array(items).sort(function (a, b) String.localeCompare(a.name, b.name))));
         else
             dactyl.help(tag);
     }

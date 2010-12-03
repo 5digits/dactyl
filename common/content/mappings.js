@@ -186,7 +186,13 @@ const Mappings = Module("mappings", {
 
     // NOTE: just normal mode for now
     /** @property {Iterator(Map)} @private */
-    __iterator__: function () this._mappingsIterator([modes.NORMAL], this._main),
+    __iterator__: function () {
+        let mode = modes.NORMAL;
+        let seen = {};
+        for (let map in iterAll(values(this._user[mode]), values(this._main[mode])))
+            if (!set.add(seen, map.name))
+                yield map;
+    },
 
     // used by :mkpentadactylrc to save mappings
     /**
