@@ -97,7 +97,7 @@
             <li tag=";s"><em>s</em> to save its destination</li>
             <li tag=";a"><em>a</em> to save its destination (prompting for save location)</li>
             <li tag=";f"><em>f</em> to focus a frame</li>
-            <li tag=";f"><em>f</em> to focus a frame or pseudo-frame</li>
+            <li tag=";F"><em>F</em> to focus a frame or pseudo-frame</li>
             <li tag=";o"><em>o</em> to open its location in the current tab</li>
             <li tag=";t"><em>t</em> to open its location in a new tab</li>
             <li tag=";b"><em>b</em> to open its location in a new background tab</li>
