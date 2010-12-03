@@ -16,16 +16,10 @@ defineModule("storage", {
 
 const win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 
-function getFile(name) {
-    let file = storage.infoPath.clone();
-    file.append(name);
-    return File(file);
-}
-
 function loadData(name, store, type) {
     try {
         if (storage.infoPath)
-            var file = getFile(name).read();
+            var file = storage.infoPath.child(name);
         if (file)
             var result = services.json.decode(file);
         if (result instanceof type)
@@ -38,7 +32,7 @@ function saveData(obj) {
     if (obj.privateData && storage.privateMode)
         return;
     if (obj.store && storage.infoPath)
-        getFile(obj.name).write(obj.serial);
+        storage.infoPath.child(obj.name).write(obj.serial);
 }
 
 const StoreBase = Class("StoreBase", {
@@ -246,12 +240,8 @@ const Storage = Module("Storage", {
 }, {
 }, {
     init: function (dactyl, modules) {
-        let infoPath = File(modules.IO.runtimePath.replace(/,.*/, ""));
-        if (infoPath) {
-            infoPath.append("info");
-            infoPath.append(dactyl.profileName);
-            storage.infoPath = infoPath;
-        }
+        storage.infoPath = File(modules.IO.runtimePath.replace(/,.*/, ""))
+                             .child("info").child(dactyl.profileName);
     }
 });
 
@@ -268,7 +258,7 @@ const File = Class("File", {
         let file = services.File();
 
         if (path instanceof Ci.nsIFile)
-            file = path.QueryInterface(Ci.nsIFile);
+            file = path.QueryInterface(Ci.nsIFile).clone();
         else if (/file:\/\//.test(path))
             file = services["File:"]().getFileFromURLSpec(path);
         else {
@@ -298,6 +288,15 @@ const File = Class("File", {
             throw Error("Not a directory");
         for (let file in iter(this.directoryEntries))
             yield File(file);
+    },
+
+    /**
+     * Returns a new file for the given child of this directory entry.
+     */
+    child: function (name) {
+        let f = this.constructor(this);
+        f.append(name);
+        return f;
     },
 
     /**
@@ -398,7 +397,7 @@ const File = Class("File", {
             mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_TRUNCATE;
 
         if (!perms)
-            perms = parseInt('0644', 8);
+            perms = octal(644);
         if (!this.exists()) // OCREAT won't create the directory
             this.create(this.NORMAL_FILE_TYPE, perms);
 

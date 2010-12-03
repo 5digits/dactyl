@@ -655,6 +655,7 @@ const JavaScript = Module("javascript", {
                 return completer.call(obj, context, obj, args);
             };
         }
+        return arguments[0];
     }
 }, {
     completion: function () {

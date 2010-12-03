@@ -538,19 +538,29 @@ const Dactyl = Module("dactyl", {
         return UTF8(xml.toXMLString());
     },
 
-    exportHelp: function (path) {
+
+    exportHelp: JavaScript.setCompleter(function (path) {
         const FILE = io.File(path);
         const PATH = FILE.leafName.replace(/\..*/, "") + "/";
         const TIME = Date.now();
 
+        if (!FILE.exists() && (/\/$/.test(path) && !/\./.test(FILE.leafName)))
+            FILE.create(FILE.DIRECTORY_TYPE, octal(755));
+
         dactyl.initHelp();
-        let zip = services.ZipWriter();
-        zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
-        function addURIEntry(file, uri)
-            zip.addEntryChannel(PATH + file, TIME, 9,
-                services.io.newChannel(uri, null, null), false);
-        function addDataEntry(file, data) // Unideal to an extreme.
-            addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
+        if (FILE.isDirectory()) {
+            function addDataEntry(file, data) FILE.child(file).write(data);
+            function addURIEntry(file, uri) addDataEntry(file, util.httpGet(uri).responseText);
+        }
+        else {
+            var zip = services.ZipWriter();
+            zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
+            function addURIEntry(file, uri)
+                zip.addEntryChannel(PATH + file, TIME, 9,
+                    services.io.newChannel(uri, null, null), false);
+            function addDataEntry(file, data) // Unideal to an extreme.
+                addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
+        }
 
         let empty = set("area base basefont br col frame hr img input isindex link meta param"
                             .split(" "));
@@ -619,9 +629,9 @@ const Dactyl = Module("dactyl", {
         }
 
         let data = [h for (h in highlight) if (set.has(styles, h.class) || /^Help/.test(h.class))]
-            .map(function (h)
-                 h.selector.replace(/^\[.*?=(.*?)\]/, ".hl-$1").replace(/html\|/, "") + "\t" +
-                     "{" + h.value + "}")
+            .map(function (h) h.selector
+                               .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
+                               .replace(/html\|/, "") + "\t" + "{" + h.value + "}")
             .join("\n");
         addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 
@@ -632,8 +642,9 @@ const Dactyl = Module("dactyl", {
         for (let [uri, leaf] in Iterator(chrome))
             addURIEntry(leaf, uri);
 
-        zip.close();
-    },
+        if (zip)
+            zip.close();
+    }, [function (context, args) completion.file(context)]),
 
     /**
      * Generates a help entry and writes it to the clipboard.

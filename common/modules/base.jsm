@@ -177,7 +177,7 @@ defineModule("base", {
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "endModule", "forEach", "isArray", "isGenerator", "isinstance",
         "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
-        "memoize", "properties", "set", "update", "values",
+        "memoize", "octal", "properties", "set", "update", "values",
         "withCallerGlobal"
     ],
     use: ["services", "util"]
@@ -1007,6 +1007,8 @@ function UTF8(str) {
         return str;
     }
 }
+
+function octal(decimal) parseInt(decimal, 8);
 
 /**
  * Array utility methods.

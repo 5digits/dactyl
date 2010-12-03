@@ -202,7 +202,7 @@ const IO = Module("io", {
         let file = services.directory.get("TmpD", Ci.nsIFile);
 
         file.append(config.tempFile);
-        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, parseInt('0600', 8));
+        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(600));
         Cc["@mozilla.org/uriloader/external-helper-app-service;1"]
             .getService(Ci.nsPIExternalAppLauncher).deleteTemporaryFileOnExit(file);
 
