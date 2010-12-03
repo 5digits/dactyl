@@ -98,8 +98,8 @@
         <code><ex>:map a b</ex>
 <ex>:map b a</ex></code>
         <p>
-            In order to avoid this shortcoming, the
-            <ex>:noremap</ex> command may be used.
+            In order to avoid this shortcoming, the <ex>:noremap</ex> command
+            or the <em>-builtin</em> option may be used.
         </p>
     </description>
 </item>
