@@ -612,6 +612,11 @@
                      //area[@href]  | //xhtml:area[@href] |
                      //img[@src]    | //xhtml:img[@src]   |
                      //iframe[@src] | //xhtml:iframe[@src]',
+          [F]:'//div  | //xhtml:div |
+               //span | //xhtml:span |
+               //p    | //xhtml:p    |
+               //body | //xhtml:body |
+               //html | //xhtml:html'
           [S]:'//input[not(@type=''hidden'')]       |
                //xhtml:input[not(@type=''hidden'')] |
                //textarea  | //xhtml:textarea |

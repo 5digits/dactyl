@@ -48,11 +48,12 @@ const Hints = Module("hints", {
             options.get("extendedhinttags").getKey(this.name, this.tags()));
 
         this._hintModes = {};
-        this.addMode(";", "Focus hint",                           function (elem) buffer.focusElement(elem));
+        this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
         this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
         this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, true));
         this.addMode("a", "Save hint with prompt",                function (elem) buffer.saveLink(elem, false));
         this.addMode("f", "Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]);
+        this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, null, isScrollable);
         this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
@@ -68,6 +69,9 @@ const Hints = Module("hints", {
         this.addMode("c", "Open context menu",                    function (elem) buffer.openContextMenu(elem));
         this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
         this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
+
+        function isScrollable(elem) isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]) ||
+            Buffer.isScrollable(elem, 0, true) || Buffer.isScrollable(elem, 0, false);
     },
 
     /**
@@ -285,7 +289,10 @@ const Hints = Module("hints", {
 
         let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint"/>, doc);
 
-        let res = util.evaluateXPath(this._hintMode.xpath, doc, null, true);
+        let mode = this._hintMode;
+        let res = util.evaluateXPath(mode.xpath, doc, null, true);
+        if (mode.filter)
+            res = let (orig = res) (e for (e in orig) if (mode.filter(e)));
 
         let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
         let start = this._pageHints.length;
@@ -1078,7 +1085,7 @@ const Hints = Module("hints", {
         return -1;
     },
 
-    Mode: Struct("name", "prompt", "action", "tags")
+    Mode: Struct("name", "prompt", "action", "tags", "filter")
 }, {
     mappings: function () {
         var myModes = config.browserModes;
@@ -1105,13 +1112,13 @@ const Hints = Module("hints", {
             util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
                             "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @tabindex or @role='link' or @role='button']"]);
 
+        function xpath(arg) Option.quote(util.makeXPath(arg));
         options.add(["extendedhinttags", "eht"],
             "XPath string of hintable elements activated by ';'",
-            "regexpmap", "[iI]:" + Option.quote(util.makeXPath(["img"])) +
-                       ",[OTivVWy]:" + Option.quote(util.makeXPath(
-                            ["{a,area}[@href]", "{img,iframe}[@src]"])) +
-                       ",[S]:" + Option.quote(util.makeXPath(
-                            ["input[not(@type='hidden')]", "textarea", "button", "select"])),
+            "regexpmap", "[iI]:" + xpath(["img"]) +
+                       ",[OTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
+                       ",[F]:" + xpath(["div", "span", "p", "body", "html"]) +
+                       ",[S]:" + xpath(["input[not(@type='hidden')]", "textarea", "button", "select"]),
             { validator: Option.validateXPath });
 
         options.add(["hinttags", "ht"],

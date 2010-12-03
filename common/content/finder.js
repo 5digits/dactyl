@@ -642,6 +642,9 @@ const RangeFind = Class("RangeFind", {
     contains: function (range, r)
         range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&
         range.compareBoundaryPoints(range.END_TO_START, r) <= 0,
+    intersects: function (range, r)
+        r.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
+        r.compareBoundaryPoints(range.END_TO_START, range) <= 0,
     endpoint: function (range, before) {
         range = range.cloneRange();
         range.collapse(before);

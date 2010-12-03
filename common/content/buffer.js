@@ -519,10 +519,22 @@ const Buffer = Module("buffer", {
         }
         else {
             elem.focus();
-            if (elem instanceof Window && elem.getSelection() && !elem.getSelection().rangeCount)
-                elem.getSelection().addRange(RangeFind.endpoint(
-                    RangeFind.nodeRange(elem.document.body || elem.document.documentElement),
-                    true));
+            if (elem instanceof Window) {
+                let sel = elem.getSelection();
+                if (sel && !sel.rangeCount)
+                    sel.addRange(RangeFind.endpoint(
+                        RangeFind.nodeRange(elem.document.body || elem.document.documentElement),
+                        true));
+            }
+            else {
+                let range = RangeFind.nodeRange(elem);
+                let sel = (elem.ownerDocument || elem).defaultView.getSelection();
+                if (!sel.rangeCount || !RangeFind.intersects(range, sel.getRangeAt(0))) {
+                    range.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            }
 
             // for imagemap
             if (elem instanceof HTMLAreaElement) {
@@ -1109,9 +1121,13 @@ const Buffer = Module("buffer", {
             return elem;
         }
 
+        var elem = buffer.focusedFrame.document.activeElement;
+        if (elem == elem.ownerDocument.body)
+            elem = null;
+
         let sel = buffer.focusedFrame.getSelection();
-        if (sel && sel.rangeCount)
-            var elem = find(sel.getRangeAt(0).startContainer);
+        if (!elem && sel && sel.rangeCount)
+            elem = find(sel.getRangeAt(0).startContainer);
 
         if (!(elem instanceof Element)) {
             let doc = Buffer.findScrollableWindow().document;
