@@ -546,7 +546,7 @@
 
         <warning>
             &dactyl.appName; will not behave correctly if the editor forks its
-            own process, rather than blocking until editing is complete. Gvim
+            own process rather than blocking until editing is complete. Gvim
             invoked without the <em>-f</em> option is one such example.
         </warning>
     </description>
@@ -618,7 +618,7 @@
                      //area[@href]  | //xhtml:area[@href] |
                      //img[@src]    | //xhtml:img[@src]   |
                      //iframe[@src] | //xhtml:iframe[@src]',
-          [F]:'//div  | //xhtml:div |
+          [F]:'//div  | //xhtml:div  |
                //span | //xhtml:span |
                //p    | //xhtml:p    |
                //body | //xhtml:body |
@@ -961,7 +961,7 @@
         <p>
             Alternatively, you can specify which plugins to load and which to
             omit in your <tt><t>&dactyl.name;rc</t></tt> using something like
-            the below:
+            the following:
         </p>
         <code><ex>:set loadplugins=</ex>!<str delim="'">foo|bar</str>,<str delim="'">\.(js|&dactyl.fileExt;)$</str></code>
         <p>

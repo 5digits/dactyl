@@ -407,10 +407,11 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     <spec>:sav<oa>eas</oa><oa>!</oa> <oa>file</oa></spec>
     <description>
         <p>
-            Save current web page to disk. If <oa>file</oa> is
-            omitted, save to the page's default filename. Existing
-            documents will only be overwritten if <oa>!</oa> is
-            given.
+            Save current web page to disk. If <oa>file</oa> is omitted, save to
+            the page's default filename. If <oa>file</oa> is a directory or ends
+            with your platform's path separator, save to the page's default
+            filename in that directory. Existing documents will only be
+            overwritten if <oa>!</oa> is given.
         </p>
     </description>
 </item>

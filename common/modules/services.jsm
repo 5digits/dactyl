@@ -39,6 +39,7 @@ const Services = Module("Services", {
         this.add("io",                  "@mozilla.org/network/io-service;1",                Ci.nsIIOService);
         this.add("json",                "@mozilla.org/dom/json;1",                          Ci.nsIJSON, "createInstance");
         this.add("livemark",            "@mozilla.org/browser/livemark-service;2",          Ci.nsILivemarkService);
+        this.add("mime",                "@mozilla.org/mime;1",                              Ci.nsIMIMEService);
         this.add("observer",            "@mozilla.org/observer-service;1",                  Ci.nsIObserverService);
         this.add("pref",                "@mozilla.org/preferences-service;1",               [Ci.nsIPrefBranch2, Ci.nsIPrefService]);
         this.add("privateBrowsing",     "@mozilla.org/privatebrowsing;1",                   Ci.nsIPrivateBrowsingService);

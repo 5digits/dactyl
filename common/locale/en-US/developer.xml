@@ -195,7 +195,7 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
     <hl key="HelpXMLAttribute">xmlns</hl>{NS}></hl></escape>
     <author email="maglione.k@gmail.com">Kris Maglione</author>
     <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
-    <project name="Pentadactyl" minVersion="1.0"/>
+    <project name="Pentadactyl" min-version="1.0"/>
     <p>
         This plugin provides the same features as the ever popular FlashBlock
         Firefox addon. Flash animations are substituted with place holders which
@@ -204,7 +204,7 @@ XML.prettyPrinting   = <hl key="Boolean">false</hl>;
         triggers to toggle the playing of animation on the current page.
     </p>
     <item>
-        <tags>'flashblock' 'fb'</tags>
+        <tags>'fb' 'flashblock'</tags>
         <spec>'flashblock' 'fb'</spec>
         <type>boolean</type>
         <default>true</default>

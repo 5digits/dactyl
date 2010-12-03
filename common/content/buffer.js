@@ -147,6 +147,14 @@ const Buffer = Module("buffer", {
     destroy: function () {
     },
 
+    getDefaultNames: function getDefaultNames(doc) {
+        let ext = services.mime.getPrimaryExtension(doc.contentType, doc.location.href.replace(/.*\./, ""));
+        return [[doc.title, "Page Name"], [doc.location.pathname.replace(/.*\//, ""), "File Name"]]
+            .filter(function ([leaf, title]) leaf)
+            .map(function ([leaf, title]) [leaf.replace(util.OS.illegalCharacters, encodeURIComponent)
+                                               .replace(RegExp("(\\." + ext + ")?$"), "." + ext), title]);
+    },
+
     _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc) {
         let args = {
             url:   doc.location.href,
@@ -1307,10 +1315,12 @@ const Buffer = Module("buffer", {
                             });
                     }
 
-                    let file = io.File(filename);
+                    let file = io.File(filename.replace(RegExp(File.PATH_SEP + "*$"), ""));
 
-                    dactyl.assert(!file.exists() || args.bang,
-                                  "E13: File exists (add ! to override)");
+                    if (filename.substr(-1) === File.PATH_SEP || file.exists() && file.isDirectory())
+                        file.append(buffer.getDefaultNames(doc)[0][0]);
+
+                    dactyl.assert(args.bang || !file.exists(), "E13: File exists (add ! to override)");
 
                     chosenData = { file: file, uri: window.makeURI(doc.location.href, doc.characterSet) };
                 }
@@ -1340,7 +1350,12 @@ const Buffer = Module("buffer", {
                         return;
                     if (/^>>/.test(context.filter))
                         context.advance(/^>>\s*/.exec(context.filter)[0].length);
-                    return completion.file(context);
+
+                    context.fork("generated", context.filter.replace(/[^/]*$/, "").length,
+                                 this, function (context) {
+                        context.completions = buffer.getDefaultNames(content.document);
+                    });
+                    return context.fork("files", 0, completion, "file");
                 },
                 literal: 0
             });

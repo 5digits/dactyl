@@ -391,9 +391,7 @@ function iter(obj) {
         if (obj.constructor instanceof ctypes.StructType)
             return (function () {
                 for (let prop in values(obj.constructor.fields))
-                    let ([name, type] = Iterator(prop).next()) {
-                        yield [name, obj[name]];
-                    }
+                    yield let ([name, type] = Iterator(prop).next()) [name, obj[name]];
             })();
         obj = {};
     }

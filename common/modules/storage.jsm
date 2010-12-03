@@ -18,10 +18,8 @@ const win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 
 function loadData(name, store, type) {
     try {
-        if (storage.infoPath)
-            var file = storage.infoPath.child(name).read();
-        if (file)
-            var result = services.json.decode(file);
+        let data = storage.infoPath.child(name).read();
+        let result = JSON.parse(data);
         if (result instanceof type)
             return result;
     }
@@ -37,8 +35,11 @@ function saveData(obj) {
 
 const StoreBase = Class("StoreBase", {
     OPTIONS: ["privateData", "replacer"],
+
     fireEvent: function (event, arg) { storage.fireEvent(this.name, event, arg); },
+
     get serial() JSON.stringify(this._object, this.replacer),
+
     init: function (name, store, load, options) {
         this._load = load;
 
@@ -49,11 +50,14 @@ const StoreBase = Class("StoreBase", {
                 this[k] = v;
         this.reload();
     },
+
     changed: function () { this.timer.tell() },
+
     reload: function reload() {
         this._object = this._load() || this._constructor();
         this.fireEvent("change", null);
     },
+
     save: function () { saveData(this); },
 });
 
@@ -205,8 +209,8 @@ const Storage = Module("Storage", {
 
     fireEvent: function fireEvent(key, event, arg) {
         this.removeDeadObservers();
-        // Safe, since we have our own Array object here.
         if (key in observers)
+            // Safe, since we have our own Array object here.
             for each (let observer in observers[key])
                 observer.callback.get()(key, event, arg);
         if (key in keys)
@@ -481,12 +485,11 @@ const File = Class("File", {
     /**
      * @property {string} The current platform's path separator.
      */
-    get PATH_SEP() {
-        delete this.PATH_SEP;
+    PATH_SEP: Class.memoize(function () {
         let f = services.directory.get("CurProcD", Ci.nsIFile);
         f.append("foo");
-        return this.PATH_SEP = f.path.substr(f.parent.path.length, 1);
-    },
+        return f.path.substr(f.parent.path.length, 1);
+    }),
 
     DoesNotExist: function (error) ({
         exists: function () false,
@@ -544,7 +547,7 @@ const File = Class("File", {
     joinPaths: function (head, tail, cwd) {
         let path = this(head, cwd);
         try {
-            // FIXME: should only expand env vars and normalise path separators
+            // FIXME: should only expand environment vars and normalize path separators
             path.appendRelativePath(this.expandPath(tail, true));
         }
         catch (e) {
