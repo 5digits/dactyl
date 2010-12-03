@@ -888,24 +888,23 @@ const Dactyl = Module("dactyl", {
                 switch (where) {
                 case dactyl.CURRENT_TAB:
                     browser.loadURIWithFlags(url, flags, null, null, postdata);
-                    break;
+                    return browser.contentWindow;
 
                 case dactyl.NEW_TAB:
                     if (!dactyl.has("tabs"))
                         return open(urls, dactyl.NEW_WINDOW);
 
-                    prefs.withContext(function () {
+                    return prefs.withContext(function () {
                         prefs.set("browser.tabs.loadInBackground", true);
-                        browser.loadOneTab(url, null, null, postdata, background);
+                        return browser.loadOneTab(url, null, null, postdata, background).linkedBrowser.contentDocument;
                     });
-                    break;
 
                 case dactyl.NEW_WINDOW:
                     window.open();
                     let win = services.windowMediator.getMostRecentWindow("navigator:browser");
                     win.loadURI(url, null, postdata);
                     browser = win.getBrowser();
-                    break;
+                    return win.content;
                 }
             }
             catch (e) {}
@@ -921,11 +920,12 @@ const Dactyl = Module("dactyl", {
         else if (!where)
             where = dactyl.CURRENT_TAB;
 
-        for (let [, url] in Iterator(urls)) {
-            open(url, where);
+        return urls.map(function (url) {
+            let res = open(url, where);
             where = dactyl.NEW_TAB;
             background = true;
-        }
+            return res;
+        });
     },
 
     pluginFiles: {},

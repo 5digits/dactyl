@@ -451,10 +451,14 @@ const Commands = Module("commands", {
     repeat: null,
 
     _addCommand: function (args, replace) {
+        if (!args[3])
+            args[3] = {};
+        args[3].definedAt = Components.stack.caller.caller;
+
         let names = array.flatten(Command.parseSpecs(args[0]));
         dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
                       "E182: Can't replace non-user command: " + args[0][0]);
-        if (!replace || !(args[3] && args[3].user))
+        if (!replace || !args[3].user)
             dactyl.assert(!names.some(function (name) name in this._exMap, this),
                           "Not replacing command " + args[0]);
         for (let name in values(names)) {

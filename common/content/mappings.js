@@ -140,6 +140,7 @@ const Mappings = Module("mappings", {
 
     _addMap: function (map) {
         let where = map.user ? this._user : this._main;
+        map.definedAt = Components.stack.caller.caller;
         map.modes.forEach(function (mode) {
             if (!(mode in where))
                 where[mode] = [];

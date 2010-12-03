@@ -642,6 +642,8 @@ const Options = Module("options", {
         if (!extraInfo)
             extraInfo = {};
 
+        extraInfo.definedAt = Components.stack.caller;
+
         let name = names[0];
         if (name in this._optionMap) {
             dactyl.log("Warning: " + name.quote() + " already exists: replacing existing option.", 1);

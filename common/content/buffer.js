@@ -142,6 +142,11 @@ const Buffer = Module("buffer", {
             return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
                         .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
         });
+
+        dactyl.commands["buffer.viewSource"] = function (event) {
+            let elem = event.originalTarget;
+            buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))])
+        };
     },
 
     destroy: function () {
@@ -950,6 +955,19 @@ const Buffer = Module("buffer", {
      */
     viewSource: function (url, useExternalEditor) {
         let doc = buffer.focusedFrame.document;
+
+        if (isArray(url)) {
+            let chrome = "chrome://global/content/viewSource.xul";
+            window.openDialog(chrome, "_blank", "all,dialog=no",
+                              url[0], null, null, url[1]);
+            /* FIXME
+            let win = dactyl.open(chrome)[0];
+            while (win.document.documentURI != chrome)
+                util.threadYield(false, true);
+            win.arguments = [url[0], null, null, url[1]];
+            */
+            return;
+        }
 
         if (useExternalEditor)
             this.viewSourceExternally(url || doc);
