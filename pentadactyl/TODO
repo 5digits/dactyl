@@ -17,14 +17,13 @@ REFACTORING:
 - remove unnecessary usage of "self"
 
 BUGS:
+- :viusage! doesn't work
 - insert abbreviations broken on <space>
 - :sidebar improvements (:sidebar! Downloads while downloads is open should refocus the sidebar)
 - ;s saves the page rather than the image
 - RC file is sourced once per window
 - :undo seems to be affected by the tabstrip state
 - the :help version-information page is no longer generated
-
-(recent Mercurial regressions):
 
 FEATURES:
 8 registers
@@ -41,6 +40,9 @@ FEATURES:
 8 <C-o>/<C-i> should work as in vim (i.e., save page positions as well as
   locations in the history list).
 8 jump to the next heading with ]h, next image ]i, previous textbox [t and so on
+7 add source location links to the output of certain commands (e.g. :viusage! or describe-key)
+7 add search capability to MOW
+7 describe-key command (prompt for a key and display its binding with documentation)
 7 Specify all INSERT mode mappings rather than falling through to the host apps
   mystery meat mappings.
 7 consider generating most of :help :index
@@ -54,6 +56,7 @@ FEATURES:
 7 make an option to disable session saving by default when you close Firefox
 7 The output of the pageinfo-command should contain the security-information of ssl-encrypted sites
 7 :grep support (needs location list)
+7 map <C-n/p> and/or <A-n/p> in command-line mode to something useful (such as Down/Up)
 6 :mksession
 6 add [count] support to :b* and :tab* commands where missing
 6 check/correct spellings in insert mode with some mappings
