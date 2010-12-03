@@ -854,7 +854,7 @@ const Options = Module("options", {
                             value = true;
                         else if (value == "false")
                             value = false;
-                        else if (/^\d+$/.test(value))
+                        else if (/^[+-]?\d+$/.test(value))
                             value = parseInt(value, 10);
                         else
                             value = Option.dequote(value);
