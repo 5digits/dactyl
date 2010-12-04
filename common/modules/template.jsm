@@ -297,9 +297,9 @@ const Template = Module("Template", {
                     <td highlight="Title" style="padding-right: 20px">{
                         let (name = item.name || item.names[0], frame = item.definedAt)
                             frame ? <a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
-                                       href={frame.filename} line={frame.lineNumber}>
-                                       <abbr title={"Defined at " + frame.filename + ":" + frame.lineNumber}>
-                                       {name}</abbr></a>
+                                       href={frame.filename} line={frame.lineNumber}
+                                       title={"Defined at " + frame.filename + ":" + frame.lineNumber}
+                                       >{name}</a>
                                   : name
                     }</td>
                     <td>{item.description}</td>
