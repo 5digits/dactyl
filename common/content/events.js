@@ -969,17 +969,15 @@ const Events = Module("events", {
                 this._input.motionCount = null;
 
                 if (!isEscape(key)) {
-                    // allow key to be passed to the host app if we can't handle it
-                    stop = (mode.main === modes.TEXT_EDIT);
-
-                    if (mode.main === modes.COMMAND_LINE) {
-                        if (!(modes.extended & modes.INPUT_MULTILINE))
-                            dactyl.trapErrors(function () {
-                                commandline.onEvent(event); // reroute event in command line mode
-                            });
-                    }
-                    else if (!mode.mainMode.input)
+                    if (mode.main === modes.TEXT_EDIT) {
                         dactyl.beep();
+                        stop = true;
+                    }
+
+                    if (mode.main === modes.COMMAND_LINE)
+                        if (!(modes.extended & modes.INPUT_MULTILINE))
+                            dactyl.trapErrors(commandline.onEvent, commandline, event);
+                    // allow key to be passed to the host app if we can't handle it
                 }
             }
 
