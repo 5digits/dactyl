@@ -969,15 +969,15 @@ const Events = Module("events", {
                 this._input.motionCount = null;
 
                 if (!isEscape(key)) {
+                    stop = false;
                     if (mode.main === modes.TEXT_EDIT) {
                         dactyl.beep();
                         stop = true;
                     }
 
                     if (mode.main === modes.COMMAND_LINE)
-                        if (!(modes.extended & modes.INPUT_MULTILINE))
+                        if (!(mode.extended & modes.INPUT_MULTILINE))
                             dactyl.trapErrors(commandline.onEvent, commandline, event);
-                    // allow key to be passed to the host app if we can't handle it
                 }
             }
 
