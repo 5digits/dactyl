@@ -405,15 +405,16 @@ lookup:
             else if (input)
                 stdin.write(input);
 
+            let shell = File.expandPath(options["shell"]);
             // TODO: implement 'shellredir'
             if (util.OS.isWindows && !/sh/.test(options["shell"])) {
                 command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
-                var res = this.run(options["shell"], options["shellcmdflag"].split(/\s+/).concat(command), true);
+                var res = this.run(shell, options["shellcmdflag"].split(/\s+/).concat(command), true);
             }
             else {
                 cmd.write("cd " + escape(this.cwd) + "\n" +
                         ["exec", ">" + escape(stdout.path), "2>&1", "<" + escape(stdin.path),
-                         escape(options["shell"]), options["shellcmdflag"], escape(command)].join(" "));
+                         escape(shell), options["shellcmdflag"], escape(command)].join(" "));
                 res = this.run("/bin/sh", ["-e", cmd.path], true);
             }
 
@@ -752,13 +753,11 @@ lookup:
 
         options.add(["runtimepath", "rtp"],
             "List of directories searched for runtime files",
-            "stringlist", IO.runtimePath,
-            { setter: function (value) File.expandPathList(value) });
+            "stringlist", IO.runtimePath);
 
         options.add(["shell", "sh"],
             "Shell to use for executing :! and :run commands",
-            "string", shell,
-            { setter: function (value) File.expandPath(value) });
+            "string", shell);
 
         options.add(["shellcmdflag", "shcf"],
             "Flag passed to shell when executing :! and :run commands",
