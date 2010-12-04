@@ -393,7 +393,7 @@
 
             <p>
                 To go in the other direction, i.e. <em>only</em> enable
-                auto-completion for <ex>:bmarks</ex>, you have to jump through
+                auto-completion for those commands, you have to jump through
                 some hoops, due to the way contexts work (see the note above):
                 <str delim="">/ex/(bmarks|history),^(/|/ex/?)$</str>
             </p>
