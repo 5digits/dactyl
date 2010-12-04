@@ -294,12 +294,16 @@ const Template = Module("Template", {
             {
                 this.map(iter, function (item)
                 <tr>
-                    <td highlight="Title" style="padding-right: 20px">{
+                    <td style="padding-right: 20px" highlight="Usage">{
                         let (name = item.name || item.names[0], frame = item.definedAt)
-                            frame ? <a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
-                                       href={frame.filename} line={frame.lineNumber}
-                                       title={"Defined at " + frame.filename + ":" + frame.lineNumber}
-                                       >{name}</a>
+                            frame ? <><span highlight="Title">{name}</span>&#xa0;
+                                      <span highlight="LineInfo">
+                                          Defined at&#xa0;<a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
+                                                             href={frame.filename} line={frame.lineNumber}
+                                                             highlight="URL">{
+                                              frame.filename + ":" + frame.lineNumber}</a>
+                                      </span>
+                                    </>
                                   : name
                     }</td>
                     <td>{item.description}</td>

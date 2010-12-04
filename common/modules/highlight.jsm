@@ -148,7 +148,7 @@ const Highlights = Module("Highlight", {
      */
     selector: function (class_)
         let (self = this)
-           class_.replace(/(^|\s)([A-Z]\w+)\b/g,
+           class_.replace(/(^|[>\s])([A-Z]\w+)\b/g,
             function (m, n1, hl) n1 +
                 (self.highlight[hl] && self.highlight[hl].class != class_
                     ? self.highlight[hl].selector : "[dactyl|highlight~=" + hl + "]")),
