@@ -28,7 +28,7 @@ const RangeFinder = Module("rangefinder", {
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;
         let regexp = false;
-        let matchCase = !(options["ignorecase"] || options["smartcase"] && !/[A-Z]/.test(str));
+        let matchCase = options["smartcase"] && /[A-Z]/.test(str) || !options["ignorecase"];
         let linksOnly = options["linksearch"];
 
         str = str.replace(/\\(.|$)/g, function (m, n1) {
