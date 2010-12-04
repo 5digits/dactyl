@@ -57,8 +57,8 @@
         </p>
 
         <dl dt="width: 6em;">
-            <dt>\c</dt> <dd>Perform case insensitive search (default if <o>ignorecase</o> is set).</dd>
-            <dt>\C</dt> <dd>Perform case sensitive search</dd>
+            <dt>\c</dt> <dd>Perform case insensitive search (default if <o>searchcase</o>=<str>ignore</str>).</dd>
+            <dt>\C</dt> <dd>Perform case sensitive search (default if <o>searchcase</o>=<str>match</str>).</dd>
             <dt>\l</dt> <dd>Search only in links, as defined by <o>hinttags</o>. (default if <o>linksearch</o> is set).</dd>
             <dt>\L</dt> <dd>Search the entire page.</dd>
         </dl>
