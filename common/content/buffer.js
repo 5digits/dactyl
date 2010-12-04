@@ -1153,7 +1153,9 @@ const Buffer = Module("buffer", {
 
         let sel = buffer.focusedFrame.getSelection();
         if (!elem && sel && sel.rangeCount)
-            elem = find(sel.getRangeAt(0).startContainer);
+            elem = sel.getRangeAt(0).startContainer;
+        if (elem)
+            elem = find(elem);
 
         if (!(elem instanceof Element)) {
             let doc = Buffer.findScrollableWindow().document;
