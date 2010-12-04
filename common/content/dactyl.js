@@ -686,7 +686,7 @@ const Dactyl = Module("dactyl", {
         let res = <res>
                 <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd>
             <item>
-                <tags>{template.map(obj.names.reverse, tag, " ")}</tags>
+                <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
                 <spec>{spec((obj.specs || obj.names)[0])}</spec>{
                 !obj.type ? "" : <>
                 <type>{obj.type}</type>
@@ -721,7 +721,7 @@ const Dactyl = Module("dactyl", {
                                 })</>
                         }</>
                     ]));
-        return res.*.toXMLString().replace(/^ {12}/gm, "");;
+        return res.*.toXMLString().replace(/^ {12}|[ \t]+$/gm, "");
     },
 
     /**

@@ -28,7 +28,8 @@ const RangeFinder = Module("rangefinder", {
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;
         let regexp = false;
-        let matchCase = options["smartcase"] && /[A-Z]/.test(str) || !options["ignorecase"];
+        let matchCase = options["searchcase"] === "smart"  ? /[A-Z]/.test(str) :
+                        options["searchcase"] === "ignore" ? false : true;
         let linksOnly = options["linksearch"];
 
         str = str.replace(/\\(.|$)/g, function (m, n1) {
@@ -218,9 +219,16 @@ const RangeFinder = Module("rangefinder", {
                 }
             });
 
-        options.add(["ignorecase", "ic"],
-            "Ignore case in search patterns",
-            "boolean", true);
+        options.add(["searchcase", "sc"],
+            "Search case matching mode",
+            "string", "smart",
+            {
+                completer: function () [
+                    ["smart", "Case is significant when capital letters are typed"],
+                    ["match", "Case is always significant"],
+                    ["ignore", "Case is never significant"]
+                ]
+            });
 
         options.add(["incsearch", "is"],
             "Show where the search pattern matches as it is typed",
@@ -230,9 +238,6 @@ const RangeFinder = Module("rangefinder", {
             "Limit the search to hyperlink text",
             "boolean", false);
 
-        options.add(["smartcase", "scs"],
-            "Override the 'ignorecase' option if the pattern contains uppercase characters",
-            "boolean", true);
     }
 });
 

@@ -969,11 +969,9 @@ const Events = Module("events", {
                 this._input.motionCount = null;
 
                 if (!isEscape(key)) {
-                    stop = false;
-                    if (mode.main === modes.TEXT_EDIT) {
+                    stop = (mode.main === modes.TEXT_EDIT);
+                    if (stop)
                         dactyl.beep();
-                        stop = true;
-                    }
 
                     if (mode.main === modes.COMMAND_LINE)
                         if (!(mode.extended & modes.INPUT_MULTILINE))

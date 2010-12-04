@@ -52,6 +52,7 @@
     * IMPORTANT: 'laststatus' has been replaced with the "s" flag in
       'guioptions'.
     * IMPORTANT: 'showstatuslinks' is now a string option.
+    * IMPORTANT: 'ignorecase' and 'smartcase' have been replaced with 'searchcase'
     * IMPORTANT: Command script files now use the *.penta file extension.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.

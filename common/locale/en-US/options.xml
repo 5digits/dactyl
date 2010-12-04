@@ -870,17 +870,6 @@
 </item>
 
 <item>
-    <tags>'noic' 'noignorecase'</tags>
-    <tags>'ic' 'ignorecase'</tags>
-    <spec>'ignorecase' 'ic'</spec>
-    <type>boolean</type>
-    <default>on</default>
-    <description>
-        <p>Ignore case in search patterns.</p>
-    </description>
-</item>
-
-<item>
     <tags>'nois' 'noincsearch'</tags>
     <tags>'is' 'incsearch'</tags>
     <spec>'incsearch' 'is'</spec>
@@ -1283,6 +1272,22 @@
 </item>
 
 <item>
+    <tags>'sc' 'searchcase'</tags>
+    <spec>'searchcase'</spec>
+    <type>string</type>
+    <default>smart</default>
+    <description>
+        <p>Search case matching mode.</p>
+
+        <dl>
+            <dt>ignore</dt> <dd>Case is never significant</dd>
+            <dt>match</dt> <dd>Case is always significant</dd>
+            <dt>smart</dt> <dd>Case is significant when capital letters are typed</dd>
+        </dl>
+    </description>
+</item>
+
+<item>
     <tags>'shell' 'sh'</tags>
     <spec>'shell' 'sh'</spec>
     <type>string</type>
@@ -1351,21 +1356,6 @@
             <dt>1</dt>      <dd>Show tab line only if more than one tab is open</dd>
             <dt>2</dt>      <dd>Always show tab line</dd>
         </dl>
-    </description>
-</item>
-
-<item>
-    <tags>'noscs' 'nosmartcase'</tags>
-    <tags>'scs' 'smartcase'</tags>
-    <spec>'smartcase' 'scs'</spec>
-    <type>boolean</type>
-    <default>on</default>
-    <description>
-        <p>
-            Override the <o>ignorecase</o> option if the pattern contains
-            uppercase characters.  This is only used if the <o>ignorecase</o>
-            option is set.
-        </p>
     </description>
 </item>
 
