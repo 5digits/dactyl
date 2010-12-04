@@ -12,11 +12,11 @@
 <!-- Initial revision: Sun Jun  8 10:07:05 UTC 2008 (penryu) -->
 <h1 tag="tutorial">Quick-start tutorial</h1>
 
-<html:p style="text-align: center">
+<note>
     This is a quickstart tutorial to help new users get up and running
     in &dactyl.appName;. It is not intended as a full reference explaining all
     features.
-</html:p>
+</note>
 
 <p>
     If you've started using &dactyl.appName; from scratch (i.e., without any
@@ -43,7 +43,7 @@
 <h2 tag="modal">&dactyl.appName;'s modal interface</h2>
 
 <p>
-    &dactyl.appName;'s power, like Vim's, comes from it's modal interface. Keys have
+    &dactyl.appName;'s power, like Vim's, comes from its modal interface. Keys have
     different meanings depending on which mode the browser is in. &dactyl.appName; has
     several modes, but the 2 most important are <em>Normal</em> mode and
     <em>Command-line</em> mode.
