@@ -80,15 +80,15 @@ const AutoCommands = Module("autocommands", {
                 </tr>
                 {
                     template.map(cmds, function ([event, items])
-                    <tr highlight="Title">
-                        <td colspan="2">{event}</td>
-                    </tr>
-                    +
+                        <tr highlight="Title">
+                            <td colspan="2">{event}</td>
+                        </tr>
+                        +
                         template.map(items, function (item)
-                        <tr>
-                            <td>&#xa0;{item.pattern.source}</td>
-                            <td>{item.command}</td>
-                        </tr>))
+                            <tr>
+                                <td>&#xa0;{item.pattern.source}</td>
+                                <td>{item.command}</td>
+                            </tr>))
                 }
             </table>);
     },

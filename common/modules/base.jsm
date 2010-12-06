@@ -833,7 +833,7 @@ function XPCOM(interfaces, superClass) {
 }
 
 /**
- * Constructs a mew Module class and instantiates an instance into the current
+ * Constructs a new Module class and instantiates an instance into the current
  * module global object.
  *
  * @param {string} name The name of the instance.

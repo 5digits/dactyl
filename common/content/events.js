@@ -701,7 +701,7 @@ const Events = Module("events", {
     // access to the real focus target
     // Huh? --djk
     onFocusChange: function onFocusChange(event) {
-        // command line has it's own focus change handler
+        // command line has its own focus change handler
         if (dactyl.mode == modes.COMMAND_LINE)
             return;
 
