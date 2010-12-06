@@ -60,8 +60,8 @@ syn keyword melodactylOption activate act altwildmode awim autocomplete au cdpat
     \ contained nextgroup=melodactylSetMod
 
 let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlsearch", "hls",
-    \ "ignorecase", "ic", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "online",
-    \ "showmode", "smd", "shuffle", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+    \ "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "online", "searchcase", "sc",
+    \ "showmode", "smd", "shuffle", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match melodactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=melodactylSetMod'

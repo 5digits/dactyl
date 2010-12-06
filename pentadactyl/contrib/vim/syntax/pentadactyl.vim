@@ -60,10 +60,9 @@ syn keyword pentadactylOption activate act altwildmode awim autocomplete au cdpa
     \ wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=pentadactylSetMod
 
-let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "flashblock", "fb", "fullscreen", "fs", "hlsearch",
-    \ "hls", "ignorecase", "ic", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more",
-    \ "online", "private", "pornmode", "showmode", "smd", "smartcase", "scs", "strictfocus", "sf", "usermode", "um", "visualbell",
-    \ "vb"]
+let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "flashblock", "fb", "fullscreen", "fs",
+    \ "hlsearch", "hls", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "online",
+    \ "private", "pornmode", "searchcase", "sc", "showmode", "smd", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match pentadactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=pentadactylSetMod'
