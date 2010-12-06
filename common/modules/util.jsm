@@ -836,6 +836,14 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         return RegExp(expr, flags);
     },
 
+    /**
+     * Given a RegExp, returns its source in the form showable to the user.
+     *
+     * @param {RegExp} re The regexp showable source of which is to be returned.
+     * @returns {string}
+     */
+    regexpSource: function regexpSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0),
+
     maxErrors: 15,
     errors: Class.memoize(function () []),
     reportError: function (error) {

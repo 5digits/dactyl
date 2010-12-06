@@ -86,7 +86,7 @@ const AutoCommands = Module("autocommands", {
                         +
                         template.map(items, function (item)
                             <tr>
-                                <td>&#xa0;{item.pattern.source}</td>
+                                <td>&#xa0;{util.regexpSource(item.pattern)}</td>
                                 <td>{item.command}</td>
                             </tr>))
                 }
@@ -114,7 +114,7 @@ const AutoCommands = Module("autocommands", {
         for (let [, autoCmd] in Iterator(autoCmds)) {
             if (autoCmd.pattern.test(url) ^ !autoCmd.pattern.result) {
                 if (!lastPattern || lastPattern.source != autoCmd.pattern.source)
-                    dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.pattern.source.quote(), 8);
+                    dactyl.echomsg("Executing " + event + " Auto commands for " + util.regexpSource(autoCmd.pattern).quote(), 8);
 
                 lastPattern = autoCmd.pattern;
                 dactyl.echomsg("autocommand " + autoCmd.command, 9);

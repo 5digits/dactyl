@@ -391,7 +391,7 @@ const Option = Class("Option", {
         re.toString = function () Option.unparseRegexp(this);
         return re;
     },
-    unparseRegexp: function (re) re.bang + Option.quote(re.source.replace(/\\(.)/g, function (m, n1) n1 == "/" ? n1 : m), /^!|:/) +
+    unparseRegexp: function (re) re.bang + Option.quote(util.regexpSource(re), /^!|:/) +
         (typeof re.result === "boolean" ? "" : ":" + Option.quote(re.result)),
 
     getKey: {
