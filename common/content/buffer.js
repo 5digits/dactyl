@@ -190,19 +190,22 @@ const Buffer = Module("buffer", {
     // event listener which is is called on each page load, even if the
     // page is loaded in a background tab
     onPageLoad: function onPageLoad(event) {
-        if (event.originalTarget instanceof Document)
-            if (/^dactyl:/.test(event.originalTarget.location.href)) {
+        let doc = event.originalTarget;
+        if (doc instanceof Document) {
+            if (doc.location.protocol === "dactyl:") {
                 dactyl.initHelp();
                 config.styleHelp();
+                // Workaround for bugs 591425 and 606877, dactyl bug #81
+                config.browser.getBrowserForDocument(doc).collapsed = false;
             }
-
-        if (event.originalTarget instanceof HTMLDocument) {
-            let doc = event.originalTarget;
 
             // mark the buffer as loaded, we can't use buffer.loaded
             // since that always refers to the current buffer, while doc can be
             // any buffer, even in a background tab
             doc.pageIsFullyLoaded = 1;
+        }
+
+        if (doc instanceof HTMLDocument) {
 
             if (doc.defaultView.frameElement) {
                 // document is part of a frameset
@@ -285,6 +288,12 @@ const Buffer = Module("buffer", {
             statusline.updateProgress();
             for (let frame in values(buffer.allFrames()))
                 frame.dactylFocusAllowed = false;
+
+            let browser = config.browser.mCurrentBrowser;
+            let uri = browser.registeredOpenURI || browser.lastURI;
+            if (uri.scheme === "dactyl" && !(browser.contentDocument || {}).pageIsFullyLoaded)
+                // Workaround for bugs 591425 and 606877, dactyl bug #81
+                browser.collapsed = true;
 
             util.timeout(function () {
                 autocommands.trigger("LocationChange", { url: buffer.URL });
@@ -1147,9 +1156,12 @@ const Buffer = Module("buffer", {
             return elem;
         }
 
-        var elem = buffer.focusedFrame.document.activeElement;
-        if (elem == elem.ownerDocument.body)
-            elem = null;
+        try {
+            var elem = buffer.focusedFrame.document.activeElement;
+            if (elem == elem.ownerDocument.body)
+                elem = null;
+        }
+        catch (e) {}
 
         let sel = buffer.focusedFrame.getSelection();
         if (!elem && sel && sel.rangeCount)
