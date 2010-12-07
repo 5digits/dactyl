@@ -624,8 +624,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     ["prompt",  "Always prompt for a lifetime"],
                     ["session", "The current session"]
                 ],
-                getter: function () (this.completer()[prefs.get(this.PREF)]
-                        || [prefs.get(this.PREF_DAYS)])[0],
+                getter: function () (this.completer()[prefs.get(this.PREF)] || [prefs.get(this.PREF_DAYS)])[0],
                 setter: function (value) {
                     let val = this.completer().map(function (i) i[0]).indexOf(value);
                     if (val > -1)

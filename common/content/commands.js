@@ -614,9 +614,8 @@ const Commands = Module("commands", {
      *     any of the command's names.
      * @returns {Command}
      */
-    get: function (name, full) {
-        return this._exMap[name] || !full && this._exCommands.filter(function (cmd) cmd.hasName(name))[0] || null;
-    },
+    get: function (name, full)
+        this._exMap[name] || !full && array.nth(this._exCommands, function (cmd) cmd.hasName(name), 0) || null,
 
     /**
      * Returns the user-defined command with matching *name*.
@@ -625,9 +624,8 @@ const Commands = Module("commands", {
      *     any of the command's names.
      * @returns {Command}
      */
-    getUserCommand: function (name) {
-        return this._exCommands.filter(function (cmd) cmd.user && cmd.hasName(name))[0] || null;
-    },
+    getUserCommand: function (name)
+        array.nth(this._exCommands, function (cmd) cmd.user && cmd.hasName(name), 0) || null,
 
     /**
      * Returns all user-defined commands.

@@ -432,7 +432,7 @@ const Tabs = Module("tabs", {
         if (matches)
             return tabs.select(this.allTabs[parseInt(matches[1], 10) - 1], false);
 
-        matches = array.first(tabs.allTabs, function (t) t.linkedBrowser.lastURI.spec === buffer);
+        matches = array.nth(tabs.allTabs, function (t) t.linkedBrowser.lastURI.spec === buffer, 0);
         if (matches)
             return tabs.select(matches, false);
 

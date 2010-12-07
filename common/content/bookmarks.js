@@ -188,7 +188,7 @@ const Bookmarks = Module("bookmarks", {
      * @returns {nsISearchEngine} The search engine.
      */
     getSearchEngine: function getSearchEngine(alias)
-        this.searchEngines.filter(function (e) e.keyword === alias)[0],
+        array.nth(this.searchEngines, function (e) e.keyword === alias, 0),
 
     getSearchEngines: deprecated("Please use bookmarks.searchEngines instead", function getSearchEngines() this.searchEngines),
     /**
