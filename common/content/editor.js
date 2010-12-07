@@ -11,8 +11,8 @@
 
 /** @instance editor */
 const Editor = Module("editor", {
-    get isCaret() modes.getStack(1).main === modes.CARET,
-    get isTextEdit() modes.getStack(1).main === modes.TEXT_EDIT,
+    get isCaret() modes.getStack(1).main == modes.CARET,
+    get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
 
     unselectText: function (toEnd) {
         try {

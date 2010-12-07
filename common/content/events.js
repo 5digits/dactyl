@@ -738,7 +738,7 @@ const Events = Module("events", {
             if (elem instanceof HTMLTextAreaElement || (elem && util.computedStyle(elem).MozUserModify == "read-write")
                || elem == null && win && Editor.getEditor(win)) {
 
-                if (modes.main === modes.VISUAL && elem.selectionEnd == elem.selectionStart)
+                if (modes.main == modes.VISUAL && elem.selectionEnd == elem.selectionStart)
                     modes.pop();
 
                 if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
@@ -764,7 +764,7 @@ const Events = Module("events", {
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
                 util.threadYield(true);
 
-            while (modes.getMode(modes.main).ownsFocus)
+            while (modes.main.ownsFocus)
                  modes.pop();
         }
         finally {
@@ -938,7 +938,7 @@ const Events = Module("events", {
                 }
                 else {
                     // Hack.
-                    if (map.name == "<C-v>" && main === modes.QUOTE)
+                    if (map.name == "<C-v>" && main == modes.QUOTE)
                         stop = false;
                     else {
                         if (modes.isReplaying && !this.waitForPageLoad())
@@ -969,11 +969,11 @@ const Events = Module("events", {
                 this._input.motionCount = null;
 
                 if (!isEscape(key)) {
-                    stop = (mode.main === modes.TEXT_EDIT);
+                    stop = (mode.main == modes.TEXT_EDIT);
                     if (stop)
                         dactyl.beep();
 
-                    if (mode.main === modes.COMMAND_LINE)
+                    if (mode.main == modes.COMMAND_LINE)
                         if (!(mode.extended & modes.INPUT_MULTILINE))
                             dactyl.trapErrors(commandline.onEvent, commandline, event);
                 }
@@ -993,7 +993,7 @@ const Events = Module("events", {
             // This is a stupid, silly, and revolting hack.
             if (isEscape(key))
                 this.onEscape();
-            if (main === modes.QUOTE)
+            if (main == modes.QUOTE)
                 modes.push(main);
         }
     },
@@ -1007,8 +1007,8 @@ const Events = Module("events", {
             (!dactyl.focus || Events.isContentNode(dactyl.focus)) &&
             options.get("passkeys").has(events.toString(event));
 
-        if (modes.main === modes.PASS_THROUGH ||
-            modes.main === modes.QUOTE
+        if (modes.main == modes.PASS_THROUGH ||
+            modes.main == modes.QUOTE
                 && modes.getStack(1).main !== modes.PASS_THROUGH
                 && !shouldPass() ||
             !modes.passThrough && shouldPass())
@@ -1048,7 +1048,7 @@ const Events = Module("events", {
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
         let couldCopy = controller && controller.isCommandEnabled("cmd_copy");
 
-        if (dactyl.mode === modes.VISUAL) {
+        if (dactyl.mode == modes.VISUAL) {
             if (!couldCopy)
                 modes.pop(); // Really not ideal.
         }

@@ -94,7 +94,7 @@ const Modes = Module("modes", {
                 statusline.updateUrl();
                 if (prev.mainMode.input || prev.mainMode.ownsFocus)
                     dactyl.focusContent(true);
-                if (prev.main === modes.NORMAL) {
+                if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);
                     // clear any selection made
                     let selection = window.content.getSelection();
@@ -141,7 +141,7 @@ const Modes = Module("modes", {
 
     addMode: function (name, extended, options, params) {
         let disp = name.replace("_", " ", "g");
-        this[name] = 1 << this._lastMode++;
+        let mode = this[name] = new Number(1 << this._lastMode++);
 
         if (typeof extended == "object") {
             params = options;
@@ -149,7 +149,7 @@ const Modes = Module("modes", {
             extended = false;
         }
 
-        let mode = util.extend({
+        util.extend(mode, {
             count: true,
             disp: disp,
             extended: extended,
@@ -221,9 +221,9 @@ const Modes = Module("modes", {
 
         let oldMain = this._main, oldExtended = this._extended;
 
-        if (typeof extendedMode === "number")
+        if (extendedMode != null)
             this._extended = extendedMode;
-        if (typeof mainMode === "number") {
+        if (mainMode != null) {
             this._main = mainMode;
             if (!extendedMode)
                 this._extended = this.NONE;
@@ -265,9 +265,9 @@ const Modes = Module("modes", {
     },
 
     onCaretChange: function onPrefChange(value) {
-        if (!value && modes.main === modes.CARET)
+        if (!value && modes.main == modes.CARET)
             modes.pop();
-        if (value && modes.main === modes.NORMAL)
+        if (value && modes.main == modes.NORMAL)
             modes.push(modes.CARET);
     },
 
@@ -325,7 +325,7 @@ const Modes = Module("modes", {
         let struct = Struct("main", "extended", "params", "saved");
         struct.prototype.__defineGetter__("mainMode", function () modes.getMode(this.main));
         struct.prototype.toString = function () !loaded.modes ? this.main : "[mode " +
-            modes.getMode(this.main).name +
+            this.mainMode.name +
             (!this.extended ? "" :
              "(" +
               [modes.getMode(1 << i).name for (i in util.range(0, 32)) if (this.extended & (1 << i))].join("|") +
