@@ -1072,6 +1072,17 @@ const array = Class("array", Array, {
         ary1.length === ary2.length && Array.every(ary1, function (e, i) e === ary2[i]),
 
     /**
+     * Returns the first member of the given array that matches the
+     * given predicate.
+     */
+    first: function first(ary, pred, self) {
+        for (let elem in values(ary))
+            if (pred.call(self, elem))
+                return elem;
+        return undefined;
+    },
+
+    /**
      * Flattens an array, such that all elements of the array are
      * joined into a single array:
      *    [["foo", ["bar"]], ["baz"], "quux"] -> ["foo", ["bar"], "baz", "quux"]

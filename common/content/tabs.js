@@ -411,9 +411,6 @@ const Tabs = Module("tabs", {
      */
     // FIXME: help!
     switchTo: function (buffer, allowNonUnique, count, reverse) {
-        if (buffer == "")
-            return;
-
         if (buffer != null) {
             // store this command, so it can be repeated with "B"
             this._lastBufferSwitchArgs = buffer;
@@ -425,33 +422,21 @@ const Tabs = Module("tabs", {
                 allowNonUnique = this._lastBufferSwitchSpecial;
         }
 
-        if (buffer == "#") {
-            tabs.selectAlternateTab();
-            return;
-        }
+        if (buffer == "#")
+            return tabs.selectAlternateTab();
 
         count = Math.max(1, count || 1);
         reverse = Boolean(reverse);
 
         let matches = buffer.match(/^(\d+):?/);
-        if (matches) {
-            tabs.select(this.allTabs[parseInt(matches[1], 10) - 1], false);
-            return;
-        }
+        if (matches)
+            return tabs.select(this.allTabs[parseInt(matches[1], 10) - 1], false);
 
-        matches = [];
-        let lowerBuffer = buffer.toLowerCase();
-        let first = tabs.index() + (reverse ? 0 : 1);
-        let allTabs = tabs.allTabs;
-        for (let [i, ] in Iterator(tabs.allTabs)) {
-            let tab = allTabs[(i + first) % allTabs.length];
-            let url = tab.linkedBrowser.contentDocument.location.href;
-            if (url == buffer)
-                return tabs.select(index, false);
+        matches = array.first(tabs.allTabs, function (t) t.linkedBrowser.lastURI.spec === buffer);
+        if (matches)
+            return tabs.select(matches, false);
 
-            if (url.indexOf(buffer) >= 0 || tab.label.toLowerCase().indexOf(lowerBuffer) >= 0)
-                matches.push(tab);
-        }
+        matches = completion.runCompleter("buffer", buffer);
 
         if (matches.length == 0)
             dactyl.echoerr("E94: No matching buffer for " + buffer);
@@ -461,7 +446,7 @@ const Tabs = Module("tabs", {
             let index = (count - 1) % matches.length;
             if (reverse)
                 index = matches.length - count;
-            tabs.select(matches[index], false);
+            tabs.select(matches[index].id, false);
         }
     },
 
@@ -662,25 +647,9 @@ const Tabs = Module("tabs", {
             { argCount: "0" });
 
         if (config.hasTabbrowser) {
-            // TODO: "Zero count" if 0 specified as arg, multiple args and count ranges?
             commands.add(["b[uffer]"],
                 "Switch to a buffer",
-                function (args) {
-                    let special = args.bang;
-                    let count   = args.count;
-                    let arg     = args[0];
-
-                    // if a numeric arg is specified any count is ignored; if a
-                    // count and non-numeric arg are both specified then E488
-                    if (arg && count > 0) {
-                        dactyl.assert(/^\d+$/.test(arg), "E488: Trailing characters");
-                        tabs.switchTo(arg, special);
-                    }
-                    else if (count > 0)
-                        tabs.switchTo(count.toString(), special);
-                    else
-                        tabs.switchTo(arg, special);
-                }, {
+                function (args) { tabs.switchTo(args[0], args.bang, args.count); }, {
                     argCount: "?",
                     bang: true,
                     count: true,

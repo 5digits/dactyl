@@ -1177,7 +1177,7 @@ const Commands = Module("commands", {
                 return;
             }
 
-            [prefix] = args.commandString.match(/^(?:\w*[\s!])?\s*/);
+            [, prefix] = args.commandString.match(/^[\s\d]*((?:\w*[\s!])?\s*)/);
             let cmdContext = context.fork(command.name, prefix.length);
             try {
                 if (!cmdContext.waitingForTab) {
