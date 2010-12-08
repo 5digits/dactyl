@@ -134,6 +134,9 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     compareIgnoreCase: function compareIgnoreCase(a, b) String.localeCompare(a.toLowerCase(), b.toLowerCase()),
 
+    compileFormat: function compileFormat(format) {
+    },
+
     /**
      * Returns an object representing a Node's computed CSS style.
      *

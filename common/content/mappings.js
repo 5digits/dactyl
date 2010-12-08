@@ -354,11 +354,8 @@ const Mappings = Module("mappings", {
 }, {
     commands: function () {
         function addMapCommands(ch, mapmodes, modeDescription) {
-            // 0 args -> list all maps
-            // 1 arg  -> list the maps starting with args
-            // 2 args -> map arg1 to arg*
-            function map(args, mapmodes, noremap) {
-                mapmodes = getModes(args);
+            function map(args, noremap) {
+                let mapmodes = array.uniq(args["-modes"].map(findMode));
                 if (!args.length) {
                     mappings.list(mapmodes);
                     return;
@@ -386,23 +383,14 @@ const Mappings = Module("mappings", {
 
             modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";
 
-            // :map, :noremap => NORMAL + VISUAL modes
-            function isMultiMode(map, cmd) {
-                return map.modes.indexOf(modules.modes.NORMAL) >= 0
-                    && map.modes.indexOf(modules.modes.VISUAL) >= 0
-                    && /^[nv](nore)?map$/.test(cmd);
-            }
-
             function findMode(name) {
-                if (typeof name == "number")
+                if (isinstance(name, Number))
                     return name;
                 for (let mode in modes.mainModes)
                     if (name == mode.char || name == mode.name.toLowerCase())
                         return mode.mask;
                 return null;
             }
-            function getModes(args)
-                array.uniq(args["-modes"].map(findMode));
             function uniqueModes(modes) {
                 modes = modes.map(modules.modes.closure.getMode);
                 let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
@@ -492,12 +480,12 @@ const Mappings = Module("mappings", {
 
             commands.add([ch ? ch + "m[ap]" : "map"],
                 "Map a key sequence" + modeDescription,
-                function (args) { map(args, mapmodes, false); },
+                function (args) { map(args, false); },
                 opts);
 
             commands.add([ch + "no[remap]"],
                 "Map a key sequence without remapping keys" + modeDescription,
-                function (args) { map(args, mapmodes, true); },
+                function (args) { map(args, true); },
                 opts);
 
             commands.add([ch + "mapc[lear]"],
