@@ -964,33 +964,31 @@ const Buffer = Module("buffer", {
         let doc = buffer.focusedFrame.document;
 
         if (isArray(url)) {
-            let chrome = "chrome://global/content/viewSource.xul";
-            window.openDialog(chrome, "_blank", "all,dialog=no",
-                              url[0], null, null, url[1]);
-            /* FIXME
-            let win = dactyl.open(chrome)[0];
-            while (win.document.documentURI != chrome)
-                util.threadYield(false, true);
-            win.arguments = [url[0], null, null, url[1]];
-            */
-            return;
+            if (options.get("editor").has("l"))
+                this.viewSourceExternally(url[0] || doc, url[1]);
+            else {
+                let chrome = "chrome://global/content/viewSource.xul";
+                window.openDialog(chrome, "_blank", "all,dialog=no",
+                                  url[0], null, null, url[1]);
+            }
         }
-
-        if (useExternalEditor)
-            this.viewSourceExternally(url || doc);
         else {
-            url = url || doc.location.href;
-            const PREFIX = "view-source:";
-            if (url.indexOf(PREFIX) == 0)
-                url = url.substr(PREFIX.length);
-            else
-                url = PREFIX + url;
+            if (useExternalEditor)
+                this.viewSourceExternally(url || doc);
+            else {
+                url = url || doc.location.href;
+                const PREFIX = "view-source:";
+                if (url.indexOf(PREFIX) == 0)
+                    url = url.substr(PREFIX.length);
+                else
+                    url = PREFIX + url;
 
-            let sh = history.session;
-            if (sh[sh.index].URI.spec == url)
-                window.getWebNavigation().gotoIndex(sh.index);
-            else
-                dactyl.open(url, { hide: true });
+                let sh = history.session;
+                if (sh[sh.index].URI.spec == url)
+                    window.getWebNavigation().gotoIndex(sh.index);
+                else
+                    dactyl.open(url, { hide: true });
+            }
         }
     },
 
@@ -1011,8 +1009,8 @@ const Buffer = Module("buffer", {
     viewSourceExternally: Class("viewSourceExternally",
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function (doc, callback) {
-            this.callback = callback ||
-                function (file) editor.editFileExternally(file.path);
+            this.callback = callable(callback) ? callback :
+                function (file) editor.editFileExternally(file.path, callback);
 
             let url = isString(doc) ? doc : doc.location.href;
             let uri = util.newURI(url, charset);

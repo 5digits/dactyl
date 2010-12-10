@@ -241,13 +241,11 @@ const Editor = Module("editor", {
         return -1;
     },
 
-    editFileExternally: function (path) {
-        // TODO: save return value in v:shell_error
-        let args = commands.parseArgs(options["editor"], { argCount: "*", allowUnknownOptions: true });
+    editFileExternally: function (path, line, column) {
+        let args = options.get("editor").format({ f: path, l: line, c: column });
 
         dactyl.assert(args.length >= 1, "No editor specified");
 
-        args.push(path);
         io.run(io.expandPath(args.shift()), args, true);
     },
 
@@ -257,6 +255,7 @@ const Editor = Module("editor", {
             return;
 
         let textBox = config.isComposeWindow ? null : dactyl.focus;
+        let line, column;
 
         if (!forceEditing && textBox && textBox.type == "password") {
             commandline.input("Editing a password field externally will reveal the password. Would you like to continue? (yes/[no]): ",
@@ -267,8 +266,12 @@ const Editor = Module("editor", {
                 return;
         }
 
-        if (textBox)
+        if (textBox) {
             var text = textBox.value;
+            let pre = text.substr(0, textBox.selectionStart);
+            line = 1 + pre.replace(/[^\n]/g, "").length;
+            column = 1 + pre.replace(/[^]*\n/, "").length;
+        }
         else {
             var editor = window.GetCurrentEditor ? GetCurrentEditor()
                                                  : Editor.getEditor(document.commandDispatcher.focusedWindow);
@@ -310,7 +313,7 @@ const Editor = Module("editor", {
                 timer.initWithCallback({ notify: update }, 100, timer.TYPE_REPEATING_SLACK);
 
                 try {
-                    this.editFileExternally(tmpfile.path);
+                    this.editFileExternally(tmpfile.path, line, column);
                 }
                 finally {
                     timer.cancel();
@@ -770,7 +773,21 @@ const Editor = Module("editor", {
     options: function () {
         options.add(["editor"],
             "Set the external text editor",
-            "string", "gvim -f");
+            "string", "gvim -f +%l %f", {
+                format: function (obj, value) {
+                    let args = commands.parseArgs(value || this.value, { argCount: "*", allowUnknownOptions: true })
+                                       .map(util.compileFormat).filter(function (fmt) fmt.valid(obj))
+                                       .map(function (fmt) fmt(obj));
+                    if (obj["f"] && !this.has("f"))
+                        args.push(obj["f"]);
+                    return args;
+                },
+                has: function (key) set.has(util.compileFormat(this.value).seen, key),
+                validator: function (value) {
+                    this.format({}, value);
+                    return Object.keys(util.compileFormat(value).seen).every(function (k) "cfl".indexOf(k) >= 0)
+                }
+            });
 
         options.add(["insertmode", "im"],
             "Use Insert mode as the default for text areas",

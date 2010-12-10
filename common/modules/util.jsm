@@ -182,10 +182,10 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                 stack.top.elements.push(update(
                     function (obj) obj[char] != null ? quote(obj, char) : "",
                     { test: function (obj) obj[char] != null }));
-            }
 
-            for (let elem in array.iterValues(stack))
-                elem.seen[char] = true;
+                for (let elem in array.iterValues(stack))
+                    elem.seen[char] = true;
+            }
         }
         if (end < format.length)
             stack.top.elements.push(format.substr(end));
