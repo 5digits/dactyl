@@ -1096,17 +1096,16 @@ const Dactyl = Module("dactyl", {
         let save = ["forceNewTab", "forceNewWindow"];
         let saved = save.map(function (p) dactyl[p]);
         return function wrappedCallback() {
-            let vals = save.map(function (p) dactyl[p]);
-            saved.forEach(function (p, i) dactyl[save[i]] = p);
-            try {
-                return callback.apply(self, arguments);
-            }
-            catch (e) {
-                dactyl.reportError(e, true);
-            }
-            finally {
-                vals.forEach(function (p, i) dactyl[save[i]] = p);
-            }
+            let args = arguments;
+            return dactyl.withSavedValues(save, function () {
+                saved.forEach(function (p, i) dactyl[save[i]] = p);
+                try {
+                    return callback.apply(self, args);
+                }
+                catch (e) {
+                    dactyl.reportError(e, true);
+                }
+            });
         }
     },
 
@@ -1546,7 +1545,7 @@ const Dactyl = Module("dactyl", {
                 else if (file.isReadable() && file.isFile())
                     AddonManager.getInstallForFile(file, install, "application/x-xpinstall");
                 else if (file.isDirectory())
-                    dactyl.echomsg("Cannot install a directory: " + file.path.quote(), 0);
+                    dactyl.echoerr("Cannot install a directory: " + file.path.quote());
                 else
                     dactyl.echoerr("E484: Can't open file " + file.path);
             }, {
