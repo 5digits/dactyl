@@ -57,11 +57,10 @@ const Bookmarks = Module("bookmarks", {
         try {
             let uri = util.createURI(url);
             if (!force && this.isBookmarked(uri.spec))
-                for (let bmark in bookmarkcache)
+                for (var bmark in bookmarkcache)
                     if (bmark.url == uri.spec) {
-                        var id = bmark.id;
                         if (title)
-                            services.bookmarks.setItemTitle(id, title);
+                            bmark.title = title;
                         break;
                     }
 
@@ -69,17 +68,18 @@ const Bookmarks = Module("bookmarks", {
                 PlacesUtils.tagging.untagURI(uri, null);
                 PlacesUtils.tagging.tagURI(uri, tags);
             }
-            if (id == undefined)
-                id = services.bookmarks.insertBookmark(
+            if (bmark == undefined)
+                bmark = bookmarkcache.bookmarks[
+                    services.bookmarks.insertBookmark(
                          services.bookmarks[unfiled ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
-                         uri, -1, title || url);
-            if (!id)
+                         uri, -1, title || url)];
+            if (!bmark)
                 return false;
 
             if (post !== undefined)
-                PlacesUtils.setPostDataForBookmark(id, post);
+                bmark.post = post;
             if (keyword)
-                services.bookmarks.setKeywordForBookmark(id, keyword);
+                bmark.keyword = keyword;
         }
         catch (e) {
             dactyl.log(e, 0);

@@ -18,7 +18,7 @@ const namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
 
 const Sheet = Struct("name", "id", "sites", "css", "system", "agent");
 Sheet.liveProperty = function (name) {
-    let i = this.prototype.members.indexOf(name);
+    let i = this.prototype.members[name];
     this.prototype.__defineGetter__(name, function () this[i]);
     this.prototype.__defineSetter__(name, function (val) {
         this[i] = val;

@@ -527,9 +527,8 @@ const CompletionContext = Class("CompletionContext", {
                 // A simple binary search to find the longest substring
                 // of the given string which also matches the current
                 // item's text.
-                var m, len = substring.length;
-                var n = substring.length;
-                var i = 0;
+                let len = substring.length;
+                let i = 0, m, n = len;
                 while (n) {
                     m = Math.floor(n / 2);
                     let keep = compare(fixCase(item.text), substring.substring(0, i + m));

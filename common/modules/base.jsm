@@ -887,7 +887,7 @@ function Struct() {
     let args = Array.slice(arguments);
     const Struct = Class("Struct", StructBase, {
         length: args.length,
-        members: args
+        members: array.toObject(args.map(function (v, k) [v, k]))
     });
     args.forEach(function (name, i) {
         Struct.prototype.__defineGetter__(name, function () this[i]);
@@ -909,7 +909,7 @@ let StructBase = Class("StructBase", Array, {
     // Iterator over our named members
     __iterator__: function () {
         let self = this;
-        return ([k, self[k]] for (k in values(self.members)))
+        return ([k, self[k]] for (k in keys(self.members)))
     }
 }, {
     fromArray: function (ary) {
@@ -928,7 +928,7 @@ let StructBase = Class("StructBase", Array, {
      *     the default value.
      */
     defaultValue: function (key, val) {
-        let i = this.prototype.members.indexOf(key);
+        let i = this.prototype.members[key];
         this.prototype.__defineGetter__(i, function () (this[i] = val.call(this)));
         this.prototype.__defineSetter__(i, function (value)
             Class.replaceProperty(this, i, value));

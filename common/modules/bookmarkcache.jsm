@@ -13,10 +13,25 @@ defineModule("bookmarkcache", {
 const Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "id");
 const Keyword = Struct("keyword", "title", "icon", "url");
 Bookmark.defaultValue("icon", function () BookmarkCache.getFavicon(this.url));
+Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
 Bookmark.prototype.__defineGetter__("extra", function () [
                         ["keyword", this.keyword,         "Keyword"],
                         ["tags",    this.tags.join(", "), "Tag"]
                     ].filter(function (item) item[1]));
+Bookmark.setter("url", function (val) {
+    let tags = this.tags;
+    this.tags = null;
+    services.bookmarks.changeBookmarkURI(this.id, val);
+    this.tags = tags;
+});
+Bookmark.setter("title", function (val) { services.bookmarks.setItemTitle(this.id, val); });
+Bookmark.setter("post", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.POST, val); });
+Bookmark.setter("keyword", function (val) { services.bookmarks.setKeywordForBookmark(this.id, val); });
+Bookmark.setter("tags", function (val) {
+    services.tagging.untagURI(this.uri, null);
+    if (val)
+        services.tagging.tagURI(this.uri, val);
+});
 
 const name = "bookmark-cache";
 
@@ -50,6 +65,13 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
         let tags = services.tagging.getTagsForURI(uri, {}) || [];
         let post = BookmarkCache.getAnnotation(node.itemId, this.POST);
         return Bookmark(node.uri, node.title, node.icon && node.icon.spec, post, keyword, tags, node.itemId);
+    },
+
+    annotate: function (id, key, val) {
+        if (val)
+            services.annotation.setItemAnnotation(id, key, val, 0, services.annotation.EXPIRE_NEVER);
+        else if (services.annotation.itemHasAnnotation(id, key))
+            services.annotation.removeItemAnnotation(id, key);
     },
 
     get: function (url) {
@@ -142,7 +164,7 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
             if (property == "tags")
                 value = services.tagging.getTagsForURI(util.newURI(bookmark.url), {});
             if (property in bookmark) {
-                bookmark[property] = value;
+                bookmark[bookmark.members[property]] = value;
                 storage.fireEvent(name, "change", { __proto__: bookmark, changed: property });
             }
         }

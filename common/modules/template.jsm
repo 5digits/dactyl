@@ -11,14 +11,17 @@ defineModule("template", {
 });
 
 default xml namespace = XHTML;
-XML.ignoreWhiteSpace = true;
-XML.prettyPrinting = false;
+function fixXML() {
+    XML.ignoreWhiteSpace = false;
+    XML.prettyPrinting = false;
+}
 
 const Template = Module("Template", {
     add: function add(a, b) a + b,
     join: function join(c) function (a, b) a + c + b,
 
     map: function map(iter, func, sep, interruptable) {
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         if (iter.length) // FIXME: Kludge?
             iter = array.iterValues(iter);
         let ret = <></>;
@@ -78,6 +81,7 @@ const Template = Module("Template", {
             var desc = this.processor[1].call(this, item, item.description);
         }
 
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // <e4x>
         return <div highlight={highlightGroup || "CompItem"} style="white-space: nowrap">
                    <!-- The non-breaking spaces prevent empty elements
@@ -108,6 +112,7 @@ const Template = Module("Template", {
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n
     highlight: function highlight(arg, processStrings, clip) {
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // some objects like window.JSON or getBrowsers()._browsers need the try/catch
         try {
             let str = clip ? util.clip(String(arg), clip) : String(arg);
@@ -173,6 +178,7 @@ const Template = Module("Template", {
     },
 
     highlightSubstrings: function highlightSubstrings(str, iter, highlight) {
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         if (typeof str == "xml")
             return str;
         if (str == "")
@@ -205,6 +211,7 @@ const Template = Module("Template", {
     </>,
 
     jumps: function jumps(index, elems) {
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // <e4x>
         return <table>
                 <tr style="text-align: left;" highlight="Title">
@@ -224,6 +231,7 @@ const Template = Module("Template", {
     },
 
     options: function options(title, opts) {
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // <e4x>
         return <table>
                 <tr highlight="Title" align="left">
@@ -255,6 +263,7 @@ const Template = Module("Template", {
             }
         }
 
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         return <a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
             href={url} line={frame.lineNumber}
             highlight="URL">{
@@ -263,8 +272,8 @@ const Template = Module("Template", {
     },
 
     table: function table(title, data, indent) {
-        let table =
-        // <e4x>
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        let table = // <e4x>
             <table>
                 <tr highlight="Title" align="left">
                     <th colspan="2">{title}</th>
@@ -285,6 +294,7 @@ const Template = Module("Template", {
 
     tabular: function tabular(headings, style, iter) {
         // TODO: This might be mind-bogglingly slow. We'll see.
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // <e4x>
         return <table>
                 <tr highlight="Title" align="left">
@@ -307,6 +317,7 @@ const Template = Module("Template", {
     },
 
     usage: function usage(iter) {
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // <e4x>
         return <table>
             {
@@ -314,10 +325,9 @@ const Template = Module("Template", {
                 <tr>
                     <td style="padding-right: 20px" highlight="Usage">{
                         let (name = item.name || item.names[0], frame = item.definedAt)
-                            !frame ? name : <>
-                                <span highlight="Title">{name}</span>&#xa0;
-                                <span highlight="LineInfo">Defined at&#xa0;{template.sourceLink(frame)}</span>
-                            </>
+                            !frame ? name :
+                                <span highlight="Title">{name}</span> + <> </> +
+                                <span highlight="LineInfo">Defined at {template.sourceLink(frame)}</span>
                     }</td>
                     <td>{item.description}</td>
                 </tr>)
