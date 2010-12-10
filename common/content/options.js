@@ -892,13 +892,15 @@ const Options = Module("options", {
                     if (opt.all)
                         options.list(opt.onlyNonDefault, opt.scope);
                     else {
+                        XML.prettyPrinting = false;
+                        XML.ignoreWhitespace = false;
                         if (option.type == "boolean")
                             var msg = (opt.optionValue ? "  " : "no") + option.name;
                         else
                             msg = "  " + option.name + "=" + opt.option.stringify(opt.optionValue);
 
                         if (options["verbose"] > 0 && option.setFrom)
-                            msg += "\n        Last set from " + option.setFrom;
+                            msg = <>{msg}<br/>        Last set from {template.sourceLink(option.setFrom)}</>;
 
                         dactyl.echo(<span highlight="CmdOutput Message">{msg}</span>);
                     }
@@ -918,7 +920,7 @@ const Options = Module("options", {
                     }
                     if (res)
                         dactyl.echoerr(res);
-                    option.setFrom = modifiers.setFrom || null;
+                    option.setFrom = commands.getCaller(null);
                 }
             }
         }

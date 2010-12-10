@@ -561,7 +561,7 @@ const Commands = Module("commands", {
             sourcing = sourcing || { file: "[Command Line]", line: 1 };
             this.sourcing = update({}, sourcing);
 
-            args = update({ setFrom: this.sourcing.file }, args || {});
+            args = update({}, args || {});
 
             if (tokens)
                 string = commands.replaceTokens(string, tokens);
