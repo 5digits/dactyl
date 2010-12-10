@@ -1779,8 +1779,6 @@ const ItemList = Class("ItemList", {
         this._doc.body.appendChild(this._doc.createTextNode(""));
         this._doc.body.style.borderTop = "1px solid black"; // FIXME: For cases where completions/MOW are shown at once, or ls=0. Should use :highlight.
 
-        this._gradient = template.gradient("GradientLeft", "GradientRight");
-
         this._items = null;
         this._startIndex = -1; // The index of the first displayed item
         this._endIndex = -1;   // The index one *after* the last displayed item
@@ -1839,7 +1837,7 @@ const ItemList = Class("ItemList", {
                     <div highlight="Completions">
                         { context.createRow(context.title || [], "CompTitle") }
                     </div>
-                    { this._gradient }
+                    <div highlight="CompTitleSep"/>
                     <div key="message" highlight="CompMsg"/>
                     <div key="up" highlight="CompLess"/>
                     <div key="items" highlight="Completions"/>

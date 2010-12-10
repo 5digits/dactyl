@@ -207,6 +207,7 @@ const ConfigBase = Class(ModuleBase, {
         CompGroup:not(:first-of-type)  margin-top: .5em;
         CompTitle            color: magenta; background: white; font-weight: bold;
         CompTitle>*          padding: 0 .5ex;
+        CompTitleSep         height: 1px; background: magenta; background: -moz-linear-gradient(60deg, magenta, white);
         CompMsg              font-style: italic; margin-left: 16px;
         CompItem
         CompItem:nth-child(2n+1)    background: rgba(0, 0, 0, .04);
@@ -221,10 +222,6 @@ const ConfigBase = Class(ModuleBase, {
         CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
         CompMore::after      content: "⌄";
         CompGroup:last-of-type  padding-bottom: 1.5ex;
-
-        Gradient        height: 1px; margin-bottom: -1px; margin-top: -1px;
-        GradientLeft    background-color: magenta;
-        GradientRight   background-color: white;
 
         Indicator   color: blue; width: 1.5em; text-align: center;
         Filter      font-weight: bold;
