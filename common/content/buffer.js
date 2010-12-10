@@ -933,22 +933,16 @@ const Buffer = Module("buffer", {
      * range.
      */
     viewSelectionSource: function () {
-        // copied (and tuned somebit) from browser.jar -> nsContextMenu.js
-        let focusedWindow = document.commandDispatcher.focusedWindow;
-        if (focusedWindow == window)
-            focusedWindow = buffer.focusedFrame;
+        // copied (and tuned somewhat) from browser.jar -> nsContextMenu.js
+        let win = document.commandDispatcher.focusedWindow;
+        if (win == window)
+            win = buffer.focusedFrame;
 
-        let docCharset = null;
-        if (focusedWindow)
-            docCharset = "charset=" + focusedWindow.document.characterSet;
+        let charset = win ? "charset=" + win.document.characterSet : null;
 
-        let reference = null;
-        reference = focusedWindow.getSelection();
-
-        let docUrl = null;
         window.openDialog("chrome://global/content/viewPartialSource.xul",
-                "_blank", "scrollbars,resizable,chrome,dialog=no",
-                docUrl, docCharset, reference, "selection");
+                          "_blank", "scrollbars,resizable,chrome,dialog=no",
+                          null, charset, win.getSelection(), "selection");
     },
 
     /**
@@ -966,11 +960,10 @@ const Buffer = Module("buffer", {
         if (isArray(url)) {
             if (options.get("editor").has("l"))
                 this.viewSourceExternally(url[0] || doc, url[1]);
-            else {
-                let chrome = "chrome://global/content/viewSource.xul";
-                window.openDialog(chrome, "_blank", "all,dialog=no",
+            else
+                window.openDialog("chrome://global/content/viewSource.xul",
+                                  "_blank", "all,dialog=no",
                                   url[0], null, null, url[1]);
-            }
         }
         else {
             if (useExternalEditor)
@@ -1000,12 +993,6 @@ const Buffer = Module("buffer", {
      *
      * @param {Document} doc The document to view.
      */
-    /*
-     * Derived from code in Mozilla, ©2005 Jason Barnabe,
-     * Tri-licensed under MPL 1.1/GPL 2.0/LGPL 2.1
-     * Portions copyright Kris Maglione licensable under the
-     * MIT license.
-     */
     viewSourceExternally: Class("viewSourceExternally",
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function (doc, callback) {
@@ -1024,8 +1011,9 @@ const Buffer = Module("buffer", {
                     this.callback(temp);
                 }, this);
 
-            if (uri.scheme == "file")
-                this.callback(File(uri.QueryInterface(Ci.nsIFileURL).file));
+            let file = util.getFile(uri);
+            if (file)
+                this.callback(file);
             else {
                 this.file = io.createTempFile();
                 var webBrowserPersist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]

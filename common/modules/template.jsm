@@ -296,15 +296,18 @@ const Template = Module("Template", {
                 <tr>
                     <td style="padding-right: 20px" highlight="Usage">{
                         let (name = item.name || item.names[0], frame = item.definedAt)
-                            frame ? <><span highlight="Title">{name}</span>&#xa0;
-                                      <span highlight="LineInfo">
-                                          Defined at&#xa0;<a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
-                                                             href={frame.filename} line={frame.lineNumber}
-                                                             highlight="URL">{
-                                              frame.filename + ":" + frame.lineNumber}</a>
-                                      </span>
-                                    </>
-                                  : name
+                            !frame ? name : /* Help... --Kris */
+                                let (url = frame.filename.replace(/.* -> /, ""))
+                                    <><span highlight="Title">{name}</span>&#xa0;
+                                          <span highlight="LineInfo">
+                                              Defined at&#xa0;<a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
+                                                                 href={url} line={frame.lineNumber}
+                                                                 highlight="URL">{
+                                                  (util.getFile(util.newURI(url)) || { path: url }).path
+                                                    + ":" + frame.lineNumber
+                                                }</a>
+                                          </span>
+                                        </>
                     }</td>
                     <td>{item.description}</td>
                 </tr>)

@@ -12,7 +12,7 @@ Components.utils.import("resource://dactyl/base.jsm");
 defineModule("util", {
     exports: ["FailedAssertion", "Math", "NS", "Util", "XHTML", "XUL", "util"],
     require: ["services"],
-    use: ["highlight", "template"]
+    use: ["highlight", "storage", "template"]
 });
 
 const XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
@@ -465,6 +465,21 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
+     * Returns the file which backs a given URL, if available.
+     *
+     * @param {nsIURI} uri The URI for which to find a file.
+     */
+    getFile: function getFile(uri) {
+        if (uri instanceof Ci.nsIFileURL)
+            return File(uri.QueryInterface(Ci.nsIFileURL).file);
+        let channel = services.io.newChannelFromURI(uri);
+        channel.cancel(Cr.NS_BINDING_ABORTED);
+        if (channel instanceof Ci.nsIFileChannel)
+            return File(channel.QueryInterface(Ci.nsIFileChannel).file);
+        return null;
+    },
+
+    /**
      * Returns the host for the given URL, or null if invalid.
      *
      * @param {string} url
@@ -626,7 +641,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @returns {nsIURI}
      */
     // FIXME: createURI needed too?
-    newURI: function (uri, charset, base) services.io.newURI(uri, charset, base),
+    newURI: function (uri, charset, base) services.io.newURI(uri.replace(/.* -> /, ""), charset, base),
 
     /**
      * Pretty print a JavaScript object. Use HTML markup to color certain items
