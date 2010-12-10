@@ -13,6 +13,13 @@
         </content>
     </binding>
 
+    <binding id="magic" inheritstyle="false">
+        <content>
+            <html:span xbl:inherits="dactyl:highlight=dactyl:highlight,number,style" />
+        </content>
+    </binding>
+
+
     <binding id="compitem-td">
         <!-- No white space. The table is white-space: pre; :( -->
         <content><html:span class="td-strut"/><html:span class="td-span"><children/></html:span></content>

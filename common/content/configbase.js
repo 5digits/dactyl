@@ -146,7 +146,7 @@ const ConfigBase = Class(ModuleBase, {
      * @property {string} The default highlighting rules.
      * See {@link Highlights#loadCSS} for details.
      */
-    CSS: UTF8(<><![CDATA[
+    CSS: UTF8(String.replace(<><![CDATA[
         // <css>
         Boolean      color: red;
         Function     color: navy;
@@ -162,22 +162,14 @@ const ConfigBase = Class(ModuleBase, {
 
         // Hack to give these groups slightly higher precedence
         // than their unadorned variants.
-        CmdCmdLine;[dactyl|highlight]>*
-        StatusCmdLine;[dactyl|highlight]>*
-        CmdNormal;[dactyl|highlight]
-        StatusNormal;[dactyl|highlight]
-        CmdErrorMsg;[dactyl|highlight]
-        StatusErrorMsg;[dactyl|highlight]
-        CmdInfoMsg;[dactyl|highlight]
-        StatusInfoMsg;[dactyl|highlight]
-        CmdModeMsg;[dactyl|highlight]
-        StatusModeMsg;[dactyl|highlight]
-        CmdMoreMsg;[dactyl|highlight]
-        StatusMoreMsg;[dactyl|highlight]
-        CmdQuestion;[dactyl|highlight]
-        StatusQuestion;[dactyl|highlight]
-        CmdWarningMsg;[dactyl|highlight]
-        StatusWarningMsg;[dactyl|highlight]
+        CmdCmdLine;[dactyl|highlight]>*  &#x0d; StatusCmdLine;[dactyl|highlight]>*
+        CmdNormal;[dactyl|highlight]     &#x0d; StatusNormal;[dactyl|highlight]
+        CmdErrorMsg;[dactyl|highlight]   &#x0d; StatusErrorMsg;[dactyl|highlight]
+        CmdInfoMsg;[dactyl|highlight]    &#x0d; StatusInfoMsg;[dactyl|highlight]
+        CmdModeMsg;[dactyl|highlight]    &#x0d; StatusModeMsg;[dactyl|highlight]
+        CmdMoreMsg;[dactyl|highlight]    &#x0d; StatusMoreMsg;[dactyl|highlight]
+        CmdQuestion;[dactyl|highlight]   &#x0d; StatusQuestion;[dactyl|highlight]
+        CmdWarningMsg;[dactyl|highlight] &#x0d; StatusWarningMsg;[dactyl|highlight]
 
         !Normal           color: black   !important; background: white   !important; font-weight: normal !important;
         !StatusNormal     color: inherit !important; background: inherit !important;
@@ -270,19 +262,21 @@ const ConfigBase = Class(ModuleBase, {
         !Bell         background-color: black !important;
         Hint;;* {
             /* This gets released into the wild, so everything is important */
-            font: bold 10px monospace !important;
+            font-size: 10px        !important;
+            font-family: monospace !important;
+            font-weight: bold      !important;
             background-color: red   !important;
             color:            white !important;
             border:  0px solid ButtonShadow !important;
             padding: 0px 1px                !important;
         }
-        !Hint::after;;*  content: attr(number) !important;
-        !HintElem;;*     background-color: yellow  !important; color: black !important;
-        !HintActive;;*   background-color: #88FF00 !important; color: black !important;
-        !HintImage;;*    opacity: .5 !important;
+        Hint::after;;*  content: attr(number) !important;
+        HintElem;;*     background-color: yellow  !important; color: black !important;
+        HintActive;;*   background-color: #88FF00 !important; color: black !important;
+        HintImage;;*    opacity: .5 !important;
 
         // </css>
-    ]]></>),
+    ]]></>, /&#x0d;/g, "\n")),
 
     helpCSS: UTF8(<><![CDATA[
         // <css>

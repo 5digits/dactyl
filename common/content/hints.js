@@ -287,7 +287,7 @@ const Hints = Module("hints", {
             return true;
         }
 
-        let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint"/>, doc);
+        let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" dactyl:class="magic" xmlns:dactyl={NS}/>, doc);
 
         let mode = this._hintMode;
         let res = util.evaluateXPath(mode.xpath, doc, null, true);
@@ -371,11 +371,11 @@ const Hints = Module("hints", {
      * @param {boolean} active Whether it is the currently active hint or not.
      */
     _setClass: function _setClass(elem, active) {
-        let prefix = (elem.getAttributeNS(NS, "class") || "") + " ";
+        let prefix = (elem.getAttributeNS(NS, "hl") || "") + " ";
         if (active)
-            elem.setAttributeNS(NS, "highlight", prefix + "HintActive");
+            highlight.highlightNode(elem, prefix + "HintActive");
         else if (active != null)
-            elem.setAttributeNS(NS, "highlight", prefix + "HintElem");
+            highlight.highlightNode(elem, prefix + "HintElem");
         else
             elem.removeAttributeNS(NS, "highlight");
     },
@@ -412,7 +412,7 @@ const Hints = Module("hints", {
                         if (!rect)
                             continue;
 
-                        hint.imgSpan = util.xmlToDom(<span highlight="Hint" dactyl:class="HintImage" xmlns:dactyl={NS}/>, doc);
+                        hint.imgSpan = util.xmlToDom(<span dactyl:class="magic" dactyl:hl="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc);
                         hint.imgSpan.style.left = (rect.left + offsetX) + "px";
                         hint.imgSpan.style.top = (rect.top + offsetY) + "px";
                         hint.imgSpan.style.width = (rect.right - rect.left) + "px";
