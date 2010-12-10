@@ -16,19 +16,16 @@ const Ci = Components.interfaces, Cc = Components.classes;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-const NS_BINDING_ABORTED = 0x804b0002;
-const nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
-
 const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-    .getBranch("extensions.dactyl.");
+                    .getBranch("extensions.dactyl.");
 const systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {
     if (url == null)
         return fakeChannel();
-    if (typeof url == "function")
+    if (typeof url === "function")
         url = dataURL.apply(null, url());
     let uri = ioService.newURI(url, null, null);
     let channel = ioService.newChannelFromURI(uri);
@@ -43,28 +40,30 @@ function redirect(to, orig, time) {
     return makeChannel(dataURL('text/html', html), ioService.newURI(to, null, null));
 }
 
+function Factory(clas) ({
+    createInstance: function (outer, iid) {
+        if (outer != null)
+            throw Components.results.NS_ERROR_NO_AGGREGATION;
+        if (!clas.instance)
+            clas.instance = new clas();
+        return clas.instance.QueryInterface(iid);
+    }
+});
+
 function ChromeData() {}
 ChromeData.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=chrome-data",
     classID:          Components.ID("{c1b67a07-18f7-4e13-b361-2edcc35a5a0d}"),
     classDescription: "Data URIs with chrome privileges",
-    QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsIProtocolHandler]),
-    _xpcom_factory: {
-        createInstance: function (outer, iid) {
-            if (outer != null)
-                throw Components.results.NS_ERROR_NO_AGGREGATION;
-            if (!ChromeData.instance)
-                ChromeData.instance = new ChromeData();
-            return ChromeData.instance.QueryInterface(iid);
-        }
-    },
+    QueryInterface:   XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
+    _xpcom_factory:   Factory(ChromeData),
 
     scheme: "chrome-data",
     defaultPort: -1,
     allowPort: function (port, scheme) false,
-    protocolFlags: nsIProtocolHandler.URI_NORELATIVE
-         | nsIProtocolHandler.URI_NOAUTH
-         | nsIProtocolHandler.URI_IS_UI_RESOURCE,
+    protocolFlags: Ci.nsIProtocolHandler.URI_NORELATIVE
+         | Ci.nsIProtocolHandler.URI_NOAUTH
+         | Ci.nsIProtocolHandler.URI_IS_UI_RESOURCE,
 
     newURI: function (spec, charset, baseURI) {
         var uri = Components.classes["@mozilla.org/network/standard-url;1"]
@@ -93,28 +92,16 @@ function Dactyl() {
     this.addonID = this.name + "@dactyl.googlecode.com";
 
     this.pages = {};
+    for each (let pref in ["appName", "fileExt", "host", "hostbin", "idName", "name"])
+        this[pref] = prefs.getComplexValue(pref, Ci.nsISupportsString).data;
 }
 Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
     classID:          Components.ID("{9c8f2530-51c8-4d41-b356-319e0b155c44}"),
     classDescription: "Dactyl utility protocol",
-    QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsIProtocolHandler]),
-    _xpcom_factory: {
-        createInstance: function (outer, iid) {
-            if (outer != null)
-                throw Components.results.NS_ERROR_NO_AGGREGATION;
-            if (!Dactyl.instance)
-                Dactyl.instance = new Dactyl();
-            return Dactyl.instance.QueryInterface(iid);
-        }
-    },
+    QueryInterface:   XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
+    _xpcom_factory:   Factory(Dactyl),
 
-    appName: prefs.getComplexValue("appName", Ci.nsISupportsString).data,
-    fileExt: prefs.getComplexValue("fileExt", Ci.nsISupportsString).data,
-    host: prefs.getComplexValue("host", Ci.nsISupportsString).data,
-    hostbin: prefs.getComplexValue("hostbin", Ci.nsISupportsString).data,
-    idName: prefs.getComplexValue("idName", Ci.nsISupportsString).data,
-    name: prefs.getComplexValue("name", Ci.nsISupportsString).data,
     get version() prefs.getComplexValue("version", Ci.nsISupportsString).data,
 
     init: function (obj) {
@@ -129,8 +116,8 @@ Dactyl.prototype = {
     defaultPort: -1,
     allowPort: function (port, scheme) false,
     protocolFlags: 0
-         | nsIProtocolHandler.URI_IS_UI_RESOURCE
-         | nsIProtocolHandler.URI_IS_LOCAL_RESOURCE,
+         | Ci.nsIProtocolHandler.URI_IS_UI_RESOURCE
+         | Ci.nsIProtocolHandler.URI_IS_LOCAL_RESOURCE,
 
     newURI: function (spec, charset, baseURI) {
         var uri = Cc["@mozilla.org/network/standard-url;1"]
@@ -200,9 +187,7 @@ Shim.prototype = {
         return this;
     },
     getHelperForLanguage: function () null,
-    getInterfaces: function (count) {
-        count.value = 0;
-    }
+    getInterfaces: function (count) { count.value = 0; }
 };
 
 if (XPCOMUtils.generateNSGetFactory)

@@ -3,7 +3,9 @@
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
 "use strict";
+
 try {
+
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("services", {
     exports: ["Services", "services"],
@@ -58,7 +60,7 @@ const Services = Module("Services", {
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
 
         this.addClass("File",         "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
-        this.addClass("File:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
+        this.addClass("file:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
@@ -71,21 +73,13 @@ const Services = Module("Services", {
 
     _create: function (classes, ifaces, meth) {
         try {
-            for (let i = 0; !res && i < 15; i++) // FIXME: Hack.
-                try {
-                    var res = Cc[classes][meth || "getService"]();
-                }
-                catch (e if e.result === Cr.NS_ERROR_XPC_BAD_OP_ON_WN_PROTO) {
-                    util.dump(String(e));
-                }
-
+            let res = Cc[classes][meth || "getService"]();
             if (!ifaces)
                 return res.wrappedJSObject;
             Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));
             return res;
         }
         catch (e) {
-            // dactyl.log() is not defined at this time, so just dump any error
             util.dump("Service creation failed for '" + classes + "': " + e + "\n");
             return null;
         }
@@ -103,7 +97,7 @@ const Services = Module("Services", {
      */
     add: function (name, class_, ifaces, meth) {
         const self = this;
-        if (name in this && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
+        if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
         this.__defineGetter__(name, function () {
             delete this[name];

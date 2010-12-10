@@ -282,18 +282,16 @@ const Buffer = Module("buffer", {
             statusline.updateProgress(curTotalProgress/maxTotalProgress);
         },
         // happens when the users switches tabs
-        onLocationChange: function onLocationChange() {
+        onLocationChange: function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
             statusline.updateUrl();
             statusline.updateProgress();
             for (let frame in values(buffer.allFrames()))
                 frame.dactylFocusAllowed = false;
 
-            let browser = config.browser.mCurrentBrowser;
-            let uri = browser.registeredOpenURI || browser.lastURI;
-            if (uri.scheme === "dactyl" && !(browser.contentDocument || {}).pageIsFullyLoaded)
+            if (uri.scheme === "dactyl" && webProgress.isLoadingDocument)
                 // Workaround for bugs 591425 and 606877, dactyl bug #81
-                browser.collapsed = true;
+                config.browser.mCurrentBrowser.collapsed = true;
 
             util.timeout(function () {
                 autocommands.trigger("LocationChange", { url: buffer.URL });

@@ -52,6 +52,7 @@
 
     let prefix = [BASE];
 
+    modules.load("util");
     modules.load("services");
     prefix.unshift("chrome://" + modules.services["dactyl:"].name + "/content/");
 
@@ -59,7 +60,6 @@
      "modules",
      "prefs",
      "storage",
-     "util",
      "javascript",
      "dactyl",
      "modes",

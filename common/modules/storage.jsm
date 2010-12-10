@@ -264,7 +264,7 @@ const File = Class("File", {
         if (path instanceof Ci.nsIFile)
             file = path.QueryInterface(Ci.nsIFile).clone();
         else if (/file:\/\//.test(path))
-            file = services["File:"]().getFileFromURLSpec(path);
+            file = services["file:"]().getFileFromURLSpec(path);
         else {
             try {
                 let expandedPath = File.expandPath(path);

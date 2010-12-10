@@ -20,6 +20,13 @@ const XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.
 const NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
 
+memoize(this, "Commands", function () {
+    // FIXME
+    let obj = {};
+    services.subscriptLoader.loadSubScript("chrome://dactyl/content/commands.js", obj);
+    return obj.Commands;
+});
+
 const FailedAssertion = Class("FailedAssertion", Error, {
     init: function (message) {
         this.message = message;
@@ -135,6 +142,56 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     compareIgnoreCase: function compareIgnoreCase(a, b) String.localeCompare(a.toLowerCase(), b.toLowerCase()),
 
     compileFormat: function compileFormat(format) {
+        let stack = [frame()];
+        stack.__defineGetter__("top", function () this[this.length - 1]);
+
+        function frame() update(
+            function _frame(obj)
+                _frame === stack.top || _frame.valid(obj) ?
+                    _frame.elements.map(function (e) callable(e) ? e(obj) : e).join("") : "",
+            {
+                elements: [],
+                seen: {},
+                valid: function (obj) this.elements.every(function (e) !e.test || e.test(obj))
+            });
+
+        let match, end = 0, re = /(.*?)%(.)/gy;
+        while (match = re.exec(format)) {
+            let [, prefix, char] = match;
+            end += match[0].length;
+
+            if (prefix)
+                stack.top.elements.push(prefix);
+            if (char === "%")
+                stack.top.elements.push("%");
+            else if (char === "[") {
+                let f = frame();
+                stack.top.elements.push(f);
+                stack.push(f);
+            }
+            else if (char === "]") {
+                stack.pop();
+                util.assert(stack.length, "Unmatched %] in format");
+            }
+            else {
+                let quote = function quote(obj, char) obj[char];
+                if (char !== char.toLowerCase())
+                    quote = function quote(obj, char) Commands.quote(obj[char]);
+                char = char.toLowerCase();
+
+                stack.top.elements.push(update(
+                    function (obj) obj[char] != null ? quote(obj, char) : "",
+                    { test: function (obj) obj[char] != null }));
+            }
+
+            for (let elem in array.iterValues(stack))
+                elem.seen[char] = true;
+        }
+        if (end < format.length)
+            stack.top.elements.push(format.substr(end));
+
+        util.assert(stack.length === 1, "Unmatched %[ in format");
+        return stack.top;
     },
 
     /**
