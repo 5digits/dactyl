@@ -327,61 +327,64 @@ lookup:
     source: function (filename, silent) {
         defineModule.loadLog.push("sourcing " + filename);
         let time = Date.now();
-        try {
-            var file = io.File(filename);
+        this.withSavedValues(["sourcing"], function () {
+            this.sourcing = null;
+            try {
+                var file = io.File(filename);
 
-            if (!file.exists() || !file.isReadable() || file.isDirectory()) {
+                if (!file.exists() || !file.isReadable() || file.isDirectory()) {
+                    if (!silent)
+                        dactyl.echoerr("E484: Can't open file " + filename.quote());
+                    return;
+                }
+
+                dactyl.echomsg("sourcing " + filename.quote(), 2);
+
+                let uri = services.io.newFileURI(file);
+
+                // handle pure JavaScript files specially
+                if (/\.js$/.test(filename)) {
+                    try {
+                        dactyl.loadScript(uri.spec, Script(file));
+                        dactyl.helpInitialized = false;
+                    }
+                    catch (e) {
+                        if (e.fileName)
+                            try {
+                                e.fileName = e.fileName.replace(/^(chrome|resource):.*? -> /, "");
+                                if (e.fileName == uri.spec)
+                                    e.fileName = filename;
+                                e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
+                            }
+                            catch (e) {}
+                        throw e;
+                    }
+                }
+                else if (/\.css$/.test(filename))
+                    styles.registerSheet(uri.spec, false, true);
+                else {
+                    commands.execute(file.read(), null, silent || "loud", null,
+                        { file: file.path, line: 1 });
+                }
+
+                if (this._scriptNames.indexOf(file.path) == -1)
+                    this._scriptNames.push(file.path);
+
+                dactyl.echomsg("finished sourcing " + filename.quote(), 2);
+
+                dactyl.log("Sourced: " + filename, 3);
+            }
+            catch (e) {
+                if (!(e instanceof FailedAssertion))
+                    dactyl.reportError(e);
+                let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
                 if (!silent)
-                    dactyl.echoerr("E484: Can't open file " + filename.quote());
-                return;
+                    dactyl.echoerr(message);
             }
-
-            dactyl.echomsg("sourcing " + filename.quote(), 2);
-
-            let uri = services.io.newFileURI(file);
-
-            // handle pure JavaScript files specially
-            if (/\.js$/.test(filename)) {
-                try {
-                    dactyl.loadScript(uri.spec, Script(file));
-                    dactyl.helpInitialized = false;
-                }
-                catch (e) {
-                    if (e.fileName)
-                        try {
-                            e.fileName = e.fileName.replace(/^(chrome|resource):.*? -> /, "");
-                            if (e.fileName == uri.spec)
-                                e.fileName = filename;
-                            e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
-                        }
-                        catch (e) {}
-                    throw e;
-                }
+            finally {
+                defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
             }
-            else if (/\.css$/.test(filename))
-                styles.registerSheet(uri.spec, false, true);
-            else {
-                commands.execute(file.read(), null, silent || "loud", null,
-                    { file: file.path, line: 1 });
-            }
-
-            if (this._scriptNames.indexOf(file.path) == -1)
-                this._scriptNames.push(file.path);
-
-            dactyl.echomsg("finished sourcing " + filename.quote(), 2);
-
-            dactyl.log("Sourced: " + filename, 3);
-        }
-        catch (e) {
-            if (!(e instanceof FailedAssertion))
-                dactyl.reportError(e);
-            let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
-            if (!silent)
-                dactyl.echoerr(message);
-        }
-        finally {
-            defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
-        }
+        });
     },
 
     // TODO: when https://bugzilla.mozilla.org/show_bug.cgi?id=68702 is
