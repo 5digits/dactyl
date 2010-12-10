@@ -668,7 +668,10 @@ const JavaScript = Module("javascript", {
             "boolean", false, {
                 setter: function (value) {
                     if (services.debugger.isOn != value)
-                        services.debugger[value ? "on" : "off"]();
+                        if (value)
+                            (services.debugger.asyncOn || services.debugger.on)(null);
+                        else
+                            services.debugger.off();
                 },
                 getter: function () services.debugger.isOn
             });

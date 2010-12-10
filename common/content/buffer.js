@@ -1158,7 +1158,8 @@ const Buffer = Module("buffer", {
             elem = find(doc.body || doc.getElementsByTagName("body")[0] ||
                         doc.documentElement);
         }
-        return elem;
+        let doc = buffer.focusedFrame.document;
+        return elem || doc.body || doc.documentElement;
     },
 
     scrollVertical: function scrollVertical(elem, increment, number) {

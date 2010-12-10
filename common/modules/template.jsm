@@ -11,10 +11,6 @@ defineModule("template", {
 });
 
 default xml namespace = XHTML;
-function fixXML() {
-    XML.ignoreWhiteSpace = false;
-    XML.prettyPrinting = false;
-}
 
 const Template = Module("Template", {
     add: function add(a, b) a + b,
@@ -37,18 +33,6 @@ const Template = Module("Template", {
             ret += val;
         }
         return ret;
-    },
-
-    maybeXML: function maybeXML(xml) {
-        if (typeof xml == "xml")
-            return xml;
-        try {
-            XML.ignoreWhitespace = false;
-            XML.prettyPrinting = false;
-            return new XMLList(xml);
-        }
-        catch (e) {}
-        return <>{xml}</>;
     },
 
     bookmarkDescription: function (item, text)
@@ -282,7 +266,7 @@ const Template = Module("Template", {
                     this.map(data, function (datum)
                     <tr>
                        <td style={"font-weight: bold; min-width: 150px; padding-left: " + (indent || "2ex")}>{datum[0]}</td>
-                       <td>{template.maybeXML(datum[1])}</td>
+                       <td>{datum[1]}</td>
                     </tr>)
                 }
             </table>;
