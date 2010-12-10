@@ -289,6 +289,14 @@ const Template = Module("Template", {
     },
 
     usage: function usage(iter) {
+        function getPath(url) {
+            try {
+                return util.getFile(util.newURI(url)).path;
+            }
+            catch (e) {
+                return url;
+            }
+        }
         // <e4x>
         return <table>
             {
@@ -297,15 +305,12 @@ const Template = Module("Template", {
                     <td style="padding-right: 20px" highlight="Usage">{
                         let (name = item.name || item.names[0], frame = item.definedAt)
                             !frame ? name : /* Help... --Kris */
-                                let (url = frame.filename.replace(/.* -> /, ""))
+                                let (url = (frame.filename || "unknown").replace(/.* -> /, ""))
                                     <><span highlight="Title">{name}</span>&#xa0;
                                           <span highlight="LineInfo">
                                               Defined at&#xa0;<a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
                                                                  href={url} line={frame.lineNumber}
-                                                                 highlight="URL">{
-                                                  (util.getFile(util.newURI(url)) || { path: url }).path
-                                                    + ":" + frame.lineNumber
-                                                }</a>
+                                                                 highlight="URL">{ getPath(url) + ":" + frame.lineNumber }</a>
                                           </span>
                                         </>
                     }</td>

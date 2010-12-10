@@ -453,7 +453,7 @@ const Commands = Module("commands", {
     _addCommand: function (args, replace) {
         if (!args[3])
             args[3] = {};
-        args[3].definedAt = Components.stack.caller.caller;
+        args[3].definedAt = commands.getCaller(Components.stack.caller.caller);
 
         let names = array.flatten(Command.parseSpecs(args[0]));
         dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
@@ -634,6 +634,22 @@ const Commands = Module("commands", {
      */
     getUserCommands: function () {
         return this._exCommands.filter(function (cmd) cmd.user);
+    },
+
+    /**
+     * Returns a frame object describing the currently executing
+     * command, if applicable, otherwise returns the passed frame.
+     *
+     * @param {nsIStackFrame} frame
+     */
+    getCaller: function (frame) {
+        if (io.sourcing)
+           return {
+                __proto__: frame,
+                filename: services.io.newFileURI(File(io.sourcing.file)).spec,
+                lineNumber: io.sourcing.line
+            };
+        return frame;
     },
 
     /**

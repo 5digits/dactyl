@@ -642,7 +642,7 @@ const Options = Module("options", {
         if (!extraInfo)
             extraInfo = {};
 
-        extraInfo.definedAt = Components.stack.caller;
+        extraInfo.definedAt = commands.getCaller(Components.stack.caller);
 
         let name = names[0];
         if (name in this._optionMap) {
