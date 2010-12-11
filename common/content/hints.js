@@ -412,7 +412,7 @@ const Hints = Module("hints", {
                         if (!rect)
                             continue;
 
-                        hint.imgSpan = util.xmlToDom(<span dactyl:class="magic" dactyl:hl="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc);
+                        hint.imgSpan = util.xmlToDom(<span dactyl:class="magic" highlight="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc);
                         hint.imgSpan.style.left = (rect.left + offsetX) + "px";
                         hint.imgSpan.style.top = (rect.top + offsetY) + "px";
                         hint.imgSpan.style.width = (rect.right - rect.left) + "px";
