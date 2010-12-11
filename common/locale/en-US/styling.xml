@@ -69,15 +69,13 @@
             <dt>CompMsg</dt>           <dd>The message which may appear at the top of a group of completion results</dd>
             <dt>CompResult</dt>        <dd>The result column of the completion list</dd>
             <dt>CompTitle</dt>         <dd>Completion row titles</dd>
+            <dt>CompTitleSep</dt>      <dd>The element which separates the completion title from its results</dd>
             <dt>Disabled</dt>          <dd>Text indicating disabled status, such as of an extension or style group</dd>
             <dt>Enabled</dt>           <dd>Text indicating enabled status, such as of an extension or style group</dd>
             <dt>ErrorMsg</dt>          <dd>Error messages</dd>
             <dt>Filter</dt>            <dd>The matching text in a completion list</dd>
             <dt>FrameIndicator</dt>    <dd>The indicator shown when a new frame is selected</dd>
             <dt>Function</dt>          <dd>A JavaScript Function object</dd>
-            <dt>Gradient</dt>          <dd>The gradient dividers used in the completion lists</dd>
-            <dt>GradientLeft</dt>      <dd>The color to the left of the Gradient</dd>
-            <dt>GradientRight</dt>     <dd>The color to the right of the Gradient</dd>
             <dt>Hint</dt>              <dd>A hint indicator. See <ex>:help hints</ex></dd>
             <dt>HintActive</dt>        <dd>The hint element of link which will be followed by <k name="Return"/></dd>
             <dt>HintElem</dt>          <dd>The hintable element</dd>
