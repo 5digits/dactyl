@@ -195,8 +195,6 @@ const Buffer = Module("buffer", {
             if (doc.location.protocol === "dactyl:") {
                 dactyl.initHelp();
                 config.styleHelp();
-                // Workaround for bugs 591425 and 606877, dactyl bug #81
-                config.browser.getBrowserForDocument(doc).collapsed = false;
             }
 
             // mark the buffer as loaded, we can't use buffer.loaded
@@ -255,6 +253,9 @@ const Buffer = Module("buffer", {
                     }
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
+                    // Workaround for bugs 591425 and 606877, dactyl bug #81
+                    config.browser.mCurrentBrowser.collapsed = false;
+
                     webProgress.DOMWindow.document.pageIsFullyLoaded = (status == 0 ? 1 : 2);
                     statusline.updateUrl();
                 }
@@ -289,9 +290,9 @@ const Buffer = Module("buffer", {
             for (let frame in values(buffer.allFrames()))
                 frame.dactylFocusAllowed = false;
 
-            if (uri.scheme === "dactyl" && webProgress.isLoadingDocument)
-                // Workaround for bugs 591425 and 606877, dactyl bug #81
-                config.browser.mCurrentBrowser.collapsed = true;
+            // Workaround for bugs 591425 and 606877, dactyl bug #81
+            config.browser.mCurrentBrowser.collapsed =
+                uri.scheme === "dactyl" && webProgress.isLoadingDocument;
 
             util.timeout(function () {
                 autocommands.trigger("LocationChange", { url: buffer.URL });
