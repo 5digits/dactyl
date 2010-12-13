@@ -678,11 +678,10 @@ const Editor = Module("editor", {
             });
 
         mappings.add([modes.VISUAL],
-            ["d"], "Delete selected text",
+            ["d", "x"], "Delete selected text",
             function () {
                 dactyl.assert(editor.isTextEdit);
                 editor.executeCommand("cmd_cut");
-                modes.pop();
             });
 
         mappings.add([modes.VISUAL],

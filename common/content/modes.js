@@ -154,7 +154,7 @@ const Modes = Module("modes", {
             disp: disp,
             extended: extended,
             input: false,
-            mask: this[name],
+            mask: mode,
             name: name,
             params: params || {}
         }, options);

@@ -373,21 +373,17 @@ const Mappings = Module("mappings", {
                         Command.bindMacro(args, "-keys", ["count"]),
                         {
                             count: args["-count"],
-                            noremap: "-builtin" in args,
+                            noremap: args["-builtin"],
                             persist: !args["-nopersist"],
                             get rhs() String(this.action),
-                            silent: "-silent" in args
+                            silent: args["-silent"]
                         });
                 }
             }
 
-            modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";
-
             function findMode(name) {
-                if (isinstance(name, Number))
-                    return name;
                 for (let mode in modes.mainModes)
-                    if (name == mode.char || name == mode.name.toLowerCase())
+                    if (name == mode || name == mode.char || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
                         return mode.mask;
                 return null;
             }
@@ -439,7 +435,7 @@ const Mappings = Module("mappings", {
                             description: "Create this mapping in the given modes",
                             default: mapmodes || ["n", "v"],
                             validator: function (list) !list || list.every(findMode),
-                            completer: function () [[array.compact([mode.name.toLowerCase(), mode.char]), mode.disp]
+                            completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
                                                     for (mode in modes.mainModes)],
                         },
                         {
@@ -478,6 +474,7 @@ const Mappings = Module("mappings", {
                             yield map;
             }
 
+            modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";
             commands.add([ch ? ch + "m[ap]" : "map"],
                 "Map a key sequence" + modeDescription,
                 function (args) { map(args, false); },
