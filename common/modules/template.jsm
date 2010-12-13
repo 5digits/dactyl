@@ -225,7 +225,7 @@ const Template = Module("Template", {
         let url = (frame.filename || "unknown").replace(/.* -> /, "");
         function getPath(url) {
             try {
-                return util.getFile(util.newURI(url)).path;
+                return util.getFile(url).path;
             }
             catch (e) {
                 return url;

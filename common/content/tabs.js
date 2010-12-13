@@ -571,8 +571,8 @@ const Tabs = Module("tabs", {
         commands.add(["tabd[o]", "bufd[o]"],
             "Execute a command in each tab",
             function (args) {
-                for (let i = 0; i < tabs.count; i++) {
-                    tabs.select(i);
+                for (let tab in values(tabs.visibleTabs)) {
+                    tabs.select(tab);
                     if (!dactyl.execute(args[0] || "", null, true))
                         break;
                 }
