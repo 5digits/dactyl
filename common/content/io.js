@@ -759,15 +759,30 @@ lookup:
         };
 
         completion.addUrlCompleter("f", "Local files", function (context, full) {
-            let match = /^(chrome:\/\/[^\/]+\/)([^/]*)$/.exec(context.filter);
+            let match = util.regexp(<![CDATA[
+                ^
+                (
+                    ((chrome|resource):\/\/)
+                    [^\/]*
+                )
+                (\/[^\/]*)?
+                $
+            ]]>).exec(context.filter);
             if (match) {
-                context.key = match[1];
-                context.advance(match[1].length);
-                context.generate = function () iter({
-                    content: "Chrome content",
-                    locale: "Locale-specific content",
-                    skin: "Theme-specific content"
-                });
+                if (!match[4]) {
+                    context.key = match[2];
+                    context.advance(match[2].length);
+                    context.generate = function () util.chromePackages.map(function (p) [p, match[1] + p + "/"]);
+                }
+                else if (match[3] === "chrome") {
+                    context.key = match[1];
+                    context.advance(match[1].length + 1);
+                    context.generate = function () iter({
+                        content: "Chrome content",
+                        locale: "Locale-specific content",
+                        skin: "Theme-specific content"
+                    });
+                }
             }
             else if (/^(\.{0,2}|~)\/|^file:/.test(context.filter) || util.getFile(context.filter) || io.isJarURL(context.filter))
                 completion.file(context, full);

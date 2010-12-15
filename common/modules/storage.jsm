@@ -288,6 +288,8 @@ const File = Class("File", {
      * Iterates over the objects in this directory.
      */
     iterDirectory: function () {
+        if (!this.exists())
+            throw Error("File does not exist");
         if (!this.isDirectory())
             throw Error("Not a directory");
         for (let file in iter(this.directoryEntries))
@@ -313,32 +315,9 @@ const File = Class("File", {
      */
     read: function (encoding) {
         let ifstream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
-
         ifstream.init(this, -1, 0, 0);
 
-        try {
-            if (encoding instanceof Ci.nsIOutputStream) {
-                let l, len = 0;
-                while ((l = encoding.writeFrom(ifstream, 4096)) != 0)
-                    len += l;
-                return len;
-            }
-            else {
-                var icstream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
-                icstream.init(ifstream, encoding || File.defaultEncoding, 4096, // 4096 bytes buffering
-                              Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
-                let buffer = [];
-                let str = {};
-                while (icstream.readString(4096, str) != 0)
-                    buffer.push(str.value);
-                return buffer.join("");
-            }
-        }
-        finally {
-            if (icstream)
-                icstream.close();
-            ifstream.close();
-        }
+        return File.readStream(ifstream, encoding);
     },
 
     /**
@@ -533,6 +512,23 @@ const File = Class("File", {
     },
 
     expandPathList: function (list) list.map(this.expandPath),
+
+    readStream: function (ifstream, encoding) {
+        try {
+            var icstream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
+            icstream.init(ifstream, encoding || File.defaultEncoding, 4096, // 4096 bytes buffering
+                          Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+            let buffer = [];
+            let str = {};
+            while (icstream.readString(4096, str) != 0)
+                buffer.push(str.value);
+            return buffer.join("");
+        }
+        finally {
+            icstream.close();
+            ifstream.close();
+        }
+    },
 
     isAbsolutePath: function (path) {
         try {

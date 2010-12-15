@@ -104,6 +104,55 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             throw new FailedAssertion(message);
     },
 
+    get chromePackages() {
+        // Horrible hack.
+        let res = {};
+        function process(manifest) {
+            for each (let line in manifest.split(/\n+/)) {
+                let match = /^\s*(content|skin|locale|resource)\s+([^\s#]+)\s/.exec(line);
+                if (match)
+                    res[match[2]] = true;
+            }
+        }
+        function processJar(file) {
+            let jar = services.ZipReader(file);
+            if (jar) {
+                if (jar.hasEntry("chrome.manifest"))
+                    process(File.readStream(jar.getInputStream("chrome.manifest")));
+                jar.close();
+            }
+        }
+
+        for each (let dir in ["UChrm", "AChrom"]) {
+            dir = File(services.directory.get(dir, Ci.nsIFile));
+            if (dir.exists() && dir.isDirectory())
+                for (let file in dir.iterDirectory())
+                    if (/\.manifest$/.test(file.leafName))
+                        process(file.read());
+
+            dir = File(dir.parent);
+            if (dir.exists() && dir.isDirectory())
+                for (let file in dir.iterDirectory())
+                    if (/\.jar$/.test(file.leafName))
+                        processJar(file);
+
+            dir = dir.child("extensions");
+            if (dir.exists() && dir.isDirectory())
+                for (let ext in dir.iterDirectory()) {
+                    if (/\.xpi$/.test(ext.leafName))
+                        processJar(ext);
+                    else {
+                        if (ext.isFile())
+                            ext = File(ext.read().replace(/\n*$/, ""));
+                        let mf = ext.child("chrome.manifest");
+                        if (mf.exists())
+                            process(mf.read());
+                    }
+                }
+        }
+        return Object.keys(res).sort();
+    },
+
     /**
      * Returns a shallow copy of *obj*.
      *
