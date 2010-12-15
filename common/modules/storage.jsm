@@ -493,7 +493,7 @@ const File = Class("File", {
 
         // expand ~
         // Yuck.
-        if (!relative && RegExp("~(?:$|[/" + util.escapeRegexp(File.PATH_SEP) + "])").test(path)) {
+        if (!relative && RegExp("~(?:$|[/" + util.regexp.escape(File.PATH_SEP) + "])").test(path)) {
             // Try $HOME first, on all systems
             let home = getenv("HOME");
 

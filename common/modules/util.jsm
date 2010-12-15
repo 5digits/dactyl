@@ -388,16 +388,6 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
-     * Escapes Regular Expression special characters in *str*.
-     *
-     * @param {string} str
-     * @returns {string}
-     */
-    escapeRegexp: function escapeRegexp(str) {
-        return str.replace(/([\\{}()[\].?*+])/g, "\\$1");
-    },
-
-    /**
      * Escapes quotes, newline and tab characters in *str*. The returned string
      * is delimited by *delimiter* or " if *delimiter* is not specified.
      * {@see String#quote}.
@@ -960,21 +950,29 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} flags Flags to apply to the new RegExp.
      * @param {object} tokens The tokens to substitute. @optional
      */
-    regexp: function (expr, flags, tokens) {
+    regexp: update(function (expr, flags, tokens) {
         if (tokens)
             expr = String.replace(expr, /<(\w+)>/g, function (m, n1) set.has(tokens, n1) ? tokens[n1].source || tokens[n1] : m);
         expr = String.replace(expr, /\/\/[^\n]*|\/\*[^]*?\*\//gm, "")
                      .replace(/\s+/g, "");
         return RegExp(expr, flags);
-    },
+    }, {
+        /**
+         * Escapes Regular Expression special characters in *str*.
+         *
+         * @param {string} str
+         * @returns {string}
+         */
+        escape: function regexp_escape(str) str.replace(/([\\{}()[\].?*+])/g, "\\$1"),
 
-    /**
-     * Given a RegExp, returns its source in the form showable to the user.
-     *
-     * @param {RegExp} re The regexp showable source of which is to be returned.
-     * @returns {string}
-     */
-    regexpSource: function regexpSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0),
+        /**
+         * Given a RegExp, returns its source in the form showable to the user.
+         *
+         * @param {RegExp} re The regexp showable source of which is to be returned.
+         * @returns {string}
+         */
+        getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0),
+    }),
 
     maxErrors: 15,
     errors: Class.memoize(function () []),

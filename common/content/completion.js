@@ -921,7 +921,7 @@ const Completion = Module("completion", {
                     function (tok) contains(item.url, tok) ||
                                    contains(item.title, tok)));
 
-            let re = RegExp(tokens.filter(util.identity).map(util.escapeRegexp).join("|"), "g");
+            let re = RegExp(tokens.filter(util.identity).map(util.regexp.escape).join("|"), "g");
             function highlight(item, text, i) process[i].call(this, item, template.highlightRegexp(text, re));
             let process = context.process;
             context.process = [
