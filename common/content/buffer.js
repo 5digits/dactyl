@@ -292,7 +292,7 @@ const Buffer = Module("buffer", {
 
             // Workaround for bugs 591425 and 606877, dactyl bug #81
             config.browser.mCurrentBrowser.collapsed =
-                uri.scheme === "dactyl" && webProgress.isLoadingDocument;
+                uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
 
             util.timeout(function () {
                 autocommands.trigger("LocationChange", { url: buffer.URL });
@@ -480,8 +480,6 @@ const Buffer = Module("buffer", {
      *
      * @returns {string}
      */
-    // FIXME: getSelection() doesn't always preserve line endings, see:
-    // https://www.mozdev.org/bugs/show_bug.cgi?id=19303
     getCurrentWord: function () {
         let win = buffer.focusedFrame || window.content;
         let selection = win.getSelection();
@@ -1688,11 +1686,11 @@ const Buffer = Module("buffer", {
         // reloading
         mappings.add(myModes, ["r"],
             "Reload the current web page",
-            function () { tabs.reload(config.browser.mCurrentTab, false); });
+            function () { tabs.reload(tabs.getTab(), false); });
 
         mappings.add(myModes, ["R"],
             "Reload while skipping the cache",
-            function () { tabs.reload(config.browser.mCurrentTab, true); });
+            function () { tabs.reload(tabs.getTab(), true); });
 
         // yanking
         mappings.add(myModes, ["Y"],

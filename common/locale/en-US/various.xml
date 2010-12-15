@@ -195,10 +195,11 @@
         </p>
 
         <note>
-            The following items are cleared regardless of <a>timeframe</a>:
-            <em>cache</em>, <em>offlineapps</em>, <em>passwords</em>,
-            <em>sessions</em>, <em>sitesettings</em>. Additionally,
-            <em>options</em> are never cleared.
+            The following items are always cleared entirely, regardless of
+            <a>timeframe</a>: <em>cache</em>, <em>offlineapps</em>,
+            <em>passwords</em>, <em>sessions</em>, <em>sitesettings</em>.
+            Conversely, <em>options</em> are never cleared unless a host is
+            specified.
         </note>
 
         <p>
@@ -235,7 +236,7 @@
 
         <p>Available actions:</p>
 
-        <dl>
+        <dl dt="width: 12em">
             <dt>unset</dt>            <dd>Unset special permissions for <a>host</a></dd>
             <dt>allow</dt>            <dd>Allow cookies from <a>host</a></dd>
             <dt>deny</dt>             <dd>Deny cookies from <a>host</a></dd>
@@ -250,7 +251,7 @@
             If no <oa>action</oa> is given, the value of <o>cookies</o> is used.
         </p>
 
-        <example>:map -b c :cookies <k name="A-Tab"/></example>
+        <example><ex>:map -b</ex> <k>c</k> <ex>:cookies</ex> <k name="A-Tab"/></example>
     </description>
 </item>
 

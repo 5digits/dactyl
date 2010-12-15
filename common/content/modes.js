@@ -23,10 +23,8 @@ const Modes = Module("modes", {
 
         this._modeStack = update([], {
             pop: function pop() {
-                if (this.length <= 1) {
-                    util.dumpStack("Trying to pop last element in mode stack");
+                if (this.length <= 1)
                     throw Error("Trying to pop last element in mode stack");
-                }
                 return pop.superapply(this, arguments);
             }
         });
@@ -47,7 +45,7 @@ const Modes = Module("modes", {
                     if (selection && !selection.isCollapsed)
                         selection.collapseToStart();
                 }
-                else
+                else if (stack.pop)
                     editor.unselectText();
             }
         });
@@ -96,10 +94,12 @@ const Modes = Module("modes", {
                     dactyl.focusContent(true);
                 if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);
-                    // clear any selection made
-                    let selection = window.content.getSelection();
-                    if (selection && !selection.isCollapsed)
-                        selection.collapseToStart();
+                    for (let frame in values(buffer.allFrames())) {
+                        // clear any selection made
+                        let selection = frame.getSelection();
+                        if (selection && !selection.isCollapsed)
+                            selection.collapseToStart();
+                    }
                 }
 
             }

@@ -209,6 +209,18 @@ const IO = Module("io", {
         return io.File(file);
     },
 
+    isJarURL: function (url) {
+        try {
+            let uri = util.newURI(url);
+            let channel = services.io.newChannelFromURI(uri);
+            channel.cancel(Cr.NS_BINDING_ABORTED);
+            if (channel instanceof Ci.nsIJARChannel)
+                return channel.QueryInterface(Ci.nsIJARChannel);
+        }
+        catch (e) {}
+        return false;
+    },
+
     readHeredoc: function (end) {
         return "";
     },
@@ -654,7 +666,12 @@ lookup:
 
         completion.file = function file(context, full, dir) {
             // dir == "" is expanded inside readDirectory to the current dir
-            [dir] = (dir || context.filter).match(/^(?:.*[\/\\])?/);
+            function getDir(str) str.match(/^(?:.*[\/\\])?/)[0];
+            dir = getDir(dir || context.filter);
+
+            let file = util.getFile(dir);
+            if (file && file.exists() && !file.isDirectory())
+                file = file.parent;
 
             if (!full)
                 context.advance(dir.length);
@@ -677,13 +694,40 @@ lookup:
 
             // context.background = true;
             context.key = dir;
-            context.generate = function generate_file() {
-                try {
-                    return io.File(dir).readDirectory();
-                }
-                catch (e) {}
-                return [];
-            };
+            let channel = io.isJarURL(dir);
+            if (channel)
+                context.generate = function generate_jar() {
+                    let uri = channel.URI.QueryInterface(Ci.nsIJARURI);
+                    let file = util.getFile(uri.JARFile);
+                    if (file) {
+                        // let jar = services.zipReader.getZip(file); Crashes.
+                        let jar = services.ZipReader(file);
+                        try {
+                            let path = decodeURI(getDir(uri.JAREntry));
+                            return [
+                                {
+                                      isDirectory: function () s.substr(-1) == "/",
+                                      leafName: /([^\/]*)\/?$/.exec(s)[1]
+                                }
+                                for (s in iter(jar.findEntries("*"))) if (s.indexOf(path) == 0)
+                            ]
+                        }
+                        finally {
+                            jar.close();
+                        }
+                    }
+                };
+            else
+                context.generate = function generate_file() {
+                    try {
+                        util.dump(String(file), file && file.path);
+                        return io.File(file || dir).readDirectory();
+                    }
+                    catch (e) {
+                        util.reportError(e);
+                    }
+                    return [];
+                };
         };
 
         completion.runtime = function (context) {
@@ -715,7 +759,17 @@ lookup:
         };
 
         completion.addUrlCompleter("f", "Local files", function (context, full) {
-            if (/^(\.{0,2}|~)\/|^file:/.test(context.filter))
+            let match = /^(chrome:\/\/[^\/]+\/)([^/]*)$/.exec(context.filter);
+            if (match) {
+                context.key = match[1];
+                context.advance(match[1].length);
+                context.generate = function () iter({
+                    content: "Chrome content",
+                    locale: "Locale-specific content",
+                    skin: "Theme-specific content"
+                });
+            }
+            else if (/^(\.{0,2}|~)\/|^file:/.test(context.filter) || util.getFile(context.filter) || io.isJarURL(context.filter))
                 completion.file(context, full);
         });
     },

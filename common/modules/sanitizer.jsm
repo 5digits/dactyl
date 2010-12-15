@@ -27,6 +27,9 @@ Range.prototype.contains = function (date)
     date == null || (this.min == null || date >= this.min) && (this.max == null || date <= this.max);
 Range.prototype.__defineGetter__("isEternity", function () this.max == null && this.min == null);
 Range.prototype.__defineGetter__("isSession", function () this.max == null && this.min == sanitizer.sessionStart);
+Range.prototype.__defineGetter__("native", function ()
+    this.isEternity ? null : [range.min || 0, range.max == null ? Number.MAX_VALUE : range.max]);
+
 
 const Item = Class("Item", {
     init: function (name) {
@@ -266,7 +269,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 try {
                     let item = this.items[Sanitizer.argToPref(itemName)];
                     if (item && !this.itemMap[itemName].override) {
-                        item.range = range;
+                        item.range = range.native;
                         if ("clear" in item && item.canClear)
                             item.clear();
                     }
@@ -369,12 +372,16 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
 
                 let timespan = args["-timespan"] || modules.options["sanitizetimespan"];
 
-                let range = Range(), match = /^(\d+)([mhdw])$/.exec(timespan);
+                let range = Range();
+                let [match, num, unit] = /^(\d+)([mhdw])$/.exec(timespan) || [];
                 range[args["-older"] ? "max" : "min"] =
-                    match ? 1000 * (Date.now() - 1000 * parseInt(match[1], 10) * { m: 60, h: 3600, d: 3600 * 24, w: 3600 * 24 * 7 }[match[2]])
+                    match ? 1000 * (Date.now() - 1000 * parseInt(num, 10) * { m: 60, h: 3600, d: 3600 * 24, w: 3600 * 24 * 7 }[unit])
                           : (timespan[0] == "s" ? sanitizer.sessionStart : null);
 
                 let items = args.slice();
+                if (args["-host"] && !args.length)
+                    args[0] = "all";
+
                 if (args.bang) {
                     dactyl.assert(args.length == 0, "E488: Trailing characters");
                     items = Object.keys(sanitizer.itemMap).filter(
@@ -386,7 +393,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                 if (items.indexOf("all") >= 0)
                     items = Object.keys(sanitizer.itemMap).filter(function (k) items.indexOf(k) === -1);
 
-                sanitizer.range = range;
+                sanitizer.range = range.native;
                 sanitizer.ignoreTimespan = range.min == null;
                 sanitizer.sanitizing = true;
                 if (args["-host"]) {
@@ -412,11 +419,9 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
                     {
                         names: ["-host", "-h"],
                         description: "Only sanitize items referring to listed host or hosts",
-                        completer: function (context) {
-                            let hosts = context.filter.split(",");
-                            context.advance(context.filter.length - hosts.pop().length);
+                        completer: function (context, args) {
                             context.filters.push(function (item)
-                                !hosts.some(function (host) util.isSubdomain(item.text, host)));
+                                !args["-host"].some(function (host) util.isSubdomain(item.text, host)));
                             modules.completion.domain(context);
                         },
                         type: modules.CommandOption.LIST,

@@ -445,7 +445,7 @@ const Tabs = Module("tabs", {
         else {
             let index = (count - 1) % matches.length;
             if (reverse)
-                index = matches.length - count;
+                index = matches.length - index - 1;
             tabs.select(matches[index].id, false);
         }
     },

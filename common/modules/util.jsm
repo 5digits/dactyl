@@ -471,7 +471,12 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     getFile: function getFile(uri) {
         if (isString(uri))
-            uri = util.newURI(uri);
+            try {
+                uri = util.newURI(uri);
+            }
+            catch (e) {
+                return null;
+            }
 
         if (uri instanceof Ci.nsIFileURL)
             return File(uri.QueryInterface(Ci.nsIFileURL).file);

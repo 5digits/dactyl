@@ -58,6 +58,7 @@ const Services = Module("Services", {
         this.add("versionCompare",      "@mozilla.org/xpcom/version-comparator;1",          Ci.nsIVersionComparator);
         this.add("windowMediator",      "@mozilla.org/appshell/window-mediator;1",          Ci.nsIWindowMediator);
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
+        this.add("zipReader",           "@mozilla.org/libjar/zip-reader-cache;1",           Ci.nsIZipReaderCache);
 
         this.addClass("File",         "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
         this.addClass("file:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
@@ -68,15 +69,18 @@ const Services = Module("Services", {
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer);
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
+        this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          Ci.nsIZipReader, "open");
         this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
     },
 
-    _create: function (classes, ifaces, meth) {
+    _create: function (classes, ifaces, meth, init, args) {
         try {
             let res = Cc[classes][meth || "getService"]();
             if (!ifaces)
                 return res.wrappedJSObject;
             Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));
+            if (init)
+                res[init].apply(res, args);
             return res;
         }
         catch (e) {
@@ -113,9 +117,9 @@ const Services = Module("Services", {
      * @param {nsISupports|nsISupports[]} ifaces The interface or array of
      *     interfaces implemented by this class.
      */
-    addClass: function (name, class_, ifaces) {
+    addClass: function (name, class_, ifaces, init) {
         const self = this;
-        return this[name] = function () self._create(class_, ifaces, "createInstance");
+        return this[name] = function () self._create(class_, ifaces, "createInstance", init, arguments);
     },
 
     /**
