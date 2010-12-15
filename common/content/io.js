@@ -772,7 +772,7 @@ lookup:
                 if (!match[4]) {
                     context.key = match[2];
                     context.advance(match[2].length);
-                    context.generate = function () util.chromePackages.map(function (p) [p, match[1] + p + "/"]);
+                    context.generate = function () util.chromePackages.map(function (p) [p, match[2] + p + "/"]);
                 }
                 else if (match[3] === "chrome") {
                     context.key = match[1];
@@ -784,8 +784,9 @@ lookup:
                     });
                 }
             }
-            else if (/^(\.{0,2}|~)\/|^file:/.test(context.filter) || util.getFile(context.filter) || io.isJarURL(context.filter))
-                completion.file(context, full);
+            if (!match || match[3] === "resource" && match[4])
+                if (/^(\.{0,2}|~)\/|^file:/.test(context.filter) || util.getFile(context.filter) || io.isJarURL(context.filter))
+                    completion.file(context, full);
         });
     },
     javascript: function () {
