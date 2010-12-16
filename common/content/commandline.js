@@ -1342,10 +1342,10 @@ const CommandLine = Module("commandline", {
             this._caret = this.caret;
         },
 
-        get caret() this.editor.selection.focusOffset,
+        get caret() this.editor.selection.getRangeAt(0).startOffset,
         set caret(offset) {
-            commandline.widgets.active.command.selectionStart = offset;
-            commandline.widgets.active.command.selectionEnd = offset;
+            this.editor.selection.getRangeAt(0).setStart(this.editor.rootElement.firstChild, offset);
+            this.editor.selection.getRangeAt(0).setEnd(this.editor.rootElement.firstChild, offset);
         },
 
         get start() this.context.allItems.start,
@@ -1394,6 +1394,7 @@ const CommandLine = Module("commandline", {
             // Don't show 1-character substrings unless we've just hit backspace
             if (substring.length < 2 && (!this._lastSubstring || this._lastSubstring.indexOf(substring) != 0))
                 return;
+
             this._lastSubstring = substring;
 
             let value = this.completion;
