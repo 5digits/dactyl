@@ -215,7 +215,7 @@ const IO = Module("io", {
             let channel = services.io.newChannelFromURI(uri);
             channel.cancel(Cr.NS_BINDING_ABORTED);
             if (channel instanceof Ci.nsIJARChannel)
-                return channel.QueryInterface(Ci.nsIJARChannel);
+                return channel.URI.QueryInterface(Ci.nsIJARURI);
         }
         catch (e) {}
         return false;
@@ -670,7 +670,7 @@ lookup:
             dir = getDir(dir || context.filter);
 
             let file = util.getFile(dir);
-            if (file && file.exists() && !file.isDirectory())
+            if (file && (!file.exists() || !file.isDirectory()))
                 file = file.parent;
 
             if (!full)
@@ -694,22 +694,22 @@ lookup:
 
             // context.background = true;
             context.key = dir;
-            let channel = io.isJarURL(dir);
-            if (channel)
+            let uri = io.isJarURL(dir);
+            if (uri)
                 context.generate = function generate_jar() {
-                    let uri = channel.URI.QueryInterface(Ci.nsIJARURI);
                     let file = util.getFile(uri.JARFile);
                     if (file) {
                         // let jar = services.zipReader.getZip(file); Crashes.
                         let jar = services.ZipReader(file);
                         try {
-                            let path = decodeURI(getDir(uri.JAREntry));
+                            let filter = RegExp("^" + util.regexp.escape(decodeURI(getDir(uri.JAREntry)))
+                                                + "[^/]*/?$");
                             return [
                                 {
                                       isDirectory: function () s.substr(-1) == "/",
                                       leafName: /([^\/]*)\/?$/.exec(s)[1]
                                 }
-                                for (s in iter(jar.findEntries("*"))) if (s.indexOf(path) == 0)
+                                for (s in iter(jar.findEntries("*"))) if (filter.test(s))
                             ]
                         }
                         finally {
@@ -720,12 +720,9 @@ lookup:
             else
                 context.generate = function generate_file() {
                     try {
-                        util.dump(String(file), file && file.path);
                         return io.File(file || dir).readDirectory();
                     }
-                    catch (e) {
-                        util.reportError(e);
-                    }
+                    catch (e) {}
                     return [];
                 };
         };
