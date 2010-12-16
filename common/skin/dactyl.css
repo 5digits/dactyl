@@ -78,6 +78,10 @@
 @-moz-document
     url-prefix(chrome://) {
 
+#addon-bar > #addonbar-closebutton {
+    visibility: collapse;
+}
+
 [dactyl|highlight~=Bell] {
     -moz-appearance: none !important;
 }
