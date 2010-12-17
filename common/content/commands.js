@@ -314,12 +314,13 @@ const Command = Class("Command", {
     replacementText: null
 }, {
     bindMacro: function (args, default_, params) {
+        let process = String;
         let makeParams = function makeParams()
             let (args = arguments)
-                params.map(function (name, i) [name, args[i]]).toObject();
+                params.map(function (name, i) [name, process(args[i])]).toObject();
         if (callable(params))
-            makeParams = params;
-        else
+            makeParams = function makeParams(args) array(Iterator(params.apply(this, arguments))).map(function ([k, v]) [k, process(v)]).toObject();
+        else if (params)
             params = array(params);
 
         let rhs = args.literalArg;
@@ -345,6 +346,7 @@ const Command = Class("Command", {
                 action = dactyl.userEval("(function action() { with (action.makeParams.apply(this, arguments)) {" + args.literalArg + "} })")
             else
                 action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
+            process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
             action.makeParams = makeParams;
             break;
         }

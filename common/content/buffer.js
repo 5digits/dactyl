@@ -160,15 +160,19 @@ const Buffer = Module("buffer", {
                                                .replace(RegExp("(\\." + ext + ")?$"), "." + ext), title]);
     },
 
-    _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc) {
+    _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc, uri) {
+        uri = uri || util.newURI(doc.location.href);
         let args = {
-            url:   doc.location.href,
+            url: { toString: function () uri.spec, valueOf: function () uri },
             title: doc.title
         };
 
         if (dactyl.has("tabs")) {
             args.tab = tabs.getContentIndex(doc) + 1;
-            args.doc = "tabs.getTab(" + (args.tab - 1) + ").linkedBrowser.contentDocument";
+            args.doc = {
+                valueOf: function () doc,
+                toString: function () "tabs.getTab(" + (args.tab - 1) + ").linkedBrowser.contentDocument"
+            };
         }
 
         autocommands.trigger(name, args);
@@ -243,7 +247,7 @@ const Buffer = Module("buffer", {
                     webProgress.DOMWindow.document.pageIsFullyLoaded = 0;
                     statusline.updateProgress(0);
 
-                    autocommands.trigger("PageLoadPre", { url: buffer.URL });
+                    buffer._triggerLoadAutocmd("PageLoadPre", webProgress.DOMWindow.document);
 
                     // don't reset mode if a frame of the frameset gets reloaded which
                     // is not the focused frame
@@ -295,7 +299,7 @@ const Buffer = Module("buffer", {
                 uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
 
             util.timeout(function () {
-                autocommands.trigger("LocationChange", { url: buffer.URL });
+                buffer._triggerLoadAutocmd("LocationChange", webProgress.DOMWindow ? webProgress.DOMWindow.document : content.document, uri);
             });
 
             // if this is not delayed we get the position of the old buffer

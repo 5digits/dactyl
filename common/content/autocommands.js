@@ -119,7 +119,7 @@ const AutoCommands = Module("autocommands", {
                 lastPattern = autoCmd.pattern;
                 dactyl.echomsg("autocommand " + autoCmd.command, 9);
 
-                autoCmd.command(args);
+                dactyl.trapErrors(autoCmd.command, autoCmd, args);
             }
         }
     }
@@ -155,16 +155,7 @@ const AutoCommands = Module("autocommands", {
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
                         autocommands.remove(event, regexp);
-                    if (args["-javascript"]) {
-                        cmd = dactyl.userFunc("args", "with(args) {" + cmd + "}");
-                        cmd.toString = function toString() "-javascript " + cmd.source;
-                    }
-                    else {
-                        cmd = function cmd(args) commands.execute(cmd.source, args, false, null, cmd.sourcing);
-                        cmd.sourcing = io.sourcing && update({}, io.sourcing);
-                        cmd.toString = function toString() cmd.source;
-                    }
-                    cmd.source = args[2];
+                    cmd = Command.bindMacro(args, "-ex", function (params) params);
                     autocommands.add(events, regexp, cmd);
                 }
                 else {
