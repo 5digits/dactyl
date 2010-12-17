@@ -342,7 +342,7 @@ lookup:
         this.withSavedValues(["sourcing"], function () {
             this.sourcing = null;
             try {
-                var file = io.File(util.getFile(filename) || filename);
+                var file = util.getFile(filename) || io.File(filename);
 
                 if (!file.exists() || !file.isReadable() || file.isDirectory()) {
                     if (!silent)

@@ -223,11 +223,11 @@ const Option = Class("Option", {
      */
     op: function (operator, values, scope, invert, str) {
 
-        let newValues = this._op(operator, values, scope, invert);
-        if (newValues == null)
-            return "Operator " + operator + " not supported for option type " + this.type;
-
         try {
+            var newValues = this._op(operator, values, scope, invert);
+            if (newValues == null)
+                return "Operator " + operator + " not supported for option type " + this.type;
+
             if (!this.isValidValue(newValues))
                 return this.invalidArgument(str || this.stringify(values), operator);
         }
@@ -489,9 +489,11 @@ const Option = Class("Option", {
         },
 
         number: function (operator, values, scope, invert) {
-            // TODO: support floats? Validators need updating.
-            if (!/^[+-]?(?:0x[0-9a-f]+|0[0-7]*|[1-9][0-9]*)$/i.test(values))
-                return "E521: Number required after := " + this.name + "=" + values;
+            if (invert)
+                values = values[(values.indexOf(String(this.value)) + 1) % values.length]
+
+            dactyl.assert(!isNaN(values) && Number(values) == parseInt(values),
+                          "E521: Number required after := " + this.name + "=" + values);
 
             let value = parseInt(values);
 
@@ -561,6 +563,8 @@ const Option = Class("Option", {
         get regexpmap() this.stringlist,
 
         string: function (operator, values, scope, invert) {
+            if (invert)
+                return values[(values.indexOf(this.value) + 1) % values.length]
             switch (operator) {
             case "+":
                 return this.value + values;
@@ -907,10 +911,12 @@ const Options = Module("options", {
                 }
                 // write access
                 else {
-                    if (opt.option.type == "boolean") {
+                    if (opt.option.type === "boolean") {
                         dactyl.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
                         opt.values = !opt.unsetBoolean;
                     }
+                    else if (/^(string|number)$/.test(opt.option.type) && opt.invert)
+                        opt.values = Option.splitList(opt.value);
                     try {
                         var res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert,
                                                 opt.value);

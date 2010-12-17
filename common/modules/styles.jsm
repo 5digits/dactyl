@@ -426,7 +426,7 @@ const Styles = Module("Styles", {
                 for (let item in Iterator({ Active: true, Inactive: false })) {
                     let [name, active] = item;
                     context.fork(name, 0, null, function (context) {
-                        context.title[0] = name + " " + context.title[0];
+                        context.title[0] = name + " Sheets";
                         context.generate = generate || function () styles.userSheets;
                         context.filters.push(function (item) item.active == active);
                     });

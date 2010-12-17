@@ -404,19 +404,17 @@
         </note>
 
         <example>
-            <p>
-                To enable auto-completion for everything but <ex>:history</ex> or
-                <ex>:bmarks</ex>, you would choose a value such as
-                <str delim="">!/ex/(bmarks|history),.?</str>
-            </p>
-
-            <p>
-                To go in the other direction, i.e. <em>only</em> enable
-                auto-completion for those commands, you have to jump through
-                some hoops, due to the way contexts work (see the note above):
-                <str delim="">/ex/(bmarks|history),^(/|/ex/?)$</str>
-            </p>
+            To enable auto-completion for everything but <ex>:history</ex> or
+            <ex>:bmarks</ex>, you would choose a value such as
+            <str delim="">!/ex/(bmarks|history),.?</str>
         </example>
+
+        <p>
+            To go in the other direction, i.e. <em>only</em> enable
+            auto-completion for those commands, you have to jump through
+            some hoops, due to the way contexts work (see the note above):
+            <str delim="">/ex/(bmarks|history),^(/|/ex/?)$</str>
+        </p>
     </description>
 </item>
 
