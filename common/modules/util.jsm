@@ -10,11 +10,12 @@ try {
 
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("util", {
-    exports: ["FailedAssertion", "Math", "NS", "Util", "XHTML", "XUL", "util"],
+    exports: ["FailedAssertion", "Math", "NS", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
     use: ["highlight", "storage", "template"]
 });
 
+const XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
 const XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
 const XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 const NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");

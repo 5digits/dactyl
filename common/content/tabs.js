@@ -21,14 +21,6 @@ const Tabs = Module("tabs", {
         this._lastBufferSwitchArgs = "";
         this._lastBufferSwitchSpecial = true;
 
-        this.tabBinding = styles.addSheet(true, "tab-binding", "chrome://browser/content/browser.xul", String.replace(<><![CDATA[
-                xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab-3) !important; }
-                #TabsToolbar > xul|tabs > xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab-4) !important; }
-                // FIXME: better solution for themes?
-                .tabbrowser-tab[busy] > .tab-icon > .tab-icon-image { list-style-image: url('chrome://global/skin/icons/loading_16.png') !important; }
-        ]]></>, /tab-./g, function (m) util.OS.isMacOSX ? "tab-mac" : m),
-        false, true);
-
         // hide tabs initially to prevent flickering when 'stal' would hide them
         // on startup
         if (config.hasTabbrowser)
@@ -45,6 +37,17 @@ const Tabs = Module("tabs", {
     },
 
     _updateTabCount: function () {
+        for (let tab in values(this.allTabs)) {
+            function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
+            if (!node("dactyl-tab-number")) {
+                let dom = util.xmlToDom(<xul xmlns:xul={XUL} xmlns:html={XHTML}
+                    ><xul:hbox highlight="TabIconNumber" class="dactyl-tab-number"
+                    /><xul:hbox highlight="TabNumber"
+                /></xul>.*, document);
+                let img = node("tab-icon-image");
+                img.parentNode.appendChild(dom);
+            }
+        }
         statusline.updateTabCount(true);
     },
 
@@ -479,6 +482,9 @@ const Tabs = Module("tabs", {
         services.sessionStore.setTabState(to, tabState);
     }
 }, {
+    load: function () {
+        tabs._updateTabCount();
+    },
     commands: function () {
         commands.add(["bd[elete]", "bw[ipeout]", "bun[load]", "tabc[lose]"],
             "Delete current buffer",

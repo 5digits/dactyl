@@ -72,16 +72,16 @@ const Events = Module("events", {
         };
 
         this._activeMenubar = false;
-        this.addSessionListener(window, "DOMMenuBarActive", this.closure.onDOMMenuBarActive, true);
-        this.addSessionListener(window, "DOMMenuBarInactive", this.closure.onDOMMenuBarInactive, true);
-        this.addSessionListener(window, "focus", this.wrapListener(this.onFocus), true);
-        this.addSessionListener(window, "keydown", this.wrapListener(this.onKeyUpOrDown), true);
-        this.addSessionListener(window, "keypress", this.wrapListener(this.onKeyPress), true);
-        this.addSessionListener(window, "keyup", this.wrapListener(this.onKeyUpOrDown), true);
-        this.addSessionListener(window, "mousedown", this.wrapListener(this.onMouseDown), true);
-        this.addSessionListener(window, "popuphidden", this.closure.onPopupHidden, true);
-        this.addSessionListener(window, "popupshown", this.closure.onPopupShown, true);
-        this.addSessionListener(window, "resize", this.closure.onResize, true);
+        this.addSessionListener(window, "DOMMenuBarActive", this.onDOMMenuBarActive, true);
+        this.addSessionListener(window, "DOMMenuBarInactive", this.onDOMMenuBarInactive, true);
+        this.addSessionListener(window, "focus", this.onFocus, true);
+        this.addSessionListener(window, "keydown", this.onKeyUpOrDown, true);
+        this.addSessionListener(window, "keypress", this.onKeyPress, true);
+        this.addSessionListener(window, "keyup", this.onKeyUpOrDown, true);
+        this.addSessionListener(window, "mousedown", this.onMouseDown, true);
+        this.addSessionListener(window, "popuphidden", this.onPopupHidden, true);
+        this.addSessionListener(window, "popupshown", this.onPopupShown, true);
+        this.addSessionListener(window, "resize", this.onResize, true);
     },
 
     destroy: function () {
@@ -103,6 +103,7 @@ const Events = Module("events", {
      */
     addSessionListener: function (target, event, callback, capture) {
         let args = Array.slice(arguments, 0);
+        args[2] = this.wrapListener(callback);
         args[0].addEventListener.apply(args[0], args.slice(1));
         args[0] = Cu.getWeakReference(args[0]);
         this.sessionListeners.push(args);

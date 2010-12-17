@@ -1237,9 +1237,6 @@ const Dactyl = Module("dactyl", {
 
                     styles.addSheet(true, "taboptions", "chrome://*",
                         classes.length ? classes.join(",") + "{ display: none; }" : "");
-
-                    tabs.tabBinding.enabled = Array.some(opts, function (k) k in this.opts, this);
-                    statusline.updateTabCount();
                 }
             }
         ].filter(function (group) !group.feature || dactyl.has(group.feature));

@@ -234,13 +234,18 @@ const ConfigBase = Class(ModuleBase, {
         TabClose;.tab-close-button
         TabIcon;.tab-icon
         TabText;.tab-text
-        !TabNumber      font-weight: bold; margin: 0px; padding-right: .3ex;
-        !TabIconNumber {
+        TabNumber               font-weight: bold; margin: 0px; padding-right: .3ex;
+        TabNumber::after        content: counter(dactyl-tab-number);
+        TabIconNumber {
+            width: 16px;
+            margin-left: -16px;
+            display: block;
             font-weight: bold;
             color: white;
             text-align: center;
             text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
         }
+        TabIconNumber::after    content: counter(dactyl-tab-number);
 
         Title       color: magenta; background: white; font-weight: bold;
         URL         text-decoration: none; color: green; background: inherit;
