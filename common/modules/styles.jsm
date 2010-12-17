@@ -28,38 +28,47 @@ Sheet.liveProperty = function (name) {
 Sheet.liveProperty("agent");
 Sheet.liveProperty("css");
 Sheet.liveProperty("sites");
-Sheet.prototype.__defineGetter__("uri", function () cssUri(this.fullCSS));
-Sheet.prototype.__defineGetter__("enabled", function () this._enabled);
-Sheet.prototype.__defineSetter__("enabled", function (on) {
-    if (on != this._enabled || this.uri != this._uri) {
-        if (on)
-            this.enabled = false;
-        else if (!this._uri)
-            return;
+update(Sheet.prototype, {
+    formatSites: function (uris)
+          template.map(this.sites,
+                       function (filter) <span highlight={uris.some(Styles.matchFilter(filter)) ? "Filter" : ""}>{filter}</span>,
+                       <>,</>),
 
-        let meth = on ? "registerSheet" : "unregisterSheet";
-        styles[meth](on ? this.uri   : this._uri,
-                     on ? this.agent : this._agent);
+    get uri() cssUri(this.fullCSS),
 
-        this._agent = this.agent;
-        this._enabled = Boolean(on);
-        this._uri = this.uri;
+    get enabled() this._enabled,
+    set enabled(on) {
+        if (on != this._enabled || this.uri != this._uri) {
+            if (on)
+                this.enabled = false;
+            else if (!this._uri)
+                return;
+
+            let meth = on ? "registerSheet" : "unregisterSheet";
+            styles[meth](on ? this.uri   : this._uri,
+                         on ? this.agent : this._agent);
+
+            this._agent = this.agent;
+            this._enabled = Boolean(on);
+            this._uri = this.uri;
+        }
+    },
+
+    get fullCSS() {
+        let filter = this.sites;
+        let css = this.css;
+        if (filter[0] == "*")
+            return namespace + css;
+
+        let selectors = filter.map(function (part)
+                                    (/[*]$/.test(part)   ? "url-prefix" :
+                                     /[\/:]/.test(part)  ? "url"
+                                                         : "domain")
+                                    + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
+                              .join(", ");
+        return "/* Dactyl style #" + this.id + (this.agent ? " (agent)" : "") + " */ "
+             + namespace + " @-moz-document " + selectors + "{\n" + css + "\n}\n";
     }
-});
-Sheet.prototype.__defineGetter__("fullCSS", function wrapCSS() {
-    let filter = this.sites;
-    let css = this.css;
-    if (filter[0] == "*")
-        return namespace + css;
-
-    let selectors = filter.map(function (part)
-                                (/[*]$/.test(part)   ? "url-prefix" :
-                                 /[\/:]/.test(part)  ? "url"
-                                                     : "domain")
-                                + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
-                          .join(", ");
-    return "/* Dactyl style #" + this.id + (this.agent ? " (agent)" : "") + " */ "
-         + namespace + " @-moz-document " + selectors + "{\n" + css + "\n}\n";
 });
 
 /**
@@ -258,6 +267,33 @@ const Styles = Module("Styles", {
         });
     },
 
+    /**
+     * A curried function which determines which host names match a
+     * given stylesheet filter. When presented with one argument,
+     * returns a matcher function which, given one nsIURI argument,
+     * returns true if that argument matches the given filter. When
+     * given two arguments, returns true if the second argument matches
+     * the given filter.
+     *
+     * @param {string} filter The URI filter to match against.
+     * @param {nsIURI} uri The location to test.
+     * @returns {nsIURI -> boolean}
+     */
+    matchFilter: function (filter) {
+        if (/[*]$/.test(filter)) {
+            let re = RegExp("^" + util.regexp.escape(filter.substr(0, filter.length - 1)));
+            function test(uri) re.test(uri.spec);
+        }
+        else if (/[\/:]/.test(filter))
+            function test(uri) uri.spec === filter;
+        else
+            function test(uri) uri.host === filter;
+        test.toString = function toString() filter;
+        if (arguments.length < 2)
+            return test;
+        return test(arguments[1]);
+    },
+
     propertyPattern: util.regexp(<![CDATA[
             (?:
                 (\s*)
@@ -290,18 +326,20 @@ const Styles = Module("Styles", {
                 let name = args["-name"];
 
                 if (!css) {
-                    let list = Array.concat([i for (i in Iterator(styles.userNames))],
-                                            [i for (i in Iterator(styles.userSheets)) if (!i[1].name)]);
+                    let list = styles.userSheets.slice()
+                                     .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
+                                                                            : !!b.name - !!a.name || a.id - b.id);
+                    let uris = util.visibleURIs(window.content);
                     modules.commandline.commandOutput(
                         template.tabular(["", "Name", "Filter", "CSS"],
                             ["min-width: 1em; text-align: center; color: red; font-weight: bold;",
                              "padding: 0 1em 0 1ex; vertical-align: top;",
                              "padding: 0 1em 0 0; vertical-align: top;"],
                             ([sheet.enabled ? "" : UTF8("×"),
-                              key,
-                              sheet.sites.join(","),
+                              sheet.name || styles.userSheets.indexOf(sheet),
+                              sheet.formatSites(uris),
                               sheet.css]
-                             for ([i, [key, sheet]] in Iterator(list))
+                             for (sheet in values(list))
                              if ((!filter || sheet.sites.indexOf(filter) >= 0) && (!name || sheet.name == name)))));
                 }
                 else {
@@ -375,13 +413,43 @@ const Styles = Module("Styles", {
                 action: function (sheet) styles.removeSheet(sheet)
             }
         ].forEach(function (cmd) {
+
+            function splitContext(context, generate) {
+                let uris = util.visibleURIs(window.content);
+                if (!generate) {
+                    context.keys.active = function (sheet) sheet.sites.some(function (site) uris.some(Styles.matchFilter(site)));
+                    context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>;
+                    if (cmd.filter)
+                        context.filters.push(function ({ item }) cmd.filter(item));
+                }
+
+                for (let item in Iterator({ Active: true, Inactive: false })) {
+                    let [name, active] = item;
+                    context.fork(name, 0, null, function (context) {
+                        context.title[0] = name + " " + context.title[0];
+                        context.generate = generate || function () styles.userSheets;
+                        context.filters.push(function (item) item.active == active);
+                    });
+                }
+            }
+
             commands.add(cmd.name, cmd.desc,
                 function (args) {
                     styles.findSheets(false, args["-name"], args[0], args.literalArg, args["-index"])
                           .forEach(cmd.action);
                 },
             {
-                completer: function (context) { context.completions = styles.sites.map(function (site) [site, ""]); },
+                completer: function (context) {
+                    let uris = util.visibleURIs(window.content);
+                    context.keys = {
+                        text: util.identity, description: util.identity,
+                        active: function (site) uris.some(Styles.matchFilter(site))
+                    };
+                    if (cmd.filter)
+                        context.filters.push(function ({ item })
+                            styles.userSheets.some(function (sheet) sheet.sites.indexOf(item) >= 0 && cmd.filter(sheet)));
+                    splitContext(context, function () styles.sites);
+                },
                 literal: 1,
                 options: [
                     {
@@ -389,16 +457,18 @@ const Styles = Module("Styles", {
                         type: modules.CommandOption.INT,
                         completer: function (context) {
                             context.compare = modules.CompletionContext.Sort.number;
-                            return [[i, <>{sheet.sites.join(",")}: {sheet.css.replace("\n", "\\n")}</>]
-                                    for ([i, sheet] in styles.userSheets)
-                                    if (!cmd.filter || cmd.filter(sheet))];
+                            context.keys.text = function (sheet) styles.userSheets.indexOf(sheet);
+                            splitContext(context);
                         },
                     }, {
                         names: ["-name", "-n"],
                         type: modules.CommandOption.STRING,
-                        completer: function () [[name, sheet.css]
-                                                for ([name, sheet] in Iterator(styles.userNames))
-                                                if (!cmd.filter || cmd.filter(sheet))]
+                        completer: function (context) {
+                            context.compare = modules.CompletionContext.Sort.number;
+                            context.keys.text = function (sheet) sheet.name;
+                            context.filters.push(function ({ item }) item.name);
+                            splitContext(context);
+                        }
                     }
                 ]
             });

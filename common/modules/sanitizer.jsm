@@ -509,14 +509,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
     },
     completion: function (dactyl, modules, window) {
         modules.completion.visibleHosts = function completeHosts(context) {
-            let res = [], seen = {};
-            (function rec(frame) {
-                try {
-                    res = res.concat(util.subdomains(frame.location.host));
-                }
-                catch (e) {}
-                Array.forEach(frame.frames, rec);
-            })(window.content);
+            let res = util.visibleHosts(window.content);
             if (context.filter && !res.some(function (host) host.indexOf(context.filter) >= 0))
                 res.push(context.filter);
 
@@ -524,7 +517,7 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
             context.anchored = false;
             context.compare = modules.CompletionContext.Sort.unsorted;
             context.keys = { text: util.identity, description: util.identity };
-            context.completions = res.filter(function (h) !set.add(seen, h));
+            context.completions = res;
         };
     },
     options: function (dactyl, modules) {

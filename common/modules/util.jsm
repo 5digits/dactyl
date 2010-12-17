@@ -1162,6 +1162,30 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         }
     },
 
+    visibleHosts: function (win) {
+        let res = [], seen = {};
+        (function rec(frame) {
+            try {
+                res = res.concat(util.subdomains(frame.location.host));
+            }
+            catch (e) {}
+            Array.forEach(frame.frames, rec);
+        })(win);
+        return res.filter(function (h) !set.add(seen, h));
+    },
+
+    visibleURIs: function (win) {
+        let res = [], seen = {};
+        (function rec(frame) {
+            try {
+                res = res.concat(util.newURI(frame.location.href));
+            }
+            catch (e) {}
+            Array.forEach(frame.frames, rec);
+        })(win);
+        return res.filter(function (h) !set.add(seen, h.spec));
+    },
+
     /**
      * Converts an E4X XML literal to a DOM node. Any attribute named
      * highlight is present, it is transformed into dactyl:highlight,
