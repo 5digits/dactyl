@@ -1121,7 +1121,7 @@ const Buffer = Module("buffer", {
             overflow = "overflowX", border1 = "borderLeftWidth", border2 = "borderRightWidth";
 
         let style = util.computedStyle(elem);
-        let borderSize = parseInt(style[border1]) + parseInt(style[border2]);
+        let borderSize = Math.round(parseFloat(style[border1]) + parseFloat(style[border2]));
         let realSize = elem[size];
         // Stupid Gecko eccentricities. May fail for quirks mode documents.
         if (elem[size] + borderSize == elem[max] || elem[size] == 0) // Stupid, fallible heuristic.
