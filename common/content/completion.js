@@ -961,10 +961,10 @@ const Completion = Module("completion", {
                 // Because its description is useful during completion. --Kris
                 ["",              "Complete only the first match"],
                 ["full",          "Complete the next full match"],
-                ["longest",       "Complete to longest common string"],
+                ["longest",       "Complete the longest common string"],
                 ["list",          "If more than one match, list all matches"],
                 ["list:full",     "List all and complete first match"],
-                ["list:longest",  "List all and complete common string"]
+                ["list:longest",  "List all and complete the longest common string"]
             ],
             checkHas: function (value, val) {
                 let [first, second] = value.split(":", 2);
@@ -977,7 +977,7 @@ const Completion = Module("completion", {
         };
 
         options.add(["altwildmode", "awim"],
-            "Define how command-line completion works when the Alt key is pressed",
+            "Define the behavior of the <A-Tab> key in command-line completion",
             "stringlist", "list:full",
             wildmode);
 
@@ -988,12 +988,10 @@ const Completion = Module("completion", {
         options.add(["complete", "cpt"],
             "Items which are completed at the :open prompts",
             "charlist", config.defaults.complete == null ? "slf" : config.defaults.complete,
-            {
-                completer: function (context) values(completion.urlCompleters)
-            });
+            { completer: function (context) values(completion.urlCompleters) });
 
         options.add(["wildanchor", "wia"],
-            "Regexp list defining which contexts require matches anchored to the beginning of the result",
+            "Define which completion groups only match at the beginning of their text",
             "regexplist", "!/ex/(back|buffer|ext|forward|help|undo)");
 
         options.add(["wildcase", "wic"],
@@ -1008,12 +1006,12 @@ const Completion = Module("completion", {
             });
 
         options.add(["wildmode", "wim"],
-            "Define how command-line completion works",
+            "Define the behavior of the <Tab> key in command-line completion",
             "stringlist", "list:full",
             wildmode);
 
         options.add(["wildsort", "wis"],
-            "Regexp list of which contexts to sort",
+            "Define which completion groups are sorted",
             "regexplist", ".*");
     }
 });

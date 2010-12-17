@@ -943,7 +943,7 @@ const Tabs = Module("tabs", {
     },
     options: function () {
         options.add(["showtabline", "stal"],
-            "Control when to show the tab bar of opened web pages",
+            "Define when the tab bar is visible",
             "number", config.defaults["showtabline"],
             {
                 setter: function (value) {
@@ -983,7 +983,7 @@ const Tabs = Module("tabs", {
                 ["paste", "P and gP mappings"]
             ];
             options.add(["activate", "act"],
-                "Define when tabs are automatically activated",
+                "Define when newly created tabs are automatically activated",
                 "stringlist", [g[0] for (g in values(activateGroups.slice(1))) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
                 {
                     completer: function (context) activateGroups,

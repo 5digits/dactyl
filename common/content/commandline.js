@@ -1703,17 +1703,17 @@ const CommandLine = Module("commandline", {
             { validator: function (value) value >= 0 });
 
         options.add(["maxitems"],
-            "Maximum number of items to display at once",
+            "Maximum number of completion items to display at once",
             "number", 20,
             { validator: function (value) value >= 1 });
 
         options.add(["messages", "msgs"],
-            "Number of messages to store in the message history",
+            "Number of messages to store in the :message history",
             "number", 100,
             { validator: function (value) value >= 0 });
 
         options.add(["more"],
-            "Pause the message list window when more than one screen of listings is displayed",
+            "Pause the message list window when the full output will not fit on one page",
             "boolean", true);
 
         options.add(["showmode", "smd"],

@@ -564,7 +564,7 @@ const Bookmarks = Module("bookmarks", {
     },
     options: function () {
         options.add(["defsearch", "ds"],
-            "Set the default search engine",
+            "The default search engine",
             "string", "google",
             {
                 completer: function completer(context) {
@@ -574,7 +574,7 @@ const Bookmarks = Module("bookmarks", {
             });
 
         options.add(["suggestengines"],
-             "Engine alias which provide search suggestions",
+             "Search engines used for search suggestions",
              "stringlist", "google",
              { completer: function completer(context) completion.searchEngine(context, true), });
     },

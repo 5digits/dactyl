@@ -1168,7 +1168,7 @@ const Dactyl = Module("dactyl", {
             "boolean", false);
 
         options.add(["exrc", "ex"],
-            "Allow reading of an RC file in the current directory",
+            "Enable automatic sourcing of an RC file in the current directory at startup",
             "boolean", false);
 
         options.add(["fullscreen", "fs"],
@@ -1265,7 +1265,7 @@ const Dactyl = Module("dactyl", {
             "regexplist", "'\\.(js|" + config.fileExtension + ")$'");
 
         options.add(["titlestring"],
-            "Change the title of the window",
+            "The string shown at the end of the window title",
             "string", config.defaults.titlestring || config.host,
             {
                 setter: function (value) {
@@ -1297,8 +1297,9 @@ const Dactyl = Module("dactyl", {
             });
 
         options.add(["urlseparator", "urlsep", "us"],
-            "Set the separator regexp used to separate multiple URL args",
-            "string", "\\|");
+            "The regular expression used to separate multiple URLs in :open and friends",
+            "string", "\\|",
+            { validator: function (value) RegExp(value) });
 
         options.add(["verbose", "vbs"],
             "Define which info messages are displayed",

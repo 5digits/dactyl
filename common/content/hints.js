@@ -1115,7 +1115,7 @@ const Hints = Module("hints", {
 
         function xpath(arg) Option.quote(util.makeXPath(arg));
         options.add(["extendedhinttags", "eht"],
-            "XPath string of hintable elements activated by ';'",
+            "XPath strings of hintable elements for extended hint modes",
             "regexpmap", "[iI]:" + xpath(["img"]) +
                         ",[OTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
                         ",[F]:" + xpath(["div", "span", "p", "body", "html"]) +
@@ -1160,7 +1160,7 @@ const Hints = Module("hints", {
             });
 
         options.add(["hintmatching", "hm"],
-            "How links are matched",
+            "How hints are filtered",
             "stringlist", "contains",
             {
                 completer: function (context) [
@@ -1175,17 +1175,18 @@ const Hints = Module("hints", {
             });
 
         options.add(["wordseparators", "wsp"],
-            "How words are split for hintmatching",
-            "string", '[.,!?:;/"^$%&?()[\\]{}<>#*+|=~ _-]');
+            "Regular expression defining which characters separate words when matching hints",
+            "string", '[.,!?:;/"^$%&?()[\\]{}<>#*+|=~ _-]',
+            { validator: function (value) RegExp(value) });
 
         options.add(["hintinputs", "hin"],
-            "How text input fields are hinted",
+            "Which text is used to filter hints for input elements",
             "stringlist", "label,value",
             {
                 completer: function (context) [
-                    ["value", "Match against the value contained by the input field"],
-                    ["label", "Match against the value of a label for the input field, if one can be found"],
-                    ["name",  "Match against the name of an input field, only if neither a name or value could be found."]
+                    ["value", "Match against the value of the input field"],
+                    ["label", "Match against the text of a label for the input field, if one can be found"],
+                    ["name",  "Match against the name of the input field"]
                 ]
             });
     }

@@ -808,7 +808,7 @@ lookup:
             "boolean", true);
 
         options.add(["fileencoding", "fenc"],
-            "Sets the character encoding of read and written files",
+            "The character encoding used when reading and writing files",
             "string", "UTF-8", {
                 completer: function (context) completion.charset(context),
                 getter: function () File.defaultEncoding,
@@ -824,11 +824,11 @@ lookup:
             "stringlist", IO.runtimePath);
 
         options.add(["shell", "sh"],
-            "Shell to use for executing :! and :run commands",
+            "Shell to use for executing external commands with :! and :run",
             "string", shell);
 
         options.add(["shellcmdflag", "shcf"],
-            "Flag passed to shell when executing :! and :run commands",
+            "Flag passed to shell when executing external commands with :! and :run",
             "string", shellcmdflag,
             {
                 getter: function (value) {
@@ -839,7 +839,7 @@ lookup:
             });
 
         options.add(["wildignore", "wig"],
-            "List of file patterns to ignore when completing files",
+            "List of file patterns to ignore when completing file names",
             "regexplist", "");
     }
 });

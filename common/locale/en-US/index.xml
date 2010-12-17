@@ -396,7 +396,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>insertmode</o></dt> <dd>Use Insert mode as the default for text areas</dd>
     <dt><o>jsdebugger</o></dt> <dd>Use the JavaScript debugger service for JavaScript completion</dd>
     <dt><o>laststatus</o></dt> <dd>Show the status line</dd>
-    <dt><o>linksearch</o></dt> <dd>Limit the search to hyperlink text</dd>
     <dt><o>loadplugins</o></dt> <dd>Load plugin scripts when starting up</dd>
     <dt><o>mapleader</o></dt> <dd>Defines the replacement keys for the <k name="Leader"/> pseudo-key</dd>
     <dt><o>maxitems</o></dt> <dd>Maximum number of items to display at once in a listing</dd>

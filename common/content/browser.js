@@ -41,7 +41,7 @@ const Browser = Module("browser", {
 }, {
     options: function () {
         options.add(["encoding", "enc"],
-            "Sets the current buffer's character encoding",
+            "The current buffer's character encoding",
             "string", "UTF-8",
             {
                 scope: Option.SCOPE_LOCAL,

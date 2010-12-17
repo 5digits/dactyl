@@ -547,7 +547,7 @@ const Mappings = Module("mappings", {
     },
     options: function () {
         options.add(["mapleader", "ml"],
-            "Defines the replacement keys for the <Leader> pseudo-key",
+            "Define the replacement keys for the <Leader> pseudo-key",
             "string", "\\");
     }
 });

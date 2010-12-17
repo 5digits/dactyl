@@ -1764,21 +1764,19 @@ const Buffer = Module("buffer", {
     },
     options: function () {
         options.add(["nextpattern"],
-            "Patterns to use when guessing the 'next' page in a document sequence",
+            "Patterns to use when guessing the next page in a document sequence",
             "regexplist", UTF8("'\\bnext\\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\\bmore\\b'"),
             { regexpFlags: "i" });
 
         options.add(["previouspattern"],
-            "Patterns to use when guessing the 'previous' page in a document sequence",
+            "Patterns to use when guessing the previous page in a document sequence",
             "regexplist", UTF8("'\\bprev|previous\\b',^<$,^(<<|«)$,^(<|«),(<|«)$"),
             { regexpFlags: "i" });
 
         options.add(["pageinfo", "pa"],
-            "Desired info in the :pageinfo output",
+            "Define which sections are shown by the :pageinfo command",
             "charlist", "gfm",
-            {
-                completer: function (context) [[k, v[1]] for ([k, v] in Iterator(buffer.pageInfo))]
-            });
+            { completer: function (context) [[k, v[1]] for ([k, v] in Iterator(buffer.pageInfo))] });
 
         options.add(["scroll", "scr"],
             "Number of lines to scroll with <C-u> and <C-d> commands",
@@ -1786,18 +1784,18 @@ const Buffer = Module("buffer", {
             { validator: function (value) value >= 0 });
 
         options.add(["showstatuslinks", "ssli"],
-            "Show the destination of the link under the cursor in the status bar",
+            "Where to show the destination of the link under the cursor",
             "string", "status",
             {
                 completer: function (context) [
-                    ["", "Don't show link destination"],
-                    ["status", "Show the link in the status line"],
-                    ["command", "Show the link in the command line"]
+                    ["", "Don't show link destinations"],
+                    ["status", "Show link destinations in the status line"],
+                    ["command", "Show link destinations in the command line"]
                 ]
             });
 
         options.add(["usermode", "um"],
-            "Show current website with a minimal style sheet to make it easily accessible",
+            "Show current website without styling defined by the author",
             "boolean", false,
             {
                 setter: function (value) config.browser.markupDocumentViewer.authorStyleDisabled = value,

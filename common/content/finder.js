@@ -27,10 +27,10 @@ const RangeFinder = Module("rangefinder", {
 
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;
+        let linksOnly = false;
         let regexp = false;
         let matchCase = options["searchcase"] === "smart"  ? /[A-Z]/.test(str) :
                         options["searchcase"] === "ignore" ? false : true;
-        let linksOnly = options["linksearch"];
 
         str = str.replace(/\\(.|$)/g, function (m, n1) {
             if (n1 == "c")
@@ -204,7 +204,7 @@ const RangeFinder = Module("rangefinder", {
         prefs.safeSet("accessibility.typeaheadfind", false);
 
         options.add(["hlsearch", "hls"],
-            "Highlight previous search pattern matches",
+            "Highlight all /search pattern matches on the current page after a search",
             "boolean", false, {
                 setter: function (value) {
                     try {
@@ -231,13 +231,8 @@ const RangeFinder = Module("rangefinder", {
             });
 
         options.add(["incsearch", "is"],
-            "Show where the search pattern matches as it is typed",
+            "Search for a pattern incrementally as it is typed rather than awaiting <Return>",
             "boolean", true);
-
-        options.add(["linksearch", "lks"],
-            "Limit the search to hyperlink text",
-            "boolean", false);
-
     }
 });
 

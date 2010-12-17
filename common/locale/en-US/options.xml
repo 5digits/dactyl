@@ -945,22 +945,6 @@
 </item>
 
 <item>
-    <tags>'nolks' 'nolinksearch'</tags>
-    <tags>'lks' 'linksearch'</tags>
-    <spec>'linksearch' 'lks'</spec>
-    <type>boolean</type>
-    <default>off</default>
-    <description>
-        <p>
-            Limit searches to hyperlink text. This includes all elements
-            matched by the <o>hinttags</o> XPath. This behavior can also be
-            enabled by including <em>\l</em> in the search pattern, and
-            disabled by including <em>\L</em>.
-        </p>
-    </description>
-</item>
-
-<item>
     <tags>'nolpl' 'lpl'</tags>
     <tags>'noloadplugins' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>

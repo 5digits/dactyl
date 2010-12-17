@@ -771,7 +771,7 @@ const Editor = Module("editor", {
 
     options: function () {
         options.add(["editor"],
-            "Set the external text editor",
+            "The external text editor",
             "string", "gvim -f +%l %f", {
                 format: function (obj, value) {
                     let args = commands.parseArgs(value || this.value, { argCount: "*", allowUnknownOptions: true })
@@ -789,7 +789,7 @@ const Editor = Module("editor", {
             });
 
         options.add(["insertmode", "im"],
-            "Use Insert mode as the default for text areas",
+            "Enter Insert mode rather than Text Edit mode when focusing text areas",
             "boolean", true);
     }
 });
