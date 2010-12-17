@@ -270,7 +270,7 @@ const ConfigBase = Class(ModuleBase, {
             border:  0px solid ButtonShadow !important;
             padding: 0px 1px                !important;
         }
-        Hint::after;;*  content: attr(number) !important;
+        Hint::after;;*  content: attr(text) !important;
         HintElem;;*     background-color: yellow  !important; color: black !important;
         HintActive;;*   background-color: #88FF00 !important; color: black !important;
         HintImage;;*    opacity: .5 !important;

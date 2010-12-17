@@ -15,7 +15,7 @@
 
     <binding id="magic" inheritstyle="false">
         <content>
-            <html:span xbl:inherits="dactyl:highlight=dactyl:highlight,number,style" />
+            <html:span xbl:inherits="dactyl:highlight=dactyl:highlight,number,style,text" />
         </content>
     </binding>
 

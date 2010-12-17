@@ -426,13 +426,14 @@ const Hints = Module("hints", {
                 let text = [];
                 if (hint.elem instanceof HTMLInputElement)
                     if (hint.elem.type === "radio")
-                        text.push(UTF8(hint.elem.checked ? "⊙ " : "○ "));
+                        text.push(UTF8(hint.elem.checked ? "⊙" : "○"));
                     else if (hint.elem.type === "checkbox")
-                        text.push(UTF8(hint.elem.checked ? "☑ " : "☐ "));
+                        text.push(UTF8(hint.elem.checked ? "☑" : "☐"));
                 if (hint.showText)
                     text.push(hint.text.substr(0, 50));
 
-                hint.span.setAttribute("number", str + (text.length ? ": " + text.join(" ") : ""));
+                hint.span.setAttribute("text", str + (text.length ? ": " + text.join(" ") : ""));
+                hint.span.setAttribute("number", str);
                 if (hint.imgSpan)
                     hint.imgSpan.setAttribute("number", str);
                 else

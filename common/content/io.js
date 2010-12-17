@@ -652,16 +652,15 @@ lookup:
 
         completion.directory = function directory(context, full) {
             this.file(context, full);
-            context.filters.push(function ({ item }) item.isDirectory());
+            context.filters.push(function (item) item.isdir);
         };
 
         completion.environment = function environment(context) {
-            let command = util.OS.isWindows ? "set" : "env";
-            let lines = io.system(command).split("\n");
-            lines.pop();
-
             context.title = ["Environment Variable", "Value"];
-            context.generate = function () lines.map(function (line) (line.match(/([^=]+)=(.+)/) || []).slice(1));
+            context.generate = function ()
+                io.system(util.OS.isWindows ? "set" : "env")
+                  .split("\n").filter(function (line) line.indexOf("=") > 0)
+                  .map(function (line) line.match(/([^=]+)=(.*)/).slice(1));
         };
 
         completion.file = function file(context, full, dir) {
@@ -679,17 +678,16 @@ lookup:
             context.title = [full ? "Path" : "Filename", "Type"];
             context.keys = {
                 text: !full ? "leafName" : function (f) dir + f.leafName,
-                description: function (f) f.isDirectory() ? "Directory" : "File",
+                description: function (f) this.isdir ? "Directory" : "File",
                 isdir: function (f) f.isDirectory(),
-                icon: function (f) f.isDirectory() ? "resource://gre/res/html/folder.png"
-                                                             : "moz-icon://" + f.leafName
+                icon: function (f) this.isdir ? "resource://gre/res/html/folder.png"
+                                              : "moz-icon://" + f.leafName
             };
-            context.compare = function (a, b)
-                        b.isdir - a.isdir || String.localeCompare(a.text, b.text);
+            context.compare = function (a, b) b.isdir - a.isdir || String.localeCompare(a.text, b.text);
 
             if (options["wildignore"]) {
                 let wig = options.get("wildignore");
-                context.filters.push(function ({ item }) item.isDirectory() || !wig.getKey(this.name));
+                context.filters.push(function (item) item.isdir || !wig.getKey(this.name));
             }
 
             // context.background = true;
