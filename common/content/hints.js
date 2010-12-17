@@ -1166,7 +1166,7 @@ const Hints = Module("hints", {
                 completer: function (context) [
                     ["contains",       "The typed characters are split on whitespace. The resulting groups must all appear in the hint."],
                     ["custom",         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)"],
-                    ["firstletters",   "Behaves like wordstartswith, but all groups much match a sequence of words."],
+                    ["firstletters",   "Behaves like wordstartswith, but all groups must match a sequence of words."],
                     ["wordstartswith", "The typed characters are split on whitespace. The resulting groups must all match the beginnings of words, in order."],
                     ["transliterated", UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")]
                 ],
