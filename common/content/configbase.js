@@ -207,8 +207,8 @@ const ConfigBase = Class(ModuleBase, {
         CompItem>*           padding: 0 .5ex;
         CompIcon             width: 16px; min-width: 16px; display: inline-block; margin-right: .5ex;
         CompIcon>img         max-width: 16px; max-height: 16px; vertical-align: middle;
-        CompResult           width: 34%; overflow: hidden;
-        CompDesc             color: gray; width: 62%;
+        CompResult           width: 36%; padding-right: 1%; overflow: hidden;
+        CompDesc             color: gray; width: 62%; padding-left: 1em;
         CompLess             text-align: center; height: 0;    line-height: .5ex; padding-top: 1ex;
         CompLess::after      content: "⌃";
         CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
