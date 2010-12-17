@@ -27,13 +27,13 @@
     navigation, and tool bars by default. If you find it uncomfortable to work
     without them, you can re-enable them by typing
 </p>
-<code><ex>:set</ex> <link topic="'guioptions'"><hl key="HelpOpt">guioptions</hl></link><hl key="HelpEx">+=mT</hl><k name="Return"/></code>
+<set opt="guioptions" op="+="><str delim="">mT</str><k name="Return"/></set>
 <p>
     If you have trouble remembering commands or keyboard shortcuts, you can
     bring up this help page at any time by typing <ex>:help</ex> or
     <k name="F1"/>. If you find that you don't like &dactyl.appName; at all,
-    you can disable it by typing <ex>:extdisable &dactyl.appName;</ex> or
-    delete it entirely by typing <ex>:extdelete &dactyl.appName;</ex>
+    you can disable it by typing <ex>:extdisable <str delim="">&dactyl.appName;</str></ex> or
+    delete it entirely by typing <ex>:extdelete <str delim="">&dactyl.appName;</str></ex>
 </p>
 
 <h2 tag="overview">Help topics</h2>
@@ -151,7 +151,7 @@
     <li>Hit-a-hint like navigation of links (start with <k>f</k> to follow a link)</li>
     <li>Advanced completion of bookmark and history URLs</li>
     <li>Vim-like status line with a Wget-like progress bar</li>
-    <li>Minimal GUI (easily hide superfluous menubar and toolbar with <ex>:set guioptions=</ex>)</li>
+    <li>Minimal GUI (easily hide superfluous menubar and toolbar with <se opt="guioptions"/>)</li>
     <li>Ability to <ex>:source</ex> JavaScript, CSS, and &dactyl.appName; command files</li>
     <li>Easy quick searches (see <ex>:open</ex>)</li>
     <li>Count supported for many commands (<em>3</em><k name="C-o"/> will go back 3 pages)</li>

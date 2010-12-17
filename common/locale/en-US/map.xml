@@ -386,7 +386,7 @@
         <p>works like</p>
         <code><ex>:map \h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
         <p>but after</p>
-        <code><ex>:set mapleader=<str>,</str></ex></code>
+        <set opt="mapleader"><str>,</str></set>
         <p>it works like</p>
         <code><ex>:map ,h</ex> <ex>:echo <str>Hello</str><k name="CR"/></ex></code>
     </description>

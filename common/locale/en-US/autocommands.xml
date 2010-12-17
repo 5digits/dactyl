@@ -99,8 +99,8 @@
 
 <p>Set the filetype to mail when editing email at Gmail:</p>
 
-<code><ex>:autocmd LocationChange</ex> !<str delim="'">mail\.google\.com</str> <ex>:set editor=<str>gvim -f</str></ex>
-<ex>:autocmd LocationChange</ex> <str delim="'">mail\.google\.com</str> <ex>:set editor=<str>gvim -f -c 'set ft=mail'</str></ex></code>
+<code><ex>:autocmd LocationChange</ex> !<str delim="'">mail\.google\.com</str> <se opt="editor"><str>gvim -f</str></se>
+<ex>:autocmd LocationChange</ex> <str delim="'">mail\.google\.com</str> <se opt="editor"><str>gvim -f -c 'set ft=mail'</str></se></code>
 
 </document>
 

@@ -26,7 +26,7 @@
     regain these by issuing the command
 </p>
 
-<code><ex>:set go+=mTB<k name="CR"/></ex></code>
+<set opt="go+"><str delim="">mTB</str><k name="CR"/></set>
 
 <p>
     where <k name="CR"/> represents pressing the <k name="Enter"/> or <k name="Return"/> key.
@@ -36,8 +36,8 @@
 <p>
     However, in this author's opinion, the best way to get familiar with
     &dactyl.appName; is to leave these disabled for now. (The above action can be
-    reversed with <ex>:set go=<k name="CR"/></ex>) You can look at the entry for <o>guioptions</o> in
-    <t>options</t> for more information on this.
+    reversed with <se opt="go" op="&amp;"/><k name="CR"/>) You can look at the entry
+    for <o>guioptions</o> in <t>options</t> for more information on this.
 </p>
 
 <h2 tag="modal">&dactyl.appName;'s modal interface</h2>
@@ -360,7 +360,7 @@
 
 <p>
     Alternatively, you can do this the old-fashioned way: re-enable the menubar,
-    as above, with <ex>:set go+=m</ex>, and select <em>Add-ons</em> from the <em>Tools</em> menu.
+    as above, with <se opt="go" op="+=">m</se>, and select <em>Add-ons</em> from the <em>Tools</em> menu.
 </p>
 
 <h2 tag="support">I'm interested… but lost!</h2>

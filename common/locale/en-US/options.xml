@@ -151,11 +151,11 @@
         <p>For list options, toggle the specified values.</p>
 
         <p>If the option is a list, the given values are toggled. Given,</p>
-        <code><ex>:set opt=foo,bar</ex></code>
+        <set opt="opt"><str delim="">foo</str>,<str delim="">bar</str></set>
         <p>then,</p>
-        <code><ex>:set opt!=foo,baz</ex></code>
+        <set opt="opt" op="!="><str delim="">foo</str>,<str delim="">baz</str></set>
         <p>has the same result as</p>
-        <code><ex>:set opt=bar,baz</ex></code>
+        <set opt="opt"><str delim="">bar</str>,<str delim="">baz</str></set>
     </description>
 </item>
 
@@ -517,7 +517,7 @@
         </dl>
 
         <p>
-            The order is important, such that <ex>:set complete=bsf</ex> will
+            The order is important, such that <se opt="complete"><str delim="">bsf</str></se> will
             list bookmarks followed by matching quick searches and then
             matching files.
         </p>
@@ -978,13 +978,13 @@
             For example, to prepend to the default value of this option to load
             all plugins except for <em>foobar-plugin</em>, you could use:
         </p>
-        <code><ex>:se lpl^=</ex>!<str delim="'">foobar-plugin</str></code>
+        <set opt="loadplugins" op="^=">!<str delim="'">foobar-plugin</str></set>
         <p>
             Alternatively, you can specify which plugins to load and which to
             omit in your <tt><t>&dactyl.name;rc</t></tt> using something like
             the following:
         </p>
-        <code><ex>:set loadplugins=</ex>!<str delim="'">foo|bar</str>,<str delim="'">\.(js|&dactyl.fileExt;)$</str></code>
+        <set opt="loadplugins">!<str delim="'">foo|bar</str>,<str delim="'">\.(js|&dactyl.fileExt;)$</str></set>
         <p>
             That will load all plugins but <em>foo</em> and <em>bar</em>.
         </p>
@@ -1135,7 +1135,7 @@
             through directly to &dactyl.host;, and are not processed
             by &dactyl.appName; in any way.
         </p>
-        <example><ex>:set passkeys+=</ex><str delim="'">https://mail\.google\.com/</str>:<str delim="">jk<k name="Return"/></str></example>
+        <example><set opt="passkeys" op="+="><str delim="'">https://mail\.google\.com/</str>:<str delim="">jk<k name="Return"/></str></set></example>
     </description>
 </item>
 
@@ -1225,7 +1225,7 @@
 
         <p>Example:</p>
 
-        <code><ex>:set runtimepath=~/my&dactyl.name;,~/.&dactyl.name;</ex></code>
+        <set opt="runtimepath"><str delim="">~/my&dactyl.name;</str>,<str delim="">~/.&dactyl.name;</str></set>
 
         <p>
             This will search for plugins in both
@@ -1427,7 +1427,7 @@
             Set the application name shown after the current page title in
             &dactyl.host;'s title bar.
         </p>
-        <example><ex>:set titlestring=<str>Mozilla &dactyl.host;</str></ex></example>
+        <example><set opt="titlestring"><str>Mozilla &dactyl.host;</str></set></example>
     </description>
 </item>
 
@@ -1443,7 +1443,7 @@
             are never split. With the default value, the following will open
             three URLs in the current tab and two new background tabs,
         </p>
-        <code><ex>:open google Linux | wikipedia Arch Linux | imdb March of the Penguins</ex></code>
+        <code><ex>:open <str delim="">google Linux</str> | <str delim="">wikipedia Arch Linux</str> | <str delim="">imdb Serenity</str></ex></code>
     </description>
 </item>
 
@@ -1540,7 +1540,7 @@
             the following will ignore object files and Vim swap files:
         </p>
 
-        <code><ex>:set wildignore=<str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]{2}$</str></ex></code>
+        <set opt="wildignore"><str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]{2}$</str></set>
 
         <note>Unlike Vim, each pattern is a regular expression rather than a glob.</note>
     </description>
