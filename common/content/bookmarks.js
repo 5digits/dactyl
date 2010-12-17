@@ -13,7 +13,12 @@ const Bookmarks = Module("bookmarks", {
     init: function () {
         storage.addObserver("bookmark-cache", function (key, event, arg) {
             if (["add", "change", "remove"].indexOf(event) >= 0)
-                autocommands.trigger("Bookmark" + event[0].toUpperCase() + event.substr(1), arg);
+                autocommands.trigger("Bookmark" + event[0].toUpperCase() + event.substr(1), iterAll({
+                        bookmark: {
+                            toString: function () "bookmarkcache.bookmarks[" + arg.id + "]",
+                            valueOf: function () arg
+                        }
+                    }, arg));
             statusline.updateUrl();
         }, window);
     },

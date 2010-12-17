@@ -314,7 +314,7 @@ const Command = Class("Command", {
     replacementText: null
 }, {
     bindMacro: function (args, default_, params) {
-        let process = String;
+        let process = util.identity;
         let makeParams = function makeParams()
             let (args = arguments)
                 params.map(function (name, i) [name, process(args[i])]).toObject();

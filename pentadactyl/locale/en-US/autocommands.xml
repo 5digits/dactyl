@@ -27,18 +27,19 @@
 </dl>
 
 <dl tag="autocommand-args" replace="autocommand-args">
-    <dt>&lt;url></dt>       <dd>The URL against which the event was selected.</dd>
-    <dt>&lt;title></dt>     <dd>The page, bookmark or download title.</dd>
-    <dt>&lt;doc></dt>       <dd>The document for which the event occurred. Only for <em>DOMLoad</em>, <em>PageLoad</em> and <em>PageLoadPre</em>.</dd>
-    <dt>&lt;tab></dt>       <dd>The tab in which the event occurred. Only for <em>DOMLoad</em>, <em>PageLoad</em> and <em>PageLoadPre</em>.</dd>
+    <dt>&lt;bookmark></dt>  <dd>The JavaScript bookmark object. Only for <em>Bookmark*</em>.</dd>
     <dt>&lt;changed></dt>   <dd>The name of the property that has changed. Only for <em>BookmarkChange</em>.</dd>
-    <dt>&lt;tags></dt>      <dd>The tags applied to <em>&lt;url></em>. Only for <em>Bookmark*</em>.</dd>
-    <dt>&lt;keyword></dt>   <dd>The keywords applied to the bookmark. Only for <em>BookmarkChange</em>, <em>BookmarkRemove</em>.</dd>
-    <dt>&lt;icon></dt>      <dd>The icon associated with <em>&lt;url></em>. Only for <em>Bookmark*</em>.</dd>
-    <dt>&lt;size></dt>      <dd>The size of a downloaded file. Only for <em>DownloadPost</em>.</dd>
+    <dt>&lt;doc></dt>       <dd>The document for which the event occurred. Only for <em>DOMLoad</em>, <em>PageLoad</em> and <em>PageLoadPre</em>.</dd>
     <dt>&lt;file></dt>      <dd>The target destination of a download. Only for <em>DownloadPost</em>.</dd>
-    <dt>&lt;state></dt>     <dd>The new state. Only for <em>Fullscreen</em> and <em>PrivateMode</em>.</dd>
+    <dt>&lt;icon></dt>      <dd>The icon associated with <em>&lt;url></em>. Only for <em>Bookmark*</em>.</dd>
+    <dt>&lt;keyword></dt>   <dd>The keywords applied to the bookmark. Only for <em>BookmarkChange</em>, <em>BookmarkRemove</em>.</dd>
     <dt>&lt;name></dt>      <dd>The name of the item. Only for <em>ColorScheme</em> and <em>Sanitize</em>.</dd>
+    <dt>&lt;size></dt>      <dd>The size of a downloaded file. Only for <em>DownloadPost</em>.</dd>
+    <dt>&lt;state></dt>     <dd>The new state. Only for <em>Fullscreen</em> and <em>PrivateMode</em>.</dd>
+    <dt>&lt;tab></dt>       <dd>The tab in which the event occurred. Only for <em>DOMLoad</em>, <em>PageLoad</em> and <em>PageLoadPre</em>.</dd>
+    <dt>&lt;tags></dt>      <dd>The tags applied to <em>&lt;url></em>. Only for <em>Bookmark*</em>.</dd>
+    <dt>&lt;title></dt>     <dd>The page, bookmark or download title.</dd>
+    <dt>&lt;url></dt>       <dd>The URL against which the event was selected.</dd>
 </dl>
 
 </overlay>
