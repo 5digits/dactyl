@@ -80,10 +80,8 @@
 @-moz-document
     url-prefix(chrome://) {
 
-xul|tabs, xul|tabbrowser { counter-reset: dactyl-tab-number; }
-xul|tab { counter-increment: dacytl-tab-number; }
-.tab-icon-image, .tab-throbber { -moz-box-ordinal-group: 10; }
-[dactyl|highlight~=TabNumber], [dactyl|highlight~=TabIconNumber] { -moz-box-ordinal-group: 20; }
+.tab-icon-image, .tab-throbber           { -moz-box-ordinal-group: 10; }
+[dactyl|highlight~=tab-number]           { -moz-box-ordinal-group: 20; }
 .tab-text, .tab-label, .tab-close-button { -moz-box-ordinal-group: 50; }
 
 #addon-bar > #addonbar-closebutton {
