@@ -961,7 +961,7 @@ const Buffer = Module("buffer", {
         let doc = buffer.focusedFrame.document;
 
         if (isArray(url)) {
-            if (options.get("editor").has("l"))
+            if (options.get("editor").has("line"))
                 this.viewSourceExternally(url[0] || doc, url[1]);
             else
                 window.openDialog("chrome://global/content/viewSource.xul",

@@ -244,6 +244,73 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         return stack.top;
     },
 
+    compileMacro: function compileFormat(macro) {
+        let stack = [frame()];
+        stack.__defineGetter__("top", function () this[this.length - 1]);
+
+        function frame() update(
+            function _frame(obj)
+                _frame === stack.top || _frame.valid(obj) ?
+                    _frame.elements.map(function (e) callable(e) ? e(obj) : e).join("") : "",
+            {
+                elements: [],
+                seen: {},
+                valid: function (obj) this.elements.every(function (e) !e.test || e.test(obj))
+            });
+
+        let defaults = { lt: "<", gt: ">" };
+
+        let match, end = 0;
+        let re = util.regexp(<![CDATA[
+            (.*?) // 1
+            (?:
+                (<\[) | // 2
+                < (.*?) > | // 3
+                (\]>) // 4
+            )
+        ]]>, "gy");
+        while (match = re.exec(macro)) {
+            let [, prefix, open, macro, close] = match;
+            end += match[0].length;
+
+            if (prefix)
+                stack.top.elements.push(prefix);
+            if (open) {
+                let f = frame();
+                stack.top.elements.push(f);
+                stack.push(f);
+            }
+            else if (close) {
+                stack.pop();
+                util.assert(stack.length, "Unmatched %] in macro");
+            }
+            else {
+                let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
+                flags = set(flags);
+
+                let quote = util.identity;
+                if (flags.q)
+                    quote = function quote(obj) typeof obj === "number" ? obj : Commands.quote(obj);
+
+                if (set.has(defaults, name))
+                    stack.top.elements.push(quote(defaults[name]));
+                else {
+                    stack.top.elements.push(update(
+                        function (obj) obj[name] != null ? quote(obj[name]) : "",
+                        { test: function (obj) obj[name] != null }));
+
+                    for (let elem in array.iterValues(stack))
+                        elem.seen[name] = true;
+                }
+            }
+        }
+        if (end < macro.length)
+            stack.top.elements.push(macro.substr(end));
+
+        util.assert(stack.length === 1, "Unmatched <[ in macro");
+        return stack.top;
+    },
+
     /**
      * Returns an object representing a Node's computed CSS style.
      *

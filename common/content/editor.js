@@ -242,7 +242,7 @@ const Editor = Module("editor", {
     },
 
     editFileExternally: function (path, line, column) {
-        let args = options.get("editor").format({ f: path, l: line, c: column });
+        let args = options.get("editor").format({ file: path, line: line, column: column });
 
         dactyl.assert(args.length >= 1, "No editor specified");
 
@@ -772,19 +772,19 @@ const Editor = Module("editor", {
     options: function () {
         options.add(["editor"],
             "The external text editor",
-            "string", "gvim -f +%l %f", {
+            "string", "gvim -f +<line> <file>", {
                 format: function (obj, value) {
                     let args = commands.parseArgs(value || this.value, { argCount: "*", allowUnknownOptions: true })
-                                       .map(util.compileFormat).filter(function (fmt) fmt.valid(obj))
+                                       .map(util.compileMacro).filter(function (fmt) fmt.valid(obj))
                                        .map(function (fmt) fmt(obj));
-                    if (obj["f"] && !this.has("f"))
-                        args.push(obj["f"]);
+                    if (obj["file"] && !this.has("file"))
+                        args.push(obj["file"]);
                     return args;
                 },
-                has: function (key) set.has(util.compileFormat(this.value).seen, key),
+                has: function (key) set.has(util.compileMacro(this.value).seen, key),
                 validator: function (value) {
                     this.format({}, value);
-                    return Object.keys(util.compileFormat(value).seen).every(function (k) "cfl".indexOf(k) >= 0)
+                    return Object.keys(util.compileMacro(value).seen).every(function (k) ["column", "file", "line"].indexOf(k) >= 0)
                 }
             });
 

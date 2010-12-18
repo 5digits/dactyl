@@ -88,6 +88,30 @@
     <str>line: 32 'Lieder eines fahrenden Gesellen.txt'</str>
 </p>
 
+<p tag="macro-string">
+    Some options may be given format strings containing macro replacements in
+    the form of <em>&lt;<a>name</a>></em>. These tokens are replaced by
+    the parameter <a>name</a> as specified in the relevant documentation.
+    If the token is in the form <em>&lt;q-<a>name</a>></em>, the value of the
+    parameter is automatically <link topic="quoting">quoted</link>.
+</p>
+<p>
+    Any substring enclosed by <em>&lt;[</em>
+    and <em>]></em> is automatically elided if any of the contained macros
+    characters aren't currently valid. A literal <em>&lt;</em> or <em>></em>
+    character may be included with the special escape sequences <em>&lt;lt></em>
+    or <em>&lt;gt></em> respectively.
+</p>
+
+<p>
+    For example, given the format string
+    <str><em>&lt;[</em>(cmd: <em>&lt;column></em>) <em>]>&lt;[</em>line: <em>&lt;line> ]>&lt;file></em></str>,
+    where <em>line</em>=<hl key="Number">32</hl> and
+    <em>file</em>=<str delim="'">Lieder eines fahrenden Gesellen.txt</str>,
+    the result is formatted as
+    <str>line: 32 'Lieder eines fahrenden Gesellen.txt'</str>
+</p>
+
 <h2 tag="set-option E764">Setting options</h2>
 
 <item>
@@ -553,7 +577,7 @@
     <tags>'editor'</tags>
     <spec>'editor'</spec>
     <type>string</type>
-    <default>gvim -f</default>
+    <default><![CDATA[gvim -f +<line> <file>]]></default>
     <description>
         <p>
             Set the external text editor.
@@ -562,16 +586,16 @@
         </p>
 
         <p>
-            Accepts a <t>format-string</t> with the following escapes available.
+            Accepts a <t>macro-string</t> with the following escapes available.
             Arguments containing escapes which are not relevant to a given call
             are automatically elided. All field splitting is done before format
             characters are processed.
         </p>
 
         <dl>
-            <dt>%f</dt> <dd>The file to edit. Appended as the final argument if missing.</dd>
-            <dt>%l</dt> <dd>The line number at which to position the cursor.</dd>
-            <dt>%c</dt> <dd>The column at which to position the cursor.</dd>
+            <dt>&lt;file></dt>   <dd>The file to edit. Appended as the final argument if missing.</dd>
+            <dt>&lt;line></dt>   <dd>The line number at which to position the cursor.</dd>
+            <dt>&lt;column></dt> <dd>The column at which to position the cursor.</dd>
         </dl>
 
         <warning>
