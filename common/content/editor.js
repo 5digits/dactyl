@@ -241,12 +241,12 @@ const Editor = Module("editor", {
         return -1;
     },
 
-    editFileExternally: function (path, line, column) {
+    editFileExternally: function (path, line, column, async) {
         let args = options.get("editor").format({ file: path, line: line, column: column });
 
         dactyl.assert(args.length >= 1, "No editor specified");
 
-        io.run(io.expandPath(args.shift()), args, true);
+        io.run(io.expandPath(args.shift()), args, !async);
     },
 
     // TODO: clean up with 2 functions for textboxes and currentEditor?

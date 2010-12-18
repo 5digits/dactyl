@@ -258,6 +258,8 @@ const Buffer = Module("buffer", {
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81
                     config.browser.mCurrentBrowser.collapsed = false;
+                    if (!dactyl.focusedElement)
+                        dactyl.focusContent();
 
                     webProgress.DOMWindow.document.pageIsFullyLoaded = (status == 0 ? 1 : 2);
                     statusline.updateUrl();
@@ -1002,7 +1004,7 @@ const Buffer = Module("buffer", {
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function (doc, callback) {
             this.callback = callable(callback) ? callback :
-                function (file) editor.editFileExternally(file.path, callback);
+                function (file) editor.editFileExternally(file.path, callback, null, true);
 
             let url = isString(doc) ? doc : doc.location.href;
             let uri = util.newURI(url, charset);

@@ -560,7 +560,7 @@ const Commands = Module("commands", {
      */
     execute: function (string, tokens, silent, args, sourcing) {
         io.withSavedValues(["readHeredoc", "sourcing"], function () {
-            sourcing = sourcing || { file: "[Command Line]", line: 1 };
+            sourcing = sourcing || this.sourcing || { file: "[Command Line]", line: 1 };
             this.sourcing = update({}, sourcing);
 
             args = update({}, args || {});
@@ -648,7 +648,8 @@ const Commands = Module("commands", {
         if (io.sourcing)
            return {
                 __proto__: frame,
-                filename: services.io.newFileURI(File(io.sourcing.file)).spec,
+                filename: io.sourcing.file[0] == "[" ? io.sourcing.file :
+                            services.io.newFileURI(File(io.sourcing.file)).spec,
                 lineNumber: io.sourcing.line
             };
         return frame;

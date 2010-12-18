@@ -310,7 +310,7 @@ const CommandLine = Module("commandline", {
                 var readHeredoc = io.readHeredoc;
                 io.readHeredoc = commandline.readHeredoc;
                 commands.repeat = command;
-                dactyl.execute(command);
+                commands.execute(command);
             }
             finally {
                 io.readHeredoc = readHeredoc;
@@ -1634,7 +1634,7 @@ const CommandLine = Module("commandline", {
         commands.add(["sil[ent]"],
             "Run a command silently",
             function (args) {
-                commandline.runSilently(function () dactyl.execute(args[0] || "", null, true));
+                commandline.runSilently(function () commands.execute(args[0] || "", null, true));
             }, {
                 completer: function (context) completion.ex(context),
                 literal: 0,

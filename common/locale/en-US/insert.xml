@@ -12,17 +12,9 @@
 <h1 tag="insert-mode insert mode-insert">Insert mode</h1>
 <toc start="2"/>
 
-<p>
+<!-->
     TODO: INTRODUCTORY TEXT...
-</p>
-
-<item>
-    <tags>t_i</tags>
-    <spec>t_i</spec>
-    <description short="true">
-        <p>Starts Insert mode in text areas when <o>insertmode</o> is not set.</p>
-    </description>
-</item>
+</-->
 
 <h2 tag="ins-special-keys">Insert-mode special keys</h2>
 
@@ -41,8 +33,9 @@
 
 <item>
     <tags><![CDATA[i_<C-t>]]></tags>
+    <strut/>
     <spec>&lt;C-t></spec>
-    <description short="true">
+    <description>
         <p>
             Enter Text Edit mode. This is useful for quick editing of text
             fields with basic Vim-keys support. See also <o>insertmode</o>.
@@ -141,6 +134,14 @@
 <h2 tag="text-edit-mode text-edit tedit-mode">Text Edit mode</h2>
 
 <item>
+    <tags>t_i</tags>
+    <spec>t_i</spec>
+    <description short="true">
+        <p>Starts Insert mode in text areas when <o>insertmode</o> is not set.</p>
+    </description>
+</item>
+
+<item>
     <tags><![CDATA[t_<C-i>]]></tags>
     <spec>&lt;C-i></spec>
     <description short="true">
@@ -164,8 +165,9 @@
 
 <item>
     <tags><![CDATA[t_l t_<Right> t_<Space>]]></tags>
+    <strut/>
     <spec><oa>count</oa>l</spec>
-    <description short="true">
+    <description>
         <p>
             Move the cursor <oa>count</oa> characters to the right.
         </p>
@@ -511,6 +513,7 @@
 <item>
     <tags>t_y v_y</tags>
     <spec>y<a>motion</a></spec>
+    <strut/>
     <spec><a>Visual</a>y</spec>
     <description short="true">
         <p>
@@ -553,6 +556,7 @@
 
 <item>
     <tags>t_~</tags>
+    <strut/>
     <spec>~</spec>
     <description>
         <p>

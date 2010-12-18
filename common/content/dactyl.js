@@ -1846,7 +1846,7 @@ const Dactyl = Module("dactyl", {
                 args = args[0] || "";
 
                 if (args[0] == ":")
-                    var method = function () dactyl.execute(args, null, true);
+                    var method = function () commands.execute(args, null, true);
                 else
                     method = dactyl.userFunc(args);
 

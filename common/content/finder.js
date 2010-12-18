@@ -311,9 +311,16 @@ const RangeFind = Class("RangeFind", {
         this.range.descroll();
     },
 
-    compareRanges: function (r1, r2)
-            this.backward ?  r1.compareBoundaryPoints(r1.END_TO_START, r2)
-                          : -r1.compareBoundaryPoints(r1.START_TO_END, r2),
+    compareRanges: function (r1, r2) {
+        try {
+            return this.backward ?  r1.compareBoundaryPoints(r1.END_TO_START, r2)
+                                 : -r1.compareBoundaryPoints(r1.START_TO_END, r2);
+        }
+        catch (e) {
+            util.reportError(e);
+            return 0;
+        }
+    },
 
     findRange: function (range) {
         let doc = range.startContainer.ownerDocument;
@@ -603,9 +610,16 @@ const RangeFind = Class("RangeFind", {
             this.save();
         },
 
-        intersects: function (range)
-            this.range.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
-            this.range.compareBoundaryPoints(range.END_TO_START, range) <= 0,
+        intersects: function (range) {
+            try {
+                return this.range.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
+                       this.range.compareBoundaryPoints(range.END_TO_START, range) <= 0;
+            }
+            catch (e) {
+                dactyl.reportError(e, true);
+                return false;
+            }
+        },
 
         save: function () {
             this.scroll = Point(this.window.pageXOffset, this.window.pageYOffset);
@@ -639,12 +653,26 @@ const RangeFind = Class("RangeFind", {
             }
         }
     }),
-    contains: function (range, r)
-        range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&
-        range.compareBoundaryPoints(range.END_TO_START, r) <= 0,
-    intersects: function (range, r)
-        r.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
-        r.compareBoundaryPoints(range.END_TO_START, range) <= 0,
+    contains: function (range, r) {
+        try {
+            return range.compareBoundaryPoints(range.START_TO_END, r) >= 0 &&
+                   range.compareBoundaryPoints(range.END_TO_START, r) <= 0;
+        }
+        catch (e) {
+            dactyl.reportError(e, true);
+            return false;
+        }
+    },
+    intersects: function (range, r) {
+        try {
+            return r.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
+                   r.compareBoundaryPoints(range.END_TO_START, range) <= 0;
+        }
+        catch (e) {
+            dactyl.reportError(e, true);
+            return false;
+        }
+    },
     endpoint: function (range, before) {
         range = range.cloneRange();
         range.collapse(before);
