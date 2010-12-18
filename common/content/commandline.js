@@ -586,6 +586,8 @@ const CommandLine = Module("commandline", {
     _echoMultiline: function echoMultiline(str, highlightGroup, silent) {
         let doc = this.widgets.multilineOutput.contentDocument;
         let win = this.widgets.multilineOutput.contentWindow;
+        let elem = doc.documentElement;
+        let body = doc.body;
 
         this.widgets.message = null;
         if (!this.commandVisible)
@@ -610,22 +612,23 @@ const CommandLine = Module("commandline", {
         // FIXME: need to make sure an open MOW is closed when commands
         //        that don't generate output are executed
         if (this.widgets.mowContainer.collapsed)
-            doc.body.innerHTML = "";
+            while (body.firstChild)
+                body.removeChild(body.firstChild);
 
-        doc.body.appendChild(output);
+        body.appendChild(output);
 
         if (!silent)
             dactyl.triggerObserver("echoMultiline", str, highlightGroup, output);
 
         commandline.updateOutputHeight(true);
 
-        if (options["more"] && win.scrollMaxY > 0) {
+        if (options["more"] && Buffer.isScrollable(elem, 1)) {
             // start the last executed command's output at the top of the screen
             let elements = doc.getElementsByClassName("ex-command-output");
             elements[elements.length - 1].scrollIntoView(true);
         }
         else
-            win.scrollTo(0, doc.height);
+            elem.scrollTop = elem.scrollHeight;
 
         dactyl.focus(win);
 
@@ -926,6 +929,7 @@ const CommandLine = Module("commandline", {
     // allow a down motion after an up rather than closing
     onMultilineOutputEvent: function onMultilineOutputEvent(event) {
         let win = this.widgets.multilineOutput.contentWindow;
+        let elem = win.document.documentElement;
 
         let showMoreHelpPrompt = false;
         let showMorePrompt = false;
@@ -975,8 +979,7 @@ const CommandLine = Module("commandline", {
         if (event instanceof MouseEvent)
             return false;
 
-        function isScrollable() !win.scrollMaxY == 0;
-        function atEnd() win.scrollY / win.scrollMaxY >= 1;
+        function atEnd(dir) !Buffer.isScrollable(elem, dir || 1);
 
         switch (key) {
         case "<Esc>":
@@ -990,8 +993,8 @@ const CommandLine = Module("commandline", {
         // down a line
         case "j":
         case "<Down>":
-            if (options["more"] && isScrollable())
-                win.scrollByLines(1);
+            if (options["more"])
+                Buffer.scrollVertical(elem, "lines", 1);
             else
                 passEvent = true;
             break;
@@ -999,8 +1002,8 @@ const CommandLine = Module("commandline", {
         case "<C-j>":
         case "<C-m>":
         case "<Return>":
-            if (options["more"] && isScrollable() && !atEnd())
-                win.scrollByLines(1);
+            if (options["more"] && !atEnd(1))
+                Buffer.scrollVertical(elem, "lines", 1);
             else
                 closeWindow = true; // don't propagate the event for accept keys
             break;
@@ -1009,18 +1012,16 @@ const CommandLine = Module("commandline", {
         case "k":
         case "<Up>":
         case "<BS>":
-            if (options["more"] && isScrollable())
-                win.scrollByLines(-1);
-            else if (options["more"] && !isScrollable())
-                showMorePrompt = true;
+            if (options["more"])
+                Buffer.scrollVertical(elem, "lines", -1);
             else
                 passEvent = true;
             break;
 
         // half page down
         case "d":
-            if (options["more"] && isScrollable())
-                win.scrollBy(0, win.innerHeight / 2);
+            if (options["more"])
+                Buffer.scrollVertical(elem, "pages", .5);
             else
                 passEvent = true;
             break;
@@ -1028,16 +1029,10 @@ const CommandLine = Module("commandline", {
         // TODO: <LeftMouse> on the prompt line should scroll one page
         // page down
         case "f":
-            if (options["more"] && isScrollable())
-                win.scrollByPages(1);
-            else
-                passEvent = true;
-            break;
-
         case "<Space>":
         case "<PageDown>":
-            if (options["more"] && isScrollable() && !atEnd())
-                win.scrollByPages(1);
+            if (options["more"] && !atEnd(1))
+                Buffer.scrollVertical(elem, "pages", 1);
             else
                 passEvent = true;
             break;
@@ -1045,50 +1040,40 @@ const CommandLine = Module("commandline", {
         // half page up
         case "u":
             // if (more and scrollable)
-            if (options["more"] && isScrollable())
-                win.scrollBy(0, -(win.innerHeight / 2));
+            if (options["more"])
+                Buffer.scrollVertical(elem, "pages", -.5);
             else
                 passEvent = true;
             break;
 
         // page up
         case "b":
-            if (options["more"] && isScrollable())
-                win.scrollByPages(-1);
-            else if (options["more"] && !isScrollable())
-                showMorePrompt = true;
-            else
-                passEvent = true;
-            break;
-
         case "<PageUp>":
-            if (options["more"] && isScrollable())
-                win.scrollByPages(-1);
+            if (options["more"])
+                Buffer.scrollVertical(elem, "pages", -1);
             else
                 passEvent = true;
             break;
 
         // top of page
         case "g":
-            if (options["more"] && isScrollable())
-                win.scrollTo(0, 0);
-            else if (options["more"] && !isScrollable())
-                showMorePrompt = true;
+            if (options["more"])
+                elem.scrollTop = 0;
             else
                 passEvent = true;
             break;
 
         // bottom of page
         case "G":
-            if (options["more"] && isScrollable() && !atEnd())
-                win.scrollTo(0, win.scrollMaxY);
+            if (options["more"])
+                elem.scrollTop = elem.scrollHeight;
             else
                 passEvent = true;
             break;
 
         // copy text to clipboard
         case "<C-y>":
-            dactyl.clipboardWrite(win.getSelection());
+            dactyl.clipboardWrite(window.getSelection());
             break;
 
         // close the window
@@ -1102,7 +1087,7 @@ const CommandLine = Module("commandline", {
 
         // unmapped key
         default:
-            if (!options["more"] || !isScrollable() || atEnd() || events.isCancelKey(key))
+            if (!options["more"] || !atEnd(-1))
                 passEvent = true;
             else
                 showMoreHelpPrompt = true;
@@ -1136,14 +1121,11 @@ const CommandLine = Module("commandline", {
     updateMorePrompt: function updateMorePrompt(force, showHelp) {
         if (this.widgets.mowContainer.collapsed)
             return this.widgets.message = null;
-
-        let win = this.widgets.multilineOutput.contentWindow;
-        function isScrollable() !win.scrollMaxY == 0;
-        function atEnd() win.scrollY / win.scrollMaxY >= 1;
+        let elem = this.widgets.multilineOutput.contentDocument.documentElement;
 
         if (showHelp)
             this.widgets.message = ["MoreMsg", "-- More -- SPACE/d/j: screen/page/line down, b/u/k: up, q: quit"];
-        else if (force || (options["more"] && isScrollable() && !atEnd()))
+        else if (force || (options["more"] && Buffer.isScrollable(elem, 1)))
             this.widgets.message = ["MoreMsg", "-- More --"];
         else
             this.widgets.message = ["Question", "Press ENTER or type command to continue"];
