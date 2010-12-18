@@ -325,7 +325,7 @@ const Template = Module("Template", {
             {
                 this.map(iter, function (item)
                 <tr>
-                    <td style="padding-right: 3em;">
+                    <td style="padding-right: 2em;">
                         <span highlight="Usage">{
                             let (name = item.name || item.names[0], frame = item.definedAt)
                                 !frame ? name :
