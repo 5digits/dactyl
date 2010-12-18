@@ -294,7 +294,10 @@ const Buffer = Module("buffer", {
                 frame.dactylFocusAllowed = false;
 
             // Workaround for bugs 591425 and 606877, dactyl bug #81
-            config.browser.mCurrentBrowser.collapsed =
+            let collapse = uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
+            if (collapse)
+                config.focus.setFocus(window.documentElement);
+            config.browser.mCurrentBrowser.collapsed = collapse;
                 uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
 
             util.timeout(function () {
