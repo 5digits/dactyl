@@ -9,13 +9,13 @@
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
-<h1 tag="text-search-commands">Text search commands</h1>
+<h1 tag="text-find-commands">Text find commands</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appName; provides a Vim-like incremental search interface to
+    &dactyl.appName; provides a Vim-like incremental find interface to
     replace &dactyl.host;'s crippled Typeahead Find. Among other improvements,
-    our search service:
+    our find service:
 </p>
 <ul>
     <li>
@@ -31,34 +31,34 @@
         unlike &dactyl.host;, which will always continue from the last match.
     </li>
     <li>
-        Supports reverse incremental search.
+        Supports reverse incremental find.
     </li>
     <li>
-        Escape sequences to toggle link-only and case-sensitive searching.
+        Escape sequences to toggle link-only and case-sensitive find.
     </li>
 </ul>
 
 <p>
-    Regular expression search, however, is not currently available unless the
+    Regular expression find, however, is not currently available unless the
     /Find Bar/ service is installed, in which case it may be toggled on with
-    a search flag.
+    a find flag.
 </p>
 
 <item>
     <tags>/</tags>
     <spec>/<a>pattern</a><oa>/</oa><k name="CR"/></spec>
     <description>
-        <p>Search forward for the first occurrence of <a>pattern</a>.</p>
+        <p>Find <a>pattern</a> starting at the current caret position.</p>
 
         <p>
             The following escape sequences can be used to modify the
-            behavior of the search. When flags conflict, the last to
+            behavior of the find. When flags conflict, the last to
             appear is the one that takes effect.
         </p>
 
         <dl dt="width: 6em;">
-            <dt>\c</dt> <dd>Perform case insensitive search (default if <o>searchcase</o>=<str>ignore</str>).</dd>
-            <dt>\C</dt> <dd>Perform case sensitive search (default if <o>searchcase</o>=<str>match</str>).</dd>
+            <dt>\c</dt> <dd>Perform case insensitive find (default if <o>findcase</o>=<str>ignore</str>).</dd>
+            <dt>\C</dt> <dd>Perform case sensitive find (default if <o>findcase</o>=<str>match</str>).</dd>
             <dt>\l</dt> <dd>Search only in links, as defined by <o>hinttags</o>.</dd>
             <dt>\L</dt> <dd>Search the entire page.</dd>
         </dl>
@@ -78,7 +78,10 @@
     <tags>?</tags>
     <spec>?<a>pattern</a><oa>?</oa><k name="CR"/></spec>
     <description>
-        <p>Search backward for <a>pattern</a>, in exactly the same manner as <k>/</k>.</p>
+        <p>
+            Find a pattern backward of the current caret position in exactly the
+            same manner as <k>/</k>
+        </p>
     </description>
 </item>
 
@@ -86,7 +89,7 @@
     <tags>n</tags>
     <spec>n</spec>
     <description short="true">
-        <p>Find next. Repeat the last search.</p>
+        <p>Find next. Repeat the last find.</p>
     </description>
 </item>
 
@@ -94,7 +97,7 @@
     <tags>N</tags>
     <spec>N</spec>
     <description short="true">
-        <p>Find previous. Repeat the last search in the opposite direction.</p>
+        <p>Find previous. Repeat the last find in the opposite direction.</p>
     </description>
 </item>
 
@@ -115,13 +118,13 @@
 </item>
 
 <item>
-    <tags>:noh :nohlsearch</tags>
+    <tags>:noh :nohlfind</tags>
     <strut/>
-    <spec>:noh<oa>lsearch</oa></spec>
+    <spec>:noh<oa>lfind</oa></spec>
     <description>
         <p>
-            Remove the search highlighting. The document is highlighted again
-            when another search command is used or the <o>hlsearch</o> option
+            Remove the find highlighting. The document is highlighted again
+            when another find command is used or the <o>hlfind</o> option
             is set.
         </p>
     </description>

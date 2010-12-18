@@ -9,7 +9,7 @@
 /** @instance rangefinder */
 const RangeFinder = Module("rangefinder", {
     init: function () {
-        this.lastSearchPattern = "";
+        this.lastFindPattern = "";
     },
 
     openPrompt: function (mode) {
@@ -29,8 +29,8 @@ const RangeFinder = Module("rangefinder", {
         let selections = this.rangeFind && this.rangeFind.selections;
         let linksOnly = false;
         let regexp = false;
-        let matchCase = options["searchcase"] === "smart"  ? /[A-Z]/.test(str) :
-                        options["searchcase"] === "ignore" ? false : true;
+        let matchCase = options["findcase"] === "smart"  ? /[A-Z]/.test(str) :
+                        options["findcase"] === "ignore" ? false : true;
 
         str = str.replace(/\\(.|$)/g, function (m, n1) {
             if (n1 == "c")
@@ -65,12 +65,12 @@ const RangeFinder = Module("rangefinder", {
             this.rangeFind.highlighted = highlighted;
             this.rangeFind.selections = selections;
         }
-        return this.lastSearchPattern = str;
+        return this.lastFindPattern = str;
     },
 
     find: function (pattern, backwards) {
         let str = this.bootstrap(pattern, backwards);
-        if (!this.rangeFind.search(str))
+        if (!this.rangeFind.find(str))
             this.timeout(function () { dactyl.echoerr("E486: Pattern not found: " + pattern); }, 0);
 
         return this.rangeFind.found;
@@ -78,47 +78,47 @@ const RangeFinder = Module("rangefinder", {
 
     findAgain: function (reverse) {
         if (!this.rangeFind)
-            this.find(this.lastSearchPattern);
-        else if (!this.rangeFind.search(null, reverse))
-            dactyl.echoerr("E486: Pattern not found: " + this.lastSearchPattern);
+            this.find(this.lastFindPattern);
+        else if (!this.rangeFind.find(null, reverse))
+            dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern);
         else if (this.rangeFind.wrapped)
             // hack needed, because wrapping causes a "scroll" event which
             // clears our command line
             this.timeout(function () {
-                let msg = this.rangeFind.backward ? "search hit TOP, continuing at BOTTOM"
-                                                  : "search hit BOTTOM, continuing at TOP";
+                let msg = this.rangeFind.backward ? "find hit TOP, continuing at BOTTOM"
+                                                  : "find hit BOTTOM, continuing at TOP";
                 commandline.echo(msg, commandline.HL_WARNINGMSG,
                                  commandline.APPEND_TO_MESSAGES | commandline.FORCE_SINGLELINE);
             }, 0);
         else
-            commandline.echo((this.rangeFind.backward ? "?" : "/") + this.lastSearchPattern, null, commandline.FORCE_SINGLELINE);
+            commandline.echo((this.rangeFind.backward ? "?" : "/") + this.lastFindPattern, null, commandline.FORCE_SINGLELINE);
 
-        if (options["hlsearch"])
+        if (options["hlfind"])
             this.highlight();
         this.rangeFind.focus();
     },
 
-    // Called when the user types a key in the search dialog. Triggers a find attempt if 'incsearch' is set
+    // Called when the user types a key in the find dialog. Triggers a find attempt if 'incfind' is set
     onKeyPress: function (command) {
-        if (options["incsearch"]) {
+        if (options["incfind"]) {
             command = this.bootstrap(command);
-            this.rangeFind.search(command);
+            this.rangeFind.find(command);
         }
     },
 
     onSubmit: function (command) {
-        if (!options["incsearch"] || !this.rangeFind || !this.rangeFind.found) {
+        if (!options["incfind"] || !this.rangeFind || !this.rangeFind.found) {
             this.clear();
-            this.find(command || this.lastSearchPattern, modes.extended & modes.FIND_BACKWARD);
+            this.find(command || this.lastFindPattern, modes.extended & modes.FIND_BACKWARD);
         }
 
-        if (options["hlsearch"])
+        if (options["hlfind"])
             this.highlight();
         this.rangeFind.focus();
     },
 
-    // Called when the search is canceled - for example if someone presses
-    // escape while typing a search
+    // Called when the find is canceled - for example if someone presses
+    // escape while typing a find
     onCancel: function () {
         if (this.rangeFind)
             this.rangeFind.cancel();
@@ -128,7 +128,7 @@ const RangeFinder = Module("rangefinder", {
     set rangeFind(val) buffer.localStore.rangeFind = val,
 
     /**
-     * Highlights all occurrences of the last searched for string in the
+     * Highlights all occurrences of the last finded for string in the
      * current buffer.
      */
     highlight: function () {
@@ -137,7 +137,7 @@ const RangeFinder = Module("rangefinder", {
     },
 
     /**
-     * Clears all search highlighting.
+     * Clears all find highlighting.
      */
     clear: function () {
         if (this.rangeFind)
@@ -159,8 +159,8 @@ const RangeFinder = Module("rangefinder", {
         commandline.registerCallback("cancel", modes.FIND_BACKWARD, this.closure.onCancel);
     },
     commands: function () {
-        commands.add(["noh[lsearch]"],
-            "Remove the search highlighting",
+        commands.add(["noh[lfind]"],
+            "Remove the find highlighting",
             function () { rangefinder.clear(); },
             { argCount: "0" });
     },
@@ -168,11 +168,11 @@ const RangeFinder = Module("rangefinder", {
         var myModes = config.browserModes.concat([modes.CARET]);
 
         mappings.add(myModes,
-            ["/"], "Search forward for a pattern",
+            ["/"], "Find a pattern starting at the current caret position",
             function () { rangefinder.openPrompt(modes.FIND_FORWARD); });
 
         mappings.add(myModes,
-            ["?"], "Search backwards for a pattern",
+            ["?"], "Find a pattern backward of the current caret position",
             function () { rangefinder.openPrompt(modes.FIND_BACKWARD); });
 
         mappings.add(myModes,
@@ -203,8 +203,8 @@ const RangeFinder = Module("rangefinder", {
         // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
         prefs.safeSet("accessibility.typeaheadfind", false);
 
-        options.add(["hlsearch", "hls"],
-            "Highlight all /search pattern matches on the current page after a search",
+        options.add(["hlfind", "hlf"],
+            "Highlight all /find pattern matches on the current page after submission",
             "boolean", false, {
                 setter: function (value) {
                     try {
@@ -219,8 +219,8 @@ const RangeFinder = Module("rangefinder", {
                 }
             });
 
-        options.add(["searchcase", "sc"],
-            "Search case matching mode",
+        options.add(["findcase", "fc"],
+            "Find case matching mode",
             "string", "smart",
             {
                 completer: function () [
@@ -230,8 +230,8 @@ const RangeFinder = Module("rangefinder", {
                 ]
             });
 
-        options.add(["incsearch", "is"],
-            "Search for a pattern incrementally as it is typed rather than awaiting <Return>",
+        options.add(["incfind", "if"],
+            "Find a pattern incrementally as it is typed rather than awaiting <Return>",
             "boolean", true);
     }
 });
@@ -240,21 +240,21 @@ const RangeFinder = Module("rangefinder", {
  * @class RangeFind
  *
  * A fairly sophisticated typeahead-find replacement. It supports
- * incremental search very much as the builtin component.
+ * incremental find very much as the builtin component.
  * Additionally, it supports several features impossible to
- * implement using the standard component. Incremental searching
+ * implement using the standard component. Incremental finding
  * works both forwards and backwards. Erasing characters during an
- * incremental search moves the selection back to the first
+ * incremental find moves the selection back to the first
  * available match for the shorter term. The selection and viewport
- * are restored when the search is canceled.
+ * are restored when the find is canceled.
  *
  * Also, in addition to full support for frames and iframes, this
- * implementation will begin searching from the position of the
+ * implementation will begin finding from the position of the
  * caret in the last active frame. This is contrary to the behavior
- * of the builtin component, which always starts a search from the
+ * of the builtin component, which always starts a find from the
  * beginning of the first frame in the case of frameset documents,
  * and cycles through all frames from beginning to end. This makes it
- * impossible to choose the starting point of a search for such
+ * impossible to choose the starting point of a find for such
  * documents, and represents a major detriment to productivity where
  * large amounts of data are concerned (e.g., for API documents).
  */
@@ -292,7 +292,7 @@ const RangeFind = Class("RangeFind", {
         }
     },
 
-    get searchString() this.lastString,
+    get findString() this.lastString,
 
     get selectedRange() {
         let selection = (buffer.focusedFrame || content).getSelection();
@@ -411,7 +411,7 @@ const RangeFind = Class("RangeFind", {
             this.lastRange = null;
             this.lastString = word;
             var res;
-            while (res = this.search(null, this.reverse, true))
+            while (res = this.find(null, this.reverse, true))
                 yield res;
         }
         finally {
@@ -510,7 +510,7 @@ const RangeFind = Class("RangeFind", {
         return null;
     },
 
-    search: function (word, reverse, private_) {
+    find: function (word, reverse, private_) {
         if (!private_ && this.lastRange && !RangeFind.equal(this.selectedRange, this.lastRange))
             this.reset();
 

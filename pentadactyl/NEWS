@@ -49,29 +49,31 @@
     * The concept of completion contexts is now exposed to the user
       (see :h :contexts), allowing for powerful and fine-grained
       completion system customization.
-    * IMPORTANT: 'linksearch' has been removed.  The \l search modifier can
-      still be used for this purpose.
-    * IMPORTANT: 'laststatus' has been replaced with the "s" flag in
-      'guioptions'.
-    * IMPORTANT: 'showstatuslinks' is now a string option.
-    * IMPORTANT: 'ignorecase' and 'smartcase' have been replaced with 'searchcase'
+    * IMPORTANT option changes:
+      - 'cdpath' and 'runtimepath' no longer treat ",,"
+        specially. Use "." instead.
+      - 'incsearch', 'hlsearch', 'ignorecase', and 'smartcase' have
+        been replaced with 'incfind', 'hlfind', and 'findcase'
+      - 'extendedhinttags' is now a regexpmap rather than a
+        string.
+      - 'guioptions' default value has changed.
+      - 'laststatus' has been replaced with the "s" flag in
+        'guioptions'.
+      - 'linksearch' has been removed.  The \l search modifier can
+        still be used for this purpose.
+      - 'loadplugins' is now a regexplist option rather than
+        a boolean.
+      - 'mapleader' is now an option rather than a :let
+        variable.
+      - 'showstatuslinks' is now a string option.
     * IMPORTANT: Command script files now use the *.penta file extension.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.
-    * IMPORTANT: 'loadplugins' is now a regexplist option rather than
-      a boolean.
-    * IMPORTANT: 'cdpath' and 'runtimepath' no longer treat ",,"
-      specially. Use "." instead.
     * IMPORTANT: Option value quoting has changed. List options will
       no longer be split at quoted commas and the option name,
       operators, and = sign may no longer be quoted. This will break
       certain automatically-generated configuration files.
       See :help stringlist
-    * IMPORTANT: 'extendedhinttags' is now a regexpmap rather than a
-      string.
-    * IMPORTANT: 'guioptions' default value has changed.
-    * IMPORTANT: 'mapleader' is now an option rather than a :let
-      variable.
     * Added "bookmarks", "diverted", and "links" to 'activate'
       option.
     * Added 'altwildmode' and <A-Tab> command-line key binding.

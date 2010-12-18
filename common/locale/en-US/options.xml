@@ -352,7 +352,6 @@
 </p>
 
 <ul>
-    <li><pref>dom.popup_allowed_events</pref></li>
     <li><pref>accessibility.typeaheadfind</pref></li>
 </ul>
 
@@ -906,31 +905,31 @@
     <default>500</default>
     <description>
         <p>
-            Maximum number of Ex commands and search patterns to store in the
+            Maximum number of Ex commands and find patterns to store in the
             <t>command-line</t> history.
         </p>
     </description>
 </item>
 
 <item>
-    <tags>'nohls' 'nohlsearch'</tags>
-    <tags>'hls' 'hlsearch'</tags>
-    <spec>'hlsearch' 'hls'</spec>
+    <tags>'nohls' 'nohlfind'</tags>
+    <tags>'hls' 'hlfind'</tags>
+    <spec>'hlfind' 'hls'</spec>
     <type>boolean</type>
     <default>off</default>
     <description>
-        <p>Highlight previous search pattern matches.</p>
+        <p>Highlight previous find pattern matches.</p>
     </description>
 </item>
 
 <item>
-    <tags>'nois' 'noincsearch'</tags>
-    <tags>'is' 'incsearch'</tags>
-    <spec>'incsearch' 'is'</spec>
+    <tags>'nois' 'noincfind'</tags>
+    <tags>'is' 'incfind'</tags>
+    <spec>'incfind' 'is'</spec>
     <type>boolean</type>
     <default>on</default>
     <description>
-        <p>Show the first match for a search pattern as it is typed.</p>
+        <p>Show the first match for a find pattern as it is typed.</p>
     </description>
 </item>
 
