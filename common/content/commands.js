@@ -1400,7 +1400,8 @@ const Commands = Module("commands", {
             description: "List all Ex commands along with their short descriptions",
             iterate: function (args) commands,
             format: {
-                description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : ""))
+                description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
+                help: function (cmd) ":" + cmd.name
             }
         });
 

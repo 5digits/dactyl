@@ -79,14 +79,14 @@ const Template = Module("Template", {
         // </e4x>
     },
 
-    helpLink: function (topic, type) {
+    helpLink: function (topic, text, type) {
         if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
-            return <>{topic}</>;
+            return <span highlight={type || ""}>{text || topic}</span>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
-        type = type || /^'.*'$/.test(topic) ? "HelpOpt" :
-                       /^:\w/.test(topic)   ? "HelpEx"  : "HelpKey";
-        return <a highlight={type} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{topic}</a>
+        type = type || (/^'.*'$/.test(topic) ? "HelpOpt" :
+                        /^:\w/.test(topic)   ? "HelpEx"  : "HelpKey");
+        return <a highlight={type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>
     },
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
@@ -314,17 +314,25 @@ const Template = Module("Template", {
     usage: function usage(iter, format) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         let desc = format && format.description || function (item) template.linkifyHelp(item.description);
+        let help = format && format.help || function (item) item.name;
+        function sourceLink(frame) {
+            let source = template.sourceLink(frame);
+            source.@NS::hint = source.text();
+            return source;
+        }
         // <e4x>
         return <table>
             {
                 this.map(iter, function (item)
                 <tr>
-                    <td style="padding-right: 20px" highlight="Usage">{
-                        let (name = item.name || item.names[0], frame = item.definedAt)
-                            !frame ? name :
-                                <span highlight="Title">{name}</span> + <> </> +
-                                <span highlight="LineInfo">Defined at {template.sourceLink(frame)}</span>
-                    }</td>
+                    <td style="padding-right: 3em;">
+                        <span highlight="Usage">{
+                            let (name = item.name || item.names[0], frame = item.definedAt)
+                                !frame ? name :
+                                    template.helpLink(help(item), name, "Title") +
+                                    <span highlight="LineInfo" xmlns:dactyl={NS}>Defined at {sourceLink(frame)}</span>
+                        }</span>
+                    </td>
                     <td>{desc(item)}</td>
                 </tr>)
             }

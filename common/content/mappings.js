@@ -527,7 +527,9 @@ const Mappings = Module("mappings", {
                             ? <span highlight="URLExtra">(passed by {template.helpLink("'passkeys'")})</span>
                             : <></>}
                         {template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))}
-                </>)
+                </>),
+                help: function (map) let (char = array.compact(map.modes.map(function (m) m.char))[0])
+                    char === "n" ? map.name : char ? char + "_" + map.name : ""
             }
         }
 

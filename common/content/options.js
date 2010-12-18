@@ -843,7 +843,8 @@ const Options = Module("options", {
                         {opt.scope == Option.SCOPE_LOCAL
                             ? <span highlight="URLExtra">(buffer local)</span> : ""}
                         {template.linkifyHelp(opt.description)}
-                </>)
+                </>),
+                help: function (opt) "'" + opt.name + "'"
             }
         });
 

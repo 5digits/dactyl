@@ -221,10 +221,9 @@ const ConfigBase = Class(ModuleBase, {
         Keyword     color: red;
         Tag         color: blue;
 
-        Usage
-        LineInfo
-        Usage>LineInfo          display: none;
-        Usage:hover>LineInfo    display: inline;
+        Usage                       position: relative;
+        Usage>LineInfo              position: absolute; left: 100%; padding: 0 1em; background: white;
+        Usage:not(:hover)>LineInfo  opacity: 0; width: 1px; overflow: hidden;
 
         !StatusLine         color: white !important; background: black   !important
         StatusLineBroken    color: black !important; background: #FFa0a0 !important /* light-red */

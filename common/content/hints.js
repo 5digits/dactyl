@@ -302,7 +302,9 @@ const Hints = Module("hints", {
             if (!isVisible(elem))
                 continue;
 
-            if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
+            if (elem.hasAttributeNS(NS, "hint"))
+                [hint.text, hint.showText] = [elem.getAttributeNS(NS, "hint"), true];
+            else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
                 [hint.text, hint.showText] = this._getInputHint(elem, doc);
             else if (elem.firstElementChild instanceof HTMLImageElement && /^\s*$/.test(elem.textContent))
                 [hint.text, hint.showText] = [elem.firstElementChild.alt || elem.firstElementChild.title, true];
@@ -371,13 +373,18 @@ const Hints = Module("hints", {
      * @param {boolean} active Whether it is the currently active hint or not.
      */
     _setClass: function _setClass(elem, active) {
-        let prefix = (elem.getAttributeNS(NS, "hl") || "") + " ";
+        if (!("dactylHighlight" in elem))
+            elem.dactylHighlight = elem.getAttributeNS(NS, "highlight") || "";
+
+        let prefix = (elem.getAttributeNS(NS, "hl") || "") + " " + elem.dactylHighlight + " ";
         if (active)
             highlight.highlightNode(elem, prefix + "HintActive");
         else if (active != null)
             highlight.highlightNode(elem, prefix + "HintElem");
-        else
-            elem.removeAttributeNS(NS, "highlight");
+        else {
+            highlight.highlightNode(elem, elem.dactylHighlight);
+            delete elem.dactylHighlight;
+        }
     },
 
     /**
@@ -402,7 +409,7 @@ const Hints = Module("hints", {
                     hint.imgSpan.style.display = (valid ? "" : "none");
 
                 if (!valid) {
-                    hint.elem.removeAttributeNS(NS, "highlight");
+                    this._setClass(hint.elem, null);
                     continue inner;
                 }
 
@@ -471,7 +478,7 @@ const Hints = Module("hints", {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1))
-                this._pageHints[i].elem.removeAttributeNS(NS, "highlight");
+                this._setClass(this._pageHints[i].elem, null);
         }
         styles.removeSheet(true, "hint-positions");
 

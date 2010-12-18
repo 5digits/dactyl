@@ -165,6 +165,7 @@ const CommandWidgets = Class("CommandWidgets", {
     completionContainer: Class.memoize(function () this.completionList.parentNode),
     multilineOutput: Class.memoize(function () {
         let elem = document.getElementById("dactyl-multiline-output");
+        elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
@@ -942,6 +943,7 @@ const CommandLine = Module("commandline", {
 
             let command = event.originalTarget.getAttributeNS(NS.uri, "command");
             if (command && dactyl.commands[command]) {
+                event.preventDefault();
                 return dactyl.withSavedValues(["forceNewTab"], function () {
                     dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
                     dactyl.commands[command](event);

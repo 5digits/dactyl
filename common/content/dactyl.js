@@ -50,7 +50,8 @@ const Dactyl = Module("dactyl", {
         this.observers = {};
 
         this.commands["dactyl.help"] = function (event) {
-            dactyl.help(event.originalTarget.textContent);
+            let elem = event.originalTarget;
+            dactyl.help(elem.getAttribute("tag") || elem.textContent);
         };
     },
 
