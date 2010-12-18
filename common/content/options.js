@@ -1182,6 +1182,7 @@ const Options = Module("options", {
         completion.option = function option(context, scope, prefix) {
             context.title = ["Option"];
             context.keys = { text: "names", description: "description" };
+            context.anchored = false;
             context.completions = options;
             if (prefix == "inv")
                 context.keys.text = function (opt)
