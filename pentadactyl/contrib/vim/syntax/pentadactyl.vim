@@ -61,8 +61,8 @@ syn keyword pentadactylOption activate act altwildmode awim autocomplete au cdpa
     \ contained nextgroup=pentadactylSetMod
 
 let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "flashblock", "fb", "fullscreen", "fs",
-    \ "hlsearch", "hls", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "online",
-    \ "private", "pornmode", "searchcase", "sc", "showmode", "smd", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+    \ "hlsearch", "hls", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "more", "online", "private",
+    \ "pornmode", "searchcase", "sc", "showmode", "smd", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match pentadactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=pentadactylSetMod'

@@ -55,8 +55,8 @@ syn keyword teledactylOption altwildmode awim archivefolder autocomplete au cdpa
     \ contained nextgroup=teledactylSetMod
 
 let s:toggleOptions = ["autoexternal", "ae", "banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs",
-    \ "hlsearch", "hls", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "linksearch", "lks", "more", "online",
-    \ "searchcase", "sc", "showmode", "smd", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+    \ "hlsearch", "hls", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "more", "online", "searchcase", "sc",
+    \ "showmode", "smd", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match teledactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=teledactylSetMod'
