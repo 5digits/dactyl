@@ -389,7 +389,7 @@ const Dactyl = Module("dactyl", {
             if (elem instanceof Window)
                 services.focus.clearFocus(elem);
             else
-                services.focus.setFocus(elem, flags || Ci.nsIFocusManager.FLAG_BYMOUSE|Ci.nsIFocusManager.FLAG_BYMOVEFOCUS);
+                services.focus.setFocus(elem, flags || Ci.nsIFocusManager.FLAG_BYMOUSE);
         } catch (e) {
             util.dump(elem);
             util.reportError(e);
