@@ -255,7 +255,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:extensions</ex></dt> <dd>List all installed extensions</dd>
     <dt><ex>:extoptions</ex></dt> <dd>Open an extension's preference dialog</dd>
     <dt><ex>:extupdate</ex></dt> <dd>Update an extension</dd>
-    <dt><ex>:exusage</ex></dt> <dd>List all Ex commands with a short description</dd>
     <dt><ex>:finish</ex></dt> <dd>Stop sourcing a script file</dd>
     <dt><ex>:forward</ex></dt> <dd>Go forward in the browser history</dd>
     <dt><ex>:frameonly</ex></dt> <dd>Show only the current frame's page</dd>
@@ -276,6 +275,9 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:jumps</ex></dt> <dd>Show jumplist</dd>
     <dt><ex>:keepalt</ex></dt> <dd>Execute a command without changing the current alternate buffer</dd>
     <dt><ex>:let</ex></dt> <dd>Set or list a variable</dd>
+    <dt><ex>:listcommands</ex></dt> <dd>List all Ex commands along with their short descriptions</dd>
+    <dt><ex>:listkeys</ex></dt> <dd>List all mappings along with their short descriptions</dd>
+    <dt><ex>:listoptions</ex></dt> <dd>List all options along with their short descriptions</dd>
     <dt><ex>:loadplugins</ex></dt> <dd>Immediately load all unloaded plugins</dd>
     <dt><ex>:macros</ex></dt> <dd>List all macros</dd>
     <dt><ex>:map</ex></dt> <dd>Map a key sequence</dd>
@@ -288,12 +290,11 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:nmap</ex></dt> <dd>Map a key sequence in Normal mode</dd>
     <dt><ex>:nmapclear</ex></dt> <dd>Remove all mappings in Normal mode</dd>
     <dt><ex>:nnoremap</ex></dt> <dd>Map a key sequence without remapping keys in Normal mode</dd>
-    <dt><ex>:nohlsearch</ex></dt> <dd>Remove the search highlighting</dd>
+    <dt><ex>:nohlfind</ex></dt> <dd>Remove the search highlighting</dd>
     <dt><ex>:noremap</ex></dt> <dd>Map a key sequence without remapping keys</dd>
     <dt><ex>:normal</ex></dt> <dd>Execute Normal mode commands</dd>
     <dt><ex>:nunmap</ex></dt> <dd>Remove a mapping in Normal mode</dd>
     <dt><ex>:open</ex></dt> <dd>Open one or more URLs in the current tab</dd>
-    <dt><ex>:optionusage</ex></dt> <dd>List all options with a short description</dd>
     <dt><ex>:pageinfo</ex></dt> <dd>Show various page information</dd>
     <dt><ex>:pagestyle</ex></dt> <dd>Select the author style sheet to apply</dd>
     <dt><ex>:preferences</ex></dt> <dd>Show &dactyl.host; preferences dialog</dd>
@@ -347,7 +348,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:verbose</ex></dt> <dd>Execute a command with <o>verbose</o> set</dd>
     <dt><ex>:version</ex></dt> <dd>Show version information</dd>
     <dt><ex>:viewsource</ex></dt> <dd>View source code of current document</dd>
-    <dt><ex>:viusage</ex></dt> <dd>List all mappings with a short description</dd>
     <dt><ex>:vmap</ex></dt> <dd>Map a key sequence in Visual mode</dd>
     <dt><ex>:vmapclear</ex></dt> <dd>Remove all mappings in Visual mode</dd>
     <dt><ex>:vnoremap</ex></dt> <dd>Map a key sequence without remapping keys in Visual mode</dd>
@@ -381,6 +381,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>exrc</o></dt> <dd>Allow reading of an RC file in the current directory</dd>
     <dt><o>extendedhinttags</o></dt> <dd>XPath string of hintable elements activated by <k>;</k></dd>
     <dt><o>fileencoding</o></dt> <dd>Changes the character encoding that &dactyl.appName; uses to read and write files</dd>
+    <dt><o>findcase</o></dt> <dd>Find case matching mode</dd>
     <dt><o>followhints</o></dt> <dd>Change the behaviour of <k name="Return"/> in Hints mode</dd>
     <dt><o>fullscreen</o></dt> <dd>Show the current window fullscreen</dd>
     <dt><o>guioptions</o></dt> <dd>Show or hide certain GUI elements like the menu or toolbar</dd>
@@ -390,9 +391,9 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>hintmatching</o></dt> <dd>How links are matched</dd>
     <dt><o>hinttags</o></dt> <dd>XPath string of hintable elements activated by <k>f</k> and <k>F</k></dd>
     <dt><o>hinttimeout</o></dt> <dd>Timeout before automatically following a non-unique numerical hint</dd>
-    <dt><o>history</o></dt> <dd>Number of Ex commands and search patterns to store in the command-line history</dd>
-    <dt><o>hlsearch</o></dt> <dd>Highlight previous search pattern matches</dd>
-    <dt><o>incsearch</o></dt> <dd>Show where the search pattern matches as it is typed</dd>
+    <dt><o>history</o></dt> <dd>Number of Ex commands and find patterns to store in the command-line history</dd>
+    <dt><o>hlfind</o></dt> <dd>Highlight previous find pattern matches</dd>
+    <dt><o>incfind</o></dt> <dd>Show where the find pattern matches as it is typed</dd>
     <dt><o>insertmode</o></dt> <dd>Use Insert mode as the default for text areas</dd>
     <dt><o>jsdebugger</o></dt> <dd>Use the JavaScript debugger service for JavaScript completion</dd>
     <dt><o>laststatus</o></dt> <dd>Show the status line</dd>
@@ -414,7 +415,6 @@ This file contains a list of all available commands, mappings and options.
     <dt><o>sanitizeshutdown</o></dt> <dd>The items to sanitize automatically at shutdown</dd>
     <dt><o>sanitizetimespan</o></dt> <dd>The default sanitizer time span</dd>
     <dt><o>scroll</o></dt> <dd>Number of lines to scroll with <k name="C-u"/> and <k name="C-d"/> commands</dd>
-    <dt><o>searchcase</o></dt> <dd>Search case matching mode</dd>
     <dt><o>shell</o></dt> <dd>Shell to use for executing <ex>:!</ex> and <ex>:run</ex> commands</dd>
     <dt><o>shellcmdflag</o></dt> <dd>Flag passed to shell when executing <ex>:!</ex> and <ex>:run</ex> commands</dd>
     <dt><o>showmode</o></dt> <dd>Show the current mode in the command line</dd>
