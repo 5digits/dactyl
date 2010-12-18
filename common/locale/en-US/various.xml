@@ -285,34 +285,40 @@
 </item>
 
 <item>
-    <tags>:exu :exusage</tags>
-    <spec>:exu<oa>sage</oa><oa>!</oa></spec>
+    <tags>:lc :listcommands</tags>
+    <spec>:listc<oa>ommands</oa> <oa>filter</oa></spec>
+    <spec>:lc <oa>filter</oa></spec>
     <description>
         <p>
-            Show help on Ex commands. If <oa>!</oa> is given then the help is listed in the
-            command output window.
+            List all Ex commands matching <oa>filter</oa> along with their
+            short descriptions. The output contains links to the source code
+            definitions.
         </p>
     </description>
 </item>
 
 <item>
-    <tags>:optionu :optionusage</tags>
-    <spec>:optionu<oa>sage</oa><oa>!</oa></spec>
+    <tags>:lk :listkeys</tags>
+    <spec>:listk<oa>eys</oa> <oa>-mode <a>mode</a></oa> <oa>filter</oa></spec>
+    <spec>:lk <oa>-mode <a>mode</a></oa> <oa>filter</oa></spec>
     <description>
         <p>
-            Show help on options. If <oa>!</oa> is given then the help is listed in the command
-            output window.
+            List the key mappings defined for <a>mode</a> (Normal by default)
+            matching <oa>filter</oa> along with their short descriptions. The
+            output contains links to the source code definitions.
         </p>
     </description>
 </item>
 
 <item>
-    <tags>:viu :viusage</tags>
-    <spec>:viu<oa>sage</oa><oa>!</oa></spec>
+    <tags>:lo :listoptions</tags>
+    <spec>:listo<oa>ptions</oa> <oa>filter</oa></spec>
+    <spec>:lo <oa>filter</oa></spec>
     <description>
         <p>
-            Show help on Normal mode commands. If <oa>!</oa> is given then the help is listed in
-            the command output window.
+            List all options matching <oa>filter</oa> along with their short
+            descriptions. The output contains links to the source code
+            definitions.
         </p>
     </description>
 </item>

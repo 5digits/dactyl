@@ -1716,13 +1716,6 @@ const Dactyl = Module("dactyl", {
             },
             { argCount: "?" });
 
-        commands.add(["exu[sage]"],
-            "List all Ex commands with a short description",
-            function (args) { Dactyl.showHelpIndex("ex-cmd-index", commands, args.bang); }, {
-                argCount: "0",
-                bang: true
-            });
-
         [
             {
                 name: "h[elp]",
@@ -1775,14 +1768,6 @@ const Dactyl = Module("dactyl", {
                 argCount: "+",
                 bang: true,
                 literal: 0
-            });
-
-        commands.add(["optionu[sage]"],
-            "List all options with a short description",
-            function (args) { Dactyl.showHelpIndex("option-index", options, args.bang); },
-            {
-                argCount: "0",
-                bang: true
             });
 
         commands.add(["q[uit]"],
@@ -1961,12 +1946,6 @@ const Dactyl = Module("dactyl", {
                 bang: true
             });
 
-        commands.add(["viu[sage]"],
-            "List all mappings with a short description",
-            function (args) { Dactyl.showHelpIndex("normal-index", mappings, args.bang); }, {
-                argCount: "0",
-                bang: true
-            });
     },
 
     completion: function () {

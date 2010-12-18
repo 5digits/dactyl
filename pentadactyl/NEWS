@@ -49,6 +49,11 @@
     * The concept of completion contexts is now exposed to the user
       (see :h :contexts), allowing for powerful and fine-grained
       completion system customization.
+    * :viusage, :optionusage and :exusage were replaced with :listkeys,
+      :listoptions and :listcommands, providing more powerful and
+      consistent interactive help facility (improvements include
+      listing keys for modes other than Normal, filtering the output
+      and linking to source locations).
     * IMPORTANT option changes:
       - 'cdpath' and 'runtimepath' no longer treat ",,"
         specially. Use "." instead.

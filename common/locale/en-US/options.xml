@@ -704,6 +704,22 @@
 </item>
 
 <item>
+    <tags>'fc' 'findcase'</tags>
+    <spec>'findcase'</spec>
+    <type>string</type>
+    <default>smart</default>
+    <description>
+        <p>Find case matching mode.</p>
+
+        <dl>
+            <dt>ignore</dt> <dd>Case is never significant</dd>
+            <dt>match</dt> <dd>Case is always significant</dd>
+            <dt>smart</dt> <dd>Case is significant when capital letters are typed</dd>
+        </dl>
+    </description>
+</item>
+
+<item>
     <tags>'fh' 'followhints'</tags>
     <spec>'followhints' 'fh'</spec>
     <type>number</type>
@@ -912,9 +928,9 @@
 </item>
 
 <item>
-    <tags>'nohls' 'nohlfind'</tags>
-    <tags>'hls' 'hlfind'</tags>
-    <spec>'hlfind' 'hls'</spec>
+    <tags>'nohlf' 'nohlfind'</tags>
+    <tags>'hlf' 'hlfind'</tags>
+    <spec>'hlfind' 'hlf'</spec>
     <type>boolean</type>
     <default>off</default>
     <description>
@@ -923,9 +939,9 @@
 </item>
 
 <item>
-    <tags>'nois' 'noincfind'</tags>
-    <tags>'is' 'incfind'</tags>
-    <spec>'incfind' 'is'</spec>
+    <tags>'noif' 'noincfind'</tags>
+    <tags>'if' 'incfind'</tags>
+    <spec>'incfind' 'if'</spec>
     <type>boolean</type>
     <default>on</default>
     <description>
@@ -1305,22 +1321,6 @@
             <k name="C-d"/> commands, that value is used instead. When the
             value is <em>0</em>, it defaults to half the window height.
         </p>
-    </description>
-</item>
-
-<item>
-    <tags>'sc' 'searchcase'</tags>
-    <spec>'searchcase'</spec>
-    <type>string</type>
-    <default>smart</default>
-    <description>
-        <p>Search case matching mode.</p>
-
-        <dl>
-            <dt>ignore</dt> <dd>Case is never significant</dd>
-            <dt>match</dt> <dd>Case is always significant</dd>
-            <dt>smart</dt> <dd>Case is significant when capital letters are typed</dd>
-        </dl>
     </description>
 </item>
 
