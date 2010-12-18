@@ -1395,6 +1395,15 @@ const Commands = Module("commands", {
                 completer: function (context) completion.userCommand(context)
             });
 
+        dactyl.addUsageCommand({
+            name: ["listc[ommands]", "lc"],
+            description: "List all Ex commands along with their short descriptions",
+            iterate: function (args) commands,
+            format: {
+                description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : ""))
+            }
+        });
+
         function checkStack(cmd) {
             util.assert(io.sourcing && io.sourcing.stack &&
                         io.sourcing.stack[cmd] && io.sourcing.stack[cmd].length,
@@ -1454,13 +1463,14 @@ const Commands = Module("commands", {
         commands.add(["y[ank]"],
             "Yanks the output of the given command to the clipboard",
             function (args) {
-                let res = commandline.withOutputToString(commands.execute, commands, args[0]);
+                let cmd = /^:/.test(args[0]) ? args[0] : ":echo " + args[0];
+                let res = commandline.withOutputToString(commands.execute, commands, cmd);
                 dactyl.clipboardWrite(res);
                 let lines = res.split("\n").length;
                 dactyl.echomsg("Yanked " + lines + " line" + (lines == 1 ? "" : "s"));
             },
             {
-                completer: function (context) completion.ex(context),
+                completer: function (context) completion[/^:/.test(context.filter) ? "ex" : "javascript"](context),
                 literal: 0
             });
     },

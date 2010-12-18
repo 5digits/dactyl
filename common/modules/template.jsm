@@ -7,7 +7,8 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("template", {
     exports: ["Template", "template"],
-    require: ["util"]
+    require: ["util"],
+    use: ["services"]
 });
 
 default xml namespace = XHTML;
@@ -76,6 +77,16 @@ const Template = Module("Template", {
                    <li highlight="CompDesc">{desc}&#xa0;</li>
                </div>;
         // </e4x>
+    },
+
+    helpLink: function (topic, type) {
+        if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
+            return <>{topic}</>;
+
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        type = type || /^'.*'$/.test(topic) ? "HelpOpt" :
+                       /^:\w/.test(topic)   ? "HelpEx"  : "HelpKey";
+        return <a highlight={type} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{topic}</a>
     },
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
@@ -199,6 +210,21 @@ const Template = Module("Template", {
         // </e4x>
     },
 
+    linkifyHelp: function linkifyHelp(str) {
+        util.dactyl.initHelp();
+
+        let re = util.regexp(<![CDATA[
+            ([/\s]|^)
+            ( '[\w-]+' | :(?:[\w-]+|!) | (?:._)?<[\w-]+> )
+            (?=[[!,;./\s]|$)
+        ]]>, "g");
+        return this.highlightSubstrings(str, (function () {
+            let res;
+            while ((res = re.exec(str)) && res[2].length)
+                yield [res.index + res[1].length, res[2].length];
+        })(), template.helpLink);
+    },
+
     options: function options(title, opts) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // <e4x>
@@ -285,8 +311,9 @@ const Template = Module("Template", {
         // </e4x>
     },
 
-    usage: function usage(iter) {
+    usage: function usage(iter, format) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        let desc = format && format.description || function (item) template.linkifyHelp(item.description);
         // <e4x>
         return <table>
             {
@@ -298,7 +325,7 @@ const Template = Module("Template", {
                                 <span highlight="Title">{name}</span> + <> </> +
                                 <span highlight="LineInfo">Defined at {template.sourceLink(frame)}</span>
                     }</td>
-                    <td>{item.description}</td>
+                    <td>{desc(item)}</td>
                 </tr>)
             }
             </table>;

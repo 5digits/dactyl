@@ -185,15 +185,16 @@ const Mappings = Module("mappings", {
                     some(function (m) m.rhs && m.rhs === map.rhs && m.name === map.name))))
     },
 
-    // NOTE: just normal mode for now
-    /** @property {Iterator(Map)} @private */
-    __iterator__: function () {
-        let mode = modes.NORMAL;
+    iterate: function (mode) {
         let seen = {};
         for (let map in iterAll(values(this._user[mode]), values(this._main[mode])))
             if (!set.add(seen, map.name))
                 yield map;
     },
+
+    // NOTE: just normal mode for now
+    /** @property {Iterator(Map)} */
+    __iterator__: function () this.iterate(modes.NORMAL),
 
     // used by :mkpentadactylrc to save mappings
     /**
@@ -381,19 +382,6 @@ const Mappings = Module("mappings", {
                 }
             }
 
-            function findMode(name) {
-                for (let mode in modes.mainModes)
-                    if (name == mode || name == mode.char || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
-                        return mode.mask;
-                return null;
-            }
-            function uniqueModes(modes) {
-                modes = modes.map(modules.modes.closure.getMode);
-                let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
-                             if (v.every(function (mode) modes.indexOf(mode) >= 0))];
-                return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0).concat(chars));
-            }
-
             const opts = {
                     completer: function (context, args) {
                         if (args.length == 1)
@@ -511,7 +499,65 @@ const Mappings = Module("mappings", {
                 });
         }
 
+        function findMode(name) {
+            for (let mode in modes.mainModes)
+                if (name == mode || name == mode.char || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
+                    return mode.mask;
+            return null;
+        }
+        function uniqueModes(modes) {
+            modes = modes.map(modules.modes.closure.getMode);
+            let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
+                         if (v.every(function (mode) modes.indexOf(mode) >= 0))];
+            return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0).concat(chars));
+        }
+
         addMapCommands("", [modes.NORMAL, modes.VISUAL], "");
+
+        let args = {
+            getMode: function (args) findMode(args["-mode"]),
+            iterate: function (args) {
+                for (let map in mappings.iterate(this.getMode(args)))
+                    for (let name in values(map.names))
+                        yield { name: name, __proto__: map };
+            },
+            format: {
+                description: function (map) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
+                        {options.get("passkeys").has(map.name)
+                            ? <span highlight="URLExtra">(passed by {template.helpLink("'passkeys'")})</span>
+                            : <></>}
+                        {template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))}
+                </>)
+            }
+        }
+
+        dactyl.addUsageCommand({
+            __proto__: args,
+            name: ["listk[eys]", "lk"],
+            description: "List all mappings along with their short descriptions",
+            options: [
+                {
+                    names: ["-mode", "-m"],
+                    type: CommandOption.STRING,
+                    description: "The mode for which to list mappings",
+                    default: "n",
+                    completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
+                                            for (mode in modes.mainModes)],
+                    validator: function (m) findMode(m)
+                }
+            ]
+        });
+
+        forEach(modes.mainModes, function (mode) {
+            if (mode.char && !commands.get(mode.char + "listkeys", true))
+                dactyl.addUsageCommand({
+                    __proto__: args,
+                    name: [mode.char + "listk[eys]", mode.char + "lk"],
+                    description: "List all " + mode.name + " mode mappings along with their short descriptions",
+                    getMode: function (args) mode,
+                    options: []
+                });
+        });
 
         for (let mode in modes.mainModes)
             if (mode.char && !commands.get(mode.char + "map", true))

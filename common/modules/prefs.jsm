@@ -131,7 +131,7 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
         if (saved == null && curval != defval || curval != saved) {
             let msg = "Warning: setting preference " + name + ", but it's changed from its default value.";
             if (message)
-                msg += " " + message;
+                msg = template.linkifyHelp(msg + " " + message);
             util.dactyl.echomsg(msg);
         }
     },

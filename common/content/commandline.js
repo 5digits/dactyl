@@ -940,14 +940,18 @@ const CommandLine = Module("commandline", {
                 dactyl.open(event.target.href, where);
             }
 
+            let command = event.originalTarget.getAttributeNS(NS.uri, "command");
+            if (command && dactyl.commands[command]) {
+                return dactyl.withSavedValues(["forceNewTab"], function () {
+                    dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
+                    dactyl.commands[command](event);
+                });
+            }
+
             switch (key) {
             case "<LeftMouse>":
                 event.preventDefault();
-                let command = event.originalTarget.getAttributeNS(NS.uri, "command");
-                if (command && dactyl.commands[command])
-                    return dactyl.commands[command](event);
-                else
-                    openLink(dactyl.CURRENT_TAB);
+                openLink(dactyl.CURRENT_TAB);
                 return false;
             case "<MiddleMouse>":
             case "<C-LeftMouse>":
@@ -1708,7 +1712,7 @@ const CommandLine = Module("commandline", {
             { validator: function (value) value >= 1 });
 
         options.add(["messages", "msgs"],
-            "Number of messages to store in the :message history",
+            "Number of messages to store in the :messages history",
             "number", 100,
             { validator: function (value) value >= 0 });
 

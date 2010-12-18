@@ -113,9 +113,12 @@
 
 <item>
     <tags>:yank :y</tags>
-    <spec>:y[ank] <a>cmd</a></spec>
+    <spec>:y[ank] :<a>cmd</a></spec>
+    <spec>:y[ank] <a>js</a></spec>
     <description>
-        <p>Yanks the output of the given command to the clipboard.</p>
+        <p>
+            Yanks the output of the given Ex command <a>cmd</a> or JavaScript <a>js</a> to the clipboard.
+        </p>
     </description>
 </item>
 

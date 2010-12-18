@@ -76,6 +76,14 @@
 
 }
 
+@-moz-document
+    url-prefix(chrome://dactyl/) {
+
+*:-moz-any-link:hover {
+    text-decoration: underline;
+}
+}
+
 /* Applied to completion buffer, MOW, browser window */
 @-moz-document
     url-prefix(chrome://) {

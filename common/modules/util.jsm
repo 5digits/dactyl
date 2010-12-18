@@ -30,7 +30,7 @@ memoize(this, "Commands", function () {
 
 const FailedAssertion = Class("FailedAssertion", Error, {
     init: function (message) {
-        this.message = message;
+        update(this, Error(message))
     }
 });
 
@@ -102,7 +102,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     assert: function (condition, message) {
         if (!condition)
-            throw new FailedAssertion(message);
+            throw FailedAssertion(message);
     },
 
     get chromePackages() {

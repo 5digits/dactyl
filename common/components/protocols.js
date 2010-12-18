@@ -111,6 +111,7 @@ Dactyl.prototype = {
             for (let [k, v] in Iterator(obj[prop] || {}))
                 this[prop][k] = v;
         }
+        this.initialized = true;
     },
 
     scheme: "dactyl",

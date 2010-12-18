@@ -48,6 +48,10 @@ const Dactyl = Module("dactyl", {
         this.commands = {};
         this.modules = modules;
         this.observers = {};
+
+        this.commands["dactyl.help"] = function (event) {
+            dactyl.help(event.originalTarget.textContent);
+        };
     },
 
     /** @property {string} The name of the current user profile. */
@@ -136,6 +140,35 @@ const Dactyl = Module("dactyl", {
                     callback.get().apply(null, args);
                     return true;
                 }
+            });
+    },
+
+    addUsageCommand: function (params) {
+        commands.add(params.name, params.description,
+            function (args) {
+                let results = array(params.iterate(args))
+                    .sort(function (a, b) String.localeCompare(a.name, b.name));
+                if (args.length)
+                    results = results.filter(function (item) args.map(String.toLowerCase)
+                        .every(function (arg) (item.name + item.description).toLowerCase().indexOf(arg) >= 0));
+                commandline.commandOutput(
+                    template.usage(results, params.format));
+            },
+            {
+                argCount: "*",
+                completer: function (context, args) {
+                    context.keys.text = util.identity;
+                    context.keys.description = function () seen[this.text] + " matching items";
+                    let seen = {};
+                    context.completions = array(item.description.toLowerCase().split(/[()\s]+/)
+                                                for (item in params.iterate(args)))
+                        .flatten().filter(function (w) /^\w[\w-_']+$/.test(w))
+                        .map(function (k) {
+                            seen[k] = (seen[k] || 0) + 1;
+                            return k;
+                        }).uniq()
+                },
+                options: params.options || []
             });
     },
 
@@ -257,8 +290,7 @@ const Dactyl = Module("dactyl", {
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
         else if (isinstance(str, ["Error"]))
-            str = str.fileName.replace(/^.*? -> /, "")
-                + ":" + str.lineNumber + ": " + str;
+            str = <>{str.fileName.replace(/^.*? -> /, "")}: {str.lineNumber}: {str}</>;
 
         if (options["errorbells"])
             dactyl.beep();
@@ -1044,7 +1076,7 @@ const Dactyl = Module("dactyl", {
     reportError: function reportError(error, echo) {
         if (error instanceof FailedAssertion || error.message === "Interrupted") {
             if (error.message)
-                dactyl.echoerr(error.message);
+                dactyl.echoerr(template.linkifyHelp(error.message));
             else
                 dactyl.beep();
             return;
@@ -1935,7 +1967,6 @@ const Dactyl = Module("dactyl", {
                 argCount: "0",
                 bang: true
             });
-
     },
 
     completion: function () {
