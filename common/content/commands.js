@@ -664,7 +664,7 @@ const Commands = Module("commands", {
      */
     hasDomain: function (command, host) {
         try {
-            for (let [cmd, args] in this._subCommands(command))
+            for (let [cmd, args] in this.subCommands(command))
                 if (Array.concat(cmd.domains(args)).some(function (domain) util.isSubdomain(domain, host)))
                     return true;
         }
@@ -682,7 +682,7 @@ const Commands = Module("commands", {
      * @returns {boolean}
      */
     hasPrivateData: function (command) {
-        for (let [cmd, args] in this._subCommands(command))
+        for (let [cmd, args] in this.subCommands(command))
             if (cmd.privateData)
                 return !callable(cmd.privateData) || cmd.privateData(args);
         return false;
@@ -1059,7 +1059,7 @@ const Commands = Module("commands", {
         while (str);
     },
 
-    _subCommands: function (command) {
+    subCommands: function (command) {
         let commands = [command];
         while (command = commands.shift())
             try {

@@ -260,7 +260,7 @@ const Hints = Module("hints", {
      * Pushes the hints into the pageHints object, but does not display them.
      *
      * @param {Window} win The window for which to generate hints.
-     * @default window.content
+     * @default content
      */
     _generate: function _generate(win, offsets) {
         if (!win)
@@ -845,7 +845,7 @@ const Hints = Module("hints", {
         this._canUpdate = false;
         this._continue = Boolean(opts.continue);
 
-        this._top = opts.window || window.content;
+        this._top = opts.window || content;
         this._top.addEventListener("resize", this._resizeTimer.closure.tell, true);
 
         this._generate();

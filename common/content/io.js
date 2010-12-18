@@ -677,7 +677,8 @@ lookup:
 
             context.title = [full ? "Path" : "Filename", "Type"];
             context.keys = {
-                text: !full ? "leafName" : function (f) dir + f.leafName,
+                text: !full ? "leafName" : function (f) this.path,
+                path: function (f) dir + f.leafName,
                 description: function (f) this.isdir ? "Directory" : "File",
                 isdir: function (f) f.isDirectory(),
                 icon: function (f) this.isdir ? "resource://gre/res/html/folder.png"
@@ -731,7 +732,7 @@ lookup:
                     dir = dir.replace("/+$", "") + "/";
                     completion.file(context, true, dir + context.filter);
                     context.title[0] = dir;
-                    context.keys.text = function (f) f.path.substr(dir.length);
+                    context.keys.text = function (f) this.path.substr(dir.length);
                 });
         };
 

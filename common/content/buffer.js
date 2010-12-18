@@ -368,9 +368,9 @@ const Buffer = Module("buffer", {
      *     tab.
      */
     get localStore() {
-        if (!window.content.dactylStore)
-            window.content.dactylStore = {};
-        return window.content.dactylStore;
+        if (!content.dactylStore)
+            content.dactylStore = {};
+        return content.dactylStore;
     },
 
     /**
@@ -383,18 +383,18 @@ const Buffer = Module("buffer", {
     /**
      * @property {string} The current top-level document's URL.
      */
-    get URL() window.content.location.href,
+    get URL() content.location.href,
 
     /**
      * @property {string} The current top-level document's URL, sans any
      *     fragment identifier.
      */
-    get URI() window.content.document.documentURI,
+    get URI() content.document.documentURI,
 
     /**
      * @property {number} The buffer's height in pixels.
      */
-    get pageHeight() window.content.innerHeight,
+    get pageHeight() content.innerHeight,
 
     /**
      * @property {number} The current browser's zoom level, as a
@@ -413,7 +413,7 @@ const Buffer = Module("buffer", {
     /**
      * @property {string} The current document's title.
      */
-    get title() window.content.document.title,
+    get title() content.document.title,
 
     /**
      * @property {number} The buffer's horizontal scroll percentile.
@@ -457,7 +457,7 @@ const Buffer = Module("buffer", {
             if (frame.document.body instanceof HTMLBodyElement)
                 frames.push(frame);
             Array.forEach(frame.frames, rec);
-        })(win || window.content);
+        })(win || content);
         if (focusedFirst)
             return frames.filter(function (f) f === buffer.focusedFrame).concat(
                     frames.filter(function (f) f !== buffer.focusedFrame));
@@ -469,7 +469,7 @@ const Buffer = Module("buffer", {
      */
     get focusedFrame() {
         let frame = (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame;
-        return frame && frame.get() || window.content;
+        return frame && frame.get() || content;
     },
     set focusedFrame(frame) {
         (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame = Cu.getWeakReference(frame);
@@ -485,7 +485,7 @@ const Buffer = Module("buffer", {
      * @returns {string}
      */
     getCurrentWord: function () {
-        let win = buffer.focusedFrame || window.content;
+        let win = buffer.focusedFrame || content;
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
@@ -821,7 +821,7 @@ const Buffer = Module("buffer", {
      */
     scrollTo: function (x, y) {
         marks.add("'", true);
-        window.content.scrollTo(x, y);
+        content.scrollTo(x, y);
     },
 
     /**
@@ -847,7 +847,7 @@ const Buffer = Module("buffer", {
      *     count skips backwards.
      */
     shiftFrameFocus: function (count) {
-        if (!(window.content.document instanceof HTMLDocument))
+        if (!(content.document instanceof HTMLDocument))
             return;
 
         let frames = buffer.allFrames();
@@ -872,7 +872,7 @@ const Buffer = Module("buffer", {
 
         // focus next frame and scroll into view
         frames[next].focus();
-        if (frames[next] != window.content)
+        if (frames[next] != content)
             frames[next].frameElement.scrollIntoView(false);
 
         // add the frame indicator
@@ -908,8 +908,8 @@ const Buffer = Module("buffer", {
     showPageInfo: function (verbose, sections) {
         // Ctrl-g single line output
         if (!verbose) {
-            let file = window.content.document.location.pathname.split("/").pop() || "[No Name]";
-            let title = window.content.document.title || "[No Title]";
+            let file = content.document.location.pathname.split("/").pop() || "[No Name]";
+            let title = content.document.title || "[No Title]";
 
             let info = template.map("gf",
                 function (opt) template.map(buffer.pageInfo[opt][0](), util.identity, ", "),
@@ -1106,7 +1106,7 @@ const Buffer = Module("buffer", {
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
             return win;
 
-        win = window.content;
+        win = content;
         if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
             return win;
 
@@ -1307,7 +1307,7 @@ const Buffer = Module("buffer", {
         commands.add(["sav[eas]", "w[rite]"],
             "Save current document to disk",
             function (args) {
-                let doc = window.content.document;
+                let doc = content.document;
                 let chosenData = null;
                 let filename = args[0];
 
@@ -1351,9 +1351,9 @@ const Buffer = Module("buffer", {
                 prefs.set("browser.download.lastDir", io.cwd);
 
                 try {
-                    var contentDisposition = window.content.QueryInterface(Ci.nsIInterfaceRequestor)
-                                                   .getInterface(Ci.nsIDOMWindowUtils)
-                                                   .getDocumentMetadata("content-disposition");
+                    var contentDisposition = content.QueryInterface(Ci.nsIInterfaceRequestor)
+                                                    .getInterface(Ci.nsIDOMWindowUtils)
+                                                    .getDocumentMetadata("content-disposition");
                 }
                 catch (e) {}
 

@@ -363,7 +363,7 @@ const Dactyl = Module("dactyl", {
             return;
 
         let win = document.commandDispatcher.focusedWindow;
-        let elem = config.mainWidget || window.content;
+        let elem = config.mainWidget || content;
         // TODO: make more generic
         try {
             if (this.has("mail") && !config.isComposeWindow) {
@@ -374,7 +374,7 @@ const Dactyl = Module("dactyl", {
             }
             else {
                 let frame = buffer.focusedFrame;
-                if (frame && frame.top == window.content && !Editor.getEditor(frame))
+                if (frame && frame.top == content && !Editor.getEditor(frame))
                     elem = frame;
             }
         }
@@ -624,7 +624,7 @@ const Dactyl = Module("dactyl", {
                         data.push(<>{node.textContent}</>.toXMLString());
                 }
             }
-            fix(window.content.document.documentElement);
+            fix(content.document.documentElement);
             addDataEntry(file + ".xhtml", data.join(""));
         }
 

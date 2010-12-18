@@ -9,7 +9,7 @@ function checkFragment() {
     var frag = document.location.hash.substr(1);
     var elem = document.getElementById(frag);
     function action() {
-        window.content.scrollTo(0, window.content.scrollY + elem.getBoundingClientRect().top - 10); // 10px context
+        content.scrollTo(0, content.scrollY + elem.getBoundingClientRect().top - 10); // 10px context
     }
     if (elem) {
         action();

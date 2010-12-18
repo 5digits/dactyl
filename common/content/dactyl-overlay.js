@@ -16,7 +16,7 @@
     const jsmodules = {};
     const modules = {
         __proto__: jsmodules,
-        get content() window.content,
+        get content() this.config.browser.contentWindow || window.content,
         jsmodules: jsmodules,
         newContext: newContext,
         window: window

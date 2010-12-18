@@ -41,7 +41,7 @@ const Modes = Module("modes", {
         this.addMode("VISUAL",   { char: "v", ownsFocus: true, display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : "") }, {
             leave: function (stack, newMode) {
                 if (newMode.main == modes.CARET) {
-                    let selection = window.content.getSelection();
+                    let selection = content.getSelection();
                     if (selection && !selection.isCollapsed)
                         selection.collapseToStart();
                 }

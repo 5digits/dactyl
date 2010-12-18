@@ -713,7 +713,7 @@ const Events = Module("events", {
         if (elem == null && Editor.getEditor(win))
             elem = win;
 
-        if (win && win.top == window.content && dactyl.has("tabs"))
+        if (win && win.top == content && dactyl.has("tabs"))
             buffer.focusedFrame = win;
 
         try {
@@ -1064,7 +1064,7 @@ const Events = Module("events", {
     isContentNode: function isContentNode(node) {
         let win = (node.ownerDocument || node).defaultView || node;
         for (; win; win = win.parent != win && win.parent)
-            if (win == window.content)
+            if (win == content)
                 return true;
         return false;
     },

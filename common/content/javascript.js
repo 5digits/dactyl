@@ -443,7 +443,7 @@ const JavaScript = Module("javascript", {
 
         // Find any complete statements that we can eval before we eval our object.
         // This allows for things like:
-        //   let doc = window.content.document; let elem = doc.createEle<Tab> ...
+        //   let doc = content.document; let elem = doc.createEle<Tab> ...
         let prev = 0;
         for (let [, v] in Iterator(this._get(0).fullStatements)) {
             let key = this._str.substring(prev, v + 1);
