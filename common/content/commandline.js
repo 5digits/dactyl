@@ -1087,7 +1087,7 @@ const CommandLine = Module("commandline", {
 
         // unmapped key
         default:
-            if (!options["more"] || !atEnd(-1))
+            if (!options["more"] || atEnd(1))
                 passEvent = true;
             else
                 showMoreHelpPrompt = true;
