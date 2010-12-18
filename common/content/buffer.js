@@ -208,7 +208,6 @@ const Buffer = Module("buffer", {
         }
 
         if (doc instanceof HTMLDocument) {
-
             if (doc.defaultView.frameElement) {
                 // document is part of a frameset
 
@@ -1504,12 +1503,9 @@ const Buffer = Module("buffer", {
               .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIXULWindow)
               .XULBrowserWindow = this.progressListener;
 
-        let appContent = document.getElementById("appcontent");
-        if (appContent) {
-            events.addSessionListener(appContent, "DOMContentLoaded", this.closure.onDOMContentLoaded, true);
-            events.addSessionListener(appContent, "load", this.closure.onPageLoad, true);
-            events.addSessionListener(appContent, "scroll", this.closure._updateBufferPosition, false);
-        }
+        events.addSessionListener(config.browser, "DOMContentLoaded", this.closure.onDOMContentLoaded, true);
+        events.addSessionListener(config.browser, "load", this.closure.onPageLoad, true);
+        events.addSessionListener(config.browser, "scroll", this.closure._updateBufferPosition, false);
     },
     mappings: function () {
         var myModes = config.browserModes;

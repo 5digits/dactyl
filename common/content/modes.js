@@ -29,7 +29,7 @@ const Modes = Module("modes", {
             }
         });
 
-        this._mainModes = [this.NONE];
+        this._mainModes = [];
         this._lastMode = 0;
         this._modeMap = {};
 

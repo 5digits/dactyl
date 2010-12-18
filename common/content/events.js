@@ -1113,11 +1113,11 @@ const Events = Module("events", {
             function () { commandline.open(":", "", modes.EX); });
 
         // focus events
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET],
+        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET].filter(util.identity),
             ["<Tab>"], "Advance keyboard focus",
             function () { document.commandDispatcher.advanceFocus(); });
 
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET, modes.INSERT, modes.TEXT_EDIT],
+        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET, modes.INSERT, modes.TEXT_EDIT].filter(util.identity),
             ["<S-Tab>"], "Rewind keyboard focus",
             function () { document.commandDispatcher.rewindFocus(); });
 
@@ -1134,12 +1134,12 @@ const Events = Module("events", {
             function () { return; });
 
         // macros
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.MESSAGE],
+        mappings.add([modes.NORMAL, modes.PLAYER, modes.MESSAGE].filter(util.identity),
             ["q"], "Record a key sequence into a macro",
             function (arg) { events.startRecording(arg); },
             { arg: true });
 
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.MESSAGE],
+        mappings.add([modes.NORMAL, modes.PLAYER, modes.MESSAGE].filter(util.identity),
             ["@"], "Play a macro",
             function (count, arg) {
                 count = Math.max(count, 1);
