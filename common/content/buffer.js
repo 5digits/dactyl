@@ -296,7 +296,7 @@ const Buffer = Module("buffer", {
             // Workaround for bugs 591425 and 606877, dactyl bug #81
             let collapse = uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
             if (collapse)
-                config.focus.setFocus(window.documentElement);
+                dactyl.focus(document.documentElement);
             config.browser.mCurrentBrowser.collapsed = collapse;
                 uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
 
@@ -543,7 +543,7 @@ const Buffer = Module("buffer", {
             buffer.lastInputField = elem;
         }
         else {
-            elem.focus();
+            dactyl.focus(elem);
             if (elem instanceof Window) {
                 let sel = elem.getSelection();
                 if (sel && !sel.rangeCount)
@@ -873,7 +873,7 @@ const Buffer = Module("buffer", {
         next = Math.constrain(next, 0, frames.length - 1);
 
         // focus next frame and scroll into view
-        frames[next].focus();
+        dactyl.focus(frames[next]);
         if (frames[next] != content)
             frames[next].frameElement.scrollIntoView(false);
 

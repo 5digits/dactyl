@@ -52,7 +52,7 @@ const Hints = Module("hints", {
         this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
         this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, true));
         this.addMode("a", "Save hint with prompt",                function (elem) buffer.saveLink(elem, false));
-        this.addMode("f", "Focus frame",                          function (elem) elem.ownerDocument.defaultView.focus(), function () ["body"]);
+        this.addMode("f", "Focus frame",                          function (elem) dactyl.focus(elem.ownerDocument.defaultView));
         this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, null, isScrollable);
         this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));

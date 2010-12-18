@@ -42,7 +42,7 @@ const CommandWidgets = Class("CommandWidgets", {
             getElement: CommandWidgets.getEditor,
             getGroup: function (value) this.activeGroup.commandline,
             onChange: function (elem) {
-                if (elem.inputField != dactyl.focus) {
+                if (elem.inputField != dactyl.focusedElement) {
                     try {
                         elem.selectionStart = elem.value.length;
                         elem.selectionEnd = elem.value.length;
@@ -50,9 +50,9 @@ const CommandWidgets = Class("CommandWidgets", {
                     catch (e) {}
                 }
                 if (!elem.collapsed)
-                    elem.focus();
+                    dactyl.focus(elem);
             },
-            onVisibility: function (elem, visible) { visible && elem.focus(); }
+            onVisibility: function (elem, visible) { visible && dactyl.focus(elem)}
         });
         this.addElement({
             name: "prompt",
@@ -627,7 +627,7 @@ const CommandLine = Module("commandline", {
         else
             win.scrollTo(0, doc.height);
 
-        win.focus();
+        dactyl.focus(win);
 
         commandline.updateMorePrompt();
     },
@@ -775,7 +775,7 @@ const CommandLine = Module("commandline", {
         this.widgets.multilineInput.value = "";
         this._autosizeMultilineInputWidget();
 
-        this.timeout(function () { this.widgets.multilineInput.focus(); }, 10);
+        this.timeout(function () { dactyl.focus(this.widgets.multilineInput); }, 10);
     },
 
     onContext: function onContext(event) {
@@ -807,7 +807,7 @@ const CommandLine = Module("commandline", {
                 // prevent losing focus, there should be a better way, but it just didn't work otherwise
                 this.timeout(function () {
                     if (this.commandVisible && event.originalTarget == this.widgets.active.command.inputField)
-                        this.widgets.active.command.inputField.focus();
+                        dactyl.focus(this.widgets.active.command.inputField);
                 }, 0);
             }
             else if (event.type == "focus") {
@@ -908,7 +908,7 @@ const CommandLine = Module("commandline", {
         }
         else if (event.type == "blur") {
             if (modes.extended & modes.INPUT_MULTILINE)
-                this.timeout(function () { this.widgets.multilineInput.inputField.focus(); }, 0);
+                this.timeout(function () { dactyl.focus(this.widgets.multilineInput.inputField); }, 0);
         }
         else if (event.type == "input")
             this._autosizeMultilineInputWidget();

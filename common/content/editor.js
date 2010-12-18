@@ -30,7 +30,7 @@ const Editor = Module("editor", {
             return;
         }
 
-        let elem = dactyl.focus;
+        let elem = dactyl.focusedElement;
 
         if (elem.setSelectionRange) {
             let text = dactyl.clipboardRead(clipboard);
@@ -254,7 +254,7 @@ const Editor = Module("editor", {
         if (!options["editor"])
             return;
 
-        let textBox = config.isComposeWindow ? null : dactyl.focus;
+        let textBox = config.isComposeWindow ? null : dactyl.focusedElement;
         let line, column;
 
         if (!forceEditing && textBox && textBox.type == "password") {
@@ -373,12 +373,12 @@ const Editor = Module("editor", {
 }, {
     getEditor: function (elem) {
         if (arguments.length === 0) {
-            dactyl.assert(dactyl.focus);
-            return dactyl.focus;
+            dactyl.assert(dactyl.focusedElement);
+            return dactyl.focusedElement;
         }
 
         if (!elem)
-            elem = dactyl.focus || document.commandDispatcher.focusedWindow;
+            elem = dactyl.focusedElement || document.commandDispatcher.focusedWindow;
         dactyl.assert(elem);
 
         if (elem instanceof Element)
@@ -394,7 +394,7 @@ const Editor = Module("editor", {
     },
 
     getController: function () {
-        let ed = dactyl.focus;
+        let ed = dactyl.focusedElement;
         if (!ed || !ed.controllers)
             return null;
 
@@ -597,7 +597,8 @@ const Editor = Module("editor", {
             ["<Tab>"], "Expand insert mode abbreviation",
             function () {
                 editor.expandAbbreviation(modes.INSERT);
-                document.commandDispatcher.advanceFocus();
+                services.focus.moveFocus(window, null, Ci.nsIFocusManager.MOVEFOCUS_FORWARD,
+                                         Ci.nsIFocusManager.FLAG_BYKEY);
             });
 
         mappings.add([modes.INSERT],

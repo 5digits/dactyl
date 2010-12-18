@@ -340,7 +340,7 @@ const RangeFind = Class("RangeFind", {
             var node = util.evaluateXPath(RangeFind.selectNodePath, this.range.document,
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
         if (node) {
-            node.focus();
+            dactyl.focus(node);
             // Re-highlight collapsed selection
             this.selectedRange = this.lastRange;
         }

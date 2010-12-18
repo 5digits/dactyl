@@ -180,25 +180,19 @@ const Config = Module("config", ConfigBase, {
         commands.add(["sideb[ar]", "sb[ar]", "sbope[n]"],
             "Open the sidebar window",
             function (args) {
-                let arg = args.literalArg;
                 function compare(a, b) util.compareIgnoreCase(a, b) == 0
 
                 // focus if the requested sidebar is already open
-                if (compare(document.getElementById("sidebar-title").value, arg)) {
-                    document.getElementById("sidebar-box").focus();
-                    return;
-                }
+                if (compare(document.getElementById("sidebar-title").value, args[0]))
+                    return dactyl.focus(document.getElementById("sidebar-box"));
 
                 let menu = document.getElementById("viewSidebarMenu");
 
-                for (let [, panel] in Iterator(menu.childNodes)) {
-                    if (compare(panel.label, arg)) {
-                        panel.doCommand();
-                        return;
-                    }
-                }
+                for (let [, panel] in Iterator(menu.childNodes))
+                    if (compare(panel.label, args[0]))
+                        return panel.doCommand();
 
-                dactyl.echoerr("No sidebar " + arg + " found");
+                return dactyl.echoerr("No sidebar " + args[0] + " found");
             },
             {
                 argCount: "1",

@@ -259,7 +259,7 @@ const Events = Module("events", {
 
                     let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
                     if (!evt_obj.dactylString && !evt_obj.dactylShift)
-                        events.dispatch(dactyl.focus || buffer.focusedFrame, event);
+                        events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event);
                     else
                         events.onKeyPress(event);
                 }
@@ -675,10 +675,10 @@ const Events = Module("events", {
      * it if it's not.
      */
     checkFocus: function () {
-        if (dactyl.focus) {
-            let rect = dactyl.focus.getBoundingClientRect();
+        if (dactyl.focusedElement) {
+            let rect = dactyl.focusedElement.getBoundingClientRect();
             if (!rect.width || !rect.height) {
-                dactyl.focus.blur();
+                services.focusManager.clearFocus(window);
                 // onFocusChange needs to die.
                 this.onFocusChange();
             }
@@ -697,6 +697,30 @@ const Events = Module("events", {
                 elem.blur();
         }
     },
+
+    /*
+    onFocus: function onFocus(event) {
+        let elem = event.originalTarget;
+        if (!(elem instanceof Element))
+            return;
+        let win = elem.ownerDocument.defaultView;
+
+        try {
+            util.dump(elem, services.focus.getLastFocusMethod(win) & (0x7000));
+            if (buffer.focusAllowed(win))
+                win.dactylLastFocus = elem;
+            else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement])) {
+                if (win.dactylLastFocus)
+                    dactyl.focus(win.dactylLastFocus);
+                else
+                    elem.blur();
+            }
+        } catch (e) {
+            util.dump(win, String(elem.ownerDocument), String(elem.ownerDocument && elem.ownerDocument.defaultView));
+            util.reportError(e);
+        }
+    },
+    */
 
     // argument "event" is deliberately not used, as i don't seem to have
     // access to the real focus target
@@ -829,7 +853,7 @@ const Events = Module("events", {
             var main = mode.main;
 
             function shouldPass()
-                (!dactyl.focus || Events.isContentNode(dactyl.focus)) &&
+                (!dactyl.focusedElement || Events.isContentNode(dactyl.focusedElement)) &&
                 options.get("passkeys").has(events.toString(event));
 
             // menus have their own command handlers
@@ -1005,7 +1029,7 @@ const Events = Module("events", {
         // "keypress" event.
 
         function shouldPass() // FIXME.
-            (!dactyl.focus || Events.isContentNode(dactyl.focus)) &&
+            (!dactyl.focusedElement || Events.isContentNode(dactyl.focusedElement)) &&
             options.get("passkeys").has(events.toString(event));
 
         if (modes.main == modes.PASS_THROUGH ||
@@ -1069,7 +1093,7 @@ const Events = Module("events", {
         return false;
     },
     isInputElemFocused: function isInputElemFocused() {
-        let elem = dactyl.focus;
+        let elem = dactyl.focusedElement;
         return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
                isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
                                  HTMLObjectElement, HTMLTextAreaElement]);

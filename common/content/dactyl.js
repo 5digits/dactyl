@@ -87,9 +87,6 @@ const Dactyl = Module("dactyl", {
 
     get menuItems() Dactyl.getMenuItems(),
 
-    /** @property {Element} The currently focused element. */
-    get focus() document.commandDispatcher.focusedElement,
-
     // Global constants
     CURRENT_TAB: [],
     NEW_TAB: [],
@@ -385,6 +382,20 @@ const Dactyl = Module("dactyl", {
         return res;
     },
 
+    focus: function (elem, flags) {
+        try {
+            if (elem instanceof Document)
+                elem = elem.defaultView;
+            if (elem instanceof Window)
+                services.focus.clearFocus(elem);
+            else
+                services.focus.setFocus(elem, flags || Ci.nsIFocusManager.FLAG_BYMOUSE|Ci.nsIFocusManager.FLAG_BYMOVEFOCUS);
+        } catch (e) {
+            util.dump(elem);
+            util.reportError(e);
+        }
+    },
+
     /**
      * Focuses the content window.
      *
@@ -413,21 +424,24 @@ const Dactyl = Module("dactyl", {
         }
         catch (e) {}
 
-        if (clearFocusedElement)
-            if (dactyl.focus)
-                dactyl.focus.blur();
-            else if (win && Editor.getEditor(win)) {
+        if (clearFocusedElement) {
+            services.focus.clearFocus(window);
+            if (win && Editor.getEditor(win)) {
                 win.blur();
                 if (win.frameElement)
                     win.frameElement.blur();
             }
+        }
 
         if (elem instanceof Window && Editor.getEditor(elem))
             elem = window;
 
-        if (elem && elem != dactyl.focus)
-            elem.focus();
-    },
+        if (elem && elem != dactyl.focusedElement)
+            dactyl.focus(elem);
+     },
+
+    /** @property {Element} The currently focused element. */
+    get focusedElement() services.focus.getFocusedElementForWindow(window, true, {}),
 
     /**
      * Returns whether this Dactyl extension supports *feature*.
