@@ -390,7 +390,8 @@
     <xsl:template match="dactyl:em | dactyl:tt | dactyl:p  |
                          dactyl:dt | dactyl:dd |
                          dactyl:ol | dactyl:ul | dactyl:li |
-                         dactyl:h1 | dactyl:h2 | dactyl:h3"
+                         dactyl:h1 | dactyl:h2 | dactyl:h3 |
+                         dactyl:h4"
                   mode="help-2">
         <xsl:element name="{local-name()}">
             <xsl:apply-templates select="@*|node()" mode="help-1"/>

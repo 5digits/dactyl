@@ -291,7 +291,7 @@ const Buffer = Module("buffer", {
         onLocationChange: function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
             statusline.updateUrl();
-            statusline.updateProgress();
+            statusline.updateProgress(webProgress.DOMWindow || content);
             for (let frame in values(buffer.allFrames()))
                 frame.dactylFocusAllowed = false;
 

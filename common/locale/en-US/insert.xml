@@ -151,7 +151,7 @@
 
 <h3 tag="tedit-cursor-motions">Cursor motions</h3>
 
-<p>Left-right motions</p>
+<h4>Left-right motions</h4>
 
 <item>
     <tags><![CDATA[t_h t_<Left> t_<BS>]]></tags>
@@ -234,7 +234,7 @@
     </description>
 </item>
 
-<p>Up-down motions</p>
+<h4>Up-down motions</h4>
 
 <item>
     <tags><![CDATA[t_k t_<Up>]]></tags>
@@ -276,7 +276,7 @@
     </description>
 </item>
 
-<p>Word motions</p>
+<h4>Word motions</h4>
 
 <item>
     <tags><![CDATA[t_b t_B t_<C-Left>]]></tags>
@@ -382,7 +382,7 @@
     </description>
 </item>
 
-<h3 tag="tedit-deleting">Deleting text</h3>
+<hh4 tag="tedit-deleting">Deleting text</hh4>
 
 <item>
     <tags>t_d</tags>

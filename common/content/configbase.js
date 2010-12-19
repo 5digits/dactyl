@@ -341,34 +341,29 @@ const ConfigBase = Class(ModuleBase, {
         HelpString[delim]::before                   content: attr(delim);
         HelpString[delim]::after                    content: attr(delim);
 
-        HelpHead;html|h1;dactyl://help/* {
-            display: block;
+        HelpHead;html|h1,html|h2,html|h3,html|h4;dactyl://help/* {
+            font-weight: bold;
+            color: #527BBD;
+            clear: both;
+        }
+        HelpHead1;html|h1;dactyl://help/* {
             margin: 2em 0 1em;
             padding-bottom: .2ex;
             border-bottom-width: 1px;
             font-size: 2em;
-            font-weight: bold;
-            color: #527BBD;
-            clear: both;
         }
-        HelpSubhead;html|h2;dactyl://help/* {
-            display: block;
+        HelpHead2;html|h2;dactyl://help/* {
             margin: 2em 0 1em;
             padding-bottom: .2ex;
             border-bottom-width: 1px;
             font-size: 1.2em;
-            font-weight: bold;
-            color: #527BBD;
-            clear: both;
         }
-        HelpSubsubhead;html|h3;dactyl://help/* {
-            display: block;
+        HelpHead3;html|h3;dactyl://help/* {
             margin: 1em 0;
             padding-bottom: .2ex;
             font-size: 1.1em;
-            font-weight: bold;
-            color: #527BBD;
-            clear: both;
+        }
+        HelpHead4;html|h4;dactyl://help/* {
         }
 
         HelpTOC
