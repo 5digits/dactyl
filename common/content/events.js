@@ -678,7 +678,7 @@ const Events = Module("events", {
         if (dactyl.focusedElement) {
             let rect = dactyl.focusedElement.getBoundingClientRect();
             if (!rect.width || !rect.height) {
-                services.focusManager.clearFocus(window);
+                services.focus.clearFocus(window);
                 // onFocusChange needs to die.
                 this.onFocusChange();
             }

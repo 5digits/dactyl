@@ -225,7 +225,13 @@ const ConfigBase = Class(ModuleBase, {
         Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
-        !StatusLine         color: white !important; background: black   !important
+        !StatusLine {       color: white !important; background: black   !important;
+            min-height: 18px !important;
+            border: none !important;
+            font-weight: bold;
+            font-family: monospace;
+            -moz-appearance: none !important;
+        }
         StatusLineBroken    color: black !important; background: #FFa0a0 !important /* light-red */
         StatusLineSecure    color: black !important; background: #a0a0FF !important /* light-blue */
         StatusLineExtended  color: black !important; background: #a0FFa0 !important /* light-green */
@@ -290,7 +296,7 @@ const ConfigBase = Class(ModuleBase, {
         HelpBorder;*;dactyl://help/*                border-color: silver; border-width: 0px; border-style: solid;
         HelpCode                                    display: block; white-space: pre; margin-left: 2em; font-family: monospace;
 
-        HelpDefault                                 display: inline-block; margin-right: 1ex; white-space: pre;
+        HelpDefault                                 display: inline-block; margin-right: 1ex; white-space: pre; vertical-align: text-top;
 
         HelpDescription                             display: block; clear: right;
         HelpDescription[short]                      clear: none;
@@ -319,9 +325,11 @@ const ConfigBase = Class(ModuleBase, {
             padding-right: 13px;
         }
 
-        HelpOrderedList;ol[level="1"],ol;dactyl://help/*         display: block; list-style: outside decimal;
-        HelpOrderedList2;ol[level="2"],ol ol;dactyl://help/*     list-style: outside upper-alpha;
-        HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*  list-style: outside lower-roman;
+        HelpOrderedList;ol;dactyl://help/*
+        HelpOrderedList1;ol[level="1"],ol;dactyl://help/*           list-style: outside decimal; display: block;
+        HelpOrderedList2;ol[level="2"],ol ol;dactyl://help/*        list-style: outside upper-alpha;
+        HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*     list-style: outside lower-roman;
+        HelpOrderedList4;ol[level="4"],ol ol ol ol;dactyl://help/*  list-style: outside decimal;
         HelpList;html|ul;dactyl://help/*     display: block; list-style: outside disc;
         HelpListItem;html|li;dactyl://help/* display: list-item;
 

@@ -1154,7 +1154,10 @@ const Buffer = Module("buffer", {
         }
         catch (e) {}
 
-        let sel = buffer.focusedFrame.getSelection();
+        try {
+            var sel = buffer.focusedFrame.getSelection();
+        }
+        catch (e) {}
         if (!elem && sel && sel.rangeCount)
             elem = sel.getRangeAt(0).startContainer;
         if (elem)

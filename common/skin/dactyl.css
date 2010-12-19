@@ -130,25 +130,12 @@ label[collapsed=true] {
 }
 
 /* fixes the min-height: 22px from firefox */
-#status-bar,
 statusbarpanel {
     -moz-appearance: none !important;
 	min-height: 18px !important;
-    border: none !important;
-    font-weight: bold;
-    font-family: monospace;
+    background: transparent;
 }
 
-#dactyl-statusline {
-    font-family: monospace;
-    margin: 0px;
-}
-#dactyl-statusline > label {
-    padding: 0px 0px 0px 8px;
-}
-#dactyl-statusline > label:first-child {
-    padding: 0px;
-}
 #dactyl-statusline-field-url {
     background-color: inherit;
     color: inherit;
