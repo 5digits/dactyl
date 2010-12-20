@@ -577,20 +577,19 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {nsIURI} uri The URI for which to find a file.
      */
     getFile: function getFile(uri) {
-        if (isString(uri))
-            try {
+        try {
+            if (isString(uri))
                 uri = util.newURI(uri);
-            }
-            catch (e) {
-                return null;
-            }
 
-        if (uri instanceof Ci.nsIFileURL)
-            return File(uri.QueryInterface(Ci.nsIFileURL).file);
-        let channel = services.io.newChannelFromURI(uri);
-        channel.cancel(Cr.NS_BINDING_ABORTED);
-        if (channel instanceof Ci.nsIFileChannel)
-            return File(channel.QueryInterface(Ci.nsIFileChannel).file);
+            if (uri instanceof Ci.nsIFileURL)
+                return File(uri.QueryInterface(Ci.nsIFileURL).file);
+
+            let channel = services.io.newChannelFromURI(uri);
+            channel.cancel(Cr.NS_BINDING_ABORTED);
+            if (channel instanceof Ci.nsIFileChannel)
+                return File(channel.QueryInterface(Ci.nsIFileChannel).file);
+        }
+        catch (e) {}
         return null;
     },
 
