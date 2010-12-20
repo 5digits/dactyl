@@ -132,6 +132,7 @@ label[collapsed=true] {
 /* fixes the min-height: 22px from firefox */
 statusbarpanel {
     -moz-appearance: none !important;
+    border: 0;
 	min-height: 18px !important;
     background: transparent;
 }
