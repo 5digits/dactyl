@@ -594,14 +594,6 @@ const Editor = Module("editor", {
             { route: true });
 
         mappings.add([modes.INSERT],
-            ["<Tab>"], "Expand insert mode abbreviation",
-            function () {
-                editor.expandAbbreviation(modes.INSERT);
-                services.focus.moveFocus(window, null, Ci.nsIFocusManager.MOVEFOCUS_FORWARD,
-                                         Ci.nsIFocusManager.FLAG_BYKEY);
-            });
-
-        mappings.add([modes.INSERT],
             ["<C-]>", "<C-5>"], "Expand insert mode abbreviation",
             function () { editor.expandAbbreviation(modes.INSERT); });
 
