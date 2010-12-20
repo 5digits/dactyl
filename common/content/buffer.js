@@ -381,7 +381,10 @@ const Buffer = Module("buffer", {
      * @property {Node} The last focused input field in the buffer. Used
      *     by the "gi" key binding.
      */
-    get lastInputField() this.localStore.lastInputField && this.localStore.lastInputField.get() || null,
+    get lastInputField() {
+        let field = this.localStore.lastInputField && this.localStore.lastInputField.get();
+        return field && field.ownerDocument == field.ownerDocument.defaultView.document ? field : null;
+    },
     set lastInputField(value) { this.localStore.lastInputField = value && Cu.getWeakReference(value); },
 
     /**
