@@ -287,49 +287,50 @@ const Hints = Module("hints", {
             return true;
         }
 
-        let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" dactyl:class="magic" xmlns:dactyl={NS}/>, doc);
-
-        let mode = this._hintMode;
-        let res = util.evaluateXPath(mode.xpath, doc, null, true);
-        if (mode.filter)
-            res = let (orig = res) (e for (e in orig) if (mode.filter(e)));
-
-        let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
-        let start = this._pageHints.length;
-        for (let elem in res) {
-            let hint = { elem: elem, showText: false };
-
-            if (!isVisible(elem))
-                continue;
-
-            if (elem.hasAttributeNS(NS, "hint"))
-                [hint.text, hint.showText] = [elem.getAttributeNS(NS, "hint"), true];
-            else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
-                [hint.text, hint.showText] = this._getInputHint(elem, doc);
-            else if (elem.firstElementChild instanceof HTMLImageElement && /^\s*$/.test(elem.textContent))
-                [hint.text, hint.showText] = [elem.firstElementChild.alt || elem.firstElementChild.title, true];
-            else
-                hint.text = elem.textContent.toLowerCase();
-
-            hint.span = baseNodeAbsolute.cloneNode(true);
-
-            let rect = elem.getClientRects()[0] || elem.getBoundingClientRect();
-            let leftPos = Math.max((rect.left + offsetX), offsetX);
-            let topPos  = Math.max((rect.top + offsetY), offsetY);
-
-            if (elem instanceof HTMLAreaElement)
-                [leftPos, topPos] = this._getAreaOffset(elem, leftPos, topPos);
-
-            hint.span.style.left = leftPos + "px";
-            hint.span.style.top =  topPos + "px";
-            fragment.appendChild(hint.span);
-
-            this._pageHints.push(hint);
-        }
-
         let body = doc.body || util.evaluateXPath(["body"], doc).snapshotItem(0);
         if (body) {
+            let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
             body.appendChild(fragment);
+
+            let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint"/>, doc);
+
+            let mode = this._hintMode;
+            let res = util.evaluateXPath(mode.xpath, doc, null, true);
+            if (mode.filter)
+                res = let (orig = res) (e for (e in orig) if (mode.filter(e)));
+
+            let start = this._pageHints.length;
+            for (let elem in res) {
+                let hint = { elem: elem, showText: false };
+
+                if (!isVisible(elem))
+                    continue;
+
+                if (elem.hasAttributeNS(NS, "hint"))
+                    [hint.text, hint.showText] = [elem.getAttributeNS(NS, "hint"), true];
+                else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
+                    [hint.text, hint.showText] = this._getInputHint(elem, doc);
+                else if (elem.firstElementChild instanceof HTMLImageElement && /^\s*$/.test(elem.textContent))
+                    [hint.text, hint.showText] = [elem.firstElementChild.alt || elem.firstElementChild.title, true];
+                else
+                    hint.text = elem.textContent.toLowerCase();
+
+                hint.span = baseNodeAbsolute.cloneNode(true);
+
+                let rect = elem.getClientRects()[0] || elem.getBoundingClientRect();
+                let leftPos = Math.max((rect.left + offsetX), offsetX);
+                let topPos  = Math.max((rect.top + offsetY), offsetY);
+
+                if (elem instanceof HTMLAreaElement)
+                    [leftPos, topPos] = this._getAreaOffset(elem, leftPos, topPos);
+
+                hint.span.style.left = leftPos + "px";
+                hint.span.style.top =  topPos + "px";
+                fragment.wrappedJSObject.hints.appendChild(hint.span);
+
+                this._pageHints.push(hint);
+            }
+
             this._docs.push({ doc: doc, start: start, end: this._pageHints.length - 1 });
         }
 
@@ -420,7 +421,7 @@ const Hints = Module("hints", {
                         if (!rect)
                             continue;
 
-                        hint.imgSpan = util.xmlToDom(<span dactyl:class="magic" highlight="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc);
+                        hint.imgSpan = util.xmlToDom(<span highlight="Hint" dactyl:hl="HintImage"/>, doc);
                         hint.imgSpan.style.left = (rect.left + offsetX) + "px";
                         hint.imgSpan.style.top = (rect.top + offsetY) + "px";
                         hint.imgSpan.style.width = (rect.right - rect.left) + "px";
@@ -453,12 +454,12 @@ const Hints = Module("hints", {
 
         if (options["usermode"]) {
             let css = [];
-            // FIXME: Broken for imgspans.
-            for (let { doc } in values(this._docs)) {
-                for (let elem in util.evaluateXPath("//*[@dactyl:highlight and @number]", doc)) {
-                    let group = elem.getAttributeNS(NS, "highlight");
-                    css.push(highlight.selector(group) + "[number=" + elem.getAttribute("number").quote() + "] { " + elem.style.cssText + " }");
-                }
+            for (let hint in values(this._pageHints)) {
+                let selector = highlight.selector("Hint") + "[number=" + hint.span.getAttribute("number").quote() + "]";
+                let imgSpan = "[dactyl|hl=HintImage]";
+                css.push(selector + ":not(" + imgSpan + ") { " + hint.span.style.cssText + " }");
+                if (hint.imgSpan)
+                    css.push(selector + imgSpan + " { " + hint.span.style.cssText + " }");
             }
             styles.addSheet(true, "hint-positions", "*", css.join("\n"));
         }

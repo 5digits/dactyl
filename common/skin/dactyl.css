@@ -7,25 +7,14 @@
     -moz-binding: url(chrome://dactyl/content/bindings.xml#frame) !important;
 }
 
-[dactyl|class~=magic] > [dactyl|highlight=Hint] {
-    visibility: visible !important;
-}
-[dactyl|class~=magic] {
-    -moz-binding: url(chrome://dactyl/content/bindings.xml#magic) !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 4000px !important;
+[dactyl|highlight~=hints] {
+    -moz-binding: url(chrome://dactyl/content/bindings.xml#hints) !important;
 }
 
 [dactyl|highlight~=HintImage],
 [dactyl|highlight~=Hint] {
-    z-index: 5000;
+    z-index: 50000;
     position: absolute !important;
-}
-[dactyl|highlight~=Search] {
-    display: inline !important;
 }
 
 /* Applied only to completion buffer and MOW */

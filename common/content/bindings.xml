@@ -13,9 +13,14 @@
         </content>
     </binding>
 
-    <binding id="magic" inheritstyle="false">
+    <binding id="hints" inheritstyle="false">
+        <implementation>
+            <field name="hints">
+                document.getAnonymousElementByAttribute(this, "anonid", "hints");
+            </field>
+        </implementation>
         <content>
-            <html:span xbl:inherits="dactyl:highlight=dactyl:highlight,number,style,text" />
+            <html:div anonid="hints"/>
         </content>
     </binding>
 
