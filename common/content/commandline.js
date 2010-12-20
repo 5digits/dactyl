@@ -500,6 +500,9 @@ const CommandLine = Module("commandline", {
             this._history.save();
         this.resetCompletions(); // cancels any asynchronous completion still going on, must be before we set completions = null
         this.hideCompletions();
+        this._completions = null;
+        this._history = null;
+        this._statusTimer.tell();
 
         if (!this._keepCommand || this._silent || this._quiet) {
             modes.delay(function () {

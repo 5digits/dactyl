@@ -636,7 +636,8 @@ lookup:
             }, {
                 argCount: "?", // TODO: "1" - probably not worth supporting weird Vim edge cases. The dream is dead. --djk
                 bang: true,
-                completer: function (context) completion.shellCommand(context),
+                // This is abominably slow.
+                // completer: function (context) completion.shellCommand(context),
                 literal: 0
             });
     },
@@ -744,10 +745,9 @@ lookup:
 
                 for (let [, dirName] in Iterator(dirNames)) {
                     let dir = io.File(dirName);
-                    if (dir.exists() && dir.isDirectory()) {
-                        commands.push([[file.leafName, dir.path] for (file in dir.iterDirectory())
-                                            if (file.isFile() && file.isExecutable())]);
-                    }
+                    if (dir.exists() && dir.isDirectory())
+                        commands.push([[file.leafName, dir.path] for (file in iter(dir.directoryEntries))
+                                       if (file.isFile() && file.isExecutable())]);
                 }
 
                 return array.flatten(commands);
