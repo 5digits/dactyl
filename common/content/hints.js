@@ -373,7 +373,7 @@ const Hints = Module("hints", {
      * @param {boolean} active Whether it is the currently active hint or not.
      */
     _setClass: function _setClass(elem, active) {
-        if (!("dactylHighlight" in elem))
+        if (elem.dactylHighlight == null)
             elem.dactylHighlight = elem.getAttributeNS(NS, "highlight") || "";
 
         let prefix = (elem.getAttributeNS(NS, "hl") || "") + " " + elem.dactylHighlight + " ";
@@ -383,7 +383,8 @@ const Hints = Module("hints", {
             highlight.highlightNode(elem, prefix + "HintElem");
         else {
             highlight.highlightNode(elem, elem.dactylHighlight);
-            delete elem.dactylHighlight;
+            // delete elem.dactylHighlight fails on Gecko 1.9. Issue #197
+            elem.dactylHighlight = null;
         }
     },
 
