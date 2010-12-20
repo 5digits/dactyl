@@ -1007,7 +1007,7 @@ const Commands = Module("commands", {
             \x2e-\x2f
             \x3a-\x40 // \x41-\x5a a-z
             \x5b-\x60 // \x61-\x7a A-Z
-            \x7b-\xff
+            \x7b-\xbf
             \u02b0-\u02ff // Spacing Modifier Letters
             \u0300-\u036f // Combining Diacritical Marks
             \u1dc0-\u1dff // Combining Diacritical Marks Supplement
