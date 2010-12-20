@@ -383,13 +383,14 @@ const Dactyl = Module("dactyl", {
     },
 
     focus: function (elem, flags) {
+        flags = flags || services.focus.FLAG_BYMOUSE;
         try {
             if (elem instanceof Document)
                 elem = elem.defaultView;
             if (elem instanceof Window)
                 services.focus.clearFocus(elem);
             else
-                services.focus.setFocus(elem, flags || services.focus.FLAG_BYMOUSE);
+                services.focus.setFocus(elem, flags);
         } catch (e) {
             util.dump(elem);
             util.reportError(e);

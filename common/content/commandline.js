@@ -257,9 +257,7 @@ const CommandLine = Module("commandline", {
         });
 
         this._statusTimer = Timer(5, 100, function statusTell() {
-            if (self._completions == null)
-                return;
-            if (self._completions.selected == null)
+            if (self._completions == null || self._completions.selected == null)
                 statusline.progess = "";
             else
                 statusline.progress = "match " + (self._completions.selected + 1) + " of " + self._completions.items.length;
