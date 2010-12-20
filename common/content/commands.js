@@ -995,6 +995,58 @@ const Commands = Module("commands", {
         }
     },
 
+    nameRegexp: util.regexp(<![CDATA[
+            [^
+                \x30-\x39 // 0-9
+                <forbid>
+            ]
+            [^ <forbid> ]*
+        ]]>, "", {
+        forbid: util.regexp(<![CDATA[
+            \x00-\x2c // \x2d -
+            \x2e-\x2f
+            \x3a-\x40 // \x41-\x5a a-z
+            \x5b-\x60 // \x61-\x7a A-Z
+            \x7b-\xff
+            \u02b0-\u02ff // Spacing Modifier Letters
+            \u0300-\u036f // Combining Diacritical Marks
+            \u1dc0-\u1dff // Combining Diacritical Marks Supplement
+            \u2000-\u206f // General Punctuation
+            \u20a0-\u20cf // Currency Symbols
+            \u20d0-\u20ff // Combining Diacritical Marks for Symbols
+            \u2400-\u243f // Control Pictures
+            \u2440-\u245f // Optical Character Recognition
+            \u2500-\u257f // Box Drawing
+            \u2580-\u259f // Block Elements
+            \u2700-\u27bf // Dingbats
+            \ufe20-\ufe2f // Combining Half Marks
+            \ufe30-\ufe4f // CJK Compatibility Forms
+            \ufe50-\ufe6f // Small Form Variants
+            \ufe70-\ufeff // Arabic Presentation Forms-B
+            \uff00-\uffef // Halfwidth and Fullwidth Forms
+            \ufff0-\uffff // Specials
+        ]]>)
+    }),
+
+    validName: Class.memoize(function () RegExp("^" + this.nameRegexp.source + "$")),
+
+    _commandRegexp: Class.memoize(function () util.regexp(<![CDATA[
+            ^
+            (
+                [:\s]*
+                (\d+ | %)?
+                (<name> | !)
+                (!)?
+                (\s*)
+            )
+            (
+                (?:. | \n)*?
+            )?
+            $
+        ]]>, "", {
+            name: this.nameRegexp
+        })),
+
     /**
      * Parses a complete Ex command.
      *
@@ -1014,9 +1066,7 @@ const Commands = Module("commands", {
         // remove comments
         str.replace(/\s*".*$/, "");
 
-        // 0 - count, 1 - cmd, 2 - special, 3 - args
-        let matches = str.match(/^([:\s]*(\d+|%)?([a-zA-Z]+|!)(!)?(\s*))((?:.|\n)*?)?$/);
-        //var matches = str.match(/^:*(\d+|%)?([a-zA-Z]+|!)(!)?(?:\s*(.*?)\s*)?$/);
+        let matches = this._commandRegexp.exec(str);
         if (!matches)
             return [];
 
@@ -1240,7 +1290,7 @@ const Commands = Module("commands", {
             function (args) {
                 let cmd = args[0];
 
-                dactyl.assert(!/\W/.test(cmd || ''), "E182: Invalid command name");
+                dactyl.assert(!cmd || commands.validName.test(cmd), "E182: Invalid command name");
 
                 if (args.literalArg) {
                     let completeOpt  = args["-complete"];

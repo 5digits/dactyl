@@ -480,7 +480,7 @@ function isinstance(targ, src) {
 /**
  * Returns true if obj is a non-null object.
  */
-function isObject(obj) typeof obj === "object" && obj != null;
+function isObject(obj) typeof obj === "object" && obj != null || obj instanceof Ci.nsISupports;
 
 /**
  * Returns true if and only if its sole argument is an

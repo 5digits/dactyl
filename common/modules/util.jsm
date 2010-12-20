@@ -773,11 +773,11 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         XML.prettyPrinting = false;
         XML.ignoreWhitespace = false;
 
-        if (object === null)
-            return "null\n";
+        if (object == null)
+            return object + "\n";
 
-        if (typeof object !== "object")
-            return false;
+        if (!isObject(object))
+            return String(object);
 
         if (object instanceof Ci.nsIDOMElement) {
             const NAMESPACES = array.toObject([
