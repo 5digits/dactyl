@@ -90,7 +90,7 @@ const Modes = Module("modes", {
                     prefs.set("accessibility.browsewithcaret", false);
 
                 statusline.updateUrl();
-                if (prev.mainMode.input || prev.mainMode.ownsFocus)
+                if (!stack.fromFocus && (prev.mainMode.input || prev.mainMode.ownsFocus))
                     dactyl.focusContent(true);
                 if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);
@@ -275,11 +275,11 @@ const Modes = Module("modes", {
         this.set(mainMode, extendedMode, params, { push: this.topOfStack });
     },
 
-    pop: function pop(mode) {
+    pop: function pop(mode, args) {
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
-                     { pop: a });
+                     update({ pop: a }, args || {}));
 
             if (mode == null)
                 return;

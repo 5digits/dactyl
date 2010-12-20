@@ -688,13 +688,17 @@ const Events = Module("events", {
     // TODO: Merge with onFocusChange
     onFocus: function onFocus(event) {
         let elem = event.originalTarget;
+        if (elem instanceof Element) {
+            let win = elem.ownerDocument.defaultView;
 
-        if (Events.isContentNode(elem) && !buffer.focusAllowed(elem)
-            && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
-            if (elem.frameElement)
-                dactyl.focusContent(true);
-            else if (!(elem instanceof Window) || Editor.getEditor(elem))
-                elem.blur();
+            if (Events.isContentNode(elem) && !buffer.focusAllowed(elem)
+                && !(services.focus.getLastFocusMethod(win) & 0x7000)
+                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
+                if (elem.frameElement)
+                    dactyl.focusContent(true);
+                else if (!(elem instanceof Window) || Editor.getEditor(elem))
+                    elem.blur();
+            }
         }
     },
 
@@ -734,6 +738,7 @@ const Events = Module("events", {
 
         let win  = window.document.commandDispatcher.focusedWindow;
         let elem = window.document.commandDispatcher.focusedElement;
+
         if (elem == null && Editor.getEditor(win))
             elem = win;
 
@@ -790,7 +795,7 @@ const Events = Module("events", {
                 util.threadYield(true);
 
             while (modes.main.ownsFocus)
-                 modes.pop();
+                 modes.pop(null, { fromFocus: true });
         }
         finally {
             this._lastFocus = elem;
@@ -1135,15 +1140,6 @@ const Events = Module("events", {
         mappings.add(modes.matchModes({ extended: false, input: false }),
             [":"], "Enter command-line mode",
             function () { commandline.open(":", "", modes.EX); });
-
-        // focus events
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET].filter(util.identity),
-            ["<Tab>"], "Advance keyboard focus",
-            function () { document.commandDispatcher.advanceFocus(); });
-
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.VISUAL, modes.CARET, modes.INSERT, modes.TEXT_EDIT].filter(util.identity),
-            ["<S-Tab>"], "Rewind keyboard focus",
-            function () { document.commandDispatcher.rewindFocus(); });
 
         mappings.add(modes.all,
             ["<C-z>"], "Temporarily ignore all " + config.appName + " key bindings",
