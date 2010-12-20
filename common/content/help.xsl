@@ -127,6 +127,7 @@
                 <xsl:copy-of select="$root/node()"/>
             </dactyl:document>
         </xsl:variable>
+        <xsl:variable name="root2" select="exsl:node-set($doc2)/dactyl:document"/>
 
         <html dactyl:highlight="Help">
             <head>
