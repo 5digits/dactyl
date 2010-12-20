@@ -37,21 +37,22 @@ const Tabs = Module("tabs", {
     },
 
     _updateTabCount: function () {
-        for (let [i, tab] in Iterator(this.visibleTabs)) {
-            function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
-            if (!node("dactyl-tab-number")) {
-                let nodes = {};
-                let dom = util.xmlToDom(<xul xmlns:xul={XUL} xmlns:html={XHTML}
-                    ><xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-number"/></xul:hbox
-                    ><xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber"/></xul:hbox
-                ></xul>.*, document, nodes);
-                let img = node("tab-icon-image");
-                img.parentNode.appendChild(dom);
-                tab.__defineGetter__("ordinal", function () Number(nodes.icon.value));
-                tab.__defineSetter__("ordinal", function (i) nodes.icon.value = nodes.label.textContent = i);
+        if (dactyl.has("Gecko2"))
+            for (let [i, tab] in Iterator(this.visibleTabs)) {
+                function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
+                if (!node("dactyl-tab-number")) {
+                    let nodes = {};
+                    let dom = util.xmlToDom(<xul xmlns:xul={XUL} xmlns:html={XHTML}
+                        ><xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-number"/></xul:hbox
+                        ><xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber"/></xul:hbox
+                    ></xul>.*, document, nodes);
+                    let img = node("tab-icon-image");
+                    img.parentNode.appendChild(dom);
+                    tab.__defineGetter__("ordinal", function () Number(nodes.icon.value));
+                    tab.__defineSetter__("ordinal", function (i) nodes.icon.value = nodes.label.textContent = i);
+                }
+                tab.ordinal = i + 1;
             }
-            tab.ordinal = i + 1;
-        }
         statusline.updateTabCount(true);
     },
 

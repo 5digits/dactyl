@@ -160,7 +160,7 @@
                             <xsl:if test="@tag">
                                 <xsl:attribute name="href"><xsl:value-of select="concat('#', substring-before(concat(@tag, ' '), ' '))"/></xsl:attribute>
                             </xsl:if>
-                            <xsl:apply-templates select="node()" mode="help-1"/>
+                            <xsl:apply-templates select="node()[not(self::dactyl:strut)]" mode="help-1"/>
                         </a>
                         <xsl:call-template name="toc">
                             <xsl:with-param name="level" select="$level + 1"/>
