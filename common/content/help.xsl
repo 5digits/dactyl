@@ -1,4 +1,5 @@
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE stylesheet SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
 <!-- Header {{{1 -->
 <xsl:stylesheet version="1.0"
@@ -126,7 +127,6 @@
                 <xsl:copy-of select="$root/node()"/>
             </dactyl:document>
         </xsl:variable>
-        <xsl:variable name="root2" select="exsl:node-set($doc2)/dactyl:document"/>
 
         <html dactyl:highlight="Help">
             <head>

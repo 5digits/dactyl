@@ -682,6 +682,8 @@ const Dactyl = Module("dactyl", {
             .join("\n");
         addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 
+        addDataEntry("tag-map.json", JSON.stringify(services["dactyl:"].HELP_TAGS));
+
         let m, re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
         while ((m = re.exec(data)))
             chrome[m[0]] = m[2];
