@@ -228,13 +228,8 @@ const ConfigBase = Class(ModuleBase, {
         Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
-        !StatusLine {       color: white !important; background: black   !important;
-            min-height: 18px !important;
-            border: none !important;
-            font-weight: bold;
-            font-family: monospace;
-            -moz-appearance: none !important;
-        }
+        !StatusLine         font-weight: bold; font-family: monospace; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
+        !StatusLineNormal   color: white !important; background: black   !important;
         StatusLineBroken    color: black !important; background: #FFa0a0 !important /* light-red */
         StatusLineSecure    color: black !important; background: #a0a0FF !important /* light-blue */
         StatusLineExtended  color: black !important; background: #a0FFa0 !important /* light-green */

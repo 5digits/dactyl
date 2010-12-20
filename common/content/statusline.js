@@ -50,10 +50,10 @@ const StatusLine = Module("statusline", {
             extended: "StatusLineExtended",
             secure:   "StatusLineSecure",
             broken:   "StatusLineBroken",
-            insecure: "StatusLine"
+            insecure: "StatusLineNormal"
         };
 
-        highlight.highlightNode(this._statusLine, highlightGroup[type]);
+        highlight.highlightNode(this._statusLine, "StatusLine " + highlightGroup[type]);
     },
     get class() this._class,
 
