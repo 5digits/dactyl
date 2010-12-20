@@ -948,8 +948,6 @@ const Tabs = Module("tabs", {
             "number", config.defaults["showtabline"],
             {
                 setter: function (value) {
-                    let tabStrip = config.tabStrip;
-
                     if (value == 0)
                         tabs.tabStyle.enabled = true;
                     else {
@@ -957,8 +955,8 @@ const Tabs = Module("tabs", {
                                       "See 'showtabline' option.");
                         tabs.tabStyle.enabled = false;
                     }
-
-                    tabStrip.collapsed = false;
+                    if (value != 1)
+                        config.tabStrip.collapsed = false;
                     return value;
                 },
                 completer: function (context) [
