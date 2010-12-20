@@ -612,7 +612,7 @@ const Dactyl = Module("dactyl", {
         let empty = set("area base basefont br col frame hr img input isindex link meta param"
                             .split(" "));
 
-        let chrome = {};
+        let chromeFiles = {};
         let styles = {};
         for (let [file, ] in Iterator(services["dactyl:"].FILE_MAP)) {
             dactyl.open("dactyl://help/" + file);
@@ -625,7 +625,7 @@ const Dactyl = Module("dactyl", {
             function fix(node) {
                 switch(node.nodeType) {
                     case Node.ELEMENT_NODE:
-                        if (isinstance(node, [HTMLBaseElement, HTMLScriptElement]))
+                        if (isinstance(node, [HTMLBaseElement]))
                             return;
 
                         data.push("<"); data.push(node.localName);
@@ -634,9 +634,9 @@ const Dactyl = Module("dactyl", {
 
                         for (let { name, value } in array.iterValues(node.attributes)) {
                             if (name == "dactyl:highlight") {
+                                set.add(styles, value);
                                 name = "class";
                                 value = "hl-" + value;
-                                set.add(styles, value);
                             }
                             if (name == "href") {
                                 value = node.href;
@@ -648,7 +648,7 @@ const Dactyl = Module("dactyl", {
                                     value = value.replace(/(#|$)/, ".xhtml$1");
                             }
                             if (name == "src" && value.indexOf(":") > 0) {
-                                chrome[value] = value.replace(/.*\//, "");;
+                                chromeFiles[value] = value.replace(/.*\//, "");;
                                 value = value.replace(/.*\//, "");
                             }
                             data.push(" ");
@@ -686,9 +686,9 @@ const Dactyl = Module("dactyl", {
 
         let m, re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
         while ((m = re.exec(data)))
-            chrome[m[0]] = m[2];
+            chromeFiles[m[0]] = m[2];
 
-        for (let [uri, leaf] in Iterator(chrome))
+        for (let [uri, leaf] in Iterator(chromeFiles))
             addURIEntry(leaf, uri);
 
         if (zip)

@@ -287,7 +287,7 @@ const Styles = Module("Styles", {
         else if (/[\/:]/.test(filter))
             function test(uri) uri.spec === filter;
         else
-            function test(uri) uri.host === filter;
+            function test(uri) { try { return uri.host === filter } catch (e) { return false } };
         test.toString = function toString() filter;
         if (arguments.length < 2)
             return test;
