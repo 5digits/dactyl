@@ -566,14 +566,16 @@ const CompletionContext = Class("CompletionContext", {
      */
     advance: function advance(count) {
         delete this._ignoreCase;
+        let advance = count;
         if (this.quote && count) {
-            count = this.quote[0].length + this.quote[1](this.filter.substr(0, count)).length;
+            advance = this.quote[1](this.filter.substr(0, count)).length;
+            count = this.quote[0].length + advance;
             this.quote[0] = "";
             this.quote[2] = "";
         }
         this.offset += count;
         if (this._filter)
-            this._filter = this._filter.substr(count);
+            this._filter = this._filter.substr(advance);
     },
 
     /**

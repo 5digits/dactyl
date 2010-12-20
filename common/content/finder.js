@@ -610,16 +610,7 @@ const RangeFind = Class("RangeFind", {
             this.save();
         },
 
-        intersects: function (range) {
-            try {
-                return this.range.compareBoundaryPoints(range.START_TO_END, range) >= 0 &&
-                       this.range.compareBoundaryPoints(range.END_TO_START, range) <= 0;
-            }
-            catch (e) {
-                dactyl.reportError(e, true);
-                return false;
-            }
-        },
+        intersects: function (range) RangeFind.intersects(this.range, range),
 
         save: function () {
             this.scroll = Point(this.window.pageXOffset, this.window.pageYOffset);
