@@ -1284,7 +1284,9 @@ const Dactyl = Module("dactyl", {
 
                     styles.addSheet(true, "taboptions", "chrome://*",
                         classes.length ? classes.join(",") + "{ display: none; }" : "");
-                }
+                },
+                validator: function (opts) dactyl.has("Gecko2") ||
+                    Option.validIf(!/[nN]/.test(opts), "Tab numbering not available in this " + config.host + " version")
             }
         ].filter(function (group) !group.feature || dactyl.has(group.feature));
 

@@ -32,6 +32,9 @@ const ConfigBase = Class(ModuleBase, {
                  {"}"}</>);
             img = null;
         };
+
+        if (util.haveGecko("2b"))
+            this.features.push("Gecko2");
     },
 
     styleHelp: function () {

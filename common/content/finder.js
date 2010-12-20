@@ -77,7 +77,7 @@ const RangeFinder = Module("rangefinder", {
     },
 
     findAgain: function (reverse) {
-        if (!this.rangeFind)
+        if (!this.rangeFind || this.rangeFind.stale)
             this.find(this.lastFindPattern);
         else if (!this.rangeFind.find(null, reverse))
             dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern);
