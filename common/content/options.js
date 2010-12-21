@@ -759,9 +759,9 @@ const Options = Module("options", {
      */
     parseOpt: function parseOpt(args, modifiers) {
         let ret = {};
-        let matches, prefix, postfix, valueGiven;
+        let matches, prefix, postfix;
 
-        [matches, prefix, ret.name, postfix, valueGiven, ret.operator, ret.value] =
+        [matches, prefix, ret.name, postfix, ret.valueGiven, ret.operator, ret.value] =
         args.match(/^\s*(no|inv)?([a-z_.-]*?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
 
         ret.args = args;
@@ -783,7 +783,7 @@ const Options = Module("options", {
         ret.postfix = postfix;
 
         ret.all = (ret.name == "all");
-        ret.get = (ret.all || postfix == "?" || (ret.option && ret.option.type != "boolean" && !valueGiven));
+        ret.get = (ret.all || postfix == "?" || (ret.option && ret.option.type != "boolean" && !ret.valueGiven));
         ret.invert = (prefix == "inv" || postfix == "!");
         ret.reset = (postfix == "&");
         ret.unsetBoolean = (prefix == "no");
