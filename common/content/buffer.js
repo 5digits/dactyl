@@ -1144,6 +1144,8 @@ const Buffer = Module("buffer", {
 
     findScrollable: function findScrollable(dir, horizontal) {
         function find(elem) {
+            while (!(elem instanceof Element) && elem.parentNode)
+                elem = elem.parentNode;
             for (; elem && elem.parentNode instanceof Element; elem = elem.parentNode)
                 if (Buffer.isScrollable(elem, dir, horizontal))
                     break;

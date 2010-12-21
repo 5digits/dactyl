@@ -318,9 +318,16 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @returns {Object}
      */
     computedStyle: function computedStyle(node) {
-        while (node instanceof Ci.nsIDOMText && node.parentNode)
+        while (!(node instanceof Ci.nsIDOMElement) && node.parentNode)
             node = node.parentNode;
-        return node.ownerDocument.defaultView.getComputedStyle(node, null);
+        try {
+            return node.ownerDocument.defaultView.getComputedStyle(node, null);
+        }
+        catch (e) {
+            util.reportError(e);
+            util.dump(String(node));
+            return {};
+        }
     },
 
     /**

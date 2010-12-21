@@ -675,7 +675,7 @@ unlet s:cpo_save
                     lines.__defineGetter__("last", function () this[this.length - 1]);
 
                     for (let item in (isArray(items) ? array.iterValues : iter)(items)) {
-                        if (item.length > width && (!lines.length || lines.last.length)) {
+                        if (item.length > width && (!lines.length || lines.last.length > 1)) {
                             lines.push([prefix]);
                             width = WIDTH - prefix.length;
                             prefix = "    \\ ";
