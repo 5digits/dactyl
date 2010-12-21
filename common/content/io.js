@@ -603,6 +603,7 @@ unlet b:current_syntax
 syn match <name>CommandStart "\%(^\s*:\=\)\@<=" nextgroup=<name>Command,<name>AutoCmd
 
 <commands>
+    \ contained
 
 syn match <name>Command "!" contained
 
@@ -617,6 +618,7 @@ syn region <name>Set matchgroup=<name>Command start="\%(^\s*:\=\)\@<=\<\%(setl\%
     \ end="$" keepend oneline contains=<name>Option,<name>String
 
 <options>
+    \ contained nextgroup=pentadactylSetMod
 
 <toggleoptions>
 execute 'syn match <name>Option "\<\%(no\|inv\)\=\%(' .
