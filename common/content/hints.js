@@ -291,6 +291,8 @@ const Hints = Module("hints", {
         if (body) {
             let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
             body.appendChild(fragment);
+            util.computedStyle(fragment).height; // Force application of binding.
+            let container = doc.getAnonymousElementByAttribute(fragment, "anonid", "hints");
 
             let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint"/>, doc);
 
@@ -326,7 +328,7 @@ const Hints = Module("hints", {
 
                 hint.span.style.left = leftPos + "px";
                 hint.span.style.top =  topPos + "px";
-                fragment.wrappedJSObject.hints.appendChild(hint.span);
+                container.appendChild(hint.span);
 
                 this._pageHints.push(hint);
             }
@@ -421,7 +423,7 @@ const Hints = Module("hints", {
                         if (!rect)
                             continue;
 
-                        hint.imgSpan = util.xmlToDom(<span highlight="Hint" dactyl:hl="HintImage"/>, doc);
+                        hint.imgSpan = util.xmlToDom(<span highlight="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc);
                         hint.imgSpan.style.left = (rect.left + offsetX) + "px";
                         hint.imgSpan.style.top = (rect.top + offsetY) + "px";
                         hint.imgSpan.style.width = (rect.right - rect.left) + "px";
