@@ -20,19 +20,19 @@ unlet b:current_syntax
 syn match teledactylCommandStart "\%(^\s*:\=\)\@<=" nextgroup=teledactylCommand,teledactylAutoCmd
 
 syn keyword teledactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] bd[elete] bw[ipeout] bun[load] tabc[lose]
-    \ ca[bbrev] cabc[lear] cd chd[ir] cm[ap] cmapc[lear] cno[remap] colo[rscheme] comc[lear] com[mand] con[tact] contacts
-    \ addr[essbook] contexts copy[to] cuna[bbrev] cunm[ap] delc[ommand] delmac[ros] delm[arks] dels[tyle] dia[log] doautoa[ll]
-    \ do[autocmd] ec[ho] echoe[rr] echom[sg] el[se] elsei[f] elif em[enu] empty[trash] en[dif] fi exe[cute] exta[dd] extde[lete]
-    \ extd[isable] exte[nable] extens[ions] exts exto[ptions] extp[references] extu[pdate] exu[sage] fini[sh] frameo[nly]
-    \ get[messages] go[to] ha[rdcopy] h[elp] helpa[ll] hi[ghlight] ia[bbrev] iabc[lear] if im[ap] imapc[lear] ino[remap]
-    \ iuna[bbrev] iunm[ap] javas[cript] js keepa[lt] let loadplugins lpl macros m[ail] map mapc[lear] ma[rk] marks mes[sages]
-    \ messc[lear] mkt[eledactylrc] move[to] nm[ap] nmapc[lear] nno[remap] noh[lsearch] no[remap] norm[al] nunm[ap] optionu[sage]
-    \ pa[geinfo] pagest[yle] pas pref[erences] prefs pw[d] q[uit] re[load] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames]
-    \ se[t] setg[lobal] setl[ocal] sil[ent] so[urce] st[op] sty[le] styled[isable] styd[isable] stylee[nable] stye[nable]
-    \ stylet[oggle] styt[oggle] tab tabd[o] bufd[o] tabl[ast] bl[ast] tabn[ext] tn[ext] bn[ext] tabp[revious] tp[revious]
-    \ tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind] bf[irst] time tm[ap] tmapc[lear] tno[remap] tunm[ap]
-    \ una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vunm[ap] y[ank]
-    \ zo[om]
+    \ ca[bbrev] cabc[lear] cd chd[ir] clistk[eys] clk cm[ap] cmapc[lear] cno[remap] colo[rscheme] comc[lear] com[mand] con[tact]
+    \ contacts addr[essbook] contexts copy[to] cuna[bbrev] cunm[ap] delc[ommand] delmac[ros] delm[arks] dels[tyle] dia[log]
+    \ doautoa[ll] do[autocmd] ec[ho] echoe[rr] echom[sg] el[se] elsei[f] elif em[enu] empty[trash] en[dif] fi exe[cute] exta[dd]
+    \ extde[lete] extd[isable] exte[nable] extens[ions] exts exto[ptions] extp[references] extu[pdate] fini[sh] frameo[nly]
+    \ get[messages] go[to] ha[rdcopy] h[elp] helpa[ll] hi[ghlight] ia[bbrev] iabc[lear] if ilistk[eys] ilk im[ap] imapc[lear]
+    \ ino[remap] iuna[bbrev] iunm[ap] javas[cript] js keepa[lt] let listc[ommands] lc listk[eys] lk listo[ptions] lo loadplugins
+    \ lpl macros m[ail] map mapc[lear] ma[rk] marks mes[sages] messc[lear] mkt[eledactylrc] move[to] nlistk[eys] nlk nm[ap]
+    \ nmapc[lear] nno[remap] noh[lfind] no[remap] norm[al] nunm[ap] pa[geinfo] pagest[yle] pas pref[erences] prefs pw[d] q[uit]
+    \ re[load] res[tart] runt[ime] sav[eas] w[rite] scrip[tnames] se[t] setg[lobal] setl[ocal] sil[ent] so[urce] st[op] sty[le]
+    \ styled[isable] styd[isable] stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab tabd[o] bufd[o] tabl[ast] bl[ast]
+    \ tabn[ext] tn[ext] bn[ext] tabp[revious] tp[revious] tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind]
+    \ bf[irst] time tlistk[eys] tlk tm[ap] tmapc[lear] tno[remap] tunm[ap] una[bbreviate] unl[et] unm[ap] verb[ose] ve[rsion]
+    \ vie[wsource] vlistk[eys] vlk vm[ap] vmapc[lear] vno[remap] vunm[ap] y[ank] zo[om]
     \ contained
 
 syn match teledactylCommand "!" contained
@@ -47,16 +47,16 @@ syn region teledactylSet matchgroup=teledactylCommand start="\%(^\s*:\=\)\@<=\<\
     \ end="$" keepend oneline contains=teledactylOption,teledactylString
 
 syn keyword teledactylOption altwildmode awim archivefolder autocomplete au cdpath cd complete cpt editor eventignore ei
-    \ extendedhinttags eht fileencoding fenc followhints fh guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm
-    \ hinttags ht hinttimeout hto history hi layout loadplugins lpl mapleader ml maxitems messages msgs nextpattern pageinfo pa
-    \ passkeys pk previouspattern runtimepath rtp scroll scr shell sh shellcmdflag shcf showstatuslinks ssli showtabline stal
-    \ titlestring urlseparator urlsep us verbose vbs wildanchor wia wildcase wic wildignore wig wildmode wim wildsort wis
-    \ wordseparators wsp
+    \ extendedhinttags eht fileencoding fenc findcase fc followhints fh guioptions go helpfile hf hintinputs hin hintkeys hk
+    \ hintmatching hm hinttags ht hinttimeout hto history hi layout loadplugins lpl mapleader ml maxitems messages msgs
+    \ nextpattern pageinfo pa passkeys pk previouspattern runtimepath rtp scroll scr shell sh shellcmdflag shcf showstatuslinks
+    \ ssli showtabline stal smtpserver smtp titlestring urlseparator urlsep us verbose vbs wildanchor wia wildcase wic wildignore
+    \ wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=teledactylSetMod
 
 let s:toggleOptions = ["autoexternal", "ae", "banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs",
-    \ "hlsearch", "hls", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "more", "online", "searchcase", "sc",
-    \ "showmode", "smd", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+    \ "hlfind", "hlf", "incfind", "if", "insertmode", "im", "jsdebugger", "jsd", "more", "online", "showmode", "smd",
+    \ "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match teledactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=teledactylSetMod'

@@ -20,22 +20,23 @@ unlet b:current_syntax
 syn match pentadactylCommandStart "\%(^\s*:\=\)\@<=" nextgroup=pentadactylCommand,pentadactylAutoCmd
 
 syn keyword pentadactylCommand run ab[breviate] abc[lear] addo[ns] au[tocmd] ba[ck] bd[elete] bw[ipeout] bun[load]
-    \ tabc[lose] bma[rk] bmarks b[uffer] buffers files ls tabs ca[bbrev] cabc[lear] cd chd[ir] cm[ap] cmapc[lear] cno[remap]
-    \ colo[rscheme] comc[lear] com[mand] contexts cookies ck cuna[bbrev] cunm[ap] delbm[arks] delc[ommand] delmac[ros] delm[arks]
-    \ delqm[arks] dels[tyle] dia[log] doautoa[ll] do[autocmd] downl[oads] dl ec[ho] echoe[rr] echom[sg] el[se] elsei[f] elif
-    \ em[enu] en[dif] fi exe[cute] exta[dd] extde[lete] extd[isable] exte[nable] extens[ions] exts exto[ptions] extp[references]
-    \ extu[pdate] exu[sage] fini[sh] fo[rward] fw frameo[nly] ha[rdcopy] h[elp] helpa[ll] hi[ghlight] hist[ory] hs ia[bbrev]
-    \ iabc[lear] if im[ap] imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js ju[mps] keepa[lt] let loadplugins lpl
-    \ macros map mapc[lear] ma[rk] marks mes[sages] messc[lear] mkp[entadactylrc] nm[ap] nmapc[lear] nno[remap] noh[lsearch]
-    \ no[remap] norm[al] nunm[ap] o[pen] optionu[sage] pa[geinfo] pagest[yle] pas pref[erences] prefs pw[d] qma[rk] qmarks q[uit]
-    \ quita[ll] qa[ll] redr[aw] re[load] reloada[ll] res[tart] runt[ime] sa[nitize] sav[eas] w[rite] sbcl[ose] scrip[tnames] se[t]
-    \ setg[lobal] setl[ocal] sideb[ar] sb[ar] sbope[n] sil[ent] so[urce] st[op] stopa[ll] sty[le] styled[isable] styd[isable]
-    \ stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab taba[ttach] tabde[tach] tabd[o] bufd[o] tabdu[plicate] tabl[ast]
-    \ bl[ast] tabm[ove] tabn[ext] tn[ext] bn[ext] tabo[nly] tabopen t[open] tabnew tabp[revious] tp[revious] tabN[ext] tN[ext]
-    \ bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind] bf[irst] time tm[ap] tmapc[lear] tno[remap] toolbarh[ide] tbh[ide]
-    \ toolbars[how] tbs[how] toolbart[oggle] tbt[oggle] tunm[ap] una[bbreviate] u[ndo] undoa[ll] unl[et] unm[ap] verb[ose]
-    \ ve[rsion] vie[wsource] viu[sage] vm[ap] vmapc[lear] vno[remap] vunm[ap] winc[lose] wc[lose] wind[ow] winon[ly] wino[pen]
-    \ wo[pen] wqa[ll] wq xa[ll] y[ank] zo[om]
+    \ tabc[lose] bma[rk] bmarks b[uffer] buffers files ls tabs ca[bbrev] cabc[lear] cd chd[ir] clistk[eys] clk cm[ap] cmapc[lear]
+    \ cno[remap] colo[rscheme] comc[lear] com[mand] contexts cookies ck cuna[bbrev] cunm[ap] delbm[arks] delc[ommand] delmac[ros]
+    \ delm[arks] delqm[arks] dels[tyle] dia[log] doautoa[ll] do[autocmd] downl[oads] dl ec[ho] echoe[rr] echom[sg] el[se]
+    \ elsei[f] elif em[enu] en[dif] fi exe[cute] exta[dd] extde[lete] extd[isable] exte[nable] extens[ions] exts exto[ptions]
+    \ extp[references] extu[pdate] fini[sh] fo[rward] fw frameo[nly] ha[rdcopy] h[elp] helpa[ll] hi[ghlight] hist[ory] hs
+    \ ia[bbrev] iabc[lear] if ilistk[eys] ilk im[ap] imapc[lear] ino[remap] iuna[bbrev] iunm[ap] javas[cript] js ju[mps]
+    \ keepa[lt] let listc[ommands] lc listk[eys] lk listo[ptions] lo loadplugins lpl macros map mapc[lear] ma[rk] marks
+    \ mes[sages] messc[lear] mkp[entadactylrc] nlistk[eys] nlk nm[ap] nmapc[lear] nno[remap] noh[lfind] no[remap] norm[al]
+    \ nunm[ap] o[pen] pa[geinfo] pagest[yle] pas pref[erences] prefs pw[d] qma[rk] qmarks q[uit] quita[ll] qa[ll] redr[aw]
+    \ re[load] reloada[ll] res[tart] runt[ime] sa[nitize] sav[eas] w[rite] sbcl[ose] scrip[tnames] se[t] setg[lobal]
+    \ setl[ocal] sideb[ar] sb[ar] sbope[n] sil[ent] so[urce] st[op] stopa[ll] sty[le] styled[isable] styd[isable]
+    \ stylee[nable] stye[nable] stylet[oggle] styt[oggle] tab taba[ttach] tabde[tach] tabd[o] bufd[o] tabdu[plicate]
+    \ tabl[ast] bl[ast] tabm[ove] tabn[ext] tn[ext] bn[ext] tabo[nly] tabopen t[open] tabnew tabp[revious] tp[revious]
+    \ tabN[ext] tN[ext] bp[revious] bN[ext] tabr[ewind] tabfir[st] br[ewind] bf[irst] time tlistk[eys] tlk tm[ap] tmapc[lear]
+    \ tno[remap] toolbarh[ide] tbh[ide] toolbars[how] tbs[how] toolbart[oggle] tbt[oggle] tunm[ap] una[bbreviate] u[ndo]
+    \ undoa[ll] unl[et] unm[ap] verb[ose] ve[rsion] vie[wsource] vlistk[eys] vlk vm[ap] vmapc[lear] vno[remap] vunm[ap]
+    \ winc[lose] wc[lose] wind[ow] winon[ly] wino[pen] wo[pen] wqa[ll] wq xa[ll] y[ank] zo[om]
     \ contained
 
 syn match pentadactylCommand "!" contained
@@ -53,16 +54,16 @@ syn region pentadactylSet matchgroup=pentadactylCommand start="\%(^\s*:\=\)\@<=\
 
 syn keyword pentadactylOption activate act altwildmode awim autocomplete au cdpath cd complete cpt cookieaccept ca
     \ cookielifetime cl cookies ck defsearch ds editor encoding enc eventignore ei extendedhinttags eht fileencoding fenc
-    \ followhints fh guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm hinttags ht hinttimeout hto history hi
-    \ loadplugins lpl mapleader ml maxitems messages msgs newtab nextpattern pageinfo pa passkeys pk popups pps previouspattern
-    \ runtimepath rtp sanitizeitems si sanitizeshutdown ss sanitizetimespan sts scroll scr shell sh shellcmdflag shcf
-    \ showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator urlsep us verbose vbs wildanchor wia wildcase
-    \ wic wildignore wig wildmode wim wildsort wis wordseparators wsp
+    \ findcase fc followhints fh guioptions go helpfile hf hintinputs hin hintkeys hk hintmatching hm hinttags ht hinttimeout hto
+    \ history hi loadplugins lpl mapleader ml maxitems messages msgs newtab nextpattern pageinfo pa passkeys pk popups pps
+    \ previouspattern runtimepath rtp sanitizeitems si sanitizeshutdown ss sanitizetimespan sts scroll scr shell sh shellcmdflag
+    \ shcf showstatuslinks ssli showtabline stal suggestengines titlestring urlseparator urlsep us verbose vbs wildanchor wia
+    \ wildcase wic wildignore wig wildmode wim wildsort wis wordseparators wsp
     \ contained nextgroup=pentadactylSetMod
 
-let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "flashblock", "fb", "fullscreen", "fs",
-    \ "hlsearch", "hls", "incsearch", "is", "insertmode", "im", "jsdebugger", "jsd", "more", "online", "private",
-    \ "pornmode", "searchcase", "sc", "showmode", "smd", "strictfocus", "sf", "usermode", "um", "visualbell", "vb"]
+let s:toggleOptions = ["banghist", "bh", "errorbells", "eb", "exrc", "ex", "fullscreen", "fs", "hlfind", "hlf", "incfind",
+    \ "if", "insertmode", "im", "jsdebugger", "jsd", "more", "online", "private", "pornmode", "showmode", "smd", "strictfocus",
+    \ "sf", "usermode", "um", "visualbell", "vb"]
 execute 'syn match pentadactylOption "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=pentadactylSetMod'
