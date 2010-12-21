@@ -54,6 +54,7 @@
       consistent interactive help facility (improvements include
       listing keys for modes other than Normal, filtering the output
       and linking to source locations).
+    * Added :mksyntax command.
     * IMPORTANT option changes:
       - 'cdpath' and 'runtimepath' no longer treat ",,"
         specially. Use "." instead.

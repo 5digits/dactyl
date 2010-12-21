@@ -46,6 +46,20 @@
 </item>
 
 <item>
+    <tags>:mks :mksyntax</tags>
+    <spec>:mks<oa>yntax</oa><oa>!</oa> <oa>path</oa></spec>
+    <description>
+        <p>
+            Generate a Vim syntax file. If <oa>path</oa> is not given, the local
+            Vim runtime path is guessed. If <oa>path</oa> is a directory, the
+            file <str delim="">&dactyl.name;.vim</str> in that directory is
+            used. An existing file will never be overwritten unless
+            <oa>bang</oa> is given.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags><![CDATA[<C-l> CTRL-L :redr :redraw]]></tags>
     <strut/>
     <spec>:redr<oa>aw</oa></spec>

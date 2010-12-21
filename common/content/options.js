@@ -42,6 +42,7 @@ const Option = Class("Option", {
     init: function (names, description, type, defaultValue, extraInfo) {
         this.name = names[0];
         this.names = names;
+        this.realNames = names;
         this.type = type;
         this.description = description;
 

@@ -568,6 +568,143 @@ lookup:
                 completer: function (context) completion.file(context, true)
             });
 
+        commands.add(["mks[yntax]"],
+            "Generate a Vim syntax file",
+            function (args) {
+                let runtime = util.OS.isWindows ? "~/vimfiles/" : "~/.vim/";
+                let file = io.File(runtime + "syntax/" + config.name + ".vim");
+                if (args.length)
+                    file = io.File(args[0]);
+
+                if (file.exists() && file.isDirectory() || args[0] && /\/$/.test(args[0]))
+                    file.append(config.name + ".vim");
+                dactyl.assert(!file.exists() || args.bang, "File exists");
+
+                let template = <![CDATA[
+" Vim syntax file
+" Language:         Pentadactyl configuration file
+" Maintainer:       Doug Kearns <dougkearns@gmail.com>
+
+" TODO: make this <name> specific - shared dactyl config?
+
+if exists("b:current_syntax")
+  finish
+endif
+
+let s:cpo_save = &cpo
+set cpo&vim
+
+syn include @javascriptTop syntax/javascript.vim
+unlet b:current_syntax
+
+syn include @cssTop syntax/css.vim
+unlet b:current_syntax
+
+syn match <name>CommandStart "\%(^\s*:\=\)\@<=" nextgroup=<name>Command,<name>AutoCmd
+
+<commands>
+
+syn match <name>Command "!" contained
+
+syn keyword <name>AutoCmd au[tocmd] contained nextgroup=<name>AutoEventList skipwhite
+
+<autocommands>
+    \ contained
+
+syn match <name>AutoEventList "\(\a\+,\)*\a\+" contained contains=<name>AutoEvent
+
+syn region <name>Set matchgroup=<name>Command start="\%(^\s*:\=\)\@<=\<\%(setl\%[ocal]\|setg\%[lobal]\|set\=\)\=\>"
+    \ end="$" keepend oneline contains=<name>Option,<name>String
+
+<options>
+
+<toggleoptions>
+execute 'syn match <name>Option "\<\%(no\|inv\)\=\%(' .
+    \ join(s:toggleOptions, '\|') .
+    \ '\)\>!\=" contained nextgroup=<name>SetMod'
+
+syn match <name>SetMod "\%(\<[a-z_]\+\)\@<=&" contained
+
+syn region <name>JavaScript start="\%(^\s*\%(javascript\|js\)\s\+\)\@<=" end="$" contains=@javascriptTop keepend oneline
+syn region <name>JavaScript matchgroup=<name>JavaScriptDelimiter
+    \ start="\%(^\s*\%(javascript\|js\)\s\+\)\@<=<<\s*\z(\h\w*\)"hs=s+2 end="^\z1$" contains=@javascriptTop fold
+
+let s:cssRegionStart = '\%(^\s*sty\%[le]!\=\s\+\%(-\%(n\|name\)\%(\s\+\|=\)\S\+\s\+\)\=[^-]\S\+\s\+\)\@<='
+execute 'syn region <name>Css start="' . s:cssRegionStart . '" end="$" contains=@cssTop keepend oneline'
+execute 'syn region <name>Css matchgroup=<name>CssDelimiter'
+    \ 'start="' . s:cssRegionStart . '<<\s*\z(\h\w*\)"hs=s+2 end="^\z1$" contains=@cssTop fold'
+
+syn match <name>Notation "<[0-9A-Za-z-]\+>"
+
+syn match   <name>Comment +".*$+ contains=<name>Todo,@Spell
+syn keyword <name>Todo FIXME NOTE TODO XXX contained
+
+syn region <name>String start="\z(["']\)" end="\z1" skip="\\\\\|\\\z1" oneline
+
+syn match <name>LineComment +^\s*".*$+ contains=<name>Todo,@Spell
+
+" NOTE: match vim.vim highlighting group names
+hi def link <name>AutoCmd               <name>Command
+hi def link <name>AutoEvent             Type
+hi def link <name>Command               Statement
+hi def link <name>Comment               Comment
+hi def link <name>JavaScriptDelimiter   Delimiter
+hi def link <name>CssDelimiter          Delimiter
+hi def link <name>Notation              Special
+hi def link <name>LineComment           Comment
+hi def link <name>Option                PreProc
+hi def link <name>SetMod                <name>Option
+hi def link <name>String                String
+hi def link <name>Todo                  Todo
+
+let b:current_syntax = "<name>"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
+
+" vim: tw=130 et ts=4 sw=4:
+]]>;
+
+                const WIDTH = 80;
+                function wrap(prefix, items, sep) {
+                    sep = sep || " ";
+                    let width = 0;
+                    let lines = [];
+                    lines.__defineGetter__("last", function () this[this.length - 1]);
+
+                    for (let item in (isArray(items) ? array.iterValues : iter)(items)) {
+                        if (item.length > width && (!lines.length || lines.last.length)) {
+                            lines.push([prefix]);
+                            width = WIDTH - prefix.length;
+                            prefix = "    \\ ";
+                        }
+                        width -= item.length + sep.length;
+                        lines.last.push(item, sep);
+                    }
+                    lines.last.pop();
+                    return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
+                }
+
+                file.write(commands.replaceTokens(String(template), {
+                    name: config.name,
+                    autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
+                                       keys(config.autocommands)),
+                    commands: wrap("syn keyword " + config.name + "Command ",
+                                  array(c.specs for (c in commands)).flatten()),
+                    options: wrap("syn keyword " + config.name + "Option ",
+                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
+                    toggleoptions: wrap("let s:toggleOptions = [",
+                                        array(o.realNames for (o in options) if (o.type == "boolean"))
+                                            .flatten().map(String.quote),
+                                        ", ") + "]"
+                }));
+            }, {
+                argCount: "?",
+                bang: true,
+                completer: function (context) completion.file(context, true),
+                literal: 1
+            });
+
         commands.add(["runt[ime]"],
             "Source the specified file from each directory in 'runtimepath'",
             function (args) { io.sourceFromRuntimePath(args, args.bang); },
