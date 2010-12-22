@@ -369,7 +369,7 @@ const Dactyl = Module("dactyl", {
             if (elem instanceof Document)
                 elem = elem.defaultView;
             if (elem instanceof Window)
-                services.focus.focusedWindow = elem;
+                services.focus.clearFocus(elem);
             else
                 services.focus.setFocus(elem, flags);
         } catch (e) {

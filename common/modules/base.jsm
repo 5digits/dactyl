@@ -248,7 +248,7 @@ function deprecated(reason, fn) {
         let frame = Components.stack.caller;
         let obj = this.className || this.constructor.className;
         if (!set.add(deprecatedMethod.seen, frame.filename))
-            util.dactyl.echoerr(
+            util.dactyl(fn).echoerr(
                 util.urlPath(frame.filename || "unknown") + ":" + frame.lineNumber + ": " +
                 (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
