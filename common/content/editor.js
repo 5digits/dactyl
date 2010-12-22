@@ -252,7 +252,7 @@ const Editor = Module("editor", {
     },
 
     // TODO: clean up with 2 functions for textboxes and currentEditor?
-    editFieldExternally: function (forceEditing) {
+    editFieldExternally: function editFieldExternally(forceEditing) {
         if (!options["editor"])
             return;
 
@@ -280,72 +280,72 @@ const Editor = Module("editor", {
             dactyl.assert(editor);
             text = Array.map(editor.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
         }
-
         let oldBg, tmpBg;
-        try {
-            let res = io.withTempFiles(function (tmpfile) {
-                if (textBox) {
-                    textBox.setAttribute("readonly", "true");
-                    oldBg = textBox.style.backgroundColor;
-                    tmpBg = "yellow";
-                    textBox.style.backgroundColor = "#bbbbbb";
-                }
+        function cleanup(error) {
+            if (timer)
+                timer.cancel();
 
-                if (!tmpfile.write(text))
-                    throw Error("Input contains characters not valid in the current " +
-                                "file encoding");
+            if (error) {
+                dactyl.reportError(error, true);
+                tmpBg = "red";
+            }
+            else
+                dactyl.trapErrors(update, null, true);
 
-                let lastUpdate = Date.now();
-                function update(force) {
-                    if (force !== true && tmpfile.lastModifiedTime <= lastUpdate)
-                        return;
-                    lastUpdate = Date.now();
+            if (tmpfile && tmpfile.exists())
+                tmpfile.remove(false);
 
-                    let val = tmpfile.read();
-                    if (textBox)
-                        textBox.value = val;
-                    else {
-                        while (editor.rootElement.firstChild)
-                            editor.rootElement.removeChild(editor.rootElement.firstChild);
-                        editor.rootElement.innerHTML = val;
-                    }
-                }
-
-                let timer = services.Timer(update, 100, services.Timer.TYPE_REPEATING_SLACK);
-
-                try {
-                    this.editFileExternally({ file: tmpfile.path, line: line, column: column }, true);
-                }
-                finally {
-                    timer.cancel();
-                }
-
-                update(true);
-
-            }, this);
-            if (res == false)
-                throw Error("Couldn't create temporary file");
-        }
-        catch (e) {
-            // Errors are unlikely, and our error messages won't
-            // likely be any more helpful than that given in the
-            // exception.
-            dactyl.reportError(e, true);
-            tmpBg = "red";
-        }
-        finally {
             if (textBox)
                 textBox.removeAttribute("readonly");
+
+            // blink the textbox after returning
+            if (textBox) {
+                let colors = [tmpBg, oldBg, tmpBg, oldBg];
+                (function next() {
+                    textBox.style.backgroundColor = colors.shift();
+                    if (colors.length > 0)
+                        util.timeout(next, 100);
+                })();
+            }
         }
 
-        // blink the textbox after returning
-        if (textBox) {
-            let colors = [tmpBg, oldBg, tmpBg, oldBg];
-            (function next() {
-                textBox.style.backgroundColor = colors.shift();
-                if (colors.length > 0)
-                    util.timeout(next, 100);
-            })();
+        try {
+            var tmpfile = io.createTempFile();
+            if (!tmpfile)
+                throw Error("Couldn't create temporary file");
+
+            if (textBox) {
+                textBox.setAttribute("readonly", "true");
+                oldBg = textBox.style.backgroundColor;
+                tmpBg = "yellow";
+                textBox.style.backgroundColor = "#bbbbbb";
+            }
+
+            if (!tmpfile.write(text))
+                throw Error("Input contains characters not valid in the current " +
+                            "file encoding");
+
+            let lastUpdate = Date.now();
+            function update(force) {
+                if (force !== true && tmpfile.lastModifiedTime <= lastUpdate)
+                    return;
+                lastUpdate = Date.now();
+
+                let val = tmpfile.read();
+                if (textBox)
+                    textBox.value = val;
+                else {
+                    while (editor.rootElement.firstChild)
+                        editor.rootElement.removeChild(editor.rootElement.firstChild);
+                    editor.rootElement.innerHTML = val;
+                }
+            }
+
+            var timer = services.Timer(update, 100, services.Timer.TYPE_REPEATING_SLACK);
+            this.editFileExternally({ file: tmpfile.path, line: line, column: column }, cleanup);
+        }
+        catch (e) {
+            cleanup(e);
         }
     },
 

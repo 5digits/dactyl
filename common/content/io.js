@@ -200,9 +200,9 @@ const IO = Module("io", {
      */
     createTempFile: function () {
         let file = services.directory.get("TmpD", Ci.nsIFile);
-
         file.append(config.tempFile);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(600));
+
         Cc["@mozilla.org/uriloader/external-helper-app-service;1"]
             .getService(Ci.nsPIExternalAppLauncher).deleteTemporaryFileOnExit(file);
 
@@ -279,7 +279,7 @@ lookup:
                     function () {
                         if (!process.isRunning) {
                             timer.cancel();
-                            callback();
+                            dactyl.trapErrors(blocking);
                         }
                     },
                     100, services.Timer.TYPE_REPEATING_SLACK);

@@ -1230,6 +1230,16 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         while (flush === true && mainThread.hasPendingEvents());
     },
 
+    yieldable: function yieldable(func)
+        function magic() {
+            let gen = func.apply(this, arguments);
+            (function next() {
+                try {
+                    util.timeout(next, gen.next());
+                } catch(e if e instanceof StopIteration) {};
+            })();
+        },
+
     /**
      * Traps errors in the called function, possibly reporting them.
      *
