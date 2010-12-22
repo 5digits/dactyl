@@ -463,7 +463,7 @@ const Hints = Module("hints", {
                 if (hint.imgSpan)
                     css.push(selector + imgSpan + " { " + hint.span.style.cssText + " }");
             }
-            styles.addSheet(true, "hint-positions", "*", css.join("\n"));
+            styles.system.add("hint-positions", "*", css.join("\n"));
         }
 
         return true;
@@ -484,7 +484,7 @@ const Hints = Module("hints", {
             for (let i in util.range(start, end + 1))
                 this._setClass(this._pageHints[i].elem, null);
         }
-        styles.removeSheet(true, "hint-positions");
+        styles.system.remove("hint-positions");
 
         this._reset(slight);
     },

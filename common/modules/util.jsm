@@ -55,14 +55,25 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     // FIXME: Only works for Pentadactyl
     get activeWindow() services.windowMediator.getMostRecentWindow("navigator:browser"),
-    dactyl: {
-        __noSuchMethod__: function (meth, args) {
-            let win = util.activeWindow;
-            if (win && win.dactyl)
-                return win.dactyl[meth].apply(win.dactyl, args);
-            return null;
+    dactyl: update(function dactyl(obj) {
+        if (obj)
+            var global = Class.objectGlobal(obj);
+        return {
+            __noSuchMethod__: function (meth, args) {
+                let win = util.activeWindow;
+                var dactyl = global && global.dactyl || win && win.dactyl;
+                if (!win)
+                    return null;
+
+                let prop = dactyl[meth];
+                if (callable(prop))
+                    return prop.apply(dactyl, args);
+                return prop;
+            }
         }
-    },
+    }, {
+        __noSuchMethod__: function () this().__noSuchMethod__.apply(null, arguments)
+    }),
 
     /**
      * Registers a obj as a new observer with the observer service. obj.observe
@@ -1232,6 +1243,16 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         catch (e) {
             util.reportError(e);
             return undefined;
+        }
+    },
+
+    urlPath: function urlPath(url) {
+        url = (url || "unknown").replace(/.* -> /, "");
+        try {
+            return util.getFile(url).path;
+        }
+        catch (e) {
+            return url;
         }
     },
 

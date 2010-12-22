@@ -35,7 +35,7 @@ Highlight.defaultValue("sites", function ()
               : ["chrome://dactyl/*", "dactyl:*", "file://*"].concat(
                     highlight.styleableChrome));
 Highlight.defaultValue("style", function ()
-    styles.addSheet(true, "highlight:" + this.class, this.sites, this.css, this.agent, true));
+    styles.system.add("highlight:" + this.class, this.sites, this.css, this.agent, true));
 Highlight.defaultValue("value", function () this.default);
 
 Highlight.prototype.__defineGetter__("base", function ()

@@ -1741,8 +1741,8 @@ const CommandLine = Module("commandline", {
     styles: function () {
         let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;
         styles.registerSheet("chrome://dactyl/skin/dactyl.css");
-        styles.addSheet(true, "font-size", "chrome://dactyl/content/buffer.xhtml",
-            "body { font-size: " + fontSize + "; }");
+        styles.system.add("font-size", "chrome://dactyl/content/buffer.xhtml",
+                          "body { font-size: " + fontSize + "; }");
     }
 });
 

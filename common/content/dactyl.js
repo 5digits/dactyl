@@ -19,25 +19,6 @@ const EVAL_ERROR = "__dactyl_eval_error";
 const EVAL_RESULT = "__dactyl_eval_result";
 const EVAL_STRING = "__dactyl_eval_string";
 
-function deprecated(reason, fn) {
-    let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
-    function deprecatedMethod() {
-        let frame = Components.stack.caller;
-        let obj = this.className || this.constructor.className;
-        if (!set.add(deprecatedMethod.seen, frame.filename))
-            dactyl.echoerr(
-                (frame.filename || "unknown").replace(/^.*? -> /, "") +
-                       ":" + frame.lineNumber + ": " +
-                (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
-        return func.apply(this, arguments);
-    }
-    deprecatedMethod.seen = { "chrome://dactyl/content/javascript.js": true };
-    return callable(fn) ? deprecatedMethod : Class.Property({
-        get: function () deprecatedMethod,
-        init: function (prop) { name = prop; }
-    });
-}
-
 const Dactyl = Module("dactyl", {
     init: function () {
         window.dactyl = this;
@@ -1266,9 +1247,9 @@ const Dactyl = Module("dactyl", {
                         this);
                     let class_ = dir.map(function (dir) "html|html > xul|scrollbar[orient=" + dir + "]");
 
-                    styles.addSheet(true, "scrollbar", "*",
-                            class_.length ? class_.join(", ") + " { visibility: collapse !important; }" : "",
-                            true);
+                    styles.system.add("scrollbar", "*",
+                                      class_.length ? class_.join(", ") + " { visibility: collapse !important; }" : "",
+                                      true);
 
                     prefs.safeSet("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
                                   "See 'guioptions' scrollbar flags.");
@@ -1285,8 +1266,8 @@ const Dactyl = Module("dactyl", {
                 setter: function (opts) {
                     let classes = [v[1] for ([k, v] in Iterator(this.opts)) if (opts.indexOf(k) < 0)];
 
-                    styles.addSheet(true, "taboptions", "chrome://*",
-                        classes.length ? classes.join(",") + "{ display: none; }" : "");
+                    styles.system.add("taboptions", "chrome://*",
+                                      classes.length ? classes.join(",") + "{ display: none; }" : "");
                 },
                 validator: function (opts) dactyl.has("Gecko2") ||
                     Option.validIf(!/[nN]/.test(opts), "Tab numbering not available in this " + config.host + " version")

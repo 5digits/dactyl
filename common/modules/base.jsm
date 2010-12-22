@@ -175,9 +175,9 @@ defineModule("base", {
         "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "array",
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
-        "endModule", "forEach", "isArray", "isGenerator", "isinstance",
-        "isObject", "isString", "isSubclass", "iter", "iterAll", "keys",
-        "memoize", "octal", "properties", "set", "update", "values",
+        "deprecated", "endModule", "forEach", "isArray", "isGenerator",
+        "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
+        "keys", "memoize", "octal", "properties", "set", "update", "values",
         "withCallerGlobal"
     ],
     use: ["services", "util"]
@@ -221,6 +221,7 @@ function prototype(obj)
     obj.__proto__ || Object.getPrototypeOf(obj) ||
     XPCNativeWrapper.unwrap(obj).__proto__ ||
     Object.getPrototypeOf(XPCNativeWrapper.unwrap(obj));
+
 function properties(obj, prototypes, debugger_) {
     let orig = obj;
     let seen = {};
@@ -238,6 +239,26 @@ function properties(obj, prototypes, debugger_) {
             if (!prototypes || !set.add(seen, key) && obj != orig)
                 yield key;
     }
+}
+
+function deprecated(reason, fn) {
+    let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
+
+    function deprecatedMethod() {
+        let frame = Components.stack.caller;
+        let obj = this.className || this.constructor.className;
+        if (!set.add(deprecatedMethod.seen, frame.filename))
+            util.dactyl.echoerr(
+                util.urlPath(frame.filename || "unknown") + ":" + frame.lineNumber + ": " +
+                (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
+        return func.apply(this, arguments);
+    }
+    deprecatedMethod.seen = { "chrome://dactyl/content/javascript.js": true };
+
+    return callable(fn) ? deprecatedMethod : Class.Property({
+        get: function () deprecatedMethod,
+        init: function (prop) { name = prop; }
+    });
 }
 
 /**

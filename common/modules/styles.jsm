@@ -16,7 +16,7 @@ const namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
                   "@namespace xul " + XUL.uri.quote() + ";\n" +
                   "@namespace dactyl " + NS.uri.quote() + ";\n";
 
-const Sheet = Struct("name", "id", "sites", "css", "system", "agent");
+const Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
 Sheet.liveProperty = function (name) {
     let i = this.prototype.members[name];
     this.prototype.__defineGetter__(name, function () this[i]);
@@ -33,6 +33,10 @@ update(Sheet.prototype, {
           template.map(this.sites,
                        function (filter) <span highlight={uris.some(Styles.matchFilter(filter)) ? "Filter" : ""}>{filter}</span>,
                        <>,</>),
+
+    remove: function () { this.hive.remove(this) },
+
+    system: Class.Property({ get: deprecated("Please use Style#hive instead", function system() this.hive === styles.system) }),
 
     get uri() cssUri(this.fullCSS),
 
@@ -71,102 +75,86 @@ update(Sheet.prototype, {
     }
 });
 
-/**
- * Manages named and unnamed user style sheets, which apply to both
- * chrome and content pages.
- *
- * @author Kris Maglione <maglione.k@gmail.com>
- */
-const Styles = Module("Styles", {
+const Hive = Class("Hive", {
     init: function () {
-        this._id = 0;
-        this.userSheets = [];
-        this.systemSheets = [];
-        this.userNames = {};
-        this.systemNames = {};
+        this.sheets = [];
+        this.names = {};
     },
 
-    get sites() array(this.userSheets).map(function (s) s.sites).flatten().uniq().array,
+    __iterator__: function () Iterator(this.sheets),
 
-    __iterator__: function () Iterator(this.userSheets.concat(this.systemSheets)),
+    get sites() array(this.sheets).map(function (s) s.sites).flatten().uniq().array,
 
     /**
      * Add a new style sheet.
      *
-     * @param {boolean} system Declares whether this is a system or
-     *     user sheet. System sheets are used internally by
-     *     @dactyl.
      * @param {string} name The name given to the style sheet by
      *     which it may be later referenced.
      * @param {string} filter The sites to which this sheet will
      *     apply. Can be a domain name or a URL. Any URL ending in
      *     "*" is matched as a prefix.
      * @param {string} css The CSS to be applied.
+     * @param {boolean} agent If true, the sheet is installed as an
+     *     agent sheet.
+     * @param {boolean} lazy If true, the sheet is not initially enabled.
+     * @returns {Sheet}
      */
-    addSheet: function addSheet(system, name, filter, css, agent, lazy) {
-        let sheets = system ? this.systemSheets : this.userSheets;
-        let names = system ? this.systemNames : this.userNames;
+    add: function add(name, filter, css, agent, lazy) {
 
         if (!isArray(filter))
             filter = filter.split(",");
-        if (name && name in names) {
-            var sheet = names[name];
+        if (name && name in this.names) {
+            var sheet = this.names[name];
             sheet.agent = agent;
             sheet.css = String(css);
             sheet.sites = filter;
         }
         else {
-            sheet = Sheet(name, this._id++, filter.filter(util.identity), String(css), system, agent);
-            sheets.push(sheet);
+            sheet = Sheet(name, this._id++, filter.filter(util.identity), String(css), this, agent);
+            this.sheets.push(sheet);
         }
 
         if (!lazy)
             sheet.enabled = true;
 
         if (name)
-            names[name] = sheet;
+            this.names[name] = sheet;
         return sheet;
     },
 
     /**
      * Get a sheet with a given name or index.
      *
-     * @param {boolean} system
      * @param {string or number} sheet The sheet to retrieve. Strings indicate
      *     sheet names, while numbers indicate indices.
      */
-    get: function get(system, sheet) {
-        let sheets = system ? this.systemSheets : this.userSheets;
-        let names = system ? this.systemNames : this.userNames;
+    get: function get(sheet) {
         if (typeof sheet === "number")
-            return sheets[sheet];
-        return names[sheet];
+            return this.sheets[sheet];
+        return this.names[sheet];
     },
 
     /**
      * Find sheets matching the parameters. See {@link #addSheet}
      * for parameters.
      *
-     * @param {boolean} system
      * @param {string} name
      * @param {string} filter
      * @param {string} css
      * @param {number} index
      */
-    findSheets: function findSheets(system, name, filter, css, index) {
-        let sheets = system ? this.systemSheets : this.userSheets;
-
+    find: function find(name, filter, css, index) {
         // Grossly inefficient.
-        let matches = [k for ([k, v] in Iterator(sheets))];
+        let matches = [k for ([k, v] in Iterator(this.sheets))];
         if (index)
-            matches = String(index).split(",").filter(function (i) i in sheets);
+            matches = String(index).split(",").filter(function (i) i in this.sheets, this);
         if (name)
-            matches = matches.filter(function (i) sheets[i].name == name);
+            matches = matches.filter(function (i) this.sheets[i].name == name, this);
         if (css)
-            matches = matches.filter(function (i) sheets[i].css == css);
+            matches = matches.filter(function (i) this.sheets[i].css == css, this);
         if (filter)
-            matches = matches.filter(function (i) sheets[i].sites.indexOf(filter) >= 0);
-        return matches.map(function (i) sheets[i]);
+            matches = matches.filter(function (i) this.sheets[i].sites.indexOf(filter) >= 0, this);
+        return matches.map(function (i) this.sheets[i], this);
     },
 
     /**
@@ -174,30 +162,27 @@ const Styles = Module("Styles", {
      * In cases where *filter* is supplied, the given filters are removed from
      * matching sheets. If any remain, the sheet is left in place.
      *
-     * @param {boolean} system
      * @param {string} name
      * @param {string} filter
      * @param {string} css
      * @param {number} index
      */
-    removeSheet: function removeSheet(system, name, filter, css, index) {
+    remove: function remove(name, filter, css, index) {
         let self = this;
         if (arguments.length == 1) {
-            var matches = [system];
-            system = matches[0].system;
+            var matches = [name];
+            name = null;
         }
-        let sheets = system ? this.systemSheets : this.userSheets;
-        let names = system ? this.systemNames : this.userNames;
 
         if (filter && filter.indexOf(",") > -1)
             return filter.split(",").reduce(
-                function (n, f) n + self.removeSheet(system, name, f, index), 0);
+                function (n, f) n + self.removeSheet(name, f, index), 0);
 
         if (filter == undefined)
             filter = "";
 
         if (!matches)
-            matches = this.findSheets(system, name, filter, css, index);
+            matches = this.findSheets(name, filter, css, index);
         if (matches.length == 0)
             return null;
 
@@ -211,21 +196,43 @@ const Styles = Module("Styles", {
             }
             sheet.enabled = false;
             if (sheet.name)
-                delete names[sheet.name];
-            if (sheets.indexOf(sheet) > -1)
-                sheets.splice(sheets.indexOf(sheet), 1);
+                delete this.names[sheet.name];
         }
+        this.sheets = this.sheets.filter(function (s) matches.indexOf(s) == -1);
         return matches.length;
     },
+});
 
-    /**
-     * Register a user style sheet at the given URI.
-     *
-     * @param {string} url The URI of the sheet to register.
-     * @param {boolean} agent If true, sheet is registered as an agent sheet.
-     * @param {boolean} reload Whether to reload any sheets that are
-     *     already registered.
-     */
+/**
+ * Manages named and unnamed user style sheets, which apply to both
+ * chrome and content pages.
+ *
+ * @author Kris Maglione <maglione.k@gmail.com>
+ */
+const Styles = Module("Styles", {
+    init: function () {
+        this._id = 0;
+        this.user = Hive();
+        this.system = Hive();
+    },
+
+    userSheets: Class.Property({ get: deprecated("Please use Styles#user.sheets instead", function userSheets() this.user.sheets) }),
+    systemSheets: Class.Property({ get: deprecated("Please use Styles#system.sheets instead", function systemSheets() this.system.sheets) }),
+    userNames: Class.Property({ get: deprecated("Please use Styles#user.names instead", function userNames() this.user.names) }),
+    systemNames: Class.Property({ get: deprecated("Please use Styles#system.names instead", function systemNames() this.system.names) }),
+    sites: Class.Property({ get: deprecated("Please use Styles#user.sites instead", function sites() this.user.sites) }),
+
+    __iterator__: function () Iterator(this.user.sheets.concat(this.system.sheets)),
+
+    _proxy: function (name, args)
+        let (obj = this[args[0] ? "system" : "user"])
+            obj[name].apply(obj, Array.slice(args, 1)),
+
+    addSheet: deprecated("Please use Styles#{user,system}.add instead", function addSheet() this._proxy("add", arguments)),
+    findSheets: deprecated("Please use Styles#{user,system}.find instead", function findSheets() this._proxy("find", arguments)),
+    get: deprecated("Please use Styles#{user,system}.get instead", function get() this._proxy("get", arguments)),
+    removeSheet: deprecated("Please use Styles#{user,system}.remove instead", function removeSheet() this._proxy("remove", arguments)),
+
     registerSheet: function registerSheet(url, agent, reload) {
         let uri = services.io.newURI(url, null, null);
         if (reload)
@@ -236,12 +243,6 @@ const Styles = Module("Styles", {
             services.stylesheet.loadAndRegisterSheet(uri, type);
     },
 
-    /**
-     * Unregister a sheet at the given URI.
-     *
-     * @param {string} url The URI of the sheet to unregister.
-     * @param {boolean} agent If true, sheet is registered as an agent sheet.
-     */
     unregisterSheet: function unregisterSheet(url, agent) {
         let uri = services.io.newURI(url, null, null);
         let type = services.stylesheet[agent ? "AGENT_SHEET" : "USER_SHEET"];
@@ -251,10 +252,10 @@ const Styles = Module("Styles", {
 }, {
     append: function (dest, src, sort) {
         let props = {};
-
         for each (let str in [dest, src])
             for (let prop in Styles.propertyIter(str))
                 props[prop.name] = prop.value;
+
         return Object.keys(props)[sort ? "sort" : "slice"]()
                      .map(function (prop) prop + ": " + props[prop] + ";")
                      .join(" ");
@@ -274,7 +275,7 @@ const Styles = Module("Styles", {
         catch (e) {}
         context.fork("others", 0, this, function (context) {
             context.title = ["Site"];
-            context.completions = [[s, ""] for ([, s] in Iterator(styles.sites))];
+            context.completions = [[s, ""] for ([, s] in Iterator(styles.user.sites))];
         });
     },
 
@@ -354,7 +355,7 @@ const Styles = Module("Styles", {
                 let name = args["-name"];
 
                 if (!css) {
-                    let list = styles.userSheets.slice()
+                    let list = styles.user.sheets.slice()
                                      .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
                                                                             : !!b.name - !!a.name || a.id - b.id);
                     let uris = util.visibleURIs(window.content);
@@ -364,7 +365,7 @@ const Styles = Module("Styles", {
                              "padding: 0 1em 0 1ex; vertical-align: top;",
                              "padding: 0 1em 0 0; vertical-align: top;"],
                             ([sheet.enabled ? "" : UTF8("×"),
-                              sheet.name || styles.userSheets.indexOf(sheet),
+                              sheet.name || styles.user.sheets.indexOf(sheet),
                               sheet.formatSites(uris),
                               sheet.css]
                              for (sheet in values(list))
@@ -372,13 +373,13 @@ const Styles = Module("Styles", {
                 }
                 else {
                     if ("-append" in args) {
-                        let sheet = styles.get(false, name);
+                        let sheet = styles.user.get(name);
                         if (sheet) {
                             filter = sheet.sites.concat(filter).join(",");
                             css = Styles.append(sheet.css, css);
                         }
                     }
-                    styles.addSheet(false, name, filter, css, args["-agent"]);
+                    styles.user.add(name, filter, css, args["-agent"]);
                 }
             },
             {
@@ -388,7 +389,7 @@ const Styles = Module("Styles", {
                     if (args.completeArg == 0)
                         Styles.completeSite(context, window.content);
                     else if (args.completeArg == 1) {
-                        let sheet = styles.get(false, args["-name"]);
+                        let sheet = styles.user.get(args["-name"]);
                         if (sheet)
                             context.completions = [[sheet.css, "Current Value"]];
                         context.fork("css", 0, modules.completion, "css");
@@ -402,7 +403,7 @@ const Styles = Module("Styles", {
                     {
                         names: ["-name", "-n"],
                         description: "The name of this stylesheet",
-                        completer: function () [[k, v.css] for ([k, v] in Iterator(styles.userNames))],
+                        completer: function () [[k, v.css] for ([k, v] in Iterator(styles.user.names))],
                         type: modules.CommandOption.STRING
                     }
                 ],
@@ -413,7 +414,7 @@ const Styles = Module("Styles", {
                         bang: true,
                         literalArg: sty.css,
                         options: sty.name ? { "-name": sty.name } : {}
-                    } for ([k, sty] in Iterator(styles.userSheets.slice().sort(function (a, b) String.localeCompare(a.name || "", b.name || ""))))
+                    } for ([k, sty] in Iterator(styles.user.sheets.slice().sort(function (a, b) String.localeCompare(a.name || "", b.name || ""))))
                 ]
             });
 
@@ -438,7 +439,7 @@ const Styles = Module("Styles", {
             {
                 name: ["dels[tyle]"],
                 desc: "Remove a user style sheet",
-                action: function (sheet) styles.removeSheet(sheet)
+                action: function (sheet) sheet.remove()
             }
         ].forEach(function (cmd) {
 
@@ -454,7 +455,7 @@ const Styles = Module("Styles", {
             function sheets(context) {
                 let uris = util.visibleURIs(window.content);
                 context.compare = modules.CompletionContext.Sort.number;
-                context.generate = function () styles.userSheets;
+                context.generate = function () styles.user.sheets;
                 context.keys.active = function (sheet) sheet.sites.some(function (site) uris.some(Styles.matchFilter(site))),
                 context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>
                 if (cmd.filter)
@@ -464,16 +465,16 @@ const Styles = Module("Styles", {
 
             commands.add(cmd.name, cmd.desc,
                 function (args) {
-                    styles.findSheets(false, args["-name"], args[0], args.literalArg, args["-index"])
+                    styles.user.find(args["-name"], args[0], args.literalArg, args["-index"])
                           .forEach(cmd.action);
                 }, {
                     completer: function (context) {
                         let uris = util.visibleURIs(window.content);
-                        context.generate = function () styles.sites;
+                        context.generate = function () styles.user.sites;
                         context.keys.text = util.identity;
                         context.keys.description = function (site) this.sheets.length + " sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
                             array.compact(this.sheets.map(function (s) s.name)).join(", ")
-                        context.keys.sheets = function (site) styles.userSheets.filter(function (s) s.sites.indexOf(site) >= 0);
+                        context.keys.sheets = function (site) styles.user.sheets.filter(function (s) s.sites.indexOf(site) >= 0);
                         context.keys.active = function (site) uris.some(Styles.matchFilter(site));
 
                         if (cmd.filter)
@@ -487,7 +488,7 @@ const Styles = Module("Styles", {
                             names: ["-index", "-i"],
                             type: modules.CommandOption.INT,
                             completer: function (context) {
-                                context.keys.text = function (sheet) styles.userSheets.indexOf(sheet);
+                                context.keys.text = function (sheet) styles.user.sheets.indexOf(sheet);
                                 sheets(context);
                             },
                         }, {
@@ -519,13 +520,12 @@ const Styles = Module("Styles", {
         };
     },
     javascript: function (dactyl, modules, window) {
-        modules.JavaScript.setCompleter(["get", "addSheet", "removeSheet", "findSheets"].map(function (m) styles[m]),
-            [ // Prototype: (system, name, filter, css, index)
-                null,
-                function (context, obj, args) args[0] ? this.systemNames : this.userNames,
+        modules.JavaScript.setCompleter(["get", "add", "remove", "find"].map(function (m) styles.user[m]),
+            [ // Prototype: (name, filter, css, index)
+                function (context, obj, args) this.names,
                 function (context, obj, args) Styles.completeSite(context, window.content),
                 null,
-                function (context, obj, args) args[0] ? this.systemSheets : this.userSheets
+                function (context, obj, args) this.sheets
             ]);
     }
 });
