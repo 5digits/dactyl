@@ -249,6 +249,17 @@ const Styles = Module("Styles", {
             services.stylesheet.unregisterSheet(uri, type);
     },
 }, {
+    append: function (dest, src, sort) {
+        let props = {};
+
+        for each (let str in [dest, src])
+            for (let prop in Styles.propertyIter(str))
+                props[prop.name] = prop.value;
+        return Object.keys(props)[sort ? "sort" : "slice"]()
+                     .map(function (prop) prop + ": " + props[prop] + ";")
+                     .join(" ");
+    },
+
     completeSite: function (context, content) {
         context.anchored = false;
         try {
@@ -294,12 +305,22 @@ const Styles = Module("Styles", {
         return test(arguments[1]);
     },
 
+    propertyIter: function (str, always) {
+        this.propertyPattern.lastIndex = 0;
+
+        let match;
+        while ((!match || match[0]) && (match = Styles.propertyPattern.exec(str)))
+            if (always || match[0])
+                yield this.Property.fromArray(match);
+    },
+
+    Property: Struct("whole", "preSpace", "name", "value", "postSpace"),
     propertyPattern: util.regexp(<![CDATA[
             (?:
-                (\s*)
+                (<space>*)
                 ([-a-z]*)
                 (?:
-                    \s* : \s* (
+                    <space>* : \s* (
                         (?:
                             [-\w]
                             (?:
@@ -308,14 +329,19 @@ const Styles = Module("Styles", {
                                 \s* (?: \) | $)
                             )?
                             \s*
-                            | \s* <string> \s* | [^;}]*
+                            | \s* <string> \s*
+                            | <space>*
+                            | [^;}]*
                         )*
                     )
                 )?
             )
-            (\s* (?: ; | $) )
+            (<space>* (?: ; | $) )
         ]]>, "gi",
-        { string: /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/ })
+        {
+            space: /(?: \s | \/\* .*? \*\/ )/,
+            string: /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/
+        })
 }, {
     commands: function (dactyl, modules, window) {
         const commands = modules.commands;
@@ -347,7 +373,7 @@ const Styles = Module("Styles", {
                         let sheet = styles.get(false, name);
                         if (sheet) {
                             filter = sheet.sites.concat(filter).join(",");
-                            css = sheet.css + " " + css;
+                            css = Styles.append(sheet.css, css);
                         }
                     }
                     styles.addSheet(false, name, filter, css, args["-agent"]);
@@ -480,12 +506,11 @@ const Styles = Module("Styles", {
             context.title = ["CSS Property"];
             context.keys = { text: function (p) p + ":", description: function () "" };
 
-            Styles.propertyPattern.lastIndex = 0;
-            let match, lastMatch;
-            while ((!match || match[0]) && (match = Styles.propertyPattern.exec(context.filter)) && (match[0].length || !lastMatch))
-                lastMatch = match;
-            if (lastMatch != null && !lastMatch[3] && !lastMatch[4]) {
-                context.advance(lastMatch.index + lastMatch[1].length)
+            for (let match in Styles.propertyIter(context.filter, true))
+                var lastMatch = match;
+
+            if (lastMatch != null && !lastMatch.value && !lastMatch.postSpace) {
+                context.advance(lastMatch.index + lastMatch.name.length)
                 context.completions = names;
             }
         };

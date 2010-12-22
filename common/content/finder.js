@@ -207,14 +207,7 @@ const RangeFinder = Module("rangefinder", {
             "Highlight all /find pattern matches on the current page after submission",
             "boolean", false, {
                 setter: function (value) {
-                    try {
-                        if (value)
-                            rangefinder.highlight();
-                        else
-                            rangefinder.clear();
-                    }
-                    catch (e) {}
-
+                    rangefinder[value ? "highlight" : "clear"]();
                     return value;
                 }
             });

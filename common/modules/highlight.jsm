@@ -108,7 +108,7 @@ const Highlights = Module("Highlight", {
         let highlight = this.highlight[key] || this._create(false, [key]);
 
         if (append)
-            newStyle = (highlight.value || "").replace(/;?\s*$/, "; " + newStyle);
+            newStyle = Styles.append(highlight.value || "", newStyle);
         if (/^\s*$/.test(newStyle))
             newStyle = null;
         if (newStyle == null) {
