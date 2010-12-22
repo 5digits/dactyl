@@ -81,10 +81,6 @@
 [dactyl|highlight~=tab-number]           { -moz-box-ordinal-group: 20; }
 .tab-text, .tab-label, .tab-close-button { -moz-box-ordinal-group: 50; }
 
-#addon-bar > #addonbar-closebutton {
-    visibility: collapse;
-}
-
 [dactyl|highlight~=Bell] {
     -moz-appearance: none !important;
 }
