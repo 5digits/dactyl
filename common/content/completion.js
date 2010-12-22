@@ -171,6 +171,7 @@ const CompletionContext = Class("CompletionContext", {
          *     cache data between calls.
          */
         this.cache = {};
+        this._cache = {};
         /**
          * @private
          * @property {Object} A cache for return values of {@link #generate}.
@@ -352,7 +353,7 @@ const CompletionContext = Class("CompletionContext", {
      * must be regenerated. May be set to true to invalidate the current
      * completions.
      */
-    get regenerate() this._generate && (!this.completions || !this.itemCache[this.key] || this.cache.offset != this.offset),
+    get regenerate() this._generate && (!this.completions || !this.itemCache[this.key] || this._cache.offset != this.offset),
     set regenerate(val) { if (val) delete this.itemCache[this.key]; },
 
     /**
@@ -372,12 +373,12 @@ const CompletionContext = Class("CompletionContext", {
      * longer valid.
      */
     generateCompletions: function generateCompletions() {
-        if (this.offset != this.cache.offset || this.lastActivated != this.top.runCount) {
+        if (this.offset != this._cache.offset || this.lastActivated != this.top.runCount) {
             this.itemCache = {};
-            this.cache.offset = this.offset;
+            this._cache.offset = this.offset;
             this.lastActivated = this.top.runCount;
         }
-        if (!this.itemCache[this.key])
+        if (!this.itemCache[this.key]) {
             try {
                 let res = this._generate();
                 if (res != null)
@@ -387,6 +388,7 @@ const CompletionContext = Class("CompletionContext", {
                 dactyl.reportError(e);
                 this.message = "Error: " + e;
             }
+        }
         // XXX
         this.noUpdate = true;
         this.completions = this.itemCache[this.key];
@@ -426,9 +428,9 @@ const CompletionContext = Class("CompletionContext", {
         let items = this.completions;
 
         // Check for cache miss
-        if (this.cache.completions !== this.completions) {
-            this.cache.completions = this.completions;
-            this.cache.constructed = null;
+        if (this._cache.completions !== this.completions) {
+            this._cache.completions = this.completions;
+            this._cache.constructed = null;
             this.cache.filtered = null;
         }
 
@@ -464,13 +466,13 @@ const CompletionContext = Class("CompletionContext", {
 
         try {
             // Item prototypes
-            if (!this.cache.constructed) {
+            if (!this._cache.constructed) {
                 let proto = this.itemPrototype;
-                this.cache.constructed = items.map(function (item) ({ __proto__: proto, item: item }));
+                this._cache.constructed = items.map(function (item) ({ __proto__: proto, item: item }));
             }
 
             // Filters
-            let filtered = this.filterFunc(this.cache.constructed);
+            let filtered = this.filterFunc(this._cache.constructed);
             if (this.maxItems)
                 filtered = filtered.slice(0, this.maxItems);
 
@@ -657,6 +659,27 @@ const CompletionContext = Class("CompletionContext", {
         }
         if (completer)
             return null;
+        return context;
+    },
+
+    split: function split(name, obj, fn) {
+        const self = this;
+
+        let context = this.fork(name);
+        function alias(prop) {
+            context.__defineGetter__(prop, function () self[prop]);
+            context.__defineSetter__(prop, function (val) self[prop] = val);
+        }
+        alias("_cache");
+        alias("_completions");
+        alias("_generate");
+        alias("_regenerate");
+        alias("itemCache");
+        alias("lastActivated");
+        context.hasItems = true;
+        this.hasItems = false;
+        if (fn)
+            return fn.apply(obj || this, [context].concat(Array.slice(arguments, split.length)));
         return context;
     },
 

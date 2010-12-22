@@ -291,7 +291,9 @@ const Styles = Module("Styles", {
      * @returns {nsIURI -> boolean}
      */
     matchFilter: function (filter) {
-        if (/[*]$/.test(filter)) {
+        if (filter === "*")
+            function test(uri) true;
+        else if (/[*]$/.test(filter)) {
             let re = RegExp("^" + util.regexp.escape(filter.substr(0, filter.length - 1)));
             function test(uri) re.test(uri.spec);
         }
@@ -441,63 +443,64 @@ const Styles = Module("Styles", {
         ].forEach(function (cmd) {
 
             function splitContext(context, generate) {
-                let uris = util.visibleURIs(window.content);
-                if (!generate) {
-                    context.keys.active = function (sheet) sheet.sites.some(function (site) uris.some(Styles.matchFilter(site)));
-                    context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>;
-                    if (cmd.filter)
-                        context.filters.push(function ({ item }) cmd.filter(item));
-                }
-
                 for (let item in Iterator({ Active: true, Inactive: false })) {
                     let [name, active] = item;
-                    context.fork(name, 0, null, function (context) {
+                    context.split(name, null, function (context) {
                         context.title[0] = name + " Sheets";
-                        context.generate = generate || function () styles.userSheets;
                         context.filters.push(function (item) item.active == active);
                     });
                 }
+            }
+            function sheets(context) {
+                let uris = util.visibleURIs(window.content);
+                context.compare = modules.CompletionContext.Sort.number;
+                context.generate = function () styles.userSheets;
+                context.keys.active = function (sheet) sheet.sites.some(function (site) uris.some(Styles.matchFilter(site))),
+                context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>
+                if (cmd.filter)
+                    context.filters.push(function ({ item }) cmd.filter(item));
+                splitContext(context);
             }
 
             commands.add(cmd.name, cmd.desc,
                 function (args) {
                     styles.findSheets(false, args["-name"], args[0], args.literalArg, args["-index"])
                           .forEach(cmd.action);
-                },
-            {
-                completer: function (context) {
-                    let uris = util.visibleURIs(window.content);
-                    context.keys = {
-                        text: util.identity, description: util.identity,
-                        active: function (site) uris.some(Styles.matchFilter(site))
-                    };
-                    if (cmd.filter)
-                        context.filters.push(function ({ item })
-                            styles.userSheets.some(function (sheet) sheet.sites.indexOf(item) >= 0 && cmd.filter(sheet)));
-                    splitContext(context, function () styles.sites);
-                },
-                literal: 1,
-                options: [
-                    {
-                        names: ["-index", "-i"],
-                        type: modules.CommandOption.INT,
-                        completer: function (context) {
-                            context.compare = modules.CompletionContext.Sort.number;
-                            context.keys.text = function (sheet) styles.userSheets.indexOf(sheet);
-                            splitContext(context);
-                        },
-                    }, {
-                        names: ["-name", "-n"],
-                        type: modules.CommandOption.STRING,
-                        completer: function (context) {
-                            context.compare = modules.CompletionContext.Sort.number;
-                            context.keys.text = function (sheet) sheet.name;
-                            context.filters.push(function ({ item }) item.name);
-                            splitContext(context);
+                }, {
+                    completer: function (context) {
+                        let uris = util.visibleURIs(window.content);
+                        context.generate = function () styles.sites;
+                        context.keys.text = util.identity;
+                        context.keys.description = function (site) this.sheets.length + " sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
+                            array.compact(this.sheets.map(function (s) s.name)).join(", ")
+                        context.keys.sheets = function (site) styles.userSheets.filter(function (s) s.sites.indexOf(site) >= 0);
+                        context.keys.active = function (site) uris.some(Styles.matchFilter(site));
+
+                        if (cmd.filter)
+                            context.filters.push(function ({ sheets }) sheets.some(cmd.filter));
+
+                        splitContext(context);
+                    },
+                    literal: 1,
+                    options: [
+                        {
+                            names: ["-index", "-i"],
+                            type: modules.CommandOption.INT,
+                            completer: function (context) {
+                                context.keys.text = function (sheet) styles.userSheets.indexOf(sheet);
+                                sheets(context);
+                            },
+                        }, {
+                            names: ["-name", "-n"],
+                            type: modules.CommandOption.STRING,
+                            completer: function (context) {
+                                context.keys.text = function (sheet) sheet.name;
+                                context.filters.push(function ({ item }) item.name);
+                                sheets(context);
+                            }
                         }
-                    }
-                ]
-            });
+                    ]
+                });
         });
     },
     completion: function (dactyl, modules, window) {
