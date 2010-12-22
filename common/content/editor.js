@@ -241,12 +241,14 @@ const Editor = Module("editor", {
         return -1;
     },
 
-    editFileExternally: function (path, line, column, async) {
-        let args = options.get("editor").format({ file: path, line: line, column: column });
+    editFileExternally: function (args, blocking) {
+        if (!isObject(args))
+            args = { file: args };
+        let args = options.get("editor").format(args);
 
         dactyl.assert(args.length >= 1, "No editor specified");
 
-        io.run(io.expandPath(args.shift()), args, !async);
+        io.run(io.expandPath(args.shift()), args, blocking);
     },
 
     // TODO: clean up with 2 functions for textboxes and currentEditor?
@@ -309,11 +311,10 @@ const Editor = Module("editor", {
                     }
                 }
 
-                let timer = services.Timer();
-                timer.initWithCallback({ notify: update }, 100, timer.TYPE_REPEATING_SLACK);
+                let timer = services.Timer(update, 100, services.Timer.TYPE_REPEATING_SLACK);
 
                 try {
-                    this.editFileExternally(tmpfile.path, line, column);
+                    this.editFileExternally({ file: tmpfile.path, line: line, column: column }, true);
                 }
                 finally {
                     timer.cancel();

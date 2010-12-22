@@ -230,12 +230,9 @@ const IO = Module("io", {
      *
      * @param {string} program The program to run.
      * @param {string[]} args An array of arguments to pass to *program*.
-     * @param {boolean} blocking Whether to wait until the process terminates.
      */
-    blockingProcesses: [],
     run: function (program, args, blocking) {
         args = args || [];
-        blocking = !!blocking;
 
         let file;
 
@@ -274,12 +271,19 @@ lookup:
             return -1;
         }
 
-        let process = services.Process();
-
-        process.init(file);
+        let process = services.Process(file);
         process.run(false, args.map(String), args.length);
         try {
-            if (blocking)
+            if (callable(blocking))
+                var timer = services.Timer(
+                    function () {
+                        if (!process.isRunning) {
+                            timer.cancel();
+                            callback();
+                        }
+                    },
+                    100, services.Timer.TYPE_REPEATING_SLACK);
+            else if (blocking)
                 while (process.isRunning)
                     util.threadYield(false, true);
         }
@@ -453,16 +457,18 @@ lookup:
      * @returns {boolean} false if temp files couldn't be created,
      *     otherwise, the return value of *func*.
      */
-    withTempFiles: function (func, self) {
+    withTempFiles: function (func, self, checked) {
         let args = util.map(util.range(0, func.length), this.createTempFile);
         try {
             if (!args.every(util.identity))
                 return false;
-            return func.apply(self || this, args);
+            var res = func.apply(self || this, args);
         }
         finally {
-            args.forEach(function (f) f && f.remove(false));
+            if (!checked || res !== true)
+                args.forEach(function (f) f && f.remove(false));
         }
+        return res;
     }
 }, {
     /**

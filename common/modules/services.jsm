@@ -66,9 +66,9 @@ const Services = Module("Services", {
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
-        this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess);
+        this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess, "init");
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
-        this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer);
+        this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          Ci.nsIZipReader, "open");
         this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
@@ -80,7 +80,7 @@ const Services = Module("Services", {
             if (!ifaces)
                 return res.wrappedJSObject;
             Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));
-            if (init)
+            if (init && args.length)
                 res[init].apply(res, args);
             return res;
         }
@@ -120,7 +120,9 @@ const Services = Module("Services", {
      */
     addClass: function (name, class_, ifaces, init) {
         const self = this;
-        return this[name] = function () self._create(class_, ifaces, "createInstance", init, arguments);
+        this[name] = function () self._create(class_, ifaces, "createInstance", init, arguments);
+        update.apply(null, [this[name]].concat(ifaces));
+        return this[name];
     },
 
     /**

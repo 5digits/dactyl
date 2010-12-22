@@ -1007,7 +1007,11 @@ const Buffer = Module("buffer", {
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function (doc, callback) {
             this.callback = callable(callback) ? callback :
-                function (file) editor.editFileExternally(file.path, callback, null, true);
+                function (file) {
+                    editor.editFileExternally({ file: file.path, line: callback },
+                                              function () { file.remove(false) });
+                    return true;
+                }
 
             let url = isString(doc) ? doc : doc.location.href;
             let uri = util.newURI(url, charset);
@@ -1018,8 +1022,8 @@ const Buffer = Module("buffer", {
                     let encoder = services.HtmlEncoder();
                     encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
                     temp.write(encoder.encodeToString(), ">");
-                    this.callback(temp);
-                }, this);
+                    return this.callback(temp);
+                }, this, true);
 
             let file = util.getFile(uri);
             if (file)
@@ -1038,10 +1042,11 @@ const Buffer = Module("buffer", {
         onStateChange: function (progress, request, flag, status) {
             if ((flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0) {
                 try {
-                    this.callback(this.file);
+                    var ok = this.callback(this.file);
                 }
                 finally {
-                    this.file.remove(false);
+                    if (ok !== true)
+                        this.file.remove(false);
                 }
             }
             return 0;
