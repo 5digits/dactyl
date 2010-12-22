@@ -280,14 +280,16 @@ const Editor = Module("editor", {
             dactyl.assert(editor);
             text = Array.map(editor.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
         }
-        let oldBg, tmpBg;
-        function cleanup(error) {
+
+        let origGroup = textBox && textBox.getAttributeNS(NS, "highlight") || "";
+        let cleanup = util.yieldable(function cleanup(error) {
             if (timer)
                 timer.cancel();
 
+            let blink = ["EditorBlink1", "EditorBlink2"];
             if (error) {
                 dactyl.reportError(error, true);
-                tmpBg = "red";
+                blink[1] = "EditorError";
             }
             else
                 dactyl.trapErrors(update, null, true);
@@ -295,19 +297,15 @@ const Editor = Module("editor", {
             if (tmpfile && tmpfile.exists())
                 tmpfile.remove(false);
 
-            if (textBox)
-                textBox.removeAttribute("readonly");
-
             // blink the textbox after returning
             if (textBox) {
-                let colors = [tmpBg, oldBg, tmpBg, oldBg];
-                (function next() {
-                    textBox.style.backgroundColor = colors.shift();
-                    if (colors.length > 0)
-                        util.timeout(next, 100);
-                })();
+                dactyl.focus(textBox);
+                for (let group in values(blink.concat(blink, ""))) {
+                    highlight.highlightNode(textBox, origGroup + " " + group);
+                    yield 100;
+                }
             }
-        }
+        });
 
         try {
             var tmpfile = io.createTempFile();
@@ -315,10 +313,8 @@ const Editor = Module("editor", {
                 throw Error("Couldn't create temporary file");
 
             if (textBox) {
-                textBox.setAttribute("readonly", "true");
-                oldBg = textBox.style.backgroundColor;
-                tmpBg = "yellow";
-                textBox.style.backgroundColor = "#bbbbbb";
+                highlight.highlightNode(textBox, origGroup + " EditorEditing");
+                textBox.blur();
             }
 
             if (!tmpfile.write(text))

@@ -110,7 +110,7 @@ const Hive = Class("Hive", {
             sheet.sites = filter;
         }
         else {
-            sheet = Sheet(name, this._id++, filter.filter(util.identity), String(css), this, agent);
+            sheet = Sheet(name, styles._id++, filter.filter(util.identity), String(css), this, agent);
             this.sheets.push(sheet);
         }
 

@@ -218,6 +218,11 @@ const ConfigBase = Class(ModuleBase, {
         CompMore::after      content: "⌄";
         CompGroup:last-of-type  padding-bottom: 1.5ex;
 
+        EditorEditing;;*   background: #bbb !important; -moz-user-input: none; -moz-user-modify: read-only;
+        EditorError;;*     background: red !important;
+        EditorBlink1;;*    background: yellow !important;
+        EditorBlink2;;*
+
         Indicator   color: blue; width: 1.5em; text-align: center;
         Filter      font-weight: bold;
 
