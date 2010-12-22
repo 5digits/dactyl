@@ -6,10 +6,10 @@
           xmlns:xbl="http://www.mozilla.org/xbl"
           xmlns:html="http://www.w3.org/1999/xhtml">
 
-    <binding id="frame">
+    <binding id="frame" inheritstyle="false">
         <content>
-            <html:div dactyl:highlight="FrameIndicator"/>
             <children/>
+            <html:div dactyl:highlight="FrameIndicator"/>
         </content>
     </binding>
 

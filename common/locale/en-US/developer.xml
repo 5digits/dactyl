@@ -178,7 +178,7 @@
 
 <p>
     Plugins should provide inline documentation, which will appear on the
-    <ex>:help plugins</ex> page. The markup for help entries is the same
+    <ex>:help <str delim="">plugins</str></ex> page. The markup for help entries is the same
     as the above, along with a few extra plugin-specific entries. Here is an
     example from the popular <em>flashblock</em> extension:
 </p>

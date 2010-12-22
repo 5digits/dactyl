@@ -198,25 +198,34 @@ const ConfigBase = Class(ModuleBase, {
         CmdInput;.dactyl-commandline-command
         CmdOutput    white-space: pre;
 
+
         CompGroup
         CompGroup:not(:first-of-type)  margin-top: .5em;
+        CompGroup:last-of-type         padding-bottom: 1.5ex;
+
         CompTitle            color: magenta; background: white; font-weight: bold;
         CompTitle>*          padding: 0 .5ex;
         CompTitleSep         height: 1px; background: magenta; background: -moz-linear-gradient(60deg, magenta, white);
+
         CompMsg              font-style: italic; margin-left: 16px;
+
         CompItem
         CompItem:nth-child(2n+1)    background: rgba(0, 0, 0, .04);
         CompItem[selected]   background: yellow;
         CompItem>*           padding: 0 .5ex;
+
         CompIcon             width: 16px; min-width: 16px; display: inline-block; margin-right: .5ex;
         CompIcon>img         max-width: 16px; max-height: 16px; vertical-align: middle;
+
         CompResult           width: 36%; padding-right: 1%; overflow: hidden;
         CompDesc             color: gray; width: 62%; padding-left: 1em;
+
         CompLess             text-align: center; height: 0;    line-height: .5ex; padding-top: 1ex;
         CompLess::after      content: "⌃";
+
         CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
         CompMore::after      content: "⌄";
-        CompGroup:last-of-type  padding-bottom: 1.5ex;
+
 
         EditorEditing;;*   background: #bbb !important; -moz-user-input: none; -moz-user-modify: read-only;
         EditorError;;*     background: red !important;
@@ -258,27 +267,25 @@ const ConfigBase = Class(ModuleBase, {
         URLExtra    color: gray;
 
         FrameIndicator;;* {
-            /* This gets released into the wild, so everything is important */
-            background-color: red !important;
-            opacity: 0.5 !important;
-            z-index: 999999 !important;
-            position: fixed !important;
-            top:      0     !important;
-            bottom:   0     !important;
-            left:     0     !important;
-            right:    0     !important;
+            background-color: red;
+            opacity: 0.5;
+            z-index: 999999;
+            position: fixed;
+            top:      0;
+            bottom:   0;
+            left:     0;
+            right:    0;
         }
 
-        !Bell         background-color: black !important;
+        Bell          background-color: black !important;
+
         Hint;;* {
-            /* This gets released into the wild, so everything is important */
             font-size: 10px        !important;
             font-family: monospace !important;
             font-weight: bold      !important;
-            background-color: red   !important;
-            color:            white !important;
-            border:  0px solid ButtonShadow !important;
-            padding: 0px 1px                !important;
+            background-color: red;
+            color:            white;
+            padding: 0px 1px;
         }
         Hint::after;;*  content: attr(text) !important;
         HintElem;;*     background-color: yellow  !important; color: black !important;
@@ -328,13 +335,19 @@ const ConfigBase = Class(ModuleBase, {
             padding-right: 13px;
         }
 
+
+        HelpTOC
+        HelpTOC>ol ol                               margin-left: -1em;
+
         HelpOrderedList;ol;dactyl://help/*
         HelpOrderedList1;ol[level="1"],ol;dactyl://help/*           list-style: outside decimal; display: block;
         HelpOrderedList2;ol[level="2"],ol ol;dactyl://help/*        list-style: outside upper-alpha;
         HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*     list-style: outside lower-roman;
         HelpOrderedList4;ol[level="4"],ol ol ol ol;dactyl://help/*  list-style: outside decimal;
+
         HelpList;html|ul;dactyl://help/*     display: block; list-style: outside disc;
         HelpListItem;html|li;dactyl://help/* display: list-item;
+
 
         HelpNote                                    color: red; font-weight: bold;
 
@@ -351,6 +364,7 @@ const ConfigBase = Class(ModuleBase, {
         HelpString::after                           content: '"';
         HelpString[delim]::before                   content: attr(delim);
         HelpString[delim]::after                    content: attr(delim);
+
 
         HelpHead;html|h1,html|h2,html|h3,html|h4;dactyl://help/* {
             font-weight: bold;
@@ -377,8 +391,6 @@ const ConfigBase = Class(ModuleBase, {
         HelpHead4;html|h4;dactyl://help/* {
         }
 
-        HelpTOC
-        HelpTOC>ol ol                               margin-left: -1em;
 
         HelpTab;html|dl;dactyl://help/* {
             display: table;
