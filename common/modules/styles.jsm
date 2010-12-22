@@ -385,7 +385,7 @@ const Styles = Module("Styles", {
                         bang: true,
                         literalArg: sty.css,
                         options: sty.name ? { "-name": sty.name } : {}
-                    } for ([k, sty] in Iterator(styles.userSheets))
+                    } for ([k, sty] in Iterator(styles.userSheets.slice().sort(function (a, b) String.localeCompare(a.name || "", b.name || ""))))
                 ]
             });
 

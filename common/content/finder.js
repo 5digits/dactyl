@@ -261,6 +261,7 @@ const RangeFinder = Module("rangefinder", {
 const RangeFind = Class("RangeFind", {
     init: function (matchCase, backward, elementPath, regexp) {
         this.window = Cu.getWeakReference(window);
+        this.baseDocument = Cu.getWeakReference(content.document);
         this.elementPath = elementPath || null;
         this.reverse = Boolean(backward);
 
@@ -576,6 +577,9 @@ const RangeFind = Class("RangeFind", {
         return range;
     },
 
+    get stale() this._stale || this.baseDocument.get() != content.document,
+    set stale(val) this._stale = val,
+
     addListeners: function () {
         for (let range in array.iterValues(this.ranges))
             range.window.addEventListener("unload", this.closure.onUnload, true);
@@ -683,8 +687,7 @@ const RangeFind = Class("RangeFind", {
         return range;
     },
     sameDocument: function (r1, r2) r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument,
-    selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(
-        function (p) "ancestor-or-self::" + p).join(" | ")
+    selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(function (p) "ancestor-or-self::" + p).join(" | ")
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:
