@@ -311,9 +311,9 @@ const Styles = Module("Styles", {
     propertyIter: function (str, always) {
         this.propertyPattern.lastIndex = 0;
 
-        let match;
+        let match, i = 0;
         while ((!match || match[0]) && (match = Styles.propertyPattern.exec(str)))
-            if (always || match[0])
+            if (always && !i++ || match[0])
                 yield this.Property.fromArray(match);
     },
 
@@ -514,7 +514,7 @@ const Styles = Module("Styles", {
                 var lastMatch = match;
 
             if (lastMatch != null && !lastMatch.value && !lastMatch.postSpace) {
-                context.advance(lastMatch.index + lastMatch.name.length)
+                context.advance(lastMatch.index + lastMatch.preSpace.length)
                 context.completions = names;
             }
         };
