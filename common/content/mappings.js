@@ -426,7 +426,7 @@ const Mappings = Module("mappings", {
                             default: mapmodes || ["n", "v"],
                             validator: function (list) !list || list.every(findMode),
                             completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
-                                                    for (mode in modes.mainModes)],
+                                                    for (mode in values(modes.all))],
                         },
                         {
                             names: ["-nopersist", "-n"],
@@ -502,7 +502,7 @@ const Mappings = Module("mappings", {
         }
 
         function findMode(name) {
-            for (let mode in modes.mainModes)
+            for (let mode in values(modes.all))
                 if (name == mode || name == mode.char || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
                     return mode.mask;
             return null;
@@ -546,7 +546,7 @@ const Mappings = Module("mappings", {
                     description: "The mode for which to list mappings",
                     default: "n",
                     completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
-                                            for (mode in modes.mainModes)],
+                                            for (mode in values(modes.all))],
                     validator: function (m) findMode(m)
                 }
             ]
@@ -573,7 +573,7 @@ const Mappings = Module("mappings", {
         completion.userMapping = function userMapping(context, modes) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
             modes = modes || [modules.modes.NORMAL];
-            context.completions = [[m.names[0], ""] for (m in mappings.getUserIterator(modes))];
+            context.completions = [[m.names[0], m.description + ": " + m.action] for (m in mappings.getUserIterator(modes))];
         };
     },
     javascript: function () {

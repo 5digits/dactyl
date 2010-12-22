@@ -36,8 +36,6 @@ update(Sheet.prototype, {
 
     remove: function () { this.hive.remove(this) },
 
-    system: Class.Property({ get: deprecated("Please use Style#hive instead", function system() this.hive === styles.system) }),
-
     get uri() cssUri(this.fullCSS),
 
     get enabled() this._enabled,
@@ -216,12 +214,6 @@ const Styles = Module("Styles", {
         this.system = Hive();
     },
 
-    userSheets: Class.Property({ get: deprecated("Please use Styles#user.sheets instead", function userSheets() this.user.sheets) }),
-    systemSheets: Class.Property({ get: deprecated("Please use Styles#system.sheets instead", function systemSheets() this.system.sheets) }),
-    userNames: Class.Property({ get: deprecated("Please use Styles#user.names instead", function userNames() this.user.names) }),
-    systemNames: Class.Property({ get: deprecated("Please use Styles#system.names instead", function systemNames() this.system.names) }),
-    sites: Class.Property({ get: deprecated("Please use Styles#user.sites instead", function sites() this.user.sites) }),
-
     __iterator__: function () Iterator(this.user.sheets.concat(this.system.sheets)),
 
     _proxy: function (name, args)
@@ -232,6 +224,12 @@ const Styles = Module("Styles", {
     findSheets: deprecated("Please use Styles#{user,system}.find instead", function findSheets() this._proxy("find", arguments)),
     get: deprecated("Please use Styles#{user,system}.get instead", function get() this._proxy("get", arguments)),
     removeSheet: deprecated("Please use Styles#{user,system}.remove instead", function removeSheet() this._proxy("remove", arguments)),
+
+    userSheets: Class.Property({ get: deprecated("Please use Styles#user.sheets instead", function userSheets() this.user.sheets) }),
+    systemSheets: Class.Property({ get: deprecated("Please use Styles#system.sheets instead", function systemSheets() this.system.sheets) }),
+    userNames: Class.Property({ get: deprecated("Please use Styles#user.names instead", function userNames() this.user.names) }),
+    systemNames: Class.Property({ get: deprecated("Please use Styles#system.names instead", function systemNames() this.system.names) }),
+    sites: Class.Property({ get: deprecated("Please use Styles#user.sites instead", function sites() this.user.sites) }),
 
     registerSheet: function registerSheet(url, agent, reload) {
         let uri = services.io.newURI(url, null, null);

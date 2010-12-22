@@ -1764,7 +1764,7 @@ const Dactyl = Module("dactyl", {
 
         commands.add(["norm[al]"],
             "Execute Normal mode commands",
-            function (args) { events.feedkeys(args[0] || "", args.bang); },
+            function (args) { events.feedkeys(args[0] || "", args.bang, false, modes.NORMAL); },
             {
                 argCount: "+",
                 bang: true,

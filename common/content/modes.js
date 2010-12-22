@@ -29,6 +29,7 @@ const Modes = Module("modes", {
             }
         });
 
+        this._modes = [];
         this._mainModes = [];
         this._lastMode = 0;
         this._modeMap = {};
@@ -49,8 +50,10 @@ const Modes = Module("modes", {
                     editor.unselectText();
             }
         });
+
         this.addMode("COMMAND_LINE", { char: "c", input: true,
             display: function () modes.extended & modes.OUTPUT_MULTILINE ? null : this.disp });
+
         this.addMode("CARET", {}, {
             get pref()    prefs.get("accessibility.browsewithcaret"),
             set pref(val) prefs.set("accessibility.browsewithcaret", val),
@@ -68,11 +71,18 @@ const Modes = Module("modes", {
         this.addMode("TEXT_EDIT", { char: "t", ownsFocus: true });
         this.addMode("EMBED",    { input: true, ownsFocus: true });
         this.addMode("PASS_THROUGH");
+
         this.addMode("QUOTE",    {
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).mainMode.display() || modes.getStack(2).mainMode.name) + " (next)"
                 : "PASS THROUGH (next)"
+        }, {
+            // Fix me.
+            preExecute: function (map) { if (modes.main == modes.QUOTE && map.name !== "<C-v>") modes.pop() },
+            postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop() },
+            onEvent: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
+
         // this._extended modes, can include multiple modes, and even main modes
         this.addMode("EX", true);
         this.addMode("HINTS", true);
@@ -129,7 +139,7 @@ const Modes = Module("modes", {
 
     __iterator__: function () array.iterValues(this.all),
 
-    get all() this._mainModes.slice(),
+    get all() this._modes.slice(),
 
     get mainModes() (mode for ([k, mode] in Iterator(modes._modeMap)) if (!mode.extended && mode.name == k)),
 
@@ -150,6 +160,7 @@ const Modes = Module("modes", {
         }
 
         util.extend(mode, {
+            toString: function () this.name,
             count: true,
             disp: disp,
             extended: extended,
@@ -167,8 +178,11 @@ const Modes = Module("modes", {
             mode.display = function () disp;
         this._modeMap[name] = mode;
         this._modeMap[this[name]] = mode;
+
+        this._modes.push(mode);
         if (!extended)
-            this._mainModes.push(this[name]);
+            this._mainModes.push(mode);
+
         dactyl.triggerObserver("mode-add", mode);
     },
 
@@ -323,12 +337,13 @@ const Modes = Module("modes", {
 }, {
     StackElement: (function () {
         let struct = Struct("main", "extended", "params", "saved");
+        struct.defaultValue("params", function () this.main.params);
         struct.prototype.__defineGetter__("mainMode", function () modes.getMode(this.main));
         struct.prototype.toString = function () !loaded.modes ? this.main : "[mode " +
             this.mainMode.name +
             (!this.extended ? "" :
              "(" +
-              [modes.getMode(1 << i).name for (i in util.range(0, 32)) if (this.extended & (1 << i))].join("|") +
+              [modes.getMode(1 << i).name for (i in util.range(0, 32)) if (modes.getMode(1 << i) && (this.extended & (1 << i)))].join("|") +
              ")") + "]";
         return struct;
     })(),

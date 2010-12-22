@@ -63,14 +63,6 @@ const Events = Module("events", {
             this._code_key[60] = "lt";
         }
 
-        this._input = {
-            buffer: "",             // partial command storage
-            pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
-            pendingArgMap: null,    // pending map storage for commands like m{a-z}
-            count: null,            // parsed count from the input buffer
-            motionCount: null
-        };
-
         this._activeMenubar = false;
         this.addSessionListener(window, "DOMMenuBarActive", this.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.onDOMMenuBarInactive, true);
@@ -235,7 +227,7 @@ const Events = Module("events", {
      *     command line.
      * @returns {boolean}
      */
-    feedkeys: function (keys, noremap, quiet) {
+    feedkeys: function (keys, noremap, quiet, mode) {
 
         let wasFeeding = this.feedingKeys;
         this.feedingKeys = true;
@@ -256,9 +248,10 @@ const Events = Module("events", {
                     else
                         evt.noremap = !!noremap;
                     evt.isMacro = true;
+                    evt.dactylMode = mode;
 
                     let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
-                    if (!evt_obj.dactylString && !evt_obj.dactylShift)
+                    if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
                         events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event);
                     else
                         events.onKeyPress(event);
@@ -285,7 +278,7 @@ const Events = Module("events", {
                 let duringFeed = this.duringFeed;
                 this.duringFeed = [];
                 for (let [, evt] in Iterator(duringFeed))
-                    events.dispatch(evt.target, evt);
+                    events.dispatch(evt.originalTarget, evt);
             }
         }
     },
@@ -363,15 +356,22 @@ const Events = Module("events", {
     dispatch: Class.memoize(function ()
         util.haveGecko("2b")
             ? function (target, event) {
-                if (target instanceof Element)
-                    // This causes a crash on Gecko<2.0, it seems.
-                    (target.ownerDocument || target.document || target).defaultView
-                           .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                           .dispatchDOMEventViaPresShell(target, event, true)
-                else
-                    target.dispatchEvent(event);
+                try {
+                    if (target instanceof Element)
+                        // This causes a crash on Gecko<2.0, it seems.
+                        (target.ownerDocument || target.document || target).defaultView
+                               .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                               .dispatchDOMEventViaPresShell(target, event, true)
+                    else
+                        target.dispatchEvent(event);
+                }
+                catch (e) {
+                    util.reportError(e);
+                }
             }
             : function (target, event) target.dispatchEvent(event)),
+
+    get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,
 
     /**
      * Converts an event string into an array of pseudo-event objects.
@@ -806,7 +806,6 @@ const Events = Module("events", {
     // the command-line has focus
     // TODO: ...help me...please...
     onKeyPress: function onKeyPress(event) {
-        function isEscape(key) key == "<Esc>" || key == "<C-[>";
 
         function killEvent() {
             event.preventDefault();
@@ -855,176 +854,86 @@ const Events = Module("events", {
         try {
             let stop = false;
             let mode = modes.getStack(0);
-            var main = mode.main;
+            if (event.dactylMode)
+                mode = Modes.StackElement(event.dactylMode);
 
             function shouldPass()
                 (!dactyl.focusedElement || Events.isContentNode(dactyl.focusedElement)) &&
                 options.get("passkeys").has(events.toString(event));
 
-            // menus have their own command handlers
-            if (modes.extended & modes.MENU)
-                stop = true;
-            else if (modes.main == modes.PASS_THROUGH)
-                // let flow continue to handle these keys to cancel escape-all-keys mode
-                stop = !isEscape(key) && key != "<C-v>";
-            // handle Escape-one-key mode (Ctrl-v)
-            else if (modes.main == modes.QUOTE) {
-                stop = !shouldPass() && (modes.getStack(1).main !== modes.PASS_THROUGH || isEscape(key));
-                // We need to preserve QUOTE mode until the escape
-                // handler to escape the <Esc> key
-                if (!stop || !isEscape(key))
-                    modes.pop();
-                mode = modes.getStack(1);
-            }
-            else if (!event.isMacro && !event.noremap && shouldPass())
-                stop = true;
-            // handle Escape-all-keys mode (Ctrl-q)
-
-            if (stop) {
-                this._input.buffer = "";
-                main = null;
-                return null;
-            }
-
-            if (key == "<C-c>")
-                util.interrupted = true;
-
-            stop = true; // set to false if we should NOT consume this event but let the host app handle it
-
-            // XXX: ugly hack for now pass certain keys to the host app as
-            // they are without beeping also fixes key navigation in combo
-            // boxes, submitting forms, etc.
-            // FIXME: breaks iabbr for now --mst
-            if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode.main)) {
-                this._input.buffer = "";
-                return null;
-            }
-
-            if (mode.params.onEvent) {
-                this._input.buffer = "";
-                // Bloody hell.
-                if (key === "<C-h>")
-                    key = event.dactylString = "<BS>";
-
-                if (mode.params.onEvent(event) === false)
-                    killEvent();
-                return null;
-            }
-
-            let inputStr = this._input.buffer + key;
-            let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
-            let candidateCommand = inputStr.substr(countStr.length);
-            let map = mappings[event.noremap ? "getDefault" : "get"](mode.main, candidateCommand);
-
-            let candidates = mappings.getCandidates(mode.main, candidateCommand);
-            if (candidates.length == 0 && !map) {
-                map = this._input.pendingMap;
-                this._input.pendingMap = null;
-                if (map && map.arg)
-                    this._input.pendingArgMap = map;
-            }
-
-            // counts must be at the start of a complete mapping (10j -> go 10 lines down)
-            if (countStr && !candidateCommand) {
-                // no count for insert mode mappings
-                if (!mode.mainMode.count || mode.mainMode.input)
-                    stop = false;
-                else
-                    this._input.buffer = inputStr;
-            }
-            else if (this._input.pendingArgMap) {
-                main = null;
-                this._input.buffer = "";
-                let map = this._input.pendingArgMap;
-                this._input.pendingArgMap = null;
-                if (!isEscape(key)) {
-                    if (modes.isReplaying && !this.waitForPageLoad())
-                        return null;
-                    map.execute(null, this._input.count, key);
-                }
-            }
-            // only follow a map if there isn't a longer possible mapping
-            // (allows you to do :map z yy, when zz is a longer mapping than z)
-            else if (map && !event.skipmap && candidates.length == 0) {
-                this._input.pendingMap = null;
-                let count = this._input.pendingMotionMap ? "motionCount" : "count";
-                this._input[count] = parseInt(countStr, 10);
-                if (isNaN(this._input[count]))
-                    this._input[count] = null;
-                this._input.buffer = "";
-                if (map.arg) {
-                    this._input.buffer = inputStr;
-                    this._input.pendingArgMap = map;
-                }
-                else if (this._input.pendingMotionMap) {
-                    if (!isEscape(key))
-                        this._input.pendingMotionMap.execute(candidateCommand, this._input.motionCount || this._input.count, null);
-                    this._input.pendingMotionMap = null;
-                    this._input.motionCount = null;
-                }
-                // no count support for these commands yet
-                else if (map.motion) {
-                    this._input.pendingMotionMap = map;
-                }
-                else {
-                    // Hack.
-                    if (map.name == "<C-v>" && main == modes.QUOTE)
-                        stop = false;
-                    else {
-                        if (modes.isReplaying && !this.waitForPageLoad())
-                            return killEvent();
-
-                        let ret = map.execute(null, this._input.count);
-                        if (map.route && ret)
-                            stop = false;
+            let input = this._input;
+            this._input = null;
+            if (!input) {
+                // menus have their own command handlers
+                if (modes.extended & modes.MENU)
+                    stop = true;
+                else if (modes.main == modes.PASS_THROUGH)
+                    // let flow continue to handle these keys to cancel escape-all-keys mode
+                    stop = !Events.isEscape(key) && key != "<C-v>";
+                // handle Escape-one-key mode (Ctrl-v)
+                else if (modes.main == modes.QUOTE) {
+                    if (modes.getStack(1).main == modes.PASS_THROUGH) {
+                        mode.params.mainMode = modes.getStack(2).main;
+                        stop = Events.isEscape(key);
                     }
-                    main = null;
+                    else if (shouldPass())
+                        mode.params.mainMode = modes.getStack(1).main;
+                    else
+                        stop = true;
+
+                    if (stop && !Events.isEscape(key))
+                        modes.pop();
                 }
+                else if (!event.isMacro && !event.noremap && shouldPass())
+                    stop = true;
+
+                if (stop)
+                    return null;
+
+                if (key == "<C-c>")
+                    util.interrupted = true;
+
+                stop = true; // set to false if we should NOT consume this event but let the host app handle it
+
+                // XXX: ugly hack for now pass certain keys to the host app as
+                // they are without beeping also fixes key navigation in combo
+                // boxes, submitting forms, etc.
+                // FIXME: breaks iabbr for now --mst
+                if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode.main))
+                    return null;
+
+                input = Events.KeyProcessor(mode.params.mainMode || mode.main, mode.extended);
+                if (mode.params.preExecute)
+                    input.preExecute = mode.params.preExecute;
+                if (mode.params.postExecute)
+                    input.postExecute = mode.params.postExecute;
+                if (mode.params.onEvent)
+                    input.fallthrough = function (event) {
+                        // Bloody hell.
+                        if (events.toString(event) === "<C-h>")
+                            event.dactylString = "<BS>";
+
+                        return mode.params.onEvent(event) === false;
+                    }
             }
-            else if (mappings.getCandidates(mode.main, candidateCommand).length > 0 && !event.skipmap) {
-                this._input.pendingMap = map;
-                this._input.buffer += key;
-            }
-            else { // if the key is neither a mapping nor the start of one
-                // the mode checking is necessary so that things like g<esc> do not beep
-                main = null;
-                if (this._input.buffer != "" && !event.skipmap &&
-                    (mode.main & (modes.INSERT | modes.COMMAND_LINE | modes.TEXT_EDIT)))
-                    events.feedkeys(this._input.buffer, { noremap: true, skipmap: true });
 
-                this._input.buffer = "";
-                this._input.pendingArgMap = null;
-                this._input.pendingMotionMap = null;
-                this._input.pendingMap = null;
-                this._input.motionCount = null;
-
-                if (!isEscape(key)) {
-                    stop = (mode.main & (modes.TEXT_EDIT | modes.VISUAL));
-                    if (stop)
-                        dactyl.beep();
-
-                    if (mode.main == modes.COMMAND_LINE)
-                        if (!(mode.extended & modes.INPUT_MULTILINE))
-                            dactyl.trapErrors(commandline.onEvent, commandline, event);
-                }
-            }
-
-            if (stop)
-                killEvent();
+            if (!input.process(event))
+                this._input = input;
         }
         catch (e) {
             dactyl.reportError(e);
         }
         finally {
-            let motionMap = (this._input.pendingMotionMap && this._input.pendingMotionMap.names[0]) || "";
-            if (!(modes.extended & modes.HINTS))
+            if (!this._input)
+                statusline.updateInputBuffer("");
+            else if (!(modes.extended & modes.HINTS)) {
+                let motionMap = (this._input.pendingMotionMap && this._input.pendingMotionMap.names[0]) || "";
                 statusline.updateInputBuffer(motionMap + this._input.buffer);
+            }
 
             // This is a stupid, silly, and revolting hack.
-            if (isEscape(key))
+            if (Events.isEscape(key) && !shouldPass())
                 this.onEscape();
-            if (main == modes.QUOTE)
-                modes.push(main);
         }
     },
 
@@ -1090,6 +999,150 @@ const Events = Module("events", {
         }
     }
 }, {
+    KeyProcessor: Class("KeyProcessor", {
+        init: function init(main, extended) {
+            this.main = main;
+            this.extended = extended;
+            this.events = [];
+        },
+
+        buffer: "",             // partial command storage
+        pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
+        pendingArgMap: null,    // pending map storage for commands like m{a-z}
+        count: null,            // parsed count from the input buffer
+        motionCount: null,
+
+        append: function append(event) {
+            this.events.push(event);
+            this.buffer += events.toString(event);
+        },
+
+        process: function process(event) {
+            function kill(event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            let res = this.onKeyPress(event);
+            if (res === true)
+                kill(event);
+            else if (isArray(res)) {
+                if (this.fallthrough) {
+                    if (this.fallthrough(res[0]) === true)
+                        kill(res[0]);
+                }
+                else if (Events.isEscape(event))
+                    kill(event);
+                else {
+                    if (this.main & (modes.TEXT_EDIT | modes.VISUAL)) {
+                        dactyl.beep();
+                        kill(event);
+                    }
+
+                    if (this.main == modes.COMMAND_LINE)
+                        if (!(this.extended & modes.INPUT_MULTILINE))
+                            dactyl.trapErrors(commandline.onEvent, commandline, event);
+                }
+
+                // Unconsumed events
+                for (let event in values(res.slice(1)))
+                    if (!event.skipmap)
+                        if (event.originalTarget)
+                            events.dispatch(event.originalTarget, event);
+                        else
+                            events.onKeyPress(event);
+            }
+            return res != null;
+        },
+
+        onKeyPress: function onKeyPress(event) {
+            const self = this;
+            let key = events.toString(event);
+            let inputStr = this.buffer + key;
+            let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
+            let candidateCommand = inputStr.substr(countStr.length);
+            let map = mappings[event.noremap ? "getDefault" : "get"](this.main, candidateCommand);
+
+            function execute(map) {
+                if (self.preExecute)
+                    self.preExecute.apply(self, arguments);
+                let res = map.execute.apply(map, Array.slice(arguments, 1))
+                if (self.postExecute) // To do: get rid of this.
+                    self.postExecute.apply(self, arguments);
+                return res;
+            }
+
+            let candidates = mappings.getCandidates(this.main, candidateCommand);
+            if (candidates.length == 0 && !map) {
+                map = this.pendingMap;
+                this.pendingMap = null;
+                if (map && map.arg)
+                    this.pendingArgMap = map;
+            }
+
+            // counts must be at the start of a complete mapping (10j -> go 10 lines down)
+            if (countStr && !candidateCommand) {
+                // no count for insert mode mappings
+                if (!this.main.count || this.main.input)
+                    return false;
+                else
+                    this.append(event);
+            }
+            else if (this.pendingArgMap) {
+                let map = this.pendingArgMap;
+                if (!Events.isEscape(key)) {
+                    if (!modes.isReplaying || this.waitForPageLoad())
+                        execute(map, null, this.count, key);
+                    return true;
+                }
+            }
+            // only follow a map if there isn't a longer possible mapping
+            // (allows you to do :map z yy, when zz is a longer mapping than z)
+            else if (map && !event.skipmap && candidates.length == 0) {
+                this.pendingMap = null;
+
+                let count = this.pendingMotionMap ? "motionCount" : "count";
+                this[count] = parseInt(countStr, 10);
+
+                if (isNaN(this[count]))
+                    this[count] = null;
+
+                this.buffer = "";
+                if (map.arg) {
+                    this.buffer = inputStr;
+                    this.pendingArgMap = map;
+                }
+                else if (this.pendingMotionMap) {
+                    if (!Events.isEscape(key))
+                        execute(this.pendingMotionMap, candidateCommand, this.motionCount || this.count, null);
+                    this.pendingMotionMap = null;
+                    this.motionCount = null;
+                }
+                // no count support for these commands yet
+                else if (map.motion)
+                    this.pendingMotionMap = map;
+                else {
+                    if (modes.isReplaying && !this.waitForPageLoad())
+                        return true;
+
+                    let ret = execute(map, null, this.count);
+                    if (map.route && ret)
+                        return false;
+                }
+                return true;
+            }
+            else if (mappings.getCandidates(this.main, candidateCommand).length > 0 && !event.skipmap) {
+                this.pendingMap = map;
+                this.append(event);
+            }
+            else {
+                this.append(event);
+                return this.events;
+            }
+            return null;
+        }
+    }),
+
     isContentNode: function isContentNode(node) {
         let win = (node.ownerDocument || node).defaultView || node;
         for (; win; win = win.parent != win && win.parent)
@@ -1097,6 +1150,11 @@ const Events = Module("events", {
                 return true;
         return false;
     },
+
+    isEscape: function isEscape(event)
+        let (key = isString(event) ? event : events.toString(event))
+            key === "<Esc>" || key === "<C-[>",
+
     isInputElemFocused: function isInputElemFocused() {
         let elem = dactyl.focusedElement;
         return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
@@ -1147,7 +1205,12 @@ const Events = Module("events", {
 
         mappings.add(modes.all,
             ["<C-v>"], "Pass through next key",
-            function () { modes.push(modes.QUOTE); });
+            function () {
+                if (modes.main == modes.QUOTE)
+                    return true;
+                modes.push(modes.QUOTE);
+            },
+            { route: true });
 
         mappings.add(modes.all,
             ["<Nop>"], "Do nothing",

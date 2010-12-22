@@ -464,7 +464,8 @@ const CommandLine = Module("commandline", {
             leave: function (params) {
                 if (params.pop)
                     commandline.leave();
-            }
+            },
+            mainMode: this.currentExtendedMode
         });
 
         this.currentExtendedMode = extendedMode || null;
@@ -736,7 +737,8 @@ const CommandLine = Module("commandline", {
                        leave: function leave(stack) {
                            commandline.leave(stack);
                            leave.supercall(this, stack);
-                       }
+                       },
+                       mainMode: extra.extended || modes.PROMPT
                    }));
         this.currentExtendedMode = modes.PROMPT;
 
