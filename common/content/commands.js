@@ -448,6 +448,10 @@ const Commands = Module("commands", {
 
     /** @property {Iterator(Command)} @private */
     __iterator__: function () {
+        let sorted = this._exCommands.sort(function (a, b) a.name > b.name);
+        return array.iterValues(sorted);
+    },
+    iterator: function () {
         let sorted = this._exCommands.sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name);
         return array.iterValues(sorted);
     },

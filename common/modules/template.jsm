@@ -88,6 +88,16 @@ const Template = Module("Template", {
                         /^:\w/.test(topic)   ? "HelpEx"  : "HelpKey");
         return <a highlight={type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>
     },
+    HelpLink: function (topic) {
+        if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
+            return <>{topic}</>;
+
+        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        let tag = (/^'.*'$/.test(topic) ? "o" :
+                   /^:\w/.test(topic)   ? "ex"  : "k");
+        topic = topic.replace(/^'(.*)'$/, "$1");
+        return <{tag}  xmlns={NS}>{topic}</{tag}>
+    },
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n
@@ -210,7 +220,7 @@ const Template = Module("Template", {
         // </e4x>
     },
 
-    linkifyHelp: function linkifyHelp(str) {
+    linkifyHelp: function linkifyHelp(str, help) {
         util.dactyl.initHelp();
 
         let re = util.regexp(<![CDATA[
@@ -222,7 +232,7 @@ const Template = Module("Template", {
             let res;
             while ((res = re.exec(str)) && res[2].length)
                 yield [res.index + res[1].length, res[2].length];
-        })(), template.helpLink);
+        })(), template[help ? "HelpLink" : "helpLink"]);
     },
 
     options: function options(title, opts) {

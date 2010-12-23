@@ -23,16 +23,22 @@ const systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPr
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {
-    if (url == null)
-        return fakeChannel();
-    if (typeof url === "function")
-        url = dataURL.apply(null, url());
-    let uri = ioService.newURI(url, null, null);
-    let channel = ioService.newChannelFromURI(uri);
-    channel.contentCharset = "UTF-8";
-    channel.owner = systemPrincipal;
-    channel.originalURI = orig;
-    return channel;
+    try {
+        if (url == null)
+            return fakeChannel();
+        if (typeof url === "function")
+            url = dataURL.apply(null, url());
+        let uri = ioService.newURI(url, null, null);
+        let channel = ioService.newChannelFromURI(uri);
+        channel.contentCharset = "UTF-8";
+        channel.owner = systemPrincipal;
+        channel.originalURI = orig;
+        return channel;
+    }
+    catch (e) {
+        Components.utils.reportError(e);
+        throw e;
+    }
 }
 function fakeChannel(orig) makeChannel("chrome://dactyl/content/does/not/exist", orig);
 function redirect(to, orig, time) {

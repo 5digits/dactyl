@@ -564,6 +564,8 @@ const Dactyl = Module("dactyl", {
                 </document>.toXMLString()));
             fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
+            default xml namespace = NS;
+
             overlayMap["index"] = function () ['text/xml;charset=UTF-8',
                 '<?xml version="1.0"?>\n' +
                 '<overlay xmlns="' + NS + '">\n' +
@@ -571,8 +573,7 @@ const Dactyl = Module("dactyl", {
                 template.map(dactyl.indices, function ([name, iter])
                     <dl insertafter={name + "-index"}>{
                         template.map(iter(), util.identity)
-                    }</dl>, <>{"\n\n"}</>)))
-                    .replace('xmlns="' + XHTML + '"', "", "g") +
+                    }</dl>, <>{"\n\n"}</>))) +
                 '\n</overlay>'];
 
             addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
@@ -728,33 +729,36 @@ const Dactyl = Module("dactyl", {
 
         XML.prettyPrinting = false;
         XML.ignoreWhitespace = false;
+        default xml namespace = NS;
 
         // E4X has its warts.
         let br = <>
                     </>;
 
         let res = <res>
-                <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd></res>;
+                <dt>{link(obj.name)}</dt> <dd>{
+                    template.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)
+                }</dd></res>;
         if (specOnly)
             return res.*;
 
         res.* += <>
-        <item>
-            <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
-            <spec>{
-                spec(template.highlightRegexp((obj.specs || obj.names)[0],
-                                              /\[(.*?)\]/g,
-                                              function (m, n0) <oa>{n0}</oa>))
-            }</spec>{
-            !obj.type ? "" : <>
-            <type>{obj.type}</type>
-            <default>{obj.stringDefaultValue}</default></>}
-            <description>{
-                obj.description ? br + <p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
-                    extraHelp ? br + extraHelp : "" }{
-                    !(extraHelp || obj.description) ? br + <p>Sorry, no help available.</p> : "" }
-            </description>
-        </item></>;
+            <item>
+                <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
+                <spec>{
+                    spec(template.highlightRegexp((obj.specs || obj.names)[0],
+                                                  /\[(.*?)\]/g,
+                                                  function (m, n0) <oa>{n0}</oa>))
+                }</spec>{
+                !obj.type ? "" : <>
+                <type>{obj.type}</type>
+                <default>{obj.stringDefaultValue}</default></>}
+                <description>{
+                    obj.description ? br + <p>{template.linkifyHelp(obj.description.replace(/\.?$/, "."), true)}</p> : "" }{
+                        extraHelp ? br + extraHelp : "" }{
+                        !(extraHelp || obj.description) ? br + <p>Sorry, no help available.</p> : "" }
+                </description>
+            </item></>;
 
         function add(ary) {
             res.item.description.* += br +
@@ -779,7 +783,10 @@ const Dactyl = Module("dactyl", {
                                 })</>
                         }</>
                     ]));
-        return res.*.toXMLString().replace(/^ {12}|[ \t]+$/gm, "").replace(/^.*\n|\n.*$/g, "") + "\n";
+        return res.*.toXMLString()
+                  .replace(' xmlns="' + NS + '"', "", "g")
+                  .replace(/^ {12}|[ \t]+$/gm, "")
+                  .replace(/^\s*\n|\n\s*$/g, "") + "\n";
     },
 
     /**
@@ -1798,10 +1805,10 @@ const Dactyl = Module("dactyl", {
                 keepQuotes: true,
                 serialGroup: 10,
                 serialize: function ()  [
-                        {
-                            command: this.name,
-                            literalArg: options["loadplugins"].join(" ")
-                        }
+                    {
+                        command: this.name,
+                        literalArg: options["loadplugins"].join(" ")
+                    }
                 ]
             });
 
