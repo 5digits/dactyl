@@ -205,7 +205,7 @@ const History = Module("history", {
             "Show recently visited URLs",
             function (args) { history.list(args.join(" "), args.bang, args["-max"], args["-sort"]); }, {
                 bang: true,
-                completer: function (context) completion.history(context, args["-max"], args["-sort"]),
+                completer: function (context, args) completion.history(context, args["-max"], args["-sort"]),
                 options: [
                     {
                         names: ["-max", "-m"],
