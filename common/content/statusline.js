@@ -26,7 +26,7 @@ const StatusLine = Module("statusline", {
                 #addon-bar { padding: 0 !important; min-height: 18px !important; }
                 #addon-bar > statusbar { -moz-box-flex: 1 }
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
-                #addon-bar > #addonbar-spring { visibility: collapse; }
+                #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
             let parent = this.widgets.status.parentNode;
             parent.removeChild(this.widgets.status);
