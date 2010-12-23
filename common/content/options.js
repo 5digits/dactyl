@@ -450,10 +450,10 @@ const Option = Class("Option", {
         regexpmap:  function (value)
             Option.splitList(value, true).map(function (v) {
                 let [count, re, quote] = Commands.parseArg(v, /:/, true);
-                v = Option.dequote(v.substr(count + 1));
+                let val = Option.dequote(v.substr(count + 1));
                 if (count === v.length)
-                    [v, re] = [re, ".?"];
-                return Option.parseRegexp(re, v, this.regexpFlags);
+                    [val, re] = [re, ".?"];
+                return Option.parseRegexp(re, val, this.regexpFlags);
             }, this)
     },
 
