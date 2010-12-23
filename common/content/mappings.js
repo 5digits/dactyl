@@ -386,6 +386,7 @@ const Mappings = Module("mappings", {
 
             const opts = {
                     completer: function (context, args) {
+                        let mapmodes = array.uniq(args["-modes"].map(findMode));
                         if (args.length == 1)
                             return completion.userMapping(context, mapmodes);
                         if (args.length == 2) {
@@ -475,17 +476,26 @@ const Mappings = Module("mappings", {
             commands.add([ch + "mapc[lear]"],
                 "Remove all mappings" + modeDescription,
                 function () { mapmodes.forEach(function (mode) { mappings.removeAll(mode); }); },
-                { argCount: "0" });
+                {
+                    argCount: "0",
+                    options: [ update({}, modeFlag, {
+                            names: ["-modes", "-mode", "-m"],
+                            type: CommandOption.LIST,
+                            description: "Clear mappings from the given modes",
+                            default: mapmodes || ["n", "v"],
+                        }),
+                    ]
+                });
 
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,
                 function (args) {
-                    args = args[0];
+                    let mapmodes = array.uniq(args["-modes"].map(findMode));
 
                     let found = false;
                     for (let [, mode] in Iterator(mapmodes)) {
-                        if (mappings.hasMap(mode, args)) {
-                            mappings.remove(mode, args);
+                        if (mappings.hasMap(mode, args[0])) {
+                            mappings.remove(mode, args[0]);
                             found = true;
                         }
                     }
@@ -494,7 +504,14 @@ const Mappings = Module("mappings", {
                 },
                 {
                     argCount: "1",
-                    completer: function (context) completion.userMapping(context, mapmodes)
+                    completer: opts.completer,
+                    options: [ update({}, modeFlag, {
+                            names: ["-modes", "-mode", "-m"],
+                            type: CommandOption.LIST,
+                            description: "Remove mapping from the given modes",
+                            default: mapmodes || ["n", "v"],
+                        }),
+                    ]
                 });
         }
 
