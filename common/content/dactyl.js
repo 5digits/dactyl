@@ -27,6 +27,7 @@ const Dactyl = Module("dactyl", {
         Object.defineProperty(window, "liberator", prop);
         Object.defineProperty(modules, "liberator", prop);
         this.commands = {};
+        this.indices = {};
         this.modules = modules;
         this.observers = {};
 
@@ -149,6 +150,12 @@ const Dactyl = Module("dactyl", {
                 },
                 options: params.options || []
             });
+        if (params.index)
+            this.indices[params.index] = function () {
+                for (let obj in (params.iterateIndex || params.iterate)())
+                    if (obj.helpTag in services["dactyl:"].HELP_TAGS)
+                        yield dactyl.generateHelp(obj, null, null, true);
+            }
     },
 
     /**
@@ -557,6 +564,17 @@ const Dactyl = Module("dactyl", {
                 </document>.toXMLString()));
             fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
+            overlayMap["index"] = function () ['text/xml;charset=UTF-8',
+                '<?xml version="1.0"?>\n' +
+                '<overlay xmlns="' + NS + '">\n' +
+                unescape(encodeURI( // UTF-8 handling hack.
+                template.map(dactyl.indices, function ([name, iter])
+                    <dl insertafter={name + "-index"}>{
+                        template.map(iter(), util.identity)
+                    }</dl>, <>{"\n\n"}</>)))
+                    .replace('xmlns="' + XHTML + '"', "", "g") +
+                '\n</overlay>'];
+
             addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
             this.helpInitialized = true;
         }
@@ -717,49 +735,50 @@ const Dactyl = Module("dactyl", {
 
         let res = <res>
                 <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd></res>;
-        if (!specOnly) {
-            res.* += <>
-            <item>
-                <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
-                <spec>{
-                    spec(template.highlightRegexp((obj.specs || obj.names)[0],
-                                                  /\[(.*?)\]/g,
-                                                  function (m, n0) <oa>{n0}</oa>))
-                }</spec>{
-                !obj.type ? "" : <>
-                <type>{obj.type}</type>
-                <default>{obj.stringDefaultValue}</default></>}
-                <description>{
-                    obj.description ? br + <p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
-                        extraHelp ? br + extraHelp : "" }{
-                        !(extraHelp || obj.description) ? br + <p>Sorry, no help available.</p> : "" }
-                </description>
-            </item></>;
+        if (specOnly)
+            return res.*;
 
-            function add(ary) {
-                res.item.description.* += br +
-                    let (br = br + <>    </>)
-                        <><dl>{ br + template.map(ary, function ([a, b]) <><dt>{a}</dt> <dd>{b}</dd></>, br) }
-                        </dl>
-                    </>;
-            }
+        res.* += <>
+        <item>
+            <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
+            <spec>{
+                spec(template.highlightRegexp((obj.specs || obj.names)[0],
+                                              /\[(.*?)\]/g,
+                                              function (m, n0) <oa>{n0}</oa>))
+            }</spec>{
+            !obj.type ? "" : <>
+            <type>{obj.type}</type>
+            <default>{obj.stringDefaultValue}</default></>}
+            <description>{
+                obj.description ? br + <p>{obj.description.replace(/\.?$/, ".")}</p> : "" }{
+                    extraHelp ? br + extraHelp : "" }{
+                    !(extraHelp || obj.description) ? br + <p>Sorry, no help available.</p> : "" }
+            </description>
+        </item></>;
 
-            if (obj.completer)
-                add(completion._runCompleter(obj.completer, "", null, args).items
-                              .map(function (i) [i.text, i.description]));
-
-            if (obj.options && obj.options.some(function (o) o.description))
-                add(obj.options.filter(function (o) o.description)
-                       .map(function (o) [
-                            o.names[0],
-                            <>{o.description}{
-                                o.names.length == 1 ? "" :
-                                    <> (short name: {
-                                        template.map(o.names.slice(1), function (n) <em>{n}</em>, <>, </>)
-                                    })</>
-                            }</>
-                        ]));
+        function add(ary) {
+            res.item.description.* += br +
+                let (br = br + <>    </>)
+                    <><dl>{ br + template.map(ary, function ([a, b]) <><dt>{a}</dt> <dd>{b}</dd></>, br) }
+                    </dl>
+                </>;
         }
+
+        if (obj.completer)
+            add(completion._runCompleter(obj.completer, "", null, args).items
+                          .map(function (i) [i.text, i.description]));
+
+        if (obj.options && obj.options.some(function (o) o.description))
+            add(obj.options.filter(function (o) o.description)
+                   .map(function (o) [
+                        o.names[0],
+                        <>{o.description}{
+                            o.names.length == 1 ? "" :
+                                <> (short name: {
+                                    template.map(o.names.slice(1), function (n) <em>{n}</em>, <>, </>)
+                                })</>
+                        }</>
+                    ]));
         return res.*.toXMLString().replace(/^ {12}|[ \t]+$/gm, "").replace(/^.*\n|\n.*$/g, "") + "\n";
     },
 

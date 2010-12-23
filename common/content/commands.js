@@ -127,6 +127,8 @@ const Command = Class("Command", {
             this.options = this.options.map(CommandOption.fromArray, CommandOption);
     },
 
+    get helpTag() ":" + this.name,
+
     /**
      * Execute this command.
      *
@@ -1449,6 +1451,7 @@ const Commands = Module("commands", {
         dactyl.addUsageCommand({
             name: ["listc[ommands]", "lc"],
             description: "List all Ex commands along with their short descriptions",
+            index: "ex-cmd",
             iterate: function (args) commands,
             format: {
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),

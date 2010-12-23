@@ -77,6 +77,8 @@ const Option = Class("Option", {
             this.globalValue = this.defaultValue;
     },
 
+    get helpTag() "'" + this.name + "'",
+
     initValue: function () {
         dactyl.trapErrors(function () this.value = this.value, this);
     },
@@ -842,6 +844,7 @@ const Options = Module("options", {
         dactyl.addUsageCommand({
             name: ["listo[ptions]", "lo"],
             description: "List all options along with their short descriptions",
+            index: "option",
             iterate: function (args) options,
             format: {
                 description: function (opt) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
