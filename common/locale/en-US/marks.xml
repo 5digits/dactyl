@@ -280,6 +280,11 @@
                 The maximum number of items to list or open
                 (short name <em>-m</em>).
             </dd>
+            <dt>-sort</dt>
+            <dd>
+                The sort order of the results
+                (short name <em>-s</em>).
+            </dd>
         </dl>
     </description>
 </item>

@@ -11,7 +11,7 @@ const History = Module("history", {
 
     get service() services.history,
 
-    get: function get(filter, maxItems) {
+    get: function get(filter, maxItems, order) {
         // no query parameters will get all history
         let query = services.history.getNewQuery();
         let options = services.history.getNewQueryOptions();
@@ -20,7 +20,15 @@ const History = Module("history", {
             filter = { searchTerms: filter };
         for (let [k, v] in Iterator(filter))
             query[k] = v;
-        options.sortingMode = options.SORT_BY_DATE_DESCENDING;
+
+        order = order || "+date";
+        dactyl.assert((order = /^([+-])(.+)/.exec(order)) &&
+                      (order = "SORT_BY_" + order[2].toUpperCase() + "_" +
+                        (order[1] == "+" ? "ASCENDING" : "DESCENDING")) &&
+                      order in options,
+                     "Invalid sort order");
+
+        options.sortingMode = options[order];
         options.resultType = options.RESULTS_AS_URI;
         if (maxItems > 0)
             options.maxResults = maxItems;
@@ -93,13 +101,13 @@ const History = Module("history", {
     },
 
     // if openItems is true, open the matching history items in tabs rather than display
-    list: function list(filter, openItems, maxItems) {
+    list: function list(filter, openItems, maxItems, sort) {
         // FIXME: returning here doesn't make sense
         //   Why the hell doesn't it make sense? --Kris
         // See comment at bookmarks.list --djk
         if (!openItems)
-            return completion.listCompleter("history", filter, maxItems);
-        let items = completion.runCompleter("history", filter, maxItems);
+            return completion.listCompleter("history", filter, maxItems, maxItems, sort);
+        let items = completion.runCompleter("history", filter, maxItems, maxItems, sort);
 
         if (items.length)
             return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
@@ -195,11 +203,39 @@ const History = Module("history", {
 
         commands.add(["hist[ory]", "hs"],
             "Show recently visited URLs",
-            function (args) { history.list(args.join(" "), args.bang, args["-max"]); }, {
+            function (args) { history.list(args.join(" "), args.bang, args["-max"], args["-sort"]); }, {
                 bang: true,
-                completer: function (context) { context.quote = null; completion.history(context); },
-                // completer: function (filter) completion.history(filter)
-                options: [{ names: ["-max", "-m"], description: "The maximum number of items to list", default: 1000, type: CommandOption.INT }],
+                completer: function (context) completion.history(context, args["-max"], args["-sort"]),
+                options: [
+                    {
+                        names: ["-max", "-m"],
+                        description: "The maximum number of items to list",
+                        default: 1000,
+                        type: CommandOption.INT
+                    },
+                    {
+                        names: ["-sort", "-s"],
+                        type: CommandOption.STRING,
+                        description: "The sort order of the results",
+                        completer: function (context, args) {
+                            context.compare = CompletionContext.Sort.unsorted;
+                            return array.flatten([
+                                "annotation",
+                                "date",
+                                "date added",
+                                "keyword",
+                                "last modified",
+                                "tags",
+                                "title",
+                                "uri",
+                                "visitcount"
+                            ].map(function (order) [
+                                  ["+" + order.replace(" ", ""), "Sort by " + order + " ascending"],
+                                  ["-" + order.replace(" ", ""), "Sort by " + order + " descending"],
+                            ]))
+                        }
+                    }
+                ],
                 privateData: true
             });
     },
@@ -218,15 +254,17 @@ const History = Module("history", {
             ].slice(2);
         };
 
-        completion.history = function _history(context, maxItems) {
+        completion.history = function _history(context, maxItems, sort) {
             context.format = history.format;
             context.title = ["History"];
             context.compare = CompletionContext.Sort.unsorted;
             //context.background = true;
-            if (context.maxItems == null)
+            if (maxItems == null)
+                context.maxItems = maxItems;
+            if (maxItems && context.maxItems == null)
                 context.maxItems = 100;
             context.regenerate = true;
-            context.generate = function () history.get(context.filter, this.maxItems);
+            context.generate = function () history.get(context.filter, this.maxItems, sort);
         };
 
         completion.addUrlCompleter("h", "History", completion.history);

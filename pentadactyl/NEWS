@@ -61,6 +61,7 @@
       - Added -keyword, -tags, -title to :delbmarks.
       - Added :extupdate command.
       - Added :feedkeys command.
+      - Added -sort option to :history
       - Added several new options, including -javascript, to :abbrev and :map.
       - Added :mksyntax command.
       - :open now only opens files beginning with /, ./, ../, or ~/

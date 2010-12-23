@@ -902,7 +902,6 @@ const Events = Module("events", {
                     input.postExecute = mode.params.postExecute;
                 if (mode.params.onEvent)
                     input.fallthrough = function (event) {
-                        util.dump("fallthrough", String(mode), events.toString(event));
                         // Bloody hell.
                         if (events.toString(event) === "<C-h>")
                             event.dactylString = "<BS>";
