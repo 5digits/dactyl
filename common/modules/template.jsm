@@ -173,7 +173,7 @@ const Template = Module("Template", {
                 break;
             XML.ignoreWhitespace = false;
             s += <>{str.substring(start, i)}</>;
-            s += highlight.apply(this, Array.slice(args || str.substr(i, length)));
+            s += highlight.apply(this, Array.concat(args || str.substr(i, length)));
             start = i + length;
         }
         return s + <>{str.substr(start)}</>;

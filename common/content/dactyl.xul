@@ -96,7 +96,7 @@
         </vbox>
     </vbox>
 
-    <statusbar id="status-bar" dactyl:highlight="StatusLine">
+    <statusbar id="status-bar" dactyl:highlight="StatusLine StatusNormal">
         <hbox insertbefore="&dactyl.statusBefore;" insertafter="&dactyl.statusAfter;"
               style="background: inherit;" id="&status;container" flex="1" hidden="false" align="center">
             <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
