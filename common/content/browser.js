@@ -127,7 +127,7 @@ const Browser = Module("browser", {
             "Go to the root of the website",
             function () { Browser.climbUrlPath(-1); });
 
-        mappings.add([modes.NORMAL], ["<C-l>"],
+        mappings.add(modes.all, ["<C-l>"],
             "Redraw the screen",
             function () { ex.redraw(); });
     },

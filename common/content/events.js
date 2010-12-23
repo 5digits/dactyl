@@ -1122,7 +1122,7 @@ const Events = Module("events", {
                         return true;
 
                     let ret = execute(map, null, this.count);
-                    return map.route && ret;
+                    return !(map.route && ret);
                 }
             }
             else if (mappings.getCandidates(this.main, candidateCommand).length > 0 && !event.skipmap) {

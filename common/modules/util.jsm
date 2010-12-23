@@ -31,6 +31,7 @@ memoize(this, "Commands", function () {
 const FailedAssertion = Class("FailedAssertion", Error, {
     init: function (message) {
         update(this, Error(message))
+        this.message = message;
     }
 });
 
