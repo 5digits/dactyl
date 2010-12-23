@@ -685,7 +685,7 @@ const Dactyl = Module("dactyl", {
      * @param {XMLList} extraHelp Extra help text beyond the description.
      * @returns {string}
      */
-    generateHelp: function generateHelp(obj, extraHelp, str) {
+    generateHelp: function generateHelp(obj, extraHelp, str, specOnly) {
         default xml namespace = "";
 
         let link, tag, spec;
@@ -696,6 +696,7 @@ const Dactyl = Module("dactyl", {
             tag = spec = function (cmd) <>:{cmd}</>;
             link = function (cmd) <ex>:{cmd}</ex>;
             args = obj.parseArgs("", CompletionContext(str || ""));
+            spec = function (cmd) cmd + (obj.bang ? <oa>!</oa> : <></>);
         }
         else if (obj instanceof Map && obj.count) {
             spec = function (map) <><oa>count</oa>{map}</>;
@@ -715,10 +716,16 @@ const Dactyl = Module("dactyl", {
                     </>;
 
         let res = <res>
-                <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd>
+                <dt>{link(obj.name)}</dt> <dd>{obj.description ? obj.description.replace(/\.$/, "") : ""}</dd></res>;
+        if (!specOnly) {
+            res.* += <>
             <item>
                 <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
-                <spec>{spec((obj.specs || obj.names)[0])}</spec>{
+                <spec>{
+                    spec(template.highlightRegexp((obj.specs || obj.names)[0],
+                                                  /\[(.*?)\]/g,
+                                                  function (m, n0) <oa>{n0}</oa>))
+                }</spec>{
                 !obj.type ? "" : <>
                 <type>{obj.type}</type>
                 <default>{obj.stringDefaultValue}</default></>}
@@ -727,32 +734,33 @@ const Dactyl = Module("dactyl", {
                         extraHelp ? br + extraHelp : "" }{
                         !(extraHelp || obj.description) ? br + <p>Sorry, no help available.</p> : "" }
                 </description>
-            </item></res>;
+            </item></>;
 
-        function add(ary) {
-            res.item.description.* += br +
-                let (br = br + <>    </>)
-                    <><dl>{ br + template.map(ary, function ([a, b]) <><dt>{a}</dt> <dd>{b}</dd></>, br) }
-                    </dl>
-                </>;
+            function add(ary) {
+                res.item.description.* += br +
+                    let (br = br + <>    </>)
+                        <><dl>{ br + template.map(ary, function ([a, b]) <><dt>{a}</dt> <dd>{b}</dd></>, br) }
+                        </dl>
+                    </>;
+            }
+
+            if (obj.completer)
+                add(completion._runCompleter(obj.completer, "", null, args).items
+                              .map(function (i) [i.text, i.description]));
+
+            if (obj.options && obj.options.some(function (o) o.description))
+                add(obj.options.filter(function (o) o.description)
+                       .map(function (o) [
+                            o.names[0],
+                            <>{o.description}{
+                                o.names.length == 1 ? "" :
+                                    <> (short name: {
+                                        template.map(o.names.slice(1), function (n) <em>{n}</em>, <>, </>)
+                                    })</>
+                            }</>
+                        ]));
         }
-
-        if (obj.completer)
-            add(completion._runCompleter(obj.completer, "", null, args).items
-                          .map(function (i) [i.text, i.description]));
-
-        if (obj.options && obj.options.some(function (o) o.description))
-            add(obj.options.filter(function (o) o.description)
-                   .map(function (o) [
-                        o.names[0],
-                        <>{o.description}{
-                            o.names.length == 1 ? "" :
-                                <> (short name: {
-                                    template.map(o.names.slice(1), function (n) <em>{n}</em>, <>, </>)
-                                })</>
-                        }</>
-                    ]));
-        return res.*.toXMLString().replace(/^ {12}|[ \t]+$/gm, "");
+        return res.*.toXMLString().replace(/^ {12}|[ \t]+$/gm, "").replace(/^.*\n|\n.*$/g, "") + "\n";
     },
 
     /**
@@ -1764,9 +1772,9 @@ const Dactyl = Module("dactyl", {
 
         commands.add(["norm[al]"],
             "Execute Normal mode commands",
-            function (args) { events.feedkeys(args[0] || "", args.bang, false, modes.NORMAL); },
+            function (args) { events.feedkeys(args[0], args.bang, false, modes.NORMAL); },
             {
-                argCount: "+",
+                argCount: "1",
                 bang: true,
                 literal: 0
             });

@@ -23,11 +23,23 @@
             arguments. These context names may be used to tune the function of
             the completion system via options like <o>autocomplete</o> and
             <o>wildcase</o>. Note that completion must be triggered in order
-            for this command to be effective, so if autocompletion is not
+            for this command to be effective, so if auto-completion is not
             active, you'll need to press the <k name="Tab" mode="c"/> key at
             least once. You should also be aware that this command is only
-            useful from the commandline.
+            useful from the command line.
         </p>
+    </description>
+</item>
+
+<item>
+    <tags>:fk :feedkeys</tags>
+    <spec>feedkeys<oa>!</oa></spec>
+    <description>
+        <p>Fake key events.</p>
+
+        <dl>
+            <dt>-mode</dt> <dd>The in which to feed the keys (short name: <em>-m</em>)</dd>
+        </dl>
     </description>
 </item>
 

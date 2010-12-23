@@ -255,6 +255,7 @@ This file contains a list of all available commands, mappings and options.
     <dt><ex>:extensions</ex></dt> <dd>List all installed extensions</dd>
     <dt><ex>:extoptions</ex></dt> <dd>Open an extension's preference dialog</dd>
     <dt><ex>:extupdate</ex></dt> <dd>Update an extension</dd>
+    <dt><ex>:feedkeys</ex></dt> <dd>Fake key events</dd>
     <dt><ex>:finish</ex></dt> <dd>Stop sourcing a script file</dd>
     <dt><ex>:forward</ex></dt> <dd>Go forward in the browser history</dd>
     <dt><ex>:frameonly</ex></dt> <dd>Show only the current frame's page</dd>

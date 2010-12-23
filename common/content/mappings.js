@@ -419,15 +419,12 @@ const Mappings = Module("mappings", {
                             names: ["-javascript", "-js", "-j"],
                             description: "Execute this mapping as JavaScript rather than keys"
                         },
-                        {
+                        update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
                             description: "Create this mapping in the given modes",
                             default: mapmodes || ["n", "v"],
-                            validator: function (list) !list || list.every(findMode),
-                            completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
-                                                    for (mode in values(modes.all))],
-                        },
+                        }),
                         {
                             names: ["-nopersist", "-n"],
                             description: "Do not save this mapping to an auto-generated RC file"
@@ -501,10 +498,20 @@ const Mappings = Module("mappings", {
                 });
         }
 
+        let modeFlag = {
+            names: ["-mode", "-m"],
+            type: CommandOption.STRING,
+            validator: function (value) Array.concat(value).every(findMode),
+            completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
+                                    for (mode in values(modes.all))],
+        };
+
         function findMode(name) {
-            for (let mode in values(modes.all))
-                if (name == mode || name == mode.char || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
-                    return mode.mask;
+            if (name)
+                for (let mode in values(modes.all))
+                    if (name == mode || name == mode.char
+                        || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
+                        return mode.mask;
             return null;
         }
         function uniqueModes(modes) {
@@ -513,6 +520,20 @@ const Mappings = Module("mappings", {
                          if (v.every(function (mode) modes.indexOf(mode) >= 0))];
             return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0).concat(chars));
         }
+
+        commands.add(["feedkeys", "fk"],
+            "Fake key events",
+            function (args) { events.feedkeys(args[0] || "", args.bang, false, findMode(args["-mode"])); },
+            {
+                argCount: "1",
+                bang: true,
+                literal: 0,
+                options: [
+                    update({}, modeFlag, {
+                        description: "The in which to feed the keys"
+                    })
+                ]
+            });
 
         addMapCommands("", [modes.NORMAL, modes.VISUAL], "");
 
@@ -540,15 +561,10 @@ const Mappings = Module("mappings", {
             name: ["listk[eys]", "lk"],
             description: "List all mappings along with their short descriptions",
             options: [
-                {
-                    names: ["-mode", "-m"],
-                    type: CommandOption.STRING,
-                    description: "The mode for which to list mappings",
+                update({}, modeFlag, {
                     default: "n",
-                    completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
-                                            for (mode in values(modes.all))],
-                    validator: function (m) findMode(m)
-                }
+                    description: "The mode for which to list mappings"
+                })
             ]
         });
 

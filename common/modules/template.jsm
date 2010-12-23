@@ -153,7 +153,7 @@ const Template = Module("Template", {
         return this.highlightSubstrings(str, (function () {
             let res;
             while ((res = re.exec(str)) && res[0].length)
-                yield [res.index, res[0].length];
+                yield [res.index, res[0].length, res];
         })(), highlight || template.filter);
     },
 
@@ -168,12 +168,12 @@ const Template = Module("Template", {
         let s = <></>;
         let start = 0;
         let n = 0;
-        for (let [i, length] in iter) {
+        for (let [i, length, args] in iter) {
             if (n++ > 50) // Prevent infinite loops.
                 break;
             XML.ignoreWhitespace = false;
             s += <>{str.substring(start, i)}</>;
-            s += highlight(str.substr(i, length));
+            s += highlight.apply(this, Array.slice(args || str.substr(i, length)));
             start = i + length;
         }
         return s + <>{str.substr(start)}</>;
