@@ -404,7 +404,8 @@ const ConfigBase = Class(ModuleBase, {
         HelpTabColumn;html|column;dactyl://help/*   display: table-column;
         HelpTabColumn:first-child                   width: 25%;
         HelpTabTitle;html|dt;dactyl://help/*        display: table-cell; padding: .1ex 1ex; font-weight: bold;
-        HelpTabDescription;html|dd;dactyl://help/*  display: table-cell; padding: .1ex 1ex; border-width: 0px;
+        HelpTabDescription;html|dd;dactyl://help/*  display: table-cell; padding: .3ex 1em; text-indent: -1em; border-width: 0px;
+        HelpTabDescription>*;;dactyl://help/*       text-indent: 0;
         HelpTabRow;html|dl>html|tr;dactyl://help/*  display: table-row;
 
         HelpTag                                     display: inline-block; color: #527BBD; margin-left: 1ex; font-size: 8pt; font-weight: bold;
