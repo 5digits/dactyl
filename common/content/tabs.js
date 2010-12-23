@@ -714,7 +714,7 @@ const Tabs = Module("tabs", {
 
             commands.add(["tabo[nly]"],
                 "Close all other tabs",
-                function () { tabs.keepOnly(config.tabbrowser.mCurrentTab); },
+                function () { tabs.keepOnly(tabs.getTab()); },
                 { argCount: "0" });
 
             commands.add(["tabopen", "t[open]", "tabnew"],

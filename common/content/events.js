@@ -852,7 +852,6 @@ const Events = Module("events", {
         }
 
         try {
-            let stop = false;
             let mode = modes.getStack(0);
             if (event.dactylMode)
                 mode = Modes.StackElement(event.dactylMode);
@@ -864,41 +863,35 @@ const Events = Module("events", {
             let input = this._input;
             this._input = null;
             if (!input) {
+                let ignore = false;
+
                 // menus have their own command handlers
                 if (modes.extended & modes.MENU)
-                    stop = true;
+                    ignore = true;
                 else if (modes.main == modes.PASS_THROUGH)
-                    // let flow continue to handle these keys to cancel escape-all-keys mode
-                    stop = !Events.isEscape(key) && key != "<C-v>";
-                // handle Escape-one-key mode (Ctrl-v)
+                    ignore = !Events.isEscape(key) && key != "<C-v>";
                 else if (modes.main == modes.QUOTE) {
                     if (modes.getStack(1).main == modes.PASS_THROUGH) {
                         mode.params.mainMode = modes.getStack(2).main;
-                        stop = Events.isEscape(key);
+                        ignore = Events.isEscape(key);
                     }
                     else if (shouldPass())
                         mode.params.mainMode = modes.getStack(1).main;
                     else
-                        stop = true;
+                        ignore = true;
 
-                    if (stop && !Events.isEscape(key))
+                    if (ignore && !Events.isEscape(key))
                         modes.pop();
                 }
                 else if (!event.isMacro && !event.noremap && shouldPass())
-                    stop = true;
+                    ignore = true;
 
-                if (stop)
+                if (ignore)
                     return null;
 
                 if (key == "<C-c>")
                     util.interrupted = true;
 
-                stop = true; // set to false if we should NOT consume this event but let the host app handle it
-
-                // XXX: ugly hack for now pass certain keys to the host app as
-                // they are without beeping also fixes key navigation in combo
-                // boxes, submitting forms, etc.
-                // FIXME: breaks iabbr for now --mst
                 if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode.main))
                     return null;
 
@@ -909,6 +902,7 @@ const Events = Module("events", {
                     input.postExecute = mode.params.postExecute;
                 if (mode.params.onEvent)
                     input.fallthrough = function (event) {
+                        util.dump("fallthrough", String(mode), events.toString(event));
                         // Bloody hell.
                         if (events.toString(event) === "<C-h>")
                             event.dactylString = "<BS>";
@@ -924,13 +918,6 @@ const Events = Module("events", {
             dactyl.reportError(e);
         }
         finally {
-            if (!this._input)
-                statusline.updateInputBuffer("");
-            else if (!(modes.extended & modes.HINTS)) {
-                let motionMap = (this._input.pendingMotionMap && this._input.pendingMotionMap.names[0]) || "";
-                statusline.updateInputBuffer(motionMap + this._input.buffer);
-            }
-
             // This is a stupid, silly, and revolting hack.
             if (Events.isEscape(key) && !shouldPass())
                 this.onEscape();
@@ -1015,6 +1002,7 @@ const Events = Module("events", {
         append: function append(event) {
             this.events.push(event);
             this.buffer += events.toString(event);
+            return this.events;
         },
 
         process: function process(event) {
@@ -1052,11 +1040,22 @@ const Events = Module("events", {
                         else
                             events.onKeyPress(event);
             }
+
+            if (!this.main.ownsBuffer) {
+                if (res != null)
+                    statusline.updateInputBuffer("");
+                else {
+                    let motionMap = (this.pendingMotionMap && this.pendingMotionMap.names[0]) || "";
+                    statusline.updateInputBuffer(motionMap + this.buffer);
+                }
+            }
+
             return res != null;
         },
 
         onKeyPress: function onKeyPress(event) {
             const self = this;
+
             let key = events.toString(event);
             let inputStr = this.buffer + key;
             let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
@@ -1083,7 +1082,9 @@ const Events = Module("events", {
             // counts must be at the start of a complete mapping (10j -> go 10 lines down)
             if (countStr && !candidateCommand) {
                 // no count for insert mode mappings
-                if (!this.main.count || this.main.input)
+                if (!this.main.count)
+                    return this.append(event);
+                else if (this.main.input)
                     return false;
                 else
                     this.append(event);

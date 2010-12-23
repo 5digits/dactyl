@@ -69,10 +69,10 @@ const Modes = Module("modes", {
             }
         });
         this.addMode("TEXT_EDIT", { char: "t", ownsFocus: true });
-        this.addMode("EMBED",    { input: true, ownsFocus: true });
+        this.addMode("EMBED",     { input: true, ownsFocus: true });
         this.addMode("PASS_THROUGH");
 
-        this.addMode("QUOTE",    {
+        this.addMode("QUOTE", {
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).mainMode.display() || modes.getStack(2).mainMode.name) + " (next)"
                 : "PASS THROUGH (next)"
@@ -85,7 +85,7 @@ const Modes = Module("modes", {
 
         // this._extended modes, can include multiple modes, and even main modes
         this.addMode("EX", true);
-        this.addMode("HINTS", true);
+        this.addMode("HINTS", { count: false, ownsBuffer: true });
         this.addMode("INPUT_MULTILINE", true);
         this.addMode("OUTPUT_MULTILINE", true);
         this.addMode("SEARCH_FORWARD", true);
