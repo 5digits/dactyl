@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+fromrepo=
+if [ $1 = -r ]; then shift; fromrepo=1; fi
+
 top=$(pwd)
 jar=$1
 bases=$2
@@ -20,7 +23,7 @@ then sed() { $sed -E "$@"; }
 else sed() { $sed -r "$@"; }
 fi
 
-if $HG root >/dev/null 2>&1
+if test -n "$fromrepo" && $HG root >/dev/null 2>&1
 then
     root="$($HG root)"
     which cygpath >/dev/null 2>&1 && root=$(cygpath $root)
@@ -28,7 +31,6 @@ then
     mf="$($HG --config ui.debug=false --config ui.verbose=false manifest)"
     find=$(which find)
     find() {
-        $find "$@" -name '*.jar'
         echo "$mf" | sed -n "s!$(pwd | sed "s!$root/?!!")/?!!p" |
             grep "^$1"
         exit 1
@@ -47,12 +49,14 @@ copytext() {
     ( echo "modified: $1"; diff -u "$1" "$2" | grep '^[-+][^-+]' )
 }
 
+[ -e "$top/$jar" ] && rm -rf "$top/$jar"
+
 for base in $bases
 do
     (
         set -e
         cd $base
-        [ ${jar##*.} = jar ] && stage="$stage/${base##*/}"
+        [ ${jar##*.} != xpi ] && stage="$stage/${base##*/}"
         for dir in $dirs
         do
             for f in $(getfiles "$bin" "$dir")
@@ -74,8 +78,16 @@ do
     ) || exit 1
 done
 
-[ -f "$top/$jar" ] && rm -f "$top/$jar"
-(set -e; cd $stage; zip -9r "$top/$jar" *) || exit 1
-rm -rf "$stage"
+(
+    set -e;
+    cd $stage;
+    case $jar in
+    (*/) if [ "$stage" != "$top/$jar" ]; then mv * $top/$jar; fi;;
+    (*)  zip -9r "$top/$jar" *;;
+    esac
+) || exit 1
+
+[ "$stage" != "$top/$jar" ] && rm -rf "$stage"
+true
 
 # vim:se ft=sh sts=4 sw=4 et:

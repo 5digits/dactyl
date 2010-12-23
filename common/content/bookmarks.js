@@ -186,15 +186,6 @@ const Bookmarks = Module("bookmarks", {
         }
     },
 
-    /**
-     * Returns the search engine for the given alias.
-     *
-     * @param {string} alias The alias of the search engine to be returned.
-     * @returns {nsISearchEngine} The search engine.
-     */
-    getSearchEngine: function getSearchEngine(alias)
-        array.nth(this.searchEngines, function (e) e.keyword === alias, 0),
-
     getSearchEngines: deprecated("Please use bookmarks.searchEngines instead", function getSearchEngines() this.searchEngines),
     /**
      * Returns a list of all visible search engines in the search
@@ -204,7 +195,7 @@ const Bookmarks = Module("bookmarks", {
     get searchEngines() {
         let searchEngines = [];
         let aliases = {};
-        return services.browserSearch.getVisibleEngines({}).map(function (engine) {
+        return array.toObject(services.browserSearch.getVisibleEngines({}).map(function (engine) {
             let alias = engine.alias;
             if (!alias || !/^[a-z_-]+$/.test(alias))
                 alias = engine.name.replace(/^\W*([a-zA-Z_-]+).*/, "$1").toLowerCase();
@@ -216,8 +207,8 @@ const Bookmarks = Module("bookmarks", {
             else
                 aliases[alias] = 0;
 
-            return { keyword: alias, __proto__: engine, title: engine.description, icon: engine.iconURI && engine.iconURI.spec };
-        });
+            return [alias, { keyword: alias, __proto__: engine, title: engine.description, icon: engine.iconURI && engine.iconURI.spec }];
+        }));
     },
 
     /**
@@ -239,7 +230,7 @@ const Bookmarks = Module("bookmarks", {
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
-        let engine = this.getSearchEngine(engineName);
+        let engine = this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
         if (!queryURI)
@@ -295,7 +286,7 @@ const Bookmarks = Module("bookmarks", {
                 param = url.substr(offset + 1);
             }
 
-            var engine = bookmarks.getSearchEngine(keyword);
+            var engine = bookmarks.searchEngines[keyword];
             if (engine) {
                 var submission = engine.getSubmission(param, null);
                 return [submission.uri.spec, submission.postData];
@@ -602,14 +593,14 @@ const Bookmarks = Module("bookmarks", {
             let engines = bookmarks.searchEngines;
 
             context.title = ["Search Keywords"];
-            context.completions = array(values(keywords)).concat(engines).array;
+            context.completions = iterAll(values(keywords), values(engines));
             context.keys = { text: "keyword", description: "title", icon: "icon" };
 
             if (!space || noSuggest)
                 return;
 
             context.fork("suggest", keyword.length + space.length, this, "searchEngineSuggest",
-                    keyword, true);
+                         keyword, true);
 
             let item = keywords[keyword];
             if (item && item.url.indexOf("%s") > -1)
@@ -652,7 +643,7 @@ const Bookmarks = Module("bookmarks", {
             let engineList = (engineAliases || options["suggestengines"].join(",") || "google").split(",");
 
             engineList.forEach(function (name) {
-                let engine = services.browserSearch.getEngineByAlias(name);
+                let engine = bookmarks.searchEngines[name];
                 if (!engine)
                     return;
                 let [, word] = /^\s*(\S+)/.exec(context.filter) || [];

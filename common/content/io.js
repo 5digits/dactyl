@@ -11,7 +11,7 @@
 
 plugins.contexts = {};
 function Script(file) {
-    let self = plugins[file.path];
+    let self = set.has(plugins, file.path) && plugins[file.path];
     if (self) {
         if (self.onUnload)
             self.onUnload();

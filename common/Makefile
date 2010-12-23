@@ -21,13 +21,14 @@ JAR_DIRS      = content skin locale
 JAR_TEXTS     = js css dtd xml xul html xhtml xsl
 JAR_BINS      = png
 
-JAR           = chrome/$(NAME).jar
+CHROME	      = chrome/
+JAR           = $(CHROME)$(NAME).jar
 
 XPI_BASES     = $(JAR_BASES) $(TOP)/..
 XPI_FILES     = install.rdf TODO AUTHORS Donors NEWS LICENSE.txt
 XPI_DIRS      = modules components chrome defaults
-XPI_TEXTS     = js jsm
-XPI_BINS      = jar
+XPI_TEXTS     = js jsm $(JAR_TEXTS)
+XPI_BINS      = $(JAR_BINS)
 
 XPI_NAME      = $(NAME)_$(VERSION)
 XPI_PATH      = ../downloads/$(XPI_NAME)
@@ -46,7 +47,7 @@ CURL      ?= curl
 
 #### rules
 
-TARGETS = all help info jar xpi install clean distclean install installxpi $(JAR)
+TARGETS = all help info jar xpi install clean distclean install installxpi $(CHROME) $(JAR)
 $(TARGETS:%=\%.%):
 	echo MAKE $* $(@:$*.%=%)
 	$(MAKE) -C $* $(@:$*.%=%)
@@ -157,7 +158,7 @@ distclean:
 
 #### xpi
 
-$(XPI): $(JAR)
+$(XPI): $(CHROME)
 	@echo "Building XPI..."
 	mkdir -p $(XPI_PATH)
 	$(AWK) -v 'name=$(NAME)' -f $(BASE)/process_manifest.awk $(TOP)/chrome.manifest >$(XPI_PATH)/chrome.manifest
@@ -166,8 +167,8 @@ $(XPI): $(JAR)
 
 #### jar
 
-$(JAR):
-	@echo "Building JAR..."
-	$(MAKE_JAR) "$(JAR)" "$(JAR_BASES)" "$(JAR_DIRS)" "$(JAR_TEXTS)" "$(JAR_BINS)" "$(JAR_FILES)"
+$(CHROME) $(JAR):
+	@echo "Packaging chrome..."
+	$(MAKE_JAR) -r "$(@)" "$(JAR_BASES)" "$(JAR_DIRS)" "$(JAR_TEXTS)" "$(JAR_BINS)" "$(JAR_FILES)"
 	@echo "SUCCESS: $@"
 

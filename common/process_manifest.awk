@@ -2,7 +2,10 @@
 content && $NF ~ /^[a-z]/ { $NF = "/" name "/" $NF }
 content {
     sub(/^\.\./, "", $NF);
-    $NF = "jar:chrome/" name ".jar!" $NF
+    if (isjar)
+	    $NF = "jar:chrome/" name ".jar!" $NF
+    else
+	    $NF = "chrome" $NF
 }
 {
     sub("^\\.\\./common/", "", $NF)
