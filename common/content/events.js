@@ -1031,7 +1031,7 @@ const Events = Module("events", {
                             dactyl.trapErrors(commandline.onEvent, commandline, event);
                 }
 
-                // Unconsumed events
+                // Reprocess unconsumed events
                 for (let event in values(res.slice(1)))
                     if (!event.skipmap)
                         if (event.originalTarget)
@@ -1056,9 +1056,8 @@ const Events = Module("events", {
             const self = this;
 
             let key = events.toString(event);
-            let inputStr = this.buffer + key;
-            let countStr = inputStr.match(/^[1-9][0-9]*|/)[0];
-            let candidateCommand = inputStr.substr(countStr.length);
+            let [, countStr, candidateCommand] = /^((?:[1-9][0-9]*)?)(.*)/.exec(this.buffer + key);
+
             let map = mappings[event.noremap ? "getDefault" : "get"](this.main, candidateCommand);
 
             function execute(map) {
@@ -1104,9 +1103,8 @@ const Events = Module("events", {
                 if (isNaN(this[count]))
                     this[count] = null;
 
-                this.buffer = "";
                 if (map.arg) {
-                    this.buffer = inputStr;
+                    this.append(event);
                     this.pendingArgMap = map;
                 }
                 else if (this.pendingMotionMap) {
@@ -1114,9 +1112,10 @@ const Events = Module("events", {
                         execute(this.pendingMotionMap, candidateCommand, this.motionCount || this.count, null);
                     return true;
                 }
-                // no count support for these commands yet
-                else if (map.motion)
+                else if (map.motion) {
+                    this.buffer = "";
                     this.pendingMotionMap = map;
+                }
                 else {
                     if (modes.isReplaying && !this.waitForPageLoad())
                         return true;
@@ -1126,8 +1125,8 @@ const Events = Module("events", {
                 }
             }
             else if (mappings.getCandidates(this.main, candidateCommand).length > 0 && !event.skipmap) {
-                this.pendingMap = map;
                 this.append(event);
+                this.pendingMap = map;
             }
             else {
                 this.append(event);

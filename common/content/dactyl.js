@@ -818,12 +818,16 @@ const Dactyl = Module("dactyl", {
             function globalVariables() this._globalVariables)
     }),
 
-    loadPlugins: function () {
+    loadPlugins: function (args) {
         function sourceDirectory(dir) {
             dactyl.assert(dir.isReadable(), "E484: Can't open file " + dir.path);
 
             dactyl.log("Sourcing plugin directory: " + dir.path + "...", 3);
+
             let loadplugins = options.get("loadplugins");
+            if (args)
+                loadplugins = { __proto__: loadplugins, value: args.map(Option.parseRegexp) }
+
             dir.readDirectory(true).forEach(function (file) {
                 if (file.isFile() && loadplugins.getKey(file.path) && !(file.path in dactyl.pluginFiles)) {
                     try {
@@ -1786,8 +1790,20 @@ const Dactyl = Module("dactyl", {
 
         commands.add(["loadplugins", "lpl"],
             "Load all plugins immediately",
-            function () { dactyl.loadPlugins(); },
-            { argCount: "0" });
+            function (args) {
+                dactyl.loadPlugins(args.length ? args : null);
+            },
+            {
+                argCount: "*",
+                keepQuotes: true,
+                serialGroup: 10,
+                serialize: function ()  [
+                        {
+                            command: this.name,
+                            literalArg: options["loadplugins"].join(" ")
+                        }
+                ]
+            });
 
         commands.add(["norm[al]"],
             "Execute Normal mode commands",

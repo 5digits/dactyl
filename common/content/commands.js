@@ -296,6 +296,7 @@ const Command = Class("Command", {
      *     invocation which should be restored on subsequent @dactyl startups.
      */
     serialize: null,
+    serialGroup: 50,
     /**
      * @property {number} If this command takes another ex command as an
      *     argument, the index of that argument. Used in determining whether to
@@ -447,7 +448,7 @@ const Commands = Module("commands", {
 
     /** @property {Iterator(Command)} @private */
     __iterator__: function () {
-        let sorted = this._exCommands.sort(function (a, b) a.name > b.name);
+        let sorted = this._exCommands.sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name);
         return array.iterValues(sorted);
     },
 
