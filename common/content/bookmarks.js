@@ -295,7 +295,7 @@ const Bookmarks = Module("bookmarks", {
                 param = url.substr(offset + 1);
             }
 
-            var engine = services.browserSearch.getEngineByAlias(keyword);
+            var engine = bookmarks.getSearchEngine(keyword);
             if (engine) {
                 var submission = engine.getSubmission(param, null);
                 return [submission.uri.spec, submission.postData];
