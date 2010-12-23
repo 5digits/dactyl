@@ -820,13 +820,13 @@ const Events = Module("events", {
              return null;
 
         if (modes.isRecording) {
-            if (key == "q" && !modes.mainMode.input) { // TODO: should not be hard-coded
+            if (key == "q" && !modes.main.input) { // TODO: should not be hard-coded
                 modes.isRecording = false;
                 dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro, {}).keys, 9);
                 dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
                 return killEvent();
             }
-            else if (!mappings.hasMap(modes.main, this._input.buffer + key))
+            else if (this._input && !mappings.hasMap(modes.main, this._input.buffer + key))
                 this._macros.set(this._currentMacro, {
                     keys: this._macros.get(this._currentMacro, {}).keys + key,
                     timeRecorded: Date.now()
@@ -1090,14 +1090,11 @@ const Events = Module("events", {
             }
             else if (this.pendingArgMap) {
                 let map = this.pendingArgMap;
-                if (!Events.isEscape(key)) {
+                if (!Events.isEscape(key))
                     if (!modes.isReplaying || this.waitForPageLoad())
                         execute(map, null, this.count, key);
-                    return true;
-                }
+                return true;
             }
-            // only follow a map if there isn't a longer possible mapping
-            // (allows you to do :map z yy, when zz is a longer mapping than z)
             else if (map && !event.skipmap && candidates.length == 0) {
                 this.pendingMap = null;
 
@@ -1115,8 +1112,7 @@ const Events = Module("events", {
                 else if (this.pendingMotionMap) {
                     if (!Events.isEscape(key))
                         execute(this.pendingMotionMap, candidateCommand, this.motionCount || this.count, null);
-                    this.pendingMotionMap = null;
-                    this.motionCount = null;
+                    return true;
                 }
                 // no count support for these commands yet
                 else if (map.motion)
@@ -1126,10 +1122,8 @@ const Events = Module("events", {
                         return true;
 
                     let ret = execute(map, null, this.count);
-                    if (map.route && ret)
-                        return false;
+                    return map.route && ret;
                 }
-                return true;
             }
             else if (mappings.getCandidates(this.main, candidateCommand).length > 0 && !event.skipmap) {
                 this.pendingMap = map;
