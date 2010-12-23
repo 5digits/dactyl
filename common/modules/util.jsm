@@ -256,9 +256,13 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         return stack.top;
     },
 
-    compileMacro: function compileFormat(macro) {
+    compileMacro: function compileFormat(macro, keepUnknown) {
         let stack = [frame()];
         stack.__defineGetter__("top", function () this[this.length - 1]);
+
+        let unknown = util.identity;
+        if (!keepUnknown)
+            unknown = function () "";
 
         function frame() update(
             function _frame(obj)
@@ -274,15 +278,15 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         let match, end = 0;
         let re = util.regexp(<![CDATA[
-            (.*?) // 1
+            ([^]*?) // 1
             (?:
                 (<\[) | // 2
-                < (.*?) > | // 3
-                (\]>) // 4
+                (< (.*?) >) | // 3 4
+                (\]>) // 5
             )
         ]]>, "gy");
         while (match = re.exec(macro)) {
-            let [, prefix, open, macro, close] = match;
+            let [, prefix, open, full, macro, close] = match;
             end += match[0].length;
 
             if (prefix)
@@ -302,14 +306,14 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
                 let quote = util.identity;
                 if (flags.q)
-                    quote = function quote(obj) typeof obj === "number" ? obj : Commands.quote(obj);
+                    quote = function quote(obj) typeof obj === "number" ? obj : String.quote(obj);
 
                 if (set.has(defaults, name))
                     stack.top.elements.push(quote(defaults[name]));
                 else {
                     stack.top.elements.push(update(
-                        function (obj) obj[name] != null ? quote(obj[name]) : "",
-                        { test: function (obj) obj[name] != null }));
+                        function (obj) obj[name] != null ? quote(obj[name]) : unknown(full),
+                        { test: function (obj) obj[name] != null && obj[name] !== false }));
 
                     for (let elem in array.iterValues(stack))
                         elem.seen[name] = true;

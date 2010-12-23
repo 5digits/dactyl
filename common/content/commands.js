@@ -335,12 +335,13 @@ const Command = Class("Command", {
         case "-keys":
             let silent = args["-silent"];
             rhs = events.canonicalKeys(rhs, true);
-            var action = function action(count)
-                events.feedkeys(commands.replaceTokens(rhs, { count: count }),
-                                noremap, silent);
+            let macro = util.compileMacro(rhs, true);
+            var action = function action(count) events.feedkeys(macro({ count: count }),
+                                                                noremap, silent);
             break;
         case "-ex":
-            action = function action() commands.execute(rhs, makeParams.apply(this, arguments),
+            macro = util.compileMacro(rhs, true);
+            action = function action() commands.execute(macro, makeParams.apply(this, arguments),
                                                         false, null, action.sourcing);
             action.sourcing = io.sourcing && update({}, io.sourcing);
             break;
@@ -572,8 +573,10 @@ const Commands = Module("commands", {
 
             args = update({}, args || {});
 
-            if (tokens)
-                string = commands.replaceTokens(string, tokens);
+            if (tokens && !callable(string))
+                string = util.compileMacro(string, true);
+            if (callable(string))
+                string = string(tokens || {});
 
             let lines = string.split(/\r\n|[\r\n]/);
 
@@ -1150,34 +1153,6 @@ const Commands = Module("commands", {
         this._exCommands = this._exCommands.filter(function (c) c !== cmd);
         for (let name in values(cmd.names))
             delete this._exMap[name];
-    },
-
-    // FIXME: still belong here? Also used for autocommand parameters.
-    /**
-     * Returns a string with all tokens in *string* matching "<key>" replaced
-     * with "value". Where "key" is a property of the specified *tokens* object
-     * and "value" is the corresponding value. The <lt> token can be used to
-     * include a literal "<" in the returned string. Any tokens prefixed with
-     * "q-" will be quoted except for <q-lt> which is treated like <lt>.
-     *
-     * @param {string} str The string with tokens to replace.
-     * @param {Object} tokens A map object whose keys are replaced with its
-     *     values.
-     * @returns {string}
-     */
-    replaceTokens: function replaceTokens(str, tokens) {
-        return str.replace(/<((?:q-)?)([a-zA-Z]+)?>/g, function (match, quote, token) {
-            if (token == "lt") // Don't quote, as in Vim (but, why so in Vim? You'd think people wouldn't say <q-lt> if they didn't want it)
-                return "<";
-            let res = tokens[token];
-            if (res === undefined) // Ignore anything undefined
-                res = "<" + token + ">";
-            if (res === null)
-                res = "";
-            if (quote && typeof res != "number")
-                return Commands.quoteArg['"'](res);
-            return res;
-        });
     }
 }, {
     // returns [count, parsed_argument]

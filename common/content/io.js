@@ -586,7 +586,7 @@ lookup:
                     file.append(config.name + ".vim");
                 dactyl.assert(!file.exists() || args.bang, "File exists");
 
-                let template = <![CDATA[
+                let template = util.compileMacro(String(<![CDATA[
 " Vim syntax file
 " Language:         Pentadactyl configuration file
 " Maintainer:       Doug Kearns <dougkearns@gmail.com>
@@ -631,7 +631,7 @@ execute 'syn match <name>Option "\<\%(no\|inv\)\=\%(' .
     \ join(s:toggleOptions, '\|') .
     \ '\)\>!\=" contained nextgroup=<name>SetMod'
 
-syn match <name>SetMod "\%(\<[a-z_]\+\)\@<=&" contained
+syn match <name>SetMod "\%(\<lt>[a-z_]\+\)\@<=&" contained
 
 syn region <name>JavaScript start="\%(^\s*\%(javascript\|js\)\s\+\)\@<=" end="$" contains=@javascriptTop keepend oneline
 syn region <name>JavaScript matchgroup=<name>JavaScriptDelimiter
@@ -642,7 +642,7 @@ execute 'syn region <name>Css start="' . s:cssRegionStart . '" end="$" contains=
 execute 'syn region <name>Css matchgroup=<name>CssDelimiter'
     \ 'start="' . s:cssRegionStart . '<<\s*\z(\h\w*\)"hs=s+2 end="^\z1$" contains=@cssTop fold'
 
-syn match <name>Notation "<[0-9A-Za-z-]\+>"
+syn match <name>Notation "<lt>[0-9A-Za-z-]\+>"
 
 syn match   <name>Comment +".*$+ contains=<name>Todo,@Spell
 syn keyword <name>Todo FIXME NOTE TODO XXX contained
@@ -671,7 +671,7 @@ let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " vim: tw=130 et ts=4 sw=4:
-]]>;
+]]>), true);
 
                 const WIDTH = 80;
                 function wrap(prefix, items, sep) {
@@ -693,7 +693,7 @@ unlet s:cpo_save
                     return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
                 }
 
-                file.write(commands.replaceTokens(String(template), {
+                file.write(template({
                     name: config.name,
                     autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
                                        keys(config.autocommands)),
