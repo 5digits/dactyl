@@ -374,7 +374,8 @@ const Styles = Module("Styles", {
                         let sheet = styles.user.get(name);
                         if (sheet) {
                             filter = sheet.sites.concat(filter).join(",");
-                            css = Styles.append(sheet.css, css);
+                            css = sheet.css + " " + css;
+
                         }
                     }
                     styles.user.add(name, filter, css, args["-agent"]);
