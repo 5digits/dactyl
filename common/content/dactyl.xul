@@ -9,12 +9,9 @@
   -->
 
 <?xml-stylesheet href="chrome://dactyl/skin/dactyl.css" type="text/css"?>
+
 <!DOCTYPE overlay SYSTEM "dactyl.dtd" [
-    <!ENTITY and "&amp;&amp;">
     <!ENTITY dactyl.content "chrome://dactyl/content/">
-    <!ENTITY commandline "if (window.dactyl) return dactyl.modules.commandline">
-    <!ENTITY events "if (window.dactyl &and; dactyl.modules.loaded.events) return dactyl.modules.events">
-    <!ENTITY status "dactyl-statusline-field-">
 ]>
 
 <overlay id="dactyl"

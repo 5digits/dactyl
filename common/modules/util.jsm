@@ -916,7 +916,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
                 for (let [elem, xml, attr] in iterator) {
                     if (elem = window.document.getElementById(elem)) {
-                        fn(elem, util.xmlToDom(xml, window.document));
+                        fn(elem, util.xmlToDom(xml, window.document, obj.objects));
                         for each (let attr in attr || [])
                             elem.setAttributeNS(attr.namespace(), attr.localName(), attr);
                     }
