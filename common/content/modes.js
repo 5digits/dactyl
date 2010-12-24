@@ -286,7 +286,6 @@ const Modes = Module("modes", {
     },
 
     push: function push(mainMode, extendedMode, params) {
-        util.dumpStack();
         this.set(mainMode, extendedMode, params, { push: this.topOfStack });
     },
 

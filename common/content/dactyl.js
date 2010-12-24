@@ -372,7 +372,6 @@ const Dactyl = Module("dactyl", {
 
     focus: function focus(elem, flags) {
         flags = flags || services.focus.FLAG_BYMOUSE;
-        util.dumpStack();
         try {
             if (elem instanceof Document)
                 elem = elem.defaultView;
