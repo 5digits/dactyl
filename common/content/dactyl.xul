@@ -8,8 +8,6 @@
  given in the LICENSE.txt file included with this file.
   -->
 
-<?xml-stylesheet href="chrome://dactyl/skin/dactyl.css" type="text/css"?>
-
 <!DOCTYPE overlay SYSTEM "dactyl.dtd" [
     <!ENTITY dactyl.content "chrome://dactyl/content/">
 ]>

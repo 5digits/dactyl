@@ -36,6 +36,15 @@ const Tabs = Module("tabs", {
         };
     },
 
+    cleanup: function cleanup() {
+        for (let [i, tab] in Iterator(this.allTabs)) {
+            function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
+            for (let elem in values(["dactyl-tab-icon-number", "dactyl-tab-number"].map(node)))
+                if (elem)
+                    elem.parentNode.parentNode.removeChild(elem.parentNode);
+        }
+    },
+
     _updateTabCount: function () {
         if (dactyl.has("Gecko2"))
             for (let [i, tab] in Iterator(this.visibleTabs)) {
@@ -43,15 +52,15 @@ const Tabs = Module("tabs", {
                 if (!node("dactyl-tab-number")) {
                     let nodes = {};
                     let dom = util.xmlToDom(<xul xmlns:xul={XUL} xmlns:html={XHTML}
-                        ><xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-number"/></xul:hbox
-                        ><xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber"/></xul:hbox
+                        ><xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-icon-number"/></xul:hbox
+                        ><xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber" class="dactyl-tab-number"/></xul:hbox
                     ></xul>.*, document, nodes);
                     let img = node("tab-icon-image");
                     img.parentNode.appendChild(dom);
-                    tab.__defineGetter__("ordinal", function () Number(nodes.icon.value));
-                    tab.__defineSetter__("ordinal", function (i) nodes.icon.value = nodes.label.textContent = i);
+                    tab.__defineGetter__("dactylOrdinal", function () Number(nodes.icon.value));
+                    tab.__defineSetter__("dactylOrdinal", function (i) nodes.icon.value = nodes.label.textContent = i);
                 }
-                tab.ordinal = i + 1;
+                tab.dactylOrdinal = i + 1;
             }
         statusline.updateTabCount(true);
     },

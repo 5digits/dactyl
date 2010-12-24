@@ -961,9 +961,21 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     observe: {
         "dactyl-cleanup": function () {
-            for (let module in values(defineModule.modules))
-                if (module.cleanup)
-                    module.cleanup();
+            // Let window cleanup functions run synchronously before we
+            // destroy modules.
+            util.timeout(function () {
+                for (let module in values(defineModule.modules))
+                    if (module.cleanup)
+                        module.cleanup();
+
+                let getOwnPropertyNames = Object.getOwnPropertyNames;
+                for each (let global in defineModule.globals.reverse())
+                    for each (let k in getOwnPropertyNames(global))
+                        try {
+                            delete global[k];
+                        }
+                        catch (e) {}
+            });
         },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
@@ -1141,6 +1153,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         }
         catch (e) {
             this.dump(e);
+            try { util.dump(e.stack) } catch (e) {}
         }
     },
 

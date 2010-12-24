@@ -65,6 +65,7 @@ const ConfigBase = Class(ModuleBase, {
      *     must be strings as entered via :set.
      */
     defaults: { guioptions: "rb" },
+    cleanups: {},
 
     /**
      * @property {[["string", "string", "function"]]} An array of

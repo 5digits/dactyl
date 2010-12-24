@@ -281,6 +281,8 @@ const Option = Class("Option", {
      */
     description: "",
 
+    cleanupValue: null,
+
     /**
      * @property {function(CompletionContext, Args)} This option's completer.
      * @see CompletionContext
@@ -635,6 +637,12 @@ const Options = Module("options", {
             if (event == "change" && opt)
                 opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
         }, window);
+    },
+
+    cleanup: function cleanup() {
+        for (let opt in this)
+            if (opt.cleanupValue != null)
+                opt.value = opt.parse(opt.cleanupValue);
     },
 
     /** @property {Iterator(Option)} @private */

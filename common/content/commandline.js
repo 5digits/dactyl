@@ -152,6 +152,14 @@ const CommandWidgets = Class("CommandWidgets", {
                 return this.commandbar;
             }
         });
+
+        let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;
+        styles.registerSheet("chrome://dactyl/skin/dactyl.css");
+        styles.system.add("font-size", "chrome://dactyl/content/buffer.xhtml",
+                          "body { font-size: " + fontSize + "; }");
+    },
+    cleanup: function cleanup() {
+        styles.unregisterSheet("chrome://dactyl/skin/dactyl.css");
     },
     addElement: function (obj) {
         const self = this;
@@ -1810,12 +1818,6 @@ const CommandLine = Module("commandline", {
                     host && (!item.domains || !item.domains.some(function (d) util.isSubdomain(d, host))));
             }
         });
-    },
-    styles: function () {
-        let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;
-        styles.registerSheet("chrome://dactyl/skin/dactyl.css");
-        styles.system.add("font-size", "chrome://dactyl/content/buffer.xhtml",
-                          "body { font-size: " + fontSize + "; }");
     }
 });
 

@@ -98,6 +98,7 @@ let loaded = {};
 let currentModule;
 function defineModule(name, params) {
     let module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
+    defineModule.globals.push(module);
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
     defineModule.loadLog.push("defineModule " + name);
@@ -114,6 +115,7 @@ function defineModule(name, params) {
     currentModule = module;
 }
 
+defineModule.globals = [];
 defineModule.loadLog = [];
 Object.defineProperty(defineModule.loadLog, "push", {
     value: function (val) { defineModule.dump(val + "\n"); this[this.length] = val; }

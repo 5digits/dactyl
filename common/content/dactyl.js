@@ -19,7 +19,7 @@ const EVAL_ERROR = "__dactyl_eval_error";
 const EVAL_RESULT = "__dactyl_eval_result";
 const EVAL_STRING = "__dactyl_eval_string";
 
-const Dactyl = Module("dactyl", {
+const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function () {
         window.dactyl = this;
         // cheap attempt at compatibility
@@ -30,11 +30,24 @@ const Dactyl = Module("dactyl", {
         this.indices = {};
         this.modules = modules;
         this.observers = {};
+        util.addObserver(this);
 
         this.commands["dactyl.help"] = function (event) {
             let elem = event.originalTarget;
             dactyl.help(elem.getAttribute("tag") || elem.textContent);
         };
+    },
+
+    observe: {
+        "dactyl-cleanup": function () {
+            for (let [, mod] in iter(array(values(modules)).reverse()))
+                if (mod instanceof ModuleBase) {
+                    if ("cleanup" in mod)
+                        mod.cleanup();
+                    if ("destroy" in mod)
+                        mod.destroy();
+                }
+        }
     },
 
     /** @property {string} The name of the current user profile. */
@@ -51,6 +64,12 @@ const Dactyl = Module("dactyl", {
                 return prof.name;
         return "unknown";
     }),
+
+    cleanup: function () {
+        delete window.dactyl;
+        delete window.modules;
+        delete window.liberator;
+    },
 
     destroy: function () {
         autocommands.trigger("LeavePre", {});
@@ -1315,6 +1334,12 @@ const Dactyl = Module("dactyl", {
         options.add(["guioptions", "go"],
             "Show or hide certain GUI elements like the menu or toolbar",
             "charlist", config.defaults.guioptions || "", {
+
+                // FIXME: cleanup
+                cleanupValue: config.cleanups.guioptions ||
+                    "r" + [k for ([k, v] in iter(groups[1].opts))
+                           if (!document.getElementById(v[1][0]).collapsed)].join(""),
+
                 completer: function (context)
                     array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
                 setter: function (value) {
