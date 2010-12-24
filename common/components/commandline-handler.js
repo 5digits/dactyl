@@ -48,5 +48,6 @@ if (XPCOMUtils.generateNSGetFactory)
     const NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler]);
 else
     const NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
+var EXPORTED_SYMBOLS = ["NSGetFactory"];
 
 // vim: set fdm=marker sw=4 ts=4 et:

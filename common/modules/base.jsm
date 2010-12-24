@@ -126,7 +126,7 @@ defineModule.dump = function dump_() {
             msg = util.objectToString(msg);
         return msg;
     }).join(", ");
-    let name = loaded.services ? services["dactyl:"].name : "dactyl";
+    let name = loaded.services && loaded.prefs && services["dactyl:"] ? services["dactyl:"].name : "dactyl";
     dump(String.replace(msg, /\n?$/, "\n")
                .replace(/^./gm, name + ": $&"));
 }
@@ -179,8 +179,8 @@ defineModule("base", {
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator",
         "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
-        "keys", "memoize", "octal", "properties", "set", "update", "values",
-        "withCallerGlobal"
+        "keys", "memoize", "octal", "properties", "require", "set", "update",
+        "values", "withCallerGlobal"
     ],
     use: ["services", "util"]
 });

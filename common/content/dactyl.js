@@ -391,7 +391,6 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
     focus: function focus(elem, flags) {
         flags = flags || services.focus.FLAG_BYMOUSE;
-        util.dumpStack();
         try {
             if (elem instanceof Document)
                 elem = elem.defaultView;

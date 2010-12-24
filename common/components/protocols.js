@@ -12,13 +12,15 @@
  * By Kris Maglione, ideas from Ed Anuff's nsChromeExtensionHandler.
  */
 
-const Ci = Components.interfaces, Cc = Components.classes;
+const NAME = "protocols";
+const global = this;
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+const Cu = Components.utils;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-                    .getBranch("extensions.dactyl.");
 const systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
@@ -97,10 +99,15 @@ function Dactyl() {
     this.OVERLAY_MAP = {};
 
     this.pages = {};
-    for each (let pref in ["appName", "fileExt", "host", "hostbin", "idName", "name"])
-        this[pref] = prefs.getComplexValue(pref, Ci.nsISupportsString).data;
 
-    this.addonID = this.name + "@dactyl.googlecode.com";
+    Cu.import("resource://dactyl/base.jsm");
+    require(global, "prefs");
+
+    ["appName", "fileExt", "host", "hostbin", "idName", "name", "version"].forEach(function (pref)
+        this.__defineGetter__(pref, function () prefs.get("extensions.dactyl." + pref, "dactyl")),
+        this);
+
+    memoize(this, "addonID", function () this.name + "@dactyl.googlecode.com");
 }
 Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
@@ -108,8 +115,6 @@ Dactyl.prototype = {
     classDescription: "Dactyl utility protocol",
     QueryInterface:   XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
     _xpcom_factory:   Factory(Dactyl),
-
-    get version() prefs.getComplexValue("version", Ci.nsISupportsString).data,
 
     init: function (obj) {
         for each (let prop in ["HELP_TAGS", "FILE_MAP", "OVERLAY_MAP"]) {
@@ -202,5 +207,6 @@ if (XPCOMUtils.generateNSGetFactory)
     const NSGetFactory = XPCOMUtils.generateNSGetFactory([AboutHandler, ChromeData, Dactyl, Shim]);
 else
     const NSGetModule = XPCOMUtils.generateNSGetModule([AboutHandler, ChromeData, Dactyl, Shim]);
+var EXPORTED_SYMBOLS = ["NSGetFactory"];
 
 // vim: set fdm=marker sw=4 ts=4 et:
