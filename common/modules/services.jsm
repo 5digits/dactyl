@@ -75,6 +75,7 @@ const Services = Module("Services", {
         if (!this.extensionManager)
             Components.utils.import("resource://gre/modules/AddonManager.jsm");
     },
+    reinit: function () {},
 
     _create: function (classes, ifaces, meth, init, args) {
         try {

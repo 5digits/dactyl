@@ -1,6 +1,6 @@
 @namespace dactyl url("http://vimperator.org/namespaces/liberator");
 @namespace html url("http://www.w3.org/1999/xhtml");
-@namespace xul uri("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@namespace xul url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
 /* Applied to all content */
 [dactyl|activeframe] {

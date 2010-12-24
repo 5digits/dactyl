@@ -38,6 +38,19 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         };
     },
 
+    cleanup: function () {
+        delete window.dactyl;
+        delete window.liberator;
+    },
+
+    destroy: function () {
+        autocommands.trigger("LeavePre", {});
+        storage.saveAll();
+        dactyl.triggerObserver("shutdown", null);
+        util.dump("All dactyl modules destroyed\n");
+        autocommands.trigger("Leave", {});
+    },
+
     observe: {
         "dactyl-cleanup": function () {
             for (let [, mod] in iter(array(values(modules)).reverse()))
@@ -64,20 +77,6 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 return prof.name;
         return "unknown";
     }),
-
-    cleanup: function () {
-        delete window.dactyl;
-        delete window.modules;
-        delete window.liberator;
-    },
-
-    destroy: function () {
-        autocommands.trigger("LeavePre", {});
-        storage.saveAll();
-        dactyl.triggerObserver("shutdown", null);
-        util.dump("All dactyl modules destroyed\n");
-        autocommands.trigger("Leave", {});
-    },
 
     /**
      * @property {number} The current main mode.

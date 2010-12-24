@@ -136,7 +136,7 @@ const CommandWidgets = Class("CommandWidgets", {
                 if (this.command && !options.get("guioptions").has("M"))
                     return this.statusbar;
                 let statusElem = this.statusbar.message;
-                if (value && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
+                if (value && statusElem.inputField.editor.rootElement.scrollWidth > statusElem.scrollWidth)
                     return this.commandbar;
                 return this.activeGroup.mode;
             }
@@ -164,9 +164,12 @@ const CommandWidgets = Class("CommandWidgets", {
     addElement: function (obj) {
         const self = this;
         this.elements[obj.name] = obj;
+
         function get(id) obj.getElement ? obj.getElement(id) : document.getElementById(id);
+
         this.active.__defineGetter__(obj.name, function () self.activeGroup[obj.name][obj.name]);
         this.activeGroup.__defineGetter__(obj.name, function () self.getGroup(obj.name));
+
         memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-" + (obj.id || obj.name)));
         memoize(this.commandbar, obj.name, function () get("dactyl-" + (obj.id || obj.name)));
 

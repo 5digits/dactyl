@@ -10,12 +10,13 @@ const Cr = Components.results;
 
 Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
 
-const io = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-const resourceProto = io.getProtocolHandler("resource")
-                        .QueryInterface(Ci.nsIResProtocolHandler);
+const resourceProto = Services.io.getProtocolHandler("resource")
+                              .QueryInterface(Ci.nsIResProtocolHandler);
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
+const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
 
 function httpGet(url) {
     let xmlhttp = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
@@ -70,23 +71,27 @@ function FactoryProxy(url, classID) {
 FactoryProxy.prototype = {
     QueryInterface: XPCOMUtils.generateQI(Ci.nsIFactory),
     register: function () {
+        dump("dactyl: bootstrap: register: " + this.classID + " " + this.contractID + "\n");
         manager.registerFactory(this.classID,
                                 String(this.classID),
                                 this.contractID,
                                 this);
     },
     unregister: function () {
+        dump("dactyl: bootstrap: unregister: " + this.classID + " " + this.contractID + "\n");
         manager.unregisterFactory(this.classID,
                                   this);
     },
     get module() {
-        Class.replaceProperty(this, "module", {});
+        Object.defineProperty(this, "module", { value: {}, enumerable: true });
         Cu.import(this.url, this.module);
         return this.module;
     },
-    createInstance: function ()
-        let (factory = this.module.NSGetFactory(this.classID))
+    createInstance: function (iids) {
+        dump("dactyl: bootstrap: createInstance: " + this.classID + " " + this.contractID + " " + iids + "\n");
+        return let (factory = this.module.NSGetFactory(this.classID))
             factory.createInstance.apply(factory, arguments)
+    }
 }
 
 function init() {
@@ -132,6 +137,10 @@ function init() {
             resourceProto.setSubstitution(fields[1], addon.getResourceURI(fields[2]));
         }
     }
+
+    Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance()
+
+    Services.obs.notifyObservers(null, "dactyl-rehash", null);
 
     Cu.import("resource://dactyl/base.jsm");
     require(global, "prefs");

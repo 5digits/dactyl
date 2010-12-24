@@ -55,10 +55,13 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     cleanup: function cleanup() {
-        for (let win in iter(services.windowMediator.getEnumerator(null)))
-            for (let elem in values(win.document.dactylOverlayElements))
+        for (let win in iter(services.windowMediator.getEnumerator(null))) {
+            for (let elem in values(win.document.dactylOverlayElements || []))
                 if (elem.get() && elem.get().parentNode)
                     elem.get().parentNode.removeChild(elem.get());
+            delete win.document.dactylOverlayElements;
+            delete win.document.dactylOverlays;
+        }
     },
 
     // FIXME: Only works for Pentadactyl
@@ -962,6 +965,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     observe: {
         "dactyl-cleanup": function () {
+            util.dump("dactyl: util: observe: dactyl-cleanup");
             // Let window cleanup functions run synchronously before we
             // destroy modules.
             util.timeout(function () {
@@ -969,6 +973,9 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                     if (module.cleanup)
                         module.cleanup();
 
+                services.observer.addObserver(this, "dactyl-rehash", true);
+
+                /*
                 let getOwnPropertyNames = Object.getOwnPropertyNames;
                 for each (let global in defineModule.globals.reverse())
                     for each (let k in getOwnPropertyNames(global))
@@ -976,7 +983,16 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                             delete global[k];
                         }
                         catch (e) {}
+                */
             });
+        },
+        "dactyl-rehash": function () {
+            util.dump("dactyl: util: observe: dactyl-rehash");
+            for (let module in values(defineModule.modules))
+                if (module.reinit)
+                    module.reinit();
+                else
+                    module.init();
         },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
