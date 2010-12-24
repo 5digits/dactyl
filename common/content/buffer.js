@@ -161,6 +161,9 @@ const Buffer = Module("buffer", {
     },
 
     _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc, uri) {
+        if (!(uri || doc.location))
+            return;
+
         uri = uri || util.newURI(doc.location.href);
         let args = {
             url: { toString: function () uri.spec, valueOf: function () uri },
@@ -292,8 +295,8 @@ const Buffer = Module("buffer", {
             onLocationChange.superapply(this, arguments);
             statusline.updateUrl();
             statusline.updateProgress(webProgress.DOMWindow || content);
-            for (let frame in values(buffer.allFrames()))
-                frame.dactylFocusAllowed = false;
+            for (let frame in values(buffer.allFrames(webProgress.DOMWindow || content)))
+                frame.document.dactylFocusAllowed = false;
 
             // Workaround for bugs 591425 and 606877, dactyl bug #81
             let collapse = uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
@@ -372,9 +375,9 @@ const Buffer = Module("buffer", {
      *     tab.
      */
     get localStore() {
-        if (!content.dactylStore)
-            content.dactylStore = {};
-        return content.dactylStore;
+        if (!content.document.dactylStore)
+            content.document.dactylStore = {};
+        return content.document.dactylStore;
     },
 
     /**
@@ -524,8 +527,8 @@ const Buffer = Module("buffer", {
     focusAllowed: function (elem) {
         if (elem instanceof Window && !Editor.getEditor(window))
             return true;
-        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        return !options["strictfocus"] || win.dactylFocusAllowed;
+        let doc = elem.ownerDocument || elem.document || elem;
+        return !options["strictfocus"] || doc.dactylFocusAllowed;
     },
 
     /**
@@ -537,11 +540,12 @@ const Buffer = Module("buffer", {
      */
     focusElement: function (elem) {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-        win.dactylFocusAllowed = true;
+        win.document.dactylFocusAllowed = true;
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
             elem = elem.contentWindow;
-        elem.dactylFocusAllowed = true;
+        if (elem.document)
+            elem.document.dactylFocusAllowed = true;
 
         if (elem instanceof HTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);
