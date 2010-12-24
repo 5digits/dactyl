@@ -964,7 +964,7 @@ const Tabs = Module("tabs", {
                                       "See 'showtabline' option.");
                         tabs.tabStyle.enabled = false;
                     }
-                    if (value != 1)
+                    if (value != 1 || !dactyl.has("Gecko2"))
                         config.tabStrip.collapsed = false;
                     return value;
                 },

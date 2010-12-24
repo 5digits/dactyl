@@ -962,7 +962,7 @@ const Events = Module("events", {
         let elem = event.target;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         for (; win; win = win != win.parent && win.parent)
-            win.dactylFocusAllowed = true;
+            win.document.dactylFocusAllowed = true;
     },
 
     onPopupShown: function onPopupShown(event) {
