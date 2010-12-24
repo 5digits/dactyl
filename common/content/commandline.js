@@ -75,7 +75,7 @@ const CommandWidgets = Class("CommandWidgets", {
                                  onblur={_commandline + ".onMultilineInputEvent(event);"}/>
                     </vbox>
                 </vbox>
-            </e4x>.*
+            </e4x>.elements()
         });
 
         this.elements = {};

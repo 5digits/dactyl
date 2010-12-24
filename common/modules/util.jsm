@@ -54,6 +54,13 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         this.overlays = {};
     },
 
+    cleanup: function cleanup() {
+        for (let win in iter(services.windowMediator.getEnumerator(null)))
+            for (let elem in values(win.document.dactylOverlayElements))
+                if (elem.get() && elem.get().parentNode)
+                    elem.get().parentNode.removeChild(elem.get());
+    },
+
     // FIXME: Only works for Pentadactyl
     get activeWindow() services.windowMediator.getMostRecentWindow("navigator:browser"),
     dactyl: update(function dactyl(obj) {
@@ -90,12 +97,13 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         let observers = obj.observe;
         function register(meth) {
             services.observer[meth](obj, "quit-application", true);
+            services.observer[meth](obj, "dactyl-unload", true);
             for (let target in keys(observers))
                 services.observer[meth](obj, target, true);
         }
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
-                if (target == "quit-application")
+                if (target == "quit-application" || target == "dactyl-unload")
                     register("removeObserver");
                 if (observers[target])
                     observers[target].call(obj, subject, data);
@@ -908,6 +916,10 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         }
     },
     _loadOverlay: function _loadOverlay(window, obj) {
+        let doc = window.document;
+        if (!doc.dactylOverlayElements)
+            doc.dactylOverlayElements = [];
+
         function overlay(key, fn) {
             if (obj[key]) {
                 let iterator = Iterator(obj[key]);
@@ -915,9 +927,12 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                     iterator = ([elem.@id, elem.*, elem.@*::*] for each (elem in obj[key]));
 
                 for (let [elem, xml, attr] in iterator) {
-                    if (elem = window.document.getElementById(elem)) {
-                        fn(elem, util.xmlToDom(xml, window.document, obj.objects));
-                        for each (let attr in attr || [])
+                    if (elem = doc.getElementById(elem)) {
+                        let node = util.xmlToDom(xml, doc, obj.objects);
+                        for (let n in array.iterValues(node.childNodes))
+                            doc.dactylOverlayElements.push(Cu.getWeakReference(n));
+                        fn(elem, node);
+                        for each (let attr in attr || []) // FIXME: Cleanup...
                             elem.setAttributeNS(attr.namespace(), attr.localName(), attr);
                     }
                 }
@@ -929,22 +944,27 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         overlay("append", function (elem, dom) elem.appendChild(dom));
         overlay("prepend", function (elem, dom) elem.insertBefore(dom, elem.firstChild));
         if (obj.init)
-            obj.init(window, window.dactylDOMLoaded);
+            obj.init(window, window.document.dactylDOMLoaded);
 
         if (obj.load)
-            if (window.document.dactylLoaded)
-                obj.load(window, window.document.dactylLoaded);
+            if (doc.dactylLoaded)
+                obj.load(window, doc.dactylLoaded);
         else
-            window.document.addEventListener("load", wrapCallback(function load(event) {
+            doc.addEventListener("load", wrapCallback(function load(event) {
                 if (event.originalTarget === event.target) {
-                    window.document.removeEventListener("load", load.wrapper, true);
-                    window.document.dactylLoaded = event;
+                    doc.removeEventListener("load", load.wrapper, true);
+                    doc.dactylLoaded = event;
                     obj.load(window, event);
                 }
             }), true);
     },
 
     observe: {
+        "dactyl-cleanup": function () {
+            for (let module in values(defineModule.modules))
+                if (module.cleanup)
+                    module.cleanup();
+        },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
                 if (event.originalTarget === window.document) {
@@ -965,8 +985,9 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                     this.overlays[url] = [];
                 this.overlays[url].push(fn);
             }, this);
-            for (let win in services.windowMediator.getEnumerator(null))
-                if (win.dactylDOMLoaded)
+
+            for (let win in iter(services.windowMediator.getEnumerator(null)))
+                if (win.document.dactylDOMLoaded)
                     this._loadOverlays(win);
         }
     },

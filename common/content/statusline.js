@@ -12,7 +12,7 @@ const StatusLine = Module("statusline", {
     init: function () {
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
-        let append = <e4x xmlns={XUL} xmlns:dactyl={NS}>
+        let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
             <statusbar id="status-bar" dactyl:highlight="StatusLine StatusNormal">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 <hbox
@@ -45,12 +45,12 @@ const StatusLine = Module("statusline", {
             </statusbar>
         </e4x>;
 
-        for each (let attr in append..@key)
+        for each (let attr in prepend..@key)
             attr.parent().@id = "dactyl-statusline-field-" + attr;
 
         util.overlayWindow(window, {
             objects: this.widgets = { get status() this.container },
-            append: append.*
+            prepend: prepend.elements()
         });
 
         this._statusLine = document.getElementById("status-bar");

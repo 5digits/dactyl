@@ -79,6 +79,11 @@ const Hive = Class("Hive", {
         this.names = {};
     },
 
+    cleanup: function cleanup() {
+        for (let sheet in values(this.sheets))
+            sheet.enabled = false;
+    },
+
     __iterator__: function () Iterator(this.sheets),
 
     get sites() array(this.sheets).map(function (s) s.sites).flatten().uniq().array,
@@ -212,6 +217,11 @@ const Styles = Module("Styles", {
         this._id = 0;
         this.user = Hive();
         this.system = Hive();
+    },
+
+    cleanup: function cleanup() {
+        for each (let hive in [this.user, this.system])
+            hive.cleanup();
     },
 
     __iterator__: function () Iterator(this.user.sheets.concat(this.system.sheets)),
