@@ -251,12 +251,9 @@ const Buffer = Module("buffer", {
 
                     buffer._triggerLoadAutocmd("PageLoadPre", webProgress.DOMWindow.document);
 
-                    // don't reset mode if a frame of the frameset gets reloaded which
-                    // is not the focused frame
-                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.loadCount++) {
+                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.loadCount++)
                         util.timeout(function () { modes.reset(false); },
-                            dactyl.mode == modes.HINTS ? 500 : 0);
-                    }
+                                     dactyl.mode == modes.HINTS ? 500 : 0);
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81

@@ -370,13 +370,14 @@ const Dactyl = Module("dactyl", {
         return res;
     },
 
-    focus: function (elem, flags) {
+    focus: function focus(elem, flags) {
         flags = flags || services.focus.FLAG_BYMOUSE;
+        util.dumpStack();
         try {
             if (elem instanceof Document)
                 elem = elem.defaultView;
             if (elem instanceof Window)
-                services.focus.clearFocus(elem);
+                services.focus.focusedWindow = elem;
             else
                 services.focus.setFocus(elem, flags);
         } catch (e) {
@@ -391,7 +392,7 @@ const Dactyl = Module("dactyl", {
      * @param {boolean} clearFocusedElement Remove focus from any focused
      *     element.
      */
-    focusContent: function (clearFocusedElement) {
+    focusContent: function focusContent(clearFocusedElement) {
         if (window != services.windowWatcher.activeWindow)
             return;
 
@@ -414,7 +415,8 @@ const Dactyl = Module("dactyl", {
         catch (e) {}
 
         if (clearFocusedElement) {
-            services.focus.clearFocus(window);
+            if (dactyl.focusedElement)
+                dactyl.focusedElement.blur();
             if (win && Editor.getEditor(win)) {
                 win.blur();
                 if (win.frameElement)
@@ -431,6 +433,7 @@ const Dactyl = Module("dactyl", {
 
     /** @property {Element} The currently focused element. */
     get focusedElement() services.focus.getFocusedElementForWindow(window, true, {}),
+    set focusedElement(elem) dactyl.focus(elem),
 
     /**
      * Returns whether this Dactyl extension supports *feature*.
