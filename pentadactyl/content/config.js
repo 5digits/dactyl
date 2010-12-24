@@ -7,6 +7,52 @@
 "use strict";
 
 const Config = Module("config", ConfigBase, {
+    init: function init() {
+        init.superapply(this, arguments);
+
+        util.overlayWindow(window, {
+            append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
+                <menupopup id="viewSidebarMenu">
+                    <menuitem observes="pentadactyl-viewAddonsSidebar" label="Add-ons" accesskey="A"/>
+                    <menuitem observes="pentadactyl-viewConsoleSidebar" label="Console" accesskey="C"/>
+                    <menuitem observes="pentadactyl-viewDownloadsSidebar" label="Downloads" accesskey="D"/>
+                    <menuitem observes="pentadactyl-viewPreferencesSidebar" label="Preferences" accesskey="P"/>
+                </menupopup>
+
+                <broadcasterset id="mainBroadcasterSet">
+                    <broadcaster id="pentadactyl-viewAddonsSidebar"
+                        autoCheck="false"
+                        type="checkbox"
+                        group="sidebar"
+                        sidebarurl="chrome://mozapps/content/extensions/extensions.xul"
+                        sidebartitle="Add-ons"
+                        oncommand="toggleSidebar('pentadactyl-viewAddonsSidebar');"/>
+                    <broadcaster id="pentadactyl-viewConsoleSidebar"
+                        autoCheck="false"
+                        type="checkbox"
+                        group="sidebar"
+                        sidebarurl="chrome://global/content/console.xul"
+                        sidebartitle="Console"
+                        oncommand="toggleSidebar('pentadactyl-viewConsoleSidebar');"/>
+                    <broadcaster id="pentadactyl-viewDownloadsSidebar"
+                        autoCheck="false"
+                        type="checkbox"
+                        group="sidebar"
+                        sidebarurl="chrome://mozapps/content/downloads/downloads.xul"
+                        sidebartitle="Downloads"
+                        oncommand="toggleSidebar('pentadactyl-viewDownloadsSidebar');"/>
+                    <broadcaster id="pentadactyl-viewPreferencesSidebar"
+                        autoCheck="false"
+                        type="checkbox"
+                        group="sidebar"
+                        sidebarurl="about:config"
+                        sidebartitle="Preferences"
+                        oncommand="toggleSidebar('pentadactyl-viewPreferencesSidebar');"/>
+                </broadcasterset>
+            </e4x>.elements()
+        });
+    },
+
     get visualbellWindow() getBrowser().mPanelContainer,
     styleableChrome: ["chrome://browser/content/browser.xul"],
 

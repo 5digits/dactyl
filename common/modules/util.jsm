@@ -908,6 +908,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (!window.dactylOverlays)
             window.dactylOverlays = [];
 
+        util.dump("load overlays", window.document.documentURI);
+
         for each (let obj in util.overlays[window.document.documentURI] || []) {
             if (window.dactylOverlays.indexOf(obj) >= 0)
                 continue;
@@ -979,6 +981,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
+                window.dactylDOMLoaded = false;
                 if (event.originalTarget === window.document) {
                     window.removeEventListener("DOMContentLoaded", listener.wrapper, true);
                     window.document.dactylDOMLoaded = event;
@@ -998,9 +1001,13 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                 this.overlays[url].push(fn);
             }, this);
 
-            for (let win in iter(services.windowMediator.getEnumerator(null)))
-                if (win.document.dactylDOMLoaded)
+            for (let win in iter(services.windowMediator.getEnumerator(null))) {
+                util.dump("checkOverlay", win.document.dactylDOMLoaded, win.document.location.href);
+                if (win.document.dactylDOMLoaded || win.dactylDOMLoaded !== false)
                     this._loadOverlays(win);
+                else
+                    this.observe(win, "toplevel-window-ready");
+            }
         }
     },
 
@@ -1152,8 +1159,11 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             this.dump("");
         }
         catch (e) {
-            this.dump(e);
-            try { util.dump(e.stack) } catch (e) {}
+            try {
+                this.dump(String(error));
+                this.dump(error.stack)
+            }
+            catch (e) { dump(e + "\n"); }
         }
     },
 

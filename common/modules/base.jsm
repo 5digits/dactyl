@@ -152,8 +152,10 @@ defineModule.time = function time(major, minor, func, self) {
 
 function endModule() {
     defineModule.loadLog.push("endModule " + currentModule.NAME);
+
     for (let [, mod] in Iterator(use[currentModule.NAME] || []))
         require(mod, currentModule.NAME, "use");
+
     loaded[currentModule.NAME] = 1;
 }
 

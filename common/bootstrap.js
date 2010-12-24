@@ -143,15 +143,17 @@ function init() {
         });
 
     if (manifestURI instanceof Ci.nsIFileURL)
-        manager.autoRegister(file.QueryInterface(Ci.nsIFileURL).file);
+        manager.autoRegister(manifestURI.QueryInterface(Ci.nsIFileURL).file);
     else {
         var file = basePath.parent;
         file.append(addon.id + ".manifest");
 
         writeFile(file, result.map(function (line) line.join(" ")).join("\n"));
         manager.autoRegister(file);
-        //file.remove(false);
+        file.remove(false);
     }
+
+    require(global, "overlay");
 }
 
 function reasonToString(reason) {
