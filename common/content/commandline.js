@@ -242,7 +242,9 @@ const CommandWidgets = Class("CommandWidgets", {
     multilineOutput: Class.memoize(function () {
         let elem = document.getElementById("dactyl-multiline-output");
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
-        elem.contentDocument.body.id = "dactyl-multiline-output-content";
+        elem.contentWindow.addEventListener("load", function (event) {
+            elem.contentDocument.body.id = "dactyl-multiline-output-content";
+        }, false);
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
             let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";

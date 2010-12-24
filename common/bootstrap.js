@@ -38,6 +38,7 @@ function writeFile(file, buf) {
 let initialized = false;
 let addon = null;
 let basePath = null;
+let components = {};
 
 function startup(data, reason) {
     dump("dactyl: bootstrap: startup\n");
@@ -68,11 +69,15 @@ function FactoryProxy(url, classID) {
 }
 FactoryProxy.prototype = {
     QueryInterface: XPCOMUtils.generateQI(Ci.nsIFactory),
-    init: function () {
+    register: function () {
         manager.registerFactory(this.classID,
                                 String(this.classID),
                                 this.contractID,
                                 this);
+    },
+    unregister: function () {
+        manager.unregisterFactory(this.classID,
+                                  this);
     },
     get module() {
         Class.replaceProperty(this, "module", {});
@@ -96,7 +101,6 @@ function init() {
     function url(path) addon.getResourceURI(path).spec;
 
     let result = [];
-    let components = {};
 
     for each (let line in manifest.split("\n")) {
         let fields = line.split(/\s+/);
@@ -121,7 +125,7 @@ function init() {
             break;
         case "contract":
             components[fields[2]].contractID = fields[1];
-            components[fields[2]].init();
+            components[fields[2]].register();
             break;
 
         case "resource":
@@ -156,6 +160,14 @@ function init() {
     require(global, "overlay");
 }
 
+function shutdown(data, reason) {
+    dump("dactyl: bootstrap: shutdown\n");
+    for (let factory in values(components))
+        // TODO: Categories;
+        factory.unregister();
+    services.observer.notifyObservers(null, "dactyl-cleanup", null);
+}
+
 function reasonToString(reason) {
     for each (let name in ["disable", "downgrade", "enable",
                            "install", "shutdown", "startup",
@@ -166,6 +178,5 @@ function reasonToString(reason) {
 }
 
 function install(data, reason) { dump("dactyl: bootstrap: install\n") }
-function shutdown(data, reason) { dump("dactyl: bootstrap: shutdown\n") }
 function uninstall(data, reason) { dump("dactyl: bootstrap: uninstall\n") }
 
