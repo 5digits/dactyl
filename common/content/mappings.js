@@ -481,7 +481,7 @@ const Mappings = Module("mappings", {
                     options: [ update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
-                            description: "Clear mappings from the given modes",
+                            description: "Remove all mappings from the given modes",
                             default: mapmodes || ["n", "v"],
                         }),
                     ]

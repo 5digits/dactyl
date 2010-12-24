@@ -61,7 +61,7 @@
       - Added -keyword, -tags, -title to :delbmarks.
       - Added :extupdate command.
       - Added :feedkeys command.
-      - Added -sort option to :history
+      - Added -sort option to :history.
       - Added several new options, including -javascript, to :abbrev and :map.
       - Added :mksyntax command.
       - :open now only opens files beginning with /, ./, ../, or ~/
@@ -71,15 +71,15 @@
       - Added -agent flag to :style.
       - The -append flag now updates existing properties rather than
         simply appending its arguments to the previous value.
-      - Active filters are not highlighted in :style listings
+      - Active filters are not highlighted in :style listings.
       - :style-related commands now divide their completions between
         those active and inactive for the current site.
-      - CSS property name completion is not available
+      - CSS property name completion is not available.
     * IMPORTANT option changes:
       - 'cdpath' and 'runtimepath' no longer treat ",,"
         specially. Use "." instead.
       - 'incsearch', 'hlsearch', 'ignorecase', and 'smartcase' have
-        been replaced with 'incfind', 'hlfind', and 'findcase'
+        been replaced with 'incfind', 'hlfind', and 'findcase'.
       - 'extendedhinttags' is now a regexpmap rather than a
         string.
       - 'guioptions' default value has changed.
