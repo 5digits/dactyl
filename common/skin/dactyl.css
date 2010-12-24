@@ -122,7 +122,7 @@ statusbarpanel {
     background: transparent;
 }
 
-#dactyl-statusline-field-url {
+.dactyl-status-field-url {
     background-color: inherit !important;
     color: inherit !important;
 }

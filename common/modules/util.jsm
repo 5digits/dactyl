@@ -57,8 +57,8 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     cleanup: function cleanup() {
         for (let win in iter(services.windowMediator.getEnumerator(null))) {
             for (let elem in values(win.document.dactylOverlayElements || []))
-                if (elem.get() && elem.get().parentNode)
-                    elem.get().parentNode.removeChild(elem.get());
+                if (elem.parentNode)
+                    elem.parentNode.removeChild(elem);
             delete win.document.dactylOverlayElements;
             delete win.document.dactylOverlays;
         }
@@ -849,7 +849,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                 let tag = "<" + [namespaced(elem)].concat(
                     [namespaced(a) + "=" +  template.highlight(a.value, true)
                      for ([i, a] in array.iterItems(elem.attributes))]).join(" ");
-                return tag + (hasChildren ? "/>" : ">...</" + namespaced(elem) + ">");
+                return tag + (!hasChildren ? "/>" : ">...</" + namespaced(elem) + ">");
             }
             catch (e) {
                 return {}.toString.call(elem);
@@ -907,62 +907,6 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         return color ? string : [s for each (s in string)].join("");
     },
 
-    _loadOverlays: function _loadOverlays(window) {
-        if (!window.dactylOverlays)
-            window.dactylOverlays = [];
-
-        util.dump("load overlays", window.document.documentURI);
-
-        for each (let obj in util.overlays[window.document.documentURI] || []) {
-            if (window.dactylOverlays.indexOf(obj) >= 0)
-                continue;
-            window.dactylOverlays.push(obj);
-            this._loadOverlay(window, obj(window));
-        }
-    },
-    _loadOverlay: function _loadOverlay(window, obj) {
-        let doc = window.document;
-        if (!doc.dactylOverlayElements)
-            doc.dactylOverlayElements = [];
-
-        function overlay(key, fn) {
-            if (obj[key]) {
-                let iterator = Iterator(obj[key]);
-                if (!isObject(obj[key]))
-                    iterator = ([elem.@id, elem.*, elem.@*::*] for each (elem in obj[key]));
-
-                for (let [elem, xml, attr] in iterator) {
-                    if (elem = doc.getElementById(elem)) {
-                        let node = util.xmlToDom(xml, doc, obj.objects);
-                        for (let n in array.iterValues(node.childNodes))
-                            doc.dactylOverlayElements.push(Cu.getWeakReference(n));
-                        fn(elem, node);
-                        for each (let attr in attr || []) // FIXME: Cleanup...
-                            elem.setAttributeNS(attr.namespace(), attr.localName(), attr);
-                    }
-                }
-            }
-        }
-
-        overlay("before", function (elem, dom) elem.parentNode.insertBefore(dom, elem));
-        overlay("after", function (elem, dom) elem.parentNode.insertBefore(dom, elem.nextSibling));
-        overlay("append", function (elem, dom) elem.appendChild(dom));
-        overlay("prepend", function (elem, dom) elem.insertBefore(dom, elem.firstChild));
-        if (obj.init)
-            obj.init(window);
-
-        if (obj.load)
-            if (doc.readyState === "complete")
-                obj.load(window);
-            else
-                doc.addEventListener("load", wrapCallback(function load(event) {
-                    if (event.originalTarget === event.target) {
-                        doc.removeEventListener("load", load.wrapper, true);
-                        obj.load(window, event);
-                    }
-                }), true);
-    },
-
     observe: {
         "dactyl-cleanup": function () {
             util.dump("dactyl: util: observe: dactyl-cleanup");
@@ -1002,6 +946,64 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                 }
             }), true)
         }
+    },
+
+    _loadOverlays: function _loadOverlays(window) {
+        if (!window.dactylOverlays)
+            window.dactylOverlays = [];
+
+        util.dump("load overlays", window.document.documentURI);
+
+        for each (let obj in util.overlays[window.document.documentURI] || []) {
+            if (window.dactylOverlays.indexOf(obj) >= 0)
+                continue;
+            window.dactylOverlays.push(obj);
+            this._loadOverlay(window, obj(window));
+        }
+    },
+    _loadOverlay: function _loadOverlay(window, obj) {
+        let doc = window.document;
+        if (!doc.dactylOverlayElements)
+            doc.dactylOverlayElements = [];
+
+        util.dump("load overlay", doc.documentURI, String(obj).substr(0, 60));
+
+        function overlay(key, fn) {
+            if (obj[key]) {
+                let iterator = Iterator(obj[key]);
+                if (!isObject(obj[key]))
+                    iterator = ([elem.@id, elem.elements(), elem.@*::*.(function::name() != "id")] for each (elem in obj[key]));
+
+                for (let [elem, xml, attr] in iterator) {
+                    if (elem = doc.getElementById(elem)) {
+                        let node = util.xmlToDom(xml, doc, obj.objects);
+                        for (let n in array.iterValues(node.childNodes))
+                            doc.dactylOverlayElements.push(n);
+                        fn(elem, node);
+                        for each (let attr in attr || []) // FIXME: Cleanup...
+                            elem.setAttributeNS(attr.namespace(), attr.localName(), attr);
+                    }
+                }
+            }
+        }
+
+        overlay("before", function (elem, dom) elem.parentNode.insertBefore(dom, elem));
+        overlay("after", function (elem, dom) elem.parentNode.insertBefore(dom, elem.nextSibling));
+        overlay("append", function (elem, dom) elem.appendChild(dom));
+        overlay("prepend", function (elem, dom) elem.insertBefore(dom, elem.firstChild));
+        if (obj.init)
+            obj.init(window);
+
+        if (obj.load)
+            if (doc.readyState === "complete")
+                obj.load(window);
+            else
+                doc.addEventListener("load", wrapCallback(function load(event) {
+                    if (event.originalTarget === event.target) {
+                        doc.removeEventListener("load", load.wrapper, true);
+                        obj.load(window, event);
+                    }
+                }), true);
     },
 
     overlayWindow: function (url, fn) {

@@ -171,10 +171,10 @@ function init() {
 
 function shutdown(data, reason) {
     dump("dactyl: bootstrap: shutdown\n");
+    services.observer.notifyObservers(null, "dactyl-cleanup", null);
     for (let factory in values(components))
         // TODO: Categories;
         factory.unregister();
-    services.observer.notifyObservers(null, "dactyl-cleanup", null);
 }
 
 function reasonToString(reason) {

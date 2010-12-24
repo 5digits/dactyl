@@ -10,6 +10,19 @@
 
 const StatusLine = Module("statusline", {
     init: function () {
+        this._statusLine = document.getElementById("status-bar");
+        this.statusBar = document.getElementById("addon-bar") || this._statusLine;
+        this.statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
+
+        if (this.statusBar.localName == "toolbar") {
+            styles.system.add("addon-bar", config.styleableChrome, <css><![CDATA[
+                #status-bar { margin-top: 0 !important; }
+                #addon-bar { padding: 0 !important; min-height: 18px !important; }
+                #addon-bar > statusbar { -moz-box-flex: 1 }
+                #addon-bar > #addonbar-closebutton { visibility: collapse; }
+                #addon-bar > xul|toolbarspring { visibility: collapse; }
+            ]]></css>);
+        }
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
@@ -21,8 +34,8 @@ const StatusLine = Module("statusline", {
                         <hbox class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
                             <label class="plain" key="mode"          crop="end" collapsed="true"/>
                             <stack flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
-                                <textbox class="plain" key="url"     crop="end" flex="1" readonly="true"/>
-                                <textbox class="plain" key="message" crop="end" flex="1" readonly="true" dactyl:highlight="Normal StatusNormal"/>
+                                <textbox key="url"     crop="end" flex="1" readonly="true" class="plain dactyl-status-field-url"/>
+                                <textbox key="message" crop="end" flex="1" readonly="true" class="plain" dactyl:highlight="Normal StatusNormal"/>
                             </stack>
                         </hbox>
 
@@ -45,31 +58,11 @@ const StatusLine = Module("statusline", {
             </statusbar>
         </e4x>;
 
-        for each (let attr in prepend..@key)
-            attr.parent().@id = "dactyl-statusline-field-" + attr;
-
+        util.dump("statusbar: load overlay");
         util.overlayWindow(window, {
             objects: this.widgets = { get status() this.container },
             prepend: prepend.elements()
         });
-
-        this._statusLine = document.getElementById("status-bar");
-        this.statusBar = document.getElementById("addon-bar") || this._statusLine;
-        this.statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
-
-
-        if (this.statusBar.localName == "toolbar") {
-            styles.system.add("addon-bar", config.styleableChrome, <css><![CDATA[
-                #status-bar { margin-top: 0 !important; }
-                #addon-bar { padding: 0 !important; min-height: 18px !important; }
-                #addon-bar > statusbar { -moz-box-flex: 1 }
-                #addon-bar > #addonbar-closebutton { visibility: collapse; }
-                #addon-bar > xul|toolbarspring { visibility: collapse; }
-            ]]></css>);
-            let parent = this.widgets.status.parentNode;
-            parent.removeChild(this.widgets.status);
-            parent.insertBefore(this.widgets.status, parent.firstChild);
-        }
     },
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,

@@ -53,13 +53,15 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
     observe: {
         "dactyl-cleanup": function () {
-            for (let [, mod] in iter(array(values(modules)).reverse()))
+            for (let name in values(Object.getOwnPropertyNames(modules).reverse())) {
+                let mod = modules[name];
                 if (mod instanceof ModuleBase) {
                     if ("cleanup" in mod)
                         mod.cleanup();
                     if ("destroy" in mod)
                         mod.destroy();
                 }
+            }
         }
     },
 

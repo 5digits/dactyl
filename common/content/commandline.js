@@ -135,9 +135,25 @@ const CommandWidgets = Class("CommandWidgets", {
             getGroup: function (value) {
                 if (this.command && !options.get("guioptions").has("M"))
                     return this.statusbar;
+
                 let statusElem = this.statusbar.message;
-                if (value && statusElem.inputField.editor.rootElement.scrollWidth > statusElem.scrollWidth)
-                    return this.commandbar;
+                if (!statusElem.editor) {
+                    util.dump(commandline == window.dactyl.modules.commandline,
+                              window.dactyl.modules.commandline.widgets == this,
+                              commandline.widgets == this);
+                    util.dumpStack();
+
+                    for (let i=0, e = statusElem; e; e = e.parentNode)
+                        util.dump(i++, e == statusline._statusLine.firstChild,
+                                  e == statusline.widgets.container,
+                                  e);
+                    util.dump(statusElem == statusline.widgets.message);
+                    util.dump(statusline._statusLine.firstChild == statusline.widgets.container);
+                }
+                else {
+                    if (value && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
+                        return this.commandbar;
+                }
                 return this.activeGroup.mode;
             }
         });
@@ -165,13 +181,13 @@ const CommandWidgets = Class("CommandWidgets", {
         const self = this;
         this.elements[obj.name] = obj;
 
-        function get(id) obj.getElement ? obj.getElement(id) : document.getElementById(id);
+        function get(prefix, map, id) (obj.getElement || util.identity)(map[id] || document.getElementById(prefix + id));
 
         this.active.__defineGetter__(obj.name, function () self.activeGroup[obj.name][obj.name]);
         this.activeGroup.__defineGetter__(obj.name, function () self.getGroup(obj.name));
 
-        memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-" + (obj.id || obj.name)));
-        memoize(this.commandbar, obj.name, function () get("dactyl-" + (obj.id || obj.name)));
+        memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-", statusline.widgets, (obj.id || obj.name)));
+        memoize(this.commandbar, obj.name, function () get("dactyl-", {}, (obj.id || obj.name)));
 
         if (!(obj.noValue || obj.getValue))
             Object.defineProperty(this, obj.name, Modes.boundProperty({
@@ -259,8 +275,7 @@ const CommandWidgets = Class("CommandWidgets", {
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
     mowContainer: Class.memoize(function () this.multilineOutput.parentNode)
 }, {
-    getEditor: function (id) {
-        let elem = document.getElementById(id);
+    getEditor: function (elem) {
         elem.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
         return elem;
     }
