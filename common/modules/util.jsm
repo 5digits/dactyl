@@ -896,45 +896,79 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         return color ? string : [s for each (s in string)].join("");
     },
 
+    _loadOverlays: function _loadOverlays(window) {
+        if (!window.dactylOverlays)
+            window.dactylOverlays = [];
+
+        for each (let obj in util.overlays[window.document.documentURI] || []) {
+            if (window.dactylOverlays.indexOf(obj) >= 0)
+                continue;
+            window.dactylOverlays.push(obj);
+            this._loadOverlay(window, obj(window));
+        }
+    },
+    _loadOverlay: function _loadOverlay(window, obj) {
+        function overlay(key, fn) {
+            if (obj[key]) {
+                let iterator = Iterator(obj[key]);
+                if (!isObject(obj[key]))
+                    iterator = ([elem.@id, elem.*, elem.@*::*] for each (elem in obj[key]));
+
+                for (let [elem, xml, attr] in iterator) {
+                    if (elem = window.document.getElementById(elem)) {
+                        fn(elem, util.xmlToDom(xml, window.document));
+                        for each (let attr in attr || [])
+                            elem.setAttributeNS(attr.namespace(), attr.localName(), attr);
+                    }
+                }
+            }
+        }
+
+        overlay("before", function (elem, dom) elem.parentNode.insertBefore(dom, elem));
+        overlay("after", function (elem, dom) elem.parentNode.insertBefore(dom, elem.nextSibling));
+        overlay("append", function (elem, dom) elem.appendChild(dom));
+        overlay("prepend", function (elem, dom) elem.insertBefore(dom, elem.firstChild));
+        if (obj.init)
+            obj.init(window, window.dactylDOMLoaded);
+
+        if (obj.load)
+            if (window.document.dactylLoaded)
+                obj.load(window, window.document.dactylLoaded);
+        else
+            window.document.addEventListener("load", wrapCallback(function load(event) {
+                if (event.originalTarget === event.target) {
+                    window.document.removeEventListener("load", load.wrapper, true);
+                    window.document.dactylLoaded = event;
+                    obj.load(window, event);
+                }
+            }), true);
+    },
+
     observe: {
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
-                window.removeEventListener("DOMContentLoaded", listener.wrapper, true);
-
-                if (event.originalTarget !== window.document)
-                    return;
-
-                let obj = util.overlays[window.document.documentURI];
-                if (obj) {
-                    obj = obj(window);
-
-                    function overlay(key, fn) {
-                        for (let [elem, xml] in Iterator(obj[key] || {}))
-                            if (elem = window.document.getElementById(elem))
-                                fn(elem, util.xmlToDom(xml, window.document));
-                    }
-
-                    overlay("before", function (elem, dom) elem.parentNode.insertBefore(dom, elem));
-                    overlay("after", function (elem, dom) elem.parentNode.insertBefore(dom, elem.nextSibling));
-                    overlay("append", function (elem, dom) elem.appendChild(dom));
-                    overlay("prepend", function (elem, dom) elem.insertBefore(dom, elem.firstChild));
-                    if (obj.init)
-                        obj.init(window, event);
-
-                    if (obj.load)
-                        window.document.addEventListener("load", function (event) {
-                            if (event.originalTarget === event.target)
-                                obj.load(window, event);
-                        }, true);
+                if (event.originalTarget === window.document) {
+                    window.removeEventListener("DOMContentLoaded", listener.wrapper, true);
+                    window.document.dactylDOMLoaded = event;
+                    util._loadOverlays(window);
                 }
             }), true)
         }
     },
 
     overlayWindow: function (url, fn) {
-        Array.concat(url).forEach(function (url) {
-            this.overlays[url] = fn;
-        }, this);
+        if (url instanceof Ci.nsIDOMWindow)
+            util._loadOverlay(url, fn);
+        else {
+            Array.concat(url).forEach(function (url) {
+                if (!this.overlays[url])
+                    this.overlays[url] = [];
+                this.overlays[url].push(fn);
+            }, this);
+            for (let win in services.windowMediator.getEnumerator(null))
+                if (win.dactylDOMLoaded)
+                    this._loadOverlays(win);
+        }
     },
 
     /**

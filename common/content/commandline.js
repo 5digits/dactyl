@@ -10,6 +10,74 @@
 
 const CommandWidgets = Class("CommandWidgets", {
     init: function () {
+        let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
+        let _status = "dactyl-statusline-field-";
+
+        util.overlayWindow(window, {
+            append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
+                <window id={document.documentElement.id}>
+                    <popupset>
+                        <menupopup id="dactyl-contextmenu"
+                                   onpopupshowing="return (event.target != this || dactyl.modules.commandline.onContext(event));">
+                            <menuitem id="dactyl-context-copylink"
+                                      label="Copy Link Location" dactyl:group="link"
+                                      oncommand="goDoCommand('cmd_copyLink');"/>
+                            <menuitem id="dactyl-context-copy"
+                                      label="Copy" dactyl:group="selection"
+                                      command="cmd_copy"/>
+                            <menuitem id="dactyl-context-selectall"
+                                      label="Select All"
+                                      command="cmd_selectAll"/>
+                        </menupopup>
+                    </popupset>
+                </window>
+
+                <vbox id={config.commandContainer}>
+
+                    <vbox class="dactyl-container" hidden="false" collapsed="true">
+                        <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
+                                flex="1" hidden="false" collapsed="false"
+                                contextmenu="dactyl-contextmenu"
+                                onclick={_commandline + ".onMultilineOutputEvent(event)"}/>
+                    </vbox>
+
+                    <vbox class="dactyl-container" hidden="false" collapsed="true">
+                        <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="chrome://dactyl/content/buffer.xhtml"
+                                contextmenu="dactyl-contextmenu"
+                                flex="1" hidden="false" collapsed="false"
+                                onclick={_commandline + ".onMultilineOutputEvent(event)"}/>
+                    </vbox>
+
+                    <vbox id={"dactyl-completions-" + _status + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true" insertbefore="addon-bar,status-bar">
+                        <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="chrome://dactyl/content/buffer.xhtml"
+                                contextmenu="dactyl-contextmenu"
+                                flex="1" hidden="false" collapsed="false"
+                                onclick={_commandline + ".onMultilineOutputEvent(event)"}/>
+                    </vbox>
+
+                    <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" dactyl:highlight="CmdLine CmdCmdLine">
+                        <textbox class="plain" id="dactyl-strut"   flex="1" crop="end" collapsed="true"/>
+                        <textbox class="plain" id="dactyl-mode"    flex="1" crop="end"/>
+                        <textbox class="plain" id="dactyl-message" flex="1" readonly="true"/>
+
+                        <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" dactyl:highlight="Normal CmdNormal" collapsed="true">
+                            <label   id="dactyl-commandline-prompt"  class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
+                            <textbox id="dactyl-commandline-command" class="dactyl-commandline-command plain" flex="1" type="input" timeout="100"
+                                     oninput={_commandline + ".onEvent(event);"} onkeyup={_commandline + ".onEvent(event);"}
+                                     onfocus={_commandline + ".onEvent(event);"} onblur={_commandline + ".onEvent(event);"}/>
+                        </hbox>
+                    </stack>
+
+                    <vbox class="dactyl-container" hidden="false" collapsed="false" dactyl:highlight="CmdLine">
+                        <textbox id="dactyl-multiline-input" class="plain" flex="1" rows="1" hidden="false" collapsed="true" multiline="true"
+                                 dactyl:highlight="Normal"
+                                 onkeypress={_commandline + ".onMultilineInputEvent(event);"} oninput={_commandline + ".onMultilineInputEvent(event);"}
+                                 onblur={_commandline + ".onMultilineInputEvent(event);"}/>
+                    </vbox>
+                </vbox>
+            </e4x>.*
+        });
+
         this.elements = {};
         this.addElement({
             name: "container",

@@ -13,6 +13,21 @@
  */
 const Events = Module("events", {
     init: function () {
+        let _events = "if (window.dactyl &and; dactyl.modules.loaded.events) return dactyl.modules.events"
+        util.overlayWindow(window, {
+            append: <e4x xmlns={XUL}>
+                <window id={document.documentElement.id}>
+                    <!--this notifies us also of focus events in the XUL
+                        from: http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands !-->
+                    <!-- I don't think we really need this. ––Kris -->
+                    <commandset id="onPentadactylFocus" commandupdater="true" events="focus"
+                                oncommandupdate="{_events}.onFocusChange(event);"/>
+                    <commandset id="onPentadactylSelect" commandupdater="true" events="select"
+                                oncommandupdate="{_events}.onSelectionChange(event);"/>
+                </window>
+            </e4x>.*
+        });
+
         this._fullscreen = window.fullScreen;
         this._lastFocus = null;
         this._currentMacro = "";

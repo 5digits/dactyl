@@ -10,6 +10,45 @@
 
 const StatusLine = Module("statusline", {
     init: function () {
+
+        let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
+        let _status = "dactyl-statusline-field-";
+
+        util.overlayWindow(window, {
+            append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
+                <statusbar id="status-bar" dactyl:highlight="StatusLine StatusNormal">
+                    <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
+                    <hbox
+                          style="background: inherit;" id={_status + "container"} flex="1" hidden="false" align="center">
+                        <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
+                            <hbox class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
+                                <label class="plain" id={_status + "mode"}          crop="end" collapsed="true"/>
+                                <stack flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
+                                    <textbox class="plain" id={_status + "url"}     crop="end" flex="1" readonly="true"/>
+                                    <textbox class="plain" id={_status + "message"} crop="end" flex="1" readonly="true" dactyl:highlight="Normal StatusNormal"/>
+                                </stack>
+                            </hbox>
+
+                            <hbox id={_status + "commandline"} hidden="false" class="dactyl-container" dactyl:highlight="Normal StatusNormal" collapsed="true">
+                                <label id={_status + "commandline-prompt"}    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
+                                <textbox id={_status + "commandline-command"} class="dactyl-commandline-command plain" flex="1" type="text" timeout="100"
+                                         oninput={_commandline + ".onEvent(event);"} onkeyup={_commandline + ".onEvent(event);"}
+                                         onfocus={_commandline + ".onEvent(event);"} onblur={_commandline + ".onEvent(event);"}/>
+                            </hbox>
+                        </stack>
+                        <label class="plain" id={_status + "inputbuffer"}    flex="0"/>
+                        <label class="plain" id={_status + "progress"}       flex="0"/>
+                        <label class="plain" id={_status + "tabcount"}       flex="0"/>
+                        <label class="plain" id={_status + "bufferposition"} flex="0"/>
+                        <label class="plain" id={_status + "zoomlevel"}      flex="0"/>
+                    </hbox>
+                    <!-- just hide them since other elements expect them -->
+                    <statusbarpanel id="statusbar-display"       hidden="true"/>
+                    <statusbarpanel id="statusbar-progresspanel" hidden="true"/>
+                </statusbar>
+            </e4x>.*
+        });
+
         this._statusLine = document.getElementById("status-bar");
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
         this.statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0

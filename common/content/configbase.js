@@ -57,6 +57,8 @@ const ConfigBase = Class(ModuleBase, {
 
     get browserModes() [modes.NORMAL],
 
+    commandContainer: "browser-bottombox",
+
     /**
      * @property {Object} Application specific defaults for option values. The
      *     property names must be the options' canonical names, and the values
