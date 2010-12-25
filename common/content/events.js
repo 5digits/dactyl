@@ -657,6 +657,7 @@ const Events = Module("events", {
         switch (dactyl.mode) {
         case modes.COMMAND_LINE:
         case modes.INSERT:
+        case modes.OUTPUT_MULTILINE:
         case modes.PASS_THROUGH:
         case modes.QUOTE:
         case modes.TEXT_EDIT:
