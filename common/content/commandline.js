@@ -446,7 +446,7 @@ var CommandLine = Module("commandline", {
      * @returns {boolean}
      */
     get commandVisible() modes.main == modes.COMMAND_LINE &&
-            !(modes.extended & (modes.INPUT_MULTILINE | modes.OUTPUT_MULTILINE)),
+        !(modes.extended & modes.INPUT_MULTILINE),
 
     /**
      * Ensure that the multiline input widget is the correct size.
@@ -620,9 +620,9 @@ var CommandLine = Module("commandline", {
             this.widgets.message = null;
         if (modes.main != modes.COMMAND_LINE)
             this.widgets.command = null;
-        if ((modes.extended & modes.OUTPUT_MULTILINE) && this.widgets.multilineOutput.atEnd)
+        if (modes.main == modes.OUTPUT_MULTILINE && this.widgets.multilineOutput.atEnd)
             modes.pop();
-        if (modes.extended != modes.OUTPUT_MULTILINE)
+        if (modes.main != modes.OUTPUT_MULTILINE)
             this.multilineOutputVisible = false;
     },
 
@@ -689,8 +689,8 @@ var CommandLine = Module("commandline", {
             this.hide();
 
         this._startHints = false;
-        if (!(modes.extended & modes.OUTPUT_MULTILINE))
-            modes.push(modes.COMMAND_LINE, modes.OUTPUT_MULTILINE, {
+        if (modes.main != modes.OUTPUT_MULTILINE)
+            modes.push(modes.OUTPUT_MULTILINE, null, {
                 onEvent: this.closure.onMultilineOutputEvent
             });
 
@@ -1020,7 +1020,7 @@ var CommandLine = Module("commandline", {
 
     /**
      * Handle events when we are in multi-line output mode, these come from
-     * dactyl when modes.extended & modes.MULTILINE_OUTPUT and also from
+     * dactyl when modes.extended & modes.OUTPUT_MULTILINE and also from
      * #dactyl-multiline-output in the XUL.
      *
      * @param {Event} event

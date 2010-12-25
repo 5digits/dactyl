@@ -82,12 +82,12 @@ var Modes = Module("modes", {
             postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop() },
             onEvent: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
+        this.addMode("OUTPUT_MULTILINE");
 
         // this._extended modes, can include multiple modes, and even main modes
         this.addMode("EX", true);
         this.addMode("HINTS", { count: false, ownsBuffer: true });
         this.addMode("INPUT_MULTILINE", true);
-        this.addMode("OUTPUT_MULTILINE", true);
         this.addMode("SEARCH_FORWARD", true);
         this.addMode("SEARCH_BACKWARD", true);
         this.addMode("MENU", true); // a popupmenu is active
