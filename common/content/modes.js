@@ -8,7 +8,7 @@
 
 /** @scope modules */
 
-const Modes = Module("modes", {
+var Modes = Module("modes", {
     init: function () {
         this.modeChars = {};
         this._main = 1;     // NORMAL

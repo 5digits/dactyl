@@ -38,7 +38,7 @@ function Script(file) {
  * Provides a basic interface to common system I/O operations.
  * @instance io
  */
-const IO = Module("io", {
+var IO = Module("io", {
     init: function () {
         this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
         this._cwd = this._processDir.path;

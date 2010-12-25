@@ -11,7 +11,7 @@
 /**
  * @instance events
  */
-const Events = Module("events", {
+var Events = Module("events", {
     init: function () {
         let _events = "if (window.dactyl && dactyl.modules.loaded.events) return dactyl.modules.events"
         util.overlayWindow(window, {

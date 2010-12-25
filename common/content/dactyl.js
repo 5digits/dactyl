@@ -12,14 +12,14 @@ default xml namespace = XHTML;
 XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
-const plugins = { __proto__: modules };
-const userContext = newContext(modules);
+var plugins = { __proto__: modules };
+var userContext = newContext(modules);
 
-const EVAL_ERROR = "__dactyl_eval_error";
-const EVAL_RESULT = "__dactyl_eval_result";
-const EVAL_STRING = "__dactyl_eval_string";
+var EVAL_ERROR = "__dactyl_eval_error";
+var EVAL_RESULT = "__dactyl_eval_result";
+var EVAL_STRING = "__dactyl_eval_string";
 
-const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
+var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function () {
         window.dactyl = this;
         // cheap attempt at compatibility
@@ -53,8 +53,10 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
     observe: {
         "dactyl-cleanup": function () {
+            let modules = dactyl.modules;
+
             for (let name in values(Object.getOwnPropertyNames(modules).reverse())) {
-                let mod = modules[name];
+                let mod = Object.getOwnPropertyDescriptor(modules, name).value;
                 if (mod instanceof ModuleBase) {
                     if ("cleanup" in mod)
                         mod.cleanup();
@@ -63,7 +65,10 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 }
             }
             for (let name in values(Object.getOwnPropertyNames(modules).reverse()))
-                delete modules[name];
+                try {
+                    delete modules[name];
+                }
+                catch (e) {}
         }
     },
 
@@ -1434,7 +1439,7 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             function () { dactyl.quit(true); });
     },
 
-    commands: function () {
+    commands: function (_dactyl, _modules, _window) {
         commands.add(["addo[ns]"],
             "Manage available Extensions and Themes",
             function () {

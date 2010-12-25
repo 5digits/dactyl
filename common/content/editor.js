@@ -10,7 +10,7 @@
 // http://developer.mozilla.org/en/docs/Editor_Embedding_Guide
 
 /** @instance editor */
-const Editor = Module("editor", {
+var Editor = Module("editor", {
     get isCaret() modes.getStack(1).main == modes.CARET,
     get isTextEdit() modes.getStack(1).main == modes.TEXT_EDIT,
 

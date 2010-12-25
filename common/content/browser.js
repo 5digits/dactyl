@@ -11,7 +11,7 @@
 /**
  * @instance browser
  */
-const Browser = Module("browser", {
+var Browser = Module("browser", {
 }, {
     climbUrlPath: function (count) {
         let url = util.newURI(buffer.URL);

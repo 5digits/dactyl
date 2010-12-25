@@ -8,7 +8,7 @@
 
 /** @scope modules */
 
-const Abbreviation = Class("Abbreviation", {
+var Abbreviation = Class("Abbreviation", {
     init: function (modes, lhs, rhs) {
         this.modes = modes.sort();
         this.lhs = lhs;
@@ -41,7 +41,7 @@ const Abbreviation = Class("Abbreviation", {
     }
 });
 
-const Abbreviations = Module("abbreviations", {
+var Abbreviations = Module("abbreviations", {
     init: function () {
         this.abbrevs = {};
 

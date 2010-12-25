@@ -6,7 +6,7 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const History = Module("history", {
+var History = Module("history", {
     get format() bookmarks.format,
 
     get service() services.history,

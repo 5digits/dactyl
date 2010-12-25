@@ -8,7 +8,7 @@
 
 /** @scope modules */
 
-const CommandWidgets = Class("CommandWidgets", {
+var CommandWidgets = Class("CommandWidgets", {
     init: function () {
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let _status = "dactyl-statusline-field-";
@@ -281,7 +281,7 @@ const CommandWidgets = Class("CommandWidgets", {
  * It consists of a prompt and command field be sure to only create objects of
  * this class when the chrome is ready.
  */
-const CommandLine = Module("commandline", {
+var CommandLine = Module("commandline", {
     init: function () {
         const self = this;
 
@@ -1847,7 +1847,7 @@ const CommandLine = Module("commandline", {
  *     must be in its own container element, whose height it will update as
  *     necessary.
  */
-const ItemList = Class("ItemList", {
+var ItemList = Class("ItemList", {
     init: function (id) {
         this._completionElements = [];
 

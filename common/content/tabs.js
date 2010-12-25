@@ -13,7 +13,7 @@
 /**
  * @instance tabs
  */
-const Tabs = Module("tabs", {
+var Tabs = Module("tabs", {
     init: function () {
         this._alternates = [config.tabbrowser.mCurrentTab, null];
 

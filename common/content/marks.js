@@ -10,7 +10,7 @@
  * @scope modules
  * @instance marks
  */
-const Marks = Module("marks", {
+var Marks = Module("marks", {
     init: function init() {
         function replacer(key, val) val instanceof Ci.nsISupports ? null : val;
         this._localMarks = storage.newMap("local-marks", { privateData: true, replacer: replacer, store: true });

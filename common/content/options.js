@@ -34,7 +34,7 @@ let ValueError = Class("ValueError", ErrorBase);
  * @optional
  * @private
  */
-const Option = Class("Option", {
+var Option = Class("Option", {
     init: function (names, description, type, defaultValue, extraInfo) {
         this.name = names[0];
         this.names = names;
@@ -620,7 +620,7 @@ const Option = Class("Option", {
 /**
  * @instance options
  */
-const Options = Module("options", {
+var Options = Module("options", {
     init: function () {
         this.needInit = [];
         this._options = [];

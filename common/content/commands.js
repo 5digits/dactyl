@@ -35,12 +35,12 @@
  * @property {string} description A description of the option
  */
 
-const CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description", "default");
+var CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description", "default");
 CommandOption.defaultValue("description", function () "");
 CommandOption.defaultValue("type", function () CommandOption.NOARG);
 CommandOption.defaultValue("multiple", function () false);
 
-const ArgType = Struct("description", "parse");
+var ArgType = Struct("description", "parse");
 update(CommandOption, {
     /**
      * @property {object} The option argument is unspecified. Any argument
@@ -108,7 +108,7 @@ update(CommandOption, {
  * @optional
  * @private
  */
-const Command = Class("Command", {
+var Command = Class("Command", {
     init: function (specs, description, action, extraInfo) {
         specs = Array.concat(specs); // XXX
         let parsedSpecs = Command.parseSpecs(specs);
@@ -377,7 +377,7 @@ const Command = Class("Command", {
 });
 
 // Prototype.
-const ex = {
+var ex = {
     _args: function (cmd, args) {
         args = Array.slice(args);
 
@@ -427,7 +427,7 @@ const ex = {
 /**
  * @instance commands
  */
-const Commands = Module("commands", {
+var Commands = Module("commands", {
     init: function () {
         this._exCommands = [];
         this._exMap = {};
