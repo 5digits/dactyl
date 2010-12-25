@@ -551,6 +551,7 @@ const CommandLine = Module("commandline", {
         this.widgets.message = null;
 
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
+            onEvent: this.closure.onEvent,
             leave: function (params) {
                 if (params.pop)
                     commandline.leave();
@@ -829,6 +830,7 @@ const CommandLine = Module("commandline", {
 
         modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended,
                    update(Object.create(extra), {
+                       onEvent: extra.onEvent || this.closure.onEvent,
                        leave: function leave(stack) {
                            commandline.leave(stack);
                            leave.supercall(this, stack);
