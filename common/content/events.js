@@ -1011,11 +1011,11 @@ const Events = Module("events", {
             }
 
             let res = this.onKeyPress(event);
-            if (res === true)
+            if (res === true || res == null)
                 kill(event);
             else if (isArray(res)) {
                 if (this.fallthrough) {
-                    if (this.fallthrough(res[0]) === true)
+                    if (dactyl.trapErrors(this.fallthrough, this, res[0]) === true)
                         kill(res[0]);
                 }
                 else if (Events.isEscape(event))
@@ -1025,10 +1025,6 @@ const Events = Module("events", {
                         dactyl.beep();
                         kill(event);
                     }
-
-                    if (this.main == modes.COMMAND_LINE)
-                        if (!(this.extended & modes.INPUT_MULTILINE))
-                            dactyl.trapErrors(commandline.onEvent, commandline, event);
                 }
 
                 // Reprocess unconsumed events
