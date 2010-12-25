@@ -4,10 +4,49 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cr = Components.results;
-const Cu = Components.utils;
+if (!JSMLoader)
+    var JSMLoader = {
+        builtin: Components.utils.Sandbox(this),
+        globals: {},
+        stale: {},
+        load: function load(url, target) {
+            dump("dactyl: load: " + url + "\n");
+            if (this.stale[url]) {
+                delete this.stale[url];
+                dump("dactyl: load stale\n");
+
+                let global = this.globals[url];
+                for each (let prop in Object.getOwnPropertyNames(global))
+                    try {
+                        if (!set.has(this.builtin, prop) && [this, set].indexOf(global[prop]) < 0)
+                            delete global[prop];
+                    }
+                    catch (e) {}
+
+                Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+                          .getService(Components.interfaces.mozIJSSubScriptLoader)
+                          .loadSubScript(url, this.globals[url]);
+                dump("dactyl: load reloaded: " + url + "\n");
+            }
+            Components.utils.import(url, target);
+        },
+        purge: function purge() {
+            for (let [url, global] in Iterator(this.globals))
+                this.stale[url] = true;
+        },
+        registerGlobal: function registerGlobal(uri, obj) {
+            if (Cu.getGlobalForObject)
+                this.globals[uri.replace(/.* -> /, "")] = Cu.getGlobalForObject(obj);
+        }
+    };
+
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+var Cr = Components.results;
+var Cu = Components.utils;
+
+Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication)
+    .storage.set("dactyl.JSMLoader", JSMLoader);
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 try {
@@ -98,7 +137,8 @@ let loaded = {};
 let currentModule;
 function defineModule(name, params) {
     let module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
-    defineModule.globals.push(module);
+    JSMLoader.registerGlobal(Components.stack.caller.filename, module);
+
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
     defineModule.loadLog.push("defineModule " + name);
@@ -115,7 +155,6 @@ function defineModule(name, params) {
     currentModule = module;
 }
 
-defineModule.globals = [];
 defineModule.loadLog = [];
 Object.defineProperty(defineModule.loadLog, "push", {
     value: function (val) { defineModule.dump(val + "\n"); this[this.length] = val; }
@@ -162,7 +201,7 @@ function endModule() {
 function require(obj, name, from) {
     try {
         defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + obj.NAME);
-        Cu.import("resource://dactyl/" + name + ".jsm", obj);
+        JSMLoader.load("resource://dactyl/" + name + ".jsm", obj);
     }
     catch (e) {
         defineModule.dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n");
@@ -176,7 +215,7 @@ function require(obj, name, from) {
 defineModule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
+        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object", "Runnable",
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "array",
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator",
@@ -478,7 +517,7 @@ function isSubclass(targ, src) {
  * @param {object|string|[object|string]} src The types to check targ against.
  * @returns {boolean}
  */
-const isinstance_types = {
+var isinstance_types = {
     boolean: Boolean,
     string: String,
     function: Function,
@@ -513,7 +552,7 @@ function isObject(obj) typeof obj === "object" && obj != null || obj instanceof 
  * any window, frame, namespace, or execution context, which
  * is not the case when using (obj instanceof Array).
  */
-const isArray =
+var isArray =
     Array.isArray
         // This is bloody stupid.
         ? function isArray(val) Array.isArray(val) || val && val.constructor && val.constructor.name === "Array"
@@ -617,7 +656,7 @@ sandbox.__proto__ = this;
  * is prepended to its arguments.
  */
 // Hack to get around lack of access to caller in strict mode.
-const withCallerGlobal = Cu.evalInSandbox(<![CDATA[
+var withCallerGlobal = Cu.evalInSandbox(<![CDATA[
     (function withCallerGlobal(fn)
         function withCallerGlobal_wrapped()
             fn.apply(this,
@@ -860,7 +899,7 @@ function XPCOM(interfaces, superClass) {
 /**
  * An abstract base class for classes that wish to inherit from Error.
  */
-const ErrorBase = Class("ErrorBase", Error, {
+var ErrorBase = Class("ErrorBase", Error, {
     level: 2,
     init: function (message, level) {
         level = level || 0;
@@ -980,7 +1019,7 @@ let StructBase = Class("StructBase", Array, {
     }
 });
 
-const Timer = Class("Timer", {
+var Timer = Class("Timer", {
     init: function (minInterval, maxInterval, callback) {
         this._timer = services.Timer();
         this.callback = callback;
@@ -1056,7 +1095,7 @@ function octal(decimal) parseInt(decimal, 8);
 /**
  * Array utility methods.
  */
-const array = Class("array", Array, {
+var array = Class("array", Array, {
     init: function (ary) {
         if (isinstance(ary, ["Iterator", "Generator"]) || "__iterator__" in ary)
             ary = [k for (k in ary)];

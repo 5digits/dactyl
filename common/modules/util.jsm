@@ -15,10 +15,10 @@ defineModule("util", {
     use: ["highlight", "storage", "template"]
 });
 
-const XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
-const XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
-const XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
-const NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
+var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
+var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
+var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
 
 memoize(this, "Commands", function () {
@@ -28,7 +28,7 @@ memoize(this, "Commands", function () {
     return obj.Commands;
 });
 
-const FailedAssertion = Class("FailedAssertion", ErrorBase);
+var FailedAssertion = Class("FailedAssertion", ErrorBase);
 
 function wrapCallback(fn)
     fn.wrapper = function wrappedCallback () {
@@ -41,7 +41,7 @@ function wrapCallback(fn)
         }
     }
 
-const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
+var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     init: function () {
         this.Array = array;
 
@@ -92,16 +92,17 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {object} obj
      */
     addObserver: function (obj) {
-        let observers = obj.observe;
+        let observers = obj._observe || obj.observe;
+        obj._observe = observers;
         function register(meth) {
             services.observer[meth](obj, "quit-application", true);
-            services.observer[meth](obj, "dactyl-unload", true);
+            services.observer[meth](obj, "dactyl-cleanup", true);
             for (let target in keys(observers))
                 services.observer[meth](obj, target, true);
         }
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
-                if (target == "quit-application" || target == "dactyl-unload")
+                if (target == "quit-application" || target == "dactyl-cleanup")
                     register("removeObserver");
                 if (observers[target])
                     observers[target].call(obj, subject, data);
@@ -1402,7 +1403,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
  * Math utility methods.
  * @singleton
  */
-const GlobalMath = Math;
+var GlobalMath = Math;
 var Math = update(Object.create(GlobalMath), {
     /**
      * Returns the specified *value* constrained to the range *min* - *max*.

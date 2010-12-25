@@ -10,8 +10,8 @@ defineModule("bookmarkcache", {
     require: ["services", "storage", "util"]
 });
 
-const Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "id");
-const Keyword = Struct("keyword", "title", "icon", "url");
+var Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "id");
+var Keyword = Struct("keyword", "title", "icon", "url");
 Bookmark.defaultValue("icon", function () BookmarkCache.getFavicon(this.url));
 Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
 Bookmark.prototype.__defineGetter__("extra", function () [
@@ -33,9 +33,9 @@ Bookmark.setter("tags", function (val) {
         services.tagging.tagURI(this.uri, val);
 });
 
-const name = "bookmark-cache";
+var name = "bookmark-cache";
 
-const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
+var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     POST: "bookmarkProperties/POSTData",
 
     init: function init() {

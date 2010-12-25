@@ -1844,8 +1844,7 @@ const Dactyl = Module("dactyl", {
 
         commands.add(["res[tart]"],
             "Force " + config.appName + " to restart",
-            function () { dactyl.restart(); },
-            { argCount: "0" });
+            function () { dactyl.restart(); });
 
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {
@@ -2070,14 +2069,16 @@ const Dactyl = Module("dactyl", {
         if (!services.commandLineHandler)
             services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
 
-        let commandline = services.commandLineHandler.optionValue;
-        if (commandline) {
-            let args = dactyl.parseCommandLine(commandline);
-            dactyl.commandLineOptions.rcFile = args["+u"];
-            dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
-            dactyl.commandLineOptions.postCommands = args["+c"];
-            dactyl.commandLineOptions.preCommands = args["++cmd"];
-            util.dump("Processing command-line option: " + commandline);
+        if (services.commandlinehandler) {
+            let commandline = services.commandLineHandler.optionValue;
+            if (commandline) {
+                let args = dactyl.parseCommandLine(commandline);
+                dactyl.commandLineOptions.rcFile = args["+u"];
+                dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
+                dactyl.commandLineOptions.postCommands = args["+c"];
+                dactyl.commandLineOptions.preCommands = args["++cmd"];
+                util.dump("Processing command-line option: " + commandline);
+            }
         }
 
         dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);
