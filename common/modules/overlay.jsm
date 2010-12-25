@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("overlay", {
     exports: ["ModuleBase"],
-    require: ["sanitizer", "services", "template", "util"],
+    require: ["highlight", "sanitizer", "services", "template", "util"],
 });
 
 /**

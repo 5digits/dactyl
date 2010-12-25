@@ -932,11 +932,13 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         },
         "dactyl-rehash": function () {
             util.dump("dactyl: util: observe: dactyl-rehash");
-            for (let module in values(defineModule.modules))
+            for (let module in values(defineModule.modules)) {
+                util.dump("dactyl: util: init(" + module + ")");
                 if (module.reinit)
                     module.reinit();
                 else
                     module.init();
+            }
         },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {

@@ -80,7 +80,7 @@ update(CommandOption, {
      *     E.g. "foo,bar"
      * @final
      */
-    LIST: ArgType("list", function (arg) arg && arg.split(/\s*,\s*/))
+    LIST: ArgType("list", function (arg, quoted) Option.splitList(quoted))
 });
 
 /**
@@ -748,7 +748,10 @@ const Commands = Module("commands", {
      */
     parseArgs: function (str, params) {
         try {
-            function getNextArg(str) {
+            function getNextArg(str, _keepQuotes) {
+                if (arguments.length < 2)
+                    _keepQuotes = keepQuotes;
+
                 if (str.substr(0, 2) === "<<" && hereDoc) {
                     let arg = /^<<(\S*)/.exec(str)[1];
                     let count = arg.length + 2;
@@ -756,7 +759,7 @@ const Commands = Module("commands", {
                         return [count, "", ""];
                     return [count, io.readHeredoc(arg), ""];
                 }
-                let [count, arg, quote] = Commands.parseArg(str, null, keepQuotes);
+                let [count, arg, quote] = Commands.parseArg(str, null, _keepQuotes);
                 if (quote == "\\" && !complete)
                     return [, , , "Trailing \\"];
                 if (quote && !complete)
@@ -782,7 +785,7 @@ const Commands = Module("commands", {
             var invalid = false;
             // FIXME: best way to specify these requirements?
             var onlyArgumentsRemaining = allowUnknownOptions || options.length == 0; // after a -- has been found
-            var arg = null;
+            var arg = null, quoted = null;
             var count = 0; // the length of the argument
             var i = 0;
             var completeOpts;
@@ -845,12 +848,14 @@ const Commands = Module("commands", {
                         for (let [, optname] in Iterator(opt.names)) {
                             if (sub.indexOf(optname) == 0) {
                                 invalid = false;
+                                quoted = null;
                                 arg = null;
                                 quote = null;
                                 count = 0;
                                 let sep = sub[optname.length];
                                 if (sep == "=" || /\s/.test(sep) && opt.type != CommandOption.NOARG) {
-                                    [count, arg, quote, error] = getNextArg(sub.substr(optname.length + 1));
+                                    [count, quoted, quote, error] = getNextArg(sub.substr(optname.length + 1), true);
+                                    arg = Option.dequote(quoted);
                                     dactyl.assert(!error, error);
 
                                     // if we add the argument to an option after a space, it MUST not be empty
@@ -879,7 +884,7 @@ const Commands = Module("commands", {
                                     if (!complete || arg != null) {
                                         if (opt.type) {
                                             let orig = arg;
-                                            arg = opt.type.parse(arg);
+                                            arg = opt.type.parse(arg, quoted);
 
                                             if (complete && isArray(arg)) {
                                                 args.completeFilter = arg[arg.length - 1];
@@ -896,7 +901,7 @@ const Commands = Module("commands", {
 
                                         // we have a validator function
                                         if (typeof opt.validator == "function") {
-                                            if (opt.validator.call(this, arg) == false) {
+                                            if (opt.validator.call(this, arg, quoted) == false) {
                                                 fail("Invalid argument for option: " + optname);
                                                 if (complete) // Always true.
                                                     complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
@@ -904,11 +909,12 @@ const Commands = Module("commands", {
                                         }
                                     }
 
-                                    // option allowed multiple times
-                                    if (opt.multiple)
-                                        args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
-                                    else
-                                        args[opt.names[0]] = opt.type == CommandOption.NOARG || arg;
+                                    if (arg != null || opt.type == CommandOption.NOARG)
+                                        // option allowed multiple times
+                                        if (opt.multiple)
+                                            args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
+                                        else
+                                            args[opt.names[0]] = opt.type == CommandOption.NOARG || arg;
 
                                     i += optname.length + count;
                                     if (i == str.length)
