@@ -28,12 +28,7 @@ memoize(this, "Commands", function () {
     return obj.Commands;
 });
 
-const FailedAssertion = Class("FailedAssertion", Error, {
-    init: function (message) {
-        update(this, Error(message))
-        this.message = message;
-    }
-});
+const FailedAssertion = Class("FailedAssertion", ErrorBase);
 
 function wrapCallback(fn)
     fn.wrapper = function wrappedCallback () {
@@ -125,7 +120,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     assert: function (condition, message) {
         if (!condition)
-            throw FailedAssertion(message);
+            throw FailedAssertion(message, 1);
     },
 
     get chromePackages() {
