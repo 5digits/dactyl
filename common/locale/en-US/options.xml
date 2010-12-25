@@ -725,7 +725,7 @@
     <type>number</type>
     <default>0</default>
     <description>
-        <p>Changes how soon matching hints are followed in in Hints mode.</p>
+        <p>Changes how soon matching hints are followed in Hints mode.</p>
 
         <p>Possible values:</p>
 

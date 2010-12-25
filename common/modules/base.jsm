@@ -1134,7 +1134,7 @@ const array = Class("array", Array, {
      * Returns the nth member of the given array that matches the
      * given predicate.
      */
-    nth: function first(ary, pred, n, self) {
+    nth: function nth(ary, pred, n, self) {
         for (let elem in values(ary))
             if (pred.call(self, elem) && n-- === 0)
                 return elem;

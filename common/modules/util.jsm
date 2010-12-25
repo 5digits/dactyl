@@ -267,7 +267,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         return stack.top;
     },
 
-    compileMacro: function compileFormat(macro, keepUnknown) {
+    compileMacro: function compileMacro(macro, keepUnknown) {
         let stack = [frame()];
         stack.__defineGetter__("top", function () this[this.length - 1]);
 

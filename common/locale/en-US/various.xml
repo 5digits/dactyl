@@ -38,7 +38,7 @@
         <p>Fake key events.</p>
 
         <dl>
-            <dt>-mode</dt> <dd>The in which to feed the keys (short name: <em>-m</em>)</dd>
+            <dt>-mode</dt> <dd>The mode in which to feed the keys (short name: <em>-m</em>)</dd>
         </dl>
     </description>
 </item>

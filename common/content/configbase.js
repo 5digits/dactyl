@@ -103,7 +103,7 @@ const ConfigBase = Class(ModuleBase, {
     host: null,
 
     /**
-     * @property {Object} A map between key names for key events should be ignored,
+     * @property {Object} A map between key names for key events which should be ignored,
      *     and a mask of the modes in which they should be ignored.
      */
     ignoreKeys: {}, // NOTE: be aware you can't put useful values in here, as "modes.NORMAL" etc. are not defined at this time
@@ -199,7 +199,7 @@ const ConfigBase = Class(ModuleBase, {
         !CmdLine;>*       font-family: monospace !important; padding: 1px !important;
         CmdPrompt;.dactyl-commandline-prompt
         CmdInput;.dactyl-commandline-command
-        CmdOutput    white-space: pre;
+        CmdOutput         white-space: pre;
 
 
         CompGroup
