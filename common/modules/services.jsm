@@ -14,7 +14,7 @@ defineModule("services", {
 /**
  * A lazily-instantiated XPCOM class and service cache.
  */
-const Services = Module("Services", {
+var Services = Module("Services", {
     init: function () {
         this.classes = {};
         this.services = {};

@@ -12,11 +12,11 @@ defineModule("styles", {
 });
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
-const namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
+var namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
                   "@namespace xul " + XUL.uri.quote() + ";\n" +
                   "@namespace dactyl " + NS.uri.quote() + ";\n";
 
-const Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
+var Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
 Sheet.liveProperty = function (name) {
     let i = this.prototype.members[name];
     this.prototype.__defineGetter__(name, function () this[i]);
@@ -73,7 +73,7 @@ update(Sheet.prototype, {
     }
 });
 
-const Hive = Class("Hive", {
+var Hive = Class("Hive", {
     init: function () {
         this.sheets = [];
         this.names = {};
@@ -212,7 +212,7 @@ const Hive = Class("Hive", {
  *
  * @author Kris Maglione <maglione.k@gmail.com>
  */
-const Styles = Module("Styles", {
+var Styles = Module("Styles", {
     init: function () {
         this._id = 0;
         this.user = Hive();

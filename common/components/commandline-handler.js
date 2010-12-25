@@ -4,14 +4,14 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const Ci = Components.interfaces, Cc = Components.classes;
+var Ci = Components.interfaces, Cc = Components.classes;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
+var prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
     .getBranch("extensions.dactyl.");
-const appName = prefs.getComplexValue("appName", Ci.nsISupportsString).data;
-const name = prefs.getComplexValue("name", Ci.nsISupportsString).data;
+var appName = prefs.getComplexValue("appName", Ci.nsISupportsString).data;
+var name = prefs.getComplexValue("name", Ci.nsISupportsString).data;
 
 function CommandLineHandler() {
     this.wrappedJSObject = this;
@@ -45,9 +45,9 @@ CommandLineHandler.prototype = {
 };
 
 if (XPCOMUtils.generateNSGetFactory)
-    const NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler]);
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler]);
 else
-    const NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
+    var NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
 var EXPORTED_SYMBOLS = ["NSGetFactory"];
 
 // vim: set fdm=marker sw=4 ts=4 et:

@@ -15,10 +15,10 @@ defineModule("util", {
     use: ["highlight", "storage", "template"]
 });
 
-const XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
-const XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
-const XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
-const NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
+var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
+var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
+var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
 
 memoize(this, "Commands", function () {
@@ -28,7 +28,7 @@ memoize(this, "Commands", function () {
     return obj.Commands;
 });
 
-const FailedAssertion = Class("FailedAssertion", ErrorBase);
+var FailedAssertion = Class("FailedAssertion", ErrorBase);
 
 function wrapCallback(fn)
     fn.wrapper = function wrappedCallback () {
@@ -41,7 +41,7 @@ function wrapCallback(fn)
         }
     }
 
-const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
+var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     init: function () {
         this.Array = array;
 
@@ -920,13 +920,16 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             services.observer.removeObserver(this, "dactyl-rehash");
 
             util.dump("dactyl: util: observe: dactyl-rehash");
-            for (let module in values(defineModule.modules)) {
-                util.dump("dactyl: util: init(" + module + ")");
-                if (module.reinit)
-                    module.reinit();
-                else
-                    module.init();
-            }
+            if (true)
+                JSMLoader.purge();
+            else
+                for (let module in values(defineModule.modules)) {
+                    util.dump("dactyl: util: init(" + module + ")");
+                    if (module.reinit)
+                        module.reinit();
+                    else
+                        module.init();
+                }
         },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
@@ -1427,7 +1430,7 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
  * Math utility methods.
  * @singleton
  */
-const GlobalMath = Math;
+var GlobalMath = Math;
 var Math = update(Object.create(GlobalMath), {
     /**
      * Returns the specified *value* constrained to the range *min* - *max*.

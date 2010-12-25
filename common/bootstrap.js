@@ -16,7 +16,7 @@ const resourceProto = Services.io.getProtocolHandler("resource")
                               .QueryInterface(Ci.nsIResProtocolHandler);
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
-const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
+const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication).storage;
 
 function httpGet(url) {
     let xmlhttp = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
@@ -41,6 +41,7 @@ let addon = null;
 let basePath = null;
 let components = {};
 let getURI = null;
+var JSMLoader = storage.get("dactyl.JSMLoader", { get load() Cu.import });
 
 function startup(data, reason) {
     dump("dactyl: bootstrap: startup " + reasonToString(reason) + "\n");
@@ -87,12 +88,12 @@ FactoryProxy.prototype = {
     },
     unregister: function () {
         dump("dactyl: bootstrap: unregister: " + this.classID + " " + this.contractID + "\n");
-        manager.unregisterFactory(this.classID,
-                                  this);
+        manager.unregisterFactory(this.classID, this);
     },
     get module() {
         Object.defineProperty(this, "module", { value: {}, enumerable: true });
-        Cu.import(this.url, this.module);
+        JSMLoader.load(this.url, this.module);
+        JSMLoader.registerGlobal(this.url, this.module.NSGetFactory);
         return this.module;
     },
     createInstance: function (iids) {
@@ -138,7 +139,6 @@ function init() {
             break;
         case "contract":
             components[fields[2]].contractID = fields[1];
-            components[fields[2]].register();
             break;
 
         case "resource":
@@ -146,11 +146,13 @@ function init() {
         }
     }
 
-    Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance()
-
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
 
-    Cu.import("resource://dactyl/base.jsm");
+    JSMLoader.load("resource://dactyl/base.jsm", global);
+
+    for each (let component in components)
+        component.register();
+
     require(global, "prefs");
     require(global, "services");
 

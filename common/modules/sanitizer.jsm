@@ -24,7 +24,7 @@ let tmp = {};
 services.subscriptLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
 tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
-const Range = Struct("min", "max");
+var Range = Struct("min", "max");
 Range.prototype.contains = function (date)
     date == null || (this.min == null || date >= this.min) && (this.max == null || date <= this.max);
 Range.prototype.__defineGetter__("isEternity", function () this.max == null && this.min == null);
@@ -33,7 +33,7 @@ Range.prototype.__defineGetter__("native", function ()
     this.isEternity ? null : [range.min || 0, range.max == null ? Number.MAX_VALUE : range.max]);
 
 
-const Item = Class("Item", {
+var Item = Class("Item", {
     init: function (name) {
         this.name = name;
     },
@@ -55,7 +55,7 @@ const Item = Class("Item", {
     SHUTDOWN_BRANCH: "privacy.clearOnShutdown."
 });
 
-const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference], tmp.Sanitizer), {
+var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference], tmp.Sanitizer), {
     sessionStart: Date.now() * 1000,
 
     init: function () {

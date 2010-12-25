@@ -7,14 +7,14 @@
 if (this.XPCSafeJSObjectWrapper == null)
     this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
 
-const myObject = Object;
+var myObject = Object;
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("storage", {
     exports: ["File", "storage"],
     require: ["services", "util"]
 });
 
-const win32 = /^win(32|nt)$/i.test(services.runtime.OS);
+var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 
 function loadData(name, store, type) {
     try {
@@ -33,7 +33,7 @@ function saveData(obj) {
         storage.infoPath.child(obj.name).write(obj.serial);
 }
 
-const StoreBase = Class("StoreBase", {
+var StoreBase = Class("StoreBase", {
     OPTIONS: ["privateData", "replacer"],
 
     fireEvent: function (event, arg) { storage.fireEvent(this.name, event, arg); },
@@ -61,7 +61,7 @@ const StoreBase = Class("StoreBase", {
     save: function () { saveData(this); },
 });
 
-const ArrayStore = Class("ArrayStore", StoreBase, {
+var ArrayStore = Class("ArrayStore", StoreBase, {
     _constructor: Array,
 
     get length() this._object.length,
@@ -107,7 +107,7 @@ const ArrayStore = Class("ArrayStore", StoreBase, {
     __iterator__: function () Iterator(this._object),
 });
 
-const ObjectStore = Class("ObjectStore", StoreBase, {
+var ObjectStore = Class("ObjectStore", StoreBase, {
     _constructor: myObject,
 
     clear: function () {
@@ -142,7 +142,7 @@ const ObjectStore = Class("ObjectStore", StoreBase, {
     __iterator__: function () Iterator(this._object),
 });
 
-const Storage = Module("Storage", {
+var Storage = Module("Storage", {
     alwaysReload: {},
 
     init: function () {
@@ -269,7 +269,7 @@ const Storage = Module("Storage", {
  * @param {boolean} checkPWD Whether to allow expansion relative to the
  *          current directory. @default true
  */
-const File = Class("File", {
+var File = Class("File", {
     init: function (path, checkPWD) {
         let file = services.File();
 

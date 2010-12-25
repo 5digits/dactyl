@@ -13,7 +13,7 @@ defineModule("prefs", {
     use: ["template"]
 });
 
-const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
+var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     SAVED: "extensions.dactyl.saved.",
     RESTORE: "extensions.dactyl.restore.",
 

@@ -14,7 +14,7 @@ defineModule("overlay", {
  * @class ModuleBase
  * The base class for all modules.
  */
-const ModuleBase = Class("ModuleBase", {
+var ModuleBase = Class("ModuleBase", {
     /**
      * @property {[string]} A list of module prerequisites which
      * must be initialized before this module is loaded.
@@ -24,7 +24,7 @@ const ModuleBase = Class("ModuleBase", {
     toString: function () "[module " + this.constructor.className + "]"
 });
 
-const Overlay = Module("Overlay", {
+var Overlay = Module("Overlay", {
     init: function () {
         util.overlayWindow("chrome://browser/content/browser.xul", function (window) ({
             init: function (document) {

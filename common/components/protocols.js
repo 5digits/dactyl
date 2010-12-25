@@ -12,16 +12,16 @@
  * By Kris Maglione, ideas from Ed Anuff's nsChromeExtensionHandler.
  */
 
-const NAME = "protocols";
-const global = this;
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cu = Components.utils;
+var NAME = "protocols";
+var global = this;
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+var Cu = Components.utils;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-const systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
+var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {
@@ -204,9 +204,9 @@ Shim.prototype = {
 };
 
 if (XPCOMUtils.generateNSGetFactory)
-    const NSGetFactory = XPCOMUtils.generateNSGetFactory([AboutHandler, ChromeData, Dactyl, Shim]);
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([AboutHandler, ChromeData, Dactyl, Shim]);
 else
-    const NSGetModule = XPCOMUtils.generateNSGetModule([AboutHandler, ChromeData, Dactyl, Shim]);
+    var NSGetModule = XPCOMUtils.generateNSGetModule([AboutHandler, ChromeData, Dactyl, Shim]);
 var EXPORTED_SYMBOLS = ["NSGetFactory"];
 
 // vim: set fdm=marker sw=4 ts=4 et:

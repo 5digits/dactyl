@@ -11,9 +11,9 @@ defineModule("highlight", {
     use: ["template", "util"]
 });
 
-const Highlight = Struct("class", "selector", "sites",
-                         "default", "value", "agent",
-                         "base", "baseClass", "style");
+var Highlight = Struct("class", "selector", "sites",
+                       "default", "value", "agent",
+                       "base", "baseClass", "style");
 Highlight.liveProperty = function (name, prop) {
     let i = this.prototype.members[name];
     this.prototype.__defineGetter__(name, function () this[i]);
@@ -52,7 +52,7 @@ Highlight.prototype.toString = function ()
  *
  * @author Kris Maglione <maglione.k@gmail.com>
  */
-const Highlights = Module("Highlight", {
+var Highlights = Module("Highlight", {
     init: function () {
         this.highlight = {};
         this.loaded = {};

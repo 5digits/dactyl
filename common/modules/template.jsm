@@ -13,7 +13,7 @@ defineModule("template", {
 
 default xml namespace = XHTML;
 
-const Template = Module("Template", {
+var Template = Module("Template", {
     add: function add(a, b) a + b,
     join: function join(c) function (a, b) a + c + b,
 
