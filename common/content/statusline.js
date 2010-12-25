@@ -26,20 +26,19 @@ const StatusLine = Module("statusline", {
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
-            <statusbar id="status-bar" dactyl:highlight="StatusLine StatusNormal">
+            <statusbar id="status-bar" highlight="StatusLine StatusNormal">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
-                <hbox
-                      style="background: inherit;" key="container" flex="1" hidden="false" align="center">
-                    <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
-                        <hbox class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
-                            <label class="plain" key="mode"          crop="end" collapsed="true"/>
-                            <stack flex="1" class="dactyl-container" dactyl:highlight="CmdLine StatusCmdLine">
-                                <textbox key="url"     crop="end" flex="1" readonly="true" class="plain dactyl-status-field-url"/>
-                                <textbox key="message" crop="end" flex="1" readonly="true" class="plain" dactyl:highlight="Normal StatusNormal"/>
+                <hbox style="background: inherit;" key="container"  flex="1" hidden="false" align="center">
+                    <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" highlight="CmdLine StatusCmdLine">
+                        <hbox                                                class="dactyl-container" highlight="CmdLine StatusCmdLine">
+                            <label key="mode"          crop="end"            class="plain" collapsed="true"/>
+                            <stack flex="1"                                  class="dactyl-container" highlight="CmdLine StatusCmdLine">
+                                <textbox key="url"     crop="end"   flex="1" class="plain dactyl-status-field-url" readonly="true"/>
+                                <textbox key="message" crop="end"   flex="1" class="plain"            highlight="Normal StatusNormal" readonly="true"/>
                             </stack>
                         </hbox>
 
-                        <hbox key="commandline" hidden="false" class="dactyl-container" dactyl:highlight="Normal StatusNormal" collapsed="true">
+                        <hbox key="commandline" hidden="false" class="dactyl-container" highlight="Normal StatusNormal" collapsed="true">
                             <label key="commandline-prompt"    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
                             <textbox key="commandline-command" class="dactyl-commandline-command plain" flex="1" type="text" timeout="100"
                                      oninput={_commandline + ".onEvent(event);"} onkeyup={_commandline + ".onEvent(event);"}

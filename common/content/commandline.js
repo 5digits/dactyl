@@ -55,12 +55,12 @@ const CommandWidgets = Class("CommandWidgets", {
                                 onclick={_commandline + ".onMultilineOutputEvent(event)"}/>
                     </vbox>
 
-                    <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" dactyl:highlight="CmdLine CmdCmdLine">
+                    <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" highlight="CmdLine CmdCmdLine">
                         <textbox class="plain" id="dactyl-strut"   flex="1" crop="end" collapsed="true"/>
                         <textbox class="plain" id="dactyl-mode"    flex="1" crop="end"/>
                         <textbox class="plain" id="dactyl-message" flex="1" readonly="true"/>
 
-                        <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" dactyl:highlight="Normal CmdNormal" collapsed="true">
+                        <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" highlight="Normal CmdNormal" collapsed="true">
                             <label   id="dactyl-commandline-prompt"  class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
                             <textbox id="dactyl-commandline-command" class="dactyl-commandline-command plain" flex="1" type="input" timeout="100"
                                      oninput={_commandline + ".onEvent(event);"} onkeyup={_commandline + ".onEvent(event);"}
@@ -68,9 +68,9 @@ const CommandWidgets = Class("CommandWidgets", {
                         </hbox>
                     </stack>
 
-                    <vbox class="dactyl-container" hidden="false" collapsed="false" dactyl:highlight="CmdLine">
+                    <vbox class="dactyl-container" hidden="false" collapsed="false" highlight="CmdLine">
                         <textbox id="dactyl-multiline-input" class="plain" flex="1" rows="1" hidden="false" collapsed="true" multiline="true"
-                                 dactyl:highlight="Normal"
+                                 highlight="Normal"
                                  onkeypress={_commandline + ".onMultilineInputEvent(event);"} oninput={_commandline + ".onMultilineInputEvent(event);"}
                                  onblur={_commandline + ".onMultilineInputEvent(event);"}/>
                     </vbox>
