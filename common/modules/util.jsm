@@ -59,6 +59,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
+    get addon() services.fuel.storage.get("dactyl.bootstrap", null).addon,
+
     // FIXME: Only works for Pentadactyl
     get activeWindow() services.windowMediator.getMostRecentWindow("navigator:browser"),
     dactyl: update(function dactyl(obj) {
@@ -920,7 +922,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             services.observer.removeObserver(this, "dactyl-rehash");
 
             util.dump("dactyl: util: observe: dactyl-rehash");
-            if (true)
+            if (this.rehashing)
                 JSMLoader.purge();
             else
                 for (let module in values(defineModule.modules)) {
@@ -1143,6 +1145,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          */
         getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0)
     }),
+
+    rehash: function () {
+        this.rehashing = true;
+        this.addon.userDisabled = true;
+        this.timeout(function () {
+            this.addon.userDisabled = false;
+        });
+    },
 
     maxErrors: 15,
     errors: Class.memoize(function () []),

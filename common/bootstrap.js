@@ -41,6 +41,7 @@ let addon = null;
 let basePath = null;
 let components = {};
 let getURI = null;
+storage.set("dactyl.bootstrap", this);
 var JSMLoader = storage.get("dactyl.JSMLoader", { get load() Cu.import });
 
 function startup(data, reason) {
@@ -53,6 +54,7 @@ function startup(data, reason) {
         dump("dactyl: bootstrap: init" + " " + data.id + "\n");
 
         addon = data;
+        AddonManager.getAddonByID(addon.id, function (a) { addon = a });
 
         if (basePath.isDirectory())
             getURI = function getURI(path) {

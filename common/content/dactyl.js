@@ -1865,10 +1865,13 @@ const Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 bang: true
             });
 
+        commands.add(["reh[ash]"],
+            "Reload the " + config.appName + " add-on",
+            function () { util.rehash(); });
+
         commands.add(["res[tart]"],
             "Force " + config.appName + " to restart",
-            function () { dactyl.restart(); },
-            { argCount: "0" });
+            function () { dactyl.restart(); });
 
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {
