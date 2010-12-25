@@ -97,16 +97,17 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {object} obj
      */
     addObserver: function (obj) {
-        let observers = obj.observe;
+        let observers = obj._observe || obj.observe;
+        obj._observe = observers;
         function register(meth) {
             services.observer[meth](obj, "quit-application", true);
-            services.observer[meth](obj, "dactyl-unload", true);
+            services.observer[meth](obj, "dactyl-cleanup", true);
             for (let target in keys(observers))
                 services.observer[meth](obj, target, true);
         }
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
-                if (target == "quit-application" || target == "dactyl-unload")
+                if (target == "quit-application" || target == "dactyl-cleanup")
                     register("removeObserver");
                 if (observers[target])
                     observers[target].call(obj, subject, data);
@@ -918,19 +919,11 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                         module.cleanup();
 
                 services.observer.addObserver(this, "dactyl-rehash", true);
-
-                /*
-                let getOwnPropertyNames = Object.getOwnPropertyNames;
-                for each (let global in defineModule.globals.reverse())
-                    for each (let k in getOwnPropertyNames(global))
-                        try {
-                            delete global[k];
-                        }
-                        catch (e) {}
-                */
             });
         },
         "dactyl-rehash": function () {
+            services.observer.removeObserver(this, "dactyl-rehash");
+
             util.dump("dactyl: util: observe: dactyl-rehash");
             for (let module in values(defineModule.modules)) {
                 util.dump("dactyl: util: init(" + module + ")");

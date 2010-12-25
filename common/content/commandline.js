@@ -244,11 +244,18 @@ const CommandWidgets = Class("CommandWidgets", {
     completionList: Class.memoize(function () document.getElementById("dactyl-completions")),
     completionContainer: Class.memoize(function () this.completionList.parentNode),
     multilineOutput: Class.memoize(function () {
-        let elem = document.getElementById("dactyl-multiline-output");
+        this.__defineGetter__("multilineOutput", function () {
+            let elem = document.getElementById("dactyl-multiline-output");
+            while (elem.contentDocument.documentURI != elem.getAttribute("src") ||
+                   ["viewable", "complete"].indexOf(elem.contentDocument.readyState) < 0)
+                util.threadYield();
+            return elem;
+        });
+
+        let elem = this.multilineOutput;
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
-        elem.contentWindow.addEventListener("load", function (event) {
-            elem.contentDocument.body.id = "dactyl-multiline-output-content";
-        }, false);
+        elem.contentDocument.body.id = "dactyl-multiline-output-content";
+
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
             let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
@@ -525,7 +532,7 @@ const CommandLine = Module("commandline", {
         set: function (value) { this.widgets.multilineInput.collapsed = !value; }
     }),
     multilineOutputVisible: Modes.boundProperty({
-        set: function (value) { this.widgets.mowContainer.collapsed = !value; }
+        set: function (value) { (this.widgets.mowContainer || {}).collapsed = !value; }
     }),
 
     /**
