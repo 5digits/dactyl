@@ -40,6 +40,7 @@ let initialized = false;
 let addon = null;
 let basePath = null;
 let components = {};
+let getURI = null;
 
 function startup(data, reason) {
     dump("dactyl: bootstrap: startup\n");
@@ -50,17 +51,24 @@ function startup(data, reason) {
 
         dump("dactyl: bootstrap: init" + " " + data.id + "\n");
 
-        AddonManager.getAddonByID(data.id, function (res) {
-            try {
-                addon = res;
-                init();
-            }
-            catch (e) {
-                dump("dactyl: bootstrap: " + e + "\n");
-                Cu.reportError(e);
-            }
-        });
+        addon = data;
 
+        if (basePath.isDirectory())
+            getURI = function getURI(path) {
+                let file = basePath.clone().QueryInterface(Ci.nsILocalFile);
+                file.appendRelativePath(path);
+                return (Services.io || services.io).newFileURI(file);
+            }
+        else
+            getURI = function getURI(path)
+                Services.io.newURI("jar:" + Services.io.newFileURI(file).spec + "!" + path);
+        try {
+            init();
+        }
+        catch (e) {
+            dump("dactyl: bootstrap: " + e + "\n" + e.stack);
+            Cu.reportError(e);
+        }
     }
 }
 
@@ -95,15 +103,15 @@ FactoryProxy.prototype = {
 }
 
 function init() {
-    dump("dactyl: bootstrap: init: " + addon + "\n");
+    dump("dactyl: bootstrap: init\n");
 
-    let manifestURI = addon.getResourceURI("chrome.manifest");
+    let manifestURI = getURI("chrome.manifest");
     let manifest = httpGet(manifestURI.spec)
             .responseText
             .replace(/^\s*|\s*$|#.*/g, "")
             .replace(/^\s*\n/gm, "");
 
-    function url(path) addon.getResourceURI(path).spec;
+    function url(path) getURI(path).spec;
 
     let result = [];
 
@@ -134,7 +142,7 @@ function init() {
             break;
 
         case "resource":
-            resourceProto.setSubstitution(fields[1], addon.getResourceURI(fields[2]));
+            resourceProto.setSubstitution(fields[1], getURI(fields[2]));
         }
     }
 
@@ -155,13 +163,15 @@ function init() {
             }
         });
 
+    let manifestText = result.map(function (line) line.join(" ")).join("\n");
+
     if (manifestURI instanceof Ci.nsIFileURL)
         manager.autoRegister(manifestURI.QueryInterface(Ci.nsIFileURL).file);
     else {
         var file = basePath.parent;
         file.append(addon.id + ".manifest");
 
-        writeFile(file, result.map(function (line) line.join(" ")).join("\n"));
+        writeFile(file, manifestText);
         manager.autoRegister(file);
         file.remove(false);
     }
