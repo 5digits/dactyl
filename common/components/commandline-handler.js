@@ -4,7 +4,10 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-var Ci = Components.interfaces, Cc = Components.classes;
+var global = this;
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+var Cu = Components.utils;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -48,6 +51,6 @@ if (XPCOMUtils.generateNSGetFactory)
     var NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler]);
 else
     var NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
-var EXPORTED_SYMBOLS = ["NSGetFactory"];
+var EXPORTED_SYMBOLS = ["NSGetFactory", "global"];
 
 // vim: set fdm=marker sw=4 ts=4 et:

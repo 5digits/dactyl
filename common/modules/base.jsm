@@ -18,8 +18,8 @@ if (!JSMLoader)
                 let global = this.globals[url];
                 for each (let prop in Object.getOwnPropertyNames(global))
                     try {
-                        if (!set.has(this.builtin, prop) && global[prop] != this && global[prop] != set)
-                            delete global[prop]
+                        if (!set.has(this.builtin, prop) && [this, set].indexOf(global[prop]) < 0)
+                            delete global[prop];
                     }
                     catch (e) {}
 
@@ -36,7 +36,7 @@ if (!JSMLoader)
         },
         registerGlobal: function registerGlobal(uri, obj) {
             if (Cu.getGlobalForObject)
-                this.globals[uri] = Cu.getGlobalForObject(obj);
+                this.globals[uri.replace(/.* -> /, "")] = Cu.getGlobalForObject(obj);
         }
     };
 

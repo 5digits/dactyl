@@ -95,7 +95,7 @@ FactoryProxy.prototype = {
     get module() {
         Object.defineProperty(this, "module", { value: {}, enumerable: true });
         JSMLoader.load(this.url, this.module);
-        JSMLoader.registerGlobal(this.url, this.module.NSGetFactory);
+        JSMLoader.registerGlobal(this.url, this.module.global);
         return this.module;
     },
     createInstance: function (iids) {
