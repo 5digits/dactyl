@@ -9,7 +9,7 @@
 /** @scope modules */
 /** @instance hints */
 
-const Hints = Module("hints", {
+var Hints = Module("hints", {
     init: function init() {
         const self = this;
 

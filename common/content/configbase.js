@@ -6,7 +6,7 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const ConfigBase = Class(ModuleBase, {
+var ConfigBase = Class(ModuleBase, {
     /**
      * Called on dactyl startup to allow for any arbitrary application-specific
      * initialization code. Must call superclass's init function.

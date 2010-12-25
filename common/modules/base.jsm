@@ -13,19 +13,19 @@ if (!JSMLoader)
             dump("dactyl: load: " + url + "\n");
             if (this.stale[url]) {
                 delete this.stale[url];
-                dump("dactyl: load stale\n");
-
                 let global = this.globals[url];
+
                 for each (let prop in Object.getOwnPropertyNames(global))
                     try {
-                        if (!set.has(this.builtin, prop) && [this, set].indexOf(global[prop]) < 0)
+                        if (!set.has(this.builtin, prop) &&
+                            [this, set].indexOf(Object.getOwnPropertyDescriptor(global, prop).value) < 0)
                             delete global[prop];
                     }
                     catch (e) {}
 
                 Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                           .getService(Components.interfaces.mozIJSSubScriptLoader)
-                          .loadSubScript(url, this.globals[url]);
+                          .loadSubScript(url, global);
                 dump("dactyl: load reloaded: " + url + "\n");
             }
             Components.utils.import(url, target);
@@ -859,10 +859,10 @@ Class.prototype = {
      */
     timeout: function (callback, timeout) {
         const self = this;
-        let notify = { notify: function notify(timer) { try { callback.apply(self); } catch (e) { util.reportError(e); } } };
-        let timer = services.Timer();
-        timer.initWithCallback(notify, timeout || 0, timer.TYPE_ONE_SHOT);
-        return timer;
+        function notify(timer) {
+            util.trapErrors(callback, self);
+        }
+        return services.Timer(notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);;
     }
 };
 memoize(Class.prototype, "closure", function () {

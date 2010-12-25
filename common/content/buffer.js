@@ -8,7 +8,7 @@
 
 /** @scope modules */
 
-const Point = Struct("x", "y");
+var Point = Struct("x", "y");
 
 /**
  * A class to manage the primary web content buffer. The name comes
@@ -16,7 +16,7 @@ const Point = Struct("x", "y");
  * files.
  * @instance buffer
  */
-const Buffer = Module("buffer", {
+var Buffer = Module("buffer", {
     init: function () {
         this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};

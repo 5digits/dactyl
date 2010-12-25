@@ -8,7 +8,7 @@
 
 /** @scope modules */
 
-const StatusLine = Module("statusline", {
+var StatusLine = Module("statusline", {
     init: function () {
         this._statusLine = document.getElementById("status-bar");
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;

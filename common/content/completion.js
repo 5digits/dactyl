@@ -26,7 +26,7 @@
  * @author Kris Maglione <maglione.k@gmail.com>
  * @constructor
  */
-const CompletionContext = Class("CompletionContext", {
+var CompletionContext = Class("CompletionContext", {
     init: function (editor, name, offset) {
         if (!name)
             name = "";
@@ -825,7 +825,7 @@ const CompletionContext = Class("CompletionContext", {
 /**
  * @instance completion
  */
-const Completion = Module("completion", {
+var Completion = Module("completion", {
     init: function () {
     },
 

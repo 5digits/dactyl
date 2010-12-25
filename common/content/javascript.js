@@ -6,7 +6,7 @@
 
 // TODO: Clean this up.
 
-const JavaScript = Module("javascript", {
+var JavaScript = Module("javascript", {
     init: function () {
         this._stack = [];
         this._functions = [];

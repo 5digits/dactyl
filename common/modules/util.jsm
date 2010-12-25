@@ -23,7 +23,7 @@ default xml namespace = XHTML;
 
 memoize(this, "Commands", function () {
     // FIXME
-    let obj = {};
+    let obj = { Module: Class };
     services.subscriptLoader.loadSubScript("chrome://dactyl/content/commands.js", obj);
     return obj.Commands;
 });
@@ -94,20 +94,28 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     addObserver: function (obj) {
         let observers = obj._observe || obj.observe;
         obj._observe = observers;
+
         function register(meth) {
-            services.observer[meth](obj, "quit-application", true);
-            services.observer[meth](obj, "dactyl-cleanup", true);
-            for (let target in keys(observers))
-                services.observer[meth](obj, target, true);
+            for (let target in set(["dactyl-cleanup", "quit-application"].concat(Object.keys(observers))))
+                try {
+                    services.observer[meth](obj, target, true);
+                }
+                catch (e) {}
         }
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
-                if (target == "quit-application" || target == "dactyl-cleanup")
-                    register("removeObserver");
-                if (observers[target])
-                    observers[target].call(obj, subject, data);
+                try {
+                    if (target == "quit-application" || target == "dactyl-cleanup")
+                        register("removeObserver");
+                    if (observers[target])
+                        observers[target].call(obj, subject, data);
+                }
+                catch (e) {
+                    util.reportError(e);
+                }
             });
-        obj.observe.unRegister = function () register("removeObserver");
+
+        obj.observe.unregister = function () register("removeObserver");
         register("addObserver");
     },
 
@@ -457,6 +465,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     dump: defineModule.dump,
 
+    stackLines: function (stack) {
+        let lines = [];
+        let match, re = /([^]*?)(@.*?)(?:\n|$)/g;
+        while (match = re.exec(stack))
+            lines.push(match[1].replace(/\n/g, "\\n").substr(0, 80) + match[2]);
+        return lines;
+    },
+
     /**
      * Dumps a stack trace to the console.
      *
@@ -464,9 +480,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {number} frames The number of frames to print.
      */
     dumpStack: function dumpStack(msg, frames) {
-        let stack = Error().stack.replace(/(?:.*\n){2}/, "");
-        if (frames != null)
-            [stack] = stack.match(RegExp("(?:.*\n){0," + frames + "}"));
+        let stack = util.stackLines(Error().stack);
+        stack = stack.slice(2, 2 + (frames || 0)).join("\n");
         util.dump((arguments.length == 0 ? "Stack" : msg) + "\n" + stack + "\n");
     },
 
@@ -1126,7 +1141,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         try {
             let obj = update({}, error, {
                 toString: function () String(error),
-                stack: <>{String.replace(error.stack || Error().stack, /^/mg, "\t")}</>
+                stack: <>{util.stackLines(String(error.stack || Error().stack)).join("\n").replace(/^/mg, "\t")}</>
             });
 
             this.errors.push([new Date, obj + "\n" + obj.stack]);
@@ -1140,7 +1155,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         catch (e) {
             try {
                 this.dump(String(error));
-                this.dump(error.stack)
+                this.dump(util.stackLines(error.stack).join("\n"))
             }
             catch (e) { dump(e + "\n"); }
         }

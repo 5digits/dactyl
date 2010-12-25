@@ -7,7 +7,7 @@
 /** @scope modules */
 
 /** @instance rangefinder */
-const RangeFinder = Module("rangefinder", {
+var RangeFinder = Module("rangefinder", {
     init: function () {
         this.lastFindPattern = "";
     },
@@ -251,7 +251,7 @@ const RangeFinder = Module("rangefinder", {
  * documents, and represents a major detriment to productivity where
  * large amounts of data are concerned (e.g., for API documents).
  */
-const RangeFind = Class("RangeFind", {
+var RangeFind = Class("RangeFind", {
     init: function (matchCase, backward, elementPath, regexp) {
         this.window = Cu.getWeakReference(window);
         this.baseDocument = Cu.getWeakReference(content.document);

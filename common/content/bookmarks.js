@@ -6,10 +6,10 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
+var DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
 
 // also includes methods for dealing with keywords and search engines
-const Bookmarks = Module("bookmarks", {
+var Bookmarks = Module("bookmarks", {
     init: function () {
         storage.addObserver("bookmark-cache", function (key, event, arg) {
             if (["add", "change", "remove"].indexOf(event) >= 0)

@@ -8,12 +8,12 @@
 
 /** @scope modules */
 
-const AutoCommand = Struct("event", "pattern", "command");
+var AutoCommand = Struct("event", "pattern", "command");
 
 /**
  * @instance autocommands
  */
-const AutoCommands = Module("autocommands", {
+var AutoCommands = Module("autocommands", {
     init: function () {
         this._store = [];
     },

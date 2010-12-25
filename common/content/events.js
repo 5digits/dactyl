@@ -11,7 +11,7 @@
 /**
  * @instance events
  */
-const Events = Module("events", {
+var Events = Module("events", {
     init: function () {
         this._fullscreen = window.fullScreen;
         this._lastFocus = null;

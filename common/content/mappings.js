@@ -29,7 +29,7 @@
  * @optional
  * @private
  */
-const Map = Class("Map", {
+var Map = Class("Map", {
     init: function (modes, keys, description, action, extraInfo) {
         modes = Array.concat(modes).map(function (m) isObject(m) ? m.mask : m);
         if (!modes.every(util.identity))
@@ -127,7 +127,7 @@ const Map = Class("Map", {
 /**
  * @instance mappings
  */
-const Mappings = Module("mappings", {
+var Mappings = Module("mappings", {
     init: function () {
         this._main = []; // default mappings
         this._user = []; // user created mappings

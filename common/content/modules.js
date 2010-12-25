@@ -8,7 +8,7 @@
  * @class ModuleBase
  * The base class for all modules.
  */
-const ModuleBase = Class("ModuleBase", {
+var ModuleBase = Class("ModuleBase", {
     /**
      * @property {[string]} A list of module prerequisites which
      * must be initialized before this module is loaded.

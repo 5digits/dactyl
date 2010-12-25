@@ -12,14 +12,14 @@ default xml namespace = XHTML;
 XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
-const plugins = { __proto__: modules };
-const userContext = newContext(modules);
+var plugins = { __proto__: modules };
+var userContext = newContext(modules);
 
-const EVAL_ERROR = "__dactyl_eval_error";
-const EVAL_RESULT = "__dactyl_eval_result";
-const EVAL_STRING = "__dactyl_eval_string";
+var EVAL_ERROR = "__dactyl_eval_error";
+var EVAL_RESULT = "__dactyl_eval_result";
+var EVAL_STRING = "__dactyl_eval_string";
 
-const Dactyl = Module("dactyl", {
+var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function () {
         window.dactyl = this;
         // cheap attempt at compatibility
