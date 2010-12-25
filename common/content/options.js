@@ -8,11 +8,7 @@
 
 /** @scope modules */
 
-let ValueError = Class("ValueError", Error, {
-    init: function (message) {
-        update(this, Error(message));
-    }
-});
+let ValueError = Class("ValueError", ErrorBase);
 
 // do NOT create instances of this class yourself, use the helper method
 // options.add() instead

@@ -176,7 +176,7 @@ function require(obj, name, from) {
 defineModule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
+        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "Object", "Runnable",
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "array",
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator",
@@ -856,6 +856,26 @@ function XPCOM(interfaces, superClass) {
     shim = interfaces = null;
     return res;
 }
+
+/**
+ * An abstract base class for classes that wish to inherit from Error.
+ */
+const ErrorBase = Class("ErrorBase", Error, {
+    level: 2,
+    init: function (message, level) {
+        level = level || 0;
+        update(this, Error(message))
+        this.message = message;
+
+        let frame = Components.stack;
+        for (let i = 0; i < this.level + level; i++) {
+            frame = frame.caller;
+            this.stack = this.stack.replace(/^.*\n/, "");
+        }
+        this.fileName = frame.filename;
+        this.lineNumber = frame.lineNumber;
+    }
+});
 
 /**
  * Constructs a new Module class and instantiates an instance into the current

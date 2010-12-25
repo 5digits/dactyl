@@ -356,17 +356,39 @@ const Styles = Module("Styles", {
 }, {
     commands: function (dactyl, modules, window) {
         const commands = modules.commands;
+
+        const queue = [];
+        const timer = Timer(10, 10, function () {
+            let args = queue.shift()
+            let [filter, css] = args;
+            if ("-append" in args) {
+                let sheet = styles.user.get(args["-name"]);
+                if (sheet) {
+                    filter = sheet.sites.concat(filter).join(",");
+                    css = sheet.css + " " + css;
+
+                }
+            }
+            styles.user.add(args["-name"], filter, css, args["-agent"]);
+
+            if (queue.length)
+                timer.tell();
+        });
         commands.add(["sty[le]"],
             "Add or list user styles",
             function (args) {
                 let [filter, css] = args;
-                let name = args["-name"];
 
-                if (!css) {
+                if (css) {
+                    queue.push(args);
+                    timer.tell(args);
+                }
+                else {
                     let list = styles.user.sheets.slice()
                                      .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
                                                                             : !!b.name - !!a.name || a.id - b.id);
                     let uris = util.visibleURIs(window.content);
+                    let name = args["-name"];
                     modules.commandline.commandOutput(
                         template.tabular(["", "Name", "Filter", "CSS"],
                             ["min-width: 1em; text-align: center; color: red; font-weight: bold;",
@@ -378,17 +400,6 @@ const Styles = Module("Styles", {
                               sheet.css]
                              for (sheet in values(list))
                              if ((!filter || sheet.sites.indexOf(filter) >= 0) && (!name || sheet.name == name)))));
-                }
-                else {
-                    if ("-append" in args) {
-                        let sheet = styles.user.get(name);
-                        if (sheet) {
-                            filter = sheet.sites.concat(filter).join(",");
-                            css = sheet.css + " " + css;
-
-                        }
-                    }
-                    styles.user.add(name, filter, css, args["-agent"]);
                 }
             },
             {
