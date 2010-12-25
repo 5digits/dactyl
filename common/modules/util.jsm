@@ -292,10 +292,10 @@ const Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             ([^]*?) // 1
             (?:
                 (<\[) | // 2
-                (< (.*?) >) | // 3 4
+                (< ((?:[a-z]-)?[a-z-]*?) >) | // 3 4
                 (\]>) // 5
             )
-        ]]>, "gy");
+        ]]>, "giy");
         while (match = re.exec(macro)) {
             let [, prefix, open, full, macro, close] = match;
             end += match[0].length;

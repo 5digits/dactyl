@@ -43,7 +43,7 @@ let components = {};
 let getURI = null;
 
 function startup(data, reason) {
-    dump("dactyl: bootstrap: startup\n");
+    dump("dactyl: bootstrap: startup " + reasonToString(reason) + "\n");
     basePath = data.installPath;
 
     if (!initialized) {
@@ -180,11 +180,13 @@ function init() {
 }
 
 function shutdown(data, reason) {
-    dump("dactyl: bootstrap: shutdown\n");
-    services.observer.notifyObservers(null, "dactyl-cleanup", null);
-    for (let factory in values(components))
-        // TODO: Categories;
-        factory.unregister();
+    dump("dactyl: bootstrap: shutdown " + reasonToString(reason) + "\n");
+    if (reason != APP_SHUTDOWN) {
+        services.observer.notifyObservers(null, "dactyl-cleanup", null);
+        for (let factory in values(components))
+            // TODO: Categories;
+            factory.unregister();
+    }
 }
 
 function reasonToString(reason) {
@@ -196,6 +198,6 @@ function reasonToString(reason) {
             return name;
 }
 
-function install(data, reason) { dump("dactyl: bootstrap: install\n") }
-function uninstall(data, reason) { dump("dactyl: bootstrap: uninstall\n") }
+function install(data, reason) { dump("dactyl: bootstrap: install " + reasonToString(reason) + "\n") }
+function uninstall(data, reason) { dump("dactyl: bootstrap: uninstall " + reasonToString(reason) + "\n") }
 

@@ -137,23 +137,8 @@ const CommandWidgets = Class("CommandWidgets", {
                     return this.statusbar;
 
                 let statusElem = this.statusbar.message;
-                if (!statusElem.editor) {
-                    util.dump(commandline == window.dactyl.modules.commandline,
-                              window.dactyl.modules.commandline.widgets == this,
-                              commandline.widgets == this);
-                    util.dumpStack();
-
-                    for (let i=0, e = statusElem; e; e = e.parentNode)
-                        util.dump(i++, e == statusline._statusLine.firstChild,
-                                  e == statusline.widgets.container,
-                                  e);
-                    util.dump(statusElem == statusline.widgets.message);
-                    util.dump(statusline._statusLine.firstChild == statusline.widgets.container);
-                }
-                else {
-                    if (value && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
-                        return this.commandbar;
-                }
+                if (value && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
+                    return this.commandbar;
                 return this.activeGroup.mode;
             }
         });
