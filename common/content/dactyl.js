@@ -37,6 +37,19 @@ const Dactyl = Module("dactyl", {
         };
     },
 
+    cleanup: function () {
+        delete window.dactyl;
+        delete window.liberator;
+    },
+
+    destroy: function () {
+        autocommands.trigger("LeavePre", {});
+        storage.saveAll();
+        dactyl.triggerObserver("shutdown", null);
+        util.dump("All dactyl modules destroyed\n");
+        autocommands.trigger("Leave", {});
+    },
+
     /** @property {string} The name of the current user profile. */
     profileName: Class.memoize(function () {
         // NOTE: services.profile.selectedProfile.name doesn't return
@@ -51,14 +64,6 @@ const Dactyl = Module("dactyl", {
                 return prof.name;
         return "unknown";
     }),
-
-    destroy: function () {
-        autocommands.trigger("LeavePre", {});
-        storage.saveAll();
-        dactyl.triggerObserver("shutdown", null);
-        util.dump("All dactyl modules destroyed\n");
-        autocommands.trigger("Leave", {});
-    },
 
     /**
      * @property {number} The current main mode.

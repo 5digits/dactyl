@@ -67,6 +67,7 @@ const CommandWidgets = Class("CommandWidgets", {
             getGroup: function (value) {
                 if (this.command && !options.get("guioptions").has("M"))
                     return this.statusbar;
+
                 let statusElem = this.statusbar.message;
                 if (value && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
                     return this.commandbar;
@@ -84,6 +85,14 @@ const CommandWidgets = Class("CommandWidgets", {
                 return this.commandbar;
             }
         });
+
+        let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;
+        styles.registerSheet("chrome://dactyl/skin/dactyl.css");
+        styles.system.add("font-size", "chrome://dactyl/content/buffer.xhtml",
+                          "body { font-size: " + fontSize + "; }");
+    },
+    cleanup: function cleanup() {
+        styles.unregisterSheet("chrome://dactyl/skin/dactyl.css");
     },
     addElement: function (obj) {
         const self = this;
@@ -1742,12 +1751,6 @@ const CommandLine = Module("commandline", {
                     host && (!item.domains || !item.domains.some(function (d) util.isSubdomain(d, host))));
             }
         });
-    },
-    styles: function () {
-        let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;
-        styles.registerSheet("chrome://dactyl/skin/dactyl.css");
-        styles.system.add("font-size", "chrome://dactyl/content/buffer.xhtml",
-                          "body { font-size: " + fontSize + "; }");
     }
 });
 

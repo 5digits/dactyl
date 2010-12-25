@@ -147,6 +147,40 @@ const Buffer = Module("buffer", {
             let elem = event.originalTarget;
             buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))])
         };
+
+        this.replaceProgressListener(this.progressListener);
+    },
+
+    cleanup: function () {
+        for (let prop in properties(this.progressListener))
+            if (!this.progressListener.__lookupGetter__(prop) &&
+                !callable(this.progressListener[prop]))
+                this.origProgressListener[prop] = this.progressListener[prop]
+
+        this.replaceProgressListener(this.origProgressListener);
+    },
+
+    replaceProgressListener: function (newListener) {
+        // I hate this whole hack. --Kris
+        let obj = window.XULBrowserWindow, getter;
+        for (let prop in properties(obj))
+            if ((getter = obj.__lookupGetter__(prop)) && !obj.__lookupSetter__(prop)) {
+                newListener.__defineGetter__(prop, getter);
+                delete obj[prop];
+            }
+
+        this.origProgressListener = window.XULBrowserWindow;
+        try {
+            config.browser.removeProgressListener(window.XULBrowserWindow);
+        }
+        catch (e) {} // Why? --djk
+
+        config.browser.addProgressListener(newListener, Ci.nsIWebProgress.NOTIFY_ALL);
+        window.XULBrowserWindow = newListener;
+        window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+              .QueryInterface(Ci.nsIDocShellTreeItem).treeOwner
+              .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIXULWindow)
+              .XULBrowserWindow = newListener;
     },
 
     destroy: function () {
@@ -1502,26 +1536,6 @@ const Buffer = Module("buffer", {
         };
     },
     events: function () {
-        try {
-            config.browser.removeProgressListener(window.XULBrowserWindow);
-        }
-        catch (e) {} // Why? --djk
-
-        // I hate this whole hack. --Kris
-        let obj = window.XULBrowserWindow, getter;
-        for (let p in properties(obj))
-            if ((getter = obj.__lookupGetter__(p)) && !obj.__lookupSetter__(p)) {
-                this.progressListener.__defineGetter__(p, getter);
-                delete obj[p];
-            }
-
-        config.browser.addProgressListener(this.progressListener, Ci.nsIWebProgress.NOTIFY_ALL);
-        window.XULBrowserWindow = this.progressListener;
-        window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-              .QueryInterface(Ci.nsIDocShellTreeItem).treeOwner
-              .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIXULWindow)
-              .XULBrowserWindow = this.progressListener;
-
         events.addSessionListener(config.browser, "DOMContentLoaded", this.closure.onDOMContentLoaded, true);
         events.addSessionListener(config.browser, "load", this.closure.onPageLoad, true);
         events.addSessionListener(config.browser, "scroll", this.closure._updateBufferPosition, false);

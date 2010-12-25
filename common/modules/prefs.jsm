@@ -28,6 +28,10 @@ const Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference
         this.restore();
     },
 
+    cleanup: function cleanup() {
+        this._branch.removeObserver("", this);
+    },
+
     observe: {
         "nsPref:changed": function (subject, data) {
             let observers = this._observers[data];

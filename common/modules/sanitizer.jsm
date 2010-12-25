@@ -12,6 +12,8 @@
 // FIXME:
 //   - finish 1.9.0 support if we're going to support sanitizing in Melodactyl
 
+try {
+
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
@@ -641,6 +643,6 @@ const Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakR
 
 endModule();
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+} catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

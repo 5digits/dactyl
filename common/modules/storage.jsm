@@ -142,25 +142,39 @@ const ObjectStore = Class("ObjectStore", StoreBase, {
     __iterator__: function () Iterator(this._object),
 });
 
-var keys = {};
-var observers = {};
-
 const Storage = Module("Storage", {
     alwaysReload: {},
+
+    init: function () {
+        this.cleanup();
+    },
+
+    cleanup: function () {
+        for (let key in keys(this.keys))
+            delete this[key];
+        for (let ary in values(this.observers))
+            for (let obj in values(ary))
+                if (obj.ref && obj.ref.get())
+                    delete obj.ref.get().dactylStorageRefs;
+
+        this.keys = {};
+        this.observers = {};
+    },
 
     newObject: function newObject(key, constructor, params) {
         if (params == null || !isObject(params))
             throw Error("Invalid argument type");
 
-        if (!(key in keys) || params.reload || this.alwaysReload[key]) {
+        if (!(key in this.keys) || params.reload || this.alwaysReload[key]) {
             if (key in this && !(params.reload || this.alwaysReload[key]))
                 throw Error();
             let load = function () loadData(key, params.store, params.type || myObject);
-            keys[key] = new constructor(key, params.store, load, params);
-            keys[key].timer = new Timer(1000, 10000, function () storage.save(key));
-            this.__defineGetter__(key, function () keys[key]);
+
+            this.keys[key] = new constructor(key, params.store, load, params);
+            this.keys[key].timer = new Timer(1000, 10000, function () storage.save(key));
+            this.__defineGetter__(key, function () this.keys[key]);
         }
-        return keys[key];
+        return this.keys[key];
     },
 
     newMap: function newMap(key, options) {
@@ -182,38 +196,36 @@ const Storage = Module("Storage", {
             callbackRef = { get: function () callback };
         }
         this.removeDeadObservers();
-        if (!(key in observers))
-            observers[key] = [];
-        if (!observers[key].some(function (o) o.callback.get() == callback))
-            observers[key].push({ ref: ref && Cu.getWeakReference(ref), callback: callbackRef });
+        if (!(key in this.observers))
+            this.observers[key] = [];
+        if (!this.observers[key].some(function (o) o.callback.get() == callback))
+            this.observers[key].push({ ref: ref && Cu.getWeakReference(ref), callback: callbackRef });
     },
 
     removeObserver: function (key, callback) {
         this.removeDeadObservers();
-        if (!(key in observers))
+        if (!(key in this.observers))
             return;
-        observers[key] = observers[key].filter(function (elem) elem.callback.get() != callback);
-        if (observers[key].length == 0)
+        this.observers[key] = this.observers[key].filter(function (elem) elem.callback.get() != callback);
+        if (this.observers[key].length == 0)
             delete obsevers[key];
     },
 
     removeDeadObservers: function () {
-        for (let [key, ary] in Iterator(observers)) {
-            observers[key] = ary = ary.filter(function (o) o.callback.get() && (!o.ref || o.ref.get() && o.ref.get().dactylStorageRefs));
+        for (let [key, ary] in Iterator(this.observers)) {
+            this.observers[key] = ary = ary.filter(function (o) o.callback.get() && (!o.ref || o.ref.get() && o.ref.get().dactylStorageRefs));
             if (!ary.length)
-                delete observers[key];
+                delete this.observers[key];
         }
     },
 
-    get observers() observers,
-
     fireEvent: function fireEvent(key, event, arg) {
         this.removeDeadObservers();
-        if (key in observers)
+        if (key in this.observers)
             // Safe, since we have our own Array object here.
-            for each (let observer in observers[key])
+            for each (let observer in this.observers[key])
                 observer.callback.get()(key, event, arg);
-        if (key in keys)
+        if (key in this.keys)
             this[key].timer.tell();
     },
 
@@ -223,11 +235,11 @@ const Storage = Module("Storage", {
     },
 
     save: function save(key) {
-        saveData(keys[key]);
+        saveData(this.keys[key]);
     },
 
     saveAll: function storeAll() {
-        for each (let obj in keys)
+        for each (let obj in this.keys)
             saveData(obj);
     },
 
@@ -237,7 +249,7 @@ const Storage = Module("Storage", {
         if (val && !this._privateMode)
             this.saveAll();
         if (!val && this._privateMode)
-            for (let key in keys)
+            for (let key in this.keys)
                 this.load(key);
         return this._privateMode = Boolean(val);
     }

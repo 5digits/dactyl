@@ -13,6 +13,7 @@ syntax: glob
 */contrib/vim/*.vba
 */bak/*
 downloads/*
+.git/*
 
 *.py[co]
 

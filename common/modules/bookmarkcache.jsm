@@ -42,6 +42,10 @@ const BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), 
         services.bookmarks.addObserver(this, false);
     },
 
+    cleanup: function cleanup() {
+        services.bookmarks.removeObserver(this);
+    },
+
     __iterator__: function () (val for ([, val] in Iterator(bookmarkcache.bookmarks))),
 
     get bookmarks() Class.replaceProperty(this, "bookmarks", this.load()),

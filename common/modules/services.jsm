@@ -8,8 +8,7 @@ try {
 
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("services", {
-    exports: ["Services", "services"],
-    use: ["util"]
+    exports: ["AddonManager", "Services", "services"]
 });
 
 /**
@@ -72,6 +71,9 @@ const Services = Module("Services", {
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          Ci.nsIZipReader, "open");
         this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
+
+        if (!this.extensionManager)
+            Components.utils.import("resource://gre/modules/AddonManager.jsm");
     },
 
     _create: function (classes, ifaces, meth, init, args) {
@@ -85,7 +87,7 @@ const Services = Module("Services", {
             return res;
         }
         catch (e) {
-            util.dump("Service creation failed for '" + classes + "': " + e + "\n");
+            dump("dactyl: Service creation failed for '" + classes + "': " + e + "\n");
             return null;
         }
     },
@@ -105,8 +107,12 @@ const Services = Module("Services", {
         if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
         this.__defineGetter__(name, function () {
+            let res = self._create(class_, ifaces, meth);
+            if (!res)
+                return null;
+
             delete this[name];
-            return this[name] = self._create(class_, ifaces, meth);
+            return this[name] = res;
         });
     },
 
@@ -140,10 +146,6 @@ const Services = Module("Services", {
     get: function (name) this[name],
 }, {
 }, {
-    init: function (dactyl, modules) {
-        if (!modules.AddonManager && !this.get("extensionManager"))
-            Components.utils.import("resource://gre/modules/AddonManager.jsm", modules);
-    },
     javascript: function (dactyl, modules) {
         modules.JavaScript.setCompleter(this.get, [function () [[k, v] for ([k, v] in Iterator(services)) if (v instanceof Ci.nsISupports)]]);
         modules.JavaScript.setCompleter(this.create, [function () [[c, ""] for (c in services.classes)]]);

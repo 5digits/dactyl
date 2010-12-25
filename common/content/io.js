@@ -13,20 +13,21 @@ plugins.contexts = {};
 function Script(file) {
     let self = set.has(plugins, file.path) && plugins[file.path];
     if (self) {
-        if (self.onUnload)
+        if (set.has(self, "onUnload"))
             self.onUnload();
     }
     else {
-        self = { __proto__: plugins };
-        plugins[file.path] = self;
-        self.NAME = file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
-        self.PATH = file.path;
-        self.CONTEXT = self;
+        self = update({ __proto__: plugins }, {
+            NAME: file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase()),
+            PATH: file.path,
+            CONTEXT: self
+        });
+        Class.replaceProperty(plugins, file.path, self);
 
         // This belongs elsewhere
         if (io.getRuntimeDirectories("plugins").some(
                 function (dir) dir.contains(file, false)))
-            plugins[self.NAME] = self;
+            Class.replaceProperty(plugins, self.NAME, self);
     }
     plugins.contexts[file.path] = self;
     return self;
@@ -65,6 +66,13 @@ const IO = Module("io", {
         };
 
         services.downloadManager.addListener(this.downloadListener);
+    },
+
+    destroy: function () {
+        services.downloadManager.removeListener(this.downloadListener);
+        for (let [, plugin] in Iterator(plugins.contexts))
+            if (plugin.onUnload)
+                plugin.onUnload();
     },
 
     // TODO: there seems to be no way, short of a new component, to change
@@ -109,13 +117,6 @@ const IO = Module("io", {
             [this._cwd, this._oldcwd] = [dir.path, this.cwd];
         }
         return this.cwd;
-    },
-
-    destroy: function () {
-        services.downloadManager.removeListener(this.downloadListener);
-        for (let [, plugin] in Iterator(plugins.contexts))
-            if (plugin.onUnload)
-                plugin.onUnload();
     },
 
     /**

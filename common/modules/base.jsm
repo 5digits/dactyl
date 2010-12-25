@@ -98,6 +98,7 @@ let loaded = {};
 let currentModule;
 function defineModule(name, params) {
     let module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
+    defineModule.globals.push(module);
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
     defineModule.loadLog.push("defineModule " + name);
@@ -114,6 +115,7 @@ function defineModule(name, params) {
     currentModule = module;
 }
 
+defineModule.globals = [];
 defineModule.loadLog = [];
 Object.defineProperty(defineModule.loadLog, "push", {
     value: function (val) { defineModule.dump(val + "\n"); this[this.length] = val; }
@@ -150,8 +152,10 @@ defineModule.time = function time(major, minor, func, self) {
 
 function endModule() {
     defineModule.loadLog.push("endModule " + currentModule.NAME);
+
     for (let [, mod] in Iterator(use[currentModule.NAME] || []))
         require(mod, currentModule.NAME, "use");
+
     loaded[currentModule.NAME] = 1;
 }
 
@@ -177,8 +181,8 @@ defineModule("base", {
         "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator",
         "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
-        "keys", "memoize", "octal", "properties", "set", "update", "values",
-        "withCallerGlobal"
+        "keys", "memoize", "octal", "properties", "require", "set", "update",
+        "values", "withCallerGlobal"
     ],
     use: ["services", "util"]
 });

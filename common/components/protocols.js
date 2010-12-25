@@ -202,5 +202,6 @@ if (XPCOMUtils.generateNSGetFactory)
     const NSGetFactory = XPCOMUtils.generateNSGetFactory([AboutHandler, ChromeData, Dactyl, Shim]);
 else
     const NSGetModule = XPCOMUtils.generateNSGetModule([AboutHandler, ChromeData, Dactyl, Shim]);
+var EXPORTED_SYMBOLS = ["NSGetFactory"];
 
 // vim: set fdm=marker sw=4 ts=4 et:
