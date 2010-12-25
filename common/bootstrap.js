@@ -186,6 +186,9 @@ function init() {
 function shutdown(data, reason) {
     dump("dactyl: bootstrap: shutdown " + reasonToString(reason) + "\n");
     if (reason != APP_SHUTDOWN) {
+        if ([ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason) >= 0)
+            services.observer.notifyObservers(null, "dactyl-purge", null);
+
         services.observer.notifyObservers(null, "dactyl-cleanup", null);
         for (let factory in values(components))
             // TODO: Categories;

@@ -949,6 +949,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         module.init();
                 }
         },
+        "dactyl-purge": function () {
+            this.rehashing = true;
+        },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
                 if (event.originalTarget === window.document) {
@@ -1163,9 +1166,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     }),
 
     rehash: function () {
-        this.rehashing = true;
-        this.addon.userDisabled = true;
         this.timeout(function () {
+            this.rehashing = true;
+            this.addon.userDisabled = true;
             this.addon.userDisabled = false;
         });
     },

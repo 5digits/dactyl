@@ -26,28 +26,28 @@ const Config = Module("config", ConfigBase, {
                         group="sidebar"
                         sidebarurl="chrome://mozapps/content/extensions/extensions.xul"
                         sidebartitle="Add-ons"
-                        oncommand="toggleSidebar('pentadactyl-viewAddonsSidebar');"/>
+                        oncommand="toggleSidebar(this.id);"/>
                     <broadcaster id="pentadactyl-viewConsoleSidebar"
                         autoCheck="false"
                         type="checkbox"
                         group="sidebar"
                         sidebarurl="chrome://global/content/console.xul"
                         sidebartitle="Console"
-                        oncommand="toggleSidebar('pentadactyl-viewConsoleSidebar');"/>
+                        oncommand="toggleSidebar(this.id);"/>
                     <broadcaster id="pentadactyl-viewDownloadsSidebar"
                         autoCheck="false"
                         type="checkbox"
                         group="sidebar"
                         sidebarurl="chrome://mozapps/content/downloads/downloads.xul"
                         sidebartitle="Downloads"
-                        oncommand="toggleSidebar('pentadactyl-viewDownloadsSidebar');"/>
+                        oncommand="toggleSidebar(this.id);"/>
                     <broadcaster id="pentadactyl-viewPreferencesSidebar"
                         autoCheck="false"
                         type="checkbox"
                         group="sidebar"
                         sidebarurl="about:config"
                         sidebartitle="Preferences"
-                        oncommand="toggleSidebar('pentadactyl-viewPreferencesSidebar');"/>
+                        oncommand="toggleSidebar(this.id);"/>
                 </broadcasterset>
             </e4x>.elements()
         });
@@ -223,7 +223,7 @@ const Config = Module("config", ConfigBase, {
             },
             { argCount: "0" });
 
-        commands.add(["sideb[ar]", "sb[ar]", "sbope[n]"],
+        commands.add(["sideb[ar]", "sb[ar]", "sbop[en]"],
             "Open the sidebar window",
             function (args) {
                 function compare(a, b) util.compareIgnoreCase(a, b) == 0

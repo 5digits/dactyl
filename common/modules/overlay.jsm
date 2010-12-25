@@ -249,10 +249,10 @@ var Overlay = Module("Overlay", {
                 util.dump("Loaded in " + (Date.now() - start) + "ms");
 
                 modules.events.addSessionListener(window, "unload", function onUnload() {
-                    window.removeEventListener("unload", onUnload, false);
+                    window.removeEventListener("unload", onUnload.wrapped, false);
                     for (let [, mod] in iter(modules))
                         if (mod instanceof ModuleBase && "destroy" in mod)
-                            mod.destroy();
+                            util.trapErrors(mod.destroy, mod);
                 }, false);
             }
         }));

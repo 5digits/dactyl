@@ -13,7 +13,6 @@
  */
 var Events = Module("events", {
     init: function () {
-        let _events = "if (window.dactyl && dactyl.modules.loaded.events) return dactyl.modules.events"
         util.overlayWindow(window, {
             append: <e4x xmlns={XUL}>
                 <window id={document.documentElement.id}>
@@ -21,9 +20,9 @@ var Events = Module("events", {
                         from: http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands !-->
                     <!-- I don't think we really need this. ––Kris -->
                     <commandset id="onPentadactylFocus" commandupdater="true" events="focus"
-                                oncommandupdate={_events + ".onFocusChange(event);"}/>
+                                oncommandupdate="dactyl.modules.events.onFocusChange(event);"/>
                     <commandset id="onPentadactylSelect" commandupdater="true" events="select"
-                                oncommandupdate={_events + ".onSelectionChange(event);"}/>
+                                oncommandupdate="dactyl.modules.events.onSelectionChange(event);"/>
                 </window>
             </e4x>.elements()
         });
@@ -121,7 +120,8 @@ var Events = Module("events", {
      */
     wrapListener: function wrapListener(method, self) {
         self = self || this;
-        return function wrappedListener(event) {
+        method.wrapped = wrappedListener;
+        function wrappedListener(event) {
             try {
                 method.apply(self, arguments);
             }
@@ -133,6 +133,7 @@ var Events = Module("events", {
                     dactyl.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
             }
         };
+        return wrappedListener;
     },
 
     /**
