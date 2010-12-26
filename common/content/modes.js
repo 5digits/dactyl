@@ -18,8 +18,8 @@ var Modes = Module("modes", {
 
         this._passNextKey = false;
         this._passAllKeys = false;
-        this._isRecording = false;
-        this._isReplaying = false; // playing a macro
+        this._recording = false;
+        this._replaying = false; // playing a macro
 
         this._modeStack = update([], {
             pop: function pop() {
@@ -119,9 +119,9 @@ var Modes = Module("modes", {
     _getModeMessage: function () {
         // when recording a macro
         let macromode = "";
-        if (modes.isRecording)
+        if (modes.recording)
             macromode = "recording";
-        else if (modes.isReplaying)
+        else if (modes.replaying)
             macromode = "replaying";
 
         let ext = "";
@@ -323,11 +323,11 @@ var Modes = Module("modes", {
         }
     },
 
-    get isRecording() this._isRecording,
-    set isRecording(value) { this._isRecording = value; this.show(); },
+    get recording() this._recording,
+    set recording(value) { this._recording = value; this.show(); },
 
-    get isReplaying() this._isReplaying,
-    set isReplaying(value) { this._isReplaying = value; this.show(); },
+    get replaying() this._replaying,
+    set replaying(value) { this._replaying = value; this.show(); },
 
     get main() this._main,
     set main(value) { this.set(value); },
