@@ -26,6 +26,8 @@
         backspace.
       - Supports reverse incremental search.
       - Input boxes are not focused when matches are highlighted.
+    * It's now possible to map keys in many more modes, including
+      Hint, Multi-line Output, and Menu.
     * Ex command parsing improvements, including:
       - Multiple Ex commands may now be separated by |
       - Commands can continue over multiple lines in RC files by
@@ -49,6 +51,9 @@
     * The concept of completion contexts is now exposed to the user
       (see :h :contexts), allowing for powerful and fine-grained
       completion system customization.
+    * The external editor can now be configured to open to a given
+      line number and column, used for opening source links and
+      editing input fields with <C-i>. See 'editor'.
     * Command changes:
       - :viusage, :optionusage and :exusage were replaced with :listkeys,
         :listoptions and :listcommands, providing more powerful and
@@ -63,8 +68,11 @@
       - Added :feedkeys command.
       - Added -sort option to :history.
       - Added several new options, including -javascript, to :abbrev and :map.
-      - Added :mksyntax command.
+      - Added :mksyntax command to auto-generate Vim syntax files.
       - :open now only opens files beginning with /, ./, ../, or ~/
+      - :saveas now provides completions for default file names, and
+        automatically chooses a filename when the save target is a
+        directory.
       - Added :write !cmd and :write >>file.
       - Added :yank command.
     * Improvements to :style and :highlight:
@@ -76,6 +84,7 @@
         those active and inactive for the current site.
       - CSS property name completion is not available.
     * IMPORTANT option changes:
+      - Boolean options no longer accept an argument.
       - 'cdpath' and 'runtimepath' no longer treat ",,"
         specially. Use "." instead.
       - 'incsearch', 'hlsearch', 'ignorecase', and 'smartcase' have
