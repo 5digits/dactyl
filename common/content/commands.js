@@ -335,14 +335,14 @@ var Command = Class("Command", {
         case "-keys":
             let silent = args["-silent"];
             rhs = events.canonicalKeys(rhs, true);
-            let macro = util.compileMacro(rhs, true);
-            var action = function action(count) events.feedkeys(macro({ count: count }),
+            var action = function action(count) events.feedkeys(action.macro({ count: count || "" }),
                                                                 noremap, silent);
+            action.macro = util.compileMacro(rhs, true);
             break;
         case "-ex":
-            macro = util.compileMacro(rhs, true);
-            action = function action() commands.execute(macro, makeParams.apply(this, arguments),
+            action = function action() commands.execute(action.macro, makeParams.apply(this, arguments),
                                                         false, null, action.sourcing);
+            action.macro = util.compileMacro(rhs, true);
             action.sourcing = io.sourcing && update({}, io.sourcing);
             break;
         case "-javascript":

@@ -330,7 +330,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     stack.top.elements.push(quote(defaults[name]));
                 else {
                     stack.top.elements.push(update(
-                        function (obj) obj[name] != null ? quote(obj[name]) : unknown(full),
+                        function (obj) obj[name] != null ? quote(obj[name]) : set.has(obj, name) ? "" : unknown(full),
                         { test: function (obj) obj[name] != null && obj[name] !== false }));
 
                     for (let elem in array.iterValues(stack))

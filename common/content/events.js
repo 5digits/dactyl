@@ -30,6 +30,7 @@ var Events = Module("events", {
         this._fullscreen = window.fullScreen;
         this._lastFocus = null;
         this._currentMacro = "";
+        this._macroKeys = [];
         this._lastMacro = "";
 
         this.sessionListeners = [];
@@ -152,17 +153,28 @@ var Events = Module("events", {
         dactyl.assert(/[a-zA-Z0-9]/.test(macro),
                       "E354: Invalid register name: '" + macro + "'");
 
-        modes.isRecording = true;
+        modes.recording = true;
 
         if (/[A-Z]/.test(macro)) { // uppercase (append)
             this._currentMacro = macro.toLowerCase();
-            if (!this._macros.get(this._currentMacro))
-                this._macros.set(this._currentMacro, { keys: "", timeRecorded: Date.now() }); // initialize if it does not yet exist
+            this._macroKeys = events.fromString((this._macros.get(this._currentMacro) || { keys: "" }).keys, true)
+                                    .map(events.closure.toString);
         }
         else {
             this._currentMacro = macro;
-            this._macros.set(this._currentMacro, { keys: "", timeRecorded: Date.now() });
+            this._macroKeys = [];
         }
+    },
+
+    finishRecording: function () {
+        modes.recording = false;
+        this._macros.set(this._currentMacro, {
+            keys: this._macroKeys.join(""),
+            timeRecorded: Date.now()
+        });
+
+        dactyl.log("Recorded " + this._currentMacro + ": " + this._macroKeys.join(""), 9);
+        dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
     },
 
     /**
@@ -195,9 +207,9 @@ var Events = Module("events", {
             catch (e) {}
 
             buffer.loaded = 1; // even if not a full page load, assume it did load correctly before starting the macro
-            modes.isReplaying = true;
+            modes.replaying = true;
             res = events.feedkeys(this._macros.get(this._lastMacro).keys, { noremap: true });
-            modes.isReplaying = false;
+            modes.replaying = false;
         }
         else
             // TODO: ignore this like Vim?
@@ -277,7 +289,7 @@ var Events = Module("events", {
                     break;
 
                 // Stop feeding keys if page loading failed.
-                if (modes.isReplaying && !this.waitForPageLoad())
+                if (modes.replaying && !this.waitForPageLoad())
                     break;
             }
         }
@@ -836,19 +848,8 @@ var Events = Module("events", {
         if (!key)
              return null;
 
-        if (modes.isRecording) {
-            if (key == "q" && !modes.main.input) { // TODO: should not be hard-coded
-                modes.isRecording = false;
-                dactyl.log("Recorded " + this._currentMacro + ": " + this._macros.get(this._currentMacro, {}).keys, 9);
-                dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
-                return killEvent();
-            }
-            else if (this._input && !mappings.hasMap(modes.main, this._input.buffer + key))
-                this._macros.set(this._currentMacro, {
-                    keys: this._macros.get(this._currentMacro, {}).keys + key,
-                    timeRecorded: Date.now()
-                });
-        }
+        if (modes.recording && (!this._input || !mappings.hasMap(modes.main, this._input.buffer + key)))
+            events._macroKeys.push(key);
 
         // feedingKeys needs to be separate from interrupted so
         // we can differentiate between a recorded <C-c>
@@ -857,8 +858,8 @@ var Events = Module("events", {
         if (events.feedingKeys && !event.isMacro) {
             if (key == "<C-c>") {
                 events.feedingKeys = false;
-                if (modes.isReplaying) {
-                    modes.isReplaying = false;
+                if (modes.replaying) {
+                    modes.replaying = false;
                     this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
                 }
             }
@@ -881,11 +882,13 @@ var Events = Module("events", {
             this._input = null;
             if (!input) {
                 let ignore = false;
+                let overrideMode = null;
 
                 // menus have their own command handlers
                 if (modes.extended & modes.MENU)
-                    ignore = true;
-                else if (modes.main == modes.PASS_THROUGH)
+                    overrideMode = modes.MENU;
+
+                if (modes.main == modes.PASS_THROUGH)
                     ignore = !Events.isEscape(key) && key != "<C-v>";
                 else if (modes.main == modes.QUOTE) {
                     if (modes.getStack(1).main == modes.PASS_THROUGH) {
@@ -912,7 +915,7 @@ var Events = Module("events", {
                 if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode.main))
                     return null;
 
-                input = Events.KeyProcessor(mode.params.mainMode || mode.main, mode.extended);
+                input = Events.KeyProcessor(overrideMode || mode.params.mainMode || mode.main, mode.extended);
                 if (mode.params.preExecute)
                     input.preExecute = mode.params.preExecute;
                 if (mode.params.postExecute)
@@ -1103,7 +1106,7 @@ var Events = Module("events", {
             else if (this.pendingArgMap) {
                 let map = this.pendingArgMap;
                 if (!Events.isEscape(key))
-                    if (!modes.isReplaying || this.waitForPageLoad())
+                    if (!modes.replaying || this.waitForPageLoad())
                         execute(map, null, this.count, key);
                 return true;
             }
@@ -1130,7 +1133,7 @@ var Events = Module("events", {
                     this.pendingMotionMap = map;
                 }
                 else {
-                    if (modes.isReplaying && !this.waitForPageLoad())
+                    if (modes.replaying && !this.waitForPageLoad())
                         return true;
 
                     let ret = execute(map, null, this.count);
@@ -1223,12 +1226,15 @@ var Events = Module("events", {
             function () { return; });
 
         // macros
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.MESSAGE].filter(util.identity),
+        mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
             ["q"], "Record a key sequence into a macro",
-            function (arg) { events.startRecording(arg); },
-            { arg: true });
+            function (arg) {
+                events._macroKeys.pop();
+                events[modes.recording ? "finishRecording" : "startRecording"](arg);
+            },
+            { get arg() !modes.recording });
 
-        mappings.add([modes.NORMAL, modes.PLAYER, modes.MESSAGE].filter(util.identity),
+        mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
             ["@"], "Play a macro",
             function (count, arg) {
                 count = Math.max(count, 1);
