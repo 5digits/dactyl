@@ -1168,9 +1168,9 @@ var CommandLine = Module("commandline", {
         availableHeight -= extra || 0;
 
         doc.body.style.minWidth = this.widgets.commandbar.commandline.scrollWidth + "px";
-        this.widgets.mowContainer.height = Math.min(doc.height, availableHeight) + "px";
+        this.widgets.mowContainer.height = Math.min(doc.body.clientHeight, availableHeight) + "px";
         this.timeout(function ()
-            this.widgets.mowContainer.height = Math.min(doc.height, availableHeight) + "px",
+            this.widgets.mowContainer.height = Math.min(doc.body.clientHeight, availableHeight) + "px",
             0);
 
         doc.body.style.minWidth = "";

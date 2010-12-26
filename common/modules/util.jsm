@@ -68,7 +68,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             __noSuchMethod__: function (meth, args) {
                 let win = util.activeWindow;
                 var dactyl = global && global.dactyl || win && win.dactyl;
-                if (!win)
+                if (!dactyl)
                     return null;
 
                 let prop = dactyl[meth];
@@ -102,6 +102,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }
                 catch (e) {}
         }
+
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
                 try {

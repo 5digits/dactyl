@@ -106,7 +106,8 @@ var Events = Module("events", {
      */
     wrapListener: function wrapListener(method, self) {
         self = self || this;
-        return function wrappedListener(event) {
+        method.wrapped = wrappedListener;
+        function wrappedListener(event) {
             try {
                 method.apply(self, arguments);
             }
@@ -118,6 +119,7 @@ var Events = Module("events", {
                     dactyl.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
             }
         };
+        return wrappedListener;
     },
 
     /**
@@ -865,11 +867,13 @@ var Events = Module("events", {
             this._input = null;
             if (!input) {
                 let ignore = false;
+                let overrideMode = null;
 
                 // menus have their own command handlers
                 if (modes.extended & modes.MENU)
-                    ignore = true;
-                else if (modes.main == modes.PASS_THROUGH)
+                    overrideMode = modes.MENU;
+
+                if (modes.main == modes.PASS_THROUGH)
                     ignore = !Events.isEscape(key) && key != "<C-v>";
                 else if (modes.main == modes.QUOTE) {
                     if (modes.getStack(1).main == modes.PASS_THROUGH) {
@@ -896,7 +900,7 @@ var Events = Module("events", {
                 if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode.main))
                     return null;
 
-                input = Events.KeyProcessor(mode.params.mainMode || mode.main, mode.extended);
+                input = Events.KeyProcessor(overrideMode || mode.params.mainMode || mode.main, mode.extended);
                 if (mode.params.preExecute)
                     input.preExecute = mode.params.preExecute;
                 if (mode.params.postExecute)
