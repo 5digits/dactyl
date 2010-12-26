@@ -2069,7 +2069,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (!services.commandLineHandler)
             services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
 
-        if (services.commandlinehandler) {
+        if (services.commandLineHandler) {
             let commandline = services.commandLineHandler.optionValue;
             if (commandline) {
                 let args = dactyl.parseCommandLine(commandline);
