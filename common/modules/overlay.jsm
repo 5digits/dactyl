@@ -82,11 +82,17 @@ var Overlay = Module("Overlay", {
                 Module.list = [];
                 Module.constructors = {};
 
-                const create = window.Object.create || function (proto) {
-                    let res = window.Object();
-                    object.__proto__ = proto;
-                    return object;
-                }
+                const BASE = "chrome://dactyl/content/";
+
+                const create = window.Object.create || (function () {
+                    window.__dactyl_eval_string = "(function (proto) ({ __proto__: proto }))";
+                    services.subscriptLoader.loadSubScript(BASE + "eval.js", window);
+
+                    let res = window.__dactyl_eval_result;
+                    delete window.__dactyl_eval_string;
+                    delete window.__dactyl_eval_result;
+                    return res;
+                })();
 
                 const jsmodules = {};
                 const modules = update(create(jsmodules), {
@@ -132,8 +138,6 @@ var Overlay = Module("Overlay", {
                 });
                 modules.modules = modules;
                 window.dactyl = { modules: modules };
-
-                const BASE = "chrome://dactyl/content/";
 
                 let prefix = [BASE];
 

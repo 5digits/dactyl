@@ -113,7 +113,7 @@ Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
     classID:          Components.ID("{9c8f2530-51c8-4d41-b356-319e0b155c44}"),
     classDescription: "Dactyl utility protocol",
-    QueryInterface:   XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
+    QueryInterface:   XPCOMUtils.generateQI([Ci.nsIObserver, Ci.nsIProtocolHandler]),
     _xpcom_factory:   Factory(Dactyl),
 
     init: function (obj) {
@@ -163,6 +163,19 @@ Dactyl.prototype = {
         }
         catch (e) {}
         return fakeChannel(uri);
+    },
+
+    // FIXME: Belongs elsewhere
+    _xpcom_categories: [{
+        category: "profile-after-change",
+        entry: "m-dactyl"
+    }],
+
+    observe: function (subject, topic, data) {
+        if (topic === "profile-after-change") {
+            Cu.import("resource://dactyl/base.jsm");
+            require(global, "overlay");
+        }
     }
 };
 
