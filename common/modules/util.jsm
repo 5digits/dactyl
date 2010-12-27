@@ -353,13 +353,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         while (!(node instanceof Ci.nsIDOMElement) && node.parentNode)
             node = node.parentNode;
         try {
-            return node.ownerDocument.defaultView.getComputedStyle(node, null);
+            var res = node.ownerDocument.defaultView.getComputedStyle(node, null);
         }
-        catch (e) {
-            util.reportError(e);
-            util.dump(String(node));
+        catch (e) {}
+        if (res == null) {
+            util.dumpStack("Computed style is null: " + node);
+            Cu.reportError(Error("Computed style is null: " + node));
             return {};
         }
+        return res;
     },
 
     /**
