@@ -1313,9 +1313,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                     styles.system.add("taboptions", "chrome://*",
                                       classes.length ? classes.join(",") + "{ display: none; }" : "");
-                },
-                validator: function (opts) dactyl.has("Gecko2") ||
-                    Option.validIf(!/[nN]/.test(opts), "Tab numbering not available in this " + config.host + " version")
+
+                    if (!dactyl.has("Gecko2")) {
+                        tabs.tabBinding.enabled = Array.some(opts, function (k) k in this.opts, this);
+                        tabs.updateTabCount();
+                    }
+                }
             }
         ].filter(function (group) !group.feature || dactyl.has(group.feature));
 

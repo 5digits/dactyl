@@ -34,6 +34,11 @@ var Tabs = Module("tabs", {
         dactyl.commands["tabs.select"] = function (event) {
             tabs.select(event.originalTarget.getAttribute("identifier"));
         };
+
+        this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", String.replace(<><![CDATA[
+                xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
+            ]]></>, /tab-./g, function (m) util.OS.isMacOSX ? "tab-mac" : m),
+            false, true);
     },
 
     cleanup: function cleanup() {
@@ -45,9 +50,9 @@ var Tabs = Module("tabs", {
         }
     },
 
-    _updateTabCount: function () {
-        if (dactyl.has("Gecko2"))
-            for (let [i, tab] in Iterator(this.visibleTabs)) {
+    updateTabCount: function () {
+        for (let [i, tab] in Iterator(this.visibleTabs)) {
+            if (dactyl.has("Gecko2")) {
                 function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
                 if (!node("dactyl-tab-number")) {
                     let nodes = {};
@@ -60,8 +65,10 @@ var Tabs = Module("tabs", {
                     tab.__defineGetter__("dactylOrdinal", function () Number(nodes.icon.value));
                     tab.__defineSetter__("dactylOrdinal", function (i) nodes.icon.value = nodes.label.textContent = i);
                 }
-                tab.dactylOrdinal = i + 1;
             }
+            tab.setAttribute("dactylOrdinal", i + 1);
+            tab.dactylOrdinal = i + 1;
+        }
         statusline.updateTabCount(true);
     },
 
@@ -497,7 +504,7 @@ var Tabs = Module("tabs", {
     }
 }, {
     load: function () {
-        tabs._updateTabCount();
+        tabs.updateTabCount();
     },
     commands: function () {
         commands.add(["bd[elete]", "bw[ipeout]", "bun[load]", "tabc[lose]"],
@@ -864,7 +871,7 @@ var Tabs = Module("tabs", {
     events: function () {
         let tabContainer = config.tabbrowser.mTabContainer;
         ["TabMove", "TabOpen", "TabClose"].forEach(function (event) {
-            events.addSessionListener(tabContainer, event, this.closure._updateTabCount, false);
+            events.addSessionListener(tabContainer, event, this.closure.updateTabCount, false);
         }, this);
         events.addSessionListener(tabContainer, "TabSelect", this.closure._onTabSelect, false);
     },

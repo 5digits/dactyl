@@ -10,7 +10,6 @@ if (!JSMLoader)
         globals: {},
         stale: {},
         load: function load(url, target) {
-            dump("dactyl: load: " + url + "\n");
             if (this.stale[url]) {
                 delete this.stale[url];
                 let global = this.globals[url];
@@ -26,7 +25,6 @@ if (!JSMLoader)
                 Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                           .getService(Components.interfaces.mozIJSSubScriptLoader)
                           .loadSubScript(url, global);
-                dump("dactyl: load reloaded: " + url + "\n");
             }
             Components.utils.import(url, target);
         },

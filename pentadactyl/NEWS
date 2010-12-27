@@ -82,7 +82,7 @@
       - Active filters are not highlighted in :style listings.
       - :style-related commands now divide their completions between
         those active and inactive for the current site.
-      - CSS property name completion is not available.
+      - CSS property name completion is now available.
     * IMPORTANT option changes:
       - Boolean options no longer accept an argument.
       - 'cdpath' and 'runtimepath' no longer treat ",,"

@@ -77,9 +77,9 @@
 @-moz-document
     url-prefix(chrome://) {
 
-.tab-icon-image, .tab-throbber           { -moz-box-ordinal-group: 10; }
-[dactyl|highlight~=tab-number]           { -moz-box-ordinal-group: 20; }
-.tab-text, .tab-label, .tab-close-button { -moz-box-ordinal-group: 50; }
+#TabsToolbar .tab-icon-image, .tab-throbber { -moz-box-ordinal-group: 10; }
+[dactyl|highlight~=tab-number]              { -moz-box-ordinal-group: 20; }
+.tab-text, .tab-label, .tab-close-button    { -moz-box-ordinal-group: 50; }
 
 [dactyl|highlight~=Bell] {
     -moz-appearance: none !important;

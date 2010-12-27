@@ -176,6 +176,8 @@ var CommandWidgets = Class("CommandWidgets", {
         let elem = document.getElementById("dactyl-multiline-output");
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
+        elem.__defineGetter__("atEnd", function ()
+            !Buffer.isScrollable(elem.contentDocument.documentElement, 1));
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
             let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
