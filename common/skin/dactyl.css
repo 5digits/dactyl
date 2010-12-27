@@ -77,9 +77,9 @@
 @-moz-document
     url-prefix(chrome://) {
 
-.tab-icon-image, .tab-throbber           { -moz-box-ordinal-group: 10; }
-[dactyl|highlight~=tab-number]           { -moz-box-ordinal-group: 20; }
-.tab-text, .tab-label, .tab-close-button { -moz-box-ordinal-group: 50; }
+#TabsToolbar .tab-icon-image, .tab-throbber { -moz-box-ordinal-group: 10; }
+[dactyl|highlight~=tab-number]              { -moz-box-ordinal-group: 20; }
+.tab-text, .tab-label, .tab-close-button    { -moz-box-ordinal-group: 50; }
 
 [dactyl|highlight~=Bell] {
     -moz-appearance: none !important;
@@ -117,7 +117,7 @@ label[collapsed=true] {
 /* fixes the min-height: 22px from firefox */
 statusbarpanel {
     -moz-appearance: none !important;
-    border: 0;
+    border: 0 !important;
 	min-height: 18px !important;
     background: transparent;
 }

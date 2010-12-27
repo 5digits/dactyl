@@ -669,7 +669,7 @@ var Options = Module("options", {
         }
 
         let closure = function () options._optionMap[name];
-        memoize(this._options, this._options.length, closure);
+
         memoize(this._optionMap, name, function () Option(names, description, type, defaultValue, extraInfo));
         for (let alias in values(names.slice(1)))
             memoize(this._optionMap, alias, closure);
@@ -678,6 +678,8 @@ var Options = Module("options", {
                 closure().initValue();
             else
                 memoize(this.needInit, this.needInit.length, closure);
+        this._floptions = (this._floptions || []).concat(name);
+        memoize(this._options, this._options.length, closure);
 
         // quickly access options with options["wildmode"]:
         this.__defineGetter__(name, function () this._optionMap[name].value);
@@ -821,9 +823,9 @@ var Options = Module("options", {
      */
     remove: function (name) {
         let opt = this.get(name);
+        this._options = this._options.filter(function (o) o != opt);
         for (let name in values(opt.names))
             delete this._optionMap[name];
-        this._options = this._options.filter(function (o) o != opt);
     },
 
     /** @property {Object} The options store. */

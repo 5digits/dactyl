@@ -1020,6 +1020,27 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }), true);
     },
 
+    overlayObject: function (object, overrides) {
+        let original = Object.create(object);
+        overrides = update(Object.create(original), overrides);
+
+        for each (let k in Object.getOwnPropertyNames(overrides)) {
+            let orig, desc = Object.getOwnPropertyDescriptor(overrides, k);
+            if (desc.value instanceof Class.Property)
+                desc = desc.value.init(k) || desc.value;
+
+            for (let obj = object; obj && !orig; obj = Object.getPrototypeOf(obj))
+                if (orig = Object.getOwnPropertyDescriptor(obj, k))
+                    Object.defineProperty(original, k, orig);
+
+            Object.defineProperty(object, k, desc);
+        }
+        return function unwrap() {
+            for each (let k in Object.getOwnPropertyNames(original))
+                Object.defineProperty(object, k, Object.getOwnPropertyDescriptor(original, k));
+        }
+    },
+
     overlayWindow: function (url, fn) {
         if (url instanceof Ci.nsIDOMWindow)
             util._loadOverlay(url, fn);

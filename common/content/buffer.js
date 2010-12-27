@@ -148,39 +148,12 @@ var Buffer = Module("buffer", {
             buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))])
         };
 
-        this.replaceProgressListener(this.progressListener);
+        this.cleanupProgressListener = util.overlayObject(window.XULBrowserWindow,
+                                                          this.progressListener);
     },
 
     cleanup: function () {
-        for (let prop in properties(this.progressListener))
-            if (!this.progressListener.__lookupGetter__(prop) &&
-                !callable(this.progressListener[prop]))
-                this.origProgressListener[prop] = this.progressListener[prop]
-
-        this.replaceProgressListener(this.origProgressListener);
-    },
-
-    replaceProgressListener: function (newListener) {
-        // I hate this whole hack. --Kris
-        let obj = window.XULBrowserWindow, getter;
-        for (let prop in properties(obj))
-            if ((getter = obj.__lookupGetter__(prop)) && !obj.__lookupSetter__(prop)) {
-                newListener.__defineGetter__(prop, getter);
-                delete obj[prop];
-            }
-
-        this.origProgressListener = window.XULBrowserWindow;
-        try {
-            config.browser.removeProgressListener(window.XULBrowserWindow);
-        }
-        catch (e) {} // Why? --djk
-
-        config.browser.addProgressListener(newListener, Ci.nsIWebProgress.NOTIFY_ALL);
-        window.XULBrowserWindow = newListener;
-        window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-              .QueryInterface(Ci.nsIDocShellTreeItem).treeOwner
-              .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIXULWindow)
-              .XULBrowserWindow = newListener;
+        this.cleanupProgressListener();
     },
 
     destroy: function () {
@@ -237,11 +210,6 @@ var Buffer = Module("buffer", {
                 dactyl.initHelp();
                 config.styleHelp();
             }
-
-            // mark the buffer as loaded, we can't use buffer.loaded
-            // since that always refers to the current buffer, while doc can be
-            // any buffer, even in a background tab
-            doc.pageIsFullyLoaded = 1;
         }
 
         if (doc instanceof HTMLDocument) {
@@ -266,10 +234,8 @@ var Buffer = Module("buffer", {
     /**
      * @property {Object} The document loading progress listener.
      */
-    progressListener: update(Object.create(window.XULBrowserWindow), {
-        QueryInterface: XPCOMUtils.generateQI([Ci.nsISupportsWeakReference, Ci.nsIWebProgressListener]),
-
-        loadCount: 0,
+    progressListener: {
+        dactylLoadCount: 0,
 
         // XXX: function may later be needed to detect a canceled synchronous openURL()
         onStateChange: function onStateChange(webProgress, request, flags, status) {
@@ -280,12 +246,11 @@ var Buffer = Module("buffer", {
                 // This fires when the load event is initiated
                 // only thrown for the current tab, not when another tab changes
                 if (flags & Ci.nsIWebProgressListener.STATE_START) {
-                    webProgress.DOMWindow.document.pageIsFullyLoaded = 0;
                     statusline.updateProgress(0);
 
                     buffer._triggerLoadAutocmd("PageLoadPre", webProgress.DOMWindow.document);
 
-                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.loadCount++)
+                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.dactylLoadCount++)
                         util.timeout(function () { modes.reset(false); },
                                      dactyl.mode == modes.HINTS ? 500 : 0);
                 }
@@ -294,8 +259,6 @@ var Buffer = Module("buffer", {
                     config.browser.mCurrentBrowser.collapsed = false;
                     if (!dactyl.focusedElement)
                         dactyl.focusContent();
-
-                    webProgress.DOMWindow.document.pageIsFullyLoaded = (status == 0 ? 1 : 2);
                     statusline.updateUrl();
                 }
             }
@@ -366,7 +329,7 @@ var Buffer = Module("buffer", {
                 break;
             }
         },
-    }),
+    },
 
     /**
      * @property {Array} The alternative style sheets for the current
@@ -387,19 +350,12 @@ var Buffer = Module("buffer", {
     pageInfo: null,
 
     /**
-     * @property {number} A value indicating whether the buffer is loaded.
-     *     Values may be:
-     *         0 - Loading.
-     *         1 - Fully loaded.
-     *         2 - Load failed.
+     * @property {number} True when the buffer is fully loaded.
      */
-    get loaded()
-        Math.min.apply(Math,
-            buffer.allFrames().map(function (frame)
-                frame.document.pageIsFullyLoaded || 0)),
-    set loaded(val)
-        buffer.allFrames().forEach(function (frame)
-            frame.document.pageIsFullyLoaded = val),
+    get loaded() Math.min.apply(null,
+        buffer.allFrames()
+              .map(function (frame) ["loading", "interactive", "complete"]
+                                        .indexOf(frame.document.readyState))),
 
     /**
      * @property {Object} The local state store for the currently selected
@@ -1217,6 +1173,13 @@ var Buffer = Module("buffer", {
         return elem || doc.body || doc.documentElement;
     },
 
+    scrollTo: function scrollTo(elem, left, top) {
+        if (left != null)
+            elem.scrollLeft = left;
+        if (top != null)
+            elem.scrollTop = top;
+    },
+
     scrollVertical: function scrollVertical(elem, increment, number) {
         elem = elem || Buffer.findScrollable(number, false);
         let fontSize = parseInt(util.computedStyle(elem).fontSize);
@@ -1227,10 +1190,8 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        if (number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight)
-            elem.scrollTop += number * increment;
-        else
-            dactyl.beep();
+        dactyl.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
+        Buffer.scrollTo(elem, null, elem.scrollTop + number * increment);
     },
 
     scrollHorizontal: function scrollHorizontal(elem, increment, number) {
@@ -1243,21 +1204,19 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        if (number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth)
-            elem.scrollLeft += number * increment;
-        else
-            dactyl.beep();
+        dactyl.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
+        Buffer.scrollTo(elem, elem.scrollLeft + number * increment, null);
     },
 
     scrollToPercent: function scrollElemToPercent(elem, horizontal, vertical) {
         elem = elem || Buffer.findScrollable(0, vertical == null);
         marks.add("'", true);
 
-        if (horizontal != null)
-            elem.scrollLeft = (elem.scrollWidth - elem.clientWidth) * (horizontal / 100);
-
-        if (vertical != null)
-            elem.scrollTop = (elem.scrollHeight - elem.clientHeight) * (vertical / 100);
+        Buffer.scrollTo(elem,
+                        horizontal == null ? null
+                                           : (elem.scrollWidth - elem.clientWidth) * (horizontal / 100),
+                        vertical   == null ? null
+                                           : (elem.scrollHeight - elem.clientHeight) * (vertical / 100));
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {

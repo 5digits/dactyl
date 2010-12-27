@@ -10,7 +10,6 @@ if (!JSMLoader)
         globals: {},
         stale: {},
         load: function load(url, target) {
-            dump("dactyl: load: " + url + "\n");
             if (this.stale[url]) {
                 delete this.stale[url];
                 let global = this.globals[url];
@@ -26,7 +25,6 @@ if (!JSMLoader)
                 Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                           .getService(Components.interfaces.mozIJSSubScriptLoader)
                           .loadSubScript(url, global);
-                dump("dactyl: load reloaded: " + url + "\n");
             }
             Components.utils.import(url, target);
         },
@@ -296,7 +294,10 @@ function deprecated(reason, fn) {
                 (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
     }
-    deprecatedMethod.seen = { "chrome://dactyl/content/javascript.js": true };
+    deprecatedMethod.seen = {
+        "chrome://dactyl/content/javascript.js": true,
+        "resource://dactyl/util.jsm": true
+    };
 
     return callable(fn) ? deprecatedMethod : Class.Property({
         get: function () deprecatedMethod,
@@ -692,10 +693,11 @@ function update(target) {
                 desc = desc.value.init(k) || desc.value;
             if (typeof desc.value == "function" && Object.getPrototypeOf(target)) {
                 let func = desc.value;
-                desc.value.superapply = function (self, args)
+                desc.value.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
+                desc.value.superapply = function superapply(self, args)
                     let (meth = Object.getPrototypeOf(target)[k])
                         meth && meth.apply(self, args);
-                desc.value.supercall = function (self)
+                desc.value.supercall = function supercall(self)
                     func.superapply(self, Array.slice(arguments, 1));
             }
             Object.defineProperty(target, k, desc);

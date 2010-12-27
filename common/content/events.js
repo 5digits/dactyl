@@ -206,7 +206,6 @@ var Events = Module("events", {
             }
             catch (e) {}
 
-            buffer.loaded = 1; // even if not a full page load, assume it did load correctly before starting the macro
             modes.replaying = true;
             res = events.feedkeys(this._macros.get(this._lastMacro).keys, { noremap: true });
             modes.replaying = false;
@@ -657,15 +656,14 @@ var Events = Module("events", {
         commandline.clear();
 
         // TODO: allow macros to be continued when page does not fully load with an option
-        let ret = (buffer.loaded == 1);
-        if (!ret)
+        if (!buffer.loaded)
             dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
 
         // sometimes the input widget had focus when replaying a macro
         // maybe this call should be moved somewhere else?
         // dactyl.focusContent(true);
 
-        return ret;
+        return buffer.loaded;
     },
 
     onDOMMenuBarActive: function () {
@@ -1106,8 +1104,7 @@ var Events = Module("events", {
             else if (this.pendingArgMap) {
                 let map = this.pendingArgMap;
                 if (!Events.isEscape(key))
-                    if (!modes.replaying || this.waitForPageLoad())
-                        execute(map, null, this.count, key);
+                    execute(map, null, this.count, key);
                 return true;
             }
             else if (map && !event.skipmap && candidates.length == 0) {
@@ -1136,8 +1133,7 @@ var Events = Module("events", {
                     if (modes.replaying && !this.waitForPageLoad())
                         return true;
 
-                    let ret = execute(map, null, this.count);
-                    return !(map.route && ret);
+                    return !execute(map, null, this.count) || !map.route
                 }
             }
             else if (mappings.getCandidates(this.main, candidateCommand).length > 0 && !event.skipmap) {
