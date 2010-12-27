@@ -408,7 +408,7 @@ var CommandLine = Module("commandline", {
     set quiet(val) {
         this._quiet = val;
         ["commandbar", "statusbar"].forEach(function (nodeSet) {
-            Array.forEach(this.widgets[nodeSet].commandline.childNodes, function (node) {
+            Array.forEach(this.widgets[nodeSet].commandline.children, function (node) {
                 node.style.opacity = this._quiet || this._silent ? "0" : "";
             }, this);
         }, this);
@@ -828,11 +828,10 @@ var CommandLine = Module("commandline", {
             let command = this.command;
 
             if (event.type == "blur") {
-                // prevent losing focus, there should be a better way, but it just didn't work otherwise
                 this.timeout(function () {
                     if (this.commandVisible && event.originalTarget == this.widgets.active.command.inputField)
                         dactyl.focus(this.widgets.active.command.inputField);
-                }, 0);
+                });
             }
             else if (event.type == "focus") {
                 if (!this.commandVisible && event.target == this.widgets.active.command.inputField) {

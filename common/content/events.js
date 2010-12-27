@@ -241,15 +241,15 @@ var Events = Module("events", {
      * @returns {boolean}
      */
     feedkeys: function (keys, noremap, quiet, mode) {
-
-        let wasFeeding = this.feedingKeys;
-        this.feedingKeys = true;
-        this.duringFeed = this.duringFeed || [];
-        let wasQuiet = commandline.quiet;
-        if (quiet)
-            commandline.quiet = quiet;
-
         try {
+            var wasFeeding = this.feedingKeys;
+            this.feedingKeys = true;
+            this.duringFeed = this.duringFeed || [];
+
+            var wasQuiet = commandline.quiet;
+            if (quiet)
+                commandline.quiet = quiet;
+
             util.threadYield(1, true);
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
