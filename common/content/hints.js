@@ -1129,7 +1129,7 @@ var Hints = Module("hints", {
             "XPath strings of hintable elements for extended hint modes",
             "regexpmap", "[iI]:" + xpath(["img"]) +
                         ",[OTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
-                        ",[F]:" + xpath(["div", "span", "p", "body", "html"]) +
+                        ",[F]:" + xpath(["body", "code", "div", "html", "p", "pre", "span"]) +
                         ",[S]:" + xpath(["input[not(@type='hidden')]", "textarea", "button", "select"]),
             { validator: Option.validateXPath });
 

@@ -398,20 +398,19 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     focus: function focus(elem, flags) {
+        util.dump("focus(" + (elem instanceof Element ? util.objectToString(elem) : elem) + ")");
         flags = flags || services.focus.FLAG_BYMOUSE;
         try {
             if (elem instanceof Document)
                 elem = elem.defaultView;
             if (elem instanceof Window)
-                services.focus.focusedWindow = elem;
+                elem.focus();
             else
                 services.focus.setFocus(elem, flags);
         } catch (e) {
             util.dump(elem);
             util.reportError(e);
         }
-        if (services.focus.focusedWindow == null)
-            util.dumpStack("focusedWindow == null");
     },
 
     /**
@@ -421,7 +420,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     element.
      */
     focusContent: function focusContent(clearFocusedElement) {
-        if (window != services.windowWatcher.activeWindow)
+        util.dump("focusContent(" + clearFocusedElement + ") " +
+                  (window == services.focus.activeWindow));
+
+        if (window != services.focus.activeWindow)
             return;
 
         let win = document.commandDispatcher.focusedWindow;
@@ -443,10 +445,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         catch (e) {}
 
         if (clearFocusedElement) {
+            util.dump("blur(" + (dactyl.focusedElement instanceof Element ? util.objectToString(dactyl.focusedElement)
+                                                                          : dactyl.focusedElement) +
+                      ")");
             if (dactyl.focusedElement)
                 dactyl.focusedElement.blur();
             if (win && Editor.getEditor(win)) {
+                util.dump("blur(" + win + ")");
                 win.blur();
+                if (win.frameElement)
+                    util.dump("blur(" + util.objectToString(win.frameElement) + ")");
                 if (win.frameElement)
                     win.frameElement.blur();
             }

@@ -10,7 +10,6 @@
 
 var CommandWidgets = Class("CommandWidgets", {
     init: function () {
-        let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let _status = "dactyl-statusline-field-";
 
         util.overlayWindow(window, {
@@ -38,21 +37,21 @@ var CommandWidgets = Class("CommandWidgets", {
                         <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
                                 flex="1" hidden="false" collapsed="false"
                                 contextmenu="dactyl-contextmenu"
-                                onclick={_commandline + ".onMultilineOutputEvent(event)"}/>
+                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
                     </vbox>
 
                     <vbox class="dactyl-container" hidden="false" collapsed="true">
                         <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="chrome://dactyl/content/buffer.xhtml"
                                 contextmenu="dactyl-contextmenu"
                                 flex="1" hidden="false" collapsed="false"
-                                onclick={_commandline + ".onMultilineOutputEvent(event)"}/>
+                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
                     </vbox>
 
                     <vbox id={"dactyl-completions-" + _status + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true" insertbefore="addon-bar,status-bar">
                         <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="chrome://dactyl/content/buffer.xhtml"
                                 contextmenu="dactyl-contextmenu"
                                 flex="1" hidden="false" collapsed="false"
-                                onclick={_commandline + ".onMultilineOutputEvent(event)"}/>
+                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
                     </vbox>
 
                     <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" highlight="CmdLine CmdCmdLine">
@@ -63,16 +62,19 @@ var CommandWidgets = Class("CommandWidgets", {
                         <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" highlight="Normal CmdNormal" collapsed="true">
                             <label   id="dactyl-commandline-prompt"  class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
                             <textbox id="dactyl-commandline-command" class="dactyl-commandline-command plain" flex="1" type="input" timeout="100"
-                                     oninput={_commandline + ".onEvent(event);"} onkeyup={_commandline + ".onEvent(event);"}
-                                     onfocus={_commandline + ".onEvent(event);"} onblur={_commandline + ".onEvent(event);"}/>
+                                     oninput="dactyl.modules.commandline.onEvent(event);"
+                                     onkeyup="dactyl.modules.commandline.onEvent(event);"
+                                     onfocus="dactyl.modules.commandline.onEvent(event);"
+                                     onblur="dactyl.modules.commandline.onEvent(event);"/>
                         </hbox>
                     </stack>
 
                     <vbox class="dactyl-container" hidden="false" collapsed="false" highlight="CmdLine">
                         <textbox id="dactyl-multiline-input" class="plain" flex="1" rows="1" hidden="false" collapsed="true" multiline="true"
                                  highlight="Normal"
-                                 onkeypress={_commandline + ".onMultilineInputEvent(event);"} oninput={_commandline + ".onMultilineInputEvent(event);"}
-                                 onblur={_commandline + ".onMultilineInputEvent(event);"}/>
+                                 onkeypress="dactyl.modules.commandline.onMultilineInputEvent(event);"
+                                 oninput="dactyl.modules.commandline.onMultilineInputEvent(event);"
+                                 onblur="dactyl.modules.commandline.onMultilineInputEvent(event);"/>
                     </vbox>
                 </vbox>
             </e4x>.elements()
