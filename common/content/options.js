@@ -720,26 +720,25 @@ var Options = Module("options", {
      * Lists all options in *scope* or only those with changed values if
      * *onlyNonDefault* is specified.
      *
-     * @param {boolean} onlyNonDefault Limit the list to prefs with a
-     *     non-default value.
+     * @param {function(Option)} filter Limit the list
      * @param {number} scope Only list options in this scope (see
      *     {@link Option#scope}).
      */
-    list: function (onlyNonDefault, scope) {
+    list: function (filter, scope) {
         if (!scope)
             scope = Option.SCOPE_BOTH;
 
         function opts(opt) {
             for (let opt in Iterator(options)) {
                 let option = {
+                    __proto__: opt,
                     isDefault: opt.isDefault,
-                    name:      opt.name,
                     default:   opt.stringDefaultValue,
                     pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
-                    value:     <></>
+                    value:     <></>,
                 };
 
-                if (onlyNonDefault && option.isDefault)
+                if (filter && !filter(opt))
                     continue;
                 if (!(opt.scope & scope))
                     continue;
@@ -757,7 +756,7 @@ var Options = Module("options", {
             }
         };
 
-        commandline.commandOutput(template.options("Options", opts()));
+        commandline.commandOutput(template.options("Options", opts(), options["verbose"] > 0));
     },
 
     /**
@@ -870,6 +869,17 @@ var Options = Module("options", {
             if (!args.length)
                 args[0] = "";
 
+            let list = [];
+            function flushList() {
+                let names = set(list.map(function (opt) opt.option ? opt.option.name : ""));
+                if (list.length)
+                    if (list.some(function (opt) opt.all))
+                        options.list(function (opt) !(list[0].onlyNonDefault && opt.isDefault) , list[0].scope);
+                    else
+                        options.list(function (opt) set.has(names, opt.name), list[0].scope);
+                list = [];
+            }
+
             for (let [, arg] in args) {
                 if (bang) {
                     let onlyNonDefault = false;
@@ -931,6 +941,7 @@ var Options = Module("options", {
 
                 // reset a variable to its default value
                 if (opt.reset) {
+                    flushList();
                     if (opt.all) {
                         for (let option in options)
                             option.reset();
@@ -940,25 +951,11 @@ var Options = Module("options", {
                     }
                 }
                 // read access
-                else if (opt.get) {
-                    if (opt.all)
-                        options.list(opt.onlyNonDefault, opt.scope);
-                    else {
-                        XML.prettyPrinting = false;
-                        XML.ignoreWhitespace = false;
-                        if (option.type == "boolean")
-                            var msg = (opt.optionValue ? "  " : "no") + option.name;
-                        else
-                            msg = "  " + option.name + "=" + opt.option.stringify(opt.optionValue);
-
-                        if (options["verbose"] > 0 && option.setFrom)
-                            msg = <>{msg}<br/>        Last set from {template.sourceLink(option.setFrom)}</>;
-
-                        dactyl.echo(<span highlight="CmdOutput Message">{msg}</span>);
-                    }
-                }
+                else if (opt.get)
+                    list.push(opt);
                 // write access
                 else {
+                    flushList();
                     if (opt.option.type === "boolean") {
                         dactyl.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
                         opt.values = !opt.unsetBoolean;
@@ -977,6 +974,7 @@ var Options = Module("options", {
                     option.setFrom = commands.getCaller(null);
                 }
             }
+            flushList();
         }
 
         function setCompleter(context, args, modifiers) {

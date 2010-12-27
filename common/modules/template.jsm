@@ -235,7 +235,7 @@ var Template = Module("Template", {
         })(), template[help ? "HelpLink" : "helpLink"]);
     },
 
-    options: function options(title, opts) {
+    options: function options(title, opts, verbose) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // <e4x>
         return <table>
@@ -249,7 +249,9 @@ var Template = Module("Template", {
                             <div highlight="Message"
                             ><span style={opt.isDefault ? "" : "font-weight: bold"}>{opt.pre}{opt.name}</span><span>{opt.value}</span>{
                                 opt.isDefault || opt.default == null ? "" : <span class="extra-info"> (default: {opt.default})</span>
-                            }</div>
+                            }</div>{
+                                verbose && opt.setFrom ? <div highlight="Message">       Last set from {template.sourceLink(opt.setFrom)}</div> : <></>
+                            }
                         </td>
                     </tr>)
                 }
