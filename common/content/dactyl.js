@@ -410,6 +410,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             util.dump(elem);
             util.reportError(e);
         }
+        if (services.focus.focusedWindow == null)
+            util.dumpStack("focusedWindow == null");
     },
 
     /**
@@ -455,6 +457,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (elem && elem != dactyl.focusedElement)
             dactyl.focus(elem);
+        if (services.focus.focusedWindow == null)
+            util.dumpStack("focusedWindow == null");
      },
 
     /** @property {Element} The currently focused element. */
