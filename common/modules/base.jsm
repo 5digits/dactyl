@@ -690,10 +690,11 @@ function update(target) {
                 desc = desc.value.init(k) || desc.value;
             if (typeof desc.value == "function" && Object.getPrototypeOf(target)) {
                 let func = desc.value;
-                desc.value.superapply = function (self, args)
+                desc.value.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
+                desc.value.superapply = function superapply(self, args)
                     let (meth = Object.getPrototypeOf(target)[k])
                         meth && meth.apply(self, args);
-                desc.value.supercall = function (self)
+                desc.value.supercall = function supercall(self)
                     func.superapply(self, Array.slice(arguments, 1));
             }
             Object.defineProperty(target, k, desc);

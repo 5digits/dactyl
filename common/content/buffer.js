@@ -1217,6 +1217,13 @@ var Buffer = Module("buffer", {
         return elem || doc.body || doc.documentElement;
     },
 
+    scrollTo: function scrollTo(elem, left, top) {
+        if (left != null)
+            elem.scrollLeft = left;
+        if (top != null)
+            elem.scrollTop = top;
+    },
+
     scrollVertical: function scrollVertical(elem, increment, number) {
         elem = elem || Buffer.findScrollable(number, false);
         let fontSize = parseInt(util.computedStyle(elem).fontSize);
@@ -1227,10 +1234,8 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        if (number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight)
-            elem.scrollTop += number * increment;
-        else
-            dactyl.beep();
+        dactyl.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
+        Buffer.scrollTo(elem, null, elem.scrollTop + number * increment);
     },
 
     scrollHorizontal: function scrollHorizontal(elem, increment, number) {
@@ -1243,21 +1248,19 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        if (number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth)
-            elem.scrollLeft += number * increment;
-        else
-            dactyl.beep();
+        dactyl.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
+        Buffer.scrollTo(elem, elem.scrollLeft + number * increment, null);
     },
 
     scrollToPercent: function scrollElemToPercent(elem, horizontal, vertical) {
         elem = elem || Buffer.findScrollable(0, vertical == null);
         marks.add("'", true);
 
-        if (horizontal != null)
-            elem.scrollLeft = (elem.scrollWidth - elem.clientWidth) * (horizontal / 100);
-
-        if (vertical != null)
-            elem.scrollTop = (elem.scrollHeight - elem.clientHeight) * (vertical / 100);
+        Buffer.scrollTo(elem,
+                        horizontal == null ? null
+                                           : (elem.scrollWidth - elem.clientWidth) * (horizontal / 100),
+                        vertical   == null ? null
+                                           : (elem.scrollHeight - elem.clientHeight) * (vertical / 100));
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {
