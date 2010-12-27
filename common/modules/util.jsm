@@ -486,7 +486,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     dumpStack: function dumpStack(msg, frames) {
         let stack = util.stackLines(Error().stack);
-        stack = stack.slice(2, 2 + (frames || stack.length)).join("\n");
+        stack = stack.slice(2, 2 + (frames || stack.length)).join("\n").replace(/^/gm, "    ");
         util.dump((arguments.length == 0 ? "Stack" : msg) + "\n" + stack + "\n");
     },
 

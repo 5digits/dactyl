@@ -398,13 +398,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     focus: function focus(elem, flags) {
-        util.dump("focus(" + (elem instanceof Element ? util.objectToString(elem) : elem) + ")");
         flags = flags || services.focus.FLAG_BYMOUSE;
         try {
             if (elem instanceof Document)
                 elem = elem.defaultView;
             if (elem instanceof Window)
-                elem.focus();
+                services.focus.focusedWindow = elem;
             else
                 services.focus.setFocus(elem, flags);
         } catch (e) {
@@ -445,13 +444,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         catch (e) {}
 
         if (clearFocusedElement) {
-            util.dump("blur(" + (dactyl.focusedElement instanceof Element ? util.objectToString(dactyl.focusedElement)
-                                                                          : dactyl.focusedElement) +
-                      ")");
             if (dactyl.focusedElement)
                 dactyl.focusedElement.blur();
             if (win && Editor.getEditor(win)) {
-                util.dump("blur(" + win + ")");
                 win.blur();
                 if (win.frameElement)
                     util.dump("blur(" + util.objectToString(win.frameElement) + ")");
@@ -465,8 +460,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (elem && elem != dactyl.focusedElement)
             dactyl.focus(elem);
-        if (services.focus.focusedWindow == null)
-            util.dumpStack("focusedWindow == null");
      },
 
     /** @property {Element} The currently focused element. */

@@ -256,6 +256,7 @@ var CommandWidgets = Class("CommandWidgets", {
 
         let elem = this.multilineOutput;
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
+        elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
         elem.__defineGetter__("atEnd", function ()
             !Buffer.isScrollable(elem.contentDocument.documentElement, 1));
@@ -1858,6 +1859,7 @@ var ItemList = Class("ItemList", {
         this._win = iframe.contentWindow;
         this._container = iframe.parentNode;
 
+        this._doc.documentElement.id = id + "-top";
         this._doc.body.id = id + "-content";
         this._doc.body.className = iframe.className + "-content";
         this._doc.body.appendChild(this._doc.createTextNode(""));

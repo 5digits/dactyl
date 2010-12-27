@@ -51,8 +51,7 @@ var Modes = Module("modes", {
             }
         });
 
-        this.addMode("COMMAND_LINE", { char: "c", input: true,
-            display: function () modes.extended & modes.OUTPUT_MULTILINE ? null : this.disp });
+        this.addMode("COMMAND_LINE", { char: "c", input: true });
 
         this.addMode("CARET", {}, {
             get pref()    prefs.get("accessibility.browsewithcaret"),
@@ -82,7 +81,7 @@ var Modes = Module("modes", {
             postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop() },
             onEvent: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
-        this.addMode("OUTPUT_MULTILINE");
+        this.addMode("OUTPUT_MULTILINE", { ownsFocus: true });
 
         // this._extended modes, can include multiple modes, and even main modes
         this.addMode("EX", true);
