@@ -930,8 +930,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             // destroy modules.
             util.timeout(function () {
                 for (let module in values(defineModule.modules))
-                    if (module.cleanup)
+                    if (module.cleanup) {
+                        util.dump("cleanup: " + module.constructor.className);
                         util.trapErrors(module.cleanup, module);
+                    }
 
                 services.observer.addObserver(this, "dactyl-rehash", true);
             });

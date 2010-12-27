@@ -992,6 +992,8 @@ let StructBase = Class("StructBase", Array, {
 
     clone: function clone() this.constructor.apply(null, this.slice()),
 
+    closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
+
     toString: function () Class.prototype.toString.apply(this, arguments),
 
     // Iterator over our named members

@@ -623,8 +623,10 @@ var CommandLine = Module("commandline", {
             this.widgets.message = null;
         if (modes.main != modes.COMMAND_LINE)
             this.widgets.command = null;
-        if (modes.main == modes.OUTPUT_MULTILINE && this.widgets.multilineOutput.atEnd)
+        if (modes.main == modes.OUTPUT_MULTILINE && this.widgets.multilineOutput.atEnd) {
+            dactyl.focusContent();
             modes.pop();
+        }
         if (modes.main != modes.OUTPUT_MULTILINE)
             this.multilineOutputVisible = false;
     },

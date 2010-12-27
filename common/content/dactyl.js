@@ -419,9 +419,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     element.
      */
     focusContent: function focusContent(clearFocusedElement) {
-        util.dump("focusContent(" + clearFocusedElement + ") " +
-                  (window == services.focus.activeWindow));
-
         if (window != services.focus.activeWindow)
             return;
 

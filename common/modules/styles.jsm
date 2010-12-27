@@ -56,6 +56,12 @@ update(Sheet.prototype, {
         }
     },
 
+    match: function (uri) {
+        if (isString(uri))
+            uri = util.newURI(uri);
+        return this.sites.some(function (site) Styles.matchFilter(site, uri));
+    },
+
     get fullCSS() {
         let filter = this.sites;
         let css = this.css;
@@ -476,7 +482,7 @@ var Styles = Module("Styles", {
                 let uris = util.visibleURIs(window.content);
                 context.compare = modules.CompletionContext.Sort.number;
                 context.generate = function () styles.user.sheets;
-                context.keys.active = function (sheet) sheet.sites.some(function (site) uris.some(Styles.matchFilter(site))),
+                context.keys.active = function (sheet) uris.some(sheet.closure.match);
                 context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>
                 if (cmd.filter)
                     context.filters.push(function ({ item }) cmd.filter(item));
