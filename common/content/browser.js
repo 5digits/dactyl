@@ -18,7 +18,7 @@ var Browser = Module("browser", {
         dactyl.assert(url instanceof Ci.nsIURL);
 
         while (count-- && url.path != "/")
-            url.path = url.path.replace(/[^\/]+\/?$/, "");
+            url.path = url.path.replace(/[^\/]+\/*$/, "");
 
         dactyl.assert(url.spec != buffer.URL);
         dactyl.open(url.spec);
