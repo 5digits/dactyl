@@ -98,7 +98,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         obj._observe = observers;
 
         function register(meth) {
-            for (let target in set(["dactyl-cleanup", "quit-application"].concat(Object.keys(observers))))
+            for (let target in set(["dactyl-cleanup-modules", "quit-application"].concat(Object.keys(observers))))
                 try {
                     services.observer[meth](obj, target, true);
                 }
@@ -108,7 +108,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
                 try {
-                    if (target == "quit-application" || target == "dactyl-cleanup")
+                    if (target == "quit-application" || target == "dactyl-cleanup-modules")
                         register("removeObserver");
                     if (observers[target])
                         observers[target].call(obj, subject, data);
@@ -924,19 +924,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     observe: {
-        "dactyl-cleanup": function () {
-            util.dump("dactyl: util: observe: dactyl-cleanup");
-            // Let window cleanup functions run synchronously before we
-            // destroy modules.
-            util.timeout(function () {
-                for (let module in values(defineModule.modules))
-                    if (module.cleanup) {
-                        util.dump("cleanup: " + module.constructor.className);
-                        util.trapErrors(module.cleanup, module);
-                    }
+        "dactyl-cleanup-modules": function () {
+            util.dump("dactyl: util: observe: dactyl-cleanup-modules");
 
-                services.observer.addObserver(this, "dactyl-rehash", true);
-            });
+            for (let module in values(defineModule.modules))
+                if (module.cleanup) {
+                    util.dump("cleanup: " + module.constructor.className);
+                    util.trapErrors(module.cleanup, module);
+                }
+
+            services.observer.addObserver(this, "dactyl-rehash", true);
         },
         "dactyl-rehash": function () {
             services.observer.removeObserver(this, "dactyl-rehash");

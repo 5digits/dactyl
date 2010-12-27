@@ -190,6 +190,7 @@ function shutdown(data, reason) {
             services.observer.notifyObservers(null, "dactyl-purge", null);
 
         services.observer.notifyObservers(null, "dactyl-cleanup", null);
+        services.observer.notifyObservers(null, "dactyl-cleanup-modules", null);
         for (let factory in values(components))
             // TODO: Categories;
             factory.unregister();
