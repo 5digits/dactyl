@@ -1097,7 +1097,7 @@ var Events = Module("events", {
 
             let candidates = mappings.getCandidates(this.main, command);
             if (candidates.length == 0 && !map) {
-                map = this.pendingMap;
+                [map, command] = this.pendingMap || [];
                 this.pendingMap = null;
                 if (map && map.arg)
                     this.pendingArgMap = map;
