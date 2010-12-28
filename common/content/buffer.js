@@ -539,7 +539,12 @@ var Buffer = Module("buffer", {
             buffer.lastInputField = elem;
         }
         else {
-            dactyl.focus(elem);
+            if (isinstance(elem, [HTMLInputElement, XULTextBoxElement]))
+                var flags = services.focus.FLAG_BYMOUSE;
+            else
+                flags = services.focus.FLAG_SHOWRING;
+            dactyl.focus(elem, flags);
+
             if (elem instanceof Window) {
                 let sel = elem.getSelection();
                 if (sel && !sel.rangeCount)

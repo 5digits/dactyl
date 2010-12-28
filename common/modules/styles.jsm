@@ -363,31 +363,21 @@ var Styles = Module("Styles", {
     commands: function (dactyl, modules, window) {
         const commands = modules.commands;
 
-        const queue = [];
-        const timer = Timer(10, 10, function () {
-            let args = queue.shift()
-            let [filter, css] = args;
-            if ("-append" in args) {
-                let sheet = styles.user.get(args["-name"]);
-                if (sheet) {
-                    filter = sheet.sites.concat(filter).join(",");
-                    css = sheet.css + " " + css;
-
-                }
-            }
-            styles.user.add(args["-name"], filter, css, args["-agent"]);
-
-            if (queue.length)
-                timer.tell();
-        });
         commands.add(["sty[le]"],
             "Add or list user styles",
             function (args) {
                 let [filter, css] = args;
 
                 if (css) {
-                    queue.push(args);
-                    timer.tell(args);
+                    if ("-append" in args) {
+                        let sheet = styles.user.get(args["-name"]);
+                        if (sheet) {
+                            filter = sheet.sites.concat(filter).join(",");
+                            css = sheet.css + " " + css;
+
+                        }
+                    }
+                    styles.user.add(args["-name"], filter, css, args["-agent"]);
                 }
                 else {
                     let list = styles.user.sheets.slice()
