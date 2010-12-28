@@ -1021,11 +1021,10 @@ var Buffer = Module("buffer", {
                 this.callback(file);
             else {
                 this.file = io.createTempFile();
-                var webBrowserPersist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
-                        .createInstance(Ci.nsIWebBrowserPersist);
-                webBrowserPersist.persistFlags = webBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
-                webBrowserPersist.progressListener = this;
-                webBrowserPersist.saveURI(uri, null, null, null, null, this.file);
+                var persist = services.Persist();
+                persist.persistFlags = persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+                persist.progressListener = this;
+                persist.saveURI(uri, null, null, null, null, this.file);
             }
             return null;
         },

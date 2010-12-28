@@ -90,7 +90,9 @@ var Map = Class("Map", {
      * @param {string} name The name to query.
      * @returns {boolean}
      */
-    hasName: function (name) this.names.indexOf(name) >= 0,
+    hasName: function (name) this.keys.indexOf(name) >= 0,
+
+    keys: Class.memoize(function () this.names.map(mappings._expandLeader)),
 
     /**
      * Execute the action for this mapping.
@@ -102,7 +104,7 @@ var Map = Class("Map", {
      * @param {string} argument The normal argument if accepted by this
      *     mapping. E.g. "a" for "ma"
      */
-    execute: function (motion, count, argument) {
+    execute: function (motion, count, argument, command) {
         let args = [];
 
         if (this.motion)
@@ -111,6 +113,7 @@ var Map = Class("Map", {
             args.push(count);
         if (this.arg)
             args.push(argument);
+        args.push(command);
 
         let self = this;
         function repeat() self.action.apply(self, args);
@@ -153,10 +156,9 @@ var Mappings = Module("mappings", {
     _getMap: function (mode, cmd, stack) {
         let maps = stack[mode] || [];
 
-        for (let [, map] in Iterator(maps)) {
+        for (let [, map] in Iterator(maps))
             if (map.hasName(cmd))
                 return map;
-        }
 
         return null;
     },
@@ -233,7 +235,6 @@ var Mappings = Module("mappings", {
      * @optional
      */
     addUserMap: function (modes, keys, description, action, extra) {
-        keys = keys.map(this._expandLeader);
         extra = extra || {};
         extra.user = true;
         let map = Map(modes, keys, description, action, extra);
@@ -631,7 +632,16 @@ var Mappings = Module("mappings", {
     options: function () {
         options.add(["mapleader", "ml"],
             "Define the replacement keys for the <Leader> pseudo-key",
-            "string", "\\");
+            "string", "\\", {
+                setter: function (value) {
+                    if (this.hasChanged)
+                        for (let hive in values([mappings._user, mappings._main]))
+                            for (let mode in values(hive))
+                                for (let map in values(mode))
+                                    delete map.keys;
+                    return value;
+                }
+            });
     }
 });
 

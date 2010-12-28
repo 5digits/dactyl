@@ -66,6 +66,7 @@ var Services = Module("Services", {
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
+        this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", Ci.nsIWebBrowserPersist);
         this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess, "init");
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");

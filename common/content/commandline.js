@@ -757,9 +757,6 @@ var CommandLine = Module("commandline", {
      *          the MOW.
      */
     echo: function echo(str, highlightGroup, flags) {
-        if (String(str) == "undefined")
-            util.dumpStack();
-
         // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
         if (this._silent)
             return;

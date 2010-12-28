@@ -2131,12 +2131,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.log("All modules loaded", 3);
 
-        AddonManager.getAddonByID(services["dactyl:"].addonID, function (addon) {
+        AddonManager.getAddonByID(services["dactyl:"].addonID, this.wrapCallback(function (addon) {
             // @DATE@ token replaced by the Makefile
             // TODO: Find it automatically
             prefs.set("extensions.dactyl.version", addon.version);
             dactyl.version = addon.version + " (created: @DATE@)";
-        });
+        }));
 
         if (!services.commandLineHandler)
             services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
