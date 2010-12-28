@@ -359,6 +359,28 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
+    <tags>:reh :rehash</tags>
+    <spec>:reh<oa>ash</oa> <oa>arg</oa> …</spec>
+    <description>
+        <p>
+            Reload the &dactyl.appName; add-on, including all code, plugins,
+            and configuration. For users running directly from the development
+            repository, this is a good way to update to the latest version or
+            to test your changes.
+        </p>
+        <p>
+            Any arguments supplied are parsed as command line arguments as
+            specified in <t>startup-options</t>.
+        </p>
+        <warning>
+            Not all plugins are designed to cleanly un-apply during a rehash.
+            While official plugins are safe, beware of possibility instability
+            if you rehash while running third-party plugins.
+        </warning>
+    </description>
+</item>
+
+<item>
     <tags>:re :reload</tags>
     <spec>:re<oa>load</oa><oa>!</oa></spec>
     <description>

@@ -1187,7 +1187,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0)
     }),
 
-    rehash: function () {
+    rehash: function (args) {
+        if (services.fuel)
+            services.fuel.storage.set("dactyl.commandlineArgs", args);
         this.timeout(function () {
             this.rehashing = true;
             this.addon.userDisabled = true;
@@ -1443,6 +1445,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     xmlToDom: function xmlToDom(node, doc, nodes) {
         XML.prettyPrinting = false;
+        if (typeof node === "string") // Sandboxes can't currently pass us XML objects.
+            node = XML(node);
         if (node.length() != 1) {
             let domnode = doc.createDocumentFragment();
             for each (let child in node)
