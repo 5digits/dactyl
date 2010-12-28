@@ -93,6 +93,7 @@ var Events = Module("events", {
         this._activeMenubar = false;
         this.addSessionListener(window, "DOMMenuBarActive", this.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.onDOMMenuBarInactive, true);
+        this.addSessionListener(window, "blur", this.onBlur, true);
         this.addSessionListener(window, "focus", this.onFocus, true);
         this.addSessionListener(window, "keydown", this.onKeyUpOrDown, true);
         this.addSessionListener(window, "keypress", this.onKeyPress, true);
@@ -722,6 +723,15 @@ var Events = Module("events", {
                 this.onFocusChange();
             }
         }
+    },
+
+    onBlur: function onFocus(event) {
+        if (event.originalTarget instanceof Window && services.focus.activeWindow == null)
+            // Deals with circumstances where, after the main window
+            // blurs while a collapsed frame has focus, re-activating
+            // the main window does not restore focus and we lose key
+            // input.
+            services.focus.clearFocus(window);
     },
 
     // TODO: Merge with onFocusChange
