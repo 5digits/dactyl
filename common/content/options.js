@@ -427,7 +427,8 @@ var Option = Class("Option", {
     },
 
     parse: {
-        number:     function (value) Number(Option.dequote(value)),
+        number:     function (value) let (val = Option.dequote(value))
+                            Option.validIf(Number(val) % 1 == 0, "Integer value required") && parseInt(val),
 
         boolean:    function (value) Option.dequote(value) == "true" || value == true ? true : false,
 
@@ -500,10 +501,9 @@ var Option = Class("Option", {
             if (invert)
                 values = values[(values.indexOf(String(this.value)) + 1) % values.length]
 
-            dactyl.assert(!isNaN(values) && Number(values) == parseInt(values),
-                          "E521: Number required after := " + this.name + "=" + values);
-
             let value = parseInt(values);
+            dactyl.assert(Number(values) % 1 == 0,
+                          "E521: Number required after =: " + this.name + "=" + values);
 
             switch (operator) {
             case "+":
@@ -773,7 +773,7 @@ var Options = Module("options", {
         let matches, prefix, postfix;
 
         [matches, prefix, ret.name, postfix, ret.valueGiven, ret.operator, ret.value] =
-        args.match(/^\s*(no|inv)?([a-z_.-]*?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
+        args.match(/^\s*(no|inv)?([^=]+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
 
         ret.args = args;
         ret.onlyNonDefault = false; // used for :set to print non-default options
@@ -892,7 +892,7 @@ var Options = Module("options", {
                     }
                     else {
                         var [matches, name, postfix, valueGiven, operator, value] =
-                            arg.match(/^\s*?([a-zA-Z0-9\.\-_{}]+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/);
+                            arg.match(/^\s*?([^=]+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/);
                         reset = (postfix == "&");
                         invertBoolean = (postfix == "!");
                     }
@@ -918,7 +918,7 @@ var Options = Module("options", {
                             value = true;
                         else if (value == "false")
                             value = false;
-                        else if (!isNaN(value) && parseInt(value) === Number(value))
+                        else if (Number(value) % 1 == 0)
                             value = parseInt(value);
                         else
                             value = Option.dequote(value);
