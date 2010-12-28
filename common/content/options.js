@@ -82,7 +82,7 @@ var Option = Class("Option", {
     get isDefault() this.stringValue === this.stringDefaultValue,
 
     /** @property {value} The option's global value. @see #scope */
-    get globalValue() options.store.get(this.name, {}).value,
+    get globalValue() { try { return options.store.get(this.name, {}).value } catch (e) { util.reportError(e); throw e; } },
     set globalValue(val) { options.store.set(this.name, { value: val, time: Date.now() }); },
 
     /**

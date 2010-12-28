@@ -996,7 +996,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             doc.dactylOverlayElements.push(n);
                         fn(elem, node);
                         for each (let attr in attr || []) // FIXME: Cleanup...
-                            elem.setAttributeNS(attr.namespace(), attr.localName(), attr);
+                            if (attr.name() != "highlight")
+                                elem.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
+                            else
+                                highlight.highlightNode(elem, String(attr));
                     }
                 }
             }
@@ -1461,11 +1464,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             for each (let attr in node.@*::*)
                 if (attr.name() != "highlight")
                     domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
-                else {
-                    domnode.setAttributeNS(NS.uri, "highlight", String(attr));
-                    for each (let h in String.split(attr, " "))
-                        highlight.loaded[h] = true;
-                }
+                else
+                    highlight.highlightNode(domnode, String(attr));
 
             for each (let child in node.*::*)
                 domnode.appendChild(xmlToDom(child, doc, nodes));

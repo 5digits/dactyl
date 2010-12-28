@@ -192,21 +192,30 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     beep: function () {
         if (options["visualbell"]) {
-            let bell  = document.getElementById("dactyl-bell");
-            let strut = document.getElementById("dactyl-bell-strut");
-            if (!bell) {
-                bell = document.documentElement.insertBefore(
-                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" highlight="Bell" id="dactyl-bell"/>, document),
-                    document.documentElement.firstChild);
-                strut = document.documentElement.appendChild(
-                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" highlight="Bell" id="dactyl-bell-strut"/>, document));
+            let elems = {
+                bell: document.getElementById("dactyl-bell"),
+                strut: document.getElementById("dactyl-bell-strut")
             }
+            if (!elems.bell)
+                util.overlayWindow(window, {
+                    objects: elems,
+                    prepend: <>
+                        <window id={document.documentElement.id} xmlns={XUL}>
+                            <hbox style="display: none" highlight="Bell" id="dactyl-bell" key="bell"/>
+                        </window>
+                    </>,
+                    append: <>
+                        <window id={document.documentElement.id} xmlns={XUL}>
+                            <hbox style="display: none" highlight="Bell" id="dactyl-bell-strut" key="strut"/>
+                        </window>
+                    </>
+                }, elems);
 
-            bell.style.height = window.innerHeight + "px";
-            strut.style.marginBottom = -window.innerHeight + "px";
-            strut.style.display = bell.style.display = "";
+            elems.bell.style.height = window.innerHeight + "px";
+            elems.strut.style.marginBottom = -window.innerHeight + "px";
+            elems.strut.style.display = elems.bell.style.display = "";
 
-            util.timeout(function () { strut.style.display = bell.style.display = "none"; }, 20);
+            util.timeout(function () { elems.strut.style.display = elems.bell.style.display = "none"; }, 20);
         }
         else {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);

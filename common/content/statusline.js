@@ -26,7 +26,7 @@ var StatusLine = Module("statusline", {
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
-            <statusbar id="status-bar" highlight="StatusLine StatusNormal">
+            <statusbar id="status-bar" highlight="StatusLine StatusLineNormal">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 <hbox style="background: inherit;" key="container"  flex="1" hidden="false" align="center">
                     <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" highlight="CmdLine StatusCmdLine">
