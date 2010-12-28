@@ -36,7 +36,7 @@ var Services = Module("Services", {
         this.add("extensionManager",    "@mozilla.org/extensions/manager;1",                Ci.nsIExtensionManager);
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           Ci.nsIFaviconService);
         this.add("focus",               "@mozilla.org/focus-manager;1",                     Ci.nsIFocusManager);
-        this.add("fuel",                "@mozilla.org/fuel/application;1",                  Ci.fuelIApplication);
+        this.add("fuel",                "@mozilla.org/fuel/application;1",                  Ci.extIApplication);
         this.add("history",             "@mozilla.org/browser/global-history;2",            [Ci.nsIBrowserHistory, Ci.nsIGlobalHistory3,
                                                                                              Ci.nsINavHistoryService, Ci.nsPIPlacesDatabase]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                Ci.nsIIOService);
@@ -66,6 +66,7 @@ var Services = Module("Services", {
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
+        this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", Ci.nsIWebBrowserPersist);
         this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess, "init");
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");
@@ -76,6 +77,7 @@ var Services = Module("Services", {
         if (!this.extensionManager)
             Components.utils.import("resource://gre/modules/AddonManager.jsm");
     },
+    reinit: function () {},
 
     _create: function (classes, ifaces, meth, init, args) {
         try {

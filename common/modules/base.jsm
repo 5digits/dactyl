@@ -163,7 +163,7 @@ defineModule.dump = function dump_() {
             msg = util.objectToString(msg);
         return msg;
     }).join(", ");
-    let name = loaded.services ? services["dactyl:"].name : "dactyl";
+    let name = loaded.services && loaded.prefs && services["dactyl:"] ? services["dactyl:"].name : "dactyl";
     dump(String.replace(msg, /\n?$/, "\n")
                .replace(/^./gm, name + ": $&"));
 }
@@ -294,7 +294,10 @@ function deprecated(reason, fn) {
                 (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
     }
-    deprecatedMethod.seen = { "chrome://dactyl/content/javascript.js": true };
+    deprecatedMethod.seen = {
+        "chrome://dactyl/content/javascript.js": true,
+        "resource://dactyl/util.jsm": true
+    };
 
     return callable(fn) ? deprecatedMethod : Class.Property({
         get: function () deprecatedMethod,
@@ -859,6 +862,8 @@ Class.prototype = {
     timeout: function (callback, timeout) {
         const self = this;
         function notify(timer) {
+            if (util.rehashing && !isinstance(Cu.getGlobalForObject(callback), ["BackstagePass"]))
+                return;
             util.trapErrors(callback, self);
         }
         return services.Timer(notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);;
@@ -987,6 +992,8 @@ let StructBase = Class("StructBase", Array, {
 
     clone: function clone() this.constructor.apply(null, this.slice()),
 
+    closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
+
     toString: function () Class.prototype.toString.apply(this, arguments),
 
     // Iterator over our named members
@@ -1029,6 +1036,9 @@ var Timer = Class("Timer", {
     },
 
     notify: function (timer) {
+        if (util.rehashing)
+            return;
+
         this._timer.cancel();
         this.latest = 0;
         // minInterval is the time between the completion of the command and the next firing

@@ -64,7 +64,7 @@
       * :extadd now supports remote URLs as well as local files on Firefox 4.
       * Added :if/:elseif/:else/:endif conditionals.
       - Added -keyword, -tags, -title to :delbmarks.
-      - Added :extupdate command.
+      - Added :extrehash, :exttoggle, :extupdate, and :rehash commands.
       - Added :feedkeys command.
       - Added -sort option to :history.
       - Added several new options, including -javascript, to :abbrev and :map.

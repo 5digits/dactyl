@@ -13,6 +13,20 @@
  */
 var Events = Module("events", {
     init: function () {
+        util.overlayWindow(window, {
+            append: <e4x xmlns={XUL}>
+                <window id={document.documentElement.id}>
+                    <!--this notifies us also of focus events in the XUL
+                        from: http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands !-->
+                    <!-- I don't think we really need this. ––Kris -->
+                    <commandset id="onPentadactylFocus" commandupdater="true" events="focus"
+                                oncommandupdate="dactyl.modules.events.onFocusChange(event);"/>
+                    <commandset id="onPentadactylSelect" commandupdater="true" events="select"
+                                oncommandupdate="dactyl.modules.events.onSelectionChange(event);"/>
+                </window>
+            </e4x>.elements()
+        });
+
         this._fullscreen = window.fullScreen;
         this._lastFocus = null;
         this._currentMacro = "";
@@ -33,18 +47,28 @@ var Events = Module("events", {
         this._keyTable = {
             add: ["Plus", "Add"],
             back_space: ["BS"],
+            count: ["count"],
             delete: ["Del"],
             escape: ["Esc", "Escape"],
             insert: ["Insert", "Ins"],
+            leader: ["Leader"],
             left_shift: ["LT", "<"],
+            nop: ["Nop"],
             return: ["Return", "CR", "Enter"],
             right_shift: [">"],
             space: ["Space", " "],
             subtract: ["Minus", "Subtract"]
         };
 
+        this._pseudoKeys = set(["count", "leader", "nop"]);
+
+        this._key_key = {};
         this._code_key = {};
         this._key_code = {};
+
+        for (let list in values(this._keyTable))
+            for (let v in values(list))
+                this._key_key[v.toLowerCase()] = v;
 
         for (let [k, v] in Iterator(KeyEvent)) {
             k = k.substr(7).toLowerCase();
@@ -53,8 +77,10 @@ var Events = Module("events", {
             if (k in this._keyTable)
                 names = this._keyTable[k];
             this._code_key[v] = names[0];
-            for (let [, name] in Iterator(names))
+            for (let [, name] in Iterator(names)) {
+                this._key_key[name.toLowerCase()] = name;
                 this._key_code[name.toLowerCase()] = v;
+            }
         }
 
         // HACK: as Gecko does not include an event for <, we must add this in manually.
@@ -67,6 +93,7 @@ var Events = Module("events", {
         this._activeMenubar = false;
         this.addSessionListener(window, "DOMMenuBarActive", this.onDOMMenuBarActive, true);
         this.addSessionListener(window, "DOMMenuBarInactive", this.onDOMMenuBarInactive, true);
+        this.addSessionListener(window, "blur", this.onBlur, true);
         this.addSessionListener(window, "focus", this.onFocus, true);
         this.addSessionListener(window, "keydown", this.onKeyUpOrDown, true);
         this.addSessionListener(window, "keypress", this.onKeyPress, true);
@@ -422,7 +449,7 @@ var Events = Module("events", {
                     keyname = String.fromCharCode(parseInt(keyname.substr(1), 16));
 
                 if (keyname && (unknownOk || keyname.length == 1 || /mouse$/.test(keyname) ||
-                                this._key_code[keyname] || keyname == "nop")) {
+                                this._key_code[keyname] || set.has(this._pseudoKeys, keyname))) {
                     evt_obj.ctrlKey  = /C-/.test(modifier);
                     evt_obj.altKey   = /A-/.test(modifier);
                     evt_obj.shiftKey = /S-/.test(modifier);
@@ -437,8 +464,8 @@ var Events = Module("events", {
 
                         evt_obj.charCode = keyname.charCodeAt(0);
                     }
-                    else if (keyname == "nop") {
-                        evt_obj.dactylString = "<Nop>";
+                    else if (set.has(this._pseudoKeys)) {
+                        evt_obj.dactylString = "<" + this._key_key[keyname] + ">";
                     }
                     else if (/mouse$/.test(keyname)) { // mouse events
                         evt_obj.type = (/2-/.test(modifier) ? "dblclick" : "click");
@@ -562,7 +589,7 @@ var Events = Module("events", {
                 }
             }
             if (key == null)
-                key = event.dactylKeyname;
+                key = this._key_key[event.dactylKeyname] || event.dactylKeyname;
             if (key == null)
                 return null;
         }
@@ -696,6 +723,15 @@ var Events = Module("events", {
                 this.onFocusChange();
             }
         }
+    },
+
+    onBlur: function onFocus(event) {
+        if (event.originalTarget instanceof Window && services.focus.activeWindow == null)
+            // Deals with circumstances where, after the main window
+            // blurs while a collapsed frame has focus, re-activating
+            // the main window does not restore focus and we lose key
+            // input.
+            services.focus.clearFocus(window);
     },
 
     // TODO: Merge with onFocusChange
@@ -1056,9 +1092,9 @@ var Events = Module("events", {
             const self = this;
 
             let key = events.toString(event);
-            let [, countStr, candidateCommand] = /^((?:[1-9][0-9]*)?)(.*)/.exec(this.buffer + key);
+            let [, countStr, command] = /^((?:[1-9][0-9]*)?)(.*)/.exec(this.buffer + key);
 
-            let map = mappings[event.noremap ? "getDefault" : "get"](this.main, candidateCommand);
+            let map = mappings[event.noremap ? "getDefault" : "get"](this.main, command);
 
             function execute(map) {
                 if (self.preExecute)
@@ -1069,16 +1105,16 @@ var Events = Module("events", {
                 return res;
             }
 
-            let candidates = mappings.getCandidates(this.main, candidateCommand);
+            let candidates = mappings.getCandidates(this.main, command);
             if (candidates.length == 0 && !map) {
-                map = this.pendingMap;
+                [map, command] = this.pendingMap || [];
                 this.pendingMap = null;
                 if (map && map.arg)
                     this.pendingArgMap = map;
             }
 
             // counts must be at the start of a complete mapping (10j -> go 10 lines down)
-            if (countStr && !candidateCommand) {
+            if (countStr && !command) {
                 // no count for insert mode mappings
                 if (!this.main.count)
                     return this.append(event);
@@ -1088,9 +1124,9 @@ var Events = Module("events", {
                     this.append(event);
             }
             else if (this.pendingArgMap) {
-                let map = this.pendingArgMap;
+                let [map, command] = this.pendingArgMap;
                 if (!Events.isEscape(key))
-                    execute(map, null, this.count, key);
+                    execute(map, null, this.count, key, command);
                 return true;
             }
             else if (map && !event.skipmap && candidates.length == 0) {
@@ -1104,27 +1140,28 @@ var Events = Module("events", {
 
                 if (map.arg) {
                     this.append(event);
-                    this.pendingArgMap = map;
+                    this.pendingArgMap = [map, command];
                 }
                 else if (this.pendingMotionMap) {
+                    let [map, command] = this.pendingMotionMap;
                     if (!Events.isEscape(key))
-                        execute(this.pendingMotionMap, candidateCommand, this.motionCount || this.count, null);
+                        execute(map, command, this.motionCount || this.count, null, command);
                     return true;
                 }
                 else if (map.motion) {
                     this.buffer = "";
-                    this.pendingMotionMap = map;
+                    this.pendingMotionMap = [map, command];
                 }
                 else {
                     if (modes.replaying && !this.waitForPageLoad())
                         return true;
 
-                    return !execute(map, null, this.count) || !map.route
+                    return !execute(map, null, this.count, null, command) || !map.route
                 }
             }
-            else if (mappings.getCandidates(this.main, candidateCommand).length > 0 && !event.skipmap) {
+            else if (mappings.getCandidates(this.main, command).length > 0 && !event.skipmap) {
                 this.append(event);
-                this.pendingMap = map;
+                this.pendingMap = [map, command];
             }
             else {
                 this.append(event);

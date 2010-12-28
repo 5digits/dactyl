@@ -25,7 +25,7 @@ CHROME	      = chrome/
 JAR           = $(CHROME)$(NAME).jar
 
 XPI_BASES     = $(JAR_BASES) $(TOP)/..
-XPI_FILES     = install.rdf TODO AUTHORS Donors NEWS LICENSE.txt
+XPI_FILES     = bootstrap.js install.rdf TODO AUTHORS Donors NEWS LICENSE.txt
 XPI_DIRS      = modules components chrome defaults
 XPI_TEXTS     = js jsm $(JAR_TEXTS)
 XPI_BINS      = $(JAR_BINS)

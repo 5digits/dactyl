@@ -59,6 +59,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
+    get addon() services.fuel.storage.get("dactyl.bootstrap", null).addon,
+
     // FIXME: Only works for Pentadactyl
     get activeWindow() services.windowMediator.getMostRecentWindow("navigator:browser"),
     dactyl: update(function dactyl(obj) {
@@ -96,7 +98,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         obj._observe = observers;
 
         function register(meth) {
-            for (let target in set(["dactyl-cleanup", "quit-application"].concat(Object.keys(observers))))
+            for (let target in set(["dactyl-cleanup-modules", "quit-application"].concat(Object.keys(observers))))
                 try {
                     services.observer[meth](obj, target, true);
                 }
@@ -106,7 +108,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         Class.replaceProperty(obj, "observe",
             function (subject, target, data) {
                 try {
-                    if (target == "quit-application" || target == "dactyl-cleanup")
+                    if (target == "quit-application" || target == "dactyl-cleanup-modules")
                         register("removeObserver");
                     if (observers[target])
                         observers[target].call(obj, subject, data);
@@ -484,7 +486,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     dumpStack: function dumpStack(msg, frames) {
         let stack = util.stackLines(Error().stack);
-        stack = stack.slice(2, 2 + (frames || stack.length)).join("\n");
+        stack = stack.slice(1, 1 + (frames || stack.length)).join("\n").replace(/^/gm, "    ");
         util.dump((arguments.length == 0 ? "Stack" : msg) + "\n" + stack + "\n");
     },
 
@@ -922,6 +924,35 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     observe: {
+        "dactyl-cleanup-modules": function () {
+            util.dump("dactyl: util: observe: dactyl-cleanup-modules");
+
+            for (let module in values(defineModule.modules))
+                if (module.cleanup) {
+                    util.dump("cleanup: " + module.constructor.className);
+                    util.trapErrors(module.cleanup, module);
+                }
+
+            services.observer.addObserver(this, "dactyl-rehash", true);
+        },
+        "dactyl-rehash": function () {
+            services.observer.removeObserver(this, "dactyl-rehash");
+
+            util.dump("dactyl: util: observe: dactyl-rehash");
+            if (this.rehashing)
+                JSMLoader.purge();
+            else
+                for (let module in values(defineModule.modules)) {
+                    util.dump("dactyl: util: init(" + module + ")");
+                    if (module.reinit)
+                        module.reinit();
+                    else
+                        module.init();
+                }
+        },
+        "dactyl-purge": function () {
+            this.rehashing = true;
+        },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
                 if (event.originalTarget === window.document) {
@@ -965,7 +996,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                             doc.dactylOverlayElements.push(n);
                         fn(elem, node);
                         for each (let attr in attr || []) // FIXME: Cleanup...
-                            elem.setAttributeNS(attr.namespace(), attr.localName(), attr);
+                            if (attr.name() != "highlight")
+                                elem.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
+                            else
+                                highlight.highlightNode(elem, String(attr));
                     }
                 }
             }
@@ -1155,6 +1189,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          */
         getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0)
     }),
+
+    rehash: function (args) {
+        if (services.fuel)
+            services.fuel.storage.set("dactyl.commandlineArgs", args);
+        this.timeout(function () {
+            this.rehashing = true;
+            this.addon.userDisabled = true;
+            this.addon.userDisabled = false;
+        });
+    },
 
     maxErrors: 15,
     errors: Class.memoize(function () []),
@@ -1404,6 +1448,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     xmlToDom: function xmlToDom(node, doc, nodes) {
         XML.prettyPrinting = false;
+        if (typeof node === "string") // Sandboxes can't currently pass us XML objects.
+            node = XML(node);
         if (node.length() != 1) {
             let domnode = doc.createDocumentFragment();
             for each (let child in node)
@@ -1418,11 +1464,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             for each (let attr in node.@*::*)
                 if (attr.name() != "highlight")
                     domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
-                else {
-                    domnode.setAttributeNS(NS.uri, "highlight", String(attr));
-                    for each (let h in String.split(attr, " "))
-                        highlight.loaded[h] = true;
-                }
+                else
+                    highlight.highlightNode(domnode, String(attr));
 
             for each (let child in node.*::*)
                 domnode.appendChild(xmlToDom(child, doc, nodes));

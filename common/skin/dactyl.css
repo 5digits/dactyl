@@ -1,6 +1,6 @@
 @namespace dactyl url("http://vimperator.org/namespaces/liberator");
 @namespace html url("http://www.w3.org/1999/xhtml");
-@namespace xul uri("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@namespace xul url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
 /* Applied to all content */
 [dactyl|activeframe] {
@@ -89,8 +89,8 @@ window[dactyl|highlight~=Bell] > * {
 }
 
 [dactyl|highlight~=CmdLine] {
-    background: inherit;
-    color: inherit;
+    background: inherit !important;
+    color: inherit !important;
 }
 [dactyl|highlight~=CmdLine],
 [dactyl|highlight~=CmdLine] > [dactyl|highlight~=CmdLine] {
@@ -122,9 +122,9 @@ statusbarpanel {
     background: transparent;
 }
 
-#dactyl-statusline-field-url {
-    background-color: inherit;
-    color: inherit;
+.dactyl-status-field-url {
+    background-color: inherit !important;
+    color: inherit !important;
 }
 
 /* no longer at the window's bottom right corner */
@@ -141,8 +141,8 @@ statusbarpanel {
     padding: 0px;
 }
 .dactyl-commandline-command {
-    background-color: inherit;
-    color: inherit;
+    background-color: inherit !important;
+    color: inherit !important;
     margin: 0px;
 }
 .dactyl-commandline-command html|*:focus {

@@ -154,9 +154,32 @@
 </item>
 
 <item>
+    <tags>:extr :extrehash</tags>
+    <spec>:extr<oa>ehash</oa> <a>extension</a></spec>
+    <spec>:extr<oa>ehash</oa></spec>
+    <description>
+        <p>
+            Toggle an extension's enabled status twice. This is useful for rebooting
+            a restartless extension.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:extt :exttoggle</tags>
+    <spec>:extt<oa>oggle</oa> <a>extension</a></spec>
+    <spec>:extt<oa>oggle</oa></spec>
+    <description>
+        <p>
+            Toggle an extension's enabled status.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>:extu :extupdate</tags>
     <spec>:extu<oa>pdate</oa> <a>extension</a></spec>
-    <spec>:extu<oa>pdate</oa>!</spec>
+    <spec>:extu<oa>pdate</oa><oa>!</oa></spec>
     <description>
         <p>
             Update an extension. When <oa>!</oa> is given, update all

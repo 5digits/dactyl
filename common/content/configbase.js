@@ -67,12 +67,15 @@ var ConfigBase = Class(ModuleBase, {
 
     get browserModes() [modes.NORMAL],
 
+    commandContainer: "browser-bottombox",
+
     /**
      * @property {Object} Application specific defaults for option values. The
      *     property names must be the options' canonical names, and the values
      *     must be strings as entered via :set.
      */
     defaults: { guioptions: "rb" },
+    cleanups: {},
 
     /**
      * @property {[["string", "string", "function"]]} An array of
@@ -184,8 +187,8 @@ var ConfigBase = Class(ModuleBase, {
         CmdQuestion;[dactyl|highlight]   &#x0d; StatusQuestion;[dactyl|highlight]
         CmdWarningMsg;[dactyl|highlight] &#x0d; StatusWarningMsg;[dactyl|highlight]
 
-        !Normal           color: black   !important; background: white   !important; font-weight: normal !important;
-        !StatusNormal     color: inherit !important; background: inherit !important;
+        Normal            color: black   !important; background: white   !important; font-weight: normal !important;
+        StatusNormal      color: inherit !important; background: inherit !important;
         ErrorMsg          color: white   !important; background: red     !important; font-weight: bold !important;
         InfoMsg           color: black   !important; background: white   !important;
         StatusInfoMsg     color: inherit !important; background: inherit !important;
@@ -195,7 +198,7 @@ var ConfigBase = Class(ModuleBase, {
         MoreMsg           color: green   !important; background: white   !important;
         StatusMoreMsg                                background: inherit !important;
         Message           white-space: pre-wrap !important; min-width: 100%; width: 100%; padding-left: 4em; text-indent: -4em; display: block;
-        !Message String   white-space: pre-wrap;
+        Message String    white-space: pre-wrap;
         NonText           color: blue; background: transparent !important;
         *Preview          color: gray;
         Question          color: green   !important; background: white   !important; font-weight: bold !important;
@@ -203,7 +206,7 @@ var ConfigBase = Class(ModuleBase, {
         WarningMsg        color: red     !important; background: white   !important;
         StatusWarningMsg  color: red     !important; background: inherit !important;
 
-        !CmdLine;>*       font-family: monospace !important; padding: 1px !important;
+        CmdLine;>*        font-family: monospace !important; padding: 1px !important;
         CmdPrompt;.dactyl-commandline-prompt
         CmdInput;.dactyl-commandline-command
         CmdOutput         white-space: pre;
@@ -252,8 +255,8 @@ var ConfigBase = Class(ModuleBase, {
         Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
-        !StatusLine         font-weight: bold; font-family: monospace; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
-        !StatusLineNormal   color: white !important; background: black   !important;
+        StatusLine          font-weight: bold; font-family: monospace; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
+        StatusLineNormal    color: white !important; background: black   !important;
         StatusLineBroken    color: black !important; background: #FFa0a0 !important /* light-red */
         StatusLineSecure    color: black !important; background: #a0a0FF !important /* light-blue */
         StatusLineExtended  color: black !important; background: #a0FFa0 !important /* light-green */

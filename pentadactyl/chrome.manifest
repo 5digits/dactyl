@@ -10,9 +10,6 @@ skin     dactyl classic/1.0 ../common/skin/
 
 override chrome://dactyl/content/dactyl.dtd  chrome://pentadactyl/content/dactyl.dtd
 
-overlay  chrome://browser/content/browser.xul chrome://dactyl/content/dactyl.xul
-overlay  chrome://browser/content/browser.xul chrome://pentadactyl/content/pentadactyl.xul
-
 component {16dc34f7-6d22-4aa4-a67f-2921fb5dcb69} components/commandline-handler.js
 contract  @mozilla.org/commandlinehandler/general-startup;1?type=pentadactyl {16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}
 category  command-line-handler m-pentadactyl @mozilla.org/commandlinehandler/general-startup;1?type=pentadactyl

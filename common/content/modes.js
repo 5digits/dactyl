@@ -51,8 +51,7 @@ var Modes = Module("modes", {
             }
         });
 
-        this.addMode("COMMAND_LINE", { char: "c", input: true,
-            display: function () modes.extended & modes.OUTPUT_MULTILINE ? null : this.disp });
+        this.addMode("COMMAND_LINE", { char: "c", input: true });
 
         this.addMode("CARET", {}, {
             get pref()    prefs.get("accessibility.browsewithcaret"),

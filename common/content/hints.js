@@ -75,6 +75,15 @@ var Hints = Module("hints", {
     },
 
     /**
+     * Clear any timeout which might be active after pressing a number
+     */
+    clearTimeout: function () {
+        if (this._activeTimeout)
+            this._activeTimeout.cancel();
+        this._activeTimeout = null;
+    },
+
+    /**
      * Reset hints, so that they can be cleanly used again.
      */
     _reset: function _reset(slight) {
@@ -92,10 +101,7 @@ var Hints = Module("hints", {
         this._pageHints = [];
         this._validHints = [];
         this._docs = [];
-
-        if (this._activeTimeout)
-            this._activeTimeout.cancel();
-        this._activeTimeout = null;
+        this.clearTimeout();
     },
     __reset: function __reset() {
         if (!this._usedTabKey)
@@ -298,14 +304,12 @@ var Hints = Module("hints", {
 
             let mode = this._hintMode;
             let res = util.evaluateXPath(mode.xpath, doc, null, true);
-            if (mode.filter)
-                res = let (orig = res) (e for (e in orig) if (mode.filter(e)));
 
             let start = this._pageHints.length;
             for (let elem in res) {
                 let hint = { elem: elem, showText: false };
 
-                if (!isVisible(elem))
+                if (!isVisible(elem) || mode.filter && !mode.filter(elem))
                     continue;
 
                 if (elem.hasAttributeNS(NS, "hint"))
@@ -582,11 +586,7 @@ var Hints = Module("hints", {
     _onInput: function _onInput(event) {
         this.prevInput = "text";
 
-        // clear any timeout which might be active after pressing a number
-        if (this._activeTimeout) {
-            this._activeTimeout.cancel();
-            this._activeTimeout = null;
-        }
+        this.clearTimeout();
 
         this._hintNumber = 0;
         this._hintString = commandline.command;
@@ -896,104 +896,38 @@ var Hints = Module("hints", {
      */
     onEvent: function onEvent(event) {
         let key = events.toString(event);
-        let followFirst = false;
 
-        // clear any timeout which might be active after pressing a number
-        if (this._activeTimeout) {
-            this._activeTimeout.cancel();
-            this._activeTimeout = null;
-        }
+        this.clearTimeout();
 
-        switch (key) {
-        case "<Return>":
-            followFirst = true;
-            break;
+        if (!this.escNumbers && this.isHintKey(key)) {
+            this.prevInput = "number";
 
-        case "<Tab>":
-        case "<S-Tab>":
-            this._usedTabKey = true;
-            if (this._hintNumber == 0)
-                this._hintNumber = 1;
-
-            let oldId = this._hintNumber;
-            if (key == "<Tab>") {
-                if (++this._hintNumber > this._validHints.length)
-                    this._hintNumber = 1;
-            }
-            else {
-                if (--this._hintNumber < 1)
-                    this._hintNumber = this._validHints.length;
-            }
-            this._showActiveHint(this._hintNumber, oldId);
-            this._updateStatusline();
-            return false;
-
-        case "<BS>":
-            if (this.prevInput !== "number")
-                return true;
-
-            if (this._hintNumber > 0 && !this._usedTabKey) {
-                this._hintNumber = Math.floor(this._hintNumber / this.hintKeys.length);
-                if (this._hintNumber == 0)
-                    this.prevInput = "text";
-            }
-            else {
-                this._usedTabKey = false;
+            let oldHintNumber = this._hintNumber;
+            if (this._usedTabKey) {
                 this._hintNumber = 0;
-                dactyl.beep();
+                this._usedTabKey = false;
+            }
+            this._hintNumber = this._hintNumber * this.hintKeys.length +
+                this.hintKeys.indexOf(key);
+
+            this._updateStatusline();
+
+            if (!this._canUpdate)
                 return;
-            }
-            break;
 
-       case options["mapleader"]:
-           hints.escNumbers = !hints.escNumbers;
-           if (hints.escNumbers && this._usedTabKey)
-               this._hintNumber = 0;
-
-           this._updateStatusline();
-           return false;
-
-        default:
-            if (!this.escNumbers && this.isHintKey(key)) {
-                this.prevInput = "number";
-
-                let oldHintNumber = this._hintNumber;
-                if (this._usedTabKey) {
-                    this._hintNumber = 0;
-                    this._usedTabKey = false;
-                }
-                this._hintNumber = this._hintNumber * this.hintKeys.length +
-                    this.hintKeys.indexOf(key);
-
-                this._updateStatusline();
-
-                if (!this._canUpdate)
-                    return;
-
-                if (this._docs.length == 0) {
-                    this._generate();
-                    this._showHints();
-                }
-                this._showActiveHint(this._hintNumber, oldHintNumber || 1);
-
-                dactyl.assert(this._hintNumber != 0);
-
-                this._checkUnique();
-                return false;
-            }
-            return true;
-        }
-
-        this._updateStatusline();
-
-        if (this._canUpdate) {
-            if (this._docs.length == 0 && this._hintString.length > 0)
+            if (this._docs.length == 0) {
                 this._generate();
+                this._showHints();
+            }
+            this._showActiveHint(this._hintNumber, oldHintNumber || 1);
 
-            this._showHints();
-            this._processHints(followFirst);
+            dactyl.assert(this._hintNumber != 0);
+
+            this._checkUnique();
+            return false;
         }
-        return false;
+
+        return !Events.isEscape(key);
     }
     //}}}
 }, {
@@ -1118,6 +1052,84 @@ var Hints = Module("hints", {
             "Start an extended hint mode and stay there until <Esc> is pressed",
             function (count) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
+
+        function update(followFirst) {
+            hints.clearTimeout();
+            hints._updateStatusline();
+
+            if (hints._canUpdate) {
+                if (hints._docs.length == 0 && hints._hintString.length > 0)
+                    hints._generate();
+
+                hints._showHints();
+                hints._processHints(followFirst);
+            }
+        }
+
+        mappings.add(modes.HINTS, ["<Return>"],
+            "Follow the selected hint",
+            function () { update(true) });
+
+        function tab(previous) {
+            hints.clearTimeout();
+            this._usedTabKey = true;
+            if (this._hintNumber == 0)
+                this._hintNumber = 1;
+
+            let oldId = this._hintNumber;
+            if (!previous) {
+                if (++this._hintNumber > this._validHints.length)
+                    this._hintNumber = 1;
+            }
+            else {
+                if (--this._hintNumber < 1)
+                    this._hintNumber = this._validHints.length;
+            }
+
+            this._showActiveHint(this._hintNumber, oldId);
+            this._updateStatusline();
+        }
+
+        mappings.add(modes.HINTS, ["<Tab>"],
+            "Focus the next matching hint",
+            function () { tab.call(hints, false) });
+
+        mappings.add(modes.HINTS, ["<S-Tab>"],
+            "Focus the previous matching hint",
+            function () { tab.call(hints, true) });
+
+        mappings.add(modes.HINTS, ["<BS>", "<C-h>"],
+            "Delete the previous character",
+            function () {
+                hints.clearTimeout();
+                if (hints.prevInput !== "number")
+                    return true;
+
+                if (hints._hintNumber > 0 && !hints._usedTabKey) {
+                    hints._hintNumber = Math.floor(hints._hintNumber / hints.hintKeys.length);
+                    if (hints._hintNumber == 0)
+                        hints.prevInput = "text";
+                    update(false);
+                }
+                else {
+                    hints._usedTabKey = false;
+                    hints._hintNumber = 0;
+                    dactyl.beep();
+                }
+                return false;
+            },
+            { route: true });
+
+        mappings.add(modes.HINTS, ["<Leader>"],
+            "Toggle hint filtering",
+            function () {
+                hints.clearTimeout();
+                hints.escNumbers = !hints.escNumbers;
+                if (hints.escNumbers && hints._usedTabKey)
+                    hints._hintNumber = 0;
+
+                hints._updateStatusline();
+            });
     },
     options: function () {
         const DEFAULT_HINTTAGS =
@@ -1129,7 +1141,7 @@ var Hints = Module("hints", {
             "XPath strings of hintable elements for extended hint modes",
             "regexpmap", "[iI]:" + xpath(["img"]) +
                         ",[OTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
-                        ",[F]:" + xpath(["div", "span", "p", "body", "html"]) +
+                        ",[F]:" + xpath(["body", "code", "div", "html", "p", "pre", "span"]) +
                         ",[S]:" + xpath(["input[not(@type='hidden')]", "textarea", "button", "select"]),
             { validator: Option.validateXPath });
 

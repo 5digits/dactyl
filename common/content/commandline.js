@@ -10,6 +10,76 @@
 
 var CommandWidgets = Class("CommandWidgets", {
     init: function () {
+        let _status = "dactyl-statusline-field-";
+
+        util.overlayWindow(window, {
+            append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
+                <window id={document.documentElement.id}>
+                    <popupset>
+                        <menupopup id="dactyl-contextmenu"
+                                   onpopupshowing="return (event.target != this || dactyl.modules.commandline.onContext(event));">
+                            <menuitem id="dactyl-context-copylink"
+                                      label="Copy Link Location" dactyl:group="link"
+                                      oncommand="goDoCommand('cmd_copyLink');"/>
+                            <menuitem id="dactyl-context-copy"
+                                      label="Copy" dactyl:group="selection"
+                                      command="cmd_copy"/>
+                            <menuitem id="dactyl-context-selectall"
+                                      label="Select All"
+                                      command="cmd_selectAll"/>
+                        </menupopup>
+                    </popupset>
+                </window>
+
+                <vbox id={config.commandContainer}>
+
+                    <vbox class="dactyl-container" hidden="false" collapsed="true">
+                        <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
+                                flex="1" hidden="false" collapsed="false"
+                                contextmenu="dactyl-contextmenu"
+                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
+                    </vbox>
+
+                    <vbox class="dactyl-container" hidden="false" collapsed="true">
+                        <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="chrome://dactyl/content/buffer.xhtml"
+                                contextmenu="dactyl-contextmenu"
+                                flex="1" hidden="false" collapsed="false"
+                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
+                    </vbox>
+
+                    <vbox id={"dactyl-completions-" + _status + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true" insertbefore="addon-bar,status-bar">
+                        <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="chrome://dactyl/content/buffer.xhtml"
+                                contextmenu="dactyl-contextmenu"
+                                flex="1" hidden="false" collapsed="false"
+                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
+                    </vbox>
+
+                    <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" highlight="CmdLine CmdCmdLine">
+                        <textbox class="plain" id="dactyl-strut"   flex="1" crop="end" collapsed="true"/>
+                        <textbox class="plain" id="dactyl-mode"    flex="1" crop="end"/>
+                        <textbox class="plain" id="dactyl-message" flex="1" readonly="true"/>
+
+                        <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" highlight="Normal CmdNormal" collapsed="true">
+                            <label   id="dactyl-commandline-prompt"  class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
+                            <textbox id="dactyl-commandline-command" class="dactyl-commandline-command plain" flex="1" type="input" timeout="100"
+                                     oninput="dactyl.modules.commandline.onEvent(event);"
+                                     onkeyup="dactyl.modules.commandline.onEvent(event);"
+                                     onfocus="dactyl.modules.commandline.onEvent(event);"
+                                     onblur="dactyl.modules.commandline.onEvent(event);"/>
+                        </hbox>
+                    </stack>
+
+                    <vbox class="dactyl-container" hidden="false" collapsed="false" highlight="CmdLine">
+                        <textbox id="dactyl-multiline-input" class="plain" flex="1" rows="1" hidden="false" collapsed="true" multiline="true"
+                                 highlight="Normal"
+                                 onkeypress="dactyl.modules.commandline.onMultilineInputEvent(event);"
+                                 oninput="dactyl.modules.commandline.onMultilineInputEvent(event);"
+                                 onblur="dactyl.modules.commandline.onMultilineInputEvent(event);"/>
+                    </vbox>
+                </vbox>
+            </e4x>.elements()
+        });
+
         this.elements = {};
         this.addElement({
             name: "container",
@@ -97,11 +167,14 @@ var CommandWidgets = Class("CommandWidgets", {
     addElement: function (obj) {
         const self = this;
         this.elements[obj.name] = obj;
-        function get(id) obj.getElement ? obj.getElement(id) : document.getElementById(id);
+
+        function get(prefix, map, id) (obj.getElement || util.identity)(map[id] || document.getElementById(prefix + id));
+
         this.active.__defineGetter__(obj.name, function () self.activeGroup[obj.name][obj.name]);
         this.activeGroup.__defineGetter__(obj.name, function () self.getGroup(obj.name));
-        memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-" + (obj.id || obj.name)));
-        memoize(this.commandbar, obj.name, function () get("dactyl-" + (obj.id || obj.name)));
+
+        memoize(this.statusbar, obj.name, function () get("dactyl-statusline-field-", statusline.widgets, (obj.id || obj.name)));
+        memoize(this.commandbar, obj.name, function () get("dactyl-", {}, (obj.id || obj.name)));
 
         if (!(obj.noValue || obj.getValue))
             Object.defineProperty(this, obj.name, Modes.boundProperty({
@@ -173,11 +246,21 @@ var CommandWidgets = Class("CommandWidgets", {
     completionList: Class.memoize(function () document.getElementById("dactyl-completions")),
     completionContainer: Class.memoize(function () this.completionList.parentNode),
     multilineOutput: Class.memoize(function () {
-        let elem = document.getElementById("dactyl-multiline-output");
+        this.__defineGetter__("multilineOutput", function () {
+            let elem = document.getElementById("dactyl-multiline-output");
+            while (elem.contentDocument.documentURI != elem.getAttribute("src") ||
+                   ["viewable", "complete"].indexOf(elem.contentDocument.readyState) < 0)
+                util.threadYield();
+            return elem;
+        });
+
+        let elem = this.multilineOutput;
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
+        elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
         elem.__defineGetter__("atEnd", function ()
             !Buffer.isScrollable(elem.contentDocument.documentElement, 1));
+
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
             let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
@@ -189,8 +272,7 @@ var CommandWidgets = Class("CommandWidgets", {
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
     mowContainer: Class.memoize(function () this.multilineOutput.parentNode)
 }, {
-    getEditor: function (id) {
-        let elem = document.getElementById(id);
+    getEditor: function (elem) {
         elem.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
         return elem;
     }
@@ -455,7 +537,7 @@ var CommandLine = Module("commandline", {
         set: function (value) { this.widgets.multilineInput.collapsed = !value; }
     }),
     multilineOutputVisible: Modes.boundProperty({
-        set: function (value) { this.widgets.mowContainer.collapsed = !value; }
+        set: function (value) { (this.widgets.mowContainer || {}).collapsed = !value; }
     }),
 
     /**
@@ -673,9 +755,6 @@ var CommandLine = Module("commandline", {
      *          the MOW.
      */
     echo: function echo(str, highlightGroup, flags) {
-        if (String(str) == "undefined")
-            util.dumpStack();
-
         // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
         if (this._silent)
             return;
@@ -1777,6 +1856,7 @@ var ItemList = Class("ItemList", {
         this._win = iframe.contentWindow;
         this._container = iframe.parentNode;
 
+        this._doc.documentElement.id = id + "-top";
         this._doc.body.id = id + "-content";
         this._doc.body.className = iframe.className + "-content";
         this._doc.body.appendChild(this._doc.createTextNode(""));

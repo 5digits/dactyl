@@ -30,6 +30,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         this.indices = {};
         this.modules = modules;
         this.observers = {};
+        util.addObserver(this);
 
         this.commands["dactyl.help"] = function (event) {
             let elem = event.originalTarget;
@@ -48,6 +49,27 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         dactyl.triggerObserver("shutdown", null);
         util.dump("All dactyl modules destroyed\n");
         autocommands.trigger("Leave", {});
+    },
+
+    observe: {
+        "dactyl-cleanup": function () {
+            let modules = dactyl.modules;
+
+            for (let name in values(Object.getOwnPropertyNames(modules).reverse())) {
+                let mod = Object.getOwnPropertyDescriptor(modules, name).value;
+                if (mod instanceof ModuleBase) {
+                    if ("cleanup" in mod)
+                        mod.cleanup();
+                    if ("destroy" in mod)
+                        mod.destroy();
+                }
+            }
+            for (let name in values(Object.getOwnPropertyNames(modules).reverse()))
+                try {
+                    delete modules[name];
+                }
+                catch (e) {}
+        }
     },
 
     /** @property {string} The name of the current user profile. */
@@ -140,7 +162,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     template.usage(results, params.format));
             },
             {
-                argCount: "*",
+                argCount: "0",
                 completer: function (context, args) {
                     context.keys.text = util.identity;
                     context.keys.description = function () seen[this.text] + " matching items";
@@ -170,21 +192,30 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     beep: function () {
         if (options["visualbell"]) {
-            let bell  = document.getElementById("dactyl-bell");
-            let strut = document.getElementById("dactyl-bell-strut");
-            if (!bell) {
-                bell = document.documentElement.insertBefore(
-                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" highlight="Bell" id="dactyl-bell"/>, document),
-                    document.documentElement.firstChild);
-                strut = document.documentElement.appendChild(
-                    util.xmlToDom(<hbox xmlns={XUL} style="display: none" highlight="Bell" id="dactyl-bell-strut"/>, document));
+            let elems = {
+                bell: document.getElementById("dactyl-bell"),
+                strut: document.getElementById("dactyl-bell-strut")
             }
+            if (!elems.bell)
+                util.overlayWindow(window, {
+                    objects: elems,
+                    prepend: <>
+                        <window id={document.documentElement.id} xmlns={XUL}>
+                            <hbox style="display: none" highlight="Bell" id="dactyl-bell" key="bell"/>
+                        </window>
+                    </>,
+                    append: <>
+                        <window id={document.documentElement.id} xmlns={XUL}>
+                            <hbox style="display: none" highlight="Bell" id="dactyl-bell-strut" key="strut"/>
+                        </window>
+                    </>
+                }, elems);
 
-            bell.style.height = window.innerHeight + "px";
-            strut.style.marginBottom = -window.innerHeight + "px";
-            strut.style.display = bell.style.display = "";
+            elems.bell.style.height = window.innerHeight + "px";
+            elems.strut.style.marginBottom = -window.innerHeight + "px";
+            elems.strut.style.display = elems.bell.style.display = "";
 
-            util.timeout(function () { strut.style.display = bell.style.display = "none"; }, 20);
+            util.timeout(function () { elems.strut.style.display = elems.bell.style.display = "none"; }, 20);
         }
         else {
             let soundService = Cc["@mozilla.org/sound;1"].getService(Ci.nsISound);
@@ -397,7 +428,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     element.
      */
     focusContent: function focusContent(clearFocusedElement) {
-        if (window != services.windowWatcher.activeWindow)
+        if (window != services.focus.activeWindow)
             return;
 
         let win = document.commandDispatcher.focusedWindow;
@@ -423,6 +454,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 dactyl.focusedElement.blur();
             if (win && Editor.getEditor(win)) {
                 win.blur();
+                if (win.frameElement)
+                    util.dump("blur(" + util.objectToString(win.frameElement) + ")");
                 if (win.frameElement)
                     win.frameElement.blur();
             }
@@ -1152,14 +1185,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @see Commands#parseArgs
      */
     parseCommandLine: function (cmdline) {
-        const options = [
-            [["+u"], CommandOption.STRING],
-            [["++noplugin"], CommandOption.NOARG],
-            [["++cmd"], CommandOption.STRING, null, null, true],
-            [["+c"], CommandOption.STRING, null, null, true]
-        ].map(CommandOption.fromArray, CommandOption);
         try {
-            return commands.parseArgs(cmdline, { options: options, argCount: "*" });
+            return commands.get("rehash").parseArgs(cmdline);
         }
         catch (e) {
             dactyl.reportError(e, true);
@@ -1325,6 +1352,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         options.add(["guioptions", "go"],
             "Show or hide certain GUI elements like the menu or toolbar",
             "charlist", config.defaults.guioptions || "", {
+
+                // FIXME: cleanup
+                cleanupValue: config.cleanups.guioptions ||
+                    "r" + [k for ([k, v] in iter(groups[1].opts))
+                           if (!document.getElementById(v[1][0]).collapsed)].join(""),
+
                 completer: function (context)
                     array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
                 setter: function (value) {
@@ -1414,7 +1447,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function () { dactyl.quit(true); });
     },
 
-    commands: function () {
+    commands: function (_dactyl, _modules, _window) {
         commands.add(["addo[ns]"],
             "Manage available Extensions and Themes",
             function () {
@@ -1659,14 +1692,31 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 perm: "disable"
             },
             {
+                name: "extr[ehash]",
+                description: "Reload an extension",
+                action: function (addon) {
+                    dactyl.assert(dactyl.has("Gecko2"), "This command is not useful in this version of " + config.host);
+                    util.timeout(function () {
+                        addon.userDisabled = true;
+                        addon.userDisabled = false;
+                    });
+                },
+                filter: function ({ item }) !item.userDisabled,
+                perm: "disable"
+            },
+            {
+                name: "extt[oggle]",
+                description: "Toggle an extension's enabled status",
+                action: function (addon) addon.userDisabled = !addon.userDisabled
+            },
+            {
                 name: "extu[pdate]",
                 description: "Update an extension",
                 actions: updateAddons,
-                filter: function ({ item }) !item.userDisabled,
                 perm: "upgrade"
             }
         ].forEach(function (command) {
-            let perm = AddonManager["PERM_CAN_" + command.perm.toUpperCase()];
+            let perm = command.perm && AddonManager["PERM_CAN_" + command.perm.toUpperCase()];
             function ok(addon) !perm || addon.permissions & perm;
             commands.add([command.name],
                 command.description,
@@ -1843,6 +1893,34 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             }, {
                 argCount: "0",
                 bang: true
+            });
+
+        commands.add(["reh[ash]"],
+            "Reload the " + config.appName + " add-on",
+            function (args) { util.rehash(args); },
+            {
+                argCount: "0",
+                options: [
+                    {
+                        names: ["+u"],
+                        description: "The initialization file to execute at startup",
+                        type: CommandOption.STRING
+                    },
+                    {
+                        names: ["++noplugin"],
+                        description: "Do not automatically load plugins"
+                    },
+                    {
+                        names: ["++cmd"],
+                        description: "Ex commands to execute prior to initialization",
+                        multiple: true
+                    },
+                    {
+                        names: ["+c"],
+                        description: "Ex commands to execute after initialization",
+                        multiple: true
+                    }
+                ]
             });
 
         commands.add(["res[tart]"],
@@ -2062,26 +2140,34 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.log("All modules loaded", 3);
 
-        AddonManager.getAddonByID(services["dactyl:"].addonID, function (addon) {
+        AddonManager.getAddonByID(services["dactyl:"].addonID, this.wrapCallback(function (addon) {
             // @DATE@ token replaced by the Makefile
             // TODO: Find it automatically
             prefs.set("extensions.dactyl.version", addon.version);
             dactyl.version = addon.version + " (created: @DATE@)";
-        });
+        }));
 
         if (!services.commandLineHandler)
             services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
 
-        if (services.commandLineHandler) {
-            let commandline = services.commandLineHandler.optionValue;
-            if (commandline) {
-                let args = dactyl.parseCommandLine(commandline);
+        try {
+            if (services.fuel)
+                var args = services.fuel.storage.get("dactyl.commandlineArgs", null);
+            if (!args) {
+                let commandline = services.commandLineHandler.optionValue;
+                if (commandline)
+                    args = dactyl.parseCommandLine(commandline);
+            }
+            if (args) {
                 dactyl.commandLineOptions.rcFile = args["+u"];
                 dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
                 dactyl.commandLineOptions.postCommands = args["+c"];
                 dactyl.commandLineOptions.preCommands = args["++cmd"];
                 util.dump("Processing command-line option: " + commandline);
             }
+        }
+        catch (e) {
+            dactyl.echoerr("Parsing command line options: " + e);
         }
 
         dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);

@@ -14,12 +14,6 @@ var StatusLine = Module("statusline", {
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
         this.statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
 
-        // our status bar fields
-        this.widgets = array(["container", "url", "inputbuffer", "progress", "tabcount", "bufferposition", "zoomlevel"]
-                    .map(function (field) [field, document.getElementById("dactyl-statusline-field-" + field)]))
-                    .toObject();
-        this.widgets.status = this.widgets.container;
-
         if (this.statusBar.localName == "toolbar") {
             styles.system.add("addon-bar", config.styleableChrome, <css><![CDATA[
                 #status-bar { margin-top: 0 !important; }
@@ -28,10 +22,46 @@ var StatusLine = Module("statusline", {
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
-            let parent = this.widgets.status.parentNode;
-            parent.removeChild(this.widgets.status);
-            parent.insertBefore(this.widgets.status, parent.firstChild);
         }
+
+        let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
+        let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
+            <statusbar id="status-bar" highlight="StatusLine StatusLineNormal">
+                <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
+                <hbox style="background: inherit;" key="container"  flex="1" hidden="false" align="center">
+                    <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" highlight="CmdLine StatusCmdLine">
+                        <hbox                                                class="dactyl-container" highlight="CmdLine StatusCmdLine">
+                            <label key="mode"          crop="end"            class="plain" collapsed="true"/>
+                            <stack flex="1"                                  class="dactyl-container" highlight="CmdLine StatusCmdLine">
+                                <textbox key="url"     crop="end"   flex="1" class="plain dactyl-status-field-url" readonly="true"/>
+                                <textbox key="message" crop="end"   flex="1" class="plain"            highlight="Normal StatusNormal" readonly="true"/>
+                            </stack>
+                        </hbox>
+
+                        <hbox key="commandline" hidden="false" class="dactyl-container" highlight="Normal StatusNormal" collapsed="true">
+                            <label key="commandline-prompt"    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
+                            <textbox key="commandline-command" class="dactyl-commandline-command plain" flex="1" type="text" timeout="100"
+                                     oninput={_commandline + ".onEvent(event);"} onkeyup={_commandline + ".onEvent(event);"}
+                                     onfocus={_commandline + ".onEvent(event);"} onblur={_commandline + ".onEvent(event);"}/>
+                        </hbox>
+                    </stack>
+                    <label class="plain" key="inputbuffer"    flex="0"/>
+                    <label class="plain" key="progress"       flex="0"/>
+                    <label class="plain" key="tabcount"       flex="0"/>
+                    <label class="plain" key="bufferposition" flex="0"/>
+                    <label class="plain" key="zoomlevel"      flex="0"/>
+                </hbox>
+                <!-- just hide them since other elements expect them -->
+                <statusbarpanel id="statusbar-display"       hidden="true"/>
+                <statusbarpanel id="statusbar-progresspanel" hidden="true"/>
+            </statusbar>
+        </e4x>;
+
+        util.dump("statusbar: load overlay");
+        util.overlayWindow(window, {
+            objects: this.widgets = { get status() this.container },
+            prepend: prepend.elements()
+        });
     },
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,

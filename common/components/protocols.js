@@ -21,8 +21,6 @@ var Cu = Components.utils;
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-var prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-                    .getBranch("extensions.dactyl.");
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
 function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
@@ -101,19 +99,22 @@ function Dactyl() {
     this.OVERLAY_MAP = {};
 
     this.pages = {};
-    for each (let pref in ["appName", "fileExt", "host", "hostbin", "idName", "name"])
-        this[pref] = prefs.getComplexValue(pref, Ci.nsISupportsString).data;
 
-    this.addonID = this.name + "@dactyl.googlecode.com";
+    Cu.import("resource://dactyl/base.jsm");
+    require(global, "prefs");
+
+    ["appName", "fileExt", "host", "hostbin", "idName", "name", "version"].forEach(function (pref)
+        this.__defineGetter__(pref, function () prefs.get("extensions.dactyl." + pref, "dactyl")),
+        this);
+
+    memoize(this, "addonID", function () this.name + "@dactyl.googlecode.com");
 }
 Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
     classID:          Components.ID("{9c8f2530-51c8-4d41-b356-319e0b155c44}"),
     classDescription: "Dactyl utility protocol",
-    QueryInterface:   XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
+    QueryInterface:   XPCOMUtils.generateQI([Ci.nsIObserver, Ci.nsIProtocolHandler]),
     _xpcom_factory:   Factory(Dactyl),
-
-    get version() prefs.getComplexValue("version", Ci.nsISupportsString).data,
 
     init: function (obj) {
         for each (let prop in ["HELP_TAGS", "FILE_MAP", "OVERLAY_MAP"]) {
@@ -162,6 +163,19 @@ Dactyl.prototype = {
         }
         catch (e) {}
         return fakeChannel(uri);
+    },
+
+    // FIXME: Belongs elsewhere
+    _xpcom_categories: [{
+        category: "profile-after-change",
+        entry: "m-dactyl"
+    }],
+
+    observe: function (subject, topic, data) {
+        if (topic === "profile-after-change") {
+            Cu.import("resource://dactyl/base.jsm");
+            require(global, "overlay");
+        }
     }
 };
 
