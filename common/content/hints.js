@@ -304,14 +304,12 @@ var Hints = Module("hints", {
 
             let mode = this._hintMode;
             let res = util.evaluateXPath(mode.xpath, doc, null, true);
-            if (mode.filter)
-                res = let (orig = res) (e for (e in orig) if (mode.filter(e)));
 
             let start = this._pageHints.length;
             for (let elem in res) {
                 let hint = { elem: elem, showText: false };
 
-                if (!isVisible(elem))
+                if (!isVisible(elem) || mode.filter && !mode.filter(elem))
                     continue;
 
                 if (elem.hasAttributeNS(NS, "hint"))
