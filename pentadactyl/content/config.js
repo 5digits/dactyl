@@ -261,7 +261,7 @@ var Config = Module("config", ConfigBase, {
             });
     },
     completion: function (dactyl, modules, window) {
-        const { CompletionContext, completion } = modules;
+        const { CompletionContext, bookmarkcache, bookmarks, completion } = modules;
         const { document } = window;
 
         var searchRunning = false; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
