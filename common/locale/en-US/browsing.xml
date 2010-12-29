@@ -374,7 +374,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
         <warning>
             Not all plugins are designed to cleanly un-apply during a rehash.
-            While official plugins are safe, beware of possibility instability
+            While official plugins are safe, beware of possible instability
             if you rehash while running third-party plugins.
         </warning>
     </description>

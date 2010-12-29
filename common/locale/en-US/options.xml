@@ -99,7 +99,7 @@
 </p>
 <p>
     Any substring enclosed by <em>&lt;{</em> and <em>}></em> is automatically
-    elided if any of the contained macros characters aren't currently valid. A
+    elided if any of the contained macros aren't currently valid. A
     literal <em>&lt;</em> or <em>></em> character may be included with the
     special escape sequences <em>&lt;lt></em> or <em>&lt;gt></em> respectively.
 </p>
@@ -1371,7 +1371,7 @@
 
         <p>Possible values are:</p>
 
-        <dl dt="width: 6em;">
+        <dl>
             <dt></dt> <dd>Don't show link destination</dd>
             <dt>status</dt> <dd>Show the link destination in the &tag.status-line;</dd>
             <dt>command</dt> <dd>Show the link destination in the &tag.command-line;</dd>
@@ -1391,24 +1391,6 @@
             <dt>always</dt> <dd>Always show tab bar</dd>
             <dt>multitab</dt> <dd>Show tab bar when there are multiple tabs</dd>
             <dt>never</dt> <dd>Never show tab bar</dd>
-        </dl>
-    </description>
-</item>
-
-</item>
-
-
-    <type>number</type>
-    <default>2</default>
-    <description>
-        <p>Controls when the tab line is shown.</p>
-
-        <p>Possible values are:</p>
-
-        <dl dt="width: 6em;">
-            <dt>0</dt>      <dd>Never show tab line</dd>
-            <dt>1</dt>      <dd>Show tab line only if more than one tab is open</dd>
-            <dt>2</dt>      <dd>Always show tab line</dd>
         </dl>
     </description>
 </item>
