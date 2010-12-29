@@ -1382,6 +1382,22 @@
 <item>
     <tags>'stal' 'showtabline'</tags>
     <spec>'showtabline' 'stal'</spec>
+    <type>string</type>
+    <default>always</default>
+    <description>
+        <p>Define when the tab bar is visible.</p>
+
+        <dl>
+            <dt>always</dt> <dd>Always show tab bar</dd>
+            <dt>multitab</dt> <dd>Show tab bar when there are multiple tabs</dd>
+            <dt>never</dt> <dd>Never show tab bar</dd>
+        </dl>
+    </description>
+</item>
+
+</item>
+
+
     <type>number</type>
     <default>2</default>
     <description>

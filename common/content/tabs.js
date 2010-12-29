@@ -961,24 +961,24 @@ var Tabs = Module("tabs", {
     options: function () {
         options.add(["showtabline", "stal"],
             "Define when the tab bar is visible",
-            "number", config.defaults["showtabline"],
+            "string", config.defaults["showtabline"],
             {
                 setter: function (value) {
-                    if (value == 0)
+                    if (value === "never")
                         tabs.tabStyle.enabled = true;
                     else {
-                        prefs.safeSet("browser.tabs.autoHide", value == 1,
+                        prefs.safeSet("browser.tabs.autoHide", value === "multitab",
                                       "See 'showtabline' option.");
                         tabs.tabStyle.enabled = false;
                     }
-                    if (value != 1 || !dactyl.has("Gecko2"))
+                    if (value !== "multitab" || !dactyl.has("Gecko2"))
                         config.tabStrip.collapsed = false;
                     return value;
                 },
                 completer: function (context) [
-                    ["0", "Never show tab bar"],
-                    ["1", "Show tab bar only if more than one tab is open"],
-                    ["2", "Always show tab bar"]
+                    ["never",    "Never show tab bar"],
+                    ["multitab", "Show tab bar when there are multiple tabs"],
+                    ["always",   "Always show tab bar"]
                 ]
             });
 

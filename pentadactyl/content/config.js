@@ -6,7 +6,7 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const Config = Module("config", ConfigBase, {
+var Config = Module("config", ConfigBase, {
     name: "pentadactyl",
     appName: "Pentadactyl",
     idName: "PENTADACTYL",
@@ -174,7 +174,7 @@ const Config = Module("config", ConfigBase, {
     defaults: {
         complete: "slf",
         guioptions: "bCrs",
-        showtabline: 2,
+        showtabline: "always",
         titlestring: "Pentadactyl"
     },
 

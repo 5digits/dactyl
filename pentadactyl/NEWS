@@ -102,7 +102,7 @@
         a boolean.
       - 'mapleader' is now an option rather than a :let
         variable.
-      - 'showstatuslinks' is now a string option.
+      - 'showstatuslinks' and 'showtabline' are now string options.
     * IMPORTANT: Command script files now use the *.penta file extension.
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'.

@@ -16,11 +16,15 @@ if (!JSMLoader)
 
                 for each (let prop in Object.getOwnPropertyNames(global))
                     try {
-                        if (!set.has(this.builtin, prop) &&
-                            [this, set].indexOf(Object.getOwnPropertyDescriptor(global, prop).value) < 0)
-                            delete global[prop];
+                        if (!(prop in this.builtin) &&
+                            [this, set].indexOf(Object.getOwnPropertyDescriptor(global, prop).value) < 0 &&
+                            !global.__lookupGetter__(prop))
+                            global[prop] = null;
                     }
-                    catch (e) {}
+                    catch (e) {
+                        dump("Deleting property " + prop + " on " + url + ":\n    " + e + "\n");
+                        Components.utils.reportError(e);
+                    }
 
                 Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                           .getService(Components.interfaces.mozIJSSubScriptLoader)
