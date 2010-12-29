@@ -64,7 +64,7 @@ function startup(data, reason) {
             }
         else
             getURI = function getURI(path)
-                Services.io.newURI("jar:" + Services.io.newFileURI(file).spec + "!" + path);
+                Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec + "!/" + path, null, null);
         try {
             init();
         }
@@ -157,6 +157,7 @@ function init() {
 
     require(global, "prefs");
     require(global, "services");
+    Cu.import("resource://gre/modules/Services.jsm", global);
 
     services.subscriptLoader.loadSubScript(
         url("defaults/preferences/dactyl.js"),
