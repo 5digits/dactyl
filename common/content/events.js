@@ -798,19 +798,17 @@ var Events = Module("events", {
             if (elem && elem.readOnly)
                 return;
 
-            if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
-                elem instanceof HTMLSelectElement ||
-                elem instanceof Window && Editor.getEditor(elem)) {
+            if (isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
+                modes.push(modes.EMBED);
+                return;
+            }
+
+            if (Events.isInputElem(elem)) {
                 if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
                     modes.push(modes.INSERT);
 
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
-                return;
-            }
-
-            if (isinstance(elem, [HTMLEmbedElement, HTMLEmbedElement])) {
-                dactyl.mode = modes.EMBED;
                 return;
             }
 
@@ -1183,12 +1181,17 @@ var Events = Module("events", {
         let (key = isString(event) ? event : events.toString(event))
             key === "<Esc>" || key === "<C-[>",
 
-    isInputElemFocused: function isInputElemFocused() {
-        let elem = dactyl.focusedElement;
+    isInputElem: function isInputElem(elem) {
         return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
                isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
-                                 HTMLObjectElement, HTMLTextAreaElement]);
-    }
+                                 HTMLObjectElement, HTMLSelectElement,
+                                 HTMLTextAreaElement,
+                                 Ci.nsIDOMXULTreeElement, Ci.nsIDOMXULTextBoxElement]) ||
+               elem instanceof Window && Editor.getEditor(elem);
+    },
+
+    isInputElemFocused: function isInputElemFocused() this.isInputElem(dactyl.focusedElement)
+
 }, {
     commands: function () {
         commands.add(["delmac[ros]"],

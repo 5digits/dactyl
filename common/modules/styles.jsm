@@ -315,7 +315,7 @@ var Styles = Module("Styles", {
         else if (/[\/:]/.test(filter))
             function test(uri) uri.spec === filter;
         else
-            function test(uri) { try { return uri.host === filter } catch (e) { return false } };
+            function test(uri) { try { return util.isSubdomain(uri.host, filter); } catch (e) { return false; } };
         test.toString = function toString() filter;
         if (arguments.length < 2)
             return test;

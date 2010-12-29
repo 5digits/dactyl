@@ -118,7 +118,7 @@ var Buffer = Module("buffer", {
             }
 
             yield ["Title", doc.title];
-            yield ["URL", template.highlightURL(doc.location.toString(), true)];
+            yield ["URL", template.highlightURL(doc.location.href, true)];
 
             let ref = "referrer" in doc && doc.referrer;
             if (ref)
@@ -171,7 +171,7 @@ var Buffer = Module("buffer", {
         if (!(uri || doc.location))
             return;
 
-        uri = uri || util.newURI(doc.location.href);
+        uri = uri || doc.documentURIObject;
         let args = {
             url: { toString: function () uri.spec, valueOf: function () uri },
             title: doc.title
@@ -224,7 +224,7 @@ var Buffer = Module("buffer", {
             else {
                 // code which should happen for all (also background) newly loaded tabs goes here:
                 if (doc != config.browser.contentDocument)
-                    dactyl.echomsg({ domains: [util.getHost(doc.location.href)], message: "Background tab loaded: " + doc.title || doc.location.href }, 3);
+                    dactyl.echomsg({ domains: [doc.location.host], message: "Background tab loaded: " + (doc.title || doc.location.href) }, 3);
 
                 this._triggerLoadAutocmd("PageLoad", doc);
             }
@@ -911,7 +911,7 @@ var Buffer = Module("buffer", {
     showPageInfo: function (verbose, sections) {
         // Ctrl-g single line output
         if (!verbose) {
-            let file = content.document.location.pathname.split("/").pop() || "[No Name]";
+            let file = content.location.pathname.split("/").pop() || "[No Name]";
             let title = content.document.title || "[No Title]";
 
             let info = template.map("gf",
@@ -1009,9 +1009,7 @@ var Buffer = Module("buffer", {
                     return true;
                 }
 
-            let url = isString(doc) ? doc : doc.location.href;
-            let uri = util.newURI(url, charset);
-            let charset = isString(doc) ? null : doc.characterSet;
+            let url = isString(doc) ? util.newURI(doc) : doc.documentURIObject;
 
             if (!isString(doc))
                 return io.withTempFiles(function (temp) {
@@ -1357,7 +1355,7 @@ var Buffer = Module("buffer", {
 
                     dactyl.assert(args.bang || !file.exists(), "E13: File exists (add ! to override)");
 
-                    chosenData = { file: file, uri: window.makeURI(doc.location.href, doc.characterSet) };
+                    chosenData = { file: file, uri: doc.documentURIObject };
                 }
 
                 // if browser.download.useDownloadDir = false then the "Save As"
