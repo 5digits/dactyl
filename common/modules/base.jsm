@@ -163,7 +163,7 @@ defineModule.dump = function dump_() {
             msg = util.objectToString(msg);
         return msg;
     }).join(", ");
-    let name = loaded.services && loaded.prefs && services["dactyl:"] ? services["dactyl:"].name : "dactyl";
+    let name = loaded.services && loaded.config ? config.name.name : "dactyl";
     dump(String.replace(msg, /\n?$/, "\n")
                .replace(/^./gm, name + ": $&"));
 }
@@ -221,7 +221,7 @@ defineModule("base", {
         "keys", "memoize", "octal", "properties", "require", "set", "update",
         "values", "withCallerGlobal"
     ],
-    use: ["services", "util"]
+    use: ["config", "services", "util"]
 });
 
 function Runnable(self, func, args) {

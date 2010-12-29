@@ -6,16 +6,20 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-var ConfigBase = Class(ModuleBase, {
+try {
+
+Components.utils.import("resource://dactyl/base.jsm");
+defineModule("config", {
+    exports: ["ConfigBase", "Config", "config"],
+    require: ["highlight", "services", "storage", "util", "template"]
+});
+
+var ConfigBase = Class("ConfigBase", {
     /**
      * Called on dactyl startup to allow for any arbitrary application-specific
      * initialization code. Must call superclass's init function.
      */
     init: function () {
-        this.name = services["dactyl:"].name;
-        this.idName = services["dactyl:"].idName;
-        this.appName = services["dactyl:"].appName;
-        this.host = services["dactyl:"].host;
 
         highlight.styleableChrome = this.styleableChrome;
         highlight.loadCSS(this.CSS);
@@ -31,21 +35,11 @@ var ConfigBase = Class(ModuleBase, {
                 }
             ]]>);
 
-        let img = Image();
-        img.src = this.logo || "chrome://" + this.name + "/content/logo.png";
-        img.onload = function () {
-            highlight.loadCSS(<>{"!Logo  {"}
-                     display:    inline-block;
-                     background: url({img.src});
-                     width:      {img.width}px;
-                     height:     {img.height}px;
-                 {"}"}</>);
-            img = null;
-        };
-
         if (util.haveGecko("2b"))
             this.features.push("Gecko2");
     },
+
+    get addonID() this.name + "@dactyl.googlecode.com",
 
     styleHelp: function () {
         if (!this.helpStyled)
@@ -55,17 +49,34 @@ var ConfigBase = Class(ModuleBase, {
         this.helpCSS = true;
     },
 
+    Local: function Local(dactyl, modules, window)
+        let ({modes} = modules) ({
+
+        get browser() window.gBrowser,
+        get tabbrowser() window.gBrowser,
+
+        get browserModes() [modes.NORMAL],
+
+        /**
+         * @property {string} The ID of the application's main XUL window.
+         */
+        mainWindowId: window.document.documentElement.id,
+
+        /**
+         * @property {number} The height (px) that is available to the output
+         *     window.
+         */
+        get outputHeight() this.browser.mPanelContainer.boxObject.height,
+
+        tabStrip: Class.memoize(function () window.document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
+    }),
+
     /**
      * @property {[["string", "string"]]} A sequence of names and descriptions
      *     of the autocommands available in this application. Primarily used
      *     for completion results.
      */
     autocommands: [],
-
-    get browser() window.gBrowser,
-    get tabbrowser() window.gBrowser,
-
-    get browserModes() [modes.NORMAL],
 
     commandContainer: "browser-bottombox",
 
@@ -119,11 +130,6 @@ var ConfigBase = Class(ModuleBase, {
     ignoreKeys: {}, // NOTE: be aware you can't put useful values in here, as "modes.NORMAL" etc. are not defined at this time
 
     /**
-     * @property {string} The ID of the application's main XUL window.
-     */
-    mainWindowId: window.document.documentElement.id,
-
-    /**
      * @property {[[]]} An array of application specific mode specifications.
      *     The values of each mode are passed to modes.addMode during
      *     dactyl startup.
@@ -137,19 +143,11 @@ var ConfigBase = Class(ModuleBase, {
     name: null,
 
     /**
-     * @property {number} The height (px) that is available to the output
-     *     window.
-     */
-    get outputHeight() this.browser.mPanelContainer.boxObject.height,
-
-    /**
      * @property {[string]} A list of extra scripts in the dactyl or
      *    application namespaces which should be loaded before dactyl
      *    initialization.
      */
     scripts: [],
-
-    tabStrip: Class.memoize(function () window.document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
 
     /**
      * @property {string} The leaf name of any temp files created by
@@ -454,5 +452,35 @@ var ConfigBase = Class(ModuleBase, {
         // </css>
     ]]></>)
 });
+
+services.subscriptLoader.loadSubScript("chrome://dactyl/content/config.js", this);
+
+config.INIT = update(Object.create(config.INIT), config.INIT, {
+    init: function init(dactyl, modules, window) {
+        init.superapply(this, arguments);
+
+        // Hmm...
+        let config1 = Object.create(config);
+        let config2 = Object.create(config1);
+        update(config1, config.Local.superapply(config2, arguments));
+        update(config2, config.Local.apply(config2, arguments));
+        modules.config = config2;
+        modules.config.init();
+
+        let img = window.Image();
+        img.src = this.logo || "chrome://" + this.name + "/content/logo.png";
+        img.onload = function () {
+            highlight.loadCSS(<>{"!Logo  {"}
+                     display:    inline-block;
+                     background: url({img.src});
+                     width:      {img.width}px;
+                     height:     {img.height}px;
+                 {"}"}</>);
+            img = null;
+        };
+    }
+});
+
+} catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et:

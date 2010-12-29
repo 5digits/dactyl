@@ -99,7 +99,6 @@ FactoryProxy.prototype = {
         return this.module;
     },
     createInstance: function (iids) {
-        dump("dactyl: bootstrap: createInstance: " + this.classID + " " + this.contractID + " " + iids + "\n");
         return let (factory = this.module.NSGetFactory(this.classID))
             factory.createInstance.apply(factory, arguments)
     }
@@ -155,18 +154,7 @@ function init() {
     for each (let component in components)
         component.register();
 
-    require(global, "prefs");
     require(global, "services");
-    Cu.import("resource://gre/modules/Services.jsm", global);
-
-    services.subscriptLoader.loadSubScript(
-        url("defaults/preferences/dactyl.js"),
-        {
-            pref: function pref(name, val) {
-                if (prefs.get(name, null) == null)
-                    prefs.set(name, val);
-            }
-        });
 
     let manifestText = result.map(function (line) line.join(" ")).join("\n");
 

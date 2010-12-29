@@ -7,53 +7,149 @@
 "use strict";
 
 const Config = Module("config", ConfigBase, {
-    init: function init() {
-        init.superapply(this, arguments);
+    name: "pentadactyl",
+    appName: "Pentadactyl",
+    idName: "PENTADACTYL",
+    fileExt: "penta",
+    host: "Firefox",
+    hostbin: "firefox",
 
-        util.overlayWindow(window, {
-            append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
-                <menupopup id="viewSidebarMenu">
-                    <menuitem observes="pentadactyl-viewAddonsSidebar" label="Add-ons" accesskey="A"/>
-                    <menuitem observes="pentadactyl-viewConsoleSidebar" label="Console" accesskey="C"/>
-                    <menuitem observes="pentadactyl-viewDownloadsSidebar" label="Downloads" accesskey="D"/>
-                    <menuitem observes="pentadactyl-viewPreferencesSidebar" label="Preferences" accesskey="P"/>
-                </menupopup>
+    Local: function Local(dactyl, modules, window)
+        let ({ config } = modules) ({
+        init: function init() {
+            init.superapply(this, arguments);
 
-                <broadcasterset id="mainBroadcasterSet">
-                    <broadcaster id="pentadactyl-viewAddonsSidebar"
-                        autoCheck="false"
-                        type="checkbox"
-                        group="sidebar"
-                        sidebarurl="chrome://mozapps/content/extensions/extensions.xul"
-                        sidebartitle="Add-ons"
-                        oncommand="toggleSidebar(this.id);"/>
-                    <broadcaster id="pentadactyl-viewConsoleSidebar"
-                        autoCheck="false"
-                        type="checkbox"
-                        group="sidebar"
-                        sidebarurl="chrome://global/content/console.xul"
-                        sidebartitle="Console"
-                        oncommand="toggleSidebar(this.id);"/>
-                    <broadcaster id="pentadactyl-viewDownloadsSidebar"
-                        autoCheck="false"
-                        type="checkbox"
-                        group="sidebar"
-                        sidebarurl="chrome://mozapps/content/downloads/downloads.xul"
-                        sidebartitle="Downloads"
-                        oncommand="toggleSidebar(this.id);"/>
-                    <broadcaster id="pentadactyl-viewPreferencesSidebar"
-                        autoCheck="false"
-                        type="checkbox"
-                        group="sidebar"
-                        sidebarurl="about:config"
-                        sidebartitle="Preferences"
-                        oncommand="toggleSidebar(this.id);"/>
-                </broadcasterset>
-            </e4x>.elements()
-        });
-    },
+            util.overlayWindow(window, {
+                append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
+                    <menupopup id="viewSidebarMenu">
+                        <menuitem observes="pentadactyl-viewAddonsSidebar" label="Add-ons" accesskey="A"/>
+                        <menuitem observes="pentadactyl-viewConsoleSidebar" label="Console" accesskey="C"/>
+                        <menuitem observes="pentadactyl-viewDownloadsSidebar" label="Downloads" accesskey="D"/>
+                        <menuitem observes="pentadactyl-viewPreferencesSidebar" label="Preferences" accesskey="P"/>
+                    </menupopup>
 
-    get visualbellWindow() getBrowser().mPanelContainer,
+                    <broadcasterset id="mainBroadcasterSet">
+                        <broadcaster id="pentadactyl-viewAddonsSidebar"
+                            autoCheck="false"
+                            type="checkbox"
+                            group="sidebar"
+                            sidebarurl="chrome://mozapps/content/extensions/extensions.xul"
+                            sidebartitle="Add-ons"
+                            oncommand="toggleSidebar(this.id);"/>
+                        <broadcaster id="pentadactyl-viewConsoleSidebar"
+                            autoCheck="false"
+                            type="checkbox"
+                            group="sidebar"
+                            sidebarurl="chrome://global/content/console.xul"
+                            sidebartitle="Console"
+                            oncommand="toggleSidebar(this.id);"/>
+                        <broadcaster id="pentadactyl-viewDownloadsSidebar"
+                            autoCheck="false"
+                            type="checkbox"
+                            group="sidebar"
+                            sidebarurl="chrome://mozapps/content/downloads/downloads.xul"
+                            sidebartitle="Downloads"
+                            oncommand="toggleSidebar(this.id);"/>
+                        <broadcaster id="pentadactyl-viewPreferencesSidebar"
+                            autoCheck="false"
+                            type="checkbox"
+                            group="sidebar"
+                            sidebarurl="about:config"
+                            sidebartitle="Preferences"
+                            oncommand="toggleSidebar(this.id);"/>
+                    </broadcasterset>
+                </e4x>.elements()
+            });
+        },
+
+        dialogs: {
+            about: ["About Firefox",
+                function () { window.openDialog("chrome://browser/content/aboutDialog.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
+            addbookmark: ["Add bookmark for the current page",
+                function () { window.PlacesCommandHook.bookmarkCurrentPage(true, window.PlacesUtils.bookmarksRootId); }],
+            addons: ["Manage Add-ons",
+                function () { window.BrowserOpenAddonsMgr(); }],
+            bookmarks: ["List your bookmarks",
+                function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
+            checkupdates: ["Check for updates",
+                function () { window.checkForUpdates(); },
+                function () "checkForUpdates" in window],
+            cleardata: ["Clear private data",
+                function () { Cc["@mozilla.org/browser/browserglue;1"].getService(Ci.nsIBrowserGlue).sanitize(window || null); }],
+            cookies: ["List your cookies",
+                function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
+            console: ["JavaScript console",
+                function () { window.toJavaScriptConsole(); }],
+            customizetoolbar: ["Customize the Toolbar",
+                function () { window.BrowserCustomizeToolbar(); }],
+            dominspector: ["DOM Inspector",
+                function () { window.inspectDOMDocument(window.content.document); },
+                function () "inspectDOMDocument" in window],
+            downloads: ["Manage Downloads",
+                function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
+            history: ["List your history",
+                function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
+            import: ["Import Preferences, Bookmarks, History, etc. from other browsers",
+                function () { window.BrowserImport(); }],
+            openfile: ["Open the file selector dialog",
+                function () { window.BrowserOpenFileWindow(); }],
+            pageinfo: ["Show information about the current page",
+                function () { window.BrowserPageInfo(); }],
+            pagesource: ["View page source",
+                function () { window.BrowserViewSourceOfDocument(window.content.document); }],
+            passwords: ["Passwords dialog",
+                function () { window.openDialog("chrome://passwordmgr/content/passwordManager.xul"); }],
+            places: ["Places Organizer: Manage your bookmarks and history",
+                function () { window.PlacesCommandHook.showPlacesOrganizer(window.ORGANIZER_ROOT_BOOKMARKS); }],
+            preferences: ["Show Firefox preferences dialog",
+                function () { window.openPreferences(); }],
+            printpreview: ["Preview the page before printing",
+                function () { PrintUtils.printPreview(window.PrintPreviewListener || onEnterPrintPreview, window.onExitPrintPreview); }],
+            printsetup: ["Setup the page size and orientation before printing",
+                function () { PrintUtils.showPageSetup(); }],
+            print: ["Show print dialog",
+                function () { PrintUtils.print(); }],
+            saveframe: ["Save frame to disk",
+                function () { window.saveFrameDocument(); }],
+            savepage: ["Save page to disk",
+                function () { window.saveDocument(window.content.document); }],
+            searchengines: ["Manage installed search engines",
+                function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
+            selectionsource: ["View selection source",
+                function () { buffer.viewSelectionSource(); }],
+            venkman: ["The JavaScript debugger",
+                function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); window.start_venkman() },
+                function () "start_venkman" in window]
+        },
+
+        get visualbellWindow() this.browser.mPanelContainer,
+
+        removeTab: function (tab) {
+            if (this.tabbrowser.mTabs.length > 1)
+                this.tabbrowser.removeTab(tab);
+            else {
+                if (buffer.URL != "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
+                    dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
+                    this.tabbrowser.removeTab(tab);
+                }
+                else
+                    dactyl.beep();
+            }
+        },
+
+        get tempFile() {
+            let prefix = this.name.toLowerCase();
+            try {
+                prefix += "-" + window.content.document.location.hostname;
+            }
+            catch (e) {}
+
+            return prefix + ".tmp";
+        }
+    }),
+
+    overlayChrome: ["chrome://browser/content/browser.xul"],
+
     styleableChrome: ["chrome://browser/content/browser.xul"],
 
     autocommands: {
@@ -82,66 +178,6 @@ const Config = Module("config", ConfigBase, {
         titlestring: "Pentadactyl"
     },
 
-    dialogs: {
-        about: ["About Firefox",
-            function () { window.openDialog("chrome://browser/content/aboutDialog.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        addbookmark: ["Add bookmark for the current page",
-            function () { PlacesCommandHook.bookmarkCurrentPage(true, PlacesUtils.bookmarksRootId); }],
-        addons: ["Manage Add-ons",
-            function () { window.BrowserOpenAddonsMgr(); }],
-        bookmarks: ["List your bookmarks",
-            function () { window.openDialog("chrome://browser/content/bookmarks/bookmarksPanel.xul", "Bookmarks", "dialog,centerscreen,width=600,height=600"); }],
-        checkupdates: ["Check for updates",
-            function () { window.checkForUpdates(); },
-            function () "checkForUpdates" in window],
-        cleardata: ["Clear private data",
-            function () { Cc["@mozilla.org/browser/browserglue;1"].getService(Ci.nsIBrowserGlue).sanitize(window || null); }],
-        cookies: ["List your cookies",
-            function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
-        console: ["JavaScript console",
-            function () { window.toJavaScriptConsole(); }],
-        customizetoolbar: ["Customize the Toolbar",
-            function () { window.BrowserCustomizeToolbar(); }],
-        dominspector: ["DOM Inspector",
-            function () { window.inspectDOMDocument(content.document); },
-            function () "inspectDOMDocument" in window],
-        downloads: ["Manage Downloads",
-            function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
-        history: ["List your history",
-            function () { window.openDialog("chrome://browser/content/history/history-panel.xul", "History", "dialog,centerscreen,width=600,height=600"); }],
-        import: ["Import Preferences, Bookmarks, History, etc. from other browsers",
-            function () { window.BrowserImport(); }],
-        openfile: ["Open the file selector dialog",
-            function () { window.BrowserOpenFileWindow(); }],
-        pageinfo: ["Show information about the current page",
-            function () { window.BrowserPageInfo(); }],
-        pagesource: ["View page source",
-            function () { window.BrowserViewSourceOfDocument(content.document); }],
-        passwords: ["Passwords dialog",
-            function () { window.openDialog("chrome://passwordmgr/content/passwordManager.xul"); }],
-        places: ["Places Organizer: Manage your bookmarks and history",
-            function () { PlacesCommandHook.showPlacesOrganizer(ORGANIZER_ROOT_BOOKMARKS); }],
-        preferences: ["Show Firefox preferences dialog",
-            function () { window.openPreferences(); }],
-        printpreview: ["Preview the page before printing",
-            function () { PrintUtils.printPreview(window.PrintPreviewListener || onEnterPrintPreview, window.onExitPrintPreview); }],
-        printsetup: ["Setup the page size and orientation before printing",
-            function () { PrintUtils.showPageSetup(); }],
-        print: ["Show print dialog",
-            function () { PrintUtils.print(); }],
-        saveframe: ["Save frame to disk",
-            function () { window.saveFrameDocument(); }],
-        savepage: ["Save page to disk",
-            function () { window.saveDocument(window.content.document); }],
-        searchengines: ["Manage installed search engines",
-            function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        selectionsource: ["View selection source",
-            function () { buffer.viewSelectionSource(); }],
-        venkman: ["The JavaScript debugger",
-            function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); start_venkman() },
-            function () "start_venkman" in window]
-    },
-
     features: [
         "bookmarks", "hints", "history", "marks", "quickmarks", "sanitizer",
         "session", "tabs", "tabs_undo", "windows"
@@ -155,21 +191,6 @@ const Config = Module("config", ConfigBase, {
 
     hasTabbrowser: true,
 
-    ignoreKeys: {},
-
-    removeTab: function (tab) {
-        if (config.tabbrowser.mTabs.length > 1)
-            config.tabbrowser.removeTab(tab);
-        else {
-            if (buffer.URL != "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
-                dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
-                config.tabbrowser.removeTab(tab);
-            }
-            else
-                dactyl.beep();
-        }
-    },
-
     scripts: [
         "browser",
         "bookmarkcache",
@@ -179,19 +200,12 @@ const Config = Module("config", ConfigBase, {
         "sanitizer",
         "tabs"
     ],
-
-    get tempFile() {
-        let prefix = this.name.toLowerCase();
-        try {
-            prefix += "-" + window.content.document.location.hostname;
-        }
-        catch (e) {}
-
-        return prefix + ".tmp";
-    }
 }, {
 }, {
-    commands: function () {
+    commands: function (dactyl, modules, window) {
+        const { commands, completion } = modules;
+        const { document } = window;
+
         commands.add(["winon[ly]"],
             "Close all other windows",
             function () {
@@ -284,7 +298,10 @@ const Config = Module("config", ConfigBase, {
                 privateData: true
             });
     },
-    completion: function () {
+    completion: function (dactyl, modules, window) {
+        const { CompletionContext, completion } = modules;
+        const { document } = window;
+
         var searchRunning = false; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
         completion.location = function location(context) {
             if (!services.autoCompleteSearch)
@@ -337,8 +354,9 @@ const Config = Module("config", ConfigBase, {
             "Firefox location bar entries (bookmarks and history sorted in an intelligent way)",
             completion.location);
     },
-    modes: function () {
-        this.ignoreKeys = {
+    modes: function (dactyl, modules, window) {
+        const { config, modes } = modules;
+        config.ignoreKeys = {
             "<Return>": modes.NORMAL | modes.INSERT,
             "<Space>": modes.NORMAL | modes.INSERT,
             "<Up>": modes.NORMAL | modes.INSERT,
@@ -346,14 +364,14 @@ const Config = Module("config", ConfigBase, {
         };
         config.modes.forEach(function (mode) { modes.addMode.apply(this, mode); });
     },
-    options: function () {
-        options.add(["online"],
+    options: function (dactyl, modules, window) {
+        modules.options.add(["online"],
             "Set the 'work offline' option",
             "boolean", true,
             {
                 setter: function (value) {
                     if (services.io.offline == value)
-                        BrowserOffline.toggleOfflineStatus();
+                        window.BrowserOffline.toggleOfflineStatus();
                     return value;
                 },
                 getter: function () !services.io.offline

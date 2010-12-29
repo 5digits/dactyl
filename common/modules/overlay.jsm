@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("overlay", {
     exports: ["ModuleBase"],
-    require: ["highlight", "sanitizer", "services", "template", "util"],
+    require: ["config", "sanitizer", "services", "util"]
 });
 
 /**
@@ -26,7 +26,7 @@ var ModuleBase = Class("ModuleBase", {
 
 var Overlay = Module("Overlay", {
     init: function () {
-        util.overlayWindow("chrome://browser/content/browser.xul", function (window) ({
+        util.overlayWindow(config.overlayChrome, function (window) ({
             init: function (document) {
                 /**
                  * @constructor Module
@@ -94,7 +94,7 @@ var Overlay = Module("Overlay", {
                     return res;
                 })();
 
-                const jsmodules = {};
+                const jsmodules = { NAME: "jsmodules" };
                 const modules = update(create(jsmodules), {
 
                     jsmodules: jsmodules,
@@ -119,7 +119,7 @@ var Overlay = Module("Overlay", {
                             }
                         }
                         try {
-                            Cu.import("resource://dactyl/" + script + ".jsm", jsmodules);
+                            require(jsmodules, script);
                         }
                         catch (e) {
                             util.dump("Loading script " + script + ":");
@@ -141,15 +141,17 @@ var Overlay = Module("Overlay", {
 
                 let prefix = [BASE];
 
-                modules.load("util");
-                modules.load("services");
-                prefix.unshift("chrome://" + modules.services["dactyl:"].name + "/content/");
-
                 ["base",
+                 "config",
+                 "util",
+                 "services",
                  "overlay",
                  "prefs",
-                 "storage",
-                 "javascript",
+                 "storage"
+                ].forEach(function (name) require(jsmodules, name));
+                prefix.unshift("chrome://" + config.name + "/content/");
+
+                ["javascript",
                  "dactyl",
                  "modes",
                  "abbreviations",
@@ -158,8 +160,6 @@ var Overlay = Module("Overlay", {
                  "commandline",
                  "commands",
                  "completion",
-                 "configbase",
-                 "config",
                  "editor",
                  "events",
                  "finder",
@@ -174,7 +174,7 @@ var Overlay = Module("Overlay", {
                  "template"
                  ].forEach(modules.load);
 
-                modules.Config.prototype.scripts.forEach(modules.load);
+                config.scripts.forEach(modules.load);
             },
             load: function (document) {
                 var { modules, Module } = window.dactyl.modules;

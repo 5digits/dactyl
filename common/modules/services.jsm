@@ -9,7 +9,7 @@ try {
 var global = this;
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("services", {
-    exports: ["AddonManager", "Services", "services"],
+    exports: ["AddonManager", "services"],
     use: ["util"]
 });
 

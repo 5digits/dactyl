@@ -332,9 +332,9 @@ var Tabs = Module("tabs", {
         }
 
         if (focusLeftTab)
-            tabs.slice(Math.max(0, index + 1 - count), index + 1).forEach(config.removeTab);
+            tabs.slice(Math.max(0, index + 1 - count), index + 1).forEach(config.closure.removeTab);
         else
-            tabs.slice(index, index + count).forEach(config.removeTab);
+            tabs.slice(index, index + count).forEach(config.closure.removeTab);
         return res;
     },
 

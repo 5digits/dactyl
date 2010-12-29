@@ -158,7 +158,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 append: {
                     SanitizeDialogPane:
                         <groupbox orient="horizontal" xmlns={XUL}>
-                          <caption label={services["dactyl:"].appName + " (see :help privacy)"}/>
+                          <caption label={config.appName + " (see :help privacy)"}/>
                           <grid flex="1">
                             <columns><column flex="1"/><column flex="1"/></columns>
                             <rows>{
@@ -183,7 +183,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         {
                           template.map(ourItems(), function ([item, desc])
                             <listitem xmlns={XUL} type="checkbox"
-                                      label={services["dactyl:"].appName + " " + desc}
+                                      label={config.appName + " " + desc}
                                       preference={branch + item}
                                       onsyncfrompreference="return gSanitizePromptDialog.onReadGeneric();"/>)
                         }

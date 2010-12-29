@@ -101,14 +101,7 @@ function Dactyl() {
     this.pages = {};
 
     Cu.import("resource://dactyl/base.jsm");
-    require(global, "prefs");
     require(global, "util");
-
-    ["appName", "fileExt", "host", "hostbin", "idName", "name", "version"].forEach(function (pref)
-        this.__defineGetter__(pref, function () prefs.get("extensions.dactyl." + pref, "dactyl")),
-        this);
-
-    memoize(this, "addonID", function () this.name + "@dactyl.googlecode.com");
 }
 Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",

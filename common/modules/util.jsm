@@ -62,7 +62,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     addon: Class.memoize(function () {
         let addon = services.fuel.storage.get("dactyl.bootstrap", {}).addon;
         if (!addon)
-            addon = AddonManager.getAddonByID(services["dactyl:"].addonID);
+            addon = AddonManager.getAddonByID(config.addonID);
         return addon;
     }),
 

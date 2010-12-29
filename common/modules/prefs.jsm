@@ -96,7 +96,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             }
         };
 
-        return template.options(services["dactyl:"].host + " Preferences", prefs.call(this));
+        return template.options(config.host + " Preferences", prefs.call(this));
     },
 
     /**
@@ -332,7 +332,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     completion: function (dactyl, modules) {
         modules.completion.preference = function preference(context) {
             context.anchored = false;
-            context.title = [services["dactyl:"].host + " Preference", "Value"];
+            context.title = [config.host + " Preference", "Value"];
             context.keys = { text: function (item) item, description: function (item) prefs.get(item) };
             context.completions = prefs.getNames();
         };
