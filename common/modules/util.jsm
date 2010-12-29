@@ -330,13 +330,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 let quote = util.identity;
                 if (flags.q)
                     quote = function quote(obj) typeof obj === "number" ? obj : String.quote(obj);
+                if (flags.e)
+                    quote = function quote(obj) "";
 
                 if (set.has(defaults, name))
                     stack.top.elements.push(quote(defaults[name]));
                 else {
                     stack.top.elements.push(update(
                         function (obj) obj[name] != null ? quote(obj[name]) : set.has(obj, name) ? "" : unknown(full),
-                        { test: function (obj) obj[name] != null && obj[name] !== false }));
+                        { test: function (obj) obj[name] != null && obj[name] !== false && (!flags.e || obj[name] != "") }));
 
                     for (let elem in array.iterValues(stack))
                         elem.seen[name] = true;

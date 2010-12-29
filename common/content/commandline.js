@@ -33,7 +33,7 @@ var CommandWidgets = Class("CommandWidgets", {
 
                 <vbox id={config.commandContainer}>
 
-                    <vbox class="dactyl-container" hidden="false" collapsed="true">
+                    <vbox class="dactyl-container" id="dactyl-multiline-output-container" hidden="false" collapsed="true">
                         <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
                                 flex="1" hidden="false" collapsed="false"
                                 contextmenu="dactyl-contextmenu"
@@ -274,7 +274,7 @@ var CommandWidgets = Class("CommandWidgets", {
         return elem;
     }),
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
-    mowContainer: Class.memoize(function () this.multilineOutput.parentNode)
+    mowContainer: Class.memoize(function () document.getElementById("dactyl-multiline-output-container"))
 }, {
     getEditor: function (elem) {
         elem.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
@@ -541,7 +541,12 @@ var CommandLine = Module("commandline", {
         set: function (value) { this.widgets.multilineInput.collapsed = !value; }
     }),
     multilineOutputVisible: Modes.boundProperty({
-        set: function (value) { (this.widgets.mowContainer || {}).collapsed = !value; }
+        set: function (value) {
+            this.widgets.mowContainer.collapsed = !value;
+            let elem = this.widgets.multilineOutput;
+            if (!value && elem && elem.contentWindow == document.commandDispatcher.focusedWindow)
+                document.commandDispatcher.focusedWindow = content;
+        }
     }),
 
     /**
