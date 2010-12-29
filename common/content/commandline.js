@@ -47,13 +47,6 @@ var CommandWidgets = Class("CommandWidgets", {
                                 onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
                     </vbox>
 
-                    <vbox id={"dactyl-completions-" + _status + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true" insertbefore="addon-bar,status-bar">
-                        <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="chrome://dactyl/content/buffer.xhtml"
-                                contextmenu="dactyl-contextmenu"
-                                flex="1" hidden="false" collapsed="false"
-                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
-                    </vbox>
-
                     <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" highlight="CmdLine CmdCmdLine">
                         <textbox class="plain" id="dactyl-strut"   flex="1" crop="end" collapsed="true"/>
                         <textbox class="plain" id="dactyl-mode"    flex="1" crop="end"/>
@@ -77,7 +70,18 @@ var CommandWidgets = Class("CommandWidgets", {
                                  onblur="dactyl.modules.commandline.onMultilineInputEvent(event);"/>
                     </vbox>
                 </vbox>
-            </e4x>.elements()
+            </e4x>.elements(),
+
+            before: <e4x xmlns={XUL} xmlns:dactyl={NS}>
+                <toolbar id={statusline.statusBar.id}>
+                    <vbox id={"dactyl-completions-" + _status + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true">
+                        <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="chrome://dactyl/content/buffer.xhtml"
+                                contextmenu="dactyl-contextmenu"
+                                flex="1" hidden="false" collapsed="false"
+                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
+                    </vbox>
+                </toolbar>
+            </e4x>.elements(),
         });
 
         this.elements = {};
@@ -709,9 +713,11 @@ var CommandLine = Module("commandline", {
 
         // FIXME: need to make sure an open MOW is closed when commands
         //        that don't generate output are executed
-        if (this.widgets.mowContainer.collapsed)
+        if (this.widgets.mowContainer.collapsed) {
+            elem.scrollTop = 0;
             while (body.firstChild)
                 body.removeChild(body.firstChild);
+        }
 
         body.appendChild(output);
 
@@ -720,7 +726,6 @@ var CommandLine = Module("commandline", {
 
         commandline.updateOutputHeight(true);
 
-        elem.scrollTop = 0;
         if (options["more"] && Buffer.isScrollable(elem, 1)) {
             // start the last executed command's output at the top of the screen
             let elements = doc.getElementsByClassName("ex-command-output");

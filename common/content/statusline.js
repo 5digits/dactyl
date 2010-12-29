@@ -57,7 +57,9 @@ var StatusLine = Module("statusline", {
             </statusbar>
         </e4x>;
 
-        util.dump("statusbar: load overlay");
+        for each (let attr in prepend..@key)
+            attr.parent().@id = "dactyl-statusline-field-" + attr;
+
         util.overlayWindow(window, {
             objects: this.widgets = { get status() this.container },
             prepend: prepend.elements()
