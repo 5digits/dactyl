@@ -69,25 +69,6 @@
     </dd>
 </dl>
 
-<p tag="format-string">
-    Some options may be given format strings containing %-delimited escape
-    sequences. Character sequences in the form of <em>%</em><a>character</a> are
-    substituted by a specified replacement string. If <a>character</a> is
-    upper-case, then the string is automatically
-    <link topic="quoting">quoted</link>. Any substring enclosed by <em>%[</em>
-    and <em>%]</em> is automatically elided if any of the contained format
-    characters aren't currently valid. A literal <em>%</em> character may be
-    included with the special escape sequence <em>%%</em>.
-</p>
-
-<p>
-    For example, given the format string <str>%[(cmd: %c) %]%[line: %l %]%F</str>,
-    where <em>l</em>=<hl key="Number">32</hl> and
-    <em>f</em>=<str delim="'">Lieder eines fahrenden Gesellen.txt</str>,
-    the result is formatted as
-    <str>line: 32 'Lieder eines fahrenden Gesellen.txt'</str>
-</p>
-
 <p tag="macro-string">
     Some options may be given format strings containing macro replacements in
     the form of <em>&lt;<a>name</a>></em>. These tokens are replaced by
