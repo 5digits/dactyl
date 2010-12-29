@@ -226,6 +226,34 @@ var IO = Module("io", {
         return "";
     },
 
+    pathSearch: function (bin) {
+        let dirs = services.environment.get("PATH").split(util.OS.isWindows ? ";" : ":");
+        // Windows tries the CWD first TODO: desirable?
+        if (util.OS.isWindows)
+            dirs = [io.cwd].concat(dirs);
+
+        for (let [, dir] in Iterator(dirs))
+            try {
+                dir = io.File(dir, true);
+                let file = dir.child(bin);
+                if (file.exists())
+                    return file;
+
+                // TODO: couldn't we just palm this off to the start command?
+                // automatically try to add the executable path extensions on windows
+                if (util.OS.isWindows) {
+                    let extensions = services.environment.get("PATHEXT").split(";");
+                    for (let [, extension] in Iterator(extensions)) {
+                        file = dir.child(bin + extension);
+                        if (file.exists())
+                            return file;
+                    }
+                }
+            }
+            catch (e) {}
+        return null;
+    },
+
     /**
      * Runs an external program.
      *
@@ -239,33 +267,8 @@ var IO = Module("io", {
 
         if (File.isAbsolutePath(program))
             file = io.File(program, true);
-        else {
-            let dirs = services.environment.get("PATH").split(util.OS.isWindows ? ";" : ":");
-            // Windows tries the CWD first TODO: desirable?
-            if (util.OS.isWindows)
-                dirs = [io.cwd].concat(dirs);
-
-lookup:
-            for (let [, dir] in Iterator(dirs)) {
-                file = File.joinPaths(dir, program, io.cwd);
-                try {
-                    if (file.exists())
-                        break;
-
-                    // TODO: couldn't we just palm this off to the start command?
-                    // automatically try to add the executable path extensions on windows
-                    if (util.OS.isWindows) {
-                        let extensions = services.environment.get("PATHEXT").split(";");
-                        for (let [, extension] in Iterator(extensions)) {
-                            file = File.joinPaths(dir, program + extension, io.cwd);
-                            if (file.exists())
-                                break lookup;
-                        }
-                    }
-                }
-                catch (e) {}
-            }
-        }
+        else
+            file = io.pathSearch(program);
 
         if (!file || !file.exists()) {
             dactyl.echoerr("Command not found: " + program);
@@ -426,6 +429,10 @@ lookup:
                 stdin.write(input);
 
             let shell = File.expandPath(options["shell"]);
+
+            if (isArray(command))
+                command = command.map(escape).join(" ");
+
             // TODO: implement 'shellredir'
             if (util.OS.isWindows && !/sh/.test(options["shell"])) {
                 command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;

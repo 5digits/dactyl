@@ -59,7 +59,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
-    get addon() services.fuel.storage.get("dactyl.bootstrap", null).addon,
+    addon: Class.memoize(function () {
+        let addon = services.fuel.storage.get("dactyl.bootstrap", {}).addon;
+        if (!addon)
+            addon = AddonManager.getAddonByID(services["dactyl:"].addonID);
+        return addon;
+    }),
 
     // FIXME: Only works for Pentadactyl
     get activeWindow() services.windowMediator.getMostRecentWindow("navigator:browser"),

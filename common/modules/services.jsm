@@ -6,9 +6,11 @@
 
 try {
 
+var global = this;
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("services", {
-    exports: ["AddonManager", "Services", "services"]
+    exports: ["AddonManager", "Services", "services"],
+    use: ["util"]
 });
 
 /**
@@ -76,6 +78,80 @@ var Services = Module("Services", {
 
         if (!this.extensionManager)
             Components.utils.import("resource://gre/modules/AddonManager.jsm");
+        else
+            global.AddonManager = {
+                getAddonByID: function (id, callback) {
+                    callback = callback || util.identity;
+                    let addon = id;
+                    if (!isObject(addon))
+                        addon = services.extensionManager.getItemForID(id);
+                    if (!addon)
+                        return callback(null);
+                    addon = Object.create(addon);
+
+                    function getRdfProperty(item, property) {
+                        let resource = services.rdf.GetResource("urn:mozilla:item:" + item.id);
+                        let value = "";
+
+                        if (resource) {
+                            let target = services.extensionManager.datasource.GetTarget(resource,
+                                services.rdf.GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
+                            if (target && target instanceof Ci.nsIRDFLiteral)
+                                value = target.Value;
+                        }
+
+                        return value;
+                    }
+
+                    ["aboutURL", "creator", "description", "developers",
+                     "homepageURL", "iconURL", "installDate",
+                     "optionsURL", "releaseNotesURI", "updateDate", "version"].forEach(function (item) {
+                        addon[item] = getRdfProperty(addon, item);
+                    });
+                    update(addon, {
+
+                        appDisabled: false,
+
+                        installLocation: Class.memoize(function () services.extensionManager.getInstallLocation(this.id)),
+                        getResourceURI: function getResourceURI(path) {
+                            let file = this.installLocation.getItemFile(this.id, path);
+                            return services.io.newFileURI(file);
+                        },
+
+                        isActive: getRdfProperty(addon, "isDisabled") != "true",
+
+                        uninstall: function uninstall() {
+                            services.extensionManager.uninstallItem(this.id);
+                        },
+
+                        get userDisabled() getRdfProperty(addon, "userDisabled") === "true",
+                        set userDisabled(val) {
+                            services.extensionManager[val ? "disableItem" : "enableItem"](this.id);
+                        }
+                    });
+
+                    return callback(addon);
+                },
+                getAddonsByTypes: function (types, callback) {
+                    let res = [];
+                    for (let [, type] in Iterator(types))
+                        for (let [, item] in Iterator(services.extensionManager
+                                    .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
+                            res.push(this.getAddonByID(item));
+                    callback(res);
+                },
+                getInstallForFile: function (file, callback, mimetype) {
+                    callback({
+                        addListener: function () {},
+                        install: function () {
+                            services.extensionManager.installItemFromFile(file, "app-profile");
+                        }
+                    });
+                },
+                getInstallForURL: function (url, callback, mimetype) {
+                    dactyl.assert(false, "Install by URL not implemented");
+                },
+            };
     },
     reinit: function () {},
 

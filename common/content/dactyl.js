@@ -106,7 +106,22 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     forceNewWindow: false,
 
     /** @property {string} The Dactyl version string. */
-    version: null,
+    version: Class.memoize(function () {
+        if (/pre$/.test(util.addon.version)) {
+            let uri = util.addon.getResourceURI("../.hg");
+            if (uri instanceof Ci.nsIFileURL &&
+                    uri.QueryInterface(Ci.nsIFileURL).file.exists() &&
+                    io.pathSearch("hg")) {
+                return io.system(["hg", "-R", uri.file.parent.path,
+                                  "log", "-r.",
+                                  "--template=hg{rev} ({date|isodate})"]);
+            }
+        }
+        let version = util.addon.version;
+        if ("@DATE" !== "@" + "DATE@")
+            version += " (created: @DATE@)"
+        return version;
+    }),
 
     /**
      * @property {Object} The map of command-line options. These are
@@ -1515,70 +1530,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         ///////////////////////////////////////////////////////////////////////////
 
-        if (typeof AddonManager == "undefined")
-            modules.AddonManager = {
-                getAddonByID: function (id, callback) {
-                    callback = callback || util.identity;
-                    let addon = id;
-                    if (!isObject(addon))
-                        addon = services.extensionManager.getItemForID(id);
-                    if (!addon)
-                        return callback(null);
-                    addon = Object.create(addon);
-
-                    function getRdfProperty(item, property) {
-                        let resource = services.rdf.GetResource("urn:mozilla:item:" + item.id);
-                        let value = "";
-
-                        if (resource) {
-                            let target = services.extensionManager.datasource.GetTarget(resource,
-                                services.rdf.GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
-                            if (target && target instanceof Ci.nsIRDFLiteral)
-                                value = target.Value;
-                        }
-
-                        return value;
-                    }
-
-                    ["aboutURL", "creator", "description", "developers",
-                     "homepageURL", "iconURL", "installDate", "name",
-                     "optionsURL", "releaseNotesURI", "updateDate", "version"].forEach(function (item) {
-                        addon[item] = getRdfProperty(addon, item);
-                    });
-                    addon.isActive = getRdfProperty(addon, "isDisabled") != "true";
-
-                    addon.uninstall = function () {
-                        services.extensionManager.uninstallItem(this.id);
-                    };
-                    addon.appDisabled = false;
-                    addon.__defineGetter__("userDisabled", function () getRdfProperty(addon, "userDisabled") === "true");
-                    addon.__defineSetter__("userDisabled", function (val) {
-                        services.extensionManager[val ? "disableItem" : "enableItem"](this.id);
-                    });
-
-                    return callback(addon);
-                },
-                getAddonsByTypes: function (types, callback) {
-                    let res = [];
-                    for (let [, type] in Iterator(types))
-                        for (let [, item] in Iterator(services.extensionManager
-                                    .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
-                            res.push(this.getAddonByID(item));
-                    callback(res);
-                },
-                getInstallForFile: function (file, callback, mimetype) {
-                    callback({
-                        addListener: function () {},
-                        install: function () {
-                            services.extensionManager.installItemFromFile(file, "app-profile");
-                        }
-                    });
-                },
-                getInstallForURL: function (url, callback, mimetype) {
-                    dactyl.assert(false, "Install by URL not implemented");
-                },
-            };
-
         const addonErrors = array.toObject([
             [AddonManager.ERROR_NETWORK_FAILURE, "A network error occurred"],
             [AddonManager.ERROR_INCORRECT_HASH,  "The downloaded file did not match the expected hash"],
@@ -2140,12 +2091,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.log("All modules loaded", 3);
 
-        AddonManager.getAddonByID(services["dactyl:"].addonID, this.wrapCallback(function (addon) {
-            // @DATE@ token replaced by the Makefile
-            // TODO: Find it automatically
-            prefs.set("extensions.dactyl.version", addon.version);
-            dactyl.version = addon.version + " (created: @DATE@)";
-        }));
+        prefs.set("extensions.dactyl.version", util.addon.version);
 
         if (!services.commandLineHandler)
             services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
