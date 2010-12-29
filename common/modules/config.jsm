@@ -192,6 +192,10 @@ var ConfigBase = Class("ConfigBase", {
         Enabled      color: blue;
         Disabled     color: red;
 
+        FontFixed           font-family: monospace !important;
+        FontCode            font-family: -mox-fixed, monospace !important;
+        FontProportional    font-family: "Droid Sans", "Helvetica LT Std", Helvetica, "DejaVu Sans", Verdana, sans-serif !important;
+
         // Hack to give these groups slightly higher precedence
         // than their unadorned variants.
         CmdCmdLine;[dactyl|highlight]>*  &#x0d; StatusCmdLine;[dactyl|highlight]>*
@@ -222,7 +226,7 @@ var ConfigBase = Class("ConfigBase", {
         WarningMsg        color: red     !important; background: white   !important;
         StatusWarningMsg  color: red     !important; background: inherit !important;
 
-        CmdLine;>*        font-family: monospace !important; padding: 1px !important;
+        CmdLine;>*;;FontFixed   padding: 1px !important;
         CmdPrompt;.dactyl-commandline-prompt
         CmdInput;.dactyl-commandline-command
         CmdOutput         white-space: pre;
@@ -271,11 +275,11 @@ var ConfigBase = Class("ConfigBase", {
         Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
-        StatusLine          font-weight: bold; font-family: monospace; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
-        StatusLineNormal    color: white !important; background: black   !important;
-        StatusLineBroken    color: black !important; background: #FFa0a0 !important /* light-red */
-        StatusLineSecure    color: black !important; background: #a0a0FF !important /* light-blue */
-        StatusLineExtended  color: black !important; background: #a0FFa0 !important /* light-green */
+        StatusLine;;;FontFixed  font-weight: bold; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
+        StatusLineNormal        color: white !important; background: black   !important;
+        StatusLineBroken        color: black !important; background: #FFa0a0 !important /* light-red */
+        StatusLineSecure        color: black !important; background: #a0a0FF !important /* light-blue */
+        StatusLineExtended      color: black !important; background: #a0FFa0 !important /* light-green */
 
         TabClose;.tab-close-button
         TabIcon;.tab-icon       min-width: 16px;
@@ -308,9 +312,8 @@ var ConfigBase = Class("ConfigBase", {
 
         Bell          background-color: black !important;
 
-        Hint;;* {
+        Hint;;*;FontFixed {
             font-size: 10px        !important;
-            font-family: monospace !important;
             font-weight: bold      !important;
             background-color: red;
             color:            white;
@@ -326,22 +329,23 @@ var ConfigBase = Class("ConfigBase", {
 
     helpCSS: UTF8(<><![CDATA[
         // <css>
-        Help                                        font-size: 8pt; line-height: 1.4em; font-family: -moz-fixed, monospace;
+        Help;;;FontProportional                     font-size: 8pt; line-height: 1.4em;
 
-        HelpArg                                     color: #6A97D4;
-        HelpOptionalArg                             color: #6A97D4;
+        HelpArg;;;FontCode                          color: #6A97D4;
+        HelpOptionalArg;;;FontCode                  color: #6A97D4;
 
         HelpBody                                    display: block; margin: 1em auto; max-width: 100ex; padding-bottom: 1em; margin-bottom: 4em; border-bottom-width: 1px;
         HelpBorder;*;dactyl://help/*                border-color: silver; border-width: 0px; border-style: solid;
-        HelpCode                                    display: block; white-space: pre; margin-left: 2em; font-family: monospace;
+        HelpCode;;;FontCode                         display: block; white-space: pre; margin-left: 2em;
+        HelpTT;;;FontFixed
 
-        HelpDefault                                 display: inline-block; margin-right: 1ex; white-space: pre; vertical-align: text-top;
+        HelpDefault;;;FontCode                      display: inline-block; margin-right: 1ex; white-space: pre; vertical-align: text-top;
 
         HelpDescription                             display: block; clear: right;
         HelpDescription[short]                      clear: none;
         HelpEm;html|em;dactyl://help/*              font-weight: bold; font-style: normal;
 
-        HelpEx                                      display: inline-block; color: #527BBD; font-weight: bold;
+        HelpEx;;;FontCode                           display: inline-block; color: #527BBD; font-weight: bold;
 
         HelpExample                                 display: block; margin: 1em 0;
         HelpExample::before                         content: "Example: "; font-weight: bold;
@@ -352,7 +356,7 @@ var ConfigBase = Class("ConfigBase", {
 
         HelpItem                                    display: block; margin: 1em 1em 1em 10em; clear: both;
 
-        HelpKey                                     color: #102663;
+        HelpKey;;;FontCode                          color: #102663;
         HelpKeyword                                 font-weight: bold; color: navy;
 
         HelpLink;html|a;dactyl://help/*             text-decoration: none !important;
@@ -380,15 +384,15 @@ var ConfigBase = Class("ConfigBase", {
 
         HelpNote                                    color: red; font-weight: bold;
 
-        HelpOpt                                     color: #106326;
-        HelpOptInfo                                 display: block; margin-bottom: 1ex; padding-left: 4em;
+        HelpOpt;;;FontCode                          color: #106326;
+        HelpOptInfo;;;FontCode                      display: block; margin-bottom: 1ex; padding-left: 4em;
 
         HelpParagraph;html|p;dactyl://help/*        display: block; margin: 1em 0em;
         HelpParagraph:first-child                   margin-top: 0;
         HelpParagraph:last-child                    margin-bottom: 0;
-        HelpSpec                                    display: block; margin-left: -10em; float: left; clear: left; color: #527BBD; margin-right: 1em;
+        HelpSpec;;;FontCode                         display: block; margin-left: -10em; float: left; clear: left; color: #527BBD; margin-right: 1em;
 
-        HelpString                                  color: green; font-weight: normal;
+        HelpString;;;FontCode                       color: green; font-weight: normal;
         HelpString::before                          content: '"';
         HelpString::after                           content: '"';
         HelpString[delim]::before                   content: attr(delim);
@@ -432,19 +436,19 @@ var ConfigBase = Class("ConfigBase", {
         }
         HelpTabColumn;html|column;dactyl://help/*   display: table-column;
         HelpTabColumn:first-child                   width: 25%;
-        HelpTabTitle;html|dt;dactyl://help/*        display: table-cell; padding: .1ex 1ex; font-weight: bold;
+        HelpTabTitle;html|dt;dactyl://help/*;FontCode  display: table-cell; padding: .1ex 1ex; font-weight: bold;
         HelpTabDescription;html|dd;dactyl://help/*  display: table-cell; padding: .3ex 1em; text-indent: -1em; border-width: 0px;
         HelpTabDescription>*;;dactyl://help/*       text-indent: 0;
         HelpTabRow;html|dl>html|tr;dactyl://help/*  display: table-row;
 
-        HelpTag                                     display: inline-block; color: #527BBD; margin-left: 1ex; font-size: 8pt; font-weight: bold;
+        HelpTag;;;FontCode                          display: inline-block; color: #527BBD; margin-left: 1ex; font-size: 8pt; font-weight: bold;
         HelpTags                                    display: block; float: right; clear: right;
-        HelpTopic                                   color: #102663;
-        HelpType                                    margin-right: 2ex;
+        HelpTopic;;;FontCode                        color: #102663;
+        HelpType;;;FontCode                         margin-right: 2ex;
 
         HelpWarning                                 color: red; font-weight: bold;
 
-        HelpXML                                     color: #C5F779; background-color: #444444; font-family: Terminus, Fixed, monospace;
+        HelpXML;;;FontCode                          color: #C5F779; background-color: #444444; font-family: Terminus, Fixed, monospace;
         HelpXMLBlock {                              white-space: pre; color: #C5F779; background-color: #444444;
             border: 1px dashed #aaaaaa;
             display: block;

@@ -150,6 +150,11 @@ var Buffer = Module("buffer", {
 
         this.cleanupProgressListener = util.overlayObject(window.XULBrowserWindow,
                                                           this.progressListener);
+
+        if (dactyl.has("tabs"))
+            for (let tab in values(tabs.allTabs))
+                if (tab.linkedBrowser.contentDocument.readyState === "complete")
+                    dactyl.initDocument(tab.linkedBrowser.contentDocument);
     },
 
     cleanup: function () {
@@ -205,12 +210,8 @@ var Buffer = Module("buffer", {
     // page is loaded in a background tab
     onPageLoad: function onPageLoad(event) {
         let doc = event.originalTarget;
-        if (doc instanceof Document) {
-            if (doc.location.protocol === "dactyl:") {
-                dactyl.initHelp();
-                config.styleHelp();
-            }
-        }
+        if (doc instanceof Document)
+            dactyl.initDocument(doc);
 
         if (doc instanceof HTMLDocument) {
             if (doc.defaultView.frameElement) {

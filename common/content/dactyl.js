@@ -525,6 +525,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     /**
      * @private
+     */
+    initDocument: function initDocument(doc) {
+        if (doc.documentURIObject.scheme === "dactyl") {
+            dactyl.initHelp();
+            config.styleHelp();
+        }
+    },
+
+    /**
+     * @private
      * Initialize the help system.
      */
     initHelp: function () {

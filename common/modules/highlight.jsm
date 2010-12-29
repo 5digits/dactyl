@@ -86,8 +86,8 @@ var Highlights = Module("Highlight", {
     _create: function (agent, args) {
         let obj = Highlight.apply(Highlight, args);
 
-        if (!isArray(obj.default))
-            obj.set("default", obj.default.split(","));
+        if (!isArray(obj.sites))
+            obj.set("sites", obj.sites.split(","));
         if (!isArray(obj.defaultExtends))
             obj.set("defaultExtends", obj.defaultExtends.split(","));
         obj.set("agent", agent);
@@ -253,6 +253,8 @@ var Highlights = Module("Highlight", {
             if (bang)
                 highlight.style.enabled = true;
        }, this);
+       for (let h in this)
+           h.style.css = h.css;
     }
 }, {
 }, {
