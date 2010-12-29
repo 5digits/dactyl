@@ -887,7 +887,7 @@ var Commands = Module("commands", {
                                             arg = opt.type.parse(arg, quoted);
 
                                             if (complete && isArray(arg)) {
-                                                args.completeFilter = arg[arg.length - 1];
+                                                args.completeFilter = arg[arg.length - 1] || "";
                                                 args.completeStart += orig.length - args.completeFilter.length;
                                             }
 
