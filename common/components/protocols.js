@@ -27,7 +27,7 @@ function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8"
 function makeChannel(url, orig) {
     try {
         if (url == null)
-            return fakeChannel();
+            return fakeChannel(orig);
         if (typeof url === "function")
             url = dataURL.apply(null, url());
         let uri = ioService.newURI(url, null, null);
@@ -38,7 +38,7 @@ function makeChannel(url, orig) {
         return channel;
     }
     catch (e) {
-        Components.utils.reportError(e);
+        util.reportError(e);
         throw e;
     }
 }
@@ -87,7 +87,7 @@ ChromeData.prototype = {
                 return makeChannel(uri.spec.replace(/^.*?:\/*(.*)(?:#.*)?/, "data:$1"), uri);
         }
         catch (e) {}
-        return fakeChannel();
+        return fakeChannel(uri);
     }
 };
 
@@ -102,6 +102,7 @@ function Dactyl() {
 
     Cu.import("resource://dactyl/base.jsm");
     require(global, "prefs");
+    require(global, "util");
 
     ["appName", "fileExt", "host", "hostbin", "idName", "name", "version"].forEach(function (pref)
         this.__defineGetter__(pref, function () prefs.get("extensions.dactyl." + pref, "dactyl")),
@@ -132,7 +133,7 @@ Dactyl.prototype = {
          | Ci.nsIProtocolHandler.URI_IS_UI_RESOURCE
          | Ci.nsIProtocolHandler.URI_IS_LOCAL_RESOURCE,
 
-    newURI: function (spec, charset, baseURI) {
+    newURI: function newURI(spec, charset, baseURI) {
         var uri = Cc["@mozilla.org/network/standard-url;1"]
                         .createInstance(Ci.nsIStandardURL)
                         .QueryInterface(Ci.nsIURI);
@@ -140,7 +141,7 @@ Dactyl.prototype = {
         return uri;
     },
 
-    newChannel: function (uri) {
+    newChannel: function newChannel(uri) {
         try {
             if (uri.host != "content" && !("all" in this.FILE_MAP))
                 return redirect(uri.spec, uri, 1);
@@ -171,7 +172,7 @@ Dactyl.prototype = {
         entry: "m-dactyl"
     }],
 
-    observe: function (subject, topic, data) {
+    observe: function observe(subject, topic, data) {
         if (topic === "profile-after-change") {
             Cu.import("resource://dactyl/base.jsm");
             require(global, "overlay");
