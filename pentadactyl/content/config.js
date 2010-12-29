@@ -16,51 +16,6 @@ var Config = Module("config", ConfigBase, {
 
     Local: function Local(dactyl, modules, window)
         let ({ config } = modules) ({
-        init: function init() {
-            init.superapply(this, arguments);
-
-            util.overlayWindow(window, {
-                append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
-                    <menupopup id="viewSidebarMenu">
-                        <menuitem observes="pentadactyl-viewAddonsSidebar" label="Add-ons" accesskey="A"/>
-                        <menuitem observes="pentadactyl-viewConsoleSidebar" label="Console" accesskey="C"/>
-                        <menuitem observes="pentadactyl-viewDownloadsSidebar" label="Downloads" accesskey="D"/>
-                        <menuitem observes="pentadactyl-viewPreferencesSidebar" label="Preferences" accesskey="P"/>
-                    </menupopup>
-
-                    <broadcasterset id="mainBroadcasterSet">
-                        <broadcaster id="pentadactyl-viewAddonsSidebar"
-                            autoCheck="false"
-                            type="checkbox"
-                            group="sidebar"
-                            sidebarurl="chrome://mozapps/content/extensions/extensions.xul"
-                            sidebartitle="Add-ons"
-                            oncommand="toggleSidebar(this.id);"/>
-                        <broadcaster id="pentadactyl-viewConsoleSidebar"
-                            autoCheck="false"
-                            type="checkbox"
-                            group="sidebar"
-                            sidebarurl="chrome://global/content/console.xul"
-                            sidebartitle="Console"
-                            oncommand="toggleSidebar(this.id);"/>
-                        <broadcaster id="pentadactyl-viewDownloadsSidebar"
-                            autoCheck="false"
-                            type="checkbox"
-                            group="sidebar"
-                            sidebarurl="chrome://mozapps/content/downloads/downloads.xul"
-                            sidebartitle="Downloads"
-                            oncommand="toggleSidebar(this.id);"/>
-                        <broadcaster id="pentadactyl-viewPreferencesSidebar"
-                            autoCheck="false"
-                            type="checkbox"
-                            group="sidebar"
-                            sidebarurl="about:config"
-                            sidebartitle="Preferences"
-                            oncommand="toggleSidebar(this.id);"/>
-                    </broadcasterset>
-                </e4x>.elements()
-            });
-        },
 
         dialogs: {
             about: ["About Firefox",
@@ -200,6 +155,13 @@ var Config = Module("config", ConfigBase, {
         "sanitizer",
         "tabs"
     ],
+
+    sidebars: {
+        viewAddons:      ["Add-ons",     "A", "chrome://mozapps/content/extensions/extensions.xul"],
+        viewConsole:     ["Console",     "C", "chrome://global/content/console.xul"],
+        viewDownloads:   ["Downloads",   "D", "chrome://mozapps/content/downloads/downloads.xul"],
+        viewPreferences: ["Preferences", "P", "about:config"]
+    }
 }, {
 }, {
     commands: function (dactyl, modules, window) {

@@ -51,6 +51,24 @@ var ConfigBase = Class("ConfigBase", {
 
     Local: function Local(dactyl, modules, window)
         let ({modes} = modules) ({
+        init: function init() {
+
+            let append = <e4x xmlns={XUL} xmlns:dactyl={NS}>
+                    <menupopup id="viewSidebarMenu"/>
+                    <broadcasterset id="mainBroadcasterSet"/>
+            </e4x>;
+            for each (let [id, [name, key, uri]] in Iterator(this.sidebars)) {
+                append.XUL::menupopup[0].* +=
+                        <menuitem observes={"pentadactyl-" + id + "Sidebar"} label={name} accesskey={key} xmlns={XUL}/>
+                append.XUL::broadcasterset[0].* +=
+                        <broadcaster id={"pentadactyl-" + id + "Sidebar"}
+                            autoCheck="false" type="checkbox" group="sidebar"
+                            sidebartitle={name} sidebarurl={uri}
+                            oncommand="toggleSidebar(this.id);" xmlns={XUL}/>
+            }
+
+            util.overlayWindow(window, { append: append.elements() });
+        },
 
         get browser() window.gBrowser,
         get tabbrowser() window.gBrowser,
