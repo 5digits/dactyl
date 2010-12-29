@@ -1,5 +1,7 @@
 1.0b4pre:
     * Extensive Firefox 4 support, including:
+      - Fully restartless. Can now be installed, uninstalled,
+        enabled, disabled, and upgraded without restarting Firefox.
       - Tabs in :buffer completions and listings are grouped
         by panorama groups.
       - Only visible tabs are considered in tab numbering,
