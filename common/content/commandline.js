@@ -1087,7 +1087,6 @@ var CommandLine = Module("commandline", {
         function atEnd(dir) !Buffer.isScrollable(elem, dir || 1);
 
         if (!options["more"] || atEnd(1)) {
-            passEvent = true;
             modes.pop();
             events.feedkeys(key);
         }
