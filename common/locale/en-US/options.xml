@@ -181,6 +181,10 @@
         <set opt="opt" op="!="><str delim="">foo</str>,<str delim="">baz</str></set>
         <p>has the same result as</p>
         <set opt="opt"><str delim="">bar</str>,<str delim="">baz</str></set>
+
+        <p>This extends to string options in a natural way, e.g.</p>
+        <set opt="stal" op="!="><str delim="">always</str>,<str delim="">never</str></set>
+        <p>toggles between the two values.</p>
     </description>
 </item>
 
