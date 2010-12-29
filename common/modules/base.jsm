@@ -167,7 +167,7 @@ defineModule.dump = function dump_() {
             msg = util.objectToString(msg);
         return msg;
     }).join(", ");
-    let name = loaded.services && loaded.config ? config.name.name : "dactyl";
+    let name = loaded.config ? config.name : "dactyl";
     dump(String.replace(msg, /\n?$/, "\n")
                .replace(/^./gm, name + ": $&"));
 }

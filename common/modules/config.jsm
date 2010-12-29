@@ -481,6 +481,8 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
     }
 });
 
+endModule();
+
 } catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et:
