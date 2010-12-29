@@ -720,6 +720,7 @@ var CommandLine = Module("commandline", {
 
         commandline.updateOutputHeight(true);
 
+        elem.scrollTop = 0;
         if (options["more"] && Buffer.isScrollable(elem, 1)) {
             // start the last executed command's output at the top of the screen
             let elements = doc.getElementsByClassName("ex-command-output");
@@ -1030,11 +1031,6 @@ var CommandLine = Module("commandline", {
         let win = this.widgets.multilineOutput.contentWindow;
         let elem = win.document.documentElement;
 
-        let showMoreHelpPrompt = false;
-        let showMorePrompt = false;
-        let closeWindow = false;
-        let passEvent = false;
-
         let key = events.toString(event);
 
         // TODO: Wouldn't multiple handlers be cleaner? --djk
@@ -1080,127 +1076,13 @@ var CommandLine = Module("commandline", {
 
         function atEnd(dir) !Buffer.isScrollable(elem, dir || 1);
 
-        switch (key) {
-        case "<Esc>":
-            closeWindow = true;
-            break; // handled globally in events.js:onEscape()
-
-        case ":":
-            commandline.open(":", "", modes.EX);
-            return false;
-
-        // down a line
-        case "j":
-        case "<Down>":
-            if (options["more"])
-                Buffer.scrollVertical(elem, "lines", 1);
-            else
-                passEvent = true;
-            break;
-
-        case "<C-j>":
-        case "<C-m>":
-        case "<Return>":
-            if (options["more"] && !atEnd(1))
-                Buffer.scrollVertical(elem, "lines", 1);
-            else
-                closeWindow = true; // don't propagate the event for accept keys
-            break;
-
-        // up a line
-        case "k":
-        case "<Up>":
-        case "<BS>":
-            if (options["more"])
-                Buffer.scrollVertical(elem, "lines", -1);
-            else
-                passEvent = true;
-            break;
-
-        // half page down
-        case "d":
-            if (options["more"])
-                Buffer.scrollVertical(elem, "pages", .5);
-            else
-                passEvent = true;
-            break;
-
-        // TODO: <LeftMouse> on the prompt line should scroll one page
-        // page down
-        case "f":
-        case "<Space>":
-        case "<PageDown>":
-            if (options["more"] && !atEnd(1))
-                Buffer.scrollVertical(elem, "pages", 1);
-            else
-                passEvent = true;
-            break;
-
-        // half page up
-        case "u":
-            // if (more and scrollable)
-            if (options["more"])
-                Buffer.scrollVertical(elem, "pages", -.5);
-            else
-                passEvent = true;
-            break;
-
-        // page up
-        case "b":
-        case "<PageUp>":
-            if (options["more"])
-                Buffer.scrollVertical(elem, "pages", -1);
-            else
-                passEvent = true;
-            break;
-
-        // top of page
-        case "g":
-            if (options["more"])
-                elem.scrollTop = 0;
-            else
-                passEvent = true;
-            break;
-
-        // bottom of page
-        case "G":
-            if (options["more"])
-                elem.scrollTop = elem.scrollHeight;
-            else
-                passEvent = true;
-            break;
-
-        // copy text to clipboard
-        case "<C-y>":
-            dactyl.clipboardWrite(window.getSelection());
-            break;
-
-        // close the window
-        case "q":
-            closeWindow = true;
-            break;
-
-        case ";":
-            hints.open(";", { window: win });
-            return false;
-
-        // unmapped key
-        default:
-            if (!options["more"] || atEnd(1))
-                passEvent = true;
-            else
-                showMoreHelpPrompt = true;
-        }
-
-        if (passEvent || closeWindow) {
+        if (!options["more"] || atEnd(1)) {
+            passEvent = true;
             modes.pop();
-
-            if (passEvent)
-                events.onKeyPress(event);
+            events.feedkeys(key);
         }
         else
-            commandline.updateMorePrompt(showMorePrompt, showMoreHelpPrompt);
-        return false;
+            commandline.updateMorePrompt(false, true);
     },
 
     getSpaceNeeded: function getSpaceNeeded() {
@@ -1782,6 +1664,85 @@ var CommandLine = Module("commandline", {
         mappings.add(myModes,
             ["<C-n>", "<PageDown>"], "Recall the next command line from the history list",
             function () { events.feedkeys("<S-Down>"); });
+
+        // add the ":" mapping in all but insert mode mappings
+        mappings.add(modes.matchModes({ extended: false, input: false }),
+            [":"], "Enter command-line mode",
+            function () { commandline.open(":", "", modes.EX); });
+
+        function body() commandline.widgets.multilineOutput.contentDocument.documentElement;
+        function win() commandline.widgets.multilineOutput.contentWindow;
+        function atEnd(dir) !Buffer.isScrollable(body(), dir || 1);
+
+        mappings.add([modes.OUTPUT_MULTILINE],
+            ["<Esc>", "<C-[>"], "Exit multi-line output mode",
+            function () {});
+
+        const PASS = true;
+        const DROP = false;
+
+        function bind(keys, description, action, test, default_) {
+            mappings.add([modes.OUTPUT_MULTILINE],
+                keys, description,
+                function (command) {
+                    if (!options["more"])
+                        var res = PASS;
+                    else if (test && !test(command))
+                        res = default_;
+                    else
+                        res = action.call(command);
+                    util.dump(String.quote(command), res, !!test, test && test(command));
+
+                    if (res === PASS || res === DROP)
+                        modes.pop();
+                    else
+                        commandline.updateMorePrompt();
+                    if (res === PASS)
+                        events.feedkeys(command);
+                });
+        }
+
+        bind(["j", "<C-e>", "<Down>"], "Scroll down one line",
+             function () { Buffer.scrollVertical(body(), "lines", 1); },
+             function () !atEnd(1), PASS);
+
+        bind(["k", "<C-y>", "<Up>"], "Scroll up one line",
+             function () { Buffer.scrollVertical(body(), "lines", -1); });
+
+        bind(["<C-j>", "<C-m>", "<Return>"], "Scroll down one line, exit on last line",
+             function () { Buffer.scrollVertical(body(), "lines", 1); },
+             function () !atEnd(1), DROP);
+
+        // half page down
+        bind(["<C-d>"], "Scroll down half a page",
+             function () { Buffer.scrollVertical(body(), "pages", .5); },
+             function () atEnd(1), PASS);
+
+        bind(["<C-f>", "<Space>", "<PageDown>"], "Scroll down one page",
+             function () { Buffer.scrollVertical(body(), "pages", 1); },
+             function () !atEnd(1), PASS);
+
+        bind(["<C-u>"], "Scroll up half a page",
+             function () { Buffer.scrollVertical(body(), "pages", -.5); });
+
+        bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
+             function () { Buffer.scrollVertical(body(), "pages", -1); });
+
+        bind(["gg"], "Scroll to the beginning of output",
+             function () { Buffer.scrollToPercent(body(), null, 0); });
+
+        bind(["G"], "Scroll to the end of output",
+             function () { body().scrollTop = body().scrollHeight; },
+             function () !atEnd(1), PASS);
+
+        // copy text to clipboard
+        bind(["<C-y>"], "Yank selection to clipboard",
+             function () { dactyl.clipboardWrite(buffer.getCurrentWord(win())); });
+
+        // close the window
+        bind(["q"], "Close the output window",
+             function () {},
+             function () false, DROP);
     },
     options: function () {
         options.add(["history", "hi"],

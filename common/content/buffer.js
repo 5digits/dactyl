@@ -481,8 +481,8 @@ var Buffer = Module("buffer", {
      *
      * @returns {string}
      */
-    getCurrentWord: function () {
-        let win = buffer.focusedFrame || content;
+    getCurrentWord: function (win) {
+        win = win || buffer.focusedFrame || content;
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";

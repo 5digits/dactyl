@@ -1222,11 +1222,6 @@ var Events = Module("events", {
         };
     },
     mappings: function () {
-        // add the ":" mapping in all but insert mode mappings
-        mappings.add(modes.matchModes({ extended: false, input: false }),
-            [":"], "Enter command-line mode",
-            function () { commandline.open(":", "", modes.EX); });
-
         mappings.add(modes.all,
             ["<C-z>"], "Temporarily ignore all " + config.appName + " key bindings",
             function () { modes.push(modes.PASS_THROUGH); });
@@ -1242,7 +1237,7 @@ var Events = Module("events", {
 
         mappings.add(modes.all,
             ["<Nop>"], "Do nothing",
-            function () { return; });
+            function () {});
 
         // macros
         mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),

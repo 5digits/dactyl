@@ -833,6 +833,11 @@ var Hints = Module("hints", {
      */
     show: function show(minor, opts) {
         opts = opts || {};
+
+        // Hack.
+        if (!opts.window && modes.main == modes.OUTPUT_MULTILINE)
+            opts.window = commandline.widgets.multilineOutput.contentWindow;
+
         this._hintMode = this._hintModes[minor];
         dactyl.assert(this._hintMode);
 
@@ -1034,7 +1039,7 @@ var Hints = Module("hints", {
     Mode: Struct("name", "prompt", "action", "tags", "filter")
 }, {
     mappings: function () {
-        var myModes = config.browserModes;
+        var myModes = config.browserModes.concat(modes.OUTPUT_MULTILINE);
         mappings.add(myModes, ["f"],
             "Start QuickHint mode",
             function () { hints.show("o"); });

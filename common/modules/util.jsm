@@ -997,8 +997,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 for (let [elem, xml, attr] in iterator) {
                     if (elem = doc.getElementById(elem)) {
                         let node = util.xmlToDom(xml, doc, obj.objects);
-                        for (let n in array.iterValues(node.childNodes))
-                            doc.dactylOverlayElements.push(n);
+                        if (!(node instanceof Ci.nsIDOMDocumentFragment))
+                            doc.dactylOverlayElements.push(node);
+                        else
+                            for (let n in array.iterValues(node.childNodes))
+                                doc.dactylOverlayElements.push(n);
+
                         fn(elem, node);
                         for each (let attr in attr || []) // FIXME: Cleanup...
                             if (attr.name() != "highlight")
