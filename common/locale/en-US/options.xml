@@ -93,19 +93,20 @@
     the form of <em>&lt;<a>name</a>></em>. These tokens are replaced by
     the parameter <a>name</a> as specified in the relevant documentation.
     If the token is in the form <em>&lt;q-<a>name</a>></em>, the value of the
-    parameter is automatically <link topic="quoting">quoted</link>.
+    parameter is automatically <link topic="quoting">quoted</link>. If it is in
+    the form of <em>&lt;e-<a>name</a>></em>, its value is never shown but may be
+    used to test whether the given parameter is empty.
 </p>
 <p>
-    Any substring enclosed by <em>&lt;[</em>
-    and <em>]></em> is automatically elided if any of the contained macros
-    characters aren't currently valid. A literal <em>&lt;</em> or <em>></em>
-    character may be included with the special escape sequences <em>&lt;lt></em>
-    or <em>&lt;gt></em> respectively.
+    Any substring enclosed by <em>&lt;{</em> and <em>}></em> is automatically
+    elided if any of the contained macros characters aren't currently valid. A
+    literal <em>&lt;</em> or <em>></em> character may be included with the
+    special escape sequences <em>&lt;lt></em> or <em>&lt;gt></em> respectively.
 </p>
 
 <p>
     For example, given the format string
-    <str><em>&lt;[</em>(cmd: <em>&lt;column></em>) <em>]>&lt;[</em>line: <em>&lt;line> ]>&lt;file></em></str>,
+    <str><em>&lt;{</em>(cmd: <em>&lt;column></em>) <em>}>&lt;{</em>line: <em>&lt;line> }>&lt;file></em></str>,
     where <em>line</em>=<hl key="Number">32</hl> and
     <em>file</em>=<str delim="'">Lieder eines fahrenden Gesellen.txt</str>,
     the result is formatted as

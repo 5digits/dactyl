@@ -303,9 +303,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let re = util.regexp(<![CDATA[
             ([^]*?) // 1
             (?:
-                (<\[) | // 2
+                (<\{) | // 2
                 (< ((?:[a-z]-)?[a-z-]*?) >) | // 3 4
-                (\]>) // 5
+                (\}>) // 5
             )
         ]]>, "giy");
         while (match = re.exec(macro)) {
@@ -348,7 +348,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (end < macro.length)
             stack.top.elements.push(macro.substr(end));
 
-        util.assert(stack.length === 1, "Unmatched <[ in macro");
+        util.assert(stack.length === 1, "Unmatched <{ in macro");
         return stack.top;
     },
 
