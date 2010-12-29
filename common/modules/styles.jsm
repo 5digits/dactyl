@@ -21,6 +21,8 @@ Sheet.liveProperty = function (name) {
     let i = this.prototype.members[name];
     this.prototype.__defineGetter__(name, function () this[i]);
     this.prototype.__defineSetter__(name, function (val) {
+        if (isArray(val) && Object.freeze)
+            Object.freeze(val);
         this[i] = val;
         this.enabled = this.enabled;
     });

@@ -1700,7 +1700,6 @@ var CommandLine = Module("commandline", {
                         res = default_;
                     else
                         res = action.call(command);
-                    util.dump(String.quote(command), res, !!test, test && test(command));
 
                     if (res === PASS || res === DROP)
                         modes.pop();
@@ -1727,9 +1726,13 @@ var CommandLine = Module("commandline", {
              function () { Buffer.scrollVertical(body(), "pages", .5); },
              function () atEnd(1), PASS);
 
-        bind(["<C-f>", "<Space>", "<PageDown>"], "Scroll down one page",
+        bind(["<C-f>", "<PageDown>"], "Scroll down one page",
              function () { Buffer.scrollVertical(body(), "pages", 1); },
              function () !atEnd(1), PASS);
+
+        bind(["<Space>"], "Scroll down one page",
+             function () { Buffer.scrollVertical(body(), "pages", 1); },
+             function () !atEnd(1), DROP);
 
         bind(["<C-u>"], "Scroll up half a page",
              function () { Buffer.scrollVertical(body(), "pages", -.5); });

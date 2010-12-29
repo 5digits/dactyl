@@ -7,45 +7,66 @@
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("highlight", {
     exports: ["Highlight", "Highlights", "highlight"],
-    require: ["services", "styles"],
-    use: ["template", "util"]
+    require: ["services", "styles", "util"],
+    use: ["template"]
 });
 
 var Highlight = Struct("class", "selector", "sites",
-                       "default", "value", "agent",
-                       "base", "baseClass", "style");
+                       "defaultExtends", "default",
+                       "value", "extends",
+                       "agent", "base", "baseClass",
+                       "style");
 Highlight.liveProperty = function (name, prop) {
-    let i = this.prototype.members[name];
-    this.prototype.__defineGetter__(name, function () this[i]);
+    this.prototype.__defineGetter__(name, function () this.get(name));
     this.prototype.__defineSetter__(name, function (val) {
-        this[i] = val;
+        if (isObject(val) && name !== "style" && Object.freeze)
+            Object.freeze(val);
+        this.set(name, val);
+
+        if (name === "value" || name === "extends")
+            for (let h in highlight)
+                if (h.extends.indexOf(this.class) >= 0)
+                    h.style.css = h.css;
+
         this.style[prop || name] = this[prop || name];
     });
 }
 Highlight.liveProperty("agent");
+Highlight.liveProperty("extends", "css");
 Highlight.liveProperty("value", "css");
 Highlight.liveProperty("selector", "css");
 Highlight.liveProperty("sites");
 Highlight.liveProperty("style", "css");
 
 Highlight.defaultValue("baseClass", function () /^(\w*)/.exec(this.class)[0]);
+
 Highlight.defaultValue("selector", function () highlight.selector(this.class));
+
 Highlight.defaultValue("sites", function ()
     this.base ? this.base.sites
               : ["chrome://dactyl/*", "dactyl:*", "file://*"].concat(
                     highlight.styleableChrome));
+
 Highlight.defaultValue("style", function ()
     styles.system.add("highlight:" + this.class, this.sites, this.css, this.agent, true));
+
+Highlight.defaultValue("defaultExtends", function () []);
+Highlight.defaultValue("default", function () "");
+Highlight.defaultValue("extends", function () this.defaultExtends);
 Highlight.defaultValue("value", function () this.default);
 
-Highlight.prototype.__defineGetter__("base", function ()
-    this.baseClass != this.class && highlight.highlight[this.baseClass] || null);
-Highlight.prototype.__defineGetter__("css", function ()
-    this.selector + "{" + this.value + "}");
-Highlight.prototype.toString = function ()
-    "Highlight(" + this.class + ")\n\t"
-    + [k + ": " + String.quote(v) for ([k, v] in this)]
-        .join("\n\t");
+update(Highlight.prototype, {
+    get base() this.baseClass != this.class && highlight.highlight[this.baseClass] || null,
+
+    get bases() array.compact(this.extends.map(function (name) highlight.get(name))),
+
+    get inheritedCSS() this.bases.map(function (b) b.value.replace(/;?\s*$/, "; ")).join(""),
+
+    get css() this.selector + "{" + this.inheritedCSS + this.value + "}",
+
+    toString: function () "Highlight(" + this.class + ")\n\t" +
+        [k + ": " + String.quote(v) for ([k, v] in this)] .join("\n\t")
+});
 
 /**
  * A class to manage highlighting rules.
@@ -65,9 +86,11 @@ var Highlights = Module("Highlight", {
     _create: function (agent, args) {
         let obj = Highlight.apply(Highlight, args);
 
-        if (!isArray(obj[2]))
-            obj[2] = obj[2].split(",");
-        obj[5] = agent;
+        if (!isArray(obj.default))
+            obj.set("default", obj.default.split(","));
+        if (!isArray(obj.defaultExtends))
+            obj.set("defaultExtends", obj.defaultExtends.split(","));
+        obj.set("agent", agent);
 
         let old = this.highlight[obj.class];
         this.highlight[obj.class] = obj;
@@ -99,33 +122,45 @@ var Highlights = Module("Highlight", {
     },
 
     get: function (k) this.highlight[k],
-    set: function (key, newStyle, force, append) {
-        let [, class_, selectors] = key.match(/^([a-zA-Z_-]+)(.*)/);
 
-        if (!(class_ in this.highlight))
-            return "Unknown highlight keyword: " + class_;
+    set: function (key, newStyle, force, append, extend) {
+        let [, class_, selectors] = key.match(/^([a-zA-Z_-]+)(.*)/);
 
         let highlight = this.highlight[key] || this._create(false, [key]);
 
-        if (append)
+        if (append) {
             newStyle = Styles.append(highlight.value || "", newStyle);
+            extend = highlight.extend.concat(extend);
+        }
+
         if (/^\s*$/.test(newStyle))
             newStyle = null;
         if (newStyle == null) {
-            if (highlight.default == null) {
+            if (highlight.default == null && highight.defaultExtends.length == 0) {
                 highlight.style.enabled = false;
                 delete this.loaded[highlight.class];
                 delete this.highlight[highlight.class];
                 return null;
             }
             newStyle = highlight.default;
+            extend = highlight.defaultExtends;
         }
 
-        highlight.value = newStyle;
+        highlight.set("value", newStyle);
+        highlight.extends = array.uniq(extend, true);
         if (force)
             highlight.style.enabled = true;
         this.highlight[highlight.class] = highlight;
         return highlight;
+    },
+
+    /**
+     * Clears all highlighting rules. Rules with default values are
+     * reset.
+     */
+    clear: function () {
+        for (let [k, v] in Iterator(this.highlight))
+            this.set(k, null, true);
     },
 
     /**
@@ -153,15 +188,6 @@ var Highlights = Module("Highlight", {
                 (self.highlight[hl] && self.highlight[hl].class != class_
                     ? self.highlight[hl].selector : "[dactyl|highlight~=" + hl + "]")),
 
-    /**
-     * Clears all highlighting rules. Rules with default values are
-     * reset.
-     */
-    clear: function () {
-        for (let [k, v] in Iterator(this.highlight))
-            this.set(k, null, true);
-    },
-
     groupRegexp: util.regexp(<![CDATA[
         ^
         (\s* (?:\S|\s\S)+ \s+)
@@ -172,9 +198,10 @@ var Highlights = Module("Highlight", {
     sheetRegexp: util.regexp(<![CDATA[
         ^\s*
         !? \*?
-             ( (?:[^;\s]|\s\S)+ )
-        (?:; ( (?:[^;\s]|\s\S)+ )? )?
-        (?:; ( (?:[^ \s]|\s\S)+ )  )?
+             ( (?:[^;\s]|\s[^;\s])+ )
+        (?:; ( (?:[^;\s]|\s[^;\s])+ )? )?
+        (?:; ( (?:[^;\s]|\s[^;\s])+ )? )?
+        (?:; ( (?:[^;\s]|\s[^;\s])+ )? )?
         \s*  (.*)
         $
     ]]>),
@@ -191,6 +218,7 @@ var Highlights = Module("Highlight", {
      *   MatchSpec ::= Class
      *               | Class ";" Selector
      *               | Class ";" Selector ";" Sites
+     *               | Class ";" Selector ";" Sites ";" Extends
      *   CSS       ::= CSSLine | "{" CSSLines "}"
      *   CSSLines  ::= CSSLine | CSSLine "\n" CSSLines
      *
@@ -229,7 +257,7 @@ var Highlights = Module("Highlight", {
 }, {
 }, {
     commands: function (dactyl, modules) {
-        const commands = modules.commands;
+        const { autocommands, commands, completion, CommandOption, config, io } = modules;
         commands.add(["colo[rscheme]"],
             "Load a color scheme",
             function (args) {
@@ -238,13 +266,13 @@ var Highlights = Module("Highlight", {
                 if (scheme == "default")
                     highlight.clear();
                 else
-                    dactyl.assert(modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + modules.config.fileExtension]),
+                    dactyl.assert(io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]),
                         "E185: Cannot find color scheme " + scheme);
-                modules.autocommands.trigger("ColorScheme", { name: scheme });
+                autocommands.trigger("ColorScheme", { name: scheme });
             },
             {
                 argCount: "1",
-                completer: function (context) modules.completion.colorScheme(context)
+                completer: function (context) completion.colorScheme(context)
             });
 
         commands.add(["hi[ghlight]"],
@@ -265,8 +293,9 @@ var Highlights = Module("Highlight", {
 
                 let [key, css] = args;
                 dactyl.assert(!(clear && css), "E488: Trailing characters");
+                let modify = css || clear || args["-append"] || args["-link"];
 
-                if (!css && !clear)
+                if (!modify)
                     modules.commandline.commandOutput(
                         template.tabular(["Key", "Sample", "CSS"],
                             ["padding: 0 1em 0 0; vertical-align: top",
@@ -279,7 +308,7 @@ var Highlights = Module("Highlight", {
                 else if (!key && clear)
                     highlight.clear();
                 else
-                    highlight.set(key, css, clear, "-append" in args);
+                    highlight.set(key, css, clear, "-append" in args, args["-link"] || []);
             },
             {
                 // TODO: add this as a standard highlight completion function?
@@ -289,17 +318,25 @@ var Highlights = Module("Highlight", {
                         args.completeArg = args.completeArg > 1 ? -1 : 0;
 
                     if (args.completeArg == 0)
-                        context.completions = [[v.class, v.value] for (v in highlight)];
+                        completion.highlightGroup(context);
                     else if (args.completeArg == 1) {
                         let hl = highlight.get(args[0]);
                         if (hl)
                             context.completions = [[hl.value, "Current Value"], [hl.default || "", "Default Value"]];
-                        context.fork("css", 0, modules.completion, "css");
+                        context.fork("css", 0, completion, "css");
                     }
                 },
                 hereDoc: true,
                 literal: 1,
-                options: [{ names: ["-append", "-a"], description: "Append new CSS to the existing value" }],
+                options: [
+                    { names: ["-append", "-a"], description: "Append new CSS to the existing value" },
+                    {
+                        names: ["-link", "-l"],
+                        description: "Links this group to another",
+                        type: CommandOption.LIST,
+                        completer: function (context, args) completion.highlightGroup(context)
+                    }
+                ],
                 serialize: function () [
                     {
                         command: this.name,
@@ -312,13 +349,12 @@ var Highlights = Module("Highlight", {
             });
     },
     completion: function (dactyl, modules) {
-        const completion = modules.completion;
-        const config = modules.config;
+        const { completion, config, io } = modules;
         completion.colorScheme = function colorScheme(context) {
             context.title = ["Color Scheme", "Runtime Path"];
             context.keys = { text: function (f) f.leafName.replace(RegExp("\\." + config.fileExtension + "$"), ""), description: ".parent.path" };
             context.completions = array.flatten(
-                modules.io.getRuntimeDirectories("colors").map(
+                io.getRuntimeDirectories("colors").map(
                     function (dir) dir.readDirectory().filter(
                         function (file) RegExp("\\." + config.fileExtension + "$").test(file.leafName))));
 

@@ -998,6 +998,9 @@ let StructBase = Class("StructBase", Array, {
 
     closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
 
+    get: function (key, val) this[this.members[key]],
+    set: function (key, val) this[this.members[key]] = val,
+
     toString: function () Class.prototype.toString.apply(this, arguments),
 
     // Iterator over our named members

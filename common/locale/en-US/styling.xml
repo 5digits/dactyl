@@ -39,7 +39,7 @@
 <item>
     <tags>:hi :highlight</tags>
     <spec>:hi<oa>ghlight</oa><oa>!</oa> <a>group</a><oa>selector</oa></spec>
-    <spec>:hi<oa>ghlight</oa><oa>!</oa> <oa>-append</oa> <a>group</a><oa>selector</oa> <oa>css</oa></spec>
+    <spec>:hi<oa>ghlight</oa><oa>!</oa> <oa>-append</oa> <oa>-link=<a>group</a>,…</oa> <a>group</a><oa>selector</oa> <oa>css</oa></spec>
     <description>
         <p>
             Highlight <a>group</a> with <oa>css</oa>. <oa>css</oa> is one or more
@@ -48,6 +48,11 @@
             be any valid CSS selector (such as <em>:hover</em> or
             <em>[href]</em>), and will restrict the highlighting to matching
             elements.
+        </p>
+
+        <p>
+            If <em>-link</em> (short name <em>-l</em>) is supplied, the value of
+            each of the listed groups is prepended to the style of this group.
         </p>
 
         <p>Valid groups include:</p>
