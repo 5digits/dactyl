@@ -147,12 +147,13 @@ function init() {
         }
     }
 
-    Services.obs.notifyObservers(null, "dactyl-rehash", null);
-
     JSMLoader.load("resource://dactyl/base.jsm", global);
 
     for each (let component in components)
         component.register();
+
+    Services.obs.notifyObservers(null, "dactyl-rehash", null);
+    JSMLoader.load("resource://dactyl/base.jsm", global);
 
     require(global, "services");
 

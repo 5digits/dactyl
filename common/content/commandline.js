@@ -935,10 +935,11 @@ var CommandLine = Module("commandline", {
             }
             else if (event.type == "keypress") {
                 let key = events.toString(event);
+                util.dump("keypress", key, Events.isEscape(event));
                 if (this._completions)
                     this._completions.previewClear();
                 if (!this.currentExtendedMode)
-                    return;
+                    return !Events.isEscape(event);
 
                 // user pressed <Enter> to carry out a command
                 // user pressing <Esc> is handled in the global onEscape
@@ -977,10 +978,8 @@ var CommandLine = Module("commandline", {
                         modes.pop();
                     }
                 }
-                else {
-                    //this.resetCompletions();
-                }
                 // allow this event to be handled by the host app
+                return !Events.isEscape(event);
             }
             else if (event.type == "keyup") {
                 let key = events.toString(event);
@@ -991,9 +990,7 @@ var CommandLine = Module("commandline", {
         catch (e) {
             dactyl.reportError(e, true);
         }
-        finally {
-            return true;
-        }
+        return true;
     },
 
     /**
