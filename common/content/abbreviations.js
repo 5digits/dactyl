@@ -247,19 +247,20 @@ var Abbreviations = Module("abbreviations", {
                         abbreviations.add(modes, lhs, rhs);
                     }
                 }, {
-                    options: [
-                        {
-                            names: ["-javascript", "-js", "-j"],
-                            description: "Expand this abbreviation by evaluating its right-hand-side as JavaScript"
-                        }
-                    ],
                     completer: function (context, args) {
                         if (args.length == 1)
                             return completion.abbreviation(context, modes);
                         else if (args["-javascript"])
                             return completion.javascript(context);
                     },
+                    hereDoc: true,
                     literal: 1,
+                    options: [
+                        {
+                            names: ["-javascript", "-js", "-j"],
+                            description: "Expand this abbreviation by evaluating its right-hand-side as JavaScript"
+                        }
+                    ],
                     serialize: function () [
                         {
                             command: this.name,

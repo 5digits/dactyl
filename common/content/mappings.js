@@ -389,6 +389,7 @@ var Mappings = Module("mappings", {
                                 return completion.ex(context);
                         }
                     },
+                    hereDoc: true,
                     literal: 1,
                     options: [
                         {

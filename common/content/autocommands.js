@@ -178,6 +178,7 @@ var AutoCommands = Module("autocommands", {
                     if (args.length == 3)
                         return args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
+                hereDoc: true,
                 literal: 2,
                 options: [
                     {

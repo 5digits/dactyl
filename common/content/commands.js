@@ -1365,6 +1365,7 @@ var Commands = Module("commands", {
                     else
                         args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
+                hereDoc: true,
                 options: [
                     { names: ["-bang", "-b"],  description: "Command may be followed by a !" },
                     { names: ["-count", "-c"], description: "Command may be preceded by a count" },
