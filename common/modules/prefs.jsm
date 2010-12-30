@@ -132,7 +132,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         let defval = this._load(name, null, true);
         let saved  = this._load(this.SAVED + name);
 
-        if (saved == null && curval != defval || curval != saved) {
+        if (saved == null && curval != defval || saved != null && curval != saved) {
             let msg = "Warning: setting preference " + name + ", but it's changed from its default value.";
             if (message)
                 msg = template.linkifyHelp(msg + " " + message);

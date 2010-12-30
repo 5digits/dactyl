@@ -284,8 +284,9 @@ var ConfigBase = Class("ConfigBase", {
         TabClose;.tab-close-button
         TabIcon;.tab-icon       min-width: 16px;
         TabText;.tab-text
-        TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
+        TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex; cursor: default;
         TabIconNumber {
+            cursor: default;
             width: 16px;
             margin: 0 2px 0 -18px !important;
             font-weight: bold;

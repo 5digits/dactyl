@@ -115,10 +115,11 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
         this.fireEvent("clear");
     },
 
-    get: function get(key, default_)
-        key in this._object  ? this._object[key] :
-        arguments.length > 1 ? this.set(key, default_) :
-                               undefined,
+    get: function get(key, default_) {
+        return key in this._object  ? this._object[key] :
+               arguments.length > 1 ? this.set(key, default_) :
+                                      undefined;
+    },
 
     keys: function keys() Object.keys(this._object),
 
