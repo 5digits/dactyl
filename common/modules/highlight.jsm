@@ -314,11 +314,12 @@ var Highlights = Module("Highlight", {
 
                 if (!modify)
                     modules.commandline.commandOutput(
-                        template.tabular(["Key", "Sample", "CSS"],
+                        template.tabular(["Key", "Sample", "Link", "CSS"],
                             ["padding: 0 1em 0 0; vertical-align: top",
                              "text-align: center"],
                             ([h.class,
                               <span style={"text-align: center; line-height: 1em;" + h.value + style}>XXX</span>,
+                              template.map(h.extends, template.highlight),
                               template.highlightRegexp(h.value, /\b[-\w]+(?=:)/g)]
                                 for (h in highlight)
                                 if (!key || h.class.indexOf(key) > -1))));
@@ -353,7 +354,15 @@ var Highlights = Module("Highlight", {
                         names: ["-link", "-l"],
                         description: "Links this group to another",
                         type: CommandOption.LIST,
-                        completer: function (context, args) completion.highlightGroup(context)
+                        completer: function (context, args) {
+                            let group = args[0] && highlight.get(args[0]);
+                            if (group)
+                                context.fork("extra", 0, this, function (context) [
+                                     [String(group.extends), "Current Value"],
+                                     [String(group.defaultExtends) || "", "Default Value"]
+                                ]);
+                            context.fork("groups", 0, completion, "highlightGroup");
+                        }
                     }
                 ],
                 serialize: function () [

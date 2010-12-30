@@ -643,7 +643,7 @@ var CompletionContext = Class("CompletionContext", {
      *      interpreted as a method to access on *self*.
      */
     fork: function fork(name, offset, self, completer) {
-        if (typeof completer == "string")
+        if (isString(completer))
             completer = self[completer];
         let context = CompletionContext(this, name, offset);
         if (this.contextList.indexOf(context) < 0)
@@ -654,7 +654,9 @@ var CompletionContext = Class("CompletionContext", {
         else if (completer) {
             let res = completer.apply(self || this, [context].concat(Array.slice(arguments, fork.length)));
             if (res && !isArray(res) && !isArray(res.__proto__))
-                return [k for (k in res)];
+                res = [k for (k in res)];
+            if (res)
+                context.completions = res;
             return res;
         }
         if (completer)
