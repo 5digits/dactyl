@@ -1046,13 +1046,15 @@ var Commands = Module("commands", {
 
     validName: Class.memoize(function () RegExp("^" + this.nameRegexp.source + "$")),
 
-    _commandRegexp: Class.memoize(function () util.regexp(<![CDATA[
+    CommandMatch: Struct("match", "spec", "prespace", "count", "cmd", "bang", "space", "args"),
+
+    commandRegexp: Class.memoize(function () util.regexp(<![CDATA[
             ^
             (
-                [:\s]*
-                (\d+ | %)?
-                (<name> | !)
-                (!)?
+                ([:\s]*)
+                ( (?:\d+ | %)? )
+                ( (?:<name> | !)? )
+                (!?)
                 (\s*)
             )
             (
@@ -1082,11 +1084,11 @@ var Commands = Module("commands", {
         // remove comments
         str.replace(/\s*".*$/, "");
 
-        let matches = this._commandRegexp.exec(str);
-        if (!matches)
+        let matches = this.commandRegexp.exec(str);
+        if (!matches || !matches[4])
             return [];
 
-        let [, spec, count, cmd, special, space, args] = matches;
+        let [, spec, prespace, count, cmd, bang, space, args] = matches;
         if (/\w/.test(cmd) && args && !(space || args[0] == "|"))
             args = null;
 
@@ -1096,7 +1098,7 @@ var Commands = Module("commands", {
         else
             count = this.COUNT_NONE;
 
-        return [count, cmd, !!special, args || "", spec.length];
+        return [count, cmd, !!bang, args || "", spec.length];
     },
 
     parseCommands: function (str, complete) {
@@ -1218,9 +1220,13 @@ var Commands = Module("commands", {
             if (!args)
                 args = { commandString: context.filter };
 
-            let [, prefix, junk] = args.commandString.match(/^(:*\s*\d*\s*)\w*(.?)/) || [];
-            context.advance(prefix.length);
-            if (!junk) {
+            let match = commands.commandRegexp.exec(args.commandString);
+            if (!match)
+                return;
+            match = commands.CommandMatch.apply(null, match);
+
+            context.advance(match.prespace.length + match.count.length);
+            if (!(match.bang || match.space)) {
                 context.fork("", 0, this, "command");
                 return;
             }
@@ -1232,8 +1238,7 @@ var Commands = Module("commands", {
                 return;
             }
 
-            [, prefix] = args.commandString.match(/^[\s\d]*((?:\w*[\s!])?\s*)/);
-            let cmdContext = context.fork(command.name, prefix.length);
+            let cmdContext = context.fork(command.name, match.cmd.length + match.bang.length + match.space.length);
             try {
                 if (!cmdContext.waitingForTab) {
                     if (!args.completeOpt && command.completer && args.completeStart != null) {
