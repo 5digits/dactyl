@@ -1073,7 +1073,7 @@ var Hints = Module("hints", {
 
         mappings.add(modes.HINTS, ["<Return>"],
             "Follow the selected hint",
-            function () { update(true) });
+            function () { update(true); });
 
         function tab(previous) {
             hints.clearTimeout();
@@ -1097,11 +1097,11 @@ var Hints = Module("hints", {
 
         mappings.add(modes.HINTS, ["<Tab>"],
             "Focus the next matching hint",
-            function () { tab.call(hints, false) });
+            function () { tab.call(hints, false); });
 
         mappings.add(modes.HINTS, ["<S-Tab>"],
             "Focus the previous matching hint",
-            function () { tab.call(hints, true) });
+            function () { tab.call(hints, true); });
 
         mappings.add(modes.HINTS, ["<BS>", "<C-h>"],
             "Delete the previous character",

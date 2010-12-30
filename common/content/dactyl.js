@@ -119,7 +119,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
         let version = util.addon.version;
         if ("@DATE" !== "@" + "DATE@")
-            version += " (created: @DATE@)"
+            version += " (created: @DATE@)";
         return version;
     }),
 
@@ -188,7 +188,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         .map(function (k) {
                             seen[k] = (seen[k] || 0) + 1;
                             return k;
-                        }).uniq()
+                        }).uniq();
                 },
                 options: params.options || []
             });
@@ -430,7 +430,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 services.focus.focusedWindow = elem;
             else
                 services.focus.setFocus(elem, flags);
-        } catch (e) {
+        }
+        catch (e) {
             util.dump(elem);
             util.reportError(e);
         }
@@ -645,12 +646,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             this.helpInitialized = true;
         }
     },
+
     stringifyXML: function (xml) {
         XML.prettyPrinting = false;
         XML.ignoreWhitespace = false;
         return UTF8(xml.toXMLString());
     },
-
 
     exportHelp: JavaScript.setCompleter(function (path) {
         const FILE = io.File(path);
@@ -714,7 +715,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                     value = value.replace(/(#|$)/, ".xhtml$1");
                             }
                             if (name == "src" && value.indexOf(":") > 0) {
-                                chromeFiles[value] = value.replace(/.*\//, "");;
+                                chromeFiles[value] = value.replace(/.*\//, "");
                                 value = value.replace(/.*\//, "");
                             }
                             data.push(" ");

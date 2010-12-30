@@ -81,7 +81,7 @@ var CommandWidgets = Class("CommandWidgets", {
                                 onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
                     </vbox>
                 </toolbar>
-            </e4x>.elements(),
+            </e4x>.elements()
         });
 
         this.elements = {};
@@ -126,7 +126,7 @@ var CommandWidgets = Class("CommandWidgets", {
                 if (!elem.collapsed)
                     dactyl.focus(elem);
             },
-            onVisibility: function (elem, visible) { visible && dactyl.focus(elem)}
+            onVisibility: function (elem, visible) { visible && dactyl.focus(elem); }
         });
         this.addElement({
             name: "prompt",
@@ -1607,7 +1607,7 @@ var CommandLine = Module("commandline", {
                     XML.ignoreWhitespace = false;
                     commandline.commandOutput(
                         template.map(commandline._messageHistory.messages, function (message)
-                            <div highlight={message.highlight + " Message"}>{message.message}</div>));;
+                            <div highlight={message.highlight + " Message"}>{message.message}</div>));
                 }
             },
             { argCount: "0" });

@@ -895,11 +895,10 @@ var Completion = Module("completion", {
             context.fork("about", 6, this, function (context) {
                 context.generate = function () {
                     const PREFIX = "@mozilla.org/network/protocol/about;1?what=";
-                    return [[k.substr(PREFIX.length), ""] for (k in Cc) if (k.indexOf(PREFIX) == 0)]
-                }
+                    return [[k.substr(PREFIX.length), ""] for (k in Cc) if (k.indexOf(PREFIX) == 0)];
+                };
             });
         }
-
 
         // Will, and should, throw an error if !(c in opts)
         Array.forEach(complete, function (c) {

@@ -401,7 +401,7 @@ var Events = Module("events", {
                         // This causes a crash on Gecko<2.0, it seems.
                         (target.ownerDocument || target.document || target).defaultView
                                .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                               .dispatchDOMEventViaPresShell(target, event, true)
+                               .dispatchDOMEventViaPresShell(target, event, true);
                     else
                         target.dispatchEvent(event);
                 }
@@ -771,7 +771,8 @@ var Events = Module("events", {
                 else
                     elem.blur();
             }
-        } catch (e) {
+        }
+        catch (e) {
             util.dump(win, String(elem.ownerDocument), String(elem.ownerDocument && elem.ownerDocument.defaultView));
             util.reportError(e);
         }
@@ -948,7 +949,7 @@ var Events = Module("events", {
                             event.dactylString = "<BS>";
 
                         return mode.params.onEvent(event) === false;
-                    }
+                    };
             }
 
             if (!input.process(event))
@@ -1157,7 +1158,7 @@ var Events = Module("events", {
                     if (modes.replaying && !this.waitForPageLoad())
                         return true;
 
-                    return !execute(map, null, this.count, null, command) || !map.route
+                    return !execute(map, null, this.count, null, command) || !map.route;
                 }
             }
             else if (mappings.getCandidates(this.main, command).length > 0 && !event.skipmap) {

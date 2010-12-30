@@ -82,7 +82,7 @@ var Option = Class("Option", {
     get isDefault() this.stringValue === this.stringDefaultValue,
 
     /** @property {value} The option's global value. @see #scope */
-    get globalValue() { try { return options.store.get(this.name, {}).value } catch (e) { util.reportError(e); throw e; } },
+    get globalValue() { try { return options.store.get(this.name, {}).value; } catch (e) { util.reportError(e); throw e; } },
     set globalValue(val) { options.store.set(this.name, { value: val, time: Date.now() }); },
 
     /**
@@ -499,7 +499,7 @@ var Option = Class("Option", {
 
         number: function (operator, values, scope, invert) {
             if (invert)
-                values = values[(values.indexOf(String(this.value)) + 1) % values.length]
+                values = values[(values.indexOf(String(this.value)) + 1) % values.length];
 
             let value = parseInt(values);
             dactyl.assert(Number(values) % 1 == 0,
@@ -572,7 +572,7 @@ var Option = Class("Option", {
 
         string: function (operator, values, scope, invert) {
             if (invert)
-                return values[(values.indexOf(this.value) + 1) % values.length]
+                return values[(values.indexOf(this.value) + 1) % values.length];
             switch (operator) {
             case "+":
                 return this.value + values;
@@ -735,7 +735,7 @@ var Options = Module("options", {
                     isDefault: opt.isDefault,
                     default:   opt.stringDefaultValue,
                     pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
-                    value:     <></>,
+                    value:     <></>
                 };
 
                 if (filter && !filter(opt))

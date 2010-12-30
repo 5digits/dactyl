@@ -54,14 +54,14 @@ function startup(data, reason) {
         dump("dactyl: bootstrap: init" + " " + data.id + "\n");
 
         addon = data;
-        AddonManager.getAddonByID(addon.id, function (a) { addon = a });
+        AddonManager.getAddonByID(addon.id, function (a) { addon = a; });
 
         if (basePath.isDirectory())
             getURI = function getURI(path) {
                 let file = basePath.clone().QueryInterface(Ci.nsILocalFile);
                 file.appendRelativePath(path);
                 return (Services.io || services.io).newFileURI(file);
-            }
+            };
         else
             getURI = function getURI(path)
                 Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec + "!/" + path, null, null);
@@ -100,7 +100,7 @@ FactoryProxy.prototype = {
     },
     createInstance: function (iids) {
         return let (factory = this.module.NSGetFactory(this.classID))
-            factory.createInstance.apply(factory, arguments)
+            factory.createInstance.apply(factory, arguments);
     }
 }
 
@@ -196,6 +196,7 @@ function reasonToString(reason) {
             return name;
 }
 
-function install(data, reason) { dump("dactyl: bootstrap: install " + reasonToString(reason) + "\n") }
-function uninstall(data, reason) { dump("dactyl: bootstrap: uninstall " + reasonToString(reason) + "\n") }
+function install(data, reason) { dump("dactyl: bootstrap: install " + reasonToString(reason) + "\n"); }
+function uninstall(data, reason) { dump("dactyl: bootstrap: uninstall " + reasonToString(reason) + "\n"); }
 
+// vim: set fdm=marker sw=4 ts=4 et:

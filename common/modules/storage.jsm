@@ -51,7 +51,7 @@ var StoreBase = Class("StoreBase", {
         this.reload();
     },
 
-    changed: function () { this.timer.tell() },
+    changed: function () { this.timer.tell(); },
 
     reload: function reload() {
         this._object = this._load() || this._constructor();

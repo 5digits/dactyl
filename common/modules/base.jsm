@@ -65,7 +65,7 @@ if (!XPCNativeWrapper.unwrap)
         if (hasOwnProperty.call(obj, "wrappedJSObject"))
             return obj.wrappedJSObject;
         return obj;
-    }
+    };
 if (!Object.create)
     Object.create = function (proto, props) {
         let obj = { __proto__: proto };
@@ -527,7 +527,7 @@ var isinstance_types = {
     string: String,
     function: Function,
     number: Number
-}
+};
 function isinstance(targ, src) {
     src = Array.concat(src);
     for (var i = 0; i < src.length; i++) {
@@ -870,7 +870,7 @@ Class.prototype = {
                 return;
             util.trapErrors(callback, self);
         }
-        return services.Timer(notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);;
+        return services.Timer(notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
     }
 };
 memoize(Class.prototype, "closure", function () {

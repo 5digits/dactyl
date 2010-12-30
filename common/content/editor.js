@@ -581,7 +581,7 @@ var Editor = Module("editor", {
         mappings.add([modes.INSERT],
             ["<C-t>"], "Edit text field in Vi mode",
             function () {
-                dactyl.assert(!editor.isTextEdit)
+                dactyl.assert(!editor.isTextEdit);
                 modes.push(modes.TEXT_EDIT);
             });
 
@@ -774,7 +774,7 @@ var Editor = Module("editor", {
                 has: function (key) set.has(util.compileMacro(this.value).seen, key),
                 validator: function (value) {
                     this.format({}, value);
-                    return Object.keys(util.compileMacro(value).seen).every(function (k) ["column", "file", "line"].indexOf(k) >= 0)
+                    return Object.keys(util.compileMacro(value).seen).every(function (k) ["column", "file", "line"].indexOf(k) >= 0);
                 }
             });
 

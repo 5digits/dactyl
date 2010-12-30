@@ -405,4 +405,4 @@ var Highlights = Module("Highlight", {
 
 endModule();
 
-// vim:se fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

@@ -83,7 +83,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     return prop.apply(dactyl, args);
                 return prop;
             }
-        }
+        };
     }, {
         __noSuchMethod__: function () this().__noSuchMethod__.apply(null, arguments)
     }),
@@ -966,7 +966,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     window.removeEventListener("DOMContentLoaded", listener.wrapper, true);
                     util._loadOverlays(window);
                 }
-            }), true)
+            }), true);
         }
     },
 
@@ -1053,7 +1053,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return function unwrap() {
             for each (let k in Object.getOwnPropertyNames(original))
                 Object.defineProperty(object, k, Object.getOwnPropertyDescriptor(original, k));
-        }
+        };
     },
 
     overlayWindow: function (url, fn) {
@@ -1234,7 +1234,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         catch (e) {
             try {
                 this.dump(String(error));
-                this.dump(util.stackLines(error.stack).join("\n"))
+                this.dump(util.stackLines(error.stack).join("\n"));
             }
             catch (e) { dump(e + "\n"); }
         }
@@ -1392,7 +1392,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             (function next() {
                 try {
                     util.timeout(next, gen.next());
-                } catch(e if e instanceof StopIteration) {};
+                }
+                catch (e if e instanceof StopIteration) {};
             })();
         },
 
@@ -1490,7 +1491,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 }, {
     Array: array
 });
-
 
 /**
  * Math utility methods.

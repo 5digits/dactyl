@@ -32,7 +32,6 @@ Range.prototype.__defineGetter__("isSession", function () this.max == null && th
 Range.prototype.__defineGetter__("native", function ()
     this.isEternity ? null : [range.min || 0, range.max == null ? Number.MAX_VALUE : range.max]);
 
-
 var Item = Class("Item", {
     init: function (name) {
         this.name = name;
@@ -311,7 +310,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         unset:   0,
         allow:   1,
         deny:    2,
-        session: 8,
+        session: 8
     },
     UNPERMS: Class.memoize(function () array.toObject([[v, k] for ([k, v] in Iterator(this.PERMS))])),
     COMMANDS: {
@@ -322,12 +321,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         list:    "List all cookies for domain",
         clear:   "Clear all cookies for domain",
         "clear-persistent": "Clear all persistent cookies for domain",
-        "clear-session":    "Clear all session cookies for domain",
+        "clear-session":    "Clear all session cookies for domain"
     },
 
     argPrefMap: {
         offlineapps:  "offlineApps",
-        sitesettings: "siteSettings",
+        sitesettings: "siteSettings"
     },
     argToPref: function (arg) Sanitizer.argPrefMap[arg] || arg,
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
@@ -500,7 +499,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                 for (let c in Sanitizer.iterCookies(host))
                                     count[c.isSession + 0]++;
                                 return <>{Sanitizer.COMMANDS[getPerms(host)]} (session: {count[1]} persistent: {count[0]})</>;
-                            }
+                            };
                             break;
                         case 1:
                             context.completions = Sanitizer.COMMANDS;
@@ -533,7 +532,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     getter: function () services.privateBrowsing.privateBrowsingEnabled,
                     setter: function (value) {
                         if (services.privateBrowsing.privateBrowsingEnabled != value)
-                            services.privateBrowsing.privateBrowsingEnabled = value
+                            services.privateBrowsing.privateBrowsingEnabled = value;
                     },
                     persist: false
                 });
@@ -584,7 +583,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         ["10m",     "Last ten minutes"],
                         ["1h",      "Past hour"],
                         ["1d",      "Past day"],
-                        ["1w",      "Past week"],
+                        ["1w",      "Past week"]
                     ]
                 },
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)

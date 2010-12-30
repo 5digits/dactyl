@@ -178,7 +178,7 @@ var Mappings = Module("mappings", {
         modes = modes.slice();
         return (map for ([i, map] in Iterator(stack[modes.shift()].sort(function (m1, m2) String.localeCompare(m1.name, m2.name))))
             if (map.rhs && modes.every(function (mode) stack[mode].
-                    some(function (m) m.rhs && m.rhs === map.rhs && m.name === map.name))))
+                    some(function (m) m.rhs && m.rhs === map.rhs && m.name === map.name))));
     },
 
     iterate: function (mode) {
@@ -475,8 +475,8 @@ var Mappings = Module("mappings", {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
                             description: "Remove all mappings from the given modes",
-                            default: mapmodes || ["n", "v"],
-                        }),
+                            default: mapmodes || ["n", "v"]
+                        })
                     ]
                 });
 
@@ -502,8 +502,8 @@ var Mappings = Module("mappings", {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
                             description: "Remove mapping from the given modes",
-                            default: mapmodes || ["n", "v"],
-                        }),
+                            default: mapmodes || ["n", "v"]
+                        })
                     ]
                 });
         }

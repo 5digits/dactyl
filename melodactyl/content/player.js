@@ -758,11 +758,11 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
              ["n"], "Find the next track",
-             function () { player.searchViewAgain(false);});
+             function () { player.searchViewAgain(false); });
 
         mappings.add([modes.PLAYER],
              ["N"], "Find the previous track",
-             function () { player.searchViewAgain(true);});
+             function () { player.searchViewAgain(true); });
 
         for (let i in util.range(0, 6)) {
             let (rating = i) {

@@ -36,7 +36,7 @@ update(Sheet.prototype, {
                        function (filter) <span highlight={uris.some(Styles.matchFilter(filter)) ? "Filter" : ""}>{filter}</span>,
                        <>,</>),
 
-    remove: function () { this.hive.remove(this) },
+    remove: function () { this.hive.remove(this); },
 
     get uri() cssUri(this.fullCSS),
 
@@ -491,7 +491,7 @@ var Styles = Module("Styles", {
                         context.generate = function () styles.user.sites;
                         context.keys.text = util.identity;
                         context.keys.description = function (site) this.sheets.length + " sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
-                            array.compact(this.sheets.map(function (s) s.name)).join(", ")
+                            array.compact(this.sheets.map(function (s) s.name)).join(", ");
                         context.keys.sheets = function (site) styles.user.sheets.filter(function (s) s.sites.indexOf(site) >= 0);
                         context.keys.active = function (site) uris.some(Styles.matchFilter(site));
 
@@ -532,7 +532,7 @@ var Styles = Module("Styles", {
                 var lastMatch = match;
 
             if (lastMatch != null && !lastMatch.value && !lastMatch.postSpace) {
-                context.advance(lastMatch.index + lastMatch.preSpace.length)
+                context.advance(lastMatch.index + lastMatch.preSpace.length);
                 context.completions = names;
             }
         };
@@ -552,4 +552,4 @@ endModule();
 
 // catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
-// vim:se fdm=marker sw=4 ts=4 et ft=javascript:
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

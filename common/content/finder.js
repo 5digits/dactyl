@@ -544,7 +544,7 @@ var RangeFind = Class("RangeFind", {
 
                 let start = RangeFind.sameDocument(this.lastRange, this.range.range) && this.range.intersects(this.lastRange) ?
                                 RangeFind.endpoint(this.lastRange, !(again ^ this.backward)) :
-                                RangeFind.endpoint(this.range.range, !this.backward);;
+                                RangeFind.endpoint(this.range.range, !this.backward);
 
                 if (this.backward && !again)
                     start = RangeFind.endpoint(this.startRange, false);

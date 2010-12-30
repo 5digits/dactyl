@@ -232,7 +232,7 @@ var History = Module("history", {
                             ].map(function (order) [
                                   ["+" + order.replace(" ", ""), "Sort by " + order + " ascending"],
                                   ["-" + order.replace(" ", ""), "Sort by " + order + " descending"],
-                            ]))
+                            ]));
                         }
                     }
                 ],

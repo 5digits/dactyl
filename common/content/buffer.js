@@ -145,7 +145,7 @@ var Buffer = Module("buffer", {
 
         dactyl.commands["buffer.viewSource"] = function (event) {
             let elem = event.originalTarget;
-            buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))])
+            buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))]);
         };
 
         this.cleanupProgressListener = util.overlayObject(window.XULBrowserWindow,
@@ -1006,9 +1006,9 @@ var Buffer = Module("buffer", {
             this.callback = callable(callback) ? callback :
                 function (file) {
                     editor.editFileExternally({ file: file.path, line: callback },
-                                              function () { file.remove(false) });
+                                              function () { file.remove(false); });
                     return true;
-                }
+                };
 
             let url = isString(doc) ? util.newURI(doc) : doc.documentURIObject;
 
@@ -1478,9 +1478,9 @@ var Buffer = Module("buffer", {
                         util.map(array.iterValues(browsers), function ([i, browser]) {
                             let indicator = " ";
                             if (i == tabs.index())
-                               indicator = "%"
+                                indicator = "%";
                             else if (i == tabs.index(tabs.alternate))
-                               indicator = "#";
+                                indicator = "#";
 
                             let tab = tabs.getTab(i);
                             let url = browser.contentDocument.location.href;
@@ -1750,7 +1750,7 @@ var Buffer = Module("buffer", {
         // page info
         mappings.add(myModes, ["<C-g>"],
             "Print the current file name",
-            function () { buffer.showPageInfo(false); })
+            function () { buffer.showPageInfo(false); });
 
         mappings.add(myModes, ["g<C-g>"],
             "Print file information",

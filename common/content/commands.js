@@ -346,7 +346,7 @@ var Command = Class("Command", {
             break;
         case "-javascript":
             if (callable(params))
-                action = dactyl.userEval("(function action() { with (action.makeParams.apply(this, arguments)) {" + args.literalArg + "} })")
+                action = dactyl.userEval("(function action() { with (action.makeParams.apply(this, arguments)) {" + args.literalArg + "} })");
             else
                 action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
             process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
