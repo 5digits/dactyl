@@ -1370,6 +1370,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         tabs.tabBinding.enabled = Array.some(opts, function (k) k in this.opts, this);
                         tabs.updateTabCount();
                     }
+                    if (config.tabbrowser.tabContainer._positionPinnedTabs)
+                        config.tabbrowser.tabContainer._positionPinnedTabs();
                 }
             }
         ].filter(function (group) !group.feature || dactyl.has(group.feature));
