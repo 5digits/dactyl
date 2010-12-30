@@ -873,9 +873,9 @@
     <default>0</default>
     <description>
         <p>
-            Timeout before automatically following a non-unique numerical
-            hint. Set to 0 (the default) to only follow numeric hints after
-            pressing <k name="Return"/> or when the hint is unique.
+            Timeout in milliseconds before automatically following a non-unique
+            hint. Set to 0 (the default) to only follow hints after pressing
+            <k name="Return"/> or when the hint is unique.
         </p>
     </description>
 </item>
