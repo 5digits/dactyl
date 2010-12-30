@@ -1050,12 +1050,12 @@ var Hints = Module("hints", {
 
         mappings.add(myModes, [";"],
             "Start an extended hint mode",
-            function (count) { hints.open(";", { count: count }); },
+            function ({ count }) { hints.open(";", { count: count }); },
             { count: true });
 
         mappings.add(myModes, ["g;"],
             "Start an extended hint mode and stay there until <Esc> is pressed",
-            function (count) { hints.open("g;", { continue: true, count: count }); },
+            function ({ count }) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
 
         function update(followFirst) {

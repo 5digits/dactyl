@@ -1507,9 +1507,9 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["."],
             "Repeat the last key event",
-            function (count) {
+            function (args) {
                 if (mappings.repeat) {
-                    for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
+                    for (let i in util.interruptibleRange(0, Math.max(args.count, 1), 100))
                         mappings.repeat();
                 }
             },
@@ -1526,22 +1526,22 @@ var Buffer = Module("buffer", {
         // scrolling
         mappings.add(myModes, ["j", "<Down>", "<C-e>"],
             "Scroll document down",
-            function (count) { buffer.scrollLines(Math.max(count, 1)); },
+            function (args) { buffer.scrollLines(Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["k", "<Up>", "<C-y>"],
             "Scroll document up",
-            function (count) { buffer.scrollLines(-Math.max(count, 1)); },
+            function (args) { buffer.scrollLines(-Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, dactyl.has("mail") ? ["h"] : ["h", "<Left>"],
             "Scroll document to the left",
-            function (count) { buffer.scrollColumns(-Math.max(count, 1)); },
+            function (args) { buffer.scrollColumns(-Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, dactyl.has("mail") ? ["l"] : ["l", "<Right>"],
             "Scroll document to the right",
-            function (count) { buffer.scrollColumns(Math.max(count, 1)); },
+            function (args) { buffer.scrollColumns(Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["0", "^"],
@@ -1554,63 +1554,63 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["gg", "<Home>"],
             "Go to the top of the document",
-            function (count) { buffer.scrollToPercent(null, count != null ? count : 0); },
+            function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 0); },
             { count: true });
 
         mappings.add(myModes, ["G", "<End>"],
             "Go to the end of the document",
-            function (count) { buffer.scrollToPercent(null, count != null ? count : 100); },
+            function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 100); },
             { count: true });
 
         mappings.add(myModes, ["%"],
             "Scroll to {count} percent of the document",
-            function (count) {
-                dactyl.assert(count > 0 && count <= 100);
+            function (args) {
+                dactyl.assert(args.count > 0 && count <= 100);
                 buffer.scrollToPercent(null, count);
             },
             { count: true });
 
         mappings.add(myModes, ["<C-d>"],
             "Scroll window downwards in the buffer",
-            function (count) { buffer._scrollByScrollSize(count, true); },
+            function (args) { buffer._scrollByScrollSize(args.count, true); },
             { count: true });
 
         mappings.add(myModes, ["<C-u>"],
             "Scroll window upwards in the buffer",
-            function (count) { buffer._scrollByScrollSize(count, false); },
+            function (args) { buffer._scrollByScrollSize(args.count, false); },
             { count: true });
 
         mappings.add(myModes, ["<C-b>", "<PageUp>", "<S-Space>"],
             "Scroll up a full page",
-            function (count) { buffer.scrollPages(-Math.max(count, 1)); },
+            function (args) { buffer.scrollPages(-Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["<C-f>", "<PageDown>", "<Space>"],
             "Scroll down a full page",
-            function (count) { buffer.scrollPages(Math.max(count, 1)); },
+            function (args) { buffer.scrollPages(Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["]f"],
             "Focus next frame",
-            function (count) { buffer.shiftFrameFocus(Math.max(count, 1)); },
+            function (args) { buffer.shiftFrameFocus(Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["[f"],
             "Focus previous frame",
-            function (count) { buffer.shiftFrameFocus(-Math.max(count, 1)); },
+            function (args) { buffer.shiftFrameFocus(-Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["]]"],
             "Follow the link labeled 'next' or '>' if it exists",
-            function (count) {
-                buffer.findLink("next", options["nextpattern"], (count || 1) - 1, true);
+            function (args) {
+                buffer.findLink("next", options["nextpattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
         mappings.add(myModes, ["[["],
             "Follow the link labeled 'prev', 'previous' or '<' if it exists",
-            function (count) {
-                buffer.findLink("previous", options["previouspattern"], (count || 1) - 1, true);
+            function (args) {
+                buffer.findLink("previous", options["previouspattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
@@ -1624,10 +1624,10 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["gi"],
             "Focus last used input field",
-            function (count) {
+            function (args) {
                 let elem = buffer.lastInputField;
 
-                if (count >= 1 || !elem || !Events.isContentNode(elem)) {
+                if (args.count >= 1 || !elem || !Events.isContentNode(elem)) {
                     let xpath = ["frame", "iframe", "input", "textarea[not(@disabled) and not(@readonly)]"];
 
                     let frames = buffer.allFrames(null, true);
@@ -1647,7 +1647,7 @@ var Buffer = Module("buffer", {
                     });
 
                     dactyl.assert(elements.length > 0);
-                    elem = elements[Math.constrain(count, 1, elements.length) - 1];
+                    elem = elements[Math.constrain(args.count, 1, elements.length) - 1];
                 }
                 buffer.focusElement(elem);
                 util.scrollIntoView(elem);
@@ -1699,59 +1699,58 @@ var Buffer = Module("buffer", {
         // zooming
         mappings.add(myModes, ["zi", "+"],
             "Enlarge text zoom of current web page",
-            function (count) { buffer.zoomIn(Math.max(count, 1), false); },
+            function (args) { buffer.zoomIn(Math.max(args.count, 1), false); },
             { count: true });
 
         mappings.add(myModes, ["zm"],
             "Enlarge text zoom of current web page by a larger amount",
-            function (count) { buffer.zoomIn(Math.max(count, 1) * 3, false); },
+            function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
         mappings.add(myModes, ["zo", "-"],
             "Reduce text zoom of current web page",
-            function (count) { buffer.zoomOut(Math.max(count, 1), false); },
+            function (args) { buffer.zoomOut(Math.max(args.count, 1), false); },
             { count: true });
 
         mappings.add(myModes, ["zr"],
             "Reduce text zoom of current web page by a larger amount",
-            function (count) { buffer.zoomOut(Math.max(count, 1) * 3, false); },
+            function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
         mappings.add(myModes, ["zz"],
             "Set text zoom value of current web page",
-            function (count) { Buffer.setZoom(count > 1 ? count : 100, false); },
+            function (args) { Buffer.setZoom(args.count > 1 ? count : 100, false); },
             { count: true });
 
         mappings.add(myModes, ["ZI", "zI"],
             "Enlarge full zoom of current web page",
-            function (count) { buffer.zoomIn(Math.max(count, 1), true); },
+            function (args) { buffer.zoomIn(Math.max(args.count, 1), true); },
             { count: true });
 
         mappings.add(myModes, ["ZM", "zM"],
             "Enlarge full zoom of current web page by a larger amount",
-            function (count) { buffer.zoomIn(Math.max(count, 1) * 3, true); },
+            function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
         mappings.add(myModes, ["ZO", "zO"],
             "Reduce full zoom of current web page",
-            function (count) { buffer.zoomOut(Math.max(count, 1), true); },
+            function (args) { buffer.zoomOut(Math.max(args.count, 1), true); },
             { count: true });
 
         mappings.add(myModes, ["ZR", "zR"],
             "Reduce full zoom of current web page by a larger amount",
-            function (count) { buffer.zoomOut(Math.max(count, 1) * 3, true); },
+            function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
         mappings.add(myModes, ["zZ"],
             "Set full zoom value of current web page",
-            function (count) { Buffer.setZoom(count > 1 ? count : 100, true); },
+            function (args) { Buffer.setZoom(args.count > 1 ? args.count : 100, true); },
             { count: true });
 
         // page info
         mappings.add(myModes, ["<C-g>"],
             "Print the current file name",
-            function (count) { buffer.showPageInfo(false); },
-            { count: true });
+            function () { buffer.showPageInfo(false); })
 
         mappings.add(myModes, ["g<C-g>"],
             "Print file information",

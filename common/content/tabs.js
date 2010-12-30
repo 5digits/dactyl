@@ -878,15 +878,15 @@ var Tabs = Module("tabs", {
     mappings: function () {
         mappings.add([modes.NORMAL], ["g0", "g^"],
             "Go to the first tab",
-            function (count) { tabs.select(0); });
+            function () { tabs.select(0); });
 
         mappings.add([modes.NORMAL], ["g$"],
             "Go to the last tab",
-            function (count) { tabs.select("$"); });
+            function () { tabs.select("$"); });
 
         mappings.add([modes.NORMAL], ["gt"],
             "Go to the next tab",
-            function (count) {
+            function ({ count }) {
                 if (count != null)
                     tabs.select(count - 1, false);
                 else
@@ -896,18 +896,18 @@ var Tabs = Module("tabs", {
 
         mappings.add([modes.NORMAL], ["<C-n>", "<C-Tab>", "<C-PageDown>"],
             "Go to the next tab",
-            function (count) { tabs.select("+" + (count || 1), true); },
+            function ({ count }) { tabs.select("+" + (count || 1), true); },
             { count: true });
 
         mappings.add([modes.NORMAL], ["gT", "<C-p>", "<C-S-Tab>", "<C-PageUp>"],
            "Go to previous tab",
-            function (count) { tabs.select("-" + (count || 1), true); },
+            function ({ count }) { tabs.select("-" + (count || 1), true); },
             { count: true });
 
         if (config.hasTabbrowser) {
             mappings.add([modes.NORMAL], ["b"],
                 "Open a prompt to switch buffers",
-                function (count) {
+                function ({ count }) {
                     if (count != null)
                         tabs.switchTo(String(count));
                     else
@@ -921,39 +921,39 @@ var Tabs = Module("tabs", {
 
             mappings.add([modes.NORMAL], ["d"],
                 "Delete current buffer",
-                function (count) { tabs.remove(tabs.getTab(), count, false); },
+                function ({ count }) { tabs.remove(tabs.getTab(), count, false); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["D"],
                 "Delete current buffer, focus tab to the left",
-                function (count) { tabs.remove(tabs.getTab(), count, true); },
+                function ({ count }) { tabs.remove(tabs.getTab(), count, true); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["gb"],
                 "Repeat last :buffer[!] command",
-                function (count) { tabs.switchTo(null, null, count, false); },
+                function ({ count }) { tabs.switchTo(null, null, count, false); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["gB"],
                 "Repeat last :buffer[!] command in reverse direction",
-                function (count) { tabs.switchTo(null, null, count, true); },
+                function ({ count }) { tabs.switchTo(null, null, count, true); },
                 { count: true });
 
             // TODO: feature dependencies - implies "session"?
             if (dactyl.has("tabs_undo")) {
                 mappings.add([modes.NORMAL], ["u"],
                     "Undo closing of a tab",
-                    function (count) { ex.undo({ "#": count }); },
+                    function ({ count }) { ex.undo({ "#": count }); },
                     { count: true });
             }
 
             mappings.add([modes.NORMAL], ["<C-^>", "<C-6>"],
                 "Select the alternate tab or the [count]th tab",
-                function (count) {
-                    if (count < 1)
-                        tabs.selectAlternateTab();
+                function ({ count }) {
+                    if (count != null)
+                        tabs.switchTo(String(count), false);
                     else
-                        tabs.switchTo(count.toString(), false);
+                        tabs.selectAlternateTab();
                 },
                 { count: true });
         }

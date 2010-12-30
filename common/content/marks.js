@@ -200,7 +200,7 @@ var Marks = Module("marks", {
 
         mappings.add(myModes,
             ["m"], "Set mark at the cursor position",
-            function (arg) {
+            function ({ arg }) {
                 dactyl.assert(/^[a-zA-Z]$/.test(arg));
                 marks.add(arg);
             },
@@ -208,7 +208,7 @@ var Marks = Module("marks", {
 
         mappings.add(myModes,
             ["'", "`"], "Jump to the mark in the current buffer",
-            function (arg) { marks.jumpTo(arg); },
+            function (args) { marks.jumpTo(args.arg); },
             { arg: true });
     },
 

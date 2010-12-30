@@ -935,7 +935,6 @@ var CommandLine = Module("commandline", {
             }
             else if (event.type == "keypress") {
                 let key = events.toString(event);
-                util.dump("keypress", key, Events.isEscape(event));
                 if (this._completions)
                     this._completions.previewClear();
                 if (!this.currentExtendedMode)

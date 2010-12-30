@@ -95,12 +95,12 @@ var Browser = Module("browser", {
 
         mappings.add([modes.NORMAL],
             ["<C-a>"], "Increment last number in URL",
-            function (count) { Browser.incrementURL(Math.max(count, 1)); },
+            function (args) { Browser.incrementURL(Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add([modes.NORMAL],
             ["<C-x>"], "Decrement last number in URL",
-            function (count) { Browser.incrementURL(-Math.max(count, 1)); },
+            function (args) { Browser.incrementURL(-Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add([modes.NORMAL], ["~"],
@@ -120,7 +120,7 @@ var Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["gu"],
             "Go to parent directory",
-            function (count) { Browser.climbUrlPath(Math.max(count, 1)); },
+            function (args) { Browser.climbUrlPath(Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add([modes.NORMAL], ["gU"],

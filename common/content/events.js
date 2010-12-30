@@ -1253,7 +1253,7 @@ var Events = Module("events", {
 
         mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
             ["@"], "Play a macro",
-            function (count, arg) {
+            function ({ arg, count }) {
                 count = Math.max(count, 1);
                 while (count-- && events.playMacro(arg))
                     ;

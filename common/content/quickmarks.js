@@ -192,17 +192,17 @@ var QuickMarks = Module("quickmarks", {
 
         mappings.add(myModes,
             ["go"], "Jump to a QuickMark",
-            function (arg) { quickmarks.jumpTo(arg, dactyl.CURRENT_TAB); },
+            function (args) { quickmarks.jumpTo(args.arg, dactyl.CURRENT_TAB); },
             { arg: true });
 
         mappings.add(myModes,
             ["gn"], "Jump to a QuickMark in a new tab",
-            function (arg) { quickmarks.jumpTo(arg, { from: "quickmark", where: dactyl.NEW_TAB }); },
+            function (args) { quickmarks.jumpTo(args.arg, { from: "quickmark", where: dactyl.NEW_TAB }); },
             { arg: true });
 
         mappings.add(myModes,
             ["M"], "Add new QuickMark for current URL",
-            function (arg) {
+            function ({ arg }) {
                 dactyl.assert(/^[a-zA-Z0-9]$/.test(arg));
                 quickmarks.add(arg, buffer.URL);
             },

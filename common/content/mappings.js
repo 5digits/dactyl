@@ -105,18 +105,10 @@ var Map = Class("Map", {
      *     mapping. E.g. "a" for "ma"
      */
     execute: function (motion, count, argument, command) {
-        let args = [];
-
-        if (this.motion)
-            args.push(motion);
-        if (this.count)
-            args.push(count);
-        if (this.arg)
-            args.push(argument);
-        args.push(command);
+        let args = { count: count, arg: argument, motion: motion, command: command };
 
         let self = this;
-        function repeat() self.action.apply(self, args);
+        function repeat() self.action(args)
         if (this.names[0] != ".") // FIXME: Kludge.
             mappings.repeat = repeat;
 
@@ -374,7 +366,7 @@ var Mappings = Module("mappings", {
                 else {
                     mappings.addUserMap(mapmodes, [lhs],
                         args["-description"],
-                        Command.bindMacro(args, "-keys", ["count"]),
+                        Command.bindMacro(args, "-keys", function (params) params),
                         {
                             count: args["-count"],
                             noremap: args["-builtin"],

@@ -431,7 +431,7 @@ var Editor = Module("editor", {
             }
 
             mappings.add([modes.CARET], keys, "",
-                function (count) {
+                function ({ count }) {
                     if (!count)
                        count = 1;
 
@@ -441,7 +441,7 @@ var Editor = Module("editor", {
                 extraInfo);
 
             mappings.add([modes.VISUAL], keys, "",
-                function (count) {
+                function ({ count }) {
                     if (!count)
                         count = 1;
 
@@ -460,7 +460,7 @@ var Editor = Module("editor", {
                 extraInfo);
 
             mappings.add([modes.TEXT_EDIT], keys, "",
-                function (count) {
+                function ({ count }) {
                     if (!count)
                         count = 1;
 
@@ -482,7 +482,7 @@ var Editor = Module("editor", {
         function addMotionMap(key) {
             mappings.add([modes.TEXT_EDIT], [key],
                 "Motion command",
-                function (motion, count) {
+                function ({ count,  motion }) {
                     editor.executeCommandWithMotion(key, motion, Math.max(count, 1));
                 },
                 { count: true, motion: true });
@@ -597,16 +597,16 @@ var Editor = Module("editor", {
         // text edit mode
         mappings.add([modes.TEXT_EDIT],
             ["u"], "Undo changes",
-            function (count) {
-                editor.executeCommand("cmd_undo", Math.max(count, 1));
+            function (args) {
+                editor.executeCommand("cmd_undo", Math.max(args.count, 1));
                 editor.unselectText();
             },
             { count: true });
 
         mappings.add([modes.TEXT_EDIT],
             ["<C-r>"], "Redo undone changes",
-            function (count) {
-                editor.executeCommand("cmd_redo", Math.max(count, 1));
+            function (args) {
+                editor.executeCommand("cmd_redo", Math.max(args.count, 1));
                 editor.unselectText();
             },
             { count: true });
@@ -634,18 +634,18 @@ var Editor = Module("editor", {
 
         mappings.add([modes.TEXT_EDIT],
             ["X"], "Delete character to the left",
-            function (count) { editor.executeCommand("cmd_deleteCharBackward", Math.max(count, 1)); },
+            function (args) { editor.executeCommand("cmd_deleteCharBackward", Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add([modes.TEXT_EDIT],
             ["x"], "Delete character to the right",
-            function (count) { editor.executeCommand("cmd_deleteCharForward", Math.max(count, 1)); },
+            function (args) { editor.executeCommand("cmd_deleteCharForward", Math.max(args.count, 1)); },
             { count: true });
 
         // visual mode
         mappings.add([modes.CARET, modes.TEXT_EDIT],
             ["v"], "Start visual mode",
-            function (count) { modes.push(modes.VISUAL); });
+            function () { modes.push(modes.VISUAL); });
 
         mappings.add([modes.VISUAL],
             ["v", "V"], "End visual mode",
@@ -687,7 +687,7 @@ var Editor = Module("editor", {
 
         mappings.add([modes.VISUAL, modes.TEXT_EDIT],
             ["p"], "Paste clipboard contents",
-            function (count) {
+            function ({ count }) {
                 dactyl.assert(!editor.isCaret);
                 if (!count)
                     count = 1;
@@ -700,7 +700,7 @@ var Editor = Module("editor", {
         // finding characters
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["f"], "Move to a character on the current line after the cursor",
-            function (count, arg) {
+            function ({ arg, count }) {
                 let pos = editor.findCharForward(arg, Math.max(count, 1));
                 if (pos >= 0)
                     editor.moveToPosition(pos, true, dactyl.mode == modes.VISUAL);
@@ -709,7 +709,7 @@ var Editor = Module("editor", {
 
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["F"], "Move to a character on the current line before the cursor",
-            function (count, arg) {
+            function ({ arg, count }) {
                 let pos = editor.findCharBackward(arg, Math.max(count, 1));
                 if (pos >= 0)
                     editor.moveToPosition(pos, false, dactyl.mode == modes.VISUAL);
@@ -718,7 +718,7 @@ var Editor = Module("editor", {
 
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["t"], "Move before a character on the current line",
-            function (count, arg) {
+            function ({ arg, count }) {
                 let pos = editor.findCharForward(arg, Math.max(count, 1));
                 if (pos >= 0)
                     editor.moveToPosition(pos - 1, true, dactyl.mode == modes.VISUAL);
@@ -727,7 +727,7 @@ var Editor = Module("editor", {
 
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["T"], "Move before a character on the current line, backwards",
-            function (count, arg) {
+            function ({ arg, count }) {
                 let pos = editor.findCharBackward(arg, Math.max(count, 1));
                 if (pos >= 0)
                     editor.moveToPosition(pos + 1, false, dactyl.mode == modes.VISUAL);
@@ -737,7 +737,7 @@ var Editor = Module("editor", {
         // text edit and visual mode
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["~"], "Switch case of the character under the cursor and move the cursor to the right",
-            function (count) {
+            function ({ count }) {
                 if (modes.main == modes.VISUAL)
                     count = Editor.getEditor().selectionEnd - Editor.getEditor().selectionStart;
                 count = Math.max(count, 1);

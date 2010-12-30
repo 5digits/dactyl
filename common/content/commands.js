@@ -335,8 +335,7 @@ var Command = Class("Command", {
         case "-keys":
             let silent = args["-silent"];
             rhs = events.canonicalKeys(rhs, true);
-            var action = function action(count) events.feedkeys(action.macro({ count: count || "" }),
-                                                                noremap, silent);
+            var action = function action(args) events.feedkeys(action.macro(args), noremap, silent);
             action.macro = util.compileMacro(rhs, true);
             break;
         case "-ex":
@@ -1527,9 +1526,9 @@ var Commands = Module("commands", {
     mappings: function () {
         mappings.add(config.browserModes,
             ["@:"], "Repeat the last Ex command",
-            function (count) {
+            function (args) {
                 if (commands.repeat) {
-                    for (let i in util.interruptibleRange(0, Math.max(count, 1), 100))
+                    for (let i in util.interruptibleRange(0, Math.max(args.count, 1), 100))
                         dactyl.execute(commands.repeat);
                 }
                 else
