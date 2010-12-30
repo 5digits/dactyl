@@ -19,9 +19,9 @@ var Events = Module("events", {
                     <!--this notifies us also of focus events in the XUL
                         from: http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands !-->
                     <!-- I don't think we really need this. ––Kris -->
-                    <commandset id="onPentadactylFocus" commandupdater="true" events="focus"
+                    <commandset id="dactyl-onfocus" commandupdater="true" events="focus"
                                 oncommandupdate="dactyl.modules.events.onFocusChange(event);"/>
-                    <commandset id="onPentadactylSelect" commandupdater="true" events="select"
+                    <commandset id="dactyl-onselect" commandupdater="true" events="select"
                                 oncommandupdate="dactyl.modules.events.onSelectionChange(event);"/>
                 </window>
             </e4x>.elements()

@@ -147,8 +147,14 @@ var RangeFinder = Module("rangefinder", {
 }, {
     modes: function () {
         /* Must come before commandline. */
-        modes.addMode("FIND_FORWARD", true);
-        modes.addMode("FIND_BACKWARD", true);
+        modes.addMode("FIND_FORWARD", {
+            extended: true,
+            description: "Forward Find mode, active when typing search input"
+        });
+        modes.addMode("FIND_BACKWARD", {
+            extended: true,
+            description: "Forward Find mode, active when typing search input"
+        });
     },
     commandline: function () {
         commandline.registerCallback("change", modes.FIND_FORWARD, this.closure.onKeyPress);

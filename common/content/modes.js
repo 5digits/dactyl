@@ -31,15 +31,28 @@ var Modes = Module("modes", {
 
         this._modes = [];
         this._mainModes = [];
-        this._lastMode = 0;
         this._modeMap = {};
 
         this.boundProperties = {};
 
         // main modes, only one should ever be active
-        this.addMode("NORMAL",   { char: "n", display: function () null });
-        this.addMode("INSERT",   { char: "i", input: true, ownsFocus: true });
-        this.addMode("VISUAL",   { char: "v", ownsFocus: true, display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : "") }, {
+        this.addMode("NORMAL", {
+            char: "n",
+            description: "Normal mode, active when nothing is focused",
+            display: function () null
+        });
+        this.addMode("INSERT", {
+            char: "i",
+            description: "Insert mode, active when an input element is focused",
+            input: true,
+            ownsFocus: true
+        });
+        this.addMode("VISUAL", {
+            char: "v",
+            description: "Visual mode, active when text is selected",
+            ownsFocus: true,
+            display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : "")
+        }, {
             leave: function (stack, newMode) {
                 if (newMode.main == modes.CARET) {
                     let selection = content.getSelection();
@@ -51,28 +64,49 @@ var Modes = Module("modes", {
             }
         });
 
-        this.addMode("COMMAND_LINE", { char: "c", input: true });
+        this.addMode("COMMAND_LINE", {
+            char: "c",
+            description: "Command Line mode, active when the command line is focused",
+            input: true
+        });
 
-        this.addMode("CARET", {}, {
+        this.addMode("CARET", {
+            description: "Caret mode, active when the caret is visible in the web content",
+        }, {
+
             get pref()    prefs.get("accessibility.browsewithcaret"),
             set pref(val) prefs.set("accessibility.browsewithcaret", val),
+
             enter: function (stack) {
                 if (stack.pop && !this.pref)
                     modes.pop();
                 else if (!stack.pop && !this.pref)
                     this.pref = true;
             },
+
             leave: function (stack) {
                 if (!stack.push && this.pref)
                     this.pref = false;
             }
         });
-        this.addMode("TEXT_EDIT", { char: "t", ownsFocus: true });
-        this.addMode("EMBED",     { input: true, ownsFocus: true });
-        this.addMode("PASS_THROUGH", { hidden: true });
+        this.addMode("TEXT_EDIT", {
+            char: "t",
+            description: "Text Edit mode, Vim-like editing of input elements",
+            ownsFocus: true
+        });
+        this.addMode("EMBED", {
+            input: true,
+            description: "Embed mode, active when an <embed> or <object> element is focused",
+            ownsFocus: true
+        });
+        this.addMode("PASS_THROUGH", {
+            description: "Pass Through mode: all keys but <C-v> are ignored by " + config.appName,
+            hidden: true
+        });
 
         this.addMode("QUOTE", {
             hidden: true,
+            description: "Quote mode: The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).mainMode.display() || modes.getStack(2).mainMode.name) + " (next)"
                 : "PASS THROUGH (next)"
@@ -82,15 +116,36 @@ var Modes = Module("modes", {
             postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop() },
             onEvent: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
-        this.addMode("OUTPUT_MULTILINE");
+        this.addMode("OUTPUT_MULTILINE", {
+            description: "Multiline Output mode, active when the multi-line output buffer is open"
+        });
 
         // this._extended modes, can include multiple modes, and even main modes
-        this.addMode("EX", true);
-        this.addMode("HINTS", { count: false, ownsBuffer: true });
-        this.addMode("INPUT_MULTILINE", true);
-        this.addMode("MENU", true); // a popupmenu is active
-        this.addMode("LINE", { extended: true, hidden: true }); // linewise visual mode
-        this.addMode("PROMPT", true);
+        this.addMode("EX", {
+            extended: true,
+            description: "Ex command mode, active when the command line is open for Ex commands"
+        });
+        this.addMode("HINTS", {
+            extended: true,
+            description: "Hint mode, active when selecting elements in QuickHint or ExtendedHint mode",
+            count: false,
+            ownsBuffer: true
+        });
+        this.addMode("INPUT_MULTILINE", {
+            extended: true,
+            hidden: true
+        });
+        this.addMode("MENU", {
+            extended: true,
+            description: "Menu mode, active when a menu or other pop-up is open",
+        }); // a popupmenu is active
+        this.addMode("LINE", {
+            extended: true, hidden: true
+        }); // linewise visual mode
+        this.addMode("PROMPT", {
+            extended: true,
+            description: "Prompt mode, active when a prompt is open in the command line"
+        });
 
         this.push(this.NORMAL, 0, {
             enter: function (stack, prev) {
@@ -147,38 +202,17 @@ var Modes = Module("modes", {
 
     get topOfStack() this._modeStack[this._modeStack.length - 1],
 
-    addMode: function (name, extended, options, params) {
-        let disp = name.replace("_", " ", "g");
-        let mode = this[name] = new Number(1 << this._lastMode++);
+    addMode: function (name, options, params) {
+        let mode = Modes.Mode(name, options, params);
 
-        if (typeof extended == "object") {
-            params = options;
-            options = extended;
-            extended = false;
-        }
-
-        util.extend(mode, {
-            toString: function () this.name,
-            count: true,
-            disp: disp,
-            extended: extended,
-            input: false,
-            mask: mode,
-            name: name,
-            params: params || {}
-        }, options);
-        if (mode.char) {
-            this.modeChars[mode.char] = this.modeChars[mode.char] || [];
-            this.modeChars[mode.char].push(mode);
-        }
-
-        if (mode.display == null)
-            mode.display = function () disp;
+        this[name] = mode;
+        if (mode.char)
+            this.modeChars[mode.char] = (this.modeChars[mode.char] || []).concat(mode);
         this._modeMap[name] = mode;
-        this._modeMap[this[name]] = mode;
+        this._modeMap[mode] = mode;
 
         this._modes.push(mode);
-        if (!extended)
+        if (!mode.extended)
             this._mainModes.push(mode);
 
         dactyl.triggerObserver("mode-add", mode);
@@ -333,6 +367,36 @@ var Modes = Module("modes", {
     get extended() this._extended,
     set extended(value) { this.set(null, value); }
 }, {
+    Mode: Class("Mode", Number, {
+        init: function init(name, options, params) {
+            let self = new Number(1 << Modes.Mode._id++);
+            update(this, {
+                mask: self,
+                name: name,
+                params: params || {}
+            }, options);
+            self.__proto__ = this;
+            return self;
+        },
+
+        toString: function () this.name,
+
+        count: true,
+
+        get description() this.disp,
+
+        disp: Class.memoize(function () this.name.replace("_", " ", "g")),
+
+        display: function () this.disp,
+
+        extended: false,
+
+        hidden: false,
+
+        input: false
+    }, {
+        _id: 0
+    }),
     StackElement: (function () {
         let struct = Struct("main", "extended", "params", "saved");
         struct.defaultValue("params", function () this.main.params);

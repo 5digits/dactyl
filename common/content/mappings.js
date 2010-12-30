@@ -513,7 +513,7 @@ var Mappings = Module("mappings", {
             names: ["-mode", "-m"],
             type: CommandOption.STRING,
             validator: function (value) Array.concat(value).every(findMode),
-            completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
+            completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
                                     for (mode in values(modes.all))
                                     if (!mode.hidden)],
         };
