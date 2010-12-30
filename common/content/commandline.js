@@ -247,18 +247,25 @@ var CommandWidgets = Class("CommandWidgets", {
     activeGroup: Class.memoize(Object),
     commandbar: Class.memoize(function () ({ group: "Cmd" })),
     statusbar: Class.memoize(function ()  ({ group: "Status" })),
-    completionList: Class.memoize(function () document.getElementById("dactyl-completions")),
-    completionContainer: Class.memoize(function () this.completionList.parentNode),
-    multilineOutput: Class.memoize(function () {
-        this.__defineGetter__("multilineOutput", function () {
-            let elem = document.getElementById("dactyl-multiline-output");
-            while (elem.contentDocument.documentURI != elem.getAttribute("src") ||
-                   ["viewable", "complete"].indexOf(elem.contentDocument.readyState) < 0)
-                util.threadYield();
-            return elem;
-        });
 
-        let elem = this.multilineOutput;
+    _whenReady: function (name, id, processor) {
+        Object.defineProperty(this, name, {
+            configurable: true, enumerable: true,
+            get: function () {
+                let elem = document.getElementById(id);
+                while (elem.contentDocument.documentURI != elem.getAttribute("src") ||
+                       ["viewable", "complete"].indexOf(elem.contentDocument.readyState) < 0)
+                    util.threadYield();
+                return elem;
+            }
+        });
+        return Class.replaceProperty(this, name, (processor || util.identity).call(this, this[name]))
+    },
+
+    get completionList() this._whenReady("completionList", "dactyl-completions"),
+    completionContainer: Class.memoize(function () this.completionList.parentNode),
+    get multilineOutput() this._whenReady("multilineOutput", "dactyl-multiline-output",
+                                          function (elem) {
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
@@ -380,7 +387,8 @@ var CommandLine = Module("commandline", {
         this.__defineGetter__("_completionList", function () {
             let node = this.widgets.active.commandline;
             if (!node._completionList)
-                node._completionList = ItemList("dactyl-completions-" + node.id);
+                this.widgets._whenReady.call(node, "_completionList", "dactyl-completions-" + node.id,
+                                             function (node) ItemList(node.id));
             return node._completionList;
         });
         this._completions = null;
