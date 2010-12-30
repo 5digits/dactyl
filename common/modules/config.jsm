@@ -337,7 +337,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpBody                                    display: block; margin: 1em auto; max-width: 100ex; padding-bottom: 1em; margin-bottom: 4em; border-bottom-width: 1px;
         HelpBorder;*;dactyl://help/*                border-color: silver; border-width: 0px; border-style: solid;
         HelpCode;;;FontCode                         display: block; white-space: pre; margin-left: 2em;
-        HelpTT;;;FontFixed
+        HelpTT;html|tt;dactyl://help/*;FontCode
 
         HelpDefault;;;FontCode                      display: inline-block; margin: -1px 1ex 0 0; white-space: pre; vertical-align: text-top;
 

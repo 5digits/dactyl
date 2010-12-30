@@ -38,7 +38,7 @@
     <dt>stringlist</dt>
     <dd>
         A comma-separated list of strings. Any comma appearing within single
-        or double quotes, or prefixed with a <em>\</em>, will not be treated
+        or double quotes, or prefixed with a <tt>\</tt>, will not be treated
         as an item separator.
     </dd>
 
@@ -50,12 +50,12 @@
     <dt>regexplist</dt>
     <dd>
         A comma-separated list of regular expressions. Expressions may be
-        prefixed with a <em>!</em>, in which case the match will be negated. A
-        literal <em>!</em> at the beginning of the expression may be matched
-        with <em>[!]</em> or by placing the regular expression in quotes.
+        prefixed with a <tt>!</tt>, in which case the match will be negated. A
+        literal <tt>!</tt> at the beginning of the expression may be matched
+        with <tt>[!]</tt> or by placing the regular expression in quotes.
         Generally, the first matching regular expression is used. Any comma
         appearing within single or double quotes, or prefixed with a
-        <em>\</em>, will not be treated as an item separator.
+        <tt>\</tt>, will not be treated as an item separator.
     </dd>
 
     <dt/><dd tag="regexpmap"/>
@@ -63,7 +63,7 @@
     <dd>
         A combination of a <em>stringmap</em> and a <em>regexplist</em>. Each key
         in the <a>key</a>:<a>value</a> pair is a regexp. If the regexp begins with a
-        <em>!</em>, the sense of the match is negated, such that a non-matching
+        <tt>!</tt>, the sense of the match is negated, such that a non-matching
         expression will be considered a match and <html:i>vice versa</html:i>.
         The first <a>key</a> to match yields value.
     </dd>
@@ -71,23 +71,24 @@
 
 <p tag="macro-string">
     Some options may be given format strings containing macro replacements in
-    the form of <em>&lt;<a>name</a>></em>. These tokens are replaced by
+    the form of <tt>&lt;<a>name</a>></tt>. These tokens are replaced by
     the parameter <a>name</a> as specified in the relevant documentation.
-    If the token is in the form <em>&lt;q-<a>name</a>></em>, the value of the
+    If the token is in the form <tt>&lt;q-<a>name</a>></tt>, the value of the
     parameter is automatically <link topic="quoting">quoted</link>. If it is in
-    the form of <em>&lt;e-<a>name</a>></em>, its value is never shown but may be
+    the form of <tt>&lt;e-<a>name</a>></tt>, its value is never shown but may be
     used to test whether the given parameter is empty.
 </p>
 <p>
-    Any substring enclosed by <em>&lt;{</em> and <em>}></em> is automatically
-    elided if any of the contained macros aren't currently valid. A
-    literal <em>&lt;</em> or <em>></em> character may be included with the
-    special escape sequences <em>&lt;lt></em> or <em>&lt;gt></em> respectively.
+    Any substring enclosed by <em><tt>&lt;{</tt></em> and <em><tt>}></tt></em>
+    is automatically elided if any of the contained macros aren't currently
+    valid. A literal <em><tt>&lt;</tt></em> or <em><tt>></tt></em> character may
+    be included with the special escape sequences <tt>&lt;lt></tt> or
+    <tt>&lt;gt></tt> respectively.
 </p>
 
-<p>
+<p style="text-align: left">
     For example, given the format string
-    <str><em>&lt;{</em>(cmd: <em>&lt;column></em>) <em>}>&lt;{</em>line: <em>&lt;line> }>&lt;file></em></str>,
+    <str>&lt;{(cmd: &lt;column>) }>&lt;{line: &lt;line> }>&lt;file></str>,
     where <em>line</em>=<hl key="Number">32</hl> and
     <em>file</em>=<str delim="'">Lieder eines fahrenden Gesellen.txt</str>,
     the result is formatted as
@@ -156,16 +157,20 @@
     <description>
         <p>For list options, toggle the specified values.</p>
 
-        <p>If the option is a list, the given values are toggled. Given,</p>
-        <set opt="opt"><str delim="">foo</str>,<str delim="">bar</str></set>
-        <p>then,</p>
-        <set opt="opt" op="!="><str delim="">foo</str>,<str delim="">baz</str></set>
-        <p>has the same result as</p>
-        <set opt="opt"><str delim="">bar</str>,<str delim="">baz</str></set>
+        <p style="text-align: left;">
+            If the option is a list, the given values are toggled. Given,
+            <se opt="opt"><str delim="">foo</str>,<str delim="">bar</str></se>
+            then,
+            <se opt="opt" op="!="><str delim="">foo</str>,<str delim="">baz</str></se>
+            has the same result as
+            <se opt="opt"><str delim="">bar</str>,<str delim="">baz</str></se>
+        </p>
 
-        <p>This extends to string options in a natural way, e.g.</p>
-        <set opt="stal" op="!="><str delim="">always</str>,<str delim="">never</str></set>
-        <p>toggles between the two values.</p>
+        <p>
+            This extends to string options in a natural way, e.g.,
+            <se opt="stal" op="!="><str delim="">always</str>,<str delim="">never</str></se>
+            toggles between the two values.
+        </p>
     </description>
 </item>
 
@@ -240,18 +245,7 @@
 
 <item>
     <tags>:setlocal :setl</tags>
-    <spec>:setl<oa>ocal</oa></spec>
-    <spec>:setl<oa>ocal</oa> all</spec>
-    <spec>:setl<oa>ocal</oa> <a>option</a>?</spec>
-    <spec>:setl<oa>ocal</oa> <a>option</a></spec>
-    <spec>:setl<oa>ocal</oa> no<a>option</a></spec>
-    <spec>:setl<oa>ocal</oa> inv<a>option</a></spec>
-    <spec>:setl<oa>ocal</oa> <a>option</a>&amp;</spec>
-    <spec>:setl<oa>ocal</oa> all&amp;</spec>
-    <spec>:setl<oa>ocal</oa> <a>option</a>=<a>value</a></spec>
-    <spec>:setl<oa>ocal</oa> <a>option</a>+=<a>value</a></spec>
-    <spec>:setl<oa>ocal</oa> <a>option</a>^=<a>value</a></spec>
-    <spec>:setl<oa>ocal</oa> <a>option</a>-=<a>value</a></spec>
+    <spec>:setl<oa>ocal</oa> …</spec>
     <description>
         <p>
             The same as <ex>:set</ex> command, but operates on current tab options
@@ -262,18 +256,7 @@
 
 <item>
     <tags>:setglobal :setg</tags>
-    <spec>:setg<oa>lobal</oa></spec>
-    <spec>:setg<oa>lobal</oa> all</spec>
-    <spec>:setg<oa>lobal</oa> <a>option</a>?</spec>
-    <spec>:setg<oa>lobal</oa> <a>option</a></spec>
-    <spec>:setg<oa>lobal</oa> no<a>option</a></spec>
-    <spec>:setg<oa>lobal</oa> inv<a>option</a></spec>
-    <spec>:setg<oa>lobal</oa> <a>option</a>&amp;</spec>
-    <spec>:setg<oa>lobal</oa> all&amp;</spec>
-    <spec>:setg<oa>lobal</oa> <a>option</a>=<a>value</a></spec>
-    <spec>:setg<oa>lobal</oa> <a>option</a>+=<a>value</a></spec>
-    <spec>:setg<oa>lobal</oa> <a>option</a>^=<a>value</a></spec>
-    <spec>:setg<oa>lobal</oa> <a>option</a>-=<a>value</a></spec>
+    <spec>:setg<oa>lobal</oa> …</spec>
     <description>
         <p>
             The same as <ex>:set</ex> command, but operates on global options only.

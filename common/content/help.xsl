@@ -458,14 +458,16 @@
 
     <xsl:template match="dactyl:se" mode="help-2">
         <xsl:variable name="nodes" xmlns="&xmlns.dactyl;">
-            <ex>:set</ex>
-            <xsl:text> </xsl:text>
-            <link topic="'{@opt}'"><hl key="HelpOpt"><xsl:value-of select="@opt"/></hl></link>
-            <xsl:choose>
-                <xsl:when test="@op and @op != ''"><xsl:value-of select="@op"/></xsl:when>
-                <xsl:otherwise>=</xsl:otherwise>
-            </xsl:choose>
-            <xsl:copy-of select="@*|node()"/>
+            <html:span style="display: inline-block;">
+                <ex>:set</ex>
+                <xsl:text> </xsl:text>
+                <link topic="'{@opt}'"><hl key="HelpOpt"><xsl:value-of select="@opt"/></hl></link>
+                <xsl:choose>
+                    <xsl:when test="@op and @op != ''"><xsl:value-of select="@op"/></xsl:when>
+                    <xsl:otherwise>=</xsl:otherwise>
+                </xsl:choose>
+                <xsl:copy-of select="@*|node()"/>
+            </html:span>
         </xsl:variable>
         <xsl:apply-templates select="exsl:node-set($nodes)" mode="help-1"/>
     </xsl:template>
