@@ -693,7 +693,7 @@ var Events = Module("events", {
      *  The global escape key handler. This is called in ALL modes.
      */
     onEscape: function () {
-        switch (dactyl.mode) {
+        switch (modes.main) {
         case modes.COMMAND_LINE:
         case modes.INSERT:
         case modes.OUTPUT_MULTILINE:
@@ -784,7 +784,7 @@ var Events = Module("events", {
     // Huh? --djk
     onFocusChange: function onFocusChange(event) {
         // command line has its own focus change handler
-        if (dactyl.mode == modes.COMMAND_LINE)
+        if (modes.main == modes.COMMAND_LINE)
             return;
 
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
@@ -1015,14 +1015,14 @@ var Events = Module("events", {
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
         let couldCopy = controller && controller.isCommandEnabled("cmd_copy");
 
-        if (dactyl.mode == modes.VISUAL) {
+        if (modes.main == modes.VISUAL) {
             if (!couldCopy)
                 modes.pop(); // Really not ideal.
         }
         else if (couldCopy) {
             if (modes.main == modes.TEXT_EDIT && !options["insertmode"])
                 modes.push(modes.VISUAL);
-            else if (dactyl.mode == modes.CARET)
+            else if (modes.main == modes.CARET)
                 modes.push(modes.VISUAL);
         }
     }

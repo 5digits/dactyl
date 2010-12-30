@@ -91,8 +91,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @property {number} The current main mode.
      * @see modes#mainModes
      */
-    get mode()      modes.main,
-    set mode(value) modes.main = value,
+    mode: Class.Property({
+        get: deprecated("Please use modes.main instead", function mode() modes.main),
+        set: deprecated("Please use modes.main instead", function mode(val) modes.main = val),
+    }),
 
     get menuItems() Dactyl.getMenuItems(),
 

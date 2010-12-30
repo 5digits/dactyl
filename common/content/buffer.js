@@ -253,7 +253,7 @@ var Buffer = Module("buffer", {
 
                     if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.dactylLoadCount++)
                         util.timeout(function () { modes.reset(false); },
-                                     dactyl.mode == modes.HINTS ? 500 : 0);
+                                     modes.main == modes.HINTS ? 500 : 0);
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81

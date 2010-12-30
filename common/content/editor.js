@@ -703,7 +703,7 @@ var Editor = Module("editor", {
             function ({ arg, count }) {
                 let pos = editor.findCharForward(arg, Math.max(count, 1));
                 if (pos >= 0)
-                    editor.moveToPosition(pos, true, dactyl.mode == modes.VISUAL);
+                    editor.moveToPosition(pos, true, modes.main == modes.VISUAL);
             },
             { arg: true, count: true });
 
@@ -712,7 +712,7 @@ var Editor = Module("editor", {
             function ({ arg, count }) {
                 let pos = editor.findCharBackward(arg, Math.max(count, 1));
                 if (pos >= 0)
-                    editor.moveToPosition(pos, false, dactyl.mode == modes.VISUAL);
+                    editor.moveToPosition(pos, false, modes.main == modes.VISUAL);
             },
             { arg: true, count: true });
 
@@ -721,7 +721,7 @@ var Editor = Module("editor", {
             function ({ arg, count }) {
                 let pos = editor.findCharForward(arg, Math.max(count, 1));
                 if (pos >= 0)
-                    editor.moveToPosition(pos - 1, true, dactyl.mode == modes.VISUAL);
+                    editor.moveToPosition(pos - 1, true, modes.main == modes.VISUAL);
             },
             { arg: true, count: true });
 
@@ -730,7 +730,7 @@ var Editor = Module("editor", {
             function ({ arg, count }) {
                 let pos = editor.findCharBackward(arg, Math.max(count, 1));
                 if (pos >= 0)
-                    editor.moveToPosition(pos + 1, false, dactyl.mode == modes.VISUAL);
+                    editor.moveToPosition(pos + 1, false, modes.main == modes.VISUAL);
             },
             { arg: true, count: true });
 
