@@ -1565,8 +1565,8 @@ var Buffer = Module("buffer", {
         mappings.add(myModes, ["%"],
             "Scroll to {count} percent of the document",
             function (args) {
-                dactyl.assert(args.count > 0 && count <= 100);
-                buffer.scrollToPercent(null, count);
+                dactyl.assert(args.count > 0 && args.count <= 100);
+                buffer.scrollToPercent(null, args.count);
             },
             { count: true });
 
@@ -1719,7 +1719,7 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["zz"],
             "Set text zoom value of current web page",
-            function (args) { Buffer.setZoom(args.count > 1 ? count : 100, false); },
+            function (args) { Buffer.setZoom(args.count > 1 ? args.count : 100, false); },
             { count: true });
 
         mappings.add(myModes, ["ZI", "zI"],
