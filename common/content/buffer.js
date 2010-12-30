@@ -258,7 +258,7 @@ var Buffer = Module("buffer", {
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81
                     config.browser.mCurrentBrowser.collapsed = false;
-                    if (!dactyl.focusedElement)
+                    if (!dactyl.focusedElement || dactyl.focusedElement === document.documentElement)
                         dactyl.focusContent();
                     statusline.updateUrl();
                 }

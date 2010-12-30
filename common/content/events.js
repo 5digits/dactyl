@@ -719,6 +719,7 @@ var Events = Module("events", {
             let rect = dactyl.focusedElement.getBoundingClientRect();
             if (!rect.width || !rect.height) {
                 services.focus.clearFocus(window);
+                document.commandDispatcher.focusedWindow = content;
                 // onFocusChange needs to die.
                 this.onFocusChange();
             }
@@ -726,12 +727,14 @@ var Events = Module("events", {
     },
 
     onBlur: function onFocus(event) {
-        if (event.originalTarget instanceof Window && services.focus.activeWindow == null)
+        if (event.originalTarget instanceof Window && services.focus.activeWindow == null) {
             // Deals with circumstances where, after the main window
             // blurs while a collapsed frame has focus, re-activating
             // the main window does not restore focus and we lose key
             // input.
             services.focus.clearFocus(window);
+            document.commandDispatcher.focusedWindow = content;
+        }
     },
 
     // TODO: Merge with onFocusChange

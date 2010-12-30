@@ -4,11 +4,10 @@
 <!DOCTYPE document SYSTEM "chrome://dactyl/content/help.dtd" [
   <!ENTITY hinttags "//*[@onclick or @onmouseover or @onmousedown or
                @onmouseup or @oncommand or @role='link'] |
-           //input[not(@type='hidden')] | //a | //area |
-           //iframe | //textarea | //button | //select |
-           //xhtml:input[not(@type='hidden')] | //xhtml:a |
-           //xhtml:area | //xhtml:iframe | //xhtml:textarea |
-           //xhtml:button | //xhtml:select">
+           //input[not(@type='hidden')] | //xhtml:input[not(@type='hidden')] |
+           //a      | //xhtml:a      | //area     | //xhtml:area    |
+           //button | //xhtml:button | //iframe   | //xhtml:iframe  |
+           //select | //xhtml:select | //textarea | //xhtml:textarea">
 ]>
 
 <document
@@ -640,16 +639,14 @@
                      //area[@href]  | //xhtml:area[@href] |
                      //img[@src]    | //xhtml:img[@src]   |
                      //iframe[@src] | //xhtml:iframe[@src]',
-          [F]:'//div  | //xhtml:div  |
-               //span | //xhtml:span |
-               //p    | //xhtml:p    |
-               //body | //xhtml:body |
+          [F]:'//div  | //xhtml:div  | //span | //xhtml:span |
+               //p    | //xhtml:p    | //body | //xhtml:body |
                //html | //xhtml:html'
           [S]:'//input[not(@type=''hidden'')]       |
                //xhtml:input[not(@type=''hidden'')] |
-               //textarea  | //xhtml:textarea |
-               //button    | //xhtml:button   |
-               //select    | //xhtml:select'</default>
+               //textarea | //xhtml:textarea |
+               //button   | //xhtml:button   |
+               //select   | //xhtml:select'</default>
     <description>
         <p>
             Defines specialized XPath expressions for arbitrary
@@ -1356,9 +1353,9 @@
         <p>Define when the tab bar is visible.</p>
 
         <dl>
-            <dt>always</dt> <dd>Always show tab bar</dd>
-            <dt>multitab</dt> <dd>Show tab bar when there are multiple tabs</dd>
-            <dt>never</dt> <dd>Never show tab bar</dd>
+            <dt>always</dt>   <dd>Always show the tab bar</dd>
+            <dt>multitab</dt> <dd>Show the tab bar when there are multiple tabs</dd>
+            <dt>never</dt>    <dd>Never show the tab bar</dd>
         </dl>
     </description>
 </item>

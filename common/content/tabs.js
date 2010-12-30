@@ -976,9 +976,9 @@ var Tabs = Module("tabs", {
                     return value;
                 },
                 completer: function (context) [
-                    ["never",    "Never show tab bar"],
-                    ["multitab", "Show tab bar when there are multiple tabs"],
-                    ["always",   "Always show tab bar"]
+                    ["never",    "Never show the tab bar"],
+                    ["multitab", "Show the tab bar when there are multiple tabs"],
+                    ["always",   "Always show the tab bar"]
                 ]
             });
 
