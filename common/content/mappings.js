@@ -514,7 +514,8 @@ var Mappings = Module("mappings", {
             type: CommandOption.STRING,
             validator: function (value) Array.concat(value).every(findMode),
             completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.disp]
-                                    for (mode in values(modes.all))],
+                                    for (mode in values(modes.all))
+                                    if (!mode.hidden)],
         };
 
         function findMode(name) {

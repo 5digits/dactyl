@@ -69,9 +69,10 @@ var Modes = Module("modes", {
         });
         this.addMode("TEXT_EDIT", { char: "t", ownsFocus: true });
         this.addMode("EMBED",     { input: true, ownsFocus: true });
-        this.addMode("PASS_THROUGH");
+        this.addMode("PASS_THROUGH", { hidden: true });
 
         this.addMode("QUOTE", {
+            hidden: true,
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).mainMode.display() || modes.getStack(2).mainMode.name) + " (next)"
                 : "PASS THROUGH (next)"
@@ -87,10 +88,8 @@ var Modes = Module("modes", {
         this.addMode("EX", true);
         this.addMode("HINTS", { count: false, ownsBuffer: true });
         this.addMode("INPUT_MULTILINE", true);
-        this.addMode("SEARCH_FORWARD", true);
-        this.addMode("SEARCH_BACKWARD", true);
         this.addMode("MENU", true); // a popupmenu is active
-        this.addMode("LINE", true); // linewise visual mode
+        this.addMode("LINE", { extended: true, hidden: true }); // linewise visual mode
         this.addMode("PROMPT", true);
 
         this.push(this.NORMAL, 0, {
