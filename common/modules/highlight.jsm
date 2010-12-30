@@ -60,7 +60,17 @@ update(Highlight.prototype, {
 
     get bases() array.compact(this.extends.map(function (name) highlight.get(name))),
 
-    get inheritedCSS() this.bases.map(function (b) b.value.replace(/;?\s*$/, "; ")).join(""),
+    get inheritedCSS() {
+        if (this.gettingCSS)
+            return "";
+        try {
+            this.gettingCSS = true;
+            return this.bases.map(function (b) (b.inheritedCSS + b.value).replace(/;?\s*$/, "; ")).join("");
+        }
+        finally {
+            this.gettingCSS = false;
+        }
+    },
 
     get css() this.selector + "{" + this.inheritedCSS + this.value + "}",
 
@@ -128,15 +138,15 @@ var Highlights = Module("Highlight", {
 
         let highlight = this.highlight[key] || this._create(false, [key]);
 
-        extend = extend || highlight.extend;
+        let extends = extend || highlight.extend;
         if (append) {
             newStyle = Styles.append(highlight.value || "", newStyle);
-            extend = highlight.extends.concat(extend);
+            extends = highlight.extends.concat(extends);
         }
 
         if (/^\s*$/.test(newStyle))
             newStyle = null;
-        if (newStyle == null) {
+        if (newStyle == null && extend == null) {
             if (highlight.default == null && highight.defaultExtends.length == 0) {
                 highlight.style.enabled = false;
                 delete this.loaded[highlight.class];
@@ -144,11 +154,11 @@ var Highlights = Module("Highlight", {
                 return null;
             }
             newStyle = highlight.default;
-            extend = highlight.defaultExtends;
+            extends = highlight.defaultExtends;
         }
 
-        highlight.set("value", newStyle);
-        highlight.extends = array.uniq(extend, true);
+        highlight.set("value", newStyle || "");
+        highlight.extends = array.uniq(extends, true);
         if (force)
             highlight.style.enabled = true;
         this.highlight[highlight.class] = highlight;
@@ -295,8 +305,12 @@ var Highlights = Module("Highlight", {
                     args.shift();
 
                 let [key, css] = args;
-                dactyl.assert(!(clear && css), "E488: Trailing characters");
                 let modify = css || clear || args["-append"] || args["-link"];
+
+                if (!modify && /&$/.test(key))
+                    [clear, modify, key] = [true, true, key.replace(/&$/, "")];
+
+                dactyl.assert(!(clear && css), "E488: Trailing characters");
 
                 if (!modify)
                     modules.commandline.commandOutput(
