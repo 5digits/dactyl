@@ -1248,7 +1248,7 @@ var Events = Module("events", {
         // macros
         mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
             ["q"], "Record a key sequence into a macro",
-            function (arg) {
+            function ({ arg }) {
                 events._macroKeys.pop();
                 events[modes.recording ? "finishRecording" : "startRecording"](arg);
             },
