@@ -49,7 +49,8 @@
             <dd>Moves the focus to the next hintable element</dd>
 
             <dt><k name="Leader"/></dt>
-            <dd>Temporarily treats all numbers as ordinary text</dd>
+            <dd>Temporarily treats all numbers (or other keys, depending on the
+                value of <o>hintkeys</o>) as ordinary text</dd>
 
             <dt><k name="Esc"/></dt>
             <dd>Exits hint mode without selecting an element</dd>

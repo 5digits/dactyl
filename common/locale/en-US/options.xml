@@ -874,8 +874,10 @@
     <description>
         <p>
             Timeout in milliseconds before automatically following a non-unique
-            hint. Set to 0 (the default) to only follow hints after pressing
-            <k name="Return"/> or when the hint is unique.
+            hint. The timeout is measured since the last time a key listed in
+            <o>hintkeys</o> was pressed. It has no effect when narrowing hints
+            by typing part of their text. Set to 0 (the default) to only follow
+            hints after pressing <k name="Return"/> or when the hint is unique.
         </p>
     </description>
 </item>
