@@ -12,7 +12,7 @@ Components.utils.import("resource://dactyl/base.jsm");
 defineModule("util", {
     exports: ["FailedAssertion", "Math", "NS", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
-    use: ["highlight", "storage", "template"]
+    use: ["config", "highlight", "storage", "template"]
 });
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
