@@ -130,7 +130,7 @@ var Highlights = Module("Highlight", {
 
         if (append) {
             newStyle = Styles.append(highlight.value || "", newStyle);
-            extend = highlight.extend.concat(extend);
+            extend = highlight.extends.concat(extend);
         }
 
         if (/^\s*$/.test(newStyle))
