@@ -745,7 +745,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let data = [h for (h in highlight) if (set.has(styles, h.class) || /^Help/.test(h.class))]
             .map(function (h) h.selector
                                .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
-                               .replace(/html\|/, "") + "\t" + "{" + h.value + "}")
+                               .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
             .join("\n");
         addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 

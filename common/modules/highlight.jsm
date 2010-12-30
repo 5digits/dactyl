@@ -12,10 +12,9 @@ defineModule("highlight", {
 });
 
 var Highlight = Struct("class", "selector", "sites",
-                       "defaultExtends", "default",
-                       "value", "extends",
-                       "agent", "base", "baseClass",
-                       "style");
+                       "defaultExtends", "defaultValue",
+                       "value", "extends", "agent",
+                       "base", "baseClass", "style");
 Highlight.liveProperty = function (name, prop) {
     this.prototype.__defineGetter__(name, function () this.get(name));
     this.prototype.__defineSetter__(name, function (val) {
@@ -51,9 +50,9 @@ Highlight.defaultValue("style", function ()
     styles.system.add("highlight:" + this.class, this.sites, this.css, this.agent, true));
 
 Highlight.defaultValue("defaultExtends", function () []);
-Highlight.defaultValue("default", function () "");
+Highlight.defaultValue("defaultValue", function () "");
 Highlight.defaultValue("extends", function () this.defaultExtends);
-Highlight.defaultValue("value", function () this.default);
+Highlight.defaultValue("value", function () this.defaultValue);
 
 update(Highlight.prototype, {
     get base() this.baseClass != this.class && highlight.highlight[this.baseClass] || null,
@@ -65,14 +64,16 @@ update(Highlight.prototype, {
             return "";
         try {
             this.gettingCSS = true;
-            return this.bases.map(function (b) (b.inheritedCSS + b.value).replace(/;?\s*$/, "; ")).join("");
+            return this.bases.map(function (b) b.cssText.replace(/;?\s*$/, "; ")).join("");
         }
         finally {
             this.gettingCSS = false;
         }
     },
 
-    get css() this.selector + "{" + this.inheritedCSS + this.value + "}",
+    get css() this.selector + "{" + this.cssText + "}",
+
+    get cssText() this.inheritedCSS + this.value,
 
     toString: function () "Highlight(" + this.class + ")\n\t" +
         [k + ": " + String.quote(v) for ([k, v] in this)] .join("\n\t")
@@ -112,7 +113,7 @@ var Highlights = Module("Highlight", {
 
         if (/^[[>+: ]/.test(args[1]))
             obj.selector = this.selector(obj.class) + args[1];
-        if (old && old.value != old.default)
+        if (old && old.value != old.defaultValue)
             obj.value = old.value;
 
         if (!old && obj.base && obj.base.style.enabled)
@@ -147,13 +148,13 @@ var Highlights = Module("Highlight", {
         if (/^\s*$/.test(newStyle))
             newStyle = null;
         if (newStyle == null && extend == null) {
-            if (highlight.default == null && highight.defaultExtends.length == 0) {
+            if (highlight.defaultValue == null && highight.defaultExtends.length == 0) {
                 highlight.style.enabled = false;
                 delete this.loaded[highlight.class];
                 delete this.highlight[highlight.class];
                 return null;
             }
-            newStyle = highlight.default;
+            newStyle = highlight.defaultValue;
             extends = highlight.defaultExtends;
         }
 
@@ -342,7 +343,7 @@ var Highlights = Module("Highlight", {
                     else if (args.completeArg == 1) {
                         let hl = highlight.get(args[0]);
                         if (hl)
-                            context.completions = [[hl.value, "Current Value"], [hl.default || "", "Default Value"]];
+                            context.completions = [[hl.value, "Current Value"], [hl.defaultValue || "", "Default Value"]];
                         context.fork("css", 0, completion, "css");
                     }
                 },
@@ -372,7 +373,7 @@ var Highlights = Module("Highlight", {
                         literalArg: v.value
                     }
                     for (v in Iterator(highlight))
-                    if (v.value != v.default)
+                    if (v.value != v.defaultValue)
                 ]
             });
     },
