@@ -153,7 +153,7 @@ var RangeFinder = Module("rangefinder", {
         });
         modes.addMode("FIND_BACKWARD", {
             extended: true,
-            description: "Forward Find mode, active when typing search input"
+            description: "Backward Find mode, active when typing search input"
         });
     },
     commandline: function () {
