@@ -1685,6 +1685,7 @@ var CommandLine = Module("commandline", {
 
         const PASS = true;
         const DROP = false;
+        const BEEP = {};
 
         function bind(keys, description, action, test, default_) {
             mappings.add([modes.OUTPUT_MULTILINE],
@@ -1701,17 +1702,20 @@ var CommandLine = Module("commandline", {
                         modes.pop();
                     else
                         commandline.updateMorePrompt();
-                    if (res === PASS)
+                    if (res === BEEP)
+                        dactyl.beep();
+                    else if (res === PASS)
                         events.feedkeys(command);
                 });
         }
 
         bind(["j", "<C-e>", "<Down>"], "Scroll down one line",
              function () { Buffer.scrollVertical(body(), "lines", 1); },
-             function () !atEnd(1), PASS);
+             function () !atEnd(1), BEEP);
 
         bind(["k", "<C-y>", "<Up>"], "Scroll up one line",
-             function () { Buffer.scrollVertical(body(), "lines", -1); });
+             function () { Buffer.scrollVertical(body(), "lines", -1); },
+             function () !atEnd(-1), BEEP);
 
         bind(["<C-j>", "<C-m>", "<Return>"], "Scroll down one line, exit on last line",
              function () { Buffer.scrollVertical(body(), "lines", 1); },
@@ -1720,28 +1724,29 @@ var CommandLine = Module("commandline", {
         // half page down
         bind(["<C-d>"], "Scroll down half a page",
              function () { Buffer.scrollVertical(body(), "pages", .5); },
-             function () atEnd(1), PASS);
+             function () atEnd(1), BEEP);
 
         bind(["<C-f>", "<PageDown>"], "Scroll down one page",
              function () { Buffer.scrollVertical(body(), "pages", 1); },
-             function () !atEnd(1), PASS);
+             function () !atEnd(1), BEEP);
 
         bind(["<Space>"], "Scroll down one page",
              function () { Buffer.scrollVertical(body(), "pages", 1); },
              function () !atEnd(1), DROP);
 
         bind(["<C-u>"], "Scroll up half a page",
-             function () { Buffer.scrollVertical(body(), "pages", -.5); });
+             function () { Buffer.scrollVertical(body(), "pages", -.5); },
+             function () !atEnd(-1), BEEP);
 
         bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
-             function () { Buffer.scrollVertical(body(), "pages", -1); });
+             function () { Buffer.scrollVertical(body(), "pages", -1); },
+             function () !atEnd(-1), BEEP);
 
         bind(["gg"], "Scroll to the beginning of output",
-             function () { Buffer.scrollToPercent(body(), null, 0); });
+             function () { Buffer.scrollToPercent(body(), null, 0); })
 
         bind(["G"], "Scroll to the end of output",
-             function () { body().scrollTop = body().scrollHeight; },
-             function () !atEnd(1), PASS);
+             function () { body().scrollTop = body().scrollHeight; })
 
         // copy text to clipboard
         bind(["<C-y>"], "Yank selection to clipboard",
