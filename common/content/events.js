@@ -1155,7 +1155,7 @@ var Events = Module("events", {
                     this.pendingMotionMap = [map, command];
                 }
                 else {
-                    if (modes.replaying && !this.waitForPageLoad())
+                    if (modes.replaying && !events.waitForPageLoad())
                         return true;
 
                     return !execute(map, null, this.count, null, command) || !map.route;
