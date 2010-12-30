@@ -1278,7 +1278,7 @@ var Commands = Module("commands", {
         // TODO: Vim allows commands to be defined without {rep} if there are {attr}s
         // specified - useful?
         commands.add(["com[mand]"],
-            "List and define commands",
+            "List or define commands",
             function (args) {
                 let cmd = args[0];
 
@@ -1499,7 +1499,7 @@ var Commands = Module("commands", {
                 argCount: "0"
             });
         commands.add(["en[dif]", "fi"],
-            "Ends a string of :if/:elseif/:else conditionals",
+            "End a string of :if/:elseif/:else conditionals",
             function (args) {},
             {
                 always: function (args) { io.sourcing.noExecute = pop("if"); },
@@ -1507,7 +1507,7 @@ var Commands = Module("commands", {
             });
 
         commands.add(["y[ank]"],
-            "Yanks the output of the given command to the clipboard",
+            "Yank the output of the given command to the clipboard",
             function (args) {
                 let cmd = /^:/.test(args[0]) ? args[0] : ":echo " + args[0];
                 let res = commandline.withOutputToString(commands.execute, commands, cmd);

@@ -353,7 +353,7 @@ var Highlights = Module("Highlight", {
                     { names: ["-append", "-a"], description: "Append new CSS to the existing value" },
                     {
                         names: ["-link", "-l"],
-                        description: "Links this group to another",
+                        description: "Link this group to another",
                         type: CommandOption.LIST,
                         completer: function (context, args) {
                             let group = args[0] && highlight.get(args[0]);

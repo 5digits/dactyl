@@ -55,7 +55,7 @@
       completion system customization.
     * The external editor can now be configured to open to a given
       line number and column, used for opening source links and
-      editing input fields with <C-i>. See 'editor'.
+      editing input fields with <C-i>. See :h 'editor'.
     * Command changes:
       - :viusage, :optionusage and :exusage were replaced with :listkeys,
         :listoptions and :listcommands, providing more powerful and
