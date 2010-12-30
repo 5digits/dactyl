@@ -128,6 +128,7 @@ var Highlights = Module("Highlight", {
 
         let highlight = this.highlight[key] || this._create(false, [key]);
 
+        extend = extend || highlight.extend;
         if (append) {
             newStyle = Styles.append(highlight.value || "", newStyle);
             extend = highlight.extends.concat(extend);
@@ -309,8 +310,10 @@ var Highlights = Module("Highlight", {
                                 if (!key || h.class.indexOf(key) > -1))));
                 else if (!key && clear)
                     highlight.clear();
+                else if (key)
+                    highlight.set(key, css, clear, "-append" in args, args["-link"]);
                 else
-                    highlight.set(key, css, clear, "-append" in args, args["-link"] || []);
+                    util.assert(false, "Invalid arguments");
             },
             {
                 // TODO: add this as a standard highlight completion function?

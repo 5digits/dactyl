@@ -17,6 +17,15 @@
     position: absolute !important;
 }
 
+@-moz-document
+    url-prefix(dactyl:) {
+
+[dactyl|highlight~=HelpDefault] {
+    -moz-binding: url(chrome://dactyl/content/bindings.xml#compitem-td);
+}
+
+}
+
 /* Applied only to completion buffer and MOW */
 @-moz-document
     url-prefix(chrome://dactyl/) {

@@ -192,9 +192,9 @@ var ConfigBase = Class("ConfigBase", {
         Enabled      color: blue;
         Disabled     color: red;
 
-        FontFixed           font-family: monospace !important;
-        FontCode            font-family: -mox-fixed, monospace !important;
-        FontProportional    font-family: "Droid Sans", "Helvetica LT Std", Helvetica, "DejaVu Sans", Verdana, sans-serif !important;
+        FontFixed                            font-family: monospace !important;
+        FontCode            font-size: 9pt;  font-family: -mox-fixed, monospace !important;
+        FontProportional    font-size: 10pt; font-family: "Droid Sans", "Helvetica LT Std", Helvetica, "DejaVu Sans", Verdana, sans-serif !important;
 
         // Hack to give these groups slightly higher precedence
         // than their unadorned variants.
@@ -329,7 +329,7 @@ var ConfigBase = Class("ConfigBase", {
 
     helpCSS: UTF8(<><![CDATA[
         // <css>
-        Help;;;FontProportional                     font-size: 8pt; line-height: 1.4em;
+        Help;;;FontProportional                     line-height: 1.4em;
 
         HelpArg;;;FontCode                          color: #6A97D4;
         HelpOptionalArg;;;FontCode                  color: #6A97D4;
@@ -339,13 +339,13 @@ var ConfigBase = Class("ConfigBase", {
         HelpCode;;;FontCode                         display: block; white-space: pre; margin-left: 2em;
         HelpTT;;;FontFixed
 
-        HelpDefault;;;FontCode                      display: inline-block; margin-right: 1ex; white-space: pre; vertical-align: text-top;
+        HelpDefault;;;FontCode                      display: inline-block; margin: -1px 1ex 0 0; white-space: pre; vertical-align: text-top;
 
         HelpDescription                             display: block; clear: right;
         HelpDescription[short]                      clear: none;
         HelpEm;html|em;dactyl://help/*              font-weight: bold; font-style: normal;
 
-        HelpEx;;;FontCode                           display: inline-block; color: #527BBD; font-weight: bold;
+        HelpEx;;;FontCode                           display: inline-block; color: #527BBD;
 
         HelpExample                                 display: block; margin: 1em 0;
         HelpExample::before                         content: "Example: "; font-weight: bold;
@@ -441,7 +441,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpTabDescription>*;;dactyl://help/*       text-indent: 0;
         HelpTabRow;html|dl>html|tr;dactyl://help/*  display: table-row;
 
-        HelpTag;;;FontCode                          display: inline-block; color: #527BBD; margin-left: 1ex; font-size: 8pt; font-weight: bold;
+        HelpTag;;;FontCode                          display: inline-block; color: #527BBD; margin-left: 1ex; font-weight: normal;
         HelpTags                                    display: block; float: right; clear: right;
         HelpTopic;;;FontCode                        color: #102663;
         HelpType;;;FontCode                         margin-right: 2ex;
