@@ -177,7 +177,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     template.usage(results, params.format));
             },
             {
-                argCount: "0",
+                argCount: "*",
                 completer: function (context, args) {
                     context.keys.text = util.identity;
                     context.keys.description = function () seen[this.text] + " matching items";
