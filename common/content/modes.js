@@ -38,18 +38,18 @@ var Modes = Module("modes", {
         // main modes, only one should ever be active
         this.addMode("NORMAL", {
             char: "n",
-            description: "Normal mode, active when nothing is focused",
+            description: "Active when nothing is focused",
             display: function () null
         });
         this.addMode("INSERT", {
             char: "i",
-            description: "Insert mode, active when an input element is focused",
+            description: "Active when an input element is focused",
             input: true,
             ownsFocus: true
         });
         this.addMode("VISUAL", {
             char: "v",
-            description: "Visual mode, active when text is selected",
+            description: "Active when text is selected",
             ownsFocus: true,
             display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : "")
         }, {
@@ -66,12 +66,12 @@ var Modes = Module("modes", {
 
         this.addMode("COMMAND_LINE", {
             char: "c",
-            description: "Command Line mode, active when the command line is focused",
+            description: "Active when the command line is focused",
             input: true
         });
 
         this.addMode("CARET", {
-            description: "Caret mode, active when the caret is visible in the web content",
+            description: "Active when the caret is visible in the web content",
         }, {
 
             get pref()    prefs.get("accessibility.browsewithcaret"),
@@ -91,22 +91,22 @@ var Modes = Module("modes", {
         });
         this.addMode("TEXT_EDIT", {
             char: "t",
-            description: "Text Edit mode, Vim-like editing of input elements",
+            description: "Vim-like editing of input elements",
             ownsFocus: true
         });
         this.addMode("EMBED", {
             input: true,
-            description: "Embed mode, active when an <embed> or <object> element is focused",
+            description: "Active when an <embed> or <object> element is focused",
             ownsFocus: true
         });
         this.addMode("PASS_THROUGH", {
-            description: "Pass Through mode: all keys but <C-v> are ignored by " + config.appName,
+            description: "All keys but <C-v> are ignored by " + config.appName,
             hidden: true
         });
 
         this.addMode("QUOTE", {
             hidden: true,
-            description: "Quote mode: The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
+            description: "The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).main.display() || modes.getStack(2).main.name) + " (next)"
                 : "PASS THROUGH (next)"
@@ -117,7 +117,7 @@ var Modes = Module("modes", {
             onEvent: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
         this.addMode("OUTPUT_MULTILINE", {
-            description: "Multiline Output mode, active when the multi-line output buffer is open"
+            description: "Active when the multi-line output buffer is open"
         });
 
         // this._extended modes, can include multiple modes, and even main modes
@@ -128,7 +128,7 @@ var Modes = Module("modes", {
         });
         this.addMode("HINTS", {
             extended: true,
-            description: "Hint mode, active when selecting elements in QuickHint or ExtendedHint mode",
+            description: "Active when selecting elements in QuickHint or ExtendedHint mode",
             count: false,
             ownsBuffer: true
         });
@@ -139,14 +139,14 @@ var Modes = Module("modes", {
         });
         this.addMode("MENU", {
             extended: true,
-            description: "Menu mode, active when a menu or other pop-up is open",
+            description: "Active when a menu or other pop-up is open",
         }); // a popupmenu is active
         this.addMode("LINE", {
             extended: true, hidden: true
         }); // linewise visual mode
         this.addMode("PROMPT", {
             extended: true,
-            description: "Prompt mode, active when a prompt is open in the command line",
+            description: "Active when a prompt is open in the command line",
             input: true
         });
 
