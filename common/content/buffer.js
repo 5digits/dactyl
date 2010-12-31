@@ -1629,7 +1629,7 @@ var Buffer = Module("buffer", {
             function (args) {
                 let elem = buffer.lastInputField;
 
-                if (args.count >= 1 || !elem || !Events.isContentNode(elem)) {
+                if (args.count >= 1 || !elem || !events.isContentNode(elem)) {
                     let xpath = ["frame", "iframe", "input", "textarea[not(@disabled) and not(@readonly)]"];
 
                     let frames = buffer.allFrames(null, true);

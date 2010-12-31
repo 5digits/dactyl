@@ -637,6 +637,14 @@ var Events = Module("events", {
      */
     isCancelKey: function (key) key == "<Esc>" || key == "<C-[>" || key == "<C-c>",
 
+    isContentNode: function isContentNode(node) {
+        let win = (node.ownerDocument || node).defaultView || node;
+        for (; win; win = win.parent != win && win.parent)
+            if (win == content)
+                return true;
+        return false;
+    },
+
     /**
      * Waits for the current buffer to successfully finish loading. Returns
      * true for a successful page load otherwise false.
@@ -743,7 +751,7 @@ var Events = Module("events", {
         if (elem instanceof Element) {
             let win = elem.ownerDocument.defaultView;
 
-            if (Events.isContentNode(elem) && !buffer.focusAllowed(elem)
+            if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
                 && !(services.focus.getLastFocusMethod(win) & 0x7000)
                 && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
                 if (elem.frameElement)
@@ -897,7 +905,7 @@ var Events = Module("events", {
                 mode = Modes.StackElement(event.dactylMode);
 
             function shouldPass()
-                (!dactyl.focusedElement || Events.isContentNode(dactyl.focusedElement)) &&
+                (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
                 options.get("passkeys").has(events.toString(event));
 
             let input = this._input;
@@ -971,7 +979,7 @@ var Events = Module("events", {
         // "keypress" event.
 
         function shouldPass() // FIXME.
-            (!dactyl.focusedElement || Events.isContentNode(dactyl.focusedElement)) &&
+            (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
             options.get("passkeys").has(events.toString(event));
 
         if (modes.main == modes.PASS_THROUGH ||
@@ -981,7 +989,7 @@ var Events = Module("events", {
             !modes.passThrough && shouldPass())
             return;
 
-        if (!Events.isInputElementFocused())
+        if (!Events.isInputElement(dactyl.focusedElement))
             event.stopPropagation();
     },
 
@@ -1174,14 +1182,6 @@ var Events = Module("events", {
         }
     }),
 
-    isContentNode: function isContentNode(node) {
-        let win = (node.ownerDocument || node).defaultView || node;
-        for (; win; win = win.parent != win && win.parent)
-            if (win == content)
-                return true;
-        return false;
-    },
-
     isEscape: function isEscape(event)
         let (key = isString(event) ? event : events.toString(event))
             key === "<Esc>" || key === "<C-[>",
@@ -1193,10 +1193,7 @@ var Events = Module("events", {
                                  HTMLTextAreaElement,
                                  Ci.nsIDOMXULTreeElement, Ci.nsIDOMXULTextBoxElement]) ||
                elem instanceof Window && Editor.getEditor(elem);
-    },
-
-    isInputElementFocused: function isInputElementFocused() this.isInputElement(dactyl.focusedElement)
-
+    }
 }, {
     commands: function () {
         commands.add(["delmac[ros]"],
