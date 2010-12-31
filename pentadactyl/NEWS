@@ -1,4 +1,4 @@
-1.0b4.1:
+1.0b5pre:
     * Extensive Firefox 4 support, including:
       - Fully restartless. Can now be installed, uninstalled,
         enabled, disabled, and upgraded without restarting Firefox.
@@ -81,7 +81,7 @@
       - Added -agent flag to :style.
       - The -append flag now updates existing properties rather than
         simply appending its arguments to the previous value.
-      - Active filters are not highlighted in :style listings.
+      - Active filters are now highlighted in :style listings.
       - :style-related commands now divide their completions between
         those active and inactive for the current site.
       - CSS property name completion is now available.

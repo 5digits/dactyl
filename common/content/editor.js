@@ -45,7 +45,7 @@ var Editor = Module("editor", {
             let start = elem.selectionStart; // caret position
             let end = elem.selectionEnd;
             elem.value = elem.value.substring(0, start) + text + elem.value.substring(end);
-            elem.selectionStart = start + (toStart ? 0 : text.length);
+            elem.selectionStart = Math.min(start + (toStart ? 0 : text.length), elem.value.length);
             elem.selectionEnd = elem.selectionStart;
 
             elem.scrollTop = top;
