@@ -160,7 +160,7 @@ var CommandWidgets = Class("CommandWidgets", {
             }
         });
 
-        let fontSize = util.computedStyle(document.getElementById(config.mainWindowId)).fontSize;
+        let fontSize = util.computedStyle(document.documentElement).fontSize;
         styles.registerSheet("chrome://dactyl/skin/dactyl.css");
         styles.system.add("font-size", "chrome://dactyl/content/buffer.xhtml",
                           "body { font-size: " + fontSize + "; }");

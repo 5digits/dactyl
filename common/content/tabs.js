@@ -973,6 +973,8 @@ var Tabs = Module("tabs", {
                     }
                     if (value !== "multitab" || !dactyl.has("Gecko2"))
                         config.tabStrip.collapsed = false;
+                    if (config.tabbrowser.tabContainer._positionPinnedTabs)
+                        config.tabbrowser.tabContainer._positionPinnedTabs();
                     return value;
                 },
                 completer: function (context) [

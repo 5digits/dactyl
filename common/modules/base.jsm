@@ -333,9 +333,13 @@ function keys(obj) {
  * @returns {Generator}
  */
 function values(obj) {
-    for (var k in obj)
-        if (hasOwnProperty.call(obj, k))
-            yield obj[k];
+    if (isinstance(obj, ["Generator", "Iterator"]))
+        for (let k in obj)
+            yield k;
+    else
+        for (var k in obj)
+            if (hasOwnProperty.call(obj, k))
+                yield obj[k];
 }
 
 /**
@@ -372,8 +376,8 @@ function iterAll() {
 function set(ary) {
     let obj = {};
     if (ary)
-        for (var i = 0; i < ary.length; i++)
-            obj[ary[i]] = true;
+        for (let val in values(ary))
+            obj[val] = true;
     return obj;
 }
 /**
@@ -456,49 +460,54 @@ set.remove = function (set, key) {
  * @returns {Generator}
  */
 function iter(obj) {
+    let res = Iterator(obj);
     if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;
         if (obj.constructor instanceof ctypes.ArrayType)
-            return array.iterItems(obj);
-        if (obj.constructor instanceof ctypes.StructType)
-            return (function () {
+            res = array.iterItems(obj);
+        else if (obj.constructor instanceof ctypes.StructType)
+            res = (function () {
                 for (let prop in values(obj.constructor.fields))
                     yield let ([name, type] = Iterator(prop).next()) [name, obj[name]];
             })();
-        obj = {};
+        else
+            return iter({});
     }
-    if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
-        return array.iterItems(obj);
-    if (obj instanceof Ci.nsIDOMNamedNodeMap)
-        return (function () {
+    else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
+        res = array.iterItems(obj);
+    else if (obj instanceof Ci.nsIDOMNamedNodeMap)
+        res = (function () {
             for (let i = 0; i < obj.length; i++)
                 yield [obj.name, obj];
         })();
-    if (obj instanceof Ci.mozIStorageStatement)
-        return (function (obj) {
+    else if (obj instanceof Ci.mozIStorageStatement)
+        res = (function (obj) {
             while (obj.executeStep())
                 yield obj.row;
             obj.reset();
         })(obj);
-    if ("getNext" in obj) {
+    else if ("getNext" in obj) {
         if ("hasMoreElements" in obj)
-            return (function () {
+            res = (function () {
                 while (obj.hasMoreElements())
                     yield obj.getNext();
             })();
-        if ("hasMore" in obj)
-            return (function () {
+        else if ("hasMore" in obj)
+            res = (function () {
                 while (obj.hasMore())
                     yield obj.getNext();
             })();
     }
-    if ("enumerator" in obj) {
+    else if ("enumerator" in obj) {
         if (callable(obj.enumerator))
             return iter(obj.enumerator());
         return iter(obj.enumerator);
     }
-    return Iterator(obj);
+    res.__noSuchMethod__ = function __noSuchMethod__(meth, args)
+        let (ary = array(this))
+            ary[meth] ? ary[meth].apply(ary, args) : ary.__noSuchMethod__(meth, args);
+    return res;
 }
 
 /**

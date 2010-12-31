@@ -601,7 +601,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (context && context.INFO instanceof XML) {
                     let info = context.INFO;
                     if (info.*.@lang.length()) {
-                        let langs = set([String(a) for each (a in info.*.@lang)]);
+                        let langs = set(String(a) for each (a in info.*.@lang));
                         let lang = [window.navigator.language,
                                     window.navigator.language.replace(/-.*/, ""),
                                     "en", "en-US", info.*.@lang[0]
@@ -1477,7 +1477,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function () { dactyl.quit(true); });
     },
 
-    commands: function (_dactyl, _modules, _window) {
+    commands: function () {
         commands.add(["addo[ns]"],
             "Manage available Extensions and Themes",
             function () {
@@ -1667,7 +1667,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         addon.userDisabled = false;
                     });
                 },
-                filter: function ({ item }) !item.userDisabled,
+                get filter() {
+                    let ids = set(keys(JSON.parse(prefs.get("extensions.bootstrappedAddons", "{}"))));
+                    return function ({ item }) !item.userDisabled && set.has(ids, item.id);
+                },
                 perm: "disable"
             },
             {

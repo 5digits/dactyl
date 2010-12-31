@@ -318,13 +318,15 @@ var Command = Class("Command", {
 }, {
     bindMacro: function (args, default_, params) {
         let process = util.identity;
-        let makeParams = function makeParams()
-            let (args = arguments)
-                params.map(function (name, i) [name, process(args[i])]).toObject();
+
         if (callable(params))
-            makeParams = function makeParams(args) array(Iterator(params.apply(this, arguments))).map(function ([k, v]) [k, process(v)]).toObject();
+            function makeParams(self, args)
+                array.toObject([[k, process(v)]
+                                for ([k, v] in iter(params.apply(this, args)))])
         else if (params)
-            params = array(params);
+            function makeParams(self, args)
+                array.toObject([[name, process(args[i])]
+                                for ([i, name] in Iterator(params))]);
 
         let rhs = args.literalArg;
         let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce(function (a, b) args[b] ? b : a, default_);
@@ -335,18 +337,19 @@ var Command = Class("Command", {
         case "-keys":
             let silent = args["-silent"];
             rhs = events.canonicalKeys(rhs, true);
-            var action = function action(args) events.feedkeys(action.macro(args), noremap, silent);
+            var action = function action() events.feedkeys(action.macro(makeParams(this, arguments)),
+                                                           noremap, silent);
             action.macro = util.compileMacro(rhs, true);
             break;
         case "-ex":
-            action = function action() commands.execute(action.macro, makeParams.apply(this, arguments),
+            action = function action() commands.execute(action.macro, makeParams(this, arguments),
                                                         false, null, action.sourcing);
             action.macro = util.compileMacro(rhs, true);
             action.sourcing = io.sourcing && update({}, io.sourcing);
             break;
         case "-javascript":
             if (callable(params))
-                action = dactyl.userEval("(function action() { with (action.makeParams.apply(this, arguments)) {" + args.literalArg + "} })");
+                action = dactyl.userEval("(function action() { with (action.makeParams(this, arguments)) {" + args.literalArg + "} })");
             else
                 action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
             process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
