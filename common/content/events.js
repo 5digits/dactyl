@@ -807,7 +807,7 @@ var Events = Module("events", {
                 return;
             }
 
-            if (Events.isInputElem(elem)) {
+            if (Events.isInputElement(elem)) {
                 if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
                     modes.push(modes.INSERT);
 
@@ -981,7 +981,7 @@ var Events = Module("events", {
             !modes.passThrough && shouldPass())
             return;
 
-        if (!Events.isInputElemFocused())
+        if (!Events.isInputElementFocused())
             event.stopPropagation();
     },
 
@@ -1186,7 +1186,7 @@ var Events = Module("events", {
         let (key = isString(event) ? event : events.toString(event))
             key === "<Esc>" || key === "<C-[>",
 
-    isInputElem: function isInputElem(elem) {
+    isInputElement: function isInputElement(elem) {
         return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
                isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
                                  HTMLObjectElement, HTMLSelectElement,
@@ -1195,7 +1195,7 @@ var Events = Module("events", {
                elem instanceof Window && Editor.getEditor(elem);
     },
 
-    isInputElemFocused: function isInputElemFocused() this.isInputElem(dactyl.focusedElement)
+    isInputElementFocused: function isInputElementFocused() this.isInputElement(dactyl.focusedElement)
 
 }, {
     commands: function () {
