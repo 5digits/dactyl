@@ -301,7 +301,9 @@ var Buffer = Module("buffer", {
                 uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
 
             util.timeout(function () {
-                buffer._triggerLoadAutocmd("LocationChange", webProgress.DOMWindow ? webProgress.DOMWindow.document : content.document, uri);
+                buffer._triggerLoadAutocmd("LocationChange",
+                                           (webProgress.DOMWindow || content).document,
+                                           uri);
             });
 
             // if this is not delayed we get the position of the old buffer

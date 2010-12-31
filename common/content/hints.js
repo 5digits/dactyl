@@ -900,6 +900,7 @@ var Hints = Module("hints", {
      * @param {Event} event The event to handle.
      */
     onEvent: function onEvent(event) {
+        const KILL = false, PASS = true;
         let key = events.toString(event);
 
         this.clearTimeout();
@@ -918,7 +919,7 @@ var Hints = Module("hints", {
             this._updateStatusline();
 
             if (!this._canUpdate)
-                return;
+                return PASS;
 
             if (this._docs.length == 0) {
                 this._generate();
@@ -929,10 +930,10 @@ var Hints = Module("hints", {
             dactyl.assert(this._hintNumber != 0);
 
             this._checkUnique();
-            return false;
+            return KILL;
         }
 
-        return !Events.isEscape(key);
+        return Events.isEscape(key) ? KILL : PASS;
     }
     //}}}
 }, {

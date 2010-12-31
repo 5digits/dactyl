@@ -1091,6 +1091,7 @@ var Events = Module("events", {
         },
 
         onKeyPress: function onKeyPress(event) {
+            const KILL = true, PASS = false, WAIT = null;
             const self = this;
 
             let key = events.toString(event);
@@ -1101,7 +1102,7 @@ var Events = Module("events", {
             function execute(map) {
                 if (self.preExecute)
                     self.preExecute.apply(self, arguments);
-                let res = map.execute.apply(map, Array.slice(arguments, 1))
+                let res = map.execute.apply(map, Array.slice(arguments, 1));
                 if (self.postExecute) // To do: get rid of this.
                     self.postExecute.apply(self, arguments);
                 return res;
@@ -1121,7 +1122,7 @@ var Events = Module("events", {
                 if (!this.main.count)
                     return this.append(event);
                 else if (this.main.input)
-                    return false;
+                    return PASS;
                 else
                     this.append(event);
             }
@@ -1129,7 +1130,7 @@ var Events = Module("events", {
                 let [map, command] = this.pendingArgMap;
                 if (!Events.isEscape(key))
                     execute(map, null, this.count, key, command);
-                return true;
+                return KILL;
             }
             else if (map && !event.skipmap && candidates.length == 0) {
                 this.pendingMap = null;
@@ -1148,7 +1149,7 @@ var Events = Module("events", {
                     let [map, command] = this.pendingMotionMap;
                     if (!Events.isEscape(key))
                         execute(map, command, this.motionCount || this.count, null, command);
-                    return true;
+                    return KILL;
                 }
                 else if (map.motion) {
                     this.buffer = "";
@@ -1156,9 +1157,9 @@ var Events = Module("events", {
                 }
                 else {
                     if (modes.replaying && !events.waitForPageLoad())
-                        return true;
+                        return KILL;
 
-                    return !execute(map, null, this.count, null, command) || !map.route;
+                    return execute(map, null, this.count, null, command) && map.route ? PASS : KILL;
                 }
             }
             else if (mappings.getCandidates(this.main, command).length > 0 && !event.skipmap) {
@@ -1169,7 +1170,7 @@ var Events = Module("events", {
                 this.append(event);
                 return this.events;
             }
-            return null;
+            return WAIT;
         }
     }),
 

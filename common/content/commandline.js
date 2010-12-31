@@ -922,6 +922,8 @@ var CommandLine = Module("commandline", {
      * @private
      */
     onEvent: function onEvent(event) {
+        const KILL = false, PASS = true;
+
         try {
             let command = this.command;
 
@@ -946,7 +948,7 @@ var CommandLine = Module("commandline", {
                 if (this._completions)
                     this._completions.previewClear();
                 if (!this.currentExtendedMode)
-                    return !Events.isEscape(event);
+                    return Events.isEscape(event) ? KILL : PASS;
 
                 // user pressed <Enter> to carry out a command
                 // user pressing <Esc> is handled in the global onEscape
@@ -986,7 +988,7 @@ var CommandLine = Module("commandline", {
                     }
                 }
                 // allow this event to be handled by the host app
-                return !Events.isEscape(event);
+                return Events.isEscape(event) ? KILL : PASS;
             }
             else if (event.type == "keyup") {
                 let key = events.toString(event);
@@ -997,7 +999,7 @@ var CommandLine = Module("commandline", {
         catch (e) {
             dactyl.reportError(e, true);
         }
-        return true;
+        return PASS;
     },
 
     /**
@@ -1007,6 +1009,8 @@ var CommandLine = Module("commandline", {
      * @param {Event} event
      */
     onMultilineInputEvent: function onMultilineInputEvent(event) {
+        const KILL = false, PASS = true;
+
         if (event.type == "keypress") {
             let key = events.toString(event);
             if (events.isAcceptKey(key)) {
@@ -1029,7 +1033,7 @@ var CommandLine = Module("commandline", {
         }
         else if (event.type == "input")
             this._autosizeMultilineInputWidget();
-        return true;
+        return PASS;
     },
 
     /**
@@ -1042,6 +1046,8 @@ var CommandLine = Module("commandline", {
     // FIXME: if 'more' is set and the MOW is not scrollable we should still
     // allow a down motion after an up rather than closing
     onMultilineOutputEvent: function onMultilineOutputEvent(event) {
+        const KILL = false, PASS = true;
+
         let win = this.widgets.multilineOutput.contentWindow;
         let elem = win.document.documentElement;
 
@@ -1059,7 +1065,7 @@ var CommandLine = Module("commandline", {
                 event.preventDefault();
                 return dactyl.withSavedValues(["forceNewTab"], function () {
                     dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
-                    dactyl.commands[command](event);
+                    return dactyl.commands[command](event);
                 });
             }
 
@@ -1067,26 +1073,26 @@ var CommandLine = Module("commandline", {
             case "<LeftMouse>":
                 event.preventDefault();
                 openLink(dactyl.CURRENT_TAB);
-                return false;
+                return KILL;
             case "<MiddleMouse>":
             case "<C-LeftMouse>":
             case "<C-M-LeftMouse>":
                 openLink({ where: dactyl.NEW_TAB, background: true });
-                return false;
+                return KILL;
             case "<S-MiddleMouse>":
             case "<C-S-LeftMouse>":
             case "<C-M-S-LeftMouse>":
                 openLink({ where: dactyl.NEW_TAB, background: false });
-                return false;
+                return KILL;
             case "<S-LeftMouse>":
                 openLink(dactyl.NEW_WINDOW);
-                return false;
+                return KILL;
             }
-            return true;
+            return PASS;
         }
 
         if (event instanceof MouseEvent)
-            return false;
+            return KILL;
 
         function atEnd(dir) !Buffer.isScrollable(elem, dir || 1);
 
@@ -1096,6 +1102,7 @@ var CommandLine = Module("commandline", {
         }
         else
             commandline.updateMorePrompt(false, true);
+        return PASS;
     },
 
     getSpaceNeeded: function getSpaceNeeded() {
