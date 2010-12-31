@@ -4,6 +4,13 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+function reportError(e) {
+    dump("dactyl: components: " + e + "\n" + (e.stack || Error().stack));
+    Cu.reportError(e);
+}
+
+try {
+
 var global = this;
 var Cc = Components.classes;
 var Ci = Components.interfaces;
@@ -52,5 +59,7 @@ if (XPCOMUtils.generateNSGetFactory)
 else
     var NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
 var EXPORTED_SYMBOLS = ["NSGetFactory", "global"];
+
+} catch (e) { reportError(e) }
 
 // vim: set fdm=marker sw=4 ts=4 et:
