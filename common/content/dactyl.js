@@ -1040,8 +1040,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     });
 
                 case dactyl.NEW_WINDOW:
-                    window.open();
-                    let win = services.windowMediator.getMostRecentWindow("navigator:browser");
+                    var handler = Cc['@mozilla.org/browser/clh;1'].getService(Ci.nsIBrowserHandler);
+                    let win = window.openDialog(document.documentURI, "_blank", "chrome,all,dialog=no",
+                                                handler.defaultArgs);
                     win.loadURI(url, null, postdata);
                     browser = win.getBrowser();
                     return win.content;
