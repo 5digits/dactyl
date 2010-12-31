@@ -367,7 +367,7 @@ var Modes = Module("modes", {
     get extended() this._extended,
     set extended(value) { this.set(null, value); }
 }, {
-    Mode: Class("Mode", Number, {
+    Mode: Class("Mode", {
         init: function init(name, options, params) {
             update(this, {
                 id: 1 << Modes.Mode._id++,
