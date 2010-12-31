@@ -497,6 +497,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         util.dump((arguments.length == 0 ? "Stack" : msg) + "\n" + stack + "\n");
     },
 
+    /**
+     * The set of input element type attribute values that mark the element as
+     * an editable field.
+     */
     editableInputs: set(["date", "datetime", "datetime-local", "email", "file",
                          "month", "number", "password", "range", "search",
                          "tel", "text", "time", "url", "week"]),
