@@ -108,7 +108,7 @@ var Modes = Module("modes", {
             hidden: true,
             description: "Quote mode: The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
-                ? (modes.getStack(2).main.display() || modes.getStack(2).mainMode.name) + " (next)"
+                ? (modes.getStack(2).main.display() || modes.getStack(2).main.name) + " (next)"
                 : "PASS THROUGH (next)"
         }, {
             // Fix me.

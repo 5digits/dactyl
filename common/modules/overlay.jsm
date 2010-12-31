@@ -209,7 +209,6 @@ var Overlay = Module("Overlay", {
                         }
                     }
                 }
-                defineModule.modules.map(init);
 
                 function load(module, prereq, frame) {
                     if (isString(module)) {
@@ -245,6 +244,8 @@ var Overlay = Module("Overlay", {
                     }
                     return modules[module.className];
                 }
+
+                defineModule.modules.map(init);
 
                 Module.list.forEach(load);
                 deferredInit["load"].forEach(call);

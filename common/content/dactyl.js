@@ -64,6 +64,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         mod.destroy();
                 }
             }
+
             for (let name in values(Object.getOwnPropertyNames(modules).reverse()))
                 try {
                     delete modules[name];

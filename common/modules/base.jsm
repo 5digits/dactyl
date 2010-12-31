@@ -613,10 +613,10 @@ function call(fn) {
  * value of the property.
  */
 function memoize(obj, key, getter) {
-    obj.__defineGetter__(key, function replace() (
+    obj.__defineGetter__(key, function g_replaceProperty() (
         Class.replaceProperty(this.instance || this, key, null),
         Class.replaceProperty(this.instance || this, key, getter.call(this, key))));
-    obj.__defineSetter__(key, function replace(val)
+    obj.__defineSetter__(key, function s_replaceProperty(val)
         Class.replaceProperty(this.instance || this, key, val));
 }
 
