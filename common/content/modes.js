@@ -123,7 +123,8 @@ var Modes = Module("modes", {
         // this._extended modes, can include multiple modes, and even main modes
         this.addMode("EX", {
             extended: true,
-            description: "Ex command mode, active when the command line is open for Ex commands"
+            description: "Ex command mode, active when the command line is open for Ex commands",
+            input: true
         });
         this.addMode("HINTS", {
             extended: true,
@@ -133,7 +134,8 @@ var Modes = Module("modes", {
         });
         this.addMode("INPUT_MULTILINE", {
             extended: true,
-            hidden: true
+            hidden: true,
+            input: true
         });
         this.addMode("MENU", {
             extended: true,
@@ -144,7 +146,8 @@ var Modes = Module("modes", {
         }); // linewise visual mode
         this.addMode("PROMPT", {
             extended: true,
-            description: "Prompt mode, active when a prompt is open in the command line"
+            description: "Prompt mode, active when a prompt is open in the command line",
+            input: true
         });
 
         this.push(this.NORMAL, 0, {
