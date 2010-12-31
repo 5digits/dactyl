@@ -351,8 +351,7 @@ var ConfigBase = Class("ConfigBase", {
         Bell          background-color: black !important;
 
         Hint;;*;FontFixed {
-            font-size: 10px        !important;
-            font-weight: bold      !important;
+            font-weight: bold !important;
             background-color: red;
             color:            white;
             padding: 0px 1px;

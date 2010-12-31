@@ -359,7 +359,7 @@ var Styles = Module("Styles", {
         ]]>, "gi",
         {
             space: /(?: \s | \/\* .*? \*\/ )/,
-            string: /(?:"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)*(?:'|$))/
+            string: /(?:" (?:[^\\"]|\\.)* (?:"|$) | '(?:[^\\']|\\.)* (?:'|$) )/
         })
 }, {
     commands: function (dactyl, modules, window) {

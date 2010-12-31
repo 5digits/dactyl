@@ -96,7 +96,7 @@ var Template = Module("Template", {
         let tag = (/^'.*'$/.test(topic) ? "o" :
                    /^:\w/.test(topic)   ? "ex"  : "k");
         topic = topic.replace(/^'(.*)'$/, "$1");
-        return <{tag}  xmlns={NS}>{topic}</{tag}>
+        return <{tag} xmlns={NS}>{topic}</{tag}>
     },
 
     // if "processStrings" is true, any passed strings will be surrounded by " and

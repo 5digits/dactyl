@@ -25,12 +25,15 @@ services.subscriptLoader.loadSubScript("chrome://browser/content/sanitize.js", t
 tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
 var Range = Struct("min", "max");
-Range.prototype.contains = function (date)
-    date == null || (this.min == null || date >= this.min) && (this.max == null || date <= this.max);
-Range.prototype.__defineGetter__("isEternity", function () this.max == null && this.min == null);
-Range.prototype.__defineGetter__("isSession", function () this.max == null && this.min == sanitizer.sessionStart);
-Range.prototype.__defineGetter__("native", function ()
-    this.isEternity ? null : [range.min || 0, range.max == null ? Number.MAX_VALUE : range.max]);
+update(Range.prototype, {
+    contains: function (date) date == null ||
+        (this.min == null || date >= this.min) && (this.max == null || date <= this.max),
+
+    get isEternity() this.max == null && this.min == null,
+    get isSession() this.max == null && this.min == sanitizer.sessionStart,
+
+    get native() this.isEternity ? null : [range.min || 0, range.max == null ? Number.MAX_VALUE : range.max]
+});
 
 var Item = Class("Item", {
     init: function (name) {

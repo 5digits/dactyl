@@ -322,7 +322,7 @@ var Command = Class("Command", {
         if (callable(params))
             function makeParams(self, args)
                 array.toObject([[k, process(v)]
-                                for ([k, v] in iter(params.apply(this, args)))])
+                                for ([k, v] in iter(params.apply(self, args)))])
         else if (params)
             function makeParams(self, args)
                 array.toObject([[name, process(args[i])]
