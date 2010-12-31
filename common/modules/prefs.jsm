@@ -10,7 +10,7 @@ Components.utils.import("resource://dactyl/base.jsm");
 defineModule("prefs", {
     exports: ["Prefs", "prefs"],
     require: ["services", "util"],
-    use: ["template"]
+    use: ["config", "template"]
 });
 
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
