@@ -7,7 +7,8 @@ BASE          = $(TOP)/../common
 GOOGLE_PROJ   = dactyl
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
 VERSION	     ?= $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
-UUID   	      = $(shell sed -n 's/.*em:id\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
+UUID   	     := $(shell sed -n 's/.*em:id\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
+MANGLE	     := $(shell date | md5sum - | awk '{ print $$1 }')
 
 LOCALEDIR     = locale
 DOC_FILES     = $(wildcard $(LOCALEDIR)/*/*.xml)
@@ -17,16 +18,16 @@ MAKE_JAR      = sh $(BASE)/make_jar.sh
 
 # TODO: specify source files manually?
 JAR_BASES     = $(TOP) $(BASE)
-JAR_DIRS      = content skin locale
-JAR_TEXTS     = js css dtd xml xul html xhtml xsl
+JAR_DIRS      = content skin locale modules
+JAR_TEXTS     = js jsm css dtd xml xul html xhtml xsl
 JAR_BINS      = png
 
-CHROME	      = chrome/
+CHROME	      = $(MANGLE)/
 JAR           = $(CHROME)$(NAME).jar
 
 XPI_BASES     = $(JAR_BASES) $(TOP)/..
 XPI_FILES     = bootstrap.js install.rdf TODO AUTHORS Donors NEWS LICENSE.txt
-XPI_DIRS      = modules components chrome defaults
+XPI_DIRS      = components $(MANGLE) defaults
 XPI_TEXTS     = js jsm $(JAR_TEXTS)
 XPI_BINS      = $(JAR_BINS)
 
@@ -43,7 +44,7 @@ AWK       ?= awk
 B64ENCODE ?= base64
 CURL      ?= curl
 
-.SILENT:
+#.SILENT:
 
 #### rules
 
@@ -161,8 +162,13 @@ distclean:
 $(XPI): $(CHROME)
 	@echo "Building XPI..."
 	mkdir -p $(XPI_PATH)
-	$(AWK) -v 'name=$(NAME)' -f $(BASE)/process_manifest.awk $(TOP)/chrome.manifest >$(XPI_PATH)/chrome.manifest
+
+	$(AWK) -v 'name=$(NAME)' -v 'chrome=$(MANGLE)' \
+	       -f $(BASE)/process_manifest.awk \
+	       $(TOP)/chrome.manifest >$(XPI_PATH)/chrome.manifest
+
 	$(MAKE_JAR) "$(XPI)" "$(XPI_BASES)" "$(XPI_DIRS)" "$(XPI_TEXTS)" "$(XPI_BINS)" "$(XPI_FILES)"
+	rm -r -- $(CHROME)
 	@echo "Built XPI: $@"
 
 #### jar

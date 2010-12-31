@@ -5,7 +5,7 @@
 "use strict";
 
 function reportError(e) {
-    dump("dactyl: components: " + e + "\n" + (e.stack || Error().stack));
+    dump("dactyl: protocols: " + e + "\n" + (e.stack || Error().stack));
     Cu.reportError(e);
 }
 

@@ -99,6 +99,7 @@ FactoryProxy.prototype = {
     },
     get module() {
         try {
+            dump("dactyl: bootstrap: create module: " + this.contractID + "\n");
             Object.defineProperty(this, "module", { value: {}, enumerable: true });
             JSMLoader.load(this.url, this.module);
             JSMLoader.registerGlobal(this.url, this.module.global);

@@ -14,8 +14,8 @@ overlay  chrome://songbird/content/xul/layoutBaseOverlay.xul chrome://melodactyl
 overlay  chrome://songbird/content/xul/layoutBaseOverlay.xul chrome://dactyl/content/dactyl.xul
 
 #component {16dc34f7-6d22-4aa4-a67f-2921fb5dcb69} components/commandline-handler.js
-#contract  @mozilla.org/commandlinehandler/general-startup;1?type=melodactyl {16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}
-#category  command-line-handler m-melodactyl @mozilla.org/commandlinehandler/general-startup;1?type=melodactyl
+#contract  @mozilla.org/commandlinehandler/general-startup;1?type=dactyl {16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}
+#category  command-line-handler m-dactyl @mozilla.org/commandlinehandler/general-startup;1?type=dactyl
 #
 #component {c1b67a07-18f7-4e13-b361-2edcc35a5a0d}	   components/protocols.js
 #contract  @mozilla.org/network/protocol;1?name=chrome-data {c1b67a07-18f7-4e13-b361-2edcc35a5a0d}

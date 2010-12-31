@@ -45,8 +45,8 @@ copytext() {
     sed -e "s,@VERSION@,$VERSION,g" \
         -e "s,@DATE@,$BUILD_DATE,g" \
         <"$1" >"$2"
-    cmp -s "$1" "$2" ||
-    ( echo "modified: $1"; diff -u "$1" "$2" | grep '^[-+][^-+]' )
+    cmp -s -- "$1" "$2" ||
+    ( echo "modified: $1"; diff -u -- "$1" "$2" | grep '^[-+][^-+]' )
 }
 
 [ -e "$top/$jar" ] && rm -rf "$top/$jar"
@@ -62,7 +62,7 @@ do
             for f in $(getfiles "$bin" "$dir")
             do
                 mkdir -p "$stage/${f%/*}"
-                cp $f "$stage/$f"
+                cp -- $f "$stage/$f"
             done
             for f in $(getfiles "$text" "$dir")
             do
@@ -82,8 +82,8 @@ done
     set -e;
     cd $stage;
     case $jar in
-    (*/) if [ "$stage" != "$top/$jar" ]; then mv * $top/$jar; fi;;
-    (*)  zip -9r "$top/$jar" *;;
+    (*/) if [ "$stage" != "$top/$jar" ]; then mv -- * $top/$jar; fi;;
+    (*)  zip -9r "$top/$jar" -- *;;
     esac
 ) || exit 1
 

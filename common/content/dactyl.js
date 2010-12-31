@@ -2108,9 +2108,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         prefs.set("extensions.dactyl.version", util.addon.version);
 
-        if (!services.commandLineHandler)
-            services.add("commandLineHandler", "@mozilla.org/commandlinehandler/general-startup;1?type=" + config.name);
-
         try {
             if (services.fuel)
                 var args = services.fuel.storage.get("dactyl.commandlineArgs", null);
