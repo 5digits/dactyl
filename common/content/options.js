@@ -984,10 +984,12 @@ var Options = Module("options", {
                 if (filter[filter.length - 1] == "=") {
                     context.advance(filter.length);
                     filter = filter.substr(0, filter.length - 1);
+
+                    context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
                     context.completions = [
                             [prefs.get(filter), "Current Value"],
                             [prefs.getDefault(filter), "Default Value"]
-                    ].filter(function (k) k[0] != null && String(k[0]).length < 200);
+                    ].filter(function (k) k[0] != null);
                     return null;
                 }
 
@@ -1017,10 +1019,11 @@ var Options = Module("options", {
             if (!opt.value && !opt.operator && !opt.invert) {
                 context.fork("default", 0, this, function (context) {
                     context.title = ["Extra Completions"];
+                    context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
                     context.completions = [
                             [option.stringValue, "Current value"],
                             [option.stringDefaultValue, "Default value"]
-                    ].filter(function (f) f[0] !== "" && String(f[0]).length < 200);
+                    ].filter(function (f) f[0] !== "");
                     context.quote = ["", util.identity, ""];
                 });
             }
