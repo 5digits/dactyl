@@ -250,7 +250,7 @@ var Overlay = Module("Overlay", {
                 deferredInit["load"].forEach(call);
                 modules.times = update({}, defineModule.times);
 
-                util.dump("Loaded in " + (Date.now() - start) + "ms");
+                defineModule.loadLog.push("Loaded in " + (Date.now() - start) + "ms");
 
                 modules.events.addSessionListener(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);

@@ -932,7 +932,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     observe: {
         "dactyl-cleanup-modules": function () {
-            util.dump("dactyl: util: observe: dactyl-cleanup-modules");
+            defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules");
 
             for (let module in values(defineModule.modules))
                 if (module.cleanup) {
@@ -945,12 +945,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         "dactyl-rehash": function () {
             services.observer.removeObserver(this, "dactyl-rehash");
 
-            util.dump("dactyl: util: observe: dactyl-rehash");
+            defineModule.loadLog.push("dactyl: util: observe: dactyl-rehash");
             if (this.rehashing)
                 JSMLoader.purge();
             else
                 for (let module in values(defineModule.modules)) {
-                    util.dump("dactyl: util: init(" + module + ")");
+                    defineModule.loadLog.push("dactyl: util: init(" + module + ")");
                     if (module.reinit)
                         module.reinit();
                     else
@@ -974,7 +974,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!window.dactylOverlays)
             window.dactylOverlays = [];
 
-        util.dump("load overlays", window.document.documentURI);
+        defineModule.loadLog.push("load overlays " + window.document.documentURI);
 
         for each (let obj in util.overlays[window.document.documentURI] || []) {
             if (window.dactylOverlays.indexOf(obj) >= 0)
@@ -988,7 +988,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!doc.dactylOverlayElements)
             doc.dactylOverlayElements = [];
 
-        util.dump("load overlay", doc.documentURI, String(obj).substr(0, 60));
+        defineModule.loadLog.push("load overlays " + doc.documentURI + " " + String(obj).substr(0, 60));
 
         function overlay(key, fn) {
             if (obj[key]) {

@@ -159,7 +159,11 @@ function defineModule(name, params) {
 
 defineModule.loadLog = [];
 Object.defineProperty(defineModule.loadLog, "push", {
-    value: function (val) { defineModule.dump(val + "\n"); this[this.length] = val; }
+    value: function (val) {
+        if (false)
+            defineModule.dump(val + "\n");
+        this[this.length] = Date.now() + " " + val;
+    }
 });
 defineModule.dump = function dump_() {
     let msg = Array.map(arguments, function (msg) {

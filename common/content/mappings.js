@@ -527,7 +527,6 @@ var Mappings = Module("mappings", {
             return null;
         }
         function uniqueModes(modes) {
-            modes = modes.map(modules.modes.closure.getMode);
             let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
                          if (v.every(function (mode) modes.indexOf(mode) >= 0))];
             return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0).concat(chars));

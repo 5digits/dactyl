@@ -32,10 +32,8 @@ var Abbreviation = Class("Abbreviation", {
     get modeChar() Abbreviation.modeChar(this.modes)
 }, {
     modeChar: function (_modes) {
-        let result = "";
-        for (let [, mode] in Iterator(_modes))
-            result += modes.getMode(mode).char;
-        if (/^(ic|ci)$/(result))
+        let result = array.uniq(_modes.map(function (m) m.char)).join("");
+        if (result == "ci")
             result = "!";
         return result;
     }

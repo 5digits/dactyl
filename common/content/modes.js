@@ -228,10 +228,11 @@ var Modes = Module("modes", {
 
     getStack: function (idx) this._modeStack[this._modeStack.length - idx - 1] || this._modeStack[0],
 
-    getCharModes: function (chr) [m for (m in values(this._modeMap)) if (m.char == chr)],
+    getCharModes: function (chr) (this.modeChars[chr] || []).slice(),
 
     matchModes: function (obj)
-        [m for (m in values(this._modeMap)) if (Object.keys(obj).every(function (k) obj[k] == (m[k] || false)))],
+        this._modes.filter(function (mode) Object.keys(obj)
+                                                 .every(function (k) obj[k] == (mode[k] || false))),
 
     // show the current mode string in the command line
     show: function show() {
