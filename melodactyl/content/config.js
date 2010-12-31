@@ -63,6 +63,14 @@ const Config = Module("config", ConfigBase, {
         Leave: "Triggered before exiting Songbird"
     },
 
+    completers: Class.memoize(function () update({
+        displaypane: "displayPane",
+        playlist: "playlist",
+        mediaview: "mediaView",
+        mediasort: "mediaListSort",
+        song: "song"
+    }, this.__proto__.completers)),
+
     dialogs: {
         about: ["About Songbird",
             function () { window.openDialog("chrome://songbird/content/xul/about.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],

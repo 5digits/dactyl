@@ -610,32 +610,7 @@
             -complete option when defining the command.
         </p>
 
-        <dl>
-            <dt>altstyle</dt>     <dd>alternate author style sheets</dd>
-            <dt>bookmark</dt>     <dd>bookmarks</dd>
-            <dt>buffer</dt>       <dd>buffers</dd>
-            <dt>color</dt>        <dd>color schemes</dd>
-            <dt>command</dt>      <dd>Ex commands</dd>
-            <dt>dialog</dt>       <dd>&dactyl.host; dialogs</dd>
-            <dt>dir</dt>          <dd>directories</dd>
-            <dt>environment</dt>  <dd>environment variables</dd>
-            <dt>event</dt>        <dd>autocommand events</dd>
-            <dt>file</dt>         <dd>files</dd>
-            <dt>help</dt>         <dd>help tags</dd>
-            <dt>highlight</dt>    <dd>highlight groups</dd>
-            <dt>javascript</dt>   <dd>JavaScript expressions</dd>
-            <dt>macro</dt>        <dd>named macros</dd>
-            <dt>mapping</dt>      <dd>user mappings</dd>
-            <dt>menu</dt>         <dd>menu items</dd>
-            <dt>option</dt>       <dd>&dactyl.appName; options</dd>
-            <dt>preference</dt>   <dd>&dactyl.host; preferences</dd>
-            <dt>search</dt>       <dd>search engines and keywords</dd>
-            <dt>shellcmd</dt>     <dd>shell commands</dd>
-            <dt>sidebar</dt>      <dd>sidebar panels</dd>
-            <dt>url</dt>          <dd>URLs</dd>
-            <dt>usercommand</dt>  <dd>user commands</dd>
-            <dt>custom,<a>func</a></dt><dd>custom completion, provided by <a>func</a></dd>
-        </dl>
+        <dl tag=":command-complete-arg-list"/>
 
         <h3 tag="E467 E468 :command-completion-custom">Custom completion</h3>
 

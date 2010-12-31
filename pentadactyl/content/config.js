@@ -126,6 +126,8 @@ var Config = Module("config", ConfigBase, {
         Leave: "Triggered before exiting Firefox"
     },
 
+    completers: Class.memoize(function () update({ sidebar: "sidebar", window: "window" }, this.__proto__.completers)),
+
     defaults: {
         complete: "slf",
         guioptions: "bCrs",

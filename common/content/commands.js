@@ -1264,19 +1264,7 @@ var Commands = Module("commands", {
     },
 
     commands: function () {
-        // TODO: offer completion.ex?
-        //     : make this config specific
-        var completeOptionMap = {
-            abbreviation: "abbreviation", altstyle: "alternateStyleSheet",
-            bookmark: "bookmark", buffer: "buffer", color: "colorScheme",
-            command: "command", dialog: "dialog", dir: "directory",
-            environment: "environment", event: "autocmdEvent", file: "file",
-            help: "help", highlight: "highlightGroup", history: "history",
-            javascript: "javascript", macro: "macro", mapping: "userMapping",
-            menu: "menuItem", option: "option", preference: "preference",
-            search: "search", shellcmd: "shellCommand", sidebar: "sidebar",
-            url: "url", usercommand: "userCommand"
-        };
+        let completerMap = config.completers;
 
         // TODO: Vim allows commands to be defined without {rep} if there are {attr}s
         // specified - useful?
@@ -1288,22 +1276,22 @@ var Commands = Module("commands", {
                 dactyl.assert(!cmd || commands.validName.test(cmd), "E182: Invalid command name");
 
                 if (args.literalArg) {
-                    let completeOpt  = args["-complete"];
-                    let completeFunc = null; // default to no completion for user commands
+                    let completer  = args["-complete"];
+                    let completerFunc = null; // default to no completion for user commands
 
-                    if (completeOpt) {
-                        if (/^custom,/.test(completeOpt)) {
-                            completeOpt = completeOpt.substr(7);
-                            completeFunc = function () {
+                    if (completer) {
+                        if (/^custom,/.test(completer)) {
+                            completer = completer.substr(7);
+                            completerFunc = function () {
                                 try {
-                                    var completer = dactyl.userEval(completeOpt);
+                                    var completer = dactyl.userEval(completer);
 
                                     if (!callable(completer))
-                                        throw new TypeError("User-defined custom completer " + completeOpt.quote() + " is not a function");
+                                        throw new TypeError("User-defined custom completer " + completer.quote() + " is not a function");
                                 }
                                 catch (e) {
                                     dactyl.echo(":" + this.name + " ...");
-                                    dactyl.echoerr("E117: Unknown function: " + completeOpt);
+                                    dactyl.echoerr("E117: Unknown function: " + completer);
                                     dactyl.log(e);
                                     return undefined;
                                 }
@@ -1311,7 +1299,7 @@ var Commands = Module("commands", {
                             };
                         }
                         else
-                            completeFunc = completion.closure[completeOptionMap[completeOpt]];
+                            completerFunc = function (context) completion.closure[completerMap[completer]](context);
                     }
 
                     let added = commands.addUserCommand([cmd],
@@ -1326,7 +1314,7 @@ var Commands = Module("commands", {
                                         argCount: args["-nargs"],
                                         bang: args["-bang"],
                                         count: args["-count"],
-                                        completer: function (context) completeFunc(context),
+                                        completer: completerFunc,
                                         persist: !args["-nopersist"],
                                         replacementText: args.literalArg,
                                         sourcing: io.sourcing && update({}, io.sourcing)
@@ -1338,13 +1326,11 @@ var Commands = Module("commands", {
                 else {
                     function completerToString(completer) {
                         if (completer)
-                            return [k for ([k, v] in Iterator(completeOptionMap)) if (completer == completion.closure[v])][0] || "custom";
+                            return [k for ([k, v] in Iterator(completerMap)) if (completer == completion.closure[v])][0] || "custom";
                         return "";
                     }
 
-                    // TODO: using an array comprehension here generates flakey results across repeated calls
-                    //     : perhaps we shouldn't allow options in a list call but just ignore them for now
-                    //     : No, array comprehensions are fine, generator statements aren't. --Kris
+                    // TODO: perhaps we shouldn't allow options in a list call but just ignore them for now
                     let cmds = commands._exCommands.filter(function (c) c.user && (!cmd || c.name.match("^" + cmd)));
 
                     if (cmds.length > 0)
@@ -1376,9 +1362,9 @@ var Commands = Module("commands", {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],
                         description: "The argument completion function",
-                        completer: function (context) [[k, ""] for ([k, v] in Iterator(completeOptionMap))],
+                        completer: function (context) [[k, ""] for ([k, v] in Iterator(completerMap))],
                         type: CommandOption.STRING,
-                        validator: function (arg) arg in completeOptionMap || /custom,\w+/.test(arg),
+                        validator: function (arg) arg in completerMap || /custom,\w+/.test(arg),
                     }, {
                         names: ["-description", "-desc", "-d"],
                         description: "A user-visible description of the command",

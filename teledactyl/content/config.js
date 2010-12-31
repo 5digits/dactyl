@@ -23,6 +23,8 @@ const Config = Module("config", ConfigBase, {
 
     get browser() getBrowser(),
 
+    completers: Class.memoize(function () update({ mailfolder: "mailFolder" }, this.__proto__.completers)),
+
     dialogs: {
         about: ["About Thunderbird",
             function () { window.openAboutDialog(); }],

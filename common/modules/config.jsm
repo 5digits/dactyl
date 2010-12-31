@@ -99,6 +99,43 @@ var ConfigBase = Class("ConfigBase", {
     commandContainer: "browser-bottombox",
 
     /**
+     * @property {Object} A map of :command-complete option values to completer
+     *     function names.
+     */
+    completers: {
+       abbreviation: "abbreviation",
+       altstyle: "alternateStyleSheet",
+       bookmark: "bookmark",
+       buffer: "buffer",
+       charset: "charset",
+       color: "colorScheme",
+       command: "command",
+       dialog: "dialog",
+       dir: "directory",
+       environment: "environment",
+       event: "autocmdEvent",
+       extension: "extension",
+       file: "file",
+       help: "help",
+       highlight: "highlightGroup",
+       history: "history",
+       javascript: "javascript",
+       macro: "macro",
+       mapping: "userMapping",
+       mark: "mark",
+       menu: "menuItem",
+       option: "option",
+       preference: "preference",
+       qmark: "quickmark",
+       runtime: "runtime",
+       search: "search",
+       shellcmd: "shellCommand",
+       toolbar: "toolbar",
+       url: "url",
+       usercommand: "userCommand"
+    },
+
+    /**
      * @property {Object} Application specific defaults for option values. The
      *     property names must be the options' canonical names, and the values
      *     must be strings as entered via :set.
