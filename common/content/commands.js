@@ -1087,12 +1087,15 @@ var Commands = Module("commands", {
         str.replace(/\s*".*$/, "");
 
         let matches = this.commandRegexp.exec(str);
-        if (!matches || !matches[4])
+        if (!matches)
             return [];
 
         let [, spec, prespace, count, cmd, bang, space, args] = matches;
-        if (/\w/.test(cmd) && args && !(space || args[0] == "|"))
-            args = null;
+        if (!cmd && bang)
+            [cmd, bang] = [bang, cmd];
+
+        if (!cmd || args && args[0] != "|" && !(space || cmd == "!"))
+            return [];
 
         // parse count
         if (count)
