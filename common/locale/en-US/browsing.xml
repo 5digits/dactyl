@@ -369,7 +369,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
             to test your changes.
         </p>
         <p>
-            Any arguments supplied are parsed as command line arguments as
+            Any arguments supplied are parsed as command-line arguments as
             specified in <t>startup-options</t>.
         </p>
         <warning>

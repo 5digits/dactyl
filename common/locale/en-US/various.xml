@@ -365,7 +365,7 @@
     <spec>&lt;Esc></spec>
     <description>
         <p>
-            Exits <t>command-line</t>, Insert, or Hints mode and returns to
+            Exits <t>Command-line</t>, Insert, or Hints mode and returns to
             Normal mode. Focuses the content web page.
         </p>
     </description>

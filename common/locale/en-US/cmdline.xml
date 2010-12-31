@@ -46,7 +46,7 @@
     </description>
 </item>
 
-<h2 tag="cmdline-editing">Command line editing</h2>
+<h2 tag="cmdline-editing">Command-line editing</h2>
 
 <item>
     <tags><![CDATA[c_<C-i>]]></tags>
@@ -161,7 +161,6 @@
     </description>
 </item>
 
-
 <h2 tag="cmdline-lines">Ex command lines</h2>
 
 <item>
@@ -175,7 +174,7 @@
             it with a backslash. E.g.
             <code><ex>:map \|</ex> <ex>:echo <str>bar</str></ex><k name="CR"/></code>
 
-            Several commands process the entire command line string literally.
+            Several commands process the entire command-line string literally.
             These commands will include any <em>|</em> as part of their
             argument string and so cannot be followed by another command. The
             list of these commands is:
@@ -227,7 +226,7 @@
     </description>
 </item>
 
-<h3 tag="cmdline-arguments">Ex command line arguments</h3>
+<h3 tag="cmdline-arguments">Ex command-line arguments</h3>
 
 <p>
     Most Ex commands accept a number of options and arguments. Arguments and

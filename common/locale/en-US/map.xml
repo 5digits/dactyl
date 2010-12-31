@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
 <!DOCTYPE document SYSTEM "chrome://dactyl/content/help.dtd">
@@ -114,7 +114,7 @@
 
     <dt>-builtin</dt> <dd>Execute this mapping as if there were no user-defined mappings (short name <em>-b</em>)</dd>
     <dt>-count</dt> <dd>Accept a count before the requisite key press (short name <em>-c</em>)</dd>
-    <dt>-descripion</dt> <dd>A description of this mapping (short name <em>-d</em>)</dd>
+    <dt>-description</dt> <dd>A description of this mapping (short name <em>-d</em>)</dd>
     <dt>-ex</dt> <dd>Execute <a>rhs</a> as an Ex command rather than keys (short name <em>-e</em>)</dd>
     <dt>-javascript</dt> <dd>Execute <a>rhs</a> as JavaScript rather than keys (short names <em>-js</em>, <em>-j</em>)</dd>
     <dt>-modes</dt> <dd>Create this mapping in the given modes (short names <em>-mode</em>, <em>-m</em>)</dd>
