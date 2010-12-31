@@ -130,8 +130,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     specified in the argument to the host application's -{config.name}
      *     option. E.g. $ firefox -pentadactyl '+u=/tmp/rcfile ++noplugin'
      *     Supported options:
-     *         +u=RCFILE   Use RCFILE instead of .pentadactylrc.
+     *         +u RCFILE   Use RCFILE instead of .pentadactylrc.
      *         ++noplugin  Don't load plugins.
+     *     These two can be specified multiple times:
+     *         ++cmd CMD   Execute an Ex command before initialization.
+     *         +c CMD      Execute an Ex command after initialization.
      */
     commandLineOptions: {
         /** @property Whether plugin loading should be prevented. */
