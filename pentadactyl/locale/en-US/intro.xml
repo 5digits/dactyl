@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<!DOCTYPE overlay SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
-<document
-    name="intro"
-    title="&dactyl.appName; Introduction"
+<overlay
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
-<html:div style="text-align: center; clear: right; margin-bottom: -2.2em; padding-right: 4em;"><logo/></html:div>
-
-<h1 tag="intro">Introduction</h1>
-
-<p>
+<p replace="intro-text">
     <link topic="&dactyl.apphome;">&dactyl.appName;</link> is a
     free browser add-on for &dactyl.host;, designed to make browsing more
     efficient and especially more keyboard accessible. Largely inspired by the
@@ -21,24 +15,7 @@
     and finger feel should be familiar to Vim users.
 </p>
 
-<p tag="first-run">
-    If this is your first time running &dactyl.appName;, you may need some
-    time to adjust to the standard interface, which hides the menu,
-    navigation, and tool bars by default. If you find it uncomfortable to work
-    without them, you can re-enable them by typing
-</p>
-<set opt="guioptions" op="+="><str delim="">mT</str><k name="Return"/></set>
-<p>
-    If you have trouble remembering commands or keyboard shortcuts, you can
-    bring up this help page at any time by typing <ex>:help</ex> or
-    <k name="F1"/>. If you find that you don't like &dactyl.appName; at all,
-    you can disable it by typing <ex>:extdisable <str delim="">&dactyl.appName;</str></ex> or
-    delete it entirely by typing <ex>:extdelete <str delim="">&dactyl.appName;</str></ex>
-</p>
-
-<h2 tag="overview">Help topics</h2>
-
-<ol>
+<ol replace="topics-list">
     <li>
         <link topic="tutorial">Quick-start tutorial</link>:
         A quick-start tutorial for new users.
@@ -135,16 +112,7 @@
     </li>
 </ol>
 
-<p>
-    You can also jump directly to the help of a specific command,
-    key mapping, or topic via the <ex>:help</ex> command.
-</p>
-
-<example><ex>:help :help</ex></example>
-
-<h2 tag="features">Features</h2>
-
-<ul>
+<ul replace="features-list">
     <li>Vim-like keybindings (<k>h</k>, <k>j</k>, <k>gg</k>, <k>ZZ</k>, <k name="C-f"/>, etc.)</li>
     <li>Ex commands (<ex>:quit</ex>, <ex>:open www.foo.com</ex>, …)</li>
     <li>Tab completion for all commands, highly configurable via <o>wildmode</o>, <o>autocomplete</o>, ...</li>
@@ -164,19 +132,6 @@
     <li>A comprehensive help system, explaining all commands, mappings, options, and plugins</li>
 </ul>
 
-<h2 tag="contact">Contact</h2>
-
-<p>
-    Please send comments, questions, or patches to the
-    <link topic="&dactyl.list.href;">mailing list</link>,
-    where we will do our best to answer any inquiries. You can also
-    check the
-    <link topic="http://code.google.com/p/dactyl/wiki">wiki</link> or
-    <link topic="&dactyl.faq;">FAQ</link>.
-    Issue reports can be entered in the
-    <link topic="&dactyl.issues;">issue tracker</link>.
-</p>
-
-</document>
+</overlay>
 
 <!-- vim:se sts=4 sw=4 et: -->

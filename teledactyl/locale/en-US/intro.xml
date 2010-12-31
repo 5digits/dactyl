@@ -1,61 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<!DOCTYPE overlay SYSTEM "chrome://dactyl/content/dactyl.dtd">
 
-<document
-    name="intro"
-    title="&dactyl.appName; Introduction"
-    xmlns="http://vimperator.org/namespaces/liberator"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+<overlay
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
 
-<logo/>
-
-<h1 tag="intro">Introduction</h1>
-
-<p>
-    <link topic="&dactyl.apphome;">&dactyl.appName;</link> is a free
-    browser add-on for &dactyl.host;, which makes it look and behave
-    like the <link topic="http://www.vim.org">Vim</link> text
-    editor. It has similar key bindings, and you could call it a
-    modal web browser, as key bindings differ according to which
-    mode you are in.
+<p replace="intro-text">
+    <link topic="&dactyl.apphome;">&dactyl.appName;</link> is a free mailer
+    add-on for &dactyl.host;, which combines the best features of the
+    <link topic="http://www.mutt.org">Mutt</link> mail client and the
+    <link topic="http://www.vim.org">Vim</link> text editor.
 </p>
 
-<p tag="first-run">
-    If this is your first time running &dactyl.appName;, you may need some
-    time to adjust to the standard interface, which hides the menu,
-    navigation, and tool bars by default. If you find it uncomfortable to work
-    without them, you can re-enable them by typing,
-</p>
-<code><ex>:set</ex> <link topic="'guioptions'"><hl key="HelpOpt">guioptions</hl></link><hl key="HelpEx">+=mT</hl><k name="Return"/></code>
-<p>
-    If you have trouble remembering commands or keyboard shortcuts, you can
-    bring up this help page at any time by typing <ex>:help</ex> or the
-    <k name="F1"/>. If you find that you don't like &dactyl.appName; at all,
-    you can disable it by typing <ex>:extdisable &dactyl.appName;</ex> or
-    delete it entirely by typing <ex>:extdelete &dactyl.appName;</ex>
-</p>
-
-<h2 tag="overview">Help topics</h2>
-
-<ol>
+<!-- TODO: make Teledactyl specific -->
+<ol replace="topics-list">
     <li>
         <link topic="tutorial">Quick-start tutorial</link>:
         A quick-start tutorial for new users.
     </li>
     <li>
         <link topic="starting">Starting &dactyl.appName;</link>:
-        How &dactyl.appName; starts up, where it reads the config file…
+        How &dactyl.appName; starts up, where it reads the config file, etc.
     </li>
     <li>
         <link topic="browsing">Browsing</link>:
-        Basic mappings and commands needed for a browsing session (how to open
-        a web page or go back in history).
+        Basic key mappings and commands needed for a browsing
+        session (how to open a web page, go back in history, etc.)
     </li>
     <li>
         <link topic="buffer">Buffer</link>:
-        Operations on the current document like scrolling or copying text.
+        Operations on the current document (scrolling, copying text,
+        etc.)
     </li>
     <li>
         <link topic="cmdline">Command-line mode</link>:
@@ -82,7 +59,7 @@
         Selecting hyperlinks and other page elements.
     </li>
     <li>
-        <link topic="">Key mappings, abbreviations, and user-defined commands</link>:
+        <link topic="map">Keyboard shortcuts and commands</link>:
         Defining new key mappings, abbreviations and user commands.
     </li>
     <li>
@@ -115,15 +92,19 @@
     </li>
     <li>
         <link topic="message">Error and informational messages</link>:
-        A description of messages and error messages.
+        A description of informational and error messages.
     </li>
     <li>
         <link topic="developer">Developer information</link>:
-        How to write docs or plugins.
+        How to write plugins and documentation.
     </li>
     <li>
         <link topic="various">Various commands</link>:
-        Other help which didn't fit into any other category.
+        Other help which doesn't readily fit into any other category.
+    </li>
+    <li>
+        <link topic="plugins">Plugins</link>:
+        Documentation for any plugins you have installed.
     </li>
     <li>
         <link topic="index">Index</link>:
@@ -131,49 +112,27 @@
     </li>
 </ol>
 
-<p>
-You can also jump directly to the help of a specific command with <ex>:help o</ex>
-or <ex>:help :set</ex>.
-</p>
-
-<h2 tag="features">Features</h2>
-
-<ul>
-    <li>Vim-like keybindings (<k>h</k>, <k>j</k>, <k>k</k>, <k>l</k>, <k>gg</k>, <k>G</k>, <k>0</k>, <k>$</k>, <k>ZZ</k>, <k name="C-f"/>, etc.)</li>
+<!-- TODO: make Teledactyl specific -->
+<ul replace="features-list">
+    <li>Vim-like keybindings (<k>h</k>, <k>j</k>, <k>gg</k>, <k>ZZ</k>, <k name="C-f"/>, etc.)</li>
     <li>Ex commands (<ex>:quit</ex>, <ex>:open www.foo.com</ex>, …)</li>
-    <li>Tab completion available for all commands with support for "longest" matching when set in 'wildmode'</li>
+    <li>Tab completion for all commands, highly configurable via <o>wildmode</o>, <o>autocomplete</o>, ...</li>
     <li>Hit-a-hint like navigation of links (start with <k>f</k> to follow a link)</li>
-    <li>Advanced completion of bookmark and history URLs (searching also in title, not only URL)</li>
-    <li>Vim-like statusline with a Wget-like progress bar</li>
-    <li>Minimal GUI (easily hide useless menubar and toolbar with <ex>:set guioptions=</ex>)</li>
-    <li>Ability to <ex>:source</ex> JavaScript files, and to use a <em>~/.pentadactylrc</em> file with syntax highlighting if you install pentadactyl.vim</li>
-    <li>Easy quick searches (<ex>:open foo</ex> will search for "foo" in google, <ex>:open ebay terminator</ex> will search for "terminator" on ebay) with support for &dactyl.host; keyword bookmarks and search engines</li>
+    <li>Advanced completion of bookmark and history URLs</li>
+    <li>Vim-like status line with a Wget-like progress bar</li>
+    <li>Minimal GUI (easily hide superfluous menubar and toolbar with <se opt="guioptions"/>)</li>
+    <li>Ability to <ex>:source</ex> JavaScript, CSS, and &dactyl.appName; command files</li>
+    <li>Easy quick searches (see <ex>:open</ex>)</li>
     <li>Count supported for many commands (<em>3</em><k name="C-o"/> will go back 3 pages)</li>
-    <li>Beep on errors</li>
-    <li>Marks support (<k>m</k><em>a</em> to set mark a on a web page, <k>'</k><em>a</em> to go there)</li>
-    <li>QuickMarks support (quickly go to previously marked web pages with <k>go</k><a>a-zA-Z0-9</a>)</li>
-    <li><ex>:map</ex> and <ex>:command</ex> support (and feedkeys() for script writers)</li>
-    <li><ex>:time</ex> support for profiling</li>
-    <li>Move the text cursor and select text with Vim keys and a Visual mode</li>
-    <li>External editor support</li>
-    <li>Macros to replay key strokes</li>
+    <li>Visual bell for errors (<o>visualbell</o>)</li>
+    <li>Marks support (<k>m</k><em>a</em> to set mark a, <k>'</k><em>a</em> to jump to it)</li>
+    <li><link topic="quickmarks">QuickMark</link> support</li>
+    <li><ex>:map</ex>, <ex>:command</ex>, <ex>:normal</ex>, and <t>macros</t></li>
+    <li><link topic="i_&lt;C-i>">Editing of text fields</link> with an <link topic="'editor'">external editor</link></li>
     <li>AutoCommands to execute actions on certain events</li>
-    <li>A comprehensive help system, explaining all commands, mappings and options</li>
+    <li>A comprehensive help system, explaining all commands, mappings, options, and plugins</li>
 </ul>
 
-<h2 tag="contact">Contact</h2>
-
-<p>
-    Please send comments, questions, or patches to the
-    <link topic="&dactyl.list.href;">mailing list</link>,
-    where we will do our best to answer any questions. You can also
-    check the
-    <link topic="http://code.google.com/p/dactyl/wiki">wiki</link> for
-    <link topic="http://code.google.com/p/dactyl/wiki/FAQ">FAQ</link>.
-    Issue reports can be entered in the
-    <link topic="&dactyl.issues;>issue tracker</link>.
-</p>
-
-</document>
+</overlay>
 
 <!-- vim:se sts=4 sw=4 et: -->
