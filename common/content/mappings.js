@@ -523,7 +523,7 @@ var Mappings = Module("mappings", {
                 for (let mode in values(modes.all))
                     if (name == mode || name == mode.char
                         || String.toLowerCase(name).replace(/-/g, "_") == mode.name.toLowerCase())
-                        return mode.mask;
+                        return mode;
             return null;
         }
         function uniqueModes(modes) {

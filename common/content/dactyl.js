@@ -2124,7 +2124,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
                 dactyl.commandLineOptions.postCommands = args["+c"];
                 dactyl.commandLineOptions.preCommands = args["++cmd"];
-                util.dump("Processing command-line option: " + commandline);
+                util.dump("Processing command-line option: " + args.string);
             }
         }
         catch (e) {

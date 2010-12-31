@@ -4,6 +4,13 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+function reportError(e) {
+    dump("dactyl: components: " + e + "\n" + (e.stack || Error().stack));
+    Cu.reportError(e);
+}
+
+try {
+
 /* Adds support for data: URIs with chrome privileges
  * and fragment identifiers.
  *
@@ -215,5 +222,7 @@ if (XPCOMUtils.generateNSGetFactory)
 else
     var NSGetModule = XPCOMUtils.generateNSGetModule([AboutHandler, ChromeData, Dactyl, Shim]);
 var EXPORTED_SYMBOLS = ["NSGetFactory", "global"];
+
+} catch (e) { reportError(e) }
 
 // vim: set fdm=marker sw=4 ts=4 et:

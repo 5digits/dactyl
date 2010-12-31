@@ -108,7 +108,7 @@ var Modes = Module("modes", {
             hidden: true,
             description: "Quote mode: The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
-                ? (modes.getStack(2).mainMode.display() || modes.getStack(2).mainMode.name) + " (next)"
+                ? (modes.getStack(2).main.display() || modes.getStack(2).mainMode.name) + " (next)"
                 : "PASS THROUGH (next)"
         }, {
             // Fix me.
@@ -153,7 +153,7 @@ var Modes = Module("modes", {
                     prefs.set("accessibility.browsewithcaret", false);
 
                 statusline.updateUrl();
-                if (!stack.fromFocus && (prev.mainMode.input || prev.mainMode.ownsFocus))
+                if (!stack.fromFocus && (prev.main.input || prev.main.ownsFocus))
                     dactyl.focusContent(true);
                 if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);
@@ -369,17 +369,16 @@ var Modes = Module("modes", {
 }, {
     Mode: Class("Mode", Number, {
         init: function init(name, options, params) {
-            let self = new Number(1 << Modes.Mode._id++);
             update(this, {
-                mask: self,
+                id: 1 << Modes.Mode._id++,
                 name: name,
                 params: params || {}
             }, options);
-            self.__proto__ = this;
-            return self;
         },
 
         toString: function () this.name,
+
+        valueOf: function () this.id,
 
         count: true,
 
@@ -393,21 +392,24 @@ var Modes = Module("modes", {
 
         hidden: false,
 
-        input: false
+        input: false,
+
+        get mask() this
     }, {
         _id: 0
     }),
     StackElement: (function () {
-        let struct = Struct("main", "extended", "params", "saved");
-        struct.defaultValue("params", function () this.main.params);
-        struct.prototype.__defineGetter__("mainMode", function () modes.getMode(this.main));
-        struct.prototype.toString = function () !loaded.modes ? this.main : "[mode " +
-            this.mainMode.name +
-            (!this.extended ? "" :
-             "(" +
-              [modes.getMode(1 << i).name for (i in util.range(0, 32)) if (modes.getMode(1 << i) && (this.extended & (1 << i)))].join("|") +
-             ")") + "]";
-        return struct;
+        const StackElement = Struct("main", "extended", "params", "saved");
+        StackElement.defaultValue("params", function () this.main.params);
+        update(StackElement.prototype, {
+            toString: function () !loaded.modes ? this.main : "[mode " +
+                this.main.name +
+                (!this.extended ? "" :
+                   "(" + modes.all.filter(function (m) this.extended & m)
+                              .join("|") +
+                   ")") + "]"
+        });
+        return StackElement;
     })(),
     cacheId: 0,
     boundProperty: function boundProperty(desc) {

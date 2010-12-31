@@ -18,6 +18,11 @@ const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICa
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication).storage;
 
+function reportError(e) {
+    dump("dactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack));
+    Cu.reportError(e);
+}
+
 function httpGet(url) {
     let xmlhttp = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
     xmlhttp.open("GET", url, false);
@@ -93,10 +98,17 @@ FactoryProxy.prototype = {
         manager.unregisterFactory(this.classID, this);
     },
     get module() {
-        Object.defineProperty(this, "module", { value: {}, enumerable: true });
-        JSMLoader.load(this.url, this.module);
-        JSMLoader.registerGlobal(this.url, this.module.global);
-        return this.module;
+        try {
+            Object.defineProperty(this, "module", { value: {}, enumerable: true });
+            JSMLoader.load(this.url, this.module);
+            JSMLoader.registerGlobal(this.url, this.module.global);
+            return this.module;
+        }
+        catch (e) {
+            delete this.module;
+            reportError(e);
+            throw e;
+        }
     },
     createInstance: function (iids) {
         return let (factory = this.module.NSGetFactory(this.classID))
