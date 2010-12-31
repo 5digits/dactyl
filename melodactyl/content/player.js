@@ -688,7 +688,7 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
             ["z"], "Previous track",
-            function (count) { ex.playerprev({ "#": count }); },
+            function (args) { ex.playerprev({ "#": args.count }); },
             { count: true });
 
         mappings.add([modes.PLAYER],
@@ -697,7 +697,7 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
             ["b"], "Next track",
-            function (count) { ex.playernext({ "#": count }); },
+            function (args) { ex.playernext({ "#": args.count }); },
             { count: true });
 
         mappings.add([modes.PLAYER],
@@ -726,22 +726,22 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
             ["h", "<Left>"], "Seek -10s",
-            function (count) { player.seekBackward(Math.max(1, count) * 10000); },
+            function (args) { player.seekBackward(Math.max(1, args.count) * 10000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
             ["l", "<Right>"], "Seek +10s",
-            function (count) { player.seekForward(Math.max(1, count) * 10000); },
+            function (args) { player.seekForward(Math.max(1, args.count) * 10000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
             ["H", "<S-Left>"], "Seek -1m",
-            function (count) { player.seekBackward(Math.max(1, count) * 60000); },
+            function (args) { player.seekBackward(Math.max(1, args.count) * 60000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
             ["L", "<S-Right>"], "Seek +1m",
-            function (count) { player.seekForward(Math.max(1, count) * 60000); },
+            function (args) { player.seekForward(Math.max(1, args.count) * 60000); },
             { count: true });
 
         mappings.add([modes.PLAYER],
@@ -754,7 +754,7 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
              ["/"], "Search forward for a track",
-             function (args) { commandline.open("/", "", modes.SEARCH_VIEW_FORWARD); });
+             function () { commandline.open("/", "", modes.SEARCH_VIEW_FORWARD); });
 
         mappings.add([modes.PLAYER],
              ["n"], "Find the next track",
