@@ -1006,13 +1006,19 @@ var Options = Module("options", {
             }
 
             let option = opt.option;
-            context.advance(context.filter.indexOf("=") + 1);
-
             if (!option) {
                 context.message = "No such option: " + opt.name;
-                context.highlight(0, name.length, "SPELLCHECK");
+                context.highlight(0, opt.name.length, "SPELLCHECK");
             }
 
+            context.advance(context.filter.indexOf("="));
+            if (option.type == "boolean") {
+                context.message = "Trailing characters";
+                context.highlight(0, context.filter.length, "SPELLCHECK");
+                return;
+            }
+
+            context.advance(1);
             if (opt.get || opt.reset || !option || prefix)
                 return null;
 
@@ -1230,9 +1236,7 @@ var Options = Module("options", {
             let extra = {};
             switch (opt.type) {
             case "boolean":
-                if (!completer)
-                    completer = function () [["true", ""], ["false", ""]];
-                break;
+                return;
             case "regexplist":
                 newValues = Option.splitList(context.filter);
                 // Fallthrough
