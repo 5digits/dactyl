@@ -1239,7 +1239,8 @@ var Commands = Module("commands", {
             // dynamically get completions as specified with the command's completer function
             context.highlight();
             if (!command) {
-                context.highlight(0, args.commandName && args.commandName.length, "SPELLCHECK");
+                context.message = "No such command: " + match.cmd;
+                context.highlight(0, match.cmd.length, "SPELLCHECK");
                 return;
             }
 

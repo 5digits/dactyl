@@ -999,6 +999,7 @@ var Options = Module("options", {
             let opt = options.parseOpt(filter, modifiers);
             let prefix = opt.prefix;
 
+            context.highlight();
             if (context.filter.indexOf("=") == -1) {
                 if (false && prefix)
                     context.filters.push(function ({ item }) item.type == "boolean" || prefix == "inv" && isArray(item.values));
