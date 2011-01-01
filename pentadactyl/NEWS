@@ -141,6 +141,7 @@
       - Add basic plugin authorship documentation.
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements.
+      - Added <A-F1> to open the single unchunked help page.
     * Removed :beep.
     * Removed :edit, :tabedit, and :winedit aliases.
     * Removed :play.

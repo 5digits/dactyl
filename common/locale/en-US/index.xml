@@ -47,7 +47,8 @@ This file contains a list of all available commands, mappings and options.
 </dl>
 
 <dl>
-    <dt><k name="F1"/></dt> <dd>Open help window</dd>
+    <dt><k name="F1"/></dt> <dd>Open the introductory help page</dd>
+    <dt><k name="A-F1"/></dt> <dd>Open the single unchunked help page</dd>
 </dl>
 
 <dl>

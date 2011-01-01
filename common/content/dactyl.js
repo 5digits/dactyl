@@ -1467,8 +1467,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     mappings: function () {
         mappings.add(modes.all, ["<F1>"],
-            "Open the help page",
+            "Open the introductory help page",
             function () { dactyl.help(); });
+
+        mappings.add(modes.all, ["<A-F1>"],
+            "Open the single unchunked help page",
+            function () { ex.helpall(); });
 
         if (dactyl.has("session"))
             mappings.add([modes.NORMAL], ["ZQ"],
@@ -1790,7 +1794,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         [
             {
                 name: "h[elp]",
-                description: "Open the help page"
+                description: "Open the introductory help page"
             }, {
                 name: "helpa[ll]",
                 description: "Open the single unchunked help page"
@@ -1802,7 +1806,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 command.description,
                 function (args) {
                     dactyl.assert(!args.bang, "E478: Don't panic!");
-
                     dactyl.help(args.literalArg, unchunked);
                 }, {
                     argCount: "?",
