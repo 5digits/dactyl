@@ -1009,6 +1009,7 @@ var Options = Module("options", {
             if (!option) {
                 context.message = "No such option: " + opt.name;
                 context.highlight(0, opt.name.length, "SPELLCHECK");
+                return;
             }
 
             context.advance(context.filter.indexOf("="));
