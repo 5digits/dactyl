@@ -459,8 +459,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         else if (node instanceof Ci.nsIDOMRange)
             encoder.setRange(node);
 
-        let str = services.String();
-        str.data = encoder.encodeToString();
+        let str = services.String(encoder.encodeToString());
         if (html)
             return str.data;
 

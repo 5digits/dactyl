@@ -139,6 +139,7 @@ var Modes = Module("modes", {
         });
         this.addMode("MENU", {
             extended: true,
+            input: true,
             description: "Active when a menu or other pop-up is open",
         }); // a popupmenu is active
         this.addMode("LINE", {

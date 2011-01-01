@@ -71,7 +71,7 @@ var Services = Module("Services", {
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
         this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", Ci.nsIWebBrowserPersist);
         this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess, "init");
-        this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString);
+        this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString, "data");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          Ci.nsIZipReader, "open");
@@ -163,7 +163,10 @@ var Services = Module("Services", {
                 return res.wrappedJSObject;
             Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));
             if (init && args.length)
-                res[init].apply(res, args);
+                if (callable(res[init]))
+                    res[init].apply(res, args);
+                else
+                    res[init] = args[0];
             return res;
         }
         catch (e) {
