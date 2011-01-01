@@ -350,11 +350,12 @@ var ConfigBase = Class("ConfigBase", {
 
         Bell          background-color: black !important;
 
-        Hint;;*;FontFixed {
-            font-weight: bold !important;
-            background-color: red;
-            color:            white;
-            padding: 0px 1px;
+        Hint;;* {
+            font:        bold 10px "Droid Sans Mono", monospace !important;
+            padding:     0 1px;
+            border:      1px solid black;
+            background:  #fff8e7;
+            color:       black;
         }
         Hint::after;;*  content: attr(text) !important;
         HintElem;;*     background-color: yellow  !important; color: black !important;

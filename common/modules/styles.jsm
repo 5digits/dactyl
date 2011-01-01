@@ -329,7 +329,7 @@ var Styles = Module("Styles", {
 
         let match, i = 0;
         while ((!match || match[0]) && (match = Styles.propertyPattern.exec(str)))
-            if (always && !i++ || match[0])
+            if (always && !i++ || match[0] && match[3])
                 yield this.Property.fromArray(match);
     },
 

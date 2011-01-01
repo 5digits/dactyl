@@ -103,6 +103,8 @@ var Highlights = Module("Highlight", {
             obj.set("defaultExtends", obj.defaultExtends.split(","));
         obj.set("agent", agent);
 
+        obj.set("defaultValue", Styles.append("", obj.get("defaultValue")));
+
         let old = this.highlight[obj.class];
         this.highlight[obj.class] = obj;
         // This *must* come before any other property changes.
