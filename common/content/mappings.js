@@ -38,16 +38,15 @@ var Map = Class("Map", {
         this.id = ++Map.id;
         this.modes = modes;
         this.names = keys.map(events.closure.canonicalKeys);
-        this._keys = keys;
         this.name = this.names[0];
         this.action = action;
         this.description = description;
+
         if (Object.freeze)
             Object.freeze(this.modes);
 
         if (extraInfo)
             update(this, extraInfo);
-        util.dump("\n\n\n", this.name, extraInfo);
     },
 
     /** @property {number[]} All of the modes for which this mapping applies. */
@@ -167,8 +166,9 @@ var Mappings = Module("mappings", {
             let j = map.names.indexOf(cmd);
             if (j >= 0) {
                 map.names.splice(j, 1);
-                if (map.names.length == 0)
-                    maps.splice(i, 1);
+                if (map.names.length == 0) // FIX ME.
+                    for (let [mode, stack] in Iterator(this._user))
+                        this._user[mode] = (stack || []).filter(function (m) m != map);
                 return;
             }
         }
@@ -451,7 +451,6 @@ var Mappings = Module("mappings", {
                         ] : [];
                     }
             };
-            window.userMappings = userMappings;
             function userMappings() {
                 let seen = {};
                 for (let [, stack] in Iterator(mappings._user))

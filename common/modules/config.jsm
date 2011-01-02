@@ -19,7 +19,7 @@ var ConfigBase = Class("ConfigBase", {
      * Called on dactyl startup to allow for any arbitrary application-specific
      * initialization code. Must call superclass's init function.
      */
-    init: function () {
+    init: function init() {
 
         highlight.styleableChrome = this.styleableChrome;
         highlight.loadCSS(this.CSS);
@@ -41,7 +41,7 @@ var ConfigBase = Class("ConfigBase", {
 
     get addonID() this.name + "@dactyl.googlecode.com",
 
-    styleHelp: function () {
+    styleHelp: function styleHelp() {
         if (!this.helpStyled)
             for (let k in keys(highlight.loaded))
                 if (/^(Help|StatusLine)|^(Boolean|Indicator|MoreMsg|Number|Logo|Key(word)?|String)$/.test(k))

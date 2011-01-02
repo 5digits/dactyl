@@ -79,7 +79,7 @@ var Config = Module("config", ConfigBase, {
 
         get visualbellWindow() this.browser.mPanelContainer,
 
-        removeTab: function (tab) {
+        removeTab: function removeTab(tab) {
             if (this.tabbrowser.mTabs.length > 1)
                 this.tabbrowser.removeTab(tab);
             else {
