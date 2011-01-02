@@ -8,7 +8,7 @@
 
 /** @scope modules */
 
-var AutoCommand = Struct("event", "pattern", "command");
+var AutoCommand = Struct("event", "patterns", "command");
 
 /**
  * @instance autocommands
@@ -31,7 +31,7 @@ var AutoCommands = Module("autocommands", {
      */
     add: function (events, regexp, cmd) {
         events.forEach(function (event) {
-            this._store.push(AutoCommand(event, Option.parseRegexp(regexp), cmd));
+            this._store.push(AutoCommand(event, Option.parse.regexplist(regexp), cmd));
         }, this);
     },
 
@@ -86,7 +86,7 @@ var AutoCommands = Module("autocommands", {
                         +
                         template.map(items, function (item)
                             <tr>
-                                <td>&#xa0;{util.regexp.getSource(item.pattern)}</td>
+                                <td>&#xa0;{item.patterns}</td>
                                 <td>{item.command}</td>
                             </tr>))
                 }
@@ -112,11 +112,11 @@ var AutoCommands = Module("autocommands", {
         let url = args.url || "";
 
         for (let [, autoCmd] in Iterator(autoCmds)) {
-            if (autoCmd.pattern.test(url) ^ !autoCmd.pattern.result) {
-                if (!lastPattern || lastPattern.source != autoCmd.pattern.source)
-                    dactyl.echomsg("Executing " + event + " Auto commands for " + util.regexp.getSource(autoCmd.pattern).quote(), 8);
+            if (autoCmd.patterns.some(function (re) re.test(url) ^ !re.result)) {
+                if (!lastPattern || String(lastPattern) != String(autoCmd.patterns))
+                    dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.patterns, 8);
 
-                lastPattern = autoCmd.pattern;
+                lastPattern = autoCmd.patterns;
                 dactyl.echomsg("autocommand " + autoCmd.command, 9);
 
                 dactyl.trapErrors(autoCmd.command, autoCmd, args);
@@ -125,7 +125,7 @@ var AutoCommands = Module("autocommands", {
     }
 }, {
     matchAutoCmd: function (autoCmd, event, regexp) {
-        return (!event || autoCmd.event == event) && (!regexp || String(autoCmd.pattern) == regexp);
+        return (!event || autoCmd.event == event) && (!regexp || String(autoCmd.patterns) == regexp);
     }
 }, {
     commands: function () {
@@ -136,7 +136,8 @@ var AutoCommands = Module("autocommands", {
                 let events = [];
 
                 try {
-                    Option.parseRegexp(regexp);
+                    if (args.length > 1)
+                        Option.parse.regexplist(regexp);
                 }
                 catch (e) {
                     dactyl.assert(false, "E475: Invalid argument: " + regexp);
@@ -211,11 +212,11 @@ var AutoCommands = Module("autocommands", {
 
                     // TODO: add command validators
                     dactyl.assert(event != "*",
-                        "E217: Can't execute autocommands for ALL events");
+                                  "E217: Can't execute autocommands for ALL events");
                     dactyl.assert(validEvents.indexOf(event) >= 0,
-                        "E216: No such group or event: " + args);
-                    dactyl.assert(autocommands.get(event).some(function (c) c.pattern.test(defaultURL)),
-                        "No matching autocommands");
+                                  "E216: No such group or event: " + args);
+                    dactyl.assert(autocommands.get(event).some(function (c) c.patterns.some(function (re) re.test(defaultURL) ^ !re.result)),
+                                  "No matching autocommands");
 
                     if (this.name == "doautoall" && dactyl.has("tabs")) {
                         let current = tabs.index();
