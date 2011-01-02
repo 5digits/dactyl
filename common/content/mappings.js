@@ -37,13 +37,17 @@ var Map = Class("Map", {
 
         this.id = ++Map.id;
         this.modes = modes;
-        this.names = keys.map(events.canonicalKeys);
+        this.names = keys.map(events.closure.canonicalKeys);
+        this._keys = keys;
         this.name = this.names[0];
         this.action = action;
         this.description = description;
+        if (Object.freeze)
+            Object.freeze(this.modes);
 
         if (extraInfo)
             update(this, extraInfo);
+        util.dump("\n\n\n", this.name, extraInfo);
     },
 
     /** @property {number[]} All of the modes for which this mapping applies. */
@@ -160,13 +164,12 @@ var Mappings = Module("mappings", {
         let names;
 
         for (let [i, map] in Iterator(maps)) {
-            for (let [j, name] in Iterator(map.names)) {
-                if (name == cmd) {
-                    map.names.splice(j, 1);
-                    if (map.names.length == 0)
-                        maps.splice(i, 1);
-                    return;
-                }
+            let j = map.names.indexOf(cmd);
+            if (j >= 0) {
+                map.names.splice(j, 1);
+                if (map.names.length == 0)
+                    maps.splice(i, 1);
+                return;
             }
         }
     },
@@ -183,7 +186,7 @@ var Mappings = Module("mappings", {
 
     iterate: function (mode) {
         let seen = {};
-        for (let map in iterAll(values(this._user[mode]), values(this._main[mode])))
+        for (let map in iter(values(this._user[mode]), values(this._main[mode])))
             if (!set.add(seen, map.name))
                 yield map;
     },
@@ -448,6 +451,7 @@ var Mappings = Module("mappings", {
                         ] : [];
                     }
             };
+            window.userMappings = userMappings;
             function userMappings() {
                 let seen = {};
                 for (let [, stack] in Iterator(mappings._user))
@@ -579,7 +583,7 @@ var Mappings = Module("mappings", {
             ]
         });
 
-        forEach(modes.mainModes, function (mode) {
+        iter.forEach(modes.mainModes, function (mode) {
             if (mode.char && !commands.get(mode.char + "listkeys", true))
                 dactyl.addUsageCommand({
                     __proto__: args,

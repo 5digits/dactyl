@@ -459,7 +459,7 @@ var Option = Class("Option", {
     testValues: {
         regexpmap:  function (vals, validator) vals.every(function (re) validator(re.result)),
         stringlist: function (vals, validator) vals.every(validator, this),
-        stringmap:  function (vals, validator) array(values(vals)).every(validator, this)
+        stringmap:  function (vals, validator) values(vals).every(validator, this)
     },
 
     dequote: function (value) {

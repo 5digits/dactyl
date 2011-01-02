@@ -34,13 +34,13 @@ var JavaScript = Module("javascript", {
         return undefined;
     },
 
-    iter: function iter(obj, toplevel) {
+    iter: function iter_(obj, toplevel) {
         if (obj == null)
             return;
 
         let seen = isinstance(obj, ["Sandbox"]) ? set(JavaScript.magicalNames) : {};
         let globals = values(toplevel && window === obj ? JavaScript.globalNames : []);
-        for (let key in iterAll(globals, properties(obj, !toplevel, true)))
+        for (let key in iter(globals, properties(obj, !toplevel, true)))
             if (!set.add(seen, key))
                 yield key;
 

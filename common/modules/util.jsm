@@ -793,20 +793,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                            .map(function (node) "//" + node).join(" | ");
     },
 
-    /**
-     * Returns the array that results from applying *func* to each property of
-     * *obj*.
-     *
-     * @param {Object} obj
-     * @param {function} func
-     * @returns {Array}
-     */
-    map: function map(obj, func) {
-        let ary = [];
-        for (let i in Iterator(obj))
-            ary.push(func(i));
-        return ary;
-    },
+    map: deprecated("Please use iter.map instead", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
 
     /**
      * Converts a URI string into a URI object.

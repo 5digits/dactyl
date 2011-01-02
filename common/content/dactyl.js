@@ -577,7 +577,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // Find the tags in the document.
             function addTags(file, doc) {
                 for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                    for (let tag in array((elem.value || elem.textContent).split(/\s+/)).compact().iterValues())
+                    for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
                         tagMap[tag] = file;
             }
 
@@ -1285,14 +1285,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let items = [];
         addChildren(document.getElementById(config.guioptions["m"][1]), "");
         return items;
-    },
-
-    // show a usage index either in the MOW or as a full help page
-    showHelpIndex: function (tag, items, inMow) {
-        if (inMow)
-            commandline.commandOutput(template.usage(array(items).sort(function (a, b) String.localeCompare(a.name, b.name))));
-        else
-            dactyl.help(tag);
     }
 }, {
     // Only general options are added here, which are valid for all Dactyl extensions

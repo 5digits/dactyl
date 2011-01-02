@@ -36,14 +36,14 @@ var History = Module("history", {
         // execute the query
         let root = services.history.executeQuery(query, options).root;
         root.containerOpen = true;
-        let items = util.map(util.range(0, root.childCount), function (i) {
+        let items = iter(util.range(0, root.childCount)).map(function (i) {
             let node = root.getChild(i);
             return {
                 url: node.uri,
                 title: node.title,
                 icon: node.icon ? node.icon.spec : DEFAULT_FAVICON
             };
-        });
+        }).toArray();
         root.containerOpen = false; // close a container after using it!
 
         return items;

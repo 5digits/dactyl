@@ -466,7 +466,7 @@ var IO = Module("io", {
      *     otherwise, the return value of *func*.
      */
     withTempFiles: function (func, self, checked) {
-        let args = util.map(util.range(0, func.length), this.createTempFile);
+        let args = array(util.range(0, func.length)).map(this.createTempFile);
         try {
             if (!args.every(util.identity))
                 return false;
@@ -688,7 +688,7 @@ unlet s:cpo_save
                     let lines = [];
                     lines.__defineGetter__("last", function () this[this.length - 1]);
 
-                    for (let item in (isArray(items) ? array.iterValues : iter)(items)) {
+                    for (let item in values(items.array || items)) {
                         if (item.length > width && (!lines.length || lines.last.length > 1)) {
                             lines.push([prefix]);
                             width = WIDTH - prefix.length;

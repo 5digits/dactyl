@@ -114,7 +114,7 @@ var Command = Class("Command", {
         let parsedSpecs = Command.parseSpecs(specs);
 
         this.specs = specs;
-        this.shortNames = array(parsedSpecs).map(function (n) n[1]).compact();
+        this.shortNames = array.compact(parsedSpecs.map(function (n) n[1]));
         this.longNames = parsedSpecs.map(function (n) n[0]);
         this.name = this.longNames[0];
         this.names = array(parsedSpecs).flatten();
@@ -321,12 +321,12 @@ var Command = Class("Command", {
 
         if (callable(params))
             function makeParams(self, args)
-                array.toObject([[k, process(v)]
-                                for ([k, v] in iter(params.apply(self, args)))])
+                iter.toObject([k, process(v)]
+                               for ([k, v] in iter(params.apply(self, args))))
         else if (params)
             function makeParams(self, args)
-                array.toObject([[name, process(args[i])]
-                                for ([i, name] in Iterator(params))]);
+                iter.toObject([name, process(args[i])]
+                              for ([i, name] in Iterator(params)));
 
         let rhs = args.literalArg;
         let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce(function (a, b) args[b] ? b : a, default_);
@@ -551,8 +551,8 @@ var Commands = Module("commands", {
         let str = args.literalArg;
         if (str)
             res.push(!/\n/.test(str) ? str :
-                     this.hereDoc    ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
-                                     : String.replace(str, /\n/, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
+                     this.hereDoc && false ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
+                                           : String.replace(str, /\n/, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
         return res.join(" ");
     },
 
@@ -1397,11 +1397,15 @@ var Commands = Module("commands", {
                 serialize: function () [ {
                         command: this.name,
                         bang: true,
-                        options: array.toObject(
-                            [[v, typeof cmd[k] == "boolean" ? null : cmd[k]]
-                             // FIXME: this map is expressed multiple times
-                             for ([k, v] in Iterator({ argCount: "-nargs", bang: "-bang", count: "-count", description: "-description" }))
-                             if (cmd[k])]),
+                        options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
+                                      // FIXME: this map is expressed multiple times
+                                      for ([k, v] in Iterator({
+                                          argCount: "-nargs",
+                                          bang: "-bang",
+                                          count: "-count",
+                                          description: "-description"
+                                      }))
+                                      if (cmd[k])).toObject(),
                         arguments: [cmd.name],
                         literalArg: cmd.action,
                         ignoreDefaults: true

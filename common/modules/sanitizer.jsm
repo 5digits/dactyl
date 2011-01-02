@@ -211,7 +211,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
 
     addItem: function addItem(name, params) {
         this.itemMap[name] = update(this.itemMap[name] || Item(name),
-            array([k, v] for ([k, v] in Iterator(params)) if (!callable(v))).toObject());
+            iter.toObject([k, v]
+                          for ([k, v] in Iterator(params))
+                          if (!callable(v))));
 
         let names = set([name].concat(params.contains || []).map(function (e) "clear-" + e));
         if (params.action)
@@ -315,7 +317,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         deny:    2,
         session: 8
     },
-    UNPERMS: Class.memoize(function () array.toObject([[v, k] for ([k, v] in Iterator(this.PERMS))])),
+    UNPERMS: Class.memoize(function () iter(this.PERMS).map(Array.reverse).toObject()),
     COMMANDS: {
         unset:   "Unset",
         allow:   "Allowed",

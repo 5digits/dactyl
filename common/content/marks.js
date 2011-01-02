@@ -29,12 +29,9 @@ var Marks = Module("marks", {
      * @property {Array} Returns all marks, both local and URL, in a sorted
      *     array.
      */
-    get all() {
-        let lmarks = array(Iterator(this._localMarks.get(this.localURI) || {}));
-        let umarks = array(Iterator(this._urlMarks)).array;
-
-        return lmarks.concat(umarks).sort(function (a, b) String.localeCompare(a[0], b[0]));
-    },
+    get all() iter(this._localMarks.get(this.localURI) || {},
+                   this._urlMarks
+                  ).sort(function (a, b) String.localeCompare(a[0], b[0])),
 
     get localURI() buffer.focusedFrame.document.documentURI,
 

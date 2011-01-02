@@ -332,7 +332,7 @@ function keys(obj) {
  * @param {object} obj The object to inspect.
  * @returns {Generator}
  */
-function values(obj) {
+function values(obj) iter(function values() {
     if (isinstance(obj, ["Generator", "Iterator"]))
         for (let k in obj)
             yield k;
@@ -340,31 +340,10 @@ function values(obj) {
         for (var k in obj)
             if (hasOwnProperty.call(obj, k))
                 yield obj[k];
-}
+}());
 
-/**
- * Iterates over an iterable object and calls a callback for each
- * element.
- *
- * @param {object} iter The iterator.
- * @param {function} fn The callback.
- * @param {object} self The this object for *fn*.
- */
-function forEach(iter, fn, self) {
-    for (let val in iter)
-        fn.call(self, val);
-}
-
-/**
- * Iterates over each iterable argument in turn, yielding each value.
- *
- * @returns {Generator}
- */
-function iterAll() {
-    for (let i = 0; i < arguments.length; i++)
-        for (let j in Iterator(arguments[i]))
-            yield j;
-}
+var forEach = deprecated("Please use iter.forEach instead", function forEach() iter.forEach.apply(iter, arguments));
+var iterAll = deprecated("Please use iter instead", function iterAll() iter.apply(null, arguments));
 
 /**
  * Utility for managing sets of strings. Given an array, returns an
@@ -426,87 +405,6 @@ set.subtract = function (set) {
 set.remove = function (set, key) {
     let res = set.has(set, key);
     delete set[key];
-    return res;
-}
-
-/**
- * Iterates over an arbitrary object. The following iterators types are
- * supported, and work as a user would expect:
- *
- *  • nsIDOMNodeIterator
- *  • mozIStorageStatement
- *
- * Additionally, the following array-like objects yield a tuple of the
- * form [index, element] for each contained element:
- *
- *  • nsIDOMHTMLCollection
- *  • nsIDOMNodeList
- *
- * and the following likewise yield one element of the form
- * [name, element] for each contained element:
- *
- *  • nsIDOMNamedNodeMap
- *
- * Duck typing is implemented for the any other type. If the object
- * contains the "enumerator" property, iter is called on that. If the
- * property is a function, it is called first. If it contains the
- * property "getNext" along with either "hasMoreItems" or "hasMore", it
- * is iterated over appropriately.
- *
- * For all other cases, this function behaves exactly like the Iterator
- * function.
- *
- * @param {object} obj
- * @returns {Generator}
- */
-function iter(obj) {
-    let res = Iterator(obj);
-    if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
-        while (obj.constructor instanceof ctypes.PointerType)
-            obj = obj.contents;
-        if (obj.constructor instanceof ctypes.ArrayType)
-            res = array.iterItems(obj);
-        else if (obj.constructor instanceof ctypes.StructType)
-            res = (function () {
-                for (let prop in values(obj.constructor.fields))
-                    yield let ([name, type] = Iterator(prop).next()) [name, obj[name]];
-            })();
-        else
-            return iter({});
-    }
-    else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
-        res = array.iterItems(obj);
-    else if (obj instanceof Ci.nsIDOMNamedNodeMap)
-        res = (function () {
-            for (let i = 0; i < obj.length; i++)
-                yield [obj.name, obj];
-        })();
-    else if (obj instanceof Ci.mozIStorageStatement)
-        res = (function (obj) {
-            while (obj.executeStep())
-                yield obj.row;
-            obj.reset();
-        })(obj);
-    else if ("getNext" in obj) {
-        if ("hasMoreElements" in obj)
-            res = (function () {
-                while (obj.hasMoreElements())
-                    yield obj.getNext();
-            })();
-        else if ("hasMore" in obj)
-            res = (function () {
-                while (obj.hasMore())
-                    yield obj.getNext();
-            })();
-    }
-    else if ("enumerator" in obj) {
-        if (callable(obj.enumerator))
-            return iter(obj.enumerator());
-        return iter(obj.enumerator);
-    }
-    res.__noSuchMethod__ = function __noSuchMethod__(meth, args)
-        let (ary = array(this))
-            ary[meth] ? ary[meth].apply(ary, args) : ary.__noSuchMethod__(meth, args);
     return res;
 }
 
@@ -889,7 +787,7 @@ Class.prototype = {
 memoize(Class.prototype, "closure", function () {
     const self = this;
     function closure(fn) function () fn.apply(self, arguments);
-    for (let k in iterAll(properties(this), properties(this, true)))
+    for (let k in iter(properties(this), properties(this, true)))
         if (!this.__lookupGetter__(k) && callable(this[k]))
             closure[k] = closure(this[k]);
     return closure;
@@ -910,8 +808,8 @@ function XPCOM(interfaces, superClass) {
                                  Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance());
 
     let res = Class("XPCOM(" + interfaces + ")", superClass || Class, update(
-        array([k, v === undefined || callable(v) ? function stub() null : v]
-               for ([k, v] in Iterator(shim))).toObject(),
+        iter.toObject([k, v === undefined || callable(v) ? function stub() null : v]
+                      for ([k, v] in Iterator(shim))),
         { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
     shim = interfaces = null;
     return res;
@@ -1122,6 +1020,197 @@ function UTF8(str) {
 function octal(decimal) parseInt(decimal, 8);
 
 /**
+ * Iterates over an arbitrary object. The following iterators types are
+ * supported, and work as a user would expect:
+ *
+ *  • nsIDOMNodeIterator
+ *  • mozIStorageStatement
+ *
+ * Additionally, the following array-like objects yield a tuple of the
+ * form [index, element] for each contained element:
+ *
+ *  • nsIDOMHTMLCollection
+ *  • nsIDOMNodeList
+ *
+ * and the following likewise yield one element of the form
+ * [name, element] for each contained element:
+ *
+ *  • nsIDOMNamedNodeMap
+ *
+ * Duck typing is implemented for the any other type. If the object
+ * contains the "enumerator" property, iter is called on that. If the
+ * property is a function, it is called first. If it contains the
+ * property "getNext" along with either "hasMoreItems" or "hasMore", it
+ * is iterated over appropriately.
+ *
+ * For all other cases, this function behaves exactly like the Iterator
+ * function.
+ *
+ * @param {object} obj
+ * @returns {Generator}
+ */
+function iter(obj) {
+    let args = arguments;
+    let res = Iterator(obj);
+
+    if (isinstance(args, ["Iterator", "Generator"]))
+        ;
+    else if (args.length > 1)
+        res = (function () {
+            for (let i = 0; i < args.length; i++)
+                for (let j in Iterator(args[i]))
+                    yield j;
+        })();
+    else if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
+        while (obj.constructor instanceof ctypes.PointerType)
+            obj = obj.contents;
+        if (obj.constructor instanceof ctypes.ArrayType)
+            res = array.iterItems(obj);
+        else if (obj.constructor instanceof ctypes.StructType)
+            res = (function () {
+                for (let prop in values(obj.constructor.fields))
+                    yield let ([name, type] = Iterator(prop).next()) [name, obj[name]];
+            })();
+        else
+            return iter({});
+    }
+    else if (isinstance(obj, [Ci.nsIDOMHTMLCollection, Ci.nsIDOMNodeList]))
+        res = array.iterItems(obj);
+    else if (obj instanceof Ci.nsIDOMNamedNodeMap)
+        res = (function () {
+            for (let i = 0; i < obj.length; i++)
+                yield [obj.name, obj];
+        })();
+    else if (obj instanceof Ci.mozIStorageStatement)
+        res = (function (obj) {
+            while (obj.executeStep())
+                yield obj.row;
+            obj.reset();
+        })(obj);
+    else if ("getNext" in obj) {
+        if ("hasMoreElements" in obj)
+            res = (function () {
+                while (obj.hasMoreElements())
+                    yield obj.getNext();
+            })();
+        else if ("hasMore" in obj)
+            res = (function () {
+                while (obj.hasMore())
+                    yield obj.getNext();
+            })();
+    }
+    else if ("enumerator" in obj) {
+        if (callable(obj.enumerator))
+            return iter(obj.enumerator());
+        return iter(obj.enumerator);
+    }
+    res.__noSuchMethod__ = function __noSuchMethod__(meth, args) {
+        if (meth in iter)
+            var res = iter[meth].apply(iter, [this].concat(args));
+        else
+            res = let (ary = array(this))
+                ary[meth] ? ary[meth].apply(ary, args) : ary.__noSuchMethod__(meth, args);
+        if (isinstance(res, ["Iterator", "Generator"]))
+            return iter(res);
+        return res;
+    };
+    return res;
+}
+update(iter, {
+    toArray: function toArray(iter) array(iter).array,
+
+    // See array.prototype for API docs.
+    toObject: function toObject(iter) {
+        let obj = {};
+        for (let [k, v] in iter)
+            obj[k] = v;
+        return obj;
+    },
+
+    compact: function compact(iter) (item for (item in iter) if (item != null)),
+
+    every: function every(iter, pred, self) {
+        pred = pred || util.identity;
+        for (let elem in iter)
+            if (!pred.call(self, elem))
+                return false;
+        return true;
+    },
+    some: function every(iter, pred, self) {
+        pred = pred || util.identity;
+        for (let elem in iter)
+            if (pred.call(self, elem))
+                return true;
+        return false;
+    },
+
+    filter: function filter(iter, pred, self) {
+        for (let elem in iter)
+            if (pred.call(self, elem))
+                yield elem;
+    },
+
+    /**
+     * Iterates over an iterable object and calls a callback for each
+     * element.
+     *
+     * @param {object} iter The iterator.
+     * @param {function} fn The callback.
+     * @param {object} self The this object for *fn*.
+     */
+    forEach: function forEach(iter, func, self) {
+        for (let val in iter)
+            func.call(self, val);
+    },
+
+    /**
+     * Returns the array that results from applying *func* to each property of
+     * *obj*.
+     *
+     * @param {Object} obj
+     * @param {function} func
+     * @returns {Array}
+     */
+    map: function map(iter, func, self) {
+        for (let i in iter)
+            yield func.call(self, i);
+    },
+
+    /**
+     * Returns the nth member of the given array that matches the
+     * given predicate.
+     */
+    nth: function nth(iter, pred, n, self) {
+        for (let elem in iter)
+            if (pred.call(self, elem) && n-- === 0)
+                return elem;
+        return undefined;
+    },
+
+    uniq: function uniq(iter) {
+        let seen = {};
+        for (let item in iter)
+            if (!set.add(seen, item))
+                yield item;
+    },
+
+    /**
+     * Zips the contents of two arrays. The resulting array is the length of
+     * ary1, with any shortcomings of ary2 replaced with null strings.
+     *
+     * @param {Array} ary1
+     * @param {Array} ary2
+     * @returns {Array}
+     */
+    zip: function zip(iter1, iter2) {
+        try {
+            yield [iter1.next(), iter2.next()];
+        }
+        catch (e if e instanceof StopIteration) {}
+    }
+});
+
+/**
  * Array utility methods.
  */
 var array = Class("array", Array, {
@@ -1138,6 +1227,8 @@ var array = Class("array", Array, {
                 var res = array[meth].apply(null, [this.array].concat(args));
                 if (isArray(res))
                     return array(res);
+                if (isinstance(res, ["Iterator", "Generator"]))
+                    return iter(res);
                 return res;
             },
             array: ary,

@@ -13,12 +13,13 @@ var Bookmarks = Module("bookmarks", {
     init: function () {
         storage.addObserver("bookmark-cache", function (key, event, arg) {
             if (["add", "change", "remove"].indexOf(event) >= 0)
-                autocommands.trigger("Bookmark" + event[0].toUpperCase() + event.substr(1), iterAll({
-                        bookmark: {
-                            toString: function () "bookmarkcache.bookmarks[" + arg.id + "]",
-                            valueOf: function () arg
-                        }
-                    }, arg));
+                autocommands.trigger("Bookmark" + event[0].toUpperCase() + event.substr(1),
+                     iter({
+                         bookmark: {
+                             toString: function () "bookmarkcache.bookmarks[" + arg.id + "]",
+                             valueOf: function () arg
+                         }
+                     }, arg));
             statusline.updateUrl();
         }, window);
     },
@@ -195,7 +196,7 @@ var Bookmarks = Module("bookmarks", {
     get searchEngines() {
         let searchEngines = [];
         let aliases = {};
-        return array.toObject(services.browserSearch.getVisibleEngines({}).map(function (engine) {
+        return array(services.browserSearch.getVisibleEngines({})).map(function (engine) {
             let alias = engine.alias;
             if (!alias || !/^[a-z_-]+$/.test(alias))
                 alias = engine.name.replace(/^\W*([a-zA-Z_-]+).*/, "$1").toLowerCase();
@@ -208,7 +209,7 @@ var Bookmarks = Module("bookmarks", {
                 aliases[alias] = 0;
 
             return [alias, { keyword: alias, __proto__: engine, title: engine.description, icon: engine.iconURI && engine.iconURI.spec }];
-        }));
+        }).toObject();
     },
 
     /**
@@ -579,7 +580,7 @@ var Bookmarks = Module("bookmarks", {
         completion.bookmark = function bookmark(context, tags, extra) {
             context.title = ["Bookmark", "Title"];
             context.format = bookmarks.format;
-            forEach(iter(extra || {}), function ([k, v]) {
+            iter(extra || {}).forEach(function ([k, v]) {
                 if (v != null)
                     context.filters.push(function (item) item.item[k] != null && this.matchString(v, item.item[k]));
             });
@@ -593,7 +594,7 @@ var Bookmarks = Module("bookmarks", {
             let engines = bookmarks.searchEngines;
 
             context.title = ["Search Keywords"];
-            context.completions = iterAll(values(keywords), values(engines));
+            context.completions = iter(values(keywords), values(engines));
             context.keys = { text: "keyword", description: "title", icon: "icon" };
 
             if (!space || noSuggest)

@@ -1440,7 +1440,7 @@ var Buffer = Module("buffer", {
             context.title = ["Stylesheet", "Location"];
 
             // unify split style sheets
-            let styles = array.toObject([[s.title, []] for (s in values(buffer.alternateStyleSheets))]);
+            let styles = iter([s.title, []] for (s in values(buffer.alternateStyleSheets))).toObject();
 
             buffer.alternateStyleSheets.forEach(function (style) {
                 styles[style.title].push(style.href || "inline");
@@ -1477,7 +1477,7 @@ var Buffer = Module("buffer", {
                 context.fork(id, 0, this, function (context, [name, browsers]) {
                     context.title = [name || "Buffers"];
                     context.generate = function ()
-                        util.map(array.iterValues(browsers), function ([i, browser]) {
+                        Array.map(browsers, function ([i, browser]) {
                             let indicator = " ";
                             if (i == tabs.index())
                                 indicator = "%";

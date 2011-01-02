@@ -333,7 +333,7 @@ var CompletionContext = Class("CompletionContext", {
             yield ["result", quote ? function () quote[0] + quote[1](this.text) + quote[2]
                                    : function () this.text];
         };
-        for (let i in iterAll(this.keys, result(this.quote))) {
+        for (let i in iter(this.keys, result(this.quote))) {
             let [k, v] = i;
             if (typeof v == "string" && /^[.[]/.test(v))
                 // This is only allowed to be a simple accessor, and shouldn't
@@ -609,7 +609,7 @@ var CompletionContext = Class("CompletionContext", {
         let step = start > end ? -1 : 1;
         start = Math.max(0, start || 0);
         end = Math.min(items.length, end ? end : items.length);
-        return util.map(util.range(start, end, step), function (i) items[i]);
+        return iter.map(util.range(start, end, step), function (i) items[i]);
     },
 
     getRows: function getRows(start, end, doc) {
