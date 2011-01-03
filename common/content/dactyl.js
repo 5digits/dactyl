@@ -1696,10 +1696,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         dactyl.assert(name, "E471: Argument required");
 
                     AddonManager.getAddonsByTypes(["extension"], dactyl.wrapCallback(function (list) {
-                        if (!args.bang)
+                        if (!args.bang) {
                             list = list.filter(function (extension) extension.name == name);
-                        if (!args.bang && !list.every(ok))
-                            return dactyl.echoerr("Permission denied");
+                            if (list.length == 0)
+                                return void dactyl.echoerr("E475: Invalid argument: " + name);
+                            if (!list.every(ok))
+                                return void dactyl.echoerr("Permission denied");
+                        }
                         if (command.actions)
                             command.actions(list);
                         else
