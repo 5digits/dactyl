@@ -276,7 +276,7 @@ var Mappings = Module("mappings", {
      */
     getCandidates: function (mode, prefix)
         this._user[mode].concat(this._main[mode])
-            .filter(function (map) map.names.some(
+            .filter(function (map) map.keys.some(
                 function (name) name.indexOf(prefix) == 0 && name.length > prefix.length
                                 && (prefix != "<" || !/^<.+>/.test(name)))),
 
