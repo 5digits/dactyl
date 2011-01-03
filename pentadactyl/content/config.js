@@ -213,8 +213,12 @@ var Config = Module("config", ConfigBase, {
                 let menu = document.getElementById("viewSidebarMenu");
 
                 for (let [, panel] in Iterator(menu.childNodes))
-                    if (compare(panel.label, args[0]))
-                        return panel.doCommand();
+                    if (compare(panel.getAttribute("label"), args[0])) {
+                        let elem = document.getElementById(panel.observes);
+                        if (elem)
+                            elem.doCommand();
+                        return;
+                    }
 
                 return dactyl.echoerr("No sidebar " + args[0] + " found");
             },

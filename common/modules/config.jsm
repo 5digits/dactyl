@@ -64,7 +64,7 @@ var ConfigBase = Class("ConfigBase", {
                         <broadcaster id={"pentadactyl-" + id + "Sidebar"}
                             autoCheck="false" type="checkbox" group="sidebar"
                             sidebartitle={name} sidebarurl={uri}
-                            oncommand="toggleSidebar(this.observes);" xmlns={XUL}/>
+                            oncommand="toggleSidebar(this.id || this.observes);" xmlns={XUL}/>
             }
 
             util.overlayWindow(window, { append: append.elements() });
