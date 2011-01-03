@@ -199,7 +199,7 @@ var Bookmarks = Module("bookmarks", {
         return array(services.browserSearch.getVisibleEngines({})).map(function (engine) {
             let alias = engine.alias;
             if (!alias || !/^[a-z_-]+$/.test(alias))
-                alias = engine.name.replace(/^\W*([a-zA-Z_-\s]+).*/, "$1").replace(/\s+/g, "-").toLowerCase();
+                alias = engine.name.replace(/^\W*([a-zA-Z\s_-]+).*/, "$1").replace(/\s+/g, "-").toLowerCase();
             if (!alias)
                 alias = "search"; // for search engines which we can't find a suitable alias
 
