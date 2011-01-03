@@ -39,6 +39,7 @@ FEATURES:
 8 <C-o>/<C-i> should work as in Vim (i.e., save page positions as well as
   locations in the history list).
 8 jump to the next heading with ]h, next image ]i, previous textbox [t and so on
+7 clean up error message codes and document
 7 add search capability to MOW
 7 describe-key command (prompt for a key and display its binding with documentation)
 7 Specify all INSERT mode mappings rather than falling through to the host apps
