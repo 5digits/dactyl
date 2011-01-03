@@ -70,8 +70,8 @@ var ConfigBase = Class("ConfigBase", {
             util.overlayWindow(window, { append: append.elements() });
         },
 
-        get browser() window.gBrowser,
-        get tabbrowser() window.gBrowser,
+        browser: Class.memoize(function () window.gBrowser),
+        tabbrowser: Class.memoize(function () window.gBrowser),
 
         get browserModes() [modes.NORMAL],
 
@@ -522,6 +522,7 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
         // Hmm...
         let config1 = Object.create(config);
         let config2 = Object.create(config1);
+        config2.instance = config2;
         update(config1, config.Local.superapply(config2, arguments));
         update(config2, config.Local.apply(config2, arguments));
         modules.config = config2;
