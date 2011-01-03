@@ -552,7 +552,7 @@ var Commands = Module("commands", {
         if (str)
             res.push(!/\n/.test(str) ? str :
                      this.hereDoc && false ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
-                                           : String.replace(str, /\n/, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
+                                           : String.replace(str, /\n/g, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
         return res.join(" ");
     },
 
