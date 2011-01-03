@@ -466,7 +466,7 @@ var IO = Module("io", {
      *     otherwise, the return value of *func*.
      */
     withTempFiles: function (func, self, checked) {
-        let args = array(util.range(0, func.length)).map(this.createTempFile);
+        let args = array(util.range(0, func.length)).map(this.createTempFile).array;
         try {
             if (!args.every(util.identity))
                 return false;
