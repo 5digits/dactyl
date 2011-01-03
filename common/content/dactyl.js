@@ -1883,11 +1883,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     {
                         names: ["++cmd"],
                         description: "Ex commands to execute prior to initialization",
+                        type: CommandOption.STRING,
                         multiple: true
                     },
                     {
                         names: ["+c"],
                         description: "Ex commands to execute after initialization",
+                        type: CommandOption.STRING,
                         multiple: true
                     }
                 ]
