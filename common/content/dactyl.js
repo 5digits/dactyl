@@ -176,9 +176,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function (args) {
                 let results = array(params.iterate(args))
                     .sort(function (a, b) String.localeCompare(a.name, b.name));
-                if (args.length)
-                    results = results.filter(function (item) args.map(String.toLowerCase)
-                        .every(function (arg) (item.name + item.description).toLowerCase().indexOf(arg) >= 0));
+
+                let filters = args.map(function (arg) RegExp("\\b" + util.regexp.escape(arg) + "\\b", "i"));
+                if (filters.length)
+                    results = results.filter(function (item) filters.every(function (re) re.test(item.name + item.description)));
+
                 commandline.commandOutput(
                     template.usage(results, params.format));
             },

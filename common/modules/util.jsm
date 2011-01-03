@@ -1168,11 +1168,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {object} tokens The tokens to substitute. @optional
      */
     regexp: update(function (expr, flags, tokens) {
+        if (isinstance(expr, ["RegExp"]))
+            expr = expr.source;
         if (tokens)
             expr = String.replace(expr, /<(\w+)>/g, function (m, n1) set.has(tokens, n1) ? tokens[n1].source || tokens[n1] : m);
         expr = String.replace(expr, /\/\/[^\n]*|\/\*[^]*?\*\//gm, "")
                      .replace(/\s+/g, "");
-        return RegExp(expr, flags);
+        return update(RegExp(expr, flags), {
+            closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
+            dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"]
+        });
     }, {
         /**
          * Escapes Regular Expression special characters in *str*.

@@ -273,7 +273,15 @@ function prototype(obj)
 
 function properties(obj, prototypes, debugger_) {
     let orig = obj;
-    let seen = {};
+    let seen = { dactylPropertyNames: true };
+
+    try {
+        if ("dactylpropertynames" in obj && !prototypes)
+            for (let key in values(dactylpropertynames))
+                if (key in obj && !set.add(seen, key))
+                    yield key;
+    }
+    catch (e) {}
 
     for (; obj; obj = prototypes && prototype(obj)) {
         try {
