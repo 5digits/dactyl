@@ -1053,14 +1053,14 @@ function iter(obj) {
     let args = arguments;
     let res = Iterator(obj);
 
-    if (isinstance(args, ["Iterator", "Generator"]))
-        ;
-    else if (args.length > 1)
+    if (args.length > 1)
         res = (function () {
             for (let i = 0; i < args.length; i++)
-                for (let j in Iterator(args[i]))
+                for (let j in iter(args[i]))
                     yield j;
         })();
+    else if (isinstance(obj, ["Iterator", "Generator"]))
+        ;
     else if (ctypes && ctypes.CData && obj instanceof ctypes.CData) {
         while (obj.constructor instanceof ctypes.PointerType)
             obj = obj.contents;

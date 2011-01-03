@@ -311,7 +311,7 @@ var Config = Module("config", ConfigBase, {
         completion.sidebar = function sidebar(context) {
             let menu = document.getElementById("viewSidebarMenu");
             context.title = ["Sidebar Panel"];
-            context.completions = Array.map(menu.childNodes, function (n) [n.label, ""]);
+            context.completions = Array.map(menu.childNodes, function (n) [n.getAttribute("label"), ""]);
         };
 
         completion.addUrlCompleter("l",
