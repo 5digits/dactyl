@@ -26,6 +26,8 @@ var ModuleBase = Class("ModuleBase", {
 
 var Overlay = Module("Overlay", {
     init: function () {
+        services["dactyl:"]; // Hack. Force module initialization.
+
         util.overlayWindow(config.overlayChrome, function (window) ({
             init: function (document) {
                 /**

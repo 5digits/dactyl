@@ -30,15 +30,14 @@ Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
-function dataURL(type, data) "data:" + (type || "application/xml;encoding=UTF-8") + "," + escape(data);
 function makeChannel(url, orig) {
     try {
         if (url == null)
             return fakeChannel(orig);
         if (typeof url === "function")
-            url = dataURL.apply(null, url());
-        let uri = ioService.newURI(url, null, null);
-        let channel = ioService.newChannelFromURI(uri);
+            return let ([type, data] = url()) StringChannel(data, type, orig);
+
+        let channel = ioService.newChannel(url, null, null);
         channel.contentCharset = "UTF-8";
         channel.owner = systemPrincipal;
         channel.originalURI = orig;
@@ -52,10 +51,11 @@ function makeChannel(url, orig) {
 function fakeChannel(orig) makeChannel("chrome://dactyl/content/does/not/exist", orig);
 function redirect(to, orig, time) {
     let html = <html><head><meta http-equiv="Refresh" content={(time || 0) + ";" + to}/></head></html>.toXMLString();
-    return makeChannel(dataURL('text/html', html), ioService.newURI(to, null, null));
+    return StringChannel(html, "text/html", ioService.newURI(to, null, null));
 }
 
 function Factory(clas) ({
+    __proto__: clas.prototype,
     createInstance: function (outer, iid) {
         if (outer != null)
             throw Components.results.NS_ERROR_NO_AGGREGATION;
@@ -108,7 +108,12 @@ function Dactyl() {
     this.pages = {};
 
     Cu.import("resource://dactyl/base.jsm");
+    require(global, "config");
+    require(global, "services");
     require(global, "util");
+
+    // Doesn't belong here:
+    AboutHandler.prototype.register();
 }
 Dactyl.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=dactyl",
@@ -180,14 +185,47 @@ Dactyl.prototype = {
     }
 };
 
+function StringChannel(data, contentType, uri) {
+    let channel = services.StreamChannel(uri);
+    channel.contentStream = services.StringStream(data);
+    channel.contentType = contentType;
+    channel.contentCharset = "UTF-8";
+    channel.owner = systemPrincipal;
+    if (uri)
+        channel.originalURI = uri;
+    return channel;
+}
+
+function XMLChannel(uri, contentType) {
+    this.sourceChannel = services.io.newChannelFromURI(uri);
+    this.pipe = services.Pipe(true, true, 0, 0, null);
+
+    this.channel = services.StreamChannel(uri);
+    this.channel.contentStream = this.pipe.outputStream;
+    this.channel.contentType = contentType;
+    this.channel.contentCharset = "UTF-8";
+    this.channel.owner = systemPrincipal;
+}
+XMLChannel.prototype = {
+    QueryInterface:   XPCOMUtils.generateQI([Ci.nsIRequestObserver]),
+};
+
 function AboutHandler() {}
 AboutHandler.prototype = {
+    register: function () {
+        try {
+            JSMLoader.registerFactory(Factory(AboutHandler));
+        }
+        catch (e) {
+            util.reportError(e);
+        }
+    },
 
-    classDescription: "About " + Dactyl.prototype.appName + " Page",
+    get classDescription() "About " + config.appName + " Page",
 
     classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
 
-    contractID: "@mozilla.org/network/protocol/about;1?what=" + Dactyl.prototype.name,
+    get contractID() "@mozilla.org/network/protocol/about;1?what=" + config.name,
 
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
 
@@ -218,9 +256,9 @@ Shim.prototype = {
 };
 
 if (XPCOMUtils.generateNSGetFactory)
-    var NSGetFactory = XPCOMUtils.generateNSGetFactory([AboutHandler, ChromeData, Dactyl, Shim]);
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([ChromeData, Dactyl, Shim]);
 else
-    var NSGetModule = XPCOMUtils.generateNSGetModule([AboutHandler, ChromeData, Dactyl, Shim]);
+    var NSGetModule = XPCOMUtils.generateNSGetModule([ChromeData, Dactyl, Shim]);
 var EXPORTED_SYMBOLS = ["NSGetFactory", "global"];
 
 } catch (e) { reportError(e) }

@@ -478,7 +478,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     stackLines: function (stack) {
         let lines = [];
-        let match, re = /([^]*?)(@.*?)(?:\n|$)/g;
+        let match, re = /([^]*?)(@[^@\n]*)(?:\n|$)/g;
         while (match = re.exec(stack))
             lines.push(match[1].replace(/\n/g, "\\n").substr(0, 80) + match[2]);
         return lines;
@@ -929,6 +929,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     util.dump("cleanup: " + module.constructor.className);
                     util.trapErrors(module.cleanup, module);
                 }
+
+            JSMLoader.cleanup();
 
             services.observer.addObserver(this, "dactyl-rehash", true);
         },

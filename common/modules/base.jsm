@@ -7,7 +7,9 @@
 if (!JSMLoader)
     var JSMLoader = {
         builtin: Components.utils.Sandbox(this),
+        factories: [],
         globals: {},
+        manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
         stale: {},
         load: function load(url, target) {
             if (this.stale[url]) {
@@ -32,6 +34,10 @@ if (!JSMLoader)
             }
             Components.utils.import(url, target);
         },
+        cleanup: function unregister() {
+            for each (let factory in this.factories.splice(0))
+                this.manager.unregisterFactory(factory.classID, factory);
+        },
         purge: function purge() {
             for (let [url, global] in Iterator(this.globals))
                 this.stale[url] = true;
@@ -39,6 +45,13 @@ if (!JSMLoader)
         registerGlobal: function registerGlobal(uri, obj) {
             if (Cu.getGlobalForObject)
                 this.globals[uri.replace(/.* -> /, "")] = Cu.getGlobalForObject(obj);
+        },
+        registerFactory: function registerFactory(factory) {
+            this.manager.registerFactory(factory.classID,
+                                         String(factory.classID),
+                                         factory.contractID,
+                                         factory);
+            this.factories.push(factory);
         }
     };
 

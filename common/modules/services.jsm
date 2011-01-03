@@ -40,8 +40,8 @@ var Services = Module("Services", {
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           Ci.nsIFaviconService);
         this.add("focus",               "@mozilla.org/focus-manager;1",                     Ci.nsIFocusManager);
         this.add("fuel",                "@mozilla.org/fuel/application;1",                  Ci.extIApplication);
-        this.add("history",             "@mozilla.org/browser/global-history;2",            [Ci.nsIBrowserHistory, Ci.nsIGlobalHistory3,
-                                                                                             Ci.nsINavHistoryService, Ci.nsPIPlacesDatabase]);
+        this.add("history",             "@mozilla.org/browser/global-history;2",
+                 [Ci.nsIBrowserHistory, Ci.nsIGlobalHistory3, Ci.nsINavHistoryService, Ci.nsPIPlacesDatabase]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                Ci.nsIIOService);
         this.add("json",                "@mozilla.org/dom/json;1",                          Ci.nsIJSON, "createInstance");
         this.add("livemark",            "@mozilla.org/browser/livemark-service;2",          Ci.nsILivemarkService);
@@ -69,15 +69,20 @@ var Services = Module("Services", {
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", Ci.nsIFormatConverter);
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     Ci.nsIDocumentEncoder);
+        this.addClass("StreamChannel","@mozilla.org/network/input-stream-channel;1",
+                      [Ci.nsIChannel, Ci.nsIInputStreamChannel, Ci.nsIRequest], "setURI");
         this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", Ci.nsIWebBrowserPersist);
+        this.addClass("Pipe",         "@mozilla.org/pipe;1",                       Ci.nsIPipe, "init");
         this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess, "init");
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString, "data");
+        this.addClass("StringStream", "@mozilla.org/io/string-input-stream;1",     Ci.nsIStringInputStream, "data");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");
+        this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1",Ci.nsIAsyncStreamCopier, "init");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          Ci.nsIZipReader, "open");
         this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  Ci.nsIZipWriter);
 
-        if (!this.extensionManager)
+        if (!Ci.nsIExtensionManager || !this.extensionManager)
             Components.utils.import("resource://gre/modules/AddonManager.jsm");
         else
             global.AddonManager = {
@@ -162,15 +167,24 @@ var Services = Module("Services", {
             if (!ifaces)
                 return res.wrappedJSObject;
             Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));
-            if (init && args.length)
-                if (callable(res[init]))
+            if (init && args.length) {
+                try {
+                    var isCallable = callable(res[init]);
+                }
+                catch (e) {} // Ugh.
+
+                if (isCallable)
                     res[init].apply(res, args);
                 else
                     res[init] = args[0];
+            }
             return res;
         }
         catch (e) {
-            dump("dactyl: Service creation failed for '" + classes + "': " + e + "\n");
+            if (typeof util !== "undefined")
+                util.reportError(e);
+            else
+                dump("dactyl: Service creation failed for '" + classes + "': " + e + "\n" + (e.stack || Error(e).stack));
             return null;
         }
     },

@@ -536,7 +536,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @private
      */
     initDocument: function initDocument(doc) {
-        if (doc.documentURIObject.scheme === "dactyl") {
+        if (doc.location.protocol === "dactyl:") {
             dactyl.initHelp();
             config.styleHelp();
         }

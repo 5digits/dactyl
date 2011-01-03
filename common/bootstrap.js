@@ -88,28 +88,16 @@ FactoryProxy.prototype = {
     QueryInterface: XPCOMUtils.generateQI(Ci.nsIFactory),
     register: function () {
         dump("dactyl: bootstrap: register: " + this.classID + " " + this.contractID + "\n");
-        manager.registerFactory(this.classID,
-                                String(this.classID),
-                                this.contractID,
-                                this);
-    },
-    unregister: function () {
-        dump("dactyl: bootstrap: unregister: " + this.classID + " " + this.contractID + "\n");
-        manager.unregisterFactory(this.classID, this);
+
+        JSMLoader.registerFactory(this);
     },
     get module() {
-        try {
-            dump("dactyl: bootstrap: create module: " + this.contractID + "\n");
-            Object.defineProperty(this, "module", { value: {}, enumerable: true });
-            JSMLoader.load(this.url, this.module);
-            JSMLoader.registerGlobal(this.url, this.module.global);
-            return this.module;
-        }
-        catch (e) {
-            delete this.module;
-            reportError(e);
-            throw e;
-        }
+        dump("dactyl: bootstrap: create module: " + this.contractID + "\n");
+
+        Object.defineProperty(this, "module", { value: {}, enumerable: true });
+        JSMLoader.load(this.url, this.module);
+        JSMLoader.registerGlobal(this.url, this.module.global);
+        return this.module;
     },
     createInstance: function (iids) {
         return let (factory = this.module.NSGetFactory(this.classID))
@@ -194,9 +182,6 @@ function shutdown(data, reason) {
 
         services.observer.notifyObservers(null, "dactyl-cleanup", null);
         services.observer.notifyObservers(null, "dactyl-cleanup-modules", null);
-        for (let factory in values(components))
-            // TODO: Categories;
-            factory.unregister();
     }
 }
 
