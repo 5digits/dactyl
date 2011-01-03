@@ -2114,8 +2114,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.log("All modules loaded", 3);
 
-        prefs.set("extensions.dactyl.version", util.addon.version);
-
         try {
             if (services.fuel)
                 var args = services.fuel.storage.get("dactyl.commandlineArgs", null);
