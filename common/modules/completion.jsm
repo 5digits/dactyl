@@ -864,7 +864,7 @@ var Completion = Module("completion", {
         listCompleter: function listCompleter(name, filter, maxItems) {
             let context = modules.CompletionContext(filter || "");
             context.maxItems = maxItems;
-            context.fork.apply(context, ["list", 0, completion, name].concat(Array.slice(arguments, 3)));
+            context.fork.apply(context, ["list", 0, this, name].concat(Array.slice(arguments, 3)));
             context = context.contexts["/list"];
             context.wait();
 

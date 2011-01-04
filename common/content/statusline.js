@@ -18,11 +18,13 @@ var StatusLine = Module("statusline", {
         if (this.statusBar.localName == "toolbar") {
             styles.system.add("addon-bar", config.styleableChrome, <css><![CDATA[
                 #status-bar { margin-top: 0 !important; }
-                #addon-bar { padding: 0 !important; min-height: 18px !important; -moz-appearance: none !important; }
                 #addon-bar > statusbar { -moz-box-flex: 1 }
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
+            highlight.loadCSS(<![CDATA[
+                !AddonBar;#addon-bar  padding: 0 !important; min-height: 18px !important; -moz-appearance: none !important;
+            ]]>);
         }
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
