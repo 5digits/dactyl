@@ -82,8 +82,8 @@ var StatusLine = Module("statusline", {
      *
      * @param {'extended'|'secure'|'broken'|'insecure'} type
      */
-    set class(type) {
-        this._class = type;
+    set security(type) {
+        this._security = type;
         const highlightGroup = {
             extended: "StatusLineExtended",
             secure:   "StatusLineSecure",
@@ -93,17 +93,7 @@ var StatusLine = Module("statusline", {
 
         highlight.highlightNode(this.statusBar, this.baseGroup + highlightGroup[type]);
     },
-    get class() this._class,
-    set security(state) {
-        if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
-            this.class = "broken";
-        else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
-            this.class = "extended";
-        else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
-            this.class = "secure";
-        else // if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
-            this.class = "insecure";
-    },
+    get security() this._security,
 
     // update all fields of the statusline
     update: function update() {
