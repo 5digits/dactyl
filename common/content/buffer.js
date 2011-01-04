@@ -282,7 +282,7 @@ var Buffer = Module("buffer", {
         },
         onProgressChange: function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
             onProgressChange.superapply(this, arguments);
-            statusline.updateProgress(curTotalProgress/maxTotalProgress);
+            statusline.updateProgress(curTotalProgress / maxTotalProgress);
         },
         // happens when the users switches tabs
         onLocationChange: function onLocationChange(webProgress, request, uri) {
@@ -297,7 +297,6 @@ var Buffer = Module("buffer", {
             if (collapse)
                 dactyl.focus(document.documentElement);
             config.browser.mCurrentBrowser.collapsed = collapse;
-                uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
 
             util.timeout(function () {
                 buffer._triggerLoadAutocmd("LocationChange",
