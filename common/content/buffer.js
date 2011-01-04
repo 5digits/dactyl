@@ -8,8 +8,6 @@
 
 /** @scope modules */
 
-var Point = Struct("x", "y");
-
 /**
  * A class to manage the primary web content buffer. The name comes
  * from Vim's term, 'buffer', which signifies instances of open

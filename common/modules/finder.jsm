@@ -4,19 +4,33 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-/** @scope modules */
+Components.utils.import("resource://dactyl/base.jsm");
+defineModule("finder", {
+    exports: ["RangeFind", "RangeFinder", "rangefinder"],
+    use: ["prefs", "services", "util"]
+});
 
 /** @instance rangefinder */
 var RangeFinder = Module("rangefinder", {
-    init: function () {
-        this.lastFindPattern = "";
-    },
+    Local: function (dactyl, modules, window) ({
+        init: function () {
+            this.dactyl = dactyl;
+            this.commandline = modules.commandline;
+            this.modes = modules.modes;
+            this.window = window;
+            this.options = modules.options;
+            this.lastFindPattern = "";
+        },
+
+        get rangeFind() modules.buffer.localStore.rangeFind,
+        set rangeFind(val) modules.buffer.localStore.rangeFind = val
+    }),
 
     openPrompt: function (mode) {
-        let backwards = mode == modes.FIND_BACKWARD;
-        commandline.open(backwards ? "?" : "/", "", mode);
+        let backwards = mode == this.modes.FIND_BACKWARD;
+        this.commandline.open(backwards ? "?" : "/", "", mode);
 
-        if (this.rangeFind && this.rangeFind.window.get() === window)
+        if (this.rangeFind && this.rangeFind.window.get() === this.window)
             this.rangeFind.reset();
         this.find("", backwards);
     },
@@ -29,8 +43,8 @@ var RangeFinder = Module("rangefinder", {
         let selections = this.rangeFind && this.rangeFind.selections;
         let linksOnly = false;
         let regexp = false;
-        let matchCase = options["findcase"] === "smart"  ? /[A-Z]/.test(str) :
-                        options["findcase"] === "ignore" ? false : true;
+        let matchCase = this.options["findcase"] === "smart"  ? /[A-Z]/.test(str) :
+                        this.options["findcase"] === "ignore" ? false : true;
 
         str = str.replace(/\\(.|$)/g, function (m, n1) {
             if (n1 == "c")
@@ -53,7 +67,7 @@ var RangeFinder = Module("rangefinder", {
         // It's possible, with :tabdetach for instance, for the rangeFind to
         // actually move from one window to another, which breaks things.
         if (!this.rangeFind
-            || this.rangeFind.window.get() != window
+            || this.rangeFind.window.get() != this.window
             || linksOnly  != !!this.rangeFind.elementPath
             || regexp     != this.rangeFind.regexp
             || matchCase  != this.rangeFind.matchCase
@@ -61,7 +75,9 @@ var RangeFinder = Module("rangefinder", {
 
             if (this.rangeFind)
                 this.rangeFind.cancel();
-            this.rangeFind = RangeFind(matchCase, backward, linksOnly && options["hinttags"], regexp);
+            this.rangeFind = RangeFind(this.window, matchCase, backward,
+                                       linksOnly && this.options["hinttags"],
+                                       regexp);
             this.rangeFind.highlighted = highlighted;
             this.rangeFind.selections = selections;
         }
@@ -71,7 +87,7 @@ var RangeFinder = Module("rangefinder", {
     find: function (pattern, backwards) {
         let str = this.bootstrap(pattern, backwards);
         if (!this.rangeFind.find(str))
-            this.timeout(function () { dactyl.echoerr("E486: Pattern not found: " + pattern); }, 0);
+            this.timeout(function () { this.dactyl.echoerr("E486: Pattern not found: " + pattern); }, 0);
 
         return this.rangeFind.found;
     },
@@ -80,39 +96,39 @@ var RangeFinder = Module("rangefinder", {
         if (!this.rangeFind || this.rangeFind.stale)
             this.find(this.lastFindPattern);
         else if (!this.rangeFind.find(null, reverse))
-            dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern);
+            this.dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern);
         else if (this.rangeFind.wrapped)
             // hack needed, because wrapping causes a "scroll" event which
             // clears our command line
             this.timeout(function () {
                 let msg = this.rangeFind.backward ? "find hit TOP, continuing at BOTTOM"
                                                   : "find hit BOTTOM, continuing at TOP";
-                commandline.echo(msg, commandline.HL_WARNINGMSG,
-                                 commandline.APPEND_TO_MESSAGES | commandline.FORCE_SINGLELINE);
+                this.commandline.echo(msg, "Warning", this.commandline.APPEND_TO_MESSAGES
+                                                    | this.commandline.FORCE_SINGLELINE);
             }, 0);
         else
-            commandline.echo((this.rangeFind.backward ? "?" : "/") + this.lastFindPattern, null, commandline.FORCE_SINGLELINE);
+            this.commandline.widgets.message = ["Normal", (this.rangeFind.backward ? "?" : "/") + this.lastFindPattern];
 
-        if (options["hlfind"])
+        if (this.options["hlfind"])
             this.highlight();
         this.rangeFind.focus();
     },
 
     // Called when the user types a key in the find dialog. Triggers a find attempt if 'incfind' is set
     onKeyPress: function (command) {
-        if (options["incfind"]) {
+        if (this.options["incfind"]) {
             command = this.bootstrap(command);
             this.rangeFind.find(command);
         }
     },
 
     onSubmit: function (command) {
-        if (!options["incfind"] || !this.rangeFind || !this.rangeFind.found) {
+        if (!this.options["incfind"] || !this.rangeFind || !this.rangeFind.found) {
             this.clear();
-            this.find(command || this.lastFindPattern, modes.extended & modes.FIND_BACKWARD);
+            this.find(command || this.lastFindPattern, this.modes.extended & this.modes.FIND_BACKWARD);
         }
 
-        if (options["hlfind"])
+        if (this.options["hlfind"])
             this.highlight();
         this.rangeFind.focus();
     },
@@ -123,9 +139,6 @@ var RangeFinder = Module("rangefinder", {
         if (this.rangeFind)
             this.rangeFind.cancel();
     },
-
-    get rangeFind() buffer.localStore.rangeFind,
-    set rangeFind(val) buffer.localStore.rangeFind = val,
 
     /**
      * Highlights all occurrences of the last finded for string in the
@@ -145,7 +158,8 @@ var RangeFinder = Module("rangefinder", {
     }
 }, {
 }, {
-    modes: function () {
+    modes: function (dactyl, modules, window) {
+        const { modes } = modules;
         /* Must come before commandline. */
         modes.addMode("FIND_FORWARD", {
             extended: true,
@@ -156,21 +170,24 @@ var RangeFinder = Module("rangefinder", {
             description: "Backward Find mode, active when typing search input"
         });
     },
-    commandline: function () {
-        commandline.registerCallback("change", modes.FIND_FORWARD, this.closure.onKeyPress);
-        commandline.registerCallback("submit", modes.FIND_FORWARD, this.closure.onSubmit);
-        commandline.registerCallback("cancel", modes.FIND_FORWARD, this.closure.onCancel);
-        commandline.registerCallback("change", modes.FIND_BACKWARD, this.closure.onKeyPress);
-        commandline.registerCallback("submit", modes.FIND_BACKWARD, this.closure.onSubmit);
-        commandline.registerCallback("cancel", modes.FIND_BACKWARD, this.closure.onCancel);
+    commandline: function (dactyl, modules, window) {
+        const { commandline, modes, rangefinder } = modules;
+        commandline.registerCallback("change", modes.FIND_FORWARD, rangefinder.closure.onKeyPress);
+        commandline.registerCallback("submit", modes.FIND_FORWARD, rangefinder.closure.onSubmit);
+        commandline.registerCallback("cancel", modes.FIND_FORWARD, rangefinder.closure.onCancel);
+        commandline.registerCallback("change", modes.FIND_BACKWARD, rangefinder.closure.onKeyPress);
+        commandline.registerCallback("submit", modes.FIND_BACKWARD, rangefinder.closure.onSubmit);
+        commandline.registerCallback("cancel", modes.FIND_BACKWARD, rangefinder.closure.onCancel);
     },
-    commands: function () {
+    commands: function (dactyl, modules, window) {
+        const { commands, rangefinder } = modules;
         commands.add(["noh[lfind]"],
             "Remove the find highlighting",
             function () { rangefinder.clear(); },
             { argCount: "0" });
     },
-    mappings: function () {
+    mappings: function (dactyl, modules, window) {
+        const { buffer, config, mappings, modes, rangefinder } = modules;
         var myModes = config.browserModes.concat([modes.CARET]);
 
         mappings.add(myModes,
@@ -204,7 +221,8 @@ var RangeFinder = Module("rangefinder", {
             });
 
     },
-    options: function () {
+    options: function (dactyl, modules, window) {
+        const { options, rangefinder } = modules;
         // prefs.safeSet("accessibility.typeaheadfind.autostart", false);
         // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
         prefs.safeSet("accessibility.typeaheadfind", false);
@@ -258,9 +276,11 @@ var RangeFinder = Module("rangefinder", {
  * large amounts of data are concerned (e.g., for API documents).
  */
 var RangeFind = Class("RangeFind", {
-    init: function (matchCase, backward, elementPath, regexp) {
+    init: function (window, matchCase, backward, elementPath, regexp) {
         this.window = Cu.getWeakReference(window);
-        this.baseDocument = Cu.getWeakReference(content.document);
+        this.content = window.content;
+
+        this.baseDocument = Cu.getWeakReference(this.content.document);
         this.elementPath = elementPath || null;
         this.reverse = Boolean(backward);
 
@@ -268,7 +288,7 @@ var RangeFind = Class("RangeFind", {
         this.matchCase = Boolean(matchCase);
         this.regexp = Boolean(regexp);
 
-        this.ranges = this.makeFrameList(content);
+        this.ranges = this.makeFrameList(this.content);
 
         this.reset();
 
@@ -295,7 +315,11 @@ var RangeFind = Class("RangeFind", {
     get findString() this.lastString,
 
     get selectedRange() {
-        let selection = (buffer.focusedFrame || content).getSelection();
+        let win = this.content, store = this.content.document.dactylStore;;
+        if (store)
+            win = store.focusedFrame || win;
+
+        let selection = win.getSelection();
         return (selection.rangeCount ? selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
     },
     set selectedRange(range) {
@@ -347,7 +371,7 @@ var RangeFind = Class("RangeFind", {
             var node = util.evaluateXPath(RangeFind.selectNodePath, this.range.document,
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
         if (node) {
-            dactyl.focus(node);
+            node.focus()
             // Re-highlight collapsed selection
             this.selectedRange = this.lastRange;
         }
@@ -576,7 +600,7 @@ var RangeFind = Class("RangeFind", {
         return range;
     },
 
-    get stale() this._stale || this.baseDocument.get() != content.document,
+    get stale() this._stale || this.baseDocument.get() != this.content.document,
     set stale(val) this._stale = val,
 
     addListeners: function () {
@@ -653,7 +677,7 @@ var RangeFind = Class("RangeFind", {
                    range.compareBoundaryPoints(range.END_TO_START, r) <= 0;
         }
         catch (e) {
-            dactyl.reportError(e, true);
+            util.reportError(e, true);
             return false;
         }
     },
@@ -663,7 +687,7 @@ var RangeFind = Class("RangeFind", {
                    r.compareBoundaryPoints(range.END_TO_START, range) <= 0;
         }
         catch (e) {
-            dactyl.reportError(e, true);
+            util.reportError(e, true);
             return false;
         }
     },
@@ -688,5 +712,7 @@ var RangeFind = Class("RangeFind", {
     sameDocument: function (r1, r2) r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument,
     selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(function (p) "ancestor-or-self::" + p).join(" | ")
 });
+
+endModule();
 
 // vim: set fdm=marker sw=4 ts=4 et:

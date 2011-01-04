@@ -10,7 +10,7 @@ try {
 
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("util", {
-    exports: ["FailedAssertion", "Math", "NS", "Util", "XBL", "XHTML", "XUL", "util"],
+    exports: ["FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
     use: ["config", "highlight", "storage", "template"]
 });
@@ -29,6 +29,7 @@ memoize(this, "Commands", function () {
 });
 
 var FailedAssertion = Class("FailedAssertion", ErrorBase);
+var Point = Struct("x", "y");
 
 function wrapCallback(fn)
     fn.wrapper = function wrappedCallback () {
