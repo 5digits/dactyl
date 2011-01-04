@@ -604,8 +604,10 @@ var CommandLine = Module("commandline", {
         this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
 
         // open the completion list automatically if wanted
-        if (cmd.length)
+        if (cmd.length) {
             commandline.triggerCallback("change", this.currentExtendedMode, cmd);
+            this._autocompleteTimer.flush();
+        }
     },
 
     /**
