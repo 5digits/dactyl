@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/base.jsm");
 defineModule("io", {
     exports: ["IO", "io"],
     require: ["services"],
-    use: ["config", "storage", "template", "util"]
+    use: ["config", "storage", "styles", "template", "util"]
 });
 
 // TODO: why are we passing around strings rather than file objects?
