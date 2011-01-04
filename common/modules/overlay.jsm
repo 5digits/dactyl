@@ -145,40 +145,42 @@ var Overlay = Module("Overlay", {
 
                 let prefix = [BASE];
 
-                ["base",
-                 "completion",
-                 "config",
-                 "javascript",
-                 "overlay",
-                 "prefs",
-                 "services",
-                 "storage",
-                 "util"
-                ].forEach(function (name) require(jsmodules, name));
-                prefix.unshift("chrome://" + config.name + "/content/");
+                defineModule.time("load", null, function _load() {
+                    ["base",
+                     "completion",
+                     "config",
+                     "javascript",
+                     "overlay",
+                     "prefs",
+                     "services",
+                     "storage",
+                     "util"
+                    ].forEach(function (name) require(jsmodules, name));
+                    prefix.unshift("chrome://" + config.name + "/content/");
 
-                ["dactyl",
-                 "modes",
-                 "abbreviations",
-                 "autocommands",
-                 "buffer",
-                 "commandline",
-                 "commands",
-                 "editor",
-                 "events",
-                 "finder",
-                 "highlight",
-                 "hints",
-                 "io",
-                 "mappings",
-                 "marks",
-                 "options",
-                 "statusline",
-                 "styles",
-                 "template"
-                 ].forEach(modules.load);
+                    ["dactyl",
+                     "modes",
+                     "abbreviations",
+                     "autocommands",
+                     "buffer",
+                     "commandline",
+                     "commands",
+                     "editor",
+                     "events",
+                     "finder",
+                     "highlight",
+                     "hints",
+                     "io",
+                     "mappings",
+                     "marks",
+                     "options",
+                     "statusline",
+                     "styles",
+                     "template"
+                     ].forEach(modules.load);
 
-                config.scripts.forEach(modules.load);
+                    config.scripts.forEach(modules.load);
+                }, this);
             },
             load: function (document) {
                 var { modules, Module } = window.dactyl.modules;
@@ -194,7 +196,7 @@ var Overlay = Module("Overlay", {
                 const start = Date.now();
                 const deferredInit = { load: [] };
                 const seen = set();
-                const loaded = set(["init"]);
+                const loaded = set();
                 modules.loaded = loaded;
 
                 function init(module) {
@@ -248,6 +250,11 @@ var Overlay = Module("Overlay", {
                     }
                     return modules[module.className];
                 }
+
+                for each (let module in defineModule.modules)
+                    defineModule.time(module.constructor.className, "init",
+                                      module.INIT.init, module,
+                                      modules.dactyl, modules, window);
 
                 defineModule.modules.map(init);
 

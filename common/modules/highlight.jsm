@@ -282,7 +282,7 @@ var Highlights = Module("Highlight", {
                 if (scheme == "default")
                     highlight.clear();
                 else
-                    dactyl.assert(io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]),
+                    dactyl.assert(modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]),
                         "E185: Cannot find color scheme " + scheme);
                 autocommands.trigger("ColorScheme", { name: scheme });
             },
