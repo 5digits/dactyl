@@ -141,7 +141,7 @@ var RangeFinder = Module("rangefinder", {
     },
 
     /**
-     * Highlights all occurrences of the last finded for string in the
+     * Highlights all occurrences of the last sought for string in the
      * current buffer.
      */
     highlight: function () {
