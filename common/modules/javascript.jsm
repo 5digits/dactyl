@@ -4,24 +4,39 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+try {
+
+Components.utils.import("resource://dactyl/base.jsm");
+defineModule("javascript", {
+    exports: ["JavaScript", "javascript"],
+    use: ["services", "template", "util"],
+});
+
 // TODO: Clean this up.
 
 var JavaScript = Module("javascript", {
-    init: function () {
-        this._stack = [];
-        this._functions = [];
-        this._top = {};  // The element on the top of the stack.
-        this._last = ""; // The last opening char pushed onto the stack.
-        this._lastNonwhite = ""; // Last non-whitespace character we saw.
-        this._lastChar = "";     // Last character we saw, used for \ escaping quotes.
-        this._str = "";
+    Local: function (dactyl, modules, window) ({
+        init: function () {
+            this.modules = modules;
+            this.window = window
 
-        this._lastIdx = 0;
+            this._stack = [];
+            this._functions = [];
+            this._top = {};  // The element on the top of the stack.
+            this._last = ""; // The last opening char pushed onto the stack.
+            this._lastNonwhite = ""; // Last non-whitespace character we saw.
+            this._lastChar = "";     // Last character we saw, used for \ escaping quotes.
+            this._str = "";
 
-        this._cacheKey = null;
+            this._lastIdx = 0;
 
-        this._nullSandbox = Cu.Sandbox("about:blank");
-    },
+            this._cacheKey = null;
+
+            this._nullSandbox = Cu.Sandbox("about:blank");
+        },
+    }),
+
+    newContext: function () this.modules.newContext(this.modules.userContext),
 
     get completers() JavaScript.completers, // For backward compatibility
 
@@ -39,7 +54,7 @@ var JavaScript = Module("javascript", {
             return;
 
         let seen = isinstance(obj, ["Sandbox"]) ? set(JavaScript.magicalNames) : {};
-        let globals = values(toplevel && window === obj ? JavaScript.globalNames : []);
+        let globals = values(toplevel && this.window === obj ? this.globalNames : []);
         for (let key in iter(globals, properties(obj, !toplevel, true)))
             if (!set.add(seen, key))
                 yield key;
@@ -60,12 +75,12 @@ var JavaScript = Module("javascript", {
             return [];
         if (isinstance(obj, ["Sandbox"]) && !toplevel) // Temporary hack.
             return [];
-        if (jsmodules.isPrototypeOf(obj) && !toplevel)
+        if (this.modules.jsmodules.isPrototypeOf(obj) && !toplevel)
             return [];
 
         let completions = [k for (k in this.iter(obj, toplevel))];
-        if (obj === modules) // Hack.
-            completions = completions.concat([k for (k in this.iter(jsmodules, toplevel))]);
+        if (obj === this.modules) // Hack.
+            completions = completions.concat([k for (k in this.iter(this.modules.jsmodules, toplevel))]);
         return completions;
     },
 
@@ -82,9 +97,9 @@ var JavaScript = Module("javascript", {
         context[JavaScript.EVAL_EXPORT] = function export(obj) cache[key] = obj;
         try {
             if (tmp != null) // Temporary hack until bug 609949 is fixed.
-                dactyl.userEval(JavaScript.EVAL_EXPORT + "(" + arg + ")", context, "[Command Line Completion]", 1);
+                this.modules.dactyl.userEval(JavaScript.EVAL_EXPORT + "(" + arg + ")", context, "[Command Line Completion]", 1);
             else
-                cache[key] = dactyl.userEval(arg, context, "[Command Line Completion]", 1);
+                cache[key] = this.modules.dactyl.userEval(arg, context, "[Command Line Completion]", 1);
 
             return cache[key];
         }
@@ -254,7 +269,7 @@ var JavaScript = Module("javascript", {
     _getObj: function (frame, stop) {
         let statement = this._get(frame, 0, "statements") || 0; // Current statement.
         let prev = statement;
-        let obj = window;
+        let obj = this.window;
         let cacheKey;
         for (let [, dot] in Iterator(this._get(frame).dots.concat(stop))) {
             if (dot < statement)
@@ -287,9 +302,9 @@ var JavaScript = Module("javascript", {
 
         this._cacheKey = null;
         let obj = [[this.cache.evalContext, "Local Variables"],
-                   [userContext, "Global Variables"],
-                   [modules, "modules"],
-                   [window, "window"]]; // Default objects;
+                   [this.modules.userContext, "Global Variables"],
+                   [this.modules, "modules"],
+                   [this.window, "window"]]; // Default objects;
         // Is this an object dereference?
         if (dot < statement) // No.
             dot = statement - 1;
@@ -322,7 +337,7 @@ var JavaScript = Module("javascript", {
     _complete: function (objects, key, compl, string, last) {
         const self = this;
 
-        if (!window.Object.getOwnPropertyNames && !options["jsdebugger"] && !this.context.message)
+        if (!this.window.Object.getOwnPropertyNames && !services.debugger.isOn && !this.context.message)
             this.context.message = "For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
 
         let orig = compl;
@@ -430,14 +445,13 @@ var JavaScript = Module("javascript", {
             this._buildStack.call(this, context.filter);
         }
         catch (e) {
-            if (e.message != "Invalid JS")
-                dactyl.reportError(e);
             this._lastIdx = 0;
+            util.assert(!e.message, e.message);
             return null;
         }
 
         this.context.getCache("evalled", Object);
-        this.context.getCache("evalContext", function () newContext(userContext));
+        this.context.getCache("evalContext", this.closure.newContext);
 
         // Okay, have parse stack. Figure out what we're completing.
 
@@ -586,27 +600,15 @@ var JavaScript = Module("javascript", {
             this._top.offset = o;
         }
         return null;
-    }
-}, {
-    EVAL_TMP: "__dactyl_eval_tmp",
-    EVAL_EXPORT: "__dactyl_eval_export",
+    },
 
-    /**
-     * A map of argument completion functions for named methods. The
-     * signature and specification of the completion function
-     * are fairly complex and yet undocumented.
-     *
-     * @see JavaScript.setCompleter
-     */
-    completers: {},
-
-    magicalNames: Class.memoize(function () Object.getOwnPropertyNames(Cu.Sandbox(window), true).sort()),
+    magicalNames: Class.memoize(function () Object.getOwnPropertyNames(Cu.Sandbox(this.window), true).sort()),
 
     /**
      * A list of properties of the global object which are not
      * enumerable by any standard method.
      */
-    globalNames: Class.memoize(function () array.uniq([
+    globalNames: Class.memoize(function () let (self = this) array.uniq([
         "Array", "ArrayBuffer", "AttributeName", "Boolean", "Components",
         "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
         "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date",
@@ -624,8 +626,21 @@ var JavaScript = Module("javascript", {
         "isXMLName", "parseFloat", "parseInt", "undefined", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
-     .concat(JavaScript.magicalNames)
-     .filter(function (k) k in window))),
+     .concat(this.magicalNames)
+     .filter(function (k) k in self.window))),
+
+}, {
+    EVAL_TMP: "__dactyl_eval_tmp",
+    EVAL_EXPORT: "__dactyl_eval_export",
+
+    /**
+     * A map of argument completion functions for named methods. The
+     * signature and specification of the completion function
+     * are fairly complex and yet undocumented.
+     *
+     * @see JavaScript.setCompleter
+     */
+    completers: {},
 
     /**
      * Installs argument string completers for a set of functions.
@@ -658,12 +673,16 @@ var JavaScript = Module("javascript", {
         return arguments[0];
     }
 }, {
-    completion: function () {
-        completion.javascript = this.closure.complete;
+    init: function init(dactyl, modules, window) {
+        init.superapply(this, arguments);
+    },
+    completion: function (dactyl, modules, window) {
+        const { completion, javascript } = modules;
+        completion.javascript = javascript.closure.complete;
         completion.javascriptCompleter = JavaScript; // Backwards compatibility.
     },
-    options: function () {
-        options.add(["jsdebugger", "jsd"],
+    options: function (dactyl, modules, window) {
+        modules.options.add(["jsdebugger", "jsd"],
             "Enable the JavaScript debugger service for use in JavaScript completion",
             "boolean", false, {
                 setter: function (value) {
@@ -677,5 +696,9 @@ var JavaScript = Module("javascript", {
             });
     }
 });
+
+endModule();
+
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et:

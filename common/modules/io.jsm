@@ -28,7 +28,7 @@ var IO = Module("io", {
         this._oldcwd = null;
     },
 
-    Local: function (dactyl, modules, window) let ({ Script, plugins } = modules) ({
+    Local: function (dactyl, modules, window) let ({ Script, io, plugins } = modules) ({
 
         init: function init() {
             this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);

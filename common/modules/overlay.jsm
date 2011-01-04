@@ -146,24 +146,24 @@ var Overlay = Module("Overlay", {
                 let prefix = [BASE];
 
                 ["base",
+                 "completion",
                  "config",
-                 "util",
-                 "services",
+                 "javascript",
                  "overlay",
                  "prefs",
-                 "storage"
+                 "services",
+                 "storage",
+                 "util"
                 ].forEach(function (name) require(jsmodules, name));
                 prefix.unshift("chrome://" + config.name + "/content/");
 
-                ["javascript",
-                 "dactyl",
+                ["dactyl",
                  "modes",
                  "abbreviations",
                  "autocommands",
                  "buffer",
                  "commandline",
                  "commands",
-                 "completion",
                  "editor",
                  "events",
                  "finder",
@@ -212,6 +212,8 @@ var Overlay = Module("Overlay", {
                             deferredInit[mod].push(init(func, mod));
                         }
                     }
+                    for (let [, fn] in iter(deferredInit[module.constructor.className] || []))
+                        fn();
                 }
 
                 function load(module, prereq, frame) {
@@ -239,8 +241,6 @@ var Overlay = Module("Overlay", {
                         modules[module.className] = defineModule.time(module.className, "init", module);
 
                         init(modules[module.className]);
-                        for (let [, fn] in iter(deferredInit[module.className] || []))
-                            fn();
                     }
                     catch (e) {
                         util.dump("Loading " + (module && module.className) + ":");

@@ -6,7 +6,13 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-/** @scope modules */
+try {
+
+Components.utils.import("resource://dactyl/base.jsm");
+defineModule("completion", {
+    exports: ["CompletionContext", "Completion", "completion"],
+    use: ["config", "template", "util"]
+});
 
 /**
  * Creates a new completion context.
@@ -36,9 +42,9 @@ var CompletionContext = Class("CompletionContext", {
             let parent = editor;
             name = parent.name + "/" + name;
 
-            this.autoComplete = options.get("autocomplete").getKey(name);
-            this.sortResults  = options.get("wildsort").getKey(name);
-            this.wildcase     = options.get("wildcase").getKey(name);
+            this.autoComplete = this.options.get("autocomplete").getKey(name);
+            this.sortResults  = this.options.get("wildsort").getKey(name);
+            this.wildcase     = this.options.get("wildcase").getKey(name);
 
             this.contexts = parent.contexts;
             if (name in this.contexts)
@@ -237,7 +243,7 @@ var CompletionContext = Class("CompletionContext", {
             return this.cache.allItemsResult;
         }
         catch (e) {
-            dactyl.reportError(e);
+            util.reportError(e);
             return { start: 0, items: [], longestAllSubstring: "" };
         }
     },
@@ -385,7 +391,7 @@ var CompletionContext = Class("CompletionContext", {
                     this.itemCache[this.key] = res;
             }
             catch (e) {
-                dactyl.reportError(e);
+                util.reportError(e);
                 this.message = "Error: " + e;
             }
         }
@@ -446,7 +452,7 @@ var CompletionContext = Class("CompletionContext", {
         delete this._substrings;
 
         if (!this.forceAnchored)
-            this.anchored = options.get("wildanchor").getKey(this.name, this.anchored);
+            this.anchored = this.options.get("wildanchor").getKey(this.name, this.anchored);
 
         // Item matchers
         if (this.ignoreCase)
@@ -484,7 +490,7 @@ var CompletionContext = Class("CompletionContext", {
         }
         catch (e) {
             this.message = "Error: " + e;
-            dactyl.reportError(e);
+            util.reportError(e);
             return [];
         }
     },
@@ -645,7 +651,7 @@ var CompletionContext = Class("CompletionContext", {
     fork: function fork(name, offset, self, completer) {
         if (isString(completer))
             completer = self[completer];
-        let context = CompletionContext(this, name, offset);
+        let context = this.constructor(this, name, offset);
         if (this.contextList.indexOf(context) < 0)
             this.contextList.push(context);
 
@@ -833,40 +839,44 @@ var Completion = Module("completion", {
 
     get setFunctionCompleter() JavaScript.setCompleter, // Backward compatibility
 
-    // FIXME
-    _runCompleter: function _runCompleter(name, filter, maxItems) {
-        let context = CompletionContext(filter);
-        context.maxItems = maxItems;
-        let res = context.fork.apply(context, ["run", 0, this, name].concat(Array.slice(arguments, 3)));
-        if (res) {
-            if (Components.stack.caller.name === "runCompleter") // FIXME
-                return { items: res.map(function (i) ({ item: i })) };
-            context.contexts["/run"].completions = res;
-        }
-        context.wait(true);
-        return context.allItems;
-    },
+    Local: function (dactyl, modules, window) ({
+        options: modules.options,
 
-    runCompleter: function runCompleter(name, filter, maxItems) {
-        return this._runCompleter.apply(this, Array.slice(arguments))
-                   .items.map(function (i) i.item);
-    },
+        // FIXME
+        _runCompleter: function _runCompleter(name, filter, maxItems) {
+            let context = modules.CompletionContext(filter);
+            context.maxItems = maxItems;
+            let res = context.fork.apply(context, ["run", 0, this, name].concat(Array.slice(arguments, 3)));
+            if (res) {
+                if (Components.stack.caller.name === "runCompleter") // FIXME
+                    return { items: res.map(function (i) ({ item: i })) };
+                context.contexts["/run"].completions = res;
+            }
+            context.wait(true);
+            return context.allItems;
+        },
 
-    listCompleter: function listCompleter(name, filter, maxItems) {
-        let context = CompletionContext(filter || "");
-        context.maxItems = maxItems;
-        context.fork.apply(context, ["list", 0, completion, name].concat(Array.slice(arguments, 3)));
-        context = context.contexts["/list"];
-        context.wait();
+        runCompleter: function runCompleter(name, filter, maxItems) {
+            return this._runCompleter.apply(this, Array.slice(arguments))
+                       .items.map(function (i) i.item);
+        },
 
-        commandline.commandOutput(
-            <div highlight="Completions">
-                { template.map(context.contextList.filter(function (c) c.hasItems && c.items.length),
-                    function (context)
-                        template.completionRow(context.title, "CompTitle") +
-                        template.map(context.items, function (item) context.createRow(item), null, 100)) }
-            </div>);
-    },
+        listCompleter: function listCompleter(name, filter, maxItems) {
+            let context = modules.CompletionContext(filter || "");
+            context.maxItems = maxItems;
+            context.fork.apply(context, ["list", 0, completion, name].concat(Array.slice(arguments, 3)));
+            context = context.contexts["/list"];
+            context.wait();
+
+            modules.commandline.commandOutput(
+                <div highlight="Completions">
+                    { template.map(context.contextList.filter(function (c) c.hasItems && c.items.length),
+                        function (context)
+                            template.completionRow(context.title, "CompTitle") +
+                            template.map(context.items, function (item) context.createRow(item), null, 100)) }
+                </div>);
+        },
+    }),
 
     ////////////////////////////////////////////////////////////////////////////////
     ////////////////////// COMPLETION TYPES ////////////////////////////////////////
@@ -882,14 +892,14 @@ var Completion = Module("completion", {
         let start = 0;
         let skip = 0;
 
-        if (options["urlseparator"])
-            skip = context.filter.match("^.*" + options["urlseparator"]); // start after the last 'urlseparator'
+        if (this.options["urlseparator"])
+            skip = context.filter.match("^.*" + this.options["urlseparator"]); // start after the last 'urlseparator'
 
         if (skip)
             context.advance(skip[0].length);
 
         if (complete == null)
-            complete = options["complete"];
+            complete = this.options["complete"];
 
         if (/^about:/.test(context.filter)) {
             context.fork("about", 6, this, function (context) {
@@ -960,11 +970,22 @@ var Completion = Module("completion", {
 }, {
     UrlCompleter: Struct("name", "description", "completer")
 }, {
-    commands: function () {
+    init: function init(dactyl, modules, window) {
+        init.superapply(this, arguments);
+
+        modules.CompletionContext = Class("CompletionContext", CompletionContext, {
+            init: function init() {
+                this.options = modules.options;
+                return init.superapply(this, arguments);
+            }
+        });
+    },
+    commands: function (dactyl, modules, window) {
+        const { commands, completion } = modules;
         commands.add(["contexts"],
             "List the completion contexts used during completion of an Ex command",
             function (args) {
-                commandline.commandOutput(
+                modules.commandline.commandOutput(
                     <div highlight="Completions">
                         { template.completionRow(["Context", "Title"], "CompTitle") }
                         { template.map(completion.contextList || [], function (item) template.completionRow(item, "CompItem")) }
@@ -980,7 +1001,8 @@ var Completion = Module("completion", {
                 literal: 0
             });
     },
-    options: function () {
+    options: function (dactyl, modules, window) {
+        const { completion, options } = modules;
         let wildmode = {
             completer: function (context) [
                 // Why do we need ""?
@@ -1041,5 +1063,9 @@ var Completion = Module("completion", {
             "regexplist", ".*");
     }
 });
+
+endModule();
+
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et:
