@@ -382,10 +382,10 @@ var ConfigBase = Class("ConfigBase", {
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
         StatusLine;;;FontFixed  font-weight: bold; background: transparent !important; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
-        StatusLineNormal;[dactyl|highlight]   color: white !important; background: black   !important;
-        StatusLineBroken;[dactyl|highlight]   color: black !important; background: #FFa0a0 !important /* light-red */
-        StatusLineSecure;[dactyl|highlight]   color: black !important; background: #a0a0FF !important /* light-blue */
-        StatusLineExtended;[dactyl|highlight] color: black !important; background: #a0FFa0 !important /* light-green */
+        StatusLineNormal;[dactyl|highlight]    color: white !important; background: black   !important;
+        StatusLineBroken;[dactyl|highlight]    color: black !important; background: #FFa0a0 !important; /* light-red */
+        StatusLineSecure;[dactyl|highlight]    color: black !important; background: #a0a0FF !important; /* light-blue */
+        StatusLineExtended;[dactyl|highlight]  color: black !important; background: #a0FFa0 !important; /* light-green */
 
         TabClose;.tab-close-button
         TabIcon;.tab-icon       min-width: 16px;
