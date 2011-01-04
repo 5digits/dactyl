@@ -91,10 +91,10 @@ var IO = Module("io", {
          * @param {boolean} all Whether all found files should be sourced.
          */
         sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
-            let dirs = options["runtimepath"];
+            let dirs = modules.options["runtimepath"];
             let found = false;
 
-            dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options.get("runtimepath").stringValue, 2);
+            dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + modules.options.get("runtimepath").stringValue, 2);
 
         outer:
             for (let [, dir] in Iterator(dirs)) {
@@ -351,7 +351,7 @@ var IO = Module("io", {
 
         let file;
 
-        if (File.isAbsolutePath(program))
+        if (program instanceof File || File.isAbsolutePath(program))
             file = this.File(program, true);
         else
             file = this.pathSearch(program);
@@ -406,21 +406,21 @@ var IO = Module("io", {
             else if (input)
                 stdin.write(input);
 
-            let shell = File.expandPath(storage["options"].get("shell").value);
+            let shell = File(storage["options"].get("shell").value);
             let shcf = storage["options"].get("shellcmdflag").value;
 
             if (isArray(command))
                 command = command.map(escape).join(" ");
 
             // TODO: implement 'shellredir'
-            if (util.OS.isWindows && !/sh/.test(options["shell"])) {
+            if (util.OS.isWindows && !/sh/.test(shell.leafName)) {
                 command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(shell, shcf.split(/\s+/).concat(command), true);
             }
             else {
                 cmd.write("cd " + escape(this.cwd) + "\n" +
                         ["exec", ">" + escape(stdout.path), "2>&1", "<" + escape(stdin.path),
-                         escape(shell), shcf, escape(command)].join(" "));
+                         escape(shell.path), shcf, escape(command)].join(" "));
                 res = this.run("/bin/sh", ["-e", cmd.path], true);
             }
 
