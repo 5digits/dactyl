@@ -143,7 +143,9 @@ var Bookmarks = Module("bookmarks", {
      * Returns true if the given URL is bookmarked and that bookmark is
      * not a Live Bookmark.
      *
-     * @param {string} url The URL of which to check the bookmarked state.
+     * @param {nsIURI|string} url The URL of which to check the bookmarked
+     *     state.
+     * @returns {boolean}
      */
     isBookmarked: function isBookmarked(uri) {
         if (isString(uri))
