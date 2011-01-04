@@ -248,7 +248,7 @@ var Editor = Module("editor", {
 
         dactyl.assert(args.length >= 1, "No editor specified");
 
-        io.run(io.expandPath(args.shift()), args, blocking);
+        io.run(args.shift(), args, blocking);
     },
 
     // TODO: clean up with 2 functions for textboxes and currentEditor?
