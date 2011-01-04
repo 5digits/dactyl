@@ -98,9 +98,15 @@ window[dactyl|highlight~=Bell] > * {
 }
 
 [dactyl|highlight~=CmdLine] {
-    background: inherit !important;
+    /* background: inherit !important; */
     color: inherit !important;
 }
+
+.dactyl-status-field-url {
+    /* background-color: inherit !important; */
+    color: inherit !important;
+}
+
 [dactyl|highlight~=CmdLine],
 [dactyl|highlight~=CmdLine] > [dactyl|highlight~=CmdLine] {
     padding: 0px !important;
@@ -131,11 +137,6 @@ statusbarpanel {
     background: transparent;
 }
 
-.dactyl-status-field-url {
-    background-color: inherit !important;
-    color: inherit !important;
-}
-
 /* no longer at the window's bottom right corner */
 .statusbar-resizerpanel {
     display: none;
@@ -145,12 +146,12 @@ statusbarpanel {
 }
 
 .dactyl-commandline-prompt {
-    background-color: inherit;
+    /* background-color: inherit; */
     margin: 0px;
     padding: 0px;
 }
 .dactyl-commandline-command {
-    background-color: inherit !important;
+    /* background-color: inherit !important; */
     color: inherit !important;
     margin: 0px;
 }

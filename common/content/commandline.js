@@ -241,6 +241,15 @@ var CommandWidgets = Class("CommandWidgets", {
                     }
                 }
             }
+        // Hack.
+        function check(node) {
+            if (util.computedStyle(node).display === "-moz-stack") {
+                let nodes = Array.filter(node.children, function (n) !n.collapsed && n.boxObject.height);
+                nodes.forEach(function (node, i) node.style.opacity = (i == nodes.length - 1) ? "" : "0");
+            }
+            Array.forEach(node.children, check);
+        }
+        [this.commandbar.container, this.statusbar.container].forEach(check);
     },
 
     active: Class.memoize(Object),

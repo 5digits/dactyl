@@ -13,11 +13,12 @@ var StatusLine = Module("statusline", {
         this._statusLine = document.getElementById("status-bar");
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
         this.statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
+        this.baseGroup = this.statusBar == this._statusLine ? "StatusLine " : "";
 
         if (this.statusBar.localName == "toolbar") {
             styles.system.add("addon-bar", config.styleableChrome, <css><![CDATA[
                 #status-bar { margin-top: 0 !important; }
-                #addon-bar { padding: 0 !important; min-height: 18px !important; }
+                #addon-bar { padding: 0 !important; min-height: 18px !important; -moz-appearance: none !important; }
                 #addon-bar > statusbar { -moz-box-flex: 1 }
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
@@ -26,9 +27,9 @@ var StatusLine = Module("statusline", {
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
-            <statusbar id="status-bar" highlight="StatusLine StatusLineNormal">
+            <statusbar id="status-bar" highlight="StatusLine">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
-                <hbox style="background: inherit;" key="container"  flex="1" hidden="false" align="center">
+                <hbox key="container" hidden="false" align="center" flex="1">
                     <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" highlight="CmdLine StatusCmdLine">
                         <hbox                                                class="dactyl-container" highlight="CmdLine StatusCmdLine">
                             <label key="mode"          crop="end"            class="plain" collapsed="true"/>
@@ -64,6 +65,7 @@ var StatusLine = Module("statusline", {
             objects: this.widgets = { get status() this.container },
             prepend: prepend.elements()
         });
+        this.class = "insecure";
     },
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,
@@ -87,7 +89,7 @@ var StatusLine = Module("statusline", {
             insecure: "StatusLineNormal"
         };
 
-        highlight.highlightNode(this._statusLine, "StatusLine " + highlightGroup[type]);
+        highlight.highlightNode(this.statusBar, this.baseGroup + highlightGroup[type]);
     },
     get class() this._class,
 

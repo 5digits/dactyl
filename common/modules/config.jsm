@@ -313,24 +313,24 @@ var ConfigBase = Class("ConfigBase", {
         CmdQuestion;[dactyl|highlight]   &#x0d; StatusQuestion;[dactyl|highlight]
         CmdWarningMsg;[dactyl|highlight] &#x0d; StatusWarningMsg;[dactyl|highlight]
 
-        Normal            color: black   !important; background: white   !important; font-weight: normal !important;
-        StatusNormal      color: inherit !important; background: inherit !important;
-        ErrorMsg          color: white   !important; background: red     !important; font-weight: bold !important;
-        InfoMsg           color: black   !important; background: white   !important;
-        StatusInfoMsg     color: inherit !important; background: inherit !important;
-        LineNr            color: orange  !important; background: white   !important;
-        ModeMsg           color: black   !important; background: white   !important;
-        StatusModeMsg     color: inherit !important; background: inherit !important; padding-right: 1em;
-        MoreMsg           color: green   !important; background: white   !important;
-        StatusMoreMsg                                background: inherit !important;
+        Normal            color: black   !important; background: white       !important; font-weight: normal !important;
+        StatusNormal      color: inherit !important; background: transparent !important;
+        ErrorMsg          color: white   !important; background: red         !important; font-weight: bold !important;
+        InfoMsg           color: black   !important; background: white       !important;
+        StatusInfoMsg     color: inherit !important; background: transparent !important;
+        LineNr            color: orange  !important; background: white       !important;
+        ModeMsg           color: black   !important; background: white       !important;
+        StatusModeMsg     color: inherit !important; background: transparent !important; padding-right: 1em;
+        MoreMsg           color: green   !important; background: white       !important;
+        StatusMoreMsg                                background: transparent !important;
         Message           white-space: pre-wrap !important; min-width: 100%; width: 100%; padding-left: 4em; text-indent: -4em; display: block;
         Message String    white-space: pre-wrap;
         NonText           color: blue; background: transparent !important;
         *Preview          color: gray;
-        Question          color: green   !important; background: white   !important; font-weight: bold !important;
-        StatusQuestion    color: green   !important; background: inherit !important;
-        WarningMsg        color: red     !important; background: white   !important;
-        StatusWarningMsg  color: red     !important; background: inherit !important;
+        Question          color: green   !important; background: white       !important; font-weight: bold !important;
+        StatusQuestion    color: green   !important; background: transparent !important;
+        WarningMsg        color: red     !important; background: white       !important;
+        StatusWarningMsg  color: red     !important; background: transparent !important;
 
         CmdLine;>*;;FontFixed   padding: 1px !important;
         CmdPrompt;.dactyl-commandline-prompt
@@ -381,11 +381,11 @@ var ConfigBase = Class("ConfigBase", {
         Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
-        StatusLine;;;FontFixed  font-weight: bold; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
-        StatusLineNormal        color: white !important; background: black   !important;
-        StatusLineBroken        color: black !important; background: #FFa0a0 !important /* light-red */
-        StatusLineSecure        color: black !important; background: #a0a0FF !important /* light-blue */
-        StatusLineExtended      color: black !important; background: #a0FFa0 !important /* light-green */
+        StatusLine;;;FontFixed  font-weight: bold; background: transparent !important; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
+        StatusLineNormal;[dactyl|highlight]   color: white !important; background: black   !important;
+        StatusLineBroken;[dactyl|highlight]   color: black !important; background: #FFa0a0 !important /* light-red */
+        StatusLineSecure;[dactyl|highlight]   color: black !important; background: #a0a0FF !important /* light-blue */
+        StatusLineExtended;[dactyl|highlight] color: black !important; background: #a0FFa0 !important /* light-green */
 
         TabClose;.tab-close-button
         TabIcon;.tab-icon       min-width: 16px;
