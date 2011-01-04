@@ -93,8 +93,14 @@ ChromeData.prototype = {
 
     newChannel: function (uri) {
         try {
-            if (uri.scheme == this.scheme)
-                return makeChannel(uri.spec.replace(/^.*?:\/*(.*)(?:#.*)?/, "data:$1"), uri);
+            if (uri.scheme == this.scheme) {
+                let channel = ioService.newChannel(uri.spec.replace(/^.*?:\/*(.*)(?:#.*)?/, "data:$1"),
+                                                   null, null);
+                channel.contentCharset = "UTF-8";
+                channel.owner = systemPrincipal;
+                channel.originalURI = uri;
+                return channel;
+            }
         }
         catch (e) {}
         return fakeChannel(uri);

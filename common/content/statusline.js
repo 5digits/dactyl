@@ -143,7 +143,7 @@ var StatusLine = Module("statusline", {
 
         // TODO: this probably needs a more general solution.
         if (url == null)
-            url = buffer.URL;
+            url = buffer.URL.spec;
 
         // when session information is available, add [+] when we can go
         // backwards, [-] when we can go forwards

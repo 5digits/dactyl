@@ -21,7 +21,7 @@ if (!JSMLoader)
                         if (!(prop in this.builtin) &&
                             [this, set].indexOf(Object.getOwnPropertyDescriptor(global, prop).value) < 0 &&
                             !global.__lookupGetter__(prop))
-                            global[prop] = null;
+                            global[prop] = undefined;
                     }
                     catch (e) {
                         dump("Deleting property " + prop + " on " + url + ":\n    " + e + "\n");
@@ -72,6 +72,9 @@ catch (e) {}
 
 let objproto = Object.prototype;
 let hasOwnProperty = objproto.hasOwnProperty;
+
+if (typeof XPCSafeJSObjectWrapper === "undefined")
+    var XPCSafeJSObjectWrapper = XPCNativeWrapper;
 
 if (!XPCNativeWrapper.unwrap)
     XPCNativeWrapper.unwrap = function (obj) {
@@ -235,12 +238,11 @@ defineModule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object", "Runnable",
-        "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "array",
-        "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
-        "deprecated", "endModule", "forEach", "isArray", "isGenerator",
-        "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
-        "keys", "memoize", "octal", "properties", "require", "set", "update",
-        "values", "withCallerGlobal"
+        "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
+        "array", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
+        "deprecated", "endModule", "forEach", "isArray", "isGenerator", "isinstance", "isObject",
+        "isString", "isSubclass", "iter", "iterAll", "keys", "memoize", "octal", "properties",
+        "require", "set", "update", "values", "withCallerGlobal"
     ],
     use: ["config", "services", "util"]
 });

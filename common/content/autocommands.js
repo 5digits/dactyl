@@ -207,7 +207,7 @@ var AutoCommands = Module("autocommands", {
                         return void dactyl.echomsg("No matching autocommands");
 
                     let [event, url] = args;
-                    let defaultURL = url || buffer.URL;
+                    let defaultURL = url || buffer.URL.spec;
                     let validEvents = Object.keys(config.autocommands);
 
                     // TODO: add command validators
@@ -224,7 +224,7 @@ var AutoCommands = Module("autocommands", {
                         for (let i = 0; i < tabs.count; i++) {
                             tabs.select(i);
                             // if no url arg is specified use the current buffer's URL
-                            autocommands.trigger(event, { url: url || buffer.URL });
+                            autocommands.trigger(event, { url: url || buffer.URL.spec });
                         }
 
                         tabs.select(current);

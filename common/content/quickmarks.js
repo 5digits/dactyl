@@ -145,7 +145,7 @@ var QuickMarks = Module("quickmarks", {
                 if (!/^[a-zA-Z0-9]$/.test(args[0]))
                     dactyl.echoerr("E488: Trailing characters");
                 else if (!args[1])
-                    quickmarks.add(args[0], buffer.URL);
+                    quickmarks.add(args[0], buffer.URL.spec);
                 else
                     quickmarks.add(args[0], args[1]);
             },
@@ -204,7 +204,7 @@ var QuickMarks = Module("quickmarks", {
             ["M"], "Add new QuickMark for current URL",
             function ({ arg }) {
                 dactyl.assert(/^[a-zA-Z0-9]$/.test(arg));
-                quickmarks.add(arg, buffer.URL);
+                quickmarks.add(arg, buffer.URL.spec);
             },
             { arg: true });
     }

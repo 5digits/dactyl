@@ -383,13 +383,13 @@ var Buffer = Module("buffer", {
     /**
      * @property {string} The current top-level document's URL.
      */
-    get URL() content.location.href,
+    get URL() util.newURI(content.location.href),
 
     /**
      * @property {string} The current top-level document's URL, sans any
      *     fragment identifier.
      */
-    get URI() content.document.documentURI,
+    get URI() let (doc = content.document) doc.documentURIObject || util.newURI(doc.documentURI),
 
     /**
      * @property {number} The buffer's height in pixels.

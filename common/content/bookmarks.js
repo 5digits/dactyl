@@ -62,7 +62,7 @@ var Bookmarks = Module("bookmarks", {
 
         try {
             let uri = util.createURI(url);
-            if (!force && this.isBookmarked(uri.spec))
+            if (!force && this.isBookmarked(uri))
                 for (var bmark in bookmarkcache)
                     if (bmark.url == uri.spec) {
                         if (title)
@@ -130,7 +130,7 @@ var Bookmarks = Module("bookmarks", {
         if (count > 0)
             dactyl.echomsg({ domains: [util.getHost(url)], message: "Removed bookmark: " + url });
         else {
-            let title = buffer.URL == url && buffer.title || url;
+            let title = buffer.URL.spec == url && buffer.title || url;
             let extra = "";
             if (title != url)
                 extra = " (" + title + ")";
@@ -145,10 +145,12 @@ var Bookmarks = Module("bookmarks", {
      *
      * @param {string} url The URL of which to check the bookmarked state.
      */
-    isBookmarked: function isBookmarked(url) {
+    isBookmarked: function isBookmarked(uri) {
+        if (isString(uri))
+            uri = util.newURI(uri);
         try {
             return services.bookmarks
-                           .getBookmarkIdsForURI(makeURI(url), {})
+                           .getBookmarkIdsForURI(uri, {})
                            .some(bookmarkcache.closure.isRegularBookmark);
         }
         catch (e) {
@@ -442,7 +444,7 @@ var Bookmarks = Module("bookmarks", {
                     post: args["-post"],
                     tags: args["-tags"] || [],
                     title: args["-title"] || (args.length === 0 ? buffer.title : null),
-                    url: args.length === 0 ? buffer.URL : args[0]
+                    url: args.length === 0 ? buffer.URL.spec : args[0]
                 };
 
                 if (bookmarks.add(opts)) {
@@ -504,7 +506,7 @@ var Bookmarks = Module("bookmarks", {
                         });
                 else {
                     if (!(args.length || args["-tags"] || args["-keyword"] || args["-title"]))
-                        var deletedCount = bookmarks.remove(buffer.URL);
+                        var deletedCount = bookmarks.remove(buffer.URL.spec);
                     else {
                         let context = CompletionContext(args.join(" "));
                         context.fork("bookmark", 0, completion, "bookmark",
@@ -536,7 +538,8 @@ var Bookmarks = Module("bookmarks", {
             function () {
                 let options = {};
 
-                let bmarks = bookmarks.get(buffer.URL).filter(function (bmark) bmark.url == buffer.URL);
+                let url = buffer.URL.spec;
+                let bmarks = bookmarks.get(url).filter(function (bmark) bmark.url == url);
 
                 if (bmarks.length == 1) {
                     let bmark = bmarks[0];
@@ -548,18 +551,18 @@ var Bookmarks = Module("bookmarks", {
                         options["-tags"] = bmark.tags.join(", ");
                 }
                 else {
-                    if (buffer.title != buffer.URL)
+                    if (buffer.title != buffer.URL.spec)
                         options["-title"] = buffer.title;
                 }
 
                 commandline.open(":",
-                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.URL] }),
+                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.URL.spec] }),
                     modes.EX);
             });
 
         mappings.add(myModes, ["A"],
             "Toggle bookmarked state of current URL",
-            function () { bookmarks.toggle(buffer.URL); });
+            function () { bookmarks.toggle(buffer.URL.spec); });
     },
     options: function () {
         options.add(["defsearch", "ds"],

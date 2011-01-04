@@ -2146,7 +2146,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             let rcFile = io.getRCFile("~");
 
             if (dactyl.userEval('typeof document') === "undefined")
-                jsmodules.__proto__ = (window.XPCSafeJSObjectWrapper || XPCNativeWrapper)(window);
+                jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);
 
             try {
                 if (dactyl.commandLineOptions.rcFile) {
