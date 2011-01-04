@@ -380,7 +380,14 @@ var ConfigBase = Class("ConfigBase", {
         Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
-        StatusLine;;;FontFixed  font-weight: bold; background: transparent !important; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
+        StatusLine;;;FontFixed  {
+            -moz-appearance: none !important;
+            font-weight: bold;
+            background: transparent !important;
+            border: 0px !important;
+            padding-right: 0px !important;
+            min-height: 18px !important;
+        }
         StatusLineNormal;[dactyl|highlight]    color: white !important; background: black   !important;
         StatusLineBroken;[dactyl|highlight]    color: black !important; background: #FFa0a0 !important; /* light-red */
         StatusLineSecure;[dactyl|highlight]    color: black !important; background: #a0a0FF !important; /* light-blue */

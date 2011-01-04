@@ -24,7 +24,13 @@ var StatusLine = Module("statusline", {
             ]]></css>);
             highlight.loadCSS(<![CDATA[
                 !AddonBar;#addon-bar  padding: 0 !important; min-height: 18px !important; -moz-appearance: none !important;
-                !AddonButton;#addon-bar>xul|toolbarbutton  -moz-appearance: none !important; padding: 0 !important;
+                !AddonButton;#addon-bar>xul|toolbarbutton  {
+                    -moz-appearance: none !important;
+                    padding: 0 !important;
+                    border-width: 0px !important;
+                    min-width: 0 !important;
+                }
+                AddonButton:not(:hover)  background: transparent !important;
             ]]>);
         }
 
