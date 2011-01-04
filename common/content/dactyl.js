@@ -57,7 +57,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             for (let name in values(Object.getOwnPropertyNames(modules).reverse())) {
                 let mod = Object.getOwnPropertyDescriptor(modules, name).value;
-                if (mod instanceof ModuleBase) {
+                if (mod instanceof Class) {
                     if ("cleanup" in mod)
                         mod.cleanup();
                     if ("destroy" in mod)
