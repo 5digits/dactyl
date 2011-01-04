@@ -55,6 +55,8 @@ var JavaScript = Module("javascript", {
 
         let seen = isinstance(obj, ["Sandbox"]) ? set(JavaScript.magicalNames) : {};
         let globals = values(toplevel && this.window === obj ? this.globalNames : []);
+        if (toplevel && "wrappedJSObject" in obj)
+            yield "wrappedJSObject";
         for (let key in iter(globals, properties(obj, !toplevel, true)))
             if (!set.add(seen, key))
                 yield key;
