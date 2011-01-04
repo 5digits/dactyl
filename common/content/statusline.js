@@ -68,7 +68,8 @@ var StatusLine = Module("statusline", {
             objects: this.widgets = { get status() this.container },
             prepend: prepend.elements()
         });
-        this.security = content.document.dactylSecurity;
+
+        this.security = content.document.dactylSecurity || "insecure";
     },
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,
