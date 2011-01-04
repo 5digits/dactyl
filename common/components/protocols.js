@@ -24,6 +24,7 @@ var global = this;
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
+var DNE = "chrome://dactyl/content/does/not/exist";
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -34,21 +35,23 @@ function makeChannel(url, orig) {
     try {
         if (url == null)
             return fakeChannel(orig);
+
         if (typeof url === "function")
             return let ([type, data] = url()) StringChannel(data, type, orig);
 
-        let channel = ioService.newChannel(url, null, null);
-        channel.contentCharset = "UTF-8";
-        channel.owner = systemPrincipal;
-        channel.originalURI = orig;
-        return channel;
+        let uri = ioService.newURI(url, null, null);
+        return (new XMLChannel(uri)).channel;
     }
     catch (e) {
         util.reportError(e);
         throw e;
     }
 }
-function fakeChannel(orig) makeChannel("chrome://dactyl/content/does/not/exist", orig);
+function fakeChannel(orig) {
+    let channel = ioService.newChannel(DNE, null, null);
+    channel.originalURI = orig;
+    return channel;
+}
 function redirect(to, orig, time) {
     let html = <html><head><meta http-equiv="Refresh" content={(time || 0) + ";" + to}/></head></html>.toXMLString();
     return StringChannel(html, "text/html", ioService.newURI(to, null, null));
@@ -148,13 +151,13 @@ Dactyl.prototype = {
 
     newChannel: function newChannel(uri) {
         try {
-            if (uri.host != "content" && !("all" in this.FILE_MAP))
+            if (/^help/.test(uri.host) && !("all" in this.FILE_MAP))
                 return redirect(uri.spec, uri, 1);
 
             let path = decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""));
             switch(uri.host) {
             case "content":
-                return makeChannel(this.pages[path], uri);
+                return makeChannel(this.pages[path] || "chrome://dactyl/content/" + path, uri);
             case "help":
                 return makeChannel(this.FILE_MAP[path], uri);
             case "help-overlay":
@@ -165,6 +168,10 @@ Dactyl.prototype = {
                     return redirect("dactyl://help/" + tag, uri);
                 if (tag in this.HELP_TAGS)
                     return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
+            case "locale":
+                return makeChannel("chrome://dactyl/locale/" + path, uri);
+            case "locale-local":
+                return makeChannel("chrome://" + config.name + "/locale/" + path, uri);
             }
         }
         catch (e) {}
@@ -188,7 +195,8 @@ Dactyl.prototype = {
 function StringChannel(data, contentType, uri) {
     let channel = services.StreamChannel(uri);
     channel.contentStream = services.StringStream(data);
-    channel.contentType = contentType;
+    if (contentType)
+        channel.contentType = contentType;
     channel.contentCharset = "UTF-8";
     channel.owner = systemPrincipal;
     if (uri)
@@ -197,17 +205,76 @@ function StringChannel(data, contentType, uri) {
 }
 
 function XMLChannel(uri, contentType) {
+    let channel = services.io.newChannelFromURI(uri);
+    try {
+        var channelStream = channel.open();
+    }
+    catch (e) {
+        this.channel = fakeChannel(uri);
+        return;
+    }
+
+    this.uri = uri;
     this.sourceChannel = services.io.newChannelFromURI(uri);
     this.pipe = services.Pipe(true, true, 0, 0, null);
+    this.writes = [];
 
     this.channel = services.StreamChannel(uri);
-    this.channel.contentStream = this.pipe.outputStream;
-    this.channel.contentType = contentType;
+    this.channel.contentStream = this.pipe.inputStream;
+    this.channel.contentType = contentType || channel.contentType;
     this.channel.contentCharset = "UTF-8";
     this.channel.owner = systemPrincipal;
+
+    let stream = services.InputStream(channelStream);
+    let [, pre, doctype, url, open, post] = util.regexp(<![CDATA[
+            ^ ([^]*?)
+            (?:
+                (<!DOCTYPE \s+ \S+ \s+) SYSTEM \s+ "([^"]*)"
+                (\s+ \[)?
+                ([^]*)
+            )?
+            $
+        ]]>).exec(stream.read(4096));
+    this.writes.push(pre);
+    if (doctype) {
+        this.writes.push(doctype + "[\n");
+        try {
+            this.writes.push(services.io.newChannel(url, null, null).open())
+        }
+        catch (e) {}
+        if (!open)
+            this.writes.push("\n]");
+        this.writes.push(post)
+    }
+    this.writes.push(channelStream);
+
+    this.writeNext();
 }
 XMLChannel.prototype = {
     QueryInterface:   XPCOMUtils.generateQI([Ci.nsIRequestObserver]),
+    writeNext: function () {
+        try {
+            if (!this.writes.length)
+                this.pipe.outputStream.close();
+            else {
+                let stream = this.writes.shift();
+                if (isString(stream))
+                    stream = services.StringStream(stream);
+
+                services.StreamCopier(stream, this.pipe.outputStream, null,
+                                      false, true, 4096, true, false)
+                        .asyncCopy(this, null);
+            }
+        }
+        catch (e) {
+            util.reportError(e);
+        }
+    },
+
+    onStartRequest: function (request, context) {},
+    onStopRequest: function (request, context, statusCode) {
+        this.writeNext();
+    }
 };
 
 function AboutHandler() {}

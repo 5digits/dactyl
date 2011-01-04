@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
 
-<!DOCTYPE overlay SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<!DOCTYPE overlay SYSTEM "dactyl://content/dtd">
 
 <overlay
     xmlns="&xmlns.dactyl;"

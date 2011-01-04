@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE stylesheet SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<!DOCTYPE stylesheet SYSTEM "dactyl://content/dtd">
 
 <!-- Header {{{1 -->
 <xsl:stylesheet version="1.0"

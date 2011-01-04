@@ -1,9 +1,0 @@
-<!ENTITY dactyl.mainWindow "msgcomposeWindow">
-<!ENTITY dactyl.name "teledactyl">
-<!ENTITY dactyl.statusBefore "">
-<!ENTITY dactyl.statusAfter "statusText">
-
-<!ENTITY xmlns.dactyl "http://vimperator.org/namespaces/liberator">
-<!ENTITY xmlns.html   "http://www.w3.org/1999/xhtml">
-<!ENTITY xmlns.xul    "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-

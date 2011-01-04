@@ -490,6 +490,21 @@ var File = Class("File", {
 
     defaultEncoding: "UTF-8",
 
+    /**
+     * Expands "~" and environment variables in *path*.
+     *
+     * "~" is expanded to to the value of $HOME. On Windows if this is not
+     * set then the following are tried in order:
+     *   $USERPROFILE
+     *   ${HOMDRIVE}$HOMEPATH
+     *
+     * The variable notation is $VAR (terminated by a non-word character)
+     * or ${VAR}. %VAR% is also supported on Windows.
+     *
+     * @param {string} path The unexpanded path string.
+     * @param {boolean} relative Whether the path is relative or absolute.
+     * @returns {string}
+     */
     expandPath: function (path, relative) {
         function getenv(name) services.environment.get(name);
 

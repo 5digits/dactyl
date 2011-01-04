@@ -92,9 +92,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @property {number} The current main mode.
      * @see modes#mainModes
      */
-    mode: Class.Property({
-        get: deprecated("Please use modes.main instead", function mode() modes.main),
-        set: deprecated("Please use modes.main instead", function mode(val) modes.main = val),
+    mode: deprecated("Please use modes.main instead", {
+        get: function mode() modes.main,
+        set: function mode(val) modes.main = val
     }),
 
     get menuItems() Dactyl.getMenuItems(),
@@ -108,23 +108,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     forceNewTab: false,
     forceNewWindow: false,
 
-    /** @property {string} The Dactyl version string. */
-    version: Class.memoize(function () {
-        if (/pre$/.test(util.addon.version)) {
-            let uri = util.addon.getResourceURI("../.hg");
-            if (uri instanceof Ci.nsIFileURL &&
-                    uri.QueryInterface(Ci.nsIFileURL).file.exists() &&
-                    io.pathSearch("hg")) {
-                return io.system(["hg", "-R", uri.file.parent.path,
-                                  "log", "-r.",
-                                  "--template=hg{rev} ({date|isodate})"]);
-            }
-        }
-        let version = util.addon.version;
-        if ("@DATE" !== "@" + "DATE@")
-            version += " (created: @DATE@)";
-        return version;
-    }),
+    version: deprecated("Please use config.version instead", { get: function version() config.version }),
 
     /**
      * @property {Object} The map of command-line options. These are
@@ -304,9 +288,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     dump: deprecated("Use util.dump instead",
-                     function dump() util.dump.apply(util, arguments)),
+                     { get: function dump() util.closure.dump }),
     dumpStack: deprecated("Use util.dumpStack instead",
-                          function dumpStack() util.dumpStack.apply(util, arguments)),
+                          { get: function dumpStack() util.closure.dumpStack }),
 
     /**
      * Outputs a plain message to the command line.
@@ -546,14 +530,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @private
      * Initialize the help system.
      */
-    initHelp: function () {
-        if (!this.helpInitialized) {
+    initHelp: function (force) {
+        if (!force && !this.helpInitialized) {
             if ("noscriptOverlay" in window) {
                 noscriptOverlay.safeAllow("chrome-data:", true, false);
                 noscriptOverlay.safeAllow("dactyl:", true, false);
             }
 
-            let namespaces = [config.name, "dactyl"];
+            let namespaces = ["locale-local", "locale"];
             services["dactyl:"].init({});
 
             let tagMap = services["dactyl:"].HELP_TAGS;
@@ -564,7 +548,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function findHelpFile(file) {
                 let result = [];
                 for (let [, namespace] in Iterator(namespaces)) {
-                    let url = ["chrome://", namespace, "/locale/", file, ".xml"].join("");
+                    let url = ["dactyl://", namespace, "/", file, ".xml"].join("");
                     let res = util.httpGet(url);
                     if (res) {
                         if (res.responseXML.documentElement.localName == "document")
@@ -894,9 +878,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * These are set and accessed with the "g:" prefix.
      */
     _globalVariables: {},
-    globalVariables: Class.Property({
-        get: deprecated("Please use the options system instead",
-            function globalVariables() this._globalVariables)
+    globalVariables: deprecated("Please use the options system instead", {
+        get: function globalVariables() this._globalVariables
     }),
 
     loadPlugins: function (args) {
@@ -2051,7 +2034,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     dactyl.open("about:");
                 else
                     commandline.commandOutput(<>
-                        {config.appName} {dactyl.version} running on:<br/>{navigator.userAgent}
+                        {config.appName} {config.version} running on:<br/>{navigator.userAgent}
                     </>);
             }, {
                 argCount: "0",

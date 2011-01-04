@@ -59,13 +59,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
-    addon: Class.memoize(function () {
-        let addon = services.fuel.storage.get("dactyl.bootstrap", {}).addon;
-        if (!addon)
-            addon = AddonManager.getAddonByID(config.addonID);
-        return addon;
-    }),
-
     // FIXME: Only works for Pentadactyl
     get activeWindow() services.windowMediator.getMostRecentWindow("navigator:browser"),
     dactyl: update(function dactyl(obj) {
@@ -1203,8 +1196,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             services.fuel.storage.set("dactyl.commandlineArgs", args);
         this.timeout(function () {
             this.rehashing = true;
-            this.addon.userDisabled = true;
-            this.addon.userDisabled = false;
+            config.addon.userDisabled = true;
+            config.addon.userDisabled = false;
         });
     },
 
@@ -1508,6 +1501,6 @@ var Math = update(Object.create(GlobalMath), {
 
 endModule();
 
-} catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+} catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

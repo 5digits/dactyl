@@ -11,7 +11,8 @@ try {
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
-    require: ["highlight", "services", "storage", "util", "template"]
+    require: ["highlight", "services", "storage", "util", "template"],
+    use: ["io"]
 });
 
 var ConfigBase = Class("ConfigBase", {
@@ -37,9 +38,77 @@ var ConfigBase = Class("ConfigBase", {
 
         if (util.haveGecko("2b"))
             this.features.push("Gecko2");
+
+        this.timeout(function () {
+            services["dactyl:"].pages.dtd = function () [null,
+                iter(config.dtdExtra, (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
+                    .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
+                    .join("\n")]
+        });
     },
 
     get addonID() this.name + "@dactyl.googlecode.com",
+    addon: Class.memoize(function () {
+        let addon = services.fuel.storage.get("dactyl.bootstrap", {}).addon;
+        if (!addon)
+            addon = AddonManager.getAddonByID(this.addonID);
+        return addon;
+    }),
+
+    /** @property {string} The Dactyl version string. */
+    version: Class.memoize(function () {
+        if (/pre$/.test(this.addon.version)) {
+            let uri = this.addon.getResourceURI("../.hg");
+            if (uri instanceof Ci.nsIFileURL &&
+                    uri.QueryInterface(Ci.nsIFileURL).file.exists() &&
+                    io.pathSearch("hg")) {
+                return io.system(["hg", "-R", uri.file.parent.path,
+                                  "log", "-r.",
+                                  "--template=hg{rev} ({date|isodate})"]);
+            }
+        }
+        let version = this.addon.version;
+        if ("@DATE" !== "@" + "DATE@")
+            version += " (created: @DATE@)";
+        return version;
+    }),
+
+    // TODO: DTD properties. Cleanup.
+    get home() "http://dactyl.sourceforge.net/",
+    get apphome() this.home + this.name,
+    code: "http://code.google.com/p/dactyl/",
+    get issues() this.home + "bug/" + this.name,
+    get plugins() "http://dactyl.sf.net/" + this.name + "/plugins",
+    get faq() this.home + this.name + "/faq",
+    "list.mailto": Class.memoize(function () config.name + "@googlegroups.com"),
+    "list.href": Class.memoize(function () "http://groups.google.com/group/" + config.name),
+
+    dtdExtra: {
+        "xmlns.dactyl": "http://vimperator.org/namespaces/liberator",
+        "xmlns.html":   "http://www.w3.org/1999/xhtml",
+        "xmlns.xul":    "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul",
+
+        "tag.command-line": '<link topic="command-line">command line</link>',
+        "tag.status-line":  '<link topic="status-line">status line</link>',
+    },
+
+    dtdStrings: [
+        "appName",
+        "apphome",
+        "code",
+        "faq",
+        "fileExt",
+        "home",
+        "host",
+        "hostbin",
+        "idName",
+        "issues",
+        "list.href",
+        "list.mailto",
+        "name",
+        "plugins",
+        "version",
+    ],
 
     styleHelp: function styleHelp() {
         if (!this.helpStyled)
@@ -518,15 +587,6 @@ services.subscriptLoader.loadSubScript("chrome://dactyl/content/config.js", this
 config.INIT = update(Object.create(config.INIT), config.INIT, {
     init: function init(dactyl, modules, window) {
         init.superapply(this, arguments);
-
-        // Hmm...
-        let config1 = Object.create(config);
-        let config2 = Object.create(config1);
-        config2.instance = config2;
-        update(config1, config.Local.superapply(config2, arguments));
-        update(config2, config.Local.apply(config2, arguments));
-        modules.config = config2;
-        modules.config.init();
 
         let img = window.Image();
         img.src = this.logo || "chrome://" + this.name + "/content/logo.png";

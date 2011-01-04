@@ -129,7 +129,9 @@ var Overlay = Module("Overlay", {
                         }
                     },
 
-                    newContext: function newContext(proto) {
+                    newContext: function newContext(proto, normal) {
+                        if (normal)
+                            return create(proto);
                         let sandbox = Components.utils.Sandbox(window, { sandboxPrototype: proto || modules, wantXrays: false });
                         // Hack:
                         sandbox.Object = jsmodules.Object;

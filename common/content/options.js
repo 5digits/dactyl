@@ -163,9 +163,9 @@ var Option = Class("Option", {
     setValues: deprecated("Please use Option#set instead", "set"),
     joinValues: deprecated("Please use Option#stringify instead", "stringify"),
     parseValues: deprecated("Please use Option#parse instead", "parse"),
-    values: Class.Property({
-        get: deprecated("Please use Option#value instead", function values() this.value),
-        set: deprecated("Please use Option#value instead", function values(val) this.value = val)
+    values: deprecated("Please use Option#value instead", {
+        get: function values() this.value,
+        set: function values(val) this.value = val
     }),
 
     /**

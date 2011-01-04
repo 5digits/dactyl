@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>
+<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "chrome://dactyl/content/help.dtd">
+<!DOCTYPE document SYSTEM "dactyl://content/dtd">
 
 <document
     name="index"

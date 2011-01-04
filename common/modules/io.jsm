@@ -7,31 +7,14 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-/** @scope modules */
+try {
 
-plugins.contexts = {};
-function Script(file) {
-    let self = set.has(plugins, file.path) && plugins[file.path];
-    if (self) {
-        if (set.has(self, "onUnload"))
-            self.onUnload();
-    }
-    else {
-        self = update({ __proto__: plugins }, {
-            NAME: file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase()),
-            PATH: file.path,
-            CONTEXT: self
-        });
-        Class.replaceProperty(plugins, file.path, self);
-
-        // This belongs elsewhere
-        if (io.getRuntimeDirectories("plugins").some(
-                function (dir) dir.contains(file, false)))
-            Class.replaceProperty(plugins, self.NAME, self);
-    }
-    plugins.contexts[file.path] = self;
-    return self;
-}
+Components.utils.import("resource://dactyl/base.jsm");
+defineModule("io", {
+    exports: ["IO", "io"],
+    require: ["services"],
+    use: ["config", "storage", "template", "util"]
+});
 
 // TODO: why are we passing around strings rather than file objects?
 /**
@@ -43,37 +26,168 @@ var IO = Module("io", {
         this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
         this._cwd = this._processDir.path;
         this._oldcwd = null;
+    },
 
-        this._lastRunCommand = ""; // updated whenever the users runs a command with :!
-        this._scriptNames = [];
+    Local: function (dactyl, modules, window) let ({ Script, plugins } = modules) ({
 
-        this.downloadListener = {
-            onDownloadStateChange: function (state, download) {
-                if (download.state == services.downloadManager.DOWNLOAD_FINISHED) {
-                    let url   = download.source.spec;
-                    let title = download.displayName;
-                    let file  = download.targetFile.path;
-                    let size  = download.size;
+        init: function init() {
+            this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
+            this._cwd = this._processDir.path;
+            this._oldcwd = null;
 
-                    dactyl.echomsg({ domains: [util.getHost(url)], message: "Download of " + title + " to " + file + " finished" },
-                                   1, commandline.ACTIVE_WINDOW);
-                    autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
+            this._lastRunCommand = ""; // updated whenever the users runs a command with :!
+            this._scriptNames = [];
+
+            this.downloadListener = {
+                onDownloadStateChange: function (state, download) {
+                    if (download.state == services.downloadManager.DOWNLOAD_FINISHED) {
+                        let url   = download.source.spec;
+                        let title = download.displayName;
+                        let file  = download.targetFile.path;
+                        let size  = download.size;
+
+                        dactyl.echomsg({ domains: [util.getHost(url)], message: "Download of " + title + " to " + file + " finished" },
+                                       1, modules.commandline.ACTIVE_WINDOW);
+                        modules.autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
+                    }
+                },
+                onStateChange:    function () {},
+                onProgressChange: function () {},
+                onSecurityChange: function () {}
+            };
+
+            services.downloadManager.addListener(this.downloadListener);
+        },
+
+        destroy: function destroy() {
+            services.downloadManager.removeListener(this.downloadListener);
+            for (let [, plugin] in Iterator(plugins.contexts))
+                if (plugin.onUnload)
+                    plugin.onUnload();
+        },
+
+        /**
+         * Returns all directories named *name* in 'runtimepath'.
+         *
+         * @param {string} name
+         * @returns {nsIFile[])
+         */
+        getRuntimeDirectories: function getRuntimeDirectories(name) {
+            let dirs = modules.options["runtimepath"];
+
+            dirs = dirs.map(function (dir) File.joinPaths(dir, name, this.cwd), this)
+                       .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
+            return dirs;
+        },
+
+        // FIXME: multiple paths?
+        /**
+         * Sources files found in 'runtimepath'. For each relative path in *paths*
+         * each directory in 'runtimepath' is searched and if a matching file is
+         * found it is sourced. Only the first file found (per specified path) is
+         * sourced unless *all* is specified, then all found files are sourced.
+         *
+         * @param {string[]} paths An array of relative paths to source.
+         * @param {boolean} all Whether all found files should be sourced.
+         */
+        sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
+            let dirs = options["runtimepath"];
+            let found = false;
+
+            dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options.get("runtimepath").stringValue, 2);
+
+        outer:
+            for (let [, dir] in Iterator(dirs)) {
+                for (let [, path] in Iterator(paths)) {
+                    let file = File.joinPaths(dir, path, this.cwd);
+
+                    dactyl.echomsg("Searching for " + file.path.quote(), 3);
+
+                    if (file.exists() && file.isFile() && file.isReadable()) {
+                        io.source(file.path, false);
+                        found = true;
+
+                        if (!all)
+                            break outer;
+                    }
                 }
-            },
-            onStateChange:    function () {},
-            onProgressChange: function () {},
-            onSecurityChange: function () {}
-        };
+            }
 
-        services.downloadManager.addListener(this.downloadListener);
-    },
+            if (!found)
+                dactyl.echomsg("not found in 'runtimepath': " + paths.join(" ").quote(), 1);
 
-    destroy: function () {
-        services.downloadManager.removeListener(this.downloadListener);
-        for (let [, plugin] in Iterator(plugins.contexts))
-            if (plugin.onUnload)
-                plugin.onUnload();
-    },
+            return found;
+        },
+
+        /**
+         * Reads Ex commands, JavaScript or CSS from *filename*.
+         *
+         * @param {string} filename The name of the file to source.
+         * @param {boolean} silent Whether errors should be reported.
+         */
+        source: function source(filename, silent) {
+            defineModule.loadLog.push("sourcing " + filename);
+            let time = Date.now();
+            this.withSavedValues(["sourcing"], function _source() {
+                this.sourcing = null;
+                try {
+                    var file = util.getFile(filename) || io.File(filename);
+
+                    if (!file.exists() || !file.isReadable() || file.isDirectory()) {
+                        if (!silent)
+                            dactyl.echoerr("E484: Can't open file " + filename.quote());
+                        return;
+                    }
+
+                    dactyl.echomsg("sourcing " + filename.quote(), 2);
+
+                    let uri = services.io.newFileURI(file);
+
+                    // handle pure JavaScript files specially
+                    if (/\.js$/.test(filename)) {
+                        try {
+                            dactyl.loadScript(uri.spec, Script(file));
+                            dactyl.helpInitialized = false;
+                        }
+                        catch (e) {
+                            if (e.fileName)
+                                try {
+                                    e.fileName = e.fileName.replace(/^(chrome|resource):.*? -> /, "");
+                                    if (e.fileName == uri.spec)
+                                        e.fileName = filename;
+                                    e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
+                                }
+                                catch (e) {}
+                            throw e;
+                        }
+                    }
+                    else if (/\.css$/.test(filename))
+                        styles.registerSheet(uri.spec, false, true);
+                    else {
+                        modules.commands.execute(file.read(), null, silent || "loud", null,
+                            { file: file.path, line: 1 });
+                    }
+
+                    if (this._scriptNames.indexOf(file.path) == -1)
+                        this._scriptNames.push(file.path);
+
+                    dactyl.echomsg("finished sourcing " + filename.quote(), 2);
+
+                    dactyl.log("Sourced: " + filename, 3);
+                }
+                catch (e) {
+                    if (!(e instanceof FailedAssertion))
+                        dactyl.reportError(e);
+                    let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
+                    if (!silent)
+                        dactyl.echoerr(message);
+                }
+                finally {
+                    defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
+                }
+            });
+        },
+    }),
 
     // TODO: there seems to be no way, short of a new component, to change
     // the process's CWD - see https://bugzilla.mozilla.org/show_bug.cgi?id=280953
@@ -123,10 +237,11 @@ var IO = Module("io", {
      * @property {function} File class.
      * @final
      */
-    File: Class("File", File, {
-        init: function init(path, checkCWD)
-            init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.cwd)
-    }),
+    File: Class.memoize(function () let (io = this)
+        Class("File", File, {
+            init: function init(path, checkCWD)
+                init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.cwd)
+        })),
 
     /**
      * @property {Object} The current file sourcing context. As a file is
@@ -135,36 +250,7 @@ var IO = Module("io", {
      */
     sourcing: null,
 
-    /**
-     * Expands "~" and environment variables in *path*.
-     *
-     * "~" is expanded to to the value of $HOME. On Windows if this is not
-     * set then the following are tried in order:
-     *   $USERPROFILE
-     *   ${HOMDRIVE}$HOMEPATH
-     *
-     * The variable notation is $VAR (terminated by a non-word character)
-     * or ${VAR}. %VAR% is also supported on Windows.
-     *
-     * @param {string} path The unexpanded path string.
-     * @param {boolean} relative Whether the path is relative or absolute.
-     * @returns {string}
-     */
-    expandPath: File.expandPath,
-
-    /**
-     * Returns all directories named *name* in 'runtimepath'.
-     *
-     * @param {string} name
-     * @returns {nsIFile[])
-     */
-    getRuntimeDirectories: function (name) {
-        let dirs = options["runtimepath"];
-
-        dirs = dirs.map(function (dir) File.joinPaths(dir, name, this.cwd), this)
-                   .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
-        return dirs;
-    },
+    expandPath: deprecated("Please use File.expandPath instead", function expandPath() File.expandPath.apply(File, arguments)),
 
     /**
      * Returns the first user RC file found in *dir*.
@@ -207,7 +293,7 @@ var IO = Module("io", {
         Cc["@mozilla.org/uriloader/external-helper-app-service;1"]
             .getService(Ci.nsPIExternalAppLauncher).deleteTemporaryFileOnExit(file);
 
-        return io.File(file);
+        return File(file);
     },
 
     isJarURL: function (url) {
@@ -266,9 +352,9 @@ var IO = Module("io", {
         let file;
 
         if (File.isAbsolutePath(program))
-            file = io.File(program, true);
+            file = this.File(program, true);
         else
-            file = io.pathSearch(program);
+            file = this.pathSearch(program);
 
         if (!file || !file.exists()) {
             dactyl.echoerr("Command not found: " + program);
@@ -283,7 +369,7 @@ var IO = Module("io", {
                     function () {
                         if (!process.isRunning) {
                             timer.cancel();
-                            dactyl.trapErrors(blocking);
+                            util.trapErrors(blocking);
                         }
                     },
                     100, services.Timer.TYPE_REPEATING_SLACK);
@@ -299,114 +385,6 @@ var IO = Module("io", {
         return process.exitValue;
     },
 
-    // FIXME: multiple paths?
-    /**
-     * Sources files found in 'runtimepath'. For each relative path in *paths*
-     * each directory in 'runtimepath' is searched and if a matching file is
-     * found it is sourced. Only the first file found (per specified path) is
-     * sourced unless *all* is specified, then all found files are sourced.
-     *
-     * @param {string[]} paths An array of relative paths to source.
-     * @param {boolean} all Whether all found files should be sourced.
-     */
-    sourceFromRuntimePath: function (paths, all) {
-        let dirs = options["runtimepath"];
-        let found = false;
-
-        dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + options.get("runtimepath").stringValue, 2);
-
-    outer:
-        for (let [, dir] in Iterator(dirs)) {
-            for (let [, path] in Iterator(paths)) {
-                let file = File.joinPaths(dir, path, this.cwd);
-
-                dactyl.echomsg("Searching for " + file.path.quote(), 3);
-
-                if (file.exists() && file.isFile() && file.isReadable()) {
-                    io.source(file.path, false);
-                    found = true;
-
-                    if (!all)
-                        break outer;
-                }
-            }
-        }
-
-        if (!found)
-            dactyl.echomsg("not found in 'runtimepath': " + paths.join(" ").quote(), 1);
-
-        return found;
-    },
-
-    /**
-     * Reads Ex commands, JavaScript or CSS from *filename*.
-     *
-     * @param {string} filename The name of the file to source.
-     * @param {boolean} silent Whether errors should be reported.
-     */
-    source: function (filename, silent) {
-        defineModule.loadLog.push("sourcing " + filename);
-        let time = Date.now();
-        this.withSavedValues(["sourcing"], function () {
-            this.sourcing = null;
-            try {
-                var file = util.getFile(filename) || io.File(filename);
-
-                if (!file.exists() || !file.isReadable() || file.isDirectory()) {
-                    if (!silent)
-                        dactyl.echoerr("E484: Can't open file " + filename.quote());
-                    return;
-                }
-
-                dactyl.echomsg("sourcing " + filename.quote(), 2);
-
-                let uri = services.io.newFileURI(file);
-
-                // handle pure JavaScript files specially
-                if (/\.js$/.test(filename)) {
-                    try {
-                        dactyl.loadScript(uri.spec, Script(file));
-                        dactyl.helpInitialized = false;
-                    }
-                    catch (e) {
-                        if (e.fileName)
-                            try {
-                                e.fileName = e.fileName.replace(/^(chrome|resource):.*? -> /, "");
-                                if (e.fileName == uri.spec)
-                                    e.fileName = filename;
-                                e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
-                            }
-                            catch (e) {}
-                        throw e;
-                    }
-                }
-                else if (/\.css$/.test(filename))
-                    styles.registerSheet(uri.spec, false, true);
-                else {
-                    commands.execute(file.read(), null, silent || "loud", null,
-                        { file: file.path, line: 1 });
-                }
-
-                if (this._scriptNames.indexOf(file.path) == -1)
-                    this._scriptNames.push(file.path);
-
-                dactyl.echomsg("finished sourcing " + filename.quote(), 2);
-
-                dactyl.log("Sourced: " + filename, 3);
-            }
-            catch (e) {
-                if (!(e instanceof FailedAssertion))
-                    dactyl.reportError(e);
-                let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
-                if (!silent)
-                    dactyl.echoerr(message);
-            }
-            finally {
-                defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
-            }
-        });
-    },
-
     // TODO: when https://bugzilla.mozilla.org/show_bug.cgi?id=68702 is
     // fixed use that instead of a tmpfile
     /**
@@ -418,7 +396,7 @@ var IO = Module("io", {
      * @returns {string}
      */
     system: function (command, input) {
-        dactyl.echomsg("Calling shell to execute: " + command, 4);
+        util.dactyl.echomsg("Calling shell to execute: " + command, 4);
 
         function escape(str) '"' + str.replace(/[\\"$]/g, "\\$&") + '"';
 
@@ -428,7 +406,8 @@ var IO = Module("io", {
             else if (input)
                 stdin.write(input);
 
-            let shell = File.expandPath(options["shell"]);
+            let shell = File.expandPath(storage["options"].get("shell").value);
+            let shcf = storage["options"].get("shellcmdflag").value;
 
             if (isArray(command))
                 command = command.map(escape).join(" ");
@@ -436,12 +415,12 @@ var IO = Module("io", {
             // TODO: implement 'shellredir'
             if (util.OS.isWindows && !/sh/.test(options["shell"])) {
                 command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
-                var res = this.run(shell, options["shellcmdflag"].split(/\s+/).concat(command), true);
+                var res = this.run(shell, shcf.split(/\s+/).concat(command), true);
             }
             else {
                 cmd.write("cd " + escape(this.cwd) + "\n" +
                         ["exec", ">" + escape(stdout.path), "2>&1", "<" + escape(stdin.path),
-                         escape(shell), options["shellcmdflag"], escape(command)].join(" "));
+                         escape(shell), shcf, escape(command)].join(" "));
                 res = this.run("/bin/sh", ["-e", cmd.path], true);
             }
 
@@ -496,9 +475,40 @@ var IO = Module("io", {
     /**
      * @property {string} The current platform's path separator.
      */
-    PATH_SEP: File.PATH_SEP
+    PATH_SEP: deprecated("Please use File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
 }, {
-    commands: function () {
+    init: function init(dactyl, modules, window) {
+        modules.plugins.contexts = {};
+        modules.Script = function Script(file) {
+            const { io, plugins } = modules;
+
+            let self = set.has(plugins, file.path) && plugins[file.path];
+            if (self) {
+                if (set.has(self, "onUnload"))
+                    self.onUnload();
+            }
+            else {
+                self = update(modules.newContext(plugins, true), {
+                    NAME: file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase()),
+                    PATH: file.path,
+                    CONTEXT: self
+                });
+                Class.replaceProperty(plugins, file.path, self);
+
+                // This belongs elsewhere
+                if (io.getRuntimeDirectories("plugins").some(
+                        function (dir) dir.contains(file, false)))
+                    Class.replaceProperty(plugins, self.NAME, self);
+            }
+            plugins.contexts[file.path] = self;
+            return self;
+        }
+
+        init.superapply(this, arguments);
+    },
+    commands: function (dactyl, modules, window) {
+        const { commands, completion, io } = modules;
+
         commands.add(["cd", "chd[ir]"],
             "Change the current directory",
             function (args) {
@@ -517,7 +527,7 @@ var IO = Module("io", {
                     dactyl.echomsg(io.cwd);
                 }
                 else {
-                    let dirs = options["cdpath"];
+                    let dirs = modules.options["cdpath"];
                     for (let [, dir] in Iterator(dirs)) {
                         dir = File.joinPaths(dir, arg, io.cwd);
 
@@ -708,9 +718,9 @@ unlet s:cpo_save
                     commands: wrap("syn keyword " + config.name + "Command ",
                                   array(c.specs for (c in commands)).flatten()),
                     options: wrap("syn keyword " + config.name + "Option ",
-                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
+                                  array(o.names for (o in modules.options) if (o.type != "boolean")).flatten()),
                     toggleoptions: wrap("let s:toggleOptions = [",
-                                        array(o.realNames for (o in options) if (o.type == "boolean"))
+                                        array(o.realNames for (o in modules.options) if (o.type == "boolean"))
                                             .flatten().map(String.quote),
                                         ", ") + "]"
                 }));
@@ -734,7 +744,7 @@ unlet s:cpo_save
         commands.add(["scrip[tnames]"],
             "List all sourced script names",
             function () {
-                commandline.commandOutput(
+                modules.commandline.commandOutput(
                     template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
                         ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
             },
@@ -768,7 +778,7 @@ unlet s:cpo_save
 
                 // This is an asinine and irritating feature when we have searchable
                 // command-line history. --Kris
-                if (options["banghist"]) {
+                if (modules.options["banghist"]) {
                     // replaceable bang and no previous command?
                     dactyl.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
                         "E34: No previous command");
@@ -782,10 +792,10 @@ unlet s:cpo_save
 
                 let output = io.system(arg);
 
-                commandline.command = "!" + arg;
-                commandline.commandOutput(<span highlight="CmdOutput">{output}</span>);
+                modules.commandline.command = "!" + arg;
+                modules.commandline.commandOutput(<span highlight="CmdOutput">{output}</span>);
 
-                autocommands.trigger("ShellCmdPost", {});
+                modules.autocommands.trigger("ShellCmdPost", {});
             }, {
                 argCount: "?", // TODO: "1" - probably not worth supporting weird Vim edge cases. The dream is dead. --djk
                 bang: true,
@@ -794,7 +804,9 @@ unlet s:cpo_save
                 literal: 0
             });
     },
-    completion: function () {
+    completion: function (dactyl, modules, window) {
+        const { completion, io } = modules;
+
         completion.charset = function (context) {
             context.anchored = false;
             context.keys = {
@@ -840,8 +852,8 @@ unlet s:cpo_save
             };
             context.compare = function (a, b) b.isdir - a.isdir || String.localeCompare(a.text, b.text);
 
-            if (options["wildignore"]) {
-                let wig = options.get("wildignore");
+            if (modules.options["wildignore"]) {
+                let wig = modules.options.get("wildignore");
                 context.filters.push(function (item) item.isdir || !wig.getKey(this.name));
             }
 
@@ -881,7 +893,7 @@ unlet s:cpo_save
         };
 
         completion.runtime = function (context) {
-            for (let [, dir] in Iterator(options["runtimepath"]))
+            for (let [, dir] in Iterator(modules.options["runtimepath"]))
                 context.fork(dir, 0, this, function (context) {
                     dir = dir.replace("/+$", "") + "/";
                     completion.file(context, true, dir + context.filter);
@@ -938,15 +950,17 @@ unlet s:cpo_save
                     completion.file(context, full);
         });
     },
-    javascript: function () {
-        JavaScript.setCompleter([File, File.expandPath],
+    javascript: function (dactyl, modules, window) {
+        modules.JavaScript.setCompleter([File, File.expandPath],
             [function (context, obj, args) {
                 context.quote[2] = "";
                 completion.file(context, true);
             }]);
 
     },
-    options: function () {
+    options: function (dactyl, modules, window) {
+        const { options } = modules;
+
         var shell, shellcmdflag;
         if (util.OS.isWindows) {
             shell = "cmd.exe";
@@ -991,6 +1005,8 @@ unlet s:cpo_save
                     return /sh/.test(options["shell"]) ? "-c" : "/c";
                 }
             });
+        options["shell"]; // Make sure it's loaded into global storage.
+        options["shellcmdflag"];
 
         options.add(["wildignore", "wig"],
             "List of file patterns to ignore when completing file names",
@@ -998,4 +1014,8 @@ unlet s:cpo_save
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+endModule();
+
+} catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

@@ -312,6 +312,10 @@ function properties(obj, prototypes, debugger_) {
 }
 
 function deprecated(reason, fn) {
+    if (isObject(fn))
+        return Class.Property(iter(fn).map(function ([k, v]) [k, callable(v) ? deprecated(reason, v) : v])
+                                      .toObject());
+
     let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
 
     function deprecatedMethod() {
@@ -708,6 +712,23 @@ function Class() {
     });
     return Constructor;
 }
+
+if (Cu.getGlobalForObject)
+    Class.objectGlobal = function (caller) {
+        try {
+            return Cu.getGlobalForObject(caller);
+        }
+        catch (e) {
+            return null;
+        }
+    };
+else
+    Class.objectGlobal = function (caller) {
+        while (caller.__parent__)
+            caller = caller.__parent__;
+        return caller;
+    };
+
 /**
  * @class Class.Property
  * A class which, when assigned to a property in a Class's prototype
@@ -870,27 +891,34 @@ function Module(name, prototype) {
     const module = Class.apply(Class, Array.slice(arguments, 0, init));
     let instance = module();
     module.className = name.toLowerCase();
-    instance.INIT = arguments[init] || {};
+
+    instance.INIT = update(Object.create(Module.INIT),
+                           arguments[init] || {});
+
     currentModule[module.className] = instance;
     defineModule.modules.push(instance);
     return module;
 }
+Module.INIT = {
+    init: function (dactyl, modules, window) {
+        let args = arguments;
 
-if (Cu.getGlobalForObject)
-    Class.objectGlobal = function (caller) {
-        try {
-            return Cu.getGlobalForObject(caller);
+        let locals = [];
+        for (let local = this.Local; local; local = local.super)
+            locals.push(local);
+
+        if (locals.length) {
+            let module = this, objs = {};
+            for (let i in locals)
+                module = objs[i] = Object.create(module);
+
+            modules[this.constructor.className] = module;
+            locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)))
+            module.instance = module;
+            module.init();
         }
-        catch (e) {
-            return null;
-        }
-    };
-else
-    Class.objectGlobal = function (caller) {
-        while (caller.__parent__)
-            caller = caller.__parent__;
-        return caller;
-    };
+    }
+}
 
 /**
  * @class Struct

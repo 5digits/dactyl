@@ -1,6 +1,0 @@
-<!ENTITY % dactylMain SYSTEM "chrome://dactyl/content/dactyl.dtd">
-%dactylMain;
-
-<!ENTITY tag.command-line '<link topic="command-line">command line</link>'>
-<!ENTITY tag.status-line  '<link topic="status-line">status line</link>'>
-
