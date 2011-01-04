@@ -118,8 +118,7 @@ var ConfigBase = Class("ConfigBase", {
         this.helpCSS = true;
     },
 
-    Local: function Local(dactyl, modules, window)
-        let ({modes} = modules) ({
+    Local: function Local(dactyl, modules, window) ({
         init: function init() {
 
             let append = <e4x xmlns={XUL} xmlns:dactyl={NS}>
@@ -142,7 +141,7 @@ var ConfigBase = Class("ConfigBase", {
         browser: Class.memoize(function () window.gBrowser),
         tabbrowser: Class.memoize(function () window.gBrowser),
 
-        get browserModes() [modes.NORMAL],
+        get browserModes() [modules.modes.NORMAL],
 
         /**
          * @property {string} The ID of the application's main XUL window.

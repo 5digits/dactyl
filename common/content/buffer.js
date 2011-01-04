@@ -265,15 +265,9 @@ var Buffer = Module("buffer", {
         // for notifying the user about secure web pages
         onSecurityChange: function onSecurityChange(webProgress, request, state) {
             onSecurityChange.superapply(this, arguments);
-            // TODO: do something useful with STATE_SECURE_MED and STATE_SECURE_LOW
-            if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
-                statusline.class = "insecure";
-            else if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
-                statusline.class = "broken";
-            else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
-                statusline.class = "extended";
-            else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
-                statusline.class = "secure";
+            if (webProgress && webProgress.DOMWindow)
+                webProgress.DOMWindow.document.dactylSecurity = state;
+            statusline.security = state;
         },
         onStatusChange: function onStatusChange(webProgress, request, status, message) {
             onStatusChange.superapply(this, arguments);

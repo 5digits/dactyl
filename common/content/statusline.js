@@ -67,7 +67,7 @@ var StatusLine = Module("statusline", {
             objects: this.widgets = { get status() this.container },
             prepend: prepend.elements()
         });
-        this.class = "insecure";
+        this.security = content.document.dactylSecurity;
     },
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,
@@ -94,6 +94,16 @@ var StatusLine = Module("statusline", {
         highlight.highlightNode(this.statusBar, this.baseGroup + highlightGroup[type]);
     },
     get class() this._class,
+    set security(state) {
+        if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
+            this.class = "broken";
+        else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
+            this.class = "extended";
+        else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
+            this.class = "secure";
+        else // if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
+            this.class = "insecure";
+    },
 
     // update all fields of the statusline
     update: function update() {
