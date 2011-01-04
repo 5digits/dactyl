@@ -74,7 +74,7 @@ let objproto = Object.prototype;
 let hasOwnProperty = objproto.hasOwnProperty;
 
 if (typeof XPCSafeJSObjectWrapper === "undefined")
-    var XPCSafeJSObjectWrapper = XPCNativeWrapper;
+    this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
 
 if (!XPCNativeWrapper.unwrap)
     XPCNativeWrapper.unwrap = function (obj) {
