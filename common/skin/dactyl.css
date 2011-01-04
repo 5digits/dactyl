@@ -135,6 +135,7 @@ statusbarpanel {
     border: 0 !important;
 	min-height: 18px !important;
     background: transparent;
+    text-shadow: inherit !important;
 }
 
 /* no longer at the window's bottom right corner */

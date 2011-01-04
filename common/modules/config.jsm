@@ -387,6 +387,7 @@ var ConfigBase = Class("ConfigBase", {
             border: 0px !important;
             padding-right: 0px !important;
             min-height: 18px !important;
+            text-shadow: none !important;
         }
         StatusLineNormal;[dactyl|highlight]    color: white !important; background: black   !important;
         StatusLineBroken;[dactyl|highlight]    color: black !important; background: #FFa0a0 !important; /* light-red */
