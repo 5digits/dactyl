@@ -364,13 +364,17 @@ var Hints = Module("hints", {
      * @param {number} oldId The currently active hint.
      */
     _showActiveHint: function _showActiveHint(newId, oldId) {
-        let oldElem = this._validHints[oldId - 1];
-        if (oldElem)
-            this._setClass(oldElem, false);
+        let oldHint = this._validHints[oldId - 1];
+        if (oldHint) {
+            this._setClass(oldHint.elem, false);
+            oldHint.span.removeAttribute("active");
+        }
 
-        let newElem = this._validHints[newId - 1];
-        if (newElem)
-            this._setClass(newElem, true);
+        let newHint = this._validHints[newId - 1];
+        if (newHint) {
+            this._setClass(newHint.elem, true);
+            newHint.span.setAttribute("active", "true");
+        }
     },
 
     /**
@@ -453,7 +457,7 @@ var Hints = Module("hints", {
                     hint.imgSpan.setAttribute("number", str);
                 else
                     this._setClass(hint.elem, activeHint == hintnum);
-                this._validHints.push(hint.elem);
+                this._validHints.push(hint);
                 hintnum++;
             }
         }
@@ -518,9 +522,9 @@ var Hints = Module("hints", {
         }
 
         if (!followFirst) {
-            let firstHref = this._validHints[0].getAttribute("href") || null;
+            let firstHref = this._validHints[0].elem.getAttribute("href") || null;
             if (firstHref) {
-                if (this._validHints.some(function (e) e.getAttribute("href") != firstHref))
+                if (this._validHints.some(function (h) h.elem.getAttribute("href") != firstHref))
                     return;
             }
             else if (this._validHints.length > 1)
@@ -529,7 +533,7 @@ var Hints = Module("hints", {
 
         let timeout = followFirst || events.feedingKeys ? 0 : 500;
         let activeIndex = (this._hintNumber ? this._hintNumber - 1 : 0);
-        let elem = this._validHints[activeIndex];
+        let elem = this._validHints[activeIndex].elem;
         let top = this._top;
 
         if (this._continue)
@@ -539,8 +543,8 @@ var Hints = Module("hints", {
 
         let n = 5;
         (function next() {
-            let hinted = n || this._validHints.some(function (e) e === elem);
-            this._setClass(elem, n ? n % 2 : !hinted ? null : this._validHints[Math.max(0, this._hintNumber-1)] === elem);
+            let hinted = n || this._validHints.some(function (h) h.elem === elem);
+            this._setClass(elem, n ? n % 2 : !hinted ? null : this._validHints[Math.max(0, this._hintNumber-1)].elem === elem);
             if (n--)
                 this.timeout(next, 50);
         }).call(this);

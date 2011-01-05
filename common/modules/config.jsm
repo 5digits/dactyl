@@ -429,14 +429,15 @@ var ConfigBase = Class("ConfigBase", {
         Hint;;* {
             font:        bold 10px "Droid Sans Mono", monospace !important;
             padding:     0 1px;
-            border:      1px solid black;
-            background:  #fff8e7;
+            border:      1px solid rgba(0, 0, 0, .5);
+            background:  rgba(255, 248, 231, .8);
             color:       black;
         }
-        Hint::after;;*  content: attr(text) !important;
-        HintElem;;*     background-color: yellow  !important; color: black !important;
-        HintActive;;*   background-color: #88FF00 !important; color: black !important;
-        HintImage;;*    opacity: .5 !important;
+        Hint[active];;*  background: rgba(255, 253, 208, .8);
+        Hint::after;;*   content: attr(text) !important;
+        HintElem;;*      background-color: yellow  !important; color: black !important;
+        HintActive;;*    background-color: #88FF00 !important; color: black !important;
+        HintImage;;*     opacity: .5 !important;
 
         // </css>
     ]]></>, /&#x0d;/g, "\n")),
