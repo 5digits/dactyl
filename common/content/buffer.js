@@ -288,9 +288,17 @@ var Buffer = Module("buffer", {
         onLocationChange: function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
             statusline.updateUrl();
-            statusline.updateProgress(webProgress.DOMWindow || content);
-            for (let frame in values(buffer.allFrames(webProgress.DOMWindow || content)))
-                frame.document.dactylFocusAllowed = false;
+            if (webProgress.DOMWindow && uri) {
+                statusline.updateProgress(webProgress.DOMWindow);
+
+                let oldURI = webProgress.document.dactylURI;
+                if (webProgress.document.dactylLoadIdx === webProgress.loadedTransIndex
+                    || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
+                    for (let frame in values(buffer.allFrames(webProgress.DOMWindow)))
+                        frame.document.dactylFocusAllowed = false;
+                webProgress.document.dactylURI = uri.spec;
+                webProgress.document.dactylLoadIdx = webProgress.loadedTransIndex;
+            }
 
             // Workaround for bugs 591425 and 606877, dactyl bug #81
             let collapse = uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;

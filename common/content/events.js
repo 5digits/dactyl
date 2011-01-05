@@ -996,6 +996,7 @@ var Events = Module("events", {
     onMouseDown: function onMouseDown(event) {
         let elem = event.target;
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+
         for (; win; win = win != win.parent && win.parent)
             win.document.dactylFocusAllowed = true;
     },

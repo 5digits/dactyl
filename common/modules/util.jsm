@@ -796,7 +796,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {nsIURI}
      */
     // FIXME: createURI needed too?
-    newURI: function (uri, charset, base) services.io.newURI(uri.replace(/.* -> /, ""), charset, base),
+    newURI: function (uri, charset, base) services.io.newURI(String.replace(uri, /.* -> /, ""), charset, base),
 
     /**
      * Pretty print a JavaScript object. Use HTML markup to color certain items
