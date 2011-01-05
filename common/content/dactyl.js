@@ -610,7 +610,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             let help =
                 '<?xml version="1.0"?>\n' +
-                '<?xml-stylesheet type="text/xsl" href="chrome://dactyl/content/help.xsl"?>\n' +
+                '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
                 '<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">\n' +
                 unescape(encodeURI( // UTF-8 handling hack.
                 <document xmlns={NS}
