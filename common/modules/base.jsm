@@ -4,8 +4,9 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-if (!JSMLoader)
+if (!JSMLoader || JSMLoader.bump != 1)
     var JSMLoader = {
+        bump: 1,
         builtin: Components.utils.Sandbox(this),
         factories: [],
         globals: {},
