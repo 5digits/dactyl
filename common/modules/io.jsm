@@ -221,12 +221,12 @@ var IO = Module("io", {
         newDir = newDir || "~";
 
         if (newDir == "-") {
-            dactyl.assert(this._oldcwd != null, "E186: No previous directory");
+            util.assert(this._oldcwd != null, "E186: No previous directory");
             [this._cwd, this._oldcwd] = [this._oldcwd, this.cwd];
         }
         else {
             let dir = io.File(newDir);
-            dactyl.assert(dir.exists() && dir.isDirectory(), "E344: Can't find directory " + dir.path.quote());
+            util.assert(dir.exists() && dir.isDirectory(), "E344: Can't find directory " + dir.path.quote());
             dir.normalize();
             [this._cwd, this._oldcwd] = [dir.path, this.cwd];
         }
@@ -357,7 +357,7 @@ var IO = Module("io", {
             file = this.pathSearch(program);
 
         if (!file || !file.exists()) {
-            dactyl.echoerr("Command not found: " + program);
+            util.dactyl.echoerr("Command not found: " + program);
             return -1;
         }
 
@@ -576,7 +576,7 @@ var IO = Module("io", {
                 let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator()) if (cmd.serialize)];
                 lines = array.flatten(lines);
 
-                lines.unshift('"' + dactyl.version + "\n");
+                lines.unshift('"' + util.version + "\n");
                 lines.push("\n\" vim: set ft=" + config.name + ":");
 
                 try {

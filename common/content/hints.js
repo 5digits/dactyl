@@ -300,7 +300,7 @@ var Hints = Module("hints", {
             util.computedStyle(fragment).height; // Force application of binding.
             let container = doc.getAnonymousElementByAttribute(fragment, "anonid", "hints");
 
-            let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint"/>, doc);
+            let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none"/>, doc);
 
             let mode = this._hintMode;
             let res = util.evaluateXPath(mode.xpath, doc, null, true);
@@ -432,6 +432,7 @@ var Hints = Module("hints", {
                             continue;
 
                         hint.imgSpan = util.xmlToDom(<span highlight="Hint" dactyl:hl="HintImage" xmlns:dactyl={NS}/>, doc);
+                        hint.imgSpan.style.display = "none";
                         hint.imgSpan.style.left = (rect.left + offsetX) + "px";
                         hint.imgSpan.style.top = (rect.top + offsetY) + "px";
                         hint.imgSpan.style.width = (rect.right - rect.left) + "px";

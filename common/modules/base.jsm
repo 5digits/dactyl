@@ -9,10 +9,17 @@ if (!JSMLoader)
         builtin: Components.utils.Sandbox(this),
         factories: [],
         globals: {},
+        io: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
         manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
         stale: {},
+        getTarget: function getTarget(url) {
+            let chan = this.io.newChannel(url, null, null);
+            chan.cancel(Components.results.NS_BINDING_ABORTED);
+            return chan.name;
+        },
         load: function load(url, target) {
-            if (this.stale[url]) {
+            let stale = this.stale[url];
+            if (stale) {
                 delete this.stale[url];
                 let global = this.globals[url];
 
@@ -28,9 +35,12 @@ if (!JSMLoader)
                         Components.utils.reportError(e);
                     }
 
-                Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                          .getService(Components.interfaces.mozIJSSubScriptLoader)
-                          .loadSubScript(url, global);
+                if (stale !== this.getTarget(url))
+                    delete this.globals[url];
+                else
+                    Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+                              .getService(Components.interfaces.mozIJSSubScriptLoader)
+                              .loadSubScript(url, global);
             }
             Components.utils.import(url, target);
         },
@@ -40,7 +50,7 @@ if (!JSMLoader)
         },
         purge: function purge() {
             for (let [url, global] in Iterator(this.globals))
-                this.stale[url] = true;
+                this.stale[url] = this.getTarget(url);
         },
         registerGlobal: function registerGlobal(uri, obj) {
             if (Cu.getGlobalForObject)
