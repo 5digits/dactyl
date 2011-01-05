@@ -330,7 +330,7 @@ function deprecated(reason, fn) {
         return func.apply(this, arguments);
     }
     deprecatedMethod.seen = {
-        "chrome://dactyl/content/javascript.js": true,
+        "resource://dactyl/javascript.jsm": true,
         "resource://dactyl/util.jsm": true
     };
 
