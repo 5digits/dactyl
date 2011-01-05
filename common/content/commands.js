@@ -551,8 +551,9 @@ var Commands = Module("commands", {
         let str = args.literalArg;
         if (str)
             res.push(!/\n/.test(str) ? str :
-                     this.hereDoc    ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
-                                     : String.replace(str, /\n/, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
+                     this.hereDoc && false ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
+                                           : String.replace(str, /\n/g, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
+
         return res.join(" ");
     },
 
@@ -1239,7 +1240,8 @@ var Commands = Module("commands", {
             // dynamically get completions as specified with the command's completer function
             context.highlight();
             if (!command) {
-                context.highlight(0, args.commandName && args.commandName.length, "SPELLCHECK");
+                context.message = "No such command: " + match.cmd;
+                context.highlight(0, match.cmd.length, "SPELLCHECK");
                 return;
             }
 

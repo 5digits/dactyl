@@ -70,8 +70,8 @@ var ConfigBase = Class("ConfigBase", {
             util.overlayWindow(window, { append: append.elements() });
         },
 
-        get browser() window.gBrowser,
-        get tabbrowser() window.gBrowser,
+        browser: Class.memoize(function () window.gBrowser),
+        tabbrowser: Class.memoize(function () window.gBrowser),
 
         get browserModes() [modes.NORMAL],
 
@@ -312,7 +312,7 @@ var ConfigBase = Class("ConfigBase", {
         Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
         Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
 
-        StatusLine;;;FontFixed  font-weight: bold; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important;
+        StatusLine;;;FontFixed  font-weight: bold; -moz-appearance: none !important; border: 0px !important; min-height: 18px !important; text-shadow: none !important;
         StatusLineNormal        color: white !important; background: black   !important;
         StatusLineBroken        color: black !important; background: #FFa0a0 !important /* light-red */
         StatusLineSecure        color: black !important; background: #a0a0FF !important /* light-blue */
@@ -350,11 +350,12 @@ var ConfigBase = Class("ConfigBase", {
 
         Bell          background-color: black !important;
 
-        Hint;;*;FontFixed {
-            font-weight: bold !important;
-            background-color: red;
-            color:            white;
-            padding: 0px 1px;
+        Hint;;* {
+            font:        bold 10px "Droid Sans Mono", monospace !important;
+            padding:     0 1px;
+            border:      1px solid black;
+            background:  #fff8e7;
+            color:       black;
         }
         Hint::after;;*  content: attr(text) !important;
         HintElem;;*     background-color: yellow  !important; color: black !important;

@@ -176,7 +176,7 @@ var Buffer = Module("buffer", {
         if (!(uri || doc.location))
             return;
 
-        uri = uri || doc.documentURIObject;
+        uri = uri || util.newURI(doc.documentURI);
         let args = {
             url: { toString: function () uri.spec, valueOf: function () uri },
             title: doc.title
@@ -225,7 +225,7 @@ var Buffer = Module("buffer", {
             else {
                 // code which should happen for all (also background) newly loaded tabs goes here:
                 if (doc != config.browser.contentDocument)
-                    dactyl.echomsg({ domains: [doc.location.host], message: "Background tab loaded: " + (doc.title || doc.location.href) }, 3);
+                    dactyl.echomsg({ domains: [util.getHost(doc.location)], message: "Background tab loaded: " + (doc.title || doc.location.href) }, 3);
 
                 this._triggerLoadAutocmd("PageLoad", doc);
             }
@@ -1012,7 +1012,7 @@ var Buffer = Module("buffer", {
                     return true;
                 };
 
-            let url = isString(doc) ? util.newURI(doc) : doc.documentURIObject;
+            let url = util.newURI(isString(doc) ? doc : doc.documentURI);
 
             if (!isString(doc))
                 return io.withTempFiles(function (temp) {
@@ -1358,7 +1358,7 @@ var Buffer = Module("buffer", {
 
                     dactyl.assert(args.bang || !file.exists(), "E13: File exists (add ! to override)");
 
-                    chosenData = { file: file, uri: doc.documentURIObject };
+                    chosenData = { file: file, uri: util.newURI(doc.documentURI) };
                 }
 
                 // if browser.download.useDownloadDir = false then the "Save As"

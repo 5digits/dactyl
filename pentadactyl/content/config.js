@@ -213,8 +213,12 @@ var Config = Module("config", ConfigBase, {
                 let menu = document.getElementById("viewSidebarMenu");
 
                 for (let [, panel] in Iterator(menu.childNodes))
-                    if (compare(panel.label, args[0]))
-                        return panel.doCommand();
+                    if (compare(panel.getAttribute("label"), args[0])) {
+                        let elem = document.getElementById(panel.observes);
+                        if (elem)
+                            elem.doCommand();
+                        return;
+                    }
 
                 return dactyl.echoerr("No sidebar " + args[0] + " found");
             },
@@ -311,7 +315,8 @@ var Config = Module("config", ConfigBase, {
         completion.sidebar = function sidebar(context) {
             let menu = document.getElementById("viewSidebarMenu");
             context.title = ["Sidebar Panel"];
-            context.completions = Array.map(menu.childNodes, function (n) [n.label, ""]);
+            context.completions = Array.map(menu.childNodes, function (n) [n.getAttribute("label"), ""]);
+
         };
 
         completion.addUrlCompleter("l",
