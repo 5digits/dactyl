@@ -428,8 +428,9 @@ var ConfigBase = Class("ConfigBase", {
 
         Hint;;* {
             font:        bold 10px "Droid Sans Mono", monospace !important;
-            padding:     0 1px;
-            border:      1px solid rgba(0, 0, 0, .5);
+            margin:      -.2ex;
+            padding:     0 0 0 1px;
+            outline:     1px solid rgba(0, 0, 0, .5);
             background:  rgba(255, 248, 231, .8);
             color:       black;
         }
