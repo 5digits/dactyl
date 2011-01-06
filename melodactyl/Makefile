@@ -2,10 +2,10 @@
 
 NAME          = melodactyl
 
-FIREFOX      ?= songbird
+SONGBIRD     ?= songbird
 HOSTAPP      ?= $(SONGBIRD)
-PROFILEPATHS ?= "$$HOME/.songbird" \
-		"$$HOME/Library/Songbird" \
-		"$$APPDATA/Songbird"
+PROFILEPATHS ?= "$$HOME/.songbird2" \
+		"$$HOME/Library/Songbird2" \
+		"$$APPDATA/Songbird2"
 
 include ../common/Makefile

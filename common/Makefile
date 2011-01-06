@@ -64,9 +64,9 @@ help:
 	@echo "  make jar        - build a JAR ($(JAR))"
 	@echo "  make xpi        - build an XPI ($(XPI_NAME))"
 	@echo "  make installxpi - build an XPI and install it to your profile"
-	@echo "  make install    - installs this source tree directly to your Firefox profile"
-	@echo '                    set $$PROFILE to select a profile and $$PROFILEPATHS to change'
-	@echo '                    the directory where profiles are searched'
+	@echo "  make install    - installs this source tree directly to your $(HOSTAPP) profile"
+	@echo '                    set $$PROFILE to select a profile by name and $$PROFILEPATHS'
+	@echo '                    to change the directory where profiles are searched'
 	@echo "  make release    - updates update.rdf (this is not for you)"
 	@echo "  make dist       - uploads to Google Code (this is not for you)"
 	@echo "  make clean      - clean up"
@@ -140,7 +140,7 @@ install:
 	else pwd; 								\
 	fi >"$$ext"
 installxpi: xpi
-	$(FIREFOX) $(XPI)
+	$(HOSTAPP) $(XPI)
 
 $(RDF): $(RDF_IN) Makefile
 	@echo "Preparing release..."
