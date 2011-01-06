@@ -578,7 +578,7 @@ var Editor = Module("editor", {
             ["<C-i>"], "Edit text field with an external editor",
             function () { editor.editFieldExternally(); });
 
-        mappings.add([modes.INSERT],
+        mappings.add([modes.INSERT, modes.COMMAND_LINE],
             ["<C-t>"], "Edit text field in Vi mode",
             function () {
                 dactyl.assert(!editor.isTextEdit);

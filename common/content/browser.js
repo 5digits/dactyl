@@ -14,7 +14,7 @@
 var Browser = Module("browser", {
 }, {
     climbUrlPath: function (count) {
-        let url = buffer.URI;
+        let url = buffer.URI.clone();
         dactyl.assert(url instanceof Ci.nsIURL);
 
         while (count-- && url.path != "/")
