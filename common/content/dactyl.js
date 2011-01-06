@@ -790,7 +790,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             }
         }
         else if (obj instanceof Option) {
-            link = function (opt) <o>{opt}</o>;
+            link = function (opt, name) <o>{name}</o>;
         }
 
         XML.prettyPrinting = false;
@@ -802,7 +802,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     </>;
 
         let res = <res>
-                <dt>{link(obj.helpTag || obj.name)}</dt> <dd>{
+                <dt>{link(obj.helpTag || obj.name, obj.name)}</dt> <dd>{
                     template.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)
                 }</dd></res>;
         if (specOnly)
