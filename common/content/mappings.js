@@ -592,7 +592,7 @@ var Mappings = Module("mappings", {
                                     ({ helpTag: prefix + map.name, __proto__: map }
                                      for (map in self.iterate(args))),
                     description: "List all " + mode.name + " mode mappings along with their short descriptions",
-                    index: mode.char + "-maps",
+                    index: mode.char + "-map",
                     getMode: function (args) mode,
                     options: []
                 });
