@@ -52,7 +52,7 @@ var Item = Class("Item", {
     shouldSanitize: function (shutdown) (!shutdown || this.builtin || this.persistent) &&
         prefs.get(shutdown ? this.shutdownPref : this.pref)
 }, {
-    PREFIX: "extensions.dactyl.",
+    PREFIX: localPrefs.branch.root,
     BRANCH: "privacy.cpd.",
     SHUTDOWN_BRANCH: "privacy.clearOnShutdown."
 });
@@ -261,8 +261,8 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         }
     },
 
-    get ranAtShutdown()    prefs.get(Item.PREFIX + "didSanitizeOnShutdown"),
-    set ranAtShutdown(val) prefs.set(Item.PREFIX + "didSanitizeOnShutdown", Boolean(val)),
+    get ranAtShutdown()    localPrefs.get("didSanitizeOnShutdown"),
+    set ranAtShutdown(val) localPrefs.set("didSanitizeOnShutdown", Boolean(val)),
     get runAtShutdown()    prefs.get("privacy.sanitize.sanitizeOnShutdown"),
     set runAtShutdown(val) prefs.set("privacy.sanitize.sanitizeOnShutdown", Boolean(val)),
 

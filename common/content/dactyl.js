@@ -934,7 +934,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {number} level The logging level 0 - 15.
      */
     log: function (msg, level) {
-        let verbose = prefs.get("extensions.dactyl.loglevel", 0);
+        let verbose = localPrefs.get("loglevel", 0);
 
         if (!level || level <= verbose) {
             if (isObject(msg))

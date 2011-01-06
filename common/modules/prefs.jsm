@@ -8,7 +8,7 @@
 
 Components.utils.import("resource://dactyl/base.jsm");
 defineModule("prefs", {
-    exports: ["Prefs", "prefs"],
+    exports: ["Prefs", "localPrefs", "prefs"],
     require: ["services", "util"],
     use: ["config", "template"]
 });
@@ -16,20 +16,21 @@ defineModule("prefs", {
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     SAVED: "extensions.dactyl.saved.",
     RESTORE: "extensions.dactyl.restore.",
+    INIT: {},
 
-    init: function () {
+    init: function (branch) {
         this._prefContexts = [];
 
         util.addObserver(this);
-        this._branch = services.pref.getBranch("").QueryInterface(Ci.nsIPrefBranch2);
-        this._branch.addObserver("", this, false);
+        this.branch = services.pref.getBranch(branch || "").QueryInterface(Ci.nsIPrefBranch2);
+        this.branch.addObserver("", this, false);
         this._observers = {};
 
         this.restore();
     },
 
     cleanup: function cleanup() {
-        this._branch.removeObserver("", this);
+        this.branch.removeObserver("", this);
     },
 
     observe: {
@@ -123,7 +124,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} branch The branch in which to search preferences.
      *     @default ""
      */
-    getNames: function (branch) services.pref.getChildList(branch || "", { value: 0 }),
+    getNames: function (branch) this.branch.getChildList(branch || "", { value: 0 }),
 
     _checkSafe: function (name, message, value) {
         let curval = this._load(name, null, false);
@@ -208,7 +209,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     reset: function (name) {
         try {
-            services.pref.clearUserPref(name);
+            this.branch.clearUserPref(name);
         }
         catch (e) {} // ignore - thrown if not a user set value
     },
@@ -219,7 +220,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} name The preference name.
      */
     toggle: function (name) {
-        util.assert(services.pref.getPrefType(name) === Ci.nsIPrefBranch.PREF_BOOL,
+        util.assert(this.branch.getPrefType(name) === Ci.nsIPrefBranch.PREF_BOOL,
                     "E488: Trailing characters: " + name + "!");
         this.set(name, !this.get(name));
     },
@@ -276,24 +277,24 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                                 ? "E521: Number required after =: " + name + "=" + value
                                 : "E474: Invalid argument: " + name + "=" + value);
 
-        let type = services.pref.getPrefType(name);
+        let type = this.branch.getPrefType(name);
         switch (typeof value) {
         case "string":
             assertType(Ci.nsIPrefBranch.PREF_STRING);
 
             let supportString = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
             supportString.data = value;
-            services.pref.setComplexValue(name, Ci.nsISupportsString, supportString);
+            this.branch.setComplexValue(name, Ci.nsISupportsString, supportString);
             break;
         case "number":
             assertType(Ci.nsIPrefBranch.PREF_INT);
 
-            services.pref.setIntPref(name, value);
+            this.branch.setIntPref(name, value);
             break;
         case "boolean":
             assertType(Ci.nsIPrefBranch.PREF_BOOL);
 
-            services.pref.setBoolPref(name, value);
+            this.branch.setBoolPref(name, value);
             break;
         default:
             throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
@@ -304,14 +305,14 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (defaultValue == null)
             defaultValue = null;
 
-        let branch = defaultBranch ? services.pref.getDefaultBranch("") : services.pref;
-        let type = services.pref.getPrefType(name);
+        let branch = defaultBranch ? services.pref.getDefaultBranch(this.branch.root) : this.branch;
+        let type = this.branch.getPrefType(name);
         try {
             switch (type) {
             case Ci.nsIPrefBranch.PREF_STRING:
                 let value = branch.getComplexValue(name, Ci.nsISupportsString).data;
                 // try in case it's a localized string (will throw an exception if not)
-                if (!services.pref.prefIsLocked(name) && !services.pref.prefHasUserValue(name) &&
+                if (!this.branch.prefIsLocked(name) && !this.branch.prefHasUserValue(name) &&
                     RegExp("chrome://.+/locale/.+\\.properties").test(value))
                         value = branch.getComplexValue(name, Ci.nsIPrefLocalizedString).data;
                 return value;
@@ -339,9 +340,12 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
     javascript: function (dactyl, modules) {
         modules.JavaScript.setCompleter([this.get, this.safeSet, this.set, this.reset, this.toggle],
-                [function (context) (context.anchored=false, prefs.getNames().map(function (pref) [pref, ""]))]);
+                [function (context) (context.anchored=false, this.getNames().map(function (pref) [pref, ""]))]);
     }
 });
+
+var localPrefs = Prefs("extensions.dactyl.");
+defineModule.modules.push(localPrefs);
 
 endModule();
 

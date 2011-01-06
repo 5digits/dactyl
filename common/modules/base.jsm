@@ -334,9 +334,10 @@ function deprecated(reason, fn) {
     function deprecatedMethod() {
         let frame = Components.stack.caller;
         let obj = this.className || this.constructor.className;
-        if (!set.add(deprecatedMethod.seen, frame.filename))
+        let filename = frame.filename.replace(/.* -> /, "");
+        if (!set.add(deprecatedMethod.seen, filename))
             util.dactyl(fn).echoerr(
-                util.urlPath(frame.filename || "unknown") + ":" + frame.lineNumber + ": " +
+                util.urlPath(filename || "unknown") + ":" + frame.lineNumber + ": " +
                 (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
     }

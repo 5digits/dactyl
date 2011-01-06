@@ -61,6 +61,10 @@ function startup(data, reason) {
         addon = data;
         AddonManager.getAddonByID(addon.id, function (a) { addon = a; });
 
+        // Temporary hack.
+        if (basePath.isDirectory() && JSMLoader.bump == null)
+            JSMLoader.bump = 1;
+
         if (basePath.isDirectory())
             getURI = function getURI(path) {
                 let file = basePath.clone().QueryInterface(Ci.nsILocalFile);
