@@ -587,7 +587,12 @@ var Mappings = Module("mappings", {
                 dactyl.addUsageCommand({
                     __proto__: args,
                     name: [mode.char + "listk[eys]", mode.char + "lk"],
+                    iterateIndex: function (args)
+                            let (self = this, prefix = mode.char == "n" ? "" : mode.char + "_")
+                                    ({ helpTag: prefix + map.name, __proto__: map }
+                                     for (map in self.iterate(args))),
                     description: "List all " + mode.name + " mode mappings along with their short descriptions",
+                    index: mode.char + "-maps",
                     getMode: function (args) mode,
                     options: []
                 });

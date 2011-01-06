@@ -348,6 +348,13 @@ var File = Class("File", {
     },
 
     /**
+     * Returns a new nsIFileURL object for this file.
+     *
+     * @returns {nsIFileURL}
+     */
+    toURI: function toURI() services.io.newFileURI(this),
+
+    /**
      * Writes the string *buf* to this file.
      *
      * @param {string} buf The file content.

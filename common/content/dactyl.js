@@ -156,7 +156,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     addUsageCommand: function (params) {
-        commands.add(params.name, params.description,
+        let name = commands.add(params.name, params.description,
             function (args) {
                 let results = array(params.iterate(args))
                     .sort(function (a, b) String.localeCompare(a.name, b.name));
@@ -186,7 +186,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
         if (params.index)
             this.indices[params.index] = function () {
-                for (let obj in (params.iterateIndex || params.iterate)())
+                let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
+                        .array.sort(function (a, b) String.localeCompare(a.name, b.name));
+
+                for (let obj in values(results))
                     if (obj.helpTag in services["dactyl:"].HELP_TAGS)
                         yield dactyl.generateHelp(obj, null, null, true);
             }
@@ -770,18 +773,23 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let args = null;
 
         if (obj instanceof Command) {
-            tag = spec = function (cmd) <>:{cmd}</>;
-            link = function (cmd) <ex>:{cmd}</ex>;
+            link = function (cmd) <ex>{cmd}</ex>;
             args = obj.parseArgs("", CompletionContext(str || ""));
             spec = function (cmd) cmd + (obj.bang ? <oa>!</oa> : <></>);
         }
-        else if (obj instanceof Map && obj.count) {
-            spec = function (map) <><oa>count</oa>{map}</>;
-            link = function (map) let (res = /^<(.*?)>(.*?)/.exec(map))
-                res ? <k name={res[1]}>{res[2]}</k> : <k>{map}</k>;
+        else if (obj instanceof Map) {
+            spec = function (map) obj.count ? <><oa>count</oa>{map}</> : <>{map}</>;
+            link = function (map) {
+                let [, mode, name, extra] = /^(?:(.)_)?(?:<([^>]+)>)?(.*)$/.exec(map);
+                let k = <k>{extra}</k>;
+                if (name)
+                    k.@name = name;
+                if (mode)
+                    k.@mode = mode;
+                return k
+            }
         }
         else if (obj instanceof Option) {
-            tag = spec = function (opt) <>'{opt}'</>;
             link = function (opt) <o>{opt}</o>;
         }
 
@@ -794,7 +802,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     </>;
 
         let res = <res>
-                <dt>{link(obj.name)}</dt> <dd>{
+                <dt>{link(obj.helpTag || obj.name)}</dt> <dd>{
                     template.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)
                 }</dd></res>;
         if (specOnly)

@@ -486,7 +486,7 @@ var Commands = Module("commands", {
         for (let alias in values(names.slice(1)))
             memoize(this._exMap, alias, closure);
 
-        return true;
+        return name;
     },
 
     /**
