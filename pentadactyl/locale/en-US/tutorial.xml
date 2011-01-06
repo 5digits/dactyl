@@ -95,8 +95,9 @@
 </code>
 
 <p>
-    Finally, in addition to the help system itself, <ex>:exusage</ex>, <ex>:viusage</ex>
-    and <ex>:optionusage</ex> are useful quick-reference commands.
+    Finally, in addition to the help system itself, <ex>:listcommands</ex>,
+    <ex>:listkeys</ex> and <ex>:listoptions</ex> are useful quick-reference
+    commands.
 </p>
 
 <h2 tag="living-mouseless">Mouseless</h2>
