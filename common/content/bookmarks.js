@@ -311,7 +311,7 @@ var Bookmarks = Module("bookmarks", {
                     [, shortcutURL, charset] = matches;
                 else {
                     try {
-                        charset = services.history.getCharsetForURI(window.makeURI(shortcutURL));
+                        charset = services.history.getCharsetForURI(util.newURI(shortcutURL));
                     }
                     catch (e) {}
                 }
@@ -620,7 +620,7 @@ var Bookmarks = Module("bookmarks", {
                     context.generate = function () {
                         let [begin, end] = item.url.split("%s");
 
-                        return history.get({ uri: window.makeURI(begin), uriIsPrefix: true }).map(function (item) {
+                        return history.get({ uri: util.newURI(begin), uriIsPrefix: true }).map(function (item) {
                             let rest = item.url.length - end.length;
                             let query = item.url.substring(begin.length, rest);
                             if (item.url.substr(rest) == end && query.indexOf("&") == -1)
