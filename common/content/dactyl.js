@@ -1035,8 +1035,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 case dactyl.NEW_WINDOW:
                     let win = window.openDialog(document.documentURI, "_blank", "chrome,all,dialog=no");
-                    win.loadURI(url, null, postdata);
                     browser = win.getBrowser();
+                    browser.loadURIWithFlags(url, flags, null, null, postdata);
                     return win.content;
                 }
             }

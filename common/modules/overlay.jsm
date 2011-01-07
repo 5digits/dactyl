@@ -252,9 +252,10 @@ var Overlay = Module("Overlay", {
                 }
 
                 for each (let module in defineModule.modules)
-                    defineModule.time(module.constructor.className, "init",
-                                      module.INIT.init, module,
-                                      modules.dactyl, modules, window);
+                    if (module.INIT.init)
+                        defineModule.time(module.constructor.className, "init",
+                                          module.INIT.init, module,
+                                          modules.dactyl, modules, window);
 
                 defineModule.modules.map(init);
 
