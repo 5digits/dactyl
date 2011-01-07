@@ -1020,9 +1020,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 // decide where to load the first url
                 switch (where) {
-                case dactyl.CURRENT_TAB:
-                    browser.loadURIWithFlags(url, flags, null, null, postdata);
-                    return browser.contentWindow;
 
                 case dactyl.NEW_TAB:
                     if (!dactyl.has("tabs"))
@@ -1035,9 +1032,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 case dactyl.NEW_WINDOW:
                     let win = window.openDialog(document.documentURI, "_blank", "chrome,all,dialog=no");
+                    while (win.document.readyState != "complete")
+                        util.threadYield();
                     browser = win.getBrowser();
+                    // FALLTHROUGH
+                case dactyl.CURRENT_TAB:
                     browser.loadURIWithFlags(url, flags, null, null, postdata);
-                    return win.content;
+                    return browser.contentWindow;
                 }
             }
             catch (e) {}
