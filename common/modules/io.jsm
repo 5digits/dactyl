@@ -576,7 +576,7 @@ var IO = Module("io", {
                 let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator()) if (cmd.serialize)];
                 lines = array.flatten(lines);
 
-                lines.unshift('"' + util.version + "\n");
+                lines.unshift('"' + config.version + "\n");
                 lines.push("\n\" vim: set ft=" + config.name + ":");
 
                 try {
