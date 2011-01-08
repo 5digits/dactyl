@@ -1018,7 +1018,7 @@ var Buffer = Module("buffer", {
                     return true;
                 };
 
-            let url = isString(doc) ? util.newURI(doc) : util.newURI(doc.location.href);
+            let uri = isString(doc) ? util.newURI(doc) : util.newURI(doc.location.href);
 
             if (!isString(doc))
                 return io.withTempFiles(function (temp) {
