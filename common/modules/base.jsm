@@ -1079,7 +1079,7 @@ function UTF8(str) {
 function octal(decimal) parseInt(decimal, 8);
 
 /**
- * Iterates over an arbitrary object. The following iterators types are
+ * Iterates over an arbitrary object. The following iterator types are
  * supported, and work as a user would expect:
  *
  *  • nsIDOMNodeIterator
@@ -1096,7 +1096,7 @@ function octal(decimal) parseInt(decimal, 8);
  *
  *  • nsIDOMNamedNodeMap
  *
- * Duck typing is implemented for the any other type. If the object
+ * Duck typing is implemented for any other type. If the object
  * contains the "enumerator" property, iter is called on that. If the
  * property is a function, it is called first. If it contains the
  * property "getNext" along with either "hasMoreItems" or "hasMore", it
