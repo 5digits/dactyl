@@ -39,14 +39,20 @@
 
 <item>
     <tags>a :bma :bmark</tags>
-    <spec>:bma<oa>rk</oa><oa>!</oa> <oa>-title=...</oa> <oa>-keyword=...</oa> <oa>-tags=tag,...</oa> <oa>url</oa></spec>
+    <spec>:bma<oa>rk</oa><oa>!</oa> <oa>options</oa> <oa>url</oa></spec>
     <spec>a</spec>
     <description>
         <p>Add a bookmark.</p>
 
-        <p>The following options are available,</p>
+        <p>The following options are available:</p>
 
         <dl dt="width: 8em;">
+            <dt>-charset</dt>
+            <dd>
+                Character encoding to use for the bookmark. Useful e.g. for
+                sites that require query parameters in encodings other than
+                UTF-8 (short name <em>-c</em>).
+            </dd>
             <dt>-keyword</dt>
             <dd>
                 A keyword which may be used to open the bookmark via
