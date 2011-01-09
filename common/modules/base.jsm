@@ -8,6 +8,7 @@ if (!JSMLoader || JSMLoader.bump != 1)
     var JSMLoader = {
         bump: 1,
         builtin: Components.utils.Sandbox(this),
+        canonical: {},
         factories: [],
         globals: {},
         io: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
@@ -21,9 +22,10 @@ if (!JSMLoader || JSMLoader.bump != 1)
         load: function load(url, target) {
             let stale = this.stale[url];
             if (stale) {
+                dump("dactyl: JSMLoader: stale: " + url + " " + stale + "\n");
                 delete this.stale[url];
-                let global = this.globals[url];
 
+                let global = this.globals[url];
                 for each (let prop in Object.getOwnPropertyNames(global))
                     try {
                         if (!(prop in this.builtin) &&
@@ -36,14 +38,13 @@ if (!JSMLoader || JSMLoader.bump != 1)
                         Components.utils.reportError(e);
                     }
 
-                if (stale !== this.getTarget(url))
-                    delete this.globals[url];
-                else
-                    Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                              .getService(Components.interfaces.mozIJSSubScriptLoader)
-                              .loadSubScript(url, global);
+                Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+                          .getService(Components.interfaces.mozIJSSubScriptLoader)
+                          .loadSubScript(url, global);
             }
-            Components.utils.import(url, target);
+
+            let global = Components.utils.import(moduleUrl, target);
+            return this.globals[url] = global;
         },
         cleanup: function unregister() {
             for each (let factory in this.factories.splice(0))
@@ -52,10 +53,6 @@ if (!JSMLoader || JSMLoader.bump != 1)
         purge: function purge() {
             for (let [url, global] in Iterator(this.globals))
                 this.stale[url] = this.getTarget(url);
-        },
-        registerGlobal: function registerGlobal(uri, obj) {
-            if (Cu.getGlobalForObject)
-                this.globals[uri.replace(/.* -> /, "")] = Cu.getGlobalForObject(obj);
         },
         registerFactory: function registerFactory(factory) {
             this.manager.registerFactory(factory.classID,
@@ -166,7 +163,6 @@ let loaded = {};
 let currentModule;
 function defineModule(name, params) {
     let module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
-    JSMLoader.registerGlobal(Components.stack.caller.filename, module);
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];

@@ -944,7 +944,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }
         },
         "dactyl-purge": function () {
-            this.rehashing = true;
+            this.rehashing = 1;
+            JSMLoader.purge();
         },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {

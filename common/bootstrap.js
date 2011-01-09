@@ -100,7 +100,6 @@ FactoryProxy.prototype = {
 
         Object.defineProperty(this, "module", { value: {}, enumerable: true });
         JSMLoader.load(this.url, this.module);
-        JSMLoader.registerGlobal(this.url, this.module.global);
         return this.module;
     },
     createInstance: function (iids) {

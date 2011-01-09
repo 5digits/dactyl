@@ -407,14 +407,14 @@ var Buffer = Module("buffer", {
      *     percentage with 100 as 'normal'.
      */
     get zoomLevel() config.browser.markupDocumentViewer[this.fullZoom ? "textZoom" : "fullZoom"] * 100,
-    set zoomLevel(value) { Buffer.setZoom(value, this.fullZoom); },
+    set zoomLevel(value) { this.setZoom(value, this.fullZoom); },
 
     /**
      * @property {boolean} Whether the current browser is using full
      *     zoom, as opposed to text zoom.
      */
     get fullZoom() ZoomManager.useFullZoom,
-    set fullZoom(value) { Buffer.setZoom(this.zoomLevel, value); },
+    set fullZoom(value) { this.setZoom(this.zoomLevel, value); },
 
     /**
      * @property {string} The current document's title.
@@ -746,48 +746,19 @@ var Buffer = Module("buffer", {
         }
     },
 
-    /**
-     * Scrolls to the bottom of the current buffer.
-     */
-    scrollBottom: function () {
-        Buffer.scrollToPercent(null, null, 100);
-    },
+    scrollHorizontal: function scrollHorizontal(increment, number)
+        Buffer.scrollHorizontal(this.findScrollable(number, true), increment, number),
 
-    /**
-     * Scrolls the buffer laterally *cols* columns.
-     *
-     * @param {number} cols The number of columns to scroll. A positive
-     *     value scrolls right and a negative value left.
-     */
-    scrollColumns: function (cols) {
-        Buffer.scrollHorizontal(null, "columns", cols);
-    },
+    scrollVertical: function scrollVertical(increment, number)
+        Buffer.scrollVertical(this.findScrollable(number, false), increment, number),
 
-    /**
-     * Scrolls to the end of the current buffer.
-     */
-    scrollEnd: function () {
-        Buffer.scrollToPercent(null, 100, null);
-    },
+    scrollToPercent: function scrollToPercent(horizontal, vertical)
+        Buffer.scrollToPercent(this.findScrollable(0, vertical == null), horizontal, vertical),
 
-    /**
-     * Scrolls the buffer vertically *lines* rows.
-     *
-     * @param {number} lines The number of lines to scroll. A positive
-     *     value scrolls down and a negative value up.
-     */
-    scrollLines: function (lines) {
-        Buffer.scrollVertical(null, "lines", lines);
-    },
-
-    /**
-     * Scrolls the buffer vertically *pages* pages.
-     *
-     * @param {number} pages The number of pages to scroll. A positive
-     *     value scrolls down and a negative value up.
-     */
-    scrollPages: function (pages) {
-        Buffer.scrollVertical(null, "pages", pages);
+    _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
+        if (count > 0)
+            options["scroll"] = count;
+        buffer.scrollByScrollSize(direction);
     },
 
     /**
@@ -801,7 +772,6 @@ var Buffer = Module("buffer", {
     scrollByScrollSize: function (direction, count) {
         direction = direction ? 1 : -1;
         count = count || 1;
-        let win = Buffer.findScrollableWindow();
 
         if (options["scroll"] > 0)
             this.scrollLines(options["scroll"] * direction);
@@ -809,45 +779,59 @@ var Buffer = Module("buffer", {
             this.scrollPages(direction / 2);
     },
 
-    _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
-        if (count > 0)
-            options["scroll"] = count;
-        buffer.scrollByScrollSize(direction);
+    findScrollable: function findScrollable(dir, horizontal) {
+        function find(elem) {
+            while (!(elem instanceof Element) && elem.parentNode)
+                elem = elem.parentNode;
+            for (; elem && elem.parentNode instanceof Element; elem = elem.parentNode)
+                if (Buffer.isScrollable(elem, dir, horizontal))
+                    break;
+            return elem;
+        }
+
+        try {
+            var elem = buffer.focusedFrame.document.activeElement;
+            if (elem == elem.ownerDocument.body)
+                elem = null;
+        }
+        catch (e) {}
+
+        try {
+            var sel = buffer.focusedFrame.getSelection();
+        }
+        catch (e) {}
+        if (!elem && sel && sel.rangeCount)
+            elem = sel.getRangeAt(0).startContainer;
+        if (elem)
+            elem = find(elem);
+
+        if (!(elem instanceof Element)) {
+            let doc = Buffer.findScrollableWindow().document;
+            elem = find(doc.body || doc.getElementsByTagName("body")[0] ||
+                        doc.documentElement);
+        }
+        let doc = buffer.focusedFrame.document;
+        return elem || doc.body || doc.documentElement;
     },
 
-    /**
-     * Scrolls the buffer to the specified screen percentiles.
-     *
-     * @param {number} x The horizontal page percentile.
-     * @param {number} y The vertical page percentile.
-     */
-    scrollToPercent: function (x, y) {
-        Buffer.scrollToPercent(null, x, y);
-    },
+    findScrollableWindow: function findScrollableWindow() {
+        win = window.document.commandDispatcher.focusedWindow;
+        if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
+            return win;
 
-    /**
-     * Scrolls the buffer to the specified screen pixels.
-     *
-     * @param {number} x The horizontal pixel.
-     * @param {number} y The vertical pixel.
-     */
-    scrollTo: function (x, y) {
-        marks.add("'", true);
-        content.scrollTo(x, y);
-    },
+        let win = this.focusedFrame;
+        if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
+            return win;
 
-    /**
-     * Scrolls the current buffer laterally to its leftmost.
-     */
-    scrollStart: function () {
-        Buffer.scrollToPercent(null, 0, null);
-    },
+        win = content;
+        if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
+            return win;
 
-    /**
-     * Scrolls the current buffer vertically to the top.
-     */
-    scrollTop: function () {
-        Buffer.scrollToPercent(null, null, 0);
+        for (let frame in array.iterValues(win.frames))
+            if (frame.scrollMaxX > 0 || frame.scrollMaxY > 0)
+                return frame;
+
+        return win;
     },
 
     // TODO: allow callback for filtering out unwanted frames? User defined?
@@ -941,6 +925,16 @@ var Buffer = Module("buffer", {
             return opt ? template.table(opt[1], opt[0](true)) : undefined;
         }, <br/>);
         dactyl.echo(list, commandline.FORCE_MULTILINE);
+    },
+
+    /**
+     * Stops loading and animations in the current content.
+     */
+    stop: function stop() {
+        if (config.stop)
+            config.stop();
+        else
+            config.browser.mCurrentBrowser.stop();
     },
 
     /**
@@ -1062,7 +1056,7 @@ var Buffer = Module("buffer", {
      * @param {boolean} fullZoom Whether to use full zoom or text zoom.
      */
     zoomIn: function (steps, fullZoom) {
-        Buffer.bumpZoomLevel(steps, fullZoom);
+        buffer.bumpZoomLevel(steps, fullZoom);
     },
 
     /**
@@ -1072,11 +1066,8 @@ var Buffer = Module("buffer", {
      * @param {boolean} fullZoom Whether to use full zoom or text zoom.
      */
     zoomOut: function (steps, fullZoom) {
-        Buffer.bumpZoomLevel(-steps, fullZoom);
-    }
-}, {
-    ZOOM_MIN: "ZoomManager" in window && Math.round(ZoomManager.MIN * 100),
-    ZOOM_MAX: "ZoomManager" in window && Math.round(ZoomManager.MAX * 100),
+        buffer.bumpZoomLevel(-steps, fullZoom);
+    },
 
     setZoom: function setZoom(value, fullZoom) {
         dactyl.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
@@ -1108,28 +1099,16 @@ var Buffer = Module("buffer", {
         if (i == cur && fullZoom == ZoomManager.useFullZoom)
             dactyl.beep();
 
-        Buffer.setZoom(Math.round(values[i] * 100), fullZoom);
-    },
+        buffer.setZoom(Math.round(values[i] * 100), fullZoom);
+    }
+}, {
+    ZOOM_MIN: Class.memoize(function () prefs.get("zoom.minPercent")),
+    ZOOM_MAX: Class.memoize(function () prefs.get("zoom.maxPercent")),
+    setZoom: deprecated("Please use buffer.setZoom instead", function setZoom() buffer.setZoom.apply(buffer, arguments)),
+    bumpZoomLevel: deprecated("Please use buffer.bumpZoomLevel instead", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),
 
-    findScrollableWindow: function findScrollableWindow() {
-        win = window.document.commandDispatcher.focusedWindow;
-        if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
-            return win;
-
-        let win = buffer.focusedFrame;
-        if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
-            return win;
-
-        win = content;
-        if (win.scrollMaxX > 0 || win.scrollMaxY > 0)
-            return win;
-
-        for (let frame in array.iterValues(win.frames))
-            if (frame.scrollMaxX > 0 || frame.scrollMaxY > 0)
-                return frame;
-
-        return win;
-    },
+    findScrollableWindow: deprecated("Please use buffer.findScrollableWindow instead", function findScrollableWindow() buffer.findScrollableWindow.apply(buffer, arguments)),
+    findScrollable: deprecated("Please use buffer.findScrollable instead", function findScrollable() buffer.findScrollable.apply(buffer, arguments)),
 
     isScrollable: function isScrollable(elem, dir, horizontal) {
         let pos = "scrollTop", size = "clientHeight", max = "scrollHeight", layoutSize = "offsetHeight",
@@ -1149,41 +1128,6 @@ var Buffer = Module("buffer", {
         return dir < 0 && elem[pos] > 0 || dir > 0 && elem[pos] + realSize < elem[max] || !dir && realSize < elem[max];
     },
 
-    findScrollable: function findScrollable(dir, horizontal) {
-        function find(elem) {
-            while (!(elem instanceof Element) && elem.parentNode)
-                elem = elem.parentNode;
-            for (; elem && elem.parentNode instanceof Element; elem = elem.parentNode)
-                if (Buffer.isScrollable(elem, dir, horizontal))
-                    break;
-            return elem;
-        }
-
-        try {
-            var elem = buffer.focusedFrame.document.activeElement;
-            if (elem == elem.ownerDocument.body)
-                elem = null;
-        }
-        catch (e) {}
-
-        try {
-            var sel = buffer.focusedFrame.getSelection();
-        }
-        catch (e) {}
-        if (!elem && sel && sel.rangeCount)
-            elem = sel.getRangeAt(0).startContainer;
-        if (elem)
-            elem = find(elem);
-
-        if (!(elem instanceof Element)) {
-            let doc = Buffer.findScrollableWindow().document;
-            elem = find(doc.body || doc.getElementsByTagName("body")[0] ||
-                        doc.documentElement);
-        }
-        let doc = buffer.focusedFrame.document;
-        return elem || doc.body || doc.documentElement;
-    },
-
     scrollTo: function scrollTo(elem, left, top) {
         if (left != null)
             elem.scrollLeft = left;
@@ -1191,22 +1135,7 @@ var Buffer = Module("buffer", {
             elem.scrollTop = top;
     },
 
-    scrollVertical: function scrollVertical(elem, increment, number) {
-        elem = elem || Buffer.findScrollable(number, false);
-        let fontSize = parseInt(util.computedStyle(elem).fontSize);
-        if (increment == "lines")
-            increment = fontSize;
-        else if (increment == "pages")
-            increment = elem.clientHeight - fontSize;
-        else
-            throw Error();
-
-        dactyl.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
-        Buffer.scrollTo(elem, null, elem.scrollTop + number * increment);
-    },
-
     scrollHorizontal: function scrollHorizontal(elem, increment, number) {
-        elem = elem || Buffer.findScrollable(number, true);
         let fontSize = parseInt(util.computedStyle(elem).fontSize);
         if (increment == "columns")
             increment = fontSize; // Good enough, I suppose.
@@ -1215,14 +1144,30 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        dactyl.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
-        Buffer.scrollTo(elem, elem.scrollLeft + number * increment, null);
+        let left = "dactylScrollDestX" in elem ? elem.dactylScrollDestX : elem.scrollLeft;
+        delete elem.dactylScrollDestX;
+
+        dactyl.assert(number < 0 ? left > 0 : left < elem.scrollWidth - elem.clientWidth);
+        Buffer.scrollTo(elem, left + number * increment, null);
     },
 
-    scrollToPercent: function scrollElemToPercent(elem, horizontal, vertical) {
-        elem = elem || Buffer.findScrollable(0, vertical == null);
-        marks.add("'", true);
+    scrollVertical: function scrollVertical(elem, increment, number) {
+        let fontSize = parseInt(util.computedStyle(elem).fontSize);
+        if (increment == "lines")
+            increment = fontSize;
+        else if (increment == "pages")
+            increment = elem.clientHeight - fontSize;
+        else
+            throw Error();
 
+        let top = "dactylScrollDestY" in elem ? elem.dactylScrollDestY : elem.scrollTop;
+        delete elem.dactylScrollDestY;
+
+        dactyl.assert(number < 0 ? top > 0 : top < elem.scrollHeight - elem.clientHeight);
+        Buffer.scrollTo(elem, null, top + number * increment);
+    },
+
+    scrollToPercent: function scrollToPercent(elem, horizontal, vertical) {
         Buffer.scrollTo(elem,
                         horizontal == null ? null
                                            : (elem.scrollWidth - elem.clientWidth) * (horizontal / 100),
@@ -1246,7 +1191,7 @@ var Buffer = Module("buffer", {
         commands.add(["frameo[nly]"],
             "Show only the current frame's page",
             function (args) {
-                dactyl.open(buffer.focusedFrame.document.documentURI);
+                dactyl.open(buffer.focusedFrame.location.href);
             },
             { argCount: "0" });
 
@@ -1404,7 +1349,7 @@ var Buffer = Module("buffer", {
 
         commands.add(["st[op]"],
             "Stop loading the current web page",
-            function () { tabs.stop(config.browser.mCurrentTab); },
+            function () { buffer.stop() },
             { argCount: "0" });
 
         commands.add(["vie[wsource]"],
@@ -1434,7 +1379,7 @@ var Buffer = Module("buffer", {
                 else
                     dactyl.assert(false, "E488: Trailing characters");
 
-                Buffer.setZoom(level, args.bang);
+                buffer.setZoom(level, args.bang);
             },
             {
                 argCount: "?",
@@ -1529,36 +1474,36 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["<C-c>"],
             "Stop loading the current web page",
-            function () { tabs.stop(config.browser.mCurrentTab); });
+            function () { ex.stop(); });
 
         // scrolling
         mappings.add(myModes, ["j", "<Down>", "<C-e>"],
             "Scroll document down",
-            function (args) { buffer.scrollLines(Math.max(args.count, 1)); },
+            function (args) { buffer.scrollVertical("lines", Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["k", "<Up>", "<C-y>"],
             "Scroll document up",
-            function (args) { buffer.scrollLines(-Math.max(args.count, 1)); },
+            function (args) { buffer.scrollVertical("lines", -Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, dactyl.has("mail") ? ["h"] : ["h", "<Left>"],
             "Scroll document to the left",
-            function (args) { buffer.scrollColumns(-Math.max(args.count, 1)); },
+            function (args) { buffer.scrollHorizontal("columns", -Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, dactyl.has("mail") ? ["l"] : ["l", "<Right>"],
             "Scroll document to the right",
-            function (args) { buffer.scrollColumns(Math.max(args.count, 1)); },
+            function (args) { buffer.scrollHorizontal("columns", Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["0", "^"],
             "Scroll to the absolute left of the document",
-            function () { buffer.scrollStart(); });
+            function () { buffer.scrollToPercent(0, null); });
 
         mappings.add(myModes, ["$"],
             "Scroll to the absolute right of the document",
-            function () { buffer.scrollEnd(); });
+            function () { buffer.scrollToPercent(100, null); });
 
         mappings.add(myModes, ["gg", "<Home>"],
             "Go to the top of the document",
@@ -1590,12 +1535,12 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["<C-b>", "<PageUp>", "<S-Space>"],
             "Scroll up a full page",
-            function (args) { buffer.scrollPages(-Math.max(args.count, 1)); },
+            function (args) { buffer.scrollVertical("pages", -Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["<C-f>", "<PageDown>", "<Space>"],
             "Scroll down a full page",
-            function (args) { buffer.scrollPages(Math.max(args.count, 1)); },
+            function (args) { buffer.scrollVertical("pages", Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add(myModes, ["]f"],
@@ -1727,7 +1672,7 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["zz"],
             "Set text zoom value of current web page",
-            function (args) { Buffer.setZoom(args.count > 1 ? args.count : 100, false); },
+            function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, false); },
             { count: true });
 
         mappings.add(myModes, ["ZI", "zI"],
@@ -1752,7 +1697,7 @@ var Buffer = Module("buffer", {
 
         mappings.add(myModes, ["zZ"],
             "Set full zoom value of current web page",
-            function (args) { Buffer.setZoom(args.count > 1 ? args.count : 100, true); },
+            function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, true); },
             { count: true });
 
         // page info
