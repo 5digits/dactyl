@@ -1064,12 +1064,13 @@ var CommandLine = Module("commandline", {
 
         let key = events.toString(event);
 
+        function openLink(where) {
+            event.preventDefault();
+            dactyl.open(event.target.href, where);
+        }
+
         // TODO: Wouldn't multiple handlers be cleaner? --djk
         if (event.type == "click" && event.target instanceof HTMLAnchorElement) {
-            function openLink(where) {
-                event.preventDefault();
-                dactyl.open(event.target.href, where);
-            }
 
             let command = event.originalTarget.getAttributeNS(NS.uri, "command");
             if (command && dactyl.commands[command]) {
@@ -1494,7 +1495,7 @@ var CommandLine = Module("commandline", {
                 try {
                     this.waiting = true;
                     for (let [, context] in Iterator(list)) {
-                        function done() !(idx >= n + context.items.length || idx == -2 && !context.items.length);
+                        let done = function done() !(idx >= n + context.items.length || idx == -2 && !context.items.length);
                         while (context.incomplete && !done())
                             util.threadYield(false, true);
 

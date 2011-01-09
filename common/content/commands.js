@@ -320,11 +320,11 @@ var Command = Class("Command", {
         let process = util.identity;
 
         if (callable(params))
-            function makeParams(self, args)
+            var makeParams = function makeParams(self, args)
                 iter.toObject([k, process(v)]
                                for ([k, v] in iter(params.apply(self, args))))
         else if (params)
-            function makeParams(self, args)
+            makeParams = function makeParams(self, args)
                 iter.toObject([name, process(args[i])]
                               for ([i, name] in Iterator(params)));
 
@@ -749,25 +749,26 @@ var Commands = Module("commands", {
      * @returns {Args}
      */
     parseArgs: function (str, params) {
-        try {
-            function getNextArg(str, _keepQuotes) {
-                if (arguments.length < 2)
-                    _keepQuotes = keepQuotes;
+        function getNextArg(str, _keepQuotes) {
+            if (arguments.length < 2)
+                _keepQuotes = keepQuotes;
 
-                if (str.substr(0, 2) === "<<" && hereDoc) {
-                    let arg = /^<<(\S*)/.exec(str)[1];
-                    let count = arg.length + 2;
-                    if (complete)
-                        return [count, "", ""];
-                    return [count, io.readHeredoc(arg), ""];
-                }
-                let [count, arg, quote] = Commands.parseArg(str, null, _keepQuotes);
-                if (quote == "\\" && !complete)
-                    return [, , , "Trailing \\"];
-                if (quote && !complete)
-                    return [, , , "E114: Missing quote: " + quote];
-                return [count, arg, quote];
+            if (str.substr(0, 2) === "<<" && hereDoc) {
+                let arg = /^<<(\S*)/.exec(str)[1];
+                let count = arg.length + 2;
+                if (complete)
+                    return [count, "", ""];
+                return [count, io.readHeredoc(arg), ""];
             }
+            let [count, arg, quote] = Commands.parseArg(str, null, _keepQuotes);
+            if (quote == "\\" && !complete)
+                return [, , , "Trailing \\"];
+            if (quote && !complete)
+                return [, , , "E114: Missing quote: " + quote];
+            return [count, arg, quote];
+        }
+
+        try {
 
             var { allowUnknownOptions, argCount, complete, extra, hereDoc, literal, options, keepQuotes } = params || {};
 
@@ -793,12 +794,12 @@ var Commands = Module("commands", {
             var completeOpts;
 
             // XXX
-            function matchOpts(arg) {
+            let matchOpts = function matchOpts(arg) {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
                     completeOpts = options.filter(function (opt) opt.multiple || !set.has(args, opt.names[0]));
             }
-            function resetCompletions() {
+            let resetCompletions = function resetCompletions() {
                 completeOpts = null;
                 args.completeArg = null;
                 args.completeOpt = null;
@@ -812,7 +813,7 @@ var Commands = Module("commands", {
                 args.completeArg = 0;
             }
 
-            function fail(error) {
+            let fail = function fail(error) {
                 if (complete)
                     complete.message = error;
                 else
@@ -1328,7 +1329,7 @@ var Commands = Module("commands", {
                         dactyl.echoerr("E174: Command already exists: add ! to replace it");
                 }
                 else {
-                    function completerToString(completer) {
+                    let completerToString = function completerToString(completer) {
                         if (completer)
                             return [k for ([k, v] in Iterator(completerMap)) if (completer == completion.closure[v])][0] || "custom";
                         return "";

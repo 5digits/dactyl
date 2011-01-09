@@ -307,6 +307,21 @@ var Editor = Module("editor", {
             }
         });
 
+        function update(force) {
+            if (force !== true && tmpfile.lastModifiedTime <= lastUpdate)
+                return;
+            lastUpdate = Date.now();
+
+            let val = tmpfile.read();
+            if (textBox)
+                textBox.value = val;
+            else {
+                while (editor.rootElement.firstChild)
+                    editor.rootElement.removeChild(editor.rootElement.firstChild);
+                editor.rootElement.innerHTML = val;
+            }
+        }
+
         try {
             var tmpfile = io.createTempFile();
             if (!tmpfile)
@@ -322,20 +337,6 @@ var Editor = Module("editor", {
                             "file encoding");
 
             let lastUpdate = Date.now();
-            function update(force) {
-                if (force !== true && tmpfile.lastModifiedTime <= lastUpdate)
-                    return;
-                lastUpdate = Date.now();
-
-                let val = tmpfile.read();
-                if (textBox)
-                    textBox.value = val;
-                else {
-                    while (editor.rootElement.firstChild)
-                        editor.rootElement.removeChild(editor.rootElement.firstChild);
-                    editor.rootElement.innerHTML = val;
-                }
-            }
 
             var timer = services.Timer(update, 100, services.Timer.TYPE_REPEATING_SLACK);
             this.editFileExternally({ file: tmpfile.path, line: line, column: column }, cleanup);

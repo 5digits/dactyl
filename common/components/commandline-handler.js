@@ -9,8 +9,6 @@ function reportError(e) {
     Cu.reportError(e);
 }
 
-try {
-
 var global = this;
 var NAME = "command-line-handler";
 var Cc = Components.classes;
@@ -60,7 +58,5 @@ if (XPCOMUtils.generateNSGetFactory)
 else
     var NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
 var EXPORTED_SYMBOLS = ["NSGetFactory", "global"];
-
-} catch (e) { reportError(e) }
 
 // vim: set fdm=marker sw=4 ts=4 et:

@@ -534,6 +534,29 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Initialize the help system.
      */
     initHelp: function (force) {
+        // Find help and overlay files with the given name.
+        function findHelpFile(file) {
+            let result = [];
+            for (let [, namespace] in Iterator(namespaces)) {
+                let url = ["dactyl://", namespace, "/", file, ".xml"].join("");
+                let res = util.httpGet(url);
+                if (res) {
+                    if (res.responseXML.documentElement.localName == "document")
+                        fileMap[file] = url;
+                    if (res.responseXML.documentElement.localName == "overlay")
+                        overlayMap[file] = url;
+                    result.push(res.responseXML);
+                }
+            }
+            return result;
+        }
+        // Find the tags in the document.
+        function addTags(file, doc) {
+            for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
+                for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
+                    tagMap[tag] = file;
+        }
+
         if (!force && !this.helpInitialized) {
             if ("noscriptOverlay" in window) {
                 noscriptOverlay.safeAllow("chrome-data:", true, false);
@@ -546,29 +569,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             let tagMap = services["dactyl:"].HELP_TAGS;
             let fileMap = services["dactyl:"].FILE_MAP;
             let overlayMap = services["dactyl:"].OVERLAY_MAP;
-
-            // Find help and overlay files with the given name.
-            function findHelpFile(file) {
-                let result = [];
-                for (let [, namespace] in Iterator(namespaces)) {
-                    let url = ["dactyl://", namespace, "/", file, ".xml"].join("");
-                    let res = util.httpGet(url);
-                    if (res) {
-                        if (res.responseXML.documentElement.localName == "document")
-                            fileMap[file] = url;
-                        if (res.responseXML.documentElement.localName == "overlay")
-                            overlayMap[file] = url;
-                        result.push(res.responseXML);
-                    }
-                }
-                return result;
-            }
-            // Find the tags in the document.
-            function addTags(file, doc) {
-                for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                    for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
-                        tagMap[tag] = file;
-            }
 
             // Scrape the list of help files from all.xml
             // Manually process main and overlay files, since XSLTProcessor and
@@ -658,21 +658,71 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.initHelp();
         if (FILE.isDirectory()) {
-            function addDataEntry(file, data) FILE.child(file).write(data);
-            function addURIEntry(file, uri) addDataEntry(file, util.httpGet(uri).responseText);
+            var addDataEntry = function addDataEntry(file, data) FILE.child(file).write(data);
+            var addURIEntry  = function addURIEntry(file, uri) addDataEntry(file, util.httpGet(uri).responseText);
         }
         else {
             var zip = services.ZipWriter();
             zip.open(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
-            function addURIEntry(file, uri)
+
+            addURIEntry = function addURIEntry(file, uri)
                 zip.addEntryChannel(PATH + file, TIME, 9,
                     services.io.newChannel(uri, null, null), false);
-            function addDataEntry(file, data) // Unideal to an extreme.
+            addDataEntry = function addDataEntry(file, data) // Unideal to an extreme.
                 addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
         }
 
         let empty = set("area base basefont br col frame hr img input isindex link meta param"
                             .split(" "));
+        function fix(node) {
+            switch(node.nodeType) {
+                case Node.ELEMENT_NODE:
+                    if (isinstance(node, [HTMLBaseElement]))
+                        return;
+
+                    data.push("<"); data.push(node.localName);
+                    if (node instanceof HTMLHtmlElement)
+                        data.push(" xmlns=" + XHTML.uri.quote());
+
+                    for (let { name, value } in array.iterValues(node.attributes)) {
+                        if (name == "dactyl:highlight") {
+                            set.add(styles, value);
+                            name = "class";
+                            value = "hl-" + value;
+                        }
+                        if (name == "href") {
+                            value = node.href;
+                            if (value.indexOf("dactyl://help-tag/") == 0) {
+                                let uri = services.io.newChannel(value, null, null).originalURI;
+                                value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
+                            }
+                            if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
+                                value = value.replace(/(#|$)/, ".xhtml$1");
+                        }
+                        if (name == "src" && value.indexOf(":") > 0) {
+                            chromeFiles[value] = value.replace(/.*\//, "");
+                            value = value.replace(/.*\//, "");
+                        }
+                        data.push(" ");
+                        data.push(name);
+                        data.push('="');
+                        data.push(<>{value}</>.toXMLString());
+                        data.push('"');
+                    }
+                    if (node.localName in empty)
+                        data.push(" />");
+                    else {
+                        data.push(">");
+                        if (node instanceof HTMLHeadElement)
+                            data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
+                        Array.map(node.childNodes, fix);
+                        data.push("</"); data.push(node.localName); data.push(">");
+                    }
+                    break;
+                case Node.TEXT_NODE:
+                    data.push(<>{node.textContent}</>.toXMLString());
+            }
+        }
 
         let chromeFiles = {};
         let styles = {};
@@ -684,55 +734,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',
                 '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
             ];
-            function fix(node) {
-                switch(node.nodeType) {
-                    case Node.ELEMENT_NODE:
-                        if (isinstance(node, [HTMLBaseElement]))
-                            return;
-
-                        data.push("<"); data.push(node.localName);
-                        if (node instanceof HTMLHtmlElement)
-                            data.push(" xmlns=" + XHTML.uri.quote());
-
-                        for (let { name, value } in array.iterValues(node.attributes)) {
-                            if (name == "dactyl:highlight") {
-                                set.add(styles, value);
-                                name = "class";
-                                value = "hl-" + value;
-                            }
-                            if (name == "href") {
-                                value = node.href;
-                                if (value.indexOf("dactyl://help-tag/") == 0) {
-                                    let uri = services.io.newChannel(value, null, null).originalURI;
-                                    value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
-                                }
-                                if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
-                                    value = value.replace(/(#|$)/, ".xhtml$1");
-                            }
-                            if (name == "src" && value.indexOf(":") > 0) {
-                                chromeFiles[value] = value.replace(/.*\//, "");
-                                value = value.replace(/.*\//, "");
-                            }
-                            data.push(" ");
-                            data.push(name);
-                            data.push('="');
-                            data.push(<>{value}</>.toXMLString());
-                            data.push('"');
-                        }
-                        if (node.localName in empty)
-                            data.push(" />");
-                        else {
-                            data.push(">");
-                            if (node instanceof HTMLHeadElement)
-                                data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
-                            Array.map(node.childNodes, fix);
-                            data.push("</"); data.push(node.localName); data.push(">");
-                        }
-                        break;
-                    case Node.TEXT_NODE:
-                        data.push(<>{node.textContent}</>.toXMLString());
-                }
-            }
             fix(content.document.documentElement);
             addDataEntry(file + ".xhtml", data.join(""));
         }
@@ -1893,12 +1894,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             "Force " + config.appName + " to restart",
             function () { dactyl.restart(); });
 
+        function findToolbar(name) util.evaluateXPath(
+            "./*[@toolbarname=" + util.escapeString(name, "'") + "]",
+            document, toolbox).snapshotItem(0);
+
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {
-            function findToolbar(name) util.evaluateXPath(
-                "./*[@toolbarname=" + util.escapeString(name, "'") + "]",
-                document, toolbox).snapshotItem(0);
-
             let toolbarCommand = function (names, desc, action, filter) {
                 commands.add(names, desc,
                     function (args) {

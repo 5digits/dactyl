@@ -309,15 +309,15 @@ var Styles = Module("Styles", {
      */
     matchFilter: function (filter) {
         if (filter === "*")
-            function test(uri) true;
+            var test = function test(uri) true;
         else if (/[*]$/.test(filter)) {
             let re = RegExp("^" + util.regexp.escape(filter.substr(0, filter.length - 1)));
-            function test(uri) re.test(uri.spec);
+            test = function test(uri) re.test(uri.spec);
         }
         else if (/[\/:]/.test(filter))
-            function test(uri) uri.spec === filter;
+            test = function test(uri) uri.spec === filter;
         else
-            function test(uri) { try { return util.isSubdomain(uri.host, filter); } catch (e) { return false; } };
+            test = function test(uri) { try { return util.isSubdomain(uri.host, filter); } catch (e) { return false; } };
         test.toString = function toString() filter;
         if (arguments.length < 2)
             return test;

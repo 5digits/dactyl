@@ -899,14 +899,14 @@ var Events = Module("events", {
             return killEvent();
         }
 
+        function shouldPass()
+            (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
+            options.get("passkeys").has(events.toString(event));
+
         try {
             let mode = modes.getStack(0);
             if (event.dactylMode)
                 mode = Modes.StackElement(event.dactylMode);
-
-            function shouldPass()
-                (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
-                options.get("passkeys").has(events.toString(event));
 
             let input = this._input;
             this._input = null;

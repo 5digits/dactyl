@@ -31,8 +31,8 @@ memoize(this, "Commands", function () {
 var FailedAssertion = Class("FailedAssertion", ErrorBase);
 var Point = Struct("x", "y");
 
-function wrapCallback(fn)
-    fn.wrapper = function wrappedCallback () {
+var wrapCallback = function wrapCallback(fn)
+    fn.wrapper = (function wrappedCallback () {
         try {
             return fn.apply(this, arguments);
         }
@@ -40,7 +40,7 @@ function wrapCallback(fn)
             util.reportError(e);
             return undefined;
         }
-    }
+    })
 
 var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     init: function () {
@@ -820,6 +820,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!isObject(object))
             return String(object);
 
+        function namespaced(node) {
+            var ns = NAMESPACES[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
+            if (!ns)
+                return node.localName;
+            if (color)
+                return <><span highlight="HelpXMLNamespace">{ns}</span>{node.localName}</>
+            return ns + ":" + node.localName;
+        }
+
         if (object instanceof Ci.nsIDOMElement) {
             const NAMESPACES = array.toObject([
                 [NS, "dactyl"],
@@ -830,14 +839,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (elem.nodeType == elem.TEXT_NODE)
                 return elem.data;
 
-            function namespaced(node) {
-                var ns = NAMESPACES[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
-                if (!ns)
-                    return node.localName;
-                if (color)
-                    return <><span highlight="HelpXMLNamespace">{ns}</span>{node.localName}</>
-                return ns + ":" + node.localName;
-            }
             try {
                 let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling)
                 if (color)
