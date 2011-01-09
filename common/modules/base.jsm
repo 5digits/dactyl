@@ -22,7 +22,6 @@ if (!JSMLoader || JSMLoader.bump != 1)
         load: function load(url, target) {
             let stale = this.stale[url];
             if (stale) {
-                dump("dactyl: JSMLoader: stale: " + url + " " + stale + "\n");
                 delete this.stale[url];
 
                 let global = this.globals[url];
@@ -38,12 +37,13 @@ if (!JSMLoader || JSMLoader.bump != 1)
                         Components.utils.reportError(e);
                     }
 
-                Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                          .getService(Components.interfaces.mozIJSSubScriptLoader)
-                          .loadSubScript(url, global);
+                if (stale === this.getTarget(url))
+                    Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+                              .getService(Components.interfaces.mozIJSSubScriptLoader)
+                              .loadSubScript(url, global);
             }
 
-            let global = Components.utils.import(moduleUrl, target);
+            let global = Components.utils.import(url, target);
             return this.globals[url] = global;
         },
         cleanup: function unregister() {
