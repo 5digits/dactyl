@@ -232,9 +232,8 @@ var StatusLine = Module("statusline", {
                 else if (progress < 1) {
                     progress = Math.floor(progress * 20);
                     progressStr = "["
-                        + "====================".substr(0, progress)
-                        + ">"
-                        + "                    ".substr(0, 19 - progress)
+                        + "===================>                    "
+                            .substr(20 - progress, 20)
                         + "]";
                 }
                 this.widgets.progress.value = progressStr;

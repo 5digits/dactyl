@@ -903,7 +903,7 @@ var Commands = Module("commands", {
 
                                         // we have a validator function
                                         if (typeof opt.validator == "function") {
-                                            if (opt.validator.call(this, arg, quoted) == false) {
+                                            if (opt.validator(arg, quoted) == false) {
                                                 fail("Invalid argument for option: " + optname);
                                                 if (complete) // Always true.
                                                     complete.highlight(args.completeStart, count - 1, "SPELLCHECK");

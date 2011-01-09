@@ -624,8 +624,8 @@ var JavaScript = Module("javascript", {
         "Uint16Array", "Uint32Array", "Uint8Array", "XML",
         "XMLHttpProgressEvent", "XMLList", "XMLSerializer", "XPCNativeWrapper",
         "XPCSafeJSWrapper", "XULControllers", "decodeURI", "decodeURIComponent",
-        "encodeURI", "encodeURIComponent", "eval", "isFinite", "isNaN",
-        "isXMLName", "parseFloat", "parseInt", "undefined", "uneval"
+        "encodeURI", "encodeURIComponent", "escape", "eval", "isFinite", "isNaN",
+        "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
      .concat(this.magicalNames)

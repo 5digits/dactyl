@@ -1070,20 +1070,34 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     // Nuances gleaned from browser.jar/content/browser/browser.js
     parseForm: function parseForm(field) {
         function encode(name, value, param) {
-            if (param)
-                value = value + "%s";
-            if (post)
-                return name + "=" + value;
-            return encodeURIComponent(name) + "=" + (param ? value : encodeURIComponent(value));
+            param = param ? "%s" : "";
+            if (post) // Seems wrong.
+                return encodeComponent(name + "=" + value + param);
+            return encodeComponent(name) + "=" + encodeComponent(value) + param;
         }
 
         let form = field.form;
         let doc = form.ownerDocument;
-        let charset = doc.charset;
+
+        let charset = doc.characterSet;
+        let converter = services.CharsetConv(charset);
+        for each (let cs in form.acceptCharset.split(/\s*,\s*|\s+/)) {
+            let c = services.CharsetConv(cs);
+            if (c) {
+                converter = services.CharsetConv(cs);
+                charset = cs;
+            }
+        }
+
         let uri = util.newURI(doc.baseURI.replace(/\?.*/, ""), charset);
         let url = util.newURI(form.action, charset, uri).spec;
 
         let post = form.method.toUpperCase() == "POST";
+
+        let encodeComponent = encodeURIComponent;
+        if (charset !== "UTF-8")
+            encodeComponent = function encodeComponent(str)
+                escape(converter.ConvertFromUnicode(str) + converter.Finish());
 
         let elems = [];
         if (field instanceof Ci.nsIDOMHTMLInputElement && field.type == "submit")
@@ -1101,8 +1115,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
         }
         if (post)
-            return [url, elems.map(encodeURIComponent).join('&'), elems];
-        return [url + "?" + elems.join('&'), null];
+            return [url, elems.join('&'), elems, charset];
+        return [url + "?" + elems.join('&'), null, charset];
     },
 
     /**

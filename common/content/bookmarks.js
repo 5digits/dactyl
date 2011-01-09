@@ -58,7 +58,7 @@ var Bookmarks = Module("bookmarks", {
     add: function add(unfiled, title, url, keyword, tags, force) {
         // FIXME
         if (isObject(unfiled))
-            var { unfiled, title, url, keyword, tags, post, force } = unfiled;
+            var { unfiled, title, url, keyword, tags, post, charset, force } = unfiled;
 
         try {
             let uri = util.createURI(url);
@@ -82,13 +82,15 @@ var Bookmarks = Module("bookmarks", {
             if (!bmark)
                 return false;
 
+            if (charset !== undefined)
+                bmark.charset = charset;
             if (post !== undefined)
                 bmark.post = post;
             if (keyword)
                 bmark.keyword = keyword;
         }
         catch (e) {
-            dactyl.log(e, 0);
+            util.reportError(e);
             return false;
         }
 
@@ -102,10 +104,12 @@ var Bookmarks = Module("bookmarks", {
      * @param {Element} elem A form element for which to add a keyword.
      */
     addSearchKeyword: function (elem) {
-        let [url, post] = util.parseForm(elem);
+        let [url, post, charset] = util.parseForm(elem);
         let options = { "-title": "Search " + elem.ownerDocument.title };
         if (post != null)
             options["-post"] = post;
+        if (charset != null && charset !== "UTF-8")
+            options["-charset"] = charset;
 
         commandline.open(":",
             commands.commandToString({ command: "bmark", options: options, arguments: [url] }) + " -keyword ",
@@ -134,7 +138,7 @@ var Bookmarks = Module("bookmarks", {
             let extra = "";
             if (title != url)
                 extra = " (" + title + ")";
-            this.add(true, title, url);
+            this.add({ unfiled: true, title: title, url: url });
             dactyl.echomsg({ domains: [util.getHost(url)], message: "Added bookmark: " + url + extra });
         }
     },
@@ -179,8 +183,10 @@ var Bookmarks = Module("bookmarks", {
             }
             ids.forEach(function (id) {
                 let bmark = bookmarkcache.bookmarks[id];
-                if (bmark)
-                    PlacesUtils.tagging.untagURI(util.newURI(bmark.url), null);
+                if (bmark) {
+                    PlacesUtils.tagging.untagURI(bmark.uri, null);
+                    bmark.charset = null;
+                }
                 services.bookmarks.removeItem(id);
             });
             return ids.length;
@@ -302,6 +308,7 @@ var Bookmarks = Module("bookmarks", {
             let [shortcutURL, postData] = PlacesUtils.getURLAndPostDataForKeyword(keyword);
             if (!shortcutURL)
                 return [url, null];
+            let bmark = bookmarkcache.keywords[keyword];
 
             let data = window.unescape(postData || "");
             if (/%s/i.test(shortcutURL) || /%s/i.test(data)) {
@@ -309,17 +316,16 @@ var Bookmarks = Module("bookmarks", {
                 var matches = shortcutURL.match(/^(.*)\&mozcharset=([a-zA-Z][_\-a-zA-Z0-9]+)\s*$/);
                 if (matches)
                     [, shortcutURL, charset] = matches;
-                else {
+                else
                     try {
                         charset = services.history.getCharsetForURI(util.newURI(shortcutURL));
                     }
                     catch (e) {}
-                }
-                var encodedParam;
                 if (charset)
-                    encodedParam = escape(window.convertFromUnicode(charset, param));
+                    var encodedParam = escape(window.convertFromUnicode(charset, param));
                 else
-                    encodedParam = encodeURIComponent(param);
+                    encodedParam = bmark.encodeURIComponent(param);
+
                 shortcutURL = shortcutURL.replace(/%s/g, encodedParam).replace(/%S/g, param);
                 if (/%s/i.test(data))
                     postData = window.getPostDataStream(data, param, encodedParam, "application/x-www-form-urlencoded");
@@ -443,6 +449,7 @@ var Bookmarks = Module("bookmarks", {
                     force: args.bang,
                     unfiled: false,
                     keyword: args["-keyword"] || null,
+                    charset: args["-charset"],
                     post: args["-post"],
                     tags: args["-tags"] || [],
                     title: args["-title"] || (args.length === 0 ? buffer.title : null),
@@ -470,7 +477,15 @@ var Bookmarks = Module("bookmarks", {
                     }
                     completion.bookmark(context, args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
                 },
-                options: [keyword, title, tags, post]
+                options: [keyword, title, tags, post,
+                    {
+                        names: ["-charset", "-c"],
+                        description: "The character encoding of the bookmark",
+                        type: CommandOption.STRING,
+                        completer: function (context) completion.charset(context),
+                        validator: Option.validateCompleter
+                    }
+                ]
             });
 
         commands.add(["bmarks"],
@@ -547,14 +562,20 @@ var Bookmarks = Module("bookmarks", {
                     let bmark = bmarks[0];
 
                     options["-title"] = bmark.title;
+                    if (bmark.charset)
+                        options["-charset"] = bmark.charset;
                     if (bmark.keyword)
                         options["-keyword"] = bmark.keyword;
+                    if (bmark.post)
+                        options["-post"] = bmark.post;
                     if (bmark.tags.length > 0)
                         options["-tags"] = bmark.tags.join(", ");
                 }
                 else {
                     if (buffer.title != buffer.URL.spec)
                         options["-title"] = buffer.title;
+                    if (content.document.characterSet !== "UTF-8")
+                        options["-charset"] = content.document.characterSet;
                 }
 
                 commandline.open(":",

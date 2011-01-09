@@ -10,14 +10,25 @@ defineModule("bookmarkcache", {
     require: ["services", "storage", "util"]
 });
 
-var Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "id");
+var Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "charset", "id");
 var Keyword = Struct("keyword", "title", "icon", "url");
 Bookmark.defaultValue("icon", function () BookmarkCache.getFavicon(this.url));
+update(Bookmark.prototype, {
+    get extra() [
+        ["keyword", this.keyword,         "Keyword"],
+        ["tags",    this.tags.join(", "), "Tag"]
+    ].filter(function (item) item[1]),
+
+    get uri() util.newURI(this.url),
+
+    encodeURIComponent: function _encodeURIComponent(str) {
+        if (!this.charset || this.charset === "UTF-8")
+            return encodeURIComponent(str);
+        let conv = services.CharsetConv(this.charset);
+        return escape(conv.ConvertFromUnicode(str) + conv.Finish());
+    }
+})
 Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
-Bookmark.prototype.__defineGetter__("extra", function () [
-                        ["keyword", this.keyword,         "Keyword"],
-                        ["tags",    this.tags.join(", "), "Tag"]
-                    ].filter(function (item) item[1]));
 Bookmark.setter("url", function (val) {
     let tags = this.tags;
     this.tags = null;
@@ -26,6 +37,7 @@ Bookmark.setter("url", function (val) {
 });
 Bookmark.setter("title", function (val) { services.bookmarks.setItemTitle(this.id, val); });
 Bookmark.setter("post", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.POST, val); });
+Bookmark.setter("charset", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.CHARSET, val); });
 Bookmark.setter("keyword", function (val) { services.bookmarks.setKeywordForBookmark(this.id, val); });
 Bookmark.setter("tags", function (val) {
     services.tagging.untagURI(this.uri, null);
@@ -37,6 +49,7 @@ var name = "bookmark-cache";
 
 var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     POST: "bookmarkProperties/POSTData",
+    CHARSET: "dactyl/charset",
 
     init: function init() {
         services.bookmarks.addObserver(this, false);
@@ -68,12 +81,14 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         let keyword = services.bookmarks.getKeywordForBookmark(node.itemId);
         let tags = services.tagging.getTagsForURI(uri, {}) || [];
         let post = BookmarkCache.getAnnotation(node.itemId, this.POST);
-        return Bookmark(node.uri, node.title, node.icon && node.icon.spec, post, keyword, tags, node.itemId);
+        let charset = BookmarkCache.getAnnotation(node.itemId, this.CHARSET);
+        return Bookmark(node.uri, node.title, node.icon && node.icon.spec, post, keyword, tags, charset, node.itemId);
     },
 
-    annotate: function (id, key, val) {
+    annotate: function (id, key, val, timespan) {
         if (val)
-            services.annotation.setItemAnnotation(id, key, val, 0, services.annotation.EXPIRE_NEVER);
+            services.annotation.setItemAnnotation(id, key, val, 0,
+                                                  timespan || services.annotation.EXPIRE_NEVER);
         else if (services.annotation.itemHasAnnotation(id, key))
             services.annotation.removeItemAnnotation(id, key);
     },
@@ -159,7 +174,9 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     onItemChanged: function onItemChanged(itemId, property, isAnnotation, value) {
         if (isAnnotation)
             if (property === this.POST)
-                [property, value] = ["post", BookmarkCache.getAnnotation(itemId, this.POST)];
+                [property, value] = ["post", BookmarkCache.getAnnotation(itemId, property)];
+            else if (property === this.CHARSET)
+                [property, value] = ["charset", BookmarkCache.getAnnotation(itemId, property)];
             else
                 return;
 

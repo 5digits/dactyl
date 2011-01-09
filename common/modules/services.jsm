@@ -64,6 +64,7 @@ var Services = Module("Services", {
         this.add("windowWatcher",       "@mozilla.org/embedcomp/window-watcher;1",          Ci.nsIWindowWatcher);
         this.add("zipReader",           "@mozilla.org/libjar/zip-reader-cache;1",           Ci.nsIZipReaderCache);
 
+        this.addClass("CharsetConv",  "@mozilla.org/intl/scriptableunicodeconverter", Ci.nsIScriptableUnicodeConverter, "charset");
         this.addClass("File",         "@mozilla.org/file/local;1",                 Ci.nsILocalFile);
         this.addClass("file:",        "@mozilla.org/network/protocol;1?name=file", Ci.nsIFileProtocolHandler);
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        Ci.nsIFind);
