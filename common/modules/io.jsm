@@ -811,7 +811,14 @@ unlet s:cpo_save
             context.anchored = false;
             context.keys = {
                 text: util.identity,
-                description: services.charset.getCharsetTitle
+                description: function (charset) {
+                    try {
+                        return services.charset.getCharsetTitle(charset);
+                    }
+                    catch (e) {
+                        return charset;
+                    }
+                }
             };
             context.generate = function () iter(services.charset.getDecoderList());
         };
