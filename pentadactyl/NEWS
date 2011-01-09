@@ -65,6 +65,7 @@
       - Added :cookies command.
       * :extadd now supports remote URLs as well as local files on Firefox 4.
       * Added :if/:elseif/:else/:endif conditionals.
+      - Added -charset and -post to :bmark.
       - Added -keyword, -tags, -title to :delbmarks.
       - Added :extrehash, :exttoggle, :extupdate, and :rehash commands.
       - Added :feedkeys command.
