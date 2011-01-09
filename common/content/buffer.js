@@ -425,7 +425,7 @@ var Buffer = Module("buffer", {
      * @property {number} The buffer's horizontal scroll percentile.
      */
     get scrollXPercent() {
-        let elem = Buffer.findScrollable(0, true);
+        let elem = buffer.findScrollable(0, true);
         if (elem.scrollWidth - elem.clientWidth === 0)
             return 0;
         return elem.scrollLeft * 100 / (elem.scrollWidth - elem.clientWidth);
@@ -435,7 +435,7 @@ var Buffer = Module("buffer", {
      * @property {number} The buffer's vertical scroll percentile.
      */
     get scrollYPercent() {
-        let elem = Buffer.findScrollable(0, false);
+        let elem = buffer.findScrollable(0, false);
         if (elem.scrollHeight - elem.clientHeight === 0)
             return 0;
         return elem.scrollTop * 100 / (elem.scrollHeight - elem.clientHeight);
@@ -806,7 +806,7 @@ var Buffer = Module("buffer", {
             elem = find(elem);
 
         if (!(elem instanceof Element)) {
-            let doc = Buffer.findScrollableWindow().document;
+            let doc = buffer.findScrollableWindow().document;
             elem = find(doc.body || doc.getElementsByTagName("body")[0] ||
                         doc.documentElement);
         }
