@@ -534,33 +534,33 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Initialize the help system.
      */
     initHelp: function (force) {
-        // Find help and overlay files with the given name.
-        function findHelpFile(file) {
-            let result = [];
-            for (let [, namespace] in Iterator(namespaces)) {
-                let url = ["dactyl://", namespace, "/", file, ".xml"].join("");
-                let res = util.httpGet(url);
-                if (res) {
-                    if (res.responseXML.documentElement.localName == "document")
-                        fileMap[file] = url;
-                    if (res.responseXML.documentElement.localName == "overlay")
-                        overlayMap[file] = url;
-                    result.push(res.responseXML);
-                }
-            }
-            return result;
-        }
-        // Find the tags in the document.
-        function addTags(file, doc) {
-            for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
-                    tagMap[tag] = file;
-        }
-
         if (!force && !this.helpInitialized) {
             if ("noscriptOverlay" in window) {
                 noscriptOverlay.safeAllow("chrome-data:", true, false);
                 noscriptOverlay.safeAllow("dactyl:", true, false);
+            }
+
+            // Find help and overlay files with the given name.
+            let findHelpFile = function findHelpFile(file) {
+                let result = [];
+                for (let [, namespace] in Iterator(namespaces)) {
+                    let url = ["dactyl://", namespace, "/", file, ".xml"].join("");
+                    let res = util.httpGet(url);
+                    if (res) {
+                        if (res.responseXML.documentElement.localName == "document")
+                            fileMap[file] = url;
+                        if (res.responseXML.documentElement.localName == "overlay")
+                            overlayMap[file] = url;
+                        result.push(res.responseXML);
+                    }
+                }
+                return result;
+            }
+            // Find the tags in the document.
+            let addTags = function addTags(file, doc) {
+                for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
+                    for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
+                        tagMap[tag] = file;
             }
 
             var namespaces = ["locale-local", "locale"];
