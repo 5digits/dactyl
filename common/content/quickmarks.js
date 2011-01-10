@@ -61,7 +61,7 @@ var QuickMarks = Module("quickmarks", {
      *
      */
     remove: function remove(filter) {
-        let pattern = RegExp("[" + filter.replace(/\s+/g, "") + "]");
+        let pattern = util.charListToRegexp(filter, "a-zA-Z0-9");
 
         for (let [qmark, ] in this._qmarks) {
             if (pattern.test(qmark))
@@ -95,10 +95,8 @@ var QuickMarks = Module("quickmarks", {
     /**
      * Lists all quickmarks matching *filter* in the message window.
      *
-     * @param {string} filter The list of quickmarks to display. Eg. "abc"
-     * Ranges are not supported.
+     * @param {string} filter The list of quickmarks to display, e.g. "a-c i O-X".
      */
-    // FIXME: filter should match that of quickmarks.remove or vice versa
     list: function list(filter) {
         let marks = [k for ([k, v] in this._qmarks)];
         let lowercaseMarks = marks.filter(function (x) /[a-z]/.test(x)).sort();
@@ -110,7 +108,8 @@ var QuickMarks = Module("quickmarks", {
         dactyl.assert(marks.length > 0, "No QuickMarks set");
 
         if (filter.length > 0) {
-            marks = marks.filter(function (qmark) filter.indexOf(qmark) >= 0);
+            let pattern = util.charListToRegexp(filter, "a-zA-Z0-9");
+            marks = marks.filter(function (qmark) pattern.test(qmark));
             dactyl.assert(marks.length >= 0, "E283: No QuickMarks matching " + filter.quote());
         }
 
@@ -142,9 +141,9 @@ var QuickMarks = Module("quickmarks", {
         commands.add(["qma[rk]"],
             "Mark a URL with a letter for quick access",
             function (args) {
-                if (!/^[a-zA-Z0-9]$/.test(args[0]))
-                    dactyl.echoerr("E488: Trailing characters");
-                else if (!args[1])
+                dactyl.assert(/^[a-zA-Z0-9]$/.test(args[0]),
+                    "E191: Argument must be an ASCII letter or digit");
+                if (!args[1])
                     quickmarks.add(args[0], buffer.URL.spec);
                 else
                     quickmarks.add(args[0], args[1]);
@@ -168,16 +167,11 @@ var QuickMarks = Module("quickmarks", {
             });
 
         commands.add(["qmarks"],
-            "Show all QuickMarks",
+            "Show the specified QuickMarks",
             function (args) {
-                args = args[0] || "";
-
-                // ignore invalid qmark characters unless there are no valid qmark chars
-                dactyl.assert(!args || /[a-zA-Z0-9]/.test(args), "E283: No QuickMarks matching " + args.quote());
-
-                let filter = args.replace(/[^a-zA-Z0-9]/g, "");
-                quickmarks.list(filter);
+                quickmarks.list(args[0] || "");
             }, {
+                completer: function (context) completion.quickmark(context),
                 literal: 0
             });
     },
@@ -192,18 +186,18 @@ var QuickMarks = Module("quickmarks", {
 
         mappings.add(myModes,
             ["go"], "Jump to a QuickMark",
-            function (args) { quickmarks.jumpTo(args.arg, dactyl.CURRENT_TAB); },
+            function ({ arg }) { quickmarks.jumpTo(arg, dactyl.CURRENT_TAB); },
             { arg: true });
 
         mappings.add(myModes,
             ["gn"], "Jump to a QuickMark in a new tab",
-            function (args) { quickmarks.jumpTo(args.arg, { from: "quickmark", where: dactyl.NEW_TAB }); },
+            function ({ arg }) { quickmarks.jumpTo(arg, { from: "quickmark", where: dactyl.NEW_TAB }); },
             { arg: true });
 
         mappings.add(myModes,
             ["M"], "Add new QuickMark for current URL",
             function ({ arg }) {
-                dactyl.assert(/^[a-zA-Z0-9]$/.test(arg));
+                dactyl.assert(/^[a-zA-Z0-9]$/.test(arg), "E191: Argument must be an ASCII letter or digit");
                 quickmarks.add(arg, buffer.URL.spec);
             },
             { arg: true });

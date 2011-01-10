@@ -134,6 +134,31 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             throw FailedAssertion(message, 1);
     },
 
+    /**
+     * Returns a RegExp object that matches characters specified in the range
+     * expression *list*, or signals an appropriate error if *list* is invalid.
+     *
+     * @param {string} list Character list, e.g., "a b d-xA-Z" produces /[abd-xA-Z]/.
+     * @param {string} accepted Character range(s) to accept, e.g. "a-zA-Z" for
+     *     ASCII letters. Used to validate *list*.
+     */
+    charListToRegexp: function charListToRegexp(list, accepted) {
+        let list = list.replace(/\s+/g, "");
+
+        // check for chars not in the accepted range
+        this.assert(RegExp("^[" + accepted + "-]+$").test(list),
+                "Character list outside the range " + accepted.quote());
+
+        // check for illegal ranges
+        let matches = list.match(RegExp("[" + accepted + "]-[" + accepted + "]", "g"));
+        if (matches) {
+            for (let match in values(matches))
+                this.assert(match[0] <= match[2],
+                    "Invalid character range: " + list.match(match + ".*")[0]);
+        }
+        return RegExp("[" + list + "]");
+    },
+
     get chromePackages() {
         // Horrible hack.
         let res = {};

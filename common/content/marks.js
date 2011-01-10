@@ -39,7 +39,7 @@ var Marks = Module("marks", {
      * Add a named mark for the current buffer, at its current position.
      * If mark matches [A-Z], it's considered a URL mark, and will jump to
      * the same position at the same URL no matter what buffer it's
-     * selected from. If it matches [a-z'"], it's a local mark, and can
+     * selected from. If it matches [a-z], it's a local mark, and can
      * only be recalled from a buffer with a matching URL.
      *
      * @param {string} mark The mark name.
@@ -69,18 +69,20 @@ var Marks = Module("marks", {
      * Remove all marks matching *filter*. If *special* is given, removes all
      * local marks.
      *
-     * @param {string} filter A string containing one character for each
-     *     mark to be removed.
+     * @param {string} filter The list of marks to delete, e.g. "aA b C-I"
      * @param {boolean} special Whether to delete all local marks.
      */
     remove: function (filter, special) {
         if (special)
             this._localMarks.remove(this.localURI);
         else {
+            let pattern = util.charListToRegexp(filter, "a-zA-Z");
             let local = this._localMarks.get(this.localURI);
-            Array.forEach(filter, function (mark) {
-                delete local[mark];
-                this.urlMarks.remove(mark);
+            this.all.forEach(function ([k, ]) {
+                if (pattern.test(k)) {
+                    local && delete local[k];
+                    marks._urlMarks.remove(k);
+                }
             });
             try {
                 Iterator(local).next();
@@ -98,8 +100,6 @@ var Marks = Module("marks", {
      * @param {string} mark The mark to jump to.
      */
     jumpTo: function (mark) {
-        let ok = false;
-
         if (Marks.isURLMark(mark)) {
             let slice = this._urlMarks.get(mark);
             let tab = slice && slice.tab && slice.tab.get();
@@ -122,26 +122,29 @@ var Marks = Module("marks", {
                     }
                     dactyl.log("Jumping to URL mark: " + Marks.markToString(mark, slice), 5);
                     buffer.scrollToPercent(slice.position.x * 100, slice.position.y * 100);
-                    ok = true;
+                    return;
                 }
             }
+            // FIXME This is stupid, but perhaps better than the current
+            // behaviour (persisting URL marks that will just signal an error).
+            else
+                this._pendingJumps.push(slice);
+                dactyl.open(slice.location, dactyl.NEW_TAB);
+                return;
         }
-        else if (Marks.isLocalMark(mark)) {
-            ok = (this._localMarks.get(this.localURI) || {})[mark];
-            if (ok) {
-                dactyl.log("Jumping to local mark: " + Marks.markToString(mark, ok), 5);
-                buffer.scrollToPercent(ok.position.x * 100, ok.position.y * 100);
-            }
+        let mobj = Marks.isLocalMark(mark) && (this._localMarks.get(this.localURI) || {})[mark];
+        if (mobj) {
+            dactyl.log("Jumping to local mark: " + Marks.markToString(mark, mobj), 5);
+            buffer.scrollToPercent(mobj.position.x * 100, mobj.position.y * 100);
+            return;
         }
-
-        if (!ok)
-            dactyl.echoerr("E20: Mark not set");
+        dactyl.echoerr("E20: Mark not set");
     },
 
     /**
      * List all marks matching *filter*.
      *
-     * @param {string} filter
+     * @param {string} filter List of marks to show, e.g. "ab A-I".
      */
     list: function (filter) {
         let marks = this.all;
@@ -149,13 +152,14 @@ var Marks = Module("marks", {
         dactyl.assert(marks.length > 0, "No marks set");
 
         if (filter.length > 0) {
-            marks = marks.filter(function (mark) filter.indexOf(mark[0]) >= 0);
+            let pattern = util.charListToRegexp(filter, "a-zA-Z");
+            marks = marks.filter(function ([k, ]) pattern.test(k));
             dactyl.assert(marks.length > 0, "E283: No marks matching " + filter.quote());
         }
 
         commandline.commandOutput(
             template.tabular(
-                ["Mark",   "Line",              "Column",            "File"],
+                ["Mark",   "HPos",              "VPos",              "File"],
                 ["",       "text-align: right", "text-align: right", "color: green"],
                 ([mark[0],
                   Math.round(mark[1].position.x * 100) + "%",
@@ -183,9 +187,9 @@ var Marks = Module("marks", {
                 (tab ? ", tab: " + tabs.index(tab) : "");
     },
 
-    isLocalMark: function isLocalMark(mark) /^['`a-z]$/.test(mark),
+    isLocalMark: function isLocalMark(mark) /^[a-z]$/.test(mark),
 
-    isURLMark: function isURLMark(mark) /^[A-Z0-9]$/.test(mark)
+    isURLMark: function isURLMark(mark) /^[A-Z]$/.test(mark)
 }, {
     events: function () {
         let appContent = document.getElementById("appcontent");
@@ -198,14 +202,15 @@ var Marks = Module("marks", {
         mappings.add(myModes,
             ["m"], "Set mark at the cursor position",
             function ({ arg }) {
-                dactyl.assert(/^[a-zA-Z]$/.test(arg));
+                dactyl.assert(/^[a-zA-Z]$/.test(arg),
+                    "E191: Argument must be an ASCII letter");
                 marks.add(arg);
             },
             { arg: true });
 
         mappings.add(myModes,
             ["'", "`"], "Jump to the mark in the current buffer",
-            function (args) { marks.jumpTo(args.arg); },
+            function ({ arg }) { marks.jumpTo(arg); },
             { arg: true });
     },
 
@@ -214,27 +219,13 @@ var Marks = Module("marks", {
             "Delete the specified marks",
             function (args) {
                 let special = args.bang;
-                args = args[0] || "";
+                let arg = args[0] || "";
 
                 // assert(special ^ args)
-                dactyl.assert( special ||  args, "E471: Argument required");
-                dactyl.assert(!special || !args, "E474: Invalid argument");
+                dactyl.assert( special ||  arg, "E471: Argument required");
+                dactyl.assert(!special || !arg, "E474: Invalid argument");
 
-                let matches = args.match(/(?:(?:^|[^a-zA-Z0-9])-|-(?:$|[^a-zA-Z0-9])|[^a-zA-Z0-9 -]).*/);
-                // NOTE: this currently differs from Vim's behavior which
-                // deletes any valid marks in the arg list, up to the first
-                // invalid arg, as well as giving the error message.
-                dactyl.assert(!matches, "E475: Invalid argument: " + (matches && matches[0]));
-
-                // check for illegal ranges - only allow a-z A-Z 0-9
-                if ((matches = args.match(/[a-zA-Z0-9]-[a-zA-Z0-9]/g))) {
-                    for (let match in values(matches))
-                        dactyl.assert(/[a-z]-[a-z]|[A-Z]-[A-Z]|[0-9]-[0-9]/.test(match) &&
-                                         match[0] <= match[2],
-                            "E475: Invalid argument: " + args.match(match + ".*")[0]);
-                }
-
-                marks.remove(args, special);
+                marks.remove(arg, special);
             },
             {
                 bang: true,
@@ -248,24 +239,18 @@ var Marks = Module("marks", {
                 let mark = args[0] || "";
                 dactyl.assert(mark.length <= 1, "E488: Trailing characters");
                 dactyl.assert(/[a-zA-Z]/.test(mark),
-                    "E191: Argument must be a letter or forward/backward quote");
+                    "E191: Argument must be an ASCII letter");
 
                 marks.add(mark);
             },
             { argCount: "1" });
 
         commands.add(["marks"],
-            "Show all location marks of current web page",
+            "Show the specified marks",
             function (args) {
-                args = args[0] || "";
-
-                // ignore invalid mark characters unless there are no valid mark chars
-                dactyl.assert(!args || /[a-zA-Z]/.test(args),
-                    "E283: No marks matching " + args.quote());
-
-                let filter = args.replace(/[^a-zA-Z]/g, "");
-                marks.list(filter);
+                marks.list(args[0] || "");
             }, {
+                completer: function (context) completion.mark(context),
                 literal: 0
             });
     },
@@ -275,8 +260,8 @@ var Marks = Module("marks", {
             function percent(i) Math.round(i * 100);
 
             // FIXME: Line/Column doesn't make sense with %
-            context.title = ["Mark", "Line Column File"];
-            context.keys.description = function ([, m]) percent(m.position.y) + "% " + percent(m.position.x) + "% " + m.location;
+            context.title = ["Mark", "HPos VPos File"];
+            context.keys.description = function ([, m]) percent(m.position.x) + "% " + percent(m.position.y) + "% " + m.location;
             context.completions = marks.all;
         };
     },
