@@ -776,7 +776,7 @@ var Buffer = Module("buffer", {
         if (options["scroll"] > 0)
             this.scrollLines(options["scroll"] * direction);
         else
-            this.scrollPages(direction / 2);
+            this.scrollVertical("pages", direction / 2);
     },
 
     findScrollable: function findScrollable(dir, horizontal) {
