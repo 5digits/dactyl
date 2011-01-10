@@ -1,4 +1,8 @@
-BEGIN { if (!chrome) chrome = "chrome" }
+BEGIN {
+    chrome = "chrome"
+    if (suffix)
+        chrome = suffix
+}
 { content = $1 ~ /^(content|skin|locale|resource)$/ }
 content && $NF ~ /^[a-z]/ { $NF = "/" name "/" $NF }
 content {
@@ -11,5 +15,10 @@ content {
 {
     sub("^\\.\\./common/", "", $NF)
     print
+    if (content && suffix && $1 == "resource") {
+	    $2 = $2 "-" suffix
+	    print
+    }
 }
 
+# vim:se sts=4 sw=4 et ft=awk:

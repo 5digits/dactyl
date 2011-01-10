@@ -4,12 +4,12 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("styles", {
     exports: ["Style", "Styles", "styles"],
     require: ["services", "util"],
     use: ["template"]
-});
+}, this);
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 var namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +

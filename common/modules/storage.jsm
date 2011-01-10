@@ -5,11 +5,11 @@
 "use strict";
 
 var myObject = Object;
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("storage", {
     exports: ["File", "storage"],
     require: ["services", "util"]
-});
+}, this);
 
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
 

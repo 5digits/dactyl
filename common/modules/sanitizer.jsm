@@ -14,11 +14,11 @@
 
 try {
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
     require: ["prefs", "services", "storage", "template", "util"]
-});
+}, this);
 
 let tmp = {};
 services.subscriptLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);

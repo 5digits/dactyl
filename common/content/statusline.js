@@ -230,7 +230,7 @@ var StatusLine = Module("statusline", {
                 if (progress <= 0)
                     progressStr = "[ Loading...         ]";
                 else if (progress < 1) {
-                    progress = Math.floor(progress * 20);
+                    progress = Math.round(progress * 20);
                     progressStr = "["
                         + "===================>                    "
                             .substr(20 - progress, 20)

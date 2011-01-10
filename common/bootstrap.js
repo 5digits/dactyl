@@ -47,7 +47,6 @@ let basePath = null;
 let components = {};
 let getURI = null;
 storage.set("dactyl.bootstrap", this);
-var JSMLoader = storage.get("dactyl.JSMLoader", { get load() Cu.import });
 
 function startup(data, reason) {
     dump("dactyl: bootstrap: startup " + reasonToString(reason) + "\n");
@@ -62,7 +61,7 @@ function startup(data, reason) {
         AddonManager.getAddonByID(addon.id, function (a) { addon = a; });
 
         // Temporary hack.
-        if (basePath.isDirectory() && JSMLoader.bump == null)
+        if (basePath.isDirectory() && false && JSMLoader.bump == null)
             JSMLoader.bump = 1;
 
         if (basePath.isDirectory())
@@ -147,17 +146,26 @@ function init() {
             break;
 
         case "resource":
+            let str = "dactyl-";
+            if (fields[1].indexOf(str) == 0)
+                var prefix = fields[1].substr(str.length);
+
             resourceProto.setSubstitution(fields[1], getURI(fields[2]));
         }
     }
 
-    JSMLoader.load("resource://dactyl/base.jsm", global);
+    if (typeof JSMLoader === "undefined")
+        Cu.import("resource://dactyl/bootstrap.jsm", global);
+    else {
+        Cu.import("resource://dactyl/bootstrap.jsm", {}).JSMLoader = JSMLoader;
+        JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
+    }
 
     for each (let component in components)
         component.register();
 
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
-    JSMLoader.load("resource://dactyl/base.jsm", global);
+    JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
 
     require(global, "services");
 

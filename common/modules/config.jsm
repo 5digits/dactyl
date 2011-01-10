@@ -8,12 +8,12 @@
 
 try {
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
     require: ["highlight", "services", "storage", "util", "template"],
     use: ["io"]
-});
+}, this);
 
 var ConfigBase = Class("ConfigBase", {
     /**

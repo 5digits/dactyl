@@ -1,75 +1,13 @@
-// Copyright (c) 2009-2010 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2009-2011 by Kris Maglione <maglione.k@gmail.com>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-if (!JSMLoader || JSMLoader.bump != 1)
-    var JSMLoader = {
-        bump: 1,
-        builtin: Components.utils.Sandbox(this),
-        canonical: {},
-        factories: [],
-        globals: {},
-        io: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
-        manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
-        stale: {},
-        getTarget: function getTarget(url) {
-            let chan = this.io.newChannel(url, null, null);
-            chan.cancel(Components.results.NS_BINDING_ABORTED);
-            return chan.name;
-        },
-        load: function load(url, target) {
-            let stale = this.stale[url];
-            if (stale) {
-                delete this.stale[url];
-
-                let global = this.globals[url];
-                for each (let prop in Object.getOwnPropertyNames(global))
-                    try {
-                        if (!(prop in this.builtin) &&
-                            [this, set].indexOf(Object.getOwnPropertyDescriptor(global, prop).value) < 0 &&
-                            !global.__lookupGetter__(prop))
-                            global[prop] = undefined;
-                    }
-                    catch (e) {
-                        dump("Deleting property " + prop + " on " + url + ":\n    " + e + "\n");
-                        Components.utils.reportError(e);
-                    }
-
-                if (stale === this.getTarget(url))
-                    Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                              .getService(Components.interfaces.mozIJSSubScriptLoader)
-                              .loadSubScript(url, global);
-            }
-
-            let global = Components.utils.import(url, target);
-            return this.globals[url] = global;
-        },
-        cleanup: function unregister() {
-            for each (let factory in this.factories.splice(0))
-                this.manager.unregisterFactory(factory.classID, factory);
-        },
-        purge: function purge() {
-            for (let [url, global] in Iterator(this.globals))
-                this.stale[url] = this.getTarget(url);
-        },
-        registerFactory: function registerFactory(factory) {
-            this.manager.registerFactory(factory.classID,
-                                         String(factory.classID),
-                                         factory.contractID,
-                                         factory);
-            this.factories.push(factory);
-        }
-    };
-
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cr = Components.results;
 var Cu = Components.utils;
-
-Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication)
-    .storage.set("dactyl.JSMLoader", JSMLoader);
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 try {
@@ -161,8 +99,10 @@ if (!Object.keys)
 let use = {};
 let loaded = {};
 let currentModule;
-function defineModule(name, params) {
-    let module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
+let global = this;
+function defineModule(name, params, module) {
+    if (!module)
+        module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
@@ -230,7 +170,7 @@ function endModule() {
 function require(obj, name, from) {
     try {
         defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + obj.NAME);
-        JSMLoader.load("resource://dactyl/" + name + ".jsm", obj);
+        JSMLoader.load(name + ".jsm", obj);
     }
     catch (e) {
         defineModule.dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n");
@@ -252,7 +192,7 @@ defineModule("base", {
         "require", "set", "update", "values", "withCallerGlobal"
     ],
     use: ["config", "services", "util"]
-});
+}, this);
 
 function Runnable(self, func, args) {
     return {
@@ -329,12 +269,14 @@ function deprecated(reason, fn) {
 
     function deprecatedMethod() {
         let frame = Components.stack.caller;
-        let obj = this.className || this.constructor.className;
+        let obj = this.className             ? this.className + "#" :
+                  this.constructor.className ? this.constructor.className + "#" :
+                      "";
         let filename = frame.filename.replace(/.* -> /, "");
         if (!set.add(deprecatedMethod.seen, filename))
             util.dactyl(fn).echoerr(
                 util.urlPath(filename || "unknown") + ":" + frame.lineNumber + ": " +
-                (obj ? obj + "." : "") + (fn.name || name) + " is deprecated: " + reason);
+                obj + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
     }
     deprecatedMethod.seen = {

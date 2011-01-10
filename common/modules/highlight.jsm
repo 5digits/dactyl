@@ -4,12 +4,12 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("highlight", {
     exports: ["Highlight", "Highlights", "highlight"],
     require: ["services", "styles", "util"],
     use: ["template"]
-});
+}, this);
 
 var Highlight = Struct("class", "selector", "sites",
                        "defaultExtends", "defaultValue",

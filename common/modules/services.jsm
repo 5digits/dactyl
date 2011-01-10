@@ -7,11 +7,11 @@
 try {
 
 var global = this;
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("services", {
     exports: ["AddonManager", "services"],
     use: ["util"]
-});
+}, this);
 
 /**
  * A lazily-instantiated XPCOM class and service cache.

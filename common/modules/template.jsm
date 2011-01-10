@@ -4,12 +4,12 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("template", {
     exports: ["Template", "template"],
     require: ["util"],
     use: ["services"]
-});
+}, this);
 
 default xml namespace = XHTML;
 

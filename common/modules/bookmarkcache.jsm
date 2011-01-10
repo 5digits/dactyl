@@ -4,11 +4,11 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("bookmarkcache", {
     exports: ["Bookmark", "BookmarkCache", "Keyword", "bookmarkcache"],
     require: ["services", "storage", "util"]
-});
+}, this);
 
 var Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "charset", "id");
 var Keyword = Struct("keyword", "title", "icon", "url");

@@ -4,11 +4,11 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("finder", {
     exports: ["RangeFind", "RangeFinder", "rangefinder"],
     use: ["prefs", "services", "util"]
-});
+}, this);
 
 /** @instance rangefinder */
 var RangeFinder = Module("rangefinder", {

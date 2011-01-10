@@ -9,12 +9,12 @@
 
 try {
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("io", {
     exports: ["IO", "io"],
     require: ["services"],
     use: ["config", "storage", "styles", "template", "util"]
-});
+}, this);
 
 // TODO: why are we passing around strings rather than file objects?
 /**

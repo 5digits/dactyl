@@ -6,12 +6,12 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("prefs", {
     exports: ["Prefs", "localPrefs", "prefs"],
     require: ["services", "util"],
     use: ["config", "template"]
-});
+}, this);
 
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     SAVED: "extensions.dactyl.saved.",

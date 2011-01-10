@@ -8,7 +8,7 @@ GOOGLE_PROJ   = dactyl
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
 VERSION	     ?= $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 UUID   	     := $(shell sed -n 's/.*em:id\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
-MANGLE	     := $(shell date | md5sum - | awk '{ print $$1 }')
+MANGLE	     := $(shell date '+%s' | awk '{ printf "%x", $$1 }')
 
 LOCALEDIR     = locale
 DOC_FILES     = $(wildcard $(LOCALEDIR)/*/*.xml)
@@ -163,7 +163,7 @@ $(XPI): $(CHROME)
 	@echo "Building XPI..."
 	mkdir -p $(XPI_PATH)
 
-	$(AWK) -v 'name=$(NAME)' -v 'chrome=$(MANGLE)' \
+	$(AWK) -v 'name=$(NAME)' -v 'suffix=$(MANGLE)' \
 	       -f $(BASE)/process_manifest.awk \
 	       $(TOP)/chrome.manifest >$(XPI_PATH)/chrome.manifest
 

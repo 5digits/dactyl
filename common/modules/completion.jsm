@@ -8,11 +8,11 @@
 
 try {
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("completion", {
     exports: ["CompletionContext", "Completion", "completion"],
     use: ["config", "template", "util"]
-});
+}, this);
 
 /**
  * Creates a new completion context.

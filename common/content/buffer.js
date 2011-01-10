@@ -345,7 +345,7 @@ var Buffer = Module("buffer", {
      *     buffer. Only returns style sheets for the 'screen' media type.
      */
     get alternateStyleSheets() {
-        let stylesheets = window.getAllStyleSheets(buffer.focusedFrame);
+        let stylesheets = window.getAllStyleSheets(this.focusedFrame);
 
         return stylesheets.filter(
             function (stylesheet) /^(screen|all|)$/i.test(stylesheet.media.mediaText) && !/^\s*$/.test(stylesheet.title)
@@ -362,9 +362,9 @@ var Buffer = Module("buffer", {
      * @property {number} True when the buffer is fully loaded.
      */
     get loaded() Math.min.apply(null,
-        buffer.allFrames()
-              .map(function (frame) ["loading", "interactive", "complete"]
-                                        .indexOf(frame.document.readyState))),
+        this.allFrames()
+            .map(function (frame) ["loading", "interactive", "complete"]
+                                      .indexOf(frame.document.readyState))),
 
     /**
      * @property {Object} The local state store for the currently selected
@@ -425,7 +425,7 @@ var Buffer = Module("buffer", {
      * @property {number} The buffer's horizontal scroll percentile.
      */
     get scrollXPercent() {
-        let elem = buffer.findScrollable(0, true);
+        let elem = this.findScrollable(0, true);
         if (elem.scrollWidth - elem.clientWidth === 0)
             return 0;
         return elem.scrollLeft * 100 / (elem.scrollWidth - elem.clientWidth);
@@ -435,7 +435,7 @@ var Buffer = Module("buffer", {
      * @property {number} The buffer's vertical scroll percentile.
      */
     get scrollYPercent() {
-        let elem = buffer.findScrollable(0, false);
+        let elem = this.findScrollable(0, false);
         if (elem.scrollHeight - elem.clientHeight === 0)
             return 0;
         return elem.scrollTop * 100 / (elem.scrollHeight - elem.clientHeight);
@@ -491,7 +491,7 @@ var Buffer = Module("buffer", {
      * @returns {string}
      */
     getCurrentWord: function (win) {
-        win = win || buffer.focusedFrame || content;
+        win = win || this.focusedFrame || content;
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
@@ -545,7 +545,7 @@ var Buffer = Module("buffer", {
 
         if (elem instanceof HTMLInputElement && elem.type == "file") {
             Buffer.openUploadPrompt(elem);
-            buffer.lastInputField = elem;
+            this.lastInputField = elem;
         }
         else {
             if (isinstance(elem, [HTMLInputElement, XULTextBoxElement]))
@@ -635,11 +635,11 @@ var Buffer = Module("buffer", {
             }
         }
 
-        for (let frame in values(buffer.allFrames(null, true)))
+        for (let frame in values(this.allFrames(null, true)))
             for (let elem in followFrame(frame))
                 if (count-- === 0) {
                     if (follow)
-                        buffer.followLink(elem, dactyl.CURRENT_TAB);
+                        this.followLink(elem, dactyl.CURRENT_TAB);
                     return elem;
                 }
 
@@ -660,7 +660,7 @@ var Buffer = Module("buffer", {
         let { left: offsetX, top: offsetY } = elem.getBoundingClientRect();
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
-            return buffer.focusElement(elem);
+            return this.focusElement(elem);
         if (isinstance(elem, HTMLLinkElement))
             return dactyl.open(elem.href, where);
 
@@ -690,7 +690,7 @@ var Buffer = Module("buffer", {
             dactyl.log("Invalid where argument for followLink()", 0);
         }
 
-        buffer.focusElement(elem);
+        this.focusElement(elem);
 
         prefs.withContext(function () {
             prefs.set("browser.tabs.loadInBackground", true);
@@ -758,7 +758,7 @@ var Buffer = Module("buffer", {
     _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
         if (count > 0)
             options["scroll"] = count;
-        buffer.scrollByScrollSize(direction);
+        this.scrollByScrollSize(direction);
     },
 
     /**
@@ -774,7 +774,7 @@ var Buffer = Module("buffer", {
         count = count || 1;
 
         if (options["scroll"] > 0)
-            this.scrollLines(options["scroll"] * direction);
+            this.scrollVertical("lines", options["scroll"] * direction);
         else
             this.scrollVertical("pages", direction / 2);
     },
@@ -790,14 +790,14 @@ var Buffer = Module("buffer", {
         }
 
         try {
-            var elem = buffer.focusedFrame.document.activeElement;
+            var elem = this.focusedFrame.document.activeElement;
             if (elem == elem.ownerDocument.body)
                 elem = null;
         }
         catch (e) {}
 
         try {
-            var sel = buffer.focusedFrame.getSelection();
+            var sel = this.focusedFrame.getSelection();
         }
         catch (e) {}
         if (!elem && sel && sel.rangeCount)
@@ -806,11 +806,11 @@ var Buffer = Module("buffer", {
             elem = find(elem);
 
         if (!(elem instanceof Element)) {
-            let doc = buffer.findScrollableWindow().document;
+            let doc = this.findScrollableWindow().document;
             elem = find(doc.body || doc.getElementsByTagName("body")[0] ||
                         doc.documentElement);
         }
-        let doc = buffer.focusedFrame.document;
+        let doc = this.focusedFrame.document;
         return elem || doc.body || doc.documentElement;
     },
 
@@ -846,7 +846,7 @@ var Buffer = Module("buffer", {
         if (!(content.document instanceof HTMLDocument))
             return;
 
-        let frames = buffer.allFrames();
+        let frames = this.allFrames();
 
         if (frames.length == 0) // currently top is always included
             return;
@@ -858,7 +858,7 @@ var Buffer = Module("buffer", {
                 rect.width && rect.height);
 
         // find the currently focused frame index
-        let current = Math.max(0, frames.indexOf(buffer.focusedFrame));
+        let current = Math.max(0, frames.indexOf(this.focusedFrame));
 
         // calculate the next frame to focus
         let next = current + count;
@@ -921,7 +921,7 @@ var Buffer = Module("buffer", {
 
         let option = sections || options["pageinfo"];
         let list = template.map(option, function (option) {
-            let opt = buffer.pageInfo[option];
+            let opt = this.pageInfo[option];
             return opt ? template.table(opt[1], opt[0](true)) : undefined;
         }, <br/>);
         dactyl.echo(list, commandline.FORCE_MULTILINE);
@@ -945,7 +945,7 @@ var Buffer = Module("buffer", {
         // copied (and tuned somewhat) from browser.jar -> nsContextMenu.js
         let win = document.commandDispatcher.focusedWindow;
         if (win == window)
-            win = buffer.focusedFrame;
+            win = this.focusedFrame;
 
         let charset = win ? "charset=" + win.document.characterSet : null;
 
@@ -964,7 +964,7 @@ var Buffer = Module("buffer", {
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
     viewSource: function (url, useExternalEditor) {
-        let doc = buffer.focusedFrame.document;
+        let doc = this.focusedFrame.document;
 
         if (isArray(url)) {
             if (options.get("editor").has("line"))
@@ -1006,9 +1006,9 @@ var Buffer = Module("buffer", {
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function (doc, callback) {
             this.callback = callable(callback) ? callback :
-                function (file) {
+                function (file, temp) {
                     editor.editFileExternally({ file: file.path, line: callback },
-                                              function () { file.remove(false); });
+                                              function () { temp && file.remove(false); });
                     return true;
                 };
 
@@ -1019,12 +1019,12 @@ var Buffer = Module("buffer", {
                     let encoder = services.HtmlEncoder();
                     encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
                     temp.write(encoder.encodeToString(), ">");
-                    return this.callback(temp);
+                    return this.callback(temp, true);
                 }, this, true);
 
             let file = util.getFile(uri);
             if (file)
-                this.callback(file);
+                this.callback(file, false);
             else {
                 this.file = io.createTempFile();
                 var persist = services.Persist();
@@ -1038,7 +1038,7 @@ var Buffer = Module("buffer", {
         onStateChange: function (progress, request, flag, status) {
             if ((flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0) {
                 try {
-                    var ok = this.callback(this.file);
+                    var ok = this.callback(this.file, true);
                 }
                 finally {
                     if (ok !== true)
@@ -1056,7 +1056,7 @@ var Buffer = Module("buffer", {
      * @param {boolean} fullZoom Whether to use full zoom or text zoom.
      */
     zoomIn: function (steps, fullZoom) {
-        buffer.bumpZoomLevel(steps, fullZoom);
+        this.bumpZoomLevel(steps, fullZoom);
     },
 
     /**
@@ -1066,7 +1066,7 @@ var Buffer = Module("buffer", {
      * @param {boolean} fullZoom Whether to use full zoom or text zoom.
      */
     zoomOut: function (steps, fullZoom) {
-        buffer.bumpZoomLevel(-steps, fullZoom);
+        this.bumpZoomLevel(-steps, fullZoom);
     },
 
     setZoom: function setZoom(value, fullZoom) {
@@ -1099,11 +1099,12 @@ var Buffer = Module("buffer", {
         if (i == cur && fullZoom == ZoomManager.useFullZoom)
             dactyl.beep();
 
-        buffer.setZoom(Math.round(values[i] * 100), fullZoom);
+        this.setZoom(Math.round(values[i] * 100), fullZoom);
     }
 }, {
     ZOOM_MIN: Class.memoize(function () prefs.get("zoom.minPercent")),
     ZOOM_MAX: Class.memoize(function () prefs.get("zoom.maxPercent")),
+
     setZoom: deprecated("Please use buffer.setZoom instead", function setZoom() buffer.setZoom.apply(buffer, arguments)),
     bumpZoomLevel: deprecated("Please use buffer.bumpZoomLevel instead", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),
 

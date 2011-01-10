@@ -6,11 +6,11 @@
 
 try {
 
-Components.utils.import("resource://dactyl/base.jsm");
+Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("javascript", {
     exports: ["JavaScript", "javascript"],
     use: ["services", "template", "util"],
-});
+}, this);
 
 // TODO: Clean this up.
 
