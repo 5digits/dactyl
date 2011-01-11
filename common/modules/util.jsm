@@ -141,6 +141,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} list Character list, e.g., "a b d-xA-Z" produces /[abd-xA-Z]/.
      * @param {string} accepted Character range(s) to accept, e.g. "a-zA-Z" for
      *     ASCII letters. Used to validate *list*.
+     * @returns {RegExp}
      */
     charListToRegexp: function charListToRegexp(list, accepted) {
         let list = list.replace(/\s+/g, "");
@@ -561,6 +562,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @default *doc*
      * @param {boolean} asIterator Whether to return the results as an
      *     XPath iterator.
+     * @returns {Object} Iterable result of the evaluation.
      */
     evaluateXPath: update(
         function evaluateXPath(expression, doc, elem, asIterator) {
@@ -654,6 +656,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Returns the file which backs a given URL, if available.
      *
      * @param {nsIURI} uri The URI for which to find a file.
+     * @returns {File|null}
      */
     getFile: function getFile(uri) {
         try {
@@ -691,6 +694,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * or greater.
      *
      * @param {string} ver The required version.
+     * @returns {boolean}
      */
     haveGecko: function (ver) services.versionCompare.compare(services.runtime.platformVersion, ver) >= 0,
 
@@ -792,6 +796,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Returns true if the given DOM node is currently visible.
      *
      * @param {Node} node
+     * @returns {boolean}
      */
     isVisible: function (node) {
         let style = util.computedStyle(node);
@@ -1092,6 +1097,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * that is the equivalent of submitting the form.
      *
      * @param {nsINode} field One of the fields of the given form.
+     * @returns {array}
      */
     // Nuances gleaned from browser.jar/content/browser/browser.js
     parseForm: function parseForm(field) {
@@ -1203,6 +1209,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string|XML} expr The expression to compile into a RegExp.
      * @param {string} flags Flags to apply to the new RegExp.
      * @param {object} tokens The tokens to substitute. @optional
+     * @returns {RegExp} A custom regexp object.
      */
     regexp: update(function (expr, flags, tokens) {
         if (isinstance(expr, ["RegExp"]))
@@ -1387,6 +1394,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *
      * @param {string} str
      * @param {RegExp} marker
+     * @returns {[string]}
      */
     splitLiteral: function splitLiteral(str, marker) {
         let results = [];
