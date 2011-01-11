@@ -988,7 +988,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     util._loadOverlays(window);
                 }
             }), true);
-        }
+        },
+        "chrome-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
+        "content-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); }
     },
 
     _loadOverlays: function _loadOverlays(window) {
