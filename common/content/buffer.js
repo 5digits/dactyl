@@ -406,7 +406,7 @@ var Buffer = Module("buffer", {
      * @property {number} The current browser's zoom level, as a
      *     percentage with 100 as 'normal'.
      */
-    get zoomLevel() config.browser.markupDocumentViewer[this.fullZoom ? "textZoom" : "fullZoom"] * 100,
+    get zoomLevel() config.browser.markupDocumentViewer[this.fullZoom ? "fullZoom" : "textZoom"] * 100,
     set zoomLevel(value) { this.setZoom(value, this.fullZoom); },
 
     /**
@@ -1079,7 +1079,7 @@ var Buffer = Module("buffer", {
             ZoomManager.zoom = value / 100;
         }
         catch (e if e == Cr.NS_ERROR_ILLEGAL_VALUE) {
-            return dactyl.echoerr("Illegal value");
+            return dactyl.echoerr("Illegal zoom value"); // XXX
         }
 
         if ("FullZoom" in window)
@@ -1373,8 +1373,7 @@ var Buffer = Module("buffer", {
                 else if (/^\d+$/.test(arg))
                     level = parseInt(arg, 10);
                 else if (/^[+-]\d+$/.test(arg)) {
-                    level = buffer.zoomLevel + parseInt(arg, 10);
-                    // relative args shouldn't take us out of range
+                    level = Math.round(buffer.zoomLevel + parseInt(arg, 10));
                     level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
                 else
