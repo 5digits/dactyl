@@ -272,10 +272,10 @@ function deprecated(reason, fn) {
         let obj = this.className             ? this.className + "#" :
                   this.constructor.className ? this.constructor.className + "#" :
                       "";
-        let filename = frame.filename.replace(/.* -> /, "");
+        let filename = (frame.filename || "unknown").replace(/.* -> /, "");
         if (!set.add(deprecatedMethod.seen, filename))
             util.dactyl(fn).echoerr(
-                util.urlPath(filename || "unknown") + ":" + frame.lineNumber + ": " +
+                util.urlPath(filename) + ":" + frame.lineNumber + ": " +
                 obj + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
     }
