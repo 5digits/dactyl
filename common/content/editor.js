@@ -336,7 +336,7 @@ var Editor = Module("editor", {
                 throw Error("Input contains characters not valid in the current " +
                             "file encoding");
 
-            let lastUpdate = Date.now();
+            var lastUpdate = Date.now();
 
             var timer = services.Timer(update, 100, services.Timer.TYPE_REPEATING_SLACK);
             this.editFileExternally({ file: tmpfile.path, line: line, column: column }, cleanup);
