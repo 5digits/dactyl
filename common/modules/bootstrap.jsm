@@ -86,4 +86,4 @@ Components.classes["@mozilla.org/fuel/application;1"]
 JSMLoader.load("base.jsm", this);
 dump("exports: " + this.JSMLoader+" " +this.EXPORTED_SYMBOLS + "\n");
 
-}catch(e){dump(e+"\n"+e.stack);Components.utils.reportError(e)}
+}catch(e){dump(e+"\n"+(e.stack || Error().stack));Components.utils.reportError(e)}

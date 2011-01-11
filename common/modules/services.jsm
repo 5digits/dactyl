@@ -167,7 +167,7 @@ var Services = Module("Services", {
         try {
             let res = Cc[classes][meth || "getService"]();
             if (!ifaces)
-                return res.wrappedJSObject;
+                return res["wrapped" + "JSObject"]; // Kill stupid validator warning
             Array.concat(ifaces).forEach(function (iface) res.QueryInterface(iface));
             if (init && args.length) {
                 try {

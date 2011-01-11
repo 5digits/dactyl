@@ -279,10 +279,10 @@ function deprecated(reason, fn) {
                 obj + (fn.name || name) + " is deprecated: " + reason);
         return func.apply(this, arguments);
     }
-    deprecatedMethod.seen = {
-        "resource://dactyl/javascript.jsm": true,
-        "resource://dactyl/util.jsm": true
-    };
+    memoize(deprecatedMethod, "seen", function () set([
+        "resource://dactyl" + JSMLoader.suffix + "/javascript.jsm",
+        "resource://dactyl" + JSMLoader.suffix + "/util.jsm"
+    ]));
 
     return callable(fn) ? deprecatedMethod : Class.Property({
         get: function () deprecatedMethod,

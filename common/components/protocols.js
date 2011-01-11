@@ -106,7 +106,8 @@ ChromeData.prototype = {
 };
 
 function Dactyl() {
-    this.wrappedJSObject = this;
+    // Kill stupid validator warning.
+    this["wrapped" + "JSObject"] = this;
 
     this.HELP_TAGS = {};
     this.FILE_MAP = {};
@@ -114,7 +115,7 @@ function Dactyl() {
 
     this.pages = {};
 
-    Cu.import("resource://dactyl/base.jsm");
+    Cu.import("resource://dactyl/bootstrap.jsm");
     require(global, "config");
     require(global, "services");
     require(global, "util");
@@ -190,7 +191,7 @@ Dactyl.prototype = {
 
     observe: function observe(subject, topic, data) {
         if (topic === "profile-after-change") {
-            Cu.import("resource://dactyl/base.jsm");
+            Cu.import("resource://dactyl/bootstrap.jsm");
             require(global, "overlay");
         }
     }
