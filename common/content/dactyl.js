@@ -563,12 +563,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         tagMap[tag] = file;
             }
 
-            var namespaces = ["locale-local", "locale"];
+            let namespaces = ["locale-local", "locale"];
             services["dactyl:"].init({});
 
-            var tagMap = services["dactyl:"].HELP_TAGS;
-            var fileMap = services["dactyl:"].FILE_MAP;
-            var overlayMap = services["dactyl:"].OVERLAY_MAP;
+            let tagMap = services["dactyl:"].HELP_TAGS;
+            let fileMap = services["dactyl:"].FILE_MAP;
+            let overlayMap = services["dactyl:"].OVERLAY_MAP;
 
             // Scrape the list of help files from all.xml
             // Manually process main and overlay files, since XSLTProcessor and
