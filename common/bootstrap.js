@@ -148,7 +148,7 @@ function init() {
         case "resource":
             let str = "dactyl-";
             if (fields[1].indexOf(str) == 0)
-                var prefix = fields[1].substr(str.length);
+                var suffix = fields[1].substr(str.length - 1);
 
             resourceProto.setSubstitution(fields[1], getURI(fields[2]));
         }
@@ -160,6 +160,9 @@ function init() {
         Cu.import("resource://dactyl/bootstrap.jsm", {}).JSMLoader = JSMLoader;
         JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
     }
+
+    if (suffix)
+        JSMLoader.suffix = suffix;
 
     for each (let component in components)
         component.register();

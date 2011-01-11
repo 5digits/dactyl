@@ -30,9 +30,9 @@ if (!JSMLoader || JSMLoader.bump != 1)
                 url = "resource://dactyl" + this.suffix + "/" + url;
 
             let stale = this.stale[url];
-            dump("JSMLoader: load " + name + " " + stale + "\n");
-            dump("JSMLoader: load " + name + " " + this.getTarget(url) + "\n");
             if (stale) {
+                dump("JSMLoader: load " + name + " " + stale + "\n");
+                dump("JSMLoader: load " + name + " " + this.getTarget(url) + "\n");
                 delete this.stale[url];
 
                 let global = this.globals[url];
@@ -51,7 +51,6 @@ if (!JSMLoader || JSMLoader.bump != 1)
                     Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                               .getService(Components.interfaces.mozIJSSubScriptLoader)
                               .loadSubScript(url, global.global || global);
-                dump("JSMLoader: load " + name + " " + global.EXPORTED_SYMBOLS + "\n");
             }
             let global = Components.utils.import(url, target);
 
