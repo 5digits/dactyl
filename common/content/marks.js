@@ -132,7 +132,6 @@ var Marks = Module("marks", {
 
                     for (let i in items.iterValues()) {
                         let entry = sh.getEntryAtIndex(i, false);
-                        util.dump(i, entry.URI.spec, entry.URI.spec.replace(/#.*/, "") == mark.location);
                         if (entry.URI.spec.replace(/#.*/, "") == mark.location)
                             return void tab.linkedBrowser.webNavigation.gotoIndex(i);
                     }
