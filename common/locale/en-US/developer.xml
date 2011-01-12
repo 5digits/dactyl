@@ -54,9 +54,10 @@
 <dl>
     <dt>Layout</dt><dd/>
     <dt>p</dt>         <dd>A paragraph (HelpParagraph)</dd>
-    <dt>h1</dt>        <dd>A first-level heading (HelpHead)</dd>
-    <dt>h2</dt>        <dd>A second-level heading (HelpSubhead)</dd>
-    <dt>h3</dt>        <dd>A third-level heading (HelpSubsubhead)</dd>
+    <dt>h1</dt>        <dd>A first-level heading (HelpHead1)</dd>
+    <dt>h2</dt>        <dd>A second-level heading (HelpHead2)</dd>
+    <dt>h3</dt>        <dd>A third-level heading (HelpHead3)</dd>
+    <dt>h4</dt>        <dd>A fourth-level heading (HelpHead4)</dd>
     <dt>code</dt>      <dd>A pre-formatted code block. (HelpCode)</dd>
     <dt>note</dt>      <dd><note>A note paragraph. (HelpNote)</note></dd>
     <dt>strut</dt>     <dd>A horizontal strut which prevents any previous floating elements from appearing below it.</dd>
