@@ -23,7 +23,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function () {
         window.dactyl = this;
         // cheap attempt at compatibility
-        let prop = { get: deprecated("Please use dactyl instead", function liberator() dactyl) };
+        let prop = { get: deprecated("dactyl", function liberator() dactyl) };
         Object.defineProperty(window, "liberator", prop);
         Object.defineProperty(modules, "liberator", prop);
         this.commands = {};
@@ -92,7 +92,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @property {number} The current main mode.
      * @see modes#mainModes
      */
-    mode: deprecated("Please use modes.main instead", {
+    mode: deprecated("modes.main", {
         get: function mode() modes.main,
         set: function mode(val) modes.main = val
     }),
@@ -108,7 +108,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     forceNewTab: false,
     forceNewWindow: false,
 
-    version: deprecated("Please use config.version instead", { get: function version() config.version }),
+    version: deprecated("config.version", { get: function version() config.version }),
 
     /**
      * @property {Object} The map of command-line options. These are
@@ -290,9 +290,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
-    dump: deprecated("Please use util.dump instead",
+    dump: deprecated("util.dump",
                      { get: function dump() util.closure.dump }),
-    dumpStack: deprecated("Please use util.dumpStack instead",
+    dumpStack: deprecated("util.dumpStack",
                           { get: function dumpStack() util.closure.dumpStack }),
 
     /**
@@ -887,7 +887,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * These are set and accessed with the "g:" prefix.
      */
     _globalVariables: {},
-    globalVariables: deprecated("Please use the options system instead", {
+    globalVariables: deprecated("the options system", {
         get: function globalVariables() this._globalVariables
     }),
 
@@ -1102,7 +1102,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} str
      * @returns {string[]}
      */
-    stringToURLArray: deprecated("Please use dactyl.parseURLs instead", "parseURLs"),
+    stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
     parseURLs: function parseURLs(str) {
         let urls;
 

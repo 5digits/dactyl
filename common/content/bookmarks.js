@@ -197,7 +197,7 @@ var Bookmarks = Module("bookmarks", {
         }
     },
 
-    getSearchEngines: deprecated("Please use bookmarks.searchEngines instead", function getSearchEngines() this.searchEngines),
+    getSearchEngines: deprecated("bookmarks.searchEngines", function getSearchEngines() this.searchEngines),
     /**
      * Returns a list of all visible search engines in the search
      * services, augmented with keyword, title, and icon properties for

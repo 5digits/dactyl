@@ -260,9 +260,9 @@ function properties(obj, prototypes, debugger_) {
     }
 }
 
-function deprecated(reason, fn) {
+function deprecated(alternative, fn) {
     if (isObject(fn))
-        return Class.Property(iter(fn).map(function ([k, v]) [k, callable(v) ? deprecated(reason, v) : v])
+        return Class.Property(iter(fn).map(function ([k, v]) [k, callable(v) ? deprecated(alternative, v) : v])
                                       .toObject());
 
     let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
@@ -276,7 +276,7 @@ function deprecated(reason, fn) {
         if (!set.add(deprecatedMethod.seen, filename))
             util.dactyl(fn).echoerr(
                 util.urlPath(filename) + ":" + frame.lineNumber + ": " +
-                obj + (fn.name || name) + " is deprecated: " + reason);
+                obj + (fn.name || name) + " is deprecated: Please use " + alternative + " instead");
         return func.apply(this, arguments);
     }
     memoize(deprecatedMethod, "seen", function () set([
@@ -319,8 +319,8 @@ function values(obj) iter(function values() {
                 yield obj[k];
 }());
 
-var forEach = deprecated("Please use iter.forEach instead", function forEach() iter.forEach.apply(iter, arguments));
-var iterAll = deprecated("Please use iter instead", function iterAll() iter.apply(null, arguments));
+var forEach = deprecated("iter.forEach", function forEach() iter.forEach.apply(iter, arguments));
+var iterAll = deprecated("iter", function iterAll() iter.apply(null, arguments));
 
 /**
  * Utility for managing sets of strings. Given an array, returns an

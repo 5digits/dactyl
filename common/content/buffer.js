@@ -600,7 +600,7 @@ var Buffer = Module("buffer", {
      * @param {bool} follow Whether to follow the matching link.
      * @param {string} path The XPath to use for the search. @optional
      */
-    followDocumentRelationship: deprecated("Please use buffer.findLink instead",
+    followDocumentRelationship: deprecated("buffer.findLink",
         function followDocumentRelationship(rel) {
             this.findLink(rel, options[rel + "pattern"], 0, true);
         }),
@@ -1102,24 +1102,24 @@ var Buffer = Module("buffer", {
         this.setZoom(Math.round(values[i] * 100), fullZoom);
     },
 
-    getAllFrames: deprecated("Please use buffer.allFrames instead", function getAllFrames() buffer.getAllFrames.apply(buffer, arguments)),
-    scrollTop: deprecated("Please use buffer.scrollToPercent instead", function scrollTop() buffer.scrollToPercent(null, 0)),
-    scrollBottom: deprecated("Please use buffer.scrollToPercent instead", function scrollBottom() buffer.scrollToPercent(null, 100)),
-    scrollStart: deprecated("Please use buffer.scrollToPercent instead", function scrollStart() buffer.scrollToPercent(0, null)),
-    scrollEnd: deprecated("Please use buffer.scrollToPercent instead", function scrollEnd() buffer.scrollToPercent(100, null)),
-    scrollColumns: deprecated("Please use buffer.scrollHorizontal instead", function scrollColumns(cols) buffer.scrollHorizontal("columns", cols)),
-    scrollPages: deprecated("Please use buffer.scrollHorizontal instead", function scrollPages(pages) buffer.scrollVertical("pages", pages)),
-    scrollTo: deprecated("Please use Buffer.scrollTo instead", function scrollTo(x, y) content.scrollTo(x, y)),
-    textZoom: deprecated("Please use buffer.zoomValue and buffer.fullZoom instead", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
+    getAllFrames: deprecated("buffer.allFrames", function getAllFrames() buffer.getAllFrames.apply(buffer, arguments)),
+    scrollTop: deprecated("buffer.scrollToPercent", function scrollTop() buffer.scrollToPercent(null, 0)),
+    scrollBottom: deprecated("buffer.scrollToPercent", function scrollBottom() buffer.scrollToPercent(null, 100)),
+    scrollStart: deprecated("buffer.scrollToPercent", function scrollStart() buffer.scrollToPercent(0, null)),
+    scrollEnd: deprecated("buffer.scrollToPercent", function scrollEnd() buffer.scrollToPercent(100, null)),
+    scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) buffer.scrollHorizontal("columns", cols)),
+    scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) buffer.scrollVertical("pages", pages)),
+    scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) content.scrollTo(x, y)),
+    textZoom: deprecated("buffer.zoomValue and buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
 }, {
     ZOOM_MIN: Class.memoize(function () prefs.get("zoom.minPercent")),
     ZOOM_MAX: Class.memoize(function () prefs.get("zoom.maxPercent")),
 
-    setZoom: deprecated("Please use buffer.setZoom instead", function setZoom() buffer.setZoom.apply(buffer, arguments)),
-    bumpZoomLevel: deprecated("Please use buffer.bumpZoomLevel instead", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),
+    setZoom: deprecated("buffer.setZoom", function setZoom() buffer.setZoom.apply(buffer, arguments)),
+    bumpZoomLevel: deprecated("buffer.bumpZoomLevel", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),
 
-    findScrollableWindow: deprecated("Please use buffer.findScrollableWindow instead", function findScrollableWindow() buffer.findScrollableWindow.apply(buffer, arguments)),
-    findScrollable: deprecated("Please use buffer.findScrollable instead", function findScrollable() buffer.findScrollable.apply(buffer, arguments)),
+    findScrollableWindow: deprecated("buffer.findScrollableWindow", function findScrollableWindow() buffer.findScrollableWindow.apply(buffer, arguments)),
+    findScrollable: deprecated("buffer.findScrollable", function findScrollable() buffer.findScrollable.apply(buffer, arguments)),
 
     isScrollable: function isScrollable(elem, dir, horizontal) {
         let pos = "scrollTop", size = "clientHeight", max = "scrollHeight", layoutSize = "offsetHeight",

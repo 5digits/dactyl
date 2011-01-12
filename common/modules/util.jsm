@@ -817,10 +817,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                            .map(function (node) "//" + node).join(" | ");
     },
 
-    map: deprecated("Please use iter.map instead", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
-
-    writeToClipboard: deprecated("Please use dactyl.clipboardWrite instead", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
-    readFromClipboard: deprecated("Please use dactyl.clipboardRead instead", function readFromClipboard() util.dactyl.clipboardRead(false)),
+    map: deprecated("iter.map", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
+    writeToClipboard: deprecated("dactyl.clipboardWrite", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
+    readFromClipboard: deprecated("dactyl.clipboardRead", function readFromClipboard() util.dactyl.clipboardRead(false)),
 
     /**
      * Converts a URI string into a URI object.

@@ -250,7 +250,7 @@ var IO = Module("io", {
      */
     sourcing: null,
 
-    expandPath: deprecated("Please use File.expandPath instead", function expandPath() File.expandPath.apply(File, arguments)),
+    expandPath: deprecated("File.expandPath", function expandPath() File.expandPath.apply(File, arguments)),
 
     /**
      * Returns the first user RC file found in *dir*.
@@ -475,7 +475,7 @@ var IO = Module("io", {
     /**
      * @property {string} The current platform's path separator.
      */
-    PATH_SEP: deprecated("Please use File.PATH_SEP instead", { get: function PATH_SEP() File.PATH_SEP })
+    PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
 }, {
     init: function init(dactyl, modules, window) {
         modules.plugins.contexts = {};
