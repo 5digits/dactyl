@@ -97,48 +97,63 @@ var Marks = Module("marks", {
     /**
      * Jumps to the named mark. See {@link #add}
      *
-     * @param {string} mark The mark to jump to.
+     * @param {string} char The mark to jump to.
      */
-    jumpTo: function (mark) {
-        if (Marks.isURLMark(mark)) {
-            let slice = this._urlMarks.get(mark);
-            let tab = slice && slice.tab && slice.tab.get();
-            if (tab && tab.linkedBrowser) {
-                if (tab.parentNode != config.browser.tabContainer) {
-                    this._pendingJumps.push(slice);
-                    // NOTE: this obviously won't work on generated pages using
-                    // non-unique URLs :(
-                    dactyl.open(slice.location, dactyl.NEW_TAB);
-                    return;
+    jumpTo: function (char) {
+        if (Marks.isURLMark(char)) {
+            let mark = this._urlMarks.get(char);
+            dactyl.assert(mark, "E20: Mark not set: " + char);
+
+            let tab = mark.tab && mark.tab.get();
+            if (!tab || !tab.linkedBrowser || tabs.allTabs.indexOf(tab) == -1)
+                for ([, tab] in iter(tabs.visibleTabs, tabs.allTabs)) {
+                    if (tab.linkedBrowser.contentDocument.documentURI === mark.location)
+                        break;
+                    tab = null;
                 }
-                let index = tabs.index(tab);
-                if (index != -1) {
-                    tabs.select(index);
-                    let win = tab.linkedBrowser.contentWindow;
-                    if (win.location.href != slice.location) {
-                        this._pendingJumps.push(slice);
-                        win.location.href = slice.location;
-                        return;
+
+            if (tab) {
+                tabs.select(tab);
+                let doc = tab.linkedBrowser.contentDocument;
+                if (doc.documentURI == mark.location) {
+                    dactyl.log("Jumping to URL mark: " + Marks.markToString(char, mark), 5);
+                    buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
+                }
+                else {
+                    this._pendingJumps.push(mark);
+
+                    let sh = tab.linkedBrowser.sessionHistory;
+                    let items = array(util.range(0, sh.count));
+
+                    let a = items.slice(0, sh.index).reverse();
+                    let b = items.slice(sh.index, sh.count);
+                    a.length = b.length = Math.max(a.length, b.length);
+                    items = array(a).zip(b).flatten().compact();
+
+                    for (let i in items.iterValues()) {
+                        let entry = sh.getEntryAtIndex(i, false);
+                        util.dump(i, entry.URI.spec, entry.URI.spec.replace(/#.*/, "") == mark.location);
+                        if (entry.URI.spec.replace(/#.*/, "") == mark.location)
+                            return void tab.linkedBrowser.webNavigation.gotoIndex(i);
                     }
-                    dactyl.log("Jumping to URL mark: " + Marks.markToString(mark, slice), 5);
-                    buffer.scrollToPercent(slice.position.x * 100, slice.position.y * 100);
-                    return;
+                    dactyl.open(mark.location);
                 }
             }
-            // FIXME This is stupid, but perhaps better than the current
-            // behaviour (persisting URL marks that will just signal an error).
-            else
-                this._pendingJumps.push(slice);
-                dactyl.open(slice.location, dactyl.NEW_TAB);
-                return;
+            else {
+                this._pendingJumps.push(mark);
+                dactyl.open(mark.location, dactyl.NEW_TAB);
+            }
         }
-        let mobj = Marks.isLocalMark(mark) && (this._localMarks.get(this.localURI) || {})[mark];
-        if (mobj) {
-            dactyl.log("Jumping to local mark: " + Marks.markToString(mark, mobj), 5);
-            buffer.scrollToPercent(mobj.position.x * 100, mobj.position.y * 100);
-            return;
+        else if (Marks.isLocalMark(char)) {
+            let mark = (this._localMarks.get(this.localURI) || {})[char];
+            dactyl.assert(mark, "E20: Mark not set: " + char);
+
+            dactyl.log("Jumping to local mark: " + Marks.markToString(char, mark), 5);
+            buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
         }
-        dactyl.echoerr("E20: Mark not set");
+        else
+            dactyl.echoerr("E20: Invalid mark");
+
     },
 
     /**
