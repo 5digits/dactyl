@@ -126,7 +126,7 @@ var Marks = Module("marks", {
                     let items = array(util.range(0, sh.count));
 
                     let a = items.slice(0, sh.index).reverse();
-                    let b = items.slice(sh.index, sh.count);
+                    let b = items.slice(sh.index);
                     a.length = b.length = Math.max(a.length, b.length);
                     items = array(a).zip(b).flatten().compact();
 

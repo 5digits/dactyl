@@ -33,7 +33,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         this.branch.removeObserver("", this);
     },
 
-    observe: {
+    observers: {
         "nsPref:changed": function (subject, data) {
             let observers = this._observers[data];
             if (observers) {

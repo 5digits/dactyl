@@ -228,7 +228,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 Class.objectGlobal(params.action));
     },
 
-    observe: {
+    observers: {
         "browser:purge-domain-data": function (subject, host) {
             storage.fireEvent("sanitize", "domain", host);
             // If we're sanitizing, our own sanitization functions will already

@@ -929,22 +929,25 @@ unlet s:cpo_save
         completion.addUrlCompleter("f", "Local files", function (context, full) {
             let match = util.regexp(<![CDATA[
                 ^
-                (
-                    ((chrome|resource):\/\/)
+                (?P<prefix>
+                    (?P<proto>
+                        (?P<scheme> chrome|resource)
+                        :\/\/
+                    )
                     [^\/]*
                 )
-                (\/[^\/]*)?
+                (?P<path> \/[^\/]* )?
                 $
             ]]>).exec(context.filter);
             if (match) {
-                if (!match[4]) {
-                    context.key = match[2];
-                    context.advance(match[2].length);
-                    context.generate = function () util.chromePackages.map(function (p) [p, match[2] + p + "/"]);
+                if (!match.path) {
+                    context.key = match.proto;
+                    context.advance(match.proto.length);
+                    context.generate = function () util.chromePackages.map(function (p) [p, match.proto + p + "/"]);
                 }
-                else if (match[3] === "chrome") {
-                    context.key = match[1];
-                    context.advance(match[1].length + 1);
+                else if (match.scheme === "chrome") {
+                    context.key = match.prefix;
+                    context.advance(match.prefix.length + 1);
                     context.generate = function () iter({
                         content: "Chrome content",
                         locale: "Locale-specific content",
@@ -952,7 +955,7 @@ unlet s:cpo_save
                     });
                 }
             }
-            if (!match || match[3] === "resource" && match[4])
+            if (!match || match.scheme === "resource" && match.path)
                 if (/^(\.{0,2}|~)\/|^file:/.test(context.filter) || util.getFile(context.filter) || io.isJarURL(context.filter))
                     completion.file(context, full);
         });

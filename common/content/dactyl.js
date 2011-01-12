@@ -51,7 +51,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         autocommands.trigger("Leave", {});
     },
 
-    observe: {
+    observers: {
         "dactyl-cleanup": function () {
             let modules = dactyl.modules;
 

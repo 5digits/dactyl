@@ -214,6 +214,7 @@ var Hive = Class("Hive", {
     },
 });
 
+try {
 /**
  * Manages named and unnamed user style sheets, which apply to both
  * chrome and content pages.
@@ -330,16 +331,15 @@ var Styles = Module("Styles", {
         let match, i = 0;
         while ((!match || match[0]) && (match = Styles.propertyPattern.exec(str)))
             if (always && !i++ || match[0] && match[3])
-                yield this.Property.fromArray(match);
+                yield match;
     },
 
-    Property: Struct("whole", "preSpace", "name", "value", "postSpace"),
     propertyPattern: util.regexp(<![CDATA[
             (?:
-                (<space>*)
-                ([-a-z]*)
+                (?P<preSpace> <space>*)
+                (?P<name> [-a-z]*)
                 (?:
-                    <space>* : \s* (
+                    <space>* : \s* (?P<value>
                         (?:
                             [-\w]
                             (?:
@@ -355,7 +355,7 @@ var Styles = Module("Styles", {
                     )
                 )?
             )
-            (<space>* (?: ; | $) )
+            (?P<postSpace> <space>* (?: ; | $) )
         ]]>, "gi",
         {
             space: /(?: \s | \/\* .*? \*\/ )/,
@@ -550,6 +550,6 @@ var Styles = Module("Styles", {
 
 endModule();
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+} catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

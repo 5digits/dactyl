@@ -1049,18 +1049,16 @@ var Commands = Module("commands", {
 
     validName: Class.memoize(function () RegExp("^" + this.nameRegexp.source + "$")),
 
-    CommandMatch: Struct("match", "spec", "prespace", "count", "cmd", "bang", "space", "args"),
-
     commandRegexp: Class.memoize(function () util.regexp(<![CDATA[
             ^
-            (
-                ([:\s]*)
-                ( (?:\d+ | %)? )
-                ( (?:<name> | !)? )
-                (!?)
-                (\s*)
+            (?P<spec>
+                (?P<prespace> [:\s]*)
+                (?P<count>    (?:\d+ | %)? )
+                (?P<cmd>      (?:<name> | !)? )
+                (?P<bang>     !?)
+                (?P<space>    \s*)
             )
-            (
+            (?P<args>
                 (?:. | \n)*?
             )?
             $
@@ -1229,7 +1227,6 @@ var Commands = Module("commands", {
             let match = commands.commandRegexp.exec(args.commandString);
             if (!match)
                 return;
-            match = commands.CommandMatch.apply(null, match);
 
             context.advance(match.prespace.length + match.count.length);
             if (!(match.bang || match.space)) {

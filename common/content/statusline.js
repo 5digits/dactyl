@@ -38,13 +38,13 @@ var StatusLine = Module("statusline", {
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
             <statusbar id="status-bar" highlight="StatusLine">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
-                <hbox key="container" hidden="false" align="center" flex="1">
-                    <stack orient="horizontal" align="stretch"      flex="1" class="dactyl-container" highlight="CmdLine StatusCmdLine">
-                        <hbox                                                class="dactyl-container" highlight="CmdLine StatusCmdLine">
-                            <label key="mode"          crop="end"            class="plain" collapsed="true"/>
-                            <stack flex="1"                                  class="dactyl-container" highlight="CmdLine StatusCmdLine">
-                                <textbox key="url"     crop="end"   flex="1" class="plain dactyl-status-field-url" readonly="true"/>
-                                <textbox key="message" crop="end"   flex="1" class="plain"            highlight="Normal StatusNormal" readonly="true"/>
+                <hbox key="container" hidden="false" align="center"  flex="1">
+                    <stack orient="horizontal"       align="stretch" flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
+                        <hbox                                                 highlight="CmdLine StatusCmdLine" class="dactyl-container">
+                            <label key="mode"          crop="end"                                               class="plain" collapsed="true"/>
+                            <stack                                   flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
+                                <textbox key="url"     crop="end"    flex="1"                                   class="plain dactyl-status-field-url" readonly="true"/>
+                                <textbox key="message" crop="end"    flex="1" highlight="Normal StatusNormal"   class="plain"                         readonly="true"/>
                             </stack>
                         </hbox>
 

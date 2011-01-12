@@ -93,11 +93,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {object} obj
      */
     addObserver: function (obj) {
-        let observers = obj._observe || obj.observe;
-        obj._observe = observers;
+        if (!obj.observers)
+            obj.observers = obj.observe;
 
         function register(meth) {
-            for (let target in set(["dactyl-cleanup-modules", "quit-application"].concat(Object.keys(observers))))
+            for (let target in set(["dactyl-cleanup-modules", "quit-application"].concat(Object.keys(obj.observers))))
                 try {
                     services.observer[meth](obj, target, true);
                 }
@@ -109,8 +109,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 try {
                     if (target == "quit-application" || target == "dactyl-cleanup-modules")
                         register("removeObserver");
-                    if (observers[target])
-                        observers[target].call(obj, subject, data);
+                    if (obj.observers[target])
+                        obj.observers[target].call(obj, subject, data);
                 }
                 catch (e) {
                     util.reportError(e);
@@ -948,7 +948,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return color ? string : [s for each (s in string)].join("");
     },
 
-    observe: {
+    observers: {
         "dactyl-cleanup-modules": function () {
             defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules");
 
@@ -1219,14 +1219,31 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     regexp: update(function (expr, flags, tokens) {
         if (isinstance(expr, ["RegExp"]))
             expr = expr.source;
+
         if (tokens)
             expr = String.replace(expr, /<(\w+)>/g, function (m, n1) set.has(tokens, n1) ? tokens[n1].source || tokens[n1] : m);
+
         expr = String.replace(expr, /\/\/[^\n]*|\/\*[^]*?\*\//gm, "")
                      .replace(/\s+/g, "");
-        return update(RegExp(expr, flags), {
+
+        if (/\(\?P</.test(expr)) {
+            let groups = ["wholeMatch"];
+            expr = expr.replace(/((?:[^[(\\]|\\.|\[(?:[^\]]|\\.)*\])*)\((?:\?P<([^>]+)>|(\?))?/gy,
+                function (m0, m1, m2, m3) {
+                    if (!m3)
+                        groups.push(m2 || "-group-" + groups.length);
+                    return m1 + "(" + (m3 || "");
+                });
+            var struct = Struct.apply(null, groups);
+        }
+
+        let res = update(RegExp(expr, flags), {
             closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
             dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"]
         });
+        if (struct)
+            update(res, { exec: function exec() struct.fromArray(exec.superapply(this, arguments)) });
+        return res;
     }, {
         /**
          * Escapes Regular Expression special characters in *str*.
