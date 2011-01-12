@@ -912,9 +912,9 @@ var Completion = Module("completion", {
 
         // Will, and should, throw an error if !(c in opts)
         Array.forEach(complete, function (c) {
-            let completer = completion.urlCompleters[c];
-            context.fork.apply(context, [c, 0, completion, completer.completer].concat(completer.args));
-        });
+            let completer = this.urlCompleters[c];
+            context.fork.apply(context, [c, 0, this, completer.completer].concat(completer.args));
+        }, this);
     },
 
     urlCompleters: {},

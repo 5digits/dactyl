@@ -71,14 +71,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         services.add("loginmanager", "@mozilla.org/login-manager;1",        Ci.nsILoginManager);
         services.add("permissions",  "@mozilla.org/permissionmanager;1",    Ci.nsIPermissionManager);
 
-        this.itemMap = {
-            __iterator__: function () {
-                // For platforms without getOwnPropertyNames :(
-                for (let p in properties(this))
-                    if (p !== "__iterator__")
-                        yield this[p]
-            }
-        };
+        this.itemMap = {};
 
         this.addItem("all", { description: "Sanitize all items", shouldSanitize: function () false });
         // Builtin items
@@ -134,7 +127,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         });
 
         function ourItems(persistent) [
-            item for (item in self.itemMap)
+            item for (item in values(self.itemMap))
             if (!item.builtin && (!persistent || item.persistent) && item.name !== "all")
         ];
 
@@ -199,7 +192,8 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                             self.withSavedValues(["sanitizing"], function () {
                                 self.sanitizing = true;
                                 sanitize.superapply(this, arguments);
-                                sanitizer.sanitizeItems([item.name for (item in self.itemMap) if (item.shouldSanitize(false))],
+                                sanitizer.sanitizeItems([item.name for (item in values(self.itemMap))
+                                                         if (item.shouldSanitize(false))],
                                                         Range.fromArray(this.range || []));
                             }, this);
                         }
@@ -337,11 +331,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
 
     iterCookies: function iterCookies(host) {
-        for (let c in iter(services.cookies)) {
-            c.QueryInterface(Ci.nsICookie2);
-            if (!host || util.isSubdomain(c.rawHost, host))
-                yield c;
-        }
+        let iterator = host ? services.cookies.getCookiesFromHost(host)
+                            : services.cookies;
+        for (let c in iter(iterator))
+            yield c.QueryInterface(Ci.nsICookie2);
     },
     iterPermissions: function iterPermissions(host) {
         for (let p in iter(services.permissions)) {
@@ -546,7 +539,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "The default list of private items to sanitize",
             "stringlist", "all",
             {
-                completer: function (value) sanitizer.itemMap,
+                completer: function (value) values(sanitizer.itemMap),
                 has: modules.Option.has.toggleAll,
                 validator: function (values) values.length &&
                     values.every(function (val) val === "all" || set.has(sanitizer.itemMap, val))
@@ -557,22 +550,22 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "stringlist", "",
             {
                 initialValue: true,
-                completer: function () [i for (i in sanitizer.itemMap) if (i.persistent || i.builtin)],
+                completer: function () [i for (i in values(sanitizer.itemMap)) if (i.persistent || i.builtin)],
                 getter: function () !sanitizer.runAtShutdown ? [] : [
-                    item.name for (item in sanitizer.itemMap)
+                    item.name for (item in values(sanitizer.itemMap))
                     if (item.shouldSanitize(true))
                 ],
-                setter: function (values) {
-                    if (values.length === 0)
+                setter: function (value) {
+                    if (value.length === 0)
                         sanitizer.runAtShutdown = false;
                     else {
                         sanitizer.runAtShutdown = true;
-                        let have = set(values);
-                        for (let item in sanitizer.itemMap)
+                        let have = set(value);
+                        for (let item in values(sanitizer.itemMap))
                             prefs.set(item.shutdownPref,
                                       Boolean(set.has(have, item.name) ^ set.has(have, "all")));
                     }
-                    return values;
+                    return value;
                 }
             });
 
