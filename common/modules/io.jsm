@@ -475,7 +475,7 @@ var IO = Module("io", {
     /**
      * @property {string} The current platform's path separator.
      */
-    PATH_SEP: deprecated("Please use File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
+    PATH_SEP: deprecated("Please use File.PATH_SEP instead", { get: function PATH_SEP() File.PATH_SEP })
 }, {
     init: function init(dactyl, modules, window) {
         modules.plugins.contexts = {};

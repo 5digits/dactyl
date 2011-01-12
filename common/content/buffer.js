@@ -1100,7 +1100,17 @@ var Buffer = Module("buffer", {
             dactyl.beep();
 
         this.setZoom(Math.round(values[i] * 100), fullZoom);
-    }
+    },
+
+    getAllFrames: deprecated("Please use buffer.allFrames instead", function getAllFrames() buffer.getAllFrames.apply(buffer, arguments)),
+    scrollTop: deprecated("Please use buffer.scrollToPercent instead", function scrollTop() buffer.scrollToPercent(null, 0)),
+    scrollBottom: deprecated("Please use buffer.scrollToPercent instead", function scrollBottom() buffer.scrollToPercent(null, 100)),
+    scrollStart: deprecated("Please use buffer.scrollToPercent instead", function scrollStart() buffer.scrollToPercent(0, null)),
+    scrollEnd: deprecated("Please use buffer.scrollToPercent instead", function scrollEnd() buffer.scrollToPercent(100, null)),
+    scrollColumns: deprecated("Please use buffer.scrollHorizontal instead", function scrollColumns(cols) buffer.scrollHorizontal("columns", cols)),
+    scrollPages: deprecated("Please use buffer.scrollHorizontal instead", function scrollPages(pages) buffer.scrollVertical("pages", pages)),
+    scrollTo: deprecated("Please use Buffer.scrollTo instead", function scrollTo(x, y) content.scrollTo(x, y)),
+    textZoom: deprecated("Please use buffer.zoomValue and buffer.fullZoom instead", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
 }, {
     ZOOM_MIN: Class.memoize(function () prefs.get("zoom.minPercent")),
     ZOOM_MAX: Class.memoize(function () prefs.get("zoom.maxPercent")),

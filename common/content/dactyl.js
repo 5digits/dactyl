@@ -290,9 +290,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
-    dump: deprecated("Use util.dump instead",
+    dump: deprecated("Please use util.dump instead",
                      { get: function dump() util.closure.dump }),
-    dumpStack: deprecated("Use util.dumpStack instead",
+    dumpStack: deprecated("Please use util.dumpStack instead",
                           { get: function dumpStack() util.closure.dumpStack }),
 
     /**

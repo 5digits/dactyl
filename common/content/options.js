@@ -686,18 +686,18 @@ var Options = Module("options", {
         this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
     },
 
-    allPrefs: deprecated("Please use prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
-    getPref: deprecated("Please use prefs.get", function getPref() prefs.get.apply(prefs, arguments)),
-    invertPref: deprecated("Please use prefs.invert", function invertPref() prefs.invert.apply(prefs, arguments)),
-    listPrefs: deprecated("Please use prefs.list", function listPrefs() { commandline.commandOutput(prefs.list.apply(prefs, arguments)); }),
-    observePref: deprecated("Please use prefs.observe", function observePref() prefs.observe.apply(prefs, arguments)),
-    popContext: deprecated("Please use prefs.popContext", function popContext() prefs.popContext.apply(prefs, arguments)),
-    pushContext: deprecated("Please use prefs.pushContext", function pushContext() prefs.pushContext.apply(prefs, arguments)),
-    resetPref: deprecated("Please use prefs.reset", function resetPref() prefs.reset.apply(prefs, arguments)),
-    safeResetPref: deprecated("Please use prefs.safeReset", function safeResetPref() prefs.safeReset.apply(prefs, arguments)),
-    safeSetPref: deprecated("Please use prefs.safeSet", function safeSetPref() prefs.safeSet.apply(prefs, arguments)),
-    setPref: deprecated("Please use prefs.set", function setPref() prefs.set.apply(prefs, arguments)),
-    withContext: deprecated("Please use prefs.withContext", function withContext() prefs.withContext.apply(prefs, arguments)),
+    allPrefs: deprecated("Please use prefs.getNames instead", function allPrefs() prefs.getNames.apply(prefs, arguments)),
+    getPref: deprecated("Please use prefs.get instead", function getPref() prefs.get.apply(prefs, arguments)),
+    invertPref: deprecated("Please use prefs.invert instead", function invertPref() prefs.invert.apply(prefs, arguments)),
+    listPrefs: deprecated("Please use prefs.list instead", function listPrefs() { commandline.commandOutput(prefs.list.apply(prefs, arguments)); }),
+    observePref: deprecated("Please use prefs.observe instead", function observePref() prefs.observe.apply(prefs, arguments)),
+    popContext: deprecated("Please use prefs.popContext instead", function popContext() prefs.popContext.apply(prefs, arguments)),
+    pushContext: deprecated("Please use prefs.pushContext instead", function pushContext() prefs.pushContext.apply(prefs, arguments)),
+    resetPref: deprecated("Please use prefs.reset instead", function resetPref() prefs.reset.apply(prefs, arguments)),
+    safeResetPref: deprecated("Please use prefs.safeReset instead", function safeResetPref() prefs.safeReset.apply(prefs, arguments)),
+    safeSetPref: deprecated("Please use prefs.safeSet instead", function safeSetPref() prefs.safeSet.apply(prefs, arguments)),
+    setPref: deprecated("Please use prefs.set instead", function setPref() prefs.set.apply(prefs, arguments)),
+    withContext: deprecated("Please use prefs.withContext instead", function withContext() prefs.withContext.apply(prefs, arguments)),
 
     /**
      * Returns the option with *name* in the specified *scope*.

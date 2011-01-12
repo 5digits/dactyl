@@ -819,8 +819,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     map: deprecated("Please use iter.map instead", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
 
-    writeToClipboard: deprecated("Please use dactyl.clipboardWrite", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
-    readFromClipboard: deprecated("Please use dactyl.clipboardRead", function readFromClipboard() util.dactyl.clipboardRead(false)),
+    writeToClipboard: deprecated("Please use dactyl.clipboardWrite instead", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
+    readFromClipboard: deprecated("Please use dactyl.clipboardRead instead", function readFromClipboard() util.dactyl.clipboardRead(false)),
 
     /**
      * Converts a URI string into a URI object.
