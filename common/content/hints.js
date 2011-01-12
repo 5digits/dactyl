@@ -550,9 +550,11 @@ var Hints = Module("hints", {
                 this.timeout(next, 50);
         }).call(this);
 
-        modes.pop();
-        if (timeout)
-            modes.push(modes.IGNORE, modes.HINTS);
+        if (!this._continue) {
+            modes.pop();
+            if (timeout)
+                modes.push(modes.IGNORE, modes.HINTS);
+        }
 
         this.timeout(function () {
             if ((modes.extended & modes.HINTS) && !this._continue)
