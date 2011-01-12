@@ -318,7 +318,7 @@ var RangeFind = Class("RangeFind", {
     get selectedRange() {
         let win = this.content, store = this.content.document.dactylStore;;
         if (store)
-            win = store.focusedFrame || win;
+            win = store.focusedFrame && store.focusedFrame.get() || win;
 
         let selection = win.getSelection();
         return (selection.rangeCount ? selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
@@ -328,6 +328,8 @@ var RangeFind = Class("RangeFind", {
         this.range.selection.addRange(range);
         this.range.selectionController.scrollSelectionIntoView(
             this.range.selectionController.SELECTION_NORMAL, 0, false);
+
+        services.focus.focusedWindow = range.startContainer.ownerDocument.defaultView;
     },
 
     cancel: function () {

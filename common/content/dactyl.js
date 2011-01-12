@@ -29,7 +29,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         this.commands = {};
         this.indices = {};
         this.modules = modules;
-        this.observers = {};
+        this._observers = {};
         util.addObserver(this);
 
         this.commands["dactyl.help"] = function (event) {
@@ -133,21 +133,21 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     registerObserver: function (type, callback, weak) {
-        if (!(type in this.observers))
-            this.observers[type] = [];
-        this.observers[type].push(weak ? Cu.getWeakReference(callback) : { get: function () callback });
+        if (!(type in this._observers))
+            this._observers[type] = [];
+        this._observers[type].push(weak ? Cu.getWeakReference(callback) : { get: function () callback });
     },
 
     unregisterObserver: function (type, callback) {
-        if (type in this.observers)
-            this.observers[type] = this.observers[type].filter(function (c) c.get() != callback);
+        if (type in this._observers)
+            this._observers[type] = this._observers[type].filter(function (c) c.get() != callback);
     },
 
     // TODO: "zoom": if the zoom value of the current buffer changed
     triggerObserver: function (type) {
         let args = Array.slice(arguments, 1);
-        if (type in this.observers)
-            this.observers[type] = this.observers[type].filter(function (callback) {
+        if (type in this._observers)
+            this._observers[type] = this._observers[type].filter(function (callback) {
                 if (callback.get()) {
                     callback.get().apply(null, args);
                     return true;

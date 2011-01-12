@@ -474,11 +474,11 @@ var Buffer = Module("buffer", {
      * @property {Window} Returns the currently focused frame.
      */
     get focusedFrame() {
-        let frame = (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame;
+        let frame = this.localStore.focusedFrame;
         return frame && frame.get() || content;
     },
     set focusedFrame(frame) {
-        (dactyl.has("tabs") ? tabs.localStore : this.localStore).focusedFrame = Cu.getWeakReference(frame);
+        this.localStore.focusedFrame = Cu.getWeakReference(frame);
     },
 
     /**
