@@ -150,6 +150,9 @@ var Modes = Module("modes", {
             description: "Active when a prompt is open in the command line",
             input: true
         });
+        this.addMode("IGNORE", { hidden: true }, {
+            onEvent: function (event) false
+        });
 
         this.push(this.NORMAL, 0, {
             enter: function (stack, prev) {
