@@ -81,7 +81,8 @@ var ConfigBase = Class("ConfigBase", {
         }
         else {
             return array(f.leafName
-                         for (f in util.getFile(uri).iterDirectory())
+                         // Fails on FF3: for (f in util.getFile(uri).iterDirectory())
+                         for (f in values(util.getFile(uri).readDirectory()))
                          if (f.isDirectory())).array;
         }
     }),
@@ -636,7 +637,7 @@ var ConfigBase = Class("ConfigBase", {
     ]]></>)
 });
 
-services.subscriptLoader.loadSubScript("resource://dactyl-local-content/config.js", this);
+JSMLoader.loadSubScript("resource://dactyl-local-content/config.js", this);
 
 config.INIT = update(Object.create(config.INIT), config.INIT, {
     init: function init(dactyl, modules, window) {

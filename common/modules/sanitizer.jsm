@@ -21,7 +21,7 @@ defineModule("sanitizer", {
 }, this);
 
 let tmp = {};
-services.subscriptLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
+JSMLoader.loadSubScript("chrome://browser/content/sanitize.js", tmp);
 tmp.Sanitizer.prototype.__proto__ = Class.prototype;
 
 var Range = Struct("min", "max");

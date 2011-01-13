@@ -88,7 +88,7 @@ var Overlay = Module("Overlay", {
 
                 const create = window.Object.create || (function () {
                     window.__dactyl_eval_string = "(function (proto) ({ __proto__: proto }))";
-                    services.subscriptLoader.loadSubScript(BASE + "eval.js", window);
+                    JSMLoader.loadSubScript(BASE + "eval.js", window);
 
                     let res = window.__dactyl_eval_result;
                     delete window.__dactyl_eval_string;
@@ -110,7 +110,7 @@ var Overlay = Module("Overlay", {
                     load: function load(script) {
                         for (let [i, base] in Iterator(prefix)) {
                             try {
-                                services.subscriptLoader.loadSubScript(base + script + ".js", modules, "UTF-8");
+                                JSMLoader.loadSubScript(base + script + ".js", modules, "UTF-8");
                                 return;
                             }
                             catch (e) {

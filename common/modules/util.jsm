@@ -24,7 +24,7 @@ default xml namespace = XHTML;
 memoize(this, "Commands", function () {
     // FIXME
     let obj = { Module: Class };
-    services.subscriptLoader.loadSubScript("chrome://dactyl/content/commands.js", obj);
+    JSMLoader.loadSubScript("resource://dactyl-content/commands.js", obj);
     return obj.Commands;
 });
 

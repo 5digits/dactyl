@@ -5,7 +5,6 @@
 "use strict";
 
 try {
-dump("=========== load bootstrap.jsm ===========\n");
 
 if (!JSMLoader || JSMLoader.bump != 1)
     var JSMLoader = {
@@ -16,6 +15,7 @@ if (!JSMLoader || JSMLoader.bump != 1)
         factories: [],
         globals: {},
         io: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
+        loader: Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader),
         manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
         stale: {},
         suffix: "",
@@ -29,17 +29,13 @@ if (!JSMLoader || JSMLoader.bump != 1)
             if (url.indexOf(":") === -1)
                 url = "resource://dactyl" + this.suffix + "/" + url;
 
-            let stale = this.stale[url];
-            if (stale) {
-                dump("JSMLoader: load " + name + " " + stale + "\n");
-                dump("JSMLoader: load " + name + " " + this.getTarget(url) + "\n");
+            if (url in this.stale) {
+                let stale = this.stale[url];
                 delete this.stale[url];
 
                 let global = this.globals[url];
                 if (stale === this.getTarget(url))
-                    Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                              .getService(Components.interfaces.mozIJSSubScriptLoader)
-                              .loadSubScript(url, global.global || global);
+                    this.loadSubScript(url, global.global || global);
             }
 
             try {
@@ -58,6 +54,7 @@ if (!JSMLoader || JSMLoader.bump != 1)
                 throw e;
             }
         },
+        loadSubScript: function loadSubScript() this.loader.loadSubScript.apply(this.loader, arguments),
         cleanup: function unregister() {
             for each (let factory in this.factories.splice(0))
                 this.manager.unregisterFactory(factory.classID, factory);
@@ -94,6 +91,6 @@ Components.classes["@mozilla.org/fuel/application;1"]
           .storage.set("dactyl.JSMLoader", JSMLoader);
 
 JSMLoader.load("base.jsm", this);
-dump("exports: " + this.JSMLoader+" " +this.EXPORTED_SYMBOLS + "\n");
 
-}catch(e){dump(e+"\n"+(e.stack || Error().stack));Components.utils.reportError(e)}
+}catch(e){ dump(e + "\n" + (e.stack || Error().stack)); Components.utils.reportError(e) }
+

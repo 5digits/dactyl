@@ -361,7 +361,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     should be loaded.
      */
     loadScript: function (uri, context) {
-        services.subscriptLoader.loadSubScript(uri, context, File.defaultEncoding);
+        JSMLoader.loadSubScript(uri, context, File.defaultEncoding);
     },
 
     userEval: function (str, context, fileName, lineNumber) {

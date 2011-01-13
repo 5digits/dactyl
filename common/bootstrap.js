@@ -121,14 +121,14 @@ function init() {
 
     let result = [];
 
+    let suffix = "-";
+    let chars = "0123456789abcdefghijklmnopqrstuv";
+    for (let n = Date.now(); n; n = Math.round(n / chars.length))
+        suffix += "0123456789abcdef"[n % chars.length];
+
     for each (let line in manifest.split("\n")) {
         let fields = line.split(/\s+/);
         switch(fields[0]) {
-        case "#":
-            if (fields[1] == "Suffix:")
-                var suffix = "-" + fields[2];
-            break;
-
         case "category":
             categoryManager.addCategoryEntry(fields[1], fields[2], fields[3], false, true);
             break;
@@ -140,8 +140,9 @@ function init() {
             break;
 
         case "resource":
-            resources.push(fields[1]);
+            resources.push(fields[1], fields[1] + suffix);
             resourceProto.setSubstitution(fields[1], getURI(fields[2]));
+            resourceProto.setSubstitution(fields[1] + suffix, getURI(fields[2]));
         }
     }
 
