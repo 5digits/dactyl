@@ -1244,7 +1244,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (struct)
             update(res, {
                 exec: function exec() let (match = exec.superapply(this, arguments)) match && struct.fromArray(match),
-                source: source, struct: struct
+                struct: struct
             });
         return res;
     }, {
