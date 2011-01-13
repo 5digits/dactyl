@@ -123,16 +123,9 @@ function init() {
     for each (let line in manifest.split("\n")) {
         let fields = line.split(/\s+/);
         switch(fields[0]) {
-        case "content":
-            fields[2] = url(fields[2]);
-        default:
-            result.push(fields);
-            break;
-
-        case "locale":
-        case "skin":
-            fields[3] = url(fields[3]);
-            result.push(fields);
+        case "#":
+            if (fields[1] == "Suffix:")
+                var suffix = fields[1];
             break;
 
         case "category":
@@ -146,10 +139,6 @@ function init() {
             break;
 
         case "resource":
-            let str = "dactyl-";
-            if (fields[1].indexOf(str) == 0)
-                var suffix = fields[1].substr(str.length - 1);
-
             resourceProto.setSubstitution(fields[1], getURI(fields[2]));
         }
     }
@@ -173,17 +162,6 @@ function init() {
     require(global, "services");
 
     let manifestText = result.map(function (line) line.join(" ")).join("\n");
-
-    if (manifestURI instanceof Ci.nsIFileURL)
-        manager.autoRegister(manifestURI.QueryInterface(Ci.nsIFileURL).file);
-    else {
-        var file = basePath.parent;
-        file.append(addon.id + ".manifest");
-
-        writeFile(file, manifestText);
-        manager.autoRegister(file);
-        file.remove(false);
-    }
 
     require(global, "overlay");
 }

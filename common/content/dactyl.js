@@ -594,10 +594,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (context && context.INFO instanceof XML) {
                     let info = context.INFO;
                     if (info.*.@lang.length()) {
-                        let langs = set(String(a) for each (a in info.*.@lang));
-                        let lang = [config.language, config.language.replace(/-.*/, ""),
-                                    "en", "en-US", info.*.@lang[0]
-                                   ].filter(function (l) set.has(langs, l))[0];
+                        let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
 
                         info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
 
@@ -613,7 +610,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             let help =
                 '<?xml version="1.0"?>\n' +
                 '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                '<!DOCTYPE document SYSTEM "chrome://dactyl/content/dactyl.dtd">\n' +
+                '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
                 unescape(encodeURI( // UTF-8 handling hack.
                 <document xmlns={NS}
                     name="plugins" title={config.appName + " Plugins"}>

@@ -7,11 +7,12 @@
         em:version="1.0b5pre"
         em:description="Firefox for Vim and Links addicts"
         em:homepageURL="http://dactyl.sourceforge.net/pentadactyl"
-        em:iconURL="chrome://pentadactyl/skin/icon.png"
-        em:optionsURL="chrome://dactyl/content/preferences.xul"
+        em:iconURL="resource://dactyl-local-skin/icon.png"
         em:bootstrap="true">
 
         <em:creator>Kris Maglione, Doug Kearns</em:creator>
+        <em:developer>Kris Maglione</em:developer>
+        <em:developer>Doug Kearns</em:developer>
         <em:developer>Štěpán Němec</em:developer>
 
         <em:contributor>anekos</em:contributor>
@@ -30,7 +31,7 @@
             <Description
                 em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                 em:minVersion="3.5"
-                em:maxVersion="4.0b9pre"/>
+                em:maxVersion="4.0"/>
         </em:targetApplication>
     </Description>
 </RDF>

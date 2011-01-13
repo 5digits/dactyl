@@ -52,15 +52,21 @@ if (!JSMLoader || JSMLoader.bump != 1)
                               .getService(Components.interfaces.mozIJSSubScriptLoader)
                               .loadSubScript(url, global.global || global);
             }
-            let global = Components.utils.import(url, target);
+            try {
+                let global = Components.utils.import(url, target);
 
-            if (name == "base.jsm") {
-                global.JSMLoader = this;
-                Components.utils.import(url, this.global);
-                this.global.EXPORTED_SYMBOLS = global.EXPORTED_SYMBOLS;
+                if (name == "base.jsm") {
+                    global.JSMLoader = this;
+                    Components.utils.import(url, this.global);
+                    this.global.EXPORTED_SYMBOLS = global.EXPORTED_SYMBOLS;
+                }
+
+                return this.globals[url] = global;
             }
-
-            return this.globals[url] = global;
+            catch (e) {
+                dump("Importing " + url + ": " + e + "\n" + (e.stack || Error().stack));
+                throw e;
+            }
         },
         cleanup: function unregister() {
             for each (let factory in this.factories.splice(0))

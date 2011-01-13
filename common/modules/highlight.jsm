@@ -43,7 +43,7 @@ Highlight.defaultValue("selector", function () highlight.selector(this.class));
 
 Highlight.defaultValue("sites", function ()
     this.base ? this.base.sites
-              : ["chrome://dactyl/*", "dactyl:*", "file://*"].concat(
+              : ["resource://dactyl*", "dactyl:*", "file://*"].concat(
                     highlight.styleableChrome));
 
 Highlight.defaultValue("style", function ()

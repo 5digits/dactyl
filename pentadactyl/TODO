@@ -6,11 +6,6 @@ ARCHITECTURE:
   on the website - is there even a documentation tool that can parse our source
   sensibly?
 
-  There are a few that can, to some extent. We more or less follow the
-  ScriptDoc standard, and we're very close to a few other standards.
-  Unfortunately, nearly all of the parsers are lacking in some way, bloated to
-  hell, and/or lack support for JS 1.8. --Kris
-
 - unify the disgusting hodge podge of contract specification styles
 
 REFACTORING:
@@ -21,7 +16,6 @@ BUGS:
 - :sidebar improvements (:sidebar! Downloads while downloads is open should refocus the sidebar)
 - ;s saves the page rather than the image
 - RC file is sourced once per window
-- :undo seems to be affected by the tabstrip state
 - the :help version-information page is no longer generated
 
 FEATURES:

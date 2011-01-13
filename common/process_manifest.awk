@@ -1,7 +1,9 @@
 BEGIN {
     chrome = "chrome"
-    if (suffix)
+    if (suffix) {
         chrome = suffix
+        print "# Suffix: " suffix
+    }
 }
 { content = $1 ~ /^(content|skin|locale|resource)$/ }
 content && $NF ~ /^[a-z]/ { $NF = "/" name "/" $NF }

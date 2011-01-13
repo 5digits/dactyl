@@ -22,7 +22,7 @@ var global = this;
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
-var DNE = "chrome://dactyl/content/does/not/exist";
+var DNE = "resource://dactyl/content/does/not/exist";
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -162,7 +162,7 @@ Dactyl.prototype = {
             let path = decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""));
             switch(uri.host) {
             case "content":
-                return makeChannel(this.pages[path] || "chrome://dactyl/content/" + path, uri);
+                return makeChannel(this.pages[path] || "resource://dactyl-content/" + path, uri);
             case "help":
                 return makeChannel(this.FILE_MAP[path], uri);
             case "help-overlay":
@@ -174,9 +174,9 @@ Dactyl.prototype = {
                 if (tag in this.HELP_TAGS)
                     return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
             case "locale":
-                return makeChannel("chrome://dactyl/locale/" + path, uri);
+                return makeChannel(["resource://dactyl-locale", config.locale, path].join("/"), uri);
             case "locale-local":
-                return makeChannel("chrome://" + config.name + "/locale/" + path, uri);
+                return makeChannel(["resource://dactyl-local-locale", config.locale, path].join("/"), uri);
             }
         }
         catch (e) {}
@@ -303,7 +303,7 @@ AboutHandler.prototype = {
 
     newChannel: function (uri) {
         let channel = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
-                          .newChannel("chrome://dactyl/content/about.xul", null, null);
+                          .newChannel("resource://dactyl-content/about.xul", null, null);
         channel.originalURI = uri;
         return channel;
     },

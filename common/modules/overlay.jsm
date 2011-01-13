@@ -84,7 +84,7 @@ var Overlay = Module("Overlay", {
                 Module.list = [];
                 Module.constructors = {};
 
-                const BASE = "chrome://dactyl/content/";
+                const BASE = "resource://dactyl-content/";
 
                 const create = window.Object.create || (function () {
                     window.__dactyl_eval_string = "(function (proto) ({ __proto__: proto }))";
@@ -143,7 +143,7 @@ var Overlay = Module("Overlay", {
                 modules.modules = modules;
                 window.dactyl = { modules: modules };
 
-                let prefix = [BASE];
+                let prefix = [BASE, "resource://dactyl-local-content/"];
 
                 defineModule.time("load", null, function _load() {
                     ["base",
@@ -156,7 +156,6 @@ var Overlay = Module("Overlay", {
                      "storage",
                      "util"
                     ].forEach(function (name) require(jsmodules, name));
-                    prefix.unshift("chrome://" + config.name + "/content/");
 
                     ["dactyl",
                      "modes",

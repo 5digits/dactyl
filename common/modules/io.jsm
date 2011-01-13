@@ -296,7 +296,7 @@ var IO = Module("io", {
         return File(file);
     },
 
-    isJarURL: function (url) {
+    isJarURL: function isJarURL(url) {
         try {
             let uri = util.newURI(url);
             let channel = services.io.newChannelFromURI(uri);
@@ -306,6 +306,22 @@ var IO = Module("io", {
         }
         catch (e) {}
         return false;
+    },
+
+    listJar: function listJar(file, path) {
+        file = util.getFile(file);
+        if (file) {
+            // let jar = services.zipReader.getZip(file); Crashes.
+            let jar = services.ZipReader(file);
+            try {
+                for (let entry in jar.findEntries("*"))
+                    if (filter.test(s))
+                        yield entry;
+            }
+            finally {
+                jar.close();
+            }
+        }
     },
 
     readHeredoc: function (end) {
@@ -869,25 +885,12 @@ unlet s:cpo_save
             let uri = io.isJarURL(dir);
             if (uri)
                 context.generate = function generate_jar() {
-                    let file = util.getFile(uri.JARFile);
-                    if (file) {
-                        // let jar = services.zipReader.getZip(file); Crashes.
-                        let jar = services.ZipReader(file);
-                        try {
-                            let filter = RegExp("^" + util.regexp.escape(decodeURI(getDir(uri.JAREntry)))
-                                                + "[^/]*/?$");
-                            return [
-                                {
-                                      isDirectory: function () s.substr(-1) == "/",
-                                      leafName: /([^\/]*)\/?$/.exec(s)[1]
-                                }
-                                for (s in iter(jar.findEntries("*"))) if (filter.test(s))
-                            ]
+                    return [
+                        {
+                              isDirectory: function () s.substr(-1) == "/",
+                              leafName: /([^\/]*)\/?$/.exec(s)[1]
                         }
-                        finally {
-                            jar.close();
-                        }
-                    }
+                        for (s in io.listJar(getDir(uri.JARFile, uri.JAREntry)))]
                 };
             else
                 context.generate = function generate_file() {

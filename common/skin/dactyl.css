@@ -4,11 +4,11 @@
 
 /* Applied to all content */
 [dactyl|activeframe] {
-    -moz-binding: url(chrome://dactyl/content/bindings.xml#frame) !important;
+    -moz-binding: url(resource://dactyl-content/bindings.xml#frame) !important;
 }
 
 [dactyl|highlight~=hints] {
-    -moz-binding: url(chrome://dactyl/content/bindings.xml#hints) !important;
+    -moz-binding: url(resource://dactyl-content/bindings.xml#hints) !important;
 }
 
 [dactyl|highlight~=HintImage],
@@ -21,14 +21,14 @@
     url-prefix(dactyl:) {
 
 [dactyl|highlight~=HelpDefault] {
-    -moz-binding: url(chrome://dactyl/content/bindings.xml#compitem-td);
+    -moz-binding: url(resource://dactyl-content/bindings.xml#compitem-td);
 }
 
 }
 
 /* Applied only to completion buffer and MOW */
 @-moz-document
-    url-prefix(chrome://dactyl/) {
+    url-prefix(resource://dactyl) {
 
 *:-moz-loading, *:-moz-broken { display: none !important; }
 
@@ -45,7 +45,7 @@
 }
 [dactyl|highlight~=CompItem] > *,
 [dactyl|highlight~=CompTitle] > * {
-    -moz-binding: url(chrome://dactyl/content/bindings.xml#compitem-td);
+    -moz-binding: url(resource://dactyl-content/bindings.xml#compitem-td);
     display: table-cell;
     vertical-align: middle;
 }
@@ -75,7 +75,7 @@
 }
 
 @-moz-document
-    url-prefix(chrome://dactyl/) {
+    url-prefix(resource://dactyl) {
 
 *:-moz-any-link:hover {
     text-decoration: underline;
@@ -84,7 +84,8 @@
 
 /* Applied to completion buffer, MOW, browser window */
 @-moz-document
-    url-prefix(chrome://) {
+    url-prefix(chrome://),
+    url-prefix(resource://) {
 
 #TabsToolbar .tab-icon-image, .tab-throbber { -moz-box-ordinal-group: 10; }
 [dactyl|highlight~=tab-number]              { -moz-box-ordinal-group: 20; }

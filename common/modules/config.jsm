@@ -55,7 +55,50 @@ var ConfigBase = Class("ConfigBase", {
         return addon;
     }),
 
-    language: Class.memoize(function () services.chromeRegistry.getSelectedLocale("dactyl")),
+    /**
+     * The current application locale.
+     */
+    appLocale: Class.memoize(function () services.chromeRegistry.getSelectedLocale("global")),
+
+    /**
+     * The current dactyl locale.
+     */
+    locale: Class.memoize(function () this.bestLocale(this.locales)),
+
+    /**
+     * The current application locale.
+     */
+    locales: Class.memoize(function () {
+        // TODO: Merge with completion.file code.
+        function getDir(str) str.match(/^(?:.*[\/\\])?/)[0];
+
+        let uri = "resource://dactyl-locale/";
+        let jar = io.isJarURL(uri);
+        if (jar) {
+            let prefix = getDir(jar.JAREntry);
+            return iter(s.slice(prefix.length).replace(/\/.*/, "") for (s in io.listJar(jar.JARFile, prefix)))
+                        .uniq().toArray();
+        }
+        else {
+            return array(f.leafName
+                         for (f in util.getFile(uri).iterDirectory())
+                         if (f.isDirectory())).array;
+        }
+    }),
+
+    /**
+     * Returns the best locale match to the current locale from a list
+     * of available locales.
+     *
+     * @param {[string]} list A list of available locales
+     * @returns {string}
+     */
+    bestLocale: function (list) {
+        let langs = set(list);
+        return values([this.appLocale, this.appLocale.replace(/-.*/, ""),
+                       "en", "en-US", iter(langs).next()])
+            .nth(function (l) set.has(langs, l), 0);
+    },
 
     /** @property {string} The Dactyl version string. */
     version: Class.memoize(function () {
@@ -593,14 +636,14 @@ var ConfigBase = Class("ConfigBase", {
     ]]></>)
 });
 
-services.subscriptLoader.loadSubScript("chrome://dactyl/content/config.js", this);
+services.subscriptLoader.loadSubScript("resource://dactyl-local-content/config.js", this);
 
 config.INIT = update(Object.create(config.INIT), config.INIT, {
     init: function init(dactyl, modules, window) {
         init.superapply(this, arguments);
 
         let img = window.Image();
-        img.src = this.logo || "chrome://" + this.name + "/content/logo.png";
+        img.src = this.logo || "chrome://dactyl-local-content/logo.png";
         img.onload = function () {
             highlight.loadCSS(<>{"!Logo  {"}
                      display:    inline-block;

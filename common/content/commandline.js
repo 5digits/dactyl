@@ -34,14 +34,14 @@ var CommandWidgets = Class("CommandWidgets", {
                 <vbox id={config.commandContainer}>
 
                     <vbox class="dactyl-container" id="dactyl-multiline-output-container" hidden="false" collapsed="true">
-                        <iframe id="dactyl-multiline-output" src="chrome://dactyl/content/buffer.xhtml"
+                        <iframe id="dactyl-multiline-output" src="resource://dactyl-content/buffer.xhtml"
                                 flex="1" hidden="false" collapsed="false"
                                 contextmenu="dactyl-contextmenu"
                                 onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
                     </vbox>
 
                     <vbox class="dactyl-container" hidden="false" collapsed="true">
-                        <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="chrome://dactyl/content/buffer.xhtml"
+                        <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="resource://dactyl-content/buffer.xhtml"
                                 contextmenu="dactyl-contextmenu"
                                 flex="1" hidden="false" collapsed="false"
                                 onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
@@ -75,7 +75,7 @@ var CommandWidgets = Class("CommandWidgets", {
             before: <e4x xmlns={XUL} xmlns:dactyl={NS}>
                 <toolbar id={statusline.statusBar.id}>
                     <vbox id={"dactyl-completions-" + _status + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true">
-                        <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="chrome://dactyl/content/buffer.xhtml"
+                        <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="resource://dactyl-content/buffer.xhtml"
                                 contextmenu="dactyl-contextmenu"
                                 flex="1" hidden="false" collapsed="false"
                                 onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
@@ -161,12 +161,12 @@ var CommandWidgets = Class("CommandWidgets", {
         });
 
         let fontSize = util.computedStyle(document.documentElement).fontSize;
-        styles.registerSheet("chrome://dactyl/skin/dactyl.css");
-        styles.system.add("font-size", "chrome://dactyl/content/buffer.xhtml",
+        styles.registerSheet("resource://dactyl-skin/dactyl.css");
+        styles.system.add("font-size", "resource://dactyl-content/buffer.xhtml",
                           "body { font-size: " + fontSize + "; }");
     },
     cleanup: function cleanup() {
-        styles.unregisterSheet("chrome://dactyl/skin/dactyl.css");
+        styles.unregisterSheet("resource://dactyl-skin/dactyl.css");
     },
     addElement: function (obj) {
         const self = this;

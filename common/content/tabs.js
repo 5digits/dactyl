@@ -36,7 +36,7 @@ var Tabs = Module("tabs", {
         };
 
         this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", String.replace(<><![CDATA[
-                xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
+                xul|tab { -moz-binding: url(resource://dactyl-content/bindings.xml#tab) !important; }
             ]]></>, /tab-./g, function (m) util.OS.isMacOSX ? "tab-mac" : m),
             false, true);
     },
