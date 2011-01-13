@@ -133,7 +133,7 @@ install:
 	fi; 									\
 										\
 	ext="$$profile/extensions/$(UUID)"; 					\
-	mkdir -p "$$(dirname "$$ext")"; 						\
+	mkdir -p "$$(dirname "$$ext")"; 					\
 	rm -rf "$$ext.xpi" "$$ext"; 						\
 	echo "Installing to $$ext"; 						\
 	if which cygpath >/dev/null 2>&1; 					\

@@ -488,6 +488,14 @@ function call(fn) {
  * value of the property.
  */
 function memoize(obj, key, getter) {
+    if (arguments.length == 1) {
+        for (let prop in Object.getOwnPropertyNames(obj)) {
+            let get = objproto.__lookupGetter__.call(obj, prop);
+            if (get)
+                memoize(obj, prop, get);
+        }
+        return obj;
+    }
     obj.__defineGetter__(key, function g_replaceProperty() (
         Class.replaceProperty(this.instance || this, key, null),
         Class.replaceProperty(this.instance || this, key, getter.call(this, key))));

@@ -761,7 +761,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     isDomainURL: function isDomainURL(url, domain) util.isSubdomain(util.getHost(url), domain),
 
     /** Dactyl's notion of the current operating system platform. */
-    OS: {
+    OS: memoize({
         _arch: services.runtime.OS,
         /**
          * @property {string} The normalised name of the OS. This is one of
@@ -776,7 +776,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         get isUnix() !this.isWindows && !this.isMacOSX,
         /** @property {RegExp} A RegExp which matches illegal characters in path components. */
         get illegalCharacters() this.isWindows ? /[<>:"/\\|?*\x00-\x1f]/ : /\//
-    },
+    }),
 
     /**
      * Returns true if *host* is a subdomain of *domain*.

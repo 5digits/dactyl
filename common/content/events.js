@@ -1122,7 +1122,7 @@ var Events = Module("events", {
                 [map] = this.pendingMap || [];
                 this.pendingMap = null;
                 if (map && map.arg)
-                    this.pendingArgMap = map;
+                    this.pendingArgMap = [map, command];
             }
 
             // counts must be at the start of a complete mapping (10j -> go 10 lines down)
