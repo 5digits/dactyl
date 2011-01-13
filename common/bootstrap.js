@@ -125,7 +125,7 @@ function init() {
         switch(fields[0]) {
         case "#":
             if (fields[1] == "Suffix:")
-                var suffix = fields[1];
+                var suffix = "-" + fields[2];
             break;
 
         case "category":

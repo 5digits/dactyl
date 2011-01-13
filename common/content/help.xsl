@@ -132,7 +132,7 @@
         <html dactyl:highlight="Help">
             <head>
                 <title><xsl:value-of select="/dactyl:document/@title"/></title>
-                <script type="text/javascript" src="chrome://dactyl/content/help.js"/>
+                <script type="text/javascript" src="resource://dactyl-content/help.js"/>
             </head>
             <body dactyl:highlight="HelpBody">
                 <xsl:apply-templates select="$root2/node()|$root2/@*" mode="help-1"/>

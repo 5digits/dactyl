@@ -314,8 +314,11 @@ var IO = Module("io", {
             // let jar = services.zipReader.getZip(file); Crashes.
             let jar = services.ZipReader(file);
             try {
-                for (let entry in jar.findEntries("*"))
-                    if (filter.test(s))
+                let filter = RegExp("^" + util.regexp.escape(decodeURI(path))
+                                    + "[^/]*/?$");
+
+                for (let entry in iter(jar.findEntries("*")))
+                    if (filter.test(entry))
                         yield entry;
             }
             finally {
