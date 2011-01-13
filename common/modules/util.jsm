@@ -993,8 +993,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!window.dactylOverlays)
             window.dactylOverlays = [];
 
-        defineModule.loadLog.push("load overlays " + window.document.documentURI);
-
         for each (let obj in util.overlays[window.document.documentURI] || []) {
             if (window.dactylOverlays.indexOf(obj) >= 0)
                 continue;
@@ -1006,8 +1004,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let doc = window.document;
         if (!doc.dactylOverlayElements)
             doc.dactylOverlayElements = [];
-
-        defineModule.loadLog.push("load overlays " + doc.documentURI + " " + String(obj).substr(0, 60));
 
         function overlay(key, fn) {
             if (obj[key]) {
