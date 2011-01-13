@@ -201,7 +201,7 @@ var Marks = Module("marks", {
                 (tab ? ", tab: " + tabs.index(tab) : "");
     },
 
-    isLocalMark: function isLocalMark(mark) /^[a-z]$/.test(mark),
+    isLocalMark: function isLocalMark(mark) /^[a-z`']$/.test(mark),
 
     isURLMark: function isURLMark(mark) /^[A-Z]$/.test(mark)
 }, {

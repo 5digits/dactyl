@@ -55,6 +55,8 @@ var ConfigBase = Class("ConfigBase", {
         return addon;
     }),
 
+    language: Class.memoize(function () services.chromeRegistry.getSelectedLocale("dactyl")),
+
     /** @property {string} The Dactyl version string. */
     version: Class.memoize(function () {
         if (/pre$/.test(this.addon.version)) {

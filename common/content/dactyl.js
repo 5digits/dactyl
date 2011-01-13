@@ -595,8 +595,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     let info = context.INFO;
                     if (info.*.@lang.length()) {
                         let langs = set(String(a) for each (a in info.*.@lang));
-                        let lang = [window.navigator.language,
-                                    window.navigator.language.replace(/-.*/, ""),
+                        let lang = [config.language, config.language.replace(/-.*/, ""),
                                     "en", "en-US", info.*.@lang[0]
                                    ].filter(function (l) set.has(langs, l))[0];
 

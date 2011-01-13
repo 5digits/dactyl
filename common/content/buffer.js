@@ -1140,6 +1140,9 @@ var Buffer = Module("buffer", {
     },
 
     scrollTo: function scrollTo(elem, left, top) {
+        // Temporary hack. Should be done better.
+        if (elem.ownerDocument == buffer.focusedFrame.document)
+            marks.add("'");
         if (left != null)
             elem.scrollLeft = left;
         if (top != null)
