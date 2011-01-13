@@ -1234,6 +1234,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     return m1 + "(" + (m3 || "");
                 });
             var struct = Struct.apply(null, groups);
+            var source = expr;
         }
 
         let res = update(RegExp(expr, flags), {
@@ -1241,7 +1242,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"]
         });
         if (struct)
-            update(res, { exec: function exec() struct.fromArray(exec.superapply(this, arguments)) });
+            update(res, {
+                exec: function exec() let (match = exec.superapply(this, arguments)) match && struct.fromArray(match),
+                source: source, struct: struct
+            });
         return res;
     }, {
         /**
