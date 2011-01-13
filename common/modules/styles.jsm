@@ -341,7 +341,7 @@ var Styles = Module("Styles", {
                 (?:
                     <space>* : \s* (?P<value>
                         (?:
-                            [-\w]
+                            [-\w]+
                             (?:
                                 \s* \( \s*
                                     (?: <string> | [^)]*  )
@@ -360,7 +360,60 @@ var Styles = Module("Styles", {
         {
             space: /(?: \s | \/\* .*? \*\/ )/,
             string: /(?:" (?:[^\\"]|\\.)* (?:"|$) | '(?:[^\\']|\\.)* (?:'|$) )/
-        })
+        }),
+
+    patterns: memoize({
+        iter: function (pattern, str) {
+            pattern = this[pattern];
+            pattern.lastIndex = 0;
+
+            let match;
+            while ((match = pattern.exec(str)) && match[0].length)
+                yield match;
+        },
+
+        get property() util.regexp(<![CDATA[
+                (?:
+                    (?P<preSpace> <space>*)
+                    (?P<name> [-a-z]*)
+                    (?:
+                        <space>* : \s* (?P<value>
+                            <token>*
+                        )
+                    )?
+                )
+                (?P<postSpace> <space>* (?: ; | $) )
+            ]]>, "gi", this),
+
+        get function() util.regexp(<![CDATA[
+                (?P<function>
+                    \s* \( \s*
+                        (?: <string> | [^)]*  )
+                    \s* (?: \) | $)
+                )
+            ]]>, "g", this),
+
+        space: /(?: \s | \/\* .*? \*\/ )/,
+
+        get string() util.regexp(<![CDATA[
+                (?P<string>
+                    " (?:[^\\"]|\\.)* (?:"|$) |
+                    ' (?:[^\\']|\\.)* (?:'|$)
+                )
+            ]]>, "g", this),
+
+        get token() util.regexp(<![CDATA[
+            (?P<token>
+                (?P<word> [-\w]+)
+                <function>?
+                \s*
+                | (?P<important> !important\b)
+                | \s* <string> \s*
+                | <space>+
+                | [^;}\s]+
+            )
+        ]]>, "gi", this)
+    })
 }, {
     commands: function (dactyl, modules, window) {
         const commands = modules.commands;
@@ -545,7 +598,34 @@ var Styles = Module("Styles", {
                 null,
                 function (context, obj, args) this.sheets
             ]);
-    }
+    },
+    template: function () {
+        let patterns = Styles.patterns;
+
+        template.highlightCSS = function highlightCSS(css) {
+            XML.prettyPrinting = XML.ignoreWhitespace = false;
+
+            return this.highlightRegexp(css, patterns.property, function (match) <>{
+                match.preSpace}{template.filter(match.name)}: {
+
+                    template.highlightRegexp(match.value, patterns.token, function (match) {
+                        if (match.function)
+                            return <>{template.filter(match.word)}{
+                                template.highlightRegexp(match.function, patterns.string,
+                                    function (match) <span highlight="String">{match.string}</span>)
+                            }</>;
+                        if (match.important == "!important")
+                            return <span highlight="String">{match.important}</span>;
+                        if (match.string)
+                            return <span highlight="String">{match.string}</span>;
+                        return template.highlightRegexp(match.wholeMatch, /^(\d+)(em|ex|px|in|cm|mm|pt|pc)?/g,
+                                                        function (m, n, u) <><span highlight="Number">{n}</span><span highlight="Object">{u || ""}</span></>);
+                    })
+
+                }{ match.postSpace }</>
+            )
+        }
+    },
 });
 
 endModule();

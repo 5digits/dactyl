@@ -1220,12 +1220,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             expr = expr.source;
 
         if (tokens)
-            expr = String.replace(expr, /<(\w+)>/g, function (m, n1) set.has(tokens, n1) ? tokens[n1].source || tokens[n1] : m);
+            expr = String.replace(expr, /(\(?P)?<(\w+)>/g, function (m, n1, n2) !n1 && set.has(tokens, n2) ? tokens[n2].dactylSource || tokens[n2].source || tokens[n2] : m);
 
         expr = String.replace(expr, /\/\/[^\n]*|\/\*[^]*?\*\//gm, "")
                      .replace(/\s+/g, "");
 
         if (/\(\?P</.test(expr)) {
+            var source = expr;
             let groups = ["wholeMatch"];
             expr = expr.replace(/((?:[^[(\\]|\\.|\[(?:[^\]]|\\.)*\])*)\((?:\?P<([^>]+)>|(\?))?/gy,
                 function (m0, m1, m2, m3) {
@@ -1234,7 +1235,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     return m1 + "(" + (m3 || "");
                 });
             var struct = Struct.apply(null, groups);
-            var source = expr;
         }
 
         let res = update(RegExp(expr, flags), {
@@ -1244,7 +1244,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (struct)
             update(res, {
                 exec: function exec() let (match = exec.superapply(this, arguments)) match && struct.fromArray(match),
-                struct: struct
+                dactylSource: source, struct: struct
             });
         return res;
     }, {

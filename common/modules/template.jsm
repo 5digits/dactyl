@@ -161,14 +161,15 @@ var Template = Module("Template", {
 
     highlightRegexp: function highlightRegexp(str, re, highlight) {
         return this.highlightSubstrings(str, (function () {
+            re.lastIndex = 0;
             let res;
             while ((res = re.exec(str)) && res[0].length)
-                yield [res.index, res[0].length, res];
+                yield [res.index, res[0].length, res.wholeMatch ? [res] : res];
         })(), highlight || template.filter);
     },
 
     highlightSubstrings: function highlightSubstrings(str, iter, highlight) {
-        XML.ignoreWhitespace = false; XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         if (typeof str == "xml")
             return str;
         if (str == "")
