@@ -36,22 +36,12 @@ if (!JSMLoader || JSMLoader.bump != 1)
                 delete this.stale[url];
 
                 let global = this.globals[url];
-                for each (let prop in Object.getOwnPropertyNames(global))
-                    try {
-                        if (!(prop in this.builtin) && ["JSMLoader", "set"].indexOf(prop) < 0 &&
-                            !global.__lookupGetter__(prop))
-                            global[prop] = undefined;
-                    }
-                    catch (e) {
-                        dump("Deleting property " + prop + " on " + url + ":\n    " + e + "\n");
-                        Components.utils.reportError(e);
-                    }
-
                 if (stale === this.getTarget(url))
                     Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                               .getService(Components.interfaces.mozIJSSubScriptLoader)
                               .loadSubScript(url, global.global || global);
             }
+
             try {
                 let global = Components.utils.import(url, target);
 
@@ -73,9 +63,23 @@ if (!JSMLoader || JSMLoader.bump != 1)
                 this.manager.unregisterFactory(factory.classID, factory);
         },
         purge: function purge() {
-            for (let [url, global] in Iterator(this.globals))
+            for (let [url, global] in Iterator(this.globals)) {
                 this.stale[url] = this.getTarget(url);
+
+                for each (let prop in Object.getOwnPropertyNames(global))
+                    try {
+                        if (!(prop in this.builtin) &&
+                            ["JSMLoader", "set", "EXPORTED_SYMBOLS"].indexOf(prop) < 0 &&
+                            !global.__lookupGetter__(prop))
+                            global[prop] = undefined;
+                    }
+                    catch (e) {
+                        dump("Deleting property " + prop + " on " + url + ":\n    " + e + "\n");
+                        Components.utils.reportError(e);
+                    }
+            }
         },
+
         registerFactory: function registerFactory(factory) {
             this.manager.registerFactory(factory.classID,
                                          String(factory.classID),

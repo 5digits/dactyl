@@ -965,9 +965,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             services.observer.removeObserver(this, "dactyl-rehash");
 
             defineModule.loadLog.push("dactyl: util: observe: dactyl-rehash");
-            if (this.rehashing)
-                JSMLoader.purge();
-            else
+            if (!this.rehashing)
                 for (let module in values(defineModule.modules)) {
                     defineModule.loadLog.push("dactyl: util: init(" + module + ")");
                     if (module.reinit)
@@ -978,7 +976,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         },
         "dactyl-purge": function () {
             this.rehashing = 1;
-            JSMLoader.purge();
         },
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {

@@ -45,6 +45,7 @@ let initialized = false;
 let addon = null;
 let basePath = null;
 let components = {};
+let resources = [];
 let getURI = null;
 storage.set("dactyl.bootstrap", this);
 
@@ -139,6 +140,7 @@ function init() {
             break;
 
         case "resource":
+            resources.push(fields[1]);
             resourceProto.setSubstitution(fields[1], getURI(fields[2]));
         }
     }
@@ -174,6 +176,10 @@ function shutdown(data, reason) {
 
         services.observer.notifyObservers(null, "dactyl-cleanup", null);
         services.observer.notifyObservers(null, "dactyl-cleanup-modules", null);
+
+        JSMLoader.purge();
+        for each (let resource in resources)
+            resourceProto.setSubstitution(resource, null);
     }
 }
 
