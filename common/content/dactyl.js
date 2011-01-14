@@ -1063,6 +1063,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     get plugins() plugins,
 
+    setNodeVisible: function setNodeVisible(node, visible) {
+        if (window.setToolbarVisibility && node.localName == "toolbar")
+            window.setToolbarVisibility(node, visible);
+        else
+            node.collapsed = !visible;
+    },
+
     /**
      * Quit the host application, no matter how many tabs/windows are open.
      *
@@ -1315,7 +1322,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         ids.map(function (id) document.getElementById(id))
                            .forEach(function (elem) {
                             if (elem)
-                                elem.collapsed = (opts.indexOf(opt) == -1);
+                                dactyl.setNodeVisible(elem, opts.indexOf(opt) >= 0);
                         });
                     }
                 }
@@ -1915,13 +1922,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
 
             toolbarCommand(["toolbars[how]", "tbs[how]"], "Show the named toolbar",
-                function (toolbar) toolbar.collapsed = false,
+                function (toolbar) dactyl.setNodeVisible(toolbar, true),
                 function (item) item.item.collapsed);
             toolbarCommand(["toolbarh[ide]", "tbh[ide]"], "Hide the named toolbar",
-                function (toolbar) toolbar.collapsed = true,
+                function (toolbar) dactyl.setNodeVisible(toolbar, false),
                 function (item) !item.item.collapsed);
             toolbarCommand(["toolbart[oggle]", "tbt[oggle]"], "Toggle the named toolbar",
-                function (toolbar) toolbar.collapsed = !toolbar.collapsed);
+                function (toolbar) dactyl.setNodeVisible(toolbar, toolbar.collapsed));
         }
 
         commands.add(["time"],
