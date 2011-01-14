@@ -4,11 +4,12 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+let is_bootstrap = 1;
+
 try {
 
 if (!JSMLoader || JSMLoader.bump != 1)
     var JSMLoader = {
-        global: this,
         bump: 1,
         builtin: Components.utils.Sandbox(this),
         canonical: {},
@@ -20,6 +21,9 @@ if (!JSMLoader || JSMLoader.bump != 1)
         stale: {},
         suffix: "",
         getTarget: function getTarget(url) {
+            if (url.indexOf(":") === -1)
+                url = "resource://dactyl" + this.suffix + "/" + url;
+
             let chan = this.io.newChannel(url, null, null);
             chan.cancel(Components.results.NS_BINDING_ABORTED);
             return chan.name;
@@ -29,11 +33,11 @@ if (!JSMLoader || JSMLoader.bump != 1)
             if (url.indexOf(":") === -1)
                 url = "resource://dactyl" + this.suffix + "/" + url;
 
-            if (url in this.stale) {
-                let stale = this.stale[url];
-                delete this.stale[url];
+            if (name in this.stale) {
+                let stale = this.stale[name];
+                delete this.stale[name];
 
-                let global = this.globals[url];
+                let global = this.globals[name];
                 if (stale === this.getTarget(url))
                     this.loadSubScript(url, global.global || global);
             }
@@ -41,13 +45,13 @@ if (!JSMLoader || JSMLoader.bump != 1)
             try {
                 let global = Components.utils.import(url, target);
 
-                if (name == "base.jsm") {
+                if (name == "base.jsm" && target.is_bootstrap) {
+                    target.EXPORTED_SYMBOLS = global.EXPORTED_SYMBOLS;
                     global.JSMLoader = this;
-                    Components.utils.import(url, this.global);
-                    this.global.EXPORTED_SYMBOLS = global.EXPORTED_SYMBOLS;
+                    target.JSMLoader = this;
                 }
 
-                return this.globals[url] = global;
+                return this.globals[name] = global;
             }
             catch (e) {
                 dump("Importing " + url + ": " + e + "\n" + (e.stack || Error().stack));

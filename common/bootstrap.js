@@ -17,6 +17,7 @@ const resourceProto = Services.io.getProtocolHandler("resource")
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication).storage;
+let JSMLoader = storage.get("dactyl.JSMLoader", undefined);
 
 function reportError(e) {
     dump("dactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack));
@@ -119,12 +120,10 @@ function init() {
 
     function url(path) getURI(path).spec;
 
-    let result = [];
-
     let suffix = "-";
     let chars = "0123456789abcdefghijklmnopqrstuv";
     for (let n = Date.now(); n; n = Math.round(n / chars.length))
-        suffix += "0123456789abcdef"[n % chars.length];
+        suffix += chars[n % chars.length];
 
     for each (let line in manifest.split("\n")) {
         let fields = line.split(/\s+/);
@@ -148,24 +147,16 @@ function init() {
 
     if (typeof JSMLoader === "undefined")
         Cu.import("resource://dactyl/bootstrap.jsm", global);
-    else {
-        Cu.import("resource://dactyl/bootstrap.jsm", {}).JSMLoader = JSMLoader;
-        JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
-    }
 
     if (suffix)
         JSMLoader.suffix = suffix;
+    JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
 
     for each (let component in components)
         component.register();
 
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
-    JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
-
     require(global, "services");
-
-    let manifestText = result.map(function (line) line.join(" ")).join("\n");
-
     require(global, "overlay");
 }
 

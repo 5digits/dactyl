@@ -1263,8 +1263,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             services.fuel.storage.set("dactyl.commandlineArgs", args);
         this.timeout(function () {
             this.rehashing = true;
-            config.addon.userDisabled = true;
-            config.addon.userDisabled = false;
+            let addon = config.addon;
+            addon.userDisabled = true;
+            addon.userDisabled = false;
         });
     },
 
