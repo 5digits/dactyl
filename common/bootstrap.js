@@ -45,6 +45,7 @@ function writeFile(file, buf) {
 let initialized = false;
 let addon = null;
 let basePath = null;
+let categories = [];
 let components = {};
 let resources = [];
 let getURI = null;
@@ -70,7 +71,7 @@ function startup(data, reason) {
             getURI = function getURI(path) {
                 let file = basePath.clone().QueryInterface(Ci.nsILocalFile);
                 file.appendRelativePath(path);
-                return (Services.io || services.io).newFileURI(file);
+                return Services.io.newFileURI(file);
             };
         else
             getURI = function getURI(path)
@@ -118,8 +119,6 @@ function init() {
             .replace(/^\s*|\s*$|#.*/g, "")
             .replace(/^\s*\n/gm, "");
 
-    function url(path) getURI(path).spec;
-
     let suffix = "-";
     let chars = "0123456789abcdefghijklmnopqrstuv";
     for (let n = Date.now(); n; n = Math.round(n / chars.length))
@@ -130,9 +129,10 @@ function init() {
         switch(fields[0]) {
         case "category":
             categoryManager.addCategoryEntry(fields[1], fields[2], fields[3], false, true);
+            categories.push([fields[1], fields[2]]);
             break;
         case "component":
-            components[fields[1]] = new FactoryProxy(url(fields[2]), fields[1]);
+            components[fields[1]] = new FactoryProxy(getURI(fields[2]).spec, fields[1]);
             break;
         case "contract":
             components[fields[2]].contractID = fields[1];
@@ -156,7 +156,6 @@ function init() {
         component.register();
 
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
-    require(global, "services");
     require(global, "overlay");
 }
 
@@ -164,12 +163,14 @@ function shutdown(data, reason) {
     dump("dactyl: bootstrap: shutdown " + reasonToString(reason) + "\n");
     if (reason != APP_SHUTDOWN) {
         if ([ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason) >= 0)
-            services.observer.notifyObservers(null, "dactyl-purge", null);
+            Services.obs.notifyObservers(null, "dactyl-purge", null);
 
-        services.observer.notifyObservers(null, "dactyl-cleanup", null);
-        services.observer.notifyObservers(null, "dactyl-cleanup-modules", null);
+        Services.obs.notifyObservers(null, "dactyl-cleanup", null);
+        Services.obs.notifyObservers(null, "dactyl-cleanup-modules", null);
 
         JSMLoader.purge();
+        for each (let [category, entry] in categories)
+            categoryManager.deleteCategoryEntry(category, entry, false);
         for each (let resource in resources)
             resourceProto.setSubstitution(resource, null);
     }
