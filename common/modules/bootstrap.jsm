@@ -8,9 +8,9 @@ let is_bootstrap = 1;
 
 try {
 
-if (!JSMLoader || JSMLoader.bump != 1)
+if (!JSMLoader || JSMLoader.bump != 2)
     var JSMLoader = {
-        bump: 1,
+        bump: 2,
         builtin: Components.utils.Sandbox(this),
         canonical: {},
         factories: [],
@@ -32,13 +32,15 @@ if (!JSMLoader || JSMLoader.bump != 1)
             let url = name;
             if (url.indexOf(":") === -1)
                 url = "resource://dactyl" + this.suffix + "/" + url;
+            let targetURL = this.getTarget(url);
 
-            if (name in this.stale) {
-                let stale = this.stale[name];
+            let stale = this.stale[name] || this.stale[targetURL];
+            if (stale) {
                 delete this.stale[name];
+                delete this.stale[targetURL];
 
                 let global = this.globals[name];
-                if (stale === this.getTarget(url))
+                if (stale === targetURL)
                     this.loadSubScript(url, global.global || global);
             }
 
@@ -65,7 +67,9 @@ if (!JSMLoader || JSMLoader.bump != 1)
         },
         purge: function purge() {
             for (let [url, global] in Iterator(this.globals)) {
-                this.stale[url] = this.getTarget(url);
+                let target = this.getTarget(url);
+                this.stale[url] = target;
+                this.stale[target] = target;
 
                 for each (let prop in Object.getOwnPropertyNames(global))
                     try {

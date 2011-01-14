@@ -9,8 +9,9 @@
 try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
+    let frag=1;
 defineModule("util", {
-    exports: ["FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
+    exports: ["frag", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
     use: ["config", "highlight", "storage", "template"]
 }, this);
