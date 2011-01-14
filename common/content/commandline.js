@@ -143,7 +143,7 @@ var CommandWidgets = Class("CommandWidgets", {
                     return this.statusbar;
 
                 let statusElem = this.statusbar.message;
-                if (value && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
+                if (value && statusElem.editor && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
                     return this.commandbar;
                 return this.activeGroup.mode;
             }
