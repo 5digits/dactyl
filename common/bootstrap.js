@@ -63,7 +63,7 @@ function startup(data, reason) {
         AddonManager.getAddonByID(addon.id, function (a) { addon = a; });
 
         // Temporary hack.
-        if (basePath.isDirectory() && JSMLoader.bump == null)
+        if (basePath.isDirectory() && global.JSMLoader && JSMLoader.bump == null)
             JSMLoader.bump = 2;
 
         if (basePath.isDirectory())
@@ -100,8 +100,6 @@ FactoryProxy.prototype = {
         dump("dactyl: bootstrap: create module: " + this.contractID + "\n");
 
         Object.defineProperty(this, "module", { value: {}, enumerable: true });
-        dump("get module " + this.url + "\n");
-        dump("           " + (JSMLoader.stale[this.url]) + "\n");
         JSMLoader.load(this.url, this.module);
         return this.module;
     },

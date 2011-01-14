@@ -303,7 +303,7 @@ AboutHandler.prototype = {
 
     newChannel: function (uri) {
         let channel = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
-                          .newChannel("resource://dactyl-content/about.xul", null, null);
+                          .newChannel("dactyl://content/about.xul", null, null);
         channel.originalURI = uri;
         return channel;
     },

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<?xml-stylesheet href="chrome://pentadactyl/skin/about.css" type="text/css"?>
-<!DOCTYPE overlay SYSTEM "chrome://dactyl/content/dactyl.dtd">
+<?xml-stylesheet href="resource://dactyl-local-skin/about.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "dactyl://content/dtd">
 
 <page id="about-&dactyl.name;" orient="vertical" title="About &dactyl.appName;"
       xmlns="&xmlns.xul;" xmlns:html="&xmlns.html;">
