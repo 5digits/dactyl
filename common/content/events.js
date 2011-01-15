@@ -335,6 +335,9 @@ var Events = Module("events", {
      */
     create: function (doc, type, opts) {
         var DEFAULTS = {
+            HTML: {
+                type: type, bubbles: true, cancelable: false
+            },
             Key: {
                 type: type,
                 bubbles: true, cancelable: true,
@@ -355,14 +358,15 @@ var Events = Module("events", {
             }
         };
         const TYPES = {
+            change: "",
             click: "Mouse", mousedown: "Mouse", mouseup: "Mouse",
             mouseover: "Mouse", mouseout: "Mouse",
             keypress: "Key", keyup: "Key", keydown: "Key"
         };
         var t = TYPES[type];
-        var evt = doc.createEvent(t + "Events");
+        var evt = doc.createEvent((t || "HTML") + "Events");
         evt["init" + t + "Event"].apply(evt,
-                [v for ([k, v] in Iterator(util.extend(DEFAULTS[t], opts)))]);
+                [v for ([k, v] in Iterator(util.extend(DEFAULTS[t || "HTML"], opts)))]);
         return evt;
     },
 

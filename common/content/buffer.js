@@ -1197,6 +1197,7 @@ var Buffer = Module("buffer", {
             dactyl.assert(file.exists());
 
             elem.value = file.path;
+            events.dispatch(elem, events.create(elem.ownerDocument, "change", {}));
         }, {
             completer: function (context) completion.file(context),
             default: elem.value
