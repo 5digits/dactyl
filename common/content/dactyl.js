@@ -249,7 +249,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             transferable.addDataFlavor("text/unicode");
 
             let source = clipboard[getClipboard || !clipboard.supportsSelectionClipboard() ?
-                                   "kSelectionClipboard" : "kGlobalClipboard"];
+                                   "kGlobalClipboard" : "kSelectionClipboard"];
             clipboard.getData(transferable, source);
 
             let str = {}, len = {};
