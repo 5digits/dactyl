@@ -28,6 +28,7 @@
 
 /* Applied only to completion buffer and MOW */
 @-moz-document
+    url-prefix(dactyl:),
     url-prefix(resource://dactyl) {
 
 *:-moz-loading, *:-moz-broken { display: none !important; }
@@ -75,6 +76,7 @@
 }
 
 @-moz-document
+    url-prefix(dactyl:),
     url-prefix(resource://dactyl) {
 
 *:-moz-any-link:hover {
@@ -84,8 +86,9 @@
 
 /* Applied to completion buffer, MOW, browser window */
 @-moz-document
-    url-prefix(chrome://),
-    url-prefix(resource://) {
+    url-prefix(chrome:),
+    url-prefix(dactyl:),
+    url-prefix(resource:) {
 
 #TabsToolbar .tab-icon-image, .tab-throbber { -moz-box-ordinal-group: 10; }
 [dactyl|highlight~=tab-number]              { -moz-box-ordinal-group: 20; }
