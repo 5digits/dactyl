@@ -242,31 +242,25 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @returns {string}
      */
     clipboardRead: function clipboardRead(getClipboard) {
-        let str = null;
-
         try {
             const clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
             const transferable = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
 
             transferable.addDataFlavor("text/unicode");
 
-            if (!getClipboard && clipboard.supportsSelectionClipboard())
-                clipboard.getData(transferable, clipboard.kSelectionClipboard);
-            else
-                clipboard.getData(transferable, clipboard.kGlobalClipboard);
+            let source = clipboard[getClipboard || !clipboard.supportsSelectionClipboard() ?
+                                   "kSelectionClipboard" : "kGlobalClipboard"];
+            clipboard.getData(transferable, source);
 
-            let data = {};
-            let dataLen = {};
+            let str = {}, len = {};
+            transferable.getTransferData("text/unicode", str, len);
 
-            transferable.getTransferData("text/unicode", data, dataLen);
-
-            if (data) {
-                data = data.value.QueryInterface(Ci.nsISupportsString);
-                str = data.data.substring(0, dataLen.value / 2);
-            }
+            if (str)
+                return str.value.QueryInterface(Ci.nsISupportsString)
+                          .data.substr(0, len.value / 2);
         }
         catch (e) {}
-        return str;
+        return null;
     },
 
     /**
@@ -1369,7 +1363,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     }
                     if (config.tabbrowser.tabContainer._positionPinnedTabs)
                         config.tabbrowser.tabContainer._positionPinnedTabs();
-                }
+                },
+                validator: function (opts) dactyl.has("Gecko2") ||
+                    Option.validIf(!/[nN]/.test(opts), "Tab numbering not available in this " + config.host + " version")
+
             }
         ].filter(function (group) !group.feature || dactyl.has(group.feature));
 
