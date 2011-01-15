@@ -31,7 +31,7 @@ var AutoCommands = Module("autocommands", {
      */
     add: function (events, regexp, cmd) {
         events.forEach(function (event) {
-            this._store.push(AutoCommand(event, Option.parse.regexplist(regexp), cmd));
+            this._store.push(AutoCommand(event, Option.parse.regexplist(regexp.source || regexp), cmd));
         }, this);
     },
 

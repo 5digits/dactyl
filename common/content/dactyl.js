@@ -1181,8 +1181,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     reportError: function reportError(error, echo) {
         if (error instanceof FailedAssertion || error.message === "Interrupted") {
+            let prefix = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
             if (error.message)
-                dactyl.echoerr(template.linkifyHelp(error.message));
+                dactyl.echoerr(template.linkifyHelp(prefix + error.message));
             else
                 dactyl.beep();
             return;

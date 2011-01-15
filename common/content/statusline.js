@@ -309,7 +309,7 @@ var StatusLine = Module("statusline", {
         if (percent == 100)
             this.widgets.zoomlevel.value = "";
         else {
-            percent = ("  " + percent).substr(-3);
+            percent = ("  " + Math.round(percent)).substr(-3);
             if (full)
                 this.widgets.zoomlevel.value = " [" + percent + "%]";
             else

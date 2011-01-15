@@ -31,17 +31,6 @@ function httpGet(url) {
     return xmlhttp;
 }
 
-function writeFile(file, buf) {
-    let fstream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
-    let stream = Cc["@mozilla.org/intl/converter-output-stream;1"].createInstance(Ci.nsIConverterOutputStream);
-
-    fstream.init(file, 0x02 | 0x08 | 0x20, parseInt("0644", 8), 0);
-    stream.init(fstream, "UTF-8", 0, "?");
-    stream.writeString(buf);
-    stream.close();
-    fstream.close();
-}
-
 let initialized = false;
 let addon = null;
 let basePath = null;
