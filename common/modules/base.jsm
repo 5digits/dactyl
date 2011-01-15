@@ -173,7 +173,7 @@ function require(obj, name, from) {
         JSMLoader.load(name + ".jsm", obj);
     }
     catch (e) {
-        defineModule.dump("loading " + String.quote("resource://dactyl/" + name + ".jsm") + "\n");
+        defineModule.dump("loading " + String.quote(name + ".jsm") + "\n");
         if (loaded.util)
             util.reportError(e);
         else

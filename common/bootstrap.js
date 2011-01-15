@@ -134,12 +134,12 @@ function init() {
         }
     }
 
-    if (typeof JSMLoader === "undefined")
+    dump("JSMLoader " + (typeof JSMLoader !== "undefined" && JSMLoader.bump) + "\n");
+    if (typeof JSMLoader === "undefined" || JSMLoader.bump != 2)
         Cu.import("resource://dactyl/bootstrap.jsm", global);
 
-    if (suffix)
-        JSMLoader.suffix = suffix;
-    JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
+    JSMLoader.init(suffix);
+    JSMLoader.load("base.jsm", global);
 
     for each (let component in components)
         component.register();

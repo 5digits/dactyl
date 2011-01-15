@@ -4,7 +4,10 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-let is_bootstrap = 1;
+dump(" ======================= bootstrap.jsm " + (typeof JSMLoader) + " ======================= \n");
+
+var EXPORTED_SYMBOLS = ["JSMLoader"];
+let global = this;
 
 try {
 
@@ -20,6 +23,18 @@ if (!JSMLoader || JSMLoader.bump != 2)
         manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
         stale: {},
         suffix: "",
+        init: function init(suffix) {
+            this.suffix = suffix || "";
+
+            Components.classes["@mozilla.org/fuel/application;1"]
+                      .getService(Components.interfaces.fuelIApplication)
+                      .storage.set("dactyl.JSMLoader", this);
+
+            let base = JSMLoader.load("base.jsm", global);
+            global.EXPORTED_SYMBOLS = base.EXPORTED_SYMBOLS;
+            global.JSMLoader = this;
+            base.JSMLoader = this;
+        },
         getTarget: function getTarget(url) {
             if (url.indexOf(":") === -1)
                 url = "resource://dactyl" + this.suffix + "/" + url;
@@ -46,13 +61,6 @@ if (!JSMLoader || JSMLoader.bump != 2)
 
             try {
                 let global = Components.utils.import(url, target);
-
-                if (name == "base.jsm" && target.is_bootstrap) {
-                    target.EXPORTED_SYMBOLS = global.EXPORTED_SYMBOLS;
-                    global.JSMLoader = this;
-                    target.JSMLoader = this;
-                }
-
                 return this.globals[name] = global;
             }
             catch (e) {
@@ -93,12 +101,6 @@ if (!JSMLoader || JSMLoader.bump != 2)
             this.factories.push(factory);
         }
     };
-
-Components.classes["@mozilla.org/fuel/application;1"]
-          .getService(Components.interfaces.fuelIApplication)
-          .storage.set("dactyl.JSMLoader", JSMLoader);
-
-JSMLoader.load("base.jsm", this);
 
 }catch(e){ dump(e + "\n" + (e.stack || Error().stack)); Components.utils.reportError(e) }
 
