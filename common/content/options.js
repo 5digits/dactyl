@@ -673,11 +673,13 @@ var Options = Module("options", {
         memoize(this._optionMap, name, function () Option(names, description, type, defaultValue, extraInfo));
         for (let alias in values(names.slice(1)))
             memoize(this._optionMap, alias, closure);
+
         if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
             if (dactyl.initialized)
                 closure().initValue();
             else
                 memoize(this.needInit, this.needInit.length, closure);
+
         this._floptions = (this._floptions || []).concat(name);
         memoize(this._options, this._options.length, closure);
 

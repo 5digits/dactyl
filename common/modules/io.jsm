@@ -332,6 +332,9 @@ var IO = Module("io", {
     },
 
     pathSearch: function (bin) {
+        if (bin instanceof File || File.isAbsolutePath(bin))
+            return this.File(bin);
+
         let dirs = services.environment.get("PATH").split(util.OS.isWindows ? ";" : ":");
         // Windows tries the CWD first TODO: desirable?
         if (util.OS.isWindows)
@@ -368,12 +371,7 @@ var IO = Module("io", {
     run: function (program, args, blocking) {
         args = args || [];
 
-        let file;
-
-        if (program instanceof File || File.isAbsolutePath(program))
-            file = this.File(program, true);
-        else
-            file = this.pathSearch(program);
+        let file = this.pathSearch(program);
 
         if (!file || !file.exists()) {
             util.dactyl.echoerr("Command not found: " + program);
@@ -425,8 +423,9 @@ var IO = Module("io", {
             else if (input)
                 stdin.write(input);
 
-            let shell = File(storage["options"].get("shell").value);
+            let shell = io.pathSearch(storage["options"].get("shell").value);
             let shcf = storage["options"].get("shellcmdflag").value;
+            util.assert(shell, "Invalid 'shell'");
 
             if (isArray(command))
                 command = command.map(escape).join(" ");
@@ -1009,7 +1008,8 @@ unlet s:cpo_save
 
         options.add(["shell", "sh"],
             "Shell to use for executing external commands with :! and :run",
-            "string", shell);
+            "string", shell,
+            { validator: function (val) io.pathSearch(val) });
 
         options.add(["shellcmdflag", "shcf"],
             "Flag passed to shell when executing external commands with :! and :run",
