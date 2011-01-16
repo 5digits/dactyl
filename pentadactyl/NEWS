@@ -42,7 +42,9 @@
       - Added g; continued extended hint mode, which allows
         selecting multiple hints. Removed ;F.
       - Hints are now updated after scrolling and window resizing.
-      - Added ;S mode for creating search keywords.
+      - ;s now prompts for a filename on the command-line rather
+        than in a dialog.
+      - Added ;a and ;S modes for creating bookmarks and search keywords.
       - Added 'hintkeys' option.
       - Added "transliterated" option to 'hintmatching'.
     * JavaScript completion improvements, including:

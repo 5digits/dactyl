@@ -776,7 +776,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         /** @property {boolean} True if the OS is some other *nix variant. */
         get isUnix() !this.isWindows && !this.isMacOSX,
         /** @property {RegExp} A RegExp which matches illegal characters in path components. */
-        get illegalCharacters() this.isWindows ? /[<>:"/\\|?*\x00-\x1f]/ : /\//
+        get illegalCharacters() this.isWindows ? /[<>:"/\\|?*\x00-\x1f]/g : /\//g
     }),
 
     /**

@@ -50,8 +50,7 @@ var Hints = Module("hints", {
         this._hintModes = {};
         this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
         this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
-        this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, true));
-        this.addMode("a", "Save hint with prompt",                function (elem) buffer.saveLink(elem, false));
+        this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, false));
         this.addMode("f", "Focus frame",                          function (elem) dactyl.focus(elem.ownerDocument.defaultView));
         this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, null, isScrollable);
         this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
@@ -61,6 +60,7 @@ var Hints = Module("hints", {
         this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
         this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
         this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
+        this.addMode("a", "Add a bookmark",                       function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
         this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
@@ -1157,7 +1157,7 @@ var Hints = Module("hints", {
         options.add(["extendedhinttags", "eht"],
             "XPath strings of hintable elements for extended hint modes",
             "regexpmap", "[iI]:" + xpath(["img"]) +
-                        ",[OTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
+                        ",[asOTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
                         ",[F]:" + xpath(["body", "code", "div", "html", "p", "pre", "span"]) +
                         ",[S]:" + xpath(["input[not(@type='hidden')]", "textarea", "button", "select"]),
             { validator: Option.validateXPath });

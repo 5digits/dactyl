@@ -96,7 +96,6 @@
             <li tag=";;"><em>;</em> to focus a link</li>
             <li tag=";?"><em>?</em> to show information about the element (incomplete)</li>
             <li tag=";s"><em>s</em> to save its destination</li>
-            <li tag=";a"><em>a</em> to save its destination (prompting for save location)</li>
             <li tag=";f"><em>f</em> to focus a frame</li>
             <li tag=";F"><em>F</em> to focus a frame or pseudo-frame</li>
             <li tag=";o"><em>o</em> to open its location in the current tab</li>
@@ -106,6 +105,7 @@
             <li tag=";O"><em>O</em> to generate an <ex>:open</ex> prompt with hint’s URL</li>
             <li tag=";T"><em>T</em> to generate a <ex>:tabopen</ex> prompt with hint’s URL (like <k>;O</k>)</li>
             <li tag=";W"><em>W</em> to generate a <ex>:winopen</ex> prompt with hint’s URL (like <k>;T</k>)</li>
+            <li tag=";a"><em>a</em> to add a bookmark</li>
             <li tag=";S"><em>S</em> to add a search keyword for the hint’s form</li>
             <li tag=";v"><em>v</em> to view its destination source</li>
             <li tag=";V"><em>V</em> to view its destination source in the external editor</li>

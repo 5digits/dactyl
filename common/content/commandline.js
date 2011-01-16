@@ -461,14 +461,14 @@ var CommandLine = Module("commandline", {
             let callback = self._input.cancel;
             self._input = {};
             if (callback)
-                callback.call(self, value != null ? value : commandline.command);
+                dactyl.trapErrors(callback, self, value != null ? value : commandline.command);
         }
 
         function closePrompt(value) {
             let callback = self._input.submit;
             self._input = {};
             if (callback)
-                callback.call(self, value != null ? value : commandline.command);
+                dactyl.trapErrors(callback, self, value != null ? value : commandline.command);
         }
     },
 
@@ -540,7 +540,12 @@ var CommandLine = Module("commandline", {
 
     triggerCallback: function (type, mode) {
         if (this._callbacks[type] && this._callbacks[type][mode])
-            this._callbacks[type][mode].apply(this, Array.slice(arguments, 2));
+            try {
+                this._callbacks[type][mode].apply(this, Array.slice(arguments, 2));
+            }
+            catch (e) {
+                dactyl.reportError(e, true);
+            }
     },
 
     runSilently: function (func, self) {
@@ -588,6 +593,7 @@ var CommandLine = Module("commandline", {
         this.widgets.message = null;
 
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
+            autocomplete: cmd.length,
             onEvent: this.closure.onEvent,
             history: (extendedMode || {}).params.history,
             leave: function (params) {
@@ -605,18 +611,19 @@ var CommandLine = Module("commandline", {
         this.widgets.command = cmd || "";
 
         this.enter();
-
-        // open the completion list automatically if wanted
-        if (cmd.length) {
-            commandline.triggerCallback("change", this.currentExtendedMode, cmd);
-            this._autocompleteTimer.flush();
-        }
     },
 
     enter: function enter() {
-        if (modes.getStack(0).params.history)
-            this._history = CommandLine.History(this.widgets.active.command.inputField, modes.getStack(0).params.history);
+        let params = modes.getStack(0).params;
+
+        if (params.history)
+            this._history = CommandLine.History(this.widgets.active.command.inputField, params.history);
         this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
+
+        if (params.autocomplete) {
+            commandline.triggerCallback("change", this.currentExtendedMode, commandline.command);
+            this._autocompleteTimer.flush();
+        }
     },
 
     /**

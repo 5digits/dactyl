@@ -104,7 +104,11 @@ var Bookmarks = Module("bookmarks", {
      * @param {Element} elem A form element for which to add a keyword.
      */
     addSearchKeyword: function (elem) {
-        let [url, post, charset] = util.parseForm(elem);
+        if (elem instanceof HTMLFormElement || elem.form)
+            var [url, post, charset] = util.parseForm(elem);
+        else
+            var [url, post, charset] = [elem.href || elem.src, null, elem.ownerDocument.characterSet];
+
         let options = { "-title": "Search " + elem.ownerDocument.title };
         if (post != null)
             options["-post"] = post;

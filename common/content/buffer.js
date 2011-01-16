@@ -162,12 +162,38 @@ var Buffer = Module("buffer", {
     destroy: function () {
     },
 
-    getDefaultNames: function getDefaultNames(doc) {
-        let ext = services.mime.getPrimaryExtension(doc.contentType, doc.location.href.replace(/.*\./, ""));
-        return [[doc.title, "Page Name"], [doc.location.pathname.replace(/.*\//, ""), "File Name"]]
-            .filter(function ([leaf, title]) leaf)
-            .map(function ([leaf, title]) [leaf.replace(util.OS.illegalCharacters, encodeURIComponent)
-                                               .replace(RegExp("(\\." + ext + ")?$"), "." + ext), title]);
+    getDefaultNames: function getDefaultNames(node) {
+        let url = node.href || node.src || node.documentURI;
+        let currExt = url.replace(/.*(?:\.([a-z0-9]+))?$/, "$1").toLowerCase();
+
+        if (isinstance(node, [Document, HTMLImageElement])) {
+            let type = node.contentType || node.QueryInterface(Ci.nsIImageLoadingContent)
+                                               .getRequest(0).mimeType;
+
+            var ext = "." + services.mime.getPrimaryExtension(type, currExt);
+        }
+        else if (currExt)
+            ext = "." + currExt;
+        else
+            ext = "";
+        let re = ext ? RegExp("(\\." + currExt + ")?$") : /$/;
+        util.dump(ext.quote(),
+                  isinstance(node, [Document, HTMLImageElement]),
+                  node.contentType);
+
+        var names = [];
+        if (node.title)
+            names.push([node.title, "Page Name"]);
+        if (node.alt)
+            names.push([node.alt, "Alternate Text"]);
+        if (!isinstance(node, Document) && node.textContent)
+            names.push([node.textContent, "Link Text"]);
+
+        names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
+
+        return names.filter(function ([leaf, title]) leaf)
+                    .map(function ([leaf, title]) [leaf.replace(util.OS.illegalCharacters, encodeURIComponent)
+                                                       .replace(re, ext), title]);
     },
 
     _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc, uri) {
@@ -740,15 +766,35 @@ var Buffer = Module("buffer", {
      *     dialog.
      */
     saveLink: function (elem, skipPrompt) {
-        let doc  = elem.ownerDocument;
-        let url  = window.makeURLAbsolute(elem.baseURI, elem.href);
-        let text = elem.textContent;
+        let doc      = elem.ownerDocument;
+        let uri      = util.newURI(elem.href || elem.src, null, util.newURI(elem.baseURI));
+        let referrer = util.newURI(doc.documentURI, doc.characterSet);
 
         try {
-            window.urlSecurityCheck(url, doc.nodePrincipal);
-            // we always want to save that link relative to the current working directory
-            prefs.set("browser.download.lastDir", io.cwd);
-            window.saveURL(url, text, null, true, skipPrompt, makeURI(url, doc.characterSet));
+            window.urlSecurityCheck(uri.spec, doc.nodePrincipal);
+
+            commandline.input("Save link: ", function (path) {
+                let file = io.File(path);
+                if (file.exists() && file.isDirectory())
+                    file.append(buffer.getDefaultNames(elem)[0][0]);
+
+                try {
+                    if (!file.exists())
+                        file.create(File.NORMAL_FILE_TYPE, octal(644));
+                }
+                catch (e) {
+                    util.assert(false, "Invalid destination: " + e.name);
+                }
+
+                var persist = services.Persist();
+                persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
+                                     | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+                persist.saveURI(uri, null, null, null, null, file);
+            }, {
+                autocomplete: true,
+                completer: function (context) completion.savePage(context, elem),
+                history: "file"
+            });
         }
         catch (e) {
             dactyl.echoerr(e);
@@ -1365,11 +1411,7 @@ var Buffer = Module("buffer", {
                     if (/^>>/.test(context.filter))
                         context.advance(/^>>\s*/.exec(context.filter)[0].length);
 
-                    context.fork("generated", context.filter.replace(/[^/]*$/, "").length,
-                                 this, function (context) {
-                        context.completions = buffer.getDefaultNames(content.document);
-                    });
-                    return context.fork("files", 0, completion, "file");
+                    return completion.savePage(context, content.document);
                 },
                 literal: 0
             });
@@ -1474,6 +1516,14 @@ var Buffer = Module("buffer", {
                             };
                         });
                 }, vals);
+        };
+
+        completion.savePage = function savePage(context, node) {
+            context.fork("generated", context.filter.replace(/[^/]*$/, "").length,
+                         this, function (context) {
+                context.completions = buffer.getDefaultNames(node);
+            });
+            return context.fork("files", 0, completion, "file");
         };
     },
     events: function () {
