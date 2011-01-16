@@ -120,7 +120,7 @@ var StatusLine = Module("statusline", {
      * respectively.
      *
      * @param {string} url The URL to display.
-     * @default buffer.URL
+     * @default buffer.uri
      */
     updateUrl: function updateUrl(url) {
         // ripped from Firefox; modified
@@ -155,7 +155,7 @@ var StatusLine = Module("statusline", {
 
         // TODO: this probably needs a more general solution.
         if (url == null)
-            url = buffer.URL.spec;
+            url = buffer.uri.spec;
 
         // when session information is available, add [+] when we can go
         // backwards, [-] when we can go forwards
@@ -168,7 +168,7 @@ var StatusLine = Module("statusline", {
                 modified += "-";
         }
         if (modules.bookmarks) {
-            if (bookmarks.isBookmarked(buffer.URL))
+            if (bookmarks.isBookmarked(buffer.uri))
                 modified += UTF8("❤");
                 //modified += UTF8("♥");
         }

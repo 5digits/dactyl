@@ -4,7 +4,6 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-var myObject = Object;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("storage", {
     exports: ["File", "storage"],
@@ -12,6 +11,7 @@ defineModule("storage", {
 }, this);
 
 var win32 = /^win(32|nt)$/i.test(services.runtime.OS);
+var myObject = JSON.parse("{}").constructor;
 
 function loadData(name, store, type) {
     try {
@@ -55,7 +55,7 @@ var StoreBase = Class("StoreBase", {
         this.fireEvent("change", null);
     },
 
-    remove: function remove() {
+    delete: function delete() {
         delete storage.keys[this.name];
         delete storage[this.name];
         storage.infoPath.child(this.name).remove(false);

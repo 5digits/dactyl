@@ -387,15 +387,24 @@ var Buffer = Module("buffer", {
     set lastInputField(value) { this.localStore.lastInputField = value && Cu.getWeakReference(value); },
 
     /**
-     * @property {string} The current top-level document's URL.
+     * @property {nsIURI} The current top-level document's URI.
      */
-    get URL() util.newURI(content.location.href),
-
+    get uri() util.newURI(content.location.href),
     /**
-     * @property {string} The current top-level document's URL, sans any
+     * @property {nsIURI} The current top-level document's URI, sans any
      *     fragment identifier.
      */
-    get URI() let (doc = content.document) doc.documentURIObject || util.newURI(doc.documentURI),
+    get documentURI() let (doc = content.document) doc.documentURIObject || util.newURI(doc.documentURI),
+
+    /**
+     * @property {string} The current top-level document's URL.
+     */
+    get URL() {
+        let str = String(content.location.href);
+        for (let [k, v] in Iterator(util.newURI(content.location.href)))
+            str[k] = v;
+        return str;
+    },
 
     /**
      * @property {number} The buffer's height in pixels.

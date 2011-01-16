@@ -1,3 +1,1 @@
-- buffer.URL and buffer.URI are now instances of nsIURI rather than strings.
-  The former string representation may be obtained via the spec property.
-  See https://developer.mozilla.org/en/nsIURI for more details.
+

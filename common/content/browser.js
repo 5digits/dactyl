@@ -14,18 +14,18 @@
 var Browser = Module("browser", {
 }, {
     climbUrlPath: function (count) {
-        let url = buffer.URI.clone();
+        let url = buffer.documentURI.clone();
         dactyl.assert(url instanceof Ci.nsIURL);
 
         while (count-- && url.path != "/")
             url.path = url.path.replace(/[^\/]+\/*$/, "");
 
-        dactyl.assert(!url.equals(buffer.URI));
+        dactyl.assert(!url.equals(buffer.documentURI));
         dactyl.open(url.spec);
     },
 
     incrementURL: function (count) {
-        let matches = buffer.URL.spec.match(/(.*?)(\d+)(\D*)$/);
+        let matches = buffer.uri.spec.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
         let oldNum = matches[2];
 
@@ -66,7 +66,7 @@ var Browser = Module("browser", {
     mappings: function () {
         mappings.add([modes.NORMAL],
             ["y"], "Yank current location to the clipboard",
-            function () { dactyl.clipboardWrite(buffer.URL.spec, true); });
+            function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
 
         // opening websites
         mappings.add([modes.NORMAL],
@@ -75,7 +75,7 @@ var Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["O"],
             "Open one or more URLs, based on current location",
-            function () { commandline.open(":", "open " + buffer.URL.spec, modes.EX); });
+            function () { commandline.open(":", "open " + buffer.uri.spec, modes.EX); });
 
         mappings.add([modes.NORMAL], ["t"],
             "Open one or more URLs in a new tab",
@@ -83,7 +83,7 @@ var Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["T"],
             "Open one or more URLs in a new tab, based on current location",
-            function () { commandline.open(":", "tabopen " + buffer.URL.spec, modes.EX); });
+            function () { commandline.open(":", "tabopen " + buffer.uri.spec, modes.EX); });
 
         mappings.add([modes.NORMAL], ["w"],
             "Open one or more URLs in a new window",
@@ -91,7 +91,7 @@ var Browser = Module("browser", {
 
         mappings.add([modes.NORMAL], ["W"],
             "Open one or more URLs in a new window, based on current location",
-            function () { commandline.open(":", "winopen " + buffer.URL.spec, modes.EX); });
+            function () { commandline.open(":", "winopen " + buffer.uri.spec, modes.EX); });
 
         mappings.add([modes.NORMAL],
             ["<C-a>"], "Increment last number in URL",

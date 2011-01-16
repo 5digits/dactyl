@@ -310,16 +310,16 @@ var CommandLine = Module("commandline", {
 
         this._callbacks = {};
 
-        this._store = storage.newMap("command-history", { store: true, privateData: true });
+        memoize(this, "_store", function () storage.newMap("command-history", { store: true, privateData: true }));
 
         for (let name in values(["command", "search"]))
             if (storage.exists("history-" + name)) {
                 let ary = storage.newArray("history-" + name, { store: true, privateData: true });
 
                 this._store.set(name, [v for ([k, v] in ary)]);
-                ary.remove();
+                ary.delete();
+                this._store.changed();
             }
-        this._store.changed();
 
         this._messageHistory = { //{{{
             _messages: [],

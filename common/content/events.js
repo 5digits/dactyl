@@ -1272,7 +1272,7 @@ var Events = Module("events", {
             "Pass certain keys through directly for the given URLs",
             "regexpmap", "", {
                 has: function (key) {
-                    let url = buffer.URI.spec;
+                    let url = buffer.documentURI.spec;
                     for (let re in values(this.value))
                         if (re.test(url) && re.result.some(function (k) k === key))
                             return true;

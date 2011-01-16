@@ -134,7 +134,7 @@ var Bookmarks = Module("bookmarks", {
         if (count > 0)
             dactyl.echomsg({ domains: [util.getHost(url)], message: "Removed bookmark: " + url });
         else {
-            let title = buffer.URL.spec == url && buffer.title || url;
+            let title = buffer.uri.spec == url && buffer.title || url;
             let extra = "";
             if (title != url)
                 extra = " (" + title + ")";
@@ -453,7 +453,7 @@ var Bookmarks = Module("bookmarks", {
                     post: args["-post"],
                     tags: args["-tags"] || [],
                     title: args["-title"] || (args.length === 0 ? buffer.title : null),
-                    url: args.length === 0 ? buffer.URL.spec : args[0]
+                    url: args.length === 0 ? buffer.uri.spec : args[0]
                 };
 
                 if (bookmarks.add(opts)) {
@@ -523,7 +523,7 @@ var Bookmarks = Module("bookmarks", {
                         });
                 else {
                     if (!(args.length || args["-tags"] || args["-keyword"] || args["-title"]))
-                        var deletedCount = bookmarks.remove(buffer.URL.spec);
+                        var deletedCount = bookmarks.remove(buffer.uri.spec);
                     else {
                         let context = CompletionContext(args.join(" "));
                         context.fork("bookmark", 0, completion, "bookmark",
@@ -555,7 +555,7 @@ var Bookmarks = Module("bookmarks", {
             function () {
                 let options = {};
 
-                let url = buffer.URL.spec;
+                let url = buffer.uri.spec;
                 let bmarks = bookmarks.get(url).filter(function (bmark) bmark.url == url);
 
                 if (bmarks.length == 1) {
@@ -572,20 +572,20 @@ var Bookmarks = Module("bookmarks", {
                         options["-tags"] = bmark.tags.join(", ");
                 }
                 else {
-                    if (buffer.title != buffer.URL.spec)
+                    if (buffer.title != buffer.uri.spec)
                         options["-title"] = buffer.title;
                     if (content.document.characterSet !== "UTF-8")
                         options["-charset"] = content.document.characterSet;
                 }
 
                 commandline.open(":",
-                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.URL.spec] }),
+                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.uri.spec] }),
                     modes.EX);
             });
 
         mappings.add(myModes, ["A"],
             "Toggle bookmarked state of current URL",
-            function () { bookmarks.toggle(buffer.URL.spec); });
+            function () { bookmarks.toggle(buffer.uri.spec); });
     },
     options: function () {
         options.add(["defsearch", "ds"],

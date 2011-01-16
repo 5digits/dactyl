@@ -144,7 +144,7 @@ var QuickMarks = Module("quickmarks", {
                 dactyl.assert(/^[a-zA-Z0-9]$/.test(args[0]),
                     "E191: Argument must be an ASCII letter or digit");
                 if (!args[1])
-                    quickmarks.add(args[0], buffer.URL.spec);
+                    quickmarks.add(args[0], buffer.uri.spec);
                 else
                     quickmarks.add(args[0], args[1]);
             },
@@ -198,7 +198,7 @@ var QuickMarks = Module("quickmarks", {
             ["M"], "Add new QuickMark for current URL",
             function ({ arg }) {
                 dactyl.assert(/^[a-zA-Z0-9]$/.test(arg), "E191: Argument must be an ASCII letter or digit");
-                quickmarks.add(arg, buffer.URL.spec);
+                quickmarks.add(arg, buffer.uri.spec);
             },
             { arg: true });
     }
