@@ -55,7 +55,15 @@ var StoreBase = Class("StoreBase", {
         this.fireEvent("change", null);
     },
 
+    remove: function remove() {
+        delete storage.keys[this.name];
+        delete storage[this.name];
+        storage.infoPath.child(this.name).remove(false);
+    },
+
     save: function () { saveData(this); },
+
+    __iterator__: function () Iterator(this._object)
 });
 
 var ArrayStore = Class("ArrayStore", StoreBase, {
@@ -99,9 +107,7 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
         this.fireEvent("change", null);
     },
 
-    get: function get(index) index >= 0 ? this._object[index] : this._object[this._object.length + index],
-
-    __iterator__: function () Iterator(this._object),
+    get: function get(index) index >= 0 ? this._object[index] : this._object[this._object.length + index]
 });
 
 var ObjectStore = Class("ObjectStore", StoreBase, {
@@ -135,9 +141,7 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
         else if (orig != val)
             this.fireEvent("change", key);
         return val;
-    },
-
-    __iterator__: function () Iterator(this._object),
+    }
 });
 
 var Storage = Module("Storage", {
@@ -158,6 +162,8 @@ var Storage = Module("Storage", {
         this.keys = {};
         this.observers = {};
     },
+
+    exists: function exists(name) this.infoPath.child(name).exists(),
 
     newObject: function newObject(key, constructor, params) {
         if (params == null || !isObject(params))

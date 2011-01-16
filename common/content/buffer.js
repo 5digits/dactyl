@@ -1200,7 +1200,8 @@ var Buffer = Module("buffer", {
             events.dispatch(elem, events.create(elem.ownerDocument, "change", {}));
         }, {
             completer: function (context) completion.file(context),
-            default: elem.value
+            default: elem.value,
+            history: "file"
         });
     }
 }, {

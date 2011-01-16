@@ -125,7 +125,7 @@ var Modes = Module("modes", {
             extended: true,
             description: "Ex command mode, active when the command line is open for Ex commands",
             input: true
-        });
+        }, { history: "command" });
         this.addMode("HINTS", {
             extended: true,
             description: "Active when selecting elements in QuickHint or ExtendedHint mode",

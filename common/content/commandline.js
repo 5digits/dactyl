@@ -310,8 +310,16 @@ var CommandLine = Module("commandline", {
 
         this._callbacks = {};
 
-        storage.newArray("history-search", { store: true, privateData: true });
-        storage.newArray("history-command", { store: true, privateData: true });
+        this._store = storage.newMap("command-history", { store: true, privateData: true });
+
+        for (let name in values(["command", "search"]))
+            if (storage.exists("history-" + name)) {
+                let ary = storage.newArray("history-" + name, { store: true, privateData: true });
+
+                this._store.set(name, [v for ([k, v] in ary)]);
+                ary.remove();
+            }
+        this._store.changed();
 
         this._messageHistory = { //{{{
             _messages: [],
@@ -581,6 +589,7 @@ var CommandLine = Module("commandline", {
 
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
             onEvent: this.closure.onEvent,
+            history: (extendedMode || {}).params.history,
             leave: function (params) {
                 if (params.pop)
                     commandline.leave();
@@ -595,19 +604,19 @@ var CommandLine = Module("commandline", {
         this.widgets.prompt = prompt;
         this.widgets.command = cmd || "";
 
-        let hist = // Hack:
-            extendedMode == modes.EX                                  ? "command" :
-            extendedMode & (modes.FIND_FORWARD | modes.FIND_BACKWARD) ? "search"  : null;
-
-        if (hist)
-            this._history = CommandLine.History(this.widgets.active.command.inputField, hist);
-        this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
+        this.enter();
 
         // open the completion list automatically if wanted
         if (cmd.length) {
             commandline.triggerCallback("change", this.currentExtendedMode, cmd);
             this._autocompleteTimer.flush();
         }
+    },
+
+    enter: function enter() {
+        if (modes.getStack(0).params.history)
+            this._history = CommandLine.History(this.widgets.active.command.inputField, modes.getStack(0).params.history);
+        this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
     },
 
     /**
@@ -873,7 +882,7 @@ var CommandLine = Module("commandline", {
         this.widgets.command = extra.default || "";
         this.widgets.active.commandline.collapsed = false;
 
-        this._completions = CommandLine.Completions(this.widgets.active.command.inputField);
+        this.enter();
     },
 
     readHeredoc: function (end) {
@@ -1202,9 +1211,10 @@ var CommandLine = Module("commandline", {
         init: function (inputField, mode) {
             this.mode = mode;
             this.input = inputField;
-            this.store = storage["history-" + mode];
             this.reset();
         },
+        get store() commandline._store.get(this.mode, []),
+        set store(ary) { commandline._store.set(this.mode, ary); },
         /**
          * Reset the history index to the first entry.
          */
@@ -1221,14 +1231,14 @@ var CommandLine = Module("commandline", {
             let str = this.input.value;
             if (/^\s*$/.test(str))
                 return;
-            this.store.mutate("filter", function (line) (line.value || line) != str);
+            this.store = this.store.filter(function (line) (line.value || line) != str);
             try {
                 this.store.push({ value: str, timestamp: Date.now()*1000, privateData: this.checkPrivate(str) });
             }
             catch (e) {
                 dactyl.reportError(e);
             }
-            this.store.truncate(options["history"], true);
+            this.store = this.store.slice(-options["history"]);
         },
         /**
          * @property {function} Returns whether a data item should be
@@ -1286,7 +1296,7 @@ var CommandLine = Module("commandline", {
                     break;
                 }
 
-                let hist = this.store.get(this.index);
+                let hist = this.store[this.index];
                 // user pressed DOWN when there is no newer history item
                 if (!hist)
                     hist = this.original;
@@ -1813,17 +1823,24 @@ var CommandLine = Module("commandline", {
             description: "Command-line and search history",
             persistent: true,
             action: function (timespan, host) {
-                if (!host)
-                    storage["history-search"].mutate("filter", function (item) !timespan.contains(item.timestamp));
-                storage["history-command"].mutate("filter", function (item)
-                    !(timespan.contains(item.timestamp) && (!host || commands.hasDomain(item.value, host))));
+                let store = commandline._store;
+                for (let [k, v] in store) {
+                    if (k == "command")
+                        store.set(k, v.filter(function (item)
+                            !(timespan.contains(item.timestamp) && (!host || commands.hasDomain(item.value, host)))));
+                    else if (!host)
+                        store.set(k, v.filter(function (item) !timespan.contains(item.timestamp)));
+                }
             }
         });
         // Delete history-like items from the commandline and messages on history purge
         sanitizer.addItem("history", {
             action: function (timespan, host) {
-                storage["history-command"].mutate("filter", function (item)
-                    !(timespan.contains(item.timestamp) && (host ? commands.hasDomain(item.value, host) : item.privateData)));
+                commandline._store.set("command",
+                    commandline._store.get("command", []).filter(function (item)
+                        !(timespan.contains(item.timestamp) && (host ? commands.hasDomain(item.value, host)
+                                                                     : item.privateData))));
+
                 commandline._messageHistory.filter(function (item) !timespan.contains(item.timestamp * 1000) ||
                     !item.domains && !item.privateData ||
                     host && (!item.domains || !item.domains.some(function (d) util.isSubdomain(d, host))));
