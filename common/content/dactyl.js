@@ -364,7 +364,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             if (io.sourcing && io.sourcing.file[0] !== "[")
                 ({ file: fileName, line: lineNumber }) = io.sourcing;
             else try {
-                util.dump("what the fuck?");
                 if (!context)
                     context = userContext;
 
