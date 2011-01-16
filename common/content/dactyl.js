@@ -13,7 +13,8 @@ XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
 var plugins = { __proto__: modules };
-var userContext = newContext(modules);
+var userContext = { __proto__: modules };
+var _userContext = newContext(userContext);
 
 var EVAL_ERROR = "__dactyl_eval_error";
 var EVAL_RESULT = "__dactyl_eval_result";
@@ -360,13 +361,35 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     userEval: function (str, context, fileName, lineNumber) {
         if (fileName == null)
-            if (io.sourcing)
+            if (io.sourcing && io.sourcing.file[0] !== "[")
                 ({ file: fileName, line: lineNumber }) = io.sourcing;
-            else if (String.indexOf(commandline.command, str) > -1)
-                [fileName, lineNumber] = ["[Command Line]", 1];
+            else try {
+                util.dump("what the fuck?");
+                if (!context)
+                    context = userContext;
+
+                context[EVAL_ERROR] = null;
+                context[EVAL_STRING] = str;
+                context[EVAL_RESULT] = null;
+                this.loadScript("resource://dactyl-content/eval.js", context);
+                if (context[EVAL_ERROR]) {
+                    try {
+                        context[EVAL_ERROR].fileName = io.sourcing.file;
+                        context[EVAL_ERROR].lineNumber += io.sourcing.line;
+                    }
+                    catch (e) {}
+                    throw context[EVAL_ERROR];
+                }
+                return context[EVAL_RESULT];
+            }
+            finally {
+                delete context[EVAL_ERROR];
+                delete context[EVAL_RESULT];
+                delete context[EVAL_STRING];
+            }
 
         if (!context)
-            context = userContext;
+            context = _userContext;
         if (window.isPrototypeOf(modules))
             return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
         return Cu.evalInSandbox("with (window) { with (modules) { this.eval(" + str.quote() + ") } }", context, "1.8", fileName, lineNumber);
