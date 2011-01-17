@@ -976,7 +976,7 @@ var Buffer = Module("buffer", {
 
         let option = sections || options["pageinfo"];
         let list = template.map(option, function (option) {
-            let opt = this.pageInfo[option];
+            let opt = buffer.pageInfo[option];
             return opt ? template.table(opt[1], opt[0](true)) : undefined;
         }, <br/>);
         dactyl.echo(list, commandline.FORCE_MULTILINE);
