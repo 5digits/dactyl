@@ -133,6 +133,12 @@ var Download = Class("Download", {
 
     updateStatus: function updateStatus() {
 
+        if (this.alive)
+            this.nodes.row.setAttribute("active", "true");
+        else
+            this.nodes.row.removeAttribute("active");
+
+        this.nodes.row.setAttribute("status", this.status);
         this.nodes.state.textContent = util.capitalize(this.status);
         for (let [command, enabled] in Iterator(this.allowed))
             this.nodes[command].collapsed = !enabled;

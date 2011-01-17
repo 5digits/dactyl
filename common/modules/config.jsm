@@ -36,8 +36,9 @@ var ConfigBase = Class("ConfigBase", {
                 }
             ]]>);
 
+        this.features.push = deprecated("set.add", function push(feature) set.add(this, feature));
         if (util.haveGecko("2b"))
-            this.features.push("Gecko2");
+            set.add(this.features, "Gecko2");
 
         this.timeout(function () {
             services["dactyl:"].pages.dtd = function () [null,
@@ -203,11 +204,11 @@ var ConfigBase = Class("ConfigBase", {
     }),
 
     /**
-     * @property {[["string", "string"]]} A sequence of names and descriptions
+     * @property {Object} A mapping of names and descriptions
      *     of the autocommands available in this application. Primarily used
      *     for completion results.
      */
-    autocommands: [],
+    autocommands: {},
 
     commandContainer: "browser-bottombox",
 
@@ -257,23 +258,22 @@ var ConfigBase = Class("ConfigBase", {
     cleanups: {},
 
     /**
-     * @property {[["string", "string", "function"]]} An array of
-     *    dialogs available via the :dialog command.
-     *  [0] name - The name of the dialog, used as the first
-     *             argument to :dialog.
-     *  [1] description - A description of the dialog, used in
+     * @property {Object} A map of dialogs available via the
+     *      :dialog command. Property names map dialog names to an array
+     *      as follows:
+     *  [0] description - A description of the dialog, used in
      *                    command completion results for :dialog.
-     *  [2] action - The function executed by :dialog.
+     *  [1] action - The function executed by :dialog.
      */
-    dialogs: [],
+    dialogs: {},
 
     /**
-     * @property {string[]} A list of features available in this
+     * @property {set} A list of features available in this
      *    application. Used extensively in feature test macros. Use
      *    dactyl.has(feature) to check for a feature's presence
      *    in this array.
      */
-    features: [],
+    features: {},
 
     /**
      * @property {string} The file extension used for command script files.
@@ -492,7 +492,7 @@ var ConfigBase = Class("ConfigBase", {
         HintActive;;*    background-color: #88FF00 !important; color: black !important;
         HintImage;;*     opacity: .5 !important;
 
-        Button                  display: inline-block; font-weight: bold; cursor: pointer;
+        Button                  display: inline-block; font-weight: bold; cursor: pointer; color: black;
         Button:hover            text-decoration: underline;
         Button[collapsed]       visibility: collapse; width: 0;
         Button::before          content: "["; color: gray; text-decoration: none !important;
@@ -504,6 +504,7 @@ var ConfigBase = Class("ConfigBase", {
         DownloadHead>*;;;DownloadCell   display: table-cell;
 
         Download                        display: table-row;
+        Download:not([active])          color: gray;
 
         DownloadCell                    display: table-cell; padding: 0 1ex;
         DownloadButtons;;;DownloadCell

@@ -508,7 +508,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} feature The feature name.
      * @returns {boolean}
      */
-    has: function (feature) config.features.indexOf(feature) >= 0,
+    has: function (feature) set.has(config.features, feature),
 
     /**
      * Returns the URL of the specified help *topic* if it exists.
