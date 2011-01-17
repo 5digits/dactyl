@@ -298,7 +298,7 @@ var Hints = Module("hints", {
             let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
             body.appendChild(fragment);
             util.computedStyle(fragment).height; // Force application of binding.
-            let container = doc.getAnonymousElementByAttribute(fragment, "anonid", "hints");
+            let container = doc.getAnonymousElementByAttribute(fragment, "anonid", "hints") || fragment;
 
             let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none"/>, doc);
 
