@@ -38,6 +38,7 @@ var Services = Module("Services", {
         this.add("downloadManager",     "@mozilla.org/download-manager;1",                  Ci.nsIDownloadManager);
         this.add("environment",         "@mozilla.org/process/environment;1",               Ci.nsIEnvironment);
         this.add("extensionManager",    "@mozilla.org/extensions/manager;1",                Ci.nsIExtensionManager);
+        this.add("externalProtocol",    "@mozilla.org/uriloader/external-protocol-service;1", Ci.nsIExternalProtocolService);
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           Ci.nsIFaviconService);
         this.add("focus",               "@mozilla.org/focus-manager;1",                     Ci.nsIFocusManager);
         this.add("fuel",                "@mozilla.org/fuel/application;1",                  Ci.extIApplication);

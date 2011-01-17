@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("downloads", {
     exports: ["Download", "Downloads", "downloads"],
-    use: ["io", "services", "template", "util"]
+    use: ["io", "prefs", "services", "template", "util"]
 }, this);
 
 Cu.import("resource://gre/modules/DownloadUtils.jsm", this);
@@ -19,17 +19,19 @@ var states = iter([v, k.slice(prefix.length).toLowerCase()]
                 .toObject();
 
 var Download = Class("Download", {
-    init: function init(id, document) {
+    init: function init(id, list) {
         let self = XPCSafeJSObjectWrapper(services.downloadManager.getDownload(id));
         self.__proto__ = this;
         this.instance = this;
+        this.list = list;
 
         this.nodes = {};
         util.xmlToDom(
             <li highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
                 <span highlight="DownloadTitle">
                     <span highlight="Link">
-                        <a key="title" href={self.target.spec} path={self.targetFile.path}>{self.displayName}</a>
+                        <a key="launch" dactyl:command="download.command"
+                           href={self.target.spec} path={self.targetFile.path}>{self.displayName}</a>
                         <span highlight="LinkInfo">{self.targetFile.path}</span>
                     </span>
                 </span>
@@ -50,7 +52,7 @@ var Download = Class("Download", {
                 <span highlight="DownloadTime" key="time"/>
                 <a highlight="DownloadSource" key="source" href={self.source.spec}>{self.source.spec}</a>
             </li>,
-            document, this.nodes);
+            this.list.document, this.nodes);
 
         for (let [key, node] in Iterator(this.nodes)) {
             node.dactylDownload = self;
@@ -81,6 +83,7 @@ var Download = Class("Download", {
     allowed: Class.memoize(function () let (self = this) ({
         get cancel() self.cancelable && self.inState(["downloading", "paused", "starting"]),
         get delete() !this.cancel && self.targetFile.exists(),
+        get launch() self.targetFile.exists() && self.inState(["finished"]),
         get pause() self.inState(["downloading"]),
         get remove() self.inState(["blocked_parental", "blocked_policy",
                                    "canceled", "dirty", "failed", "finished"]),
@@ -102,6 +105,31 @@ var Download = Class("Download", {
         delete: function delete() {
             this.targetFile.remove(false);
             this.updateStatus();
+        },
+        launch: function launch() {
+            let self = this;
+            // Behavior mimics that of the builtin Download Manager.
+            function action() {
+                try {
+                    if (this.MIMEInfo && this.MIMEInfo.preferredAction == this.MIMEInfo.useHelperApp)
+                        this.MIMEInfo.launchWithFile(file)
+                    else
+                        file.launch();
+                }
+                catch (e) {
+                    services.externalProtocol.loadUrl(this.target);
+                }
+            }
+
+            let file = io.File(this.targetFile);
+            if (file.isExecutable() && prefs.get("browser.download.manager.alertOnEXEOpen", true))
+                this.list.modules.commandline.input("This will launch an executable download. Continue? (yes/[no]) ",
+                    function (resp) {
+                        if (resp && resp.match(/^y(es)?$/i))
+                            action.call(self);
+                    });
+            else
+                action.call(this);
         }
     },
 
@@ -181,7 +209,7 @@ var DownloadList = Class("DownloadList",
 
     addDownload: function addDownload(id) {
         if (!(id in this.downloads)) {
-            this.downloads[id] = Download(id, this.document);
+            this.downloads[id] = Download(id, this);
 
             let index = values(this.downloads).sort(function (a, b) a.compare(b))
                                               .indexOf(this.downloads[id]);
