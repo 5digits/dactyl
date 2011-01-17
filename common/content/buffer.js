@@ -174,15 +174,14 @@ var Buffer = Module("buffer", {
         else
             ext = "";
         let re = ext ? RegExp("(\\." + currExt + ")?$") : /$/;
-        util.dump(ext.quote(),
-                  isinstance(node, [Document, HTMLImageElement]),
-                  node.contentType);
 
         var names = [];
         if (node.title)
             names.push([node.title, "Page Name"]);
+
         if (node.alt)
             names.push([node.alt, "Alternate Text"]);
+
         if (!isinstance(node, Document) && node.textContent)
             names.push([node.textContent, "Link Text"]);
 
