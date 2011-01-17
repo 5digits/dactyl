@@ -19,7 +19,6 @@ table.pentadactyl {
     border-width: 1px;
     border-style: dotted;
     border-color: gray;
-    /*margin-bottom: 2em; /* FIXME: just a quick hack until we have proper pages */
 }
 table.pentadactyl td {
     border: none;
