@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
+
+<!DOCTYPE document SYSTEM "dactyl://content/dtd">
+
+<document
+    name="faq"
+    title="&dactyl.appName; FAQ"
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
+
+            <h1 style="margin-top: 0;">Frequently Asked Questions</h1>
+            <p>
+                Below is a list of some of the commonest questions that come to
+                our attention, along with their hopefully satisfactory answers.
+                Please take a minute to search for your answers here before
+                asking the <link topic="&dactyl.list.href;">mailing list</link> or
+                <link topic="&dactyl.irc;">irc channel</link>,
+                and don't forget to peruse the
+                <link topic="&dactyl.hg.latest;&dactyl.name;/NEWS">NEWS file</link> for recent
+                changes that might throw you off balance.
+            </p>
+
+            <toc start="2"/>
+
+            <h2 tag="faq-general">General</h2>
+            <h3 tag="faq-fork">Why did Pentadactyl split from Vimperator?</h3>
+            <p>
+                The reasons for the fork were mostly political, but mostly
+                boil down to the fact that the current maintainer, while
+                making no substantial contributions to the project for several
+                years, continues to exercise full editorial control while
+                actively soliciting donations with no transparency whatever.
+                We considered the latter especially a slight on both our
+                developers and our users, and after a considerable escalation
+                of the degree of offense felt compelled to leave the project.
+            </p>
+            <p>
+                However, though we could no longer justify supporting the
+                Vimperator project, we've invested considerable time and
+                energy into the code over these past several years and still
+                use and care about it. For that reason, we've decided to
+                publicly release our personal changes and continue to develop
+                the extension under a different name.
+            </p>
+
+            <h3 tag="faq-differences">What differentiates Pentadactyl from Vimperator?</h3>
+            <p>
+                The main difference is that Vimperator's most active
+                developers have moved on to Pentadactyl. More qualitative
+                changes may be found in the
+                <link topic="&dactyl.hg.latest;&dactyl.name;/NEWS">change log</link>,
+                but essentially add up to what we consider more active and
+                thoughtful development. Among the most visible differences, as
+                of Pentadactyl 1.0, are more extensive Firefox 4 support,
+                significantly better startup time and completion performance,
+                considerably better :sanitize and private mode support, a
+                greatly improved incremental find implementation, major
+                improvements in Ex command parsing (including the ability to
+                separate commands with | and split long commands across lines),
+                conditionals (<ex>:if</ex>/<ex>:else</ex>) in configuration
+                files, greatly updated documentation, and a number of bug fixes.
+            </p>
+
+            <h3 tag="faq-statussymbols">What do the "[-+♥]" symbols in the status bar mean?</h3>
+            <p>
+                These indicate that you can move backward through history,
+                that you can move forward through history, and that the page
+                is bookmarked, respectively. See also <ex>:help</ex>
+                <t>status-line</t>.
+            </p>
+
+            <h3 tag="faq-lasttab">How can I prevent <k>d</k> on the last tab from closing the window?</h3>
+            <p><ex>:set!</ex> <hl key="HelpOpt">browser.tabs.closeWindowWithLastTab</hl>=<hl key="Boolean">false</hl></p>
+
+            <h3 tag="faq-regexpsearch">How can I use regular expressions in the page search?</h3>
+            <p>
+                Regular expression search is possible with the <tt>/Find Bar/</tt>
+                extension installed, in which case it can be toggled with the
+                <em>\r</em> and <em>\R</em> search flags. See also
+                <ex>:help</ex> <t>pattern</t>.
+            </p>
+
+            <h3 tag="faq-autocomplete">How can I prevent the command line completion list showing until I press <k name="Tab"/>?</h3>
+            <p>
+                You can disable it entirely with <ex>:set autocomplete=</ex>
+                or for specific types of command completion by
+                choosing more restrictive values. See <ex>:help</ex>
+                <o>autocomplete</o> and <o>wildmode</o>.
+            </p>
+
+            <h3 tag="faq-editor-fork">Why doesn't external input field editing work with my <o>editor</o> setting?</h3>
+            <p>
+                Unfortunately, external editors which return immediately,
+                before editing is complete, are not supported. This means that
+                gvim, for instance, must be run with the <em>-f</em> flag, and
+                editors run from a terminal must not connect to a remote
+                process. In the case of Rxvt-unicode, this means that the
+                urxvtc program is not an option, and Gnome Terminal is very
+                likely not useable under any circumstances.
+            </p>
+            <note>
+                If you are using a version of Firefox newer than 4.0
+                beta 7 and a version of Pentadactyl less than 1.0
+                βeta 4, you'll need to upgrade the latter.
+            </note>
+
+            <h3 tag="faq-symlinks">Why can't I build/install from the Mercurial repository on Windows®?</h3>
+            <p>
+                We use symbolic links in our repository to deal with certain
+                files which are common across projects. Mercurial for
+                Windows®, unfortunately, doesn't deal with these very well.
+                However, adding the following lines to the <tt>.hg\hgrc</tt>
+                file in your repository should make things work:
+            </p>
+            <code><hl key="Key">[hooks]</hl>
+update = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</str>
+preupdate = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</str>
+commit = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</str>
+precommit = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</str></code>
+
+            <h2 tag="faq-open"><ex>:open</ex> behavior</h2>
+            <h3 tag="faq-urlsep">Why can't I separate URLs in <ex>:open</ex> with a comma anymore?</h3>
+            <p>See <ex>:help <o>urlseparator</o></ex></p>
+
+            <h3 tag="faq-hidden-engines">
+                <strut/>
+                <ex>:open <a>search-string</a></ex> or <ex>:open <str delim="">google</str> <a>search-string</a></ex>
+                results in <str>The url is not valid and cannot be loaded</str>
+            </h3>
+            <p>
+                You need a valid search engine name in the <o>defsearch</o>
+                option. If it's stopped working suddenly, there's a good chance
+                that you've either deleted a search engine or changed its alias.
+                You can check by invoking
+
+                <code><ex>:dialog <str delim="">searchengines</str></ex></code>
+
+                There also appears to be a Firefox bug whereby the default
+                engines are hidden after an update. This can be remedied by
+                invoking
+
+                <code style="position: relative"><ex>:js</ex> services.get(<str>browserSearch</str>).getEngines().forEach(<em>function</em> (e) e.hidden = <hl key="Boolean">false</hl>)</code>
+            </p>
+
+            <h2 tag="faq-keys">Key bindings</h2>
+            <h3 tag="faq-website-keys">How can I use the native key bindings of sites like Gmail?</h3>
+            <p>
+                See the <o>passkeys</o> option to automatically pass specific
+                keys on sites of your choosing, or <t>autocmd-examples</t> to
+                automatically enter <em>PASS THROUGH</em> mode for certain websites.
+            </p>
+
+            <h3 tag="faq-passkeys-autocmd">Why doesn't my modes.passAllKeys autocmd work anymore?</h3>
+            <p>See <t>faq-website-keys</t> above.</p>
+
+            <h2 tag="faq-hints">Hints</h2>
+            <h3 tag="faq-hintkeys">How can I use keys other than numbers for hinting?</h3>
+            <p>Use the <o>hintkeys</o> option.</p>
+
+            <h3 tag="faq-hintkeys-uppercase">How can I display my hints in upper case but type them in lower case?</h3>
+            <p>
+                If you use alphabetic characters for your <o>hintkeys</o> and
+                would like to be able to type them in lower case but still have
+                the hints displayed in upper case, use:
+            </p>
+            <code><ex>:highlight</ex> <em>-a</em> Hint <hl key="Key">text-transform</hl>: <str delim="">uppercase</str>;</code>
+
+            <h3 tag="faq-hint-hidetext">How can I hide the hint text for input and image hints?</h3>
+            <p>
+                If you'd only like to show the numbered portion of hints, you
+                can do so with:
+            </p>
+            <code><ex>:highlight</ex> Hint<str delim="">::after</str> <hl key="Key">content</hl>: attr(<str delim="">number</str>) <hl key="Key">!important</hl>;</code>
+
+</document>
+
+<!-- vim:se sts=4 sw=4 et: -->

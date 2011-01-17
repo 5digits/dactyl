@@ -34,6 +34,7 @@
 <include href="developer" tag="developer.xml"/>
 <include href="various" tag="various.xml"/>
 <include href="plugins" tag="plugins.xml"/>
+<include href="faq" tag="faq.xml"/>
 <include href="index" tag="index.xml"/>
 
 </document>

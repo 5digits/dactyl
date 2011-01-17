@@ -128,6 +128,8 @@ var ConfigBase = Class("ConfigBase", {
     get faq() this.home + this.name + "/faq",
     "list.mailto": Class.memoize(function () config.name + "@googlegroups.com"),
     "list.href": Class.memoize(function () "http://groups.google.com/group/" + config.name),
+    "hg.latest": Class.memoize(function () config.code + "source/browse/"), // XXX
+    "irc": "irc://irc.oftc.net/#pentadactyl",
 
     dtdExtra: {
         "xmlns.dactyl": "http://vimperator.org/namespaces/liberator",
@@ -144,16 +146,18 @@ var ConfigBase = Class("ConfigBase", {
         "code",
         "faq",
         "fileExt",
+        "hg.latest",
         "home",
         "host",
         "hostbin",
         "idName",
+        "irc",
         "issues",
         "list.href",
         "list.mailto",
         "name",
         "plugins",
-        "version",
+        "version"
     ],
 
     styleHelp: function styleHelp() {

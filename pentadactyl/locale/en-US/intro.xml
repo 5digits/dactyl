@@ -107,6 +107,10 @@
         Documentation for any plugins you have installed.
     </li>
     <li>
+        <link topic="faq">FAQ</link>:
+        Frequently asked questions.
+    </li>
+    <li>
         <link topic="index">Index</link>:
         An index of all commands and options.
     </li>
