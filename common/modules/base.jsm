@@ -737,9 +737,9 @@ Class.memoize = function memoize(getter)
         configurable: true,
         enumerable: true,
         init: function (key) {
-            this.get = function replace() (
-                Class.replaceProperty(this, key, null),
-                Class.replaceProperty(this, key, getter.call(this, key)))
+            this.get = function replace() let (obj = this.instance || this) (
+                Class.replaceProperty(obj, key, null),
+                Class.replaceProperty(obj, key, getter.call(this, key)))
         }
     });
 
@@ -1195,6 +1195,9 @@ update(iter, {
                 return elem;
         return undefined;
     },
+
+    sort: function sort(iter, fn, self)
+        array(this.toArray(iter).sort(fn, self)),
 
     uniq: function uniq(iter) {
         let seen = {};

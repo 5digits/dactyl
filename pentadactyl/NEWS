@@ -64,6 +64,8 @@
         consistent interactive help facility (improvements include
         listing keys for modes other than Normal, filtering the output
         and linking to source locations).
+      - :downloads now opens a download list in the multi-line output
+        buffer.
       - Added :cookies command.
       * :extadd now supports remote URLs as well as local files on Firefox 4.
       * Added :if/:elseif/:else/:endif conditionals.

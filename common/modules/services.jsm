@@ -79,6 +79,7 @@ var Services = Module("Services", {
                       [Ci.nsIChannel, Ci.nsIInputStreamChannel, Ci.nsIRequest], "setURI");
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString, "data");
         this.addClass("StringStream", "@mozilla.org/io/string-input-stream;1",     Ci.nsIStringInputStream, "data");
+        this.addClass("Transfer",     "@mozilla.org/transfer;1",                   Ci.nsITransfer, "init");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");
         this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1",Ci.nsIAsyncStreamCopier, "init");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);

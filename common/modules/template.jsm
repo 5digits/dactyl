@@ -331,11 +331,11 @@ var Template = Module("Template", {
                 this.map(iter, function (item)
                 <tr>
                     <td style="padding-right: 2em;">
-                        <span highlight="Usage">{
+                        <span highlight="Usage Link">{
                             let (name = item.name || item.names[0], frame = item.definedAt)
                                 !frame ? name :
                                     template.helpLink(help(item), name, "Title") +
-                                    <span highlight="LineInfo" xmlns:dactyl={NS}>Defined at {sourceLink(frame)}</span>
+                                    <span highlight="LinkInfo" xmlns:dactyl={NS}>Defined at {sourceLink(frame)}</span>
                         }</span>
                     </td>
                     <td>{desc(item)}</td>

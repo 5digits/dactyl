@@ -133,7 +133,7 @@ var Browser = Module("browser", {
     },
 
     commands: function () {
-        commands.add(["downl[oads]", "dl"],
+        commands.add(["old-downl[oads]", "old-dl"],
             "Show progress of current downloads",
             function () {
                 dactyl.open("chrome://mozapps/content/downloads/downloads.xul",

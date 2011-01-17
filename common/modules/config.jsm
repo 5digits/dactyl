@@ -426,9 +426,16 @@ var ConfigBase = Class("ConfigBase", {
         Keyword     color: red;
         Tag         color: blue;
 
-        Usage                       position: relative; padding-right: 2em;
-        Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
-        Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
+        Link                        position: relative; padding-right: 2em;
+        Link:not(:hover)>LinkInfo   opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
+        LinkInfo                    {
+            position: absolute;
+            left: 100%;
+            padding: 1ex;
+            margin: -1ex -1em;
+            background: rgba(255, 255, 255, .8);
+            border-radius: 1ex;
+        }
 
         StatusLine;;;FontFixed  {
             -moz-appearance: none !important;
@@ -489,6 +496,30 @@ var ConfigBase = Class("ConfigBase", {
         HintElem;;*      background-color: yellow  !important; color: black !important;
         HintActive;;*    background-color: #88FF00 !important; color: black !important;
         HintImage;;*     opacity: .5 !important;
+
+        Button                  display: inline-block; font-weight: bold; cursor: pointer;
+        Button:hover            text-decoration: underline;
+        Button[collapsed]       visibility: collapse; width: 0;
+        Button::before          content: "["; color: gray; text-decoration: none !important;
+        Button::after           content: "]"; color: gray; text-decoration: none !important;
+        Button:not([collapsed]) ~ Button:not([collapsed])::before  content: "/[";
+
+        Downloads                       display: table; margin: 0; padding: 0;
+        DownloadHead;;;CompTitle        display: table-row;
+        DownloadHead>*;;;DownloadCell   display: table-cell;
+
+        Download                        display: table-row;
+
+        DownloadCell                    display: table-cell; padding: 0 1ex;
+        DownloadButtons;;;DownloadCell
+        DownloadPercent;;;DownloadCell
+        DownloadProgress;;;DownloadCell
+        DownloadProgressHave
+        DownloadProgressTotal
+        DownloadSource;;;DownloadCell,URL
+        DownloadState;;;DownloadCell
+        DownloadTime;;;DownloadCell
+        DownloadTitle;;;DownloadCell,URL
 
         // </css>
     ]]></>, /&#x0d;/g, "\n")),

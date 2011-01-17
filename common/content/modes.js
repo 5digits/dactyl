@@ -175,6 +175,9 @@ var Modes = Module("modes", {
             }
         });
     },
+    cleanup: function () {
+        modes.reset();
+    },
 
     _getModeMessage: function () {
         // when recording a macro

@@ -149,6 +149,7 @@ var Overlay = Module("Overlay", {
                     ["base",
                      "completion",
                      "config",
+                     "downloads",
                      "javascript",
                      "overlay",
                      "prefs",

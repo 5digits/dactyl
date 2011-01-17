@@ -786,6 +786,10 @@ var Buffer = Module("buffer", {
                 var persist = services.Persist();
                 persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
                                      | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+
+                persist.progressListener = new window.DownloadListener(window,
+                        services.Transfer(uri, services.io.newFileURI(file), "",
+                                          null, null, null, persist));
                 persist.saveURI(uri, null, null, null, null, file);
             }, {
                 autocomplete: true,

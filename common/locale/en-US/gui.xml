@@ -70,9 +70,8 @@
     <spec>:downl<oa>oads</oa></spec>
     <description>
         <p>
-            Show progress of current downloads. Open the standard &dactyl.host;
-            download dialog in a new tab. Here, downloads can be paused,
-            resumed, and canceled.
+            Show progress of current downloads. Here, downloads can
+            be paused, resumed, and canceled.
         </p>
     </description>
 </item>
