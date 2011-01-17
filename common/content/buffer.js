@@ -159,9 +159,6 @@ var Buffer = Module("buffer", {
         this.cleanupProgressListener();
     },
 
-    destroy: function () {
-    },
-
     getDefaultNames: function getDefaultNames(node) {
         let url = node.href || node.src || node.documentURI;
         let currExt = url.replace(/.*(?:\.([a-z0-9]+))?$/, "$1").toLowerCase();
