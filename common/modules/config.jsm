@@ -41,9 +41,11 @@ var ConfigBase = Class("ConfigBase", {
 
         this.timeout(function () {
             services["dactyl:"].pages.dtd = function () [null,
-                iter(config.dtdExtra, (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
-                    .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
-                    .join("\n")]
+                iter(config.dtdExtra,
+                     (["dactyl." + k, v] for ([k, v] in iter(config.dtd))),
+                     (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
+                  .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
+                  .join("\n")]
         });
     },
 
@@ -119,17 +121,20 @@ var ConfigBase = Class("ConfigBase", {
         return version;
     }),
 
-    // TODO: DTD properties. Cleanup.
-    get home() "http://dactyl.sourceforge.net/",
-    get apphome() this.home + this.name,
-    code: "http://code.google.com/p/dactyl/",
-    get issues() this.home + "bug/" + this.name,
-    get plugins() "http://dactyl.sf.net/" + this.name + "/plugins",
-    get faq() this.home + this.name + "/faq",
-    "list.mailto": Class.memoize(function () config.name + "@googlegroups.com"),
-    "list.href": Class.memoize(function () "http://groups.google.com/group/" + config.name),
-    "hg.latest": Class.memoize(function () config.code + "source/browse/"), // XXX
-    "irc": "irc://irc.oftc.net/#pentadactyl",
+    dtd: memoize({
+        get home() "http://dactyl.sourceforge.net/",
+        get apphome() this.home + this.name,
+        code: "http://code.google.com/p/dactyl/",
+        get issues() this.home + "bug/" + this.name,
+        get plugins() "http://dactyl.sf.net/" + this.name + "/plugins",
+        get faq() this.home + this.name + "/faq",
+
+        "list.mailto": Class.memoize(function () config.name + "@googlegroups.com"),
+        "list.href": Class.memoize(function () "http://groups.google.com/group/" + config.name),
+
+        "hg.latest": Class.memoize(function () this.code + "source/browse/"), // XXX
+        "irc": "irc://irc.oftc.net/#pentadactyl",
+    }),
 
     dtdExtra: {
         "xmlns.dactyl": "http://vimperator.org/namespaces/liberator",
@@ -142,21 +147,11 @@ var ConfigBase = Class("ConfigBase", {
 
     dtdStrings: [
         "appName",
-        "apphome",
-        "code",
-        "faq",
         "fileExt",
-        "hg.latest",
-        "home",
         "host",
         "hostbin",
         "idName",
-        "irc",
-        "issues",
-        "list.href",
-        "list.mailto",
         "name",
-        "plugins",
         "version"
     ],
 
