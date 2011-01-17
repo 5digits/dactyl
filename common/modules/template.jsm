@@ -262,12 +262,13 @@ var Template = Module("Template", {
 
     sourceLink: function (frame) {
         let url = (frame.filename || "unknown").replace(/.* -> /, "");
+        let path = util.urlPath(url);
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         return <a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
-            href={url} line={frame.lineNumber}
+            href={url} path={path} line={frame.lineNumber}
             highlight="URL">{
-            util.urlPath(url) + ":" + frame.lineNumber
+            path + ":" + frame.lineNumber
         }</a>
     },
 
@@ -331,11 +332,11 @@ var Template = Module("Template", {
                 this.map(iter, function (item)
                 <tr>
                     <td style="padding-right: 2em;">
-                        <span highlight="Usage">{
+                        <span highlight="Usage Link">{
                             let (name = item.name || item.names[0], frame = item.definedAt)
                                 !frame ? name :
                                     template.helpLink(help(item), name, "Title") +
-                                    <span highlight="LineInfo" xmlns:dactyl={NS}>Defined at {sourceLink(frame)}</span>
+                                    <span highlight="LinkInfo" xmlns:dactyl={NS}>Defined at {sourceLink(frame)}</span>
                         }</span>
                     </td>
                     <td>{desc(item)}</td>

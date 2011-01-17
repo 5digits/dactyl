@@ -79,6 +79,7 @@ var Services = Module("Services", {
                       [Ci.nsIChannel, Ci.nsIInputStreamChannel, Ci.nsIRequest], "setURI");
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString, "data");
         this.addClass("StringStream", "@mozilla.org/io/string-input-stream;1",     Ci.nsIStringInputStream, "data");
+        this.addClass("Transfer",     "@mozilla.org/transfer;1",                   Ci.nsITransfer, "init");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");
         this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1",Ci.nsIAsyncStreamCopier, "init");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
@@ -113,10 +114,11 @@ var Services = Module("Services", {
                     }
 
                     ["aboutURL", "creator", "description", "developers",
-                     "homepageURL", "iconURL", "installDate",
-                     "optionsURL", "releaseNotesURI", "updateDate", "version"].forEach(function (item) {
-                        addon[item] = getRdfProperty(addon, item);
+                     "homepageURL", "installDate", "optionsURL",
+                     "releaseNotesURI", "updateDate"].forEach(function (item) {
+                        memoize(addon, item, function (item) getRdfProperty(this, item));
                     });
+
                     update(addon, {
 
                         appDisabled: false,
@@ -147,7 +149,7 @@ var Services = Module("Services", {
                         for (let [, item] in Iterator(services.extensionManager
                                     .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
                             res.push(this.getAddonByID(item));
-                    callback(res);
+                    return (callback || util.identity)(res);
                 },
                 getInstallForFile: function (file, callback, mimetype) {
                     callback({
@@ -206,14 +208,7 @@ var Services = Module("Services", {
         const self = this;
         if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
-        this.__defineGetter__(name, function () {
-            let res = self._create(class_, ifaces, meth);
-            if (!res)
-                return null;
-
-            delete this[name];
-            return this[name] = res;
-        });
+        memoize(this, name, function () self._create(class_, ifaces, meth));
     },
 
     /**

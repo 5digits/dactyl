@@ -36,14 +36,17 @@ var ConfigBase = Class("ConfigBase", {
                 }
             ]]>);
 
+        this.features.push = deprecated("set.add", function push(feature) set.add(this, feature));
         if (util.haveGecko("2b"))
-            this.features.push("Gecko2");
+            set.add(this.features, "Gecko2");
 
         this.timeout(function () {
             services["dactyl:"].pages.dtd = function () [null,
-                iter(config.dtdExtra, (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
-                    .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
-                    .join("\n")]
+                iter(config.dtdExtra,
+                     (["dactyl." + k, v] for ([k, v] in iter(config.dtd))),
+                     (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
+                  .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
+                  .join("\n")]
         });
     },
 
@@ -119,17 +122,20 @@ var ConfigBase = Class("ConfigBase", {
         return version;
     }),
 
-    // TODO: DTD properties. Cleanup.
-    get home() "http://dactyl.sourceforge.net/",
-    get apphome() this.home + this.name,
-    code: "http://code.google.com/p/dactyl/",
-    get issues() this.home + "bug/" + this.name,
-    get plugins() "http://dactyl.sf.net/" + this.name + "/plugins",
-    get faq() this.home + this.name + "/faq",
-    "list.mailto": Class.memoize(function () config.name + "@googlegroups.com"),
-    "list.href": Class.memoize(function () "http://groups.google.com/group/" + config.name),
-    "hg.latest": Class.memoize(function () config.code + "source/browse/"), // XXX
-    "irc": "irc://irc.oftc.net/#pentadactyl",
+    dtd: memoize({
+        get home() "http://dactyl.sourceforge.net/",
+        get apphome() this.home + this.name,
+        code: "http://code.google.com/p/dactyl/",
+        get issues() this.home + "bug/" + this.name,
+        get plugins() "http://dactyl.sf.net/" + this.name + "/plugins",
+        get faq() this.home + this.name + "/faq",
+
+        "list.mailto": Class.memoize(function () config.name + "@googlegroups.com"),
+        "list.href": Class.memoize(function () "http://groups.google.com/group/" + config.name),
+
+        "hg.latest": Class.memoize(function () this.code + "source/browse/"), // XXX
+        "irc": "irc://irc.oftc.net/#pentadactyl",
+    }),
 
     dtdExtra: {
         "xmlns.dactyl": "http://vimperator.org/namespaces/liberator",
@@ -142,21 +148,11 @@ var ConfigBase = Class("ConfigBase", {
 
     dtdStrings: [
         "appName",
-        "apphome",
-        "code",
-        "faq",
         "fileExt",
-        "hg.latest",
-        "home",
         "host",
         "hostbin",
         "idName",
-        "irc",
-        "issues",
-        "list.href",
-        "list.mailto",
         "name",
-        "plugins",
         "version"
     ],
 
@@ -208,11 +204,11 @@ var ConfigBase = Class("ConfigBase", {
     }),
 
     /**
-     * @property {[["string", "string"]]} A sequence of names and descriptions
+     * @property {Object} A mapping of names and descriptions
      *     of the autocommands available in this application. Primarily used
      *     for completion results.
      */
-    autocommands: [],
+    autocommands: {},
 
     commandContainer: "browser-bottombox",
 
@@ -262,23 +258,22 @@ var ConfigBase = Class("ConfigBase", {
     cleanups: {},
 
     /**
-     * @property {[["string", "string", "function"]]} An array of
-     *    dialogs available via the :dialog command.
-     *  [0] name - The name of the dialog, used as the first
-     *             argument to :dialog.
-     *  [1] description - A description of the dialog, used in
+     * @property {Object} A map of dialogs available via the
+     *      :dialog command. Property names map dialog names to an array
+     *      as follows:
+     *  [0] description - A description of the dialog, used in
      *                    command completion results for :dialog.
-     *  [2] action - The function executed by :dialog.
+     *  [1] action - The function executed by :dialog.
      */
-    dialogs: [],
+    dialogs: {},
 
     /**
-     * @property {string[]} A list of features available in this
+     * @property {set} A list of features available in this
      *    application. Used extensively in feature test macros. Use
      *    dactyl.has(feature) to check for a feature's presence
      *    in this array.
      */
-    features: [],
+    features: {},
 
     /**
      * @property {string} The file extension used for command script files.
@@ -426,9 +421,16 @@ var ConfigBase = Class("ConfigBase", {
         Keyword     color: red;
         Tag         color: blue;
 
-        Usage                       position: relative; padding-right: 2em;
-        Usage>LineInfo              position: absolute; left: 100%; padding: 1ex; margin: -1ex -1em; background: rgba(255, 255, 255, .8); border-radius: 1ex;
-        Usage:not(:hover)>LineInfo  opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
+        Link                        position: relative; padding-right: 2em;
+        Link:not(:hover)>LinkInfo   opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
+        LinkInfo                    {
+            position: absolute;
+            left: 100%;
+            padding: 1ex;
+            margin: -1ex -1em;
+            background: rgba(255, 255, 255, .8);
+            border-radius: 1ex;
+        }
 
         StatusLine;;;FontFixed  {
             -moz-appearance: none !important;

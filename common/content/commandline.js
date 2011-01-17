@@ -21,6 +21,9 @@ var CommandWidgets = Class("CommandWidgets", {
                             <menuitem id="dactyl-context-copylink"
                                       label="Copy Link Location" dactyl:group="link"
                                       oncommand="goDoCommand('cmd_copyLink');"/>
+                            <menuitem id="dactyl-context-copypath"
+                                      label="Copy File Path" dactyl:group="link path"
+                                      oncommand="dactyl.clipboardWrite(document.popupNode.getAttribute('path'));"/>
                             <menuitem id="dactyl-context-copy"
                                       label="Copy" dactyl:group="selection"
                                       command="cmd_copy"/>
@@ -265,10 +268,12 @@ var CommandWidgets = Class("CommandWidgets", {
                 while (elem.contentDocument.documentURI != elem.getAttribute("src") ||
                        ["viewable", "complete"].indexOf(elem.contentDocument.readyState) < 0)
                     util.threadYield();
-                return elem;
+                res = res || (processor || util.identity).call(self, elem);
+                return res;
             }
         });
-        return Class.replaceProperty(this, name, (processor || util.identity).call(this, this[name]))
+        let res, self = this;
+        return Class.replaceProperty(this, name, this[name])
     },
 
     get completionList() this._whenReady("completionList", "dactyl-completions"),
@@ -748,8 +753,15 @@ var CommandLine = Module("commandline", {
         XML.ignoreWhitespace = false;
         XML.prettyPrinting = false;
         let style = typeof str === "string" ? "pre" : "nowrap";
-        this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{str}</div>;
-        let output = util.xmlToDom(this._lastMowOutput, doc);
+        if (callable(str)) {
+            this._lastMowOutput = null;
+            var output = util.xmlToDom(<div class="ex-command-output" style="white-space: nowrap" highlight={highlightGroup}/>, doc);
+            output.appendChild(str(doc));
+        }
+        else {
+            this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{str}</div>;
+            var output = util.xmlToDom(this._lastMowOutput, doc);
+        }
 
         // FIXME: need to make sure an open MOW is closed when commands
         //        that don't generate output are executed
@@ -824,7 +836,7 @@ var CommandLine = Module("commandline", {
         let single = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
         let action = this._echoLine;
 
-        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || typeof str == "xml") && !(flags & this.FORCE_SINGLELINE))
+        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || !isString(str)) && !(flags & this.FORCE_SINGLELINE))
             action = this._echoMultiline;
 
         if (single)
@@ -928,14 +940,21 @@ var CommandLine = Module("commandline", {
     },
 
     onContext: function onContext(event) {
-        let enabled = {
-            link: window.document.popupNode instanceof HTMLAnchorElement,
-            selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
-        };
+        try {
+            let enabled = {
+                link: window.document.popupNode instanceof HTMLAnchorElement,
+                path: window.document.popupNode.hasAttribute("path"),
+                selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
+            };
 
-        for (let [, node] in iter(event.target.childNodes)) {
-            let group = node.getAttributeNS(NS, "group");
-            node.hidden = group && !group.split(/\s+/).some(function (g) enabled[g]);
+            for (let node in array.iterValues(event.target.children)) {
+                let group = node.getAttributeNS(NS, "group");
+                util.dump(node, group, group && !group.split(/\s+/).every(function (g) enabled[g]));
+                node.hidden = group && !group.split(/\s+/).every(function (g) enabled[g]);
+            }
+        }
+        catch (e) {
+            util.reportError(e);
         }
         return true;
     },
@@ -1073,63 +1092,72 @@ var CommandLine = Module("commandline", {
     // FIXME: if 'more' is set and the MOW is not scrollable we should still
     // allow a down motion after an up rather than closing
     onMultilineOutputEvent: function onMultilineOutputEvent(event) {
-        const KILL = false, PASS = true;
+        try {
+            const KILL = false, PASS = true;
 
-        let win = this.widgets.multilineOutput.contentWindow;
-        let elem = win.document.documentElement;
+            let win = this.widgets.multilineOutput.contentWindow;
+            let elem = win.document.documentElement;
 
-        let key = events.toString(event);
+            let key = events.toString(event);
 
-        function openLink(where) {
-            event.preventDefault();
-            dactyl.open(event.target.href, where);
-        }
-
-        // TODO: Wouldn't multiple handlers be cleaner? --djk
-        if (event.type == "click" && event.target instanceof HTMLAnchorElement) {
-
-            let command = event.originalTarget.getAttributeNS(NS.uri, "command");
-            if (command && dactyl.commands[command]) {
+            const openLink = function openLink(where) {
                 event.preventDefault();
-                return dactyl.withSavedValues(["forceNewTab"], function () {
-                    dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
-                    return dactyl.commands[command](event);
-                });
+                dactyl.open(event.target.href, where);
             }
 
-            switch (key) {
-            case "<LeftMouse>":
-                event.preventDefault();
-                openLink(dactyl.CURRENT_TAB);
-                return KILL;
-            case "<MiddleMouse>":
-            case "<C-LeftMouse>":
-            case "<C-M-LeftMouse>":
-                openLink({ where: dactyl.NEW_TAB, background: true });
-                return KILL;
-            case "<S-MiddleMouse>":
-            case "<C-S-LeftMouse>":
-            case "<C-M-S-LeftMouse>":
-                openLink({ where: dactyl.NEW_TAB, background: false });
-                return KILL;
-            case "<S-LeftMouse>":
-                openLink(dactyl.NEW_WINDOW);
-                return KILL;
+            // TODO: Wouldn't multiple handlers be cleaner? --djk
+            if (event.type == "click" && (event.target instanceof HTMLAnchorElement ||
+                                          event.originalTarget.hasAttributeNS(NS, "command"))) {
+
+                let command = event.originalTarget.getAttributeNS(NS, "command");
+                if (command && event.button == 2)
+                    return PASS;
+
+                if (command && dactyl.commands[command]) {
+                    event.preventDefault();
+                    return dactyl.withSavedValues(["forceNewTab"], function () {
+                        dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
+                        return dactyl.commands[command](event);
+                    });
+                }
+
+                switch (key) {
+                case "<LeftMouse>":
+                    event.preventDefault();
+                    openLink(dactyl.CURRENT_TAB);
+                    return KILL;
+                case "<MiddleMouse>":
+                case "<C-LeftMouse>":
+                case "<C-M-LeftMouse>":
+                    openLink({ where: dactyl.NEW_TAB, background: true });
+                    return KILL;
+                case "<S-MiddleMouse>":
+                case "<C-S-LeftMouse>":
+                case "<C-M-S-LeftMouse>":
+                    openLink({ where: dactyl.NEW_TAB, background: false });
+                    return KILL;
+                case "<S-LeftMouse>":
+                    openLink(dactyl.NEW_WINDOW);
+                    return KILL;
+                }
+                return PASS;
             }
-            return PASS;
+
+            if (event instanceof MouseEvent)
+                return KILL;
+
+            const atEnd = function atEnd(dir) !Buffer.isScrollable(elem, dir || 1);
+
+            if (!options["more"] || atEnd(1)) {
+                modes.pop();
+                events.feedkeys(key);
+            }
+            else
+                commandline.updateMorePrompt(false, true);
         }
-
-        if (event instanceof MouseEvent)
-            return KILL;
-
-        function atEnd(dir) !Buffer.isScrollable(elem, dir || 1);
-
-        if (!options["more"] || atEnd(1)) {
-            modes.pop();
-            events.feedkeys(key);
+        catch (e) {
+            util.reportError(e);
         }
-        else
-            commandline.updateMorePrompt(false, true);
         return PASS;
     },
 

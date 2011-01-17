@@ -174,15 +174,14 @@ var Buffer = Module("buffer", {
         else
             ext = "";
         let re = ext ? RegExp("(\\." + currExt + ")?$") : /$/;
-        util.dump(ext.quote(),
-                  isinstance(node, [Document, HTMLImageElement]),
-                  node.contentType);
 
         var names = [];
         if (node.title)
             names.push([node.title, "Page Name"]);
+
         if (node.alt)
             names.push([node.alt, "Alternate Text"]);
+
         if (!isinstance(node, Document) && node.textContent)
             names.push([node.textContent, "Link Text"]);
 
@@ -786,6 +785,10 @@ var Buffer = Module("buffer", {
                 var persist = services.Persist();
                 persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
                                      | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+
+                persist.progressListener = new window.DownloadListener(window,
+                        services.Transfer(uri, services.io.newFileURI(file), "",
+                                          null, null, null, persist));
                 persist.saveURI(uri, null, null, null, null, file);
             }, {
                 autocomplete: true,

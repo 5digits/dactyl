@@ -92,7 +92,8 @@ var Highlights = Module("Highlight", {
 
     keys: function keys() Object.keys(this.highlight).sort(),
 
-    __iterator__: function () values(this.highlight),
+    __iterator__: function () values(this.highlight).sort(function (a, b) String.localeCompare(a.class, b.class))
+                                                    .iterValues(),
 
     _create: function (agent, args) {
         let obj = Highlight.apply(Highlight, args);
@@ -318,7 +319,7 @@ var Highlights = Module("Highlight", {
                 if (!modify)
                     modules.commandline.commandOutput(
                         template.tabular(["Key", "Sample", "Link", "CSS"],
-                            ["padding: 0 1em 0 0; vertical-align: top",
+                            ["padding: 0 1em 0 0; vertical-align: top; max-width: 16em; overflow: hidden;",
                              "text-align: center"],
                             ([h.class,
                               <span style={"text-align: center; line-height: 1em;" + h.value + style}>XXX</span>,

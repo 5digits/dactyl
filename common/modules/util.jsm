@@ -136,6 +136,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
+     * Capitalizes the first character of the given string.
+     * @param {string} str The string to capitalize
+     * @returns {string}
+     */
+    capitalize: function capitalize(str) str && str[0].toUpperCase() + str.slice(1),
+
+    /**
      * Returns a RegExp object that matches characters specified in the range
      * expression *list*, or signals an appropriate error if *list* is invalid.
      *
@@ -499,9 +506,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     stackLines: function (stack) {
         let lines = [];
-        let match, re = /([^]*?)(@[^@\n]*)(?:\n|$)/g;
+        let match, re = /([^]*?)@([^@\n]*)(?:\n|$)/g;
         while (match = re.exec(stack))
-            lines.push(match[1].replace(/\n/g, "\\n").substr(0, 80) + match[2]);
+            lines.push(match[1].replace(/\n/g, "\\n").substr(0, 80) + "@" +
+                       match[2].replace(/.* -> /, ""));
         return lines;
     },
 
@@ -651,6 +659,28 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             strNum[0] += "." + strNum[1];
 
         return strNum[0] + " " + unitVal[unitIndex];
+    },
+
+    /**
+     * Converts *seconds* into a human readable time string.
+     *
+     * @param {number} seconds
+     * @returns {string}
+     */
+    formatSeconds: function formatSeconds(seconds) {
+        function div(num, denom) [Math.round(num / denom), Math.round(num % denom)];
+        let days, hours, minutes;
+
+        [minutes, seconds] = div(seconds, 60);
+        [hours, minutes]   = div(minutes, 60);
+        [days, hours]      = div(hours,   24);
+        if (days)
+            return days + " days " + hours + " hours"
+        if (hours)
+            return hours + "h " + minutes + "m";
+        if (minutes)
+            return minutes + ":" + seconds;
+        return seconds + "s";
     },
 
     /**

@@ -135,10 +135,10 @@ var Config = Module("config", ConfigBase, {
         titlestring: "Pentadactyl"
     },
 
-    features: [
+    features: set([
         "bookmarks", "hints", "history", "marks", "quickmarks", "sanitizer",
         "session", "tabs", "tabs_undo", "windows"
-    ],
+    ]),
 
     guioptions: {
         m: ["Menubar",      ["toolbar-menubar"]],

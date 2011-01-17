@@ -53,16 +53,18 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     observers: {
-        "dactyl-cleanup": function () {
+        "dactyl-cleanup": function dactyl_cleanup() {
             let modules = dactyl.modules;
 
             for (let name in values(Object.getOwnPropertyNames(modules).reverse())) {
                 let mod = Object.getOwnPropertyDescriptor(modules, name).value;
                 if (mod instanceof Class) {
                     if ("cleanup" in mod)
-                        mod.cleanup();
+                        this.trapErrors(mod.cleanup, mod);
                     if ("destroy" in mod)
-                        mod.destroy();
+                        this.trapErrors(mod.destroy, mod);
+                    if ("INIT" in mod && "cleanup" in mod.INIT)
+                        this.trapErrors(mod.cleanup, mod, dactyl, modules, window);
                 }
             }
 
@@ -360,6 +362,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     userEval: function (str, context, fileName, lineNumber) {
+        if (jsmodules.__proto__ != window)
+            str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
+
         if (fileName == null)
             if (io.sourcing && io.sourcing.file[0] !== "[")
                 ({ file: fileName, line: lineNumber }) = io.sourcing;
@@ -389,9 +394,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (!context)
             context = _userContext;
-        if (window.isPrototypeOf(modules))
-            return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
-        return Cu.evalInSandbox("with (window) { with (modules) { this.eval(" + str.quote() + ") } }", context, "1.8", fileName, lineNumber);
+        return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
     },
 
     /**
@@ -505,7 +508,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} feature The feature name.
      * @returns {boolean}
      */
-    has: function (feature) config.features.indexOf(feature) >= 0,
+    has: function (feature) set.has(config.features, feature),
 
     /**
      * Returns the URL of the specified help *topic* if it exists.
@@ -2178,7 +2181,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             let init = services.environment.get(config.idName + "_INIT");
             let rcFile = io.getRCFile("~");
 
-            if (dactyl.userEval('typeof document') === "undefined")
+            if (dactyl.userEval("typeof document", null, "test.js") === "undefined")
                 jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);
 
             try {

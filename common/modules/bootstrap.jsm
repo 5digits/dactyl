@@ -4,8 +4,6 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-dump(" ======================= bootstrap.jsm " + (typeof JSMLoader) + " ======================= \n");
-
 var EXPORTED_SYMBOLS = ["JSMLoader"];
 let global = this;
 

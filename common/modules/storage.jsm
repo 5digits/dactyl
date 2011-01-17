@@ -259,9 +259,15 @@ var Storage = Module("Storage", {
     }
 }, {
 }, {
-    init: function (dactyl, modules) {
+    init: function init(dactyl, modules) {
+        init.superapply(this, arguments);
         storage.infoPath = File(modules.IO.runtimePath.replace(/,.*/, ""))
                              .child("info").child(dactyl.profileName);
+    },
+
+    cleanup: function (dactyl, modules, window) {
+        delete window.dactylStorageRefs;
+        this.removeDeadObservers();
     }
 });
 
