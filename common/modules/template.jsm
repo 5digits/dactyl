@@ -262,12 +262,13 @@ var Template = Module("Template", {
 
     sourceLink: function (frame) {
         let url = (frame.filename || "unknown").replace(/.* -> /, "");
+        let path = util.urlPath(url);
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         return <a xmlns:dactyl={NS} dactyl:command="buffer.viewSource"
-            href={url} line={frame.lineNumber}
+            href={url} path={path} line={frame.lineNumber}
             highlight="URL">{
-            util.urlPath(url) + ":" + frame.lineNumber
+            path + ":" + frame.lineNumber
         }</a>
     },
 

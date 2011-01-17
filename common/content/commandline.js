@@ -21,6 +21,9 @@ var CommandWidgets = Class("CommandWidgets", {
                             <menuitem id="dactyl-context-copylink"
                                       label="Copy Link Location" dactyl:group="link"
                                       oncommand="goDoCommand('cmd_copyLink');"/>
+                            <menuitem id="dactyl-context-copypath"
+                                      label="Copy File Path" dactyl:group="link path"
+                                      oncommand="dactyl.clipboardWrite(document.popupNode.getAttribute('path'));"/>
                             <menuitem id="dactyl-context-copy"
                                       label="Copy" dactyl:group="selection"
                                       command="cmd_copy"/>
@@ -937,14 +940,21 @@ var CommandLine = Module("commandline", {
     },
 
     onContext: function onContext(event) {
-        let enabled = {
-            link: window.document.popupNode instanceof HTMLAnchorElement,
-            selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
-        };
+        try {
+            let enabled = {
+                link: window.document.popupNode instanceof HTMLAnchorElement,
+                path: window.document.popupNode.hasAttribute("path"),
+                selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
+            };
 
-        for (let [, node] in iter(event.target.childNodes)) {
-            let group = node.getAttributeNS(NS, "group");
-            node.hidden = group && !group.split(/\s+/).some(function (g) enabled[g]);
+            for (let node in array.iterValues(event.target.children)) {
+                let group = node.getAttributeNS(NS, "group");
+                util.dump(node, group, group && !group.split(/\s+/).every(function (g) enabled[g]));
+                node.hidden = group && !group.split(/\s+/).every(function (g) enabled[g]);
+            }
+        }
+        catch (e) {
+            util.reportError(e);
         }
         return true;
     },
@@ -1100,6 +1110,9 @@ var CommandLine = Module("commandline", {
                                           event.originalTarget.hasAttributeNS(NS, "command"))) {
 
                 let command = event.originalTarget.getAttributeNS(NS, "command");
+                if (command && event.button == 2)
+                    return PASS;
+
                 if (command && dactyl.commands[command]) {
                     event.preventDefault();
                     return dactyl.withSavedValues(["forceNewTab"], function () {

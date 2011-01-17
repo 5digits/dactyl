@@ -29,7 +29,7 @@ var Download = Class("Download", {
             <li highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
                 <span highlight="DownloadTitle">
                     <span highlight="Link">
-                        <a key="title" href={self.target.spec}>{self.displayName}</a>
+                        <a key="title" href={self.target.spec} path={self.targetFile.path}>{self.displayName}</a>
                         <span highlight="LinkInfo">{self.targetFile.path}</span>
                     </span>
                 </span>

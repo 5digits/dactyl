@@ -363,7 +363,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     userEval: function (str, context, fileName, lineNumber) {
         if (jsmodules.__proto__ != window)
-            str = "with (window) { with (modules) { this.eval(" + str.quote() + ") } }";
+            str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
 
         if (fileName == null)
             if (io.sourcing && io.sourcing.file[0] !== "[")
