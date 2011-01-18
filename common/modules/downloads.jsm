@@ -248,7 +248,7 @@ var DownloadList = Class("DownloadList",
             else {
                 this.addDownload(download.id);
 
-                this.modules.commandline.updateOutputHeight(true);
+                this.modules.commandline.updateOutputHeight(false);
                 this.nodes.list.scrollIntoView(false);
             }
         }
@@ -282,7 +282,10 @@ var Downloads = Module("downloads", {
                 modules.commandline.echo(function (doc) {
                     let downloads = DownloadList(doc, modules);
                     // Temporary and dangerous hack:
-                    modules.modes.getStack(0).params = downloads;
+                    Object.defineProperty(modules.modes.getStack(0), "params", {
+                        get: function params() downloads,
+                        set: function params(val) { throw FailedAssertion("Not replacing mode change handler", 1) }
+                    });
                     return downloads.nodes.list;
                 });
             });
