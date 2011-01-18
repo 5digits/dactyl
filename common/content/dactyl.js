@@ -1092,7 +1092,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     confirmQuit: function confirmQuit()
         prefs.withContext(function () {
             prefs.set("browser.warnOnQuit", false);
-            return !window.canQuitApplication();
+            return window.canQuitApplication();
         }),
 
     /**
