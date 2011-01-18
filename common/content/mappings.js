@@ -95,7 +95,7 @@ var Map = Class("Map", {
      */
     hasName: function (name) this.keys.indexOf(name) >= 0,
 
-    keys: Class.memoize(function () this.names.map(mappings._expandLeader)),
+    keys: Class.memoize(function () this.names.map(mappings.expandLeader)),
 
     /**
      * Execute the action for this mapping.
@@ -122,87 +122,150 @@ var Map = Class("Map", {
     id: 0
 });
 
-/**
- * @instance mappings
- */
-var Mappings = Module("mappings", {
-    init: function () {
-        this._main = []; // default mappings
-        this._user = []; // user created mappings
-
-        dactyl.registerObserver("mode-add", function (mode) {
-            if (!(mode.mask in this._user || mode.mask in this._main)) {
-                this._main[mode.mask] = [];
-                this._user[mode.mask] = [];
-            }
-        });
+var MapHive = Class("MapHive", {
+    init: function init(name) {
+        this.name = name;
+        this.stacks = {};
     },
 
-    _addMap: function (map) {
-        let where = map.user ? this._user : this._main;
-        map.definedAt = commands.getCaller(Components.stack.caller.caller);
-        map.modes.forEach(function (mode) {
-            if (!(mode in where))
-                where[mode] = [];
-            where[mode].push(map);
-        });
+    /**
+     * Iterates over all mappings present in all of the given *modes*.
+     *
+     * @param {[Modes.Mode]} modes The modes for which to return mappings.
+     */
+    iterate: function (modes) {
+        let stacks = Array.concat(modes).map(this.closure.getStack);
+        return values(stacks.shift().sort(function (m1, m2) String.localeCompare(m1.name, m2.name))
+            .filter(function (map) map.rhs &&
+                stacks.every(function (stack) stack.some(function (m) m.rhs && m.rhs === map.rhs && m.name === map.name))));
     },
 
-    _getMap: function (mode, cmd, stack) {
-        let maps = stack[mode] || [];
-
-        for (let [, map] in Iterator(maps))
-            if (map.hasName(cmd))
-                return map;
-
-        return null;
+    /**
+     * Returns the mapping stack for the given mode.
+     *
+     * @param {Modes.Mode} mode The mode to search.
+     * @returns {[Map]}
+     */
+    getStack: function getStack(mode) {
+        if (!(mode in this.stacks))
+            return this.stacks[mode] = [];
+        return this.stacks[mode];
     },
 
-    _removeMap: function (mode, cmd) {
-        let maps = this._user[mode] || [];
-        let names;
+    /**
+     * Adds a new Map object to the given mode.
+     *
+     * @param {Modes.Mode} mode The mode to search.
+     * @param {string} cmd The map name to match.
+     * @returns {Map|null}
+     */
+    add: function (mode, map) {
+        this.getStack(mode).push(map);
+    },
 
-        for (let [i, map] in Iterator(maps)) {
+    /**
+     * Returns the map from *mode* named *cmd*.
+     *
+     * @param {Modes.Mode} mode The mode to search.
+     * @param {string} cmd The map name to match.
+     * @returns {Map|null}
+     */
+    get: function (mode, cmd) array.nth(this.getStack(mode), function (m) m.hasName(cmd), 0),
+
+    /**
+     * Returns an array of maps with names starting with but not equal to
+     * *prefix*.
+     *
+     * @param {Modes.Mode} mode The mode to search.
+     * @param {string} prefix The map prefix string to match.
+     * @returns {Map[]}
+     */
+    getCandidates: function (mode, prefix) {
+        let filter = util.regexp("^" + util.regexp.escape(prefix) + ".").closure.test;
+        return this.getStack(mode)
+                   .filter(function (map) map.keys.some(filter));
+    },
+
+    /**
+     * Returns whether there is a user-defined mapping *cmd* for the specified
+     * *mode*.
+     *
+     * @param {Modes.Mode} mode The mode to search.
+     * @param {string} cmd The candidate key mapping.
+     * @returns {boolean}
+     */
+    has: function (mode, cmd) this.getStack(mode).some(function (map) map.hasName(cmd)),
+
+    /**
+     * Remove the mapping named *cmd* for *mode*.
+     *
+     * @param {Modes.Mode} mode The mode to search.
+     * @param {string} cmd The map name to match.
+     */
+    remove: function (mode, cmd) {
+        for (let [i, map] in Iterator(this.getStack(mode))) {
             let j = map.names.indexOf(cmd);
             if (j >= 0) {
                 map.names.splice(j, 1);
                 if (map.names.length == 0) // FIX ME.
-                    for (let [mode, stack] in Iterator(this._user))
-                        this._user[mode] = (stack || []).filter(function (m) m != map);
+                    for (let [mode, stack] in Iterator(this.stacks))
+                        this.stacks[mode] = stack.filter(function (m) m != map);
                 return;
             }
         }
     },
 
-    _expandLeader: function (keyString) keyString.replace(/<Leader>/i, options["mapleader"]),
+    /**
+     * Remove all user-defined mappings for *mode*.
+     *
+     * @param {Modes.Mode} mode The mode to remove all mappings from.
+     */
+    clear: function (mode) {
+        this.stacks[mode] = [];
+    }
+});
 
-    // Return all mappings present in all @modes
-    _mappingsIterator: function (modes, stack) {
-        modes = modes.slice();
-        return (map for ([i, map] in Iterator(stack[modes.shift()].sort(function (m1, m2) String.localeCompare(m1.name, m2.name))))
-            if (map.rhs && modes.every(function (mode) stack[mode].
-                    some(function (m) m.rhs && m.rhs === map.rhs && m.name === map.name))));
+/**
+ * @instance mappings
+ */
+var Mappings = Module("mappings", {
+    init: function () {
+        this.userHive = MapHive("user");
+        this.builtinHive = MapHive("builtin");
+        this.hives = array([this.userHive, this.builtinHive]);
     },
+
+    _addMap: function (map) {
+        let hive = map.user ? this.userHive : this.builtinHive;
+
+        map.definedAt = commands.getCaller(Components.stack.caller.caller);
+        map.modes.forEach(function (mode) {
+            hive.add(mode, map);
+        });
+    },
+
+    expandLeader: function (keyString) keyString.replace(/<Leader>/i, options["mapleader"]),
 
     iterate: function (mode) {
         let seen = {};
-        for (let map in iter(values(this._user[mode]), values(this._main[mode])))
-            if (!set.add(seen, map.name))
-                yield map;
+        for (let hive in this.hives.iterValues())
+            for (let map in values(hive.getStack(mode)))
+                if (!set.add(seen, map.name))
+                    yield map;
     },
 
     // NOTE: just normal mode for now
     /** @property {Iterator(Map)} */
     __iterator__: function () this.iterate(modes.NORMAL),
 
-    // used by :mkpentadactylrc to save mappings
-    /**
-     * Returns a user-defined mappings iterator for the specified *mode*.
-     *
-     * @param {number} mode The mode to return mappings from.
-     * @returns {Iterator(Map)}
-     */
-    getUserIterator: function (mode) this._mappingsIterator(mode, this._user),
+    getDefault: deprecated("mappings.builtinHive.get",
+        function getDefault(mode, cmd) this.builtinHive.get(mode, cmd)),
+    getUserIterator: deprecated("mappings.userHive.iterator",
+                                function getUserIterator(modes) this.userHive.iterator(modes)),
+    hasMap: deprecated("mappings.userHive.has", function hasMap(mode, cmd) this.userHive.has(mode, cmd)),
+    remove: deprecated("mappings.userHive.remove", function remove(mode, cmd) this.userHive.remove(mode, cmd)),
+    removeAll: deprecated("mappings.userHive.clear", function removeAll(mode) this.userHive.clear(mode)),
+
 
     /**
      * Adds a new default key mapping.
@@ -237,7 +300,7 @@ var Mappings = Module("mappings", {
         // remove all old mappings to this key sequence
         for (let [, name] in Iterator(map.names))
             for (let [, mode] in Iterator(map.modes))
-                this._removeMap(mode, name);
+                this.userHive.remove(mode, name);
 
         this._addMap(map);
     },
@@ -249,21 +312,8 @@ var Mappings = Module("mappings", {
      * @param {string} cmd The map name to match.
      * @returns {Map}
      */
-    get: function (mode, cmd) {
-        mode = mode || modes.NORMAL;
-        return this._getMap(mode, cmd, this._user) || this._getMap(mode, cmd, this._main);
-    },
-
-    /**
-     * Returns the default map from *mode* named *cmd*.
-     *
-     * @param {number} mode The mode to search.
-     * @param {string} cmd The map name to match.
-     * @returns {Map}
-     */
-    getDefault: function (mode, cmd) {
-        mode = mode || modes.NORMAL;
-        return this._getMap(mode, cmd, this._main);
+    get: function get(mode, cmd) {
+        return this.hives.nth(function (h) h.get(mode, command), 0);
     },
 
     /**
@@ -275,39 +325,8 @@ var Mappings = Module("mappings", {
      * @returns {Map[]}
      */
     getCandidates: function (mode, prefix)
-        this._user[mode].concat(this._main[mode])
-            .filter(function (map) map.keys.some(
-                function (name) name.indexOf(prefix) == 0 && name.length > prefix.length
-                                && (prefix != "<" || !/^<.+>/.test(name)))),
-
-    /**
-     * Returns whether there is a user-defined mapping *cmd* for the specified
-     * *mode*.
-     *
-     * @param {number} mode The mode to search.
-     * @param {string} cmd The candidate key mapping.
-     * @returns {boolean}
-     */
-    hasMap: function (mode, cmd) this._user[mode].some(function (map) map.hasName(cmd)),
-
-    /**
-     * Remove the user-defined mapping named *cmd* for *mode*.
-     *
-     * @param {number} mode The mode to search.
-     * @param {string} cmd The map name to match.
-     */
-    remove: function (mode, cmd) {
-        this._removeMap(mode, cmd);
-    },
-
-    /**
-     * Remove all user-defined mappings for *mode*.
-     *
-     * @param {number} mode The mode to remove all mappings from.
-     */
-    removeAll: function (mode) {
-        this._user[mode] = [];
-    },
+        this.hives.map(function (h) h.getCandidates(mode, prefix))
+                  .flatten(),
 
     /**
      * Lists all user-defined mappings matching *filter* for the specified
@@ -327,7 +346,7 @@ var Mappings = Module("mappings", {
                     modeSign += m.char;
         });
 
-        let maps = this._mappingsIterator(modes, this._user);
+        let maps = this.userHive.iterate(modes);
         if (filter)
             maps = [map for (map in maps) if (map.names[0] == filter)];
 
@@ -365,7 +384,7 @@ var Mappings = Module("mappings", {
                     args["-builtin"] = true;
 
                 if (!rhs) // list the mapping
-                    mappings.list(mapmodes, mappings._expandLeader(lhs));
+                    mappings.list(mapmodes, mappings.expandLeader(lhs));
                 else {
                     mappings.addUserMap(mapmodes, [lhs],
                         args["-description"],
@@ -453,7 +472,7 @@ var Mappings = Module("mappings", {
             };
             function userMappings() {
                 let seen = {};
-                for (let [, stack] in Iterator(mappings._user))
+                for (let stack in values(mappings.userHive.stacks))
                     for (let map in values(stack))
                         if (!set.add(seen, map.id))
                             yield map;
@@ -472,7 +491,7 @@ var Mappings = Module("mappings", {
 
             commands.add([ch + "mapc[lear]"],
                 "Remove all mappings" + modeDescription,
-                function () { mapmodes.forEach(function (mode) { mappings.removeAll(mode); }); },
+                function () { mapmodes.forEach(function (mode) { mappings.userHive.clear(mode); }); },
                 {
                     argCount: "0",
                     options: [ update({}, modeFlag, {
@@ -491,8 +510,8 @@ var Mappings = Module("mappings", {
 
                     let found = false;
                     for (let [, mode] in Iterator(mapmodes)) {
-                        if (mappings.hasMap(mode, args[0])) {
-                            mappings.remove(mode, args[0]);
+                        if (mappings.userHive.hasMap(mode, args[0])) {
+                            mappings.userHive.remove(mode, args[0]);
                             found = true;
                         }
                     }
@@ -608,7 +627,8 @@ var Mappings = Module("mappings", {
         completion.userMapping = function userMapping(context, modes) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
             modes = modes || [modules.modes.NORMAL];
-            context.completions = [[m.names[0], m.description + ": " + m.action] for (m in mappings.getUserIterator(modes))];
+            context.keys = { text: function (m) m.names[0], description: function (m) m.description + ": " + m.action };
+            context.completions = mappings.userHive.iterate(modes);
         };
     },
     javascript: function () {
@@ -619,16 +639,10 @@ var Mappings = Module("mappings", {
                     let mode = args[0];
                     return array.flatten([
                         [[name, map.description] for ([i, name] in Iterator(map.names))]
-                        for ([i, map] in Iterator(mappings._user[mode].concat(mappings._main[mode])))
+                        for (map in mappings.iterate(mode))
                     ]);
                 }
             ]);
-    },
-    modes: function () {
-        for (let mode in modes) {
-            this._main[mode] = [];
-            this._user[mode] = [];
-        }
     },
     options: function () {
         options.add(["mapleader", "ml"],
@@ -636,9 +650,9 @@ var Mappings = Module("mappings", {
             "string", "\\", {
                 setter: function (value) {
                     if (this.hasChanged)
-                        for (let hive in values([mappings._user, mappings._main]))
-                            for (let mode in values(hive))
-                                for (let map in values(mode))
+                        for (let hive in mappings.hives.iterValues())
+                            for (let stack in values(hive.stacks))
+                                for (let map in values(stack))
                                     delete map.keys;
                     return value;
                 }

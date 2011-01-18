@@ -1008,20 +1008,14 @@ var CommandLine = Module("commandline", {
                 }
                 // user pressed <Up> or <Down> arrow to cycle history completion
                 else if (/^<(Up|Down|S-Up|S-Down)>$/.test(key)) {
-                    // prevent tab from moving to the next field
-                    event.preventDefault();
-                    event.stopPropagation();
-
                     dactyl.assert(this._history);
                     this._history.select(/Up/.test(key), !/S-/.test(key));
+                    return KILL;
                 }
                 // user pressed <Tab> to get completions of a command
                 else if (/^<(?:A-)?(?:S-)?Tab>$/.test(key)) {
-                    // prevent tab from moving to the next field
-                    event.preventDefault();
-                    event.stopPropagation();
-
                     this._tabTimer.tell(event);
+                    return KILL;
                 }
                 else if (key == "<BS>") {
                     // reset the tab completion
