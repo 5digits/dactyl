@@ -4,6 +4,8 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+try {
+
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("overlay", {
     exports: ["ModuleBase"],
@@ -275,5 +277,7 @@ var Overlay = Module("Overlay", {
         }));
     }
 });
+
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

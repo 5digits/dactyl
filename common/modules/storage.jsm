@@ -152,8 +152,11 @@ var Storage = Module("Storage", {
     },
 
     cleanup: function () {
-        for (let key in keys(this.keys))
+        for (let key in keys(this.keys)) {
+            if (this[key].timer)
+                this[key].timer.flush();
             delete this[key];
+        }
         for (let ary in values(this.observers))
             for (let obj in values(ary))
                 if (obj.ref && obj.ref.get())
@@ -239,7 +242,8 @@ var Storage = Module("Storage", {
     },
 
     save: function save(key) {
-        saveData(this.keys[key]);
+        if (this[key])
+            saveData(this.keys[key]);
     },
 
     saveAll: function storeAll() {

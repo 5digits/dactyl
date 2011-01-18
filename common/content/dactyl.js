@@ -1575,9 +1575,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         function listener(action, event)
             function addonListener(install) {
-                dactyl[install.error ? "echoerr" : "echomsg"](
-                    "Add-on " + action + " " + event + ": " + (install.name || install.sourceURI.spec) +
-                    (install.error ? ": " + addonErrors[install.error] : ""));
+                if (typeof dactyl !== "undefined")
+                    dactyl[install.error ? "echoerr" : "echomsg"](
+                        "Add-on " + action + " " + event + ": " + (install.name || install.sourceURI.spec) +
+                        (install.error ? ": " + addonErrors[install.error] : ""));
             }
         const addonListener = {
             onNewInstall:      function (install) {},
