@@ -1278,7 +1278,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {string} str
          * @returns {string}
          */
-        escape: function regexp_escape(str) str.replace(/([\\{}()[\].?*+])/g, "\\$1"),
+        escape: function regexp_escape(str) str.replace(/([\\{}()[\]^$.?*+|])/g, "\\$1"),
 
         /**
          * Given a RegExp, returns its source in the form showable to the user.
