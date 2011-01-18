@@ -960,23 +960,25 @@ var Events = Module("events", {
 
                 if (overrideMode)
                     processors = [Events.KeyProcessor(overrideMode, mode.extended)];
-                else for (let m in keyModes.iterValues())
-                    if (m)
-                        processors.push(Events.KeyProcessor(m, mode.extended));
+                else {
+                    for (let m in keyModes.iterValues())
+                        if (m)
+                            processors.push(Events.KeyProcessor(m, mode.extended));
 
-                let input = processors[processors.length - 1];
-                if (mode.params.preExecute)
-                    input.preExecute = mode.params.preExecute;
-                if (mode.params.postExecute)
-                    input.postExecute = mode.params.postExecute;
-                if (mode.params.onEvent)
-                    input.fallthrough = function (event) {
-                        // Bloody hell.
-                        if (events.toString(event) === "<C-h>")
-                            event.dactylString = "<BS>";
+                    let input = processors[processors.length - 1];
+                    if (mode.params.preExecute)
+                        input.preExecute = mode.params.preExecute;
+                    if (mode.params.postExecute)
+                        input.postExecute = mode.params.postExecute;
+                    if (mode.params.onEvent)
+                        input.fallthrough = function (event) {
+                            // Bloody hell.
+                            if (events.toString(event) === "<C-h>")
+                                event.dactylString = "<BS>";
 
-                        return mode.params.onEvent(event) === false;
-                    };
+                            return mode.params.onEvent(event) === false;
+                        };
+                }
             }
 
             const KILL = true, PASS = false, WAIT = null;
