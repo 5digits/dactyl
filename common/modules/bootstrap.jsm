@@ -28,6 +28,7 @@ if (!JSMLoader || JSMLoader.bump != 3)
         storage: storage,
         suffix: "",
         init: function init(suffix) {
+            this.initialized = true;
             this.suffix = suffix || "";
 
             this.storage.set("dactyl.JSMLoader", this);
