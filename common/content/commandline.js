@@ -597,6 +597,7 @@ var CommandLine = Module("commandline", {
     open: function open(prompt, cmd, extendedMode) {
         this.widgets.message = null;
 
+        this.currentExtendedMode = extendedMode || null;
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
             autocomplete: cmd.length,
             onEvent: this.closure.onEvent,
@@ -608,7 +609,6 @@ var CommandLine = Module("commandline", {
             mainMode: this.currentExtendedMode
         });
 
-        this.currentExtendedMode = extendedMode || null;
         this._keepCommand = false;
 
         this.widgets.active.commandline.collapsed = false;
@@ -893,7 +893,7 @@ var CommandLine = Module("commandline", {
                            commandline.leave(stack);
                            leave.supercall(this, stack);
                        },
-                       mainMode: extra.extended || modes.PROMPT
+                       keyModes: [extra.extended, modes.PROMPT]
                    }));
         this.currentExtendedMode = modes.PROMPT;
 

@@ -32,6 +32,7 @@ var Events = Module("events", {
         this._currentMacro = "";
         this._macroKeys = [];
         this._lastMacro = "";
+        this._processors = [];
 
         this.sessionListeners = [];
 
@@ -281,7 +282,7 @@ var Events = Module("events", {
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 for (let type in values(["keydown", "keyup", "keypress"])) {
-                    let evt = this.feedingEvent = update({}, evt_obj, { type: type });
+                    let evt = update({}, evt_obj, { type: type });
 
                     if (isObject(noremap))
                         update(evt, noremap);
@@ -292,7 +293,7 @@ var Events = Module("events", {
 
                     let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
                     if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
-                        events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event);
+                        events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event, evt);
                     else
                         events.onKeyPress(event);
                 }
@@ -399,8 +400,9 @@ var Events = Module("events", {
      */
     dispatch: Class.memoize(function ()
         util.haveGecko("2b")
-            ? function (target, event) {
+            ? function (target, event, extra) {
                 try {
+                    this.feedingEvent = extra;
                     if (target instanceof Element)
                         // This causes a crash on Gecko<2.0, it seems.
                         (target.ownerDocument || target.document || target).defaultView
@@ -412,8 +414,11 @@ var Events = Module("events", {
                 catch (e) {
                     util.reportError(e);
                 }
+                finally {
+                    this.feedingEvent = null;
+                }
             }
-            : function (target, event) target.dispatchEvent(event)),
+            : function (target, event, extra) target.dispatchEvent(update(event, extra || {}))),
 
     get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,
 
@@ -870,13 +875,15 @@ var Events = Module("events", {
     // TODO: ...help me...please...
     onKeyPress: function onKeyPress(event) {
 
-        function killEvent() {
+        function kill(event) {
             event.preventDefault();
             event.stopPropagation();
         }
 
-        if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity))
+        if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
             update(event, this.feedingEvent);
+            this.feedingEvent = null;
+        }
 
         let key = events.toString(event);
         if (!key)
@@ -900,7 +907,7 @@ var Events = Module("events", {
             else
                 events.duringFeed.push(event);
 
-            return killEvent();
+            return kill(event);
         }
 
         function shouldPass()
@@ -912,9 +919,9 @@ var Events = Module("events", {
             if (event.dactylMode)
                 mode = Modes.StackElement(event.dactylMode);
 
-            let input = this._input;
-            this._input = null;
-            if (!input) {
+            let processors = this._processors;
+            this._processors = [];
+            if (!processors.length) {
                 let ignore = false;
                 let overrideMode = null;
 
@@ -949,7 +956,15 @@ var Events = Module("events", {
                 if (key in config.ignoreKeys && (config.ignoreKeys[key] & mode.main))
                     return null;
 
-                input = Events.KeyProcessor(overrideMode || mode.params.mainMode || mode.main, mode.extended);
+                let keyModes = array(mode.keyModes || []).concat([mode.params.mainMode, mode.main]).compact();
+
+                if (overrideMode)
+                    processors = [Events.KeyProcessor(overrideMode, mode.extended)];
+                else for (let m in keyModes.iterValues())
+                    if (m)
+                        processors.push(Events.KeyProcessor(m, mode.extended));
+
+                let input = processors[processors.length - 1];
                 if (mode.params.preExecute)
                     input.preExecute = mode.params.preExecute;
                 if (mode.params.postExecute)
@@ -964,8 +979,35 @@ var Events = Module("events", {
                     };
             }
 
-            if (!input.process(event))
-                this._input = input;
+            const KILL = true, PASS = false, WAIT = null;
+
+            let refeed;
+            for (let input in values(processors)) {
+                var res = input.process(event);
+                if (isArray(res))
+                    refeed = res;
+                else if (res == WAIT || res === PASS)
+                    continue;
+                else if (res === KILL) {
+                    refeed = null;
+                    break;
+                }
+            }
+
+            if (res == WAIT)
+                this._processors = processors;
+            else if (res !== KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
+                dactyl.beep();
+
+            if (res !== PASS)
+                kill(event);
+
+            if (refeed)
+                for (let [i, event] in Iterator(refeed))
+                    if (event.originalTarget)
+                        events.dispatch(event.originalTarget, event, i == 0 && { skipmap: true });
+                    else if (i > 0)
+                        events.onKeyPress(event);
         }
         catch (e) {
             dactyl.reportError(e);
@@ -1047,6 +1089,8 @@ var Events = Module("events", {
             this.events = [];
         },
 
+        toString: function () "[instance KeyProcessor(" + this.main.name + ")]",
+
         buffer: "",             // partial command storage
         pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
         pendingArgMap: null,    // pending map storage for commands like m{a-z}
@@ -1060,39 +1104,33 @@ var Events = Module("events", {
         },
 
         process: function process(event) {
+            const KILL = true, PASS = false, WAIT = null;
+
             function kill(event) {
                 event.stopPropagation();
                 event.preventDefault();
             }
 
             let res = this.onKeyPress(event);
-            if (res === true || res == null)
+            if (res === KILL)
                 kill(event);
             else if (isArray(res)) {
                 if (this.fallthrough) {
-                    if (dactyl.trapErrors(this.fallthrough, this, res[0]) === true)
+                    let r = dactyl.trapErrors(this.fallthrough, this, res[0]);
+                    if (r === KILL)
                         kill(res[0]);
+                    res = r === KILL ? KILL : PASS;
+                    /*
+                    if (r === KILL)
+                        res = res.slice(1);
+                    else
+                        res = r == WAIT ? res : false;
+                    */
                 }
-                else if (Events.isEscape(event))
-                    kill(event);
-                else {
-                    if (this.main & (modes.TEXT_EDIT | modes.VISUAL)) {
-                        dactyl.beep();
-                        kill(event);
-                    }
-                }
-
-                // Reprocess unconsumed events
-                for (let event in values(res.slice(1)))
-                    if (!event.skipmap)
-                        if (event.originalTarget)
-                            events.dispatch(event.originalTarget, event);
-                        else
-                            events.onKeyPress(event);
             }
 
             if (!this.main.ownsBuffer) {
-                if (res != null)
+                if (res != WAIT)
                     statusline.updateInputBuffer("");
                 else {
                     let motionMap = (this.pendingMotionMap && this.pendingMotionMap.names[0]) || "";
@@ -1100,7 +1138,7 @@ var Events = Module("events", {
                 }
             }
 
-            return res != null;
+            return res;
         },
 
         onKeyPress: function onKeyPress(event) {
@@ -1145,7 +1183,7 @@ var Events = Module("events", {
                     execute(map, null, this.count, key, command);
                 return KILL;
             }
-            else if (map && !event.skipmap && candidates.length == 0) {
+            else if (!event.skipmap && map && candidates.length == 0) {
                 this.pendingMap = null;
 
                 let count = this.pendingMotionMap ? "motionCount" : "count";
@@ -1175,7 +1213,7 @@ var Events = Module("events", {
                     return execute(map, null, this.count, null, command) && map.route ? PASS : KILL;
                 }
             }
-            else if (mappings.getCandidates(this.main, command).length > 0 && !event.skipmap) {
+            else if (!event.skipmap && mappings.getCandidates(this.main, command).length > 0) {
                 this.append(event);
                 this.pendingMap = [map, command];
             }
