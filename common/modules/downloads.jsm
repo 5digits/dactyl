@@ -198,9 +198,11 @@ var DownloadList = Class("DownloadList",
         for (let row in iter(services.downloadManager.DBConnection
                                      .createStatement("SELECT id FROM moz_downloads")))
             this.addDownload(row.id);
-
+    },
+    initialize: function initialize() {
         util.addObserver(this);
         services.downloadManager.addListener(this);
+        return this.nodes.list;
     },
     cleanup: function cleanup() {
         this.observe.unregister();
@@ -286,7 +288,7 @@ var Downloads = Module("downloads", {
                         get: function params() downloads,
                         set: function params(val) { throw FailedAssertion("Not replacing mode change handler", 1) }
                     });
-                    return downloads.nodes.list;
+                    return downloads.initialize();
                 });
             });
     },
