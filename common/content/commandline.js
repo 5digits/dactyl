@@ -606,7 +606,7 @@ var CommandLine = Module("commandline", {
                 if (params.pop)
                     commandline.leave();
             },
-            mainMode: this.currentExtendedMode
+            keyModes: [this.currentExtendedMode]
         });
 
         this._keepCommand = false;

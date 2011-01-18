@@ -417,10 +417,17 @@ var isinstance_types = {
     number: Number
 };
 function isinstance(targ, src) {
+    if (targ == null)
+        return false;
+
     src = Array.concat(src);
     for (var i = 0; i < src.length; i++) {
         if (typeof src[i] === "string") {
             if (objproto.toString.call(targ) === "[object " + src[i] + "]")
+                return true;
+        }
+        else if ("isinstance" in targ) {
+            if (targ.isinstance(src[i]))
                 return true;
         }
         else {
@@ -1317,8 +1324,7 @@ var array = Class("array", Array, {
      * @returns {Iterator(Object)}
      */
     iterValues: function iterValues(ary) {
-        let length = ary.length;
-        for (let i = 0; i < length; i++)
+        for (let i = 0; i < ary.length; i++)
             yield ary[i];
     },
 

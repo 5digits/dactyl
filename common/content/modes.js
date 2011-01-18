@@ -35,11 +35,18 @@ var Modes = Module("modes", {
 
         this.boundProperties = {};
 
-        // main modes, only one should ever be active
+        this.addMode("BASE", {
+            char: "b",
+            description: "The base mode for most other modes"
+        });
         this.addMode("NORMAL", {
             char: "n",
             description: "Active when nothing is focused",
             display: function () null
+        });
+        this.addMode("INPUT", {
+            char: "I",
+            description: "The base mode for input modes, including Insert and Command Line"
         });
         this.addMode("INSERT", {
             char: "i",
@@ -101,12 +108,14 @@ var Modes = Module("modes", {
         });
         this.addMode("PASS_THROUGH", {
             description: "All keys but <C-v> are ignored by " + config.appName,
+            bases: [],
             hidden: true
         });
 
         this.addMode("QUOTE", {
             hidden: true,
             description: "The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
+            bases: [],
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).main.display() || modes.getStack(2).main.name) + " (next)"
                 : "PASS THROUGH (next)"
@@ -151,7 +160,8 @@ var Modes = Module("modes", {
             input: true
         });
         this.addMode("IGNORE", { hidden: true }, {
-            onEvent: function (event) false
+            onEvent: function (event) false,
+            bases: []
         });
 
         this.push(this.NORMAL, 0, {
@@ -386,6 +396,21 @@ var Modes = Module("modes", {
                 params: params || {}
             }, options);
         },
+
+        isinstance: function (obj)
+            this.allBases.indexOf(obj >= 0) || callable(obj) && this instanceof obj,
+
+        allBases: Class.memoize(function () {
+            let seen = {}, res = [], queue = this.bases;
+            for (let mode in array.iterValues(queue))
+                if (!set.add(seen, mode)) {
+                    res.push(mode);
+                    queue.push.apply(queue, mode.bases);
+                }
+            return res;
+        }),
+
+        get bases() this.input ? [modes.INPUT] : [modes.BASE],
 
         get toStringParams() [this.name],
 

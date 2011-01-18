@@ -959,7 +959,7 @@ var Events = Module("events", {
                 if (overrideMode)
                     processors = [Events.KeyProcessor(overrideMode, mode.extended)];
                 else {
-                    let keyModes = array(mode.params.keyModes || []).concat([mode.params.mainMode, mode.main]).compact();
+                    let keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
 
                     let hives = mappings.hives.slice(event.noremap ? -1 : 0);
 
@@ -972,7 +972,7 @@ var Events = Module("events", {
                                 input.preExecute = mode.params.preExecute;
                             if (mode.params.postExecute)
                                 input.postExecute = mode.params.postExecute;
-                            if (mode.params.onEvent && i == processors.length - 1)
+                            if (mode.params.onEvent && input.hive === mappings.builtinHive)
                                 input.fallthrough = function (event) {
                                     // Bloody hell.
                                     if (events.toString(event) === "<C-h>")
