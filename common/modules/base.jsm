@@ -964,16 +964,22 @@ var Timer = Class("Timer", {
     },
 
     notify: function (timer) {
-        if (util.rehashing)
-            return;
-
-        this._timer.cancel();
-        this.latest = 0;
-        // minInterval is the time between the completion of the command and the next firing
-        this.doneAt = Date.now() + this.minInterval;
-
         try {
-            this.callback(this.arg);
+            if (util.rehashing || typeof util === "undefined")
+                return;
+
+            this._timer.cancel();
+            this.latest = 0;
+            // minInterval is the time between the completion of the command and the next firing
+            this.doneAt = Date.now() + this.minInterval;
+
+                this.callback(this.arg);
+        }
+        catch (e) {
+            if (typeof util === "undefined")
+                dump("dactyl: " + e + "\n" + (e.stack || Error().stack));
+            else
+                util.reportError(e);
         }
         finally {
             this.doneAt = Date.now() + this.minInterval;

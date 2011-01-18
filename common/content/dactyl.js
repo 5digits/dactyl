@@ -1089,6 +1089,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             node.collapsed = !visible;
     },
 
+    confirmQuit: function confirmQuit()
+        prefs.withContext(function () {
+            prefs.set("browser.warnOnQuit", false);
+            return !window.canQuitApplication();
+        }),
+
     /**
      * Quit the host application, no matter how many tabs/windows are open.
      *
@@ -1098,11 +1104,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *    windows could be closed individually.
      */
     quit: function (saveSession, force) {
-        if (!force &&
-            prefs.withContext(function () {
-                prefs.set("browser.warnOnQuit", false);
-                return !canQuitApplication();
-            }))
+        if (!force && !this.confirmQuit())
             return;
 
         let pref = "browser.startup.page";
@@ -1113,6 +1115,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             prefs.safeSet(pref, 1);
 
         services.appStartup.quit(Ci.nsIAppStartup[force ? "eForceQuit" : "eAttemptQuit"]);
+    },
+
+    /**
+     * Restart the host application.
+     */
+    restart: function () {
+        if (!this.confirmQuit())
+            return;
+
+        services.appStartup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
     },
 
     /**
@@ -1212,16 +1224,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (echo)
             dactyl.echoerr(error);
         util.reportError(error);
-    },
-
-    /**
-     * Restart the host application.
-     */
-    restart: function () {
-        if (!canQuitApplication())
-            return;
-
-        services.appStartup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
     },
 
     /**
@@ -1573,9 +1575,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         function listener(action, event)
             function addonListener(install) {
-                dactyl[install.error ? "echoerr" : "echomsg"](
-                    "Add-on " + action + " " + event + ": " + (install.name || install.sourceURI.spec) +
-                    (install.error ? ": " + addonErrors[install.error] : ""));
+                if (typeof dactyl !== "undefined")
+                    dactyl[install.error ? "echoerr" : "echomsg"](
+                        "Add-on " + action + " " + event + ": " + (install.name || install.sourceURI.spec) +
+                        (install.error ? ": " + addonErrors[install.error] : ""));
             }
         const addonListener = {
             onNewInstall:      function (install) {},

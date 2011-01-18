@@ -115,8 +115,6 @@ function Dactyl() {
 
     this.pages = {};
 
-    Cu.import("resource://dactyl/bootstrap.jsm");
-    JSMLoader.init();
     JSMLoader.load("base.jsm", global);
     require(global, "config");
     require(global, "services");
@@ -194,6 +192,7 @@ Dactyl.prototype = {
     observe: function observe(subject, topic, data) {
         if (topic === "profile-after-change") {
             Cu.import("resource://dactyl/bootstrap.jsm");
+            JSMLoader.init();
             require(global, "overlay");
         }
     }

@@ -4,29 +4,33 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-var EXPORTED_SYMBOLS = ["JSMLoader"];
-let global = this;
-
 try {
 
-if (!JSMLoader || JSMLoader.bump != 2)
-    var JSMLoader = {
-        bump: 2,
+var EXPORTED_SYMBOLS = ["JSMLoader"];
+var global = this;
+var storage = Components.classes["@mozilla.org/fuel/application;1"]
+                        .getService(Components.interfaces.fuelIApplication)
+                        .storage;
+
+var JSMLoader = storage.get("dactyl.JSMLoader", undefined);
+
+if (!JSMLoader || JSMLoader.bump != 3)
+    JSMLoader = {
+        bump: 3,
         builtin: Components.utils.Sandbox(this),
         canonical: {},
         factories: [],
-        globals: {},
+        globals: JSMLoader ? JSMLoader.globals : {},
         io: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
         loader: Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader),
         manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
-        stale: {},
+        stale: JSMLoader ? JSMLoader.stale : {},
+        storage: storage,
         suffix: "",
         init: function init(suffix) {
             this.suffix = suffix || "";
 
-            Components.classes["@mozilla.org/fuel/application;1"]
-                      .getService(Components.interfaces.fuelIApplication)
-                      .storage.set("dactyl.JSMLoader", this);
+            this.storage.set("dactyl.JSMLoader", this);
 
             let base = JSMLoader.load("base.jsm", global);
             global.EXPORTED_SYMBOLS = base.EXPORTED_SYMBOLS;
@@ -52,9 +56,11 @@ if (!JSMLoader || JSMLoader.bump != 2)
                 delete this.stale[name];
                 delete this.stale[targetURL];
 
+                let loadURL = url.replace(RegExp("^(resource://dactyl)/"), "$1" + this.suffix + "/");
+
                 let global = this.globals[name];
                 if (stale === targetURL)
-                    this.loadSubScript(url, global.global || global);
+                    this.loadSubScript(loadURL, global.global || global);
             }
 
             try {
@@ -72,7 +78,12 @@ if (!JSMLoader || JSMLoader.bump != 2)
                 this.manager.unregisterFactory(factory.classID, factory);
         },
         purge: function purge() {
+            dump("dactyl: JSMLoader: purge\n");
+
             for (let [url, global] in Iterator(this.globals)) {
+                if (url === "bootstrap.jsm" || url === "resource://dactyl/bootstrap.jsm")
+                    continue;
+
                 let target = this.getTarget(url);
                 this.stale[url] = target;
                 this.stale[target] = target;
