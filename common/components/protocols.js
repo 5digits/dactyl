@@ -115,6 +115,7 @@ function Dactyl() {
 
     this.pages = {};
 
+    Cu.import("resource://dactyl/bootstrap.jsm");
     JSMLoader.load("base.jsm", global);
     require(global, "config");
     require(global, "services");
