@@ -1394,8 +1394,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 /*
                 validator: function (opts) dactyl.has("Gecko2") ||
                     Option.validIf(!/[nN]/.test(opts), "Tab numbering not available in this " + config.host + " version")
-                */
-
+                 */
             }
         ].filter(function (group) !group.feature || dactyl.has(group.feature));
 
