@@ -769,7 +769,8 @@ Class.prototype = {
     toString: function () {
         if (this.toStringParams)
             var params = "(" + this.toStringParams.map(function (m) isArray(m)  ? "[" + m + "]" :
-                                                                    isString(m) ? m.quote() : String(m)) + ")";
+                                                                    isString(m) ? m.quote() : String(m))
+                                   .join(", ") + ")";
         return "[instance " + this.constructor.className + (params || "") + "]";
     },
 

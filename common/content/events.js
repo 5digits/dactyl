@@ -1018,6 +1018,7 @@ var Events = Module("events", {
             if (refeed)
                 for (let [i, event] in Iterator(refeed))
                     if (event.originalTarget) {
+                        util.dump("Re-feed " + i + " " + refeed.length + " " + (events.toString(event) || "").quote());
                         let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
                         events.dispatch(event.originalTarget, evt, i == 0 && { skipmap: true });
                     }

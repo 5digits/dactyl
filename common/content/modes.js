@@ -387,7 +387,7 @@ var Modes = Module("modes", {
             }, options);
         },
 
-        toString: function () this.name,
+        get toStringParams() [this.name],
 
         valueOf: function () this.id,
 
@@ -411,14 +411,14 @@ var Modes = Module("modes", {
     }),
     StackElement: (function () {
         const StackElement = Struct("main", "extended", "params", "saved");
+        StackElement.className = "Modes.StackElement";
         StackElement.defaultValue("params", function () this.main.params);
+
         update(StackElement.prototype, {
-            toString: function () !loaded.modes ? this.main : "[mode " +
-                this.main.name +
-                (!this.extended ? "" :
-                   "(" + modes.all.filter(function (m) this.extended & m)
-                              .join("|") +
-                   ")") + "]"
+            get toStringParams() !loaded.modes ? this.main.name : [
+                this.main.name,
+                <>({ modes.all.filter(function (m) this.extended & m, this).map(function (m) m.name).join("|") })</>
+            ]
         });
         return StackElement;
     })(),
