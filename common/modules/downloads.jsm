@@ -37,12 +37,12 @@ var Download = Class("Download", {
                 </span>
                 <span highlight="DownloadState" key="state"/>
                 <span highlight="DownloadButtons">
-                    <span highlight="Button" key="pause">Pause</span>
-                    <span highlight="Button" key="remove">Remove</span>
-                    <span highlight="Button" key="resume">Resume</span>
-                    <span highlight="Button" key="retry">Retry</span>
-                    <span highlight="Button" key="cancel">Cancel</span>
-                    <span highlight="Button" key="delete">Delete</span>
+                    <a highlight="Button" key="pause">Pause</a>
+                    <a highlight="Button" key="remove">Remove</a>
+                    <a highlight="Button" key="resume">Resume</a>
+                    <a highlight="Button" key="retry">Retry</a>
+                    <a highlight="Button" key="cancel">Cancel</a>
+                    <a highlight="Button" key="delete">Delete</a>
                 </span>
                 <span highlight="DownloadProgress" key="progress">
                     <span highlight="DownloadProgressHave" key="progressHave"

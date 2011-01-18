@@ -492,7 +492,7 @@ var ConfigBase = Class("ConfigBase", {
         HintActive;;*    background-color: #88FF00 !important; color: black !important;
         HintImage;;*     opacity: .5 !important;
 
-        Button                  display: inline-block; font-weight: bold; cursor: pointer; color: black;
+        Button                  display: inline-block; font-weight: bold; cursor: pointer; color: black; text-decoration: none;
         Button:hover            text-decoration: underline;
         Button[collapsed]       visibility: collapse; width: 0;
         Button::before          content: "["; color: gray; text-decoration: none !important;
