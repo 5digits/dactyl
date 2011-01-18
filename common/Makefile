@@ -31,7 +31,7 @@ XPI_DIRS      = components $(MANGLE) defaults
 XPI_TEXTS     = js jsm $(JAR_TEXTS)
 XPI_BINS      = $(JAR_BINS)
 
-XPI_NAME      = $(NAME)_$(VERSION)
+XPI_NAME      = $(NAME)-$(VERSION)
 XPI_PATH      = ../downloads/$(XPI_NAME)
 XPI           = $(XPI_PATH).xpi
 

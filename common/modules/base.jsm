@@ -766,7 +766,12 @@ Class.prototype = {
         }
     },
 
-    toString: function () "[instance " + this.constructor.className + "]",
+    toString: function () {
+        if (this.toStringParams)
+            var params = "(" + this.toStringParams.map(function (m) isArray(m)  ? "[" + m + "]" :
+                                                                    isString(m) ? m.quote() : String(m)) + ")";
+        return "[instance " + this.constructor.className + (params || "") + "]";
+    },
 
     /**
      * Executes *callback* after *timeout* milliseconds. The value of

@@ -108,7 +108,7 @@ var RangeFinder = Module("rangefinder", {
             }, 0);
         else
             this.commandline.echo((this.rangeFind.backward ? "?" : "/") + this.lastFindPattern,
-                                  null, this.commandline.FORCE_SINGLELINE);
+                                  "Normal", this.commandline.FORCE_SINGLELINE);
 
         if (this.options["hlfind"])
             this.highlight();

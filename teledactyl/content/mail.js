@@ -514,8 +514,7 @@ const Mail = Module("mail", {
 
         mappings.add(myModes, ["<Space>"],
             "Scroll message or select next unread one",
-            function () true,
-            { route: true });
+            function () Events.PASS);
 
         mappings.add(myModes, ["t"],
             "Select thread",

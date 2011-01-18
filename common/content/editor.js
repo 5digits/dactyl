@@ -588,8 +588,10 @@ var Editor = Module("editor", {
 
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand insert mode abbreviation",
-            function () { editor.expandAbbreviation(modes.INSERT); },
-            { route: true });
+            function () {
+                editor.expandAbbreviation(modes.INSERT);
+                return Events.PASS;
+            });
 
         mappings.add([modes.INSERT],
             ["<C-]>", "<C-5>"], "Expand insert mode abbreviation",

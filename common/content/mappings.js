@@ -22,7 +22,6 @@
  *         arg     - see {@link Map#arg}
  *         count   - see {@link Map#count}
  *         motion  - see {@link Map#motion}
- *         route   - see {@link Map#route}
  *         noremap - see {@link Map#noremap}
  *         rhs     - see {@link Map#rhs}
  *         silent  - see {@link Map#silent}
@@ -49,6 +48,8 @@ var Map = Class("Map", {
             update(this, extraInfo);
     },
 
+    get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
+
     /** @property {number[]} All of the modes for which this mapping applies. */
     modes: null,
     /** @property {string[]} All of this mapping's names (key sequences). */
@@ -67,12 +68,6 @@ var Map = Class("Map", {
      *     as an argument.
      */
     motion: false,
-    /**
-     * @property {boolean} Whether the mapping's key events should be
-     *     propagated to the host application.
-     */
-    // TODO: I'm not sure this is the best name but it reflects that which it replaced. --djk
-    route: false,
     /** @property {boolean} Whether the RHS of the mapping should expand mappings recursively. */
     noremap: false,
     /** @property {boolean} Whether any output from the mapping should be echoed on the command line. */
@@ -127,6 +122,8 @@ var MapHive = Class("MapHive", {
         this.name = name;
         this.stacks = {};
     },
+
+    get toStringParams() [this.name],
 
     /**
      * Iterates over all mappings present in all of the given *modes*.

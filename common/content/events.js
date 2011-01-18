@@ -978,26 +978,24 @@ var Events = Module("events", {
                                     if (events.toString(event) === "<C-h>")
                                         event.dactylString = "<BS>";
 
-                                    return mode.params.onEvent(event) === false ? KILL : PASS;
+                                    return mode.params.onEvent(event) === false ? Events.KILL : Events.PASS;
                                 };
                         }}
                 }
             }
 
-            const KILL = true, PASS = false, WAIT = null;
-
             let refeed, ownsBuffer = 0, buffer, waiting = 0;
             for (let input in values(processors)) {
                 var res = input.process(event);
                 ownsBuffer += !!input.main.ownsBuffer;
-                waiting += res == WAIT;
+                waiting += res == Events.WAIT;
                 buffer = buffer || input.inputBuffer;
 
                 if (isArray(res) && !waiting)
                     refeed = res;
-                else if (res !== PASS)
+                else if (res !== Events.PASS)
                     refeed = null;
-                if (res === KILL)
+                if (res === Events.KILL)
                     break;
             }
 
@@ -1006,13 +1004,15 @@ var Events = Module("events", {
 
             if (waiting)
                 this._processors = processors;
-            else if (res !== KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
+            else if (res !== Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
                 dactyl.beep();
 
-            if (refeed && refeed.length == 1 && !refeed[0].getPreventDefault())
-                [refeed, res] = [null, PASS];
+            if (refeed && refeed[0] && !refeed[0].getPreventDefault()) {
+                res = Events.PASS;
+                refeed.pop();
+            }
 
-            if (res !== PASS)
+            if (res !== Events.PASS)
                 kill(event);
 
             if (refeed)
@@ -1097,6 +1097,11 @@ var Events = Module("events", {
         }
     }
 }, {
+    KILL: true,
+    PASS: false,
+    WAIT: null,
+
+
     KeyProcessor: Class("KeyProcessor", {
         init: function init(main, extended, hive) {
             this.main = main;
@@ -1105,7 +1110,7 @@ var Events = Module("events", {
             this.hive = hive;
         },
 
-        toString: function () ["[instance KeyProcessor(" + this.main.name, this.extended, this.hive.name + ")]"].join(", "),
+        get toStringParams() [this.main.name, this.extended, this.hive.name],
 
         buffer: "",             // partial command storage
         pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
@@ -1120,31 +1125,29 @@ var Events = Module("events", {
         },
 
         process: function process(event) {
-            const KILL = true, PASS = false, WAIT = null;
-
             function kill(event) {
                 event.stopPropagation();
                 event.preventDefault();
             }
 
             let res = this.onKeyPress(event);
-            if (res === KILL)
+            if (res === Events.KILL)
                 kill(event);
             else if (this.fallthrough) {
                 let evt = isArray(res) ? res[0] : event;
                 let r = dactyl.trapErrors(this.fallthrough, this, evt);
-                if (r === KILL)
+                if (r === Events.KILL)
                     kill(evt);
-                res = r === KILL ? KILL : PASS;
+                res = r === Events.KILL ? Events.KILL : Events.PASS;
                 /*
-                if (r === KILL)
+                if (r === Events.KILL)
                     res = res.slice(1);
                 else
-                    res = r == WAIT ? res : false;
+                    res = r == Events.WAIT ? res : false;
                 */
             }
 
-            if (res != WAIT)
+            if (res != Events.WAIT)
                 this.inputBuffer = "";
             else {
                 let motionMap = (this.pendingMotionMap && this.pendingMotionMap.names[0]) || "";
@@ -1155,7 +1158,6 @@ var Events = Module("events", {
         },
 
         onKeyPress: function onKeyPress(event) {
-            const KILL = true, PASS = false, WAIT = null;
             const self = this;
 
             let key = events.toString(event);
@@ -1186,7 +1188,7 @@ var Events = Module("events", {
                 if (!this.main.count)
                     return this.append(event);
                 else if (this.main.input)
-                    return PASS;
+                    return Events.PASS;
                 else
                     this.append(event);
             }
@@ -1194,7 +1196,7 @@ var Events = Module("events", {
                 let [map, command] = this.pendingArgMap;
                 if (!Events.isEscape(key))
                     execute(map, null, this.count, key, command);
-                return KILL;
+                return Events.KILL;
             }
             else if (!event.skipmap && map && candidates.length == 0) {
                 this.pendingMap = null;
@@ -1213,7 +1215,7 @@ var Events = Module("events", {
                     let [map, command] = this.pendingMotionMap;
                     if (!Events.isEscape(key))
                         execute(map, command, this.motionCount || this.count, null, command);
-                    return KILL;
+                    return Events.KILL;
                 }
                 else if (map.motion) {
                     this.buffer = "";
@@ -1221,9 +1223,9 @@ var Events = Module("events", {
                 }
                 else {
                     if (modes.replaying && !events.waitForPageLoad())
-                        return KILL;
+                        return Events.KILL;
 
-                    return execute(map, null, this.count, null, command) && map.route ? PASS : KILL;
+                    return execute(map, null, this.count, null, command) === Events.PASS ? Events.PASS : Events.KILL;
                 }
             }
             else if (!event.skipmap && this.hive.getCandidates(this.main, command).length > 0) {
@@ -1234,7 +1236,7 @@ var Events = Module("events", {
                 this.append(event);
                 return this.events;
             }
-            return WAIT;
+            return Events.WAIT;
         }
     }),
 
@@ -1291,10 +1293,9 @@ var Events = Module("events", {
             ["<C-v>"], "Pass through next key",
             function () {
                 if (modes.main == modes.QUOTE)
-                    return true;
+                    return Events.PASS;
                 modes.push(modes.QUOTE);
-            },
-            { route: true });
+            });
 
         mappings.add(modes.all,
             ["<Nop>"], "Do nothing",

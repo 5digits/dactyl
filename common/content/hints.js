@@ -1120,7 +1120,7 @@ var Hints = Module("hints", {
             function () {
                 hints.clearTimeout();
                 if (hints.prevInput !== "number")
-                    return true;
+                    return Events.PASS;
 
                 if (hints._hintNumber > 0 && !hints._usedTabKey) {
                     hints._hintNumber = Math.floor(hints._hintNumber / hints.hintKeys.length);
@@ -1133,9 +1133,8 @@ var Hints = Module("hints", {
                     hints._hintNumber = 0;
                     dactyl.beep();
                 }
-                return false;
-            },
-            { route: true });
+                return Events.KILL;
+            });
 
         mappings.add(modes.HINTS, ["<Leader>"],
             "Toggle hint filtering",

@@ -1713,9 +1713,8 @@ var CommandLine = Module("commandline", {
             function () {
                 commandline.resetCompletions();
                 editor.expandAbbreviation(modes.COMMAND_LINE);
-                return true;
-            },
-            { route: true });
+                return Events.PASS;
+            });
 
         mappings.add(myModes,
             ["<C-]>", "<C-5>"], "Expand command line abbreviation",
