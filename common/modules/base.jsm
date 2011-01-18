@@ -238,8 +238,8 @@ function properties(obj, prototypes, debugger_) {
     let seen = { dactylPropertyNames: true };
 
     try {
-        if ("dactylpropertynames" in obj && !prototypes)
-            for (let key in values(dactylpropertynames))
+        if ("dactylPropertyNames" in obj && !prototypes)
+            for (let key in values(obj.dactylPropertyNames))
                 if (key in obj && !set.add(seen, key))
                     yield key;
     }
