@@ -159,16 +159,22 @@ var RangeFinder = Module("rangefinder", {
     }
 }, {
 }, {
+    /* Must come before commandline. */
     modes: function (dactyl, modules, window) {
         const { modes } = modules;
-        /* Must come before commandline. */
+        modes.addMode("FIND", {
+            extended: true,
+            description: "Find mode, active when typing search input"
+        });
         modes.addMode("FIND_FORWARD", {
             extended: true,
-            description: "Forward Find mode, active when typing search input"
+            description: "Forward Find mode, active when typing search input",
+            bases: [modes.FIND]
         }, { history: "search" });
         modes.addMode("FIND_BACKWARD", {
             extended: true,
-            description: "Backward Find mode, active when typing search input"
+            description: "Backward Find mode, active when typing search input",
+            bases: [modes.FIND]
         }, { history: "search" });
     },
     commandline: function (dactyl, modules, window) {
