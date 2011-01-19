@@ -22,8 +22,13 @@ var StatusLine = Module("statusline", {
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
-            highlight.loadCSS(<![CDATA[
-                !AddonBar;#addon-bar  padding: 0 !important; min-height: 18px !important; -moz-appearance: none !important;
+            highlight.loadCSS(String.replace(<![CDATA[
+                !AddonBar;#addon-bar  {
+                    padding-left: 0 !important;
+                    min-height: 18px !important;
+                    -moz-appearance: none !important;
+                    <padding>
+                }
                 !AddonButton;#addon-bar>xul|toolbarbutton  {
                     -moz-appearance: none !important;
                     padding: 0 !important;
@@ -31,7 +36,7 @@ var StatusLine = Module("statusline", {
                     min-width: 0 !important;
                 }
                 AddonButton:not(:hover)  background: transparent !important;
-            ]]>);
+            ]]>, "<padding>", util.OS.isMacOS ? "padding-right: 10px !important;" : ""));
         }
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
