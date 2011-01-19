@@ -1004,7 +1004,7 @@ var Events = Module("events", {
 
             if (waiting)
                 this._processors = processors;
-            else if (res !== Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
+            else if (res === Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
                 dactyl.beep();
 
             if (refeed && refeed[0] && !refeed[0].getPreventDefault()) {
@@ -1020,7 +1020,7 @@ var Events = Module("events", {
                     if (event.originalTarget) {
                         util.dump("Re-feed " + i + " " + refeed.length + " " + (events.toString(event) || "").quote());
                         let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
-                        events.dispatch(event.originalTarget, evt, i == 0 && { skipmap: true });
+                        events.dispatch(event.originalTarget, evt, { skipmap: true });
                     }
                     else if (i > 0)
                         events.onKeyPress(event);
