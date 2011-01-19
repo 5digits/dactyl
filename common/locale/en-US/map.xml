@@ -645,15 +645,15 @@
             Example:
             <code><ex>:command foo -nargs=<str>?</str>
        \ -complete custom,<str delim="'">
-       \   function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str></ex>
-       \ <ex>:echo</ex> <str>Useless </str> + <em>&lt;q-args></em>
+       \   function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str>
+       \ </ex><ex>:echo</ex> <str>Useless </str> + <em>&lt;q-args></em>
 
 <ex>:command foo -nargs=<str>?</str>
        \ -complete custom,<str delim="'">[
        \     ["arg1", "description1"],
        \     ["arg2, "description2"]
-       \ ]</str></ex>
-       \ <ex>:echo</ex> <str>Same as above but simpler </str> + <em>&lt;q-args></em></code>
+       \ ]</str>
+       \ </ex><ex>:echo</ex> <str>Same as above but simpler </str> + <em>&lt;q-args></em></code>
         </p>
 
         <h3 tag="E177 E178 :command-count">Count handling</h3>
