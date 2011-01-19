@@ -193,7 +193,7 @@ var MapHive = Class("MapHive", {
      * @param {string} cmd The candidate key mapping.
      * @returns {boolean}
      */
-    has: function (mode, cmd) this.getStack(mode).candidates[cmd] != null,
+    has: function (mode, cmd) this.getStack(mode).mappings[cmd] != null,
 
     /**
      * Remove the mapping named *cmd* for *mode*.
@@ -543,7 +543,7 @@ var Mappings = Module("mappings", {
 
                     let found = false;
                     for (let [, mode] in Iterator(mapmodes)) {
-                        if (mappings.userHive.hasMap(mode, args[0])) {
+                        if (mappings.userHive.has(mode, args[0])) {
                             mappings.userHive.remove(mode, args[0]);
                             found = true;
                         }
