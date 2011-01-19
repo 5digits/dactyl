@@ -556,7 +556,7 @@
 </item>
 
 <item>
-    <spec>:com<oa>mand</oa><oa>!</oa> <oa><a>attr</a>…</oa> <a>cmd</a> <a>rep</a></spec>
+    <spec>:com<oa>mand</oa><oa>!</oa> <oa><a>options</a>…</oa> <a>cmd</a> <a>rep</a></spec>
     <description>
         <p>
             Define a new user command. The name of the command is
@@ -564,7 +564,8 @@
             command with this name already exists, an error is
             reported unless <oa>!</oa> is specified, in which case
             the command is redefined. Unlike Vim, the command may
-            start with a lowercase letter.
+            start with a lowercase letter. <a>cmd</a> may also be multiple
+            alternative command names separated by commas.
         </p>
 
         <p>
@@ -582,14 +583,14 @@
 
         <p>
             The command's behavior can be altered by providing
-            attributes when the command is defined.
+            options when the command is defined.
         </p>
 
         <h3 tag="E175 E176 :command-nargs">Argument handling</h3>
 
         <p>
             By default, user commands accept no arguments. This can be changed by specifying
-            the -nargs attribute.
+            the -nargs option.
         </p>
 
         <p>The valid values are:</p>
@@ -615,11 +616,15 @@
         <h3 tag="E467 E468 :command-completion-custom">Custom completion</h3>
 
         <p>
-            Custom completion can be provided by specifying the <str>custom,<a>func</a></str> argument to
-            -complete. The <a>func</a> is called with two arguments, a completion context, and
-            an object describing the command's arguments. It should set the context's
-            <str>completions</str> property, or return an object, with <str>items</str> and <str>start</str>
-            properties, describing the completions and where the replacement is to start.
+            Custom completion can be provided by specifying the
+            <str>custom,<a>thing</a></str> argument to -complete. If
+            <a>thing</a> evaluates to a function (i.e., it is a variable
+            holding a function value, or a string containing the definition
+            itself), it is called with two arguments: a completion context, and
+            an object describing the command's arguments. It should set the
+            context's <str>completions</str> property, or return an object with
+            <str>items</str> and <str>start</str> properties describing the
+            completions and where the replacement is to start.
         </p>
 
         <p>
@@ -628,22 +633,36 @@
             [[arg1, description1], [arg2, description2], …]
         </p>
 
-        <!-- TODO: add examples -->
+        <p>
+            Otherwise <a>thing</a> should be an array of the same form as the
+            <str>completions</str> property of the context object.
+        </p>
+
+        <p>
+            Example:
+            <code><ex>:command foo -complete custom,
+\ <str delim="'">function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str>
+\ <ex>:echo <str>Useless</str></ex></ex>
+
+<ex>:command foo -complete custom,<str delim="'">[["arg1", "description1"], ["arg2, "description2"]]</str>
+\ <ex>:echo <str>Same as above but simpler</str></ex></ex>
+            </code>
+        </p>
 
         <h3 tag="E177 E178 :command-count">Count handling</h3>
 
         <p>
-            By default, user commands do not accept a count. Use the -count attribute if
+            By default, user commands do not accept a count. Use the -count option if
             you'd like to have a count passed to your user command. This will then be
-            available for expansion as &lt;count> in the argument.
+            available for expansion as &lt;count> in the replacement.
         </p>
 
         <h3 tag=":command-bang">Special cases</h3>
 
         <p>
             By default, a user command does not have a special version, i.e. a version
-            executed with the ! modifier. Providing the -bang attribute will enable this
-            and &lt;bang> will be available in the argument.
+            executed with the ! modifier. Providing the -bang option will enable this
+            and &lt;bang> will be available in the replacement.
         </p>
 
         <h3 tag=":command-description">Command description</h3>
@@ -656,27 +675,22 @@
         <h3 tag=":command-replacement-text">Replacement text</h3>
 
         <p>
-            The replacement text <a>rep</a> is scanned for escape sequences and these are
+            The replacement text <a>rep</a> is scanned for macro strings and these are
             replaced with values from the user-entered command line. The resulting string
             is then executed as an Ex command.
         </p>
 
-        <p>The valid escape sequences are:</p>
+        <p>The valid macro strings are:</p>
 
         <dl>
             <dt>&lt;args></dt> <dd>The command arguments exactly as supplied</dd>
             <dt>&lt;count></dt><dd>Any supplied count, e.g. 5</dd>
             <dt>&lt;bang></dt> <dd>! if the command was executed with the ! modifier</dd>
-            <dt>&lt;lt></dt>
-            <dd>
-                A literal '&lt;' character to allow for a literal copy of one
-                of the escape sequences. E.g., &lt;lt>args> will expand to a
-                literal &lt;args>
-            </dd>
+            <dt>&lt;lt></dt> <dd>A literal '&lt;' character</dd>
         </dl>
 
         <p>
-            "q-" can be prefixed to the escape sequence so that the value is quoted, making
+            "q-" can be prefixed to the macro string so that the value is quoted, making
             it suitable for expression evaluation. Example: &lt;q-args>
         </p>
     </description>

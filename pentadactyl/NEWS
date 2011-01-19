@@ -84,6 +84,9 @@
       - Added :yank command.
       - :delmarks, :marks and :qmarks now also accept ranges, same as
         :delqmarks.
+      - :command now accepts comma-separated alternative command names
+      - :command -complete custom now also accepts a completions array, see
+        :h :command-completion-custom.
     * Improvements to :style and :highlight:
       - Added -agent flag to :style.
       - The -append flag now updates existing properties rather than

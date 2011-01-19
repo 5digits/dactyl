@@ -40,7 +40,7 @@
     <dt>url</dt>          <dd>URLs</dd>
     <dt>usercommand</dt>  <dd>user commands</dd>
     <dt>window</dt>       <dd>windows</dd>
-    <dt>custom,<a>func</a></dt><dd>custom completion, provided by <a>func</a></dd>
+    <dt>custom,<a>thing</a></dt><dd>custom completion, provided by <a>thing</a></dd>
 </dl>
 
 </overlay>

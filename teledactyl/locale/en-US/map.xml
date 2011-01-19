@@ -39,7 +39,7 @@
     <dt>toolbar</dt>      <dd>toolbars</dd>
     <dt>url</dt>          <dd>URLs</dd>
     <dt>usercommand</dt>  <dd>user commands</dd>
-    <dt>custom,<a>func</a></dt><dd>custom completion, provided by <a>func</a></dd>
+    <dt>custom,<a>thing</a></dt><dd>custom completion, provided by <a>thing</a></dd>
 </dl>
 
 </overlay>
