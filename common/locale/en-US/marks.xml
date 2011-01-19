@@ -102,7 +102,7 @@
         <p>
             Toggle bookmarked state of current URL. Add/remove a
             bookmark for the current location, depending on whether
-            it is currently bookmarked. New bookmarks are placed in
+            it is already bookmarked. New bookmarks are placed in
             the <em>Unfiled Bookmarks</em> folder, and don't appear
             in the bookmarks menu or toolbar, but do appear in
             location bar and <em>:open</em> completions, as well as
@@ -129,7 +129,7 @@
             bookmarks in new tabs rather than listing them.
         </p>
 
-        <p>The bookmarks may also be filtered via the following options,</p>
+        <p>The bookmarks may also be filtered via the following options:</p>
 
         <dl dt="width: 8em;">
             <dt>-keyword</dt>
@@ -298,10 +298,10 @@
 <h2 tag="quickmarks">QuickMarks</h2>
 
 <p>
-    QuickMarks are bookmarks stripped to the bone for quickly
-    getting to the pages that you visit most. A QuickMark is very
-    simply a URL assigned to a letter or number. They can therefore
-    be saved or opened with only three key presses each.
+    QuickMarks are bookmarks stripped to the bone for quickly getting to the
+    pages that you visit most. A QuickMark is simply a URL assigned to a letter
+    or number. They can therefore be saved or opened with only three key
+    presses each. QuickMarks are persistent across browser sessions.
 </p>
 
 <item>
@@ -312,8 +312,7 @@
         <p>
             Add new QuickMark for current URL. You can later jump to
             the mark with <k>go</k><a>a-zA-Z0-9</a>
-            <k>gn</k><a>a-zA-Z0-9</a>. QuickMarks are persistent
-            across browser sessions.
+            <k>gn</k><a>a-zA-Z0-9</a>.
         </p>
     </description>
 </item>
@@ -393,16 +392,15 @@
 <h2 tag="urlmarks localmarks">Local marks and URL marks</h2>
 
 <p>
-    Local and URL marks allow you to mark your position on the
-    current page to quickly return later. Each mark is assigned to a
-    letter. Lowercase letters behave as local marks, while uppercase
-    letters act as URL marks. The difference between the two is
-    that local marks apply uniquely to each page, while URL marks
-    mark a specific position on a specific page. So, while the mark
-    <em>m</em> may take you to the top of the page on Site 1, it may
-    take you to the middle on Site 2. The mark <em>M</em>, on the
-    other hand, will always return you to Site 1, no matter where
-    before hand.
+    Local and URL marks allow you to mark your position on the current page to
+    quickly return later. Each mark is assigned to a letter. Lowercase letters
+    behave as local marks, while uppercase letters act as URL marks. The
+    difference between the two is that local marks apply uniquely to each page,
+    while URL marks mark a specific position on a specific page. So, while the
+    mark <em>m</em> may take you to the top of the page on Site 1, it may take
+    you to the middle on Site 2. The mark <em>M</em>, on the other hand, will
+    always return you to Site 1, possibly switching buffers or creating a new
+    one. All marks are persistent across browser sessions.
 </p>
 
 <item>
@@ -420,11 +418,13 @@
 <item>
     <tags>` '</tags>
     <strut/>
-    <spec>'<a>a-zA-Z</a></spec>
+    <spec>'<a>a-zA-Z'</a></spec>
+    <spec>`<a>a-zA-Z'</a></spec>
     <description>
         <p>
-            Jump to the mark. Marks a-z are local to the buffer, whereas A-Z are valid
-            between buffers.
+            Jump to the mark. Marks a-z are local to the buffer, whereas A-Z
+            are valid between buffers. The special mark ' holds the buffer
+            position before the last scrolling action.
         </p>
     </description>
 </item>
@@ -443,7 +443,6 @@
             <li><ex>:delmarks b-p</ex> deletes all marks in the range b to p</li>
             <li><ex>:delmarks!</ex> deletes all marks for the current buffer</li>
         </ul>
-
     </description>
 </item>
 
