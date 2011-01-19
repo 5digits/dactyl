@@ -398,7 +398,7 @@ var Modes = Module("modes", {
         },
 
         isinstance: function (obj)
-            this.allBases.indexOf(obj >= 0) || callable(obj) && this instanceof obj,
+            this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
         allBases: Class.memoize(function () {
             let seen = {}, res = [], queue = this.bases;
