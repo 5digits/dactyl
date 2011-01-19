@@ -1115,8 +1115,6 @@ var Events = Module("events", {
             this.main = main;
             this.events = [];
             this.hive = hive;
-            if (!hive.get)
-                util.dumpStack(main + " " + hive + " !hive.get")
         },
 
         get toStringParams() [this.main.name, this.hive.name],
@@ -1135,7 +1133,6 @@ var Events = Module("events", {
 
         process: function process(event) {
             function kill(event) {
-                util.dumpStack("kill " + events.toString(event));
                 event.stopPropagation();
                 event.preventDefault();
             }

@@ -760,6 +760,7 @@ var Commands = Module("commands", {
                     return [count, "", ""];
                 return [count, io.readHeredoc(arg), ""];
             }
+
             let [count, arg, quote] = Commands.parseArg(str, null, _keepQuotes);
             if (quote == "\\" && !complete)
                 return [, , , "Trailing \\"];

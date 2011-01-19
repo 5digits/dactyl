@@ -309,7 +309,11 @@ var Buffer = Module("buffer", {
         // happens when the users switches tabs
         onLocationChange: function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
+
+            delete mappings.hives;
+
             statusline.updateUrl();
+
             if (webProgress.DOMWindow && uri) {
                 statusline.updateProgress(webProgress.DOMWindow);
 

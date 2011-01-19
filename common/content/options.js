@@ -389,7 +389,7 @@ var Option = Class("Option", {
     },
 
     parseRegexp: function (value, result, flags) {
-        if (isArray(flags)) // Called by map
+        if (isArray(flags)) // Called by Array.map
             result = flags = undefined;
 
         let [, bang, val] = /^(!?)(.*)/.exec(value);

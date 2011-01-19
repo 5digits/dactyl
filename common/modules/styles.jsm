@@ -311,6 +311,10 @@ var Styles = Module("Styles", {
     matchFilter: function (filter) {
         if (filter === "*")
             var test = function test(uri) true;
+        else if (filter[0] == "^") {
+            let re = RegExp(filter[0]);
+            test = function test(uri) re.test(uri.spec);
+        }
         else if (/[*]$/.test(filter)) {
             let re = RegExp("^" + util.regexp.escape(filter.substr(0, filter.length - 1)));
             test = function test(uri) re.test(uri.spec);

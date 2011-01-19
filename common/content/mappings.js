@@ -122,12 +122,16 @@ var Map = Class("Map", {
 });
 
 var MapHive = Class("MapHive", {
-    init: function init(name) {
+    init: function init(name, description, filter) {
         this.name = name;
         this.stacks = {};
+        this.description = description;
+        this.filter = filter || function (uri) true;
     },
 
     get toStringParams() [this.name],
+
+    get builtin() mappings.builtinHives.indexOf(this) >= 0,
 
     /**
      * Iterates over all mappings present in all of the given *modes*.
@@ -263,15 +267,18 @@ var MapHive = Class("MapHive", {
  */
 var Mappings = Module("mappings", {
     init: function () {
-        this.userHive = MapHive("user");
-        this.builtinHive = MapHive("builtin");
-        this.hives = array([this.userHive, this.builtinHive]);
+        this.userHive = MapHive("user", "User-defined mappings");
+        this.builtinHive = MapHive("builtin", "Builtin mappings");
+
+        this.builtinHives = array([this.userHive, this.builtinHive]);
+        this.allHives = [this.userHive, this.builtinHive];
     },
 
-    _addMap: function (map) {
-        let hive = map.user ? this.userHive : this.builtinHive;
+    hives: Class.memoize(function () array(this.allHives.filter(function (h) h.filter(buffer.uri)))),
 
+    _addMap: function (map, hive) {
         map.definedAt = commands.getCaller(Components.stack.caller.caller);
+        map.hive = hive;
         map.modes.forEach(function (mode) {
             hive.add(mode, map);
         });
@@ -311,7 +318,7 @@ var Mappings = Module("mappings", {
      * @optional
      */
     add: function (modes, keys, description, action, extra) {
-        this._addMap(Map(modes, keys, description, action, extra));
+        this._addMap(Map(modes, keys, description, action, extra), this.builtinHive);
     },
 
     /**
@@ -335,8 +342,25 @@ var Mappings = Module("mappings", {
             for (let [, mode] in Iterator(map.modes))
                 this.userHive.remove(mode, name);
 
-        this._addMap(map);
+        this._addMap(map, extra.hive || this.userHive);
     },
+
+    addHive: function addHive(name, filter, description) {
+        this.removeHive(name);
+        let hive = MapHive(name, description, filter);
+        this.allHives.unshift(hive);
+        return hive;
+    },
+
+    removeHive: function removeHive(name, filter) {
+        let hive = this.getHive(name);
+        dactyl.assert(!hive || !hive.builtin, "Not replacing builtin hive");
+        if (hive)
+            this.allHives.splice(this.allHives.indexOf(hive), 1);
+        return hive;
+    },
+
+    getHive: function getHive(name) array.nth(this.allHives, function (h) h.name == name, 0) || null,
 
     /**
      * Returns the map from *mode* named *cmd*.
@@ -416,6 +440,9 @@ var Mappings = Module("mappings", {
                 if (noremap)
                     args["-builtin"] = true;
 
+                if (isString(args["-group"]))
+                    args["-group"] = mappings.getHive(args["-group"]);
+
                 if (!rhs) // list the mapping
                     mappings.list(mapmodes, mappings.expandLeader(lhs));
                 else {
@@ -424,6 +451,7 @@ var Mappings = Module("mappings", {
                         Command.bindMacro(args, "-keys", function (params) params),
                         {
                             count: args["-count"],
+                            hive: args["-group"],
                             noremap: args["-builtin"],
                             persist: !args["-nopersist"],
                             get rhs() String(this.action),
@@ -464,6 +492,17 @@ var Mappings = Module("mappings", {
                         {
                             names: ["-ex", "-e"],
                             description: "Execute this mapping as an Ex command rather than keys"
+                        },
+                        {
+                            names: ["-group", "-g"],
+                            description: "Mapping group to which to add this mapping",
+                            type: CommandOption.STRING,
+                            get default() io.sourcing && io.sourcing.mapHive || mappings.userHive,
+                            completer: function (context) {
+                                context.keys = { text: "name", description: function (h) h.description || h.filter };
+                                context.completions = mappings.allHives.filter(function (h) h.name != "builtin");
+                            },
+                            validator: Option.validateCompleter
                         },
                         {
                             names: ["-javascript", "-js", "-j"],
@@ -563,6 +602,58 @@ var Mappings = Module("mappings", {
                     ]
                 });
         }
+
+        commands.add(["mapg[roup]"],
+            "Create or select a mapping group",
+            function (args) {
+                dactyl.assert(args.length <= 2, "Trailing characters");
+
+                if (args.length == 0) {
+                    throw FailedAssertion("Not implemented");
+                    return;
+                }
+
+                let name = Option.dequote(args[0]);
+                let hive = mappings.getHive(name);
+
+                if (args.length == 2) {
+                    dactyl.assert(!hive || args.bang, "Group exists");
+
+                    let filter = function siteFilter(uri)
+                        siteFilter.filters.every(function (f) f(uri) == f.result);
+
+                    update(filter, {
+                        toString: function () this.filters.join(","),
+                        filters: Option.splitList(args[1], true).map(function (pattern) {
+                            let [, res, filter] = /^(!?)(.*)/.exec(pattern);
+
+                            return update(Styles.matchFilter(filter), {
+                                result: !res,
+                                toString: function () pattern
+                            });
+                        })
+                    });
+
+                    hive = mappings.addHive(name, filter, args["-description"]);
+                }
+
+                dactyl.assert(hive, "No mapping group: " + name);
+                dactyl.assert(hive.name != "builtin", "Can't map to builtin hive");
+                if (io.sourcing)
+                    io.sourcing.mapHive = hive;
+            },
+            {
+                argCount: "*",
+                bang: true,
+                keepQuotes: true,
+                options: [
+                    {
+                        names: ["-description", "-d"],
+                        description: "A description of this mapping group",
+                        type: CommandOption.STRING
+                    }
+                ]
+            });
 
         let modeFlag = {
             names: ["-mode", "-m"],
@@ -683,7 +774,7 @@ var Mappings = Module("mappings", {
             "string", "\\", {
                 setter: function (value) {
                     if (this.hasChanged)
-                        for (let hive in mappings.hives.iterValues())
+                        for (let hive in values(mappings.allHives))
                             for (let stack in values(hive.stacks))
                                 delete stack.states;
                     return value;
