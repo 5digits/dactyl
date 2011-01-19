@@ -682,24 +682,21 @@
         <h3 tag=":command-replacement-text">Replacement text</h3>
 
         <p>
-            The replacement text <a>rep</a> is scanned for macro strings and these are
+            The replacement text <a>rep</a> is scanned for <t>macro-string</t>s and these are
             replaced with values from the user-entered command line. The resulting string
             is then executed as an Ex command.
         </p>
 
-        <p>The valid macro strings are:</p>
+        <p>
+            In addition to the standard parameters listed in
+            <t>macro-string</t>, the following parameters are available:
+        </p>
 
         <dl>
             <dt>&lt;args></dt> <dd>The command arguments exactly as supplied</dd>
             <dt>&lt;count></dt><dd>Any supplied count, e.g. 5</dd>
             <dt>&lt;bang></dt> <dd>! if the command was executed with the ! modifier</dd>
-            <dt>&lt;lt></dt> <dd>A literal '&lt;' character</dd>
         </dl>
-
-        <p>
-            "q-" can be prefixed to the macro string so that the value is quoted, making
-            it suitable for expression evaluation. Example: &lt;q-args>
-        </p>
     </description>
 </item>
 
