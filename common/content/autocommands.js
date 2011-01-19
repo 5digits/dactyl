@@ -148,7 +148,7 @@ var AutoCommands = Module("autocommands", {
                     let validEvents = Object.keys(config.autocommands);
                     validEvents.push("*");
 
-                    events = event.split(",");
+                    events = Option.parse.stringlist(event);
                     dactyl.assert(events.every(function (event) validEvents.indexOf(event) >= 0),
                         "E216: No such group or event: " + event);
                 }
@@ -180,6 +180,7 @@ var AutoCommands = Module("autocommands", {
                         return args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
                 hereDoc: true,
+                keepQuotes: true,
                 literal: 2,
                 options: [
                     {

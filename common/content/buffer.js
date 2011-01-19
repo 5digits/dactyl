@@ -221,7 +221,7 @@ var Buffer = Module("buffer", {
 
     onDOMContentLoaded: function onDOMContentLoaded(event) {
         let doc = event.originalTarget;
-        if (doc instanceof HTMLDocument && !doc.defaultView.frameElement)
+        if (doc instanceof HTMLDocument)
             this._triggerLoadAutocmd("DOMLoad", doc);
     },
 
