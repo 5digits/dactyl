@@ -627,7 +627,7 @@ var Mappings = Module("mappings", {
                         filters: Option.splitList(args[1], true).map(function (pattern) {
                             let [, res, filter] = /^(!?)(.*)/.exec(pattern);
 
-                            return update(Styles.matchFilter(filter), {
+                            return update(Styles.matchFilter(Option.dequote(filter)), {
                                 result: !res,
                                 toString: function () pattern
                             });
