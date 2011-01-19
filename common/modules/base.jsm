@@ -407,7 +407,7 @@ function isSubclass(targ, src) {
  * returns true if ({}.toString.call(object) == "[object <interfaces>]").
  *
  * @param {object} object The object to check.
- * @param {object|string|[object|string]} interfaces The types to check object against.
+ * @param {constructor|[constructor|string]} interfaces The types to check object against.
  * @returns {boolean}
  */
 var isinstance_types = {

@@ -1076,9 +1076,10 @@ var Events = Module("events", {
 
     onResize: function onResize(event) {
         if (window.fullScreen != this._fullscreen) {
+            statusline.statusBar.removeAttribute("moz-collapsed");
             this._fullscreen = window.fullScreen;
             dactyl.triggerObserver("fullscreen", this._fullscreen);
-            autocommands.trigger("Fullscreen", { state: this._fullscreen });
+            autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
         }
     },
 
