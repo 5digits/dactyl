@@ -6,6 +6,8 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+try {
+
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("prefs", {
     exports: ["Prefs", "localPrefs", "prefs"],
@@ -18,19 +20,31 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     RESTORE: "extensions.dactyl.restore.",
     INIT: {},
 
-    init: function (branch) {
+    init: function (branch, defaults) {
         this._prefContexts = [];
 
-        util.addObserver(this);
-        this.branch = services.pref.getBranch(branch || "").QueryInterface(Ci.nsIPrefBranch2);
-        this.branch.addObserver("", this, false);
-        this._observers = {};
+        this.branch = services.pref[defaults ? "getDefaultBranch" : "getBranch"](branch || "");
+        if (this.branch instanceof Ci.nsIPrefBranch2)
+            this.branch.QueryInterface(Ci.nsIPrefBranch2);
 
-        this.restore();
+        if (!defaults)
+            this.restore();
+
+        this.defaults = defaults ? this : this.constructor(branch, true);
+
+        this._observers = {};
     },
 
     cleanup: function cleanup() {
+        if (this.defaults != this)
+            this.defaults.cleanup();
+
         this.branch.removeObserver("", this);
+        this._observers = {};
+        if (this.observe) {
+            this.observe.unregister();
+            delete this.observe;
+        }
     },
 
     observers: {
@@ -56,6 +70,11 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *    new value of the preference whenever it changes.
      */
     watch: function (pref, callback, strong) {
+        if (!this.observe) {
+            util.addObserver(this);
+            this.branch.addObserver("", this, false);
+        }
+
         if (!this._observers[pref])
             this._observers[pref] = [];
         this._observers[pref].push(!strong ? Cu.getWeakReference(callback) : { get: function () callback });
@@ -107,16 +126,34 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {value} defaultValue The value to return if the preference
      *     is unset.
      */
-    get: function (name, defaultValue) this._load(name, defaultValue),
+    get: function get(name, defaultValue) {
+        if (defaultValue == null)
+            defaultValue = null;
 
-    /**
-     * Returns the default value of a preference
-     *
-     * @param {string} name The preference name.
-     * @param {value} defaultValue The value to return if the preference
-     *     has no default value.
-     */
-    getDefault:  function (name, defaultValue) this._load(name, defaultValue, true),
+        let type = this.branch.getPrefType(name);
+        try {
+            switch (type) {
+            case Ci.nsIPrefBranch.PREF_STRING:
+                let value = this.branch.getComplexValue(name, Ci.nsISupportsString).data;
+                // try in case it's a localized string (will throw an exception if not)
+                if (!this.branch.prefIsLocked(name) && !this.branch.prefHasUserValue(name) &&
+                    RegExp("chrome://.+/locale/.+\\.properties").test(value))
+                        value = this.branch.getComplexValue(name, Ci.nsIPrefLocalizedString).data;
+                return value;
+            case Ci.nsIPrefBranch.PREF_INT:
+                return this.branch.getIntPref(name);
+            case Ci.nsIPrefBranch.PREF_BOOL:
+                return this.branch.getBoolPref(name);
+            default:
+                return defaultValue;
+            }
+        }
+        catch (e) {
+            return defaultValue;
+        }
+    },
+
+    getDefault: deprecated("Prefs#defaults.get", function getDefault(name, defaultValue) this.defaults.get(name, defaultValue)),
 
     /**
      * Returns the names of all preferences.
@@ -127,11 +164,11 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     getNames: function (branch) this.branch.getChildList(branch || "", { value: 0 }),
 
     _checkSafe: function (name, message, value) {
-        let curval = this._load(name, null, false);
+        let curval = this.get(name, null);
         if (arguments.length > 2 && curval === value)
             return;
-        let defval = this._load(name, null, true);
-        let saved  = this._load(this.SAVED + name);
+        let defval = this.defaults.get(name, null);
+        let saved  = this.get(this.SAVED + name);
 
         if (saved == null && curval != defval || saved != null && curval != saved) {
             let msg = "Warning: setting preference " + name + ", but it's changed from its default value.";
@@ -163,8 +200,8 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     safeSet: function (name, value, message, skipSave) {
         this._checkSafe(name, message, value);
-        this._store(name, value);
-        this[skipSave ? "reset" : "_store"](this.SAVED + name, value);
+        this.set(name, value);
+        this[skipSave ? "reset" : "set"](this.SAVED + name, value);
     },
 
     /**
@@ -174,7 +211,40 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {value} value The new preference value.
      */
     set: function (name, value) {
-        this._store(name, value);
+        if (this._prefContexts.length) {
+            let val = this.get(name, null);
+            if (val != null)
+                this._prefContexts[this._prefContexts.length - 1][name] = val;
+        }
+
+        function assertType(needType)
+            util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
+                type === Ci.nsIPrefBranch.PREF_INT
+                                ? "E521: Number required after =: " + name + "=" + value
+                                : "E474: Invalid argument: " + name + "=" + value);
+
+        let type = this.branch.getPrefType(name);
+        switch (typeof value) {
+        case "string":
+            assertType(Ci.nsIPrefBranch.PREF_STRING);
+
+            let supportString = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+            supportString.data = value;
+            this.branch.setComplexValue(name, Ci.nsISupportsString, supportString);
+            break;
+        case "number":
+            assertType(Ci.nsIPrefBranch.PREF_INT);
+
+            this.branch.setIntPref(name, value);
+            break;
+        case "boolean":
+            assertType(Ci.nsIPrefBranch.PREF_BOOL);
+
+            this.branch.setBoolPref(name, value);
+            break;
+        default:
+            throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
+        }
     },
 
     /**
@@ -241,7 +311,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     popContext: function () {
         for (let [k, v] in Iterator(this._prefContexts.pop()))
-            this._store(k, v);
+            this.set(k, v);
     },
 
     /**
@@ -261,71 +331,6 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         }
         finally {
             this.popContext();
-        }
-    },
-
-    _store: function (name, value) {
-        if (this._prefContexts.length) {
-            let val = this._load(name, null);
-            if (val != null)
-                this._prefContexts[this._prefContexts.length - 1][name] = val;
-        }
-
-        function assertType(needType)
-            util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
-                type === Ci.nsIPrefBranch.PREF_INT
-                                ? "E521: Number required after =: " + name + "=" + value
-                                : "E474: Invalid argument: " + name + "=" + value);
-
-        let type = this.branch.getPrefType(name);
-        switch (typeof value) {
-        case "string":
-            assertType(Ci.nsIPrefBranch.PREF_STRING);
-
-            let supportString = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
-            supportString.data = value;
-            this.branch.setComplexValue(name, Ci.nsISupportsString, supportString);
-            break;
-        case "number":
-            assertType(Ci.nsIPrefBranch.PREF_INT);
-
-            this.branch.setIntPref(name, value);
-            break;
-        case "boolean":
-            assertType(Ci.nsIPrefBranch.PREF_BOOL);
-
-            this.branch.setBoolPref(name, value);
-            break;
-        default:
-            throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
-        }
-    },
-
-    _load: function (name, defaultValue, defaultBranch) {
-        if (defaultValue == null)
-            defaultValue = null;
-
-        let branch = defaultBranch ? services.pref.getDefaultBranch(this.branch.root) : this.branch;
-        let type = this.branch.getPrefType(name);
-        try {
-            switch (type) {
-            case Ci.nsIPrefBranch.PREF_STRING:
-                let value = branch.getComplexValue(name, Ci.nsISupportsString).data;
-                // try in case it's a localized string (will throw an exception if not)
-                if (!this.branch.prefIsLocked(name) && !this.branch.prefHasUserValue(name) &&
-                    RegExp("chrome://.+/locale/.+\\.properties").test(value))
-                        value = branch.getComplexValue(name, Ci.nsIPrefLocalizedString).data;
-                return value;
-            case Ci.nsIPrefBranch.PREF_INT:
-                return branch.getIntPref(name);
-            case Ci.nsIPrefBranch.PREF_BOOL:
-                return branch.getBoolPref(name);
-            default:
-                return defaultValue;
-            }
-        }
-        catch (e) {
-            return defaultValue;
         }
     }
 }, {
@@ -349,6 +354,6 @@ defineModule.modules.push(localPrefs);
 
 endModule();
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:
