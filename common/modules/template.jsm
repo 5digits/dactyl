@@ -339,6 +339,7 @@ var Template = Module("Template", {
                                     <span highlight="LinkInfo" xmlns:dactyl={NS}>Defined at {sourceLink(frame)}</span>
                         }</span>
                     </td>
+                    { template.map(item.columns, function (c) <td>{c}</td>) }
                     <td>{desc(item)}</td>
                 </tr>)
             }

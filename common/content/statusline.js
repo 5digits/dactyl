@@ -36,7 +36,7 @@ var StatusLine = Module("statusline", {
                     min-width: 0 !important;
                 }
                 AddonButton:not(:hover)  background: transparent !important;
-            ]]>, "<padding>", util.OS.isMacOS ? "padding-right: 10px !important;" : ""));
+            ]]>, "<padding>", util.OS.isMacOSX ? "padding-right: 10px !important;" : ""));
         }
 
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
