@@ -1736,7 +1736,7 @@ var CommandLine = Module("commandline", {
             function () { events.feedkeys("<S-Down>"); });
 
         // add the ":" mapping in all but insert mode mappings
-        mappings.add(modes.matchModes({ extended: false, input: false }),
+        mappings.add(modes.COMMAND,
             [":"], "Enter command-line mode",
             function () { commandline.open(":", "", modes.EX); });
 

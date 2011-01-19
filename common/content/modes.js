@@ -36,27 +36,28 @@ var Modes = Module("modes", {
         this.boundProperties = {};
 
         this.addMode("BASE", {
-            char: "b",
-            description: "The base mode for most other modes"
+            description: "The base mode for all other modes"
         });
+        this.addMode("MAIN", {
+            char: "m",
+            description: "The base mode for most other modes",
+            bases: [this.BASE]
+        });
+        this.addMode("COMMAND", {
+            description: "The base mode for most modes which accept commands rather than input",
+            hidden: true
+        });
+
         this.addMode("NORMAL", {
             char: "n",
             description: "Active when nothing is focused",
+            bases: [this.COMMAND],
             display: function () null
-        });
-        this.addMode("INPUT", {
-            char: "I",
-            description: "The base mode for input modes, including Insert and Command Line"
-        });
-        this.addMode("INSERT", {
-            char: "i",
-            description: "Active when an input element is focused",
-            input: true,
-            ownsFocus: true
         });
         this.addMode("VISUAL", {
             char: "v",
             description: "Active when text is selected",
+            bases: [this.COMMAND],
             ownsFocus: true,
             display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : "")
         }, {
@@ -70,15 +71,9 @@ var Modes = Module("modes", {
                     editor.unselectText();
             }
         });
-
-        this.addMode("COMMAND_LINE", {
-            char: "c",
-            description: "Active when the command line is focused",
-            input: true
-        });
-
         this.addMode("CARET", {
             description: "Active when the caret is visible in the web content",
+            bases: [this.COMMAND]
         }, {
 
             get pref()    prefs.get("accessibility.browsewithcaret"),
@@ -99,8 +94,27 @@ var Modes = Module("modes", {
         this.addMode("TEXT_EDIT", {
             char: "t",
             description: "Vim-like editing of input elements",
+            bases: [this.COMMAND],
             ownsFocus: true
         });
+
+        this.addMode("INPUT", {
+            char: "I",
+            description: "The base mode for input modes, including Insert and Command Line"
+        });
+        this.addMode("INSERT", {
+            char: "i",
+            description: "Active when an input element is focused",
+            input: true,
+            ownsFocus: true
+        });
+        this.addMode("COMMAND_LINE", {
+            char: "c",
+            description: "Active when the command line is focused",
+            input: true
+        });
+
+
         this.addMode("EMBED", {
             input: true,
             description: "Active when an <embed> or <object> element is focused",
@@ -160,7 +174,7 @@ var Modes = Module("modes", {
             input: true
         });
         this.addMode("IGNORE", { hidden: true }, {
-            onEvent: function (event) false,
+            onEvent: function (event) Events.KILL,
             bases: []
         });
 
@@ -410,7 +424,7 @@ var Modes = Module("modes", {
             return res;
         }),
 
-        get bases() this.input ? [modes.INPUT] : [modes.BASE],
+        get bases() this.input ? [modes.INPUT] : [modes.MAIN],
 
         get toStringParams() [this.name],
 
