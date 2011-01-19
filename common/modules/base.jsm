@@ -399,15 +399,15 @@ function isSubclass(targ, src) {
 }
 
 /**
- * Returns true if targ is an instance or src. If src is an array,
- * returns true if targ is an instance of any element of src. If src is
- * the object form of a primitive type, returns true if targ is a
- * non-boxed version of the type, i.e., if (typeof targ == "string"),
- * isinstance(targ, String) is true. Finally, if src is a string,
- * returns true if ({}.toString.call(targ) == "[object <src>]").
+ * Returns true if object is an instance or interfaces. If interfaces is an array,
+ * returns true if object is an instance of any element of interfaces. If interfaces is
+ * the object form of a primitive type, returns true if object is a
+ * non-boxed version of the type, i.e., if (typeof object == "string"),
+ * isinstance(object, String) is true. Finally, if interfaces is a string,
+ * returns true if ({}.toString.call(object) == "[object <interfaces>]").
  *
- * @param {object} targ The object to check.
- * @param {object|string|[object|string]} src The types to check targ against.
+ * @param {object} object The object to check.
+ * @param {object|string|[object|string]} interfaces The types to check object against.
  * @returns {boolean}
  */
 var isinstance_types = {
@@ -416,25 +416,25 @@ var isinstance_types = {
     function: Function,
     number: Number
 };
-function isinstance(targ, src) {
-    if (targ == null)
+function isinstance(object, interfaces) {
+    if (object == null)
         return false;
 
-    src = Array.concat(src);
-    for (var i = 0; i < src.length; i++) {
-        if (typeof src[i] === "string") {
-            if (objproto.toString.call(targ) === "[object " + src[i] + "]")
+    interfaces = Array.concat(interfaces);
+    for (var i = 0; i < interfaces.length; i++) {
+        if (typeof interfaces[i] === "string") {
+            if (objproto.toString.call(object) === "[object " + interfaces[i] + "]")
                 return true;
         }
-        else if ("isinstance" in targ) {
-            if (targ.isinstance(src[i]) && targ.isinstance !== isinstance)
+        else if ("isinstance" in object && object.isinstance !== isinstance) {
+            if (object.isinstance(interfaces[i]))
                 return true;
         }
         else {
-            if (targ instanceof src[i])
+            if (object instanceof interfaces[i])
                 return true;
-            var type = isinstance_types[typeof targ];
-            if (type && isSubclass(src[i], type))
+            var type = isinstance_types[typeof object];
+            if (type && isSubclass(interfaces[i], type))
                 return true;
         }
     }
