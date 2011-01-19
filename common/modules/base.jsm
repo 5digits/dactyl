@@ -427,7 +427,7 @@ function isinstance(targ, src) {
                 return true;
         }
         else if ("isinstance" in targ) {
-            if (targ.isinstance(src[i]))
+            if (targ.isinstance(src[i]) && targ.isinstance !== isinstance)
                 return true;
         }
         else {
