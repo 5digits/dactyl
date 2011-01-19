@@ -90,7 +90,7 @@ var Map = Class("Map", {
      */
     hasName: function (name) this.keys.indexOf(name) >= 0,
 
-    keys: Class.memoize(function () this.names.map(mappings.expandLeader)),
+    get keys() this.names.map(mappings.expandLeader),
 
     /**
      * Execute the action for this mapping.
@@ -149,7 +149,7 @@ var MapHive = Class("MapHive", {
      */
     getStack: function getStack(mode) {
         if (!(mode in this.stacks))
-            return this.stacks[mode] = [];
+            return this.stacks[mode] = MapHive.Stack();
         return this.stacks[mode];
     },
 
@@ -161,7 +161,9 @@ var MapHive = Class("MapHive", {
      * @returns {Map|null}
      */
     add: function (mode, map) {
-        this.getStack(mode).push(map);
+        let stack = this.getStack(mode);
+        stack.push(map);
+        delete stack.states;
     },
 
     /**
@@ -171,21 +173,17 @@ var MapHive = Class("MapHive", {
      * @param {string} cmd The map name to match.
      * @returns {Map|null}
      */
-    get: function (mode, cmd) array.nth(this.getStack(mode), function (m) m.hasName(cmd), 0),
+    get: function (mode, cmd) this.getStack(mode).mappings[cmd],
 
     /**
-     * Returns an array of maps with names starting with but not equal to
+     * Returns a count of maps with names starting with but not equal to
      * *prefix*.
      *
      * @param {Modes.Mode} mode The mode to search.
      * @param {string} prefix The map prefix string to match.
-     * @returns {Map[]}
+     * @returns {number)
      */
-    getCandidates: function (mode, prefix) {
-        let filter = util.regexp("^" + util.regexp.escape(prefix) + ".").closure.test;
-        return this.getStack(mode)
-                   .filter(function (map) map.keys.some(filter));
-    },
+    getCandidates: function (mode, prefix) this.getStack(mode).candidates[prefix] || 0,
 
     /**
      * Returns whether there is a user-defined mapping *cmd* for the specified
@@ -195,7 +193,7 @@ var MapHive = Class("MapHive", {
      * @param {string} cmd The candidate key mapping.
      * @returns {boolean}
      */
-    has: function (mode, cmd) this.getStack(mode).some(function (map) map.hasName(cmd)),
+    has: function (mode, cmd) this.getStack(mode).candidates[cmd] != null,
 
     /**
      * Remove the mapping named *cmd* for *mode*.
@@ -204,13 +202,15 @@ var MapHive = Class("MapHive", {
      * @param {string} cmd The map name to match.
      */
     remove: function (mode, cmd) {
-        for (let [i, map] in Iterator(this.getStack(mode))) {
+        let stack = this.getStack(mode);
+        for (let [i, map] in array.iterItems(stack)) {
             let j = map.names.indexOf(cmd);
             if (j >= 0) {
+                delete stack.states;
                 map.names.splice(j, 1);
                 if (map.names.length == 0) // FIX ME.
                     for (let [mode, stack] in Iterator(this.stacks))
-                        this.stacks[mode] = stack.filter(function (m) m != map);
+                        this.stacks[mode] = MapHive.Stack(stack.filter(function (m) m != map));
                 return;
             }
         }
@@ -224,6 +224,38 @@ var MapHive = Class("MapHive", {
     clear: function (mode) {
         this.stacks[mode] = [];
     }
+}, {
+    Stack: Class("Stack", Array, {
+        init: function (ary) {
+            let self = ary || [];
+            self.__proto__ = this.__proto__;
+            return self;
+        },
+
+        __iterator__: function () array.iterValues(this),
+
+        get candidates() this.states.candidates,
+        get mappings() this.states.mappings,
+
+        states: Class.memoize(function () {
+            var states = {
+                candidates: {},
+                mappings: {}
+            };
+
+            for (let map in this)
+                for (let name in values(map.keys)) {
+                    states.mappings[name] = map;
+                    let state = "";
+                    for (let key in events.iterKeys(name)) {
+                        state += key;
+                        if (state !== name)
+                            states.candidates[state] = (states.candidates[state] || 0) + 1
+                    }
+                }
+            return states;
+        })
+    })
 });
 
 /**
@@ -653,8 +685,7 @@ var Mappings = Module("mappings", {
                     if (this.hasChanged)
                         for (let hive in mappings.hives.iterValues())
                             for (let stack in values(hive.stacks))
-                                for (let map in values(stack))
-                                    delete map.keys;
+                                delete stack.states;
                     return value;
                 }
             });

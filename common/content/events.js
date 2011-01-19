@@ -393,6 +393,12 @@ var Events = Module("events", {
         return events.fromString(keys, unknownOk).map(events.closure.toString).join("");
     },
 
+    iterKeys: function (keys) {
+        let match, re = /<.*?>?>|[^<]/g;
+        while (match = re.exec(keys))
+            yield match[0];
+    },
+
     /**
      * Dispatches an event to an element as if it were a native event.
      *
@@ -1177,7 +1183,7 @@ var Events = Module("events", {
             }
 
             let candidates = this.hive.getCandidates(this.main, command);
-            if (candidates.length == 0 && !map) {
+            if (candidates == 0 && !map) {
                 [map] = this.pendingMap || [];
                 this.pendingMap = null;
                 if (map && map.arg)
@@ -1200,7 +1206,7 @@ var Events = Module("events", {
                     execute(map, null, this.count, key, command);
                 return Events.KILL;
             }
-            else if (!event.skipmap && map && candidates.length == 0) {
+            else if (!event.skipmap && map && candidates == 0) {
                 this.pendingMap = null;
 
                 let count = this.pendingMotionMap ? "motionCount" : "count";
@@ -1230,7 +1236,7 @@ var Events = Module("events", {
                     return execute(map, null, this.count, null, command) === Events.PASS ? Events.PASS : Events.KILL;
                 }
             }
-            else if (!event.skipmap && this.hive.getCandidates(this.main, command).length > 0) {
+            else if (!event.skipmap && this.hive.getCandidates(this.main, command) > 0) {
                 this.append(event);
                 this.pendingMap = [map, command];
             }
