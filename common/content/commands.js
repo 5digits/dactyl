@@ -1049,7 +1049,7 @@ var Commands = Module("commands", {
         ]]>)
     }),
 
-    validName: Class.memoize(function () RegExp("^" + this.nameRegexp.source + "$")),
+    validName: Class.memoize(function () util.regexp("^" + this.nameRegexp.source + "$")),
 
     commandRegexp: Class.memoize(function () util.regexp(<![CDATA[
             ^
@@ -1277,7 +1277,8 @@ var Commands = Module("commands", {
             function (args) {
                 let cmd = args[0];
 
-                dactyl.assert(!cmd || commands.validName.test(cmd), "E182: Invalid command name");
+                dactyl.assert(!cmd || cmd.split(",").every(commands.validName.closure.test),
+                              "E182: Invalid command name");
 
                 if (args.literalArg) {
                     let completer  = args["-complete"];
@@ -1286,12 +1287,9 @@ var Commands = Module("commands", {
                     if (completer) {
                         if (/^custom,/.test(completer)) {
                             completer = completer.substr(7);
-                            completerFunc = function () {
+                            completerFunc = function (context) {
                                 try {
-                                    var completer = dactyl.userEval(completer);
-
-                                    if (!callable(completer))
-                                        throw new TypeError("User-defined custom completer " + completer.quote() + " is not a function");
+                                    var result = dactyl.userEval(completer);
                                 }
                                 catch (e) {
                                     dactyl.echo(":" + this.name + " ...");
@@ -1299,14 +1297,17 @@ var Commands = Module("commands", {
                                     dactyl.log(e);
                                     return undefined;
                                 }
-                                return completer.apply(this, Array.slice(arguments));
+                                if (callable(result))
+                                    return result.apply(this, Array.slice(arguments));
+                                else
+                                    return context.completions = result;
                             };
                         }
                         else
                             completerFunc = function (context) completion.closure[completerMap[completer]](context);
                     }
 
-                    let added = commands.addUserCommand([cmd],
+                    let added = commands.addUserCommand(cmd.split(","),
                                     args["-description"],
                                     Command.bindMacro(args, "-ex",
                                         function makeParams(args, modifiers) ({
@@ -1368,7 +1369,7 @@ var Commands = Module("commands", {
                         description: "The argument completion function",
                         completer: function (context) [[k, ""] for ([k, v] in Iterator(completerMap))],
                         type: CommandOption.STRING,
-                        validator: function (arg) arg in completerMap || /custom,\w+/.test(arg),
+                        validator: function (arg) arg in completerMap || /^custom,/.test(arg),
                     }, {
                         names: ["-description", "-desc", "-d"],
                         description: "A user-visible description of the command",

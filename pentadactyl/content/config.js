@@ -17,6 +17,8 @@ var Config = Module("config", ConfigBase, {
     Local: function Local(dactyl, modules, window)
         let ({ config } = modules) ({
 
+        completers: Class.memoize(function () update({ sidebar: "sidebar", window: "window" }, this.__proto__.completers)),
+
         dialogs: {
             about: ["About Firefox",
                 function () { window.openDialog("chrome://browser/content/aboutDialog.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
@@ -125,8 +127,6 @@ var Config = Module("config", ConfigBase, {
         LeavePre: "Triggered before exiting Firefox, just before destroying each module",
         Leave: "Triggered before exiting Firefox"
     },
-
-    completers: Class.memoize(function () update({ sidebar: "sidebar", window: "window" }, this.__proto__.completers)),
 
     defaults: {
         complete: "slf",
