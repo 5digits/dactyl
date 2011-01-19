@@ -276,6 +276,8 @@ var Mappings = Module("mappings", {
 
     hives: Class.memoize(function () array(this.allHives.filter(function (h) h.filter(buffer.uri)))),
 
+    get userHives() this.allHives.filter(function (h) h !== this.builtinHive, this),
+
     _addMap: function (map, hive) {
         map.definedAt = commands.getCaller(Components.stack.caller.caller);
         map.hive = hive;
@@ -398,30 +400,40 @@ var Mappings = Module("mappings", {
      * @param {number[]} modes An array of modes to search.
      * @param {string} filter The filter string to match.
      */
-    list: function (modes, filter) {
+    list: function (modes, filter, hives) {
+        hives = hives || mappings.userHives;
+
         let modeSign = "";
+        modes.filter(function (m)  m.char).forEach(function (m) { modeSign += m.char; });
+        modes.filter(function (m) !m.char).forEach(function (m) { modeSign += " " + m.name; });
+        modeSign = modeSign.replace(/^ /, "");
 
-        // TODO: Vim hides "nv" in a :map and "v" and "n" in :vmap and
-        //       :nmap respectively if the map is not exclusive.
-        modes.forEach(function (mode) {
-            for (let m in modules.modes.mainModes)
-                if (mode == m.mask && modeSign.indexOf(m.char) == -1)
-                    modeSign += m.char;
-        });
-
-        let maps = this.userHive.iterate(modes);
-        if (filter)
-            maps = [map for (map in maps) if (map.names[0] == filter)];
+        function maps(hive) {
+            let maps = hive.iterate(modes);
+            if (filter)
+                maps = [map for (map in maps) if (map.names[0] == filter)];
+            return maps;
+        }
 
         let list = <table>
+                <tr highlight="Title">
+                    <td/>
+                    <td style="padding-right: 1em;">Mode</td>
+                    <td style="padding-right: 1em;">Command</td>
+                    <td style="padding-right: 1em;">Action</td>
+                </tr>
                 {
-                    template.map(maps, function (map)
-                        template.map(map.names, function (name)
-                        <tr>
-                            <td>{modeSign} {name}</td>
-                            <td>{map.noremap ? "*" : " "}</td>
-                            <td>{map.rhs || map.action.toSource()}</td>
-                        </tr>))
+                    template.map(hives, function (hive) let (i = 0)
+                        <tr style="height: .5ex;"/> +
+                        template.map(maps(hive), function (map)
+                            template.map(map.names, function (name)
+                            <tr>
+                                <td highlight="Title" style="padding-right: 1em">{!i++ ? hive.name : ""}</td>
+                                <td>{modeSign}</td>
+                                <td>{name}</td>
+                                <td>{map.rhs || map.action.toSource()}</td>
+                            </tr>)) +
+                        <tr style="height: .5ex;"/>)
                 }
                 </table>;
 
@@ -437,8 +449,10 @@ var Mappings = Module("mappings", {
         function addMapCommands(ch, mapmodes, modeDescription) {
             function map(args, noremap) {
                 let mapmodes = array.uniq(args["-modes"].map(findMode));
+                let hives = args.explicitOpts["-group"] ? [args["-group"]] : null;
+
                 if (!args.length) {
-                    mappings.list(mapmodes);
+                    mappings.list(mapmodes, null, hives);
                     return;
                 }
 
@@ -447,7 +461,7 @@ var Mappings = Module("mappings", {
                     args["-builtin"] = true;
 
                 if (!rhs) // list the mapping
-                    mappings.list(mapmodes, mappings.expandLeader(lhs));
+                    mappings.list(mapmodes, mappings.expandLeader(lhs), hives);
                 else {
                     mappings.addUserMap(mapmodes, [lhs],
                         args["-description"],
@@ -800,7 +814,7 @@ var Mappings = Module("mappings", {
         completion.mapGroup = function mapGroup(context, modes) {
             context.title = ["Map group"];
             context.keys = { text: "name", description: function (h) h.description || h.filter };
-            context.completions = mappings.allHives.filter(function (h) h.name != "builtin");
+            context.completions = mappings.userHives;
         };
         completion.userMapping = function userMapping(context, modes) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk

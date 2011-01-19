@@ -269,6 +269,7 @@ var Command = Class("Command", {
             {
                 __iterator__: function () array.iterItems(this),
                 command: this,
+                explicitOpts: Class.memoize(function () ({})),
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
                 // TODO: string: Class.memoize(function () { ... }),
                 verify: function verify() {
@@ -396,7 +397,8 @@ var ex = {
                     let val = opt.type && opt.type.parse(v);
                     dactyl.assert(val != null && (typeof val !== "number" || !isNaN(val)),
                                   "No such option: " + k);
-                    res[opt.names[0]] = val;
+                    Class.replaceProperty(args, opt.names[0], val);
+                    args.explicitOpts[opt.names[0]] = val;
                 }
         for (let [i, val] in array.iterItems(args))
             res[i] = String(val);
@@ -920,6 +922,8 @@ var Commands = Module("commands", {
                                             args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
                                         else
                                             Class.replaceProperty(args, opt.names[0], opt.type == CommandOption.NOARG || arg);
+
+                                        args.explicitOpts[opt.names[0]] = args[opt.names[0]];
 
                                     i += optname.length + count;
                                     if (i == str.length)
