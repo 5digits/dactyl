@@ -33,12 +33,33 @@ function httpGet(url) {
 
 let initialized = false;
 let addon = null;
+let addonData = null;
 let basePath = null;
 let categories = [];
 let components = {};
 let resources = [];
 let getURI = null;
 storage.set("dactyl.bootstrap", this);
+
+function updateVersion() {
+    try {
+        function isDev(ver) /^hg|pre$/.test(ver);
+        if (typeof require === "undefined" || addon === addonData)
+            return;
+
+        require(global, "config");
+        require(global, "prefs");
+        config.lastVersion = localPrefs.get("lastVersion", null);
+
+        localPrefs.set("lastVersion", addon.version);
+
+        if (!config.lastVersion || isDev(config.lastVersion) != isDev(addon.version))
+            addon.applyBackgroundUpdates = AddonManager[isDev(addon.version) ? "AUTOUPDATE_DISABLE" : "AUTOUPDATE_DEFAULT"];
+    }
+    catch (e) {
+        reportError(e);
+    }
+}
 
 function startup(data, reason) {
     dump("dactyl: bootstrap: startup " + reasonToString(reason) + "\n");
@@ -49,8 +70,12 @@ function startup(data, reason) {
 
         dump("dactyl: bootstrap: init" + " " + data.id + "\n");
 
+        addonData = data;
         addon = data;
-        AddonManager.getAddonByID(addon.id, function (a) { addon = a; });
+        AddonManager.getAddonByID(addon.id, function (a) {
+            addon = a;
+            updateVersion();
+        });
 
         if (basePath.isDirectory())
             getURI = function getURI(path) {
@@ -145,6 +170,7 @@ function init() {
         component.register();
 
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
+    updateVersion();
     require(global, "overlay");
 }
 
