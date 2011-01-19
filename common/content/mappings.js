@@ -226,7 +226,7 @@ var MapHive = Class("MapHive", {
      * @param {Modes.Mode} mode The mode to remove all mappings from.
      */
     clear: function (mode) {
-        this.stacks[mode] = [];
+        this.stacks[mode] = MapHive.Stack([]);
     }
 }, {
     Stack: Class("Stack", Array, {
@@ -347,6 +347,7 @@ var Mappings = Module("mappings", {
 
     addHive: function addHive(name, filter, description) {
         this.removeHive(name);
+
         let hive = MapHive(name, description, filter);
         this.allHives.unshift(hive);
         return hive;
@@ -354,9 +355,14 @@ var Mappings = Module("mappings", {
 
     removeHive: function removeHive(name, filter) {
         let hive = this.getHive(name);
-        dactyl.assert(!hive || !hive.builtin, "Not replacing builtin hive");
+        dactyl.assert(!hive || !hive.builtin, "Cannot remove builtin group");
         if (hive)
             this.allHives.splice(this.allHives.indexOf(hive), 1);
+
+        if (io.sourcing && io.sourcing.mapHive == hive)
+            io.sourcing.mapHive = null;
+
+        delete this.hives;
         return hive;
     },
 
@@ -440,9 +446,6 @@ var Mappings = Module("mappings", {
                 if (noremap)
                     args["-builtin"] = true;
 
-                if (isString(args["-group"]))
-                    args["-group"] = mappings.getHive(args["-group"]);
-
                 if (!rhs) // list the mapping
                     mappings.list(mapmodes, mappings.expandLeader(lhs));
                 else {
@@ -493,14 +496,7 @@ var Mappings = Module("mappings", {
                             names: ["-ex", "-e"],
                             description: "Execute this mapping as an Ex command rather than keys"
                         },
-                        {
-                            names: ["-group", "-g"],
-                            description: "Mapping group to which to add this mapping",
-                            type: CommandOption.STRING,
-                            get default() io.sourcing && io.sourcing.mapHive || mappings.userHive,
-                            completer: function (context) completion.mapGroup(context),
-                            validator: Option.validateCompleter
-                        },
+                        groupFlag,
                         {
                             names: ["-javascript", "-js", "-j"],
                             description: "Execute this mapping as JavaScript rather than keys"
@@ -560,10 +556,17 @@ var Mappings = Module("mappings", {
 
             commands.add([ch + "mapc[lear]"],
                 "Remove all mappings" + modeDescription,
-                function () { mapmodes.forEach(function (mode) { mappings.userHive.clear(mode); }); },
+                function (args) {
+                    let mapmodes = array.uniq(args["-modes"].map(findMode));
+                    mapmodes.forEach(function (mode) {
+                        args["-group"].clear(mode);
+                    });
+                },
                 {
                     argCount: "0",
-                    options: [ update({}, modeFlag, {
+                    options: [
+                        groupFlag,
+                        update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
                             description: "Remove all mappings from the given modes",
@@ -579,8 +582,8 @@ var Mappings = Module("mappings", {
 
                     let found = false;
                     for (let [, mode] in Iterator(mapmodes)) {
-                        if (mappings.userHive.has(mode, args[0])) {
-                            mappings.userHive.remove(mode, args[0]);
+                        if (args["-group"].has(mode, args[0])) {
+                            args["-group"].remove(mode, args[0]);
                             found = true;
                         }
                     }
@@ -590,7 +593,9 @@ var Mappings = Module("mappings", {
                 {
                     argCount: "1",
                     completer: opts.completer,
-                    options: [ update({}, modeFlag, {
+                    options: [
+                        groupFlag,
+                        update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
                             description: "Remove mapping from the given modes",
@@ -664,6 +669,27 @@ var Mappings = Module("mappings", {
                 ]
             });
 
+        commands.add(["delmapg[roup]"],
+            "Delete a mapping group",
+            function (args) {
+                dactyl.assert(mappings.getHive(args[0]), "No mapping group: " + args[0]);
+                mappings.removeHive(args[0]);
+            },
+            {
+                argCount: "1",
+                completer: function (context, args) {
+                    completion.mapGroup(context);
+                    context.filters.push(function ({ item }) !item.builtin);
+                }
+            });
+
+        let groupFlag = {
+            names: ["-group", "-g"],
+            description: "Mapping group to which to add this mapping",
+            type: ArgType("map-group", function (group) isString(group) ? mappings.getHive(group) : group),
+            get default() io.sourcing && io.sourcing.mapHive || mappings.userHive,
+            completer: function (context) completion.mapGroup(context)
+        };
         let modeFlag = {
             names: ["-mode", "-m"],
             type: CommandOption.STRING,

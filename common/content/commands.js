@@ -919,7 +919,7 @@ var Commands = Module("commands", {
                                         if (opt.multiple)
                                             args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
                                         else
-                                            args[opt.names[0]] = opt.type == CommandOption.NOARG || arg;
+                                            Class.replaceProperty(args, opt.names[0], opt.type == CommandOption.NOARG || arg);
 
                                     i += optname.length + count;
                                     if (i == str.length)
