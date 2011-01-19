@@ -289,7 +289,7 @@ var Mappings = Module("mappings", {
     iterate: function (mode) {
         let seen = {};
         for (let hive in this.hives.iterValues())
-            for (let map in values(hive.getStack(mode)))
+            for (let map in hive.getStack(mode).iterValues())
                 if (!set.add(seen, map.name))
                     yield map;
     },
@@ -732,9 +732,22 @@ var Mappings = Module("mappings", {
         let args = {
             getMode: function (args) findMode(args["-mode"]),
             iterate: function (args) {
-                for (let map in mappings.iterate(this.getMode(args)))
-                    for (let name in values(map.names))
-                        yield { name: name, __proto__: map };
+                let mainMode = this.getMode(args);
+                let seen = {};
+                for (let mode in values([mainMode].concat(mainMode.bases)))
+                    for (let hive in mappings.hives.iterValues())
+                        for (let map in array.iterValues(hive.getStack(mode)))
+                            for (let name in values(map.names))
+                                if (!set.add(seen, name)) {
+                                    yield {
+                                        name: name,
+                                        columns: [
+                                            mode == mainMode ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
+                                            hive.name == "builtin" ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>,
+                                        ],
+                                        __proto__: map
+                                    };
+                                }
             },
             format: {
                 description: function (map) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
@@ -744,7 +757,8 @@ var Mappings = Module("mappings", {
                         {template.linkifyHelp(map.description + (map.rhs ? ": " + map.rhs : ""))}
                 </>),
                 help: function (map) let (char = array.compact(map.modes.map(function (m) m.char))[0])
-                    char === "n" ? map.name : char ? char + "_" + map.name : ""
+                    char === "n" ? map.name : char ? char + "_" + map.name : "",
+                headings: ["Command", "Mode", "Group", "Description"]
             }
         }
 

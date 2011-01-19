@@ -319,8 +319,9 @@ var Template = Module("Template", {
 
     usage: function usage(iter, format) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
-        let desc = format && format.description || function (item) template.linkifyHelp(item.description);
-        let help = format && format.help || function (item) item.name;
+        format = format || {};
+        let desc = format.description || function (item) template.linkifyHelp(item.description);
+        let help = format.help || function (item) item.name;
         function sourceLink(frame) {
             let source = template.sourceLink(frame);
             source.@NS::hint = source.text();
@@ -328,6 +329,20 @@ var Template = Module("Template", {
         }
         // <e4x>
         return <table>
+            { format.headings ?
+                <tr highlight="Title" align="left">
+                {
+                    this.map(format.headings, function (h) <th>{h}</th>)
+                }
+                </tr> : ""
+            }
+            { format.columns ?
+                <colgroup>
+                {
+                    this.map(format.columns, function (c) <col style={c}/>)
+                }
+                </colgroup> : ""
+            }
             {
                 this.map(iter, function (item)
                 <tr>
@@ -339,7 +354,7 @@ var Template = Module("Template", {
                                     <span highlight="LinkInfo" xmlns:dactyl={NS}>Defined at {sourceLink(frame)}</span>
                         }</span>
                     </td>
-                    { template.map(item.columns, function (c) <td>{c}</td>) }
+                    { item.columns ? template.map(item.columns, function (c) <td>{c}</td>) : "" }
                     <td>{desc(item)}</td>
                 </tr>)
             }

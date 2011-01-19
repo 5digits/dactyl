@@ -622,7 +622,7 @@ var IO = Module("io", {
                     file.append(config.name + ".vim");
                 dactyl.assert(!file.exists() || args.bang, "File exists");
 
-                let template = util.compileMacro(String(<![CDATA[
+                let template = util.compileMacro(<![CDATA[
 " Vim syntax file
 " Language:         Pentadactyl configuration file
 " Maintainer:       Doug Kearns <dougkearns@gmail.com>
@@ -707,7 +707,7 @@ let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " vim: tw=130 et ts=4 sw=4:
-]]>), true);
+]]>, true);
 
                 const WIDTH = 80;
                 function wrap(prefix, items, sep) {

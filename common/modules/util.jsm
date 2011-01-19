@@ -336,6 +336,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 (\}>) // 5
             )
         ]]>, "giy");
+        macro = String(macro);
         while (match = re.exec(macro)) {
             let [, prefix, open, full, macro, close] = match;
             end += match[0].length;
