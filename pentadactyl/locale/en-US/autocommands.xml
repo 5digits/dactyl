@@ -7,7 +7,7 @@
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
-<dl tag="autocommand-list" replace="autocommand-list">
+<dl tag="autocommand-list" tag="autocommand-list" replace="autocommand-list">
     <dt>BookmarkAdd</dt>       <dd>Triggered after a page is bookmarked</dd>
     <dt>BookmarkChange</dt>    <dd>Triggered after a page's bookmark is changed</dd>
     <dt>BookmarkRemove</dt>    <dd>Triggered after a page's bookmark is removed</dd>
@@ -26,7 +26,7 @@
     <dt>Leave</dt>             <dd>Triggered before exiting &dactyl.host;</dd>
 </dl>
 
-<dl tag="autocommand-args" replace="autocommand-args">
+<dl tag="autocommand-args" tag="autocommand-args"replace="autocommand-args">
     <dt>&lt;bookmark></dt>  <dd>The JavaScript bookmark object. Only for <em>Bookmark*</em>.</dd>
     <dt>&lt;changed></dt>   <dd>The name of the property that has changed. Only for <em>BookmarkChange</em>.</dd>
     <dt>&lt;doc></dt>       <dd>The document for which the event occurred. Only for <em>DOMLoad</em>, <em>PageLoad</em> and <em>PageLoadPre</em>.</dd>

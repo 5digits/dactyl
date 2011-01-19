@@ -968,6 +968,19 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
+    onClick: function onClick(event) {
+        let command = event.originalTarget.getAttributeNS(NS, "command");
+        if (command && event.button == 0) {
+            event.preventDefault();
+
+            if (dactyl.commands[command])
+                dactyl.withSavedValues(["forceNewTab"], function () {
+                    dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
+                    dactyl.commands[command](event);
+                });
+        }
+    },
+
     /**
      * Opens one or more URLs. Returns true when load was initiated, or
      * false on error.
@@ -1307,6 +1320,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         return items;
     }
 }, {
+    events: function () {
+        events.addSessionListener(window, "click", dactyl.closure.onClick, true);
+    },
     // Only general options are added here, which are valid for all Dactyl extensions
     options: function () {
         options.add(["errorbells", "eb"],

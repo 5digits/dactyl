@@ -1103,17 +1103,8 @@ var CommandLine = Module("commandline", {
             if (event.type == "click" && (event.target instanceof HTMLAnchorElement ||
                                           event.originalTarget.hasAttributeNS(NS, "command"))) {
 
-                let command = event.originalTarget.getAttributeNS(NS, "command");
-                if (command && event.button == 2)
-                    return PASS;
-
-                if (command && dactyl.commands[command]) {
-                    event.preventDefault();
-                    return dactyl.withSavedValues(["forceNewTab"], function () {
-                        dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
-                        return dactyl.commands[command](event);
-                    });
-                }
+                if (event.getPreventDefault())
+                    return;
 
                 switch (key) {
                 case "<LeftMouse>":

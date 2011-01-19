@@ -7,6 +7,7 @@
     name="map"
     title="&dactyl.appName; Key Mappings"
     xmlns="&xmlns.dactyl;"
+    xmlns:dactyl="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
 <h1 tag="keyboard-shortcuts">Keyboard shortcuts and commands</h1>
@@ -617,36 +618,42 @@
 
         <p>
             Custom completion can be provided by specifying the
-            <str>custom,<a>thing</a></str> argument to -complete. If
-            <a>thing</a> evaluates to a function (i.e., it is a variable
-            holding a function value, or a string containing the definition
-            itself), it is called with two arguments: a completion context, and
-            an object describing the command's arguments. It should set the
-            context's <str>completions</str> property, or return an object with
-            <str>items</str> and <str>start</str> properties describing the
-            completions and where the replacement is to start.
+            <str>custom,<a>thing</a></str> argument to <tt>-complete</tt>. If
+            <a>thing</a> evaluates to a function (i.e., it is a variable holding
+            a function value, or a string containing the definition itself), it
+            is called with two arguments: a completion context, and an object
+            describing the command's arguments. It should set the context's
+            <tt>completions</tt> property to the list of completion results.
+            Other influential properties include <tt>title</tt>, <tt>sort</tt>,
+            <tt>anthored</tt>, and <tt>filters</tt>, which are documented in the
+            <link topic="resource://dactyl/completion.jsm"
+                line="17" dactyl:command="buffer.viewSource">source code</link>.
         </p>
 
         <p>
             <em>start</em> is the index into the word being completed at which the returned values
             should be applied and <em>completions</em> is a two-dimensional array of the form:
-            [[arg1, description1], [arg2, description2], …]
+            <tt>[[arg1, description1], [arg2, description2], …]</tt>
         </p>
 
         <p>
             Otherwise <a>thing</a> should be an array of the same form as the
-            <str>completions</str> property of the context object.
+            <tt>completions</tt> property of the context object.
         </p>
 
         <p>
             Example:
-            <code><ex>:command foo -complete custom,
-\ <str delim="'">function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str>
-\ <ex>:echo <str>Useless</str></ex></ex>
+            <code><ex>:command foo -nargs=<str>?</str>
+       \ -complete custom,<str delim="'">
+       \   function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str></ex>
+       \ <ex>:echo</ex> <str>Useless </str> + <em>&lt;q-args></em>
 
-<ex>:command foo -complete custom,<str delim="'">[["arg1", "description1"], ["arg2, "description2"]]</str>
-\ <ex>:echo <str>Same as above but simpler</str></ex></ex>
-            </code>
+<ex>:command foo -nargs=<str>?</str>
+       \ -complete custom,<str delim="'">[
+       \     ["arg1", "description1"],
+       \     ["arg2, "description2"]
+       \ ]</str></ex>
+       \ <ex>:echo</ex> <str>Same as above but simpler </str> + <em>&lt;q-args></em></code>
         </p>
 
         <h3 tag="E177 E178 :command-count">Count handling</h3>

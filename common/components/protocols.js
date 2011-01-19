@@ -175,7 +175,7 @@ Dactyl.prototype = {
                 if (tag in this.FILE_MAP)
                     return redirect("dactyl://help/" + tag, uri);
                 if (tag in this.HELP_TAGS)
-                    return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag, uri);
+                    return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag.replace(/#/g, encodeURIComponent), uri);
             case "locale":
                 return makeChannel(["resource://dactyl-locale", config.locale, path].join("/"), uri);
             case "locale-local":

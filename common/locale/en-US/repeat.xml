@@ -167,18 +167,19 @@
             Additionally, certain commands support the same ‘here document’
             syntax supported by most Unix shells and by the &tag.command-line;.
             So, to execute a JavaScript statement which does not comfortably fit
-            on a single line, you can use
+            on a single line, you can use:
         </p>
-
-        <p>See also <t>ex-scripts</t> below.</p>
 
         <code><ex>:js</ex> &lt;&lt;<em>EOF</em>
 <kwd><hl key="Object">var</hl></kwd> hello = <kwd>function</kwd> () {
     alert(<str>Hello world</str>);
 }
 <em>EOF</em></code>
+
+        <p>See also <t>ex-scripts</t> below.</p>
     </description>
 </item>
+
 
 <item>
     <tags>:lpl :loadplugins</tags>
@@ -277,8 +278,8 @@
     character.
 </p>
 
-<code>    <html:span style="color: #444">        " This is a comment</html:span>
-    foo bar <html:span style="color: #444">" This is a comment</html:span>
+<code>            <hl style="color: #444">" This is a comment</hl>
+    foo bar <hl style="color: #444">" This is a comment</hl>
             <str> This is not a comment</str>
     foo bar <str> This is not a comment</str>
 </code>

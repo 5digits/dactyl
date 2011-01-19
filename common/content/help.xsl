@@ -352,6 +352,7 @@
     <!-- HTML-ish elements {{{1 -->
 
     <xsl:template match="dactyl:dl" mode="help-2">
+        <xsl:apply-templates select="@tag" mode="help-1"/>
         <dl>
             <column style="{@dt}"/>
             <column style="{@dd}"/>
@@ -375,7 +376,11 @@
                 </xsl:otherwise>
             </xsl:choose>
             <xsl:if test="regexp:match(@topic, '^[a-zA-Z]*:', '')
-                    and not(starts-with(@topic, 'mailto:'))">
+                    and not(starts-with(@topic, 'mailto:') or
+                            starts-with(@topic, 'chrome:') or
+                            starts-with(@topic, 'resource:') or
+                            starts-with(@topic, 'dactyl:'))">
+                    <!-- A regexp does not work for the second test here ↑. :( -->
                 <xsl:attribute name="rel">external</xsl:attribute>
             </xsl:if>
             <xsl:apply-templates select="@*|node()" mode="help-1"/>
