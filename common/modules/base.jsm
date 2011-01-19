@@ -1315,7 +1315,7 @@ var array = Class("array", Array, {
      * @param {Array} ary
      * @returns {Array}
      */
-    flatten: function flatten(ary) ary.length ? Array.concat.apply([], ary) : [],
+    flatten: function flatten(ary) ary.length ? Array.prototype.concat.apply([], ary) : [],
 
     /**
      * Returns an Iterator for an array's values.

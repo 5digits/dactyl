@@ -881,6 +881,8 @@ var Events = Module("events", {
     // the command-line has focus
     // TODO: ...help me...please...
     onKeyPress: function onKeyPress(event) {
+        event.dactylDefaultPrevented = event.getPreventDefault();
+
         function kill(event) {
             event.preventDefault();
             event.stopPropagation();
@@ -963,31 +965,30 @@ var Events = Module("events", {
                     return null;
 
                 if (overrideMode)
-                    processors = [Events.KeyProcessor(overrideMode, mode.extended)];
-                else {
-                    let keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
+                    var keyModes = array([overrideMode]);
+                else
+                    keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
 
-                    let hives = mappings.hives.slice(event.noremap ? -1 : 0);
+                let hives = mappings.hives.slice(event.noremap ? -1 : 0);
 
-                    processors = keyModes.map(function (m) hives.map(function (h) Events.KeyProcessor(m, mode.extended, h)))
-                                         .flatten().array;
+                processors = keyModes.map(function (m) hives.map(function (h) Events.KeyProcessor(m, h)))
+                                     .flatten().array;
 
-                    for (let [i, input] in Iterator(processors)) {
-                        if (input.main == mode.main) {
-                            if (mode.params.preExecute)
-                                input.preExecute = mode.params.preExecute;
-                            if (mode.params.postExecute)
-                                input.postExecute = mode.params.postExecute;
-                            if (mode.params.onEvent && input.hive === mappings.builtinHive)
-                                input.fallthrough = function (event) {
-                                    // Bloody hell.
-                                    if (events.toString(event) === "<C-h>")
-                                        event.dactylString = "<BS>";
+                for (let [i, input] in Iterator(processors)) {
+                    let params = input.main == mode.main ? mode.params : input.main.params;
+                    if (params.preExecute)
+                        input.preExecute = params.preExecute;
+                    if (params.postExecute)
+                        input.postExecute = params.postExecute;
+                    if (params.onEvent && input.hive === mappings.builtinHive)
+                        input.fallthrough = function (event) {
+                            // Bloody hell.
+                            if (events.toString(event) === "<C-h>")
+                                event.dactylString = "<BS>";
 
-                                    return mode.params.onEvent(event) === false ? Events.KILL : Events.PASS;
-                                };
-                        }}
-                }
+                            return params.onEvent(event) === false ? Events.KILL : Events.PASS;
+                        };
+                    }
             }
 
             let refeed, ownsBuffer = 0, buffer, waiting = 0;
@@ -1013,9 +1014,9 @@ var Events = Module("events", {
             else if (res === Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
                 dactyl.beep();
 
-            if (refeed && refeed[0] && !refeed[0].getPreventDefault()) {
+            if (refeed && refeed[0] && (!refeed[0].getPreventDefault() || refeed[0].dactylDefaultPrevented)) {
                 res = Events.PASS;
-                refeed.pop();
+                refeed.shift();
             }
 
             if (res !== Events.PASS)
@@ -1024,7 +1025,6 @@ var Events = Module("events", {
             if (refeed)
                 for (let [i, event] in Iterator(refeed))
                     if (event.originalTarget) {
-                        util.dump("Re-feed " + i + " " + refeed.length + " " + (events.toString(event) || "").quote());
                         let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
                         events.dispatch(event.originalTarget, evt, { skipmap: true });
                     }
@@ -1111,14 +1111,15 @@ var Events = Module("events", {
 
 
     KeyProcessor: Class("KeyProcessor", {
-        init: function init(main, extended, hive) {
+        init: function init(main, hive) {
             this.main = main;
-            this.extended = extended;
             this.events = [];
             this.hive = hive;
+            if (!hive.get)
+                util.dumpStack(main + " " + hive + " !hive.get")
         },
 
-        get toStringParams() [this.main.name, this.extended, this.hive.name],
+        get toStringParams() [this.main.name, this.hive.name],
 
         buffer: "",             // partial command storage
         pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
@@ -1134,6 +1135,7 @@ var Events = Module("events", {
 
         process: function process(event) {
             function kill(event) {
+                util.dumpStack("kill " + events.toString(event));
                 event.stopPropagation();
                 event.preventDefault();
             }
@@ -1166,12 +1168,14 @@ var Events = Module("events", {
         },
 
         onKeyPress: function onKeyPress(event) {
+            // This all needs to go. It's horrible. --Kris
+
             const self = this;
 
             let key = events.toString(event);
             let [, countStr, command] = /^((?:[1-9][0-9]*)?)(.*)/.exec(this.buffer + key);
 
-            let map = this.hive.get(this.main, command);
+            var map = this.hive.get(this.main, command);
 
             function execute(map) {
                 if (self.preExecute)

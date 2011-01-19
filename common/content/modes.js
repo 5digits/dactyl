@@ -436,11 +436,11 @@ var Modes = Module("modes", {
 
         count: true,
 
-        get description() this.disp,
+        get description() this._display,
 
-        disp: Class.memoize(function () this.name.replace("_", " ", "g")),
+        _display: Class.memoize(function () this.name.replace("_", " ", "g")),
 
-        display: function () this.disp,
+        display: function () this._display,
 
         extended: false,
 
