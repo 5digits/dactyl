@@ -625,35 +625,30 @@
             describing the command's arguments. It should set the context's
             <tt>completions</tt> property to the list of completion results.
             Other influential properties include <tt>title</tt>, <tt>sort</tt>,
-            <tt>anthored</tt>, and <tt>filters</tt>, which are documented in the
+            <tt>anchored</tt>, and <tt>filters</tt>, which are documented in the
             <link topic="resource://dactyl/completion.jsm"
                 line="17" dactyl:command="buffer.viewSource">source code</link>.
         </p>
 
         <p>
-            <em>start</em> is the index into the word being completed at which the returned values
-            should be applied and <em>completions</em> is a two-dimensional array of the form:
+            <em>completions</em> is a two-dimensional array of the form:
             <tt>[[arg1, description1], [arg2, description2], …]</tt>
         </p>
 
         <p>
-            Otherwise <a>thing</a> should be an array of the same form as the
-            <tt>completions</tt> property of the context object.
+            Otherwise <a>thing</a> should evaluate to an array of the same form
+            as the <tt>completions</tt> property of the context object.
         </p>
 
         <p>
             Example:
-            <code><ex>:command foo -nargs=<str>?</str>
-       \ -complete custom,<str delim="'">
-       \   function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str>
-       \ <ex>:echo</ex> <str>Useless </str> + <em>&lt;q-args></em></ex>
+            <code><ex>:command foo -nargs=<str>?</str> -complete custom,
+    \ <str delim="'">function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str>
+    \ <ex>:echo</ex> <str>Useless </str> + <em>&lt;q-args></em></ex>
 
 <ex>:command foo -nargs=<str>?</str>
-       \ -complete custom,<str delim="'">[
-       \     ["arg1", "description1"],
-       \     ["arg2, "description2"]
-       \ ]</str>
-       \ <ex>:echo</ex> <str>Same as above but simpler </str> + <em>&lt;q-args></em></ex></code>
+    \ -complete custom,<str delim="'">[["arg1", "description1"], ["arg2, "description2"]]</str>
+    \ <ex>:echo</ex> <str>Same as above but simpler </str> + <em>&lt;q-args></em></ex></code>
         </p>
 
         <h3 tag="E177 E178 :command-count">Count handling</h3>

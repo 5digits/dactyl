@@ -125,7 +125,7 @@
 
         <p>
             Every invocation completely replaces the styling of any previous
-            invocation, unless <em>-append</em> (short option: <em>-a</em>) is
+            invocation, unless <em>-append</em> (short name <em>-a</em>) is
             provided, in which case <a>css</a> is appended to its current
             value. If <a>css</a> is not provided, any styles beginning with
             <a>group</a> are listed.
@@ -159,7 +159,7 @@
         <dl>
             <dt>-append</dt>
             <dd>If provided along with <em>-name</em>, <oa>css</oa> and
-                <a>filter</a> are appended to its current value. (short name: <em>-a</em>)</dd>
+                <a>filter</a> are appended to its current value. (short name <em>-a</em>)</dd>
 
             <dt>-agent</dt>
             <dd>If provided, the style is installed as an Agent sheet, which
@@ -167,8 +167,9 @@
                 elements. (short name <em>-A</em>)</dd>
 
             <dt>-name=<a>name</a></dt>
-            <dd>If provided, any existing style with the same name is overridden, and the style may later be deleted using <a>name</a>.
-                (short name <em>-n</em>)</dd>
+            <dd>If provided, any existing style with the same name is
+                overridden, and the style may later be deleted using
+                <a>name</a>. (short name <em>-n</em>)</dd>
 
         </dl>
 
@@ -191,9 +192,9 @@
         <p>The available options are:</p>
 
         <dl>
-            <dt>-name</dt>  <dd>The name provided to <ex>:style</ex> (short option: <em>-n</em>)</dd>
+            <dt>-name</dt>  <dd>The name provided to <ex>:style</ex> (short name <em>-n</em>)</dd>
             <dt>-index</dt> <dd>For unnamed styles, the index listed by <ex>:style</ex>
-                (short option: <em>-i</em>)</dd>
+                (short name <em>-i</em>)</dd>
         </dl>
     </description>
 </item>

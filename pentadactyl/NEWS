@@ -63,7 +63,7 @@
         :listoptions and :listcommands, providing more powerful and
         consistent interactive help facility (improvements include
         listing keys for modes other than Normal, filtering the output
-        and linking to source locations).
+        and linking to source code locations).
       - :downloads now opens a download list in the multi-line output
         buffer.
       - Added :cookies command.
@@ -120,7 +120,7 @@
       no longer be split at quoted commas and the option name,
       operators, and = sign may no longer be quoted. This will break
       certain automatically-generated configuration files.
-      See :help stringlist
+      See :help stringlist.
     * Option changes:
       - Added "bookmarks", "diverted", and "links" to 'activate'
         option.

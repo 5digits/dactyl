@@ -156,7 +156,7 @@
             extensions, with all hyphens stripped and any letter following a
             hyphen capitalized.  So, the file
             <em>~/.&dactyl.name;/plugins/foo-bar.js</em> may be accessed as
-            <em>plugins.fooBar</em>. See also <t>writing-plugins</t>
+            <em>plugins.fooBar</em>. See also <t>writing-plugins</t>.
         </p>
 
         <h3 tag=":source-ex">Ex commands</h3>

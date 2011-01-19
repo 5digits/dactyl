@@ -399,15 +399,16 @@ function isSubclass(targ, src) {
 }
 
 /**
- * Returns true if object is an instance or interfaces. If interfaces is an array,
- * returns true if object is an instance of any element of interfaces. If interfaces is
- * the object form of a primitive type, returns true if object is a
- * non-boxed version of the type, i.e., if (typeof object == "string"),
- * isinstance(object, String) is true. Finally, if interfaces is a string,
- * returns true if ({}.toString.call(object) == "[object <interfaces>]").
+ * Returns true if *object* is an instance of *interfaces*. If *interfaces* is
+ * an array, returns true if *object* is an instance of any element of
+ * *interfaces*. If *interfaces* is the object form of a primitive type,
+ * returns true if *object* is a non-boxed version of the type, i.e., if
+ * (typeof object == "string"), isinstance(object, String) is true. Finally, if
+ * *interfaces* is a string, returns true if ({}.toString.call(object) ==
+ * "[object <interfaces>]").
  *
  * @param {object} object The object to check.
- * @param {constructor|[constructor|string]} interfaces The types to check object against.
+ * @param {constructor|[constructor|string]} interfaces The types to check *object* against.
  * @returns {boolean}
  */
 var isinstance_types = {
