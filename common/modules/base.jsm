@@ -708,7 +708,7 @@ else
  * @param {Object} desc The property descriptor.
  */
 Class.Property = function Property(desc) update(
-    Object.create(Property.prototype), desc);
+    Object.create(Property.prototype), desc || { configurable: true, writable: true });
 Class.Property.prototype.init = function () {};
 /**
  * Extends a subclass with a superclass. The subclass's
@@ -1152,7 +1152,10 @@ update(iter, {
     toObject: function toObject(iter) {
         let obj = {};
         for (let [k, v] in iter)
-            obj[k] = v;
+            if (v instanceof Class.Property)
+                Object.defineProperty(obj, k, v.init(k) || v);
+            else
+                obj[k] = v;
         return obj;
     },
 
@@ -1283,7 +1286,12 @@ var array = Class("array", Array, {
      */
     toObject: function toObject(assoc) {
         let obj = {};
-        assoc.forEach(function ([k, v]) { obj[k] = v; });
+        assoc.forEach(function ([k, v]) {
+            if (v instanceof Class.Property)
+                Object.defineProperty(obj, k, v.init(k) || v);
+            else
+                obj[k] = v;
+        });
         return obj;
     },
 

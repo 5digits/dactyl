@@ -264,7 +264,8 @@ var Command = Class("Command", {
     },
     argsPrototype: Class.memoize(function () update([],
             array(this.options).filter(function (opt) opt.default !== undefined)
-                               .map(function (opt) [opt.names[0], opt.default]).toObject(),
+                               .map(function (opt) [opt.names[0], Class.Property(Object.getOwnPropertyDescriptor(opt, "default"))])
+                               .toObject(),
             {
                 __iterator__: function () array.iterItems(this),
                 command: this,

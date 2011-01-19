@@ -498,10 +498,7 @@ var Mappings = Module("mappings", {
                             description: "Mapping group to which to add this mapping",
                             type: CommandOption.STRING,
                             get default() io.sourcing && io.sourcing.mapHive || mappings.userHive,
-                            completer: function (context) {
-                                context.keys = { text: "name", description: function (h) h.description || h.filter };
-                                context.completions = mappings.allHives.filter(function (h) h.name != "builtin");
-                            },
+                            completer: function (context) completion.mapGroup(context),
                             validator: Option.validateCompleter
                         },
                         {
@@ -608,10 +605,8 @@ var Mappings = Module("mappings", {
             function (args) {
                 dactyl.assert(args.length <= 2, "Trailing characters");
 
-                if (args.length == 0) {
-                    throw FailedAssertion("Not implemented");
-                    return;
-                }
+                if (args.length == 0)
+                    return void completion.listCompleter("mapGroup", "");
 
                 let name = Option.dequote(args[0]);
                 let hive = mappings.getHive(name);
@@ -645,6 +640,20 @@ var Mappings = Module("mappings", {
             {
                 argCount: "*",
                 bang: true,
+                completer: function (context, args) {
+                    if (args.length == 1)
+                        completion.mapGroup(context);
+                    else {
+                        Option.splitList(context.filter);
+                        context.advance(Option._splitAt);
+
+                        context.compare = CompletionContext.Sort.unsorted
+                        context.completions = [
+                            [buffer.uri.host, "Current Host"],
+                            [buffer.uri.spec, "Current Page"]
+                        ];
+                    }
+                },
                 keepQuotes: true,
                 options: [
                     {
@@ -748,6 +757,11 @@ var Mappings = Module("mappings", {
                                [mode.name.toLowerCase()]);
     },
     completion: function () {
+        completion.mapGroup = function mapGroup(context, modes) {
+            context.title = ["Map group"];
+            context.keys = { text: "name", description: function (h) h.description || h.filter };
+            context.completions = mappings.allHives.filter(function (h) h.name != "builtin");
+        };
         completion.userMapping = function userMapping(context, modes) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
             modes = modes || [modules.modes.NORMAL];

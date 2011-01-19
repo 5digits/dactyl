@@ -1250,11 +1250,14 @@ var Options = Module("options", {
             case "regexpmap":
                 let vals = Option.splitList(context.filter);
                 let target = vals.pop() || "";
+
                 let [count, key, quote] = Commands.parseArg(target, /:/, true);
                 let split = Option._splitAt;
+
                 extra.key = Option.dequote(key);
                 extra.value = count < target.length ? Option.dequote(target.substr(count + 1)) : null;
                 extra.values = opt.parse(vals.join(","));
+
                 Option._splitAt = split + (extra.value == null ? 0 : count + 1);
                 break;
             }
