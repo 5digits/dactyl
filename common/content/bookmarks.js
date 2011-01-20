@@ -105,7 +105,7 @@ var Bookmarks = Module("bookmarks", {
      */
     addSearchKeyword: function (elem) {
         if (elem instanceof HTMLFormElement || elem.form)
-            var [url, post, charset] = util.parseForm(elem);
+            var [url, post,, charset] = util.parseForm(elem);
         else
             var [url, post, charset] = [elem.href || elem.src, null, elem.ownerDocument.characterSet];
 
