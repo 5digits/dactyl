@@ -662,7 +662,7 @@ var Editor = Module("editor", {
 
         mappings.add([modes.VISUAL],
             ["v", "V"], "End visual mode",
-            function () { events.onEscape(); }); // XXX
+            function () { modes.pop(); });
 
         mappings.add([modes.TEXT_EDIT],
             ["V"], "Start visual line mode",
