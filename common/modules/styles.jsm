@@ -330,11 +330,9 @@ var Styles = Module("Styles", {
     },
 
     propertyIter: function (str, always) {
-        this.propertyPattern.lastIndex = 0;
-
-        let match, i = 0;
-        while ((!match || match[0]) && (match = Styles.propertyPattern.exec(str)))
-            if (always && !i++ || match[0] && match[3])
+        let i = 0;
+        for (let match in this.propertyPattern.iterate(str))
+            if (always && !i++ || match[0] && match.value)
                 yield match;
     },
 
@@ -367,15 +365,6 @@ var Styles = Module("Styles", {
         }),
 
     patterns: memoize({
-        iter: function (pattern, str) {
-            pattern = this[pattern];
-            pattern.lastIndex = 0;
-
-            let match;
-            while ((match = pattern.exec(str)) && match[0].length)
-                yield match;
-        },
-
         get property() util.regexp(<![CDATA[
                 (?:
                     (?P<preSpace> <space>*)

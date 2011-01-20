@@ -161,9 +161,7 @@ var Template = Module("Template", {
 
     highlightRegexp: function highlightRegexp(str, re, highlight) {
         return this.highlightSubstrings(str, (function () {
-            re.lastIndex = 0;
-            let res;
-            while ((res = re.exec(str)) && res[0].length)
+            for (let res in util.regexp.iterate(re, str))
                 yield [res.index, res[0].length, res.wholeMatch ? [res] : res];
         })(), highlight || template.filter);
     },

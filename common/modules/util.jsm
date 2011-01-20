@@ -268,8 +268,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 valid: function (obj) this.elements.every(function (e) !e.test || e.test(obj))
             });
 
-        let match, end = 0, re = /(.*?)%(.)/gy;
-        while (match = re.exec(format)) {
+        let end = 0;
+        for (let match in util.regexp.iterate(/(.*?)%(.)/gy, format)) {
+
             let [, prefix, char] = match;
             end += match[0].length;
 
@@ -327,7 +328,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         let defaults = { lt: "<", gt: ">" };
 
-        let match, end = 0;
         let re = util.regexp(<![CDATA[
             ([^]*?) // 1
             (?:
@@ -337,7 +337,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             )
         ]]>, "giy");
         macro = String(macro);
-        while (match = re.exec(macro)) {
+        let end = 0;
+        for (let match in re.iterate(macro)) {
             let [, prefix, open, full, macro, close] = match;
             end += match[0].length;
 
@@ -1264,7 +1265,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         let res = update(RegExp(expr, flags), {
             closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
-            dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"]
+            dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"],
+            iterate: function (str, idx) util.regexp.iterate(this, str, idx)
         });
         if (struct)
             update(res, {
@@ -1287,7 +1289,27 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {RegExp} re The regexp showable source of which is to be returned.
          * @returns {string}
          */
-        getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0)
+        getSource: function regexp_getSource(re) re.source.replace(/\\(.)/g, function (m0, m1) m1 === "/" ? "/" : m0),
+
+        /**
+         * Iterates over all matches of the given regexp in the given
+         * string.
+         *
+         * @param {RegExp} regexp The regular expression to execute.
+         * @param {string} string The string to search.
+         * @param {number} lastIndex The index at which to begin searching. @optional
+         */
+        iterate: function iterate(regexp, string, lastIndex) {
+            regexp.lastIndex = lastIndex = lastIndex || 0;
+            let match;
+            while (match = regexp.exec(string)) {
+                lastIndex = regexp.lastIndex;
+                yield match;
+                regexp.lastIndex = lastIndex;
+                if (match[0].length == 0 || !regexp.global)
+                    break;
+            }
+        }
     }),
 
     rehash: function (args) {
