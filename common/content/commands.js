@@ -1291,9 +1291,14 @@ var Commands = Module("commands", {
                     if (completer) {
                         if (/^custom,/.test(completer)) {
                             completer = completer.substr(7);
+
+                            let sourcing = update({}, io.sourcing || {});
                             completerFunc = function (context) {
                                 try {
-                                    var result = dactyl.userEval(completer);
+                                    var result = io.withSavedValues(["sourcing"], function () {
+                                        io.sourcing = sourcing;
+                                        return dactyl.userEval(completer);
+                                    });
                                 }
                                 catch (e) {
                                     dactyl.echo(":" + this.name + " ...");
