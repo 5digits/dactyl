@@ -762,10 +762,8 @@ var Buffer = Module("buffer", {
      * Saves a page link to disk.
      *
      * @param {HTMLAnchorElement} elem The page link to save.
-     * @param {boolean} skipPrompt Whether to open the "Save Link As..."
-     *     dialog.
      */
-    saveLink: function (elem, skipPrompt) {
+    saveLink: function (elem) {
         let doc      = elem.ownerDocument;
         let uri      = util.newURI(elem.href || elem.src, null, util.newURI(elem.baseURI));
         let referrer = util.newURI(doc.documentURI, doc.characterSet);
@@ -786,14 +784,7 @@ var Buffer = Module("buffer", {
                     util.assert(false, "Invalid destination: " + e.name);
                 }
 
-                var persist = services.Persist();
-                persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
-                                     | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
-
-                persist.progressListener = new window.DownloadListener(window,
-                        services.Transfer(uri, services.io.newFileURI(file), "",
-                                          null, null, null, persist));
-                persist.saveURI(uri, null, null, null, null, file);
+                buffer.saveURI(uri, file);
             }, {
                 autocomplete: true,
                 completer: function (context) completion.savePage(context, elem),
@@ -805,12 +796,42 @@ var Buffer = Module("buffer", {
         }
     },
 
+    /**
+     * Saves the contents of a URI to disk.
+     *
+     * @param {nsIURI} uri The URI to save
+     * @param {nsIFile} file The file into which to write the result.
+     */
+    saveURI: function (uri, file) {
+        var persist = services.Persist();
+        persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
+                             | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+
+        persist.progressListener = new window.DownloadListener(window,
+                services.Transfer(uri, services.io.newFileURI(file), "",
+                                  null, null, null, persist));
+        persist.saveURI(uri, null, null, null, null, file);
+    },
+
+    /**
+     * Scrolls the currently active element horizontally. See
+     * {@link Buffer.scrollHorizontal} for parameters.
+     */
     scrollHorizontal: function scrollHorizontal(increment, number)
         Buffer.scrollHorizontal(this.findScrollable(number, true), increment, number),
 
+    /**
+     * Scrolls the currently active element vertically. See
+     * {@link Buffer.scrollVertical} for parameters.
+     */
     scrollVertical: function scrollVertical(increment, number)
         Buffer.scrollVertical(this.findScrollable(number, false), increment, number),
 
+    /**
+     * Scrolls the currently active element to the given horizontal and
+     * vertical percentages. See {@link Buffer.scrollToPercent} for
+     * parameters.
+     */
     scrollToPercent: function scrollToPercent(horizontal, vertical)
         Buffer.scrollToPercent(this.findScrollable(0, vertical == null), horizontal, vertical),
 
@@ -838,6 +859,17 @@ var Buffer = Module("buffer", {
             this.scrollVertical("pages", direction / 2);
     },
 
+    /**
+     * Find the best candidate scrollable element for the given
+     * direction and orientation.
+     *
+     * @param {number} dir The direction in which the element must be
+     *   able to scroll. Negative numbers represent up or left, while
+     *   positive numbers represent down or right.
+     * @param {boolean} horizontal If true, look for horizontally
+     *   scrollable elements, otherwise look for vertically scrollable
+     *   elements.
+     */
     findScrollable: function findScrollable(dir, horizontal) {
         function find(elem) {
             while (!(elem instanceof Element) && elem.parentNode)
@@ -873,6 +905,9 @@ var Buffer = Module("buffer", {
         return elem || doc.body || doc.documentElement;
     },
 
+    /**
+     * Find the best candidate scrollable frame in the current buffer.
+     */
     findScrollableWindow: function findScrollableWindow() {
         win = window.document.commandDispatcher.focusedWindow;
         if (win && (win.scrollMaxX > 0 || win.scrollMaxY > 0))
@@ -1128,6 +1163,18 @@ var Buffer = Module("buffer", {
         this.bumpZoomLevel(-steps, fullZoom);
     },
 
+    /**
+     * Adjusts the page zoom of the current buffer to the given absolute
+     * value.
+     *
+     * @param {number} value The new zoom value as a possibly fractional
+     *   percentage of the page's natural size.
+     * @param {boolean} fullZoom If true, zoom all content of the page,
+     *   including raster images. If false, zoom only text. If omitted,
+     *   use the current zoom function. @optional
+     * @throws {FailedAssertion} if the given *value* is not within the
+     *   closed range [Buffer.ZOOM_MIN, Buffer.ZOOM_MAX].
+     */
     setZoom: function setZoom(value, fullZoom) {
         dactyl.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
             "Zoom value out of range (" + Buffer.ZOOM_MIN + " - " + Buffer.ZOOM_MAX + "%)");
@@ -1147,6 +1194,19 @@ var Buffer = Module("buffer", {
         statusline.updateZoomLevel(value, ZoomManager.useFullZoom);
     },
 
+    /**
+     * Adjusts the page zoom of the current buffer relative to the
+     * current zoom level.
+     *
+     * @param {number} steps The number of natural fractions by which to
+     *  adjust the current page zoom. If positive, the zoom level is
+     *  increased, if negative it is decreased.
+     * @param {boolean} fullZoom If true, zoom all content of the page,
+     *   including raster images. If false, zoom only text. If omitted,
+     *   use the current zoom function. @optional
+     * @throws {FailedAssertion} if the buffer's zoom level is already
+     *  at its extreme in the given direction.
+     */
     bumpZoomLevel: function bumpZoomLevel(steps, fullZoom) {
         if (fullZoom === undefined)
             fullZoom = ZoomManager.useFullZoom;
@@ -1155,8 +1215,7 @@ var Buffer = Module("buffer", {
         let cur = values.indexOf(ZoomManager.snap(ZoomManager.zoom));
         let i = Math.constrain(cur + steps, 0, values.length - 1);
 
-        if (i == cur && fullZoom == ZoomManager.useFullZoom)
-            dactyl.beep();
+        dactyl.assert(i != cur || fullZoom != ZoomManager.useFullZoom);
 
         this.setZoom(Math.round(values[i] * 100), fullZoom);
     },
@@ -1198,6 +1257,16 @@ var Buffer = Module("buffer", {
         return dir < 0 && elem[pos] > 0 || dir > 0 && elem[pos] + realSize < elem[max] || !dir && realSize < elem[max];
     },
 
+    /**
+     * Scroll the contents of the given element to the absolute *left*
+     * and *top* pixel offsets.
+     *
+     * @param {Element} elem The element to scroll.
+     * @param {number|null} left The left absolute pixel offset. If
+     *   null, to not alter the horizontal scroll offset.
+     * @param {number|null} top The top absolute pixel offset. If
+     *   null, to not alter the vertical scroll offset.
+     */
     scrollTo: function scrollTo(elem, left, top) {
         // Temporary hack. Should be done better.
         if (elem.ownerDocument == buffer.focusedFrame.document)
@@ -1208,6 +1277,18 @@ var Buffer = Module("buffer", {
             elem.scrollTop = top;
     },
 
+    /**
+     * Scrolls the currently given element horizontally.
+     *
+     * @param {Element} elem The element to scroll.
+     * @param {string} increment The increment by which to scroll.
+     *   Possible values are: "columns", "pages"
+     * @param {number} number The possibly fractional number of
+     *   increments to scroll. Positive values scroll to the right while
+     *   negative values scroll to the left.
+     * @throws {FailedAssertion} if scrolling is not possible in the
+     *   given direction.
+     */
     scrollHorizontal: function scrollHorizontal(elem, increment, number) {
         let fontSize = parseInt(util.computedStyle(elem).fontSize);
         if (increment == "columns")
@@ -1225,6 +1306,18 @@ var Buffer = Module("buffer", {
         Buffer.scrollTo(elem, left + number * increment, null);
     },
 
+    /**
+     * Scrolls the currently given element vertically.
+     *
+     * @param {Element} elem The element to scroll.
+     * @param {string} increment The increment by which to scroll.
+     *   Possible values are: "lines", "pages"
+     * @param {number} number The possibly fractional number of
+     *   increments to scroll. Positive values scroll upward while
+     *   negative values scroll downward.
+     * @throws {FailedAssertion} if scrolling is not possible in the
+     *   given direction.
+     */
     scrollVertical: function scrollVertical(elem, increment, number) {
         let fontSize = parseInt(util.computedStyle(elem).fontSize);
         if (increment == "lines")
@@ -1242,6 +1335,18 @@ var Buffer = Module("buffer", {
         Buffer.scrollTo(elem, null, top + number * increment);
     },
 
+    /**
+     * Scrolls the currently active element to the given horizontal and
+     * vertical percentages.
+     *
+     * @param {Element} elem The element to scroll.
+     * @param {number|null} horizontal The possibly fractional
+     *   percentage of the current viewport width to scroll to. If null,
+     *   do not scroll horizontally.
+     * @param {number|null} vertical The possibly fractional percentage
+     *   of the current viewport height to scroll to. If null, do not
+     *   scroll vertically.
+     */
     scrollToPercent: function scrollToPercent(elem, horizontal, vertical) {
         Buffer.scrollTo(elem,
                         horizontal == null ? null
