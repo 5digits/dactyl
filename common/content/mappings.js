@@ -532,27 +532,37 @@ var Mappings = Module("mappings", {
                         }
                     ],
                     serialize: function () {
-                        return this.name == "map" ? [
-                            {
-                                command: this.name,
-                                options: array([
-                                    ["-modes", uniqueModes(map.modes)],
-                                    ["-description", map.description],
-                                    map.silent && ["-silent"]])
-                                    .filter(util.identity)
-                                    .toObject(),
-                                arguments: [map.names[0]],
-                                literalArg: map.rhs,
-                                ignoreDefaults: true
-                            }
-                            for (map in userMappings())
-                            if (map.persist)
-                        ] : [];
+                        return this.name != "map" ? [] :
+                            array(mappings.userHives)
+                                .filter(function (h) !h.noPersist)
+                                .map(function (hive) [
+                                    {
+                                        command: "mapgroup",
+                                        bang: true,
+                                        arguments: [hive.name, String(hive.filter)].slice(0, hive.name == "user" ? 1 : 2)
+                                    }
+                                ].concat([
+                                    {
+                                        command: "map",
+                                        options: array([
+                                            ["-modes", uniqueModes(map.modes)],
+                                            ["-description", map.description],
+                                            map.silent && ["-silent"]])
+                                            .filter(util.identity)
+                                            .toObject(),
+                                        arguments: [map.names[0]],
+                                        literalArg: map.rhs,
+                                        ignoreDefaults: true
+                                    }
+                                    for (map in userMappings(hive))
+                                    if (map.persist)
+                                ]))
+                                .flatten().array;
                     }
             };
-            function userMappings() {
+            function userMappings(hive) {
                 let seen = {};
-                for (let stack in values(mappings.userHive.stacks))
+                for (let stack in values(hive.stacks))
                     for (let map in array.iterValues(stack))
                         if (!set.add(seen, map.id))
                             yield map;
@@ -650,6 +660,8 @@ var Mappings = Module("mappings", {
                     });
 
                     hive = mappings.addHive(name, filter, args["-description"]);
+                    if (args["-nopersist"])
+                        hive.noPersist = true;
                 }
 
                 dactyl.assert(hive, "No mapping group: " + name);
@@ -680,6 +692,10 @@ var Mappings = Module("mappings", {
                         names: ["-description", "-d"],
                         description: "A description of this mapping group",
                         type: CommandOption.STRING
+                    },
+                    {
+                        names: ["-nopersist", "-n"],
+                        description: "Do not save this mapping group to an auto-generated RC file"
                     }
                 ]
             });
