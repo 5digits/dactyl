@@ -272,7 +272,6 @@ var Events = Module("events", {
         try {
             var wasFeeding = this.feedingKeys;
             this.feedingKeys = true;
-            this.duringFeed = this.duringFeed || [];
 
             var wasQuiet = commandline.quiet;
             if (quiet)
@@ -315,13 +314,6 @@ var Events = Module("events", {
             this.feedingKeys = wasFeeding;
             if (quiet)
                 commandline.quiet = wasQuiet;
-
-            if (this.duringFeed.length) {
-                let duringFeed = this.duringFeed;
-                this.duringFeed = [];
-                for (let [, event] in Iterator(duringFeed))
-                    events.dispatch(event.originalTarget, event, event);
-            }
         }
     },
 
@@ -868,43 +860,45 @@ var Events = Module("events", {
             event.stopPropagation();
         }
 
-        if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
-            for (let [k, v] in Iterator(this.feedingEvent))
-                if (!(k in event))
-                    event[k] = v;
-            this.feedingEvent = null;
-        }
-
-        let key = events.toString(event);
-        if (!key)
-             return null;
-
-        if (modes.recording && (!this._input || !mappings.userHive.hasMap(modes.main, this._input.buffer + key)))
-            events._macroKeys.push(key);
-
-        // feedingKeys needs to be separate from interrupted so
-        // we can differentiate between a recorded <C-c>
-        // interrupting whatever it's started and a real <C-c>
-        // interrupting our playback.
-        if (events.feedingKeys && !event.isMacro) {
-            if (key == "<C-c>") {
-                events.feedingKeys = false;
-                if (modes.replaying) {
-                    modes.replaying = false;
-                    this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
-                }
-            }
-            else
-                events.duringFeed.push(event);
-
-            return kill(event);
-        }
-
         function shouldPass()
             (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
             options.get("passkeys").has(events.toString(event));
 
+        let duringFeed = this.duringFeed;
+        this.duringFeed = [];
         try {
+            if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
+                for (let [k, v] in Iterator(this.feedingEvent))
+                    if (!(k in event))
+                        event[k] = v;
+                this.feedingEvent = null;
+            }
+
+            let key = events.toString(event);
+            if (!key)
+                 return null;
+
+            if (modes.recording && (!this._input || !mappings.userHive.hasMap(modes.main, this._input.buffer + key)))
+                events._macroKeys.push(key);
+
+            // feedingKeys needs to be separate from interrupted so
+            // we can differentiate between a recorded <C-c>
+            // interrupting whatever it's started and a real <C-c>
+            // interrupting our playback.
+            if (events.feedingKeys && !event.isMacro) {
+                if (key == "<C-c>") {
+                    events.feedingKeys = false;
+                    if (modes.replaying) {
+                        modes.replaying = false;
+                        this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
+                    }
+                }
+                else
+                    events.duringFeed.push(event);
+
+                return kill(event);
+            }
+
             let mode = modes.getStack(0);
             if (event.dactylMode)
                 mode = Modes.StackElement(event.dactylMode);
@@ -1019,6 +1013,16 @@ var Events = Module("events", {
         }
         catch (e) {
             dactyl.reportError(e);
+        }
+        finally {
+            [duringFeed, this.duringFeed] = [this.duringFeed, duringFeed];
+            for (let event in this.duringFeed)
+                try {
+                    this.dispatch(event.originalTarget, event, event);
+                }
+                catch (e) {
+                    util.reportError(e);
+                }
         }
     },
 

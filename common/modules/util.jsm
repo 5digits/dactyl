@@ -1465,16 +1465,23 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return results;
     },
 
+    yielders: 0,
     threadYield: function (flush, interruptable) {
-        let mainThread = services.threading.mainThread;
-        /* FIXME */
-        util.interrupted = false;
-        do {
-            mainThread.processNextEvent(!flush);
-            if (util.interrupted)
-                throw new Error("Interrupted");
+        this.yielders++;
+        try {
+            let mainThread = services.threading.mainThread;
+            /* FIXME */
+            util.interrupted = false;
+            do {
+                mainThread.processNextEvent(!flush);
+                if (util.interrupted)
+                    throw new Error("Interrupted");
+            }
+            while (flush === true && mainThread.hasPendingEvents());
         }
-        while (flush === true && mainThread.hasPendingEvents());
+        finally {
+            this.yielders--;
+        }
     },
 
     yieldable: function yieldable(func)
