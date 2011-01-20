@@ -988,10 +988,14 @@ var Events = Module("events", {
             if (!processors.some(function (p) p.main.ownsBuffer))
                 statusline.updateInputBuffer(buffer);
 
-            if (waiting)
+            if (waiting) {
+                res = Events.KILL;
                 this._processors = processors;
-            else if (res === Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
+            }
+            if (res !== Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL))) {
+                res = Events.KILL;
                 dactyl.beep();
+            }
 
             if (res !== Events.PASS && !isArray(res))
                 refeed = null;
