@@ -426,7 +426,7 @@ var Events = Module("events", {
                     this.feedingEvent = null;
                 }
             }
-            : function (target, event, extra) target.dispatchEvent(update(event, extra || {}))),
+            : function (target, event, extra) target.dispatchEvent(event)),
 
     get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,
 
@@ -869,7 +869,9 @@ var Events = Module("events", {
         }
 
         if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
-            update(event, this.feedingEvent);
+            for (let [k, v] in Iterator(this.feedingEvent))
+                if (!(k in event))
+                    event[k] = v;
             this.feedingEvent = null;
         }
 
@@ -987,7 +989,7 @@ var Events = Module("events", {
                         res = dactyl.trapErrors(input.fallthrough, input, event);
                     }
 
-            if (!keyModes.some(function (m) m.ownsBuffer))
+            if (!processors.some(function (p) p.main.ownsBuffer))
                 statusline.updateInputBuffer(buffer);
 
             if (waiting)

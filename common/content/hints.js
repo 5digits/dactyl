@@ -830,7 +830,7 @@ var Hints = Module("hints", {
                 context.compare = function () 0;
                 context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints._hintModes))];
             },
-            onAccept: function (arg) { arg && util.timeout(function () hints.show(arg, opts), 0); },
+            onAccept: function (arg) { arg && util.timeout(function () dactyl.trapErrors(hints.show, hints, arg, opts), 0); },
             get onCancel() this.onAccept,
             onChange: function () { modes.pop(); }
         });
