@@ -1497,7 +1497,7 @@ var Buffer = Module("buffer", {
                 // if browser.download.useDownloadDir = false then the "Save As"
                 // dialog is used with this as the default directory
                 // TODO: if we're going to do this shouldn't it be done in setCWD or the value restored?
-                prefs.set("browser.download.lastDir", io.cwd);
+                prefs.set("browser.download.lastDir", io.cwd.path);
 
                 try {
                     var contentDisposition = content.QueryInterface(Ci.nsIInterfaceRequestor)

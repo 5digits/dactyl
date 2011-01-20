@@ -296,13 +296,13 @@ var File = Class("File", {
                 let expandedPath = File.expandPath(path);
 
                 if (!File.isAbsolutePath(expandedPath) && checkPWD)
-                    file = File.joinPaths(checkPWD, expandedPath);
+                    file = checkPWD.child(expandedPath);
                 else
                     file.initWithPath(expandedPath);
             }
             catch (e) {
                 util.reportError(e);
-                return File.DoesNotExist(e);
+                return File.DoesNotExist(path, e);
             }
         }
         let self = XPCSafeJSObjectWrapper(file);
@@ -327,9 +327,14 @@ var File = Class("File", {
      */
     child: function (name) {
         let f = this.constructor(this);
-        f.append(name);
+        f.QueryInterface(Ci.nsILocalFile).appendRelativePath(name);
         return f;
     },
+
+    /**
+     * Returns a clone of this file.
+     */
+    clone: function () File(this),
 
     /**
      * Reads this file's entire contents in "text" mode and returns the
@@ -503,7 +508,8 @@ var File = Class("File", {
         return f.path.substr(f.parent.path.length, 1);
     }),
 
-    DoesNotExist: function (error) ({
+    DoesNotExist: function (path, error) ({
+        path: path,
         exists: function () false,
         __noSuchMethod__: function () { throw error || Error("Does not exist"); }
     }),

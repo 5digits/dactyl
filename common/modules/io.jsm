@@ -73,11 +73,9 @@ var IO = Module("io", {
          * @returns {nsIFile[])
          */
         getRuntimeDirectories: function getRuntimeDirectories(name) {
-            let dirs = modules.options["runtimepath"];
-
-            dirs = dirs.map(function (dir) File.joinPaths(dir, name, this.cwd), this)
-                       .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
-            return dirs;
+            return modules.options.get("runtimepath").files
+                .map(function (dir) dir.child(name))
+                .filter(function (dir) dir.exists() && dir.isDirectory() && dir.isReadable());
         },
 
         // FIXME: multiple paths?
@@ -91,15 +89,15 @@ var IO = Module("io", {
          * @param {boolean} all Whether all found files should be sourced.
          */
         sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
-            let dirs = modules.options["runtimepath"];
+            let dirs = modules.options.get("runtimepath").files;
             let found = false;
 
             dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + modules.options.get("runtimepath").stringValue, 2);
 
         outer:
-            for (let [, dir] in Iterator(dirs)) {
-                for (let [, path] in Iterator(paths)) {
-                    let file = File.joinPaths(dir, path, this.cwd);
+            for (let dir in values(dirs)) {
+                for (let [,path] in Iterator(paths)) {
+                    let file = dir.child(path);
 
                     dactyl.echomsg("Searching for " + file.path.quote(), 3);
 
@@ -206,9 +204,9 @@ var IO = Module("io", {
         // NOTE: the directory could have been deleted underneath us so
         // fallback to the process's CWD
         if (dir.exists() && dir.isDirectory())
-            return dir.path;
+            return dir;
         else
-            return this._processDir.path;
+            return this._processDir.clone();
     },
 
     /**
@@ -218,7 +216,7 @@ var IO = Module("io", {
      *     absolute path and is expanded by {@link #expandPath}.
      */
     set cwd(newDir) {
-        newDir = newDir || "~";
+        newDir = newDir && newDir.path || newDir || "~";
 
         if (newDir == "-") {
             util.assert(this._oldcwd != null, "E186: No previous directory");
@@ -255,17 +253,17 @@ var IO = Module("io", {
     /**
      * Returns the first user RC file found in *dir*.
      *
-     * @param {string} dir The directory to search.
+     * @param {File|string} dir The directory to search.
      * @param {boolean} always When true, return a path whether
      *     the file exists or not.
      * @default $HOME.
      * @returns {nsIFile} The RC file or null if none is found.
      */
     getRCFile: function (dir, always) {
-        dir = dir || "~";
+        dir = this.File(dir || "~");
 
-        let rcFile1 = File.joinPaths(dir, "." + config.name + "rc", this.cwd);
-        let rcFile2 = File.joinPaths(dir, "_" + config.name + "rc", this.cwd);
+        let rcFile1 = dir.child("." + config.name + "rc");
+        let rcFile2 = dir.child("_" + config.name + "rc");
 
         if (util.OS.isWindows)
             [rcFile1, rcFile2] = [rcFile2, rcFile1];
@@ -296,6 +294,13 @@ var IO = Module("io", {
         return File(file);
     },
 
+    /**
+     * Determines whether the given URL string resolves to a JAR URL and
+     * returns the matching nsIJARURI object if it does.
+     *
+     * @param {string} url The URL to check.
+     * @returns {nsIJARURI|null}
+     */
     isJarURL: function isJarURL(url) {
         try {
             let uri = util.newURI(url);
@@ -305,9 +310,16 @@ var IO = Module("io", {
                 return channel.URI.QueryInterface(Ci.nsIJARURI);
         }
         catch (e) {}
-        return false;
+        return null;
     },
 
+    /**
+     * Returns a list of the contents of the given JAR file which are
+     * children of the given path.
+     *
+     * @param {nsIURI|string} file The URI of the JAR file to list.
+     * @param {string} path The prefix path to search.
+     */
     listJar: function listJar(file, path) {
         file = util.getFile(file);
         if (file) {
@@ -331,6 +343,17 @@ var IO = Module("io", {
         return "";
     },
 
+    /**
+     * Searches for the given executable file in the system executable
+     * file paths as specified by the PATH environment variable.
+     *
+     * On Windows, if the unadorned filename cannot be found, the
+     * extensions in the semicolon-separated list in the PATHSEP
+     * environment variable are successively appended to the original
+     * name and searched for in turn.
+     *
+     * @param {string} bin The name of the executable to find.
+     */
     pathSearch: function (bin) {
         if (bin instanceof File || File.isAbsolutePath(bin))
             return this.File(bin);
@@ -342,7 +365,8 @@ var IO = Module("io", {
 
         for (let [, dir] in Iterator(dirs))
             try {
-                dir = io.File(dir, true);
+                dir = this.File(dir, true);
+
                 let file = dir.child(bin);
                 if (file.exists())
                     return file;
@@ -365,7 +389,7 @@ var IO = Module("io", {
     /**
      * Runs an external program.
      *
-     * @param {string} program The program to run.
+     * @param {File|string} program The program to run.
      * @param {string[]} args An array of arguments to pass to *program*.
      */
     run: function (program, args, blocking) {
@@ -432,11 +456,11 @@ var IO = Module("io", {
 
             // TODO: implement 'shellredir'
             if (util.OS.isWindows && !/sh/.test(shell.leafName)) {
-                command = "cd /D " + this.cwd + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
+                command = "cd /D " + this.cwd.path + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(shell, shcf.split(/\s+/).concat(command), true);
             }
             else {
-                cmd.write("cd " + escape(this.cwd) + "\n" +
+                cmd.write("cd " + escape(this.cwd.path) + "\n" +
                         ["exec", ">" + escape(stdout.path), "2>&1", "<" + escape(stdin.path),
                          escape(shell.path), shcf, escape(command)].join(" "));
                 res = this.run("/bin/sh", ["-e", cmd.path], true);
@@ -542,16 +566,16 @@ var IO = Module("io", {
                 // TODO: handle ../ and ./ paths
                 if (File.isAbsolutePath(arg)) {
                     io.cwd = arg;
-                    dactyl.echomsg(io.cwd);
+                    dactyl.echomsg(io.cwd.path);
                 }
                 else {
-                    let dirs = modules.options["cdpath"];
-                    for (let [, dir] in Iterator(dirs)) {
-                        dir = File.joinPaths(dir, arg, io.cwd);
+                    let dirs = modules.options.get("cdpath").files;
+                    for (let dir in values(dirs)) {
+                        dir = dir.child(arg);
 
                         if (dir.exists() && dir.isDirectory() && dir.isReadable()) {
-                            io.cwd = dir.path;
-                            dactyl.echomsg(io.cwd);
+                            io.cwd = dir;
+                            dactyl.echomsg(io.cwd.path);
                             return;
                         }
                     }
@@ -576,7 +600,7 @@ var IO = Module("io", {
 
         commands.add(["pw[d]"],
             "Print the current directory name",
-            function () { dactyl.echomsg(io.cwd); },
+            function () { dactyl.echomsg(io.cwd.path); },
             { argCount: "0" });
 
         commands.add([config.name.replace(/(.)(.*)/, "mk$1[$2rc]")],
@@ -584,11 +608,10 @@ var IO = Module("io", {
             function (args) {
                 dactyl.assert(args.length <= 1, "E172: Only one file name allowed");
 
-                let filename = args[0] || io.getRCFile(null, true).path;
-                let file = io.File(filename);
+                let file = io.File(args[0] || io.getRCFile(null, true));
 
                 dactyl.assert(!file.exists() || args.bang,
-                              "E189: " + filename.quote() + " exists (add ! to override)");
+                              "E189: " + file.path.quote() + " exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
                 let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator()) if (cmd.serialize)];
@@ -601,7 +624,7 @@ var IO = Module("io", {
                     file.write(lines.join("\n"));
                 }
                 catch (e) {
-                    dactyl.echoerr("E190: Cannot open " + filename.quote() + " for writing");
+                    dactyl.echoerr("E190: Cannot open " + file.path.quote() + " for writing");
                     dactyl.log("Could not write to " + file.path + ": " + e.message); // XXX
                 }
             }, {
@@ -1000,11 +1023,19 @@ unlet s:cpo_save
         options.add(["cdpath", "cd"],
             "List of directories searched when executing :cd",
             "stringlist", ["."].concat(services.environment.get("CDPATH").split(/[:;]/).filter(util.identity)).join(","),
-            { setter: function (value) File.expandPathList(value) });
+            {
+                get files() this.value.map(function (path) File(path, modules.io.cwd))
+                                .filter(function (dir) dir.exists()),
+                setter: function (value) File.expandPathList(value)
+            });
 
         options.add(["runtimepath", "rtp"],
             "List of directories searched for runtime files",
-            "stringlist", IO.runtimePath);
+            "stringlist", IO.runtimePath,
+            {
+                get files() this.value.map(function (path) File(path, modules.io.cwd))
+                                .filter(function (dir) dir.exists())
+            });
 
         options.add(["shell", "sh"],
             "Shell to use for executing external commands with :! and :run",

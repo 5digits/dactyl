@@ -241,9 +241,21 @@ var Editor = Module("editor", {
         return -1;
     },
 
+    /**
+     * Edits the given file in the external editor as specified by the
+     * 'editor' option.
+     *
+     * @param {object|File|string} args An object specifying the file,
+     *  line, and column to edit. If a non-object is specified, it is
+     *  treated as the file parameter of the object.
+     * @param {boolean} blocking If true, this function does not return
+     *  until the editor exits.
+     */
     editFileExternally: function (args, blocking) {
-        if (!isObject(args))
+        if (!isObject(args) || args instanceof File)
             args = { file: args };
+        args.file = args.file.path || args.file;
+
         let args = options.get("editor").format(args);
 
         dactyl.assert(args.length >= 1, "No editor specified");
