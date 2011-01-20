@@ -494,17 +494,17 @@ var Modes = Module("modes", {
         mappings.add([modes.BASE],
             ["<Esc>", "<C-[>"],
             "Return to NORMAL mode",
-            function () { modes.reset() });
+            function () { modes.reset(); });
 
         mappings.add([modes.INPUT, modes.COMMAND, modes.PASS_THROUGH, modes.QUOTE],
             ["<Esc>", "<C-[>"],
             "Return to the previous mode",
-            function () { modes.reset() });
+            function () { modes.pop(); });
 
         mappings.add([modes.MENU],
             ["<Esc>", "<C-[>"],
             "Close the current popup",
-            function () events.PASS);
+            function () Events.PASS);
     },
     prefs: function () {
         prefs.watch("accessibility.browsewithcaret", modes.closure.onCaretChange);

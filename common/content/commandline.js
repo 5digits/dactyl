@@ -1687,12 +1687,6 @@ var CommandLine = Module("commandline", {
             });
     },
     mappings: function () {
-        var myModes = [modes.COMMAND_LINE];
-
-        // TODO: move "<Esc>", "<C-[>" here from mappings
-        mappings.add(myModes,
-            ["<C-c>"], "Focus content",
-            function () { events.onEscape(); });
 
         // Any "non-keyword" character triggers abbreviation expansion
         // TODO: Add "<CR>" and "<Tab>" to this list
@@ -1701,7 +1695,7 @@ var CommandLine = Module("commandline", {
         // TODO: Make non-keyword recognition smarter so that there need not
         //       be two lists of the same characters (one here and a regexp in
         //       mappings.js)
-        mappings.add(myModes,
+        mappings.add([modes.COMMAND_LINE],
             ["<Space>", '"', "'"], "Expand command line abbreviation",
             function () {
                 commandline.resetCompletions();
@@ -1709,7 +1703,7 @@ var CommandLine = Module("commandline", {
                 return Events.PASS;
             });
 
-        mappings.add(myModes,
+        mappings.add([modes.COMMAND_LINE],
             ["<C-]>", "<C-5>"], "Expand command line abbreviation",
             function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
 
@@ -1720,11 +1714,11 @@ var CommandLine = Module("commandline", {
                 commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
             });
 
-        mappings.add(myModes,
+        mappings.add([modes.COMMAND_LINE],
             ["<C-p>", "<PageUp>"], "Recall the previous command line from the history list",
             function () { events.feedkeys("<S-Up>"); });
 
-        mappings.add(myModes,
+        mappings.add([modes.COMMAND_LINE],
             ["<C-n>", "<PageDown>"], "Recall the next command line from the history list",
             function () { events.feedkeys("<S-Down>"); });
 
@@ -1736,10 +1730,6 @@ var CommandLine = Module("commandline", {
         function body() commandline.widgets.multilineOutput.contentDocument.documentElement;
         function win() commandline.widgets.multilineOutput.contentWindow;
         function atEnd(dir) !Buffer.isScrollable(body(), dir || 1);
-
-        mappings.add([modes.OUTPUT_MULTILINE],
-            ["<Esc>", "<C-[>"], "Exit multi-line output mode",
-            function () {});
 
         const PASS = true;
         const DROP = false;
