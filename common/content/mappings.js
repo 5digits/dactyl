@@ -553,7 +553,7 @@ var Mappings = Module("mappings", {
             function userMappings() {
                 let seen = {};
                 for (let stack in values(mappings.userHive.stacks))
-                    for (let map in values(stack))
+                    for (let map in array.iterValues(stack))
                         if (!set.add(seen, map.id))
                             yield map;
             }
