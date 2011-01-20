@@ -2190,6 +2190,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         // TODO: we should have some class where all this guioptions stuff fits well
         // Dactyl.hideGUI();
 
+        if (dactyl.userEval("typeof document", null, "test.js") === "undefined")
+            jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);
+
         if (dactyl.commandLineOptions.preCommands)
             dactyl.commandLineOptions.preCommands.forEach(function (cmd) {
                 dactyl.execute(cmd);
@@ -2200,9 +2203,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         util.timeout(function () {
             let init = services.environment.get(config.idName + "_INIT");
             let rcFile = io.getRCFile("~");
-
-            if (dactyl.userEval("typeof document", null, "test.js") === "undefined")
-                jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);
 
             try {
                 if (dactyl.commandLineOptions.rcFile) {
