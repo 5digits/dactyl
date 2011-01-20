@@ -864,7 +864,7 @@ var Events = Module("events", {
             (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
             options.get("passkeys").has(events.toString(event));
 
-        let duringFeed = this.duringFeed;
+        let duringFeed = this.duringFeed || [];
         this.duringFeed = [];
         try {
             if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
@@ -894,7 +894,7 @@ var Events = Module("events", {
                     }
                 }
                 else
-                    events.duringFeed.push(event);
+                    duringFeed.push(event);
 
                 return kill(event);
             }
