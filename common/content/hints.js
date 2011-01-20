@@ -25,7 +25,6 @@ var Hints = Module("hints", {
         this._validHints = []; // store the indices of the "hints" array with valid elements
 
         this._activeTimeout = null; // needed for hinttimeout > 0
-        this._canUpdate = false;
 
         // keep track of the documents which we generated the hints for
         // this._docs = { doc: document, start: start_index in hints[], end: end_index in hints[] }
@@ -92,7 +91,6 @@ var Hints = Module("hints", {
             this.prevInput = "";
             this.escNumbers = false;
             this._usedTabKey = false;
-            this._canUpdate = false;
             this._hintNumber = 0;
             this._hintString = "";
             statusline.updateInputBuffer("");
@@ -869,7 +867,6 @@ var Hints = Module("hints", {
         this._hintNumber = 0;
         this._usedTabKey = false;
         this.prevInput = "";
-        this._canUpdate = false;
         this._continue = Boolean(opts.continue);
 
         this._top = opts.window || content;
@@ -877,10 +874,6 @@ var Hints = Module("hints", {
 
         this._generate();
 
-        // get all keys from the input queue
-        util.threadYield(true);
-
-        this._canUpdate = true;
         this._showHints();
 
         if (this._validHints.length == 0) {
@@ -928,9 +921,6 @@ var Hints = Module("hints", {
                 this.hintKeys.indexOf(key);
 
             this._updateStatusline();
-
-            if (!this._canUpdate)
-                return PASS;
 
             if (this._docs.length == 0) {
                 this._generate();
@@ -1074,13 +1064,11 @@ var Hints = Module("hints", {
             hints.clearTimeout();
             hints._updateStatusline();
 
-            if (hints._canUpdate) {
-                if (hints._docs.length == 0 && hints._hintString.length > 0)
-                    hints._generate();
+            if (hints._docs.length == 0 && hints._hintString.length > 0)
+                hints._generate();
 
-                hints._showHints();
-                hints._processHints(followFirst);
-            }
+            hints._showHints();
+            hints._processHints(followFirst);
         }
 
         mappings.add(modes.HINTS, ["<Return>"],
