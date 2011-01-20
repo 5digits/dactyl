@@ -115,11 +115,7 @@ var Map = Class("Map", {
         if (this.names[0] != ".") // FIXME: Kludge.
             mappings.repeat = repeat;
 
-        dactyl.assert(!this.executing, "Attempt to execute mapping recursively");
-        this.executing = true;
-        let res = dactyl.trapErrors(repeat);
-        this.executing = false;
-        return res;
+        return dactyl.trapErrors(repeat);
     }
 
 }, {
