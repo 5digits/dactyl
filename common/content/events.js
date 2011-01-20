@@ -886,6 +886,8 @@ var Events = Module("events", {
             // interrupting whatever it's started and a real <C-c>
             // interrupting our playback.
             if (events.feedingKeys && !event.isMacro) {
+                if (!event.originalTarget)
+                    util.dumpStack();
                 if (key == "<C-c>") {
                     events.feedingKeys = false;
                     if (modes.replaying) {
@@ -1016,13 +1018,16 @@ var Events = Module("events", {
         }
         finally {
             [duringFeed, this.duringFeed] = [this.duringFeed, duringFeed];
-            for (let event in this.duringFeed)
-                try {
-                    this.dispatch(event.originalTarget, event, event);
-                }
-                catch (e) {
-                    util.reportError(e);
-                }
+            if (this.feedingKeys)
+                this.duringFeed = this.duringFeed.concat(duringFeed);
+            else
+                for (let event in values(duringFeed))
+                    try {
+                        this.dispatch(event.originalTarget, event, event);
+                    }
+                    catch (e) {
+                        util.reportError(e);
+                    }
         }
     },
 
