@@ -967,17 +967,14 @@ var Events = Module("events", {
                     }
             }
 
-            let refeed, ownsBuffer = 0, buffer, waiting = 0;
+            let refeed, buffer, waiting = 0;
             for (let input in values(processors)) {
                 var res = input.process(event);
-                ownsBuffer += !!input.main.ownsBuffer;
                 waiting += res == Events.WAIT;
                 buffer = buffer || input.inputBuffer;
 
                 if (isArray(res) && !waiting)
                     refeed = res;
-                else if (res !== Events.PASS)
-                    refeed = null;
                 if (res === Events.KILL)
                     break;
             }
@@ -990,13 +987,16 @@ var Events = Module("events", {
                         res = dactyl.trapErrors(input.fallthrough, input, event);
                     }
 
-            if (!ownsBuffer)
+            if (!keyModes.some(function (m) m.ownsBuffer))
                 statusline.updateInputBuffer(buffer);
 
             if (waiting)
                 this._processors = processors;
             else if (res === Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL)))
                 dactyl.beep();
+
+            if (res !== Events.PASS && !isArray(res))
+                refeed = null;
 
             if (refeed && refeed[0] && (!refeed[0].getPreventDefault() || refeed[0].dactylDefaultPrevented)) {
                 res = Events.PASS;

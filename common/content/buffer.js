@@ -1198,9 +1198,9 @@ var Buffer = Module("buffer", {
      * Adjusts the page zoom of the current buffer relative to the
      * current zoom level.
      *
-     * @param {number} steps The number of natural fractions by which to
-     *  adjust the current page zoom. If positive, the zoom level is
-     *  increased, if negative it is decreased.
+     * @param {number} steps The integral number of natural fractions by
+     *   which to adjust the current page zoom. If positive, the zoom
+     *   level is increased, if negative it is decreased.
      * @param {boolean} fullZoom If true, zoom all content of the page,
      *   including raster images. If false, zoom only text. If omitted,
      *   use the current zoom function. @optional

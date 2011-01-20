@@ -37,6 +37,7 @@ var Modes = Module("modes", {
 
         this.addMode("BASE", {
             description: "The base mode for all other modes",
+            bases: [],
             count: false
         });
         this.addMode("MAIN", {
