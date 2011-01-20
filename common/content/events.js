@@ -290,6 +290,7 @@ var Events = Module("events", {
                         evt.noremap = !!noremap;
                     evt.isMacro = true;
                     evt.dactylMode = mode;
+                    this.feedingEvent = evt;
 
                     let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
                     if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
@@ -318,8 +319,8 @@ var Events = Module("events", {
             if (this.duringFeed.length) {
                 let duringFeed = this.duringFeed;
                 this.duringFeed = [];
-                for (let [, evt] in Iterator(duringFeed))
-                    events.dispatch(evt.originalTarget, evt);
+                for (let [, event] in Iterator(duringFeed))
+                    events.dispatch(event.originalTarget, event, event);
             }
         }
     },
@@ -1009,7 +1010,7 @@ var Events = Module("events", {
                 for (let [i, event] in Iterator(refeed))
                     if (event.originalTarget) {
                         let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
-                        events.dispatch(event.originalTarget, evt, { skipmap: true });
+                        events.dispatch(event.originalTarget, evt, { skipmap: true, isMacro: true });
                     }
                     else if (i > 0)
                         events.onKeyPress(event);

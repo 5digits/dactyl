@@ -424,7 +424,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         modifiers = modifiers || {};
 
         if (!silent)
-            commandline.command = str.replace(/^\s*:\s*/, "");
+            commandline.lastCommand = str.replace(/^\s*:\s*/, "");
         let res = true;
         for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
             if (command === null)

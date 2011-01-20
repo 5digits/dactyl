@@ -666,6 +666,8 @@ var CommandLine = Module("commandline", {
             return this.widgets.command = val;
         return this._lastCommand = val;
     },
+    get lastCommand() this._lastCommand || this.command,
+    set lastCommand(val) { this._lastCommand = val },
 
     clear: function () {
         if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
