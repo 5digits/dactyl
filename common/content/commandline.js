@@ -283,8 +283,6 @@ var CommandWidgets = Class("CommandWidgets", {
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
-        elem.__defineGetter__("atEnd", function ()
-            !Buffer.isScrollable(elem.contentDocument.documentElement, 1));
 
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
@@ -674,7 +672,7 @@ var CommandLine = Module("commandline", {
             this.widgets.message = null;
         if (modes.main != modes.COMMAND_LINE)
             this.widgets.command = null;
-        if (modes.main == modes.OUTPUT_MULTILINE && this.widgets.multilineOutput.atEnd)
+        if (modes.main == modes.OUTPUT_MULTILINE && !mow.isScrollable(1))
             modes.pop();
         if (modes.main != modes.OUTPUT_MULTILINE)
             this.multilineOutputVisible = false;
@@ -1133,9 +1131,7 @@ var CommandLine = Module("commandline", {
             if (event instanceof MouseEvent)
                 return KILL;
 
-            const atEnd = function atEnd(dir) !Buffer.isScrollable(elem, dir || 1);
-
-            if (!options["more"] || atEnd(1)) {
+            if (!options["more"] || !mow.isScrollable(1)) {
                 modes.pop();
                 events.feedkeys(key);
             }
@@ -1168,7 +1164,7 @@ var CommandLine = Module("commandline", {
         let elem = this.widgets.multilineOutput.contentDocument.documentElement;
 
         if (showHelp)
-            this.widgets.message = ["MoreMsg", "-- More -- SPACE/d/j: screen/page/line down, b/u/k: up, q: quit"];
+            this.widgets.message = ["MoreMsg", "-- More -- SPACE/<C-f>/j: screen/page/line down, <C-b>/<C-u>/k: up, q: quit"];
         else if (force || (options["more"] && Buffer.isScrollable(elem, 1)))
             this.widgets.message = ["MoreMsg", "-- More --"];
         else
@@ -1727,9 +1723,11 @@ var CommandLine = Module("commandline", {
             [":"], "Enter command-line mode",
             function () { commandline.open(":", "", modes.EX); });
 
-        function body() commandline.widgets.multilineOutput.contentDocument.documentElement;
-        function win() commandline.widgets.multilineOutput.contentWindow;
-        function atEnd(dir) !Buffer.isScrollable(body(), dir || 1);
+        let mow = modules.mow = {
+            __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args))
+        };
+        memoize(mow, "body", function () commandline.widgets.multilineOutput.contentDocument.documentElement);
+        memoize(mow, "window", function () commandline.widgets.multilineOutput.contentWindow);
 
         const PASS = true;
         const DROP = false;
@@ -1758,47 +1756,47 @@ var CommandLine = Module("commandline", {
         }
 
         bind(["j", "<C-e>", "<Down>"], "Scroll down one line",
-             function () { Buffer.scrollVertical(body(), "lines", 1); },
-             function () !atEnd(1), BEEP);
+             function () { mow.scrollVertical("lines", 1); },
+             function () mow.isScrollable(1), BEEP);
 
         bind(["k", "<C-y>", "<Up>"], "Scroll up one line",
-             function () { Buffer.scrollVertical(body(), "lines", -1); },
-             function () !atEnd(-1), BEEP);
+             function () { mow.scrollVertical("lines", -1); },
+             function () mow.isScrollable(-1), BEEP);
 
         bind(["<C-j>", "<C-m>", "<Return>"], "Scroll down one line, exit on last line",
-             function () { Buffer.scrollVertical(body(), "lines", 1); },
-             function () !atEnd(1), DROP);
+             function () { mow.scrollVertical("lines", 1); },
+             function () mow.isScrollable(1), DROP);
 
         // half page down
         bind(["<C-d>"], "Scroll down half a page",
-             function () { Buffer.scrollVertical(body(), "pages", .5); },
-             function () atEnd(1), BEEP);
+             function () { mow.scrollVertical("pages", .5); },
+             function () mow.isScrollable(1), BEEP);
 
         bind(["<C-f>", "<PageDown>"], "Scroll down one page",
-             function () { Buffer.scrollVertical(body(), "pages", 1); },
-             function () !atEnd(1), BEEP);
+             function () { mow.scrollVertical("pages", 1); },
+             function () mow.isScrollable(1), BEEP);
 
         bind(["<Space>"], "Scroll down one page",
-             function () { Buffer.scrollVertical(body(), "pages", 1); },
-             function () !atEnd(1), DROP);
+             function () { mow.scrollVertical("pages", 1); },
+             function () mow.isScrollable(1), DROP);
 
         bind(["<C-u>"], "Scroll up half a page",
-             function () { Buffer.scrollVertical(body(), "pages", -.5); },
-             function () !atEnd(-1), BEEP);
+             function () { mow.scrollVertical("pages", -.5); },
+             function () mow.isScrollable(-1), BEEP);
 
         bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
-             function () { Buffer.scrollVertical(body(), "pages", -1); },
-             function () !atEnd(-1), BEEP);
+             function () { mow.scrollVertical("pages", -1); },
+             function () mow.isScrollable(-1), BEEP);
 
         bind(["gg"], "Scroll to the beginning of output",
-             function () { Buffer.scrollToPercent(body(), null, 0); })
+             function () { mow.scrollToPercent(null, 0); })
 
         bind(["G"], "Scroll to the end of output",
-             function () { body().scrollTop = body().scrollHeight; })
+             function () { mow.body.scrollTop = mow.body.scrollHeight; })
 
         // copy text to clipboard
         bind(["<C-y>"], "Yank selection to clipboard",
-             function () { dactyl.clipboardWrite(buffer.getCurrentWord(win())); });
+             function () { dactyl.clipboardWrite(buffer.getCurrentWord(mow.window)); });
 
         // close the window
         bind(["q"], "Close the output window",
