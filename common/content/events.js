@@ -982,10 +982,6 @@ var Events = Module("events", {
                         input.postExecute = params.postExecute;
                     if (params.onEvent && input.hive === mappings.builtinHive)
                         input.fallthrough = function (event) {
-                            // Bloody hell.
-                            if (events.toString(event) === "<C-h>")
-                                event.dactylString = "<BS>";
-
                             return params.onEvent(event) === false ? Events.KILL : Events.PASS;
                         };
                     }
@@ -1005,6 +1001,14 @@ var Events = Module("events", {
                 if (res === Events.KILL)
                     break;
             }
+
+            if (!refeed || refeed.length == 1)
+                for (let input in values(processors))
+                    if (input.fallthrough) {
+                        if (res === Events.KILL)
+                            break;
+                        res = dactyl.trapErrors(input.fallthrough, input, event);
+                    }
 
             if (!ownsBuffer)
                 statusline.updateInputBuffer(buffer);
@@ -1143,19 +1147,6 @@ var Events = Module("events", {
             let res = this.onKeyPress(event);
             if (res === Events.KILL)
                 kill(event);
-            else if (this.fallthrough) {
-                let evt = isArray(res) ? res[0] : event;
-                let r = dactyl.trapErrors(this.fallthrough, this, evt);
-                if (r === Events.KILL)
-                    kill(evt);
-                res = r === Events.KILL ? Events.KILL : Events.PASS;
-                /*
-                if (r === Events.KILL)
-                    res = res.slice(1);
-                else
-                    res = r == Events.WAIT ? res : false;
-                */
-            }
 
             if (res != Events.WAIT)
                 this.inputBuffer = "";

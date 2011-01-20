@@ -400,7 +400,6 @@ var Editor = Module("editor", {
     }
 }, {
     mappings: function () {
-        var myModes = [modes.INSERT, modes.COMMAND_LINE];
 
         // add mappings for commands like h,j,k,l,etc. in CARET, VISUAL and TEXT_EDIT mode
         function addMovementMap(keys, hasCount, caretModeMethod, caretModeArg, textEditCommand, visualTextEditCommand) {
@@ -528,11 +527,11 @@ var Editor = Module("editor", {
         addMotionMap("y"); // yank
 
         // insert mode mappings
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-w>"], "Delete previous word",
             function () { editor.executeCommand("cmd_deleteWordBackward", 1); });
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-u>"], "Delete until beginning of current line",
             function () {
                 // broken in FF3, deletes the whole line:
@@ -542,44 +541,43 @@ var Editor = Module("editor", {
                     editor.executeCommand("cmd_delete", 1);
             });
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-k>"], "Delete until end of current line",
             function () { editor.executeCommand("cmd_deleteToEndOfLine", 1); });
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-a>"], "Move cursor to beginning of current line",
             function () { editor.executeCommand("cmd_beginLine", 1); });
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-e>"], "Move cursor to end of current line",
             function () { editor.executeCommand("cmd_endLine", 1); });
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-h>"], "Delete character to the left",
             function () { events.feedkeys("<BS>", true); });
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-d>"], "Delete character to the right",
             function () { editor.executeCommand("cmd_deleteCharForward", 1); });
 
-        /*mappings.add(myModes,
+        /*mappings.add([modes.INPUT],
             ["<C-Home>"], "Move cursor to beginning of text field",
             function () { editor.executeCommand("cmd_moveTop", 1); });
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<C-End>"], "Move cursor to end of text field",
             function () { editor.executeCommand("cmd_moveBottom", 1); });*/
 
-        mappings.add(myModes,
+        mappings.add([modes.INPUT],
             ["<S-Insert>"], "Insert clipboard/selection",
             function () { editor.pasteClipboard(); });
 
-        // TODO: a better way to specify mode types
-        mappings.add(modes.getCharModes("i").concat(modes.TEXT_EDIT, modes.COMMAND_LINE),
+        mappings.add([modes.INPUT, modes.TEXT_EDIT],
             ["<C-i>"], "Edit text field with an external editor",
             function () { editor.editFieldExternally(); });
 
-        mappings.add([modes.INSERT, modes.COMMAND_LINE],
+        mappings.add([modes.INPUT],
             ["<C-t>"], "Edit text field in Vi mode",
             function () {
                 dactyl.assert(!editor.isTextEdit);

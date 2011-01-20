@@ -99,6 +99,10 @@ var Modes = Module("modes", {
             bases: [this.COMMAND],
             ownsFocus: true
         });
+        this.addMode("OUTPUT_MULTILINE", {
+            description: "Active when the multi-line output buffer is open",
+            bases: [this.COMMAND],
+        });
 
         this.addMode("INPUT", {
             char: "I",
@@ -124,16 +128,16 @@ var Modes = Module("modes", {
             description: "Active when an <embed> or <object> element is focused",
             ownsFocus: true
         });
+
         this.addMode("PASS_THROUGH", {
             description: "All keys but <C-v> are ignored by " + config.appName,
-            bases: [],
+            bases: [this.BASE],
             hidden: true
         });
-
         this.addMode("QUOTE", {
             hidden: true,
             description: "The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
-            bases: [],
+            bases: [this.BASE],
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).main.display() || modes.getStack(2).main.name) + " (next)"
                 : "PASS THROUGH (next)"
@@ -143,8 +147,9 @@ var Modes = Module("modes", {
             postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop() },
             onEvent: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
-        this.addMode("OUTPUT_MULTILINE", {
-            description: "Active when the multi-line output buffer is open"
+        this.addMode("IGNORE", { hidden: true }, {
+            onEvent: function (event) Events.KILL,
+            bases: []
         });
 
         // this._extended modes, can include multiple modes, and even main modes
@@ -176,10 +181,6 @@ var Modes = Module("modes", {
             extended: true,
             description: "Active when a prompt is open in the command line",
             input: true
-        });
-        this.addMode("IGNORE", { hidden: true }, {
-            onEvent: function (event) Events.KILL,
-            bases: []
         });
 
         this.push(this.NORMAL, 0, {
