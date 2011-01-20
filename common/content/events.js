@@ -1019,6 +1019,9 @@ var Events = Module("events", {
                 refeed.shift();
             }
 
+            if (Events.isEscape(key) && !shouldPass())
+                res = Events.KILL;
+
             if (res !== Events.PASS)
                 kill(event);
 
