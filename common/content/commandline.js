@@ -994,7 +994,7 @@ var CommandLine = Module("commandline", {
                 if (this._completions)
                     this._completions.previewClear();
                 if (!this.currentExtendedMode)
-                    return Events.isEscape(event) ? KILL : PASS;
+                    return PASS;
 
                 // user pressed <Enter> to carry out a command
                 // user pressing <Esc> is handled in the global onEscape
@@ -1028,7 +1028,7 @@ var CommandLine = Module("commandline", {
                     }
                 }
                 // allow this event to be handled by the host app
-                return Events.isEscape(event) ? KILL : PASS;
+                return PASS;
             }
             else if (event.type == "keyup") {
                 let key = events.toString(event);

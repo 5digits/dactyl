@@ -944,7 +944,7 @@ var Hints = Module("hints", {
             return KILL;
         }
 
-        return Events.isEscape(key) ? KILL : PASS;
+        return PASS;
     }
     //}}}
 }, {

@@ -714,27 +714,6 @@ var Events = Module("events", {
     },
 
     /**
-     *  The global escape key handler. This is called in ALL modes.
-     */
-    onEscape: function () {
-        switch (modes.main) {
-        case modes.COMMAND_LINE:
-        case modes.INSERT:
-        case modes.OUTPUT_MULTILINE:
-        case modes.PASS_THROUGH:
-        case modes.QUOTE:
-        case modes.TEXT_EDIT:
-        case modes.VISUAL:
-            modes.pop();
-            break;
-
-        default:
-            modes.reset();
-            break;
-        }
-    },
-
-    /**
      * Ensures that the currently focused element is visible and blurs
      * it if it's not.
      */
@@ -1023,9 +1002,6 @@ var Events = Module("events", {
                 refeed.shift();
             }
 
-            if (Events.isEscape(key) && !shouldPass())
-                res = Events.KILL;
-
             if (res !== Events.PASS)
                 kill(event);
 
@@ -1040,11 +1016,6 @@ var Events = Module("events", {
         }
         catch (e) {
             dactyl.reportError(e);
-        }
-        finally {
-            // This is a stupid, silly, and revolting hack.
-            if (Events.isEscape(key) && !shouldPass())
-                this.onEscape();
         }
     },
 
