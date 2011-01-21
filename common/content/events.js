@@ -878,7 +878,7 @@ var Events = Module("events", {
             if (!key)
                  return null;
 
-            if (modes.recording && (!this._input || !mappings.userHive.hasMap(modes.main, this._input.buffer + key)))
+            if (modes.recording && (!this._input || !mappings.user.hasMap(modes.main, this._input.buffer + key)))
                 events._macroKeys.push(key);
 
             // feedingKeys needs to be separate from interrupted so
@@ -958,7 +958,7 @@ var Events = Module("events", {
                         input.preExecute = params.preExecute;
                     if (params.postExecute)
                         input.postExecute = params.postExecute;
-                    if (params.onEvent && input.hive === mappings.builtinHive)
+                    if (params.onEvent && input.hive === mappings.builtin)
                         input.fallthrough = function (event) {
                             return params.onEvent(event) === false ? Events.KILL : Events.PASS;
                         };

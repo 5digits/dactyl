@@ -146,6 +146,33 @@ var MapHive = Class("MapHive", {
     },
 
     /**
+     * Adds a new default key mapping.
+     *
+     * @param {number[]} modes The modes that this mapping applies to.
+     * @param {string[]} keys The key sequences which are bound to *action*.
+     * @param {string} description A description of the key mapping.
+     * @param {function} action The action invoked by each key sequence.
+     * @param {Object} extra An optional extra configuration hash.
+     * @optional
+     */
+    add: function (modes, keys, description, action, extra) {
+        extra = extra || {};
+
+        let map = Map(modes, keys, description, action, extra);
+        map.definedAt = commands.getCaller(Components.stack.caller);
+        map.hive = this;
+
+        if (this.name !== "builtin")
+            for (let [, name] in Iterator(map.names))
+                for (let [, mode] in Iterator(map.modes))
+                    this.remove(mode, name);
+
+        for (let mode in values(map.modes))
+            this.getStack(mode).add(map);
+        return map;
+    },
+
+    /**
      * Returns the mapping stack for the given mode.
      *
      * @param {Modes.Mode} mode The mode to search.
@@ -155,19 +182,6 @@ var MapHive = Class("MapHive", {
         if (!(mode in this.stacks))
             return this.stacks[mode] = MapHive.Stack();
         return this.stacks[mode];
-    },
-
-    /**
-     * Adds a new Map object to the given mode.
-     *
-     * @param {Modes.Mode} mode The mode to search.
-     * @param {string} cmd The map name to match.
-     * @returns {Map|null}
-     */
-    add: function (mode, map) {
-        let stack = this.getStack(mode);
-        stack.push(map);
-        delete stack.states;
     },
 
     /**
@@ -241,6 +255,11 @@ var MapHive = Class("MapHive", {
         get candidates() this.states.candidates,
         get mappings() this.states.mappings,
 
+        add: function (map) {
+            this.push(map);
+            delete this.states;
+        },
+
         states: Class.memoize(function () {
             var states = {
                 candidates: {},
@@ -267,24 +286,16 @@ var MapHive = Class("MapHive", {
  */
 var Mappings = Module("mappings", {
     init: function () {
-        this.userHive = MapHive("user", "User-defined mappings");
-        this.builtinHive = MapHive("builtin", "Builtin mappings");
+        this.user = MapHive("user", "User-defined mappings");
+        this.builtin = MapHive("builtin", "Builtin mappings");
 
-        this.builtinHives = array([this.userHive, this.builtinHive]);
-        this.allHives = [this.userHive, this.builtinHive];
+        this.builtinHives = array([this.user, this.builtin]);
+        this.allHives = [this.user, this.builtin];
     },
 
     hives: Class.memoize(function () array(this.allHives.filter(function (h) h.filter(buffer.uri)))),
 
-    get userHives() this.allHives.filter(function (h) h !== this.builtinHive, this),
-
-    _addMap: function (map, hive) {
-        map.definedAt = commands.getCaller(Components.stack.caller.caller);
-        map.hive = hive;
-        map.modes.forEach(function (mode) {
-            hive.add(mode, map);
-        });
-    },
+    get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
 
     expandLeader: function (keyString) keyString.replace(/<Leader>/i, options["mapleader"]),
 
@@ -300,13 +311,11 @@ var Mappings = Module("mappings", {
     /** @property {Iterator(Map)} */
     __iterator__: function () this.iterate(modes.NORMAL),
 
-    getDefault: deprecated("mappings.builtinHive.get",
-        function getDefault(mode, cmd) this.builtinHive.get(mode, cmd)),
-    getUserIterator: deprecated("mappings.userHive.iterator",
-                                function getUserIterator(modes) this.userHive.iterator(modes)),
-    hasMap: deprecated("mappings.userHive.has", function hasMap(mode, cmd) this.userHive.has(mode, cmd)),
-    remove: deprecated("mappings.userHive.remove", function remove(mode, cmd) this.userHive.remove(mode, cmd)),
-    removeAll: deprecated("mappings.userHive.clear", function removeAll(mode) this.userHive.clear(mode)),
+    getDefault: deprecated("mappings.builtin.get", function getDefault(mode, cmd) this.builtin.get(mode, cmd)),
+    getUserIterator: deprecated("mappings.user.iterator", function getUserIterator(modes) this.user.iterator(modes)),
+    hasMap: deprecated("mappings.user.has", function hasMap(mode, cmd) this.user.has(mode, cmd)),
+    remove: deprecated("mappings.user.remove", function remove(mode, cmd) this.user.remove(mode, cmd)),
+    removeAll: deprecated("mappings.user.clear", function removeAll(mode) this.user.clear(mode)),
 
 
     /**
@@ -319,8 +328,10 @@ var Mappings = Module("mappings", {
      * @param {Object} extra An optional extra configuration hash.
      * @optional
      */
-    add: function (modes, keys, description, action, extra) {
-        this._addMap(Map(modes, keys, description, action, extra), this.builtinHive);
+    add: function () {
+        let map = this.builtin.add.apply(this.builtin, arguments);
+        map.definedAt = commands.getCaller(Components.stack.caller);
+        return map;
     },
 
     /**
@@ -334,17 +345,10 @@ var Mappings = Module("mappings", {
      *     {@link Map#extraInfo}).
      * @optional
      */
-    addUserMap: function (modes, keys, description, action, extra) {
-        extra = extra || {};
-        extra.user = true;
-        let map = Map(modes, keys, description, action, extra);
-
-        // remove all old mappings to this key sequence
-        for (let [, name] in Iterator(map.names))
-            for (let [, mode] in Iterator(map.modes))
-                this.userHive.remove(mode, name);
-
-        this._addMap(map, extra.hive || this.userHive);
+    addUserMap: function () {
+        let map = this.user.add.apply(this.user, arguments);
+        map.definedAt = commands.getCaller(Components.stack.caller);
+        return map;
     },
 
     addHive: function addHive(name, filter, description) {
@@ -464,12 +468,11 @@ var Mappings = Module("mappings", {
                 if (!rhs) // list the mapping
                     mappings.list(mapmodes, mappings.expandLeader(lhs), hives);
                 else {
-                    mappings.addUserMap(mapmodes, [lhs],
+                    args["-group"].add(mapmodes, [lhs],
                         args["-description"],
                         Command.bindMacro(args, "-keys", function (params) params),
                         {
                             count: args["-count"],
-                            hive: args["-group"],
                             noremap: args["-builtin"],
                             persist: !args["-nopersist"],
                             get rhs() String(this.action),
@@ -482,7 +485,7 @@ var Mappings = Module("mappings", {
                     completer: function (context, args) {
                         let mapmodes = array.uniq(args["-modes"].map(findMode));
                         if (args.length == 1)
-                            return completion.userMapping(context, mapmodes);
+                            return completion.userMapping(context, mapmodes, args["-group"]);
                         if (args.length == 2) {
                             if (args["-javascript"])
                                 return completion.javascript(context);
@@ -718,7 +721,7 @@ var Mappings = Module("mappings", {
             names: ["-group", "-g"],
             description: "Mapping group to which to add this mapping",
             type: ArgType("map-group", function (group) isString(group) ? mappings.getHive(group) : group),
-            get default() io.sourcing && io.sourcing.mapHive || mappings.userHive,
+            get default() io.sourcing && io.sourcing.mapHive || mappings.user,
             completer: function (context) completion.mapGroup(context)
         };
         let modeFlag = {
@@ -833,11 +836,12 @@ var Mappings = Module("mappings", {
             context.keys = { text: "name", description: function (h) h.description || h.filter };
             context.completions = mappings.userHives;
         };
-        completion.userMapping = function userMapping(context, modes) {
+        completion.userMapping = function userMapping(context, modes, hive) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
+            hive = hive || mappings.user;
             modes = modes || [modules.modes.NORMAL];
             context.keys = { text: function (m) m.names[0], description: function (m) m.description + ": " + m.action };
-            context.completions = mappings.userHive.iterate(modes);
+            context.completions = hive.iterate(modes);
         };
     },
     javascript: function () {
