@@ -301,7 +301,7 @@ var Hints = Module("hints", {
             let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none"/>, doc);
 
             let mode = this._hintMode;
-            let res = util.evaluateXPath(mode.xpath, doc, null, true);
+            let res = util.evaluateXPath(mode.xpath, doc, true);
 
             let start = this._pageHints.length;
             for (let elem in res) {
