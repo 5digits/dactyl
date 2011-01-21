@@ -865,11 +865,6 @@ var Tabs = Module("tabs", {
                 { argCount: "0" });
         }
     },
-    completion: function () {
-        completion.addUrlCompleter("t",
-            "Open tabs",
-            completion.buffer);
-    },
     events: function () {
         let tabContainer = config.tabbrowser.mTabContainer;
         ["TabMove", "TabOpen", "TabClose"].forEach(function (event) {
