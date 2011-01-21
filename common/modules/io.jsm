@@ -26,11 +26,13 @@ var IO = Module("io", {
         this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
         this._cwd = this._processDir.path;
         this._oldcwd = null;
+        this.config = config;
     },
 
     Local: function (dactyl, modules, window) let ({ Script, io, plugins } = modules) ({
 
         init: function init() {
+            this.config = modules.config;
             this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
             this._cwd = this._processDir.path;
             this._oldcwd = null;
@@ -285,7 +287,7 @@ var IO = Module("io", {
      */
     createTempFile: function () {
         let file = services.directory.get("TmpD", Ci.nsIFile);
-        file.append(config.tempFile);
+        file.append(this.config.tempFile);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(600));
 
         Cc["@mozilla.org/uriloader/external-helper-app-service;1"]

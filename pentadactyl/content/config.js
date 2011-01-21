@@ -95,7 +95,7 @@ var Config = Module("config", ConfigBase, {
         },
 
         get tempFile() {
-            let prefix = this.name.toLowerCase();
+            let prefix = this.name;
             try {
                 prefix += "-" + window.content.document.location.hostname;
             }
