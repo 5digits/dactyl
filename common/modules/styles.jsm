@@ -450,10 +450,13 @@ var Styles = Module("Styles", {
                 bang: true,
                 completer: function (context, args) {
                     let compl = [];
-                    if (args.completeArg == 0)
-                        Styles.completeSite(context, window.content);
+                    let sheet = styles.user.get(args["-name"]);
+                    if (args.completeArg == 0) {
+                        if (sheet)
+                            context.completions = [[sheet.sites.join(","), "Current Value"]];
+                        context.fork("sites", 0, Styles, "completeSite", window.content);
+                    }
                     else if (args.completeArg == 1) {
-                        let sheet = styles.user.get(args["-name"]);
                         if (sheet)
                             context.completions = [[sheet.css, "Current Value"]];
                         context.fork("css", 0, modules.completion, "css");

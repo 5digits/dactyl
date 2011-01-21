@@ -491,7 +491,7 @@ var Modes = Module("modes", {
     }
 }, {
     mappings: function () {
-        mappings.add([modes.BASE],
+        mappings.add([modes.BASE, modes.NORMAL],
             ["<Esc>", "<C-[>"],
             "Return to NORMAL mode",
             function () { modes.reset(); });

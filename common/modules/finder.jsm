@@ -87,7 +87,10 @@ var RangeFinder = Module("rangefinder", {
     find: function (pattern, backwards) {
         let str = this.bootstrap(pattern, backwards);
         if (!this.rangeFind.find(str))
-            this.timeout(function () { this.dactyl.echoerr("E486: Pattern not found: " + pattern); }, 0);
+            this.timeout(function () {
+                this.dactyl.echoerr("E486: Pattern not found: " + pattern,
+                                    this.commandline.FORCE_SINGLELINE);
+            });
 
         return this.rangeFind.found;
     },
@@ -96,7 +99,8 @@ var RangeFinder = Module("rangefinder", {
         if (!this.rangeFind || this.rangeFind.stale)
             this.find(this.lastFindPattern);
         else if (!this.rangeFind.find(null, reverse))
-            this.dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern);
+            this.dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern,
+                                this.commandline.FORCE_SINGLELINE);
         else if (this.rangeFind.wrapped)
             // hack needed, because wrapping causes a "scroll" event which
             // clears our command line
@@ -380,7 +384,7 @@ var RangeFind = Class("RangeFind", {
 
     focus: function () {
         if (this.lastRange)
-            var node = util.evaluateXPath(RangeFind.selectNodePath, this.range.document,
+            var node = util.evaluateXPath(RangeFind.selectNodePath,
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
         if (node) {
             node.focus()

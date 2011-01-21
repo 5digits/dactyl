@@ -466,12 +466,12 @@ var IO = Module("io", {
                 res = this.run("/bin/sh", ["-e", cmd.path], true);
             }
 
-            let output = stdout.read();
-            if (res > 0)
-                output += "\nshell returned " + res;
-            else if (output)
-                output = output.replace(/^(.*)\n$/, "$1");
-            return output;
+            return {
+                __noSuchMethod__: function (meth, args) this.output[meth].apply(this.output, args),
+                valueOf: function () this.output,
+                output: stdout.read().replace(/^(.*)\n$/, "$1"),
+                returnValue: res
+            };
         }) || "";
     },
 
@@ -831,10 +831,12 @@ unlet s:cpo_save
 
                 io._lastRunCommand = arg;
 
-                let output = io.system(arg);
+                let result = io.system(arg);
+                if (result.returnValue != 0)
+                    result.output += "\nshell returned " + res;
 
                 modules.commandline.command = "!" + arg;
-                modules.commandline.commandOutput(<span highlight="CmdOutput">{output}</span>);
+                modules.commandline.commandOutput(<span highlight="CmdOutput">{result.output}</span>);
 
                 modules.autocommands.trigger("ShellCmdPost", {});
             }, {
@@ -873,7 +875,8 @@ unlet s:cpo_save
             context.title = ["Environment Variable", "Value"];
             context.generate = function ()
                 io.system(util.OS.isWindows ? "set" : "env")
-                  .split("\n").filter(function (line) line.indexOf("=") > 0)
+                  .output.split("\n")
+                  .filter(function (line) line.indexOf("=") > 0)
                   .map(function (line) line.match(/([^=]+)=(.*)/).slice(1));
         };
 

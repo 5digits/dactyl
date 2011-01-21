@@ -80,6 +80,9 @@ var Template = Module("Template", {
     },
 
     helpLink: function (topic, text, type) {
+        if (!services["dactyl:"].initialized)
+            util.dactyl.initHelp();
+
         if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
             return <span highlight={type || ""}>{text || topic}</span>;
 
@@ -89,6 +92,9 @@ var Template = Module("Template", {
         return <a highlight={type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>
     },
     HelpLink: function (topic) {
+        if (!services["dactyl:"].initialized)
+            util.dactyl.initHelp();
+
         if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
             return <>{topic}</>;
 
@@ -220,8 +226,6 @@ var Template = Module("Template", {
     },
 
     linkifyHelp: function linkifyHelp(str, help) {
-        util.dactyl.initHelp();
-
         let re = util.regexp(<![CDATA[
             ([/\s]|^)
             ( '[\w-]+' | :(?:[\w-]+|!) | (?:._)?<[\w-]+> )

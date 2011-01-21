@@ -567,35 +567,37 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * namespaces. The result may be used as an iterator.
      *
      * @param {string} expression The XPath expression to evaluate.
-     * @param {Document} doc The document to evaluate the expression in.
-     * @default The current document.
      * @param {Node} elem The context element.
-     * @default *doc*
+     * @default The current document.
      * @param {boolean} asIterator Whether to return the results as an
      *     XPath iterator.
      * @returns {Object} Iterable result of the evaluation.
      */
     evaluateXPath: update(
-        function evaluateXPath(expression, doc, elem, asIterator) {
-            if (!doc)
-                doc = util.activeWindow.content.document;
-            if (!elem)
-                elem = doc;
-            if (isArray(expression))
-                expression = util.makeXPath(expression);
+        function evaluateXPath(expression, elem, asIterator) {
+            try {
+                if (!elem)
+                    elem = util.activeWindow.content.document;
+                let doc = elem.ownerDocument || elem;
+                if (isArray(expression))
+                    expression = util.makeXPath(expression);
 
-            let result = doc.evaluate(expression, elem,
-                evaluateXPath.resolver,
-                asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                null
-            );
+                let result = doc.evaluate(expression, elem,
+                    evaluateXPath.resolver,
+                    asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                    null
+                );
 
-            return Object.create(result, {
-                __iterator__: {
-                    value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
-                                      : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
-                }
-            });
+                return Object.create(result, {
+                    __iterator__: {
+                        value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
+                                          : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
+                    }
+                });
+            }
+            catch (e) {
+                throw e.stack ? e : Error(e);
+            }
         },
         {
             resolver: function lookupNamespaceURI(prefix) ({

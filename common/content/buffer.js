@@ -802,14 +802,24 @@ var Buffer = Module("buffer", {
      * @param {nsIURI} uri The URI to save
      * @param {nsIFile} file The file into which to write the result.
      */
-    saveURI: function (uri, file) {
+    saveURI: function (uri, file, callback, self) {
         var persist = services.Persist();
         persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
                              | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
 
-        persist.progressListener = new window.DownloadListener(window,
+        let downloadListener = new window.DownloadListener(window,
                 services.Transfer(uri, services.io.newFileURI(file), "",
                                   null, null, null, persist));
+
+        persist.progressListener = update(Object.create(downloadListener), {
+            onStateChange: function onStateChange(progress, request, flag, status) {
+                if (callback && (flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
+                    dactyl.trapErrors(callback, self, uri, file, progress, request, flag, status);
+
+                return onStateChange.superapply(this, arguments);
+            }
+        });
+
         persist.saveURI(uri, null, null, null, null, file);
     },
 
@@ -1130,7 +1140,7 @@ var Buffer = Module("buffer", {
         },
 
         onStateChange: function (progress, request, flag, status) {
-            if ((flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0) {
+            if ((flag & this.STATE_STOP) && status == 0) {
                 try {
                     var ok = this.callback(this.file, true);
                 }

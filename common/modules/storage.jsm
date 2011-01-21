@@ -332,11 +332,6 @@ var File = Class("File", {
     },
 
     /**
-     * Returns a clone of this file.
-     */
-    clone: function () File(this),
-
-    /**
      * Reads this file's entire contents in "text" mode and returns the
      * content as a string.
      *
