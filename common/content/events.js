@@ -741,7 +741,7 @@ var Events = Module("events", {
             let win = elem.ownerDocument.defaultView;
 
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
-                for (let e = elem; e; e = e.parentNode)
+                for (let e = elem; e instanceof Element; e = e.parentNode)
                     if (util.computedStyle(e).visibility !== "visible") {
                         elem.blur();
                         break;
