@@ -178,10 +178,18 @@ var DownloadList = Class("DownloadList",
                          XPCOM([Ci.nsIDownloadProgressListener,
                                 Ci.nsIObserver,
                                 Ci.nsISupportsWeakReference]), {
-    init: function init(document, modules) {
+    init: function init(modules) {
         this.modules = modules;
-        this.document = document;
         this.nodes = {};
+        this.downloads = {};
+    },
+    cleanup: function cleanup() {
+        this.observe.unregister();
+        services.downloadManager.removeListener(this);
+    },
+
+    message: Class.memoize(function () {
+
         util.xmlToDom(<ul highlight="Downloads" key="list" xmlns={XHTML}>
                         <li highlight="DownloadHead">
                             <span>Title</span>
@@ -194,20 +202,14 @@ var DownloadList = Class("DownloadList",
                         </li>
                       </ul>, this.document, this.nodes);
 
-        this.downloads = {};
         for (let row in iter(services.downloadManager.DBConnection
                                      .createStatement("SELECT id FROM moz_downloads")))
             this.addDownload(row.id);
-    },
-    initialize: function initialize() {
+
         util.addObserver(this);
         services.downloadManager.addListener(this);
         return this.nodes.list;
-    },
-    cleanup: function cleanup() {
-        this.observe.unregister();
-        services.downloadManager.removeListener(this);
-    },
+    }),
 
     addDownload: function addDownload(id) {
         if (!(id in this.downloads)) {
@@ -281,15 +283,11 @@ var Downloads = Module("downloads", {
         commands.add(["downl[oads]", "dl"],
             "Display the downloads list",
             function (args) {
-                modules.commandline.echo(function (doc) {
-                    let downloads = DownloadList(doc, modules);
-                    // Temporary and dangerous hack:
-                    Object.defineProperty(modules.modes.getStack(0), "params", {
-                        get: function params() downloads,
-                        set: function params(val) { throw FailedAssertion("Not replacing mode change handler", 1) }
-                    });
-                    return downloads.initialize();
-                });
+                let downloads = DownloadList(modules);
+                modules.commandline.echo(downloads);
+
+                if (modules.commandline.savingOutput)
+                    util.waitFor(function () downloads.document);
             });
     },
     dactyl: function (dactyl, modules, window) {

@@ -569,6 +569,7 @@ var CommandLine = Module("commandline", {
     _history: Modes.boundProperty(),
     _lastClearable: Modes.boundProperty(),
     _keepCommand: Modes.boundProperty(),
+    messages: Modes.boundProperty(),
 
     multilineInputVisible: Modes.boundProperty({
         set: function (value) { this.widgets.multilineInput.collapsed = !value; }
@@ -727,10 +728,10 @@ var CommandLine = Module("commandline", {
     /**
      * Display a multi-line message.
      *
-     * @param {string} str
+     * @param {string} data
      * @param {string} highlightGroup
      */
-    _echoMultiline: function echoMultiline(str, highlightGroup, silent) {
+    _echoMultiline: function echoMultiline(data, highlightGroup, silent) {
         let doc = this.widgets.multilineOutput.contentDocument;
         let win = this.widgets.multilineOutput.contentWindow;
         let elem = doc.documentElement;
@@ -741,25 +742,38 @@ var CommandLine = Module("commandline", {
             this.hide();
 
         this._startHints = false;
-        if (modes.main != modes.OUTPUT_MULTILINE)
+        if (modes.main != modes.OUTPUT_MULTILINE) {
             modes.push(modes.OUTPUT_MULTILINE, null, {
-                onEvent: this.closure.onMultilineOutputEvent
+                onEvent: this.closure.onMultilineOutputEvent,
+                leave: this.closure(function leave(stack) {
+                    if (stack.pop)
+                        for (let message in values(this.messages))
+                            if (message.leave)
+                                message.leave(stack);
+                })
             });
+            this.messages = [];
+        }
 
         // If it's already XML, assume it knows what it's doing.
         // Otherwise, white space is significant.
         // The problem elsewhere is that E4X tends to insert new lines
         // after interpolated data.
-        XML.ignoreWhitespace = false;
-        XML.prettyPrinting = false;
-        let style = typeof str === "string" ? "pre" : "nowrap";
-        if (callable(str)) {
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
+
+        if (isObject(data)) {
             this._lastMowOutput = null;
+
             var output = util.xmlToDom(<div class="ex-command-output" style="white-space: nowrap" highlight={highlightGroup}/>, doc);
-            output.appendChild(str(doc));
+            data.document = doc;
+            output.appendChild(data.message);
+
+            this.messages.push(data);
         }
         else {
-            this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{str}</div>;
+            let style = isString(data) ? "pre" : "nowrap";
+            this._lastMowOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{data}</div>;
+
             var output = util.xmlToDom(this._lastMowOutput, doc);
         }
 
@@ -773,8 +787,9 @@ var CommandLine = Module("commandline", {
 
         body.appendChild(output);
 
+        let str = typeof data !== "xml" && data.message || data;
         if (!silent)
-            dactyl.triggerObserver("echoMultiline", str, highlightGroup, output);
+            dactyl.triggerObserver("echoMultiline", data, highlightGroup, output);
 
         commandline.updateOutputHeight(true);
 
@@ -812,7 +827,7 @@ var CommandLine = Module("commandline", {
      *   commandline.FORCE_MULTILINE    - Forces the message to appear in
      *          the MOW.
      */
-    echo: function echo(str, highlightGroup, flags) {
+    echo: function echo(data, highlightGroup, flags) {
         // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
         if (this._silent)
             return;
@@ -820,9 +835,9 @@ var CommandLine = Module("commandline", {
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
         if (flags & this.APPEND_TO_MESSAGES) {
-            let message = isObject(str) ? str : { message: str };
+            let message = isObject(data) ? data : { message: data };
             this._messageHistory.add(update({ highlight: highlightGroup }, message));
-            str = message.message;
+            data = message.message;
         }
 
         if ((flags & this.ACTIVE_WINDOW) &&
@@ -836,7 +851,7 @@ var CommandLine = Module("commandline", {
         let single = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
         let action = this._echoLine;
 
-        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(str) || !isString(str)) && !(flags & this.FORCE_SINGLELINE))
+        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isString(data)) && !(flags & this.FORCE_SINGLELINE))
             action = this._echoMultiline;
 
         if (single)
@@ -851,13 +866,13 @@ var CommandLine = Module("commandline", {
                 highlightGroup += " Message";
                 action = this._echoMultiline;
             }
-            this._lastEcho = (action == this._echoLine) && str;
+            this._lastEcho = (action == this._echoLine) && data;
         }
 
-        this._lastClearable = action === this._echoLine && String(str);
+        this._lastClearable = action === this._echoLine && String(data);
 
         if (action)
-            action.call(this, str, highlightGroup, single);
+            action.call(this, data, highlightGroup, single);
     },
 
     /**
@@ -1215,6 +1230,7 @@ var CommandLine = Module("commandline", {
         function observe(str, highlight, dom) {
             buffer.push(dom && !isString(str) ? util.domToString(dom) : str);
         }
+
         this.savingOutput = true;
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
         this.savingOutput = false;
