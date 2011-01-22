@@ -208,6 +208,20 @@
         </p>
     </description>
 </item>
+<item>
+    <spec>:sidebar! <oa>name</oa></spec>
+    <description>
+        <p>
+            Toggle the sidebar window. When <oa>name</oa> is provided, the
+            semantics are as follows: If the named is currently open, it is
+            closed. Otherwise the sidebar is closed. When <oa>name</oa> is
+            not provided, the semantics are as follows: If the sidebar is
+            currently open, it is closed. Otherwise the previously open sidebar
+            panel is re-opened.
+        </p>
+    </description>
+</item>
+
 
 <h2 tag="status-line status-bar">Status line</h2>
 

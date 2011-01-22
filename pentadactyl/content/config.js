@@ -167,7 +167,7 @@ var Config = Module("config", ConfigBase, {
 }, {
 }, {
     commands: function (dactyl, modules, window) {
-        const { commands, completion } = modules;
+        const { commands, completion, config } = modules;
         const { document } = window;
 
         commands.add(["winon[ly]"],
@@ -205,10 +205,20 @@ var Config = Module("config", ConfigBase, {
             "Open the sidebar window",
             function (args) {
                 function compare(a, b) util.compareIgnoreCase(a, b) == 0
+                let title = document.getElementById("sidebar-title");
+
+                dactyl.assert(args.length || title.value || args.bang && config.lastSidebar,
+                              "Argument required");
+
+                if (!args.length)
+                    return window.toggleSidebar(title.value ? null : config.lastSidebar);
 
                 // focus if the requested sidebar is already open
-                if (compare(document.getElementById("sidebar-title").value, args[0]))
+                if (compare(title.value, args[0])) {
+                    if (args.bang)
+                        return window.toggleSidebar();
                     return dactyl.focus(document.getElementById("sidebar-box"));
+                }
 
                 let menu = document.getElementById("viewSidebarMenu");
 
@@ -223,7 +233,8 @@ var Config = Module("config", ConfigBase, {
                 return dactyl.echoerr("No sidebar " + args[0] + " found");
             },
             {
-                argCount: "1",
+                argCount: "?",
+                bang: true,
                 completer: function (context) {
                     context.ignoreCase = true;
                     return completion.sidebar(context);
@@ -321,6 +332,12 @@ var Config = Module("config", ConfigBase, {
         completion.addUrlCompleter("l",
             "Firefox location bar entries (bookmarks and history sorted in an intelligent way)",
             completion.location);
+    },
+    events: function (dactyl, modules, window) {
+        modules.events.addSessionListener(window, "SidebarFocused", function (event) {
+            modules.config.lastSidebar = window.document.getElementById("sidebar-box")
+                                               .getAttribute("sidebarcommand");
+        }, false);
     },
     modes: function (dactyl, modules, window) {
         const { config, modes } = modules;

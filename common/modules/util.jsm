@@ -743,15 +743,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {function(XMLHttpRequest)} callback
      * @returns {XMLHttpRequest}
      */
-    httpGet: function httpGet(url, callback) {
+    httpGet: function httpGet(url, callback, self) {
         try {
             let xmlhttp = services.Xmlhttp();
             xmlhttp.mozBackgroundRequest = true;
-            if (callback)
-                xmlhttp.onreadystatechange = function () {
-                    if (xmlhttp.readyState == 4)
-                        callback(xmlhttp);
-                };
+            if (callback) {
+                xmlhttp.onload = function handler(event) { util.trapErrors(callback, self, xmlhttp, event) };
+                xmlhttp.onerror = xmlhttp.onload;
+            }
             xmlhttp.open("GET", url, !!callback);
             xmlhttp.send(null);
             return xmlhttp;
