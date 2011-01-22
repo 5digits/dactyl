@@ -803,8 +803,8 @@ var CompletionContext = Class("CompletionContext", {
      */
     wait: function wait(interruptable, timeout) {
         let end = Date.now() + timeout;
-        while (this.incomplete && (!timeout || Date.now() > end))
-            util.threadYield(false, interruptable);
+        util.waitFor(function () !this.incomplete || (this.timeout && Date.now() > end),
+                     this);
         return this.incomplete;
     }
 }, {

@@ -1215,7 +1215,9 @@ var CommandLine = Module("commandline", {
         function observe(str, highlight, dom) {
             buffer.push(dom && !isString(str) ? util.domToString(dom) : str);
         }
+        this.savingOutput = true;
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
+        this.savingOutput = false;
         return buffer.join("\n");
     }
 }, {

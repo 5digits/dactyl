@@ -1804,6 +1804,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                         &#xa0;on restart)</>;
                     return <></>;
                 }
+                let waiting = true;
                 AddonManager.getAddonsByTypes(["extension"], function (extensions) {
                     if (args[0])
                         extensions = extensions.filter(function (extension) extension.name.indexOf(args[0]) >= 0);
@@ -1823,7 +1824,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         dactyl.echoerr("Exxx: No extension matching " + filter.quote());
                     else
                         dactyl.echoerr("No extensions installed");
+                    waiting = false;
                 });
+                if (commandline.savingOutput)
+                    util.waitFor(function () !waiting);
             },
             { argCount: "?" });
 
