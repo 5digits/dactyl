@@ -303,7 +303,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         commandline.echo(str, commandline.HL_NORMAL, flags);
     },
 
-    // TODO: Vim replaces unprintable characters in echoerr/echomsg
     /**
      * Outputs an error message to the command line.
      *
@@ -325,6 +324,17 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             dactyl.beep();
 
         commandline.echo(str, commandline.HL_ERRORMSG, flags);
+    },
+
+    /**
+     * Outputs a warning message to the command line.
+     *
+     * @param {string} str The message to output.
+     * @param {number} flags These control the multi-line message behavior.
+     *     See {@link CommandLine#echo}.
+     */
+    warn: function warn(str, flags) {
+        commandline.echo(str, "WarningMsg", flags | commandline.APPEND_TO_MESSAGES);
     },
 
     // TODO: add proper level constants

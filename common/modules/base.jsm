@@ -274,7 +274,7 @@ function deprecated(alternative, fn) {
                       "";
         let filename = (frame.filename || "unknown").replace(/.* -> /, "");
         if (!set.add(deprecatedMethod.seen, filename))
-            util.dactyl(fn).echoerr(
+            util.dactyl(fn).warn(
                 util.urlPath(filename) + ":" + frame.lineNumber + ": " +
                 obj + (fn.name || name) + " is deprecated: Please use " + alternative + " instead");
         return func.apply(this, arguments);
