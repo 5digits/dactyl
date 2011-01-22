@@ -69,12 +69,12 @@ update(CommandOption, {
      * @property {object} The option accepts an integer argument.
      * @final
      */
-    INT: ArgType("int", parseInt),
+    INT: ArgType("int", function (val) parseInt(val)),
     /**
      * @property {object} The option accepts a float argument.
      * @final
      */
-    FLOAT: ArgType("float", parseFloat),
+    FLOAT: ArgType("float", function (val) parseFloat(val)),
     /**
      * @property {object} The option accepts a string list argument.
      *     E.g. "foo,bar"
