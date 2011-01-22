@@ -143,9 +143,10 @@ var Events = Module("events", {
             catch (e) {
                 dactyl.reportError(e);
                 if (e.message == "Interrupted")
-                    dactyl.echoerr("Interrupted");
+                    dactyl.echoerr("Interrupted", commandline.FORCE_SINGLELINE);
                 else
-                    dactyl.echoerr("Processing " + event.type + " event: " + (e.echoerr || e));
+                    dactyl.echoerr("Processing " + event.type + " event: " + (e.echoerr || e),
+                                   commandline.FORCE_SINGLELINE);
             }
         };
         return wrappedListener;
@@ -738,6 +739,13 @@ var Events = Module("events", {
         let elem = event.originalTarget;
         if (elem instanceof Element) {
             let win = elem.ownerDocument.defaultView;
+
+            if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
+                for (let e = elem; e; e = e.parentNode)
+                    if (util.computedStyle(e).visibility !== "visible") {
+                        elem.blur();
+                        break;
+                    }
 
             if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
                 && !(services.focus.getLastFocusMethod(win) & 0x7000)

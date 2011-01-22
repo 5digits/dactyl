@@ -1245,7 +1245,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (error.result == Cr.NS_BINDING_ABORTED)
             return;
         if (echo)
-            dactyl.echoerr(error);
+            dactyl.echoerr(error, commandline.FORCE_SINGLELINE);
         util.reportError(error);
     },
 
