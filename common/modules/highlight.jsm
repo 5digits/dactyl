@@ -116,6 +116,9 @@ var Highlights = Module("Highlight", {
 
         if (/^[[>+: ]/.test(args[1]))
             obj.selector = this.selector(obj.class) + args[1];
+        else if (args[1])
+            obj.selector = this.selector(args[1]);
+
         if (old && old.value != old.defaultValue)
             obj.value = old.value;
 

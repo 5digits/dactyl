@@ -27,10 +27,10 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         if (this.branch instanceof Ci.nsIPrefBranch2)
             this.branch.QueryInterface(Ci.nsIPrefBranch2);
 
+        this.defaults = defaults ? this : this.constructor(branch, true);
+
         if (!defaults)
             this.restore();
-
-        this.defaults = defaults ? this : this.constructor(branch, true);
 
         this._observers = {};
     },
