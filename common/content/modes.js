@@ -60,9 +60,10 @@ var Modes = Module("modes", {
         this.addMode("VISUAL", {
             char: "v",
             description: "Active when text is selected",
+            display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : ""),
             bases: [this.COMMAND],
             ownsFocus: true,
-            display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : "")
+            passUnknown: false
         }, {
             leave: function (stack, newMode) {
                 if (newMode.main == modes.CARET) {
@@ -98,7 +99,8 @@ var Modes = Module("modes", {
             char: "t",
             description: "Vim-like editing of input elements",
             bases: [this.COMMAND],
-            ownsFocus: true
+            ownsFocus: true,
+            passUnknown: false
         });
         this.addMode("OUTPUT_MULTILINE", {
             description: "Active when the multi-line output buffer is open",
@@ -432,11 +434,7 @@ var Modes = Module("modes", {
 
         get bases() this.input ? [modes.INPUT] : [modes.MAIN],
 
-        get toStringParams() [this.name],
-
-        valueOf: function () this.id,
-
-        count: true,
+        get count() !this.input,
 
         get description() this._display,
 
@@ -450,7 +448,13 @@ var Modes = Module("modes", {
 
         input: false,
 
-        get mask() this
+        passUnknown: false,
+
+        get mask() this,
+
+        get toStringParams() [this.name],
+
+        valueOf: function () this.id
     }, {
         _id: 0
     }),

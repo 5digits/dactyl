@@ -95,22 +95,20 @@ var Map = Class("Map", {
     /**
      * Execute the action for this mapping.
      *
-     * @param {string} motion The motion argument if accepted by this mapping.
-     *     E.g. "w" for "dw"
-     * @param {number} count The associated count. E.g. "5" for "5j"
-     * @default -1
-     * @param {string} argument The normal argument if accepted by this
-     *     mapping. E.g. "a" for "ma"
+     * @param {object} args The arguments object for the given mapping.
      */
-    execute: function (motion, count, argument, command) {
-        let args = { count: count, arg: argument, motion: motion, command: command };
+    execute: function (args) {
+        if (!isObject(args)) // Backwards compatibility :(
+            args = iter(["motion", "count", "arg", "command"])
+                .map(function ([i, prop]) [prop, this[i]], arguments)
+                .toObject()
 
         let self = this;
         function repeat() self.action(args)
         if (this.names[0] != ".") // FIXME: Kludge.
             mappings.repeat = repeat;
 
-        dactyl.assert(!this.executing, "Attempt to execute mapping recursively");
+        dactyl.assert(!this.executing, "Attempt to execute mapping recursively: " + args.command);
         this.executing = true;
         let res = dactyl.trapErrors(repeat);
         this.executing = false;
@@ -382,7 +380,7 @@ var Mappings = Module("mappings", {
      * @returns {Map}
      */
     get: function get(mode, cmd) {
-        return this.hives.nth(function (h) h.get(mode, command), 0);
+        return this.hives.nth(function (h) h.get(mode, cmd), 0);
     },
 
     /**

@@ -8,11 +8,219 @@
 
 /** @scope modules */
 
+var ProcessorStack = Class("ProcessorStack", {
+    init: function (mode, hives, keyModes) {
+        this.main = mode.main;
+        this.actions = [];
+        this.buffer = "";
+        this.events = [];
+
+        this.processors = keyModes.map(function (m) hives.map(function (h) KeyProcessor(m, h)))
+                                  .flatten().array;
+
+        for (let [i, input] in Iterator(this.processors)) {
+            let params = input.main == mode.main ? mode.params : input.main.params;
+            if (params.preExecute)
+                input.preExecute = params.preExecute;
+            if (params.postExecute)
+                input.postExecute = params.postExecute;
+            if (params.onEvent && input.hive === mappings.builtin)
+                input.fallthrough = function (event) {
+                    return params.onEvent(event) === false ? Events.KILL : Events.PASS;
+                };
+            }
+    },
+
+    process: function process(event) {
+        function dbg() {}
+
+        let key = events.toString(event);
+        this.events.push(event);
+
+        this.buffer += key;
+
+        let actions = [];
+        let processors = [];
+
+        dbg("\n\n");
+        dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro);
+
+        for (let [i, input] in Iterator(this.processors)) {
+            let res = input.process(event);
+            if (res !== Events.ABORT)
+                var result = res;
+
+            dbg("RES: " + input + " " + (callable(res) ? {}.toString.call(res) : res));
+
+            if (res === Events.KILL)
+                break;
+
+            buffer = buffer || input.inputBuffer;
+
+            if (callable(res))
+                actions.push(res);
+
+            if (isinstance(res, KeyProcessor))
+                processors.push(res);
+            if (res === Events.WAIT || input.waiting)
+                processors.push(input);
+        }
+
+        dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
+        dbg("ACTIONS: " + actions.length + " " + this.actions.length);
+        dbg("PROCESSORS:", processors);
+
+        if (!processors.some(function (p) p.main.ownsBuffer))
+            statusline.updateInputBuffer(processors.length ? this.buffer : "");
+
+        this.actions = actions.concat(this.actions);
+
+        if (result === Events.KILL)
+            this.actions = [];
+        else if (!this.actions.length)
+            for (let input in values(this.processors))
+                if (input.fallthrough) {
+                    if (result === Events.KILL)
+                        break;
+                    result = dactyl.trapErrors(input.fallthrough, input, event);
+                }
+
+        this.processors = processors;
+
+        if (processors.length)
+            result = Events.KILL;
+        else if (this.actions.length) {
+            if (actions.length == 0)
+                dactyl.beep();
+            result = this.actions[0]() === Events.PASS ? Events.PASS : Events.KILL;
+        }
+        else if (result !== Events.KILL && processors.some(function (p) !p.main.passUnknown)) {
+            result = Events.KILL;
+            dactyl.beep();
+        }
+        else if (result === undefined)
+            result = Events.PASS;
+
+        if (result !== Events.PASS)
+            Events.kill(event);
+
+        if (result === Events.PASS || result === Events.ABORT)
+            this.events.filter(function (e) e.getPreventDefault())
+                .forEach(function (event, i) {
+                    if (event.originalTarget) {
+                        let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
+                        events.dispatch(event.originalTarget, evt, { skipmap: true, isMacro: true });
+                    }
+                    else if (i > 0)
+                        events.onKeyPress(event);
+                });
+        return this.processors.length == 0;
+    }
+});
+
+var KeyProcessor = Class("KeyProcessor", {
+    init: function init(main, hive) {
+        this.main = main;
+        this.events = [];
+        this.hive = hive;
+        this.wantCount = this.main.count;
+    },
+
+    get toStringParams() [this.main.name, this.hive.name],
+
+    countStr: "",
+    command: "",
+    get count() this.countStr ? Number(this.countStr) : null,
+
+    append: function append(event) {
+        this.events.push(event);
+        let key = events.toString(event);
+
+        if (this.wantCount && !this.command &&
+                (this.countStr ? /^[0-9]$/ : /^[1-9]$/).test(key))
+            this.countStr += key;
+        else
+            this.command += key;
+        return this.events;
+    },
+
+    process: function process(event) {
+        this.append(event);
+        this.waiting = false;
+        return this.onKeyPress(event);
+    },
+
+    execute: function execute(map)
+        let (self = this, args = arguments)
+            function execute() {
+                if (self.preExecute)
+                    self.preExecute.apply(self, args);
+                let res = map.execute.apply(map, Array.slice(args, 1));
+                if (self.postExecute)
+                    self.postExecute.apply(self, args);
+                return res;
+            },
+
+    onKeyPress: function onKeyPress(event) {
+        if (event.skipmap)
+            return Events.ABORT;
+
+        if (!this.command)
+            return Events.WAIT;
+
+        var map = this.hive.get(this.main, this.command);
+        this.waiting = this.hive.getCandidates(this.main, this.command);
+        if (map) {
+            if (map.arg)
+                return KeyArgProcessor(this, map, false, "arg");
+            else if (map.motion)
+                return KeyArgProcessor(this, map, true, "motion");
+            else if (modes.replaying && !events.waitForPageLoad())
+                return Events.KILL;
+
+            return this.execute(map, { count: this.count, command: this.command, events: this.events });
+        }
+
+        if (!this.waiting)
+            return this.main.input ? Events.PASS : Events.ABORT;
+
+        return Events.WAIT;
+    }
+});
+
+var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
+    init: function init(input, map, wantCount, argName) {
+        init.supercall(this, input.main, input.hive);
+        this.map = map;
+        this.parent = input;
+        this.argName = argName;
+        this.wantCount = wantCount;
+    },
+
+    onKeyPress: function onKeyPress(event) {
+        if (Events.isEscape(event))
+            return Events.KILL;
+        if (!this.command)
+            return Events.WAIT;
+
+        let args = {
+            command: this.parent.command,
+            count:   this.count || this.parent.count,
+            events:  this.parent.events.concat(this.events)
+        };
+        args[this.argName] = this.command;
+
+        return this.execute(this.map, args);
+    }
+});
+
 /**
  * @instance events
  */
 var Events = Module("events", {
     init: function () {
+        const self = this;
+
         util.overlayWindow(window, {
             append: <e4x xmlns={XUL}>
                 <window id={document.documentElement.id}>
@@ -32,7 +240,6 @@ var Events = Module("events", {
         this._currentMacro = "";
         this._macroKeys = [];
         this._lastMacro = "";
-        this._processors = [];
 
         this.sessionListeners = [];
 
@@ -103,6 +310,10 @@ var Events = Module("events", {
         this.addSessionListener(window, "popuphidden", this.onPopupHidden, true);
         this.addSessionListener(window, "popupshown", this.onPopupShown, true);
         this.addSessionListener(window, "resize", this.onResize, true);
+
+        dactyl.registerObserver("modeChange", function () {
+            delete this.processor;
+        });
     },
 
     destroy: function () {
@@ -863,15 +1074,6 @@ var Events = Module("events", {
     onKeyPress: function onKeyPress(event) {
         event.dactylDefaultPrevented = event.getPreventDefault();
 
-        function kill(event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        function shouldPass()
-            (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
-            options.get("passkeys").has(events.toString(event));
-
         let duringFeed = this.duringFeed || [];
         this.duringFeed = [];
         try {
@@ -906,16 +1108,14 @@ var Events = Module("events", {
                 else
                     duringFeed.push(event);
 
-                return kill(event);
+                return Events.kill(event);
             }
 
-            let mode = modes.getStack(0);
-            if (event.dactylMode)
-                mode = Modes.StackElement(event.dactylMode);
+            if (!this.processor) {
+                let mode = modes.getStack(0);
+                if (event.dactylMode)
+                    mode = Modes.StackElement(event.dactylMode);
 
-            let processors = this._processors;
-            this._processors = [];
-            if (!processors.length) {
                 let ignore = false;
                 let overrideMode = null;
 
@@ -930,7 +1130,7 @@ var Events = Module("events", {
                         mode.params.mainMode = modes.getStack(2).main;
                         ignore = Events.isEscape(key);
                     }
-                    else if (shouldPass())
+                    else if (events.shouldPass(event))
                         mode.params.mainMode = modes.getStack(1).main;
                     else
                         ignore = true;
@@ -938,7 +1138,7 @@ var Events = Module("events", {
                     if (ignore && !Events.isEscape(key))
                         modes.pop();
                 }
-                else if (!event.isMacro && !event.noremap && shouldPass())
+                else if (!event.isMacro && !event.noremap && events.shouldPass(event))
                     ignore = true;
 
                 if (ignore)
@@ -957,78 +1157,14 @@ var Events = Module("events", {
 
                 let hives = mappings.hives.slice(event.noremap ? -1 : 0);
 
-                processors = keyModes.map(function (m) hives.map(function (h) Events.KeyProcessor(m, h)))
-                                     .flatten().array;
-
-                for (let [i, input] in Iterator(processors)) {
-                    let params = input.main == mode.main ? mode.params : input.main.params;
-                    if (params.preExecute)
-                        input.preExecute = params.preExecute;
-                    if (params.postExecute)
-                        input.postExecute = params.postExecute;
-                    if (params.onEvent && input.hive === mappings.builtin)
-                        input.fallthrough = function (event) {
-                            return params.onEvent(event) === false ? Events.KILL : Events.PASS;
-                        };
-                    }
+                this.processor = ProcessorStack(mode, hives, keyModes);
             }
 
-            let refeed, buffer, waiting = 0, action;
-            for (let input in values(processors)) {
-                var res = input.process(event);
-                waiting += res == Events.WAIT;
-                buffer = buffer || input.inputBuffer;
-                if (callable(res))
-                    action = action || res;
+            let processor = this.processor;
+            this.processor = null;
+            if (!processor.process(event))
+                this.processor = processor;
 
-                if (isArray(res) && !waiting)
-                    refeed = res;
-                if (res === Events.KILL)
-                    break;
-            }
-
-            if (!refeed || refeed.length == 1)
-                for (let input in values(processors))
-                    if (input.fallthrough) {
-                        if (res === Events.KILL)
-                            break;
-                        res = dactyl.trapErrors(input.fallthrough, input, event);
-                    }
-
-            if (!processors.some(function (p) p.main.ownsBuffer))
-                statusline.updateInputBuffer(buffer);
-
-            if (waiting) {
-                res = Events.KILL;
-                this._processors = processors;
-            }
-            else if (action)
-                res = action(res) === Events.PASS ? Events.PASS : Events.KILL;
-
-            if (res !== Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL))) {
-                res = Events.KILL;
-                dactyl.beep();
-            }
-
-            if (res !== Events.PASS && !isArray(res))
-                refeed = null;
-
-            if (refeed && refeed[0] && (!refeed[0].getPreventDefault() || refeed[0].dactylDefaultPrevented)) {
-                res = Events.PASS;
-                refeed.shift();
-            }
-
-            if (res !== Events.PASS)
-                kill(event);
-
-            if (refeed)
-                for (let [i, event] in Iterator(refeed))
-                    if (event.originalTarget) {
-                        let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
-                        events.dispatch(event.originalTarget, evt, { skipmap: true, isMacro: true });
-                    }
-                    else if (i > 0)
-                        events.onKeyPress(event);
         }
         catch (e) {
             dactyl.reportError(e);
@@ -1053,15 +1189,11 @@ var Events = Module("events", {
         // before we get a chance to process our key bindings on the
         // "keypress" event.
 
-        function shouldPass() // FIXME.
-            (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
-            options.get("passkeys").has(events.toString(event));
-
         if (modes.main == modes.PASS_THROUGH ||
             modes.main == modes.QUOTE
                 && modes.getStack(1).main !== modes.PASS_THROUGH
-                && !shouldPass() ||
-            !modes.passThrough && shouldPass())
+                && !events.shouldPass(event) ||
+            !modes.passThrough && events.shouldPass(event))
             return;
 
         if (!Events.isInputElement(dactyl.focusedElement))
@@ -1110,136 +1242,16 @@ var Events = Module("events", {
             else if (modes.main == modes.CARET)
                 modes.push(modes.VISUAL);
         }
-    }
+    },
+
+    shouldPass: function shouldPass(event)
+        (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
+        options.get("passkeys").has(events.toString(event))
 }, {
+    ABORT: {},
     KILL: true,
     PASS: false,
     WAIT: null,
-
-
-    KeyProcessor: Class("KeyProcessor", {
-        init: function init(main, hive) {
-            this.main = main;
-            this.events = [];
-            this.hive = hive;
-        },
-
-        get toStringParams() [this.main.name, this.hive.name],
-
-        buffer: "",             // partial command storage
-        pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
-        pendingArgMap: null,    // pending map storage for commands like m{a-z}
-        count: null,            // parsed count from the input buffer
-        motionCount: null,
-
-        append: function append(event) {
-            this.events.push(event);
-            this.buffer += events.toString(event);
-            return this.events;
-        },
-
-        process: function process(event) {
-            function kill(event) {
-                event.stopPropagation();
-                event.preventDefault();
-            }
-
-            let res = this.onKeyPress(event);
-
-            if (res != Events.WAIT)
-                this.inputBuffer = "";
-            else {
-                let motionMap = (this.pendingMotionMap && this.pendingMotionMap.names[0]) || "";
-                this.inputBuffer = motionMap + this.buffer;
-            }
-
-            return res;
-        },
-
-        execute: function execute(map)
-            let (self = this, args = arguments)
-                function execute() {
-                    if (self.preExecute)
-                        self.preExecute.apply(self, args);
-                    let res = map.execute.apply(map, Array.slice(args, 1));
-                    if (self.postExecute) // To do: get rid of self.
-                        self.postExecute.apply(self, args);
-                    return res;
-                },
-
-        onKeyPress: function onKeyPress(event) {
-            // This all needs to go. It's horrible. --Kris
-
-            let key = events.toString(event);
-            let [, countStr, command] = /^((?:[1-9][0-9]*)?)(.*)/.exec(this.buffer + key);
-
-            var map = this.hive.get(this.main, command);
-
-            let candidates = this.hive.getCandidates(this.main, command);
-            if (candidates == 0 && !map) {
-                [map] = this.pendingMap || [];
-                this.pendingMap = null;
-                if (map && map.arg)
-                    this.pendingArgMap = [map, command];
-            }
-
-            // counts must be at the start of a complete mapping (10j -> go 10 lines down)
-            if (countStr && !command) {
-                // no count for insert mode mappings
-                if (!this.main.count)
-                    return this.append(event);
-                else if (this.main.input)
-                    return Events.PASS;
-                else
-                    this.append(event);
-            }
-            else if (this.pendingArgMap) {
-                let [map, command] = this.pendingArgMap;
-                if (!Events.isEscape(key))
-                    return this.execute(map, null, this.count, key, command);
-                return Events.KILL;
-            }
-            else if (!event.skipmap && map && candidates == 0) {
-                this.pendingMap = null;
-
-                let count = this.pendingMotionMap ? "motionCount" : "count";
-                this[count] = parseInt(countStr, 10);
-
-                if (isNaN(this[count]))
-                    this[count] = null;
-
-                if (map.arg) {
-                    this.append(event);
-                    this.pendingArgMap = [map, command];
-                }
-                else if (this.pendingMotionMap) {
-                    let [map, command] = this.pendingMotionMap;
-                    if (!Events.isEscape(key))
-                        return this.execute(map, command, this.motionCount || this.count, null, command);
-                    return Events.KILL;
-                }
-                else if (map.motion) {
-                    this.buffer = "";
-                    this.pendingMotionMap = [map, command];
-                }
-                else {
-                    if (modes.replaying && !events.waitForPageLoad())
-                        return Events.KILL;
-
-                    return this.execute(map, null, this.count, null, command);
-                }
-            }
-            else if (!event.skipmap && this.hive.getCandidates(this.main, command) > 0) {
-                this.append(event);
-                this.pendingMap = [map, command];
-            }
-            else {
-                this.append(event);
-                return this.events;
-            }
-            return Events.WAIT;
-        }
-    }),
 
     isEscape: function isEscape(event)
         let (key = isString(event) ? event : events.toString(event))
@@ -1252,6 +1264,11 @@ var Events = Module("events", {
                                  HTMLTextAreaElement,
                                  Ci.nsIDOMXULTreeElement, Ci.nsIDOMXULTextBoxElement]) ||
                elem instanceof Window && Editor.getEditor(elem);
+    },
+
+    kill: function kill(event) {
+        event.stopPropagation();
+        event.preventDefault();
     }
 }, {
     commands: function () {
