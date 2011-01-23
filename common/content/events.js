@@ -973,11 +973,13 @@ var Events = Module("events", {
                     }
             }
 
-            let refeed, buffer, waiting = 0;
+            let refeed, buffer, waiting = 0, action;
             for (let input in values(processors)) {
                 var res = input.process(event);
                 waiting += res == Events.WAIT;
                 buffer = buffer || input.inputBuffer;
+                if (callable(res))
+                    action = action || res;
 
                 if (isArray(res) && !waiting)
                     refeed = res;
@@ -1000,6 +1002,9 @@ var Events = Module("events", {
                 res = Events.KILL;
                 this._processors = processors;
             }
+            else if (action)
+                res = action(res) === Events.PASS ? Events.PASS : Events.KILL;
+
             if (res !== Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL))) {
                 res = Events.KILL;
                 dactyl.beep();
@@ -1140,8 +1145,6 @@ var Events = Module("events", {
             }
 
             let res = this.onKeyPress(event);
-            if (res === Events.KILL)
-                kill(event);
 
             if (res != Events.WAIT)
                 this.inputBuffer = "";
@@ -1153,24 +1156,24 @@ var Events = Module("events", {
             return res;
         },
 
+        execute: function execute(map)
+            let (self = this, args = arguments)
+                function execute() {
+                    if (self.preExecute)
+                        self.preExecute.apply(self, args);
+                    let res = map.execute.apply(map, Array.slice(args, 1));
+                    if (self.postExecute) // To do: get rid of self.
+                        self.postExecute.apply(self, args);
+                    return res;
+                },
+
         onKeyPress: function onKeyPress(event) {
             // This all needs to go. It's horrible. --Kris
-
-            const self = this;
 
             let key = events.toString(event);
             let [, countStr, command] = /^((?:[1-9][0-9]*)?)(.*)/.exec(this.buffer + key);
 
             var map = this.hive.get(this.main, command);
-
-            function execute(map) {
-                if (self.preExecute)
-                    self.preExecute.apply(self, arguments);
-                let res = map.execute.apply(map, Array.slice(arguments, 1));
-                if (self.postExecute) // To do: get rid of this.
-                    self.postExecute.apply(self, arguments);
-                return res;
-            }
 
             let candidates = this.hive.getCandidates(this.main, command);
             if (candidates == 0 && !map) {
@@ -1193,7 +1196,7 @@ var Events = Module("events", {
             else if (this.pendingArgMap) {
                 let [map, command] = this.pendingArgMap;
                 if (!Events.isEscape(key))
-                    execute(map, null, this.count, key, command);
+                    return this.execute(map, null, this.count, key, command);
                 return Events.KILL;
             }
             else if (!event.skipmap && map && candidates == 0) {
@@ -1212,7 +1215,7 @@ var Events = Module("events", {
                 else if (this.pendingMotionMap) {
                     let [map, command] = this.pendingMotionMap;
                     if (!Events.isEscape(key))
-                        execute(map, command, this.motionCount || this.count, null, command);
+                        return this.execute(map, command, this.motionCount || this.count, null, command);
                     return Events.KILL;
                 }
                 else if (map.motion) {
@@ -1223,7 +1226,7 @@ var Events = Module("events", {
                     if (modes.replaying && !events.waitForPageLoad())
                         return Events.KILL;
 
-                    return execute(map, null, this.count, null, command) === Events.PASS ? Events.PASS : Events.KILL;
+                    return this.execute(map, null, this.count, null, command);
                 }
             }
             else if (!event.skipmap && this.hive.getCandidates(this.main, command) > 0) {
