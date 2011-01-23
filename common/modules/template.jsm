@@ -182,10 +182,12 @@ var Template = Module("Template", {
         str = String(str).replace(" ", "\u00a0");
         let s = <></>;
         let start = 0;
-        let n = 0;
+        let n = 0, _i;
         for (let [i, length, args] in iter) {
-            if (n++ > 50) // Prevent infinite loops.
+            if (i == _i || i < _i)
                 break;
+            _i = i;
+
             XML.ignoreWhitespace = false;
             s += <>{str.substring(start, i)}</>;
             s += highlight.apply(this, Array.concat(args || str.substr(i, length)));
@@ -227,14 +229,13 @@ var Template = Module("Template", {
 
     linkifyHelp: function linkifyHelp(str, help) {
         let re = util.regexp(<![CDATA[
-            ([/\s]|^)
-            ( '[\w-]+' | :(?:[\w-]+|!) | (?:._)?<[\w-]+> )
-            (?=[[!,;./\s]|$)
+            (?P<pre> [/\s]|^)
+            (?P<tag> '[\w-]+' | :(?:[\w-]+|!) | (?:._)?<[\w-]+> )
+            (?=      [[!,;./\s]|$)
         ]]>, "g");
         return this.highlightSubstrings(str, (function () {
-            let res;
-            while ((res = re.exec(str)) && res[2].length)
-                yield [res.index + res[1].length, res[2].length];
+            for (let res in re.iterate(str))
+                yield [res.index + res.pre.length, res.tag.length];
         })(), template[help ? "HelpLink" : "helpLink"]);
     },
 
