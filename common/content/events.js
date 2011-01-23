@@ -312,7 +312,7 @@ var Events = Module("events", {
         this.addSessionListener(window, "resize", this.onResize, true);
 
         dactyl.registerObserver("modeChange", function () {
-            delete this.processor;
+            delete self.processor;
         });
     },
 
