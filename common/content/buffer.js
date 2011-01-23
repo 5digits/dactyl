@@ -486,7 +486,7 @@ var Buffer = Module("buffer", {
      *     section's output.
      */
     addPageInfoSection: function addPageInfoSection(option, title, func) {
-        this.pageInfo[option] = [func, title];
+        this.pageInfo[option] = [func, title]; // TODO: are these reversed intentionally? --djk
     },
 
     /**
@@ -1023,10 +1023,9 @@ var Buffer = Module("buffer", {
             return;
         }
 
-        let option = sections || options["pageinfo"];
-        let list = template.map(option, function (option) {
-            let opt = buffer.pageInfo[option];
-            return opt ? template.table(opt[1], opt[0](true)) : undefined;
+        let list = template.map(sections || options["pageinfo"], function (option) {
+            let [data, title] = buffer.pageInfo[option];
+            return template.table(title, data(true));
         }, <br/>);
         dactyl.echo(list, commandline.FORCE_MULTILINE);
     },
