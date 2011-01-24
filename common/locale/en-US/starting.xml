@@ -22,6 +22,7 @@
 
 <item>
     <tags>+c</tags>
+    <strut/>
     <spec>+c <a>command</a></spec>
     <description>
         <p>
@@ -35,6 +36,7 @@
 
 <item>
     <tags>++cmd</tags>
+    <strut/>
     <spec>++cmd <a>command</a></spec>
     <description>
         <p>
@@ -48,6 +50,7 @@
 
 <item>
     <tags>+u</tags>
+    <strut/>
     <spec>+u <a>rcfile</a></spec>
     <description>
         <p>
@@ -61,6 +64,7 @@
 
 <item>
     <tags>++noplugin</tags>
+    <strut/>
     <spec>++noplugin</spec>
     <description>
         <p>Prevents plugin scripts from being loaded at startup. See <o>loadplugins</o>.</p>
