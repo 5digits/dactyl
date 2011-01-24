@@ -21,7 +21,10 @@ by Kris Maglione, Doug Kearns, et al.
 
 type :q&lt;<span class="key">Enter</span>>                 to exit         <!---->
 type :help&lt;<span class="key">Enter</span>>  or  &lt;<span class="key">F1</span>>    for on-line help
+type :help faq&lt;<span class="key">Enter</span>>          for the FAQ page
+<!--
 type :help version-&dactyl.version;&lt;<span class="key">Enter</span>>  for version info
+-->
       </div>
     <spring flex="1"/>
   </hbox>

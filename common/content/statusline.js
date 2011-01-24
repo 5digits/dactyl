@@ -29,7 +29,7 @@ var StatusLine = Module("statusline", {
                     -moz-appearance: none !important;
                     <padding>
                 }
-                !AddonButton;#addon-bar>xul|toolbarbutton  {
+                !AddonButton;#addon-bar>xul|toolbarbutton,#addon-bar>xul|toolbarbutton>xul|toolbarbutton  {
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
