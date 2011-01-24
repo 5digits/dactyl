@@ -50,6 +50,8 @@ var Map = Class("Map", {
 
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
 
+    /** @property {number} A unique ID for this mapping. */
+    id: null,
     /** @property {number[]} All of the modes for which this mapping applies. */
     modes: null,
     /** @property {string[]} All of this mapping's names (key sequences). */
