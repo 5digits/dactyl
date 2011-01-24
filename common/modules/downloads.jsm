@@ -25,7 +25,9 @@ var Download = Class("Download", {
         this.instance = this;
         this.list = list;
 
-        this.nodes = {};
+        this.nodes = {
+            commandTarget: self
+        };
         util.xmlToDom(
             <li highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
                 <span highlight="DownloadTitle">
@@ -53,22 +55,6 @@ var Download = Class("Download", {
                 <a highlight="DownloadSource" key="source" href={self.source.spec}>{self.source.spec}</a>
             </li>,
             this.list.document, this.nodes);
-
-        for (let [key, node] in Iterator(this.nodes)) {
-            node.dactylDownload = self;
-            if (node.getAttributeNS(NS, "highlight") == "Button") {
-                node.setAttributeNS(NS, "command", "download.command");
-                update(node, {
-                    set collapsed(collapsed) {
-                        if (collapsed)
-                            this.setAttribute("collapsed", "true");
-                        else
-                            this.removeAttribute("collapsed");
-                    },
-                    get collapsed() !!this.getAttribute("collapsed")
-                });
-            }
-        }
 
         self.updateStatus();
         return self;
@@ -289,12 +275,6 @@ var Downloads = Module("downloads", {
                 if (modules.commandline.savingOutput)
                     util.waitFor(function () downloads.document);
             });
-    },
-    dactyl: function (dactyl, modules, window) {
-        dactyl.commands["download.command"] = function (event) {
-            let elem = event.originalTarget;
-            elem.dactylDownload.command(elem.getAttribute("key"));
-        }
     }
 });
 

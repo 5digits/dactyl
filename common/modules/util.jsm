@@ -1587,27 +1587,33 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         XML.prettyPrinting = false;
         if (typeof node === "string") // Sandboxes can't currently pass us XML objects.
             node = XML(node);
+
         if (node.length() != 1) {
             let domnode = doc.createDocumentFragment();
             for each (let child in node)
                 domnode.appendChild(xmlToDom(child, doc, nodes));
             return domnode;
         }
+
         switch (node.nodeKind()) {
         case "text":
             return doc.createTextNode(String(node));
         case "element":
             let domnode = doc.createElementNS(node.namespace(), node.localName());
-            for each (let attr in node.@*::*)
-                if (attr.name() != "highlight")
-                    domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
-                else
-                    highlight.highlightNode(domnode, String(attr));
 
             for each (let child in node.*::*)
                 domnode.appendChild(xmlToDom(child, doc, nodes));
             if (nodes && node.@key)
                 nodes[node.@key] = domnode;
+
+            for each (let attr in node.@*::*)
+                if (attr.name() != "highlight")
+                    domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
+                else {
+                    highlight.highlightNode(domnode, String(attr));
+                    if (attr in template.bindings)
+                        template.bindings[attr](domnode, nodes);
+                }
             return domnode;
         default:
             return null;

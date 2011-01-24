@@ -92,7 +92,11 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (this.actions.length) {
             if (actions.length == 0)
                 dactyl.beep();
-            result = this.actions[0]() === Events.PASS ? Events.PASS : Events.KILL;
+
+            if (modes.replaying && !events.waitForPageLoad())
+                result = Events.KILL;
+            else
+                result = this.actions[0]() === Events.PASS ? Events.PASS : Events.KILL;
         }
         else if (result !== Events.KILL && processors.some(function (p) !p.main.passUnknown)) {
             result = Events.KILL;
@@ -175,8 +179,6 @@ var KeyProcessor = Class("KeyProcessor", {
                 return KeyArgProcessor(this, map, false, "arg");
             else if (map.motion)
                 return KeyArgProcessor(this, map, true, "motion");
-            else if (modes.replaying && !events.waitForPageLoad())
-                return Events.KILL;
 
             return this.execute(map, { count: this.count, command: this.command, events: this.events });
         }
