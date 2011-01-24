@@ -527,7 +527,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     /**
      * Returns the URL of the specified help *topic* if it exists.
      *
-     * @param {string} topic The help topic to lookup.
+     * @param {string} topic The help topic to look up.
      * @param {boolean} unchunked Whether to search the unchunked help page.
      * @returns {string}
      */
@@ -851,7 +851,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     }, [function (context, args) completion.file(context)]),
 
     /**
-     * Generates a help entry and writes it to the clipboard.
+     * Generates a help entry and returns it as a string.
      *
      * @param {Command|Map|Option} obj A dactyl *Command*, *Map* or *Option*
      *     object
@@ -953,7 +953,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *
      * @param {string} topic The help topic to open.
      * @param {boolean} unchunked Whether to use the unchunked help page.
-     * @returns {string}
      */
     help: function (topic, unchunked) {
         dactyl.initHelp();

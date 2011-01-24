@@ -24,7 +24,6 @@
  *         (@link CommandOption.FLOAT),
  *         (@link CommandOption.LIST),
  *         (@link CommandOption.ANY)
- * @property {object} default The option's default value
  * @property {function} validator A validator function
  * @property {function (CompletionContext, object)} completer A list of
  *    completions, or a completion function which will be passed a
@@ -33,6 +32,7 @@
  *      completeOpt - The name of the option currently being completed.
  * @property {boolean} multiple Whether this option can be specified multiple times
  * @property {string} description A description of the option
+ * @property {object} default The option's default value
  */
 
 var CommandOption = Struct("names", "type", "validator", "completer", "multiple", "description", "default");
