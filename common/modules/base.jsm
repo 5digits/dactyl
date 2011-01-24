@@ -1032,8 +1032,8 @@ var Timer = Class("Timer", {
 });
 
 /**
- * Returns the UTF-8 encoded value of a string mis-encoded into
- * ISO-8859-1.
+ * Idempotent function which returns the UTF-8 encoded value of an
+ * improperly-decoded string.
  *
  * @param {string} str
  * @returns {string}
