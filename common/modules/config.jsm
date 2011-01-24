@@ -506,6 +506,8 @@ var ConfigBase = Class("ConfigBase", {
         Download                        display: table-row;
         Download:not([active])          color: gray;
 
+        Buttons
+
         DownloadCell                    display: table-cell; padding: 0 1ex;
         DownloadButtons;;;DownloadCell
         DownloadPercent;;;DownloadCell
@@ -516,6 +518,21 @@ var ConfigBase = Class("ConfigBase", {
         DownloadState;;;DownloadCell
         DownloadTime;;;DownloadCell
         DownloadTitle;;;DownloadCell,URL
+
+        AddonCell                    display: table-cell; padding: 0 1ex;
+
+        Addons                       display: table; margin: 0; padding: 0;
+        AddonHead;;;CompTitle        display: table-row;
+        AddonHead>*;;;AddonCell
+
+        Addon                        display: table-row;
+
+        Addon>*;;;AddonCell
+        AddonButtons
+        AddonDescription
+        AddonName
+        AddonStatus
+        AddonVersion
 
         // </css>
     ]]></>, /&#x0d;/g, "\n")),

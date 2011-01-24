@@ -148,7 +148,8 @@ var Overlay = Module("Overlay", {
                 let prefix = [BASE, "resource://dactyl-local-content/"];
 
                 defineModule.time("load", null, function _load() {
-                    ["base",
+                    ["addons",
+                     "base",
                      "completion",
                      "config",
                      "downloads",

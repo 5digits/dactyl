@@ -41,16 +41,11 @@
 <h2 tag="dialogs">Dialogs</h2>
 
 <item>
-    <tags>:addo :addons</tags>
+    <tags>:ao :addo :addons</tags>
     <strut/>
     <spec>:addo<oa>ns</oa></spec>
     <description>
-        <p>
-            Opens the &dactyl.host; addon manager, where extensions and themes
-            may be installed, removed, disabled, and configured. See also
-            <ex>:extensions</ex>, <ex>:extadd</ex>, <ex>:extoptions</ex>,
-            <ex>:extenable</ex>, <ex>:extdisable</ex>, and <ex>:extdelete</ex>.
-        </p>
+        <p>Opens the add-on list.</p>
     </description>
 </item>
 
@@ -126,16 +121,6 @@
             Enable an extension. <a>extension</a> is the extension's name. When <oa>!</oa> is given all
             extensions are enabled.
         </p>
-    </description>
-</item>
-
-<item>
-    <tags>:exts :extens :extensions</tags>
-    <spec>:extens<oa>ions</oa></spec>
-    <spec>:exts</spec>
-    <strut/>
-    <description>
-        <p>List all installed extensions.</p>
     </description>
 </item>
 

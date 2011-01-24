@@ -36,7 +36,7 @@ var Download = Class("Download", {
                     </span>
                 </span>
                 <span highlight="DownloadState" key="state"/>
-                <span highlight="DownloadButtons">
+                <span highlight="DownloadButtons Buttons">
                     <a highlight="Button" key="pause">Pause</a>
                     <a highlight="Button" key="remove">Remove</a>
                     <a highlight="Button" key="resume">Resume</a>
@@ -285,9 +285,6 @@ var Downloads = Module("downloads", {
             function (args) {
                 let downloads = DownloadList(modules);
                 modules.commandline.echo(downloads);
-
-                if (modules.commandline.savingOutput)
-                    util.waitFor(function () downloads.document);
             });
     },
     dactyl: function (dactyl, modules, window) {
