@@ -198,6 +198,7 @@
             <dt>downloads   </dt>       <dd>Download history</dd>
             <dt>formdata    </dt>       <dd>Saved form and search history</dd>
             <dt>history     </dt>       <dd>Browsing history</dd>
+            <dt>host        </dt>       <dd>All data from the given host</dd>
             <dt>marks       </dt>       <dd>Local and URL marks</dd>
             <dt>macros      </dt>       <dd>Saved macros</dd>
             <dt>messages    </dt>       <dd>Saved <ex>:messages</ex></dd>
@@ -225,27 +226,27 @@
 
         <note>
             The following items are always cleared entirely, regardless of
-            <a>timeframe</a>: <em>cache</em>, <em>offlineapps</em>,
+            <a>timeframe</a>: <em>cache</em>, <em>host</em>, <em>offlineapps</em>,
             <em>passwords</em>, <em>sessions</em>, <em>sitesettings</em>.
-            Conversely, <em>options</em> are never cleared unless a host is
-            specified.
+            Conversely, <em>host</em> and <em>options</em> are never cleared
+            unless a host is specified.
         </note>
 
         <p>
             If <a>host</a> (short name <em>-h</em>) is specified, only items
             containing a reference to that domain or a subdomain thereof are
-            cleared. Moreover, if <em>commandline</em> or <em>history</em> is
-            specified, the invocation of the <em>:sanitize</em> command is
-            naturally cleared as well.
+            cleared. Moreover, if either of <em>commandline</em> or
+            <em>history</em> is specified, the invocation of the
+            <em>:sanitize</em> command is naturally cleared as well.
         </p>
 
         <note>
             This only applies to <em>commandline</em>, <em>cookies</em>,
             <em>history</em>, <em>marks</em>, <em>messages</em>,
             <em>options</em>, and <em>sitesettings</em>. All other
-            domain-specific data is cleared only along with <em>history</em>,
+            domain-specific data is cleared only along with <em>host</em>,
             when a request is made to &dactyl.host; to purge all data for
-            <em>host</em>. Included in this purge are all matching history
+            <a>host</a>. Included in this purge are all matching history
             entries, cookies, closed tabs, form data, and location bar
             entries.
         </note>
