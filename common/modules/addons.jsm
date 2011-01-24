@@ -93,6 +93,18 @@ var actions = {
         filter: function ({ item }) !item.userDisabled,
         perm: "disable"
     },
+    options: {
+        name: ["exto[ptions]", "extp[references]"],
+        description: "Open an extension's preference dialog",
+        bang: true,
+        action: function (addon, bang) {
+            if (bang)
+                this.window.openDialog(addon.optionsURL, "_blank", "chrome");
+            else
+                this.dactyl.open(addon.optionsURL, { from: "extoptions" });
+        },
+        filter: function ({ item }) item.isActive && item.optionsURL
+    },
     rehash: {
         name: "extr[ehash]",
         description: "Reload an extension",
@@ -143,6 +155,7 @@ var Addon = Class("Addon", {
                     <a highlight="Button" key="disable">Off</a>
                     <a highlight="Button" key="delete">Del</a>
                     <a highlight="Button" key="update">Upd</a>
+                    <a highlight="Button" key="options">Opt</a>
                 </span>
                 <span highlight="AddonDescription" key="description"/>
             </li>,
@@ -167,7 +180,7 @@ var Addon = Class("Addon", {
 
         let action = actions[cmd];
         if (action.action)
-            action.action.call(this.modules, this);
+            action.action.call(this.list.modules, this, true);
         else
             action.actions([this], this.list.modules);
     },
@@ -324,6 +337,28 @@ var Addons = Module("addons", {
     commands: function (dactyl, modules, window) {
         const { CommandOption, commands, completion } = modules;
 
+        commands.add(["addo[ns]", "ao"],
+            "List installed extensions",
+            function (args) {
+                let addons = AddonList(modules, args["-types"], args[0]);
+                modules.commandline.echo(addons);
+
+                if (modules.commandline.savingOutput)
+                    util.waitFor(function () addons.ready);
+            },
+            {
+                argCount: "?",
+                options: [
+                    {
+                        names: ["-types", "-type", "-t"],
+                        description: "The add-on types to list",
+                        default: ["extension"],
+                        completer: function (context, args) completion.addonType(context),
+                        type: CommandOption.LIST
+                    }
+                ]
+            });
+
         let addonListener = AddonListener(modules);
 
         commands.add(["exta[dd]"],
@@ -358,17 +393,17 @@ var Addons = Module("addons", {
             let perm = command.perm && AddonManager["PERM_CAN_" + command.perm.toUpperCase()];
             function ok(addon) !perm || addon.permissions & perm;
 
-            commands.add([command.name],
+            commands.add(Array.concat(command.name),
                 command.description,
                 function (args) {
                     let name = args[0];
-                    if (args.bang)
+                    if (args.bang && !command.bang)
                         dactyl.assert(!name, "E488: Trailing characters");
                     else
                         dactyl.assert(name, "E471: Argument required");
 
                     AddonManager.getAddonsByTypes(["extension"], dactyl.wrapCallback(function (list) {
-                        if (!args.bang) {
+                        if (!args.bang || command.bang) {
                             list = list.filter(function (extension) extension.name == name);
                             if (list.length == 0)
                                 return void dactyl.echoerr("E475: Invalid argument: " + name);
@@ -378,7 +413,7 @@ var Addons = Module("addons", {
                         if (command.actions)
                             command.actions(list, this.modules);
                         else
-                            list.forEach(command.action, this.modules);
+                            list.forEach(function (addon) command.action.call(this.modules, addon, args.bang), this);
                     }));
                 }, {
                     argCount: "?", // FIXME: should be "1"
@@ -392,50 +427,6 @@ var Addons = Module("addons", {
                     literal: 0
                 });
         });
-
-        commands.add(["exto[ptions]", "extp[references]"],
-            "Open an extension's preference dialog",
-            function (args) {
-                AddonManager.getAddonsByTypes(["extension"], dactyl.wrapCallback(function (list) {
-                    list = list.filter(function (extension) extension.name == args[0]);
-                    if (!list.length || !list[0].optionsURL)
-                        dactyl.echoerr("E474: Invalid argument");
-                    else if (args.bang)
-                        window.openDialog(list[0].optionsURL, "_blank", "chrome");
-                    else
-                        dactyl.open(list[0].optionsURL, { from: "extoptions" });
-                }));
-            }, {
-                argCount: "1",
-                bang: true,
-                completer: function (context) {
-                    completion.extension(context);
-                    context.filters.push(function ({ item }) item.isActive && item.optionsURL);
-                },
-                literal: 0
-            });
-
-        commands.add(["addo[ns]", "ao"],
-            "List installed extensions",
-            function (args) {
-                let addons = AddonList(modules, args["-types"], args[0]);
-                modules.commandline.echo(addons);
-
-                if (modules.commandline.savingOutput)
-                    util.waitFor(function () addons.ready);
-            },
-            {
-                argCount: "?",
-                options: [
-                    {
-                        names: ["-types", "-type", "-t"],
-                        description: "The add-on types to list",
-                        default: ["extension"],
-                        completer: function (context, args) completion.addonType(context),
-                        type: CommandOption.LIST
-                    }
-                ]
-            });
     },
     completion: function (dactyl, modules, window) {
         completion.addonType = function addonType(context) {
