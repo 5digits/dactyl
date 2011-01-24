@@ -1008,41 +1008,7 @@ var CommandLine = Module("commandline", {
                 let key = events.toString(event);
                 if (this._completions)
                     this._completions.previewClear();
-                if (!this.currentExtendedMode)
-                    return PASS;
 
-                // user pressed <Enter> to carry out a command
-                // user pressing <Esc> is handled in the global onEscape
-                // FIXME: <Esc> should trigger "cancel" event
-                if (events.isAcceptKey(key)) {
-                    this._keepCommand = userContext.hidden_option_command_afterimage;
-                    let mode = this.currentExtendedMode;
-                    this.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
-                    modes.pop();
-                    commandline.triggerCallback("submit", mode, command);
-                }
-                // user pressed <Up> or <Down> arrow to cycle history completion
-                else if (/^<(Up|Down|S-Up|S-Down)>$/.test(key)) {
-                    dactyl.assert(this._history);
-                    this._history.select(/Up/.test(key), !/S-/.test(key));
-                    return KILL;
-                }
-                // user pressed <Tab> to get completions of a command
-                else if (/^<(?:A-)?(?:S-)?Tab>$/.test(key)) {
-                    this._tabTimer.tell(event);
-                    return KILL;
-                }
-                else if (key == "<BS>") {
-                    // reset the tab completion
-                    //this.resetCompletions();
-
-                    // and blur the command line if there is no text left
-                    if (command.length == 0) {
-                        commandline.triggerCallback("cancel", this.currentExtendedMode);
-                        modes.pop();
-                    }
-                }
-                // allow this event to be handled by the host app
                 return PASS;
             }
             else if (event.type == "keyup") {
@@ -1718,6 +1684,47 @@ var CommandLine = Module("commandline", {
             });
 
         mappings.add([modes.COMMAND_LINE],
+            ["<Return>", "<C-j>", "<C-m>"], "Accept the current input",
+            function (args) {
+                commandline._keepCommand = userContext.hidden_option_command_afterimage;
+                let mode = commandline.currentExtendedMode;
+                commandline.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
+                modes.pop();
+                commandline.triggerCallback("submit", mode, commandline.command);
+            });
+
+        [
+            [["<Up>", "<A-p>"],                   "previous matching", true,  true],
+            [["<S-Up>", "<C-p>", "<PageUp>"],     "previous",          true,  false],
+            [["<Down>", "<A-n>"],                 "next matching",     false, true],
+            [["<S-Down>", "<C-n>", "<PageDown>"], "next",              false, false]
+        ].forEach(function ([keys, desc, up, search]) {
+            mappings.add([modes.COMMAND_LINE],
+                keys, "Recall the " + desc + " command line from the history list",
+                function (args) {
+                    dactyl.assert(commandline._history);
+                    commandline._history.select(up, search);
+                });
+        });
+
+        mappings.add([modes.COMMAND_LINE],
+            ["<A-Tab>", "<Tab>"], "Select the next matching completion item",
+            function ({ events }) { commandline._tabTimer.tell(events[0]); });
+
+        mappings.add([modes.COMMAND_LINE],
+            ["<A-S-Tab>", "<S-Tab>"], "Select the previous matching completion item",
+            function ({ events }) { commandline._tabTimer.tell(events[0]); });
+
+        mappings.add([modes.COMMAND_LINE],
+            ["<BS>", "<C-h>"], "Delete the previous character",
+            function () {
+                if (!commandline.command)
+                    modes.pop();
+                else
+                    return Events.PASS;
+            });
+
+        mappings.add([modes.COMMAND_LINE],
             ["<C-]>", "<C-5>"], "Expand command line abbreviation",
             function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
 
@@ -1727,14 +1734,6 @@ var CommandLine = Module("commandline", {
                 dactyl.assert(commandline._lastMowOutput, "No previous command output");
                 commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
             });
-
-        mappings.add([modes.COMMAND_LINE],
-            ["<C-p>", "<PageUp>"], "Recall the previous command line from the history list",
-            function () { events.feedkeys("<S-Up>"); });
-
-        mappings.add([modes.COMMAND_LINE],
-            ["<C-n>", "<PageDown>"], "Recall the next command line from the history list",
-            function () { events.feedkeys("<S-Down>"); });
 
         // add the ":" mapping in all but insert mode mappings
         mappings.add(modes.COMMAND,
