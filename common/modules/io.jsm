@@ -436,7 +436,7 @@ var IO = Module("io", {
      *
      * @param {string} command The command to run.
      * @param {string} input Any input to be provided to the command on stdin.
-     * @returns {string}
+     * @returns {object}
      */
     system: function (command, input) {
         util.dactyl.echomsg("Calling shell to execute: " + command, 4);
@@ -472,7 +472,8 @@ var IO = Module("io", {
                 __noSuchMethod__: function (meth, args) this.output[meth].apply(this.output, args),
                 valueOf: function () this.output,
                 output: stdout.read().replace(/^(.*)\n$/, "$1"),
-                returnValue: res
+                returnValue: res,
+                toString: function () this.output
             };
         }) || "";
     },
