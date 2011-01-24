@@ -83,6 +83,9 @@ input[type=file][dactyl|highlight~=HintElem] {
     url-prefix(dactyl:),
     url-prefix(resource://dactyl) {
 
+*:-moz-any-link {
+    color: green;
+}
 *:-moz-any-link:hover {
     text-decoration: underline;
 }

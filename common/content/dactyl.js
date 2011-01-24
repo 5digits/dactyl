@@ -37,6 +37,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             let elem = event.originalTarget;
             dactyl.help(elem.getAttribute("tag") || elem.textContent);
         };
+        this.commands["dactyl.restart"] = function (event) {
+            dactyl.restart();
+        };
     },
 
     cleanup: function () {
