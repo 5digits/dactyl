@@ -223,6 +223,7 @@ var Events = Module("events", {
     init: function () {
         const self = this;
 
+        XML.ignoreWhitespace = true;
         util.overlayWindow(window, {
             append: <e4x xmlns={XUL}>
                 <window id={document.documentElement.id}>

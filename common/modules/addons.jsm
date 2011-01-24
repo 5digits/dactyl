@@ -83,14 +83,14 @@ var actions = {
     enable: {
         name: "exte[nable]",
         description: "Enable an extension",
-        action: function (addon) addon.userDisabled = false,
+        action: function (addon) { addon.userDisabled = false; },
         filter: function ({ item }) item.userDisabled,
         perm: "enable"
     },
     disable: {
         name: "extd[isable]",
         description: "Disable an extension",
-        action: function (addon) addon.userDisabled = true,
+        action: function (addon) { addon.userDisabled = true; },
         filter: function ({ item }) !item.userDisabled,
         perm: "disable"
     },
@@ -125,7 +125,7 @@ var actions = {
     toggle: {
         name: "extt[oggle]",
         description: "Toggle an extension's enabled status",
-        action: function (addon) addon.userDisabled = !addon.userDisabled
+        action: function (addon) { addon.userDisabled = !addon.userDisabled; }
     },
     update: {
         name: "extu[pdate]",
