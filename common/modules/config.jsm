@@ -592,8 +592,8 @@ var ConfigBase = Class("ConfigBase", {
         HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*     list-style: outside lower-roman;
         HelpOrderedList4;ol[level="4"],ol ol ol ol;dactyl://help/*  list-style: outside decimal;
 
-        HelpList;html|ul;dactyl://help/*     display: block; list-style: outside disc;
-        HelpListItem;html|li;dactyl://help/* display: list-item;
+        HelpList;html|ul;dactyl://help/*      display: block; list-style-position: outside; margin: 1em 0;
+        HelpListItem;html|li;dactyl://help/*  display: list-item;
 
 
         HelpNote                                    color: red; font-weight: bold;
