@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
-// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2010 by Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2011 by Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -381,9 +381,7 @@ var Mappings = Module("mappings", {
      * @param {string} cmd The map name to match.
      * @returns {Map}
      */
-    get: function get(mode, cmd) {
-        return this.hives.nth(function (h) h.get(mode, cmd), 0);
-    },
+    get: function get(mode, cmd) this.hives.map(function (h) h.get(mode, cmd)).compact()[0] || null,
 
     /**
      * Returns an array of maps with names starting with but not equal to

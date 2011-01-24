@@ -1,4 +1,10 @@
-// https://wiki.mozilla.org/Extension_Manager:Bootstrapped_Extensions
+// Copyright (c) 2010-2011 by Kris Maglione <maglione.k@gmail.com>
+//
+// This work is licensed for reuse under an MIT license. Details are
+// given in the LICENSE.txt file included with this file.
+//
+// See https://wiki.mozilla.org/Extension_Manager:Bootstrapped_Extensions
+// for details.
 
 const NAME = "bootstrap";
 const global = this;
