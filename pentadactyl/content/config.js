@@ -85,7 +85,7 @@ var Config = Module("config", ConfigBase, {
             if (this.tabbrowser.mTabs.length > 1)
                 this.tabbrowser.removeTab(tab);
             else {
-                if (modules.buffer.URL != "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
+                if (modules.buffer.uri.spec !== "about:blank" || window.getWebNavigation().sessionHistory.count > 0) {
                     dactyl.open("about:blank", dactyl.NEW_BACKGROUND_TAB);
                     this.tabbrowser.removeTab(tab);
                 }
