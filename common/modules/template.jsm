@@ -104,15 +104,32 @@ var Template = Module("Template", {
                 init.supercall(this, node);
 
                 this.target = params.commandTarget;
-                if (callable(this.target))
-                    this.target = { command: this.target }
             },
+
+            get command() this.getAttribute("command") || this.getAttribute("key"),
 
             events: {
                 "click": function onClick(event) {
                     event.preventDefault();
-                    this.target.command(this.getAttribute("key"));
+                    if (this.commandAllowed) {
+                        if (set.has(this.target.commands || {}, this.command))
+                            this.target.commands[this.command].call(this.target);
+                        else
+                            this.target.command(this.command);
+                    }
                 }
+            },
+
+            get commandAllowed() {
+                if (set.has(this.target.allowedCommands || {}, this.command))
+                    return this.target.allowedCommands[this.command];
+                if ("commandAllowed" in this.target)
+                    return this.target.commandAllowed(this.command);
+                return true;
+            },
+
+            update: function update() {
+                this.collapsed = !this.commandAllowed;
             }
         })
     },

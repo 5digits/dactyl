@@ -893,20 +893,21 @@ var CommandLine = Module("commandline", {
      */
     input: function _input(prompt, callback, extra) {
         extra = extra || {};
+        let closure = extra.closure || extra;
 
         this._input = {
-            submit: callback || extra.onAccept,
-            change: extra.onChange,
-            complete: extra.completer,
-            cancel: extra.onCancel
+            submit: callback || closure.onAccept,
+            change: closure.onChange,
+            complete: closure.completer,
+            cancel: closure.onCancel
         };
 
         modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended,
                    update(Object.create(extra), {
-                       onEvent: extra.onEvent || this.closure.onEvent,
+                       onEvent: closure.onEvent || this.closure.onEvent,
                        leave: function leave(stack) {
                            commandline.leave(stack);
-                           leave.supercall(this, stack);
+                           leave.supercall(extra, stack);
                        },
                        keyModes: [extra.extended, modes.PROMPT]
                    }));

@@ -500,25 +500,27 @@ var ConfigBase = Class("ConfigBase", {
         Button::after           content: "]"; color: gray; text-decoration: none !important;
         Button:not([collapsed]) ~ Button:not([collapsed])::before  content: "/[";
 
+        DownloadCell                    display: table-cell; padding: 0 1ex;
+
         Downloads                       display: table; margin: 0; padding: 0;
         DownloadHead;;;CompTitle        display: table-row;
-        DownloadHead>*;;;DownloadCell   display: table-cell;
+        DownloadHead>*;;;DownloadCell
 
         Download                        display: table-row;
         Download:not([active])          color: gray;
 
         Buttons
 
-        DownloadCell                    display: table-cell; padding: 0 1ex;
-        DownloadButtons;;;DownloadCell
-        DownloadPercent;;;DownloadCell
-        DownloadProgress;;;DownloadCell
+        Download>*;;;DownloadCell
+        DownloadButtons
+        DownloadPercent
+        DownloadProgress
         DownloadProgressHave
         DownloadProgressTotal
-        DownloadSource;;;DownloadCell,URL
-        DownloadState;;;DownloadCell
-        DownloadTime;;;DownloadCell
-        DownloadTitle;;;DownloadCell,URL
+        DownloadSource
+        DownloadState
+        DownloadTime
+        DownloadTitle
         DownloadTitle>Link>a         max-width: 48ex; overflow: hidden; display: inline-block;
 
         AddonCell                    display: table-cell; padding: 0 1ex;

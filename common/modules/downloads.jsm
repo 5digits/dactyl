@@ -66,7 +66,7 @@ var Download = Class("Download", {
 
     get alive() this.inState(["downloading", "notstarted", "paused", "queued", "scanning"]),
 
-    allowed: Class.memoize(function () let (self = this) ({
+    allowedCommands: Class.memoize(function () let (self = this) ({
         get cancel() self.cancelable && self.inState(["downloading", "paused", "starting"]),
         get delete() !this.cancel && self.targetFile.exists(),
         get launch() self.targetFile.exists() && self.inState(["finished"]),
@@ -78,13 +78,10 @@ var Download = Class("Download", {
     })),
 
     command: function command(name) {
-        util.assert(set.has(this.allowed, name), "Unknown command");
-        util.assert(this.allowed[name], "Command not allowed");
+        util.assert(set.has(this.allowedCommands, name), "Unknown command");
+        util.assert(this.allowedCommands[name], "Command not allowed");
 
-        if (set.has(this.commands, name))
-            this.commands[name].call(this);
-        else
-            services.downloadManager[name + "Download"](this.id);
+        services.downloadManager[name + "Download"](this.id);
     },
 
     commands: {
@@ -154,8 +151,11 @@ var Download = Class("Download", {
 
         this.nodes.row.setAttribute("status", this.status);
         this.nodes.state.textContent = util.capitalize(this.status);
-        for (let [command, enabled] in Iterator(this.allowed))
-            this.nodes[command].collapsed = !enabled;
+
+        for (let node in values(this.nodes))
+            if (node.update)
+                node.update();
+
         this.updateProgress();
     }
 });
@@ -166,7 +166,9 @@ var DownloadList = Class("DownloadList",
                                 Ci.nsISupportsWeakReference]), {
     init: function init(modules, filter) {
         this.modules = modules;
-        this.nodes = {};
+        this.nodes = {
+            commandTarget: this
+        };
         this.filter = filter && filter.toLowerCase();
         this.downloads = {};
     },
@@ -181,17 +183,30 @@ var DownloadList = Class("DownloadList",
                         <li highlight="DownloadHead">
                             <span>Title</span>
                             <span>Status</span>
-                            <span></span>
+                            <span/>
                             <span>Progress</span>
-                            <span></span>
+                            <span/>
                             <span>Time remaining</span>
                             <span>Source</span>
+                        </li>
+                        <li highlight="Download"><span><div style="min-height: 1ex; /* FIXME */"/></span></li>
+                        <li highlight="Download" key="totals">
+                            <span highlight="Title">Totals:</span>
+                            <span/>
+                            <span highlight="DownloadButtons">
+                                <a highlight="Button" key="clear">Clear</a>
+                            </span>
+                            <span/>
+                            <span/>
+                            <span/>
+                            <span/>
                         </li>
                       </ul>, this.document, this.nodes);
 
         for (let row in iter(services.downloadManager.DBConnection
                                      .createStatement("SELECT id FROM moz_downloads")))
             this.addDownload(row.id);
+        this.update();
 
         util.addObserver(this);
         services.downloadManager.addListener(this);
@@ -224,14 +239,31 @@ var DownloadList = Class("DownloadList",
             this.cleanup();
     },
 
+    allowedCommands: Class.memoize(function () let (self = this) ({
+        get clear() values(self.downloads).some(function (dl) dl.allowedCommands.remove)
+    })),
+
+    commands: {
+        clear: function () {
+            services.downloadManager.cleanUp();
+        }
+    },
+
+    update: function update() {
+        for (let node in values(this.nodes))
+            if (node.update && node.update != update)
+                node.update();
+    },
+
     observers: {
         "download-manager-remove-download": function (id) {
             if (id == null)
-                id = [k for ([k, dl] in iter(this.downloads)) if (dl.allowed.remove)];
+                id = [k for ([k, dl] in iter(this.downloads)) if (dl.allowedCommands.remove)];
             else
                 id = [id.QueryInterface(Ci.nsISupportsPRUint32).data];
 
             Array.concat(id).map(this.closure.removeDownload);
+            this.update();
         }
     },
 
@@ -245,6 +277,7 @@ var DownloadList = Class("DownloadList",
                 this.modules.commandline.updateOutputHeight(false);
                 this.nodes.list.scrollIntoView(false);
             }
+            this.update();
         }
         catch (e) {
             util.reportError(e);
