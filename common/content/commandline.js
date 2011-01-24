@@ -1224,17 +1224,19 @@ var CommandLine = Module("commandline", {
     },
 
     withOutputToString: function (fn, self) {
-        let buffer = [];
         dactyl.registerObserver("echoLine", observe, true);
         dactyl.registerObserver("echoMultiline", observe, true);
+
+        let output = [];
         function observe(str, highlight, dom) {
-            buffer.push(dom && !isString(str) ? util.domToString(dom) : str);
+            output.push(dom && !isString(str) ? dom : str);
         }
 
         this.savingOutput = true;
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
         this.savingOutput = false;
-        return buffer.join("\n");
+        return output.map(function (elem) elem instanceof Node ? util.domToString(elem) : elem)
+                     .join("\n");
     }
 }, {
     /**
