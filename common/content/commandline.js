@@ -427,23 +427,17 @@ var CommandLine = Module("commandline", {
         // way of calling "open"
         this.currentExtendedMode = null; // the extended mode which we last opened the command line for
 
-        // save the arguments for the inputMultiline method which are needed in the event handler
-        this._multilineEnd = null;
-        this._multilineCallback = null;
-
         this._input = {};
 
         this.registerCallback("submit", modes.EX, function (command) {
-            try {
-                var readHeredoc = io.readHeredoc;
-                io.readHeredoc = commandline.readHeredoc;
+            io.withSavedValues(["readHeredoc", "sourcing"], function () {
+                this.sourcing = { file: "[Command Line]", line: 1 };
+                this.readHeredoc = commandline.readHeredoc;
                 commands.repeat = command;
-                commands.execute(command);
-            }
-            finally {
-                io.readHeredoc = readHeredoc;
-            }
+                dactyl.execute(command);
+            });
         });
+
         this.registerCallback("complete", modes.EX, function (context) {
             context.fork("ex", 0, completion, "ex");
         });
@@ -571,6 +565,9 @@ var CommandLine = Module("commandline", {
             if (nodeSet.commandline._completionList)
                 nodeSet.commandline._completionList.hide();
     },
+
+    _multilineEnd: Modes.boundProperty(),
+    _multilineCallback: Modes.boundProperty(),
 
     currentExtendedMode: Modes.boundProperty(),
     _completions: Modes.boundProperty(),
@@ -929,10 +926,8 @@ var CommandLine = Module("commandline", {
 
     readHeredoc: function readHeredoc(end) {
         let args;
-        commandline.inputMultiline(end,
-            function (res) { args = res; });
-        while (args === undefined)
-            util.threadYield(true);
+        commandline.inputMultiline(end, function (res) { args = res; });
+        util.waitFor(function () args !== undefined);
         return args;
     },
 
@@ -947,7 +942,9 @@ var CommandLine = Module("commandline", {
     // FIXME: Buggy, especially when pasting.
     inputMultiline: function inputMultiline(end, callbackFunc) {
         let cmd = this.command;
-        modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE);
+        modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE, {
+            keyModes: [modes.INPUT_MULTILINE]
+        });
         if (cmd != false)
             this._echoLine(cmd, this.HL_NORMAL);
 
@@ -1028,22 +1025,6 @@ var CommandLine = Module("commandline", {
         },
         input: function onInput(event) {
             this._autosizeMultilineInputWidget();
-        },
-        keypress: function onKeyPress(event) {
-            let key = events.toString(event);
-            if (events.isAcceptKey(key)) {
-                let text = "\n" + this.widgets.multilineInput.value.substr(0, this.widgets.multilineInput.selectionStart) + "\n";
-                let index = text.indexOf(this._multilineEnd);
-                if (index >= 0) {
-                    text = text.substring(1, index);
-                    let callback = this._multilineCallback;
-                    modes.pop();
-                    callback.call(this, text);
-                }
-            }
-            else if (events.isCancelKey(key)) {
-                modes.pop();
-            }
         }
     },
 
@@ -1085,7 +1066,7 @@ var CommandLine = Module("commandline", {
     onMOWKeyPress: function onMOWKeyPress(event) {
         const KILL = false, PASS = true;
 
-        if (options["more"] && mos.isScrollable(1))
+        if (options["more"] && mow.isScrollable(1))
             commandline.updateMorePrompt(false, true);
         else {
             modes.pop();
@@ -1655,6 +1636,25 @@ var CommandLine = Module("commandline", {
                 commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
             });
 
+
+        mappings.add([modes.INPUT_MULTILINE],
+            ["<Return>", "<C-j>", "<C-m>"], "Begin a new line",
+            function (args) {
+                let text = "\n" + commandline.widgets.multilineInput
+                                             .value.substr(0, commandline.widgets.multilineInput.selectionStart)
+                         + "\n";
+
+                let index = text.indexOf(commandline._multilineEnd);
+                if (index >= 0) {
+                    text = text.substring(1, index);
+                    let callback = commandline._multilineCallback;
+                    modes.pop();
+
+                    return function () callback.call(commandline, text);
+                }
+                return Events.PASS;
+            });
+
         let bind = function bind()
             mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)))
 
@@ -1682,7 +1682,7 @@ var CommandLine = Module("commandline", {
                  commandline.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
                  modes.pop();
 
-                 commandline.triggerCallback("submit", mode, command);
+                 return function () commandline.triggerCallback("submit", mode, command);
              });
 
         [

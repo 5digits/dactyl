@@ -95,8 +95,11 @@ var ProcessorStack = Class("ProcessorStack", {
 
             if (modes.replaying && !events.waitForPageLoad())
                 result = Events.KILL;
-            else
-                result = this.actions[0]() === Events.PASS ? Events.PASS : Events.KILL;
+            else {
+                for (var res = this.actions[0]; callable(res);)
+                    res = res();
+                result = res === Events.PASS ? Events.PASS : Events.KILL;
+            }
         }
         else if (result !== Events.KILL && processors.some(function (p) !p.main.passUnknown)) {
             result = Events.KILL;
