@@ -499,6 +499,8 @@ var ConfigBase = Class("ConfigBase", {
         Button::after           content: "]"; color: gray; text-decoration: none !important;
         Button:not([collapsed]) ~ Button:not([collapsed])::before  content: "/[";
 
+        Buttons
+
         DownloadCell                    display: table-cell; padding: 0 1ex;
 
         Downloads                       display: table; margin: 0; padding: 0;
@@ -518,6 +520,21 @@ var ConfigBase = Class("ConfigBase", {
         DownloadState
         DownloadTime
         DownloadTitle
+
+        AddonCell                    display: table-cell; padding: 0 1ex;
+
+        Addons                       display: table; margin: 0; padding: 0;
+        AddonHead;;;CompTitle        display: table-row;
+        AddonHead>*;;;AddonCell
+
+        Addon                        display: table-row;
+
+        Addon>*;;;AddonCell
+        AddonButtons
+        AddonDescription
+        AddonName
+        AddonStatus
+        AddonVersion
 
         // </css>
     ]]></>, /&#x0d;/g, "\n")),

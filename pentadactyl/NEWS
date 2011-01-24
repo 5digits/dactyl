@@ -66,6 +66,7 @@
         and linking to source code locations).
       - :downloads now opens a download list in the multi-line output
         buffer.
+      - :extensions has been replaced with a more powerful :addons
       - Added :cookies command.
       * :extadd now supports remote URLs as well as local files on Firefox 4.
       * Added :if/:elseif/:else/:endif conditionals.
