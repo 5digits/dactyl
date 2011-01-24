@@ -481,6 +481,13 @@ var CompletionContext = Class("CompletionContext", {
             let filtered = this.filterFunc(this._cache.constructed);
             if (this.maxItems)
                 filtered = filtered.slice(0, this.maxItems);
+            if (/types/.test(this.name)) {
+                let self = this;
+                util.dump(this.filters[1]);
+                util.dump("FILTERED", this._cache.constructed.map(function (item) [item.text.quote(), self.filters[0].call(self, item.text)]));
+                util.dump("FILTERED", this._cache.constructed.map(function (item)
+                    self.filters.map(function (filter) filter.call(self, item))));
+            }
 
             // Sorting
             if (this.sortResults && this.compare)

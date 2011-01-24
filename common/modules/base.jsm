@@ -297,11 +297,11 @@ function deprecated(alternative, fn) {
  * @param {object} obj The object to inspect.
  * @returns {Generator}
  */
-function keys(obj) {
+function keys(obj) iter(function keys() {
     for (var k in obj)
         if (hasOwnProperty.call(obj, k))
             yield k;
-}
+}());
 /**
  * Iterates over all of the top-level, iterable property values of an
  * object.

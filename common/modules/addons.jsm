@@ -10,7 +10,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("addons", {
     exports: ["AddonManager", "Addons", "Addon", "addons"],
     require: ["services"],
-    use: ["config", "io", "prefs", "template", "util"]
+    use: ["completion", "config", "io", "prefs", "template", "util"]
 }, this);
 
 var callResult = function callResult(method) {
@@ -235,8 +235,9 @@ var Addon = Class("Addon", {
 });
 
 var AddonList = Class("AddonList", {
-    init: function init(modules, types) {
+    init: function init(modules, types, filter) {
         this.modules = modules;
+        this.filter = filter && filter.toLowerCase();
         this.nodes = {};
         this.addons = [];
         this.ready = false;
@@ -271,6 +272,9 @@ var AddonList = Class("AddonList", {
         if (addon.id in this.addons)
             this.update(addon);
         else {
+            if (this.filter && addon.name.toLowerCase().indexOf(this.filter) === -1)
+                return;
+
             addon = Addon(addon, this);
             this.addons[addon.id] = addon;
 
@@ -318,7 +322,7 @@ var Addons = Module("addons", {
 }, {
 }, {
     commands: function (dactyl, modules, window) {
-        const { commands, completion } = modules;
+        const { CommandOption, commands, completion } = modules;
 
         let addonListener = AddonListener(modules);
 
@@ -414,12 +418,44 @@ var Addons = Module("addons", {
         commands.add(["addo[ns]", "ao"],
             "List installed extensions",
             function (args) {
-                let addons = AddonList(modules, ["extension"]);
+                let addons = AddonList(modules, args["-types"], args[0]);
                 modules.commandline.echo(addons);
 
                 if (modules.commandline.savingOutput)
                     util.waitFor(function () addons.ready);
+            },
+            {
+                argCount: "?",
+                options: [
+                    {
+                        names: ["-types", "-type", "-t"],
+                        description: "The add-on types to list",
+                        default: ["extension"],
+                        completer: function (context, args) completion.addonType(context),
+                        type: CommandOption.LIST
+                    }
+                ]
             });
+    },
+    completion: function (dactyl, modules, window) {
+        completion.addonType = function addonType(context) {
+            let base = ["extension", "theme"];
+            function update(types) {
+                context.completions = types.map(function (t) [t, util.capitalize(t)]);
+            }
+
+            context.generate = function generate() {
+                update(base);
+                if (AddonManager.getAllAddons) {
+                    context.incomplete = true;
+                    AddonManager.getAllAddons(function (addons) {
+                        context.incomplete = false;
+                        update(array.uniq(base.concat(addons.map(function (a) a.type)),
+                                          true));
+                    });
+                }
+            }
+        }
     }
 });
 

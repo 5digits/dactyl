@@ -164,8 +164,9 @@ var DownloadList = Class("DownloadList",
                          XPCOM([Ci.nsIDownloadProgressListener,
                                 Ci.nsIObserver,
                                 Ci.nsISupportsWeakReference]), {
-    init: function init(modules) {
+    init: function init(modules, filter) {
         this.modules = modules;
+        this.filter = filter && filter.toLowerCase();
         this.nodes = {
             commandTarget: this
         };
@@ -214,12 +215,15 @@ var DownloadList = Class("DownloadList",
 
     addDownload: function addDownload(id) {
         if (!(id in this.downloads)) {
-            this.downloads[id] = Download(id, this);
+            let download = Download(id, this);
+            if (this.filter && download.displayName.indexOf(this.filter) === -1)
+                return;
 
+            this.downloads[id] = download;
             let index = values(this.downloads).sort(function (a, b) a.compare(b))
-                                              .indexOf(this.downloads[id]);
+                                              .indexOf(download);
 
-            this.nodes.list.insertBefore(this.downloads[id].nodes.row,
+            this.nodes.list.insertBefore(download.nodes.row,
                                          this.nodes.list.childNodes[index + 1]);
         }
     },
@@ -302,8 +306,11 @@ var Downloads = Module("downloads", {
         commands.add(["downl[oads]", "dl"],
             "Display the downloads list",
             function (args) {
-                let downloads = DownloadList(modules);
+                let downloads = DownloadList(modules, args[0]);
                 modules.commandline.echo(downloads);
+            },
+            {
+                argCount: "?"
             });
     }
 });

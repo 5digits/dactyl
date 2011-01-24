@@ -903,7 +903,7 @@ var CommandLine = Module("commandline", {
 
         modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended,
                    update(Object.create(extra), {
-                       onEvent: extra.onEvent || this.extra.onEvent,
+                       onEvent: extra.onEvent || this.closure.onEvent,
                        leave: function leave(stack) {
                            commandline.leave(stack);
                            leave.supercall(extra, stack);
