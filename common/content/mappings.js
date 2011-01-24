@@ -50,6 +50,8 @@ var Map = Class("Map", {
 
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
 
+    /** @property {number} A unique ID for this mapping. */
+    id: null,
     /** @property {number[]} All of the modes for which this mapping applies. */
     modes: null,
     /** @property {string[]} All of this mapping's names (key sequences). */
@@ -300,7 +302,7 @@ var Mappings = Module("mappings", {
     iterate: function (mode) {
         let seen = {};
         for (let hive in this.hives.iterValues())
-            for (let map in hive.getStack(mode).iterValues())
+            for (let map in array(hive.getStack(mode)).iterValues())
                 if (!set.add(seen, map.name))
                     yield map;
     },
