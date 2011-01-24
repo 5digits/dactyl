@@ -923,7 +923,8 @@ var Events = Module("events", {
     events: {
         DOMMenuBarActive: function () {
             this._activeMenubar = true;
-            modes.add(modes.MENU);
+            if (modes.main != modes.MENU)
+                modes.push(modes.MENU);
         },
 
         DOMMenuBarInactive: function () {
@@ -1057,11 +1058,6 @@ var Events = Module("events", {
                         mode = Modes.StackElement(event.dactylMode);
 
                     let ignore = false;
-                    let overrideMode = null;
-
-                    // menus have their own command handlers
-                    if (modes.extended & modes.MENU)
-                        overrideMode = modes.MENU;
 
                     if (modes.main == modes.PASS_THROUGH)
                         ignore = !Events.isEscape(key) && key != "<C-v>";
@@ -1090,12 +1086,9 @@ var Events = Module("events", {
                     if (config.ignoreKeys[key] & mode.main)
                         return null;
 
-                    if (overrideMode)
-                        var keyModes = array([overrideMode]);
-                    else
-                        keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
-
                     let hives = mappings.hives.slice(event.noremap ? -1 : 0);
+
+                    let keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
 
                     this.processor = ProcessorStack(mode, hives, keyModes);
                 }
@@ -1153,7 +1146,8 @@ var Events = Module("events", {
 
         popupshown: function onPopupShown(event) {
             if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
-                modes.add(modes.MENU);
+                if (modes.main != modes.MENU)
+                    modes.push(modes.MENU);
         },
 
         popuphidden: function onPopupHidden() {

@@ -155,6 +155,11 @@ var Modes = Module("modes", {
             bases: []
         });
 
+        this.addMode("MENU", {
+            description: "Active when a menu or other pop-up is open",
+            input: true
+        });
+
         // this._extended modes, can include multiple modes, and even main modes
         this.addMode("EX", {
             extended: true,
@@ -172,14 +177,9 @@ var Modes = Module("modes", {
             hidden: true,
             input: true
         });
-        this.addMode("MENU", {
-            extended: true,
-            input: true,
-            description: "Active when a menu or other pop-up is open",
-        }); // a popupmenu is active
         this.addMode("LINE", {
             extended: true, hidden: true
-        }); // linewise visual mode
+        });
         this.addMode("PROMPT", {
             extended: true,
             description: "Active when a prompt is open in the command line",
@@ -219,14 +219,9 @@ var Modes = Module("modes", {
         else if (modes.replaying)
             macromode = "replaying";
 
-        let ext = "";
-        if (this._extended & modes.MENU) // TODO: desirable?
-            ext += " (menu)";
-        ext += " --" + macromode;
-
         let val = this._modeMap[this._main].display();
         if (val)
-            return "-- " + val + ext;
+            return "-- " + val + " --" + macromode;;
         return macromode;
     },
 
@@ -270,6 +265,8 @@ var Modes = Module("modes", {
 
     getStack: function (idx) this._modeStack[this._modeStack.length - idx - 1] || this._modeStack[0],
 
+    get stack() this._modeStack.slice(),
+
     getCharModes: function (chr) (this.modeChars[chr] || []).slice(),
 
     matchModes: function (obj)
@@ -285,10 +282,11 @@ var Modes = Module("modes", {
             commandline.widgets.mode = msg || null;
     },
 
-    // add/remove always work on the this._extended mode only
-    add: function add(mode) {
-        this._extended |= mode;
-        this.show();
+    remove: function remove(mode) {
+        if (this.stack.some(function (m) m.main == mode)) {
+            this.pop(mode);
+            this.pop();
+        }
     },
 
     delayed: [],
@@ -389,13 +387,6 @@ var Modes = Module("modes", {
             this.topOfStack.params.enter({}, this.topOfStack);
         while (this._modeStack.length > 1)
             this.pop();
-    },
-
-    remove: function remove(mode) {
-        if (this._extended & mode) {
-            this._extended &= ~mode;
-            this.show();
-        }
     },
 
     get recording() this._recording,
@@ -505,10 +496,13 @@ var Modes = Module("modes", {
             "Return to the previous mode",
             function () { modes.pop(); });
 
-        mappings.add([modes.MENU],
-            ["<Esc>", "<C-[>"],
+        mappings.add([modes.MENU], ["<Esc>"],
             "Close the current popup",
             function () Events.PASS);
+
+        mappings.add([modes.MENU], ["<C-[>"],
+            "Close the current popup",
+            function () { events.feedkeys("<Esc>") });
     },
     prefs: function () {
         prefs.watch("accessibility.browsewithcaret", modes.closure.onCaretChange);
