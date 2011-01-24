@@ -950,7 +950,8 @@ var Events = Module("events", {
 
                 if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
                     for (let e = elem; e instanceof Element; e = e.parentNode)
-                        if (util.computedStyle(e).visibility !== "visible") {
+                        if (util.computedStyle(e).visibility !== "visible" ||
+                                e.boxObject && e.boxObject.height === 0) {
                             elem.blur();
                             break;
                         }
