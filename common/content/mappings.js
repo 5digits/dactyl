@@ -304,7 +304,7 @@ var Mappings = Module("mappings", {
     iterate: function (mode) {
         let seen = {};
         for (let hive in this.hives.iterValues())
-            for (let map in hive.getStack(mode).iterValues())
+            for (let map in array(hive.getStack(mode)).iterValues())
                 if (!set.add(seen, map.name))
                     yield map;
     },
