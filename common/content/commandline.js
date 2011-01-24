@@ -911,7 +911,7 @@ var CommandLine = Module("commandline", {
 
         modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended,
                    update(Object.create(extra), {
-                       onKeyPress: extra.onEvent || this.closure.onKeyPress,
+                       onKeyPress: extra.onKeyPress || this.closure.onKeyPress,
                        leave: function leave(stack) {
                            commandline.leave(stack);
                            leave.supercall(extra, stack);

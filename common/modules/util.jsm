@@ -332,7 +332,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             ([^]*?) // 1
             (?:
                 (<\{) | // 2
-                (< ((?:[a-z]-)?[a-z-]*?) >) | // 3 4
+                (< ((?:[a-z]-)?[a-z-]+?) >) | // 3 4
                 (\}>) // 5
             )
         ]]>, "giy");
