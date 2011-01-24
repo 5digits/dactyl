@@ -672,6 +672,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {string}
      */
     formatSeconds: function formatSeconds(seconds) {
+        function pad(n, val) ("0000000" + val).substr(-Math.max(n, String(val).length));
         function div(num, denom) [Math.round(num / denom), Math.round(num % denom)];
         let days, hours, minutes;
 
@@ -683,7 +684,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (hours)
             return hours + "h " + minutes + "m";
         if (minutes)
-            return minutes + ":" + seconds;
+            return minutes + ":" + pad(2, seconds);
         return seconds + "s";
     },
 
