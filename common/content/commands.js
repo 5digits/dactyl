@@ -916,7 +916,7 @@ var Commands = Module("commands", {
                                         }
                                     }
 
-                                    if (arg != null || opt.type == CommandOption.NOARG)
+                                    if (arg != null || opt.type == CommandOption.NOARG) {
                                         // option allowed multiple times
                                         if (opt.multiple)
                                             args[opt.names[0]] = (args[opt.names[0]] || []).concat(arg);
@@ -924,6 +924,7 @@ var Commands = Module("commands", {
                                             Class.replaceProperty(args, opt.names[0], opt.type == CommandOption.NOARG || arg);
 
                                         args.explicitOpts[opt.names[0]] = args[opt.names[0]];
+                                    }
 
                                     i += optname.length + count;
                                     if (i == str.length)
@@ -989,14 +990,17 @@ var Commands = Module("commands", {
                 if (args.completeOpt) {
                     let opt = args.completeOpt;
                     let context = complete.fork(opt.names[0], args.completeStart);
-                    let arg = args[opt.names[0]];
+                    let arg = args.explicitOpts[opt.names[0]];
                     context.filter = args.completeFilter;
+
                     if (isArray(arg))
                         context.filters.push(function (item) arg.indexOf(item.text) === -1);
+
                     if (typeof opt.completer == "function")
                         var compl = opt.completer(context, args);
                     else
                         compl = opt.completer || [];
+
                     context.title = [opt.names[0]];
                     context.quote = args.quote;
                     if (compl)

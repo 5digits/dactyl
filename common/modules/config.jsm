@@ -424,6 +424,7 @@ var ConfigBase = Class("ConfigBase", {
         Link                        position: relative; padding-right: 2em;
         Link:not(:hover)>LinkInfo   opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
         LinkInfo                    {
+            color: black;
             position: absolute;
             left: 100%;
             padding: 1ex;
@@ -518,6 +519,7 @@ var ConfigBase = Class("ConfigBase", {
         DownloadState;;;DownloadCell
         DownloadTime;;;DownloadCell
         DownloadTitle;;;DownloadCell,URL
+        DownloadTitle>Link>a         max-width: 48ex; overflow: hidden; display: inline-block;
 
         AddonCell                    display: table-cell; padding: 0 1ex;
 
@@ -530,7 +532,7 @@ var ConfigBase = Class("ConfigBase", {
         Addon>*;;;AddonCell
         AddonButtons
         AddonDescription
-        AddonName
+        AddonName                    max-width: 48ex; overflow: hidden;
         AddonStatus
         AddonVersion
 
