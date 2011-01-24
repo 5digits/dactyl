@@ -112,7 +112,7 @@ var ProcessorStack = Class("ProcessorStack", {
                         events.dispatch(event.originalTarget, evt, { skipmap: true, isMacro: true });
                     }
                     else if (i > 0)
-                        events.onKeyPress(event);
+                        events.events.keypress.call(events, event);
                 });
         return this.processors.length == 0;
     }
@@ -299,17 +299,8 @@ var Events = Module("events", {
         }
 
         this._activeMenubar = false;
-        this.addSessionListener(window, "DOMMenuBarActive", this.onDOMMenuBarActive, true);
-        this.addSessionListener(window, "DOMMenuBarInactive", this.onDOMMenuBarInactive, true);
-        this.addSessionListener(window, "blur", this.onBlur, true);
-        this.addSessionListener(window, "focus", this.onFocus, true);
-        this.addSessionListener(window, "keydown", this.onKeyUpOrDown, true);
-        this.addSessionListener(window, "keypress", this.onKeyPress, true);
-        this.addSessionListener(window, "keyup", this.onKeyUpOrDown, true);
-        this.addSessionListener(window, "mousedown", this.onMouseDown, true);
-        this.addSessionListener(window, "popuphidden", this.onPopupHidden, true);
-        this.addSessionListener(window, "popupshown", this.onPopupShown, true);
-        this.addSessionListener(window, "resize", this.onResize, true);
+        for (let [event, callback] in Iterator(this.events))
+            this.addSessionListener(window, event, callback, true);
 
         dactyl.registerObserver("modeChange", function () {
             delete self.processor;
@@ -507,7 +498,7 @@ var Events = Module("events", {
                     if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
                         events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event, evt);
                     else
-                        events.onKeyPress(event);
+                        events.events.keypress.call(events, event);
                 }
 
                 if (!this.feedingKeys)
@@ -908,16 +899,6 @@ var Events = Module("events", {
         return buffer.loaded;
     },
 
-    onDOMMenuBarActive: function () {
-        this._activeMenubar = true;
-        modes.add(modes.MENU);
-    },
-
-    onDOMMenuBarInactive: function () {
-        this._activeMenubar = false;
-        modes.remove(modes.MENU);
-    },
-
     /**
      * Ensures that the currently focused element is visible and blurs
      * it if it's not.
@@ -934,65 +915,240 @@ var Events = Module("events", {
         }
     },
 
-    onBlur: function onFocus(event) {
-        if (event.originalTarget instanceof Window && services.focus.activeWindow == null) {
-            // Deals with circumstances where, after the main window
-            // blurs while a collapsed frame has focus, re-activating
-            // the main window does not restore focus and we lose key
-            // input.
-            services.focus.clearFocus(window);
-            document.commandDispatcher.focusedWindow = content;
-        }
-    },
+    events: {
+        DOMMenuBarActive: function () {
+            this._activeMenubar = true;
+            modes.add(modes.MENU);
+        },
 
-    // TODO: Merge with onFocusChange
-    onFocus: function onFocus(event) {
-        let elem = event.originalTarget;
-        if (elem instanceof Element) {
+        DOMMenuBarInactive: function () {
+            this._activeMenubar = false;
+            modes.remove(modes.MENU);
+        },
+
+        blur: function onBlur(event) {
+            if (event.originalTarget instanceof Window && services.focus.activeWindow == null) {
+                // Deals with circumstances where, after the main window
+                // blurs while a collapsed frame has focus, re-activating
+                // the main window does not restore focus and we lose key
+                // input.
+                services.focus.clearFocus(window);
+                document.commandDispatcher.focusedWindow = content;
+            }
+        },
+
+        // TODO: Merge with onFocusChange
+        focus: function onFocus(event) {
+            let elem = event.originalTarget;
+            if (elem instanceof Element) {
+                let win = elem.ownerDocument.defaultView;
+
+                if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
+                    for (let e = elem; e instanceof Element; e = e.parentNode)
+                        if (util.computedStyle(e).visibility !== "visible") {
+                            elem.blur();
+                            break;
+                        }
+
+                if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
+                    && !(services.focus.getLastFocusMethod(win) & 0x7000)
+                    && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
+                    if (elem.frameElement)
+                        dactyl.focusContent(true);
+                    else if (!(elem instanceof Window) || Editor.getEditor(elem))
+                        elem.blur();
+                }
+            }
+        },
+
+        /*
+        onFocus: function onFocus(event) {
+            let elem = event.originalTarget;
+            if (!(elem instanceof Element))
+                return;
             let win = elem.ownerDocument.defaultView;
 
-            if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
-                for (let e = elem; e instanceof Element; e = e.parentNode)
-                    if (util.computedStyle(e).visibility !== "visible") {
+            try {
+                util.dump(elem, services.focus.getLastFocusMethod(win) & (0x7000));
+                if (buffer.focusAllowed(win))
+                    win.dactylLastFocus = elem;
+                else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement])) {
+                    if (win.dactylLastFocus)
+                        dactyl.focus(win.dactylLastFocus);
+                    else
                         elem.blur();
-                        break;
+                }
+            }
+            catch (e) {
+                util.dump(win, String(elem.ownerDocument), String(elem.ownerDocument && elem.ownerDocument.defaultView));
+                util.reportError(e);
+            }
+        },
+        */
+
+        // this keypress handler gets always called first, even if e.g.
+        // the command-line has focus
+        // TODO: ...help me...please...
+        keypress: function onKeyPress(event) {
+            event.dactylDefaultPrevented = event.getPreventDefault();
+
+            let duringFeed = this.duringFeed || [];
+            this.duringFeed = [];
+            try {
+                if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
+                    for (let [k, v] in Iterator(this.feedingEvent))
+                        if (!(k in event))
+                            event[k] = v;
+                    this.feedingEvent = null;
+                }
+
+                let key = events.toString(event);
+                if (!key)
+                     return null;
+
+                if (modes.recording && (!this._input || !mappings.user.hasMap(modes.main, this._input.buffer + key)))
+                    events._macroKeys.push(key);
+
+                // feedingKeys needs to be separate from interrupted so
+                // we can differentiate between a recorded <C-c>
+                // interrupting whatever it's started and a real <C-c>
+                // interrupting our playback.
+                if (events.feedingKeys && !event.isMacro) {
+                    if (!event.originalTarget)
+                        util.dumpStack();
+                    if (key == "<C-c>") {
+                        events.feedingKeys = false;
+                        if (modes.replaying) {
+                            modes.replaying = false;
+                            this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
+                        }
                     }
+                    else
+                        duringFeed.push(event);
 
-            if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
-                && !(services.focus.getLastFocusMethod(win) & 0x7000)
-                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
-                if (elem.frameElement)
-                    dactyl.focusContent(true);
-                else if (!(elem instanceof Window) || Editor.getEditor(elem))
-                    elem.blur();
+                    return Events.kill(event);
+                }
+
+                if (!this.processor) {
+                    let mode = modes.getStack(0);
+                    if (event.dactylMode)
+                        mode = Modes.StackElement(event.dactylMode);
+
+                    let ignore = false;
+                    let overrideMode = null;
+
+                    // menus have their own command handlers
+                    if (modes.extended & modes.MENU)
+                        overrideMode = modes.MENU;
+
+                    if (modes.main == modes.PASS_THROUGH)
+                        ignore = !Events.isEscape(key) && key != "<C-v>";
+                    else if (modes.main == modes.QUOTE) {
+                        if (modes.getStack(1).main == modes.PASS_THROUGH) {
+                            mode.params.mainMode = modes.getStack(2).main;
+                            ignore = Events.isEscape(key);
+                        }
+                        else if (events.shouldPass(event))
+                            mode.params.mainMode = modes.getStack(1).main;
+                        else
+                            ignore = true;
+
+                        if (ignore && !Events.isEscape(key))
+                            modes.pop();
+                    }
+                    else if (!event.isMacro && !event.noremap && events.shouldPass(event))
+                        ignore = true;
+
+                    if (ignore)
+                        return null;
+
+                    if (key == "<C-c>")
+                        util.interrupted = true;
+
+                    if (config.ignoreKeys[key] & mode.main)
+                        return null;
+
+                    if (overrideMode)
+                        var keyModes = array([overrideMode]);
+                    else
+                        keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
+
+                    let hives = mappings.hives.slice(event.noremap ? -1 : 0);
+
+                    this.processor = ProcessorStack(mode, hives, keyModes);
+                }
+
+                let processor = this.processor;
+                this.processor = null;
+                if (!processor.process(event))
+                    this.processor = processor;
+
             }
-        }
-    },
-
-    /*
-    onFocus: function onFocus(event) {
-        let elem = event.originalTarget;
-        if (!(elem instanceof Element))
-            return;
-        let win = elem.ownerDocument.defaultView;
-
-        try {
-            util.dump(elem, services.focus.getLastFocusMethod(win) & (0x7000));
-            if (buffer.focusAllowed(win))
-                win.dactylLastFocus = elem;
-            else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement])) {
-                if (win.dactylLastFocus)
-                    dactyl.focus(win.dactylLastFocus);
+            catch (e) {
+                dactyl.reportError(e);
+            }
+            finally {
+                [duringFeed, this.duringFeed] = [this.duringFeed, duringFeed];
+                if (this.feedingKeys)
+                    this.duringFeed = this.duringFeed.concat(duringFeed);
                 else
-                    elem.blur();
+                    for (let event in values(duringFeed))
+                        try {
+                            this.dispatch(event.originalTarget, event, event);
+                        }
+                        catch (e) {
+                            util.reportError(e);
+                        }
+            }
+        },
+
+        keyup: function onKeyUp(event) {
+            // Prevent certain sites from transferring focus to an input box
+            // before we get a chance to process our key bindings on the
+            // "keypress" event.
+
+            if (modes.main == modes.PASS_THROUGH ||
+                modes.main == modes.QUOTE
+                    && modes.getStack(1).main !== modes.PASS_THROUGH
+                    && !events.shouldPass(event) ||
+                !modes.passThrough && events.shouldPass(event))
+                return;
+
+            if (!Events.isInputElement(dactyl.focusedElement))
+                event.stopPropagation();
+        },
+        keydown: function onKeyDown(event) {
+            this.events.keyup.call(this, event);
+        },
+
+        mousedown: function onMouseDown(event) {
+            let elem = event.target;
+            let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+
+            for (; win; win = win != win.parent && win.parent)
+                win.document.dactylFocusAllowed = true;
+        },
+
+        popupshown: function onPopupShown(event) {
+            if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
+                modes.add(modes.MENU);
+        },
+
+        popuphidden: function onPopupHidden() {
+            // gContextMenu is set to NULL, when a context menu is closed
+            if (window.gContextMenu == null && !this._activeMenubar)
+                modes.remove(modes.MENU);
+        },
+
+        resize: function onResize(event) {
+            if (window.fullScreen != this._fullscreen) {
+                statusline.statusBar.removeAttribute("moz-collapsed");
+                this._fullscreen = window.fullScreen;
+                dactyl.triggerObserver("fullscreen", this._fullscreen);
+                autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
             }
         }
-        catch (e) {
-            util.dump(win, String(elem.ownerDocument), String(elem.ownerDocument && elem.ownerDocument.defaultView));
-            util.reportError(e);
-        }
     },
-    */
 
     // argument "event" is deliberately not used, as i don't seem to have
     // access to the real focus target
@@ -1065,166 +1221,6 @@ var Events = Module("events", {
         }
         finally {
             this._lastFocus = elem;
-        }
-    },
-
-    // this keypress handler gets always called first, even if e.g.
-    // the command-line has focus
-    // TODO: ...help me...please...
-    onKeyPress: function onKeyPress(event) {
-        event.dactylDefaultPrevented = event.getPreventDefault();
-
-        let duringFeed = this.duringFeed || [];
-        this.duringFeed = [];
-        try {
-            if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
-                for (let [k, v] in Iterator(this.feedingEvent))
-                    if (!(k in event))
-                        event[k] = v;
-                this.feedingEvent = null;
-            }
-
-            let key = events.toString(event);
-            if (!key)
-                 return null;
-
-            if (modes.recording && (!this._input || !mappings.user.hasMap(modes.main, this._input.buffer + key)))
-                events._macroKeys.push(key);
-
-            // feedingKeys needs to be separate from interrupted so
-            // we can differentiate between a recorded <C-c>
-            // interrupting whatever it's started and a real <C-c>
-            // interrupting our playback.
-            if (events.feedingKeys && !event.isMacro) {
-                if (!event.originalTarget)
-                    util.dumpStack();
-                if (key == "<C-c>") {
-                    events.feedingKeys = false;
-                    if (modes.replaying) {
-                        modes.replaying = false;
-                        this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
-                    }
-                }
-                else
-                    duringFeed.push(event);
-
-                return Events.kill(event);
-            }
-
-            if (!this.processor) {
-                let mode = modes.getStack(0);
-                if (event.dactylMode)
-                    mode = Modes.StackElement(event.dactylMode);
-
-                let ignore = false;
-                let overrideMode = null;
-
-                // menus have their own command handlers
-                if (modes.extended & modes.MENU)
-                    overrideMode = modes.MENU;
-
-                if (modes.main == modes.PASS_THROUGH)
-                    ignore = !Events.isEscape(key) && key != "<C-v>";
-                else if (modes.main == modes.QUOTE) {
-                    if (modes.getStack(1).main == modes.PASS_THROUGH) {
-                        mode.params.mainMode = modes.getStack(2).main;
-                        ignore = Events.isEscape(key);
-                    }
-                    else if (events.shouldPass(event))
-                        mode.params.mainMode = modes.getStack(1).main;
-                    else
-                        ignore = true;
-
-                    if (ignore && !Events.isEscape(key))
-                        modes.pop();
-                }
-                else if (!event.isMacro && !event.noremap && events.shouldPass(event))
-                    ignore = true;
-
-                if (ignore)
-                    return null;
-
-                if (key == "<C-c>")
-                    util.interrupted = true;
-
-                if (config.ignoreKeys[key] & mode.main)
-                    return null;
-
-                if (overrideMode)
-                    var keyModes = array([overrideMode]);
-                else
-                    keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
-
-                let hives = mappings.hives.slice(event.noremap ? -1 : 0);
-
-                this.processor = ProcessorStack(mode, hives, keyModes);
-            }
-
-            let processor = this.processor;
-            this.processor = null;
-            if (!processor.process(event))
-                this.processor = processor;
-
-        }
-        catch (e) {
-            dactyl.reportError(e);
-        }
-        finally {
-            [duringFeed, this.duringFeed] = [this.duringFeed, duringFeed];
-            if (this.feedingKeys)
-                this.duringFeed = this.duringFeed.concat(duringFeed);
-            else
-                for (let event in values(duringFeed))
-                    try {
-                        this.dispatch(event.originalTarget, event, event);
-                    }
-                    catch (e) {
-                        util.reportError(e);
-                    }
-        }
-    },
-
-    onKeyUpOrDown: function onKeyUpOrDown(event) {
-        // Prevent certain sites from transferring focus to an input box
-        // before we get a chance to process our key bindings on the
-        // "keypress" event.
-
-        if (modes.main == modes.PASS_THROUGH ||
-            modes.main == modes.QUOTE
-                && modes.getStack(1).main !== modes.PASS_THROUGH
-                && !events.shouldPass(event) ||
-            !modes.passThrough && events.shouldPass(event))
-            return;
-
-        if (!Events.isInputElement(dactyl.focusedElement))
-            event.stopPropagation();
-    },
-
-    onMouseDown: function onMouseDown(event) {
-        let elem = event.target;
-        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-
-        for (; win; win = win != win.parent && win.parent)
-            win.document.dactylFocusAllowed = true;
-    },
-
-    onPopupShown: function onPopupShown(event) {
-        if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
-            modes.add(modes.MENU);
-    },
-
-    onPopupHidden: function onPopupHidden() {
-        // gContextMenu is set to NULL, when a context menu is closed
-        if (window.gContextMenu == null && !this._activeMenubar)
-            modes.remove(modes.MENU);
-    },
-
-    onResize: function onResize(event) {
-        if (window.fullScreen != this._fullscreen) {
-            statusline.statusBar.removeAttribute("moz-collapsed");
-            this._fullscreen = window.fullScreen;
-            dactyl.triggerObserver("fullscreen", this._fullscreen);
-            autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
         }
     },
 
