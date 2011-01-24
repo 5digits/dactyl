@@ -1117,7 +1117,6 @@ var CommandLine = Module("commandline", {
             // TODO: Wouldn't multiple handlers be cleaner? --djk
             if (event.type == "click" && event.target instanceof HTMLAnchorElement) {
 
-                util.dump(event.getPreventDefault(), event.target);
                 if (event.getPreventDefault())
                     return;
 

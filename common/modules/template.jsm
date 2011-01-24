@@ -13,6 +13,68 @@ defineModule("template", {
 
 default xml namespace = XHTML;
 
+var Binding = Class("Binding", {
+    init: function (node) {
+        this.node = node;
+        node.dactylBinding = this;
+
+        Object.defineProperties(node, this.constructor.properties);
+
+        for (let [event, handler] in values(this.constructor.events))
+            node.addEventListener(event, handler, false);
+    },
+
+    set collapsed(collapsed) {
+        if (collapsed)
+            this.setAttribute("collapsed", "true");
+        else
+            this.removeAttribute("collapsed");
+    },
+    get collapsed() !!this.getAttribute("collapsed"),
+
+    __noSuchMethod__: function __noSuchMethod__(meth, args) {
+        return this.node[meth].apply(this.node, args);
+    }
+}, {
+    get bindings() {
+        let bindingProto = Object.getPrototypeOf(Binding.prototype);
+        for (let obj = this.prototype; obj !== bindingProto; obj = Object.getPrototypeOf(obj))
+            yield obj;
+    },
+
+    bind: function bind(func) function bound() {
+        try {
+            return func.apply(this.dactylBinding, arguments);
+        }
+        catch (e) {
+            util.reportError(e);
+            throw e;
+        }
+    },
+
+    events: Class.memoize(function () {
+        let res = [];
+        for (let obj in this.bindings)
+            if (Object.getOwnPropertyDescriptor(obj, "events"))
+                for (let [event, handler] in Iterator(obj.events))
+                    res.push([event, this.bind(handler)]);
+        return res;
+    }),
+
+    properties: Class.memoize(function () {
+        let res = {};
+        for (let obj in this.bindings)
+            for (let prop in properties(obj)) {
+                let desc = Object.getOwnPropertyDescriptor(obj, prop);
+                for (let k in values(["get", "set", "value"]))
+                    if (typeof desc[k] === "function")
+                        desc[k] = this.bind(desc[k]);
+                res[prop] = desc;
+            }
+        return res;
+    })
+});
+
 var Template = Module("Template", {
     add: function add(a, b) a + b,
     join: function join(c) function (a, b) a + c + b,
@@ -34,6 +96,25 @@ var Template = Module("Template", {
             ret += val;
         }
         return ret;
+    },
+
+    bindings: {
+        Button: Class("Button", Binding, {
+            init: function init(node, params) {
+                init.supercall(this, node);
+
+                this.target = params.commandTarget;
+                if (callable(this.target))
+                    this.target = { command: this.target }
+            },
+
+            events: {
+                "click": function onClick(event) {
+                    event.preventDefault();
+                    this.target.command(this.getAttribute("key"));
+                }
+            }
+        })
     },
 
     bookmarkDescription: function (item, text)
