@@ -1256,6 +1256,7 @@ var CommandLine = Module("commandline", {
          * @param {string} val The new value.
          */
         replace: function (val) {
+            delete this.input.dactylKeyPress;
             this.input.value = val;
             commandline.triggerCallback("change", commandline.currentExtendedMode, val, "history");
         },
@@ -1321,6 +1322,7 @@ var CommandLine = Module("commandline", {
             this.context = CompletionContext(input.QueryInterface(Ci.nsIDOMNSEditableElement).editor);
             this.context.onUpdate = this.closure._reset;
             this.editor = input.editor;
+            this.input = input;
             this.selected = null;
             this.wildmode = options.get("wildmode");
             this.wildtypes = this.wildmode.value;
@@ -1351,6 +1353,8 @@ var CommandLine = Module("commandline", {
             // Reset the caret to one position after the completion.
             this.caret = this.prefix.length + completion.length;
             this._caret = this.caret;
+
+            delete this.input.dactylKeyPress;
         },
 
         get caret() this.editor.selection.getRangeAt(0).startOffset,
