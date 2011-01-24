@@ -1668,6 +1668,13 @@ var CommandLine = Module("commandline", {
     },
     mappings: function () {
 
+        mappings.add([modes.COMMAND],
+            [":"], "Enter command-line mode",
+            function () { commandline.open(":", "", modes.EX); });
+
+        let bind = function bind()
+            mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)))
+
         // Any "non-keyword" character triggers abbreviation expansion
         // TODO: Add "<CR>" and "<Tab>" to this list
         //       At the moment, adding "<Tab>" breaks tab completion. Adding
@@ -1675,23 +1682,21 @@ var CommandLine = Module("commandline", {
         // TODO: Make non-keyword recognition smarter so that there need not
         //       be two lists of the same characters (one here and a regexp in
         //       mappings.js)
-        mappings.add([modes.COMMAND_LINE],
-            ["<Space>", '"', "'"], "Expand command line abbreviation",
-            function () {
-                commandline.resetCompletions();
-                editor.expandAbbreviation(modes.COMMAND_LINE);
-                return Events.PASS;
-            });
+        bind(["<Space>", '"', "'"], "Expand command line abbreviation",
+             function () {
+                 commandline.resetCompletions();
+                 editor.expandAbbreviation(modes.COMMAND_LINE);
+                 return Events.PASS;
+             });
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<Return>", "<C-j>", "<C-m>"], "Accept the current input",
-            function (args) {
-                commandline._keepCommand = userContext.hidden_option_command_afterimage;
-                let mode = commandline.currentExtendedMode;
-                commandline.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
-                modes.pop();
-                commandline.triggerCallback("submit", mode, commandline.command);
-            });
+        bind(["<Return>", "<C-j>", "<C-m>"], "Accept the current input",
+             function (args) {
+                 commandline._keepCommand = userContext.hidden_option_command_afterimage;
+                 let mode = commandline.currentExtendedMode;
+                 commandline.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
+                 modes.pop();
+                 commandline.triggerCallback("submit", mode, commandline.command);
+             });
 
         [
             [["<Up>", "<A-p>"],                   "previous matching", true,  true],
@@ -1699,46 +1704,35 @@ var CommandLine = Module("commandline", {
             [["<Down>", "<A-n>"],                 "next matching",     false, true],
             [["<S-Down>", "<C-n>", "<PageDown>"], "next",              false, false]
         ].forEach(function ([keys, desc, up, search]) {
-            mappings.add([modes.COMMAND_LINE],
-                keys, "Recall the " + desc + " command line from the history list",
-                function (args) {
-                    dactyl.assert(commandline._history);
-                    commandline._history.select(up, search);
-                });
+            bind(keys, "Recall the " + desc + " command line from the history list",
+                 function (args) {
+                     dactyl.assert(commandline._history);
+                     commandline._history.select(up, search);
+                 });
         });
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<A-Tab>", "<Tab>"], "Select the next matching completion item",
-            function ({ events }) { commandline._tabTimer.tell(events[0]); });
+        bind(["<A-Tab>", "<Tab>"], "Select the next matching completion item",
+             function ({ events }) { commandline._tabTimer.tell(events[0]); });
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<A-S-Tab>", "<S-Tab>"], "Select the previous matching completion item",
-            function ({ events }) { commandline._tabTimer.tell(events[0]); });
+        bind(["<A-S-Tab>", "<S-Tab>"], "Select the previous matching completion item",
+             function ({ events }) { commandline._tabTimer.tell(events[0]); });
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<BS>", "<C-h>"], "Delete the previous character",
-            function () {
-                if (!commandline.command)
-                    modes.pop();
-                else
-                    return Events.PASS;
-            });
+        bind(["<BS>", "<C-h>"], "Delete the previous character",
+             function () {
+                 if (!commandline.command)
+                     modes.pop();
+                 else
+                     return Events.PASS;
+             });
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<C-]>", "<C-5>"], "Expand command line abbreviation",
-            function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
+        bind(["<C-]>", "<C-5>"], "Expand command line abbreviation",
+             function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
 
-        mappings.add([modes.NORMAL],
-            ["g<"], "Redisplay the last command output",
-            function () {
-                dactyl.assert(commandline._lastMowOutput, "No previous command output");
-                commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
-            });
-
-        // add the ":" mapping in all but insert mode mappings
-        mappings.add(modes.COMMAND,
-            [":"], "Enter command-line mode",
-            function () { commandline.open(":", "", modes.EX); });
+        bind(["g<"], "Redisplay the last command output",
+             function () {
+                 dactyl.assert(commandline._lastMowOutput, "No previous command output");
+                 commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
+             });
 
         let mow = modules.mow = {
             __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args))
@@ -1750,7 +1744,7 @@ var CommandLine = Module("commandline", {
         const DROP = false;
         const BEEP = {};
 
-        function bind(keys, description, action, test, default_) {
+        bind = function bind(keys, description, action, test, default_) {
             mappings.add([modes.OUTPUT_MULTILINE],
                 keys, description,
                 function (command) {
