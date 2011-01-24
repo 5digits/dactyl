@@ -383,9 +383,7 @@ var Mappings = Module("mappings", {
      * @param {string} cmd The map name to match.
      * @returns {Map}
      */
-    get: function get(mode, cmd) {
-        return this.hives.nth(function (h) h.get(mode, command), 0);
-    },
+    get: function get(mode, cmd) this.hives.map(function (h) h.get(mode, cmd)).compact()[0] || null,
 
     /**
      * Returns an array of maps with names starting with but not equal to
