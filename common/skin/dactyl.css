@@ -187,7 +187,6 @@ statusbarpanel {
 .dactyl-completions,
 #dactyl-multiline-output,
 #dactyl-multiline-input {
-    overflow: hidden;
     background-color: white;
     color: black;
 }

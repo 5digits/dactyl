@@ -212,6 +212,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 bell: document.getElementById("dactyl-bell"),
                 strut: document.getElementById("dactyl-bell-strut")
             }
+            XML.ignoreWhitespace = true;
             if (!elems.bell)
                 util.overlayWindow(window, {
                     objects: elems,

@@ -12,6 +12,7 @@ var CommandWidgets = Class("CommandWidgets", {
     init: function () {
         let _status = "dactyl-statusline-field-";
 
+        XML.ignoreWhitespace = true;
         util.overlayWindow(window, {
             append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
                 <window id={document.documentElement.id}>
@@ -166,10 +167,9 @@ var CommandWidgets = Class("CommandWidgets", {
         let fontSize = util.computedStyle(document.documentElement).fontSize;
         styles.registerSheet("resource://dactyl-skin/dactyl.css");
         styles.system.add("font-size", "dactyl://content/buffer.xhtml",
-                          "body { font-size: " + fontSize + "; }");
-    },
-    cleanup: function cleanup() {
-        styles.unregisterSheet("resource://dactyl-skin/dactyl.css");
+                          "body { font-size: " + fontSize + "; } \
+                           html|html > xul|scrollbar { visibility: collapse !important; }",
+                          true);
     },
     addElement: function (obj) {
         const self = this;
@@ -473,6 +473,9 @@ var CommandLine = Module("commandline", {
             if (callback)
                 dactyl.trapErrors(callback, self, value != null ? value : commandline.command);
         }
+    },
+    cleanup: function cleanup() {
+        styles.unregisterSheet("resource://dactyl-skin/dactyl.css");
     },
 
     /**

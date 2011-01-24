@@ -39,6 +39,7 @@ var StatusLine = Module("statusline", {
             ]]>)({ padding: util.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
         }
 
+        XML.ignoreWhitespace = true;
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
             <statusbar id="status-bar" highlight="StatusLine">
