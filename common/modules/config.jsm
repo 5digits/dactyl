@@ -586,7 +586,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpTOC
         HelpTOC>ol ol                               margin-left: -1em;
 
-        HelpOrderedList;ol;dactyl://help/*
+        HelpOrderedList;ol;dactyl://help/*                          margin: 1em 0;
         HelpOrderedList1;ol[level="1"],ol;dactyl://help/*           list-style: outside decimal; display: block;
         HelpOrderedList2;ol[level="2"],ol ol;dactyl://help/*        list-style: outside upper-alpha;
         HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*     list-style: outside lower-roman;
