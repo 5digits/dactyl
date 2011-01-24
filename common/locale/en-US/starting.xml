@@ -170,7 +170,7 @@
 <item>
     <tags>:res :restart</tags>
     <spec>:res<oa>tart</oa></spec>
-    <description>
+    <description short="true">
         <p>Force &dactyl.host; to restart. Useful when installing extensions.</p>
     </description>
 </item>
