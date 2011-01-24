@@ -190,15 +190,18 @@ var DownloadList = Class("DownloadList",
                             <span>Source</span>
                         </li>
                         <li highlight="Download"><span><div style="min-height: 1ex; /* FIXME */"/></span></li>
-                        <li highlight="Download" key="totals">
-                            <span highlight="Title">Totals:</span>
+                        <li highlight="Download" key="totals" active="true">
+                            <span><span highlight="Title">Totals:</span>&#xa0;<span key="total"/></span>
                             <span/>
                             <span highlight="DownloadButtons">
                                 <a highlight="Button" key="clear">Clear</a>
                             </span>
-                            <span/>
-                            <span/>
-                            <span/>
+                            <span highlight="DownloadProgress" key="progress">
+                                <span highlight="DownloadProgressHave" key="progressHave"
+                                />/<span highlight="DownloadProgressTotal" key="progressTotal"/>
+                            </span>
+                            <span highlight="DownloadPercent" key="percent"/>
+                            <span highlight="DownloadTime" key="time"/>
                             <span/>
                         </li>
                       </ul>, this.document, this.nodes);
@@ -253,6 +256,25 @@ var DownloadList = Class("DownloadList",
         for (let node in values(this.nodes))
             if (node.update && node.update != update)
                 node.update();
+        this.updateProgress();
+    },
+
+    timeRemaining: Infinity,
+
+    updateProgress: function updateProgress() {
+        let downloads = values(this.downloads).toArray();
+
+        let self = Object.create(this);
+        for (let prop in values(["amountTransferred", "size", "speed", "timeRemaining"]))
+            this[prop] = downloads.reduce(function (acc, dl) dl[prop] + acc, 0);
+
+        Download.prototype.updateProgress.call(self);
+
+        let active = downloads.filter(function (dl) dl.alive).length;
+        if (active)
+            this.nodes.total.textContent = active + " active";
+        else for (let key in values(["total", "percent", "time"]))
+            this.nodes[key].textContent = "";
     },
 
     observers: {
@@ -290,6 +312,7 @@ var DownloadList = Class("DownloadList",
         try {
             if (download.id in this.downloads)
                 this.downloads[download.id].updateProgress();
+            this.updateProgress();
         }
         catch (e) {
             util.reportError(e);
