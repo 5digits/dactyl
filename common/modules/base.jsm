@@ -427,7 +427,7 @@ function isinstance(object, interfaces) {
             if (objproto.toString.call(object) === "[object " + interfaces[i] + "]")
                 return true;
         }
-        else if ("isinstance" in object && object.isinstance !== isinstance) {
+        else if (typeof object === "object" && "isinstance" in object && object.isinstance !== isinstance) {
             if (object.isinstance(interfaces[i]))
                 return true;
         }

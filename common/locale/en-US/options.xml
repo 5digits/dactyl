@@ -327,8 +327,8 @@
 
 <item>
     <tags>'act' 'activate'</tags>
-    <spec>'activate' 'act'</spec>
     <strut/>
+    <spec>'activate' 'act'</spec>
     <type>stringlist</type>
     <default>addons,bookmarks,diverted,downloads,extoptions,
           help,homepage,quickmark,tabopen,paste</default>
@@ -853,8 +853,8 @@
 
 <item>
     <tags>'ht' 'hinttags'</tags>
-    <spec>'hinttags' 'ht'</spec>
     <strut/>
+    <spec>'hinttags' 'ht'</spec>
     <type>string</type>
     <default>&hinttags;</default>
     <description>
@@ -1062,8 +1062,8 @@
 
 <item>
     <tags>'nextpattern'</tags>
-    <spec>'nextpattern'</spec>
     <strut/>
+    <spec>'nextpattern'</spec>
     <type>stringlist</type>
     <default>'\bnext',^>$,'^(>>|»)$','^(>|»)','(>|»)$','\bmore\b'</default>
     <description>
@@ -1166,8 +1166,8 @@
 
 <item>
     <tags>'previouspattern'</tags>
-    <spec>'previouspattern'</spec>
     <strut/>
+    <spec>'previouspattern'</spec>
     <type>stringlist</type>
     <default><![CDATA['\bprev|previous\b',^<$,'^(<<|«)$','^(<|«)','(<|«)$']]></default>
     <description>
@@ -1466,8 +1466,8 @@
 
 <item>
     <tags>'wia' 'wildanchor'</tags>
-    <spec>'wildanchor' 'wia'</spec>
     <strut/>
+    <spec>'wildanchor' 'wia'</spec>
     <type>regexplist</type>
     <default>!'/ex/(back|buffer|ext|forward|help|undo)'</default>
     <description>
