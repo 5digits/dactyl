@@ -530,9 +530,10 @@ var Events = Module("events", {
      *
      * @param {Document} doc The DOM document to associate this event with
      * @param {Type} type The type of event (keypress, click, etc.)
-     * @param {Object} opts The pseudo-event.
+     * @param {Object} opts The pseudo-event. @optional
      */
     create: function (doc, type, opts) {
+        opts = opts || {};
         var DEFAULTS = {
             HTML: {
                 type: type, bubbles: true, cancelable: false
@@ -557,7 +558,7 @@ var Events = Module("events", {
             }
         };
         const TYPES = {
-            change: "",
+            change: "", input: "",
             click: "Mouse", mousedown: "Mouse", mouseup: "Mouse",
             mouseover: "Mouse", mouseout: "Mouse",
             keypress: "Key", keyup: "Key", keydown: "Key"
@@ -566,7 +567,9 @@ var Events = Module("events", {
         var evt = doc.createEvent((t || "HTML") + "Events");
 
         let defaults = DEFAULTS[t || "HTML"]
-        evt["init" + t + "Event"].apply(evt, Object.keys(defaults).map(function (k) k in opts ? opts[k] : defaults[k]));
+        evt["init" + t + "Event"].apply(evt, Object.keys(defaults)
+                                                   .map(function (k) k in opts ? opts[k]
+                                                                               : defaults[k]));
         return evt;
     },
 
@@ -988,11 +991,27 @@ var Events = Module("events", {
         },
         */
 
+        input: function onInput(event) {
+            delete event.originalTarget.dactylKeyPress;
+        },
+
         // this keypress handler gets always called first, even if e.g.
         // the command-line has focus
         // TODO: ...help me...please...
         keypress: function onKeyPress(event) {
             event.dactylDefaultPrevented = event.getPreventDefault();
+
+            // Hack to deal with <BS> and so forth not dispatching input
+            // events
+            if (event.originalTarget instanceof HTMLInputElement) {
+                let elem = event.originalTarget;
+                elem.dactylKeyPress = elem.value;
+                util.timeout(function () {
+                    if ("dactylKeyPress" in elem && elem.value !== elem.dactylKeyPress)
+                        events.dispatch(elem, events.create(elem.ownerDocument, "input"));
+                    delete events.dactylKeyPress;
+                });
+            }
 
             let duringFeed = this.duringFeed || [];
             this.duringFeed = [];

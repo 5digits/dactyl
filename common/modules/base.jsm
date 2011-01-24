@@ -803,10 +803,23 @@ Class.prototype = {
 };
 memoize(Class.prototype, "closure", function () {
     const self = this;
-    function closure(fn) function () fn.apply(self, arguments);
-    for (let k in iter(properties(this), properties(this, true)))
+    function closure(fn) function () {
+        try {
+            return fn.apply(self, arguments);
+        }
+        catch (e) {
+            util.reportError(e);
+        }
+    }
+    iter(properties(this), properties(this, true)).forEach(function (k) {
         if (!this.__lookupGetter__(k) && callable(this[k]))
             closure[k] = closure(this[k]);
+        else if (!(k in closure || k in Object.prototype))
+            Object.defineProperty(closure, k, {
+                get: function get_proxy() self[k],
+                set: function set_proxy(val) self[k] = val,
+            });
+    }, this);
     return closure;
 });
 

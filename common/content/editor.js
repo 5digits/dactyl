@@ -51,9 +51,7 @@ var Editor = Module("editor", {
             elem.scrollTop = top;
             elem.scrollLeft = left;
 
-            let event = elem.ownerDocument.createEvent("Event");
-            event.initEvent("input", true, false);
-            events.dispatch(elem, event);
+            events.dispatch(elem, events.create(elem.ownerDocument, "input"));
         }
     },
 

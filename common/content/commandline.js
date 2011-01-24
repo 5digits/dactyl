@@ -893,18 +893,17 @@ var CommandLine = Module("commandline", {
      */
     input: function _input(prompt, callback, extra) {
         extra = extra || {};
-        let closure = extra.closure || extra;
 
         this._input = {
-            submit: callback || closure.onAccept,
-            change: closure.onChange,
-            complete: closure.completer,
-            cancel: closure.onCancel
+            submit: callback || extra.onAccept,
+            change: extra.onChange,
+            complete: extra.completer,
+            cancel: extra.onCancel
         };
 
         modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended,
                    update(Object.create(extra), {
-                       onEvent: closure.onEvent || this.closure.onEvent,
+                       onEvent: extra.onEvent || this.extra.onEvent,
                        leave: function leave(stack) {
                            commandline.leave(stack);
                            leave.supercall(extra, stack);
@@ -965,7 +964,6 @@ var CommandLine = Module("commandline", {
 
             for (let node in array.iterValues(event.target.children)) {
                 let group = node.getAttributeNS(NS, "group");
-                util.dump(node, group, group && !group.split(/\s+/).every(function (g) enabled[g]));
                 node.hidden = group && !group.split(/\s+/).every(function (g) enabled[g]);
             }
         }
@@ -1672,6 +1670,13 @@ var CommandLine = Module("commandline", {
             [":"], "Enter command-line mode",
             function () { commandline.open(":", "", modes.EX); });
 
+        mappings.add([modes.COMMAND],
+            ["g<lt>"], "Redisplay the last command output",
+            function () {
+                dactyl.assert(commandline._lastMowOutput, "No previous command output");
+                commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
+            });
+
         let bind = function bind()
             mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)))
 
@@ -1727,12 +1732,6 @@ var CommandLine = Module("commandline", {
 
         bind(["<C-]>", "<C-5>"], "Expand command line abbreviation",
              function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
-
-        bind(["g<"], "Redisplay the last command output",
-             function () {
-                 dactyl.assert(commandline._lastMowOutput, "No previous command output");
-                 commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
-             });
 
         let mow = modules.mow = {
             __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args))

@@ -31,7 +31,7 @@ var HintSession = Class("HintSession", {
         this.usedTabKey = false;
         this.validHints = []; // store the indices of the "hints" array with valid elements
 
-        commandline.input(UTF8(this.mode.prompt) + ": ", null, this);
+        commandline.input(UTF8(this.mode.prompt) + ": ", null, this.closure);
         modes.extended = modes.HINTS;
 
         this.top = opts.window || content;
@@ -78,6 +78,17 @@ var HintSession = Class("HintSession", {
         if (this.activeTimeout)
             this.activeTimeout.cancel();
         this.activeTimeout = null;
+    },
+
+    _escapeNumbers: false,
+    get escapeNumbers() this._escapeNumbers,
+    set escapeNumbers(val) {
+        this.clearTimeout();
+        this._escapeNumbers = !!val;
+        if (val && this.usedTabKey)
+            this.hintNumber = 0;
+
+        this.updateStatusline();
     },
 
     /**
@@ -322,7 +333,7 @@ var HintSession = Class("HintSession", {
 
         this.clearTimeout();
 
-        if (!this.escNumbers && this.isHintKey(key)) {
+        if (!this.escapeNumbers && this.isHintKey(key)) {
             this.prevInput = "number";
 
             let oldHintNumber = this.hintNumber;
@@ -586,11 +597,61 @@ var HintSession = Class("HintSession", {
         }
     },
 
+    backspace: function () {
+        this.clearTimeout();
+        if (this.prevInput !== "number")
+            return Events.PASS;
+
+        if (this.hintNumber > 0 && !this.usedTabKey) {
+            this.hintNumber = Math.floor(this.hintNumber / this.hintKeys.length);
+            if (this.hintNumber == 0)
+                this.prevInput = "text";
+            this.update(false);
+        }
+        else {
+            this.usedTabKey = false;
+            this.hintNumber = 0;
+            dactyl.beep();
+        }
+        return Events.KILL;
+    },
+
+    tab: function tab(previous) {
+        this.clearTimeout();
+        this.usedTabKey = true;
+        if (this.hintNumber == 0)
+            this.hintNumber = 1;
+
+        let oldId = this.hintNumber;
+        if (!previous) {
+            if (++this.hintNumber > this.validHints.length)
+                this.hintNumber = 1;
+        }
+        else {
+            if (--this.hintNumber < 1)
+                this.hintNumber = this.validHints.length;
+        }
+
+        this.showActiveHint(this.hintNumber, oldId);
+        this.updateStatusline();
+    },
+
+    update: function update(followFirst) {
+        this.clearTimeout();
+        this.updateStatusline();
+
+        if (this.docs.length == 0 && this.hintString.length > 0)
+            this.generate();
+
+        this.show();
+        this.process(followFirst);
+    },
+
     /**
      * Display the current status to the user.
      */
     updateStatusline: function _updateStatusline() {
-        statusline.updateInputBuffer((hints.escNumbers ? options["mapleader"] : "") +
+        statusline.updateInputBuffer((this.escapeNumbers ? options["mapleader"] : "") +
                                      (this.hintNumber ? this.getHintString(this.hintNumber) : ""));
     },
 });
@@ -1034,79 +1095,26 @@ var Hints = Module("hints", {
             function ({ count }) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
 
-        function update(followFirst) {
-            hints.clearTimeout();
-            hints._updateStatusline();
-
-            if (hints._docs.length == 0 && hints._hintString.length > 0)
-                hints._generate();
-
-            hints._showHints();
-            hints._processHints(followFirst);
-        }
-
         mappings.add(modes.HINTS, ["<Return>"],
             "Follow the selected hint",
-            function () { update(true); });
-
-        function tab(previous) {
-            hints.clearTimeout();
-            this._usedTabKey = true;
-            if (this._hintNumber == 0)
-                this._hintNumber = 1;
-
-            let oldId = this._hintNumber;
-            if (!previous) {
-                if (++this._hintNumber > this._validHints.length)
-                    this._hintNumber = 1;
-            }
-            else {
-                if (--this._hintNumber < 1)
-                    this._hintNumber = this._validHints.length;
-            }
-
-            this._showActiveHint(this._hintNumber, oldId);
-            this._updateStatusline();
-        }
+            function () { hints.hintSession.update(true); });
 
         mappings.add(modes.HINTS, ["<Tab>"],
             "Focus the next matching hint",
-            function () { tab.call(hints, false); });
+            function () { hints.hintSession.tab(false); });
 
         mappings.add(modes.HINTS, ["<S-Tab>"],
             "Focus the previous matching hint",
-            function () { tab.call(hints, true); });
+            function () { hints.hintSession.tab(true); });
 
         mappings.add(modes.HINTS, ["<BS>", "<C-h>"],
             "Delete the previous character",
-            function () {
-                hints.clearTimeout();
-                if (hints.prevInput !== "number")
-                    return Events.PASS;
-
-                if (hints._hintNumber > 0 && !hints._usedTabKey) {
-                    hints._hintNumber = Math.floor(hints._hintNumber / hints.hintKeys.length);
-                    if (hints._hintNumber == 0)
-                        hints.prevInput = "text";
-                    update(false);
-                }
-                else {
-                    hints._usedTabKey = false;
-                    hints._hintNumber = 0;
-                    dactyl.beep();
-                }
-                return Events.KILL;
-            });
+            function () hints.hintSession.backspace());
 
         mappings.add(modes.HINTS, ["<Leader>"],
             "Toggle hint filtering",
             function () {
-                hints.clearTimeout();
-                hints.escNumbers = !hints.escNumbers;
-                if (hints.escNumbers && hints._usedTabKey)
-                    hints._hintNumber = 0;
-
-                hints._updateStatusline();
+                hints.hintSession.escapeNumbers = !hints.hintSession.escapeNumbers;
             });
     },
     options: function () {
