@@ -270,9 +270,11 @@ var Overlay = Module("Overlay", {
 
                 modules.events.addSessionListener(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
-                    for (let [, mod] in iter(modules))
-                        if (mod instanceof ModuleBase && "destroy" in mod)
-                            util.trapErrors(mod.destroy, mod);
+                    for (let prop in properties(modules)) {
+                        let desc = Object.getOwnPropertyDescriptor(modules, prop);
+                        if (desc.value instanceof ModuleBase && "destroy" in desc.value)
+                            util.trapErrors(desc.value.destroy, desc.value);
+                    }
                 }, false);
             }
         }));

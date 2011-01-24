@@ -24,9 +24,9 @@ var ProcessorStack = Class("ProcessorStack", {
                 input.preExecute = params.preExecute;
             if (params.postExecute)
                 input.postExecute = params.postExecute;
-            if (params.onEvent && input.hive === mappings.builtin)
+            if (params.onKeyPress && input.hive === mappings.builtin)
                 input.fallthrough = function (event) {
-                    return params.onEvent(event) === false ? Events.KILL : Events.PASS;
+                    return params.onKeyPress(event) === false ? Events.KILL : Events.PASS;
                 };
             }
     },

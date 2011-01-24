@@ -46,19 +46,12 @@ var StatusLine = Module("statusline", {
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 <hbox key="container" hidden="false" align="center"  flex="1">
                     <stack orient="horizontal"       align="stretch" flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
-                        <hbox                                                 highlight="CmdLine StatusCmdLine" class="dactyl-container">
+                        <hbox                                                 highlight="CmdLine StatusCmdLine" class="dactyl-container" id="dactyl-statusline-stack">
                             <label key="mode"          crop="end"                                               class="plain" collapsed="true"/>
                             <stack                                   flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
                                 <textbox key="url"     crop="end"    flex="1"                                   class="plain dactyl-status-field-url" readonly="true"/>
                                 <textbox key="message" crop="end"    flex="1" highlight="Normal StatusNormal"   class="plain"                         readonly="true"/>
                             </stack>
-                        </hbox>
-
-                        <hbox key="commandline" hidden="false" class="dactyl-container" highlight="Normal StatusNormal" collapsed="true">
-                            <label key="commandline-prompt"    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
-                            <textbox key="commandline-command" class="dactyl-commandline-command plain" flex="1" type="text" timeout="100"
-                                     oninput={_commandline + ".onEvent(event);"} onkeyup={_commandline + ".onEvent(event);"}
-                                     onfocus={_commandline + ".onEvent(event);"} onblur={_commandline + ".onEvent(event);"}/>
                         </hbox>
                     </stack>
                     <label class="plain" key="inputbuffer"    flex="0"/>

@@ -1602,19 +1602,17 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         case "element":
             let domnode = doc.createElementNS(node.namespace(), node.localName());
 
+            for each (let attr in node.@*::*)
+                if (attr.name() != "highlight")
+                    domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
+
             for each (let child in node.*::*)
                 domnode.appendChild(xmlToDom(child, doc, nodes));
             if (nodes && node.@key)
                 nodes[node.@key] = domnode;
 
-            for each (let attr in node.@*::*)
-                if (attr.name() != "highlight")
-                    domnode.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
-                else {
-                    highlight.highlightNode(domnode, String(attr));
-                    if (attr in template.bindings)
-                        template.bindings[attr](domnode, nodes);
-                }
+            if (node.@highlight)
+                highlight.highlightNode(domnode, String(node.@highlight), nodes || true);
             return domnode;
         default:
             return null;

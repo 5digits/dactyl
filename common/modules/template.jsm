@@ -131,6 +131,16 @@ var Template = Module("Template", {
             update: function update() {
                 this.collapsed = !this.commandAllowed;
             }
+        }),
+
+        Events: Class("Events", Binding, {
+            init: function init(node, params) {
+                init.supercall(this, node);
+
+                let obj = params.eventTarget;
+                for (let [event, handler] in Iterator(obj[this.getAttribute("events") || "events"]))
+                    node.addEventListener(event, obj.closure(handler), false);
+            }
         })
     },
 

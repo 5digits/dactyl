@@ -148,10 +148,10 @@ var Modes = Module("modes", {
             // Fix me.
             preExecute: function (map) { if (modes.main == modes.QUOTE && map.name !== "<C-v>") modes.pop() },
             postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop() },
-            onEvent: function () { if (modes.main == modes.QUOTE) modes.pop() }
+            onKeyPress: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
         this.addMode("IGNORE", { hidden: true }, {
-            onEvent: function (event) Events.KILL,
+            onKeyPress: function (event) Events.KILL,
             bases: []
         });
 

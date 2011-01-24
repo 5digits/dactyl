@@ -327,7 +327,7 @@ var HintSession = Class("HintSession", {
      *
      * @param {Event} event The event to handle.
      */
-    onEvent: function onEvent(event) {
+    onKeyPress: function onKeyPress(event) {
         const KILL = false, PASS = true;
         let key = events.toString(event);
 
