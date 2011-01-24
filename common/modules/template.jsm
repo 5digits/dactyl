@@ -339,7 +339,7 @@ var Template = Module("Template", {
         let re = util.regexp(<![CDATA[
             (?P<pre> [/\s]|^)
             (?P<tag> '[\w-]+' | :(?:[\w-]+|!) | (?:._)?<[\w-]+> )
-            (?=      [[!,;./\s]|$)
+            (?=      [[\)!,;./\s]|$)
         ]]>, "g");
         return this.highlightSubstrings(str, (function () {
             for (let res in re.iterate(str))
