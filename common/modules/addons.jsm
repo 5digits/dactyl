@@ -145,6 +145,7 @@ var Addon = Class("Addon", {
         this.nodes = {
             commandTarget: this
         };
+        XML.ignoreWhitespace = true;
         util.xmlToDom(
             <li highlight="Addon" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
                 <span highlight="AddonName" key="name">
@@ -189,6 +190,9 @@ var Addon = Class("Addon", {
     compare: function compare(other) String.localeCompare(this.name, other.name),
 
     get statusInfo() {
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
+        default xml namespace = XHTML;
+
         let info = this.isActive ? <span highlight="Enabled">enabled</span>
                                  : <span highlight="Disabled">disabled</span>;
 
@@ -205,7 +209,7 @@ var Addon = Class("Addon", {
             pending = ["Enabled", "upgraded"];
         if (pending)
             return <>{info}&#xa0;(<span highlight={pending[0]}>{pending[1]}</span>
-                                  &#xa0;on restart)</>;
+                                  &#xa0;on <a href="#" dactyl:command="dactyl.restart" xmlns:dactyl={NS}>restart</a>)</>;
         return info;
     },
 
@@ -269,6 +273,7 @@ var AddonList = Class("AddonList", {
 
     message: Class.memoize(function () {
 
+        XML.ignoreWhitespace = true;
         util.xmlToDom(<ul highlight="Addons" key="list" xmlns={XHTML}>
                         <li highlight="AddonHead">
                             <span>Name</span>
@@ -534,7 +539,6 @@ var addonErrors = array.toObject([
     [AddonManager.ERROR_INCORRECT_HASH,  "The downloaded file did not match the expected hash"],
     [AddonManager.ERROR_CORRUPT_FILE,    "The file appears to be corrupt"],
     [AddonManager.ERROR_FILE_ACCESS,     "There was an error accessing the filesystem"]]);
-
 
 endModule();
 
