@@ -708,13 +708,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     unescape(encodeURI( // UTF-8 handling hack.
                     <document xmlns={NS}
                         name="versions" title={config.appName + " Versions"}>
-                        <h1 tag="versions">Versions</h1>
+                        <h1 tag="versions news">{config.appName} Versions</h1>
                         <toc start="2"/>
 
                         {rec(NEWS, 0)}
                     </document>.toXMLString()))
                 ]
             }
+            addTags("versions", util.httpGet("dactyl://help/versions").responseXML);
 
             default xml namespace = NS;
 
