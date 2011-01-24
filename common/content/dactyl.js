@@ -619,8 +619,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
 
             // Process plugin help entries.
-            XML.ignoreWhiteSpace = false;
-            XML.prettyPrinting = false;
+            XML.ignoreWhiteSpace = XML.prettyPrinting = false;
 
             let body = XML();
             for (let [, context] in Iterator(plugins.contexts))
@@ -653,6 +652,69 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     {body}
                 </document>.toXMLString()));
             fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
+
+            fileMap["versions"] = function () {
+                let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec).responseText;
+
+                let re = util.regexp(<![CDATA[
+                    ^ (?P<space> \s*)
+                      (?P<char>  [-*+]) \x20
+                    (?P<content> .*\n
+                       (?: \1\x20\x20.*\n | \s*\n)* )
+                    |
+                    (?P<par>
+                        (?: ^ [^\S\n]*
+                            (?:[^-*+\s] | [-*+]\S)
+                            .*\n
+                        )+
+                    )
+                    |
+                    (?: ^ [^\S\n]* \n) +
+                ]]>, "gmy");
+
+                default xml namespace = NS;
+                function rec(text, level) {
+                    let res = <></>;
+                    let list, space;
+
+                    for (let match in re.iterate(text)) {
+                        if (match.char) {
+                            if (!list)
+                                res += list = <ul/>;
+                            list.* += <li>{rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1)}</li>;
+                        }
+                        else if (match.par) {
+                            list = null;
+                            if (level == 0 && /^.*:\n$/.test(match.par))
+                                res += <h2>{template.linkifyHelp(match.par.slice(0, -1), true)}</h2>;
+                            else {
+                                let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(match.par);
+                                res += <p>{
+                                    a ? <hl key="HelpWarning">{a}</hl> : ""
+                                }{
+                                    template.linkifyHelp(b, true)
+                                }</p>;
+                            }
+                        }
+                    }
+                    return res;
+                }
+
+                XML.prettyPrinting = XML.ignoreWhitespace = false;
+                return ["application/xml",
+                    '<?xml version="1.0"?>\n' +
+                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
+                    '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
+                    unescape(encodeURI( // UTF-8 handling hack.
+                    <document xmlns={NS}
+                        name="versions" title={config.appName + " Versions"}>
+                        <h1 tag="versions">Versions</h1>
+                        <toc start="2"/>
+
+                        {rec(NEWS, 0)}
+                    </document>.toXMLString()))
+                ]
+            }
 
             default xml namespace = NS;
 
