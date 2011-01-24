@@ -17,7 +17,7 @@
 <p>
     Command-line options can be passed to &dactyl.appName; via the -&dactyl.name; &dactyl.host;
     option. These are passed as single string argument.
-    E.g., &dactyl.hostbin; -&dactyl.name; <str>++cmd 'set exrc' +u 'tempRcFile' ++noplugin</str>
+    E.g., <tt>&dactyl.hostbin; -&dactyl.name; <str><t>++cmd</t> 'set exrc' <t>+u</t> 'tempRcFile' <t>++noplugin</t></str></tt>
 </p>
 
 <item>
@@ -52,9 +52,9 @@
     <description>
         <p>
             The file <a>rcfile</a> is used for user initialization commands. If <a>rcfile</a> is
-            "NORC" then no startup initialization is performed except for the loading of
+            <str>NORC</str> then no startup initialization is performed except for the loading of
             plugins, i.e., steps 1. and 2. in <t>initialization</t> are skipped. If <a>rcfile</a>
-            is "NONE" then plugin loading is also skipped.
+            is <str>NONE</str> then plugin loading is also skipped.
         </p>
     </description>
 </item>
@@ -89,7 +89,7 @@
                 <em>~/_&dactyl.name;rc</em>
                 <strut/>
                 Windows only. If this file exists, its contents
-                are executed and <em>$MY_&dactyl.idName;RC</em> set to its path.
+                are executed and <tt>$MY_&dactyl.idName;RC</tt> set to its path.
             </li>
             <li>
                 <em>~/.&dactyl.name;rc</em>
@@ -116,8 +116,8 @@
 
         <ul>
             <li><o>noloadplugins</o> is set,</li>
-            <li>the ++noplugin command-line option was specified, or</li>
-            <li>the +u=NONE command-line option was specified.</li>
+            <li>the <t>++noplugin</t> command-line option was specified, or</li>
+            <li>the <tt><t>+u</t>=NONE</tt> command-line option was specified.</li>
         </ul>
 
         <p>
@@ -132,11 +132,11 @@
 </p>
 
 <ul>
-    <li>On Unix and Mac, the environment variable  <em>$HOME</em> is used.</li>
+    <li>On Unix and Mac, the environment variable <tt>$HOME</tt> is used.</li>
     <li>
         On Windows, &dactyl.appName; checks for the existence of
-        <em>%HOME%</em>, then <em>%USERPROFILE%</em>, and then
-        <em>%HOMEDRIVE%%HOMEPATH%</em>. It uses the first one it
+        <tt>%HOME%</tt>, then <tt>%USERPROFILE%</tt>, and then
+        <tt>%HOMEDRIVE%%HOMEPATH%</tt>. It uses the first one it
         finds.
     </li>
 </ul>
