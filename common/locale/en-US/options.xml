@@ -327,6 +327,7 @@
 
 <item>
     <tags>'act' 'activate'</tags>
+    <strut/>
     <spec>'activate' 'act'</spec>
     <type>stringlist</type>
     <default>addons,bookmarks,diverted,downloads,extoptions,
@@ -852,6 +853,7 @@
 
 <item>
     <tags>'ht' 'hinttags'</tags>
+    <strut/>
     <spec>'hinttags' 'ht'</spec>
     <type>string</type>
     <default>&hinttags;</default>
@@ -1060,6 +1062,7 @@
 
 <item>
     <tags>'nextpattern'</tags>
+    <strut/>
     <spec>'nextpattern'</spec>
     <type>stringlist</type>
     <default>'\bnext',^>$,'^(>>|»)$','^(>|»)','(>|»)$','\bmore\b'</default>
@@ -1163,6 +1166,7 @@
 
 <item>
     <tags>'previouspattern'</tags>
+    <strut/>
     <spec>'previouspattern'</spec>
     <type>stringlist</type>
     <default><![CDATA['\bprev|previous\b',^<$,'^(<<|«)$','^(<|«)','(<|«)$']]></default>
@@ -1462,6 +1466,7 @@
 
 <item>
     <tags>'wia' 'wildanchor'</tags>
+    <strut/>
     <spec>'wildanchor' 'wia'</spec>
     <type>regexplist</type>
     <default>!'/ex/(back|buffer|ext|forward|help|undo)'</default>
