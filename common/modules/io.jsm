@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
-// Copyright (c) 2007-2009 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2010 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2011 by Kris Maglione <maglione.k@gmail.com>
 // Some code based on Venkman
 //
 // This work is licensed for reuse under an MIT license. Details are
