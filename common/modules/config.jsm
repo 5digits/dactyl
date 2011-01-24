@@ -113,7 +113,7 @@ var ConfigBase = Class("ConfigBase", {
                     io.pathSearch("hg")) {
                 return io.system(["hg", "-R", uri.file.parent.path,
                                   "log", "-r.",
-                                  "--template=hg{rev} ({date|isodate})"]);
+                                  "--template=hg{rev} ({date|isodate})"]).output;
             }
         }
         let version = this.addon.version;

@@ -78,7 +78,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         this.addItem("cache",       { builtin: true, description: "Cache" });
         this.addItem("downloads",   { builtin: true, description: "Download history" });
         this.addItem("formdata",    { builtin: true, description: "Saved form and search history" });
-        this.addItem("history",     { builtin: true, description: "Browsing history", sessionHistory: true });
         this.addItem("offlineapps", { builtin: true, description: "Offline website data" });
         this.addItem("passwords",   { builtin: true, description: "Saved passwords" });
         this.addItem("sessions",    { builtin: true, description: "Authenticated sessions" });
@@ -95,6 +94,32 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         services.cookies.remove(c.host, c.name, c.path, false);
             },
             override: true
+        });
+        this.addItem("history", {
+            builtin: true,
+            description: "Browsing history",
+            persistent: true,
+            sessionHistory: true,
+            action: function (range, host) {
+                if (host)
+                    services.history.removePagesFromHost(host, true);
+                else
+                    services.history.removeVisitsByTimeframe(this.range.min, this.range.max);
+
+                if (!host)
+                    services.observer.notifyObservers(null, "browser:purge-session-history", "");
+
+                if (!host || util.isDomainURL(prefs.get("general.open_location.last_url"), host))
+                    prefs.reset("general.open_location.last_url");
+            },
+            override: true
+        });
+        this.addItem("host", {
+            description: "All data from the given host",
+            action: function (range, host) {
+                if (host)
+                    services.privateBrowsing.removeDataFromDomain(host);
+            }
         });
         this.addItem("sitesettings", {
             builtin: true,
@@ -398,8 +423,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 if (args["-host"]) {
                     args["-host"].forEach(function (host) {
                         sanitizer.sanitizing = true;
-                        if (items.indexOf("history") > -1)
-                            services.privateBrowsing.removeDataFromDomain(host);
                         sanitizer.sanitizeItems(items, range, host)
                     });
                 }
