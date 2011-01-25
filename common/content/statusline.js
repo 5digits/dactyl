@@ -12,7 +12,7 @@ var StatusLine = Module("statusline", {
     init: function () {
         this._statusLine = document.getElementById("status-bar");
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
-        this.statusBar.collapsed = true; // it is later restored unless the user sets laststatus=0
+        this.statusBar.collapsed = true;
         this.baseGroup = this.statusBar == this._statusLine ? "StatusLine " : "";
 
         if (this.statusBar.localName == "toolbar") {
