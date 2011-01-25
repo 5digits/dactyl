@@ -211,8 +211,9 @@
 <h2 tag="status-line status-bar">Status line</h2>
 
 <p>
-    The status line appears at the bottom of each window. The <o>laststatus</o>
-    option can be used to specify when the status line appears.
+    The status line appears at the bottom of each window. You can use
+    <o>guioptions</o> to specify if and when the status line appears, as well
+    as its relation to the command line and messages.
 </p>
 
 <p>

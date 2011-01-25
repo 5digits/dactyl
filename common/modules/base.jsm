@@ -169,8 +169,12 @@ function endModule() {
 
 function require(obj, name, from) {
     try {
+        if (arguments.length === 1)
+            [obj, name] = [{}, obj];
+
         defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + obj.NAME);
         JSMLoader.load(name + ".jsm", obj);
+        return obj;
     }
     catch (e) {
         defineModule.dump("loading " + String.quote(name + ".jsm") + "\n");

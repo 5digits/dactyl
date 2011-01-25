@@ -8,6 +8,7 @@
 
 try {
 
+let global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
@@ -54,7 +55,7 @@ var ConfigBase = Class("ConfigBase", {
     addon: Class.memoize(function () {
         let addon = services.fuel.storage.get("dactyl.bootstrap", {}).addon;
         if (!addon)
-            addon = AddonManager.getAddonByID(this.addonID);
+            addon = require("addons").AddonManager.getAddonByID(this.addonID);
         return addon;
     }),
 

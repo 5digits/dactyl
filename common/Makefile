@@ -9,6 +9,9 @@ GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
 VERSION	     ?= $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 UUID   	     := $(shell sed -n 's/.*em:id\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 MANGLE	     := $(shell date '+%s' | awk '{ printf "%x", $$1 }')
+MOZMILL       = mozmill
+HOSTAPP_PATH  = $(shell which $(HOSTAPP))
+TEST_DIR      = $(BASE)/tests/functional
 
 LOCALEDIR     = locale
 DOC_FILES     = $(wildcard $(LOCALEDIR)/*/*.xml)
@@ -48,7 +51,7 @@ CURL      ?= curl
 
 #### rules
 
-TARGETS = all help info jar xpi install clean distclean install installxpi $(CHROME) $(JAR)
+TARGETS = all help info jar xpi install clean distclean install installxpi test $(CHROME) $(JAR)
 $(TARGETS:%=\%.%):
 	echo MAKE $* $(@:$*.%=%)
 	$(MAKE) -C $* $(@:$*.%=%)
@@ -71,6 +74,7 @@ help:
 	@echo "  make dist       - uploads to Google Code (this is not for you)"
 	@echo "  make clean      - clean up"
 	@echo "  make distclean  - clean up more"
+	@echo "  make test       - run functional tests"
 	@echo
 	@echo "running some commands with V=1 will show more build details"
 
@@ -157,6 +161,11 @@ clean:
 distclean:
 	@echo "More $(NAME) cleanup..."
 	rm -rf $(BUILD_DIR)
+
+# TODO: generalize log path
+test: $(XPI)
+	@echo "Running functional tests..."
+	$(MOZMILL) --show-all -l /tmp/dactyl-test.log -b $(HOSTAPP_PATH) --addons $(XPI) -t $(TEST_DIR)
 
 #### xpi
 

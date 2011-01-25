@@ -836,7 +836,7 @@ unlet s:cpo_save
 
                 let result = io.system(arg);
                 if (result.returnValue != 0)
-                    result.output += "\nshell returned " + res;
+                    result.output += "\nshell returned " + result.returnValue;
 
                 modules.commandline.command = "!" + arg;
                 modules.commandline.commandOutput(<span highlight="CmdOutput">{result.output}</span>);
