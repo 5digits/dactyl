@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-    <Description about="urn:mozilla:install-manifest"
-        em:id="pentadactyl@dactyl.googlecode.com"
-        em:name="Pentadactyl"
-        em:version="1.0b6pre"
-        em:description="Firefox for Vim and Links addicts"
-        em:homepageURL="http://dactyl.sourceforge.net/pentadactyl"
-        em:iconURL="resource://dactyl-local-skin/icon.png"
-        em:bootstrap="true">
+    <Description about="urn:mozilla:install-manifest">
+        <em:id>pentadactyl@dactyl.googlecode.com</em:id>
+        <em:name>Pentadactyl</em:name>
+        <em:version>1.0b6pre</em:version>
+        <em:description>Firefox for Vim and Links addicts</em:description>
+        <em:homepageURL>http://dactyl.sourceforge.net/pentadactyl</em:homepageURL>
+        <em:iconURL>resource://dactyl-local-skin/icon.png</em:iconURL>
+        <em:bootstrap>true</em:bootstrap>
 
         <em:creator>Kris Maglione, Doug Kearns</em:creator>
         <em:developer>Kris Maglione</em:developer>

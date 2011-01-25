@@ -133,12 +133,20 @@ In general: Just look at the existing source code!
   Wrong:
     function splitStr()
 
-== Testing/Optimization ==
+== Testing ==
 
-TODO: Add some information here about testing/validation/etc.
-Information about how/when to use :regressions might be nice.
-Additionally, maybe there should be some benchmark information here --
-something to let a developer know what's "too" slow...? Or general
-guidelines about optimization?
+Functional tests are implemented using the Mozmill automated testing framework
+-- https://developer.mozilla.org/en/Mozmill_Tests.
 
-// vim: set ft=asciidoc fdm=marker sw=4 ts=4 et ai:
+A fresh profile is created for the duration of the test run, however, passing
+arguments to the host application won't be supported until Mozmill 1.5.2, the
+next release, so any user RC and plugin files should be temporarily disabled.
+This can be done by adding the following to the head of the RC file:
+set loadplugins=
+finish
+
+The host application binary tested can be overridden via the HOSTAPP_PATH
+makefile variable. E.g.,
+$ HOSTAPP_PATH=/path/to/firefox make -e -C pentadactyl test
+
+// vim: fdm=marker sw=4 ts=4 et ai:
