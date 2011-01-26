@@ -381,7 +381,6 @@ var CommandMode = Class("CommandMode", {
         }
     },
 
-    autocomplete: false,
     keepCommand: false,
 
     onKeyPress: function onKeyPress(event) {
@@ -390,9 +389,6 @@ var CommandMode = Class("CommandMode", {
             this.completions.previewClear();
 
         return true; /* Pass event */
-    },
-
-    complete: function (context) {
     },
 
     onCancel: function (value) {
