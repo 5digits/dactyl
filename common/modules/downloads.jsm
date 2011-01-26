@@ -166,10 +166,10 @@ var DownloadList = Class("DownloadList",
                                 Ci.nsISupportsWeakReference]), {
     init: function init(modules, filter) {
         this.modules = modules;
+        this.filter = filter && filter.toLowerCase();
         this.nodes = {
             commandTarget: this
         };
-        this.filter = filter && filter.toLowerCase();
         this.downloads = {};
     },
     cleanup: function cleanup() {

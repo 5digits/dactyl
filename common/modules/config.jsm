@@ -501,6 +501,8 @@ var ConfigBase = Class("ConfigBase", {
         Button::after           content: "]"; color: gray; text-decoration: none !important;
         Button:not([collapsed]) ~ Button:not([collapsed])::before  content: "/[";
 
+        Buttons
+
         DownloadCell                    display: table-cell; padding: 0 1ex;
 
         Downloads                       display: table; margin: 0; padding: 0;
@@ -509,8 +511,6 @@ var ConfigBase = Class("ConfigBase", {
 
         Download                        display: table-row;
         Download:not([active])          color: gray;
-
-        Buttons
 
         Download>*;;;DownloadCell
         DownloadButtons

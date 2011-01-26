@@ -16,7 +16,6 @@ BUGS:
 - :sidebar improvements (:sidebar! Downloads while downloads is open should refocus the sidebar)
 - ;s saves the page rather than the image
 - RC file is sourced once per window
-- the :help version-information page is no longer generated
 
 FEATURES:
 8 registers
@@ -38,7 +37,6 @@ FEATURES:
 7 describe-key command (prompt for a key and display its binding with documentation)
 7 Specify all INSERT mode mappings rather than falling through to the host apps
   mystery meat mappings.
-7 consider generating most of :help :index
 7 use ctrl-n/p in insert mode for word completion
 7 implement QuickFix window based on ItemList
 7 wherever possible: get rid of dialogs and ask console-like dialog questions
@@ -70,4 +68,3 @@ FEATURES:
 3 Splitting Windows with [:sp :vsp ctrl-w,s ctrl-w,v] and closing with [ctrl-w,q], moving with [ctrl-w,w or tab]
   have a look into the split browser extension
 1 Reformat dactyl/HACKING so that git diff can find sections and report changes @ somewhere
-

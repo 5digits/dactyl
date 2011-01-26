@@ -233,23 +233,15 @@ var Addon = Class("Addon", {
     }
 });
 
-["cancelUninstall", "findUpdates", "getResourceURI", "hasResource",
- "isCompatibleWith", "uninstall"].forEach(function (prop) {
-     Addon.prototype[prop] = function proxy() this.addon[prop].apply(this.addon, arguments);
-});
-
-["aboutURL", "appDisabled", "applyBackgroundUpdates", "blocklistState",
- "contributors", "creator", "description", "developers", "homepageURL",
- "iconURL", "id", "install", "installDate", "isActive", "isCompatible",
- "isPlatformCompatible", "name", "operationsRequiringRestart",
- "optionsURL", "pendingOperations", "pendingUpgrade", "permissions",
- "providesUpdatesSecurely", "releaseNotesURI", "scope", "screenshots",
- "size", "sourceURI", "translators", "type", "updateDate",
- "userDisabled", "version"].forEach(function (prop) {
-    Object.defineProperty(Addon.prototype, prop, {
-        get: function get_proxy() this.addon[prop],
-        set: function set_proxy(val) this.addon[prop] = val
-    });
+iter.forEach(properties(config.addon), function (prop) {
+    let desc = Object.getOwnPropertyDescriptor(config.addon, prop);
+    if (callable(desc.value))
+        Addon.prototype[prop] = function proxy() this.addon[prop].apply(this.addon, arguments);
+    else
+        Object.defineProperty(Addon.prototype, prop, {
+            get: function get_proxy() this.addon[prop],
+            set: function set_proxy(val) this.addon[prop] = val
+        });
 });
 
 var AddonList = Class("AddonList", {

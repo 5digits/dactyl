@@ -8,11 +8,225 @@
 
 /** @scope modules */
 
+var ProcessorStack = Class("ProcessorStack", {
+    init: function (mode, hives, keyModes) {
+        this.main = mode.main;
+        this.actions = [];
+        this.buffer = "";
+        this.events = [];
+
+        this.processors = keyModes.map(function (m) hives.map(function (h) KeyProcessor(m, h)))
+                                  .flatten().array;
+
+        for (let [i, input] in Iterator(this.processors)) {
+            let params = input.main == mode.main ? mode.params : input.main.params;
+            if (params.preExecute)
+                input.preExecute = params.preExecute;
+            if (params.postExecute)
+                input.postExecute = params.postExecute;
+            if (params.onKeyPress && input.hive === mappings.builtin)
+                input.fallthrough = function (event) {
+                    return params.onKeyPress(event) === false ? Events.KILL : Events.PASS;
+                };
+            }
+    },
+
+    process: function process(event) {
+        function dbg() {}
+
+        let key = events.toString(event);
+        this.events.push(event);
+
+        this.buffer += key;
+
+        let actions = [];
+        let processors = [];
+
+        dbg("\n\n");
+        dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro);
+
+        for (let [i, input] in Iterator(this.processors)) {
+            let res = input.process(event);
+            if (res !== Events.ABORT)
+                var result = res;
+
+            dbg("RES: " + input + " " + (callable(res) ? {}.toString.call(res) : res));
+
+            if (res === Events.KILL)
+                break;
+
+            buffer = buffer || input.inputBuffer;
+
+            if (callable(res))
+                actions.push(res);
+
+            if (isinstance(res, KeyProcessor))
+                processors.push(res);
+            if (res === Events.WAIT || input.waiting)
+                processors.push(input);
+        }
+
+        dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
+        dbg("ACTIONS: " + actions.length + " " + this.actions.length);
+        dbg("PROCESSORS:", processors);
+
+        if (!processors.some(function (p) p.main.ownsBuffer))
+            statusline.updateInputBuffer(processors.length ? this.buffer : "");
+
+        this.actions = actions.concat(this.actions);
+
+        if (result === Events.KILL)
+            this.actions = [];
+        else if (!this.actions.length)
+            for (let input in values(this.processors))
+                if (input.fallthrough) {
+                    if (result === Events.KILL)
+                        break;
+                    result = dactyl.trapErrors(input.fallthrough, input, event);
+                }
+
+        this.processors = processors;
+
+        if (processors.length)
+            result = Events.KILL;
+        else if (this.actions.length) {
+            if (actions.length == 0)
+                dactyl.beep();
+
+            if (modes.replaying && !events.waitForPageLoad())
+                result = Events.KILL;
+            else {
+                for (var res = this.actions[0]; callable(res);)
+                    res = res();
+                result = res === Events.PASS ? Events.PASS : Events.KILL;
+            }
+        }
+        else if (result !== Events.KILL && processors.some(function (p) !p.main.passUnknown)) {
+            result = Events.KILL;
+            dactyl.beep();
+        }
+        else if (result === undefined)
+            result = Events.PASS;
+
+        if (result !== Events.PASS)
+            Events.kill(event);
+
+        if (result === Events.PASS || result === Events.ABORT)
+            this.events.filter(function (e) e.getPreventDefault())
+                .forEach(function (event, i) {
+                    if (event.originalTarget) {
+                        let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
+                        events.dispatch(event.originalTarget, evt, { skipmap: true, isMacro: true });
+                    }
+                    else if (i > 0)
+                        events.events.keypress.call(events, event);
+                });
+        return this.processors.length == 0;
+    }
+});
+
+var KeyProcessor = Class("KeyProcessor", {
+    init: function init(main, hive) {
+        this.main = main;
+        this.events = [];
+        this.hive = hive;
+        this.wantCount = this.main.count;
+    },
+
+    get toStringParams() [this.main.name, this.hive.name],
+
+    countStr: "",
+    command: "",
+    get count() this.countStr ? Number(this.countStr) : null,
+
+    append: function append(event) {
+        this.events.push(event);
+        let key = events.toString(event);
+
+        if (this.wantCount && !this.command &&
+                (this.countStr ? /^[0-9]$/ : /^[1-9]$/).test(key))
+            this.countStr += key;
+        else
+            this.command += key;
+        return this.events;
+    },
+
+    process: function process(event) {
+        this.append(event);
+        this.waiting = false;
+        return this.onKeyPress(event);
+    },
+
+    execute: function execute(map)
+        let (self = this, args = arguments)
+            function execute() {
+                if (self.preExecute)
+                    self.preExecute.apply(self, args);
+                let res = map.execute.apply(map, Array.slice(args, 1));
+                if (self.postExecute)
+                    self.postExecute.apply(self, args);
+                return res;
+            },
+
+    onKeyPress: function onKeyPress(event) {
+        if (event.skipmap)
+            return Events.ABORT;
+
+        if (!this.command)
+            return Events.WAIT;
+
+        var map = this.hive.get(this.main, this.command);
+        this.waiting = this.hive.getCandidates(this.main, this.command);
+        if (map) {
+            if (map.arg)
+                return KeyArgProcessor(this, map, false, "arg");
+            else if (map.motion)
+                return KeyArgProcessor(this, map, true, "motion");
+
+            return this.execute(map, { count: this.count, command: this.command, events: this.events });
+        }
+
+        if (!this.waiting)
+            return this.main.input ? Events.PASS : Events.ABORT;
+
+        return Events.WAIT;
+    }
+});
+
+var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
+    init: function init(input, map, wantCount, argName) {
+        init.supercall(this, input.main, input.hive);
+        this.map = map;
+        this.parent = input;
+        this.argName = argName;
+        this.wantCount = wantCount;
+    },
+
+    onKeyPress: function onKeyPress(event) {
+        if (Events.isEscape(event))
+            return Events.KILL;
+        if (!this.command)
+            return Events.WAIT;
+
+        let args = {
+            command: this.parent.command,
+            count:   this.count || this.parent.count,
+            events:  this.parent.events.concat(this.events)
+        };
+        args[this.argName] = this.command;
+
+        return this.execute(this.map, args);
+    }
+});
+
 /**
  * @instance events
  */
 var Events = Module("events", {
     init: function () {
+        const self = this;
+
+        XML.ignoreWhitespace = true;
         util.overlayWindow(window, {
             append: <e4x xmlns={XUL}>
                 <window id={document.documentElement.id}>
@@ -32,7 +246,6 @@ var Events = Module("events", {
         this._currentMacro = "";
         this._macroKeys = [];
         this._lastMacro = "";
-        this._processors = [];
 
         this.sessionListeners = [];
 
@@ -92,17 +305,12 @@ var Events = Module("events", {
         }
 
         this._activeMenubar = false;
-        this.addSessionListener(window, "DOMMenuBarActive", this.onDOMMenuBarActive, true);
-        this.addSessionListener(window, "DOMMenuBarInactive", this.onDOMMenuBarInactive, true);
-        this.addSessionListener(window, "blur", this.onBlur, true);
-        this.addSessionListener(window, "focus", this.onFocus, true);
-        this.addSessionListener(window, "keydown", this.onKeyUpOrDown, true);
-        this.addSessionListener(window, "keypress", this.onKeyPress, true);
-        this.addSessionListener(window, "keyup", this.onKeyUpOrDown, true);
-        this.addSessionListener(window, "mousedown", this.onMouseDown, true);
-        this.addSessionListener(window, "popuphidden", this.onPopupHidden, true);
-        this.addSessionListener(window, "popupshown", this.onPopupShown, true);
-        this.addSessionListener(window, "resize", this.onResize, true);
+        for (let [event, callback] in Iterator(this.events))
+            this.addSessionListener(window, event, callback, true);
+
+        dactyl.registerObserver("modeChange", function () {
+            delete self.processor;
+        });
     },
 
     destroy: function () {
@@ -296,7 +504,7 @@ var Events = Module("events", {
                     if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
                         events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event, evt);
                     else
-                        events.onKeyPress(event);
+                        events.events.keypress.call(events, event);
                 }
 
                 if (!this.feedingKeys)
@@ -326,9 +534,10 @@ var Events = Module("events", {
      *
      * @param {Document} doc The DOM document to associate this event with
      * @param {Type} type The type of event (keypress, click, etc.)
-     * @param {Object} opts The pseudo-event.
+     * @param {Object} opts The pseudo-event. @optional
      */
     create: function (doc, type, opts) {
+        opts = opts || {};
         var DEFAULTS = {
             HTML: {
                 type: type, bubbles: true, cancelable: false
@@ -353,7 +562,7 @@ var Events = Module("events", {
             }
         };
         const TYPES = {
-            change: "",
+            change: "", input: "",
             click: "Mouse", mousedown: "Mouse", mouseup: "Mouse",
             mouseover: "Mouse", mouseout: "Mouse",
             keypress: "Key", keyup: "Key", keydown: "Key"
@@ -362,7 +571,9 @@ var Events = Module("events", {
         var evt = doc.createEvent((t || "HTML") + "Events");
 
         let defaults = DEFAULTS[t || "HTML"]
-        evt["init" + t + "Event"].apply(evt, Object.keys(defaults).map(function (k) k in opts ? opts[k] : defaults[k]));
+        evt["init" + t + "Event"].apply(evt, Object.keys(defaults)
+                                                   .map(function (k) k in opts ? opts[k]
+                                                                               : defaults[k]));
         return evt;
     },
 
@@ -697,16 +908,6 @@ var Events = Module("events", {
         return buffer.loaded;
     },
 
-    onDOMMenuBarActive: function () {
-        this._activeMenubar = true;
-        modes.add(modes.MENU);
-    },
-
-    onDOMMenuBarInactive: function () {
-        this._activeMenubar = false;
-        modes.remove(modes.MENU);
-    },
-
     /**
      * Ensures that the currently focused element is visible and blurs
      * it if it's not.
@@ -723,66 +924,251 @@ var Events = Module("events", {
         }
     },
 
-    onBlur: function onFocus(event) {
-        if (event.originalTarget instanceof Window && services.focus.activeWindow == null) {
-            // Deals with circumstances where, after the main window
-            // blurs while a collapsed frame has focus, re-activating
-            // the main window does not restore focus and we lose key
-            // input.
-            services.focus.clearFocus(window);
-            document.commandDispatcher.focusedWindow = content;
-        }
-    },
+    events: {
+        DOMMenuBarActive: function () {
+            this._activeMenubar = true;
+            if (modes.main != modes.MENU)
+                modes.push(modes.MENU);
+        },
 
-    // TODO: Merge with onFocusChange
-    onFocus: function onFocus(event) {
-        let elem = event.originalTarget;
-        if (elem instanceof Element) {
+        DOMMenuBarInactive: function () {
+            this._activeMenubar = false;
+            modes.remove(modes.MENU);
+        },
+
+        blur: function onBlur(event) {
+            if (event.originalTarget instanceof Window && services.focus.activeWindow == null) {
+                // Deals with circumstances where, after the main window
+                // blurs while a collapsed frame has focus, re-activating
+                // the main window does not restore focus and we lose key
+                // input.
+                services.focus.clearFocus(window);
+                document.commandDispatcher.focusedWindow = content;
+            }
+        },
+
+        // TODO: Merge with onFocusChange
+        focus: function onFocus(event) {
+            let elem = event.originalTarget;
+            if (elem instanceof Element) {
+                let win = elem.ownerDocument.defaultView;
+
+                if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
+                    for (let e = elem; e instanceof Element; e = e.parentNode)
+                        if (util.computedStyle(e).visibility !== "visible" ||
+                                e.boxObject && e.boxObject.height === 0) {
+                            elem.blur();
+                            break;
+                        }
+
+                if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
+                    && !(services.focus.getLastFocusMethod(win) & 0x7000)
+                    && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
+                    if (elem.frameElement)
+                        dactyl.focusContent(true);
+                    else if (!(elem instanceof Window) || Editor.getEditor(elem))
+                        elem.blur();
+                }
+            }
+        },
+
+        /*
+        onFocus: function onFocus(event) {
+            let elem = event.originalTarget;
+            if (!(elem instanceof Element))
+                return;
             let win = elem.ownerDocument.defaultView;
 
-            if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
-                for (let e = elem; e instanceof Element; e = e.parentNode)
-                    if (util.computedStyle(e).visibility !== "visible" ||
-                            e.boxObject && e.boxObject.height === 0) {
+            try {
+                util.dump(elem, services.focus.getLastFocusMethod(win) & (0x7000));
+                if (buffer.focusAllowed(win))
+                    win.dactylLastFocus = elem;
+                else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement])) {
+                    if (win.dactylLastFocus)
+                        dactyl.focus(win.dactylLastFocus);
+                    else
                         elem.blur();
-                        break;
+                }
+            }
+            catch (e) {
+                util.dump(win, String(elem.ownerDocument), String(elem.ownerDocument && elem.ownerDocument.defaultView));
+                util.reportError(e);
+            }
+        },
+        */
+
+        input: function onInput(event) {
+            delete event.originalTarget.dactylKeyPress;
+        },
+
+        // this keypress handler gets always called first, even if e.g.
+        // the command-line has focus
+        // TODO: ...help me...please...
+        keypress: function onKeyPress(event) {
+            event.dactylDefaultPrevented = event.getPreventDefault();
+
+            // Hack to deal with <BS> and so forth not dispatching input
+            // events
+            if (event.originalTarget instanceof HTMLInputElement) {
+                let elem = event.originalTarget;
+                elem.dactylKeyPress = elem.value;
+                util.timeout(function () {
+                    if ("dactylKeyPress" in elem && elem.value !== elem.dactylKeyPress)
+                        events.dispatch(elem, events.create(elem.ownerDocument, "input"));
+                    delete events.dactylKeyPress;
+                });
+            }
+
+            let duringFeed = this.duringFeed || [];
+            this.duringFeed = [];
+            try {
+                if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
+                    for (let [k, v] in Iterator(this.feedingEvent))
+                        if (!(k in event))
+                            event[k] = v;
+                    this.feedingEvent = null;
+                }
+
+                let key = events.toString(event);
+                if (!key)
+                     return null;
+
+                if (modes.recording && (!this._input || !mappings.user.hasMap(modes.main, this._input.buffer + key)))
+                    events._macroKeys.push(key);
+
+                // feedingKeys needs to be separate from interrupted so
+                // we can differentiate between a recorded <C-c>
+                // interrupting whatever it's started and a real <C-c>
+                // interrupting our playback.
+                if (events.feedingKeys && !event.isMacro) {
+                    if (!event.originalTarget)
+                        util.dumpStack();
+                    if (key == "<C-c>") {
+                        events.feedingKeys = false;
+                        if (modes.replaying) {
+                            modes.replaying = false;
+                            this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
+                        }
                     }
+                    else
+                        duringFeed.push(event);
 
-            if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
-                && !(services.focus.getLastFocusMethod(win) & 0x7000)
-                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
-                if (elem.frameElement)
-                    dactyl.focusContent(true);
-                else if (!(elem instanceof Window) || Editor.getEditor(elem))
-                    elem.blur();
+                    return Events.kill(event);
+                }
+
+                if (!this.processor) {
+                    let mode = modes.getStack(0);
+                    if (event.dactylMode)
+                        mode = Modes.StackElement(event.dactylMode);
+
+                    let ignore = false;
+
+                    if (modes.main == modes.PASS_THROUGH)
+                        ignore = !Events.isEscape(key) && key != "<C-v>";
+                    else if (modes.main == modes.QUOTE) {
+                        if (modes.getStack(1).main == modes.PASS_THROUGH) {
+                            mode.params.mainMode = modes.getStack(2).main;
+                            ignore = Events.isEscape(key);
+                        }
+                        else if (events.shouldPass(event))
+                            mode.params.mainMode = modes.getStack(1).main;
+                        else
+                            ignore = true;
+
+                        if (ignore && !Events.isEscape(key))
+                            modes.pop();
+                    }
+                    else if (!event.isMacro && !event.noremap && events.shouldPass(event))
+                        ignore = true;
+
+                    if (ignore)
+                        return null;
+
+                    if (key == "<C-c>")
+                        util.interrupted = true;
+
+                    if (config.ignoreKeys[key] & mode.main)
+                        return null;
+
+                    let hives = mappings.hives.slice(event.noremap ? -1 : 0);
+
+                    let keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
+
+                    this.processor = ProcessorStack(mode, hives, keyModes);
+                }
+
+                let processor = this.processor;
+                this.processor = null;
+                if (!processor.process(event))
+                    this.processor = processor;
+
             }
-        }
-    },
-
-    /*
-    onFocus: function onFocus(event) {
-        let elem = event.originalTarget;
-        if (!(elem instanceof Element))
-            return;
-        let win = elem.ownerDocument.defaultView;
-
-        try {
-            util.dump(elem, services.focus.getLastFocusMethod(win) & (0x7000));
-            if (buffer.focusAllowed(win))
-                win.dactylLastFocus = elem;
-            else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement])) {
-                if (win.dactylLastFocus)
-                    dactyl.focus(win.dactylLastFocus);
+            catch (e) {
+                dactyl.reportError(e);
+            }
+            finally {
+                [duringFeed, this.duringFeed] = [this.duringFeed, duringFeed];
+                if (this.feedingKeys)
+                    this.duringFeed = this.duringFeed.concat(duringFeed);
                 else
-                    elem.blur();
+                    for (let event in values(duringFeed))
+                        try {
+                            this.dispatch(event.originalTarget, event, event);
+                        }
+                        catch (e) {
+                            util.reportError(e);
+                        }
+            }
+        },
+
+        keyup: function onKeyUp(event) {
+            // Prevent certain sites from transferring focus to an input box
+            // before we get a chance to process our key bindings on the
+            // "keypress" event.
+
+            if (modes.main == modes.PASS_THROUGH ||
+                modes.main == modes.QUOTE
+                    && modes.getStack(1).main !== modes.PASS_THROUGH
+                    && !events.shouldPass(event) ||
+                !modes.passThrough && events.shouldPass(event))
+                return;
+
+            if (!Events.isInputElement(dactyl.focusedElement))
+                event.stopPropagation();
+        },
+        keydown: function onKeyDown(event) {
+            this.events.keyup.call(this, event);
+        },
+
+        mousedown: function onMouseDown(event) {
+            let elem = event.target;
+            let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+
+            for (; win; win = win != win.parent && win.parent)
+                win.document.dactylFocusAllowed = true;
+        },
+
+        popupshown: function onPopupShown(event) {
+            if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
+                if (modes.main != modes.MENU)
+                    modes.push(modes.MENU);
+        },
+
+        popuphidden: function onPopupHidden() {
+            // gContextMenu is set to NULL, when a context menu is closed
+            if (window.gContextMenu == null && !this._activeMenubar)
+                modes.remove(modes.MENU);
+        },
+
+        resize: function onResize(event) {
+            if (window.fullScreen != this._fullscreen) {
+                statusline.statusBar.removeAttribute("moz-collapsed");
+                this._fullscreen = window.fullScreen;
+                dactyl.triggerObserver("fullscreen", this._fullscreen);
+                autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
             }
         }
-        catch (e) {
-            util.dump(win, String(elem.ownerDocument), String(elem.ownerDocument && elem.ownerDocument.defaultView));
-            util.reportError(e);
-        }
     },
-    */
 
     // argument "event" is deliberately not used, as i don't seem to have
     // access to the real focus target
@@ -858,245 +1244,6 @@ var Events = Module("events", {
         }
     },
 
-    // this keypress handler gets always called first, even if e.g.
-    // the command-line has focus
-    // TODO: ...help me...please...
-    onKeyPress: function onKeyPress(event) {
-        event.dactylDefaultPrevented = event.getPreventDefault();
-
-        function kill(event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        function shouldPass()
-            (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
-            options.get("passkeys").has(events.toString(event));
-
-        let duringFeed = this.duringFeed || [];
-        this.duringFeed = [];
-        try {
-            if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
-                for (let [k, v] in Iterator(this.feedingEvent))
-                    if (!(k in event))
-                        event[k] = v;
-                this.feedingEvent = null;
-            }
-
-            let key = events.toString(event);
-            if (!key)
-                 return null;
-
-            if (modes.recording && (!this._input || !mappings.user.hasMap(modes.main, this._input.buffer + key)))
-                events._macroKeys.push(key);
-
-            // feedingKeys needs to be separate from interrupted so
-            // we can differentiate between a recorded <C-c>
-            // interrupting whatever it's started and a real <C-c>
-            // interrupting our playback.
-            if (events.feedingKeys && !event.isMacro) {
-                if (!event.originalTarget)
-                    util.dumpStack();
-                if (key == "<C-c>") {
-                    events.feedingKeys = false;
-                    if (modes.replaying) {
-                        modes.replaying = false;
-                        this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
-                    }
-                }
-                else
-                    duringFeed.push(event);
-
-                return kill(event);
-            }
-
-            let mode = modes.getStack(0);
-            if (event.dactylMode)
-                mode = Modes.StackElement(event.dactylMode);
-
-            let processors = this._processors;
-            this._processors = [];
-            if (!processors.length) {
-                let ignore = false;
-                let overrideMode = null;
-
-                // menus have their own command handlers
-                if (modes.extended & modes.MENU)
-                    overrideMode = modes.MENU;
-
-                if (modes.main == modes.PASS_THROUGH)
-                    ignore = !Events.isEscape(key) && key != "<C-v>";
-                else if (modes.main == modes.QUOTE) {
-                    if (modes.getStack(1).main == modes.PASS_THROUGH) {
-                        mode.params.mainMode = modes.getStack(2).main;
-                        ignore = Events.isEscape(key);
-                    }
-                    else if (shouldPass())
-                        mode.params.mainMode = modes.getStack(1).main;
-                    else
-                        ignore = true;
-
-                    if (ignore && !Events.isEscape(key))
-                        modes.pop();
-                }
-                else if (!event.isMacro && !event.noremap && shouldPass())
-                    ignore = true;
-
-                if (ignore)
-                    return null;
-
-                if (key == "<C-c>")
-                    util.interrupted = true;
-
-                if (config.ignoreKeys[key] & mode.main)
-                    return null;
-
-                if (overrideMode)
-                    var keyModes = array([overrideMode]);
-                else
-                    keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
-
-                let hives = mappings.hives.slice(event.noremap ? -1 : 0);
-
-                processors = keyModes.map(function (m) hives.map(function (h) Events.KeyProcessor(m, h)))
-                                     .flatten().array;
-
-                for (let [i, input] in Iterator(processors)) {
-                    let params = input.main == mode.main ? mode.params : input.main.params;
-                    if (params.preExecute)
-                        input.preExecute = params.preExecute;
-                    if (params.postExecute)
-                        input.postExecute = params.postExecute;
-                    if (params.onEvent && input.hive === mappings.builtin)
-                        input.fallthrough = function (event) {
-                            return params.onEvent(event) === false ? Events.KILL : Events.PASS;
-                        };
-                    }
-            }
-
-            let refeed, buffer, waiting = 0, action;
-            for (let input in values(processors)) {
-                var res = input.process(event);
-                waiting += res == Events.WAIT;
-                buffer = buffer || input.inputBuffer;
-                if (callable(res))
-                    action = action || res;
-
-                if (isArray(res) && !waiting)
-                    refeed = res;
-                if (res === Events.KILL)
-                    break;
-            }
-
-            if (!refeed || refeed.length == 1)
-                for (let input in values(processors))
-                    if (input.fallthrough) {
-                        if (res === Events.KILL)
-                            break;
-                        res = dactyl.trapErrors(input.fallthrough, input, event);
-                    }
-
-            if (!processors.some(function (p) p.main.ownsBuffer))
-                statusline.updateInputBuffer(buffer);
-
-            if (waiting) {
-                res = Events.KILL;
-                this._processors = processors;
-            }
-            else if (action)
-                res = action(res) === Events.PASS ? Events.PASS : Events.KILL;
-
-            if (res !== Events.KILL && (mode.main & (modes.TEXT_EDIT | modes.VISUAL))) {
-                res = Events.KILL;
-                dactyl.beep();
-            }
-
-            if (res !== Events.PASS && !isArray(res))
-                refeed = null;
-
-            if (refeed && refeed[0] && (!refeed[0].getPreventDefault() || refeed[0].dactylDefaultPrevented)) {
-                res = Events.PASS;
-                refeed.shift();
-            }
-
-            if (res !== Events.PASS)
-                kill(event);
-
-            if (refeed)
-                for (let [i, event] in Iterator(refeed))
-                    if (event.originalTarget) {
-                        let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
-                        events.dispatch(event.originalTarget, evt, { skipmap: true, isMacro: true });
-                    }
-                    else if (i > 0)
-                        events.onKeyPress(event);
-        }
-        catch (e) {
-            dactyl.reportError(e);
-        }
-        finally {
-            [duringFeed, this.duringFeed] = [this.duringFeed, duringFeed];
-            if (this.feedingKeys)
-                this.duringFeed = this.duringFeed.concat(duringFeed);
-            else
-                for (let event in values(duringFeed))
-                    try {
-                        this.dispatch(event.originalTarget, event, event);
-                    }
-                    catch (e) {
-                        util.reportError(e);
-                    }
-        }
-    },
-
-    onKeyUpOrDown: function onKeyUpOrDown(event) {
-        // Prevent certain sites from transferring focus to an input box
-        // before we get a chance to process our key bindings on the
-        // "keypress" event.
-
-        function shouldPass() // FIXME.
-            (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
-            options.get("passkeys").has(events.toString(event));
-
-        if (modes.main == modes.PASS_THROUGH ||
-            modes.main == modes.QUOTE
-                && modes.getStack(1).main !== modes.PASS_THROUGH
-                && !shouldPass() ||
-            !modes.passThrough && shouldPass())
-            return;
-
-        if (!Events.isInputElement(dactyl.focusedElement))
-            event.stopPropagation();
-    },
-
-    onMouseDown: function onMouseDown(event) {
-        let elem = event.target;
-        let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
-
-        for (; win; win = win != win.parent && win.parent)
-            win.document.dactylFocusAllowed = true;
-    },
-
-    onPopupShown: function onPopupShown(event) {
-        if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
-            modes.add(modes.MENU);
-    },
-
-    onPopupHidden: function onPopupHidden() {
-        // gContextMenu is set to NULL, when a context menu is closed
-        if (window.gContextMenu == null && !this._activeMenubar)
-            modes.remove(modes.MENU);
-    },
-
-    onResize: function onResize(event) {
-        if (window.fullScreen != this._fullscreen) {
-            statusline.statusBar.removeAttribute("moz-collapsed");
-            this._fullscreen = window.fullScreen;
-            dactyl.triggerObserver("fullscreen", this._fullscreen);
-            autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
-        }
-    },
-
     onSelectionChange: function onSelectionChange(event) {
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
         let couldCopy = controller && controller.isCommandEnabled("cmd_copy");
@@ -1111,136 +1258,16 @@ var Events = Module("events", {
             else if (modes.main == modes.CARET)
                 modes.push(modes.VISUAL);
         }
-    }
+    },
+
+    shouldPass: function shouldPass(event)
+        (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
+        options.get("passkeys").has(events.toString(event))
 }, {
+    ABORT: {},
     KILL: true,
     PASS: false,
     WAIT: null,
-
-
-    KeyProcessor: Class("KeyProcessor", {
-        init: function init(main, hive) {
-            this.main = main;
-            this.events = [];
-            this.hive = hive;
-        },
-
-        get toStringParams() [this.main.name, this.hive.name],
-
-        buffer: "",             // partial command storage
-        pendingMotionMap: null, // e.g. "d{motion}" if we wait for a motion of the "d" command
-        pendingArgMap: null,    // pending map storage for commands like m{a-z}
-        count: null,            // parsed count from the input buffer
-        motionCount: null,
-
-        append: function append(event) {
-            this.events.push(event);
-            this.buffer += events.toString(event);
-            return this.events;
-        },
-
-        process: function process(event) {
-            function kill(event) {
-                event.stopPropagation();
-                event.preventDefault();
-            }
-
-            let res = this.onKeyPress(event);
-
-            if (res != Events.WAIT)
-                this.inputBuffer = "";
-            else {
-                let motionMap = (this.pendingMotionMap && this.pendingMotionMap.names[0]) || "";
-                this.inputBuffer = motionMap + this.buffer;
-            }
-
-            return res;
-        },
-
-        execute: function execute(map)
-            let (self = this, args = arguments)
-                function execute() {
-                    if (self.preExecute)
-                        self.preExecute.apply(self, args);
-                    let res = map.execute.apply(map, Array.slice(args, 1));
-                    if (self.postExecute) // To do: get rid of self.
-                        self.postExecute.apply(self, args);
-                    return res;
-                },
-
-        onKeyPress: function onKeyPress(event) {
-            // This all needs to go. It's horrible. --Kris
-
-            let key = events.toString(event);
-            let [, countStr, command] = /^((?:[1-9][0-9]*)?)(.*)/.exec(this.buffer + key);
-
-            var map = this.hive.get(this.main, command);
-
-            let candidates = this.hive.getCandidates(this.main, command);
-            if (candidates == 0 && !map) {
-                [map] = this.pendingMap || [];
-                this.pendingMap = null;
-                if (map && map.arg)
-                    this.pendingArgMap = [map, command];
-            }
-
-            // counts must be at the start of a complete mapping (10j -> go 10 lines down)
-            if (countStr && !command) {
-                // no count for insert mode mappings
-                if (!this.main.count)
-                    return this.append(event);
-                else if (this.main.input)
-                    return Events.PASS;
-                else
-                    this.append(event);
-            }
-            else if (this.pendingArgMap) {
-                let [map, command] = this.pendingArgMap;
-                if (!Events.isEscape(key))
-                    return this.execute(map, null, this.count, key, command);
-                return Events.KILL;
-            }
-            else if (!event.skipmap && map && candidates == 0) {
-                this.pendingMap = null;
-
-                let count = this.pendingMotionMap ? "motionCount" : "count";
-                this[count] = parseInt(countStr, 10);
-
-                if (isNaN(this[count]))
-                    this[count] = null;
-
-                if (map.arg) {
-                    this.append(event);
-                    this.pendingArgMap = [map, command];
-                }
-                else if (this.pendingMotionMap) {
-                    let [map, command] = this.pendingMotionMap;
-                    if (!Events.isEscape(key))
-                        return this.execute(map, command, this.motionCount || this.count, null, command);
-                    return Events.KILL;
-                }
-                else if (map.motion) {
-                    this.buffer = "";
-                    this.pendingMotionMap = [map, command];
-                }
-                else {
-                    if (modes.replaying && !events.waitForPageLoad())
-                        return Events.KILL;
-
-                    return this.execute(map, null, this.count, null, command);
-                }
-            }
-            else if (!event.skipmap && this.hive.getCandidates(this.main, command) > 0) {
-                this.append(event);
-                this.pendingMap = [map, command];
-            }
-            else {
-                this.append(event);
-                return this.events;
-            }
-            return Events.WAIT;
-        }
-    }),
 
     isEscape: function isEscape(event)
         let (key = isString(event) ? event : events.toString(event))
@@ -1253,6 +1280,11 @@ var Events = Module("events", {
                                  HTMLTextAreaElement,
                                  Ci.nsIDOMXULTreeElement, Ci.nsIDOMXULTextBoxElement]) ||
                elem instanceof Window && Editor.getEditor(elem);
+    },
+
+    kill: function kill(event) {
+        event.stopPropagation();
+        event.preventDefault();
     }
 }, {
     commands: function () {

@@ -57,7 +57,7 @@
       completion system customization.
     * The external editor can now be configured to open to a given
       line number and column, used for opening source links and
-      editing input fields with <C-i>. See :h 'editor'.
+      editing input fields with i_<C-i>. See :h 'editor'.
     * Command changes:
       - :viusage, :optionusage and :exusage were replaced with :listkeys,
         :listoptions and :listcommands, providing more powerful and
@@ -66,16 +66,17 @@
         and linking to source code locations).
       - :downloads now opens a download list in the multi-line output
         buffer.
-      - :extensions has been replaced with a more powerful :addons
+      - :extensions has been replaced with a more powerful :addons.
       - Added :cookies command.
-      * :extadd now supports remote URLs as well as local files on Firefox 4.
-      * Added :if/:elseif/:else/:endif conditionals.
+      - :extadd now supports remote URLs as well as local files on Firefox 4.
+      - Added :if/:elseif/:else/:endif conditionals.
       - Added -charset and -post to :bmark.
       - Added -keyword, -tags, -title to :delbmarks.
       - Added :extrehash, :exttoggle, :extupdate, and :rehash commands.
       - Added :feedkeys command.
       - Added -sort option to :history.
-      - Added several new options, including -javascript, to :abbrev and :map.
+      - Added several new options, including -javascript, to :abbreviate and
+        :map.
       - Added :mksyntax command to auto-generate Vim syntax files.
       - :open now only opens files beginning with /, ./, ../, or ~/
       - :saveas now provides completions for default file names, and
@@ -87,7 +88,7 @@
       - Added :yank command.
       - :delmarks, :marks and :qmarks now also accept ranges, same as
         :delqmarks.
-      - :command now accepts comma-separated alternative command names
+      - :command now accepts comma-separated alternative command names.
       - :command -complete custom now also accepts a completions array, see
         :h :command-completion-custom.
     * Improvements to :style and :highlight:
@@ -127,7 +128,7 @@
     * Option changes:
       - Added "bookmarks", "diverted", and "links" to 'activate'
         option.
-      - Added 'altwildmode' and <A-Tab> command-line key binding.
+      - Added 'altwildmode' and c_<A-Tab> command-line key binding.
       - Added 'autocomplete' option for specifying which completion
         groups should be auto-completed.
       - Added 'banghist' option.
@@ -135,7 +136,7 @@
       - 'complete' now defaults to "slf" but file completion only
         triggers when the URL begins as above.
       - Added 'passkeys' option.
-      - Changed 'urlseparator' default value to '|'.
+      - Changed 'urlseparator' default value to "|".
       - Added "passwords" and "venkman" dialogs to :dialog.
       - Added 'wildanchor' option.
       - Added 'cookies', 'cookieaccept', and 'cookielifetime' options.
@@ -150,7 +151,7 @@
     * Completion list now behaves better when the multi-line output
       window is displayed.
     * Major help system improvements:
-      - Plugins may now provide full-fledged ':help' documentation.
+      - Plugins may now provide full-fledged :help documentation.
       - Add basic plugin authorship documentation.
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements.

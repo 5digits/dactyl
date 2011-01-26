@@ -9,177 +9,113 @@
 /** @scope modules */
 /** @instance hints */
 
-var Hints = Module("hints", {
-    init: function init() {
-        const self = this;
+var HintSession = Class("HintSession", {
+    init: function init(mode, opts) {
+        opts = opts || {};
 
-        this._hintMode = null;
-        this._submode = "";             // used for extended mode, can be "o", "t", "y", etc.
-        this._hintString = "";          // the typed string part of the hint is in this string
-        this._hintNumber = 0;           // only the numerical part of the hint
-        this._usedTabKey = false;       // when we used <Tab> to select an element
-        this.prevInput = "";            // record previous user input type, "text" || "number"
-        this._extendedhintCount = null; // for the count argument of Mode#action (extended hint only)
+        // Hack.
+        if (!opts.window && modes.main == modes.OUTPUT_MULTILINE)
+            opts.window = commandline.widgets.multilineOutput.contentWindow;
 
-        this._pageHints = [];
-        this._validHints = []; // store the indices of the "hints" array with valid elements
+        this.mode = hints.modes[mode];
+        dactyl.assert(this.mode);
 
-        this._activeTimeout = null; // needed for hinttimeout > 0
+        this.activeTimeout = null; // needed for hinttimeout > 0
+        this.continue = Boolean(opts.continue);
+        this.docs = [];
+        this.hintKeys = events.fromString(options["hintkeys"]).map(events.closure.toString);
+        this.hintNumber = 0;
+        this.hintString = opts.filter || "";
+        this.pageHints = [];
+        this.prevInput = "";
+        this.usedTabKey = false;
+        this.validHints = []; // store the indices of the "hints" array with valid elements
 
-        // keep track of the documents which we generated the hints for
-        // this._docs = { doc: document, start: start_index in hints[], end: end_index in hints[] }
-        this._docs = [];
+        commandline.input(UTF8(this.mode.prompt) + ": ", null, this.closure);
+        modes.extended = modes.HINTS;
 
-        this._resizeTimer = Timer(100, 500, function () {
-            if (self._top && (modes.extended & modes.HINTS)) {
-                self._removeHints(0, true);
-                self._generate(self._top);
-                self._showHints();
-            }
-        });
-        let appContent = document.getElementById("appcontent");
-        if (appContent)
-            events.addSessionListener(appContent, "scroll", this._resizeTimer.closure.tell, false);
+        this.top = opts.window || content;
+        this.top.addEventListener("resize", hints.resizeTimer.closure.tell, true);
 
-        const Mode = Hints.Mode;
-        Mode.defaultValue("tags", function () function () options["hinttags"]);
-        Mode.prototype.__defineGetter__("xpath", function ()
-            options.get("extendedhinttags").getKey(this.name, this.tags()));
+        this.generate();
 
-        this._hintModes = {};
-        this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
-        this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
-        this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, false));
-        this.addMode("f", "Focus frame",                          function (elem) dactyl.focus(elem.ownerDocument.defaultView));
-        this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, null, isScrollable);
-        this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
-        this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
-        this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
-        this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
-        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
-        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
-        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
-        this.addMode("a", "Add a bookmark",                       function (elem) bookmarks.addSearchKeyword(elem));
-        this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
-        this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
-        this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
-        this.addMode("y", "Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true));
-        this.addMode("Y", "Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true));
-        this.addMode("c", "Open context menu",                    function (elem) buffer.openContextMenu(elem));
-        this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
-        this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
+        this.show();
 
-        function isScrollable(elem) isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]) ||
-            Buffer.isScrollable(elem, 0, true) || Buffer.isScrollable(elem, 0, false);
+        if (this.validHints.length == 0) {
+            dactyl.beep();
+            modes.pop();
+        }
+        else if (this.validHints.length == 1 && !this.continue)
+            this.process(false);
+        else // Ticket #185
+            this.checkUnique();
+    },
+
+    get extended() modes.HINTS,
+
+    checkUnique: function _checkUnique() {
+        if (this.hintNumber == 0)
+            return;
+        dactyl.assert(this.hintNumber <= this.validHints.length);
+
+        // if we write a numeric part like 3, but we have 45 hints, only follow
+        // the hint after a timeout, as the user might have wanted to follow link 34
+        if (this.hintNumber > 0 && this.hintNumber * this.hintKeys.length <= this.validHints.length) {
+            let timeout = options["hinttimeout"];
+            if (timeout > 0)
+                this.activeTimeout = this.timeout(function () {
+                    this.process(true);
+                }, timeout);
+        }
+        else // we have a unique hint
+            this.process(true);
     },
 
     /**
      * Clear any timeout which might be active after pressing a number
      */
     clearTimeout: function () {
-        if (this._activeTimeout)
-            this._activeTimeout.cancel();
-        this._activeTimeout = null;
+        if (this.activeTimeout)
+            this.activeTimeout.cancel();
+        this.activeTimeout = null;
     },
 
-    /**
-     * Reset hints, so that they can be cleanly used again.
-     */
-    _reset: function _reset(slight) {
-        if (!slight) {
-            this.__reset();
-            this.prevInput = "";
-            this.escNumbers = false;
-            this._usedTabKey = false;
-            this._hintNumber = 0;
-            this._hintString = "";
-            statusline.updateInputBuffer("");
-            commandline.widgets.command = "";
-        }
-        this._pageHints = [];
-        this._validHints = [];
-        this._docs = [];
+    _escapeNumbers: false,
+    get escapeNumbers() this._escapeNumbers,
+    set escapeNumbers(val) {
         this.clearTimeout();
-    },
-    __reset: function __reset() {
-        if (!this._usedTabKey)
-            this._hintNumber = 0;
-        if (this._continue && this._validHints.length <= 1) {
-            this._hintString = "";
-            commandline.widgets.command = this._hintString;
-            this._showHints();
-        }
-        this._updateStatusline();
+        this._escapeNumbers = !!val;
+        if (val && this.usedTabKey)
+            this.hintNumber = 0;
+
+        this.updateStatusline();
     },
 
     /**
-     * Display the current status to the user.
+     * Returns the hint string for a given number based on the values of
+     * the 'hintkeys' option.
+     *
+     * @param {number} n The number to transform.
+     * @returns {string}
      */
-    _updateStatusline: function _updateStatusline() {
-        statusline.updateInputBuffer((hints.escNumbers ? options["mapleader"] : "") +
-                                     (this._hintNumber ? this.getHintString(this._hintNumber) : ""));
+    getHintString: function getHintString(n) {
+        let res = [], len = this.hintKeys.length;
+        do {
+            res.push(this.hintKeys[n % len]);
+            n = Math.floor(n / len);
+        }
+        while (n > 0);
+        return res.reverse().join("");
     },
 
     /**
-     * Get a hint for "input", "textarea" and "select".
+     * Returns true if the given key string represents a
+     * pseudo-hint-number.
      *
-     * Tries to use <label>s if possible but does not try to guess that a
-     * neighboring element might look like a label. Only called by
-     * {@link #_generate}.
-     *
-     * If it finds a hint it returns it, if the hint is not the caption of the
-     * element it will return showText=true.
-     *
-     * @param {Object} elem The element used to generate hint text.
-     * @param {Document} doc The containing document.
-     *
-     * @returns [text, showText]
+     * @param {string} key The key to test.
+     * @returns {boolean} Whether the key represents a hint number.
      */
-    _getInputHint: function _getInputHint(elem, doc) {
-        // <input type="submit|button|reset"/>   Always use the value
-        // <input type="radio|checkbox"/>        Use the value if it is not numeric or label or name
-        // <input type="password"/>              Never use the value, use label or name
-        // <input type="text|file"/> <textarea/> Use value if set or label or name
-        // <input type="image"/>                 Use the alt text if present (showText) or label or name
-        // <input type="hidden"/>                Never gets here
-        // <select/>                             Use the text of the selected item or label or name
-
-        let type = elem.type;
-
-        if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type))
-            return [elem.value, false];
-        else {
-            for (let [, option] in Iterator(options["hintinputs"])) {
-                if (option == "value") {
-                    if (elem instanceof HTMLSelectElement) {
-                        if (elem.selectedIndex >= 0)
-                            return [elem.item(elem.selectedIndex).text.toLowerCase(), false];
-                    }
-                    else if (type == "image") {
-                        if (elem.alt)
-                            return [elem.alt.toLowerCase(), true];
-                    }
-                    else if (elem.value && type != "password") {
-                        // radio's and checkboxes often use internal ids as values - maybe make this an option too...
-                        if (! ((type == "radio" || type == "checkbox") && !isNaN(elem.value)))
-                            return [elem.value.toLowerCase(), (type == "radio" || type == "checkbox")];
-                    }
-                }
-                else if (option == "label") {
-                    if (elem.id) {
-                        // TODO: (possibly) do some guess work for label-like objects
-                        let label = util.evaluateXPath(["label[@for=" + elem.id.quote() + "]"], doc).snapshotItem(0);
-                        if (label)
-                            return [label.textContent.toLowerCase(), true];
-                    }
-                }
-                else if (option == "name")
-                    return [elem.name.toLowerCase(), true];
-            }
-        }
-
-        return ["", false];
-    },
+    isHintKey: function isHintKey(key) this.hintKeys.indexOf(key) >= 0,
 
     /**
      * Gets the actual offset of an imagemap area.
@@ -191,7 +127,7 @@ var Hints = Module("hints", {
      * @param {number} topPos The top offset of the image.
      * @returns [leftPos, topPos] The updated offsets.
      */
-    _getAreaOffset: function _getAreaOffset(elem, leftPos, topPos) {
+    getAreaOffset: function _getAreaOffset(elem, leftPos, topPos) {
         try {
             // Need to add the offset to the area element.
             // Always try to find the top-left point, as per dactyl default.
@@ -245,7 +181,7 @@ var Hints = Module("hints", {
     },
 
     // the containing block offsets with respect to the viewport
-    _getContainerOffsets: function _getContainerOffsets(doc) {
+    getContainerOffsets: function _getContainerOffsets(doc) {
         let body = doc.body || doc.documentElement;
         // TODO: getComputedStyle returns null for Facebook channel_iframe doc - probable Gecko bug.
         let style = util.computedStyle(body);
@@ -266,13 +202,13 @@ var Hints = Module("hints", {
      * @param {Window} win The window for which to generate hints.
      * @default content
      */
-    _generate: function _generate(win, offsets) {
+    generate: function _generate(win, offsets) {
         if (!win)
-            win = this._top;
+            win = this.top;
 
         let doc = win.document;
 
-        let [offsetX, offsetY] = this._getContainerOffsets(doc);
+        let [offsetX, offsetY] = this.getContainerOffsets(doc);
 
         offsets = offsets || { left: 0, right: 0, top: 0, bottom: 0 };
         offsets.right  = win.innerWidth  - offsets.right;
@@ -300,10 +236,10 @@ var Hints = Module("hints", {
 
             let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none"/>, doc);
 
-            let mode = this._hintMode;
+            let mode = this.mode;
             let res = util.evaluateXPath(mode.xpath, doc, true);
 
-            let start = this._pageHints.length;
+            let start = this.pageHints.length;
             for (let elem in res) {
                 let hint = { elem: elem, showText: false };
 
@@ -313,7 +249,7 @@ var Hints = Module("hints", {
                 if (elem.hasAttributeNS(NS, "hint"))
                     [hint.text, hint.showText] = [elem.getAttributeNS(NS, "hint"), true];
                 else if (isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement]))
-                    [hint.text, hint.showText] = this._getInputHint(elem, doc);
+                    [hint.text, hint.showText] = hints.getInputHint(elem, doc);
                 else if (elem.firstElementChild instanceof HTMLImageElement && /^\s*$/.test(elem.textContent))
                     [hint.text, hint.showText] = [elem.firstElementChild.alt || elem.firstElementChild.title, true];
                 else
@@ -326,22 +262,22 @@ var Hints = Module("hints", {
                 let topPos  = Math.max((rect.top + offsetY), offsetY);
 
                 if (elem instanceof HTMLAreaElement)
-                    [leftPos, topPos] = this._getAreaOffset(elem, leftPos, topPos);
+                    [leftPos, topPos] = this.getAreaOffset(elem, leftPos, topPos);
 
                 hint.span.style.left = leftPos + "px";
                 hint.span.style.top =  topPos + "px";
                 container.appendChild(hint.span);
 
-                this._pageHints.push(hint);
+                this.pageHints.push(hint);
             }
 
-            this._docs.push({ doc: doc, start: start, end: this._pageHints.length - 1 });
+            this.docs.push({ doc: doc, start: start, end: this.pageHints.length - 1 });
         }
 
         Array.forEach(win.frames, function (f) {
             if (isVisible(f.frameElement)) {
                 let rect = f.frameElement.getBoundingClientRect();
-                this._generate(f, {
+                this.generate(f, {
                     left: Math.max(offsets.left - rect.left, 0),
                     right: Math.max(rect.right - offsets.right, 0),
                     top: Math.max(offsets.top - rect.top, 0),
@@ -353,26 +289,189 @@ var Hints = Module("hints", {
         return true;
     },
 
+    leave: function leave(stack) {
+        if (!stack.push) {
+            if (hints.hintSession == this)
+                hints.hintSession = null;
+            this.continue = false;
+            if (this.top)
+                this.top.removeEventListener("resize", hints.resizeTimer.closure.tell, true);
+
+            this.removeHints(0);
+        }
+    },
+
     /**
-     * Update the activeHint.
+     * Handle user input.
      *
-     * By default highlights it green instead of yellow.
+     * Will update the filter on displayed hints and follow the final hint if
+     * necessary.
      *
-     * @param {number} newId The hint to make active.
-     * @param {number} oldId The currently active hint.
+     * @param {Event} event The keypress event.
      */
-    _showActiveHint: function _showActiveHint(newId, oldId) {
-        let oldHint = this._validHints[oldId - 1];
-        if (oldHint) {
-            this._setClass(oldHint.elem, false);
-            oldHint.span.removeAttribute("active");
+    onChange: function onInput(event) {
+        this.prevInput = "text";
+
+        this.clearTimeout();
+
+        this.hintNumber = 0;
+        this.hintString = commandline.command;
+        this.updateStatusline();
+        this.show();
+        if (this.validHints.length == 1)
+            this.process(false);
+    },
+
+    /**
+     * Handle a hint mode event.
+     *
+     * @param {Event} event The event to handle.
+     */
+    onKeyPress: function onKeyPress(event) {
+        const KILL = false, PASS = true;
+        let key = events.toString(event);
+
+        this.clearTimeout();
+
+        if (!this.escapeNumbers && this.isHintKey(key)) {
+            this.prevInput = "number";
+
+            let oldHintNumber = this.hintNumber;
+            if (this.usedTabKey) {
+                this.hintNumber = 0;
+                this.usedTabKey = false;
+            }
+            this.hintNumber = this.hintNumber * this.hintKeys.length +
+                this.hintKeys.indexOf(key);
+
+            this.updateStatusline();
+
+            if (this.docs.length == 0) {
+                this.generate();
+                this.show();
+            }
+            this.showActiveHint(this.hintNumber, oldHintNumber || 1);
+
+            dactyl.assert(this.hintNumber != 0);
+
+            this.checkUnique();
+            return KILL;
         }
 
-        let newHint = this._validHints[newId - 1];
-        if (newHint) {
-            this._setClass(newHint.elem, true);
-            newHint.span.setAttribute("active", "true");
+        return PASS;
+    },
+
+    onResize: function () {
+        this.removeHints(0);
+        this.generate(this.top);
+        this.show();
+    },
+
+    /**
+     * Finish hinting.
+     *
+     * Called when there are one or zero hints in order to possibly activate it
+     * and, if activated, to clean up the rest of the hinting system.
+     *
+     * @param {boolean} followFirst Whether to force the following of the first
+     *     link (when 'followhints' is 1 or 2)
+     *
+     */
+    process: function _processHints(followFirst) {
+        dactyl.assert(this.validHints.length > 0);
+
+        // This "followhints" option is *too* confusing. For me, and
+        // presumably for users, too. --Kris
+        if (options["followhints"] > 0) {
+            if (!followFirst)
+                return; // no return hit; don't examine uniqueness
+
+            // OK. return hit. But there's more than one hint, and
+            // there's no tab-selected current link. Do not follow in mode 2
+            dactyl.assert(options["followhints"] != 2 || this.validHints.length == 1 || this.hintNumber);
         }
+
+        if (!followFirst) {
+            let firstHref = this.validHints[0].elem.getAttribute("href") || null;
+            if (firstHref) {
+                if (this.validHints.some(function (h) h.elem.getAttribute("href") != firstHref))
+                    return;
+            }
+            else if (this.validHints.length > 1)
+                return;
+        }
+
+        let timeout = followFirst || events.feedingKeys ? 0 : 500;
+        let activeIndex = (this.hintNumber ? this.hintNumber - 1 : 0);
+        let elem = this.validHints[activeIndex].elem;
+        let top = this.top;
+
+        if (this.continue)
+            this._reset();
+        else
+            this.removeHints(timeout);
+
+        let n = 5;
+        (function next() {
+            let hinted = n || this.validHints.some(function (h) h.elem === elem);
+            this.setClass(elem, n ? n % 2 : !hinted ? null : this.validHints[Math.max(0, this.hintNumber-1)].elem === elem);
+            if (n--)
+                this.timeout(next, 50);
+        }).call(this);
+
+        if (!this.continue) {
+            modes.pop();
+            if (timeout)
+                modes.push(modes.IGNORE, modes.HINTS);
+        }
+
+        this.timeout(function () {
+            if ((modes.extended & modes.HINTS) && !this.continue)
+                modes.pop();
+            commandline.lastEcho = null; // Hack.
+            dactyl.trapErrors(this.mode.action, this.mode,
+                              elem, elem.href || elem.src || "",
+                              this.extendedhintCount, top);
+            if (this.continue && this.top)
+                this.show();
+        }, timeout);
+    },
+
+    /**
+     * Remove all hints from the document, and reset the completions.
+     *
+     * Lingers on the active hint briefly to confirm the selection to the user.
+     *
+     * @param {number} timeout The number of milliseconds before the active
+     *     hint disappears.
+     */
+    removeHints: function _removeHints(timeout) {
+        for (let { doc, start, end } in values(this.docs)) {
+            for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
+                elem.parentNode.removeChild(elem);
+            for (let i in util.range(start, end + 1))
+                this.setClass(this.pageHints[i].elem, null);
+        }
+        styles.system.remove("hint-positions");
+
+        this.reset();
+    },
+
+    reset: function reset() {
+        this.pageHints = [];
+        this.validHints = [];
+        this.docs = [];
+        this.clearTimeout();
+    },
+    _reset: function _reset() {
+        if (!this.usedTabKey)
+            this.hintNumber = 0;
+        if (this.continue && this.validHints.length <= 1) {
+            this.hintString = "";
+            commandline.widgets.command = this.hintString;
+            this.show();
+        }
+        this.updateStatusline();
     },
 
     /**
@@ -381,7 +480,7 @@ var Hints = Module("hints", {
      * @param {Object} elem The element to toggle.
      * @param {boolean} active Whether it is the currently active hint or not.
      */
-    _setClass: function _setClass(elem, active) {
+    setClass: function _setClass(elem, active) {
         if (elem.dactylHighlight == null)
             elem.dactylHighlight = elem.getAttributeNS(NS, "highlight") || "";
 
@@ -400,18 +499,18 @@ var Hints = Module("hints", {
     /**
      * Display the hints in pageHints that are still valid.
      */
-    _showHints: function _showHints() {
+    show: function _show() {
         let hintnum = 1;
-        let validHint = this._hintMatcher(this._hintString.toLowerCase());
-        let activeHint = this._hintNumber || 1;
-        this._validHints = [];
+        let validHint = hints.hintMatcher(this.hintString.toLowerCase());
+        let activeHint = this.hintNumber || 1;
+        this.validHints = [];
 
-        for (let { doc, start, end } in values(this._docs)) {
-            let [offsetX, offsetY] = this._getContainerOffsets(doc);
+        for (let { doc, start, end } in values(this.docs)) {
+            let [offsetX, offsetY] = this.getContainerOffsets(doc);
 
         inner:
             for (let i in (util.interruptibleRange(start, end + 1, 500))) {
-                let hint = this._pageHints[i];
+                let hint = this.pageHints[i];
 
                 let valid = validHint(hint.text);
                 hint.span.style.display = (valid ? "" : "none");
@@ -419,7 +518,7 @@ var Hints = Module("hints", {
                     hint.imgSpan.style.display = (valid ? "" : "none");
 
                 if (!valid) {
-                    this._setClass(hint.elem, null);
+                    this.setClass(hint.elem, null);
                     continue inner;
                 }
 
@@ -437,7 +536,7 @@ var Hints = Module("hints", {
                         hint.imgSpan.style.height = (rect.bottom - rect.top) + "px";
                         hint.span.parentNode.appendChild(hint.imgSpan);
                     }
-                    this._setClass(hint.imgSpan, activeHint == hintnum);
+                    this.setClass(hint.imgSpan, activeHint == hintnum);
                 }
 
                 let str = this.getHintString(hintnum);
@@ -455,15 +554,15 @@ var Hints = Module("hints", {
                 if (hint.imgSpan)
                     hint.imgSpan.setAttribute("number", str);
                 else
-                    this._setClass(hint.elem, activeHint == hintnum);
-                this._validHints.push(hint);
+                    this.setClass(hint.elem, activeHint == hintnum);
+                this.validHints.push(hint);
                 hintnum++;
             }
         }
 
         if (options["usermode"]) {
             let css = [];
-            for (let hint in values(this._pageHints)) {
+            for (let hint in values(this.pageHints)) {
                 let selector = highlight.selector("Hint") + "[number=" + hint.span.getAttribute("number").quote() + "]";
                 let imgSpan = "[dactyl|hl=HintImage]";
                 css.push(selector + ":not(" + imgSpan + ") { " + hint.span.style.cssText + " }");
@@ -477,132 +576,207 @@ var Hints = Module("hints", {
     },
 
     /**
-     * Remove all hints from the document, and reset the completions.
+     * Update the activeHint.
      *
-     * Lingers on the active hint briefly to confirm the selection to the user.
+     * By default highlights it green instead of yellow.
      *
-     * @param {number} timeout The number of milliseconds before the active
-     *     hint disappears.
+     * @param {number} newId The hint to make active.
+     * @param {number} oldId The currently active hint.
      */
-    _removeHints: function _removeHints(timeout, slight) {
-        for (let { doc, start, end } in values(this._docs)) {
-            for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
-                elem.parentNode.removeChild(elem);
-            for (let i in util.range(start, end + 1))
-                this._setClass(this._pageHints[i].elem, null);
+    showActiveHint: function _showActiveHint(newId, oldId) {
+        let oldHint = this.validHints[oldId - 1];
+        if (oldHint) {
+            this.setClass(oldHint.elem, false);
+            oldHint.span.removeAttribute("active");
         }
-        styles.system.remove("hint-positions");
 
-        this._reset(slight);
+        let newHint = this.validHints[newId - 1];
+        if (newHint) {
+            this.setClass(newHint.elem, true);
+            newHint.span.setAttribute("active", "true");
+        }
     },
 
-    /**
-     * Finish hinting.
-     *
-     * Called when there are one or zero hints in order to possibly activate it
-     * and, if activated, to clean up the rest of the hinting system.
-     *
-     * @param {boolean} followFirst Whether to force the following of the first
-     *     link (when 'followhints' is 1 or 2)
-     *
-     */
-    _processHints: function _processHints(followFirst) {
-        dactyl.assert(this._validHints.length > 0);
-
-        // This "followhints" option is *too* confusing. For me, and
-        // presumably for users, too. --Kris
-        if (options["followhints"] > 0) {
-            if (!followFirst)
-                return; // no return hit; don't examine uniqueness
-
-            // OK. return hit. But there's more than one hint, and
-            // there's no tab-selected current link. Do not follow in mode 2
-            dactyl.assert(options["followhints"] != 2 || this._validHints.length == 1 || this._hintNumber);
-        }
-
-        if (!followFirst) {
-            let firstHref = this._validHints[0].elem.getAttribute("href") || null;
-            if (firstHref) {
-                if (this._validHints.some(function (h) h.elem.getAttribute("href") != firstHref))
-                    return;
-            }
-            else if (this._validHints.length > 1)
-                return;
-        }
-
-        let timeout = followFirst || events.feedingKeys ? 0 : 500;
-        let activeIndex = (this._hintNumber ? this._hintNumber - 1 : 0);
-        let elem = this._validHints[activeIndex].elem;
-        let top = this._top;
-
-        if (this._continue)
-            this.__reset();
-        else
-            this._removeHints(timeout);
-
-        let n = 5;
-        (function next() {
-            let hinted = n || this._validHints.some(function (h) h.elem === elem);
-            this._setClass(elem, n ? n % 2 : !hinted ? null : this._validHints[Math.max(0, this._hintNumber-1)].elem === elem);
-            if (n--)
-                this.timeout(next, 50);
-        }).call(this);
-
-        if (!this._continue) {
-            modes.pop();
-            if (timeout)
-                modes.push(modes.IGNORE, modes.HINTS);
-        }
-
-        this.timeout(function () {
-            if ((modes.extended & modes.HINTS) && !this._continue)
-                modes.pop();
-            commandline._lastEcho = null; // Hack.
-            dactyl.trapErrors(this._hintMode.action, this._hintMode,
-                              elem, elem.href || elem.src || "",
-                              this._extendedhintCount, top);
-            if (this._continue && this._top)
-                this._showHints();
-        }, timeout);
-    },
-
-    _checkUnique: function _checkUnique() {
-        if (this._hintNumber == 0)
-            return;
-        dactyl.assert(this._hintNumber <= this._validHints.length);
-
-        // if we write a numeric part like 3, but we have 45 hints, only follow
-        // the hint after a timeout, as the user might have wanted to follow link 34
-        if (this._hintNumber > 0 && this._hintNumber * this.hintKeys.length <= this._validHints.length) {
-            let timeout = options["hinttimeout"];
-            if (timeout > 0)
-                this._activeTimeout = this.timeout(function () {
-                    this._processHints(true);
-                }, timeout);
-        }
-        else // we have a unique hint
-            this._processHints(true);
-    },
-
-    /**
-     * Handle user input.
-     *
-     * Will update the filter on displayed hints and follow the final hint if
-     * necessary.
-     *
-     * @param {Event} event The keypress event.
-     */
-    _onInput: function _onInput(event) {
-        this.prevInput = "text";
-
+    backspace: function () {
         this.clearTimeout();
+        if (this.prevInput !== "number")
+            return Events.PASS;
 
-        this._hintNumber = 0;
-        this._hintString = commandline.command;
-        this._updateStatusline();
-        this._showHints();
-        if (this._validHints.length == 1)
-            this._processHints(false);
+        if (this.hintNumber > 0 && !this.usedTabKey) {
+            this.hintNumber = Math.floor(this.hintNumber / this.hintKeys.length);
+            if (this.hintNumber == 0)
+                this.prevInput = "text";
+            this.update(false);
+        }
+        else {
+            this.usedTabKey = false;
+            this.hintNumber = 0;
+            dactyl.beep();
+        }
+        return Events.KILL;
+    },
+
+    tab: function tab(previous) {
+        this.clearTimeout();
+        this.usedTabKey = true;
+        if (this.hintNumber == 0)
+            this.hintNumber = 1;
+
+        let oldId = this.hintNumber;
+        if (!previous) {
+            if (++this.hintNumber > this.validHints.length)
+                this.hintNumber = 1;
+        }
+        else {
+            if (--this.hintNumber < 1)
+                this.hintNumber = this.validHints.length;
+        }
+
+        this.showActiveHint(this.hintNumber, oldId);
+        this.updateStatusline();
+    },
+
+    update: function update(followFirst) {
+        this.clearTimeout();
+        this.updateStatusline();
+
+        if (this.docs.length == 0 && this.hintString.length > 0)
+            this.generate();
+
+        this.show();
+        this.process(followFirst);
+    },
+
+    /**
+     * Display the current status to the user.
+     */
+    updateStatusline: function _updateStatusline() {
+        statusline.updateInputBuffer((this.escapeNumbers ? options["mapleader"] : "") +
+                                     (this.hintNumber ? this.getHintString(this.hintNumber) : ""));
+    },
+});
+
+var Hints = Module("hints", {
+    init: function init() {
+        this.resizeTimer = Timer(100, 500, function () {
+            if (modes.extended & modes.HINTS)
+                modes.getStack(0).params.onResize();
+        });
+        let appContent = document.getElementById("appcontent");
+        if (appContent)
+            events.addSessionListener(appContent, "scroll", this.resizeTimer.closure.tell, false);
+
+        const Mode = Hints.Mode;
+        Mode.defaultValue("tags", function () function () options["hinttags"]);
+        Mode.prototype.__defineGetter__("xpath", function ()
+            options.get("extendedhinttags").getKey(this.name, this.tags()));
+
+        this.modes = {};
+        this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
+        this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
+        this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, false));
+        this.addMode("f", "Focus frame",                          function (elem) dactyl.focus(elem.ownerDocument.defaultView));
+        this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, null, isScrollable);
+        this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
+        this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
+        this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
+        this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
+        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
+        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
+        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
+        this.addMode("a", "Add a bookmark",                       function (elem) bookmarks.addSearchKeyword(elem));
+        this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
+        this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
+        this.addMode("V", "View hint source in external editor",  function (elem, loc) buffer.viewSource(loc, true));
+        this.addMode("y", "Yank hint location",                   function (elem, loc) dactyl.clipboardWrite(loc, true));
+        this.addMode("Y", "Yank hint description",                function (elem) dactyl.clipboardWrite(elem.textContent || "", true));
+        this.addMode("c", "Open context menu",                    function (elem) buffer.openContextMenu(elem));
+        this.addMode("i", "Show image",                           function (elem) dactyl.open(elem.src));
+        this.addMode("I", "Show image in a new tab",              function (elem) dactyl.open(elem.src, dactyl.NEW_TAB));
+
+        function isScrollable(elem) isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]) ||
+            Buffer.isScrollable(elem, 0, true) || Buffer.isScrollable(elem, 0, false);
+    },
+
+    hintSession: Modes.boundProperty(),
+
+    /**
+     * Creates a new hint mode.
+     *
+     * @param {string} mode The letter that identifies this mode.
+     * @param {string} prompt The description to display to the user
+     *     about this mode.
+     * @param {function(Node)} action The function to be called with the
+     *     element that matches.
+     * @param {function():string} tags The function that returns an
+     *     XPath expression to decide which elements can be hinted (the
+     *     default returns options["hinttags"]).
+     * @optional
+     */
+    addMode: function (mode, prompt, action, tags) {
+        arguments[1] = UTF8(prompt);
+        this.modes[mode] = Hints.Mode.apply(Hints.Mode, arguments);
+    },
+
+    /**
+     * Get a hint for "input", "textarea" and "select".
+     *
+     * Tries to use <label>s if possible but does not try to guess that a
+     * neighboring element might look like a label. Only called by
+     * {@link #_generate}.
+     *
+     * If it finds a hint it returns it, if the hint is not the caption of the
+     * element it will return showText=true.
+     *
+     * @param {Object} elem The element used to generate hint text.
+     * @param {Document} doc The containing document.
+     *
+     * @returns [text, showText]
+     */
+    getInputHint: function _getInputHint(elem, doc) {
+        // <input type="submit|button|reset"/>   Always use the value
+        // <input type="radio|checkbox"/>        Use the value if it is not numeric or label or name
+        // <input type="password"/>              Never use the value, use label or name
+        // <input type="text|file"/> <textarea/> Use value if set or label or name
+        // <input type="image"/>                 Use the alt text if present (showText) or label or name
+        // <input type="hidden"/>                Never gets here
+        // <select/>                             Use the text of the selected item or label or name
+
+        let type = elem.type;
+
+        if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type))
+            return [elem.value, false];
+        else {
+            for (let [, option] in Iterator(options["hintinputs"])) {
+                if (option == "value") {
+                    if (elem instanceof HTMLSelectElement) {
+                        if (elem.selectedIndex >= 0)
+                            return [elem.item(elem.selectedIndex).text.toLowerCase(), false];
+                    }
+                    else if (type == "image") {
+                        if (elem.alt)
+                            return [elem.alt.toLowerCase(), true];
+                    }
+                    else if (elem.value && type != "password") {
+                        // radio's and checkboxes often use internal ids as values - maybe make this an option too...
+                        if (! ((type == "radio" || type == "checkbox") && !isNaN(elem.value)))
+                            return [elem.value.toLowerCase(), (type == "radio" || type == "checkbox")];
+                    }
+                }
+                else if (option == "label") {
+                    if (elem.id) {
+                        // TODO: (possibly) do some guess work for label-like objects
+                        let label = util.evaluateXPath(["label[@for=" + elem.id.quote() + "]"], doc).snapshotItem(0);
+                        if (label)
+                            return [label.textContent.toLowerCase(), true];
+                    }
+                }
+                else if (option == "name")
+                    return [elem.name.toLowerCase(), true];
+            }
+        }
+
+        return ["", false];
     },
 
     /**
@@ -611,7 +785,7 @@ var Hints = Module("hints", {
      * @param {string} hintString The currently typed hint.
      * @returns {hintMatcher}
      */
-    _hintMatcher: function _hintMatcher(hintString) { //{{{
+    hintMatcher: function _hintMatcher(hintString) { //{{{
         /**
          * Divide a string by a regular expression.
          *
@@ -776,167 +950,28 @@ var Hints = Module("hints", {
         return null;
     }, //}}}
 
-    /**
-     * Creates a new hint mode.
-     *
-     * @param {string} mode The letter that identifies this mode.
-     * @param {string} prompt The description to display to the user
-     *     about this mode.
-     * @param {function(Node)} action The function to be called with the
-     *     element that matches.
-     * @param {function():string} tags The function that returns an
-     *     XPath expression to decide which elements can be hinted (the
-     *     default returns options["hinttags"]).
-     * @optional
-     */
-    addMode: function (mode, prompt, action, tags) {
-        arguments[1] = UTF8(prompt);
-        this._hintModes[mode] = Hints.Mode.apply(Hints.Mode, arguments);
-    },
-
-    /**
-     * Returns the hint string for a given number based on the values of
-     * the 'hintkeys' option.
-     *
-     * @param {number} n The number to transform.
-     * @returns {string}
-     */
-    getHintString: function getHintString(n) {
-        let res = [], len = this.hintKeys.length;
-        do {
-            res.push(this.hintKeys[n % len]);
-            n = Math.floor(n / len);
-        }
-        while (n > 0);
-        return res.reverse().join("");
-    },
-
-    /**
-     * Returns true if the given key string represents a
-     * pseudo-hint-number.
-     *
-     * @param {string} key The key to test.
-     * @returns {boolean} Whether the key represents a hint number.
-     */
-    isHintKey: function isHintKey(key) this.hintKeys.indexOf(key) >= 0,
-
     open: function open(mode, opts) {
         this._extendedhintCount = opts.count;
         commandline.input(mode, null, {
-            promptHighlight: "Normal",
             completer: function (context) {
                 context.compare = function () 0;
-                context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints._hintModes))];
+                context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints.modes))];
             },
-            onAccept: function (arg) { arg && util.timeout(function () dactyl.trapErrors(hints.show, hints, arg, opts), 0); },
+            onAccept: function (arg) {
+                if (arg)
+                    util.timeout(function () {
+                        dactyl.trapErrors(hints.show, hints, arg, opts);
+                    });
+            },
             get onCancel() this.onAccept,
-            onChange: function () { modes.pop(); }
+            onChange: function () { modes.pop(); },
+            promptHighlight: "Normal"
         });
     },
 
-    /**
-     * Updates the display of hints.
-     *
-     * @param {string} minor Which hint mode to use.
-     * @param {Object} opts Extra options.
-     */
-    show: function show(minor, opts) {
-        opts = opts || {};
-
-        // Hack.
-        if (!opts.window && modes.main == modes.OUTPUT_MULTILINE)
-            opts.window = commandline.widgets.multilineOutput.contentWindow;
-
-        this._hintMode = this._hintModes[minor];
-        dactyl.assert(this._hintMode);
-
-        commandline.input(UTF8(this._hintMode.prompt) + ": ", null, {
-            extended: modes.HINTS,
-            leave: function (stack) {
-                if (!stack.push)
-                    hints.hide();
-            },
-            onChange: this.closure._onInput,
-            onEvent: this.closure.onEvent
-        });
-        modes.extended = modes.HINTS;
-
-        this.hintKeys = events.fromString(options["hintkeys"]).map(events.closure.toString);
-        this._submode = minor;
-        this._hintString = opts.filter || "";
-        this._hintNumber = 0;
-        this._usedTabKey = false;
-        this.prevInput = "";
-        this._continue = Boolean(opts.continue);
-
-        this._top = opts.window || content;
-        this._top.addEventListener("resize", this._resizeTimer.closure.tell, true);
-
-        this._generate();
-
-        this._showHints();
-
-        if (this._validHints.length == 0) {
-            dactyl.beep();
-            modes.pop();
-        }
-        else if (this._validHints.length == 1 && !this._continue)
-            this._processHints(false);
-        else // Ticket #185
-            this._checkUnique();
-    },
-
-    /**
-     * Cancel all hinting.
-     */
-    hide: function hide() {
-        this._continue = false;
-        if (this._top)
-            this._top.removeEventListener("resize", this._resizeTimer.closure.tell, true);
-        this._top = null;
-
-        this._removeHints(0);
-    },
-
-    /**
-     * Handle a hint mode event.
-     *
-     * @param {Event} event The event to handle.
-     */
-    onEvent: function onEvent(event) {
-        const KILL = false, PASS = true;
-        let key = events.toString(event);
-
-        this.clearTimeout();
-
-        if (!this.escNumbers && this.isHintKey(key)) {
-            this.prevInput = "number";
-
-            let oldHintNumber = this._hintNumber;
-            if (this._usedTabKey) {
-                this._hintNumber = 0;
-                this._usedTabKey = false;
-            }
-            this._hintNumber = this._hintNumber * this.hintKeys.length +
-                this.hintKeys.indexOf(key);
-
-            this._updateStatusline();
-
-            if (this._docs.length == 0) {
-                this._generate();
-                this._showHints();
-            }
-            this._showActiveHint(this._hintNumber, oldHintNumber || 1);
-
-            dactyl.assert(this._hintNumber != 0);
-
-            this._checkUnique();
-            return KILL;
-        }
-
-        return PASS;
+    show: function show(mode, opts) {
+        this.hintSession = HintSession(mode, opts);
     }
-    //}}}
 }, {
     translitTable: Class.memoize(function () {
         const table = {};
@@ -1060,79 +1095,26 @@ var Hints = Module("hints", {
             function ({ count }) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
 
-        function update(followFirst) {
-            hints.clearTimeout();
-            hints._updateStatusline();
-
-            if (hints._docs.length == 0 && hints._hintString.length > 0)
-                hints._generate();
-
-            hints._showHints();
-            hints._processHints(followFirst);
-        }
-
         mappings.add(modes.HINTS, ["<Return>"],
             "Follow the selected hint",
-            function () { update(true); });
-
-        function tab(previous) {
-            hints.clearTimeout();
-            this._usedTabKey = true;
-            if (this._hintNumber == 0)
-                this._hintNumber = 1;
-
-            let oldId = this._hintNumber;
-            if (!previous) {
-                if (++this._hintNumber > this._validHints.length)
-                    this._hintNumber = 1;
-            }
-            else {
-                if (--this._hintNumber < 1)
-                    this._hintNumber = this._validHints.length;
-            }
-
-            this._showActiveHint(this._hintNumber, oldId);
-            this._updateStatusline();
-        }
+            function () { hints.hintSession.update(true); });
 
         mappings.add(modes.HINTS, ["<Tab>"],
             "Focus the next matching hint",
-            function () { tab.call(hints, false); });
+            function () { hints.hintSession.tab(false); });
 
         mappings.add(modes.HINTS, ["<S-Tab>"],
             "Focus the previous matching hint",
-            function () { tab.call(hints, true); });
+            function () { hints.hintSession.tab(true); });
 
         mappings.add(modes.HINTS, ["<BS>", "<C-h>"],
             "Delete the previous character",
-            function () {
-                hints.clearTimeout();
-                if (hints.prevInput !== "number")
-                    return Events.PASS;
-
-                if (hints._hintNumber > 0 && !hints._usedTabKey) {
-                    hints._hintNumber = Math.floor(hints._hintNumber / hints.hintKeys.length);
-                    if (hints._hintNumber == 0)
-                        hints.prevInput = "text";
-                    update(false);
-                }
-                else {
-                    hints._usedTabKey = false;
-                    hints._hintNumber = 0;
-                    dactyl.beep();
-                }
-                return Events.KILL;
-            });
+            function () hints.hintSession.backspace());
 
         mappings.add(modes.HINTS, ["<Leader>"],
             "Toggle hint filtering",
             function () {
-                hints.clearTimeout();
-                hints.escNumbers = !hints.escNumbers;
-                if (hints.escNumbers && hints._usedTabKey)
-                    hints._hintNumber = 0;
-
-                hints._updateStatusline();
+                hints.hintSession.escapeNumbers = !hints.hintSession.escapeNumbers;
             });
     },
     options: function () {

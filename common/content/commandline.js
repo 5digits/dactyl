@@ -9,11 +9,16 @@
 /** @scope modules */
 
 var CommandWidgets = Class("CommandWidgets", {
-    init: function () {
-        let _status = "dactyl-statusline-field-";
+    depends: ["statusline"],
+
+    init: function init() {
+        let s = "dactyl-statusline-field-";
 
         XML.ignoreWhitespace = true;
         util.overlayWindow(window, {
+            objects: {
+                eventTarget: commandline
+            },
             append: <e4x xmlns={XUL} xmlns:dactyl={NS}>
                 <window id={document.documentElement.id}>
                     <popupset>
@@ -39,16 +44,15 @@ var CommandWidgets = Class("CommandWidgets", {
 
                     <vbox class="dactyl-container" id="dactyl-multiline-output-container" hidden="false" collapsed="true">
                         <iframe id="dactyl-multiline-output" src="dactyl://content/buffer.xhtml"
-                                flex="1" hidden="false" collapsed="false"
-                                contextmenu="dactyl-contextmenu"
-                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
+                                flex="1" hidden="false" collapsed="false" contextmenu="dactyl-contextmenu"
+                                highlight="Events" events="multilineOutputEvents" />
                     </vbox>
 
                     <vbox class="dactyl-container" hidden="false" collapsed="true">
                         <iframe class="dactyl-completions" id="dactyl-completions-dactyl-commandline" src="dactyl://content/buffer.xhtml"
                                 contextmenu="dactyl-contextmenu"
                                 flex="1" hidden="false" collapsed="false"
-                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
+                                highlight="Events" events="multilineOutputEvents" />
                     </vbox>
 
                     <stack orient="horizontal" align="stretch" class="dactyl-container" id="dactyl-container" highlight="CmdLine CmdCmdLine">
@@ -59,30 +63,31 @@ var CommandWidgets = Class("CommandWidgets", {
                         <hbox id="dactyl-commandline" hidden="false" class="dactyl-container" highlight="Normal CmdNormal" collapsed="true">
                             <label   id="dactyl-commandline-prompt"  class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
                             <textbox id="dactyl-commandline-command" class="dactyl-commandline-command plain" flex="1" type="input" timeout="100"
-                                     oninput="dactyl.modules.commandline.onEvent(event);"
-                                     onkeyup="dactyl.modules.commandline.onEvent(event);"
-                                     onfocus="dactyl.modules.commandline.onEvent(event);"
-                                     onblur="dactyl.modules.commandline.onEvent(event);"/>
+                                     highlight="Events" />
                         </hbox>
                     </stack>
 
                     <vbox class="dactyl-container" hidden="false" collapsed="false" highlight="CmdLine">
                         <textbox id="dactyl-multiline-input" class="plain" flex="1" rows="1" hidden="false" collapsed="true" multiline="true"
-                                 highlight="Normal"
-                                 onkeypress="dactyl.modules.commandline.onMultilineInputEvent(event);"
-                                 oninput="dactyl.modules.commandline.onMultilineInputEvent(event);"
-                                 onblur="dactyl.modules.commandline.onMultilineInputEvent(event);"/>
+                                 highlight="Normal Events" events="multilineInputEvents" />
                     </vbox>
                 </vbox>
+
+                <stack id="dactyl-statusline-stack">
+                    <hbox id={s + "commandline"} hidden="false" class="dactyl-container" highlight="Normal StatusNormal" collapsed="true">
+                        <label id={s + "commandline-prompt"}    class="dactyl-commandline-prompt  plain" flex="0" crop="end" value="" collapsed="true"/>
+                        <textbox id={s + "commandline-command"} class="dactyl-commandline-command plain" flex="1" type="text" timeout="100"
+                                 highlight="Events" />
+                    </hbox>
+                </stack>
             </e4x>.elements(),
 
             before: <e4x xmlns={XUL} xmlns:dactyl={NS}>
                 <toolbar id={statusline.statusBar.id}>
-                    <vbox id={"dactyl-completions-" + _status + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true">
-                        <iframe class="dactyl-completions" id={"dactyl-completions-" + _status + "commandline"} src="dactyl://content/buffer.xhtml"
-                                contextmenu="dactyl-contextmenu"
-                                flex="1" hidden="false" collapsed="false"
-                                onclick="dactyl.modules.commandline.onMultilineOutputEvent(event)"/>
+                    <vbox id={"dactyl-completions-" + s + "commandline-container"} class="dactyl-container" hidden="false" collapsed="true">
+                        <iframe class="dactyl-completions" id={"dactyl-completions-" + s + "commandline"} src="dactyl://content/buffer.xhtml"
+                                contextmenu="dactyl-contextmenu" flex="1" hidden="false" collapsed="false"
+                                highlight="Events" events="multilineOutputEvents" />
                     </vbox>
                 </toolbar>
             </e4x>.elements()
@@ -171,7 +176,7 @@ var CommandWidgets = Class("CommandWidgets", {
                            html|html > xul|scrollbar { visibility: collapse !important; }",
                           true);
     },
-    addElement: function (obj) {
+    addElement: function addElement(obj) {
         const self = this;
         this.elements[obj.name] = obj;
 
@@ -185,13 +190,13 @@ var CommandWidgets = Class("CommandWidgets", {
 
         if (!(obj.noValue || obj.getValue))
             Object.defineProperty(this, obj.name, Modes.boundProperty({
-                get: function () {
+                get: function get_widgetValue() {
                     let elem = self.getGroup(obj.name, obj.value)[obj.name];
                     if (obj.value != null)
                         return [obj.value[0], obj.get ? obj.get.call(this, elem) : elem.value];
                     return null;
                 },
-                set: function (val) {
+                set: function set_widgetValue(val) {
                     if (val != null && !isArray(val))
                         val = [obj.defaultGroup || "", val];
                     obj.value = val;
@@ -222,12 +227,12 @@ var CommandWidgets = Class("CommandWidgets", {
                                                      .map(function (g) g + " " + nodeSet.group + g).join(" "));
             });
     },
-    getGroup: function (name, value) {
+    getGroup: function getgroup(name, value) {
         if (!statusline.visible)
             return this.commandbar;
         return this.elements[name].getGroup.call(this, arguments.length > 1 ? value : this[name]);
     },
-    updateVisibility: function () {
+    updateVisibility: function updateVisibility() {
         for (let elem in values(this.elements))
             if (elem.getGroup) {
                 let value = elem.getValue ? elem.getValue.call(this)
@@ -260,10 +265,10 @@ var CommandWidgets = Class("CommandWidgets", {
     commandbar: Class.memoize(function () ({ group: "Cmd" })),
     statusbar: Class.memoize(function ()  ({ group: "Status" })),
 
-    _whenReady: function (name, id, processor) {
+    _whenReady: function _whenReady(name, id, processor) {
         Object.defineProperty(this, name, {
             configurable: true, enumerable: true,
-            get: function () {
+            get: function get_whenReady() {
                 let elem = document.getElementById(id);
                 while (elem.contentDocument.documentURI != elem.getAttribute("src") ||
                        ["viewable", "complete"].indexOf(elem.contentDocument.readyState) < 0)
@@ -295,7 +300,7 @@ var CommandWidgets = Class("CommandWidgets", {
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
     mowContainer: Class.memoize(function () document.getElementById("dactyl-multiline-output-container"))
 }, {
-    getEditor: function (elem) {
+    getEditor: function getEditor(elem) {
         elem.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
         return elem;
     }
@@ -308,7 +313,7 @@ var CommandWidgets = Class("CommandWidgets", {
  * this class when the chrome is ready.
  */
 var CommandLine = Module("commandline", {
-    init: function () {
+    init: function init() {
         const self = this;
 
         this._callbacks = {};
@@ -422,23 +427,17 @@ var CommandLine = Module("commandline", {
         // way of calling "open"
         this.currentExtendedMode = null; // the extended mode which we last opened the command line for
 
-        // save the arguments for the inputMultiline method which are needed in the event handler
-        this._multilineEnd = null;
-        this._multilineCallback = null;
-
         this._input = {};
 
         this.registerCallback("submit", modes.EX, function (command) {
-            try {
-                var readHeredoc = io.readHeredoc;
-                io.readHeredoc = commandline.readHeredoc;
+            io.withSavedValues(["readHeredoc", "sourcing"], function () {
+                this.sourcing = { file: "[Command Line]", line: 1 };
+                this.readHeredoc = commandline.readHeredoc;
                 commands.repeat = command;
-                commands.execute(command);
-            }
-            finally {
-                io.readHeredoc = readHeredoc;
-            }
+                dactyl.execute(command);
+            });
         });
+
         this.registerCallback("complete", modes.EX, function (context) {
             context.fork("ex", 0, completion, "ex");
         });
@@ -489,7 +488,7 @@ var CommandLine = Module("commandline", {
     /**
      * Ensure that the multiline input widget is the correct size.
      */
-    _autosizeMultilineInputWidget: function () {
+    _autosizeMultilineInputWidget: function _autosizeMultilineInputWidget() {
         let lines = this.widgets.multilineInput.value.split("\n").length - 1;
 
         this.widgets.multilineInput.setAttribute("rows", Math.max(lines, 1));
@@ -538,13 +537,13 @@ var CommandLine = Module("commandline", {
     //  "change"
     //  "cancel"
     //  "complete"
-    registerCallback: function (type, mode, func) {
+    registerCallback: function registerCallback(type, mode, func) {
         if (!(type in this._callbacks))
             this._callbacks[type] = {};
         this._callbacks[type][mode] = func;
     },
 
-    triggerCallback: function (type, mode) {
+    triggerCallback: function triggerCallback(type, mode) {
         if (this._callbacks[type] && this._callbacks[type][mode])
             try {
                 this._callbacks[type][mode].apply(this, Array.slice(arguments, 2));
@@ -554,18 +553,21 @@ var CommandLine = Module("commandline", {
             }
     },
 
-    runSilently: function (func, self) {
+    runSilently: function runSilently(func, self) {
         this.withSavedValues(["_silent"], function () {
             this._silent = true;
             func.call(self);
         });
     },
 
-    hideCompletions: function () {
+    hideCompletions: function hideCompletions() {
         for (let nodeSet in values([this.widgets.statusbar, this.widgets.commandbar]))
             if (nodeSet.commandline._completionList)
                 nodeSet.commandline._completionList.hide();
     },
+
+    _multilineEnd: Modes.boundProperty(),
+    _multilineCallback: Modes.boundProperty(),
 
     currentExtendedMode: Modes.boundProperty(),
     _completions: Modes.boundProperty(),
@@ -575,10 +577,10 @@ var CommandLine = Module("commandline", {
     messages: Modes.boundProperty(),
 
     multilineInputVisible: Modes.boundProperty({
-        set: function (value) { this.widgets.multilineInput.collapsed = !value; }
+        set: function set_miwVisible(value) { this.widgets.multilineInput.collapsed = !value; }
     }),
     multilineOutputVisible: Modes.boundProperty({
-        set: function (value) {
+        set: function set_mowVisible(value) {
             this.widgets.mowContainer.collapsed = !value;
             let elem = this.widgets.multilineOutput;
             if (!value && elem && elem.contentWindow == document.commandDispatcher.focusedWindow)
@@ -602,7 +604,7 @@ var CommandLine = Module("commandline", {
         this.currentExtendedMode = extendedMode || null;
         modes.push(modes.COMMAND_LINE, this.currentExtendedMode, {
             autocomplete: cmd.length,
-            onEvent: this.closure.onEvent,
+            onKeyPress: this.closure.onKeyPress,
             history: (extendedMode || {}).params.history,
             leave: function (params) {
                 if (params.pop)
@@ -671,7 +673,7 @@ var CommandLine = Module("commandline", {
     get lastCommand() this._lastCommand || this.command,
     set lastCommand(val) { this._lastCommand = val },
 
-    clear: function () {
+    clear: function clear() {
         if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
             this.widgets.message = null;
         if (modes.main != modes.COMMAND_LINE)
@@ -688,7 +690,7 @@ var CommandLine = Module("commandline", {
      *
      * @param {XML} xml The output as an E4X XML object.
      */
-    commandOutput: function (xml) {
+    commandOutput: function commandOutput(xml) {
         XML.ignoreWhitespace = false;
         XML.prettyPrinting = false;
         if (this.command)
@@ -747,7 +749,7 @@ var CommandLine = Module("commandline", {
         this._startHints = false;
         if (modes.main != modes.OUTPUT_MULTILINE) {
             modes.push(modes.OUTPUT_MULTILINE, null, {
-                onEvent: this.closure.onMultilineOutputEvent,
+                onKeyPress: this.closure.onMOWKeyPress,
                 leave: this.closure(function leave(stack) {
                     if (stack.pop)
                         for (let message in values(this.messages))
@@ -896,18 +898,17 @@ var CommandLine = Module("commandline", {
      */
     input: function _input(prompt, callback, extra) {
         extra = extra || {};
-        let closure = extra.closure || extra;
 
         this._input = {
-            submit: callback || closure.onAccept,
-            change: closure.onChange,
-            complete: closure.completer,
-            cancel: closure.onCancel
+            submit: callback || extra.onAccept,
+            change: extra.onChange,
+            complete: extra.completer,
+            cancel: extra.onCancel
         };
 
         modes.push(modes.COMMAND_LINE, modes.PROMPT | extra.extended,
                    update(Object.create(extra), {
-                       onEvent: closure.onEvent || this.closure.onEvent,
+                       onKeyPress: extra.onKeyPress || this.closure.onKeyPress,
                        leave: function leave(stack) {
                            commandline.leave(stack);
                            leave.supercall(extra, stack);
@@ -923,12 +924,10 @@ var CommandLine = Module("commandline", {
         this.enter();
     },
 
-    readHeredoc: function (end) {
+    readHeredoc: function readHeredoc(end) {
         let args;
-        commandline.inputMultiline(end,
-            function (res) { args = res; });
-        while (args === undefined)
-            util.threadYield(true);
+        commandline.inputMultiline(end, function (res) { args = res; });
+        util.waitFor(function () args !== undefined);
         return args;
     },
 
@@ -943,11 +942,13 @@ var CommandLine = Module("commandline", {
     // FIXME: Buggy, especially when pasting.
     inputMultiline: function inputMultiline(end, callbackFunc) {
         let cmd = this.command;
-        modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE);
+        modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE, {
+            keyModes: [modes.INPUT_MULTILINE]
+        });
         if (cmd != false)
             this._echoLine(cmd, this.HL_NORMAL);
 
-        // save the arguments, they are needed in the event handler onEvent
+        // save the arguments, they are needed in the event handler onKeyPress
         this._multilineEnd = "\n" + end + "\n";
         this._multilineCallback = callbackFunc;
 
@@ -968,7 +969,6 @@ var CommandLine = Module("commandline", {
 
             for (let node in array.iterValues(event.target.children)) {
                 let group = node.getAttributeNS(NS, "group");
-                util.dump(node, group, group && !group.split(/\s+/).every(function (g) enabled[g]));
                 node.hidden = group && !group.split(/\s+/).every(function (g) enabled[g]);
             }
         }
@@ -978,87 +978,36 @@ var CommandLine = Module("commandline", {
         return true;
     },
 
-    /**
-     * Handles all command-line events. All key events are passed here when
-     * COMMAND_LINE mode is active, as well as all input, keyup, focus, and
-     * blur events sent to the command-line XUL element.
-     *
-     * @param {Event} event
-     * @private
-     */
-    onEvent: function onEvent(event) {
-        const KILL = false, PASS = true;
+    onKeyPress: function onKeyPress(event) {
+        let key = events.toString(event);
+        if (this._completions)
+            this._completions.previewClear();
 
-        try {
-            let command = this.command;
+        return true; /* Pass event */
+    },
 
-            if (event.type == "blur") {
-                this.timeout(function () {
-                    if (this.commandVisible && event.originalTarget == this.widgets.active.command.inputField)
-                        dactyl.focus(this.widgets.active.command.inputField);
-                });
+    events: {
+        blur: function onBlur(event) {
+            this.timeout(function () {
+                if (this.commandVisible && event.originalTarget == this.widgets.active.command.inputField)
+                    dactyl.focus(this.widgets.active.command.inputField);
+            });
+        },
+        focus: function onFocus(event) {
+            if (!this.commandVisible && event.target == this.widgets.active.command.inputField) {
+                event.target.blur();
+                dactyl.beep();
             }
-            else if (event.type == "focus") {
-                if (!this.commandVisible && event.target == this.widgets.active.command.inputField) {
-                    event.target.blur();
-                    dactyl.beep();
-                }
-            }
-            else if (event.type == "input") {
-                this.resetCompletions();
-                commandline.triggerCallback("change", this.currentExtendedMode, command);
-            }
-            else if (event.type == "keypress") {
-                let key = events.toString(event);
-                if (this._completions)
-                    this._completions.previewClear();
-                if (!this.currentExtendedMode)
-                    return PASS;
-
-                // user pressed <Enter> to carry out a command
-                // user pressing <Esc> is handled in the global onEscape
-                // FIXME: <Esc> should trigger "cancel" event
-                if (events.isAcceptKey(key)) {
-                    this._keepCommand = userContext.hidden_option_command_afterimage;
-                    let mode = this.currentExtendedMode;
-                    this.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
-                    modes.pop();
-                    commandline.triggerCallback("submit", mode, command);
-                }
-                // user pressed <Up> or <Down> arrow to cycle history completion
-                else if (/^<(Up|Down|S-Up|S-Down)>$/.test(key)) {
-                    dactyl.assert(this._history);
-                    this._history.select(/Up/.test(key), !/S-/.test(key));
-                    return KILL;
-                }
-                // user pressed <Tab> to get completions of a command
-                else if (/^<(?:A-)?(?:S-)?Tab>$/.test(key)) {
-                    this._tabTimer.tell(event);
-                    return KILL;
-                }
-                else if (key == "<BS>") {
-                    // reset the tab completion
-                    //this.resetCompletions();
-
-                    // and blur the command line if there is no text left
-                    if (command.length == 0) {
-                        commandline.triggerCallback("cancel", this.currentExtendedMode);
-                        modes.pop();
-                    }
-                }
-                // allow this event to be handled by the host app
-                return PASS;
-            }
-            else if (event.type == "keyup") {
-                let key = events.toString(event);
-                if (/^<(?:A-)?(?:S-)?Tab>$/.test(key))
-                    this._tabTimer.flush();
-            }
+        },
+        input: function onInput(event) {
+            this.resetCompletions();
+            this.triggerCallback("change", this.currentExtendedMode, this.command);
+        },
+        keyup: function onKeyUp(event) {
+            let key = events.toString(event);
+            if (/-?Tab>$/.test(key))
+                this._tabTimer.flush();
         }
-        catch (e) {
-            dactyl.reportError(e, true);
-        }
-        return PASS;
     },
 
     /**
@@ -1067,97 +1016,62 @@ var CommandLine = Module("commandline", {
      *
      * @param {Event} event
      */
-    onMultilineInputEvent: function onMultilineInputEvent(event) {
-        const KILL = false, PASS = true;
-
-        if (event.type == "keypress") {
-            let key = events.toString(event);
-            if (events.isAcceptKey(key)) {
-                let text = "\n" + this.widgets.multilineInput.value.substr(0, this.widgets.multilineInput.selectionStart) + "\n";
-                let index = text.indexOf(this._multilineEnd);
-                if (index >= 0) {
-                    text = text.substring(1, index);
-                    let callback = this._multilineCallback;
-                    modes.pop();
-                    callback.call(this, text);
-                }
-            }
-            else if (events.isCancelKey(key)) {
-                modes.pop();
-            }
-        }
-        else if (event.type == "blur") {
+    multilineInputEvents: {
+        blur: function onBlur(event) {
             if (modes.extended & modes.INPUT_MULTILINE)
-                this.timeout(function () { dactyl.focus(this.widgets.multilineInput.inputField); }, 0);
-        }
-        else if (event.type == "input")
+                this.timeout(function () {
+                    dactyl.focus(this.widgets.multilineInput.inputField);
+                });
+        },
+        input: function onInput(event) {
             this._autosizeMultilineInputWidget();
-        return PASS;
+        }
     },
 
-    /**
-     * Handle events when we are in multi-line output mode, these come from
-     * dactyl when modes.extended & modes.OUTPUT_MULTILINE and also from
-     * #dactyl-multiline-output in the XUL.
-     *
-     * @param {Event} event
-     */
-    // FIXME: if 'more' is set and the MOW is not scrollable we should still
-    // allow a down motion after an up rather than closing
-    onMultilineOutputEvent: function onMultilineOutputEvent(event) {
-        try {
-            const KILL = false, PASS = true;
-
-            let win = this.widgets.multilineOutput.contentWindow;
-            let elem = win.document.documentElement;
-
-            let key = events.toString(event);
+    multilineOutputEvents: {
+        click: function onClick(event) {
+            if (event.getPreventDefault())
+                return;
 
             const openLink = function openLink(where) {
                 event.preventDefault();
                 dactyl.open(event.target.href, where);
             }
 
-            // TODO: Wouldn't multiple handlers be cleaner? --djk
-            if (event.type == "click" && event.target instanceof HTMLAnchorElement) {
-
-                if (event.getPreventDefault())
-                    return;
-
-                switch (key) {
+            if (event.target instanceof HTMLAnchorElement)
+                switch (events.toString(event)) {
                 case "<LeftMouse>":
-                    event.preventDefault();
                     openLink(dactyl.CURRENT_TAB);
-                    return KILL;
+                    break;
                 case "<MiddleMouse>":
                 case "<C-LeftMouse>":
                 case "<C-M-LeftMouse>":
                     openLink({ where: dactyl.NEW_TAB, background: true });
-                    return KILL;
+                    break;
                 case "<S-MiddleMouse>":
                 case "<C-S-LeftMouse>":
                 case "<C-M-S-LeftMouse>":
                     openLink({ where: dactyl.NEW_TAB, background: false });
-                    return KILL;
+                    break;
                 case "<S-LeftMouse>":
                     openLink(dactyl.NEW_WINDOW);
-                    return KILL;
+                    break;
                 }
-                return PASS;
-            }
-
-            if (event instanceof MouseEvent)
-                return KILL;
-
-            if (!options["more"] || !mow.isScrollable(1)) {
-                modes.pop();
-                events.feedkeys(key);
-            }
-            else
-                commandline.updateMorePrompt(false, true);
+        },
+        unload: function onUnload(event) {
+            event.preventDefault();
         }
-        catch (e) {
-            util.reportError(e);
+    },
+
+    onMOWKeyPress: function onMOWKeyPress(event) {
+        const KILL = false, PASS = true;
+
+        if (options["more"] && mow.isScrollable(1))
+            commandline.updateMorePrompt(false, true);
+        else {
+            modes.pop();
+            events.feedkeys(events.toString(event));
+            return KILL;
         }
         return PASS;
     },
@@ -1226,7 +1140,7 @@ var CommandLine = Module("commandline", {
             this._history.reset();
     },
 
-    withOutputToString: function (fn, self) {
+    withOutputToString: function withOutputToString(fn, self) {
         dactyl.registerObserver("echoLine", observe, true);
         dactyl.registerObserver("echoMultiline", observe, true);
 
@@ -1249,7 +1163,7 @@ var CommandLine = Module("commandline", {
      * @param {string} mode The mode for which we need history.
      */
     History: Class("History", {
-        init: function (inputField, mode) {
+        init: function init(inputField, mode) {
             this.mode = mode;
             this.input = inputField;
             this.reset();
@@ -1259,14 +1173,14 @@ var CommandLine = Module("commandline", {
         /**
          * Reset the history index to the first entry.
          */
-        reset: function () {
+        reset: function reset() {
             this.index = null;
         },
         /**
          * Save the last entry to the permanent store. All duplicate entries
          * are removed and the list is truncated, if necessary.
          */
-        save: function () {
+        save: function save() {
             if (events.feedingKeys)
                 return;
             let str = this.input.value;
@@ -1285,7 +1199,7 @@ var CommandLine = Module("commandline", {
          * @property {function} Returns whether a data item should be
          * considered private.
          */
-        checkPrivate: function (str) {
+        checkPrivate: function checkPrivate(str) {
             // Not really the ideal place for this check.
             if (this.mode == "command")
                 return commands.hasPrivateData(str);
@@ -1296,7 +1210,8 @@ var CommandLine = Module("commandline", {
          *
          * @param {string} val The new value.
          */
-        replace: function (val) {
+        replace: function replace(val) {
+            delete this.input.dactylKeyPress;
             this.input.value = val;
             commandline.triggerCallback("change", commandline.currentExtendedMode, val, "history");
         },
@@ -1308,7 +1223,7 @@ var CommandLine = Module("commandline", {
          * @param {boolean} matchCurrent Search for matches starting
          *      with the current input value.
          */
-        select: function (backward, matchCurrent) {
+        select: function select(backward, matchCurrent) {
             // always reset the tab completion if we use up/down keys
             if (commandline._completions)
                 commandline._completions.reset();
@@ -1358,10 +1273,11 @@ var CommandLine = Module("commandline", {
      * @param {Object} input
      */
     Completions: Class("Completions", {
-        init: function (input) {
+        init: function init(input) {
             this.context = CompletionContext(input.QueryInterface(Ci.nsIDOMNSEditableElement).editor);
             this.context.onUpdate = this.closure._reset;
             this.editor = input.editor;
+            this.input = input;
             this.selected = null;
             this.wildmode = options.get("wildmode");
             this.wildtypes = this.wildmode.value;
@@ -1392,6 +1308,8 @@ var CommandLine = Module("commandline", {
             // Reset the caret to one position after the completion.
             this.caret = this.prefix.length + completion.length;
             this._caret = this.caret;
+
+            delete this.input.dactylKeyPress;
         },
 
         get caret() this.editor.selection.getRangeAt(0).startOffset,
@@ -1417,7 +1335,7 @@ var CommandLine = Module("commandline", {
             this.wildIndex = 0;
         },
 
-        haveType: function (type)
+        haveType: function haveType(type)
             this.wildmode.checkHas(this.wildtype, type == "first" ? "" : type),
 
         preview: function preview() {
@@ -1644,7 +1562,7 @@ var CommandLine = Module("commandline", {
         return arg;
     }
 }, {
-    commands: function () {
+    commands: function init_commands() {
         [
             {
                 name: "ec[ho]",
@@ -1705,7 +1623,40 @@ var CommandLine = Module("commandline", {
                 subCommand: 0
             });
     },
-    mappings: function () {
+    mappings: function init_mappings() {
+
+        mappings.add([modes.COMMAND],
+            [":"], "Enter command-line mode",
+            function () { commandline.open(":", "", modes.EX); });
+
+        mappings.add([modes.COMMAND],
+            ["g<lt>"], "Redisplay the last command output",
+            function () {
+                dactyl.assert(commandline._lastMowOutput, "No previous command output");
+                commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
+            });
+
+
+        mappings.add([modes.INPUT_MULTILINE],
+            ["<Return>", "<C-j>", "<C-m>"], "Begin a new line",
+            function (args) {
+                let text = "\n" + commandline.widgets.multilineInput
+                                             .value.substr(0, commandline.widgets.multilineInput.selectionStart)
+                         + "\n";
+
+                let index = text.indexOf(commandline._multilineEnd);
+                if (index >= 0) {
+                    text = text.substring(1, index);
+                    let callback = commandline._multilineCallback;
+                    modes.pop();
+
+                    return function () callback.call(commandline, text);
+                }
+                return Events.PASS;
+            });
+
+        let bind = function bind()
+            mappings.add.apply(mappings, [[modes.COMMAND_LINE]].concat(Array.slice(arguments)))
 
         // Any "non-keyword" character triggers abbreviation expansion
         // TODO: Add "<CR>" and "<Tab>" to this list
@@ -1714,37 +1665,55 @@ var CommandLine = Module("commandline", {
         // TODO: Make non-keyword recognition smarter so that there need not
         //       be two lists of the same characters (one here and a regexp in
         //       mappings.js)
-        mappings.add([modes.COMMAND_LINE],
-            ["<Space>", '"', "'"], "Expand command line abbreviation",
-            function () {
-                commandline.resetCompletions();
-                editor.expandAbbreviation(modes.COMMAND_LINE);
-                return Events.PASS;
-            });
+        bind(["<Space>", '"', "'"], "Expand command line abbreviation",
+             function () {
+                 commandline.resetCompletions();
+                 editor.expandAbbreviation(modes.COMMAND_LINE);
+                 return Events.PASS;
+             });
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<C-]>", "<C-5>"], "Expand command line abbreviation",
-            function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
+        bind(["<Return>", "<C-j>", "<C-m>"], "Accept the current input",
+             function (args) {
 
-        mappings.add([modes.NORMAL],
-            ["g<"], "Redisplay the last command output",
-            function () {
-                dactyl.assert(commandline._lastMowOutput, "No previous command output");
-                commandline._echoMultiline(commandline._lastMowOutput, commandline.HL_NORMAL);
-            });
+                 commandline._keepCommand = userContext.hidden_option_command_afterimage;
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<C-p>", "<PageUp>"], "Recall the previous command line from the history list",
-            function () { events.feedkeys("<S-Up>"); });
+                 let mode    = commandline.currentExtendedMode;
+                 let command = commandline.command;
+                 commandline.currentExtendedMode = null; // Don't let modes.pop trigger "cancel"
+                 modes.pop();
 
-        mappings.add([modes.COMMAND_LINE],
-            ["<C-n>", "<PageDown>"], "Recall the next command line from the history list",
-            function () { events.feedkeys("<S-Down>"); });
+                 return function () commandline.triggerCallback("submit", mode, command);
+             });
 
-        // add the ":" mapping in all but insert mode mappings
-        mappings.add(modes.COMMAND,
-            [":"], "Enter command-line mode",
-            function () { commandline.open(":", "", modes.EX); });
+        [
+            [["<Up>", "<A-p>"],                   "previous matching", true,  true],
+            [["<S-Up>", "<C-p>", "<PageUp>"],     "previous",          true,  false],
+            [["<Down>", "<A-n>"],                 "next matching",     false, true],
+            [["<S-Down>", "<C-n>", "<PageDown>"], "next",              false, false]
+        ].forEach(function ([keys, desc, up, search]) {
+            bind(keys, "Recall the " + desc + " command line from the history list",
+                 function (args) {
+                     dactyl.assert(commandline._history);
+                     commandline._history.select(up, search);
+                 });
+        });
+
+        bind(["<A-Tab>", "<Tab>"], "Select the next matching completion item",
+             function ({ events }) { commandline._tabTimer.tell(events[0]); });
+
+        bind(["<A-S-Tab>", "<S-Tab>"], "Select the previous matching completion item",
+             function ({ events }) { commandline._tabTimer.tell(events[0]); });
+
+        bind(["<BS>", "<C-h>"], "Delete the previous character",
+             function () {
+                 if (!commandline.command)
+                     modes.pop();
+                 else
+                     return Events.PASS;
+             });
+
+        bind(["<C-]>", "<C-5>"], "Expand command line abbreviation",
+             function () { editor.expandAbbreviation(modes.COMMAND_LINE); });
 
         let mow = modules.mow = {
             __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args))
@@ -1756,7 +1725,7 @@ var CommandLine = Module("commandline", {
         const DROP = false;
         const BEEP = {};
 
-        function bind(keys, description, action, test, default_) {
+        bind = function bind(keys, description, action, test, default_) {
             mappings.add([modes.OUTPUT_MULTILINE],
                 keys, description,
                 function (command) {
@@ -1826,7 +1795,7 @@ var CommandLine = Module("commandline", {
              function () {},
              function () false, DROP);
     },
-    options: function () {
+    options: function init_options() {
         options.add(["history", "hi"],
             "Number of Ex commands and search patterns to store in the command-line history",
             "number", 500,
@@ -1850,7 +1819,7 @@ var CommandLine = Module("commandline", {
             "Show the current mode in the command line",
             "boolean", true);
     },
-    sanitizer: function () {
+    sanitizer: function init_sanitizer() {
         sanitizer.addItem("commandline", {
             description: "Command-line and search history",
             persistent: true,
@@ -1897,7 +1866,7 @@ var CommandLine = Module("commandline", {
  *     necessary.
  */
 var ItemList = Class("ItemList", {
-    init: function (id) {
+    init: function init(id) {
         this._completionElements = [];
 
         var iframe = document.getElementById(id);
@@ -1921,9 +1890,9 @@ var ItemList = Class("ItemList", {
         this._minHeight = 0;
     },
 
-    _dom: function (xml, map) util.xmlToDom(xml instanceof XML ? xml : <>{xml}</>, this._doc, map),
+    _dom: function _dom(xml, map) util.xmlToDom(xml instanceof XML ? xml : <>{xml}</>, this._doc, map),
 
-    _autoSize: function () {
+    _autoSize: function _autoSize() {
         if (this._container.collapsed)
             this._div.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
 
@@ -1942,9 +1911,9 @@ var ItemList = Class("ItemList", {
         this.timeout(function () { this._container.height -= commandline.getSpaceNeeded(); }, 0);
     },
 
-    _getCompletion: function (index) this._completionElements.snapshotItem(index - this._startIndex),
+    _getCompletion: function _getCompletion(index) this._completionElements.snapshotItem(index - this._startIndex),
 
-    _init: function () {
+    _init: function _init() {
         this._div = this._dom(
             <div class="ex-command-output" highlight="Normal" style="white-space: nowrap">
                 <div highlight="Completions" key="noCompletions"><span highlight="Title">No Completions</span></div>
@@ -1989,7 +1958,7 @@ var ItemList = Class("ItemList", {
      *
      * @param {number} offset Start at this index and show options["maxitems"].
      */
-    _fill: function (offset) {
+    _fill: function _fill(offset) {
         XML.ignoreWhiteSpace = false;
         let diff = offset - this._startIndex;
         if (this._items == null || offset == null || diff == 0 || offset < 0)
@@ -2072,7 +2041,7 @@ var ItemList = Class("ItemList", {
     show: function show() { this._container.collapsed = false; },
     visible: function visible() !this._container.collapsed,
 
-    reset: function (brief) {
+    reset: function reset(brief) {
         this._startIndex = this._endIndex = this._selIndex = -1;
         this._div = null;
         if (!brief)
@@ -2142,7 +2111,7 @@ var ItemList = Class("ItemList", {
         //    util.dump({ time: Date.now() - this.start });
     },
 
-    onEvent: function onEvent(event) false
+    onKeyPress: function onKeyPress(event) false
 }, {
     WAITING_MESSAGE: "Generating results..."
 });
