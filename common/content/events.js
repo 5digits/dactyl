@@ -33,7 +33,6 @@ var ProcessorStack = Class("ProcessorStack", {
 
     process: function process(event) {
         function dbg() {}
-        let dbg = util.closure.dump;
 
         let key = events.toString(event);
         this.events.push(event);
@@ -494,7 +493,6 @@ var Events = Module("events", {
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 let now = Date.now();
-                util.dump("+feed", events.toString(evt_obj));
                 for (let type in values(["keydown", "keyup", "keypress"])) {
                     let evt = update({}, evt_obj, { type: type });
 
@@ -512,7 +510,6 @@ var Events = Module("events", {
                     else
                         events.events.keypress.call(events, event);
                 }
-                util.dump("-feed", events.toString(evt_obj), this.feedingKeys);
 
                 if (!this.feedingKeys)
                     break;
@@ -1364,11 +1361,9 @@ var Events = Module("events", {
             ["<A-m>s", "<sleep>"], "Sleep for {count} milliseconds before continuing macro playback",
             function ({ command, count }) {
                 let now = Date.now();
-                util.dump("+<sleep>", count);
                 dactyl.assert(count, "Count required for " + command);
                 if (events.feedingKeys)
                     util.sleep(count);
-                util.dump("-<sleep>", count, now - Date.now());
             },
             { count: true });
 
