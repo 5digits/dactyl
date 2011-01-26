@@ -1015,7 +1015,8 @@ var Events = Module("events", {
         */
 
         input: function onInput(event) {
-            delete event.originalTarget.dactylKeyPress;
+            if ("dactylKeyPress" in event.originalTarget)
+                delete event.originalTarget.dactylKeyPress;
         },
 
         // this keypress handler gets always called first, even if e.g.

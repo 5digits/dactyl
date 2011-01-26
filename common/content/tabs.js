@@ -867,9 +867,11 @@ var Tabs = Module("tabs", {
     },
     events: function () {
         let tabContainer = config.tabbrowser.mTabContainer;
-        ["TabMove", "TabOpen", "TabClose"].forEach(function (event) {
-            events.addSessionListener(tabContainer, event, this.closure.updateTabCount, false);
-        }, this);
+        function callback() {
+            tabs.timeout(function () { this.updateTabCount(); });
+        }
+        for (let event in values(["TabMove", "TabOpen", "TabClose"]))
+            events.addSessionListener(tabContainer, event, callback, false);
         events.addSessionListener(tabContainer, "TabSelect", this.closure._onTabSelect, false);
     },
     mappings: function () {
