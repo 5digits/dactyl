@@ -138,7 +138,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
         if (result === Events.KILL)
             this.actions = [];
-        else if (!this.actions.length)
+        else if (!this.actions.length && !processors.length)
             for (let input in values(this.processors))
                 if (input.fallthrough) {
                     if (result === Events.KILL)
@@ -1331,11 +1331,11 @@ var Events = Module("events", {
         };
     },
     mappings: function () {
-        mappings.add(modes.all,
+        mappings.add(modes.MAIN,
             ["<C-z>", "<pass-all-keys>"], "Temporarily ignore all " + config.appName + " key bindings",
             function () { modes.push(modes.PASS_THROUGH); });
 
-        mappings.add(modes.all,
+        mappings.add(modes.MAIN,
             ["<C-v>", "<pass-next-key>"], "Pass through next key",
             function () {
                 if (modes.main == modes.QUOTE)
@@ -1343,12 +1343,12 @@ var Events = Module("events", {
                 modes.push(modes.QUOTE);
             });
 
-        mappings.add(modes.all,
+        mappings.add(modes.BASE,
             ["<Nop>"], "Do nothing",
             function () {});
 
         // macros
-        mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
+        mappings.add([modes.COMMAND],
             ["q", "<record-macro>"], "Record a key sequence into a macro",
             function ({ arg }) {
                 events._macroKeys.pop();
@@ -1356,7 +1356,7 @@ var Events = Module("events", {
             },
             { get arg() !modes.recording });
 
-        mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
+        mappings.add([modes.COMMAND],
             ["@", "<play-macro>"], "Play a macro",
             function ({ arg, count }) {
                 count = Math.max(count, 1);
