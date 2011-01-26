@@ -451,15 +451,13 @@ var Events = Module("events", {
             this._lastMacro = macro.toLowerCase(); // XXX: sets last played macro, even if it does not yet exist
 
         if (this._macros.get(this._lastMacro)) {
-            // make sure the page is stopped before starting to play the macro
             try {
-                window.getWebNavigation().stop(nsIWebNavigation.STOP_ALL);
+                modes.replaying = true;
+                res = events.feedkeys(this._macros.get(this._lastMacro).keys, { noremap: true });
             }
-            catch (e) {}
-
-            modes.replaying = true;
-            res = events.feedkeys(this._macros.get(this._lastMacro).keys, { noremap: true });
-            modes.replaying = false;
+            finally {
+                modes.replaying = false;
+            }
         }
         else
             // TODO: ignore this like Vim?
@@ -537,7 +535,7 @@ var Events = Module("events", {
                 }
 
                 if (!this.feedingKeys)
-                    break;
+                    return false;
             }
         }
         catch (e) {
@@ -549,6 +547,7 @@ var Events = Module("events", {
             if (quiet)
                 commandline.quiet = wasQuiet;
         }
+        return true;
     },
 
     /**
