@@ -1213,9 +1213,10 @@ var Commands = Module("commands", {
         return [len - str.length, arg, quote];
     },
 
-    quote: function quote(str) Commands.quoteArg[/[\s"'\\]|^$|^-/.test(str)
-            ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
-            : ""](str)
+    quote: function quote(str) Commands.quoteArg[
+        /[\b\f\n\r\t]/.test(str)   ? "'" :
+        /[\s"'\\]|^$|^-/.test(str) ? "'"
+                                   : ""](str)
 }, {
     completion: function () {
         completion.command = function command(context) {
