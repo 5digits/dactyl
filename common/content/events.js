@@ -1204,7 +1204,7 @@ var Events = Module("events", {
             }
 
             if (Events.isInputElement(elem)) {
-                if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
+                if (!modes.main.input)
                     modes.push(modes.INSERT);
 
                 if (hasHTMLDocument(win))
