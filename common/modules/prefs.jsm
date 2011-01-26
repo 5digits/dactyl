@@ -106,7 +106,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
                 let option = {
                     isDefault: !userValue,
-                    default:   this._load(pref, null, true),
+                    default:   this.defaults.get(pref, null),
                     value:     <>={template.highlight(value, true, 100)}</>,
                     name:      pref,
                     pre:       "\u00a0\u00a0" // Unicode nonbreaking space.
