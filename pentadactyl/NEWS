@@ -66,6 +66,8 @@
         and linking to source code locations).
       - :downloads now opens a download list in the multi-line output
         buffer.
+      - Added :mapgroup command and -group flag to :map, :unmap, and
+        :mapclear.
       - :extensions has been replaced with a more powerful :addons.
       - Added :cookies command.
       - :extadd now supports remote URLs as well as local files on Firefox 4.
@@ -91,6 +93,14 @@
       - :command now accepts comma-separated alternative command names.
       - :command -complete custom now also accepts a completions array, see
         :h :command-completion-custom.
+    * Mapping changes:
+      - Added site-specific mapping groups and related command
+        changes.
+      - Added named aliases for many mappings
+      - Added <A-m>l and <A-m>s to aid in the construction of macros.
+      - Removed the implicit page load delays during macro playback.
+      - Added the base modes Base, Main, and Command which other
+        modes inherit key bindings from.
     * Improvements to :style and :highlight:
       - Added -agent flag to :style.
       - The -append flag now updates existing properties rather than

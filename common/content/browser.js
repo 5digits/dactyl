@@ -65,7 +65,7 @@ var Browser = Module("browser", {
 
     mappings: function () {
         mappings.add([modes.NORMAL],
-            ["y"], "Yank current location to the clipboard",
+            ["y", "<yank-location>"], "Yank current location to the clipboard",
             function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
 
         // opening websites

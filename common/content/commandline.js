@@ -372,7 +372,6 @@ var CommandMode = Class("CommandMode", {
                 if (!this.completions.itemList.visible)
                     this.autocompleteTimer.flush();
             }
-            util.dump("input", commandline.command, this.widgets.command[1]);
             this.onChange(commandline.command);
         },
         keyup: function onKeyUp(event) {
