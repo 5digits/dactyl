@@ -1409,12 +1409,12 @@ var Events = Module("events", {
             "Prevent scripts from focusing input elements without user intervention",
             "boolean", true);
 
-        options.add(["timeout", "to"],
+        options.add(["timeout", "tmo"],
             "Whether to execute a shorter key command after a timeout when a longer command exists",
             "boolean", true);
 
-        options.add(["timeoutlen", "tm"],
-            "Maximum time to wait for a longer key command when a shorter command exists",
+        options.add(["timeoutlen", "tmol"],
+            "Maximum time (milliseconds) to wait for a longer key command when a shorter one exists",
             "number", 1000);
     },
     sanitizer: function () {
