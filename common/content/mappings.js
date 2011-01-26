@@ -515,7 +515,7 @@ var Mappings = Module("mappings", {
                             description: "Accept a count before the requisite key press"
                         },
                         {
-                            names: ["-description", "-d"],
+                            names: ["-description", "-desc", "-d"],
                             description: "A description of this mapping",
                             default: "User-defined mapping",
                             type: CommandOption.STRING

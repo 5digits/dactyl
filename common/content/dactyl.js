@@ -380,15 +380,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     userEval: function (str, context, fileName, lineNumber) {
+        let ctxt;
         if (jsmodules.__proto__ != window)
             str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
 
         if (fileName == null)
             if (io.sourcing && io.sourcing.file[0] !== "[")
-                ({ file: fileName, line: lineNumber }) = io.sourcing;
+                ({ file: fileName, line: lineNumber, context: ctxt }) = io.sourcing;
             else try {
                 if (!context)
-                    context = userContext;
+                    context = userContext || ctxt;
 
                 context[EVAL_ERROR] = null;
                 context[EVAL_STRING] = str;
@@ -411,7 +412,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             }
 
         if (!context)
-            context = _userContext;
+            context = _userContext || ctxt;
         return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
     },
 

@@ -1214,6 +1214,15 @@ update(iter, {
             func.call(self, val);
     },
 
+    indexOf: function indexOf(iter, elem) {
+        let i = 0;
+        for (let item in iter) {
+            if (item == elem)
+                return i;
+            i++;
+        }
+    },
+
     /**
      * Returns the array that results from applying *func* to each property of
      * *obj*.
