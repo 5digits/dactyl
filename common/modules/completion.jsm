@@ -483,8 +483,13 @@ var CompletionContext = Class("CompletionContext", {
                 filtered = filtered.slice(0, this.maxItems);
 
             // Sorting
-            if (this.sortResults && this.compare)
+            if (this.sortResults && this.compare) {
                 filtered.sort(this.compare);
+                if (!this.anchored) {
+                    let filter = this.filter;
+                    filtered.sort(function (a, b) (b.text.indexOf(filter) == 0) - (a.text.indexOf(filter) == 0));
+                }
+            }
 
             return this.cache.filtered = filtered;
         }
