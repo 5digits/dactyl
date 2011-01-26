@@ -425,7 +425,7 @@ var Buffer = Module("buffer", {
     /**
      * @property {string} The current top-level document's URL.
      */
-    get URL() update(content.location.href, util.newURI(content.location.href)),
+    get URL() update(new String(content.location.href), util.newURI(content.location.href)),
 
     /**
      * @property {number} The buffer's height in pixels.

@@ -921,7 +921,7 @@ unlet s:cpo_save
                               isDirectory: function () s.substr(-1) == "/",
                               leafName: /([^\/]*)\/?$/.exec(s)[1]
                         }
-                        for (s in io.listJar(getDir(uri.JARFile, uri.JAREntry)))]
+                        for (s in io.listJar(uri.JARFile, getDir(uri.JAREntry)))]
                 };
             else
                 context.generate = function generate_file() {
