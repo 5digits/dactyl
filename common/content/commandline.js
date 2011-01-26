@@ -305,14 +305,6 @@ var CommandMode = Class("CommandMode", {
 
         if (this.complete)
             this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField, this);
-
-        this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
-            if (!events.feedingKeys && this.completions && options["autocomplete"].length) {
-                this.completions.complete(true, false);
-                if (this.completions)
-                    this.completions.itemList.visible = true;
-            }
-        }, this);
     },
 
     open: function (command) {
@@ -335,17 +327,14 @@ var CommandMode = Class("CommandMode", {
         commandline.commandSession = this;
         if (this.command || stack.pop && commandline.command) {
             this.onChange(commandline.command);
-            this.autocompleteTimer.flush(true);
+            if (this.completions)
+                this.completions.autocompleteTimer.flush(true);
         }
     },
 
     leave: function (stack) {
-        this.autocompleteTimer.reset();
-
-        if (this.completions) {
-            this.completions.previewClear();
-            this.completions.tabTimer.reset();
-        }
+        if (this.completions)
+            this.completions.cleanup();
 
         if (this.history)
             this.history.save();
@@ -368,9 +357,9 @@ var CommandMode = Class("CommandMode", {
             if (this.completions) {
                 this.resetCompletions();
 
-                this.autocompleteTimer.tell(false);
+                this.completions.autocompleteTimer.tell(false);
                 if (!this.completions.itemList.visible)
-                    this.autocompleteTimer.flush();
+                    this.completions.autocompleteTimer.flush();
             }
             this.onChange(commandline.command);
         },
@@ -614,8 +603,10 @@ var CommandLine = Module("commandline", {
         if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
             this.widgets.message = null;
 
-        if (!this.commandSession)
+        if (!this.commandSession) {
             this.widgets.command = null;
+            this.hideCompletions();
+        }
 
         if (modes.main == modes.OUTPUT_MULTILINE && !mow.isScrollable(1))
             modes.pop();
@@ -990,9 +981,22 @@ var CommandLine = Module("commandline", {
             this.itemList = commandline.completionList;
             this.itemList.setItems(this.context);
 
+            this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
+                if (!events.feedingKeys && this.completions && options["autocomplete"].length) {
+                    this.complete(true, false);
+                    this.itemList.visible = true;
+                }
+            }, this);
             this.tabTimer = Timer(0, 0, function tabTell(event) {
                 this.tab(event.shiftKey, event.altKey && options["altwildmode"]);
             }, this);
+        },
+
+        cleanup: function () {
+            this.previewClear();
+            this.tabTimer.reset();
+            this.autocompleteTimer.reset();
+            this.itemList.visible = false;
         },
 
         UP: {},
@@ -1207,7 +1211,7 @@ var CommandLine = Module("commandline", {
         tabs: [],
 
         tab: function tab(reverse, wildmode) {
-            this.session.autocompleteTimer.flush();
+            this.autocompleteTimer.flush();
 
             if (this._caret != this.caret)
                 this.reset();
