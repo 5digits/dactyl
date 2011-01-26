@@ -147,20 +147,19 @@ var Addon = Class("Addon", {
         };
         XML.ignoreWhitespace = true;
         util.xmlToDom(
-            <li highlight="Addon" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
-                <span highlight="AddonName" key="name">
-                </span>
-                <span highlight="AddonVersion" key="version"/>
-                <span highlight="AddonStatus" key="status"/>
-                <span highlight="AddonButtons Buttons">
+            <tr highlight="Addon" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
+                <td highlight="AddonName" key="name"/>
+                <td highlight="AddonVersion" key="version"/>
+                <td highlight="AddonStatus" key="status"/>
+                <td highlight="AddonButtons Buttons">
                     <a highlight="Button" key="enable">On&#xa0;</a>
                     <a highlight="Button" key="disable">Off</a>
                     <a highlight="Button" key="delete">Del</a>
                     <a highlight="Button" key="update">Upd</a>
                     <a highlight="Button" key="options">Opt</a>
-                </span>
-                <span highlight="AddonDescription" key="description"/>
-            </li>,
+                </td>
+                <td highlight="AddonDescription" key="description"/>
+            </tr>,
             this.list.document, this.nodes);
 
         this.update();
@@ -266,15 +265,15 @@ var AddonList = Class("AddonList", {
     message: Class.memoize(function () {
 
         XML.ignoreWhitespace = true;
-        util.xmlToDom(<ul highlight="Addons" key="list" xmlns={XHTML}>
-                        <li highlight="AddonHead">
-                            <span>Name</span>
-                            <span>Version</span>
-                            <span>Status</span>
-                            <span/>
-                            <span>Description</span>
-                        </li>
-                      </ul>, this.document, this.nodes);
+        util.xmlToDom(<table highlight="Addons" key="list" xmlns={XHTML}>
+                        <tr highlight="AddonHead">
+                            <td>Name</td>
+                            <td>Version</td>
+                            <td>Status</td>
+                            <td/>
+                            <td>Description</td>
+                        </tr>
+                      </table>, this.document, this.nodes);
 
         return this.nodes.list;
     }),

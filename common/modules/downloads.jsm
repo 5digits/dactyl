@@ -29,31 +29,31 @@ var Download = Class("Download", {
             commandTarget: self
         };
         util.xmlToDom(
-            <li highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
-                <span highlight="DownloadTitle">
+            <tr highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
+                <td highlight="DownloadTitle">
                     <span highlight="Link">
                         <a key="launch" dactyl:command="download.command"
                            href={self.target.spec} path={self.targetFile.path}>{self.displayName}</a>
                         <span highlight="LinkInfo">{self.targetFile.path}</span>
                     </span>
-                </span>
-                <span highlight="DownloadState" key="state"/>
-                <span highlight="DownloadButtons Buttons">
+                </td>
+                <td highlight="DownloadState" key="state"/>
+                <td highlight="DownloadButtons Buttons">
                     <a highlight="Button" key="pause">Pause</a>
                     <a highlight="Button" key="remove">Remove</a>
                     <a highlight="Button" key="resume">Resume</a>
                     <a highlight="Button" key="retry">Retry</a>
                     <a highlight="Button" key="cancel">Cancel</a>
                     <a highlight="Button" key="delete">Delete</a>
-                </span>
-                <span highlight="DownloadProgress" key="progress">
+                </td>
+                <td highlight="DownloadProgress" key="progress">
                     <span highlight="DownloadProgressHave" key="progressHave"
                     />/<span highlight="DownloadProgressTotal" key="progressTotal"/>
-                </span>
-                <span highlight="DownloadPercent" key="percent"/>
-                <span highlight="DownloadTime" key="time"/>
-                <a highlight="DownloadSource" key="source" href={self.source.spec}>{self.source.spec}</a>
-            </li>,
+                </td>
+                <td highlight="DownloadPercent" key="percent"/>
+                <td highlight="DownloadTime" key="time"/>
+                <td><a highlight="DownloadSource" key="source" href={self.source.spec}>{self.source.spec}</a></td>
+            </tr>,
             this.list.document, this.nodes);
 
         self.updateStatus();
@@ -179,8 +179,8 @@ var DownloadList = Class("DownloadList",
 
     message: Class.memoize(function () {
 
-        util.xmlToDom(<ul highlight="Downloads" key="list" xmlns={XHTML}>
-                        <li highlight="DownloadHead">
+        util.xmlToDom(<table highlight="Downloads" key="list" xmlns={XHTML}>
+                        <tr highlight="DownloadHead">
                             <span>Title</span>
                             <span>Status</span>
                             <span/>
@@ -188,23 +188,23 @@ var DownloadList = Class("DownloadList",
                             <span/>
                             <span>Time remaining</span>
                             <span>Source</span>
-                        </li>
-                        <li highlight="Download"><span><div style="min-height: 1ex; /* FIXME */"/></span></li>
-                        <li highlight="Download" key="totals" active="true">
-                            <span><span highlight="Title">Totals:</span>&#xa0;<span key="total"/></span>
-                            <span/>
-                            <span highlight="DownloadButtons">
+                        </tr>
+                        <tr highlight="Download"><span><div style="min-height: 1ex; /* FIXME */"/></span></tr>
+                        <tr highlight="Download" key="totals" active="true">
+                            <td><span highlight="Title">Totals:</span>&#xa0;<span key="total"/></td>
+                            <td/>
+                            <td highlight="DownloadButtons">
                                 <a highlight="Button" key="clear">Clear</a>
-                            </span>
-                            <span highlight="DownloadProgress" key="progress">
+                            </td>
+                            <td highlight="DownloadProgress" key="progress">
                                 <span highlight="DownloadProgressHave" key="progressHave"
                                 />/<span highlight="DownloadProgressTotal" key="progressTotal"/>
-                            </span>
-                            <span highlight="DownloadPercent" key="percent"/>
-                            <span highlight="DownloadTime" key="time"/>
-                            <span/>
-                        </li>
-                      </ul>, this.document, this.nodes);
+                            </td>
+                            <td highlight="DownloadPercent" key="percent"/>
+                            <td highlight="DownloadTime" key="time"/>
+                            <td/>
+                        </tr>
+                      </table>, this.document, this.nodes);
 
         for (let row in iter(services.downloadManager.DBConnection
                                      .createStatement("SELECT id FROM moz_downloads")))
