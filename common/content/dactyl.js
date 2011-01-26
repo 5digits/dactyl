@@ -110,10 +110,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     get menuItems() Dactyl.getMenuItems(),
 
     // Global constants
-    CURRENT_TAB: [],
-    NEW_TAB: [],
-    NEW_BACKGROUND_TAB: [],
-    NEW_WINDOW: [],
+    CURRENT_TAB: "here",
+    NEW_TAB: "tab",
+    NEW_BACKGROUND_TAB: "background-tab",
+    NEW_WINDOW: "window",
 
     forceNewTab: false,
     forceNewWindow: false,
@@ -173,7 +173,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 let filters = args.map(function (arg) RegExp("\\b" + util.regexp.escape(arg) + "\\b", "i"));
                 if (filters.length)
-                    results = results.filter(function (item) filters.every(function (re) re.test(item.name + item.description)));
+                    results = results.filter(function (item) filters.every(function (re) re.test(item.name + " " + item.description)));
 
                 commandline.commandOutput(
                     template.usage(results, params.format));
@@ -380,15 +380,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     userEval: function (str, context, fileName, lineNumber) {
+        let ctxt;
         if (jsmodules.__proto__ != window)
             str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
 
         if (fileName == null)
             if (io.sourcing && io.sourcing.file[0] !== "[")
-                ({ file: fileName, line: lineNumber }) = io.sourcing;
+                ({ file: fileName, line: lineNumber, context: ctxt }) = io.sourcing;
             else try {
                 if (!context)
-                    context = userContext;
+                    context = userContext || ctxt;
 
                 context[EVAL_ERROR] = null;
                 context[EVAL_STRING] = str;
@@ -411,7 +412,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             }
 
         if (!context)
-            context = _userContext;
+            context = _userContext || ctxt;
         return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
     },
 
@@ -560,9 +561,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @private
      */
     initDocument: function initDocument(doc) {
-        if (doc.location.protocol === "dactyl:") {
-            dactyl.initHelp();
-            config.styleHelp();
+        try {
+            if (doc.location.protocol === "dactyl:") {
+                dactyl.initHelp();
+                config.styleHelp();
+            }
+        }
+        catch (e) {
+            util.reportError(e);
         }
     },
 
@@ -662,9 +668,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 let re = util.regexp(<![CDATA[
                     ^ (?P<space> \s*)
-                      (?P<char>  [-*+]) \x20
+                      (?P<char>  [-*+]) \ //
                     (?P<content> .*\n
-                       (?: \1\x20\x20.*\n | \s*\n)* )
+                       (?: \1\ \ .*\n | \s*\n)* )
                     |
                     (?P<par>
                         (?: ^ [^\S\n]*
@@ -676,30 +682,55 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     (?: ^ [^\S\n]* \n) +
                 ]]>, "gmy");
 
+                let betas = util.regexp(/\[(b\d)\]/, "g");
+
+                let beta = array(betas.iterate(NEWS))
+                            .map(function (m) m[1]).uniq().slice(-1)[0];
+
                 default xml namespace = NS;
-                function rec(text, level) {
+                function rec(text, level, li) {
                     let res = <></>;
-                    let list, space;
+                    let list, space, i = 0;
 
                     for (let match in re.iterate(text)) {
                         if (match.char) {
                             if (!list)
                                 res += list = <ul/>;
-                            list.* += <li>{rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1)}</li>;
+                            let li = <li/>;
+                            li.* += rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1, li)
+                            list.* += li;
                         }
                         else if (match.par) {
+                            let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
+                            let t = tags;
+                            tags = array(betas.iterate(tags)).map(function (m) m[1]);
+
+                            let group = tags.length && !tags.some(function (t) t == beta) ? "HelpNewsOld" : "";
+                            if (i === 0 && li) {
+                                li.@highlight = group;
+                                group = "";
+                            }
+
                             list = null;
-                            if (level == 0 && /^.*:\n$/.test(match.par))
-                                res += <h2>{template.linkifyHelp(match.par.slice(0, -1), true)}</h2>;
+                            if (level == 0 && /^.*:\n$/.test())
+                                var elem = <h2>{template.linkifyHelp(par.slice(0, -1), true)}</h2>;
                             else {
-                                let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(match.par);
-                                res += <p>{
+                                let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
+                                res += <p highlight={group + " HelpNews"}>{
+                                    !tags.length ? "" :
+                                    <hl key="HelpNewsTag">{tags.join(" ")}</hl>
+                                }{
                                     a ? <hl key="HelpWarning">{a}</hl> : ""
                                 }{
                                     template.linkifyHelp(b, true)
                                 }</p>;
                             }
                         }
+                        i++;
+                    }
+                    for each (let attr in res..@highlight) {
+                        attr.parent().@NS::highlight = attr;
+                        delete attr.parent().@highlight;
                     }
                     return res;
                 }
@@ -710,7 +741,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
                     '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
                     unescape(encodeURI( // UTF-8 handling hack.
-                    <document xmlns={NS}
+                    <document xmlns={NS} xmlns:dactyl={NS}
                         name="versions" title={config.appName + " Versions"}>
                         <h1 tag="versions news">{config.appName} Versions</h1>
                         <toc start="2"/>

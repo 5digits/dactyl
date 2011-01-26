@@ -11,12 +11,14 @@
 var ProcessorStack = Class("ProcessorStack", {
     init: function (mode, hives, keyModes) {
         this.main = mode.main;
+        this._actions = [];
         this.actions = [];
         this.buffer = "";
         this.events = [];
 
         this.processors = keyModes.map(function (m) hives.map(function (h) KeyProcessor(m, h)))
                                   .flatten().array;
+        this.ownsBuffer = !this.processors.some(function (p) p.main.ownsBuffer);
 
         for (let [i, input] in Iterator(this.processors)) {
             let params = input.main.params;
@@ -31,8 +33,69 @@ var ProcessorStack = Class("ProcessorStack", {
             }
     },
 
+    notify: function () {
+        this.execute(Events.KILL, true);
+    },
+
+    execute: function execute(result, force) {
+
+        if (force && this.actions.length)
+            this.processors.length = 0;
+
+        if (this.ownsBuffer)
+            statusline.updateInputBuffer(this.processors.length ? this.buffer : "");
+
+        if (this.processors.length) {
+            result = Events.KILL;
+            if (this.actions.length && options["timeout"])
+                this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
+        }
+        else if (this.actions.length) {
+            if (this._actions.length == 0) {
+                dactyl.beep();
+                events.feedingKeys = false;
+            }
+
+            for (var res = this.actions[0]; callable(res);)
+                res = res();
+            result = res === Events.PASS ? Events.PASS : Events.KILL;
+        }
+        else if (result !== Events.KILL && !this.actions.length &&
+                 this.processors.some(function (p) !p.main.passUnknown)) {
+            result = Events.KILL;
+            dactyl.beep();
+            events.feedingKeys = false;
+        }
+        else if (result === undefined)
+            result = Events.PASS;
+
+        if (result !== Events.PASS)
+            Events.kill(this.events[this.events.length - 1]);
+
+        if (result === Events.PASS || result === Events.ABORT)
+            this.events.filter(function (e) e.getPreventDefault())
+                .forEach(function (event, i) {
+                    let elem = event.originalTarget;
+                    if (event.originalTarget) {
+                        let doc = elem.ownerDocument || elem.document || elem;
+                        let evt = events.create(doc, event.type, event);
+                        events.dispatch(elem, evt, { skipmap: true, isMacro: true, isReplay: true });
+                    }
+                    else if (i > 0)
+                        events.events.keypress.call(events, event);
+                });
+
+        if (force && this.processors.length === 0)
+            events.processor = null;
+
+        return this.processors.length == 0;
+    },
+
     process: function process(event) {
         function dbg() {}
+
+        if (this.timer)
+            this.timer.cancel();
 
         let key = events.toString(event);
         this.events.push(event);
@@ -70,9 +133,7 @@ var ProcessorStack = Class("ProcessorStack", {
         dbg("ACTIONS: " + actions.length + " " + this.actions.length);
         dbg("PROCESSORS:", processors);
 
-        if (!processors.some(function (p) p.main.ownsBuffer))
-            statusline.updateInputBuffer(processors.length ? this.buffer : "");
-
+        this._actions = actions;
         this.actions = actions.concat(this.actions);
 
         if (result === Events.KILL)
@@ -87,42 +148,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
         this.processors = processors;
 
-        if (processors.length)
-            result = Events.KILL;
-        else if (this.actions.length) {
-            if (actions.length == 0)
-                dactyl.beep();
-
-            if (modes.replaying && !events.waitForPageLoad())
-                result = Events.KILL;
-            else {
-                for (var res = this.actions[0]; callable(res);)
-                    res = res();
-                result = res === Events.PASS ? Events.PASS : Events.KILL;
-            }
-        }
-        else if (result !== Events.KILL && !this.actions.length &&
-                 processors.some(function (p) !p.main.passUnknown)) {
-            result = Events.KILL;
-            dactyl.beep();
-        }
-        else if (result === undefined)
-            result = Events.PASS;
-
-        if (result !== Events.PASS)
-            Events.kill(event);
-
-        if (result === Events.PASS || result === Events.ABORT)
-            this.events.filter(function (e) e.getPreventDefault())
-                .forEach(function (event, i) {
-                    if (event.originalTarget) {
-                        let evt = events.create(event.originalTarget.ownerDocument, event.type, event);
-                        events.dispatch(event.originalTarget, evt, { skipmap: true, isMacro: true });
-                    }
-                    else if (i > 0)
-                        events.events.keypress.call(events, event);
-                });
-        return this.processors.length == 0;
+        return this.execute(result, options["timeout"] && options["timeoutlen"] === 0)
     }
 });
 
@@ -491,6 +517,7 @@ var Events = Module("events", {
             util.threadYield(1, true);
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
+                let now = Date.now();
                 for (let type in values(["keydown", "keyup", "keypress"])) {
                     let evt = update({}, evt_obj, { type: type });
 
@@ -510,10 +537,6 @@ var Events = Module("events", {
                 }
 
                 if (!this.feedingKeys)
-                    break;
-
-                // Stop feeding keys if page loading failed.
-                if (modes.replaying && !this.waitForPageLoad())
                     break;
             }
         }
@@ -594,9 +617,14 @@ var Events = Module("events", {
      * of x.
      *
      * @param {string} keys Messy form.
+     * @param {boolean} unknownOk Whether unknown keys are passed
+     *     through rather than being converted to <lt>keyname>.
+     *     @default false
      * @returns {string} Canonical form.
      */
     canonicalKeys: function (keys, unknownOk) {
+        if (arguments.length === 1)
+            unknownOk = true;
         return events.fromString(keys, unknownOk).map(events.closure.toString).join("");
     },
 
@@ -651,11 +679,17 @@ var Events = Module("events", {
      * <S-@> where @ is a non-case-changeable, non-space character.
      *
      * @param {string} keys The string to parse.
+     * @param {boolean} unknownOk Whether unknown keys are passed
+     *     through rather than being converted to <lt>keyname>.
+     *     @default false
      * @returns {Array[Object]}
      */
     fromString: function (input, unknownOk) {
-        let out = [];
 
+        if (arguments.length === 1)
+            unknownOk = true;
+
+        let out = [];
         let re = RegExp("<.*?>?>|[^<]|<(?!.*>)", "g");
         let match;
         while ((match = re.exec(input))) {
@@ -862,10 +896,7 @@ var Events = Module("events", {
 
     isContentNode: function isContentNode(node) {
         let win = (node.ownerDocument || node).defaultView || node;
-        for (; win; win = win.parent != win && win.parent)
-            if (win == content)
-                return true;
-        return false;
+        return XPCNativeWrapper(win).top == content;
     },
 
     /**
@@ -874,38 +905,23 @@ var Events = Module("events", {
      *
      * @returns {boolean}
      */
-    waitForPageLoad: function () {
+    waitForPageLoad: function (time) {
         util.threadYield(true); // clear queue
 
-        if (buffer.loaded == 1)
+        if (buffer.loaded)
             return true;
 
-        const maxWaitTime = 25;
+        dactyl.echo("Waiting for page to load...", commandline.DISALLOW_MULTILINE);
+
+        const maxWaitTime = (time || 25);
         let start = Date.now();
-        let end = start + (maxWaitTime * 1000); // maximum time to wait - TODO: add option
-        let now;
-        while (now = Date.now(), now < end) {
-            util.threadYield();
+        let end = start + (maxWaitTime * 1000);
 
-            if (!events.feedingKeys)
-                return false;
-
-            if (buffer.loaded > 0) {
-                util.sleep(250);
-                break;
-            }
-            else
-                dactyl.echo("Waiting for page to load...", commandline.DISALLOW_MULTILINE);
-        }
+        util.waitFor(function () !events.feedingKeys || buffer.loaded || Date.now() > end);
         commandline.clear();
 
-        // TODO: allow macros to be continued when page does not fully load with an option
         if (!buffer.loaded)
             dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
-
-        // sometimes the input widget had focus when replaying a macro
-        // maybe this call should be moved somewhere else?
-        // dactyl.focusContent(true);
 
         return buffer.loaded;
     },
@@ -1000,7 +1016,8 @@ var Events = Module("events", {
         */
 
         input: function onInput(event) {
-            delete event.originalTarget.dactylKeyPress;
+            if ("dactylKeyPress" in event.originalTarget)
+                delete event.originalTarget.dactylKeyPress;
         },
 
         // this keypress handler gets always called first, even if e.g.
@@ -1024,18 +1041,17 @@ var Events = Module("events", {
             let duringFeed = this.duringFeed || [];
             this.duringFeed = [];
             try {
-                if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
+                if (this.feedingEvent)
                     for (let [k, v] in Iterator(this.feedingEvent))
                         if (!(k in event))
                             event[k] = v;
-                    this.feedingEvent = null;
-                }
+                this.feedingEvent = null;
 
                 let key = events.toString(event);
                 if (!key)
                      return null;
 
-                if (modes.recording && (!this._input || !mappings.user.hasMap(modes.main, this._input.buffer + key)))
+                if (modes.recording && !event.isReplay)
                     events._macroKeys.push(key);
 
                 // feedingKeys needs to be separate from interrupted so
@@ -1043,8 +1059,6 @@ var Events = Module("events", {
                 // interrupting whatever it's started and a real <C-c>
                 // interrupting our playback.
                 if (events.feedingKeys && !event.isMacro) {
-                    if (!event.originalTarget)
-                        util.dumpStack();
                     if (key == "<C-c>") {
                         events.feedingKeys = false;
                         if (modes.replaying) {
@@ -1177,10 +1191,6 @@ var Events = Module("events", {
     // access to the real focus target
     // Huh? --djk
     onFocusChange: function onFocusChange(event) {
-        // command line has its own focus change handler
-        if (modes.main.input)
-            return;
-
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
 
         let win  = window.document.commandDispatcher.focusedWindow;
@@ -1202,7 +1212,7 @@ var Events = Module("events", {
             }
 
             if (Events.isInputElement(elem)) {
-                if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
+                if (!modes.main.input)
                     modes.push(modes.INSERT);
 
                 if (hasHTMLDocument(win))
@@ -1216,7 +1226,7 @@ var Events = Module("events", {
                 if (modes.main == modes.VISUAL && elem.selectionEnd == elem.selectionStart)
                     modes.pop();
 
-                if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
+                if (!modes.main.input)
                     if (options["insertmode"])
                         modes.push(modes.INSERT);
                     else {
@@ -1323,11 +1333,11 @@ var Events = Module("events", {
     },
     mappings: function () {
         mappings.add(modes.all,
-            ["<C-z>"], "Temporarily ignore all " + config.appName + " key bindings",
+            ["<C-z>", "<pass-all-keys>"], "Temporarily ignore all " + config.appName + " key bindings",
             function () { modes.push(modes.PASS_THROUGH); });
 
         mappings.add(modes.all,
-            ["<C-v>"], "Pass through next key",
+            ["<C-v>", "<pass-next-key>"], "Pass through next key",
             function () {
                 if (modes.main == modes.QUOTE)
                     return Events.PASS;
@@ -1340,7 +1350,7 @@ var Events = Module("events", {
 
         // macros
         mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
-            ["q"], "Record a key sequence into a macro",
+            ["q", "<record-macro>"], "Record a key sequence into a macro",
             function ({ arg }) {
                 events._macroKeys.pop();
                 events[modes.recording ? "finishRecording" : "startRecording"](arg);
@@ -1348,13 +1358,33 @@ var Events = Module("events", {
             { get arg() !modes.recording });
 
         mappings.add([modes.NORMAL, modes.TEXT_AREA, modes.PLAYER].filter(util.identity),
-            ["@"], "Play a macro",
+            ["@", "<play-macro>"], "Play a macro",
             function ({ arg, count }) {
                 count = Math.max(count, 1);
                 while (count-- && events.playMacro(arg))
                     ;
             },
             { arg: true, count: true });
+
+        mappings.add([modes.COMMAND],
+            ["<A-m>s", "<sleep>"], "Sleep for {count} milliseconds before continuing macro playback",
+            function ({ command, count }) {
+                let now = Date.now();
+                dactyl.assert(count, "Count required for " + command);
+                if (events.feedingKeys)
+                    util.sleep(count);
+            },
+            { count: true });
+
+        mappings.add([modes.COMMAND],
+            ["<A-m>l", "<wait-for-page-load>"], "Wait for the current page to finish loading before continuing macro playback",
+            function ({ count }) {
+                if (events.feedingKeys && !events.waitForPageLoad(count)) {
+                    util.interrupted = true;
+                    throw Error("Interrupted");
+                }
+            },
+            { count: true });
     },
     options: function () {
         options.add(["passkeys", "pk"],
@@ -1375,9 +1405,18 @@ var Events = Module("events", {
                     return values;
                 }
             });
+
         options.add(["strictfocus", "sf"],
             "Prevent scripts from focusing input elements without user intervention",
             "boolean", true);
+
+        options.add(["timeout", "tmo"],
+            "Whether to execute a shorter key command after a timeout when a longer command exists",
+            "boolean", true);
+
+        options.add(["timeoutlen", "tmol"],
+            "Maximum time (milliseconds) to wait for a longer key command when a shorter one exists",
+            "number", 1000);
     },
     sanitizer: function () {
         sanitizer.addItem("macros", {

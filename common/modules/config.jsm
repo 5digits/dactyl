@@ -613,6 +613,9 @@ var ConfigBase = Class("ConfigBase", {
         HelpString[delim]::before                   content: attr(delim);
         HelpString[delim]::after                    content: attr(delim);
 
+        HelpNews        position: relative;
+        HelpNewsOld     opacity: .7;
+        HelpNewsTag     position: absolute; left: 100%; padding-left: 1em; color: #527BBD; opacity: .6; white-space: pre;
 
         HelpHead;html|h1,html|h2,html|h3,html|h4;dactyl://help/* {
             font-weight: bold;

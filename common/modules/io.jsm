@@ -185,8 +185,10 @@ var IO = Module("io", {
                     else if (/\.css$/.test(filename))
                         styles.registerSheet(uri.spec, false, true);
                     else {
+                        if (!(file.path in plugins))
+                            plugins[file.path] = modules.newContext(modules.userContext);
                         modules.commands.execute(file.read(), null, silent || "loud", null,
-                            { file: file.path, line: 1 });
+                            { file: file.path, line: 1, context: plugins[file.path] });
                     }
 
                     if (this._scriptNames.indexOf(file.path) == -1)

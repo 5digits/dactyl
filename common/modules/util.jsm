@@ -1200,7 +1200,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
         if (post)
             return [url, elems.join('&'), charset, elems];
-        return [url + "?" + elems.join('&'), null, charset];
+        return [url + "?" + elems.join('&'), null, charset, elems];
     },
 
     /**
@@ -1270,8 +1270,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (tokens)
             expr = String.replace(expr, /(\(?P)?<(\w+)>/g, function (m, n1, n2) !n1 && set.has(tokens, n2) ? tokens[n2].dactylSource || tokens[n2].source || tokens[n2] : m);
 
-        expr = String.replace(expr, /\/\/[^\n]*|\/\*[^]*?\*\//gm, "")
-                     .replace(/\s+/g, "");
+        expr = String.replace(expr, /(\\.)|\/\/[^\n]*|\/\*[^]*?\*\/|\s+/gm, function (m, m1) m1 || "");
 
         if (/\(\?P</.test(expr)) {
             var source = expr;

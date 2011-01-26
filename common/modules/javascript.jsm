@@ -478,7 +478,7 @@ var JavaScript = Module("javascript", {
                 if (obj.length) {
                     let func = obj[0][0][funcName];
                     if (callable(func)) {
-                        let [, prefix, args] = /^(function .*?)\((.*)?\)/.exec(Function.prototype.toString.call(func));
+                        let [, prefix, args] = /^(function .*?)\((.*?)\)/.exec(Function.prototype.toString.call(func));
                         let n = this._get(i).comma.length;
                         args = template.map(Iterator(args.split(", ")),
                             function ([i, arg]) <span highlight={i == n ? "Filter" : ""}>{arg}</span>,

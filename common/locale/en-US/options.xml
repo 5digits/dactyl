@@ -1392,6 +1392,34 @@
 </item>
 
 <item>
+    <tags>'tmo' 'timeout'</tags>
+    <spec>'timeout' 'tmo'</spec>
+    <type>boolean</type>
+    <default>true</default>
+    <description>
+        <p>
+            When this option is set and a key sequence interpretable both as a
+            complete command and as a start of a longer command is typed,
+            execute the shorter command after <o>timeoutlen</o> milliseconds.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>'tmol' 'timeoutlen'</tags>
+    <spec>'timeoutlen' 'tmol'</spec>
+    <type>number</type>
+    <default>1000</default>
+    <description>
+        <p>
+            Maximum number of milliseconds to wait for a longer key command
+            when a shorter one exists. Only effective when <o>timeout</o> is
+            set.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>'titlestring'</tags>
     <spec>'titlestring'</spec>
     <type>string</type>

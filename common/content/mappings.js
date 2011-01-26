@@ -113,9 +113,17 @@ var Map = Class("Map", {
         if (this.executing)
             util.dumpStack("Attempt to execute mapping recursively: " + args.command);
         dactyl.assert(!this.executing, "Attempt to execute mapping recursively: " + args.command);
-        this.executing = true;
-        let res = dactyl.trapErrors(repeat);
-        this.executing = false;
+
+        try {
+            this.executing = true;
+            var res = repeat();
+        }
+        catch (e) {
+            events.feedingKeys = false;
+        }
+        finally {
+            this.executing = false;
+        }
         return res;
     }
 
@@ -507,7 +515,7 @@ var Mappings = Module("mappings", {
                             description: "Accept a count before the requisite key press"
                         },
                         {
-                            names: ["-description", "-d"],
+                            names: ["-description", "-desc", "-d"],
                             description: "A description of this mapping",
                             default: "User-defined mapping",
                             type: CommandOption.STRING

@@ -148,12 +148,6 @@ var CommandWidgets = Class("CommandWidgets", {
                 return this.commandbar;
             }
         });
-
-        let fontSize = util.computedStyle(document.documentElement).fontSize;
-        styles.system.add("font-size", "dactyl://content/buffer.xhtml",
-                          "body { font-size: " + fontSize + "; } \
-                           html|html > xul|scrollbar { visibility: collapse !important; }",
-                          true);
     },
     addElement: function addElement(obj) {
         const self = this;
@@ -301,18 +295,10 @@ var CommandMode = Class("CommandMode", {
         this.keepCommand = userContext.hidden_option_command_afterimage;
 
         if (this.historyKey)
-            this.history = CommandLine.History(commandline.widgets.active.command.inputField, this.historyKey);
+            this.history = CommandLine.History(commandline.widgets.active.command.inputField, this.historyKey, this);
 
         if (this.complete)
-            this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField);
-
-        this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
-            if (!events.feedingKeys && this.completions && options["autocomplete"].length) {
-                this.completions.complete(true, false);
-                if (this.completions)
-                    this.completions.itemList.visible = true;
-            }
-        }, this);
+            this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField, this);
     },
 
     open: function (command) {
@@ -335,17 +321,14 @@ var CommandMode = Class("CommandMode", {
         commandline.commandSession = this;
         if (this.command || stack.pop && commandline.command) {
             this.onChange(commandline.command);
-            this.autocompleteTimer.flush(true);
+            if (this.completions)
+                this.completions.autocompleteTimer.flush(true);
         }
     },
 
     leave: function (stack) {
-        this.autocompleteTimer.reset();
-
-        if (this.completions) {
-            this.completions.previewClear();
-            this.completions.tabTimer.reset();
-        }
+        if (this.completions)
+            this.completions.cleanup();
 
         if (this.history)
             this.history.save();
@@ -368,9 +351,9 @@ var CommandMode = Class("CommandMode", {
             if (this.completions) {
                 this.resetCompletions();
 
-                this.autocompleteTimer.tell(false);
+                this.completions.autocompleteTimer.tell(false);
                 if (!this.completions.itemList.visible)
-                    this.autocompleteTimer.flush();
+                    this.completions.autocompleteTimer.flush();
             }
             this.onChange(commandline.command);
         },
@@ -614,8 +597,10 @@ var CommandLine = Module("commandline", {
         if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
             this.widgets.message = null;
 
-        if (modes.main != modes.COMMAND_LINE)
+        if (!this.commandSession) {
             this.widgets.command = null;
+            this.hideCompletions();
+        }
 
         if (modes.main == modes.OUTPUT_MULTILINE && !mow.isScrollable(1))
             modes.pop();
@@ -866,10 +851,11 @@ var CommandLine = Module("commandline", {
      * @param {string} mode The mode for which we need history.
      */
     History: Class("History", {
-        init: function init(inputField, mode) {
+        init: function init(inputField, mode, session) {
             this.mode = mode;
             this.input = inputField;
             this.reset();
+            this.session = session;
         },
         get store() commandline._store.get(this.mode, []),
         set store(ary) { commandline._store.set(this.mode, ary); },
@@ -915,8 +901,9 @@ var CommandLine = Module("commandline", {
          */
         replace: function replace(val) {
             delete this.input.dactylKeyPress;
+            if (this.completions)
+                this.completions.previewClear();
             this.input.value = val;
-            commandline.commandSession.onChange(val, "history");
         },
 
         /**
@@ -928,8 +915,8 @@ var CommandLine = Module("commandline", {
          */
         select: function select(backward, matchCurrent) {
             // always reset the tab completion if we use up/down keys
-            if (commandline._completions)
-                commandline._completions.reset();
+            if (this.session.completions)
+                this.session.completions.reset();
 
             let diff = backward ? -1 : 1;
 
@@ -976,20 +963,34 @@ var CommandLine = Module("commandline", {
      * @param {Object} input
      */
     Completions: Class("Completions", {
-        init: function init(input) {
+        init: function init(input, session) {
             this.context = CompletionContext(input.QueryInterface(Ci.nsIDOMNSEditableElement).editor);
             this.context.onUpdate = this.closure._reset;
             this.editor = input.editor;
             this.input = input;
+            this.session = session;
             this.selected = null;
             this.wildmode = options.get("wildmode");
             this.wildtypes = this.wildmode.value;
             this.itemList = commandline.completionList;
             this.itemList.setItems(this.context);
 
+            this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
+                if (!events.feedingKeys && options["autocomplete"].length) {
+                    this.complete(true, false);
+                    this.itemList.visible = true;
+                }
+            }, this);
             this.tabTimer = Timer(0, 0, function tabTell(event) {
                 this.tab(event.shiftKey, event.altKey && options["altwildmode"]);
             }, this);
+        },
+
+        cleanup: function () {
+            this.previewClear();
+            this.tabTimer.reset();
+            this.autocompleteTimer.reset();
+            this.itemList.visible = false;
         },
 
         UP: {},
@@ -1038,7 +1039,7 @@ var CommandLine = Module("commandline", {
         complete: function complete(show, tabPressed) {
             this.context.reset();
             this.context.tabPressed = tabPressed;
-            commandline.commandSession.complete(this.context);
+            this.session.complete(this.context);
             this.context.updateAsync = true;
             this.reset(show, tabPressed);
             this.wildIndex = 0;
@@ -1204,7 +1205,7 @@ var CommandLine = Module("commandline", {
         tabs: [],
 
         tab: function tab(reverse, wildmode) {
-            commandline.commandSession.autocompleteTimer.flush();
+            this.autocompleteTimer.flush();
 
             if (this._caret != this.caret)
                 this.reset();
