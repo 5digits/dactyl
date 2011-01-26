@@ -148,12 +148,6 @@ var CommandWidgets = Class("CommandWidgets", {
                 return this.commandbar;
             }
         });
-
-        let fontSize = util.computedStyle(document.documentElement).fontSize;
-        styles.system.add("font-size", "dactyl://content/buffer.xhtml",
-                          "body { font-size: " + fontSize + "; } \
-                           html|html > xul|scrollbar { visibility: collapse !important; }",
-                          true);
     },
     addElement: function addElement(obj) {
         const self = this;
