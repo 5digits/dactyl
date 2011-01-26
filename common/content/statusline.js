@@ -42,6 +42,7 @@ var StatusLine = Module("statusline", {
         XML.ignoreWhitespace = true;
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
+            <toolbarbutton id="appmenu-toolbar-button" label="" image="chrome://branding/content/icon16.png" />
             <statusbar id="status-bar" highlight="StatusLine">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 <hbox key="container" hidden="false" align="center"  flex="1">
