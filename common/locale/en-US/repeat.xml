@@ -122,11 +122,12 @@
 <item>
     <tags><![CDATA[<wait-for-page-load> <A-m>l]]></tags>
     <strut/>
-    <spec><![CDATA[<A-m>l]]></spec>
+    <spec><oa>count</oa><![CDATA[<A-m>l]]></spec>
     <description>
         <p>
             Wait for the current page to finish loading before resuming
-            playback.
+            playback. If <oa>count</oa> is given, wait no more than
+            <oa>count</oa> seconds. Otherwise wait no more than 25 seconds.
         </p>
     </description>
 </item>
