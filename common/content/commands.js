@@ -1214,7 +1214,7 @@ var Commands = Module("commands", {
     },
 
     quote: function quote(str) Commands.quoteArg[
-        /[\b\f\n\r\t]/.test(str)   ? "'" :
+        /[\b\f\n\r\t]/.test(str)   ? '"' :
         /[\s"'\\]|^$|^-/.test(str) ? "'"
                                    : ""](str)
 }, {
