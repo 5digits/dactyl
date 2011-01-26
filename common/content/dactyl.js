@@ -110,10 +110,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     get menuItems() Dactyl.getMenuItems(),
 
     // Global constants
-    CURRENT_TAB: [],
-    NEW_TAB: [],
-    NEW_BACKGROUND_TAB: [],
-    NEW_WINDOW: [],
+    CURRENT_TAB: "here",
+    NEW_TAB: "tab",
+    NEW_BACKGROUND_TAB: "background-tab",
+    NEW_WINDOW: "window",
 
     forceNewTab: false,
     forceNewWindow: false,
