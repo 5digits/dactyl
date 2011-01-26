@@ -110,7 +110,7 @@ var Modes = Module("modes", {
         this.addMode("INPUT", {
             char: "I",
             description: "The base mode for input modes, including Insert and Command Line",
-            bases: [this.BASE],
+            bases: [this.MAIN],
             input: true
         });
         this.addMode("INSERT", {
