@@ -504,8 +504,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             if (win && Editor.getEditor(win)) {
                 win.blur();
                 if (win.frameElement)
-                    util.dump("blur(" + util.objectToString(win.frameElement) + ")");
-                if (win.frameElement)
                     win.frameElement.blur();
             }
         }

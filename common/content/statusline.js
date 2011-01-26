@@ -47,9 +47,9 @@ var StatusLine = Module("statusline", {
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 <hbox key="container" hidden="false" align="center"  flex="1">
                     <stack orient="horizontal"       align="stretch" flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
-                        <hbox                                                 highlight="CmdLine StatusCmdLine" class="dactyl-container" id="dactyl-statusline-stack">
+                        <hbox                                                 highlight="CmdLine StatusCmdLine" class="dactyl-container">
                             <label key="mode"          crop="end"                                               class="plain" collapsed="true"/>
-                            <stack                                   flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
+                            <stack  id="dactyl-statusline-stack"     flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
                                 <textbox key="url"     crop="end"    flex="1"                                   class="plain dactyl-status-field-url" readonly="true"/>
                                 <textbox key="message" crop="end"    flex="1" highlight="Normal StatusNormal"   class="plain"                         readonly="true"/>
                             </stack>
