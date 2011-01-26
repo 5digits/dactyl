@@ -43,6 +43,15 @@ var wrapCallback = function wrapCallback(fn)
         }
     })
 
+var getAttr = function getAttr(elem, ns, name)
+    elem.hasAttributeNS(ns, name) ? elem.getAttributeNS(ns, name) : null;
+var setAttr = function setAttr(elem, ns, name, val) {
+    if (val == null)
+        elem.removeAttributeNS(ns, name);
+    else
+        elem.setAttributeNS(ns, name, val);
+}
+
 var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     init: function () {
         this.Array = array;
@@ -52,12 +61,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     cleanup: function cleanup() {
-        for (let win in iter(services.windowMediator.getEnumerator(null))) {
-            for (let elem in values(win.document.dactylOverlayElements || []))
+        for (let { document: doc } in iter(services.windowMediator.getEnumerator(null))) {
+            for (let elem in values(doc.dactylOverlayElements || []))
                 if (elem.parentNode)
                     elem.parentNode.removeChild(elem);
-            delete win.document.dactylOverlayElements;
-            delete win.document.dactylOverlays;
+
+            for (let [elem, ns, name, orig, value] in values(doc.dactylOverlayAttributes || []))
+                if (getAttr(elem, ns, name) === value)
+                    setAttr(elem, ns, name, orig);
+
+            delete doc.dactylOverlayElements;
+            delete doc.dactylOverlayAttributes;
+            delete doc.dactylOverlays;
         }
     },
 
@@ -1037,8 +1052,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
     _loadOverlay: function _loadOverlay(window, obj) {
         let doc = window.document;
-        if (!doc.dactylOverlayElements)
+        if (!doc.dactylOverlayElements) {
             doc.dactylOverlayElements = [];
+            doc.dactylOverlayAttributes = [];
+        }
 
         function overlay(key, fn) {
             if (obj[key]) {
@@ -1056,11 +1073,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                                 doc.dactylOverlayElements.push(n);
 
                         fn(elem, node);
-                        for each (let attr in attr || []) // FIXME: Cleanup...
+                        for each (let attr in attr || []) {
+                            let ns = attr.namespace(), name = attr.localName();
+                            doc.dactylOverlayAttributes.push([elem, ns, name, getAttr(elem, ns, name), String(attr)]);
                             if (attr.name() != "highlight")
-                                elem.setAttributeNS(attr.namespace(), attr.localName(), String(attr));
+                                elem.setAttributeNS(ns, name, String(attr));
                             else
                                 highlight.highlightNode(elem, String(attr));
+                        }
                     }
                 }
             }
