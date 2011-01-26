@@ -766,25 +766,25 @@ var Buffer = Module("buffer", {
         try {
             window.urlSecurityCheck(uri.spec, doc.nodePrincipal);
 
-            commandline.input("Save link: ", function (path) {
-                let file = io.File(path);
-                if (file.exists() && file.isDirectory())
-                    file.append(buffer.getDefaultNames(elem)[0][0]);
+            io.CommandFileMode("Save link: ", {
+                onSubmit: function (path) {
+                    let file = io.File(path);
+                    if (file.exists() && file.isDirectory())
+                        file.append(buffer.getDefaultNames(elem)[0][0]);
 
-                try {
-                    if (!file.exists())
-                        file.create(File.NORMAL_FILE_TYPE, octal(644));
-                }
-                catch (e) {
-                    util.assert(false, "Invalid destination: " + e.name);
-                }
+                    try {
+                        if (!file.exists())
+                            file.create(File.NORMAL_FILE_TYPE, octal(644));
+                    }
+                    catch (e) {
+                        util.assert(false, "Invalid destination: " + e.name);
+                    }
 
-                buffer.saveURI(uri, file);
-            }, {
-                autocomplete: true,
-                completer: function (context) completion.savePage(context, elem),
-                history: "file"
-            });
+                    buffer.saveURI(uri, file);
+                },
+
+                completer: function (context) completion.savePage(context, elem)
+            }).open();
         }
         catch (e) {
             dactyl.echoerr(e);
@@ -1360,17 +1360,15 @@ var Buffer = Module("buffer", {
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {
-        commandline.input("Upload file: ", function (path) {
-            let file = io.File(path);
-            dactyl.assert(file.exists());
+        io.CommandFileMode("Upload file: ", {
+            onSubmit: function (path) {
+                let file = io.File(path);
+                dactyl.assert(file.exists());
 
-            elem.value = file.path;
-            events.dispatch(elem, events.create(elem.ownerDocument, "change", {}));
-        }, {
-            completer: function (context) completion.file(context),
-            default: elem.value,
-            history: "file"
-        });
+                elem.value = file.path;
+                events.dispatch(elem, events.create(elem.ownerDocument, "change", {}));
+            }
+        }).open(elem.value);
     }
 }, {
     commands: function () {
@@ -1530,7 +1528,8 @@ var Buffer = Module("buffer", {
                     if (/^>>/.test(context.filter))
                         context.advance(/^>>\s*/.exec(context.filter)[0].length);
 
-                    return completion.savePage(context, content.document);
+                    completion.savePage(context, content.document);
+                    context.fork("file", 0, completion, "file");
                 },
                 literal: 0
             });
@@ -1642,7 +1641,6 @@ var Buffer = Module("buffer", {
                          this, function (context) {
                 context.completions = buffer.getDefaultNames(node);
             });
-            return context.fork("files", 0, completion, "file");
         };
     },
     events: function () {

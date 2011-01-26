@@ -818,7 +818,7 @@ memoize(Class.prototype, "closure", function () {
     iter(properties(this), properties(this, true)).forEach(function (k) {
         if (!this.__lookupGetter__(k) && callable(this[k]))
             closure[k] = closure(this[k]);
-        else if (!(k in closure || k in Object.prototype))
+        else if (!(k in closure))
             Object.defineProperty(closure, k, {
                 get: function get_proxy() self[k],
                 set: function set_proxy(val) self[k] = val,
@@ -985,9 +985,10 @@ let StructBase = Class("StructBase", Array, {
 });
 
 var Timer = Class("Timer", {
-    init: function (minInterval, maxInterval, callback) {
+    init: function (minInterval, maxInterval, callback, self) {
         this._timer = services.Timer();
         this.callback = callback;
+        this.self = self || this;
         this.minInterval = minInterval;
         this.maxInterval = maxInterval;
         this.doneAt = 0;
@@ -1004,7 +1005,7 @@ var Timer = Class("Timer", {
             // minInterval is the time between the completion of the command and the next firing
             this.doneAt = Date.now() + this.minInterval;
 
-                this.callback(this.arg);
+            this.callback.call(this.self, this.arg);
         }
         catch (e) {
             if (typeof util === "undefined")
@@ -1042,8 +1043,8 @@ var Timer = Class("Timer", {
         this.doneAt = 0;
     },
 
-    flush: function () {
-        if (this.doneAt == -1)
+    flush: function (force) {
+        if (this.doneAt == -1 || force)
             this.notify();
     }
 });

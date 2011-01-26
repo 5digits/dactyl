@@ -138,7 +138,9 @@ var Template = Module("Template", {
                 init.supercall(this, node);
 
                 let obj = params.eventTarget;
-                for (let [event, handler] in Iterator(obj[this.getAttribute("events") || "events"]))
+                let events = obj[this.getAttribute("events") || "events"];
+
+                for (let [event, handler] in Iterator(events))
                     node.addEventListener(event, obj.closure(handler), false);
             }
         })
