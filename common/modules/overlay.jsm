@@ -176,6 +176,7 @@ var Overlay = Module("Overlay", {
                      "io",
                      "mappings",
                      "marks",
+                     "mow",
                      "options",
                      "statusline",
                      "styles",

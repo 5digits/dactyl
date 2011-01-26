@@ -15,12 +15,14 @@ var RangeFinder = Module("rangefinder", {
     Local: function (dactyl, modules, window) ({
         init: function () {
             this.dactyl = dactyl;
-            this.commandline = modules.commandline;
-            this.modes = modules.modes;
+            this.modules = modules;
             this.window = window;
-            this.options = modules.options;
             this.lastFindPattern = "";
         },
+
+        get commandline() this.modules.commandline,
+        get modes() this.modules.modes,
+        get options() this.modules.options(),
 
         get rangeFind() modules.buffer.localStore.rangeFind,
         set rangeFind(val) modules.buffer.localStore.rangeFind = val
@@ -28,7 +30,7 @@ var RangeFinder = Module("rangefinder", {
 
     openPrompt: function (mode) {
         let backwards = mode == this.modes.FIND_BACKWARD;
-        this.commandline.open(backwards ? "?" : "/", "", mode);
+        this.CommandMode(mode).open(backwards ? "?" : "/");
 
         if (this.rangeFind && this.rangeFind.window.get() === this.window)
             this.rangeFind.reset();
@@ -184,21 +186,23 @@ var RangeFinder = Module("rangefinder", {
             input: true
         }, { history: "search" });
     },
-    commandline: function (dactyl, modules, window) {
-        const { commandline, modes, rangefinder } = modules;
-        commandline.registerCallback("change", modes.FIND_FORWARD, rangefinder.closure.onKeyPress);
-        commandline.registerCallback("submit", modes.FIND_FORWARD, rangefinder.closure.onSubmit);
-        commandline.registerCallback("cancel", modes.FIND_FORWARD, rangefinder.closure.onCancel);
-        commandline.registerCallback("change", modes.FIND_BACKWARD, rangefinder.closure.onKeyPress);
-        commandline.registerCallback("submit", modes.FIND_BACKWARD, rangefinder.closure.onSubmit);
-        commandline.registerCallback("cancel", modes.FIND_BACKWARD, rangefinder.closure.onCancel);
-    },
     commands: function (dactyl, modules, window) {
         const { commands, rangefinder } = modules;
         commands.add(["noh[lfind]"],
             "Remove the find highlighting",
             function () { rangefinder.clear(); },
             { argCount: "0" });
+    },
+    commandline: function (dactyl, modules, window) {
+        this.CommandMode = modules.CommandMode("CommandFindMode", {
+            init: function init(mode) {
+                this.mode = mode;
+            },
+            historyKey: "find",
+            onCancel: rangefinder.closure.onCancel,
+            onChange: rangefinder.closure.onKeyPress,
+            onSubmit: rangefinder.closure.onSubmit
+        });
     },
     mappings: function (dactyl, modules, window) {
         const { buffer, config, mappings, modes, rangefinder } = modules;

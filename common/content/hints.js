@@ -9,16 +9,18 @@
 /** @scope modules */
 /** @instance hints */
 
-var HintSession = Class("HintSession", {
+var HintSession = Class("HintSession", CommandMode, {
     init: function init(mode, opts) {
+        init.supercall(this);
+
         opts = opts || {};
 
         // Hack.
         if (!opts.window && modes.main == modes.OUTPUT_MULTILINE)
             opts.window = commandline.widgets.multilineOutput.contentWindow;
 
-        this.mode = hints.modes[mode];
-        dactyl.assert(this.mode);
+        this.hintMode = hints.modes[mode];
+        dactyl.assert(this.hintMode);
 
         this.activeTimeout = null; // needed for hinttimeout > 0
         this.continue = Boolean(opts.continue);
@@ -31,8 +33,7 @@ var HintSession = Class("HintSession", {
         this.usedTabKey = false;
         this.validHints = []; // store the indices of the "hints" array with valid elements
 
-        commandline.input(UTF8(this.mode.prompt) + ": ", null, this.closure);
-        modes.extended = modes.HINTS;
+        this.open();
 
         this.top = opts.window || content;
         this.top.addEventListener("resize", hints.resizeTimer.closure.tell, true);
@@ -51,7 +52,22 @@ var HintSession = Class("HintSession", {
             this.checkUnique();
     },
 
-    get extended() modes.HINTS,
+    get mode() modes.HINTS,
+
+    get prompt() ["Question", UTF8(this.hintMode.prompt) + ": "],
+
+    leave: function leave(stack) {
+        leave.superapply(this, arguments);
+
+        if (!stack.push) {
+            if (hints.hintSession == this)
+                hints.hintSession = null;
+            if (this.top)
+                this.top.removeEventListener("resize", hints.resizeTimer.closure.tell, true);
+
+            this.removeHints(0);
+        }
+    },
 
     checkUnique: function _checkUnique() {
         if (this.hintNumber == 0)
@@ -236,7 +252,7 @@ var HintSession = Class("HintSession", {
 
             let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none"/>, doc);
 
-            let mode = this.mode;
+            let mode = this.hintMode;
             let res = util.evaluateXPath(mode.xpath, doc, true);
 
             let start = this.pageHints.length;
@@ -287,18 +303,6 @@ var HintSession = Class("HintSession", {
         }, this);
 
         return true;
-    },
-
-    leave: function leave(stack) {
-        if (!stack.push) {
-            if (hints.hintSession == this)
-                hints.hintSession = null;
-            this.continue = false;
-            if (this.top)
-                this.top.removeEventListener("resize", hints.resizeTimer.closure.tell, true);
-
-            this.removeHints(0);
-        }
     },
 
     /**
@@ -429,7 +433,7 @@ var HintSession = Class("HintSession", {
             if ((modes.extended & modes.HINTS) && !this.continue)
                 modes.pop();
             commandline.lastEcho = null; // Hack.
-            dactyl.trapErrors(this.mode.action, this.mode,
+            dactyl.trapErrors("action", this.hintMode,
                               elem, elem.href || elem.src || "",
                               this.extendedhintCount, top);
             if (this.continue && this.top)
@@ -662,6 +666,7 @@ var Hints = Module("hints", {
             if (modes.extended & modes.HINTS)
                 modes.getStack(0).params.onResize();
         });
+
         let appContent = document.getElementById("appcontent");
         if (appContent)
             events.addSessionListener(appContent, "scroll", this.resizeTimer.closure.tell, false);
@@ -681,9 +686,9 @@ var Hints = Module("hints", {
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
         this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
-        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) commandline.open(":", "open " + loc, modes.EX));
-        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) commandline.open(":", "tabopen " + loc, modes.EX));
-        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) commandline.open(":", "winopen " + loc, modes.EX));
+        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) CommandExMode.open("open " + loc));
+        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) CommandExMode.open("tabopen " + loc));
+        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) CommandExMode.open("winopen " + loc));
         this.addMode("a", "Add a bookmark",                       function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));
@@ -952,20 +957,19 @@ var Hints = Module("hints", {
 
     open: function open(mode, opts) {
         this._extendedhintCount = opts.count;
-        commandline.input(mode, null, {
+        commandline.input(["Normal", mode], "", {
             completer: function (context) {
                 context.compare = function () 0;
                 context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints.modes))];
             },
-            onAccept: function (arg) {
+            onSubmit: function (arg) {
                 if (arg)
-                    util.timeout(function () {
-                        dactyl.trapErrors(hints.show, hints, arg, opts);
-                    });
+                    hints.show(arg, opts);
             },
-            get onCancel() this.onAccept,
-            onChange: function () { modes.pop(); },
-            promptHighlight: "Normal"
+            onChange: function () {
+                this.accepted = true;
+                modes.pop();
+            },
         });
     },
 
@@ -1075,6 +1079,15 @@ var Hints = Module("hints", {
 
     Mode: Struct("name", "prompt", "action", "tags", "filter")
 }, {
+    modes: function () {
+        modes.addMode("HINTS", {
+            extended: true,
+            description: "Active when selecting elements in QuickHint or ExtendedHint mode",
+            bases: [modes.COMMAND_LINE],
+            input: true,
+            ownsBuffer: true
+        });
+    },
     mappings: function () {
         var myModes = config.browserModes.concat(modes.OUTPUT_MULTILINE);
         mappings.add(myModes, ["f"],
@@ -1097,25 +1110,23 @@ var Hints = Module("hints", {
 
         mappings.add(modes.HINTS, ["<Return>"],
             "Follow the selected hint",
-            function () { hints.hintSession.update(true); });
+            function ({ self }) { self.update(true); });
 
         mappings.add(modes.HINTS, ["<Tab>"],
             "Focus the next matching hint",
-            function () { hints.hintSession.tab(false); });
+            function ({ self }) { self.tab(false); });
 
         mappings.add(modes.HINTS, ["<S-Tab>"],
             "Focus the previous matching hint",
-            function () { hints.hintSession.tab(true); });
+            function ({ self }) { self.tab(true); });
 
         mappings.add(modes.HINTS, ["<BS>", "<C-h>"],
             "Delete the previous character",
-            function () hints.hintSession.backspace());
+            function ({ self }) self.backspace());
 
         mappings.add(modes.HINTS, ["<Leader>"],
             "Toggle hint filtering",
-            function () {
-                hints.hintSession.escapeNumbers = !hints.hintSession.escapeNumbers;
-            });
+            function ({ self }) { self.escapeNumbers = !self.escapeNumbers; });
     },
     options: function () {
         const DEFAULT_HINTTAGS =

@@ -115,9 +115,8 @@ var Bookmarks = Module("bookmarks", {
         if (charset != null && charset !== "UTF-8")
             options["-charset"] = charset;
 
-        commandline.open(":",
-            commands.commandToString({ command: "bmark", options: options, arguments: [url] }) + " -keyword ",
-            modes.EX);
+        CommandExMode().open(
+            commands.commandToString({ command: "bmark", options: options, arguments: [url] }) + " -keyword ");
     },
 
     /**
@@ -582,9 +581,8 @@ var Bookmarks = Module("bookmarks", {
                         options["-charset"] = content.document.characterSet;
                 }
 
-                commandline.open(":",
-                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.uri.spec] }),
-                    modes.EX);
+                CommandExMode().open(
+                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.uri.spec] }));
             });
 
         mappings.add(myModes, ["A"],

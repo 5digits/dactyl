@@ -19,7 +19,7 @@ var ProcessorStack = Class("ProcessorStack", {
                                   .flatten().array;
 
         for (let [i, input] in Iterator(this.processors)) {
-            let params = input.main == mode.main ? mode.params : input.main.params;
+            let params = input.main.params;
             if (params.preExecute)
                 input.preExecute = params.preExecute;
             if (params.postExecute)
@@ -101,7 +101,8 @@ var ProcessorStack = Class("ProcessorStack", {
                 result = res === Events.PASS ? Events.PASS : Events.KILL;
             }
         }
-        else if (result !== Events.KILL && processors.some(function (p) !p.main.passUnknown)) {
+        else if (result !== Events.KILL && !this.actions.length &&
+                 processors.some(function (p) !p.main.passUnknown)) {
             result = Events.KILL;
             dactyl.beep();
         }
@@ -157,12 +158,13 @@ var KeyProcessor = Class("KeyProcessor", {
         return this.onKeyPress(event);
     },
 
-    execute: function execute(map)
-        let (self = this, args = arguments)
+    execute: function execute(map, args)
+        let (self = this)
             function execute() {
                 if (self.preExecute)
                     self.preExecute.apply(self, args);
-                let res = map.execute.apply(map, Array.slice(args, 1));
+                let res = map.execute.call(map, update({ self: self.main.params.mappingSelf || self.main.mappingSelf || map },
+                                                       args))
                 if (self.postExecute)
                     self.postExecute.apply(self, args);
                 return res;
@@ -1092,7 +1094,8 @@ var Events = Module("events", {
 
                     let hives = mappings.hives.slice(event.noremap ? -1 : 0);
 
-                    let keyModes = array([mode.params.keyModes, mode.main, mode.main.allBases]).flatten().compact();
+                    let main = { __proto__: mode.main, params: mode.params };
+                    let keyModes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
 
                     this.processor = ProcessorStack(mode, hives, keyModes);
                 }
@@ -1175,7 +1178,7 @@ var Events = Module("events", {
     // Huh? --djk
     onFocusChange: function onFocusChange(event) {
         // command line has its own focus change handler
-        if (modes.main == modes.COMMAND_LINE)
+        if (modes.main.input)
             return;
 
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument

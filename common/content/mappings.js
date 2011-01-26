@@ -295,6 +295,8 @@ var Mappings = Module("mappings", {
         this.allHives = [this.user, this.builtin];
     },
 
+    repeat: Modes.boundProperty(),
+
     hives: Class.memoize(function () array(this.allHives.filter(function (h) h.filter(buffer.uri)))),
 
     get userHives() this.allHives.filter(function (h) h !== this.builtin, this),

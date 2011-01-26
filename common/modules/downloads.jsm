@@ -296,7 +296,7 @@ var DownloadList = Class("DownloadList",
             else {
                 this.addDownload(download.id);
 
-                this.modules.commandline.updateOutputHeight(false);
+                this.modules.mow.resize(false);
                 this.nodes.list.scrollIntoView(false);
             }
             this.update();
