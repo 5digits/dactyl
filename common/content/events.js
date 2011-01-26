@@ -1183,10 +1183,6 @@ var Events = Module("events", {
     // access to the real focus target
     // Huh? --djk
     onFocusChange: function onFocusChange(event) {
-        // command line has its own focus change handler
-        if (modes.main.input)
-            return;
-
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
 
         let win  = window.document.commandDispatcher.focusedWindow;
@@ -1222,7 +1218,7 @@ var Events = Module("events", {
                 if (modes.main == modes.VISUAL && elem.selectionEnd == elem.selectionStart)
                     modes.pop();
 
-                if (!(modes.main & (modes.INSERT | modes.TEXT_EDIT | modes.VISUAL)))
+                if (!modes.main.input)
                     if (options["insertmode"])
                         modes.push(modes.INSERT);
                     else {
