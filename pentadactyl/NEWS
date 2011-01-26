@@ -79,24 +79,24 @@
         :mapclear. [b6]
       - :extensions has been replaced with a more powerful :addons.
       - Added :cookies command. [b3]
-      - :extadd now supports remote URLs as well as local files on Firefox 4.
+      - :extadd now supports remote URLs as well as local files on Firefox 4. [b2]
       - Added :if/:elseif/:else/:endif conditionals. [b3]
-      - Added -charset and -post to :bmark.
+      - Added -charset and -post to :bmark. [b5]
       - Added -keyword, -tags, -title to :delbmarks. [b2]
-      - Added :extrehash, :exttoggle, :extupdate, and :rehash commands.
+      - Added :extrehash, :exttoggle, :extupdate, and :rehash commands. [b5]
       - Added :feedkeys command. [b4]
       - Added -sort option to :history. [b4]
       - Added several new options, including -javascript, to :abbreviate and
         :map. [b2]
       - Added :mksyntax command to auto-generate Vim syntax files. [b4]
-      - :open now only opens files beginning with /, ./, ../, or ~/
+      - :open now only opens files beginning with /, ./, ../, or ~/ [b1]
       - :saveas now provides completions for default file names, and
         automatically chooses a filename when the save target is a
         directory. [b4]
       - :sidebar now accepts a ! flag to toggle the sidebar rather
-        than open it unconditionally.
-      - Added :write !cmd and :write >>file.
-      - Added :yank command.
+        than open it unconditionally. [b6]
+      - Added :write !cmd and :write >>file. [b3]
+      - Added :yank command. [b3]
       - :delmarks, :marks and :qmarks now also accept ranges, same as
         :delqmarks.
       - :command now accepts comma-separated alternative command names.
@@ -112,14 +112,18 @@
         those active and inactive for the current site. [b4]
       - CSS property name completion is now available. [b4]
     * IMPORTANT option changes:
+      - Option value quoting has changed. List options will
+        no longer be split at quoted commas and the option name, operators, and
+        = sign may no longer be quoted. This will break certain
+        automatically-generated configuration files. See :help stringlist. [b2]
       - Boolean options no longer accept an argument. [b4]
       - 'cdpath' and 'runtimepath' no longer treat ",,"
-        specially. Use "." instead.
+        specially. Use "." instead. [b2]
       - 'incsearch', 'hlsearch', 'ignorecase', and 'smartcase' have
         been replaced with 'incfind', 'hlfind', and 'findcase'. [b4]
       - 'extendedhinttags' is now a regexpmap rather than a
         string. [b2]
-      - 'guioptions' default value has changed.
+      - 'guioptions' default value has changed. [b4]
       - 'laststatus' has been replaced with the "s" flag in
         'guioptions'. [b4]
       - 'linksearch' has been removed.  The \l search modifier can
@@ -127,18 +131,13 @@
       - 'loadplugins' is now a regexplist option rather than
         a boolean. [b2]
       - 'mapleader' is now an option rather than a :let
-        variable.
+        variable. [b4]
       - 'showstatuslinks' and 'showtabline' are now string options. [b4]
-    * IMPORTANT: Command script files now use the *.penta file extension.
+    * IMPORTANT: Command script files now use the *.penta file extension. [b2]
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
-      directory in 'runtimepath' rather than 'plugin/'.
+      directory in 'runtimepath' rather than 'plugin/'. [b1]
     * Option changes:
-      - IMPORTANT: Option value quoting has changed. List options will
-        no longer be split at quoted commas and the option name,
-        operators, and = sign may no longer be quoted. This will break
-        certain automatically-generated configuration files.
-        See :help stringlist. [b2]
-      - Added "bookmarks", "diverted", and "links" to 'activate'
+      - Added "bookmarks", "diverted", and "links" to 'activate' [b2]
         option.
       - Added 'altwildmode' and c_<A-Tab> command-line key binding. [b2]
       - Added 'autocomplete' option for specifying which completion
@@ -146,9 +145,9 @@
       - Added 'banghist' option. [b1]
       - Replaced 'focuscontent' with 'strictfocus'. [b1]
       - 'complete' now defaults to "slf" but file completion only
-        triggers when the URL begins as above.
-      - Added 'passkeys' option.
-      - Changed 'urlseparator' default value to "|".
+        triggers when the URL begins as above. [b1]
+      - Added 'passkeys' option. [b3]
+      - Changed 'urlseparator' default value to "|". [b3]
       - Added "passwords" and "venkman" dialogs to :dialog. [b2]
       - Added 'wildanchor' option. [b2]
       - Added 'cookies', 'cookieaccept', and 'cookielifetime' options. [b3]
@@ -163,7 +162,7 @@
     * Completion list now behaves better when the multi-line output
       window is displayed. [b1]
     * Major help system improvements:
-      - Plugins may now provide full-fledged :help documentation.
+      - Plugins may now provide full-fledged :help documentation. [b1]
       - Add basic plugin authorship documentation. [b1]
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements. [b1]

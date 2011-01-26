@@ -1200,7 +1200,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
         if (post)
             return [url, elems.join('&'), charset, elems];
-        return [url + "?" + elems.join('&'), null, charset];
+        return [url + "?" + elems.join('&'), null, charset, elems];
     },
 
     /**
