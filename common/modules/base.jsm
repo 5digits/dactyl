@@ -23,20 +23,20 @@ if (typeof XPCSafeJSObjectWrapper === "undefined")
     this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
 
 if (!XPCNativeWrapper.unwrap)
-    XPCNativeWrapper.unwrap = function (obj) {
+    XPCNativeWrapper.unwrap = function unwrap(obj) {
         if (hasOwnProperty.call(obj, "wrappedJSObject"))
             return obj.wrappedJSObject;
         return obj;
     };
 if (!Object.create)
-    Object.create = function (proto, props) {
+    Object.create = function create(proto, props) {
         let obj = { __proto__: proto };
         for (let k in properties(props || {}))
             Object.defineProperty(obj, k, props[k]);
         return obj;
     };
 if (!Object.defineProperty)
-    Object.defineProperty = function (obj, prop, desc) {
+    Object.defineProperty = function defineProperty(obj, prop, desc) {
         let value = desc.value;
         if ("value" in desc)
             if (desc.writable && !objproto.__lookupGetter__.call(obj, prop)
@@ -56,6 +56,11 @@ if (!Object.defineProperty)
         if ("set" in desc)
             objproto.__defineSetter__.call(obj, prop, desc.set);
     };
+if (!Object.defineProperties)
+    Object.defineProperties = function defineProperties(obj, props) {
+        for (let [k, v] in Iterator(props))
+            Object.defineProperty(obj, k, v);
+    }
 if (!Object.getOwnPropertyDescriptor)
     Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
         if (!hasOwnProperty.call(obj, prop))
@@ -91,9 +96,9 @@ if (!Object.getOwnPropertyNames)
         return res;
     };
 if (!Object.getPrototypeOf)
-    Object.getPrototypeOf = function (obj) obj.__proto__;
+    Object.getPrototypeOf = function getPrototypeOf(obj) obj.__proto__;
 if (!Object.keys)
-    Object.keys = function (obj)
+    Object.keys = function keys(obj)
         Object.getOwnPropertyNames(obj).filter(function (k) objproto.propertyIsEnumerable.call(obj, k));
 
 let use = {};
