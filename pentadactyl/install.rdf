@@ -3,6 +3,7 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
     <Description about="urn:mozilla:install-manifest"
         em:id="pentadactyl@dactyl.googlecode.com"
+        em:type="2"
         em:name="Pentadactyl"
         em:version="1.0b6pre"
         em:description="Firefox for Vim and Links addicts"

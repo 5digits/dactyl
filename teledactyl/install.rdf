@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-    <Description about="urn:mozilla:install-manifest">
-        <em:id>teledactyl@dactyl.googlecode.com</em:id>
-        <em:name>Teledactyl</em:name>
-        <em:version>0.5b1pre</em:version>
-        <em:description>Thunderbird for Mutt and Vim addicts</em:description>
-        <em:creator>Kris Maglione</em:creator>
-        <em:homepageURL>http://dactyl.sf.net/Teledactyl</em:homepageURL>
-        <em:iconURL>chrome://teledactyl/skin/icon.png</em:iconURL>
-        <em:optionsURL>chrome://dactyl/content/preferences.xul</em:optionsURL>
+    <Description about="urn:mozilla:install-manifest"
+        em:id="teledactyl@dactyl.googlecode.com"
+        em:type="2"
+        em:name="Teledactyl"
+        em:version="0.5b1pre"
+        em:description="Thunderbird for Mutt and Vim addicts"
+        em:creator="Kris Maglione"
+        em:homepageURL="http://dactyl.sf.net/Teledactyl"
+        em:iconURL="chrome://teledactyl/skin/icon.png"
+        em:optionsURL="chrome://dactyl/content/preferences.xul">
         <em:targetApplication>
             <Description>
                 <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
