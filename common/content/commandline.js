@@ -301,10 +301,10 @@ var CommandMode = Class("CommandMode", {
         this.keepCommand = userContext.hidden_option_command_afterimage;
 
         if (this.historyKey)
-            this.history = CommandLine.History(commandline.widgets.active.command.inputField, this.historyKey);
+            this.history = CommandLine.History(commandline.widgets.active.command.inputField, this.historyKey, this);
 
         if (this.complete)
-            this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField);
+            this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField, this);
 
         this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
             if (!events.feedingKeys && this.completions && options["autocomplete"].length) {
@@ -372,6 +372,7 @@ var CommandMode = Class("CommandMode", {
                 if (!this.completions.itemList.visible)
                     this.autocompleteTimer.flush();
             }
+            util.dump("input", commandline.command, this.widgets.command[1]);
             this.onChange(commandline.command);
         },
         keyup: function onKeyUp(event) {
@@ -866,10 +867,11 @@ var CommandLine = Module("commandline", {
      * @param {string} mode The mode for which we need history.
      */
     History: Class("History", {
-        init: function init(inputField, mode) {
+        init: function init(inputField, mode, session) {
             this.mode = mode;
             this.input = inputField;
             this.reset();
+            this.session = session;
         },
         get store() commandline._store.get(this.mode, []),
         set store(ary) { commandline._store.set(this.mode, ary); },
@@ -915,8 +917,9 @@ var CommandLine = Module("commandline", {
          */
         replace: function replace(val) {
             delete this.input.dactylKeyPress;
+            if (this.completions)
+                this.completions.previewClear();
             this.input.value = val;
-            commandline.commandSession.onChange(val, "history");
         },
 
         /**
@@ -928,8 +931,8 @@ var CommandLine = Module("commandline", {
          */
         select: function select(backward, matchCurrent) {
             // always reset the tab completion if we use up/down keys
-            if (commandline._completions)
-                commandline._completions.reset();
+            if (this.session.completions)
+                this.session.completions.reset();
 
             let diff = backward ? -1 : 1;
 
@@ -976,11 +979,12 @@ var CommandLine = Module("commandline", {
      * @param {Object} input
      */
     Completions: Class("Completions", {
-        init: function init(input) {
+        init: function init(input, session) {
             this.context = CompletionContext(input.QueryInterface(Ci.nsIDOMNSEditableElement).editor);
             this.context.onUpdate = this.closure._reset;
             this.editor = input.editor;
             this.input = input;
+            this.session = session;
             this.selected = null;
             this.wildmode = options.get("wildmode");
             this.wildtypes = this.wildmode.value;
@@ -1038,7 +1042,7 @@ var CommandLine = Module("commandline", {
         complete: function complete(show, tabPressed) {
             this.context.reset();
             this.context.tabPressed = tabPressed;
-            commandline.commandSession.complete(this.context);
+            this.session.complete(this.context);
             this.context.updateAsync = true;
             this.reset(show, tabPressed);
             this.wildIndex = 0;
@@ -1204,7 +1208,7 @@ var CommandLine = Module("commandline", {
         tabs: [],
 
         tab: function tab(reverse, wildmode) {
-            commandline.commandSession.autocompleteTimer.flush();
+            this.session.autocompleteTimer.flush();
 
             if (this._caret != this.caret)
                 this.reset();
