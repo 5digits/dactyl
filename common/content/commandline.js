@@ -982,7 +982,7 @@ var CommandLine = Module("commandline", {
             this.itemList.setItems(this.context);
 
             this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
-                if (!events.feedingKeys && this.completions && options["autocomplete"].length) {
+                if (!events.feedingKeys && options["autocomplete"].length) {
                     this.complete(true, false);
                     this.itemList.visible = true;
                 }
