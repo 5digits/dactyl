@@ -614,7 +614,7 @@ var CommandLine = Module("commandline", {
         if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
             this.widgets.message = null;
 
-        if (modes.main != modes.COMMAND_LINE)
+        if (!this.commandSession)
             this.widgets.command = null;
 
         if (modes.main == modes.OUTPUT_MULTILINE && !mow.isScrollable(1))

@@ -174,13 +174,13 @@ var RangeFinder = Module("rangefinder", {
             description: "Forward Find mode, active when typing search input",
             bases: [modes.FIND],
             input: true
-        }, { history: "search" });
+        });
         modes.addMode("FIND_BACKWARD", {
             extended: true,
             description: "Backward Find mode, active when typing search input",
             bases: [modes.FIND],
             input: true
-        }, { history: "search" });
+        });
     },
     commands: function (dactyl, modules, window) {
         const { commands, rangefinder } = modules;
