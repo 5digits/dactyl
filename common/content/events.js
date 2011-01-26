@@ -654,11 +654,17 @@ var Events = Module("events", {
      * <S-@> where @ is a non-case-changeable, non-space character.
      *
      * @param {string} keys The string to parse.
+     * @param {boolean} unknownOk Whether unknown keys are passed
+     *     through rather than being converted to <lt>keyname>.
+     *     @default false
      * @returns {Array[Object]}
      */
     fromString: function (input, unknownOk) {
-        let out = [];
 
+        if (arguments.length === 1)
+            unknownOk = true;
+
+        let out = [];
         let re = RegExp("<.*?>?>|[^<]|<(?!.*>)", "g");
         let match;
         while ((match = re.exec(input))) {
@@ -1027,12 +1033,11 @@ var Events = Module("events", {
             let duringFeed = this.duringFeed || [];
             this.duringFeed = [];
             try {
-                if (this.feedingEvent && [!(k in event) || event[k] === v for ([k, v] in Iterator(this.feedingEvent))].every(util.identity)) {
+                if (this.feedingEvent)
                     for (let [k, v] in Iterator(this.feedingEvent))
                         if (!(k in event))
                             event[k] = v;
-                    this.feedingEvent = null;
-                }
+                this.feedingEvent = null;
 
                 let key = events.toString(event);
                 if (!key)
