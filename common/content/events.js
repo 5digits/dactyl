@@ -960,32 +960,31 @@ var Events = Module("events", {
                 // the main window does not restore focus and we lose key
                 // input.
                 services.focus.clearFocus(window);
-                document.commandDispatcher.focusedWindow = content;
+                document.commandDispatcher.focusedWindow = Editor.getEditor(content) ? window : content;
             }
         },
 
         // TODO: Merge with onFocusChange
         focus: function onFocus(event) {
             let elem = event.originalTarget;
-            if (elem instanceof Element) {
-                let win = elem.ownerDocument.defaultView;
 
-                if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
-                    for (let e = elem; e instanceof Element; e = e.parentNode)
-                        if (util.computedStyle(e).visibility !== "visible" ||
-                                e.boxObject && e.boxObject.height === 0) {
-                            elem.blur();
-                            break;
-                        }
-
-                if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
-                    && !(services.focus.getLastFocusMethod(win) & 0x7000)
-                    && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
-                    if (elem.frameElement)
-                        dactyl.focusContent(true);
-                    else if (!(elem instanceof Window) || Editor.getEditor(elem))
+            if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
+                for (let e = elem; e instanceof Element; e = e.parentNode)
+                    if (util.computedStyle(e).visibility !== "visible" ||
+                            e.boxObject && e.boxObject.height === 0) {
                         elem.blur();
-                }
+                        break;
+                    }
+
+            let win = (elem.ownerDocument || elem).defaultView || elem;
+
+            if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
+                && !(services.focus.getLastFocusMethod(win) & 0x7000)
+                && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
+                if (elem.frameElement)
+                    dactyl.focusContent(true);
+                else if (!(elem instanceof Window) || Editor.getEditor(elem))
+                    dactyl.focus(window);
             }
         },
 
