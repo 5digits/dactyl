@@ -354,8 +354,6 @@ var CommandMode = Class("CommandMode", {
                 this.resetCompletions();
 
                 this.completions.autocompleteTimer.tell(false);
-                if (!this.completions.itemList.visible)
-                    this.completions.autocompleteTimer.flush();
             }
             this.onChange(commandline.command);
         },
