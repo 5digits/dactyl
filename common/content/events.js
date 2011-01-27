@@ -1209,15 +1209,6 @@ var Events = Module("events", {
                 return;
             }
 
-            if (Events.isInputElement(elem)) {
-                if (!modes.main.input)
-                    modes.push(modes.INSERT);
-
-                if (hasHTMLDocument(win))
-                    buffer.lastInputField = elem;
-                return;
-            }
-
             if (elem instanceof HTMLTextAreaElement || (elem && util.computedStyle(elem).MozUserModify == "read-write")
                || elem == null && win && Editor.getEditor(win)) {
 
@@ -1232,6 +1223,15 @@ var Events = Module("events", {
                         if (elem.selectionEnd - elem.selectionStart > 0)
                             modes.push(modes.VISUAL);
                     }
+
+                if (hasHTMLDocument(win))
+                    buffer.lastInputField = elem;
+                return;
+            }
+
+            if (Events.isInputElement(elem)) {
+                if (!modes.main.input)
+                    modes.push(modes.INSERT);
 
                 if (hasHTMLDocument(win))
                     buffer.lastInputField = elem;
