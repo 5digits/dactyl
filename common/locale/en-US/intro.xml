@@ -45,7 +45,16 @@
 
 <ul tag="features-list"></ul>
 
-<h2 tag="contact">Contact</h2>
+<h2 tag="official-plugins">Official Plugins</h2>
+
+<p>
+    In case you're not sufficiently overwhelmed by &dactyl.appName;'s default
+    feature set, don't despair. You can find more entertainment in the
+    officially supported (read: you can flame us when they stop working)
+    <link topic="&dactyl.plugins;">plugins</link>.
+</p>
+
+<h2 tag="contact bugs">Contact</h2>
 
 <p>
     Please send comments, questions, or patches to the
