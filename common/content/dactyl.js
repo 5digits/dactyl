@@ -326,7 +326,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
         else if (isinstance(str, ["Error"]))
-            str = <>{str.fileName.replace(/^.*? -> /, "")}: {str.lineNumber}: {str}</>;
+            str = <>{str.fileName.replace(/^.* -> /, "")}: {str.lineNumber}: {str}</>;
 
         if (options["errorbells"])
             dactyl.beep();
@@ -1131,7 +1131,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 });
 
         params = params || {};
-        if (isArray(params))
+        if (isString(params))
             params = { where: params };
 
         let flags = 0;

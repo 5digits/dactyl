@@ -42,7 +42,7 @@ var CommandWidgets = Class("CommandWidgets", {
 
                     <vbox class="dactyl-container" hidden="false" collapsed="false" highlight="CmdLine">
                         <textbox id="dactyl-multiline-input" class="plain" flex="1" rows="1" hidden="false" collapsed="true" multiline="true"
-                                 highlight="Normal Events" events="mowEvents" />
+                                 highlight="Normal Events" events="multilineInputEvents" />
                     </vbox>
                 </vbox>
 
@@ -88,6 +88,7 @@ var CommandWidgets = Class("CommandWidgets", {
 
         this.addElement({
             name: "command",
+            test: function (stack, prev) stack.pop && !isinstance(prev.main, modes.COMMAND_LINE),
             id: "commandline-command",
             get: function (elem) {
                 // The long path is because of complications with the
@@ -163,6 +164,7 @@ var CommandWidgets = Class("CommandWidgets", {
 
         if (!(obj.noValue || obj.getValue)) {
             Object.defineProperty(this, obj.name, Modes.boundProperty({
+                test: obj.test,
 
                 get: function get_widgetValue() {
                     let elem = self.getGroup(obj.name, obj.value)[obj.name];
@@ -569,9 +571,6 @@ var CommandLine = Module("commandline", {
                 nodeSet.commandline.completionList.visible = false;
     },
 
-    _multilineEnd: Modes.boundProperty(),
-    _multilineCallback: Modes.boundProperty(),
-
     _lastClearable: Modes.boundProperty(),
     messages: Modes.boundProperty(),
 
@@ -759,20 +758,21 @@ var CommandLine = Module("commandline", {
      * callback with that string as a parameter.
      *
      * @param {string} end
-     * @param {function(string)} callbackFunc
+     * @param {function(string)} callback
      */
     // FIXME: Buggy, especially when pasting.
-    inputMultiline: function inputMultiline(end, callbackFunc) {
+    inputMultiline: function inputMultiline(end, callback) {
         let cmd = this.command;
-        modes.push(modes.COMMAND_LINE, modes.INPUT_MULTILINE, {
-            keyModes: [modes.INPUT_MULTILINE]
+        modes.push(modes.INPUT_MULTILINE, null, {
+            mappingSelf: {
+                end: "\n" + end + "\n",
+                callback: callback
+            }
         });
         if (cmd != false)
             this._echoLine(cmd, this.HL_NORMAL);
 
         // save the arguments, they are needed in the event handler onKeyPress
-        this._multilineEnd = "\n" + end + "\n";
-        this._multilineCallback = callbackFunc;
 
         this.multilineInputVisible = true;
         this.widgets.multilineInput.value = "";
@@ -781,23 +781,25 @@ var CommandLine = Module("commandline", {
         this.timeout(function () { dactyl.focus(this.widgets.multilineInput); }, 10);
     },
 
+    get commandMode() this.commandSession && isinstance(modes.main, modes.COMMAND_LINE),
+
     events: update(
         iter(CommandMode.prototype.events).map(
             function ([event, handler]) [
                 event, function (event) {
-                    if (this.commandSession)
+                    if (this.commandMode)
                         handler.call(this.commandSession, event);
                 }
             ]).toObject(),
         {
             blur: function onBlur(event) {
                 this.timeout(function () {
-                    if (this.commandSession && event.originalTarget === this.widgets.active.command.inputField)
+                    if (this.commandMode && event.originalTarget === this.widgets.active.command.inputField)
                         dactyl.focus(this.widgets.active.command.inputField);
                 });
             },
             focus: function onFocus(event) {
-                if (!this.commandSession
+                if (!this.commandMode
                         && event.originalTarget === this.widgets.active.command.inputField) {
                     event.target.blur();
                     dactyl.beep();
@@ -816,7 +818,7 @@ var CommandLine = Module("commandline", {
      */
     multilineInputEvents: {
         blur: function onBlur(event) {
-            if (modes.extended & modes.INPUT_MULTILINE)
+            if (modes.main == modes.INPUT_MULTILINE)
                 this.timeout(function () {
                     dactyl.focus(this.widgets.multilineInput.inputField);
                 });
@@ -1355,6 +1357,11 @@ var CommandLine = Module("commandline", {
             bases: [modes.COMMAND_LINE],
             input: true
         });
+
+        modes.addMode("INPUT_MULTILINE", {
+            bases: [modes.INSERT],
+            input: true
+        });
     },
     mappings: function init_mappings() {
 
@@ -1364,18 +1371,17 @@ var CommandLine = Module("commandline", {
 
         mappings.add([modes.INPUT_MULTILINE],
             ["<Return>", "<C-j>", "<C-m>"], "Begin a new line",
-            function (args) {
+            function ({ self }) {
                 let text = "\n" + commandline.widgets.multilineInput
                                              .value.substr(0, commandline.widgets.multilineInput.selectionStart)
                          + "\n";
 
-                let index = text.indexOf(commandline._multilineEnd);
+                let index = text.indexOf(self.end);
                 if (index >= 0) {
                     text = text.substring(1, index);
-                    let callback = commandline._multilineCallback;
                     modes.pop();
 
-                    return function () callback.call(commandline, text);
+                    return function () self.callback.call(commandline, text);
                 }
                 return Events.PASS;
             });
