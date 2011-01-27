@@ -46,7 +46,7 @@
 </p>
 
 <p tag=":map-modes">
-    Standard key mapping commands are provided for the four most
+    Standard key mapping commands are provided for the five most
     common modes,
 </p>
 
@@ -65,6 +65,7 @@
     prefixed with one of the above letters. For instance,
     <ex>:imap</ex> creates a new key mapping in insert mode, while
     <ex>:cunmap</ex> removes a key mapping from command-line mode.
+    Other modes can be specified using the -modes option described below.
 </p>
 
 <warning>
