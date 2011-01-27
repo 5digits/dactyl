@@ -119,6 +119,12 @@ var Modes = Module("modes", {
             input: true,
             ownsFocus: true
         });
+        this.addMode("COMMAND_LINE", {
+            char: "c",
+            description: "Active when the command line is focused",
+            input: true
+        });
+
 
         this.addMode("EMBED", {
             input: true,
@@ -154,8 +160,30 @@ var Modes = Module("modes", {
             input: true
         });
 
+        // this._extended modes, can include multiple modes, and even main modes
+        this.addMode("EX", {
+            extended: true,
+            description: "Ex command mode, active when the command line is open for Ex commands",
+            input: true
+        }, { history: "command" });
+        this.addMode("HINTS", {
+            extended: true,
+            description: "Active when selecting elements in QuickHint or ExtendedHint mode",
+            count: false,
+            ownsBuffer: true
+        });
+        this.addMode("INPUT_MULTILINE", {
+            extended: true,
+            hidden: true,
+            input: true
+        });
         this.addMode("LINE", {
             extended: true, hidden: true
+        });
+        this.addMode("PROMPT", {
+            extended: true,
+            description: "Active when a prompt is open in the command line",
+            input: true
         });
 
         this.push(this.NORMAL, 0, {
@@ -186,9 +214,9 @@ var Modes = Module("modes", {
     _getModeMessage: function () {
         // when recording a macro
         let macromode = "";
-        if (this.recording)
+        if (modes.recording)
             macromode = "recording";
-        else if (this.replaying)
+        else if (modes.replaying)
             macromode = "replaying";
 
         let val = this._modeMap[this._main].display();
@@ -264,11 +292,11 @@ var Modes = Module("modes", {
     delayed: [],
     delay: function (callback, self) { this.delayed.push([callback, self]); },
 
-    save: function save(id, obj, prop, test) {
+    save: function save(id, obj, prop) {
         if (!(id in this.boundProperties))
             for (let elem in array.iterValues(this._modeStack))
-                elem.saved[id] = { obj: obj, prop: prop, value: obj[prop], test: test };
-        this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop, test: test };
+                elem.saved[id] = { obj: obj, prop: prop, value: obj[prop] };
+        this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop };
     },
 
     // helper function to set both modes in one go
@@ -289,26 +317,22 @@ var Modes = Module("modes", {
         }
 
         if (stack && stack.pop && stack.pop.params.leave)
-            dactyl.trapErrors("leave", stack.pop.params,
-                              stack, this.topOfStack);
+            stack.pop.params.leave(stack, this.topOfStack);
 
         let push = mainMode != null && !(stack && stack.pop) &&
             Modes.StackElement(this._main, this._extended, params, {});
-
         if (push && this.topOfStack) {
             if (this.topOfStack.params.leave)
-                dactyl.trapErrors("leave", this.topOfStack.params,
-                                  { push: push }, push);
-
-            for (let [id, { obj, prop, test }] in Iterator(this.boundProperties)) {
+                this.topOfStack.params.leave({ push: push }, push);
+            for (let [id, { obj, prop }] in Iterator(this.boundProperties)) {
                 if (!obj.get())
                     delete this.boundProperties[id];
                 else
-                    this.topOfStack.saved[id] = { obj: obj.get(), prop: prop, value: obj.get()[prop], test: test };
+                    this.topOfStack.saved[id] = { obj: obj.get(), prop: prop, value: obj.get()[prop] };
             }
         }
 
-        let delayed = this.delayed;
+        this.delayed.forEach(function ([fn, self]) fn.call(self));
         this.delayed = [];
 
         let prev = stack && stack.pop || this.topOfStack;
@@ -316,18 +340,12 @@ var Modes = Module("modes", {
             this._modeStack.push(push);
 
         if (stack && stack.pop)
-            for (let { obj, prop, value, test } in values(this.topOfStack.saved))
-                if (!test || !test(stack, prev))
-                    obj[prop] = value;
-
-        this.show();
-
-        delayed.forEach(function ([fn, self]) dactyl.trapErrors(fn, self));
+            for (let { obj, prop, value } in values(this.topOfStack.saved))
+                obj[prop] = value;
 
         if (this.topOfStack.params.enter && prev)
-            dactyl.trapErrors("enter", this.topOfStack.params,
-                              push ? { push: push } : stack || {},
-                              prev);
+            this.topOfStack.params.enter(push ? { push: push } : stack || {},
+                                         prev);
 
         dactyl.triggerObserver("modeChange", [oldMain, oldExtended], [this._main, this._extended], stack);
         this.show();
@@ -421,7 +439,7 @@ var Modes = Module("modes", {
 
         input: false,
 
-        get passUnknown() this.input,
+        passUnknown: false,
 
         get mask() this,
 
@@ -458,7 +476,7 @@ var Modes = Module("modes", {
                     return val === undefined ? value : val;
                 },
                 set: function (val) {
-                    modes.save(id, this, prop, desc.test);
+                    modes.save(id, this, prop);
                     if (desc.set)
                         value = desc.set.call(this, val);
                     value = !desc.set || value === undefined ? val : value;

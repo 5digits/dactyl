@@ -22,7 +22,7 @@
 <h2 tag="buffer-information">Buffer information</h2>
 
 <item>
-    <tags><![CDATA[<page-info> <C-g>]]></tags>
+    <tags><![CDATA[<C-g>]]></tags>
     <strut/>
     <spec>&lt;C-g></spec>
     <description>
@@ -35,7 +35,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<more-page-info> g<C-g>]]></tags>
+    <tags><![CDATA[g<C-g>]]></tags>
     <spec>g&lt;C-g></spec>
     <description short="true">
         <p>Print file information. Same as <ex>:pa<oa>geinfo</oa></ex>.</p>
@@ -95,7 +95,7 @@
 <h2 tag="motion scrolling">Motion commands</h2>
 
 <item>
-    <tags>&lt;scroll-begin> ^ 0</tags>
+    <tags>^ 0</tags>
     <strut/>
     <spec>0</spec>
     <description>
@@ -107,7 +107,7 @@
 </item>
 
 <item>
-    <tags>&lt;scroll-end> $</tags>
+    <tags>$</tags>
     <spec>$</spec>
     <description short="true">
         <p>Scroll to the absolute right of the document</p>
@@ -140,7 +140,7 @@
 </item>
 
 <item>
-    <tags>&lt;scroll-percent> N%</tags>
+    <tags>N%</tags>
     <spec><a>count</a>%</spec>
     <description short="true">
         <p>Scroll to <a>count</a> percent of the document.</p>
@@ -148,7 +148,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-column-left> <Left> h]]></tags>
+    <tags><![CDATA[<Left> h]]></tags>
     <strut/>
     <spec><oa>count</oa>h</spec>
     <description>
@@ -160,7 +160,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-line-down> <C-e> <Down> j]]></tags>
+    <tags><![CDATA[<C-e> <Down> j]]></tags>
     <strut/>
     <spec><oa>count</oa>j</spec>
     <description>
@@ -172,7 +172,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-line-up> <C-y> <Up> k]]></tags>
+    <tags><![CDATA[<C-y> <Up> k]]></tags>
     <strut/>
     <spec><oa>count</oa>k</spec>
     <description>
@@ -184,7 +184,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-column-right> <Right> l]]></tags>
+    <tags><![CDATA[<Right> l]]></tags>
     <strut/>
     <spec><oa>count</oa>l</spec>
     <description>
@@ -196,7 +196,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-down> <C-d>]]></tags>
+    <tags><![CDATA[<C-d>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-d></spec>
     <description>
@@ -209,7 +209,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-up> <C-u>]]></tags>
+    <tags><![CDATA[<C-u>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-u></spec>
     <description>
@@ -222,7 +222,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-page-up> <S-Space> <PageUp> <C-b>]]></tags>
+    <tags><![CDATA[<S-Space> <PageUp> <C-b>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-b></spec>
     <description>
@@ -234,7 +234,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-page-down> <Space> <PageDown> <C-f>]]></tags>
+    <tags><![CDATA[<Space> <PageDown> <C-f>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-f></spec>
     <description>
@@ -264,7 +264,7 @@
 </item>
 
 <item>
-    <tags>&lt;focus-input> gi</tags>
+    <tags>gi</tags>
     <strut/>
     <spec><oa>count</oa>gi</spec>
     <description>
@@ -277,7 +277,7 @@
 </item>
 
 <item>
-    <tags>&lt;next-frame> ]f</tags>
+    <tags>]f</tags>
     <strut/>
     <spec><oa>count</oa>]f</spec>
     <description>
@@ -290,7 +290,7 @@
 </item>
 
 <item>
-    <tags>&lt;previous-frame> [f</tags>
+    <tags>[f</tags>
     <strut/>
     <spec><oa>count</oa>[f</spec>
     <description>
@@ -303,7 +303,7 @@
 </item>
 
 <item>
-    <tags>&lt;next-page> ]]</tags>
+    <tags>]]</tags>
     <strut/>
     <spec><oa>count</oa>]]</spec>
     <description>
@@ -316,7 +316,7 @@
 </item>
 
 <item>
-    <tags>&lt;previous-page> [[</tags>
+    <tags>[[</tags>
     <strut/>
     <spec><oa>count</oa>[[</spec>
     <description>
@@ -361,7 +361,7 @@
 </note>
 
 <item>
-    <tags><![CDATA[<text-zoom-in> + zi]]></tags>
+    <tags>+ zi</tags>
     <spec><oa>count</oa>zi</spec>
     <description short="true">
         <p>Enlarge text zoom of current web page. Mnemonic: zoom in.</p>
@@ -369,7 +369,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<text-zoom-more> zm]]></tags>
+    <tags>zm</tags>
     <strut/>
     <spec><oa>count</oa>zm</spec>
     <description>
@@ -378,7 +378,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<text-zoom-out> - zo]]></tags>
+    <tags>- zo</tags>
     <spec><oa>count</oa>zo</spec>
     <description short="true">
         <p>Reduce text zoom of current web page. Mnemonic: zoom out.</p>
@@ -386,7 +386,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<text-zoom-reduce> zr]]></tags>
+    <tags>zr</tags>
     <spec><oa>count</oa>zr</spec>
     <description short="true">
         <p>Reduce text zoom of current web page by a larger amount. Mnemonic: zoom reduce.</p>
@@ -394,7 +394,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<text-zoom> zz]]></tags>
+    <tags>zz</tags>
     <strut/>
     <spec><oa>count</oa>zz</spec>
     <description>
@@ -407,7 +407,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<full-zoom-in> ZI zI]]></tags>
+    <tags>ZI zI</tags>
     <spec><oa>count</oa>ZI</spec>
     <description short="true">
         <p>Enlarge full zoom of current web page. Mnemonic: zoom in.</p>
@@ -415,7 +415,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<full-zoom-more> ZM zM]]></tags>
+    <tags>ZM zM</tags>
     <strut/>
     <spec><oa>count</oa>ZM</spec>
     <description>
@@ -424,7 +424,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<full-zoom-out> ZO zO]]></tags>
+    <tags>ZO zO</tags>
     <spec><oa>count</oa>ZO</spec>
     <description short="true">
         <p>Reduce full zoom of current web page. Mnemonic: zoom out.</p>
@@ -432,7 +432,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<full-zoom-reduce> ZR zR]]></tags>
+    <tags>ZR zR</tags>
     <spec><oa>count</oa>ZR</spec>
     <description short="true">
         <p>Reduce full zoom of current web page by a larger amount. Mnemonic: zoom reduce.</p>
@@ -440,7 +440,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<full-zoom> zZ]]></tags>
+    <tags>zZ</tags>
     <strut/>
     <spec><oa>count</oa>zZ</spec>
     <description>
@@ -489,7 +489,7 @@
 </p>
 
 <item>
-    <tags>&lt;yank-location> y</tags>
+    <tags>y</tags>
     <spec>y</spec>
     <description short="true">
         <p>Yank current location to the clipboard.</p>
@@ -497,7 +497,7 @@
 </item>
 
 <item>
-    <tags>&lt;yank-word> Y</tags>
+    <tags>Y</tags>
     <spec>Y</spec>
     <description short="true">
         <p>Copy currently selected text to the system clipboard.</p>

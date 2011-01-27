@@ -65,33 +65,33 @@ var Browser = Module("browser", {
 
     mappings: function () {
         mappings.add([modes.NORMAL],
-            ["y", "<yank-location>"], "Yank current location to the clipboard",
+            ["y"], "Yank current location to the clipboard",
             function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
 
         // opening websites
         mappings.add([modes.NORMAL],
             ["o"], "Open one or more URLs",
-            function () { CommandExMode().open("open "); });
+            function () { commandline.open(":", "open ", modes.EX); });
 
         mappings.add([modes.NORMAL], ["O"],
             "Open one or more URLs, based on current location",
-            function () { CommandExMode().open("open " + buffer.uri.spec); });
+            function () { commandline.open(":", "open " + buffer.uri.spec, modes.EX); });
 
         mappings.add([modes.NORMAL], ["t"],
             "Open one or more URLs in a new tab",
-            function () { CommandExMode().open("tabopen "); });
+            function () { commandline.open(":", "tabopen ", modes.EX); });
 
         mappings.add([modes.NORMAL], ["T"],
             "Open one or more URLs in a new tab, based on current location",
-            function () { CommandExMode().open("tabopen " + buffer.uri.spec); });
+            function () { commandline.open(":", "tabopen " + buffer.uri.spec, modes.EX); });
 
         mappings.add([modes.NORMAL], ["w"],
             "Open one or more URLs in a new window",
-            function () { CommandExMode().open("winopen "); });
+            function () { commandline.open(":", "winopen ", modes.EX); });
 
         mappings.add([modes.NORMAL], ["W"],
             "Open one or more URLs in a new window, based on current location",
-            function () { CommandExMode().open("winopen " + buffer.uri.spec); });
+            function () { commandline.open(":", "winopen " + buffer.uri.spec, modes.EX); });
 
         mappings.add([modes.NORMAL],
             ["<C-a>"], "Increment last number in URL",

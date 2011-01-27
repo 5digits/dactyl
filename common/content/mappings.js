@@ -113,17 +113,9 @@ var Map = Class("Map", {
         if (this.executing)
             util.dumpStack("Attempt to execute mapping recursively: " + args.command);
         dactyl.assert(!this.executing, "Attempt to execute mapping recursively: " + args.command);
-
-        try {
-            this.executing = true;
-            var res = repeat();
-        }
-        catch (e) {
-            events.feedingKeys = false;
-        }
-        finally {
-            this.executing = false;
-        }
+        this.executing = true;
+        let res = dactyl.trapErrors(repeat);
+        this.executing = false;
         return res;
     }
 
@@ -302,8 +294,6 @@ var Mappings = Module("mappings", {
         this.builtinHives = array([this.user, this.builtin]);
         this.allHives = [this.user, this.builtin];
     },
-
-    repeat: Modes.boundProperty(),
 
     hives: Class.memoize(function () array(this.allHives.filter(function (h) h.filter(buffer.uri)))),
 

@@ -176,7 +176,6 @@ var Overlay = Module("Overlay", {
                      "io",
                      "mappings",
                      "marks",
-                     "mow",
                      "options",
                      "statusline",
                      "styles",
@@ -204,14 +203,12 @@ var Overlay = Module("Overlay", {
                 modules.loaded = loaded;
 
                 function init(module) {
-                    let name = module.constructor.className;
-
                     function init(func, mod)
                         function () defineModule.time(module.className || module.constructor.className, mod,
-                                                      func, modules[name],
+                                                      func, module,
                                                       modules.dactyl, modules, window);
 
-                    set.add(loaded, name);
+                    set.add(loaded, module.constructor.className);
                     for (let [mod, func] in Iterator(module.INIT)) {
                         if (mod in loaded)
                             init(func, mod)();
@@ -243,7 +240,7 @@ var Overlay = Module("Overlay", {
 
                         defineModule.loadLog.push("Load" + (isString(prereq) ? " " + prereq + " dependency: " : ": ") + module.className);
                         if (frame && frame.filename)
-                            defineModule.loadLog.push(" from: " + frame.filename.replace(/.* -> /, "") + ":" + frame.lineNumber);
+                            defineModule.loadLog.push(" from: " + frame.filename + ":" + frame.lineNumber);
 
                         delete modules[module.className];
                         modules[module.className] = defineModule.time(module.className, "init", module);

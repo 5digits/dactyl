@@ -21,7 +21,7 @@
 <h2 tag="single-repeat">Single repeats</h2>
 
 <item>
-    <tags>&lt;repeat-key> .</tags>
+    <tags>.</tags>
     <strut/>
     <spec><oa>count</oa>.</spec>
     <description>
@@ -45,7 +45,7 @@
 <h2 tag="macros complex-repeat">Macros</h2>
 
 <item>
-    <tags>&lt;record-macro> q</tags>
+    <tags>q</tags>
     <strut/>
     <spec>q<a>0-9a-zA-Z</a></spec>
     <description>
@@ -82,7 +82,7 @@
 </item>
 
 <item>
-    <tags>&lt;play-macro> @</tags>
+    <tags>@</tags>
     <spec><oa>count</oa>@<a>a-z0-9</a></spec>
     <description>
         <p>
@@ -99,39 +99,6 @@
         <p>Replay the last executed macro <oa>count</oa> times.</p>
     </description>
 </item>
-
-<h2 tag="macro-utilities">Macro utilities</h2>
-
-<p>
-    The following key bindings facilitate the recording of efficient
-    macros. They have no effect when typed normally, but are
-    recorded and take effect during macro playback.
-</p>
-
-<item>
-    <tags><![CDATA[<sleep> <A-m>s]]></tags>
-    <strut/>
-    <spec><a>count</a>&lt;m>s</spec>
-    <description>
-        <p>
-            Sleep for <a>count</a> milliseconds before resuming playback.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[<wait-for-page-load> <A-m>l]]></tags>
-    <strut/>
-    <spec><oa>count</oa><![CDATA[<A-m>l]]></spec>
-    <description>
-        <p>
-            Wait for the current page to finish loading before resuming
-            playback. If <oa>count</oa> is given, wait no more than
-            <oa>count</oa> seconds. Otherwise wait no more than 25 seconds.
-        </p>
-    </description>
-</item>
-
 
 <h2 tag="using-scripts">Using scripts</h2>
 

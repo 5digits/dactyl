@@ -766,25 +766,25 @@ var Buffer = Module("buffer", {
         try {
             window.urlSecurityCheck(uri.spec, doc.nodePrincipal);
 
-            io.CommandFileMode("Save link: ", {
-                onSubmit: function (path) {
-                    let file = io.File(path);
-                    if (file.exists() && file.isDirectory())
-                        file.append(buffer.getDefaultNames(elem)[0][0]);
+            commandline.input("Save link: ", function (path) {
+                let file = io.File(path);
+                if (file.exists() && file.isDirectory())
+                    file.append(buffer.getDefaultNames(elem)[0][0]);
 
-                    try {
-                        if (!file.exists())
-                            file.create(File.NORMAL_FILE_TYPE, octal(644));
-                    }
-                    catch (e) {
-                        util.assert(false, "Invalid destination: " + e.name);
-                    }
+                try {
+                    if (!file.exists())
+                        file.create(File.NORMAL_FILE_TYPE, octal(644));
+                }
+                catch (e) {
+                    util.assert(false, "Invalid destination: " + e.name);
+                }
 
-                    buffer.saveURI(uri, file);
-                },
-
-                completer: function (context) completion.savePage(context, elem)
-            }).open();
+                buffer.saveURI(uri, file);
+            }, {
+                autocomplete: true,
+                completer: function (context) completion.savePage(context, elem),
+                history: "file"
+            });
         }
         catch (e) {
             dactyl.echoerr(e);
@@ -1360,15 +1360,17 @@ var Buffer = Module("buffer", {
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {
-        io.CommandFileMode("Upload file: ", {
-            onSubmit: function (path) {
-                let file = io.File(path);
-                dactyl.assert(file.exists());
+        commandline.input("Upload file: ", function (path) {
+            let file = io.File(path);
+            dactyl.assert(file.exists());
 
-                elem.value = file.path;
-                events.dispatch(elem, events.create(elem.ownerDocument, "change", {}));
-            }
-        }).open(elem.value);
+            elem.value = file.path;
+            events.dispatch(elem, events.create(elem.ownerDocument, "change", {}));
+        }, {
+            completer: function (context) completion.file(context),
+            default: elem.value,
+            history: "file"
+        });
     }
 }, {
     commands: function () {
@@ -1528,8 +1530,7 @@ var Buffer = Module("buffer", {
                     if (/^>>/.test(context.filter))
                         context.advance(/^>>\s*/.exec(context.filter)[0].length);
 
-                    completion.savePage(context, content.document);
-                    context.fork("file", 0, completion, "file");
+                    return completion.savePage(context, content.document);
                 },
                 literal: 0
             });
@@ -1641,6 +1642,7 @@ var Buffer = Module("buffer", {
                          this, function (context) {
                 context.completions = buffer.getDefaultNames(node);
             });
+            return context.fork("files", 0, completion, "file");
         };
     },
     events: function () {
@@ -1651,7 +1653,7 @@ var Buffer = Module("buffer", {
     mappings: function () {
         var myModes = config.browserModes;
 
-        mappings.add(myModes, [".", "<repeat-key>"],
+        mappings.add(myModes, ["."],
             "Repeat the last key event",
             function (args) {
                 if (mappings.repeat) {
@@ -1670,31 +1672,31 @@ var Buffer = Module("buffer", {
             function () { ex.stop(); });
 
         // scrolling
-        mappings.add(myModes, ["j", "<Down>", "<C-e>", "<scroll-down-line>"],
+        mappings.add(myModes, ["j", "<Down>", "<C-e>"],
             "Scroll document down",
             function (args) { buffer.scrollVertical("lines", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["k", "<Up>", "<C-y>", "<scroll-up-line>"],
+        mappings.add(myModes, ["k", "<Up>", "<C-y>"],
             "Scroll document up",
             function (args) { buffer.scrollVertical("lines", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, dactyl.has("mail") ? ["h", "<scroll-left-column>"] : ["h", "<Left>", "<scroll-left-column>"],
+        mappings.add(myModes, dactyl.has("mail") ? ["h"] : ["h", "<Left>"],
             "Scroll document to the left",
             function (args) { buffer.scrollHorizontal("columns", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, dactyl.has("mail") ? ["l", "<scroll-right-column>"] : ["l", "<Right>", "<scroll-right-column>"],
+        mappings.add(myModes, dactyl.has("mail") ? ["l"] : ["l", "<Right>"],
             "Scroll document to the right",
             function (args) { buffer.scrollHorizontal("columns", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["0", "^", "<scroll-begin>"],
+        mappings.add(myModes, ["0", "^"],
             "Scroll to the absolute left of the document",
             function () { buffer.scrollToPercent(0, null); });
 
-        mappings.add(myModes, ["$", "<scroll-end>"],
+        mappings.add(myModes, ["$"],
             "Scroll to the absolute right of the document",
             function () { buffer.scrollToPercent(100, null); });
 
@@ -1708,7 +1710,7 @@ var Buffer = Module("buffer", {
             function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 100); },
             { count: true });
 
-        mappings.add(myModes, ["%", "<scroll-percent>"],
+        mappings.add(myModes, ["%"],
             "Scroll to {count} percent of the document",
             function (args) {
                 dactyl.assert(args.count > 0 && args.count <= 100);
@@ -1716,59 +1718,59 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add(myModes, ["<C-d>", "<scroll-down>"],
+        mappings.add(myModes, ["<C-d>"],
             "Scroll window downwards in the buffer",
             function (args) { buffer._scrollByScrollSize(args.count, true); },
             { count: true });
 
-        mappings.add(myModes, ["<C-u>", "<scroll-up>"],
+        mappings.add(myModes, ["<C-u>"],
             "Scroll window upwards in the buffer",
             function (args) { buffer._scrollByScrollSize(args.count, false); },
             { count: true });
 
-        mappings.add(myModes, ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-page-up>"],
+        mappings.add(myModes, ["<C-b>", "<PageUp>", "<S-Space>"],
             "Scroll up a full page",
             function (args) { buffer.scrollVertical("pages", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["<C-f>", "<PageDown>", "<Space>", "<scroll-page-down>"],
+        mappings.add(myModes, ["<C-f>", "<PageDown>", "<Space>"],
             "Scroll down a full page",
             function (args) { buffer.scrollVertical("pages", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["]f", "<previous-frame>"],
+        mappings.add(myModes, ["]f"],
             "Focus next frame",
             function (args) { buffer.shiftFrameFocus(Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["[f", "<next-frame>"],
+        mappings.add(myModes, ["[f"],
             "Focus previous frame",
             function (args) { buffer.shiftFrameFocus(-Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["]]", "<next-page>"],
+        mappings.add(myModes, ["]]"],
             "Follow the link labeled 'next' or '>' if it exists",
             function (args) {
                 buffer.findLink("next", options["nextpattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
-        mappings.add(myModes, ["[[", "<previous-page>"],
+        mappings.add(myModes, ["[["],
             "Follow the link labeled 'prev', 'previous' or '<' if it exists",
             function (args) {
                 buffer.findLink("previous", options["previouspattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
-        mappings.add(myModes, ["gf", "<view-source>"],
+        mappings.add(myModes, ["gf"],
             "Toggle between rendered and source view",
             function () { buffer.viewSource(null, false); });
 
-        mappings.add(myModes, ["gF", "<view-source-externally>"],
+        mappings.add(myModes, ["gF"],
             "View source with an external editor",
             function () { buffer.viewSource(null, true); });
 
-        mappings.add(myModes, ["gi", "<focus-input>"],
+        mappings.add(myModes, ["gi"],
             "Focus last used input field",
             function (args) {
                 let elem = buffer.lastInputField;
@@ -1808,7 +1810,7 @@ var Buffer = Module("buffer", {
                 dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB, background: true });
             });
 
-        mappings.add(myModes, ["p", "<MiddleMouse>", "<open-clipboard-url>"],
+        mappings.add(myModes, ["p", "<MiddleMouse>"],
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1816,7 +1818,7 @@ var Buffer = Module("buffer", {
                 dactyl.open(url);
             });
 
-        mappings.add(myModes, ["P", "<tab-open-clipboard-url>"],
+        mappings.add(myModes, ["P"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1825,16 +1827,16 @@ var Buffer = Module("buffer", {
             });
 
         // reloading
-        mappings.add(myModes, ["r", "<reload>"],
+        mappings.add(myModes, ["r"],
             "Reload the current web page",
             function () { tabs.reload(tabs.getTab(), false); });
 
-        mappings.add(myModes, ["R", "<full-reload>"],
+        mappings.add(myModes, ["R"],
             "Reload while skipping the cache",
             function () { tabs.reload(tabs.getTab(), true); });
 
         // yanking
-        mappings.add(myModes, ["Y", "<yank-word>"],
+        mappings.add(myModes, ["Y"],
             "Copy selected text or current word",
             function () {
                 let sel = buffer.getCurrentWord();
@@ -1843,62 +1845,62 @@ var Buffer = Module("buffer", {
             });
 
         // zooming
-        mappings.add(myModes, ["zi", "+", "<text-zoom-in>"],
+        mappings.add(myModes, ["zi", "+"],
             "Enlarge text zoom of current web page",
             function (args) { buffer.zoomIn(Math.max(args.count, 1), false); },
             { count: true });
 
-        mappings.add(myModes, ["zm", "<text-zoom-more>"],
+        mappings.add(myModes, ["zm"],
             "Enlarge text zoom of current web page by a larger amount",
             function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
-        mappings.add(myModes, ["zo", "-", "<text-zoom-out>"],
+        mappings.add(myModes, ["zo", "-"],
             "Reduce text zoom of current web page",
             function (args) { buffer.zoomOut(Math.max(args.count, 1), false); },
             { count: true });
 
-        mappings.add(myModes, ["zr", "<text-zoom-reduce>"],
+        mappings.add(myModes, ["zr"],
             "Reduce text zoom of current web page by a larger amount",
             function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
-        mappings.add(myModes, ["zz", "<text-zoom>"],
+        mappings.add(myModes, ["zz"],
             "Set text zoom value of current web page",
             function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, false); },
             { count: true });
 
-        mappings.add(myModes, ["ZI", "zI", "<full-zoom-in>"],
+        mappings.add(myModes, ["ZI", "zI"],
             "Enlarge full zoom of current web page",
             function (args) { buffer.zoomIn(Math.max(args.count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["ZM", "zM", "<full-zoom-more>"],
+        mappings.add(myModes, ["ZM", "zM"],
             "Enlarge full zoom of current web page by a larger amount",
             function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["ZO", "zO", "<full-zoom-out>"],
+        mappings.add(myModes, ["ZO", "zO"],
             "Reduce full zoom of current web page",
             function (args) { buffer.zoomOut(Math.max(args.count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["ZR", "zR", "<full-zoom-reduce>"],
+        mappings.add(myModes, ["ZR", "zR"],
             "Reduce full zoom of current web page by a larger amount",
             function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["zZ", "<full-zoom>"],
+        mappings.add(myModes, ["zZ"],
             "Set full zoom value of current web page",
             function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, true); },
             { count: true });
 
         // page info
-        mappings.add(myModes, ["<C-g>", "<page-info>"],
+        mappings.add(myModes, ["<C-g>"],
             "Print the current file name",
             function () { buffer.showPageInfo(false); });
 
-        mappings.add(myModes, ["g<C-g>", "<more-page-info>"],
+        mappings.add(myModes, ["g<C-g>"],
             "Print file information",
             function () { buffer.showPageInfo(true); });
     },

@@ -40,15 +40,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         this.commands["dactyl.restart"] = function (event) {
             dactyl.restart();
         };
-
-        styles.registerSheet("resource://dactyl-skin/dactyl.css");
     },
 
     cleanup: function () {
         delete window.dactyl;
         delete window.liberator;
-
-        styles.unregisterSheet("resource://dactyl-skin/dactyl.css");
     },
 
     destroy: function () {
@@ -1131,7 +1127,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 });
 
         params = params || {};
-        if (isString(params))
+        if (isArray(params))
             params = { where: params };
 
         let flags = 0;
@@ -1319,8 +1315,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     trapErrors: function trapErrors(func, self) {
         try {
-            if (isString(func))
-                func = self[func];
             return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {
