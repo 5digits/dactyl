@@ -31,17 +31,17 @@ var AddonListener = Class("AddonListener", {
         this.dactyl = modules.dactyl;
     },
 
-    onNewInstall:      function (install) {},
-    onExternalInstall: function (addon, existingAddon, needsRestart) {},
+    onNewInstall:        function (install) {},
+    onExternalInstall:   function (addon, existingAddon, needsRestart) {},
     onDownloadStarted:   listener("download", "started"),
     onDownloadEnded:     listener("download", "complete"),
     onDownloadCancelled: listener("download", "cancelled"),
     onDownloadFailed:    listener("download", "failed"),
     onDownloadProgress:  function (install) {},
-    onInstallStarted:   function (install) {},
-    onInstallEnded:     listener("installation", "complete"),
-    onInstallCancelled: listener("installation", "cancelled"),
-    onInstallFailed:    listener("installation", "failed")
+    onInstallStarted:    function (install) {},
+    onInstallEnded:      listener("installation", "complete"),
+    onInstallCancelled:  listener("installation", "cancelled"),
+    onInstallFailed:     listener("installation", "failed")
 });
 
 var updateAddons = Class("UpgradeListener", AddonListener, {

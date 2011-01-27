@@ -120,6 +120,7 @@ var Map = Class("Map", {
         }
         catch (e) {
             events.feedingKeys = false;
+            dactyl.reportError(e, true);
         }
         finally {
             this.executing = false;
