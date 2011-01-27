@@ -154,11 +154,6 @@ var Modes = Module("modes", {
             input: true
         });
 
-        this.addMode("INPUT_MULTILINE", {
-            extended: true,
-            hidden: true,
-            input: true
-        });
         this.addMode("LINE", {
             extended: true, hidden: true
         });
