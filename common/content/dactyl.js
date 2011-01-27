@@ -482,6 +482,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         let win = document.commandDispatcher.focusedWindow;
         let elem = config.mainWidget || content;
+
         // TODO: make more generic
         try {
             if (this.has("mail") && !config.isComposeWindow) {

@@ -551,7 +551,7 @@ var Buffer = Module("buffer", {
      * @returns {boolean}
      */
     focusAllowed: function (elem) {
-        if (elem instanceof Window && !Editor.getEditor(window))
+        if (elem instanceof Window && !Editor.getEditor(elem))
             return true;
         let doc = elem.ownerDocument || elem.document || elem;
         return !options["strictfocus"] || doc.dactylFocusAllowed;
