@@ -273,7 +273,6 @@ var Modes = Module("modes", {
 
     // helper function to set both modes in one go
     set: function set(mainMode, extendedMode, params, stack) {
-        util.dumpStack(" ========== " + mainMode.toString());
         params = params || this.getMode(mainMode || this.main).params;
 
         if (!stack && mainMode != null && this._modeStack.length > 1)
@@ -317,11 +316,9 @@ var Modes = Module("modes", {
             this._modeStack.push(push);
 
         if (stack && stack.pop)
-            for (let { obj, prop, value, test } in values(this.topOfStack.saved)) {
-                util.dump("pop " + obj + " " + prop + " " + !!test + " " + (test && test(stack, prev)));
+            for (let { obj, prop, value, test } in values(this.topOfStack.saved))
                 if (!test || !test(stack, prev))
                     obj[prop] = value;
-            }
 
         this.show();
 
