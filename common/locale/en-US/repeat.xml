@@ -109,7 +109,7 @@
 </p>
 
 <item>
-    <tags><sleep> <A-m>s</tags>
+    <tags><![CDATA[<sleep> <A-m>s]]></tags>
     <strut/>
     <spec><a>count</a>&lt;m>s</spec>
     <description>
