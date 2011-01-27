@@ -124,7 +124,7 @@ var Services = Module("Services", {
      * @param {string} class The class's contract ID.
      * @param {nsISupports|nsISupports[]} ifaces The interface or array of
      *     interfaces implemented by this service.
-     * @param {string} meth The name of the function used to instanciate
+     * @param {string} meth The name of the function used to instantiate
      *     the service.
      */
     add: function (name, class_, ifaces, meth) {
@@ -138,9 +138,11 @@ var Services = Module("Services", {
      * Adds a new XPCOM class to the cache.
      *
      * @param {string} name The class's cache key.
-     * @param {string} class The class's contract ID.
+     * @param {string} class_ The class's contract ID.
      * @param {nsISupports|nsISupports[]} ifaces The interface or array of
      *     interfaces implemented by this class.
+     * @param {string} init Name of a property or method used to initialise the
+     *     class. See {@link #_create}.
      */
     addClass: function (name, class_, ifaces, init) {
         const self = this;

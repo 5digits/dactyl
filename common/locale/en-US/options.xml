@@ -443,8 +443,8 @@
 </item>
 
 <item>
-    <tags>'cookieaccept' 'ca'</tags>
-    <spec>'cookieaccept'</spec>
+    <tags>'ca' 'cookieaccept'</tags>
+    <spec>'cookieaccept' 'ca'</spec>
     <type>string</type>
     <default>all</default>
     <description>
@@ -575,7 +575,7 @@
 
 <item>
     <tags>'enc' 'encoding'</tags>
-    <spec>'encoding'</spec>
+    <spec>'encoding' 'enc'</spec>
     <type>string</type>
     <default>UTF-8</default>
     <description>
@@ -602,7 +602,7 @@
 
 <item>
     <tags>'ei' 'eventignore'</tags>
-    <spec>'eventignore'</spec>
+    <spec>'eventignore' 'ei'</spec>
     <type>stringlist</type>
     <default></default>
     <description>
@@ -658,7 +658,7 @@
 
 <item>
     <tags>'fenc' 'fileencoding'</tags>
-    <spec>'fileencoding'</spec>
+    <spec>'fileencoding' 'fenc'</spec>
     <type>string</type>
     <default>UTF-8</default>
     <description>
@@ -671,7 +671,7 @@
 
 <item>
     <tags>'fc' 'findcase'</tags>
-    <spec>'findcase'</spec>
+    <spec>'findcase' 'fc'</spec>
     <type>string</type>
     <default>smart</default>
     <description>
@@ -939,6 +939,7 @@
 </item>
 
 <item>
+    <tags>'nojsd' 'nojsdebugger'</tags>
     <tags>'jsd' 'jsdebugger'</tags>
     <spec>'jsdebugger' 'jsd'</spec>
     <type>boolean</type>
@@ -951,8 +952,8 @@
 </item>
 
 <item>
-    <tags>'nolpl' 'lpl'</tags>
-    <tags>'noloadplugins' 'loadplugins'</tags>
+    <tags>'nolpl' 'noloadplugins'</tags>
+    <tags>'lpl' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
     <type>regexplist</type>
     <default>'\.(js|&dactyl.fileExt;)$'</default>
@@ -991,7 +992,7 @@
 
 <item>
     <tags>'ml' 'mapleader'</tags>
-    <spec>'mapleader'</spec>
+    <spec>'mapleader' 'ml'</spec>
     <type>string</type>
     <default>\</default>
     <description>
@@ -1247,8 +1248,8 @@
 </item>
 
 <item>
-    <tags>'sanitizeshutdown' 'ss'</tags>
-    <spec>'sanitizeshutdown'</spec>
+    <tags>'ss' 'sanitizeshutdown'</tags>
+    <spec>'sanitizeshutdown' 'ss'</spec>
     <type>stringlist</type>
     <default/>
     <description>
@@ -1296,7 +1297,7 @@
 </item>
 
 <item>
-    <tags>'shell' 'sh'</tags>
+    <tags>'sh' 'shell'</tags>
     <spec>'shell' 'sh'</spec>
     <type>string</type>
     <default type="plain"><em>$SHELL</em> or <str>sh</str>, Windows: <str>cmd.exe</str></default>
@@ -1306,7 +1307,7 @@
 </item>
 
 <item>
-    <tags>'shellcmdflag' 'shcf'</tags>
+    <tags>'shcf' 'shellcmdflag'</tags>
     <spec>'shellcmdflag' 'shcf'</spec>
     <strut/>
     <type>string</type>
@@ -1392,6 +1393,7 @@
 </item>
 
 <item>
+    <tags>'notmo' 'notimeout'</tags>
     <tags>'tmo' 'timeout'</tags>
     <spec>'timeout' 'tmo'</spec>
     <type>boolean</type>
@@ -1435,7 +1437,7 @@
 
 <item>
     <tags>'us' 'urlsep' 'urlseparator'</tags>
-    <spec>'urlseparator'</spec>
+    <spec>'urlseparator' 'urlsep' 'us'</spec>
     <type>string</type>
     <default>\|</default>
     <description>
@@ -1533,7 +1535,7 @@
 </item>
 
 <item>
-    <tags>'wildignore' 'wig'</tags>
+    <tags>'wig' 'wildignore'</tags>
     <spec>'wildignore' 'wig'</spec>
     <type>regexplist</type>
     <default></default>

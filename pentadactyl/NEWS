@@ -75,7 +75,7 @@
         listing keys for modes other than Normal, filtering the output
         and linking to source code locations). [b4]
       - :downloads now opens a download list in the multi-line output
-        buffer.
+        buffer. [b6]
       - Added :mapgroup command and -group flag to :map, :unmap, and
         :mapclear. [b6]
       - :extensions has been replaced with a more powerful :addons.
@@ -99,10 +99,10 @@
       - Added :write !cmd and :write >>file. [b3]
       - Added :yank command. [b3]
       - :delmarks, :marks and :qmarks now also accept ranges, same as
-        :delqmarks.
-      - :command now accepts comma-separated alternative command names.
+        :delqmarks. [b4]
+      - :command now accepts comma-separated alternative command names. [b4]
       - :command -complete custom now also accepts a completions array, see
-        :h :command-completion-custom.
+        :h :command-completion-custom. [b4]
     * Improvements to :style and :highlight:
       - Added -link flag to :highlight. [b4]
       - Added -agent flag to :style. [b2]
@@ -138,8 +138,8 @@
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'. [b1]
     * Option changes:
-      - Added "bookmarks", "diverted", and "links" to 'activate' [b2]
-        option.
+      - Added "bookmarks", "diverted", and "links" to 'activate'
+        option. [b2]
       - Added 'altwildmode' and c_<A-Tab> command-line key binding. [b2]
       - Added 'autocomplete' option for specifying which completion
         groups should be auto-completed. [b2]

@@ -232,17 +232,6 @@ var Addon = Class("Addon", {
     }
 });
 
-iter.forEach(properties(config.addon), function (prop) {
-    let desc = Object.getOwnPropertyDescriptor(config.addon, prop);
-    if (callable(desc.value))
-        Addon.prototype[prop] = function proxy() this.addon[prop].apply(this.addon, arguments);
-    else
-        Object.defineProperty(Addon.prototype, prop, {
-            get: function get_proxy() this.addon[prop],
-            set: function set_proxy(val) this.addon[prop] = val
-        });
-});
-
 var AddonList = Class("AddonList", {
     init: function init(modules, types, filter) {
         this.modules = modules;
@@ -532,6 +521,17 @@ var addonErrors = array.toObject([
     [AddonManager.ERROR_FILE_ACCESS,     "There was an error accessing the filesystem"]]);
 
 endModule();
+
+iter.forEach(properties(config.addon), function (prop) {
+    let desc = Object.getOwnPropertyDescriptor(config.addon, prop);
+    if (callable(desc.value))
+        Addon.prototype[prop] = function proxy() this.addon[prop].apply(this.addon, arguments);
+    else
+        Object.defineProperty(Addon.prototype, prop, {
+            get: function get_proxy() this.addon[prop],
+            set: function set_proxy(val) this.addon[prop] = val
+        });
+});
 
 } catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 

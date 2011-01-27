@@ -83,7 +83,7 @@ var CompletionContext = Class("CompletionContext", {
             self.waitingForTab = false;
 
             delete self._generate;
-            delete self._ignoreCase;
+            delete self.ignoreCase;
             if (self != this)
                 return self;
             ["_caret", "contextList", "maxItems", "onUpdate", "selectionTypes", "tabPressed", "updateAsync", "value"].forEach(function (key) {
@@ -305,7 +305,7 @@ var CompletionContext = Class("CompletionContext", {
 
     get filter() this._filter != null ? this._filter : this.value.substr(this.offset, this.caret),
     set filter(val) {
-        delete this._ignoreCase;
+        delete this.ignoreCase;
         return this._filter = val;
     },
 
@@ -401,18 +401,15 @@ var CompletionContext = Class("CompletionContext", {
         this.noUpdate = false;
     },
 
-    get ignoreCase() {
-        if (this._ignoreCase == null) {
-            let mode = this.wildcase;
-            if (mode == "match")
-                this._ignoreCase = false;
-            if (mode == "ignore")
-                this._ignoreCase = true;
-            this._ignoreCase = !/[A-Z]/.test(this.filter);
-        }
-        return this._ignoreCase;
-    },
-    set ignoreCase(val) this._ignoreCase = val,
+    ignoreCase: Class.memoize(function () {
+        let mode = this.wildcase;
+        if (mode == "match")
+            return false;
+        else if (mode == "ignore")
+            return true;
+        else
+            return !/[A-Z]/.test(this.filter);
+    }),
 
     /**
      * Returns a list of all completion items which match the current
@@ -578,7 +575,7 @@ var CompletionContext = Class("CompletionContext", {
      * @param {number} count The number of characters to advance the context.
      */
     advance: function advance(count) {
-        delete this._ignoreCase;
+        delete this.ignoreCase;
         let advance = count;
         if (this.quote && count) {
             advance = this.quote[1](this.filter.substr(0, count)).length;

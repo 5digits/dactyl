@@ -124,6 +124,7 @@ var ConfigBase = Class("ConfigBase", {
     }),
 
     dtd: memoize({
+        get name() config.name,
         get home() "http://dactyl.sourceforge.net/",
         get apphome() this.home + this.name,
         code: "http://code.google.com/p/dactyl/",
