@@ -88,6 +88,7 @@ var CommandWidgets = Class("CommandWidgets", {
 
         this.addElement({
             name: "command",
+            test: function (stack, prev) stack.pop && !isinstance(prev.main, modes.COMMAND_LINE),
             id: "commandline-command",
             get: function (elem) {
                 // The long path is because of complications with the
@@ -163,6 +164,7 @@ var CommandWidgets = Class("CommandWidgets", {
 
         if (!(obj.noValue || obj.getValue)) {
             Object.defineProperty(this, obj.name, Modes.boundProperty({
+                test: obj.test,
 
                 get: function get_widgetValue() {
                     let elem = self.getGroup(obj.name, obj.value)[obj.name];
@@ -779,23 +781,25 @@ var CommandLine = Module("commandline", {
         this.timeout(function () { dactyl.focus(this.widgets.multilineInput); }, 10);
     },
 
+    get commandMode() this.commandSession && isinstance(modes.main, modes.COMMAND_LINE),
+
     events: update(
         iter(CommandMode.prototype.events).map(
             function ([event, handler]) [
                 event, function (event) {
-                    if (this.commandSession)
+                    if (this.commandMode)
                         handler.call(this.commandSession, event);
                 }
             ]).toObject(),
         {
             blur: function onBlur(event) {
                 this.timeout(function () {
-                    if (this.commandSession && event.originalTarget === this.widgets.active.command.inputField)
+                    if (this.commandMode && event.originalTarget === this.widgets.active.command.inputField)
                         dactyl.focus(this.widgets.active.command.inputField);
                 });
             },
             focus: function onFocus(event) {
-                if (!this.commandSession
+                if (!this.commandMode
                         && event.originalTarget === this.widgets.active.command.inputField) {
                     event.target.blur();
                     dactyl.beep();

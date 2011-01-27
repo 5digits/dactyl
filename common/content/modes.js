@@ -264,15 +264,16 @@ var Modes = Module("modes", {
     delayed: [],
     delay: function (callback, self) { this.delayed.push([callback, self]); },
 
-    save: function save(id, obj, prop) {
+    save: function save(id, obj, prop, test) {
         if (!(id in this.boundProperties))
             for (let elem in array.iterValues(this._modeStack))
-                elem.saved[id] = { obj: obj, prop: prop, value: obj[prop] };
-        this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop };
+                elem.saved[id] = { obj: obj, prop: prop, value: obj[prop], test: test };
+        this.boundProperties[id] = { obj: Cu.getWeakReference(obj), prop: prop, test: test };
     },
 
     // helper function to set both modes in one go
     set: function set(mainMode, extendedMode, params, stack) {
+        util.dumpStack(" ========== " + mainMode.toString());
         params = params || this.getMode(mainMode || this.main).params;
 
         if (!stack && mainMode != null && this._modeStack.length > 1)
@@ -294,15 +295,17 @@ var Modes = Module("modes", {
 
         let push = mainMode != null && !(stack && stack.pop) &&
             Modes.StackElement(this._main, this._extended, params, {});
+
         if (push && this.topOfStack) {
             if (this.topOfStack.params.leave)
                 dactyl.trapErrors("leave", this.topOfStack.params,
                                   { push: push }, push);
-            for (let [id, { obj, prop }] in Iterator(this.boundProperties)) {
+
+            for (let [id, { obj, prop, test }] in Iterator(this.boundProperties)) {
                 if (!obj.get())
                     delete this.boundProperties[id];
                 else
-                    this.topOfStack.saved[id] = { obj: obj.get(), prop: prop, value: obj.get()[prop] };
+                    this.topOfStack.saved[id] = { obj: obj.get(), prop: prop, value: obj.get()[prop], test: test };
             }
         }
 
@@ -314,8 +317,11 @@ var Modes = Module("modes", {
             this._modeStack.push(push);
 
         if (stack && stack.pop)
-            for (let { obj, prop, value } in values(this.topOfStack.saved))
-                obj[prop] = value;
+            for (let { obj, prop, value, test } in values(this.topOfStack.saved)) {
+                util.dump("pop " + obj + " " + prop + " " + !!test + " " + (test && test(stack, prev)));
+                if (!test || !test(stack, prev))
+                    obj[prop] = value;
+            }
 
         this.show();
 
@@ -455,7 +461,7 @@ var Modes = Module("modes", {
                     return val === undefined ? value : val;
                 },
                 set: function (val) {
-                    modes.save(id, this, prop);
+                    modes.save(id, this, prop, desc.test);
                     if (desc.set)
                         value = desc.set.call(this, val);
                     value = !desc.set || value === undefined ? val : value;
