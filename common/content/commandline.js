@@ -324,7 +324,7 @@ var CommandMode = Class("CommandMode", {
         if (this.command || stack.pop && commandline.command) {
             this.onChange(commandline.command);
             if (this.completions)
-                this.completions.autocompleteTimer.flush(true);
+                this.completions.complete(true, false);
         }
     },
 

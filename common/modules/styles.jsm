@@ -311,8 +311,8 @@ var Styles = Module("Styles", {
     matchFilter: function (filter) {
         if (filter === "*")
             var test = function test(uri) true;
-        else if (filter[0] == "^") {
-            let re = RegExp(filter[0]);
+        else if (filter[0] === "^") {
+            let re = RegExp(filter);
             test = function test(uri) re.test(uri.spec);
         }
         else if (/[*]$/.test(filter)) {
