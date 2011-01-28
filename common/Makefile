@@ -35,8 +35,8 @@ XPI_TEXTS     = js jsm $(JAR_TEXTS)
 XPI_BINS      = $(JAR_BINS)
 
 XPI_NAME      = $(NAME)-$(VERSION)
-XPI_PATH      = ../downloads/$(XPI_NAME)
-XPI           = $(XPI_PATH).xpi
+XPI_PATH      = ../downloads/
+XPI           = $(XPI_PATH)$(XPI_NAME).xpi
 
 RDF           = ../downloads/update.rdf
 RDF_IN        = $(RDF).in
