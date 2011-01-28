@@ -35,8 +35,8 @@ XPI_TEXTS     = js jsm $(JAR_TEXTS)
 XPI_BINS      = $(JAR_BINS)
 
 XPI_NAME      = $(NAME)-$(VERSION)
-XPI_PATH      = ../downloads/$(XPI_NAME)
-XPI           = $(XPI_PATH).xpi
+XPI           =  ../downloads/$(XPI_NAME).xpi
+XPI_PATH      = $(TOP)$(XPI:%.xpi=%)
 
 RDF           = ../downloads/update.rdf
 RDF_IN        = $(RDF).in
@@ -47,7 +47,7 @@ AWK       ?= awk
 B64ENCODE ?= base64
 CURL      ?= curl
 
-#.SILENT:
+.SILENT:
 
 #### rules
 
@@ -84,7 +84,6 @@ info:
 	@echo "doc files           $(DOC_FILES)"
 	@echo "xpi files           $(XPI_FILES)"
 
-xpi: $(XPI)
 jar: $(JAR)
 
 release: $(XPI) $(RDF)
@@ -169,17 +168,17 @@ test: $(XPI)
 
 #### xpi
 
-$(XPI): $(CHROME)
+xpi: $(CHROME)
 	@echo "Building XPI..."
-	mkdir -p $(XPI_PATH)
+	mkdir -p "$(XPI_PATH)"
 
 	$(AWK) -v 'name=$(NAME)' -v 'suffix=$(MANGLE)' \
 	       -f $(BASE)/process_manifest.awk \
-	       $(TOP)/chrome.manifest >$(XPI_PATH)/chrome.manifest
+	       $(TOP)/chrome.manifest >"$(XPI_PATH)/chrome.manifest"
 
 	$(MAKE_JAR) "$(XPI)" "$(XPI_BASES)" "$(XPI_DIRS)" "$(XPI_TEXTS)" "$(XPI_BINS)" "$(XPI_FILES)"
 	rm -r -- $(CHROME)
-	@echo "Built XPI: $@"
+	@echo "Built XPI: $(XPI)"
 
 #### jar
 

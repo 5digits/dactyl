@@ -2,7 +2,7 @@
 set -e
 
 fromrepo=
-if [ $1 = -r ]; then shift; fromrepo=1; fi
+if [ "$1" = -r ]; then shift; fromrepo=1; fi
 
 top=$(pwd)
 jar=$1
@@ -15,7 +15,7 @@ files="$@"
 HG=${HG:-hg}
 
 stage="$top/${jar%.*}"
-mkdir -p $stage
+mkdir -p "$stage"
 
 sed=$(which sed)
 if [ "xoo" = x$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ]
@@ -49,7 +49,13 @@ copytext() {
     ( echo "modified: $1"; diff -u -- "$1" "$2" | grep '^[-+][^-+]' )
 }
 
-[ -e "$top/$jar" ] && rm -rf "$top/$jar"
+[ -f "$jar" ] && rm -f "$jar"
+case "$jar" in
+    /*) ;;
+    *)
+        [ -d "$jar" ] && rm -rf "$jar"
+        jar="$top/$jar";;
+esac
 
 for base in $bases
 do
@@ -80,14 +86,14 @@ done
 
 (
     set -e;
-    cd $stage;
-    case $jar in
-    (*/) if [ "$stage" != "$top/$jar" ]; then mv -- * $top/$jar; fi;;
-    (*)  zip -9r "$top/$jar" -- *;;
+    cd "$stage";
+    case "$jar" in
+    (*/) if [ "$stage" != "$jar" ]; then mv -- * "$jar"; fi;;
+    (*)  zip -9r "$jar" -- *;;
     esac
 ) || exit 1
 
-[ "$stage" != "$top/$jar" ] && rm -rf "$stage"
+[ "$stage" != "$jar" ] && rm -rf "$stage"
 true
 
 # vim:se ft=sh sts=4 sw=4 et:
