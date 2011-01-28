@@ -1127,7 +1127,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 });
 
         params = params || {};
-        if (isArray(params))
+        if (isString(params))
             params = { where: params };
 
         let flags = 0;
