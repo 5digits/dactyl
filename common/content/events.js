@@ -913,11 +913,7 @@ var Events = Module("events", {
         dactyl.echo("Waiting for page to load...", commandline.DISALLOW_MULTILINE);
 
         const maxWaitTime = (time || 25);
-        let start = Date.now();
-        let end = start + (maxWaitTime * 1000);
-
-        util.waitFor(function () !events.feedingKeys || buffer.loaded, this, maxWaitTime);
-        commandline.clear();
+        util.waitFor(function () !events.feedingKeys || buffer.loaded, this, maxWaitTime * 1000, true);
 
         if (!buffer.loaded)
             dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
