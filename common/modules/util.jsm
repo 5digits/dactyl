@@ -1526,8 +1526,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             this.yielders--;
         }
     },
-    waitFor: function waitFor(test, self, interruptable) {
-        while (!test.call(self))
+    waitFor: function waitFor(test, self, timeout, interruptable) {
+        let end = timeout && Date.now() + timeout;
+        while ((!end || Date.now() < end) && !test.call(self))
             this.threadYield(false, interruptable);
     },
 

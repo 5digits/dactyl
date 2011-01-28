@@ -916,7 +916,7 @@ var Events = Module("events", {
         let start = Date.now();
         let end = start + (maxWaitTime * 1000);
 
-        util.waitFor(function () !events.feedingKeys || buffer.loaded || Date.now() > end);
+        util.waitFor(function () !events.feedingKeys || buffer.loaded, this, maxWaitTime);
         commandline.clear();
 
         if (!buffer.loaded)

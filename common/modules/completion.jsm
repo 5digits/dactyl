@@ -804,9 +804,7 @@ var CompletionContext = Class("CompletionContext", {
      *    If 0 or null, wait indefinitely.
      */
     wait: function wait(interruptable, timeout) {
-        let end = Date.now() + timeout;
-        util.waitFor(function () !this.incomplete || (this.timeout && Date.now() > end),
-                     this);
+        util.waitFor(function () !this.incomplete, this, timeout);
         return this.incomplete;
     }
 }, {
