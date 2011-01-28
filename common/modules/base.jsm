@@ -758,6 +758,7 @@ Class.memoize = function memoize(getter)
             this.get = function replace() let (obj = this.instance || this) (
                 Class.replaceProperty(obj, key, null),
                 Class.replaceProperty(obj, key, getter.call(this, key)))
+            this.set = function replace(val) Class.replaceProperty(this.instance || this, val);
         }
     });
 
@@ -1246,6 +1247,9 @@ update(iter, {
      * given predicate.
      */
     nth: function nth(iter, pred, n, self) {
+        if (typeof pred === "number")
+            [pred, n] = [function () true, pred]; // Hack.
+
         for (let elem in iter)
             if (pred.call(self, elem) && n-- === 0)
                 return elem;
