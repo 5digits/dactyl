@@ -331,9 +331,12 @@ var Styles = Module("Styles", {
 
     propertyIter: function (str, always) {
         let i = 0;
-        for (let match in this.propertyPattern.iterate(str))
-            if (always && !i++ || match[0] && match.value)
+        for (let match in this.propertyPattern.iterate(str)) {
+            if (match.value || always && match.name || match.wholeMatch === match.preSpace && always && !i++)
                 yield match;
+            if (!/;/.test(match.postSpace))
+                break;
+        }
     },
 
     propertyPattern: util.regexp(<![CDATA[
