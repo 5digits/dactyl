@@ -1246,6 +1246,9 @@ update(iter, {
      * given predicate.
      */
     nth: function nth(iter, pred, n, self) {
+        if (typeof pred === "number")
+            [pred, n] = [function () true, pred]; // Hack.
+
         for (let elem in iter)
             if (pred.call(self, elem) && n-- === 0)
                 return elem;

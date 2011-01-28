@@ -61,7 +61,8 @@ var ProcessorStack = Class("ProcessorStack", {
             result = res === Events.PASS ? Events.PASS : Events.KILL;
         }
         else if (result !== Events.KILL && !this.actions.length &&
-                 this.processors.some(function (p) !p.main.passUnknown)) {
+                 (this.events.length > 1 ||
+                     this.processors.some(function (p) !p.main.passUnknown))) {
             result = Events.KILL;
             dactyl.beep();
             events.feedingKeys = false;
