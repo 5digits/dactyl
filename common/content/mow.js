@@ -186,10 +186,6 @@ var MOW = Module("mow", {
         }
     },
 
-    onContext: function onContext(event) {
-        return true;
-    },
-
     onKeyPress: function onKeyPress(event) {
         const KILL = false, PASS = true;
 
