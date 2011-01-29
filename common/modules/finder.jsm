@@ -108,8 +108,8 @@ var RangeFinder = Module("rangefinder", {
             this.timeout(function () {
                 let msg = this.rangeFind.backward ? "find hit TOP, continuing at BOTTOM"
                                                   : "find hit BOTTOM, continuing at TOP";
-                this.commandline.echo(msg, "Warning", this.commandline.APPEND_TO_MESSAGES
-                                                    | this.commandline.FORCE_SINGLELINE);
+                this.commandline.echo(msg, "WarningMsg", this.commandline.APPEND_TO_MESSAGES
+                                                       | this.commandline.FORCE_SINGLELINE);
             }, 0);
         else
             this.commandline.echo((this.rangeFind.backward ? "?" : "/") + this.lastFindPattern,

@@ -789,11 +789,9 @@ var Commands = Module("commands", {
             for (let [k, v] in Iterator(extra || []))
                 args[k] = v;
 
-            var invalid = false;
             // FIXME: best way to specify these requirements?
             var onlyArgumentsRemaining = allowUnknownOptions || options.length == 0; // after a -- has been found
-            var arg = null, quoted = null;
-            var count = 0; // the length of the argument
+            var arg = null;
             var i = 0;
             var completeOpts;
 
@@ -854,11 +852,10 @@ var Commands = Module("commands", {
                     for (let [, opt] in Iterator(options)) {
                         for (let [, optname] in Iterator(opt.names)) {
                             if (sub.indexOf(optname) == 0) {
-                                invalid = false;
-                                quoted = null;
-                                arg = null;
-                                quote = null;
-                                count = 0;
+                                let count = 0;
+                                let invalid = false;
+                                let arg, uote, quoted;
+
                                 let sep = sub[optname.length];
                                 if (sep == "=" || /\s/.test(sep) && opt.type != CommandOption.NOARG) {
                                     [count, quoted, quote, error] = getNextArg(sub.substr(optname.length + 1), true);
@@ -874,14 +871,14 @@ var Commands = Module("commands", {
                                 else if (!/\s/.test(sep) && sep != undefined) // this isn't really an option as it has trailing characters, parse it as an argument
                                     invalid = true;
 
-                                if (complete && !/[\s=]/.test(sep))
-                                    matchOpts(sub);
-
                                 let context = null;
                                 if (!complete && quote)
                                     fail("Invalid argument for option " + optname);
 
                                 if (!invalid) {
+                                    if (complete && !/[\s=]/.test(sep))
+                                        matchOpts(sub);
+
                                     if (complete && count > 0) {
                                         args.completeStart += optname.length + 1;
                                         args.completeOpt = opt;
@@ -908,7 +905,7 @@ var Commands = Module("commands", {
 
                                         // we have a validator function
                                         if (typeof opt.validator == "function") {
-                                            if (opt.validator(arg, quoted) == false) {
+                                            if (opt.validator(arg, quoted) == false && (arg || !complete)) {
                                                 fail("Invalid argument for option: " + optname);
                                                 if (complete) // Always true.
                                                     complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
@@ -939,10 +936,9 @@ var Commands = Module("commands", {
 
                 matchOpts(sub);
 
-                if (complete) {
+                if (complete)
                     if (argCount == "0" || args.length > 0 && (/[1?]/.test(argCount)))
                         complete.highlight(i, sub.length, "SPELLCHECK");
-                }
 
                 if (args.length === literal) {
                     if (complete)
