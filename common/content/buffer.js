@@ -1420,7 +1420,7 @@ var Buffer = Module("buffer", {
                 let arg = args[0];
                 let opt = options.get("pageinfo");
 
-                dactyl.assert(opt.validator(opt.parse(arg)), "E475: Invalid argument: " + arg);
+                dactyl.assert(!arg || opt.validator(opt.parse(arg)), "E475: Invalid argument: " + arg);
                 buffer.showPageInfo(true, arg);
             },
             {

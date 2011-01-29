@@ -269,22 +269,29 @@ var CommandWidgets = Class("CommandWidgets", {
     },
 
     get completionList() this._whenReady("completionList", "dactyl-completions"),
-    completionContainer: Class.memoize(function () this.completionList.parentNode),
-    get multilineOutput() this._whenReady("multilineOutput", "dactyl-multiline-output",
-                                          function (elem) {
-        elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
-        elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
-        elem.contentDocument.body.id = "dactyl-multiline-output-content";
 
+    completionContainer: Class.memoize(function () this.completionList.parentNode),
+
+    contextMenu: Class.memoize(function () {
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
             let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
             document.getElementById("dactyl-context-" + tail).style.listStyleImage =
                 util.computedStyle(util.evaluateXPath(xpath, document).snapshotItem(0)).listStyleImage;
         });
+        return document.getElementById("dactyl-contextmenu");
+    }),
+
+    get multilineOutput() this._whenReady("multilineOutput", "dactyl-multiline-output",
+                                          function (elem) {
+        elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
+        elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
+        elem.contentDocument.body.id = "dactyl-multiline-output-content";
         return elem;
     }),
+
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
+
     mowContainer: Class.memoize(function () document.getElementById("dactyl-multiline-output-container"))
 }, {
     getEditor: function getEditor(elem) {
@@ -331,16 +338,16 @@ var CommandMode = Class("CommandMode", {
     },
 
     leave: function (stack) {
-        if (this.completions)
-            this.completions.cleanup();
-
-        if (this.history)
-            this.history.save();
-
-        commandline.hideCompletions();
-        this.resetCompletions();
-
         if (!stack.push) {
+            if (this.completions)
+                this.completions.cleanup();
+
+            if (this.history)
+                this.history.save();
+
+            commandline.hideCompletions();
+            this.resetCompletions();
+
             modes.delay(function () {
                 if (!this.keepCommand || commandline.silent || commandline.quiet)
                     commandline.hide();
@@ -1120,6 +1127,7 @@ var CommandLine = Module("commandline", {
 
             if (show) {
                 this.itemList.reset();
+                this.itemList.visible = true;
                 this.selected = null;
                 this.wildIndex = 0;
             }

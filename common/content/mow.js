@@ -172,13 +172,14 @@ var MOW = Module("mow", {
     },
     contextEvents: {
         popupshowing: function (event) {
+            let menu = commandline.widgets.contextMenu;
             let enabled = {
                 link: window.document.popupNode instanceof HTMLAnchorElement,
                 path: window.document.popupNode.hasAttribute("path"),
                 selection: !window.document.commandDispatcher.focusedWindow.getSelection().isCollapsed
             };
 
-            for (let node in array.iterValues(event.target.children)) {
+            for (let node in array.iterValues(menu.children)) {
                 let group = node.getAttributeNS(NS, "group");
                 node.hidden = group && !group.split(/\s+/).every(function (g) enabled[g]);
             }
