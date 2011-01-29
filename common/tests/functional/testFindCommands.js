@@ -7,9 +7,14 @@ var setupModule = function (module) {
     dactyl = new dactyllib.Controller(controller);
 };
 
+var teardownModule = function (module) {
+    dactyl.teardown();
+}
+
 var setupTest = function (test) {
     controller.open(FIND_TEST_PAGE);
     controller.waitForPageLoad(controller.tabs.activeTab);
+    controller.sleep(1000);
 };
 
 var testFindCommand_PresentAlphabeticText_TextSelected = function () {
@@ -32,6 +37,8 @@ var testFindCommand_MissingText_ErrorMessageDisplayed = function () {
 function runTextSearchCommand(str) {
     dactyl.runViCommand("/" + str);
     dactyl.runViCommand([["VK_RETURN"]]);
+
+    controller.sleep(0);
 }
 
 function assertTextFoundInPage(text) {

@@ -658,7 +658,7 @@ function Class() {
 
     var Constructor = eval(String.replace(<![CDATA[
         (function constructor() {
-            let self = Object.create(Constructor.prototype, {
+            var self = Object.create(Constructor.prototype, {
                 constructor: { value: Constructor },
             });
             self.instance = self;

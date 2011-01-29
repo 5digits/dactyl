@@ -1344,13 +1344,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         });
     },
 
-    maxErrors: 15,
+    errorCount: 0,
     errors: Class.memoize(function () []),
+    maxErrors: 15,
     reportError: function (error) {
         if (Cu.reportError)
             Cu.reportError(error);
 
         try {
+            this.errorCount++;
+
             let obj = update({}, error, {
                 toString: function () String(error),
                 stack: <>{util.stackLines(String(error.stack || Error().stack)).join("\n").replace(/^/mg, "\t")}</>

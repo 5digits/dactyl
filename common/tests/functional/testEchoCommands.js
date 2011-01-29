@@ -5,6 +5,10 @@ var setupModule = function (module) {
     dactyl = new dactyllib.Controller(controller);
 };
 
+var teardownModule = function (module) {
+    dactyl.teardown();
+}
+
 var teardownTest = function (test) {
     dactyl.closeMessageWindow();
 };
@@ -56,13 +60,18 @@ var testEchoCommand_ObjectArgumentAndClosedMOW_MessageDisplayedInMOW = function 
     });
 };
 
+function executeCommand(command) {
+    dactyl.runViCommand(":" + command);
+    dactyl.runViCommand([["VK_RETURN"]]);
+}
+
 function assertEchoGeneratesWindowOutput({ ECHO_COMMAND, EXPECTED_OUTPUT }) {
-    dactyl.runExCommand(ECHO_COMMAND);
+    executeCommand(ECHO_COMMAND);
     dactyl.assertMessageWindow(EXPECTED_OUTPUT);
 }
 
 function assertEchoGeneratesLineOutput({ ECHO_COMMAND, EXPECTED_OUTPUT }) {
-    dactyl.runExCommand(ECHO_COMMAND);
+    executeCommand(ECHO_COMMAND);
     dactyl.assertMessageLine(EXPECTED_OUTPUT);
 }
 

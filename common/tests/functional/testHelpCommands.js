@@ -6,6 +6,10 @@ var setupModule = function (module) {
     dactyl = new dactyllib.Controller(controller);
 };
 
+var teardownModule = function (module) {
+    dactyl.teardown();
+}
+
 var setupTest = function (test) {
     dactyl.runViCommand([["VK_ESCAPE"]]);
 };

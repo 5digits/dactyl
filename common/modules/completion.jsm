@@ -870,10 +870,15 @@ var Completion = Module("completion", {
             context = context.contexts["/list"];
             context.wait();
 
+            let contexts = context.contextList.filter(function (c) c.hasItems && c.items.length);
+            if (!contexts.length)
+                contexts = context.contextList.filter(function (c) c.hasItems).slice(0, 1);
+            if (!contexts.length)
+                contexts = context.contextList.slice(-1);
+
             modules.commandline.commandOutput(
                 <div highlight="Completions">
-                    { template.map(context.contextList.filter(function (c) c.hasItems && c.items.length),
-                        function (context)
+                    { template.map(contexts, function (context)
                             template.completionRow(context.title, "CompTitle") +
                             template.map(context.items, function (item) context.createRow(item), null, 100)) }
                 </div>);

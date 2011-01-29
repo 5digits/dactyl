@@ -5,6 +5,10 @@ var setupModule = function (module) {
     dactyl = new dactyllib.Controller(controller);
 };
 
+var teardownModule = function (module) {
+    dactyl.teardown();
+}
+
 var teardownTest = function (test) {
     dactyl.closeMessageWindow();
 };
