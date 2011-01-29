@@ -910,7 +910,7 @@ var Tabs = Module("tabs", {
                     if (count != null)
                         tabs.switchTo(String(count));
                     else
-                        commandline.open(":", "buffer! ", modes.EX);
+                        CommandExMode.open("buffer! ");
                 },
                 { count: true });
 

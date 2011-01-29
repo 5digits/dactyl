@@ -218,6 +218,14 @@
     </description>
 </item>
 
+<h3 tag=":map-timeout map-timeout">Mapping timeout</h3>
+<p>
+    When &dactyl.appName; receives a key event that has a separate binding and
+    at the same time is part of a key chain, values of the <o>timeout</o> and
+    <o>timeoutlen</o> options are used to decide what to do. See the
+    documentation of those options for more information.
+</p>
+
 <h3 tag=":map-arguments">Special arguments</h3>
 
 <tags>:map-&lt;silent></tags>

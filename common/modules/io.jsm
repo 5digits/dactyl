@@ -61,6 +61,27 @@ var IO = Module("io", {
             services.downloadManager.addListener(this.downloadListener);
         },
 
+        CommandFileMode: Class("CommandFileMode", modules.CommandMode, {
+            init: function init(prompt, params) {
+                init.supercall(this);
+                this.prompt = isArray(prompt) ? prompt : ["Question", prompt];
+                update(this, params);
+            },
+
+            historyKey: "file",
+
+            get mode() modules.modes.FILE_INPUT,
+
+            complete: function (context) {
+                if (this.completer)
+                    this.completer(context);
+
+                context = context.fork("files", 0);
+                modules.completion.file(context);
+                context.filters = context.filters.concat(this.filters || []);
+            }
+        }),
+
         destroy: function destroy() {
             services.downloadManager.removeListener(this.downloadListener);
             for (let [, plugin] in Iterator(plugins.contexts))
@@ -1003,6 +1024,16 @@ unlet s:cpo_save
                 completion.file(context, true);
             }]);
 
+    },
+    modes: function (dactyl, modules, window) {
+        const { commandline, modes } = modules;
+
+        modes.addMode("FILE_INPUT", {
+            extended: true,
+            description: "Active when selecting a file",
+            bases: [modes.COMMAND_LINE],
+            input: true
+        });
     },
     options: function (dactyl, modules, window) {
         const { options } = modules;

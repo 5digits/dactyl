@@ -20,7 +20,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 &dactyl.host; or to a web page, you have two options:
 
 <item>
-    <tags><![CDATA[pass-through <C-z> CTRL-Z]]></tags>
+    <tags><![CDATA[pass-through <pass-all-keys> <C-z> CTRL-Z]]></tags>
     <spec>&lt;C-z></spec>
     <description>
         <p>
@@ -33,7 +33,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[send-key <C-v> CTRL-V]]></tags>
+    <tags><![CDATA[send-key <pass-next-key> <C-v> CTRL-V]]></tags>
     <spec>&lt;C-v></spec>
     <description>
         <p>
@@ -171,7 +171,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[<MiddleMouse> p]]></tags>
+    <tags><![CDATA[<open-clipboard-url> <MiddleMouse> p]]></tags>
     <strut/>
     <spec>p</spec>
     <description>
@@ -185,7 +185,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>P</tags>
+    <tags>&lt;tab-open-clipboard-url> P</tags>
     <strut/>
     <spec>P</spec>
     <description>
@@ -343,7 +343,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 <h2 tag="reloading">Reloading</h2>
 
 <item>
-    <tags>r</tags>
+    <tags>&lt;reload> r</tags>
     <spec>r</spec>
     <description short="true">
         <p>Reload the current web page.</p>
@@ -351,7 +351,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>R</tags>
+    <tags>&lt;full-reload> R</tags>
     <spec>R</spec>
     <description short="true">
         <p>Reload the current web page without using the cache.</p>

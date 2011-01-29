@@ -115,9 +115,8 @@ var Bookmarks = Module("bookmarks", {
         if (charset != null && charset !== "UTF-8")
             options["-charset"] = charset;
 
-        commandline.open(":",
-            commands.commandToString({ command: "bmark", options: options, arguments: [url] }) + " -keyword ",
-            modes.EX);
+        CommandExMode().open(
+            commands.commandToString({ command: "bmark", options: options, arguments: [url] }) + " -keyword ");
     },
 
     /**
@@ -213,7 +212,7 @@ var Bookmarks = Module("bookmarks", {
         return iter(services.browserSearch.getVisibleEngines({})).map(function ([, engine]) {
             let alias = engine.alias;
             if (!alias || !/^[a-z-]+$/.test(alias))
-                alias = engine.name.replace(/[a-z_-]+/i, "-").replace(/^-|-$/, "").toLowerCase();
+                alias = engine.name.replace(/[^a-z_-]+/gi, "-").replace(/^-|-$/, "").toLowerCase();
             if (!alias)
                 alias = "search"; // for search engines which we can't find a suitable alias
 
@@ -249,7 +248,7 @@ var Bookmarks = Module("bookmarks", {
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
         if (!queryURI)
-            return [];
+            return (callback || util.identity)([]);
 
         function process(resp) {
             let results = [];
@@ -582,9 +581,8 @@ var Bookmarks = Module("bookmarks", {
                         options["-charset"] = content.document.characterSet;
                 }
 
-                commandline.open(":",
-                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.uri.spec] }),
-                    modes.EX);
+                CommandExMode().open(
+                    commands.commandToString({ command: "bmark", options: options, arguments: [buffer.uri.spec] }));
             });
 
         mappings.add(myModes, ["A"],
