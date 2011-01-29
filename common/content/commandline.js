@@ -332,7 +332,7 @@ var CommandMode = Class("CommandMode", {
         commandline.commandSession = this;
         if (this.command || stack.pop && commandline.command) {
             this.onChange(commandline.command);
-            if (this.completions)
+            if (this.completions && options["autocomplete"].length)
                 this.completions.complete(true, false);
         }
     },
