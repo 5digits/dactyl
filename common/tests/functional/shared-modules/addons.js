@@ -121,7 +121,7 @@ addonsManager.prototype = {
    *                            [optional - default: menu]
    *                  waitFor - Wait until the Add-ons Manager has been opened
    *                            [optional - default: true]
-   *                  
+   *
    *
    * @returns Reference the tab with the Add-ons Manager open
    * @type {object}
@@ -181,7 +181,7 @@ addonsManager.prototype = {
     // mozmill.utils.waitFor(function() {
     //   return self.isOpen;
     // }, timeout, 100, "Add-ons Manager has been opened");
-    
+
     mozmill.utils.waitForEval("subject.isOpen", timeout, 100, this);
 
     // The first tab found will be the selected one
@@ -238,16 +238,16 @@ addonsManager.prototype = {
       this._controller.click(button);
 
       // Click the button and wait until menu has been opened
-      
+
       // TODO: restore after 1.5.1 has landed
       // mozmill.utils.waitFor(function() {
       //   return menu.getNode() && menu.getNode().state == "open";
       // }, TIMEOUT, 100, "Menu of utils button has been opened.");
-      
+
       mozmill.utils.waitForEval("subject && subject.state == 'open'",
                                 TIMEOUT, 100, menu.getNode());
 
-      // Click the given menu entry and make sure the 
+      // Click the given menu entry and make sure the
       var menuItem = this.getElement({
         type: "utilsButton_menuItem",
         value: "#utils-" + item
@@ -257,12 +257,12 @@ addonsManager.prototype = {
     } finally {
       // Make sure the menu has been closed
       this._controller.keypress(menu, "VK_ESCAPE", {});
-      
+
       // TODO: restore after 1.5.1 has landed
       // mozmill.utils.waitFor(function() {
       //   return menu.getNode() && menu.getNode().state == "closed";
       // }, TIMEOUT, 100, "Menu of utils button has been closed.");
-      
+
       mozmill.utils.waitForEval("subject && subject.state == 'closed'",
                                 TIMEOUT, 100, menu.getNode());
     }
@@ -569,7 +569,7 @@ addonsManager.prototype = {
 
   /**
    * Wait until the specified add-on has been downloaded
-   * 
+   *
    * @param {object} aSpec
    *        Object with parameters for customization
    *        Elements: addon   - Add-on element to wait for being downloaded
@@ -586,13 +586,13 @@ addonsManager.prototype = {
 
     var self = this;
     var node = addon.getNode();
-    
+
     // TODO: restore after 1.5.1 has landed
     // mozmill.utils.waitFor(function () {
     //   return node.getAttribute("pending") == "install" &&
     //          node.getAttribute("status") != "installing";
     // }, timeout, 100, "'" + node.getAttribute("name") + "' has been downloaded");
-    
+
     mozmill.utils.waitForEval("subject.getAttribute('pending') == 'install' &&" +
                               "subject.getAttribute('status') != 'installing'",
                               timeout, 100, node);
@@ -738,7 +738,7 @@ addonsManager.prototype = {
 
   /**
    * Wait until the specified category has been selected
-   * 
+   *
    * @param {object} aSpec
    *        Object with parameters for customization
    *        Elements: category - Category element to wait for
@@ -758,9 +758,9 @@ addonsManager.prototype = {
     // mozmill.utils.waitFor(function () {
     //   return self.selectedCategory.getNode() == category.getNode();
     // }, timeout, 100, "Category '" + category.getNode().id + "' has been set");
-    
+
     mozmill.utils.waitForEval("subject.self.selectedCategory.getNode() == subject.aCategory.getNode()",
-                               timeout, 100, 
+                               timeout, 100,
                                {self: this, aCategory: category});
   },
 
@@ -916,7 +916,7 @@ addonsManager.prototype = {
 
   /**
    * Waits until the specified search filter has been selected
-   * 
+   *
    * @param {object} aSpec
    *        Object with parameters for customization
    *        Elements: filter  - Filter element to wait for
@@ -933,11 +933,11 @@ addonsManager.prototype = {
 
     // TODO: restore after 1.5.1 has landed
     // var self = this;
-    // 
+    //
     // mozmill.utils.waitFor(function () {
     //   return self.selectedSearchFilter.getNode() == filter.getNode();
     // }, timeout, 100, "Search filter '" + filter.getNode().value + "' has been set");
-    
+
     mozmill.utils.waitForEval("subject.self.selectedSearchFilter.getNode() == subject.aFilter.getNode()",
                               timeout, 100,
                               {self: this, aFilter: filter});
@@ -967,7 +967,7 @@ addonsManager.prototype = {
 
   /**
    * Waits until the active search has been finished
-   * 
+   *
    * @param {object} aSpec
    *        Object with parameters for customization
    *        Elements: timeout - Duration to wait for the target state
@@ -978,12 +978,12 @@ addonsManager.prototype = {
 
     // TODO: restore after 1.5.1 has landed
     // var self = this;
-    // 
+    //
     // mozmill.utils.waitFor(function () {
     //   return self.isSearching == false;
     // }, timeout, 100, "Search has been finished");
-    
-    mozmill.utils.waitForEval("subject.isSearching == false", 
+
+    mozmill.utils.waitForEval("subject.isSearching == false",
                               timeout, 100, this);
   },
 
@@ -1231,7 +1231,7 @@ addonsManager.prototype = {
  * @param {string} aDomain
  *        The domain to add the permission for
  */
-function addToWhiteList(aDomain) { 
+function addToWhiteList(aDomain) {
   pm.add(utils.createURI(aDomain),
          "install",
          Ci.nsIPermissionManager.ALLOW_ACTION);
@@ -1242,7 +1242,7 @@ function addToWhiteList(aDomain) {
  * @param {string} aHost
  *        The host whose permission will be removed
  */
-function removeFromWhiteList(aHost) { 
+function removeFromWhiteList(aHost) {
   pm.remove(aHost, "install");
 }
 

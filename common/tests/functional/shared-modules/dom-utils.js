@@ -219,7 +219,7 @@ DOMWalker.prototype = {
     }
 
     collectedResults = collectedResults.concat(nodeTestResults);
-    
+
     return collectedResults;
   },
 

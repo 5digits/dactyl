@@ -58,7 +58,7 @@ const gTimeout = 5000;
 
 /**
  * Constructor
- * 
+ *
  * @param {MozMillController} controller
  *        MozMill controller of the browser window to operate on.
  */
@@ -111,7 +111,7 @@ aboutSessionRestore.prototype = {
    *        type: General type information
    *        subtype: Specific element or property
    *        value: Value of the element or property
-   * @returns Element which has been created  
+   * @returns Element which has been created
    * @type {ElemBase}
    */
   getElement : function aboutSessionRestore_getElement(spec) {
@@ -160,7 +160,7 @@ aboutSessionRestore.prototype = {
 
   /**
    * Get restorable tabs under the given window
-   * 
+   *
    * @param {object} window
    *        Window inside the tree
    * @returns List of tabs
@@ -187,7 +187,7 @@ aboutSessionRestore.prototype = {
 
   /**
    * Get restorable windows
-   * 
+   *
    * @returns List of windows
    * @type {array of object}
    */
@@ -238,7 +238,7 @@ function resetRecentlyClosedTabs()
 
 /**
  * Returns the number of restorable tabs for a given window
- * 
+ *
  * @param {MozMillController} controller
  *        MozMillController of the window to operate on
  * @returns The number of restorable tabs in the window
@@ -250,7 +250,7 @@ function getClosedTabCount(controller)
 
 /**
  * Restores the tab which has been recently closed
- * 
+ *
  * @param {MozMillController} controller
  *        MozMillController of the window to operate on
  * @param {object} event
@@ -280,7 +280,7 @@ function undoClosedTab(controller, event)
 
 /**
  * Restores the window which has been recently closed
- * 
+ *
  * @param {MozMillController} controller
  *        MozMillController of the window to operate on
  * @param {object} event

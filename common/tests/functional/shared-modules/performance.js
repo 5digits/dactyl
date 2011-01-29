@@ -136,7 +136,7 @@ PerfTracer.prototype = {
    *
    * @param {string} path
    *        Path of memory reporter (e.g. PATH_MAPPED)
-   * @returns Memory value from requested reporter, MEMORY_UNAVAILABLE if 
+   * @returns Memory value from requested reporter, MEMORY_UNAVAILABLE if
    *          not found
    * @type {number}
    */
@@ -181,7 +181,7 @@ PerfTracer.prototype = {
   finish : function PerfTracer_finish() {
     // Title
     var title = "Performance Trace (" + this._name + ")";
-    
+
     // Separator
     var sep = "";
     for(var i = 0; i < title.length; i++) {

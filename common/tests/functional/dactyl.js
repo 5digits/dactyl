@@ -353,7 +353,7 @@ Controller.prototype = {
         this.setExMode();
 
         utils.assertEqual("dactyl.runExCompletion",
-                          this.elements.commandInput, 
+                          this.elements.commandInput,
                           this.elements.focused,
                           "Running Ex Completion: The command line is not focused");
 

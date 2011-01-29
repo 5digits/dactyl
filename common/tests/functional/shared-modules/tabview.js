@@ -387,7 +387,7 @@ tabView.prototype = {
    *        Information about the element to operate on
    *        Elements: tab - Tab to close
    */
-  closeTab : function tabView_closeTab(aSpec) { 
+  closeTab : function tabView_closeTab(aSpec) {
     var spec = aSpec || {};
     var tab = spec.tab;
 

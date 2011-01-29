@@ -169,7 +169,7 @@ function removeAllHistory() {
   // Set up an observer so we get notified when remove completes
   let observer = {
     observe: function(aSubject, aTopic, aData) {
-      observerService.removeObserver(this, TOPIC_EXPIRATION_FINISHED);    
+      observerService.removeObserver(this, TOPIC_EXPIRATION_FINISHED);
       finishedFlag.state = true;
     }
   }
