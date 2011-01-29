@@ -1321,7 +1321,10 @@ var Commands = Module("commands", {
                                     args["-description"],
                                     Command.bindMacro(args, "-ex",
                                         function makeParams(args, modifiers) ({
-                                            args:  this.argCount && args.string,
+                                            args:  {
+                                                __proto__: args,
+                                                toString: function () this.string,
+                                            },
                                             bang:  this.bang && args.bang ? "!" : "",
                                             count: this.count && args.count
                                         })),
@@ -1330,7 +1333,7 @@ var Commands = Module("commands", {
                                         bang: args["-bang"],
                                         count: args["-count"],
                                         completer: completerFunc,
-                                        literal: args["-count"] == "*" ? 0 : null,
+                                        literal: args["-literal"],
                                         persist: !args["-nopersist"],
                                         replacementText: args.literalArg,
                                         sourcing: io.sourcing && update({}, io.sourcing)
@@ -1389,6 +1392,10 @@ var Commands = Module("commands", {
                     }, {
                         names: ["-javascript", "-js", "-j"],
                         description: "Execute the definition as JavaScript rather than Ex commands"
+                    }, {
+                        names: ["-literal", "-l"],
+                        description: "Process the nth ignoring any quoting or meta characters",
+                        type: CommandOption.INT
                     }, {
                         names: ["-nargs", "-a"],
                         description: "The allowed number of arguments",

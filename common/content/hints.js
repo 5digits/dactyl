@@ -686,9 +686,9 @@ var Hints = Module("hints", {
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
         this.addMode("w", "Follow hint in a new window",          function (elem) buffer.followLink(elem, dactyl.NEW_WINDOW));
-        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) CommandExMode.open("open " + loc));
-        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) CommandExMode.open("tabopen " + loc));
-        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) CommandExMode.open("winopen " + loc));
+        this.addMode("O", "Generate an ‘:open URL’ prompt",       function (elem, loc) CommandExMode().open("open " + loc));
+        this.addMode("T", "Generate a ‘:tabopen URL’ prompt",     function (elem, loc) CommandExMode().open("tabopen " + loc));
+        this.addMode("W", "Generate a ‘:winopen URL’ prompt",     function (elem, loc) CommandExMode().open("winopen " + loc));
         this.addMode("a", "Add a bookmark",                       function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("S", "Add a search keyword",                 function (elem) bookmarks.addSearchKeyword(elem));
         this.addMode("v", "View hint source",                     function (elem, loc) buffer.viewSource(loc, false));

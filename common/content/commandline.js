@@ -322,6 +322,9 @@ var CommandMode = Class("CommandMode", {
         this.widgets.active.commandline.collapsed = false;
         this.widgets.prompt = this.prompt;
         this.widgets.command = command || "";
+
+        if (this.completions && options["autocomplete"].length)
+            this.completions.complete(true, false);
     },
 
     get mappingSelf() this,
@@ -332,7 +335,7 @@ var CommandMode = Class("CommandMode", {
         commandline.commandSession = this;
         if (this.command || stack.pop && commandline.command) {
             this.onChange(commandline.command);
-            if (this.completions && options["autocomplete"].length)
+            if (this.completions && stack.pop)
                 this.completions.complete(true, false);
         }
     },
