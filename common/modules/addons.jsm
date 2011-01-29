@@ -302,7 +302,7 @@ var AddonList = Class("AddonList", {
         if (addon && addon.id in this.addons)
             this.addons[addon.id].update();
         if (this.ready)
-            this.modules.commandline.updateOutputHeight(false);
+            this.modules.mow.resize(false);
     },
 
     onDisabled:           function (addon) { this.update(addon); },
