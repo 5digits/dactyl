@@ -8,6 +8,8 @@ var setupModule = function (module) {
 
     dactyl.dactyl.options["autocomplete"] = [];
     dactyl.dactyl.options["wildmode"] = ["list"];
+
+    dactyl.prefs.set("browser.tabs.closeWindowWithLastTab", false);
 };
 var teardownModule = function (module) {
     dactyl.teardown();
