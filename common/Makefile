@@ -36,7 +36,7 @@ XPI_BINS      = $(JAR_BINS)
 
 XPI_NAME      = $(NAME)-$(VERSION)
 XPI           =  ../downloads/$(XPI_NAME).xpi
-XPI_PATH      = $(TOP)$(XPI:%.xpi=%)
+XPI_PATH      = $(TOP)/$(XPI:%.xpi=%)
 
 RDF           = ../downloads/update.rdf
 RDF_IN        = $(RDF).in
@@ -162,7 +162,7 @@ distclean:
 	rm -rf $(BUILD_DIR)
 
 # TODO: generalize log path
-test: $(XPI)
+test: xpi
 	@echo "Running functional tests..."
 	$(MOZMILL) --show-all -l /tmp/dactyl-test.log -b $(HOSTAPP_PATH) --addons $(XPI) -t $(TEST_DIR)
 

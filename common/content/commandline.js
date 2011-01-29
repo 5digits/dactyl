@@ -181,7 +181,9 @@ var CommandWidgets = Class("CommandWidgets", {
 
                     [this.commandbar, this.statusbar].forEach(function (nodeSet) {
                         let elem = nodeSet[obj.name];
-                        if (val != null) {
+                        if (val == null)
+                            elem.value = "";
+                        else {
                             highlight.highlightNode(elem,
                                 (val[0] != null ? val[0] : obj.defaultGroup)
                                     .split(/\s/).filter(util.identity)

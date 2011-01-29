@@ -159,7 +159,18 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (type in this._observers)
             this._observers[type] = this._observers[type].filter(function (callback) {
                 if (callback.get()) {
-                    callback.get().apply(null, args);
+                    try {
+                        try {
+                            callback.get().apply(null, args);
+                        }
+                        catch (e if e.message == "can't wrap XML objects") {
+                            // Horrible kludge.
+                            callback.get().apply(null, [String(args[0])].concat(args.slice(1)))
+                        }
+                    }
+                    catch (e) {
+                        dactyl.reportError(e);
+                    }
                     return true;
                 }
             });
@@ -211,6 +222,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * 'visualbell' option.
      */
     beep: function () {
+        this.triggerObserver("beep");
         if (options["visualbell"]) {
             let elems = {
                 bell: document.getElementById("dactyl-bell"),
@@ -1091,6 +1103,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
+    onExecute: function onExecute(event) {
+        let cmd = event.originalTarget.getAttribute("dactyl-execute");
+        commands.execute(cmd, null, false, null,
+                         { file: "[Command Line]", line: 1 });
+    },
+
     /**
      * Opens one or more URLs. Returns true when load was initiated, or
      * false on error.
@@ -1337,9 +1355,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     reportError: function reportError(error, echo) {
         if (error instanceof FailedAssertion || error.message === "Interrupted") {
+
             let prefix = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
+            if (error.message && error.message.indexOf(prefix) !== 0)
+                error.message = prefix + error.message;
+
             if (error.message)
-                dactyl.echoerr(template.linkifyHelp(prefix + error.message));
+                dactyl.echoerr(template.linkifyHelp(error.message));
             else
                 dactyl.beep();
             return;
@@ -1434,6 +1456,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 }, {
     events: function () {
         events.addSessionListener(window, "click", dactyl.closure.onClick, true);
+        events.addSessionListener(window, "dactyl.execute", dactyl.closure.onExecute, true);
     },
     // Only general options are added here, which are valid for all Dactyl extensions
     options: function () {
@@ -1676,7 +1699,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function (args) {
                 try {
                     let cmd = dactyl.userEval(args[0] || "");
-                    dactyl.execute(cmd, null, true);
+                    dactyl.execute(cmd || "", null, true);
                 }
                 catch (e) {
                     dactyl.echoerr(e);
