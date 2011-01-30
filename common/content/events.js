@@ -1026,7 +1026,7 @@ var Events = Module("events", {
                 let elem = event.originalTarget;
                 elem.dactylKeyPress = elem.value;
                 util.timeout(function () {
-                    if (elem.value !== elem.dactylKeyPress)
+                    if (elem.dactylKeyPress !== undefined && elem.value !== elem.dactylKeyPress)
                         events.dispatch(elem, events.create(elem.ownerDocument, "input"));
                     delete events.dactylKeyPress;
                 });

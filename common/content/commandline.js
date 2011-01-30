@@ -912,7 +912,7 @@ var CommandLine = Module("commandline", {
          * @param {string} val The new value.
          */
         replace: function replace(val) {
-            delete this.input.dactylKeyPress;
+            this.input.dactylKeyPress = undefined;
             if (this.completions)
                 this.completions.previewClear();
             this.input.value = val;
@@ -1031,7 +1031,7 @@ var CommandLine = Module("commandline", {
             this.caret = this.prefix.length + completion.length;
             this._caret = this.caret;
 
-            delete this.input.dactylKeyPress;
+            this.input.dactylKeyPress = undefined;
         },
 
         get caret() this.editor.selection.getRangeAt(0).startOffset,
