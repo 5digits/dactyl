@@ -314,13 +314,14 @@ var Buffer = Module("buffer", {
 
             statusline.updateUrl();
 
-            if (webProgress.DOMWindow && uri) {
-                statusline.updateProgress(webProgress.DOMWindow);
+            let win = webProgress.DOMWindow;
+            if (win && uri) {
+                statusline.updateProgress(win);
 
                 let oldURI = webProgress.document.dactylURI;
                 if (webProgress.document.dactylLoadIdx === webProgress.loadedTransIndex
                     || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
-                    for (let frame in values(buffer.allFrames(webProgress.DOMWindow)))
+                    for (let frame in values(buffer.allFrames(win)))
                         frame.document.dactylFocusAllowed = false;
                 webProgress.document.dactylURI = uri.spec;
                 webProgress.document.dactylLoadIdx = webProgress.loadedTransIndex;
@@ -334,7 +335,7 @@ var Buffer = Module("buffer", {
 
             util.timeout(function () {
                 buffer._triggerLoadAutocmd("LocationChange",
-                                           (webProgress.DOMWindow || content).document,
+                                           (win || content).document,
                                            uri);
             });
 

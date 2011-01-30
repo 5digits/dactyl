@@ -42,7 +42,7 @@ var tests = {
         anyOutput: ["about:pentadactyl"]
     },
     bmark: {
-        anyOutput: ["bmark", "bmark -tags=foo -titlt=bar -keyword=baz -charset=UTF-8 -post=quux about:pentadactyl"],
+        someOutput: ["bmark", "bmark -tags=foo -titlt=bar -keyword=baz -charset=UTF-8 -post=quux about:pentadactyl"],
         error: ["bmark -tags=foo -titlt=bar -keyword=baz -charset=nonExistentCharset -post=quux about:pentadactyl"],
         completions: [
             "-max=1 -keyword=",
@@ -71,14 +71,16 @@ var tests = {
         completions: ["", "1"]
     },
     cd: {
-        anyOutput: ["", "~/"],
+        lineOutput: ["", "~/"],
         completions: ["", "~/"]
     },
     colorscheme: {
         error: ["", "some-non-existent-scheme"]
     },
     command: {
-        anyOutput: ["", "foo", "foo bar", "-js bar baz"],
+        multiOutput: [""],
+        someOutput: ["foo"],
+        noOutput: ["foo bar", "-js bar baz"],
         error: ["foo bar", "-js bar baz"]
     },
     comclear: {
@@ -103,9 +105,7 @@ var tests = {
     get delmarks() this.delmacros,
     get delqmarks() this.delmacros,
     delstyle: {
-        completions: [
-            "", "-name=", "-name=foo ", "-index=", "-index="
-        ]
+        completions: ["", "-name=", "-name=foo ", "-index=", "-index="]
     },
     dialog: {
         // Skip implementation for now
@@ -114,7 +114,7 @@ var tests = {
     doautoall: {}, // Skip for now
     doautocmd: {}, // Skip for now
     downloads: {
-        multiOutput: ["", "dactyl", "-type=extension", "-type=extension dactyl"]
+        multiOutput: ["", "dactyl", "dactyl"]
     },
     echo: {
         singleOutput: ["' - '"],
@@ -127,7 +127,10 @@ var tests = {
             "commands.get('"
         ]
     },
-    get echoerr() this.echo,
+    get echoerr() ({
+        errorsOk: true,
+        __proto__: this.echo,
+    }),
     get echomsg() this.echo,
     else: {}, // Skip for now
     elseif: {}, // Skip for now
@@ -218,50 +221,180 @@ var tests = {
     get listoptions() this.listcommands,
     loadplugins: {},
     macros: {
-        multiOutput: [""]
+        multiOutput: [""],
+        complete: [""]
     },
     map: {
         multiOutput: ["", "i"],
-        noOutput: ["i j", "-b i j", "-js i j()", "-ex i :j"]
+        noOutput: [
+            "i j",
+            "-builtin i j",
+            "-group=user -b i j",
+            "-js i j()",
+            "-ex i :j",
+            "-silent i :j",
+            "-mode=ex -b <C-a> <C-a>"
+        ],
+        error: [
+            "-mode=some-nonexistent-mode <C-a> <C-a>",
+            "-gtroup=some-nonexistent-group <C-a> <C-a>"
+        ],
+        complete: [
+            "",
+            "-",
+            "-mode=ex ",
+            "-mode=",
+            "-group=",
+            "-builtin i ",
+            "-ex i ",
+            "-javascript i ",
+        ]
     },
     mapclear: {
+        noOutput: [""],
+        complete: [""]
+    },
+    mapgroup: {
+        multiOutput: [""],
+        noOutput: [
+            "foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'",
+            "! foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'",
+            "foo",
+            "user"
+        ],
+        error: [
+            "some-nonexistent-group",
+            "foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'"
+        ],
+        complete: [
+            "",
+            "foo "
+        ],
+        cleanup: ["delmapgroup foo"]
+    },
+    mark: {
+        error: ["", "#", "xy"],
+        noOutput: ["y"],
+        complete: [""]
+    },
+    marks: {
+        init: ["delmarks q"],
+        multiOutput: ["", "y"],
+        error: ["q", "#"],
+        complete: [""]
+    },
+    messages: {
+        anyOutput: ["messages"]
+    },
+    messclear: {
+        error: ["q"],
         noOutput: [""]
     },
-    mapgroup: {},
-    mark: {},
-    marks: {},
-    messages: {},
-    messclear: {},
-    mkpentadactylrc: {},
-    mksyntax: {},
-    mlistkeys: {},
-    mmap: {},
-    mmapclear: {},
-    mnoremap: {},
-    munmap: {},
-    nlistkeys: {},
-    nmap: {},
-    nmapclear: {},
-    nnoremap: {},
-    nohlfind: {},
-    noremap: {},
-    normal: {},
-    nunmap: {},
-    open: {},
-    pageinfo: {},
-    pagestyle: {},
-    preferences: {},
-    pwd: {},
-    qmark: {},
-    qmarks: {},
-    quit: {},
-    quitall: {},
-    redraw: {},
-    rehash: {},
-    reload: {},
-    reloadall: {},
-    restart: {},
-    runtime: {},
+    mkpentadactylrc: {
+        noOutput: [
+            "some-nonexistent-rc.penta",
+            "! some-nonexistent-rc.penta"
+        ],
+        error: ["some-nonexistent-rc.penta"],
+        complete: [""],
+        cleanup: ["silent !rm some-nonexistent-rc.penta"]
+    },
+    mksyntax: {
+        noOutput: [
+            "some-nonexistent-pentadactyl-dir/",
+            "! some-nonexistent-pentadactyl-dir/",
+            "some-nonexistent-pentadactyl-dir/foo.vim",
+            "! some-nonexistent-pentadactyl-dir/foo.vim",
+        ],
+        error: [
+            "some-nonexistent-pentadactyl-dir/",
+            "some-nonexistent-pentadactyl-dir/foo.vim"
+        ],
+        complete: [""],
+        cleanup: ["silent !rm -r some-nonexistent-pentadactyl-dir/"]
+    },
+    normal: {
+        noOutput: ["<Nop>"],
+        lineOutput: ["<C-g>"],
+        multiOutput: ["g<C-g>"]
+    },
+    open: {
+        noOutput: ["about:blank | about:home"],
+        complete: [
+            "",
+            "./",
+            "./ | ",
+            "chrome://",
+            "chrome://browser/",
+            "chrome://browser/content/",
+            "about:",
+            "resource://",
+            "resource://dactyl/"
+        ]
+    },
+    pageinfo: {
+        multiOutput: ["", "fgm"],
+        complete: [""],
+        error: ["abcdefghijklmnopqrstuvwxyz", "f g m"]
+    },
+    pagestyle: {
+        complete: [""]
+    },
+    preferences: {}, // Skip for now
+    pwd: {
+        singleOutput: [""]
+    },
+    qmark: {
+        lineOutput: [
+            "m",
+            "m foo bar"
+        ],
+        error: ["", "#"],
+        complete: ["", "m "]
+    },
+    qmarks: {
+        init: ["delqmarks x"],
+        multiOutput: ["", "m", "x"],
+        complete: [""]
+    },
+    quit: {}, // Skip for now
+    quitall: {}, // Skip for now
+    redraw: {
+        noOutput: [""]
+    },
+    rehash: {}, // Skip for now
+    reload: {
+        noOutput: [""]
+    },
+    reloadall: {
+        noOutput: [""]
+    },
+    restart: {}, // Skip
+    runtime: {
+        init: [
+            "js File('~/.pentadactyl/some-nonexistent/good.css').write('')",
+            "js File('~/.pentadactyl/some-nonexistent/good.js').write('')",
+            "js File('~/.pentadactyl/some-nonexistent/bad.js').write('dactyl.echoerr(\"error\")')",
+            "js File('~/.pentadactyl/some-nonexistent/good.penta').write('')",
+            "js File('~/.pentadactyl/some-nonexistent/bad.penta').write('echoerr \"error\"')",
+        ],
+        cleanup: ["js File('~/.pentadactyl/some-nonexistent').remove(true)"],
+        noOutput: [
+            "some-nonexistent/good.css",
+            "some-nonexistent/good.js",
+            "some-nonexistent/good.penta"
+        ],
+        errors: [
+            "some-nonexistent/bad.js",
+            "some-nonexistent/bad.penta"
+        ],
+        singleOutput: ["some-nonexistent-file.js"],
+        complete: [
+            "",
+            "plugins/",
+            "info/"
+        ]
+    },
     sanitize: {},
     saveas: {},
     sbclose: {},
@@ -326,22 +459,37 @@ function addTest(cmdName, testName, func) {
     global["testCommand_" + cmdName + "_" + testName] = func;
 }
 
-function runCommands(cmdName, testName, commands, test) {
+function runCommands(cmdName, testName, commands, test, forbidErrors) {
     addTest(cmdName, testName, function () {
         commands.forEach(function (cmd) {
             // dump("CMD: " + cmdName + " " + cmd + "\n");
             dactyl.clearMessage();
             dactyl.closeMessageWindow();
+
             cmd = cmdName + cmd.replace(/^(!?) ?/, "$1 ");
-            dactyl.runExCommand(cmd);
+            if (forbidErrors)
+                dactyl.assertNoErrorMessages(function () { dactyl.runExCommand(cmd) },
+                                             null, [], cmd);
+            else
+                dactyl.runExCommand(cmd);
+            controller.waitForPageLoad(controller.tabs.activeTab);
+
             test(cmd);
+        });
+    });
+}
+function _runCommands(cmdName, testName, commands) {
+    addTest(cmdName, testName, function () {
+        commands.forEach(function (cmd) {
+            dactyl.runExCommand(cmd);
+            controller.waitForPageLoad(controller.tabs.activeTab);
         });
     });
 }
 
 for (var val in Iterator(tests)) (function ([command, params]) {
     if (params.init)
-        runCommands(command, "init", params.init, function () {});
+        _runCommands(command, "init", params.init, function () {});
 
     // Goddamn stupid fucking MozMill and its stupid fucking sandboxes with their ancient fucking JS versions.
     for (var val in Iterator(params)) (function ([testName, commands]) {
@@ -362,12 +510,12 @@ for (var val in Iterator(tests)) (function ([command, params]) {
         case "singleOutput":
             runCommands(command, testName, commands, function (cmd) {
                 dactyl.assertMessageLine(/./, "Expected command output: " + cmd);
-            });
+            }, true);
             break;
         case "multiOutput":
             runCommands(command, testName, commands, function (cmd) {
                 dactyl.assertMessageWindowOpen(true, "Expected command output: " + cmd);
-            });
+            }, true && !params.errorsOk);
             break;
         case "error":
             addTest(command, testName, function () {
@@ -375,6 +523,7 @@ for (var val in Iterator(tests)) (function ([command, params]) {
                     cmd = command + cmd.replace(/^(!?) ?/, "$1 ");
                     dactyl.assertMessageError(function () {
                         dactyl.runExCommand(cmd);
+                        controller.waitForPageLoad(controller.tabs.activeTab);
                     }, null, [], cmd);
                 });
             });
@@ -382,7 +531,10 @@ for (var val in Iterator(tests)) (function ([command, params]) {
         case "completions":
             addTest(command, testName, function () {
                 commands.forEach(function (cmd) {
-                    dactyl.runExCompletion(command + cmd.replace(/^(!?) ?/, "$1 "));
+                    dactyl.assertNoErrorMessages(function () {
+                        dactyl.runExCompletion(command + cmd.replace(/^(!?) ?/, "$1 "));
+                        controller.waitForPageLoad(controller.tabs.activeTab);
+                    });
                 });
             });
             break;
@@ -390,7 +542,7 @@ for (var val in Iterator(tests)) (function ([command, params]) {
     })(val);
 
     if (params.cleanup)
-        runCommands(command, "cleanup", params.cleanup, function () {});
+        _runCommands(command, "cleanup", params.cleanup, function () {});
 })(val);
 
 // vim: sw=4 ts=8 et:

@@ -50,7 +50,7 @@ function Controller(controller) {
     }
     this._countError = function countError(message, highlight) {
         if (/\bErrorMsg\b/.test(highlight))
-            self.errorCount++;
+            self.errorMessageCount++;
     }
     this.dactyl.dactyl.registerObserver("beep", this._countBeep);
     this.dactyl.dactyl.registerObserver("echoLine", this._countError);
@@ -69,6 +69,7 @@ Controller.prototype = {
 
     beepCount: 0,
     errorCount: 0,
+    errorMessageCount: 0,
 
     /**
      * Asserts that an error message is displayed during the execution
@@ -82,10 +83,10 @@ Controller.prototype = {
      * @param {string} message The message to display upon assertion failure. @optional
      */
     assertMessageError: function (func, self, args, message) {
-        let errorCount = this.errorCount;
+        let errorCount = this.errorMessageCount;
         this.assertNoErrors(func, self, args, message);
-        // dump("assertMessageError " + errorCount + " " + this.errorCount + "\n");
-        return utils.assert('dactyl.assertMessageError', this.errorCount > errorCount,
+        // dump("assertMessageError " + errorCount + " " + this.errorMessageCount + "\n");
+        return utils.assert('dactyl.assertMessageError', this.errorMessageCount > errorCount,
                             "Expected error but got none" + (message ? ": " + message : ""));
     },
 
@@ -164,13 +165,12 @@ Controller.prototype = {
      *      of *func*. @optional
      * @param {Array} args Arguments to be passed to *func*. @optional
      * @param {string} message The message to display upon assertion failure. @optional
-     * @param {string} message The message to display upon assertion failure. @optional
      */
     assertNoErrors: function (func, self, args, message) {
         let msg = message ? ": " + message : "";
+
         let beepCount = this.beepCount;
         let errorCount = this.errorCount;
-
         if (func) {
             errorCount = this.dactyl.util.errorCount;
 
@@ -196,6 +196,34 @@ Controller.prototype = {
         return utils.assertEqual('dactyl.assertNoErrors',
                                  errorCount, this.dactyl.util.errorCount,
                                  "Errors were reported during the execution of this test" + msg + "\n" + errors);
+    },
+
+    /**
+     * Asserts that the no error messages are reported during the call
+     * of *func*.
+     *
+     * @param {function} func A function to call during before the
+     *      assertion takes place. When present, the current error count
+     *      is reset before execution.
+     *      @optional
+     * @param {object} self The 'this' object to be used during the call
+     *      of *func*. @optional
+     * @param {Array} args Arguments to be passed to *func*. @optional
+     * @param {string} message The message to display upon assertion failure. @optional
+     */
+    assertNoErrorMessages: function (func, self, args, message) {
+        let msg = message ? ": " + message : "";
+        let count = this.errorMessageCount;
+
+        try {
+            func.apply(self || this, args || []);
+        }
+        catch (e) {
+            this.dactyl.util.reportError(e);
+        }
+
+        return utils.assertEqual('dactyl.assertNoErrorMessages', count, this.errorMessageCount,
+                                 "Error messsages were reported" + msg);
     },
 
     /**
@@ -352,7 +380,7 @@ Controller.prototype = {
     runExCompletion: wrapAssertNoErrors(function (cmd) {
         this.setExMode();
 
-        utils.assertEqual("dactyl.runExCompletion",
+        utils.assertEqual("dactyl.assertCommandLineFocused",
                           this.elements.commandInput,
                           this.elements.focused,
                           "Running Ex Completion: The command line is not focused");

@@ -436,18 +436,24 @@ var Addons = Module("addons", {
     }
 });
 
-if (!Ci.nsIExtensionManager || !services.extensionManager)
+if (!("nsIExtensionManager" in Ci) || !services.extensionManager)
     Components.utils.import("resource://gre/modules/AddonManager.jsm");
 else
     var AddonManager = {
+        PERM_CAN_UNINSTALL: 1,
+        PERM_CAN_ENABLE: 2,
+        PERM_CAN_DISABLE: 4,
+        PERM_CAN_UPGRADE: 8,
+
         getAddonByID: function (id, callback) {
             callback = callback || util.identity;
-            let addon = id;
-            if (!isObject(addon))
-                addon = services.extensionManager.getItemForID(id);
-            if (!addon)
-                return callback(null);
-            addon = Object.create(addon);
+            addon = services.extensionManager.getItemForID(id);
+            if (addon)
+                addon = this.wrapAddon(addon);
+            return callback(addon);
+        },
+        wrapAddon: function wrapAddon(addon) {
+            addon = Object.create(addon.QueryInterface(Ci.nsIUpdateItem));
 
             function getRdfProperty(item, property) {
                 let resource = services.rdf.GetResource("urn:mozilla:item:" + item.id);
@@ -471,6 +477,8 @@ else
 
             update(addon, {
 
+                get permissions() 1 | (this.userDisabled ? 2 : 4),
+
                 appDisabled: false,
 
                 installLocation: Class.memoize(function () services.extensionManager.getInstallLocation(this.id)),
@@ -491,15 +499,18 @@ else
                 }
             });
 
-            return callback(addon);
+            return addon;
         },
         getAddonsByTypes: function (types, callback) {
             let res = [];
             for (let [, type] in Iterator(types))
                 for (let [, item] in Iterator(services.extensionManager
                             .getItemList(Ci.nsIUpdateItem["TYPE_" + type.toUpperCase()], {})))
-                    res.push(this.getAddonByID(item));
-            return (callback || util.identity)(res);
+                    res.push(this.wrapAddon(item));
+
+            if (callback)
+                util.timeout(function () { callback(res); });
+            return res;
         },
         getInstallForFile: function (file, callback, mimetype) {
             callback({
@@ -512,6 +523,34 @@ else
         getInstallForURL: function (url, callback, mimetype) {
             dactyl.assert(false, "Install by URL not implemented");
         },
+        observers: [],
+        addAddonListener: function (listener) {
+            observer.listener = listener;
+            function observer(subject, topic, data) {
+                if (subject instanceof Ci.nsIUpdateItem)
+                    subject = AddonManager.wrapAddon(subject);
+
+                if (data === "item-installed")
+                    listener.onInstalling(subject, true);
+                else if (data === "item-uninstalled")
+                    listener.onUnistalling(subject, true);
+                else if (data === "item-upgraded")
+                    listener.onInstalling(subject, true);
+                else if (data === "item-enabled")
+                    listener.onEnabling(subject, true);
+                else if (data === "item-disabled")
+                    listener.onDisabling(subject, true);
+            }
+            services.observer.addObserver(observer, "em-action-requested", false);
+            this.observers.push(observer);
+        },
+        removeAddonListener: function (listener) {
+            this.observers = this.observers.filter(function (observer) {
+                if (observer.listener !== listener)
+                    return true;
+                services.observer.removeObserver(observer, "em-action-requested");
+            });
+        }
     };
 
 var addonErrors = array.toObject([
@@ -522,15 +561,22 @@ var addonErrors = array.toObject([
 
 endModule();
 
-iter.forEach(properties(config.addon), function (prop) {
-    let desc = Object.getOwnPropertyDescriptor(config.addon, prop);
-    if (callable(desc.value))
-        Addon.prototype[prop] = function proxy() this.addon[prop].apply(this.addon, arguments);
-    else
-        Object.defineProperty(Addon.prototype, prop, {
-            get: function get_proxy() this.addon[prop],
-            set: function set_proxy(val) this.addon[prop] = val
-        });
+let iterator = properties(config.addon);
+if ("nsIUpdateItem" in Ci)
+    iterator = iter(iterator, properties(config.addon.__proto__));
+
+iter.forEach(iterator, function (prop) {
+    let desc = Object.getOwnPropertyDescriptor(config.addon, prop) ||
+               Object.getOwnPropertyDescriptor(config.addon.__proto__, prop);
+
+    if (!set.has(Addon.prototype, prop))
+        if (callable(desc.value))
+            Addon.prototype[prop] = function proxy() this.addon[prop].apply(this.addon, arguments);
+        else
+            Object.defineProperty(Addon.prototype, prop, {
+                get: function get_proxy() this.addon[prop],
+                set: function set_proxy(val) this.addon[prop] = val
+            });
 });
 
 } catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }

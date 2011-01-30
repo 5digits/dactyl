@@ -348,12 +348,15 @@ var Tabs = Module("tabs", {
      *     reloading.
      */
     reload: function (tab, bypassCache) {
-        if (bypassCache) {
-            const flags = Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_PROXY | Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
-            config.tabbrowser.getBrowserForTab(tab).reloadWithFlags(flags);
+        try {
+            if (bypassCache) {
+                const flags = Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_PROXY | Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
+                config.tabbrowser.getBrowserForTab(tab).reloadWithFlags(flags);
+            }
+            else
+                config.tabbrowser.reloadTab(tab);
         }
-        else
-            config.tabbrowser.reloadTab(tab);
+        catch (e if !(e instanceof Error)) {}
     },
 
     /**

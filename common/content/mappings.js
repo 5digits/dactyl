@@ -703,7 +703,7 @@ var Mappings = Module("mappings", {
                 keepQuotes: true,
                 options: [
                     {
-                        names: ["-description", "-d"],
+                        names: ["-description", "-desc", "-d"],
                         description: "A description of this mapping group",
                         type: CommandOption.STRING
                     },
