@@ -1303,9 +1303,8 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        let left = "dactylScrollDestX" in elem ? elem.dactylScrollDestX : elem.scrollLeft;
-        if ("dactylScrollDestX" in elem)
-            delete elem.dactylScrollDestX;
+        let left = elem.dactylScrollDestX !== undefined ? elem.dactylScrollDestX : elem.scrollLeft;
+        elem.dactylScrollDestX = undefined;
 
         dactyl.assert(number < 0 ? left > 0 : left < elem.scrollWidth - elem.clientWidth);
         Buffer.scrollTo(elem, left + number * increment, null);
@@ -1332,9 +1331,8 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
-        let top = "dactylScrollDestY" in elem ? elem.dactylScrollDestY : elem.scrollTop;
-        if ("dactylScrollDestY" in elem)
-            delete elem.dactylScrollDestY;
+        let top = elem.dactylScrollDestY !== undefined ? elem.dactylScrollDestY : elem.scrollTop;
+        elem.dactylScrollDestY = undefined;
 
         dactyl.assert(number < 0 ? top > 0 : top < elem.scrollHeight - elem.clientHeight);
         Buffer.scrollTo(elem, null, top + number * increment);

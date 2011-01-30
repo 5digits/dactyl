@@ -1011,8 +1011,7 @@ var Events = Module("events", {
         */
 
         input: function onInput(event) {
-            if ("dactylKeyPress" in event.originalTarget)
-                delete event.originalTarget.dactylKeyPress;
+            event.originalTarget.dactylKeyPress = undefined;
         },
 
         // this keypress handler gets always called first, even if e.g.
@@ -1027,7 +1026,7 @@ var Events = Module("events", {
                 let elem = event.originalTarget;
                 elem.dactylKeyPress = elem.value;
                 util.timeout(function () {
-                    if ("dactylKeyPress" in elem && elem.value !== elem.dactylKeyPress)
+                    if (elem.value !== elem.dactylKeyPress)
                         events.dispatch(elem, events.create(elem.ownerDocument, "input"));
                     delete events.dactylKeyPress;
                 });
