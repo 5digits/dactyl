@@ -520,8 +520,8 @@ var Bookmarks = Module("bookmarks", {
                     commandline.input("This will delete all bookmarks. Would you like to continue? (yes/[no]) ",
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
-                                Object.keys(bookmarkcache.bookmarks).forEach(function (id) { services.bookmarks.removeItem(id); });
-                                dactyl.echomsg("All bookmarks deleted", 1, commandline.FORCE_SINGLELINE);
+                                bookmarks.remove(Object.keys(bookmarkcache.bookmarks));
+                                dactyl.echomsg("All bookmarks deleted");
                             }
                         });
                 else {
@@ -534,8 +534,7 @@ var Bookmarks = Module("bookmarks", {
                         var deletedCount = bookmarks.remove(context.allItems.items.map(function (item) item.item.id));
                     }
 
-                    dactyl.echomsg({ message: deletedCount + " bookmark(s) deleted" },
-                                   1, commandline.FORCE_SINGLELINE);
+                    dactyl.echomsg({ message: deletedCount + " bookmark(s) deleted" });
                 }
 
             },

@@ -760,14 +760,21 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {XMLHttpRequest}
      */
     httpGet: function httpGet(url, callback, self) {
+        let params = callback;
+        if (!isObject(params))
+            params = { callback: params && function () callback.apply(self, arguments) };
+
         try {
             let xmlhttp = services.Xmlhttp();
             xmlhttp.mozBackgroundRequest = true;
-            if (callback) {
-                xmlhttp.onload = function handler(event) { util.trapErrors(callback, self, xmlhttp, event) };
+            if (params.callback) {
+                xmlhttp.onload = function handler(event) { util.trapErrors(params.callback, params, xmlhttp, event) };
                 xmlhttp.onerror = xmlhttp.onload;
             }
-            xmlhttp.open("GET", url, !!callback);
+            if (params.mimeType)
+                xmlhttp.overrideMimeType(params.mimeType);
+
+            xmlhttp.open(params.method || "GET", url, !!params.callback, params.user, params.pass);
             xmlhttp.send(null);
             return xmlhttp;
         }

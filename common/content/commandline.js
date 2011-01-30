@@ -430,7 +430,7 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
 
 var CommandPromptMode = Class("CommandPromptMode", CommandMode, {
     init: function init(prompt, params) {
-        this.prompt = prompt;
+        this.prompt = isArray(prompt) ? prompt : ["Question", prompt];
         update(this, params);
         init.supercall(this);
     },
@@ -752,7 +752,7 @@ var CommandLine = Module("commandline", {
     input: function _input(prompt, callback, extra) {
         extra = extra || {};
 
-        CommandPromptMode(prompt, extra).open();
+        CommandPromptMode(prompt, update({ onSubmit: callback }, extra)).open();
     },
 
     readHeredoc: function readHeredoc(end) {

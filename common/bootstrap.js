@@ -32,6 +32,7 @@ function reportError(e) {
 
 function httpGet(url) {
     let xmlhttp = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
+    xmlhttp.overrideMimeType("text/plain");
     xmlhttp.open("GET", url, false);
     xmlhttp.send(null);
     return xmlhttp;
