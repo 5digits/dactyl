@@ -110,7 +110,7 @@ var actions = {
         name: "extr[ehash]",
         description: "Reload an extension",
         action: function (addon) {
-            dactyl.assert(dactyl.has("Gecko2"), "This command is not useful in this version of " + config.host);
+            util.assert(util.haveGecko("2b"), "This command is not useful in this version of " + config.host);
             util.timeout(function () {
                 addon.userDisabled = true;
                 addon.userDisabled = false;
@@ -521,7 +521,7 @@ else
             });
         },
         getInstallForURL: function (url, callback, mimetype) {
-            dactyl.assert(false, "Install by URL not implemented");
+            util.assert(false, "Install by URL not implemented");
         },
         observers: [],
         addAddonListener: function (listener) {
