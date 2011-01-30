@@ -2036,13 +2036,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         dactyl.log("All modules loaded", 3);
 
         try {
-            if (services.fuel)
-                var args = services.fuel.storage.get("dactyl.commandlineArgs", null);
-            if (!args) {
-                let commandline = services.commandLineHandler.optionValue;
-                if (commandline)
-                    args = dactyl.parseCommandLine(commandline);
-            }
+            var args = services.fuel && services.fuel.storage.get("dactyl.commandlineArgs", null)
+                    || services.commandLineHandler.optionValue;
+            if (isString(args))
+                args = dactyl.parseCommandLine(args);
+
             if (args) {
                 dactyl.commandLineOptions.rcFile = args["+u"];
                 dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
@@ -2112,7 +2110,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 }
 
                 if (dactyl.commandLineOptions.rcFile == "NONE" || dactyl.commandLineOptions.noPlugins)
-                    options["loadplugins"] = false;
+                    options["loadplugins"] = [];
 
                 if (options["loadplugins"])
                     dactyl.loadPlugins();

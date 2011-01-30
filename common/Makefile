@@ -13,6 +13,8 @@ MOZMILL       = mozmill
 HOSTAPP_PATH  = $(shell which $(HOSTAPP))
 TEST_DIR      = $(BASE)/tests/functional
 
+IDNAME       := $(shell echo "$(NAME)" | tr a-z A-Z)
+
 LOCALEDIR     = locale
 DOC_FILES     = $(wildcard $(LOCALEDIR)/*/*.xml)
 
@@ -164,7 +166,8 @@ distclean:
 # TODO: generalize log path
 test: xpi
 	@echo "Running functional tests..."
-	$(MOZMILL) --show-all -l /tmp/dactyl-test.log -b $(HOSTAPP_PATH) --addons $(XPI) -t $(TEST_DIR)
+	$(IDNAME)_INIT="set loadplugins=" \
+		$(MOZMILL) --show-all -l /tmp/dactyl-test.log -b $(HOSTAPP_PATH) --addons $(XPI) -t $(TEST_DIR)
 
 #### xpi
 

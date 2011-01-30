@@ -48,9 +48,10 @@ function Controller(controller) {
     this._counBeep = function countBeep() {
         self.beepCount++;
     }
+    this.errors = [];
     this._countError = function countError(message, highlight) {
         if (/\bErrorMsg\b/.test(highlight))
-            self.errorMessageCount++;
+            self.errors.push(String(message));
     }
     this.dactyl.dactyl.registerObserver("beep", this._countBeep);
     this.dactyl.dactyl.registerObserver("echoLine", this._countError);
@@ -69,7 +70,6 @@ Controller.prototype = {
 
     beepCount: 0,
     errorCount: 0,
-    errorMessageCount: 0,
 
     /**
      * Asserts that an error message is displayed during the execution
@@ -83,10 +83,10 @@ Controller.prototype = {
      * @param {string} message The message to display upon assertion failure. @optional
      */
     assertMessageError: function (func, self, args, message) {
-        let errorCount = this.errorMessageCount;
+        let errorCount = this.errors.length;
         this.assertNoErrors(func, self, args, message);
         // dump("assertMessageError " + errorCount + " " + this.errorMessageCount + "\n");
-        return utils.assert('dactyl.assertMessageError', this.errorMessageCount > errorCount,
+        return utils.assert('dactyl.assertMessageError', this.errors.length > errorCount,
                             "Expected error but got none" + (message ? ": " + message : ""));
     },
 
@@ -213,7 +213,7 @@ Controller.prototype = {
      */
     assertNoErrorMessages: function (func, self, args, message) {
         let msg = message ? ": " + message : "";
-        let count = this.errorMessageCount;
+        let count = this.errors.length;
 
         try {
             func.apply(self || this, args || []);
@@ -222,8 +222,9 @@ Controller.prototype = {
             this.dactyl.util.reportError(e);
         }
 
-        return utils.assertEqual('dactyl.assertNoErrorMessages', count, this.errorMessageCount,
-                                 "Error messsages were reported" + msg);
+        return utils.assertEqual('dactyl.assertNoErrorMessages', count, this.errors.length,
+                                 "Error messsages were reported" + msg + ":\n\t" +
+                                 this.errors.slice(count).join("\n\t"));
     },
 
     /**

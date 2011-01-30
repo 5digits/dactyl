@@ -133,9 +133,9 @@ var QuickMarks = Module("quickmarks", {
                     quickmarks.remove(args[0]);
             },
             {
+                argCount: "?",
                 bang: true,
-                completer: function (context) completion.quickmark(context),
-                literal: 0
+                completer: function (context) completion.quickmark(context)
             });
 
         commands.add(["qma[rk]"],
@@ -171,8 +171,8 @@ var QuickMarks = Module("quickmarks", {
             function (args) {
                 quickmarks.list(args[0] || "");
             }, {
+                argCount: "?",
                 completer: function (context) completion.quickmark(context),
-                literal: 0
             });
     },
     completion: function () {

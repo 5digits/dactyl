@@ -78,9 +78,10 @@ var tests = {
         error: ["", "some-non-existent-scheme"]
     },
     command: {
-        multiOutput: [""],
-        someOutput: ["foo"],
+        init: ["comclear"],
+        lineOutput: ["", "foobar"],
         noOutput: ["foo bar", "-js bar baz"],
+        multiOutput: [""],
         error: ["foo bar", "-js bar baz"]
     },
     comclear: {
@@ -353,7 +354,9 @@ var tests = {
         complete: ["", "m "]
     },
     qmarks: {
-        init: ["delqmarks x"],
+        // init: ["delqmarks a-zA-Z0-9"],
+        // error: ["", "x"],
+        init: ["qmark x"],
         multiOutput: ["", "m", "x"],
         complete: [""]
     },
@@ -397,13 +400,36 @@ var tests = {
     },
     sanitize: {},
     saveas: {},
-    sbclose: {},
+    sbclose: {
+        noOutput: [""]
+    },
     scriptnames: {},
     set: {},
-    setglobal: {},
-    setlocal: {},
-    sidebar: {},
-    silent: {},
+    get setglobal() this.set,
+    get setlocal() this.set,
+    sidebar: {
+        error: ["!", ""],
+        noOutput: [
+            "! Add-ons",       "Add-ons",       "! Add-ons",
+            "! Bookmarks",     "Bookmarks",     "! Bookmarks",
+            "! Console",       "Console",       "! Console",
+            "! Downloads",     "Downloads",     "! Downloads",
+            "! History",       "History",       "! History",
+            "! Preferences",   "Preferences",   "! Preferences",
+            // "!" Previous sidebar isn't saved until the window loads.
+            //     We don't give it enough time.
+        ],
+        completions: ["", "! "]
+    },
+    silent: {
+        noOutput: [
+            "echo 'foo'",
+            "echo " + "foo\nbar".quote(),
+            "echoerr 'foo'",
+            "echoerr " + "foo\nbar".quote()
+        ],
+        completions: [""]
+    },
     source: {},
     stop: {},
     stopall: {},
@@ -424,10 +450,6 @@ var tests = {
     tabprevious: {},
     tabrewind: {},
     time: {},
-    tlistkeys: {},
-    tmap: {},
-    tmapclear: {},
-    tnoremap: {},
     toolbarhide: {},
     toolbarshow: {},
     toolbartoggle: {},
@@ -440,11 +462,6 @@ var tests = {
     verbose: {},
     version: {},
     viewsource: {},
-    vlistkeys: {},
-    vmap: {},
-    vmapclear: {},
-    vnoremap: {},
-    vunmap: {},
     winclose: {},
     window: {},
     winonly: {},
@@ -510,7 +527,7 @@ for (var val in Iterator(tests)) (function ([command, params]) {
         case "singleOutput":
             runCommands(command, testName, commands, function (cmd) {
                 dactyl.assertMessageLine(/./, "Expected command output: " + cmd);
-            }, true);
+            }, true && !params.errorsOk);
             break;
         case "multiOutput":
             runCommands(command, testName, commands, function (cmd) {
@@ -533,7 +550,6 @@ for (var val in Iterator(tests)) (function ([command, params]) {
                 commands.forEach(function (cmd) {
                     dactyl.assertNoErrorMessages(function () {
                         dactyl.runExCompletion(command + cmd.replace(/^(!?) ?/, "$1 "));
-                        controller.waitForPageLoad(controller.tabs.activeTab);
                     });
                 });
             });
