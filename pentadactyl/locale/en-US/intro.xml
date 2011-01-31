@@ -111,6 +111,11 @@
         Frequently asked questions.
     </li>
     <li>
+        <link topic="versions">Version information</link>:
+        A detailed list of differences between each of the released versions of
+        &dactyl.appName;.
+    </li>
+    <li>
         <link topic="index">Index</link>:
         An index of all commands and options.
     </li>

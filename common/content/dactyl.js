@@ -628,6 +628,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // Manually process main and overlay files, since XSLTProcessor and
             // XMLHttpRequest don't allow access to chrome documents.
             tagMap["all"] = tagMap["all.xml"] = "all";
+            tagMap["versions"] = tagMap["versions.xml"] = "versions";
             let files = findHelpFile("all").map(function (doc)
                     [f.value for (f in util.evaluateXPath("//dactyl:include/@href", doc))]);
 
