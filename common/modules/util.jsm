@@ -1162,8 +1162,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     parseForm: function parseForm(field) {
         function encode(name, value, param) {
             param = param ? "%s" : "";
-            if (post) // Seems wrong.
-                return encodeComponent(name + "=" + value + param);
+            if (post)
+                return name + "=" + encodeComponent(value + param);
             return encodeComponent(name) + "=" + encodeComponent(value) + param;
         }
 
