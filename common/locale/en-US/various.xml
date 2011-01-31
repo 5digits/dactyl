@@ -33,9 +33,9 @@
 
 <item>
     <tags>:fk :feedkeys</tags>
-    <spec>feedkeys<oa>!</oa></spec>
+    <spec>feedkeys<oa>!</oa> <a>keys</a></spec>
     <description>
-        <p>Fake key events.</p>
+        <p>Fake key events. If <oa>!</oa> is given then recursive mappings are not allowed.</p>
 
         <dl>
             <dt>-mode</dt> <dd>The mode in which to feed the keys (short name <em>-m</em>)</dd>
