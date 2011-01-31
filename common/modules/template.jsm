@@ -199,7 +199,7 @@ var Template = Module("Template", {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         type = type || (/^'.*'$/.test(topic) ? "HelpOpt" :
                         /^:\w/.test(topic)   ? "HelpEx"  : "HelpKey");
-        return <a highlight={type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>
+        return <a highlight={type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>;
     },
     HelpLink: function (topic) {
         if (!services["dactyl:"].initialized)
@@ -212,7 +212,7 @@ var Template = Module("Template", {
         let tag = (/^'.*'$/.test(topic) ? "o" :
                    /^:\w/.test(topic)   ? "ex"  : "k");
         topic = topic.replace(/^'(.*)'$/, "$1");
-        return <{tag} xmlns={NS}>{topic}</{tag}>
+        return <{tag} xmlns={NS}>{topic}</{tag}>;
     },
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
@@ -382,7 +382,7 @@ var Template = Module("Template", {
             href={url} path={path} line={frame.lineNumber}
             highlight="URL">{
             path + ":" + frame.lineNumber
-        }</a>
+        }</a>;
     },
 
     table: function table(title, data, indent) {

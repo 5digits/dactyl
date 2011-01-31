@@ -849,7 +849,7 @@ var Options = Module("options", {
                         {template.linkifyHelp(map.description)}
                 </>)
             }
-        }
+        };
 
         dactyl.addUsageCommand({
             name: ["listo[ptions]", "lo"],

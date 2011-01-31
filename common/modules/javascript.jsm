@@ -9,7 +9,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("javascript", {
     exports: ["JavaScript", "javascript"],
-    use: ["services", "template", "util"],
+    use: ["services", "template", "util"]
 }, this);
 
 // TODO: Clean this up.
@@ -18,7 +18,7 @@ var JavaScript = Module("javascript", {
     Local: function (dactyl, modules, window) ({
         init: function () {
             this.modules = modules;
-            this.window = window
+            this.window = window;
 
             this._stack = [];
             this._functions = [];

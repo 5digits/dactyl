@@ -605,7 +605,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         ["1h",      "Past hour"],
                         ["1d",      "Past day"],
                         ["1w",      "Past week"]
-                    ]
+                    ];
                 },
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
             });

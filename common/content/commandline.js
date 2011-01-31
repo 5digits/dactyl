@@ -265,7 +265,7 @@ var CommandWidgets = Class("CommandWidgets", {
             }
         });
         let res, self = this;
-        return Class.replaceProperty(this, name, this[name])
+        return Class.replaceProperty(this, name, this[name]);
     },
 
     get completionList() this._whenReady("completionList", "dactyl-completions"),
@@ -299,7 +299,6 @@ var CommandWidgets = Class("CommandWidgets", {
         return elem;
     }
 });
-
 
 var CommandMode = Class("CommandMode", {
     init: function init() {
@@ -600,7 +599,7 @@ var CommandLine = Module("commandline", {
     },
 
     get lastCommand() this._lastCommand || this.command,
-    set lastCommand(val) { this._lastCommand = val },
+    set lastCommand(val) { this._lastCommand = val; },
 
     clear: function clear() {
         if (this.widgets.message && this.widgets.message[1] === this._lastClearable)

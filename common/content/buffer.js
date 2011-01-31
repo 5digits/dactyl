@@ -1535,7 +1535,7 @@ var Buffer = Module("buffer", {
 
         commands.add(["st[op]"],
             "Stop loading the current web page",
-            function () { buffer.stop() },
+            function () { buffer.stop(); },
             { argCount: "0" });
 
         commands.add(["vie[wsource]"],

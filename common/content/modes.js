@@ -140,8 +140,8 @@ var Modes = Module("modes", {
                 : "PASS THROUGH (next)"
         }, {
             // Fix me.
-            preExecute: function (map) { if (modes.main == modes.QUOTE && map.name !== "<C-v>") modes.pop() },
-            postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop() },
+            preExecute: function (map) { if (modes.main == modes.QUOTE && map.name !== "<C-v>") modes.pop(); },
+            postExecute: function (map) { if (modes.main == modes.QUOTE && map.name === "<C-v>") modes.pop(); },
             onKeyPress: function () { if (modes.main == modes.QUOTE) modes.pop() }
         });
         this.addMode("IGNORE", { hidden: true }, {
@@ -484,7 +484,7 @@ var Modes = Module("modes", {
 
         mappings.add([modes.MENU], ["<C-[>"],
             "Close the current popup",
-            function () { events.feedkeys("<Esc>") });
+            function () { events.feedkeys("<Esc>"); });
     },
     prefs: function () {
         prefs.watch("accessibility.browsewithcaret", modes.closure.onCaretChange);

@@ -149,7 +149,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
         this.processors = processors;
 
-        return this.execute(result, options["timeout"] && options["timeoutlen"] === 0)
+        return this.execute(result, options["timeout"] && options["timeoutlen"] === 0);
     }
 });
 
@@ -191,7 +191,7 @@ var KeyProcessor = Class("KeyProcessor", {
                 if (self.preExecute)
                     self.preExecute.apply(self, args);
                 let res = map.execute.call(map, update({ self: self.main.params.mappingSelf || self.main.mappingSelf || map },
-                                                       args))
+                                                       args));
                 if (self.postExecute)
                     self.postExecute.apply(self, args);
                 return res;
@@ -596,7 +596,7 @@ var Events = Module("events", {
         var t = TYPES[type];
         var evt = doc.createEvent((t || "HTML") + "Events");
 
-        let defaults = DEFAULTS[t || "HTML"]
+        let defaults = DEFAULTS[t || "HTML"];
         evt["init" + t + "Event"].apply(evt, Object.keys(defaults)
                                                    .map(function (k) k in opts ? opts[k]
                                                                                : defaults[k]));

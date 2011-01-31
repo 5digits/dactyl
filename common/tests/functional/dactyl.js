@@ -435,21 +435,21 @@ Controller.prototype = {
     /**
      * Opens the output message window by echoing a single newline character.
      */
-    openMessageWindow: wrapAssertNoErrors(function() {
+    openMessageWindow: wrapAssertNoErrors(function () {
         this.dactyl.dactyl.echo("\n");
     }, "Opening message window"),
 
     /**
      * Clears the current message.
      */
-    clearMessage: function() {
+    clearMessage: function () {
         this.elements.message.value = ""; // XXX
     },
 
     /**
      * Closes the output message window if open.
      */
-    closeMessageWindow: wrapAssertNoErrors(function() {
+    closeMessageWindow: wrapAssertNoErrors(function () {
         for (let i = 0; i < 15 && !this.elements.multilineContainer.collapsed; i++)
             this.controller.keypress(null, "VK_ESCAPE", {});
         this.assertMessageWindowOpen(false, "Clearing message window failed");

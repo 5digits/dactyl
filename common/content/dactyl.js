@@ -165,7 +165,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         }
                         catch (e if e.message == "can't wrap XML objects") {
                             // Horrible kludge.
-                            callback.get().apply(null, [String(args[0])].concat(args.slice(1)))
+                            callback.get().apply(null, [String(args[0])].concat(args.slice(1)));
                         }
                     }
                     catch (e) {
@@ -213,7 +213,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 for (let obj in values(results))
                     if (obj.helpTag in services["dactyl:"].HELP_TAGS)
                         yield dactyl.generateHelp(obj, null, null, true);
-            }
+            };
     },
 
     /**
@@ -227,7 +227,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             let elems = {
                 bell: document.getElementById("dactyl-bell"),
                 strut: document.getElementById("dactyl-bell-strut")
-            }
+            };
             XML.ignoreWhitespace = true;
             if (!elems.bell)
                 util.overlayWindow(window, {
@@ -609,13 +609,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     }
                 }
                 return result;
-            }
+            };
             // Find the tags in the document.
             let addTags = function addTags(file, doc) {
                 for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
                     for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
                         tagMap[tag] = file;
-            }
+            };
 
             let namespaces = ["locale-local", "locale"];
             services["dactyl:"].init({});
@@ -759,7 +759,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                         {rec(NEWS, 0)}
                     </document>.toXMLString()))
-                ]
+                ];
             }
             addTags("versions", util.httpGet("dactyl://help/versions").responseXML);
 
@@ -925,8 +925,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     k.@name = name;
                 if (mode)
                     k.@mode = mode;
-                return k
-            }
+                return k;
+            };
         }
         else if (obj instanceof Option) {
             link = function (opt, name) <o>{name}</o>;

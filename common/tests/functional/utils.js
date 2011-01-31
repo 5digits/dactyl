@@ -32,14 +32,14 @@ for (var [k, v] in Iterator({
 
     assert: function (funcName, value, comment)
         test(value, {
-            function: funcName, 
+            function: funcName,
             value: toJSON(value),
             comment: toJSON(comment)
         }),
 
     assertEqual: function (funcName, want, got, comment)
         test(want == got, {
-            function: funcName, 
+            function: funcName,
             want: toJSON(want), got: toJSON(got),
             comment: toJSON(comment)
         })

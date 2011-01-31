@@ -103,7 +103,7 @@ var Map = Class("Map", {
         if (!isObject(args)) // Backwards compatibility :(
             args = iter(["motion", "count", "arg", "command"])
                 .map(function ([i, prop]) [prop, this[i]], arguments)
-                .toObject()
+                .toObject();
 
         let self = this;
         function repeat() self.action(args)
@@ -284,7 +284,7 @@ var MapHive = Class("MapHive", {
                     for (let key in events.iterKeys(name)) {
                         state += key;
                         if (state !== name)
-                            states.candidates[state] = (states.candidates[state] || 0) + 1
+                            states.candidates[state] = (states.candidates[state] || 0) + 1;
                     }
                 }
             return states;
@@ -329,7 +329,6 @@ var Mappings = Module("mappings", {
     hasMap: deprecated("mappings.user.has", function hasMap(mode, cmd) this.user.has(mode, cmd)),
     remove: deprecated("mappings.user.remove", function remove(mode, cmd) this.user.remove(mode, cmd)),
     removeAll: deprecated("mappings.user.clear", function removeAll(mode) this.user.clear(mode)),
-
 
     /**
      * Adds a new default key mapping.
@@ -534,7 +533,7 @@ var Mappings = Module("mappings", {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
                             description: "Create this mapping in the given modes",
-                            default: mapmodes || ["n", "v"],
+                            default: mapmodes || ["n", "v"]
                         }),
                         {
                             names: ["-nopersist", "-n"],
@@ -693,7 +692,7 @@ var Mappings = Module("mappings", {
                         Option.splitList(context.filter);
                         context.advance(Option._splitAt);
 
-                        context.compare = CompletionContext.Sort.unsorted
+                        context.compare = CompletionContext.Sort.unsorted;
                         context.completions = [
                             [buffer.uri.host, "Current Host"],
                             [buffer.uri.spec, "Current Page"]
@@ -788,7 +787,7 @@ var Mappings = Module("mappings", {
                                         name: name,
                                         columns: [
                                             mode == mainMode ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
-                                            hive.name == "builtin" ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>,
+                                            hive.name == "builtin" ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>
                                         ],
                                         __proto__: map
                                     };

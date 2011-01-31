@@ -144,7 +144,7 @@ var MOW = Module("mow", {
             const openLink = function openLink(where) {
                 event.preventDefault();
                 dactyl.open(event.target.href, where);
-            }
+            };
 
             if (event.target instanceof HTMLAnchorElement)
                 switch (events.toString(event)) {
@@ -297,7 +297,7 @@ var MOW = Module("mow", {
                     else if (res === PASS)
                         events.feedkeys(command);
                 });
-        }
+        };
 
         bind(["j", "<C-e>", "<Down>"], "Scroll down one line",
              function () { mow.scrollVertical("lines", 1); },
@@ -333,10 +333,10 @@ var MOW = Module("mow", {
              function () mow.isScrollable(-1), BEEP);
 
         bind(["gg"], "Scroll to the beginning of output",
-             function () { mow.scrollToPercent(null, 0); })
+             function () { mow.scrollToPercent(null, 0); });
 
         bind(["G"], "Scroll to the end of output",
-             function () { mow.body.scrollTop = mow.body.scrollHeight; })
+             function () { mow.body.scrollTop = mow.body.scrollHeight; });
 
         // copy text to clipboard
         bind(["<C-y>"], "Yank selection to clipboard",

@@ -324,7 +324,7 @@ var Command = Class("Command", {
         if (callable(params))
             var makeParams = function makeParams(self, args)
                 iter.toObject([k, process(v)]
-                               for ([k, v] in iter(params.apply(self, args))))
+                               for ([k, v] in iter(params.apply(self, args))));
         else if (params)
             makeParams = function makeParams(self, args)
                 iter.toObject([name, process(args[i])]
@@ -800,7 +800,7 @@ var Commands = Module("commands", {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
                     completeOpts = options.filter(function (opt) opt.multiple || !set.has(args, opt.names[0]));
-            }
+            };
             let resetCompletions = function resetCompletions() {
                 completeOpts = null;
                 args.completeArg = null;
@@ -808,7 +808,7 @@ var Commands = Module("commands", {
                 args.completeFilter = null;
                 args.completeStart = i;
                 args.quote = Commands.complQuote[""];
-            }
+            };
             if (complete) {
                 resetCompletions();
                 matchOpts("");
@@ -820,7 +820,7 @@ var Commands = Module("commands", {
                     complete.message = error;
                 else
                     dactyl.assert(false, error);
-            }
+            };
 
             outer:
             while (i < str.length || complete) {

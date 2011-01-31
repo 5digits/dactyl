@@ -267,7 +267,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     restore: function (branch) {
         this.getNames(this.RESTORE + (branch || "")).forEach(function (pref) {
-            this.safeSet(pref.substr(this.RESTORE.length), this.get(pref), null, true)
+            this.safeSet(pref.substr(this.RESTORE.length), this.get(pref), null, true);
             this.reset(pref);
         }, this);
     },

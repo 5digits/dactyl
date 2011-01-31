@@ -135,7 +135,6 @@ var actions = {
     }
 };
 
-
 var Addon = Class("Addon", {
     init: function init(addon, list) {
         this.addon = addon;
@@ -248,7 +247,6 @@ var Addon = Class("Addon", {
         set: function set_proxy(val) this.addon[prop] = val
     });
 });
-
 
 var AddonList = Class("AddonList", {
     init: function init(modules, types, filter) {
