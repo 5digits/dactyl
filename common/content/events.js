@@ -499,7 +499,8 @@ var Events = Module("events", {
      * @param {string} keys A string like "2<C-f>" to push onto the event
      *     queue. If you want "<" to be taken literally, prepend it with a
      *     "\\".
-     * @param {boolean} noremap Allow recursive mappings.
+     * @param {boolean} noremap Whether recursive mappings should be
+     *     disallowed.
      * @param {boolean} silent Whether the command should be echoed to the
      *     command line.
      * @returns {boolean}
