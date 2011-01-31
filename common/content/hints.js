@@ -52,6 +52,32 @@ var HintSession = Class("HintSession", CommandMode, {
             this.checkUnique();
     },
 
+    Hint: {
+        get active() this._active,
+        set active(val) {
+            this._active = val;
+            if (val)
+                this.span.setAttribute("active", true);
+            else
+                this.span.removeAttribute("active");
+
+            hints.setClass(this.elem, this.valid ? val : null);
+            if (this.imgSpan)
+                hints.setClass(this.imgSpan, this.valid ? val : null);
+        },
+
+        get valid() this._valid,
+        set valid(val) {
+            this._valid = val,
+
+            this.span.style.display = (val ? "" : "none");
+            if (this.imgSpan)
+                this.imgSpan.style.display = (val ? "" : "none");
+
+            this.active = this.active;
+        }
+    },
+
     get mode() modes.HINTS,
 
     get prompt() ["Question", UTF8(this.hintMode.prompt) + ": "],
@@ -257,7 +283,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
             let start = this.pageHints.length;
             for (let elem in res) {
-                let hint = { elem: elem, showText: false };
+                let hint = { elem: elem, showText: false, __proto__: this.Hint };
 
                 if (!isVisible(elem) || mode.filter && !mode.filter(elem))
                     continue;
@@ -313,7 +339,7 @@ var HintSession = Class("HintSession", CommandMode, {
      *
      * @param {Event} event The keypress event.
      */
-    onChange: function onInput(event) {
+    onChange: function onChange(event) {
         this.prevInput = "text";
 
         this.clearTimeout();
@@ -350,10 +376,13 @@ var HintSession = Class("HintSession", CommandMode, {
 
             this.updateStatusline();
 
-            if (this.docs.length == 0) {
+            if (this.docs.length)
+                this.updateValidNumbers();
+            else {
                 this.generate();
                 this.show();
             }
+
             this.showActiveHint(this.hintNumber, oldHintNumber || 1);
 
             dactyl.assert(this.hintNumber != 0);
@@ -418,7 +447,13 @@ var HintSession = Class("HintSession", CommandMode, {
         let n = 5;
         (function next() {
             let hinted = n || this.validHints.some(function (h) h.elem === elem);
-            this.setClass(elem, n ? n % 2 : !hinted ? null : this.validHints[Math.max(0, this.hintNumber-1)].elem === elem);
+            if (!hinted)
+                hints.setClass(elem, null);
+            else if (n)
+                hints.setClass(elem, n % 2);
+            else
+                hints.setClass(elem, this.validHints[Math.max(0, this.hintNumber-1)].elem === elem);
+
             if (n--)
                 this.timeout(next, 50);
         }).call(this);
@@ -454,7 +489,7 @@ var HintSession = Class("HintSession", CommandMode, {
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1))
-                this.setClass(this.pageHints[i].elem, null);
+                this.pageHints[i].valid = false;
         }
         styles.system.remove("hint-positions");
 
@@ -479,28 +514,6 @@ var HintSession = Class("HintSession", CommandMode, {
     },
 
     /**
-     * Toggle the highlight of a hint.
-     *
-     * @param {Object} elem The element to toggle.
-     * @param {boolean} active Whether it is the currently active hint or not.
-     */
-    setClass: function _setClass(elem, active) {
-        if (elem.dactylHighlight == null)
-            elem.dactylHighlight = elem.getAttributeNS(NS, "highlight") || "";
-
-        let prefix = (elem.getAttributeNS(NS, "hl") || "") + " " + elem.dactylHighlight + " ";
-        if (active)
-            highlight.highlightNode(elem, prefix + "HintActive");
-        else if (active != null)
-            highlight.highlightNode(elem, prefix + "HintElem");
-        else {
-            highlight.highlightNode(elem, elem.dactylHighlight);
-            // delete elem.dactylHighlight fails on Gecko 1.9. Issue #197
-            elem.dactylHighlight = null;
-        }
-    },
-
-    /**
      * Display the hints in pageHints that are still valid.
      */
     show: function _show() {
@@ -516,15 +529,9 @@ var HintSession = Class("HintSession", CommandMode, {
             for (let i in (util.interruptibleRange(start, end + 1, 500))) {
                 let hint = this.pageHints[i];
 
-                let valid = validHint(hint.text);
-                hint.span.style.display = (valid ? "" : "none");
-                if (hint.imgSpan)
-                    hint.imgSpan.style.display = (valid ? "" : "none");
-
-                if (!valid) {
-                    this.setClass(hint.elem, null);
+                hint.valid = validHint(hint.text);
+                if (!hint.valid)
                     continue inner;
-                }
 
                 if (hint.text == "" && hint.elem.firstChild && hint.elem.firstChild instanceof HTMLImageElement) {
                     if (!hint.imgSpan) {
@@ -540,7 +547,6 @@ var HintSession = Class("HintSession", CommandMode, {
                         hint.imgSpan.style.height = (rect.bottom - rect.top) + "px";
                         hint.span.parentNode.appendChild(hint.imgSpan);
                     }
-                    this.setClass(hint.imgSpan, activeHint == hintnum);
                 }
 
                 let str = this.getHintString(hintnum);
@@ -557,8 +563,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 hint.span.setAttribute("number", str);
                 if (hint.imgSpan)
                     hint.imgSpan.setAttribute("number", str);
-                else
-                    this.setClass(hint.elem, activeHint == hintnum);
+                hint.active = activeHint == hintnum;
                 this.validHints.push(hint);
                 hintnum++;
             }
@@ -589,16 +594,12 @@ var HintSession = Class("HintSession", CommandMode, {
      */
     showActiveHint: function _showActiveHint(newId, oldId) {
         let oldHint = this.validHints[oldId - 1];
-        if (oldHint) {
-            this.setClass(oldHint.elem, false);
-            oldHint.span.removeAttribute("active");
-        }
+        if (oldHint)
+            oldHint.active = false;
 
         let newHint = this.validHints[newId - 1];
-        if (newHint) {
-            this.setClass(newHint.elem, true);
-            newHint.span.setAttribute("active", "true");
-        }
+        if (newHint)
+            newHint.active = true;
     },
 
     backspace: function () {
@@ -618,6 +619,12 @@ var HintSession = Class("HintSession", CommandMode, {
             dactyl.beep();
         }
         return Events.KILL;
+    },
+
+    updateValidNumbers: function updateValidNumbers() {
+        let re = RegExp(util.regexp.escape(this.getHintString(this.hintNumber)) + "$");
+        for (let hint in values(this.validHints))
+            hint.valid = re.test(hint.span.getAttribute("number"));
     },
 
     tab: function tab(previous) {
@@ -971,6 +978,28 @@ var Hints = Module("hints", {
                 modes.pop();
             },
         });
+    },
+
+    /**
+     * Toggle the highlight of a hint.
+     *
+     * @param {Object} elem The element to toggle.
+     * @param {boolean} active Whether it is the currently active hint or not.
+     */
+    setClass: function _setClass(elem, active) {
+        if (elem.dactylHighlight == null)
+            elem.dactylHighlight = elem.getAttributeNS(NS, "highlight") || "";
+
+        let prefix = (elem.getAttributeNS(NS, "hl") || "") + " " + elem.dactylHighlight + " ";
+        if (active)
+            highlight.highlightNode(elem, prefix + "HintActive");
+        else if (active != null)
+            highlight.highlightNode(elem, prefix + "HintElem");
+        else {
+            highlight.highlightNode(elem, elem.dactylHighlight);
+            // delete elem.dactylHighlight fails on Gecko 1.9. Issue #197
+            elem.dactylHighlight = null;
+        }
     },
 
     show: function show(mode, opts) {
