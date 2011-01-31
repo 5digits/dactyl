@@ -327,7 +327,8 @@ var File = Class("File", {
      */
     child: function (name) {
         let f = this.constructor(this);
-        f.QueryInterface(Ci.nsILocalFile).appendRelativePath(name);
+        for each (let elem in name.split(File.pathSplit))
+            f.append(elem);
         return f;
     },
 
@@ -502,6 +503,8 @@ var File = Class("File", {
         f.append("foo");
         return f.path.substr(f.parent.path.length, 1);
     }),
+
+    pathSplit: Class.memoize(function () util.regexp("(?:/|" + util.regexp.escape(this.PATH_SEP) + ")", "g")),
 
     DoesNotExist: function (path, error) ({
         path: path,
