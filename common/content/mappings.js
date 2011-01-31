@@ -767,7 +767,7 @@ var Mappings = Module("mappings", {
                 literal: 0,
                 options: [
                     update({}, modeFlag, {
-                        description: "The in which to feed the keys"
+                        description: "The mode in which to feed the keys"
                     })
                 ]
             });
