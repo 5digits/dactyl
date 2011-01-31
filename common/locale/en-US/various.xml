@@ -35,7 +35,11 @@
     <tags>:fk :feedkeys</tags>
     <spec>feedkeys<oa>!</oa> <a>keys</a></spec>
     <description>
-        <p>Fake key events. If <oa>!</oa> is given then recursive mappings are not allowed.</p>
+        <p>
+            Fake key events. If <oa>!</oa> is given, key remappings are
+            ignored, similarly to the <t>:map</t> command's <em>-builtin</em>
+            option.
+        </p>
 
         <dl>
             <dt>-mode</dt> <dd>The mode in which to feed the keys (short name <em>-m</em>)</dd>
