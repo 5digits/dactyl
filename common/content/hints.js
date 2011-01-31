@@ -622,9 +622,9 @@ var HintSession = Class("HintSession", CommandMode, {
     },
 
     updateValidNumbers: function updateValidNumbers() {
-        let re = RegExp(util.regexp.escape(this.getHintString(this.hintNumber)) + "$");
+        let string = this.getHintString(this.hintNumber);
         for (let hint in values(this.validHints))
-            hint.valid = re.test(hint.span.getAttribute("number"));
+            hint.valid = hint.span.getAttribute("number").indexOf(string) == 0;
     },
 
     tab: function tab(previous) {
