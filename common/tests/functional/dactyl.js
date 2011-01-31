@@ -45,7 +45,7 @@ function Controller(controller) {
 
     this.errorCount = 0;
 
-    this._counBeep = function countBeep() {
+    this._countBeep = function countBeep() {
         self.beepCount++;
     }
     this.errors = [];
