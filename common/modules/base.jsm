@@ -365,7 +365,8 @@ set.add = function (set, key) {
  * @param {string} key The key to check.
  * @returns {boolean}
  */
-set.has = function (set, key) hasOwnProperty.call(set, key);
+set.has = function (set, key) hasOwnProperty.call(set, key) &&
+               objproto.propertyIsEnumerable.call(set, key);
 /**
  * Returns a new set containing the members of the first argument which
  * do not exist in any of the other given arguments.
