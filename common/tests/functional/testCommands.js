@@ -1,15 +1,19 @@
 // Runs a slew of generic command tests
 
 var dactyllib = require("dactyl");
+var utils = require("utils");
+
+const { module } = utils;
+var jumlib = module("resource://mozmill/modules/jum.js");
 
 var setupModule = function (module) {
     controller = mozmill.getBrowserController();
     dactyl = new dactyllib.Controller(controller);
 
-    dactyl.dactyl.options["autocomplete"] = [];
-    dactyl.dactyl.options["wildmode"] = ["list"];
+    dactyl.modules.options["autocomplete"] = [];
+    dactyl.modules.options["wildmode"] = ["list"];
 
-    dactyl.dactyl.prefs.set("browser.tabs.closeWindowWithLastTab", false);
+    dactyl.modules.prefs.set("browser.tabs.closeWindowWithLastTab", false);
 };
 var teardownModule = function (module) {
     dactyl.teardown();
@@ -118,8 +122,13 @@ var tests = {
         multiOutput: ["", "dactyl", "dactyl"]
     },
     echo: {
-        singleOutput: ["' - '"],
-        multiOutput: ["'\\n'", "window"],
+        singleOutput: [
+            ["' - '", " - "]
+        ],
+        multiOutput: [
+            ["'\\n'", /\n/],
+            ["window", /\[object\sChromeWindow\]/]
+        ],
         completions: [
             "",
             "window",
@@ -145,16 +154,22 @@ var tests = {
         noOutput: ["", "'js " + "".quote() + "'"],
         someOutput: ["'ls'"]
     },
-    extadd: { error: [""] },
-    extdelete: { error: [""] },
-    extdisable: { error: [""] },
-    extenable: { error: [""] },
-    extoptions: { error: [""] },
-    extrehash: { error: [""] },
-    exttoggle: { error: [""] },
-    extupdate: { error: [""] },
+    extadd: {
+        completions: [""],
+        error: [""]
+    },
+    extdelete: {
+        completions: [""],
+        error: [""]
+    },
+    get extdisable() this.extdelete,
+    get extenable() this.extdelete,
+    get extoptions() this.extdelete,
+    get extrehash() this.extdelete,
+    get exttoggle() this.extdelete,
+    get extupdate() this.extdelete,
     feedkeys: {
-        noOutput: ["<Exc>"],
+        noOutput: ["<Esc>"],
         error: [""]
     },
     finish: { noOutput: [""] },
@@ -223,7 +238,7 @@ var tests = {
     loadplugins: {},
     macros: {
         multiOutput: [""],
-        complete: [""]
+        completeions: [""]
     },
     map: {
         multiOutput: ["", "i"],
@@ -240,7 +255,7 @@ var tests = {
             "-mode=some-nonexistent-mode <C-a> <C-a>",
             "-gtroup=some-nonexistent-group <C-a> <C-a>"
         ],
-        complete: [
+        completeions: [
             "",
             "-",
             "-mode=ex ",
@@ -253,7 +268,7 @@ var tests = {
     },
     mapclear: {
         noOutput: [""],
-        complete: [""]
+        completeions: [""]
     },
     mapgroup: {
         multiOutput: [""],
@@ -267,7 +282,7 @@ var tests = {
             "some-nonexistent-group",
             "foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'"
         ],
-        complete: [
+        completeions: [
             "",
             "foo "
         ],
@@ -276,13 +291,13 @@ var tests = {
     mark: {
         error: ["", "#", "xy"],
         noOutput: ["y"],
-        complete: [""]
+        completeions: [""]
     },
     marks: {
         init: ["delmarks q"],
         multiOutput: ["", "y"],
         error: ["q", "#"],
-        complete: [""]
+        completeions: [""]
     },
     messages: {
         anyOutput: ["messages"]
@@ -297,7 +312,7 @@ var tests = {
             "! some-nonexistent-rc.penta"
         ],
         error: ["some-nonexistent-rc.penta"],
-        complete: [""],
+        completeions: [""],
         cleanup: ["silent !rm some-nonexistent-rc.penta"]
     },
     mksyntax: {
@@ -311,7 +326,7 @@ var tests = {
             "some-nonexistent-pentadactyl-dir/",
             "some-nonexistent-pentadactyl-dir/foo.vim"
         ],
-        complete: [""],
+        completeions: [""],
         cleanup: ["silent !rm -r some-nonexistent-pentadactyl-dir/"]
     },
     normal: {
@@ -321,7 +336,7 @@ var tests = {
     },
     open: {
         noOutput: ["about:blank | about:home"],
-        complete: [
+        completions: [
             "",
             "./",
             "./ | ",
@@ -335,11 +350,11 @@ var tests = {
     },
     pageinfo: {
         multiOutput: ["", "fgm"],
-        complete: [""],
+        completions: [""],
         error: ["abcdefghijklmnopqrstuvwxyz", "f g m"]
     },
     pagestyle: {
-        complete: [""]
+        completions: [""]
     },
     preferences: {}, // Skip for now
     pwd: {
@@ -351,15 +366,19 @@ var tests = {
             "m foo bar"
         ],
         error: ["", "#"],
-        complete: ["", "m "]
+        completions: ["", "m "]
     },
-    qmarks: {
-        // init: ["delqmarks a-zA-Z0-9"],
-        // error: ["", "x"],
-        init: ["qmark x"],
-        multiOutput: ["", "m", "x"],
-        complete: [""]
-    },
+    qmarks: [
+        {
+            init: ["delqmarks a-zA-Z0-9"],
+            error: ["", "x"],
+        },
+        {
+            init: ["qmark x"],
+            multiOutput: ["", "m", "x"],
+            completions: [""]
+        }
+    ],
     quit: {}, // Skip for now
     quitall: {}, // Skip for now
     redraw: {
@@ -392,13 +411,21 @@ var tests = {
             "some-nonexistent/bad.penta"
         ],
         singleOutput: ["some-nonexistent-file.js"],
-        complete: [
+        completions: [
             "",
             "plugins/",
             "info/"
         ]
     },
-    sanitize: {},
+    sanitize: {
+        // Skip details for now.
+        completions: [
+            "",
+            "-",
+            "-host=",
+            "-timespan="
+        ]
+    },
     saveas: {},
     sbclose: {
         noOutput: [""]
@@ -478,8 +505,10 @@ function addTest(cmdName, testName, func) {
 
 function runCommands(cmdName, testName, commands, test, forbidErrors) {
     addTest(cmdName, testName, function () {
-        commands.forEach(function (cmd) {
-            // dump("CMD: " + cmdName + " " + cmd + "\n");
+        commands.forEach(function (val) {
+            var [cmd, testVal] = Array.concat(val);
+
+            // dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
             dactyl.clearMessage();
             dactyl.closeMessageWindow();
 
@@ -491,74 +520,104 @@ function runCommands(cmdName, testName, commands, test, forbidErrors) {
                 dactyl.runExCommand(cmd);
             controller.waitForPageLoad(controller.tabs.activeTab);
 
-            test(cmd);
+            test(cmd, testVal);
         });
     });
 }
 function _runCommands(cmdName, testName, commands) {
     addTest(cmdName, testName, function () {
-        commands.forEach(function (cmd) {
-            dactyl.runExCommand(cmd);
+        commands.forEach(function (value) {
+            var [cmd, test] = Array.concat(value);
+
+            // dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
+            var res = dactyl.runExCommand(cmd);
             controller.waitForPageLoad(controller.tabs.activeTab);
+            if (test)
+                jumlib.assert(test(), "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
         });
     });
 }
 
-for (var val in Iterator(tests)) (function ([command, params]) {
-    if (params.init)
-        _runCommands(command, "init", params.init, function () {});
+for (var val in Iterator(tests)) (function ([command, paramsList]) {
+    Array.concat(paramsList).forEach(function (params, i) {
+        if (params.init)
+            _runCommands(command, "init" + (i || ""), params.init);
 
-    // Goddamn stupid fucking MozMill and its stupid fucking sandboxes with their ancient fucking JS versions.
-    for (var val in Iterator(params)) (function ([testName, commands]) {
-        switch (testName) {
-        case "noOutput":
-            runCommands(command, testName, commands, function (cmd) {
-                dactyl.assertMessage(function (msg) !msg, "Unexpected command output: " + cmd);
-            });
-            break;
-        case "anyOutput":
-            runCommands(command, testName, commands, function (cmd) {});
-            break;
-        case "someOutput":
-            runCommands(command, testName, commands, function (cmd) {
-                dactyl.assertMessage(/./, "Expected command output: " + cmd);
-            });
-            break;
-        case "singleOutput":
-            runCommands(command, testName, commands, function (cmd) {
-                dactyl.assertMessageLine(/./, "Expected command output: " + cmd);
-            }, true && !params.errorsOk);
-            break;
-        case "multiOutput":
-            runCommands(command, testName, commands, function (cmd) {
-                dactyl.assertMessageWindowOpen(true, "Expected command output: " + cmd);
-            }, true && !params.errorsOk);
-            break;
-        case "error":
-            addTest(command, testName, function () {
-                commands.forEach(function (cmd) {
-                    cmd = command + cmd.replace(/^(!?) ?/, "$1 ");
-                    dactyl.assertMessageError(function () {
-                        dactyl.runExCommand(cmd);
-                        controller.waitForPageLoad(controller.tabs.activeTab);
-                    }, null, [], cmd);
+        // Goddamn stupid fucking MozMill and its stupid fucking sandboxes with their ancient fucking JS versions.
+        for (var val in Iterator(params)) (function ([test, commands]) {
+            var testName = test + (i || "");
+
+            switch (test) {
+            case "noOutput":
+                runCommands(command, testName, commands, function (cmd, test) {
+                    var res = dactyl.assertMessage(function (msg) !msg, "Unexpected command output: " + cmd);
+                    if (res && test)
+                        jumlib.assert(test(), "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
                 });
-            });
-            break;
-        case "completions":
-            addTest(command, testName, function () {
-                commands.forEach(function (cmd) {
-                    dactyl.assertNoErrorMessages(function () {
-                        dactyl.runExCompletion(command + cmd.replace(/^(!?) ?/, "$1 "));
+                break;
+            case "anyOutput":
+                runCommands(command, testName, commands, function (cmd, test) {
+                    if (test)
+                        jumlib.assert(test(), "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
+                });
+                break;
+            case "someOutput":
+                runCommands(command, testName, commands, function (cmd, test) {
+                    var res = dactyl.assertMessage(/./, "Expected command output: " + cmd);
+                    if (res && res && test != null)
+                        dactyl.assertMessage(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
+                });
+                break;
+            case "singleOutput":
+                runCommands(command, testName, commands, function (cmd, test) {
+                    var res = dactyl.assertMessageLine(/./, "Expected command output: " + cmd);
+                    if (res && test != null)
+                        dactyl.assertMessageLine(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
+                }, true && !params.errorsOk);
+                break;
+            case "multiOutput":
+                runCommands(command, testName, commands, function (cmd, test) {
+                    var res = dactyl.assertMessageWindowOpen(true, "Expected command output: " + cmd);
+                    if (res && test != null)
+                        dactyl.assertMessageWindow(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
+                }, true && !params.errorsOk);
+                break;
+            case "error":
+                addTest(command, testName, function () {
+                    commands.forEach(function (val) {
+                        var [cmd, test] = Array.concat(val);
+                        cmd = command + cmd.replace(/^(!?) ?/, "$1 ");
+
+                        var res = dactyl.assertMessageError(function () {
+                            dactyl.runExCommand(cmd);
+                            controller.waitForPageLoad(controller.tabs.activeTab);
+                        }, null, [], cmd);
+
+                        if (res && test != null)
+                            dactyl.runExCommand(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
                     });
                 });
-            });
-            break;
-        }
-    })(val);
+                break;
+            case "completions":
+                addTest(command, testName, function () {
+                    commands.forEach(function (val) {
+                        var [cmd, test] = Array.concat(val);
 
-    if (params.cleanup)
-        _runCommands(command, "cleanup", params.cleanup, function () {});
+                        dactyl.assertNoErrorMessages(function () {
+                            dactyl.runExCompletion(command + cmd.replace(/^(!?) ?/, "$1 "));
+                            if (test)
+                                jumlib.assert(test(dactyl.modules.commandline.commandSession.completions.context),
+                                              "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
+                        });
+                    });
+                });
+                break;
+            }
+        })(val);
+
+        if (params.cleanup)
+            _runCommands(command, "cleanup" + (i || ""), params.cleanup);
+    });
 })(val);
 
 // vim: sw=4 ts=8 et:

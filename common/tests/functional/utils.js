@@ -11,8 +11,9 @@ var jumlib = module("resource://mozmill/modules/jum.js");
 function toJSON(val) {
     if (typeof val == "function")
         return val.toSource();
-    else
-        return val;
+    if (val instanceof Ci.nsIDOMNode || val instanceof Ci.nsIDOMWindow)
+        return { DOMNode: String(val) };
+    return val;
 }
 
 function test(val, params) {

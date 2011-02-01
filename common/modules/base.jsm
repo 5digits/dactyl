@@ -1001,9 +1001,9 @@ var Timer = Class("Timer", {
         this.latest = 0;
     },
 
-    notify: function (timer) {
+    notify: function (timer, force) {
         try {
-            if (util.rehashing || typeof util === "undefined")
+            if (util.rehashing || typeof util === "undefined" || !force && this.doneAt == 0)
                 return;
 
             this._timer.cancel();
@@ -1051,7 +1051,7 @@ var Timer = Class("Timer", {
 
     flush: function (force) {
         if (this.doneAt == -1 || force)
-            this.notify();
+            this.notify(null, true);
     }
 });
 

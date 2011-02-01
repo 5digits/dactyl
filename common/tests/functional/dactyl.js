@@ -41,7 +41,7 @@ function Controller(controller) {
      * @property {object} The dactyl modules namespace, to be used
      * sparingly in tests.
      */
-    this.dactyl = controller.window.dactyl.modules;
+    this.modules = controller.window.dactyl.modules;
 
     this.errorCount = 0;
 
@@ -53,9 +53,9 @@ function Controller(controller) {
         if (/\bErrorMsg\b/.test(highlight))
             self.errors.push(String(message));
     }
-    this.dactyl.dactyl.registerObserver("beep", this._countBeep);
-    this.dactyl.dactyl.registerObserver("echoLine", this._countError);
-    this.dactyl.dactyl.registerObserver("echoMultiline", this._countError);
+    this.modules.dactyl.registerObserver("beep", this._countBeep);
+    this.modules.dactyl.registerObserver("echoLine", this._countError);
+    this.modules.dactyl.registerObserver("echoMultiline", this._countError);
 
     this.resetErrorCount();
 }
@@ -63,9 +63,9 @@ function Controller(controller) {
 Controller.prototype = {
 
     teardown: function () {
-        this.dactyl.dactyl.unregisterObserver("beep", this._countBeep);
-        this.dactyl.dactyl.unregisterObserver("echoLine", this._countError);
-        this.dactyl.dactyl.unregisterObserver("echoMultiline", this._countError);
+        this.modules.dactyl.unregisterObserver("beep", this._countBeep);
+        this.modules.dactyl.unregisterObserver("echoLine", this._countError);
+        this.modules.dactyl.unregisterObserver("echoMultiline", this._countError);
     },
 
     beepCount: 0,
@@ -172,29 +172,29 @@ Controller.prototype = {
         let beepCount = this.beepCount;
         let errorCount = this.errorCount;
         if (func) {
-            errorCount = this.dactyl.util.errorCount;
+            errorCount = this.modules.util.errorCount;
 
             try {
                 func.apply(self || this, args || []);
             }
             catch (e) {
-                this.dactyl.util.reportError(e);
+                this.modules.util.reportError(e);
             }
         }
 
         if (this.beepCount > beepCount)
-            this.frame.log({
+            frame.log({
                 function: "dactyl.beepMonitor",
                 want: beepCount, got: this.beepCount,
                 comment: "Got " + (this.beepCount - beepCount) + " beeps during execution" + msg
             });
 
-        if (errorCount != this.dactyl.util.errorCount)
-            var errors = this.dactyl.util.errors.slice(errorCount - this.dactyl.util.errorCount)
+        if (errorCount != this.modules.util.errorCount)
+            var errors = this.modules.util.errors.slice(errorCount - this.modules.util.errorCount)
                              .join("\n");
 
         return utils.assertEqual('dactyl.assertNoErrors',
-                                 errorCount, this.dactyl.util.errorCount,
+                                 errorCount, this.modules.util.errorCount,
                                  "Errors were reported during the execution of this test" + msg + "\n" + errors);
     },
 
@@ -219,7 +219,7 @@ Controller.prototype = {
             func.apply(self || this, args || []);
         }
         catch (e) {
-            this.dactyl.util.reportError(e);
+            this.modules.util.reportError(e);
         }
 
         return utils.assertEqual('dactyl.assertNoErrorMessages', count, this.errors.length,
@@ -232,7 +232,7 @@ Controller.prototype = {
      * reported during the execution of a test.
      */
     resetErrorCount: function () {
-        this.errorCount = this.dactyl.util.errorCount;
+        this.errorCount = this.modules.util.errorCount;
     },
 
     /**
@@ -263,7 +263,7 @@ Controller.prototype = {
      * @property {string} The name of dactyl's current key handling
      * mode.
      */
-    get currentMode() this.dactyl.modes.main.name,
+    get currentMode() this.modules.modes.main.name,
 
     /**
      * @property {object} A map of dactyl widgets to be used sparingly
@@ -273,7 +273,7 @@ Controller.prototype = {
         /**
          * @property {HTMLInputElement} The command line's command input box
          */
-        get commandInput() self.dactyl.commandline.widgets.active.command.inputField,
+        get commandInput() self.modules.commandline.widgets.active.command.inputField,
         /**
          * @property {Node|null} The currently focused node.
          */
@@ -281,15 +281,15 @@ Controller.prototype = {
         /**
          * @property {HTMLInputElement} The message bar's command input box
          */
-        get message() self.dactyl.commandline.widgets.active.message,
+        get message() self.modules.commandline.widgets.active.message,
         /**
          * @property {Node} The multi-line output window.
          */
-        get multiline() self.dactyl.commandline.widgets.multilineOutput,
+        get multiline() self.modules.commandline.widgets.multilineOutput,
         /**
          * @property {Node} The multi-line output container.
          */
-        get multilineContainer() self.dactyl.commandline.widgets.mowContainer,
+        get multilineContainer() self.modules.commandline.widgets.mowContainer,
     }),
 
     /**
@@ -297,12 +297,12 @@ Controller.prototype = {
      */
     setNormalMode: wrapAssertNoErrors(function () {
         // XXX: Normal mode test
-        for (let i = 0; i < 15 && this.dactyl.modes.stack.length > 1; i++)
+        for (let i = 0; i < 15 && this.modules.modes.stack.length > 1; i++)
             this.controller.keypress(null, "VK_ESCAPE", {});
 
         this.controller.keypress(null, "l", { ctrlKey: true });
 
-        utils.assert("dactyl.setNormalMode", this.dactyl.modes.stack.length == 1,
+        utils.assert("dactyl.setNormalMode", this.modules.modes.stack.length == 1,
                      "Failed to return to Normal mode");
 
         this.assertMessageWindowOpen(false, "Returning to normal mode: Multi-line output not closed");
@@ -352,11 +352,11 @@ Controller.prototype = {
         try {
             // Force async commands to wait for their output to be ready
             // before returning.
-            this.dactyl.commandline.savingOutput = true;
+            this.modules.commandline.savingOutput = true;
             if (args)
-                this.dactyl.ex[cmd](args);
+                this.modules.ex[cmd](args);
             else if (true)
-                this.dactyl.commands.execute(cmd, null, false, null,
+                this.modules.commands.execute(cmd, null, false, null,
                                              { file: "[Command Line]", line: 1 });
             else {
                 var doc = this.controller.window.document;
@@ -367,7 +367,7 @@ Controller.prototype = {
             }
         }
         finally {
-            this.dactyl.commandline.savingOutput = false;
+            this.modules.commandline.savingOutput = false;
         }
     }),
 
@@ -406,10 +406,10 @@ Controller.prototype = {
         this.controller.keypress(null, "VK_TAB", {});
 
         // XXX
-        if (this.dactyl.commandline._tabTimer)
-            this.dactyl.commandline._tabTimer.flush();
-        else if (this.dactyl.commandline.commandSession && this.dactyl.commandline.commandSession.completions)
-            this.dactyl.commandline.commandSession.completions.tabTimer.flush();
+        if (this.modules.commandline._tabTimer)
+            this.modules.commandline._tabTimer.flush();
+        else if (this.modules.commandline.commandSession && this.modules.commandline.commandSession.completions)
+            this.modules.commandline.commandSession.completions.tabTimer.flush();
     }),
 
     /**
@@ -436,7 +436,7 @@ Controller.prototype = {
      * Opens the output message window by echoing a single newline character.
      */
     openMessageWindow: wrapAssertNoErrors(function () {
-        this.dactyl.dactyl.echo("\n");
+        this.modules.dactyl.echo("\n");
     }, "Opening message window"),
 
     /**
@@ -458,7 +458,7 @@ Controller.prototype = {
     /**
      * @property {string} The specific Dactyl application. Eg. Pentadactyl
      */
-    get applicationName() this.dactyl.config.appName // XXX
+    get applicationName() this.modules.config.appName // XXX
 };
 
 exports.Controller = Controller;
