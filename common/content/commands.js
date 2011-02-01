@@ -1022,35 +1022,35 @@ var Commands = Module("commands", {
 
     nameRegexp: util.regexp(<![CDATA[
             [^
-                \x30-\x39 // 0-9
+                0-9
                 <forbid>
             ]
             [^ <forbid> ]*
         ]]>, "", {
-        forbid: util.regexp(<![CDATA[
-            \x00-\x2c // \x2d -
-            \x2e-\x2f
-            \x3a-\x40 // \x41-\x5a a-z
-            \x5b-\x60 // \x61-\x7a A-Z
-            \x7b-\xbf
-            \u02b0-\u02ff // Spacing Modifier Letters
-            \u0300-\u036f // Combining Diacritical Marks
-            \u1dc0-\u1dff // Combining Diacritical Marks Supplement
-            \u2000-\u206f // General Punctuation
-            \u20a0-\u20cf // Currency Symbols
-            \u20d0-\u20ff // Combining Diacritical Marks for Symbols
-            \u2400-\u243f // Control Pictures
-            \u2440-\u245f // Optical Character Recognition
-            \u2500-\u257f // Box Drawing
-            \u2580-\u259f // Block Elements
-            \u2700-\u27bf // Dingbats
-            \ufe20-\ufe2f // Combining Half Marks
-            \ufe30-\ufe4f // CJK Compatibility Forms
-            \ufe50-\ufe6f // Small Form Variants
-            \ufe70-\ufeff // Arabic Presentation Forms-B
-            \uff00-\uffef // Halfwidth and Fullwidth Forms
-            \ufff0-\uffff // Specials
-        ]]>)
+        forbid: util.regexp(String.replace(<![CDATA[
+            U0000-U002c // U002d -
+            U002e-U002f
+            U003a-U0040 // U0041-U005a a-z
+            U005b-U0060 // U0061-U007a A-Z
+            U007b-U00bf
+            U02b0-U02ff // Spacing Modifier Letters
+            U0300-U036f // Combining Diacritical Marks
+            U1dc0-U1dff // Combining Diacritical Marks Supplement
+            U2000-U206f // General Punctuation
+            U20a0-U20cf // Currency Symbols
+            U20d0-U20ff // Combining Diacritical Marks for Symbols
+            U2400-U243f // Control Pictures
+            U2440-U245f // Optical Character Recognition
+            U2500-U257f // Box Drawing
+            U2580-U259f // Block Elements
+            U2700-U27bf // Dingbats
+            Ufe20-Ufe2f // Combining Half Marks
+            Ufe30-Ufe4f // CJK Compatibility Forms
+            Ufe50-Ufe6f // Small Form Variants
+            Ufe70-Ufeff // Arabic Presentation Forms-B
+            Uff00-Uffef // Halfwidth and Fullwidth Forms
+            Ufff0-Uffff // Specials
+        ]]>, /U/g, "\\u"))
     }),
 
     validName: Class.memoize(function () util.regexp("^" + this.nameRegexp.source + "$")),
