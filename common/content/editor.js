@@ -387,6 +387,38 @@ var Editor = Module("editor", {
         }
     },
 }, {
+    extendRange: function extendRange(range, forward, re, sameWord) {
+        // FIXME: This could be so much simpler if I had more sleep.
+        function advance(positive) {
+            let tmp = range.cloneRange();
+            while (tmp.endOffset < nodeRange.endOffset) {
+                tmp.setEnd(tmp.endContainer, tmp.endOffset + 1);
+                if (!re.test(String.slice(tmp, -1)) == positive)
+                    break;
+                range.setEnd(tmp.endContainer, tmp.endOffset);
+            }
+        }
+        function retreat(positive) {
+            let tmp = range.cloneRange();
+            while (tmp.startOffset > 0) {
+                tmp.setStart(tmp.startContainer, tmp.startOffset - 1);
+                if (re.test(String(tmp)[0]) == positive)
+                    break;
+                range.setStart(tmp.startContainer, tmp.startOffset);
+            }
+        }
+
+        let nodeRange = range.cloneRange();
+        nodeRange.selectNodeContents(range.startContainer);
+
+        let charge = forward ? advance : retreat;
+
+        charge(true);
+        if (!sameWord || !forward)
+            charge(false);
+        return range;
+    },
+
     getEditor: function (elem) {
         if (arguments.length === 0) {
             dactyl.assert(dactyl.focusedElement);
@@ -520,35 +552,8 @@ var Editor = Module("editor", {
         }
 
         function updateRange(editor, forward, re, modify) {
-            // FIXME: This could be so much simpler if I had more sleep.
-            function advance(positive) {
-                let tmp = range.cloneRange();
-                while (tmp.endOffset < nodeRange.endOffset) {
-                    tmp.setEnd(tmp.endContainer, tmp.endOffset + 1);
-                    if (!re.test(String.slice(tmp, -1)) == positive)
-                        break;
-                    range.setEnd(tmp.endContainer, tmp.endOffset);
-                }
-            }
-            function retreat(positive) {
-                let tmp = range.cloneRange();
-                while (tmp.startOffset > 0) {
-                    tmp.setStart(tmp.startContainer, tmp.startOffset - 1);
-                    if (re.test(String(tmp)[0]) == positive)
-                        break;
-                    range.setStart(tmp.startContainer, tmp.startOffset);
-                }
-            }
-
-            let range = editor.selection.getRangeAt(0).cloneRange();
-            let nodeRange = range.cloneRange();
-            nodeRange.selectNodeContents(range.startContainer);
-
-            let charge = forward ? advance : retreat;
-
-            charge(true);
-            charge(false);
-
+            let range = Editor.extendRange(editor.selection.getRangeAt(0),
+                                           forward, re, false);
             modify(range);
             editor.selection.removeAllRanges();
             editor.selection.addRange(range);
@@ -749,7 +754,7 @@ var Editor = Module("editor", {
                     modes.pop();
                 }
                 else
-                    dactyl.clipboardWrite(buffer.getCurrentWord(), true);
+                    dactyl.clipboardWrite(buffer.currentWord, true);
             });
 
         mappings.add([modes.VISUAL, modes.TEXT_EDIT],

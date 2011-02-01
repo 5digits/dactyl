@@ -517,32 +517,26 @@ var Buffer = Module("buffer", {
      * null, it tries to guess the word that the caret is
      * positioned in.
      *
-     * NOTE: might change the selection
-     *
      * @returns {string}
      */
     getCurrentWord: function (win) {
-        win = win || this.focusedFrame || content;
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
 
-        let range = selection.getRangeAt(0);
-        if (selection.isCollapsed) {
-            let controller = util.selectionController(win);
-            let caretmode = controller.getCaretEnabled();
-            controller.setCaretEnabled(true);
-
-            // Only move backwards if the previous character is not a space.
-            if (range.startOffset > 0 && !/\s/.test(range.startContainer.textContent[range.startOffset - 1]))
-                controller.wordMove(false, false);
-
-            controller.wordMove(true, true);
-            controller.setCaretEnabled(caretmode);
-            return String.match(selection, /\w*/)[0];
+        let range = selection.getRangeAt(0).cloneRange();
+        if (range.collapsed) {
+            let re = options.get("iskeyword").regexp;
+            util.dump(String.quote(range));
+            Editor.extendRange(range, true,  re, true);
+            util.dump(String.quote(range));
+            Editor.extendRange(range, false, re, true);
+            util.dump(String.quote(range) + "\n\n\n");
         }
         return util.domToString(range);
     },
+
+    get currentWord() this.getCurrentWord(this.focusedFrame),
 
     /**
      * Returns true if a scripts are allowed to focus the given input
@@ -1836,7 +1830,7 @@ var Buffer = Module("buffer", {
         mappings.add(myModes, ["Y", "<yank-word>"],
             "Copy selected text or current word",
             function () {
-                let sel = buffer.getCurrentWord();
+                let sel = buffer.currentWord;
                 dactyl.assert(sel);
                 dactyl.clipboardWrite(sel, true);
             });
@@ -1902,6 +1896,17 @@ var Buffer = Module("buffer", {
             function () { buffer.showPageInfo(true); });
     },
     options: function () {
+        options.add(["iskeyword", "isk"],
+            "Regular expression defining which characters constitute word characters",
+            "string", '[^\\s.,!?:;/"\'^$%&?()[\\]{}<>#*+|=~_-]',
+            {
+                setter: function (value) {
+                    this.regexp = util.regexp(value);
+                    return value;
+                },
+                validator: function (value) RegExp(value)
+            });
+
         options.add(["nextpattern"],
             "Patterns to use when guessing the next page in a document sequence",
             "regexplist", UTF8("'\\bnext\\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\\bmore\\b'"),
