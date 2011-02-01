@@ -388,34 +388,32 @@ var Editor = Module("editor", {
     },
 }, {
     extendRange: function extendRange(range, forward, re, sameWord) {
-        // FIXME: This could be so much simpler if I had more sleep.
+        util.dump("\n\n\n");
         function advance(positive) {
-            let tmp = range.cloneRange();
-            while (tmp.endOffset < nodeRange.endOffset) {
-                tmp.setEnd(tmp.endContainer, tmp.endOffset + 1);
-                if (!re.test(String.slice(tmp, -1)) == positive)
-                    break;
-                range.setEnd(tmp.endContainer, tmp.endOffset);
-            }
+            let idx = range.endOffset;
+            while (idx < text.length && re.test(text[idx++]) == positive)
+                range.setEnd(range.endContainer, idx);
         }
         function retreat(positive) {
-            let tmp = range.cloneRange();
-            while (tmp.startOffset > 0) {
-                tmp.setStart(tmp.startContainer, tmp.startOffset - 1);
-                if (re.test(String(tmp)[0]) == positive)
-                    break;
-                range.setStart(tmp.startContainer, tmp.startOffset);
-            }
+            let idx = range.startOffset;
+            while (idx > 0 && re.test(text[--idx]) == positive)
+                range.setStart(range.startContainer, idx);
         }
 
         let nodeRange = range.cloneRange();
         nodeRange.selectNodeContents(range.startContainer);
+        let text = String(nodeRange);
 
-        let charge = forward ? advance : retreat;
-
-        charge(true);
-        if (!sameWord || !forward)
-            charge(false);
+        if (forward) {
+            advance(true);
+            if (!sameWord);
+                advance(false);
+        }
+        else {
+            if (!sameWord)
+                retreat(false);
+            retreat(true);
+        }
         return range;
     },
 
