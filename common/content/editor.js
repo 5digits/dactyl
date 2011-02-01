@@ -59,10 +59,12 @@ var Editor = Module("editor", {
 
     // count is optional, defaults to 1
     executeCommand: function (cmd, count) {
+        let editor = Editor.getEditor(null);
         let controller = Editor.getController();
-        dactyl.assert(controller &&
-                      controller.supportsCommand(cmd) &&
-                      controller.isCommandEnabled(cmd));
+        dactyl.assert(callable(cmd) ||
+                          controller &&
+                          controller.supportsCommand(cmd) &&
+                          controller.isCommandEnabled(cmd));
 
         // XXX: better as a precondition
         if (count == null)
@@ -74,10 +76,14 @@ var Editor = Module("editor", {
             // at the beginning of the textarea, would hang the doCommand()
             // good thing is, we need this code anyway for proper beeping
             try {
-                controller.doCommand(cmd);
+                if (callable(cmd))
+                    cmd(editor);
+                else
+                    controller.doCommand(cmd);
                 didCommand = true;
             }
             catch (e) {
+                util.reportError(e);
                 dactyl.assert(didCommand);
                 break;
             }
@@ -457,11 +463,12 @@ var Editor = Module("editor", {
                     if (!count)
                         count = 1;
 
+                    let editor_ = Editor.getEditor(null);
                     let controller = buffer.selectionController;
                     while (count-- && modes.main == modes.VISUAL) {
                         if (editor.isTextEdit) {
-                            if (typeof visualTextEditCommand == "function")
-                                visualTextEditCommand();
+                            if (callable(visualTextEditCommand))
+                                visualTextEditCommand(editor_);
                             else
                                 editor.executeCommand(visualTextEditCommand);
                         }
@@ -512,13 +519,60 @@ var Editor = Module("editor", {
                 editor.executeCommand("cmd_selectLineNext");
         }
 
+        function updateRange(editor, forward, re, modify) {
+            // FIXME: This could be so much simpler if I had more sleep.
+            function advance(positive) {
+                let tmp = range.cloneRange();
+                while (tmp.endOffset < nodeRange.endOffset) {
+                    tmp.setEnd(tmp.endContainer, tmp.endOffset + 1);
+                    if (!re.test(String.slice(tmp, -1)) == positive)
+                        break;
+                    range.setEnd(tmp.endContainer, tmp.endOffset);
+                }
+            }
+            function retreat(positive) {
+                let tmp = range.cloneRange();
+                while (tmp.startOffset > 0) {
+                    tmp.setStart(tmp.startContainer, tmp.startOffset - 1);
+                    if (re.test(String(tmp)[0]) == positive)
+                        break;
+                    range.setStart(tmp.startContainer, tmp.startOffset);
+                }
+            }
+
+            let range = editor.selection.getRangeAt(0).cloneRange();
+            let nodeRange = range.cloneRange();
+            nodeRange.selectNodeContents(range.startContainer);
+
+            let charge = forward ? advance : retreat;
+
+            charge(true);
+            charge(false);
+
+            modify(range);
+            editor.selection.removeAllRanges();
+            editor.selection.addRange(range);
+        }
+        function move(forward, re)
+            function _move(editor) {
+                updateRange(editor, forward, re, function (range) { range.collapse(!forward); });
+            }
+        function select(forward, re)
+            function _select(editor) {
+                updateRange(editor, forward, re, function (range) {});
+            }
+
         //             KEYS                          COUNT  CARET                   TEXT_EDIT            VISUAL_TEXT_EDIT
         addMovementMap(["k", "<Up>"],                true,  "lineMove", false,      "cmd_linePrevious", selectPreviousLine);
         addMovementMap(["j", "<Down>", "<Return>"],  true,  "lineMove", true,       "cmd_lineNext",     selectNextLine);
         addMovementMap(["h", "<Left>", "<BS>"],      true,  "characterMove", false, "cmd_charPrevious", "cmd_selectCharPrevious");
         addMovementMap(["l", "<Right>", "<Space>"],  true,  "characterMove", true,  "cmd_charNext",     "cmd_selectCharNext");
-        addMovementMap(["b", "B", "<C-Left>"],       true,  "wordMove", false,      "cmd_wordPrevious", "cmd_selectWordPrevious");
-        addMovementMap(["w", "W", "e", "<C-Right>"], true,  "wordMove", true,       "cmd_wordNext",     "cmd_selectWordNext");
+        addMovementMap(["b", "<C-Left>"],            true,  "wordMove", false,      "cmd_wordPrevious", "cmd_selectWordPrevious");
+        addMovementMap(["w", "<C-Right>"],           true,  "wordMove", true,       "cmd_wordNext",     "cmd_selectWordNext");
+        addMovementMap(["B"],                        true,  "wordMove", false,      move(false, /\S/),  select(false, /\S/));
+        addMovementMap(["W"],                        true,  "wordMove", true,       move(true,  /\S/),  select(true,  /\S/));
+        addMovementMap(["e"],                        true,  "wordMove", false,      move(true,  /\W/),  select(true,  /\W/));
+        addMovementMap(["E"],                        true,  "wordMove", true,       move(true,  /\s/),  select(true,  /\s/));
         addMovementMap(["<C-f>", "<PageDown>"],      true,  "pageMove", true,       "cmd_movePageDown", "cmd_selectNextPage");
         addMovementMap(["<C-b>", "<PageUp>"],        true,  "pageMove", false,      "cmd_movePageUp",   "cmd_selectPreviousPage");
         addMovementMap(["gg", "<C-Home>"],           false, "completeMove", false,  "cmd_moveTop",      "cmd_selectTop");
