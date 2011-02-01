@@ -32,7 +32,8 @@ function checkPopup(event) {
         let elem = doc.getAnonymousElementByAttribute(binding, "anonid", "stillworks");
         if (elem && elem.nextSibling) {
             elem.nextSibling.disabled = true;
-            elem.nextSibling.setAttribute("tooltiptext", "Developer has opted out of incompatibility reports");
+            elem.nextSibling.setAttribute("tooltiptext", "Developer has opted out of incompatibility reports\n"+
+                                                         "Development versions are available with updated support");
         }
     }
 }

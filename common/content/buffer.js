@@ -161,7 +161,7 @@ var Buffer = Module("buffer", {
 
     getDefaultNames: function getDefaultNames(node) {
         let url = node.href || node.src || node.documentURI;
-        let currExt = url.replace(/.*(?:\.([a-z0-9]+))?$/, "$1").toLowerCase();
+        let currExt = url.replace(/^.*?(?:\.([a-z0-9]+))?$/i, "$1").toLowerCase();
 
         if (isinstance(node, [Document, HTMLImageElement])) {
             let type = node.contentType || node.QueryInterface(Ci.nsIImageLoadingContent)
@@ -173,7 +173,7 @@ var Buffer = Module("buffer", {
             ext = "." + currExt;
         else
             ext = "";
-        let re = ext ? RegExp("(\\." + currExt + ")?$") : /$/;
+        let re = ext ? RegExp("(\\." + currExt + ")?$", "i") : /$/;
 
         var names = [];
         if (node.title)
