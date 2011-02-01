@@ -95,6 +95,10 @@
         A description of informational and error messages.
     </li>
     <li>
+        <link topic="privacy">Privacy and sensitive information</link>:
+        How to manage your private data while browsing.
+    </li>
+    <li>
         <link topic="developer">Developer information</link>:
         How to write plugins and documentation.
     </li>

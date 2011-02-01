@@ -31,6 +31,7 @@
 <include href="gui" tag="gui.xml"/>
 <include href="styling" tag="styling.xml"/>
 <include href="message" tag="message.xml"/>
+<include href="privacy" tag="privacy.xml"/>
 <include href="developer" tag="developer.xml"/>
 <include href="various" tag="various.xml"/>
 <include href="plugins" tag="plugins.xml"/>

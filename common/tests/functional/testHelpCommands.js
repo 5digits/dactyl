@@ -17,8 +17,8 @@ var setupTest = function (test) {
 const HELP_FILES = ["all", "tutorial", "intro", "starting", "browsing",
     "buffer", "cmdline", "insert", "options", "pattern", "tabs", "hints",
     "map", "eval", "marks", "repeat", "autocommands", "print", "gui",
-    "styling", "message", "developer", "various", "plugins", "faq", "versions",
-    "index"];
+    "styling", "message", "privacy", "developer", "various", "plugins", "faq",
+    "versions", "index"];
 
 var testViHelpCommand_OpensIntroHelpPage = function () {
     assertHelpOpensPageWithTag({
