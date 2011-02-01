@@ -1536,10 +1536,19 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             this.yielders--;
         }
     },
+
     waitFor: function waitFor(test, self, timeout, interruptable) {
-        let end = timeout && Date.now() + timeout;
-        while ((!end || Date.now() < end) && !test.call(self))
-            this.threadYield(false, interruptable);
+        let end = timeout && Date.now() + timeout, result;
+
+        let timer = services.Timer(function () {}, 10, services.Timer.TYPE_REPEATING_SLACK);
+        try {
+            while (!(result = test.call(self)) && (!end || Date.now() < end))
+                this.threadYield(false, interruptable);
+        }
+        finally {
+            timer.cancel();
+        }
+        return result;
     },
 
     yieldable: function yieldable(func)

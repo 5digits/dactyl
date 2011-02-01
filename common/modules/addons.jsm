@@ -437,18 +437,32 @@ var Addons = Module("addons", {
                 context.completions = types.map(function (t) [t, util.capitalize(t)]);
             }
 
+            if (AddonManager.getAllAddons)
+                context.incomplete = true;
+
             context.generate = function generate() {
                 update(base);
-                if (AddonManager.getAllAddons) {
-                    context.incomplete = true;
+                if (AddonManager.getAllAddons)
                     AddonManager.getAllAddons(function (addons) {
                         context.incomplete = false;
                         update(array.uniq(base.concat(addons.map(function (a) a.type)),
                                           true));
                     });
-                }
             }
         }
+
+        completion.extension = function extension(context, types) {
+            context.title = ["Extension"];
+            context.anchored = false;
+            context.keys = { text: "name", description: "description", icon: "iconURL" },
+            context.incomplete = true;
+            context.generate = function () {
+                AddonManager.getAddonsByTypes(types || ["extension"], function (addons) {
+                    context.incomplete = false;
+                    context.completions = addons;
+                });
+            };
+        };
     }
 });
 

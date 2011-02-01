@@ -1989,19 +1989,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             context.completions = [[k, v[0], v[2]] for ([k, v] in Iterator(config.dialogs))];
         };
 
-        completion.extension = function extension(context) {
-            context.title = ["Extension"];
-            context.anchored = false;
-            context.keys = { text: "name", description: "description", icon: "iconURL" },
-            context.generate = function () {
-                context.incomplete = true;
-                AddonManager.getAddonsByTypes(["extension"], function (addons) {
-                    context.incomplete = false;
-                    context.completions = addons;
-                });
-            };
-        };
-
         completion.help = function help(context, unchunked) {
             dactyl.initHelp();
             context.title = ["Help"];

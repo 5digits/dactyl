@@ -798,14 +798,14 @@ var CompletionContext = Class("CompletionContext", {
     /**
      * Wait for all subcontexts to complete.
      *
-     * @param {boolean} interruptible When true, the call may be interrupted
-     *    via <C-c>, in which case, "Interrupted" may be thrown.
      * @param {number} timeout The maximum time, in milliseconds, to wait.
      *    If 0 or null, wait indefinitely.
+     * @param {boolean} interruptible When true, the call may be interrupted
+     *    via <C-c>, in which case, "Interrupted" may be thrown.
      */
-    wait: function wait(interruptable, timeout) {
-        util.waitFor(function () !this.incomplete, this, timeout);
-        return this.incomplete;
+    wait: function wait(timeout, interruptable) {
+        this.allItems;
+        return util.waitFor(function () !this.incomplete, this, timeout, interruptable);
     }
 }, {
     Sort: {
@@ -852,7 +852,7 @@ var Completion = Module("completion", {
                     return { items: res.map(function (i) ({ item: i })) };
                 context.contexts["/run"].completions = res;
             }
-            context.wait(true);
+            context.wait(null, true);
             return context.allItems;
         },
 
@@ -866,7 +866,7 @@ var Completion = Module("completion", {
             context.maxItems = maxItems;
             context.fork.apply(context, ["list", 0, this, name].concat(Array.slice(arguments, 3)));
             context = context.contexts["/list"];
-            context.wait();
+            context.wait(null, true);
 
             let contexts = context.contextList.filter(function (c) c.hasItems && c.items.length);
             if (!contexts.length)

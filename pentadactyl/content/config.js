@@ -281,10 +281,15 @@ var Config = Module("config", ConfigBase, {
         const { CompletionContext, bookmarkcache, bookmarks, completion } = modules;
         const { document } = window;
 
-        var searchRunning = false; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
+        var searchRunning = null; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
         completion.location = function location(context) {
             if (!services.autoCompleteSearch)
                 return;
+
+            if (searchRunning) {
+                searchRunning.completions = searchRunning.completions;
+                searchRunning.cancel();
+            }
 
             context.anchored = false;
             context.compare = CompletionContext.Sort.unsorted;
@@ -297,30 +302,27 @@ var Config = Module("config", ConfigBase, {
             context.title = ["Smart Completions"];
 
             context.cancel = function () {
-                if (searchRunning) {
+                this.incomplete = false;
+                if (searchRunning === this) {
                     services.autoCompleteSearch.stopSearch();
-                    searchRunning = false;
+                    searchRunning = null;
                 }
             };
-            if (searchRunning)
-                services.autoCompleteSearch.stopSearch();
-            let timer = new Timer(50, 100, function (result) {
-                context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
-                context.completions = [
-                    { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
-                    for (i in util.range(0, result.matchCount))
-                ];
-            });
+
             services.autoCompleteSearch.startSearch(context.filter, "", context.result, {
                 onSearchResult: function onSearchResult(search, result) {
-                    timer.tell(result);
-                    if (result.searchResult <= result.RESULT_SUCCESS) {
-                        searchRunning = false;
-                        timer.flush();
-                    }
-                }
+                    if (result.searchResult <= result.RESULT_SUCCESS)
+                        searchRunning = null;
+
+                    context.incomplete = result.searchResult >= result.RESULT_NOMATCH_ONGOING;
+                    context.completions = [
+                        { url: result.getValueAt(i), title: result.getCommentAt(i), icon: result.getImageAt(i) }
+                        for (i in util.range(0, result.matchCount))
+                    ];
+                },
+                get onUpdateSearchResult() this.onSearchResult
             });
-            searchRunning = true;
+            searchRunning = context;
         };
 
         completion.sidebar = function sidebar(context) {

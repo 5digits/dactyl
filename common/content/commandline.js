@@ -1418,7 +1418,7 @@ var CommandLine = Module("commandline", {
                  let command = commandline.command;
 
                  self.accepted = true;
-                 modes.pop();
+                 return function () modes.pop();
              });
 
         [

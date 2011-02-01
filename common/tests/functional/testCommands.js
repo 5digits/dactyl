@@ -19,6 +19,10 @@ var teardownModule = function (module) {
     dactyl.teardown();
 }
 
+function hasItems(context) context.allItems.items.length;
+function hasntNullItems(context) hasItems(context) &&
+    !context.allItems.items.some(function ({ text, description }) [text, description].some(function (text) /^\[object/.test(text)));
+
 var tests = {
     "!": {
         multiOutput: ["echo foo"]
@@ -32,18 +36,27 @@ var tests = {
         noOutput: [""]
     },
     addons: {
-        multiOutput: ["", "dactyl", "-type=extension", "-type=extension dactyl"]
+        multiOutput: ["", "dactyl", "-type=extension", "-type=extension dactyl"],
+        completions: [
+            "",
+            ["-types=", hasItems]
+        ]
     },
     autocmd: {
         multiOutput: ["", "DOMLoad", "DOMLoad foo"],
         noOutput: ["DOMLoad foo bar", "-js DOMLoad foo bar"],
-        completions: ["", "DOMLoad foo ", "-js DOMLoad foo "]
+        completions: [
+            ["", hasntNullItems],
+            "DOMLoad foo ",
+            "-js DOMLoad foo "
+        ]
     },
     back: { noOutput: [""] },
     bdelete: {
         init: ["tabopen about:pentadactyl", "tabopen about:pentadactyl"],
         noOutput: [""],
-        anyOutput: ["about:pentadactyl"]
+        anyOutput: ["about:pentadactyl"],
+        completions: [["", hasItems]]
     },
     bmark: {
         someOutput: ["bmark", "bmark -tags=foo -titlt=bar -keyword=baz -charset=UTF-8 -post=quux about:pentadactyl"],
@@ -52,7 +65,7 @@ var tests = {
             "-max=1 -keyword=",
             "-max=1 -keyword=foo -tags=",
             "-max=1 -keyword=foo -tags=bar -title=",
-            "-max=1 -keyword=foo -tags=bar -title=baz -charset=",
+            ["-max=1 -keyword=foo -tags=bar -title=baz -charset=", hasItems],
             "-max=1 -keyword=foo -tags=bar -title=baz -charset= about:"
         ]
     },
@@ -68,7 +81,10 @@ var tests = {
     buffer: {
         anyOutput: ["", "1"],
         noOutput: ["!", "! 1"],
-        completions: ["", "1"]
+        completions: [
+            ["", hasItems],
+            ["1", hasItems]
+        ]
     },
     buffers: {
         multiOutput: ["", "1"],
@@ -95,7 +111,10 @@ var tests = {
     cookies: {
         anyOutput: ["dactyl.sf.net", "dactyl.sf.net list"],
         error: [""],
-        completions: ["", "dactyl.sf.net "]
+        completions: [
+            "",
+            ["dactyl.sf.net ", hasItems]
+        ]
     },
     delbmarks: { anyOutput: ["", "about:pentadactyl"] },
     delcommand: {
@@ -114,7 +133,9 @@ var tests = {
     },
     dialog: {
         // Skip implementation for now
-        completions: ["", "pre"]
+        completions: [
+            ["", hasntNullItems]
+        ]
     },
     doautoall: {}, // Skip for now
     doautocmd: {}, // Skip for now
@@ -147,24 +168,34 @@ var tests = {
     emenu: {
         noOutput: ["View.Zoom.Zoom In", "View.Zoom.Zoom Out"],
         error: [""],
-        completions: ["", "View."]
+        completions: [
+            ["", hasItems],
+            ["View.", hasItems]
+        ]
     },
     endif: {}, // Skip for now
     execute: {
         noOutput: ["", "'js " + "".quote() + "'"],
-        someOutput: ["'ls'"]
+        someOutput: ["'ls'"],
+        completions: [["", hasItems]]
     },
     extadd: {
-        completions: [""],
+        completions: [["", hasItems]],
         error: [""]
     },
     extdelete: {
-        completions: [""],
+        completions: [["", hasItems]],
         error: [""]
     },
     get extdisable() this.extdelete,
-    get extenable() this.extdelete,
-    get extoptions() this.extdelete,
+    extenable: {
+        completions: [""],
+        error: [""]
+    },
+    extoptions: {
+        completions: [""],
+        error: [""]
+    },
     get extrehash() this.extdelete,
     get exttoggle() this.extdelete,
     get extupdate() this.extdelete,
@@ -179,7 +210,10 @@ var tests = {
     help: {
         noOutput: ["", "intro"],
         cleanup: ["tabdelete", "tabdelete"],
-        completions: ["", "'wild"]
+        completions: [
+            ["", hasItems],
+            ["'wild", hasItems]
+        ]
     },
     get helpall() this.help,
     highlight: {
@@ -190,34 +224,35 @@ var tests = {
             "Help -group=FontCode foo: bar;"
         ],
         completions: [
-            "",
-            "Help",
-            "Help ",
-            "Help -group=",
-            "Help -group=FontCode ",
-            "Help foo: bar; -moz"
+            ["", hasItems],
+            ["Help", hasItems],
+            ["Help ", hasItems],
+            ["Help -group=", hasItems],
+            ["Help -group=FontCode ", hasItems],
+            ["Help foo: bar; -moz", hasItems]
         ]
     },
     history: {
+        init: ["open about:pentadactyl"],
         anyOutput: ["-max=1", "-max=1 -sort=+date", "-max=1 dactyl"],
         completions: [
-            "",
-            "dactyl",
-            "-sort=+",
-            "-sort=-",
-            "-sort=+date ",
-            "-sort=+date dactyl"
+            ["", hasItems],
+            "about:",
+            ["-sort=+", hasItems],
+            ["-sort=-", hasItems],
+            ["-sort=+date ", hasItems],
+            "-sort=+date about:"
         ]
     },
     if: {}, // Skip for now
     javascript: {
         noOutput: ["''", "'\\n'", "<pre>foo bar</pre>", "window"],
         completions: [
-            "",
-            "window",
-            "window.",
-            "window['",
-            "commands.get('"
+            ["", hasItems],
+            ["window", hasItems],
+            ["window.", hasItems],
+            ["window['", hasItems],
+            ["commands.get('", hasItems]
         ]
     },
     jumps: {
@@ -231,7 +266,10 @@ var tests = {
     let: {}, // Deprecated. Fuck it.
     listcommands: {
         anyOutput: ["", "in"],
-        completions: ["", "in "]
+        completions: [
+            ["", hasItems],
+            "in "
+        ]
     },
     get listkeys() this.listcommands,
     get listoptions() this.listcommands,
@@ -256,14 +294,14 @@ var tests = {
             "-gtroup=some-nonexistent-group <C-a> <C-a>"
         ],
         completeions: [
-            "",
-            "-",
-            "-mode=ex ",
-            "-mode=",
-            "-group=",
-            "-builtin i ",
-            "-ex i ",
-            "-javascript i ",
+            ["", hasItems],
+            ["-", hasItems],
+            ["-mode=ex ", hasItems],
+            ["-mode=", hasItems],
+            ["-group=", hasItems],
+            ["-builtin i ", hasItems],
+            ["-ex i ", hasItems],
+            ["-javascript i ", hasItems]
         ]
     },
     mapclear: {
@@ -326,7 +364,9 @@ var tests = {
             "some-nonexistent-pentadactyl-dir/",
             "some-nonexistent-pentadactyl-dir/foo.vim"
         ],
-        completeions: [""],
+        completeions: [
+            ["", hasItems]
+        ],
         cleanup: ["silent !rm -r some-nonexistent-pentadactyl-dir/"]
     },
     normal: {
@@ -337,20 +377,20 @@ var tests = {
     open: {
         noOutput: ["about:blank | about:home"],
         completions: [
-            "",
-            "./",
-            "./ | ",
-            "chrome://",
-            "chrome://browser/",
-            "chrome://browser/content/",
-            "about:",
-            "resource://",
-            "resource://dactyl/"
+            ["", hasItems],
+            ["./", hasItems],
+            ["./ | ", hasItems],
+            ["chrome://", hasItems],
+            ["chrome://browser/", hasItems],
+            ["chrome://browser/content/", hasItems],
+            ["about:", hasItems],
+            ["resource://", hasItems],
+            ["resource://dactyl/", hasItems]
         ]
     },
     pageinfo: {
         multiOutput: ["", "fgm"],
-        completions: [""],
+        completions: [["", hasItems]],
         error: ["abcdefghijklmnopqrstuvwxyz", "f g m"]
     },
     pagestyle: {
@@ -366,7 +406,10 @@ var tests = {
             "m foo bar"
         ],
         error: ["", "#"],
-        completions: ["", "m "]
+        completions: [
+            ["", hasItems], // Fails. Why?
+            ["m ", hasItems]
+        ]
     },
     qmarks: [
         {
@@ -376,7 +419,7 @@ var tests = {
         {
             init: ["qmark x"],
             multiOutput: ["", "m", "x"],
-            completions: [""]
+            completions: [["", hasItems]]
         }
     ],
     quit: {}, // Skip for now
@@ -446,7 +489,10 @@ var tests = {
             // "!" Previous sidebar isn't saved until the window loads.
             //     We don't give it enough time.
         ],
-        completions: ["", "! "]
+        completions: [
+            ["", hasntNullItems],
+            "! "
+        ]
     },
     silent: {
         noOutput: [
@@ -455,7 +501,7 @@ var tests = {
             "echoerr 'foo'",
             "echoerr " + "foo\nbar".quote()
         ],
-        completions: [""]
+        completions: [["", hasItems]]
     },
     source: {},
     stop: {},
@@ -508,7 +554,7 @@ function runCommands(cmdName, testName, commands, test, forbidErrors) {
         commands.forEach(function (val) {
             var [cmd, testVal] = Array.concat(val);
 
-            // dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
+            dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
             dactyl.clearMessage();
             dactyl.closeMessageWindow();
 
@@ -529,7 +575,7 @@ function _runCommands(cmdName, testName, commands) {
         commands.forEach(function (value) {
             var [cmd, test] = Array.concat(value);
 
-            // dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
+            dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
             var res = dactyl.runExCommand(cmd);
             controller.waitForPageLoad(controller.tabs.activeTab);
             if (test)
@@ -602,12 +648,21 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
                 addTest(command, testName, function () {
                     commands.forEach(function (val) {
                         var [cmd, test] = Array.concat(val);
+                        cmd = command + cmd.replace(/^(!?) ?/, "$1 ");
 
                         dactyl.assertNoErrorMessages(function () {
-                            dactyl.runExCompletion(command + cmd.replace(/^(!?) ?/, "$1 "));
-                            if (test)
-                                jumlib.assert(test(dactyl.modules.commandline.commandSession.completions.context),
-                                              "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
+                            dump("COMPL: " + cmd + "\n");
+                            dactyl.runExCompletion(cmd);
+                            if (test) {
+                                /* Freezes. :(
+                                var context = dactyl.modules.commandline.commandSession.completions.context;
+                                */
+                                var context = dactyl.modules.CompletionContext(cmd);
+                                context.tabPressed = true;
+                                context.fork("ex", 0, dactyl.modules.completion, "ex");
+                                jumlib.assert(context.wait(5000), "Completion failed: " + cmd.quote());
+                                jumlib.assert(test(context), "Completion tests failed: " + cmd.quote() + " " + test);
+                            }
                         });
                     });
                 });
