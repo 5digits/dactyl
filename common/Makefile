@@ -12,6 +12,7 @@ MANGLE	     := $(shell date '+%s' | awk '{ printf "%x", $$1 }')
 MOZMILL       = mozmill
 HOSTAPP_PATH  = $(shell which $(HOSTAPP))
 TEST_DIR      = $(BASE)/tests/functional
+TEST_LOG      = $(TEST_DIR)/log
 
 IDNAME       := $(shell echo "$(NAME)" | tr a-z A-Z)
 
@@ -163,11 +164,10 @@ distclean:
 	@echo "More $(NAME) cleanup..."
 	rm -rf $(BUILD_DIR)
 
-# TODO: generalize log path
 test: xpi
-	@echo "Running functional tests..."
+	@echo "Running $(NAME) functional tests..."
 	$(IDNAME)_INIT="set loadplugins=" \
-		$(MOZMILL) --show-all -l /tmp/dactyl-test.log -b $(HOSTAPP_PATH) --addons $(XPI) -t $(TEST_DIR)
+		$(MOZMILL) --show-all -l $(TEST_LOG) -b $(HOSTAPP_PATH) --addons $(XPI) -t $(TEST_DIR)
 
 #### xpi
 
