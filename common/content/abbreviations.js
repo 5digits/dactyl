@@ -113,7 +113,7 @@ var Abbreviations = Module("abbreviations", {
      */
     get: function (mode, lhs) {
         let abbrevs = this._store[mode];
-        return abbrevs && abbrevs.hasOwnProperty(lhs) ? abbrevs[lhs] : null;
+        return abbrevs && set.has(abbrevs, lhs) ? abbrevs[lhs] : null;
     },
 
     /**
