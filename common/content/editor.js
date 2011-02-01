@@ -77,7 +77,7 @@ var Editor = Module("editor", {
             // good thing is, we need this code anyway for proper beeping
             try {
                 if (callable(cmd))
-                    cmd(editor);
+                    cmd(editor, controller);
                 else
                     controller.doCommand(cmd);
                 didCommand = true;
@@ -563,6 +563,10 @@ var Editor = Module("editor", {
             function _select(editor) {
                 updateRange(editor, forward, re, function (range) {});
             }
+        function beginLine(editor_) {
+            editor.executeCommand("cmd_beginLine");
+            move(true, /\S/)(editor_);
+        }
 
         //             KEYS                          COUNT  CARET                   TEXT_EDIT            VISUAL_TEXT_EDIT
         addMovementMap(["k", "<Up>"],                true,  "lineMove", false,      "cmd_linePrevious", selectPreviousLine);
@@ -579,7 +583,8 @@ var Editor = Module("editor", {
         addMovementMap(["<C-b>", "<PageUp>"],        true,  "pageMove", false,      "cmd_movePageUp",   "cmd_selectPreviousPage");
         addMovementMap(["gg", "<C-Home>"],           false, "completeMove", false,  "cmd_moveTop",      "cmd_selectTop");
         addMovementMap(["G", "<C-End>"],             false, "completeMove", true,   "cmd_moveBottom",   "cmd_selectBottom");
-        addMovementMap(["0", "^", "<Home>"],         false, "intraLineMove", false, "cmd_beginLine",    "cmd_selectBeginLine");
+        addMovementMap(["0", "<Home>"],              false, "intraLineMove", false, "cmd_beginLine",    "cmd_selectBeginLine");
+        addMovementMap(["^"],                        false, "intraLineMove", false, beginLine,          "cmd_selectBeginLine");
         addMovementMap(["$", "<End>"],               false, "intraLineMove", true,  "cmd_endLine" ,     "cmd_selectEndLine");
 
         addBeginInsertModeMap(["i", "<Insert>"], []);
