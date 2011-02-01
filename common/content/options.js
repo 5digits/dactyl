@@ -1094,7 +1094,7 @@ var Options = Module("options", {
 
                     dactyl.assert(scope == "g:" || scope == null,
                         "E461: Illegal variable name: " + scope + name);
-                    dactyl.assert(globalVariables.hasOwnProperty(name) || (expr && !op),
+                    dactyl.assert(set.has(globalVariables, name) || (expr && !op),
                         "E121: Undefined variable: " + fullName);
 
                     if (!expr)
@@ -1192,13 +1192,13 @@ var Options = Module("options", {
             function (args) {
                 for (let [, name] in args) {
                     name = name.replace(/^g:/, ""); // throw away the scope prefix
-                    if (!dactyl.globalVariables.hasOwnProperty(name)) {
+                    if (!set.has(dactyl._globalVariables, name)) {
                         if (!args.bang)
                             dactyl.echoerr("E108: No such variable: " + name);
                         return;
                     }
 
-                    delete dactyl.globalVariables[name];
+                    delete dactyl._globalVariables[name];
                 }
             },
             {
