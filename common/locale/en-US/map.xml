@@ -455,10 +455,10 @@
 </item>
 
 <item>
-    <tags>:ca :cabbrev</tags>
-    <spec>:ca<oa>bbrev</oa> <a>lhs</a> <a>rhs</a></spec>
-    <spec>:ca<oa>bbrev</oa> <a>lhs</a></spec>
-    <spec>:ca<oa>bbrev</oa></spec>
+    <tags>:ca :cabbreviate</tags>
+    <spec>:ca<oa>bbreviate</oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:ca<oa>bbreviate</oa> <a>lhs</a></spec>
+    <spec>:ca<oa>bbreviate</oa></spec>
     <description>
         <p>
             Abbreviate a key sequence for Command-line mode. Same as
@@ -469,10 +469,10 @@
 </item>
 
 <item>
-    <tags>:ia :iabbrev</tags>
-    <spec>:ia<oa>bbrev</oa> <a>lhs</a> <a>rhs</a></spec>
-    <spec>:ia<oa>bbrev</oa> <a>lhs</a></spec>
-    <spec>:ia<oa>bbrev</oa></spec>
+    <tags>:ia :iabbreviate</tags>
+    <spec>:ia<oa>bbreviate</oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:ia<oa>bbreviate</oa> <a>lhs</a></spec>
+    <spec>:ia<oa>bbreviate</oa></spec>
     <description>
         <p>
             Abbreviate a key sequence for Insert mode. Same as
@@ -490,8 +490,8 @@
 </item>
 
 <item>
-    <tags>:cuna :cunabbrev</tags>
-    <spec>:cuna<oa>bbrev</oa> <a>lhs</a></spec>
+    <tags>:cuna :cunabbreviate</tags>
+    <spec>:cuna<oa>bbreviate</oa> <a>lhs</a></spec>
     <description>
         <p>
             Remove an abbreviation for Command-line mode. Same as
@@ -502,8 +502,8 @@
 </item>
 
 <item>
-    <tags>:iuna :iunabbrev</tags>
-    <spec>:iuna<oa>bbrev</oa> <a>lhs</a></spec>
+    <tags>:iuna :iunabbreviate</tags>
+    <spec>:iuna<oa>bbreviate</oa> <a>lhs</a></spec>
     <description>
         <p>
             Remove an abbreviation for Insert mode. Same as
