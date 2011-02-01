@@ -113,7 +113,7 @@ var Abbreviations = Module("abbreviations", {
      */
     get: function (mode, lhs) {
         let abbrevs = this.abbrevs[mode];
-        return abbrevs && abbrevs[lhs];
+        return abbrevs && abbrevs.hasOwnProperty(lhs) ? abbrevs[lhs] : null;
     },
 
     /**
