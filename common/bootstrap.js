@@ -14,9 +14,15 @@ const Ci = Components.interfaces;
 const Cu = Components.utils;
 const Cr = Components.results;
 
-Cu.import("resource://gre/modules/AddonManager.jsm");
-Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-Cu.import("resource://gre/modules/Services.jsm");
+function module(uri) {
+    let obj = {};
+    Cu.import(uri, obj);
+    return obj;
+}
+
+const { AddonManager } = module("resource://gre/modules/AddonManager.jsm");
+const { XPCOMUtils }   = module("resource://gre/modules/XPCOMUtils.jsm");
+const { Services }     = module("resource://gre/modules/Services.jsm");
 
 const resourceProto = Services.io.getProtocolHandler("resource")
                               .QueryInterface(Ci.nsIResProtocolHandler);
@@ -95,6 +101,7 @@ function startup(data, reason) {
         else
             getURI = function getURI(path)
                 Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec + "!/" + path, null, null);
+
         try {
             init();
         }
@@ -163,6 +170,11 @@ function init() {
         }
     }
 
+    try {
+        module("resource://dactyl-local-content/disable-acr.jsm").init();
+    }
+    catch (e) {}
+
     if (JSMLoader && JSMLoader.bump != 3) // Temporary hack
         Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
             Cu.import("resource://dactyl/bootstrap.jsm", global));
@@ -186,6 +198,11 @@ function init() {
 function shutdown(data, reason) {
     dump("dactyl: bootstrap: shutdown " + reasonToString(reason) + "\n");
     if (reason != APP_SHUTDOWN) {
+        try {
+            module("resource://dactyl-local-content/disable-acr.jsm").cleanup();
+        }
+        catch (e) {}
+
         if ([ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason) >= 0)
             Services.obs.notifyObservers(null, "dactyl-purge", null);
 
