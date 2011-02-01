@@ -388,7 +388,6 @@ var Editor = Module("editor", {
     },
 }, {
     extendRange: function extendRange(range, forward, re, sameWord) {
-        util.dump("\n\n\n");
         function advance(positive) {
             let idx = range.endOffset;
             while (idx < text.length && re.test(text[idx++]) == positive)
