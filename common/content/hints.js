@@ -621,10 +621,10 @@ var HintSession = Class("HintSession", CommandMode, {
         return Events.KILL;
     },
 
-    updateValidNumbers: function updateValidNumbers() {
+    updateValidNumbers: function updateValidNumbers(always) {
         let string = this.getHintString(this.hintNumber);
         for (let hint in values(this.validHints))
-            hint.valid = hint.span.getAttribute("number").indexOf(string) == 0;
+            hint.valid = always || hint.span.getAttribute("number").indexOf(string) == 0;
     },
 
     tab: function tab(previous) {
@@ -643,6 +643,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 this.hintNumber = this.validHints.length;
         }
 
+        this.updateValidNumbers(true);
         this.showActiveHint(this.hintNumber, oldId);
         this.updateStatusline();
     },

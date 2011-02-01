@@ -305,7 +305,7 @@ var File = Class("File", {
                 return File.DoesNotExist(path, e);
             }
         }
-        let self = XPCSafeJSObjectWrapper(file);
+        let self = XPCSafeJSObjectWrapper(file.QueryInterface(Ci.nsILocalFile));
         self.__proto__ = this;
         return self;
     },
