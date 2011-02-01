@@ -41,7 +41,7 @@ var Abbreviation = Class("Abbreviation", {
 
 var Abbreviations = Module("abbreviations", {
     init: function () {
-        this.abbrevs = {};
+        this._store = {};
 
         // (summarized from Vim's ":help abbreviations")
         //
@@ -99,9 +99,9 @@ var Abbreviations = Module("abbreviations", {
             abbr = Abbreviation.apply(null, arguments);
 
         for (let [, mode] in Iterator(abbr.modes)) {
-            if (!this.abbrevs[mode])
-                this.abbrevs[mode] = {};
-            this.abbrevs[mode][abbr.lhs] = abbr;
+            if (!this._store[mode])
+                this._store[mode] = {};
+            this._store[mode][abbr.lhs] = abbr;
         }
     },
 
@@ -112,7 +112,7 @@ var Abbreviations = Module("abbreviations", {
      * @param {string} lhs The LHS of the abbreviation.
      */
     get: function (mode, lhs) {
-        let abbrevs = this.abbrevs[mode];
+        let abbrevs = this._store[mode];
         return abbrevs && abbrevs.hasOwnProperty(lhs) ? abbrevs[lhs] : null;
     },
 
@@ -139,17 +139,17 @@ var Abbreviations = Module("abbreviations", {
     get merged() {
         let result = [];
         let lhses = [];
-        let modes = [mode for (mode in this.abbrevs)];
+        let modes = [mode for (mode in this._store)];
 
-        for (let [, mabbrevs] in Iterator(this.abbrevs))
-            lhses = lhses.concat([key for (key in mabbrevs)]);
+        for (let [, abbrevs] in Iterator(this._store))
+            lhses = lhses.concat([key for (key in abbrevs)]);
         lhses.sort();
         lhses = array.uniq(lhses);
 
         for (let [, lhs] in Iterator(lhses)) {
             let exists = {};
-            for (let [, mabbrevs] in Iterator(this.abbrevs)) {
-                let abbr = mabbrevs[lhs];
+            for (let [, abbrevs] in Iterator(this._store)) {
+                let abbr = abbrevs[lhs];
                 if (abbr && !exists[abbr.rhs]) {
                     exists[abbr.rhs] = 1;
                     result.push(abbr);
@@ -192,10 +192,10 @@ var Abbreviations = Module("abbreviations", {
     remove: function (modes, lhs) {
         let result = false;
         for (let [, mode] in Iterator(modes)) {
-            if ((mode in this.abbrevs) && (lhs in this.abbrevs[mode])) {
+            if ((mode in this._store) && (lhs in this._store[mode])) {
                 result = true;
-                this.abbrevs[mode][lhs].removeMode(mode);
-                delete this.abbrevs[mode][lhs];
+                this._store[mode][lhs].removeMode(mode);
+                delete this._store[mode][lhs];
             }
         }
         return result;
@@ -208,11 +208,11 @@ var Abbreviations = Module("abbreviations", {
      */
     removeAll: function (modes) {
         for (let [, mode] in modes) {
-            if (!(mode in this.abbrevs))
+            if (!(mode in this._store))
                 return;
-            for (let [, abbr] in this.abbrevs[mode])
+            for (let [, abbr] in this._store[mode])
                 abbr.removeMode(mode);
-            delete this.abbrevs[mode];
+            delete this._store[mode];
         }
     }
 }, {
