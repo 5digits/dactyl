@@ -44,7 +44,9 @@ var Editor = Module("editor", {
 
             let start = elem.selectionStart; // caret position
             let end = elem.selectionEnd;
-            elem.value = elem.value.substring(0, start) + text + elem.value.substring(end);
+            let value = elem.value.substring(0, start) + text + elem.value.substring(end);
+            elem.value = value;
+            Editor.getEditor(elem).rootElement.firstChild.textContent = value;
             elem.selectionStart = Math.min(start + (toStart ? 0 : text.length), elem.value.length);
             elem.selectionEnd = elem.selectionStart;
 
