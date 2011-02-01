@@ -230,7 +230,7 @@ var Abbreviations = Module("abbreviations", {
             modes.sort();
             modeDescription = modeDescription ? " in " + modeDescription + " mode" : "";
 
-            commands.add([ch + "ab[breviate]"],
+            commands.add([ch ? ch + "a[bbreviate]" : "ab[breviate]"],
                 "Abbreviate a key sequence" + modeDescription,
                 function (args) {
                     let [lhs, rhs] = args;
