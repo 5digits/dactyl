@@ -8,45 +8,32 @@ const OVERLAY_URLS = [
     "chrome://mozapps/content/extensions/extensions.xul"
 ];
 
-const Cc = Components.classes;
 const Ci = Components.interfaces;
-const Cr = Components.results;
 const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-function observe(subject, topic, data) {
-    if (topic in observers)
-        observers[topic](subject, data);
+function observe(window, topic, url) {
+    if (topic === "chrome-document-global-created")
+        checkDocument(window.document);
 }
 function init(disable) {
-    for (let observer in observers)
-        Services.obs[disable ? "removeObserver" : "addObserver"](observe, observer, false);
+    Services.obs[disable ? "removeObserver" : "addObserver"](observe, "chrome-document-global-created", false);
     for (let doc in chromeDocuments)
         checkDocument(doc, disable);
 }
 function cleanup() { init(true); }
-var observers = {
-    "chrome-document-global-created": function (window, uri) {
-        checkDocument(window.document);
-    }
-}
 
 function checkPopup(event) {
-    try {
-        let doc = event.originalTarget.ownerDocument;
-        let binding = doc.getBindingParent(event.originalTarget);
-        if (binding && binding.addon && binding.addon.guid == ADDON_ID && !binding.addon.compatible) {
-            let elem = doc.getAnonymousElementByAttribute(binding, "anonid", "stillworks");
-            if (elem && elem.nextSibling) {
-                elem.nextSibling.disabled = true;
-                elem.nextSibling.setAttribute("tooltiptext", "Developer has opted out of incompatibility reports");
-            }
+    let doc = event.originalTarget.ownerDocument;
+    let binding = doc.getBindingParent(event.originalTarget);
+    if (binding && binding.addon && binding.addon.guid == ADDON_ID && !binding.addon.compatible) {
+        let elem = doc.getAnonymousElementByAttribute(binding, "anonid", "stillworks");
+        if (elem && elem.nextSibling) {
+            elem.nextSibling.disabled = true;
+            elem.nextSibling.setAttribute("tooltiptext", "Developer has opted out of incompatibility reports");
         }
-    }
-    catch (e) {
-        Cu.reportError(e);
     }
 }
 
@@ -57,13 +44,8 @@ function checkDocument(doc, disable, force) {
     }
     else {
         doc.addEventListener("DOMContentLoaded", function listener() {
-            try {
-                doc.removeEventListener("DOMContentLoaded", listener, false);
-                checkDocument(doc, disable, true);
-            }
-            catch (e) {
-                Cu.reportError(e);
-            }
+            doc.removeEventListener("DOMContentLoaded", listener, false);
+            checkDocument(doc, disable, true);
         }, false);
     }
 }
