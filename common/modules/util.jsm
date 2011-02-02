@@ -861,6 +861,23 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
+     * Iterates over all currently open documents, including all
+     * top-level window and sub-frames thereof.
+     */
+    iterDocuments: function iterDocuments() {
+        let windows = services.windowMediator.getXULWindowEnumerator(null);
+        while (windows.hasMoreElements()) {
+            let window = windows.getNext().QueryInterface(Ci.nsIXULWindow);
+            for each (let type in ["typeChrome", "typeContent"]) {
+                let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
+                                                                      Ci.nsIDocShell.ENUMERATE_FORWARDS);
+                while (docShells.hasMoreElements())
+                    yield docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer.DOMDocument;
+            }
+        }
+    },
+
+    /**
      * Returns an XPath union expression constructed from the specified node
      * tests. An expression is built with node tests for both the null and
      * XHTML namespaces. See {@link Buffer#evaluateXPath}.
@@ -1149,11 +1166,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 this.overlays[url].push(fn);
             }, this);
 
-            for (let win in iter(services.windowMediator.getEnumerator(null)))
-                if (["interactive", "complete"].indexOf(win.document.readyState) >= 0)
-                    this._loadOverlays(win);
+            for (let doc in util.iterDocuments())
+                if (["interactive", "complete"].indexOf(doc.readyState) >= 0)
+                    this._loadOverlays(doc.defaultView);
                 else
-                    this.observe(win, "toplevel-window-ready");
+                    this.observe(doc.defaultView, "toplevel-window-ready");
         }
     },
 

@@ -52,13 +52,15 @@ function checkDocument(doc, disable, force) {
 }
 
 function chromeDocuments() {
-    let windows = Services.ww.getXULWindowEnumerator(null);
+    let windows = services.windowMediator.getXULWindowEnumerator(null);
     while (windows.hasMoreElements()) {
         let window = windows.getNext().QueryInterface(Ci.nsIXULWindow);
-        let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShell.typeChrome,
-                                                              Ci.nsIDocShell.ENUMERATE_FORWARDS);
-        while (docShells.hasMoreElements())
-            yield docShells.getNext().containedDocShells.DOMDocument;
+        for each (let type in ["typeChrome", "typeContent"]) {
+            let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
+                                                                  Ci.nsIDocShell.ENUMERATE_FORWARDS);
+            while (docShells.hasMoreElements())
+                yield docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer.DOMDocument;
+        }
     }
 }
 
