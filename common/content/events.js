@@ -418,6 +418,7 @@ var Events = Module("events", {
         }
     },
 
+    /** Terminates the recording of the current key event macro. */
     finishRecording: function () {
         modes.recording = false;
         this._macros.set(this._currentMacro, {
