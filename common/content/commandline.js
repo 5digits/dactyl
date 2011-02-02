@@ -322,7 +322,7 @@ var CommandMode = Class("CommandMode", {
         this.widgets.prompt = this.prompt;
         this.widgets.command = command || "";
 
-        if (this.completions && options["autocomplete"].length)
+        if (this.completions && command && options["autocomplete"].length)
             this.completions.complete(true, false);
     },
 
