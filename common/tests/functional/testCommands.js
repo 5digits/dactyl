@@ -59,8 +59,8 @@ var tests = {
         completions: [["", hasItems]]
     },
     bmark: {
-        someOutput: ["bmark", "bmark -tags=foo -titlt=bar -keyword=baz -charset=UTF-8 -post=quux about:pentadactyl"],
-        error: ["bmark -tags=foo -titlt=bar -keyword=baz -charset=nonExistentCharset -post=quux about:pentadactyl"],
+        singleOutput: ["", "-tags=foo -title=bar -keyword=baz -charset=UTF-8 -post=quux about:pentadactyl"],
+        error: ["-tags=foo -title=bar -keyword=baz -charset=nonExistentCharset -post=quux about:pentadactyl"],
         completions: [
             "-max=1 -keyword=",
             "-max=1 -keyword=foo -tags=",
@@ -610,7 +610,7 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
             case "someOutput":
                 runCommands(command, testName, commands, function (cmd, test) {
                     var res = dactyl.assertMessage(/./, "Expected command output: " + cmd);
-                    if (res && res && test != null)
+                    if (res && test != null)
                         dactyl.assertMessage(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
                 });
                 break;
