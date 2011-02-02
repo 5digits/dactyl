@@ -374,7 +374,7 @@ var Template = Module("Template", {
     },
 
     sourceLink: function (frame) {
-        let url = (frame.filename || "unknown").replace(/.* -> /, "");
+        let url = util.fixURI(frame.filename || "unknown");
         let path = util.urlPath(url);
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;

@@ -526,7 +526,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let match, re = /([^]*?)@([^@\n]*)(?:\n|$)/g;
         while (match = re.exec(stack))
             lines.push(match[1].replace(/\n/g, "\\n").substr(0, 80) + "@" +
-                       match[2].replace(/.* -> /, ""));
+                       util.fixURI(match[2]));
         return lines;
     },
 
@@ -712,7 +712,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     getFile: function getFile(uri) {
         try {
             if (isString(uri))
-                uri = util.newURI(uri);
+                uri = util.newURI(util.fixURI(uri));
 
             if (uri instanceof Ci.nsIFileURL)
                 return File(uri.QueryInterface(Ci.nsIFileURL).file);
@@ -885,7 +885,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {nsIURI}
      */
     // FIXME: createURI needed too?
-    newURI: function (uri, charset, base) services.io.newURI(String.replace(uri, /.* -> /, ""), charset, base),
+    newURI: function (uri, charset, base) services.io.newURI(uri, charset, base),
+
+    /**
+     * Removes leading garbage prepended to URIs by the subscript
+     * loader.
+     */
+    fixURI: function fixURI(url) String.replace(url, /.* -> /, ""),
 
     /**
      * Pretty print a JavaScript object. Use HTML markup to color certain items
@@ -1579,7 +1585,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     urlPath: function urlPath(url) {
-        url = (url || "unknown").replace(/.* -> /, "");
         try {
             return util.getFile(url).path;
         }

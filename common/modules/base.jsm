@@ -281,7 +281,7 @@ function deprecated(alternative, fn) {
         let obj = this.className             ? this.className + "#" :
                   this.constructor.className ? this.constructor.className + "#" :
                       "";
-        let filename = (frame.filename || "unknown").replace(/.* -> /, "");
+        let filename = util.fixURI(frame.filename || "unknown");
         if (!set.add(deprecatedMethod.seen, filename))
             util.dactyl(fn).warn(
                 util.urlPath(filename) + ":" + frame.lineNumber + ": " +

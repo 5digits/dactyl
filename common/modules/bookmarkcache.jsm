@@ -183,7 +183,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         let bookmark = this.bookmarks[itemId];
         if (bookmark) {
             if (property == "tags")
-                value = services.tagging.getTagsForURI(util.newURI(bookmark.url), {});
+                value = services.tagging.getTagsForURI(bookmark.uri, {});
             if (property in bookmark) {
                 bookmark[bookmark.members[property]] = value;
                 storage.fireEvent(name, "change", { __proto__: bookmark, changed: property });

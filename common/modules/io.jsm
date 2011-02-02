@@ -173,7 +173,7 @@ var IO = Module("io", {
                         catch (e) {
                             if (e.fileName)
                                 try {
-                                    e.fileName = e.fileName.replace(/^(chrome|resource):.*? -> /, "");
+                                    e.fileName = util.fixURI(e.fileName);
                                     if (e.fileName == uri.spec)
                                         e.fileName = filename;
                                     e.echoerr = <>{e.fileName}:{e.lineNumber}: {e}</>;
@@ -328,7 +328,7 @@ var IO = Module("io", {
      */
     isJarURL: function isJarURL(url) {
         try {
-            let uri = util.newURI(url);
+            let uri = util.newURI(util.fixURI(url));
             let channel = services.io.newChannelFromURI(uri);
             channel.cancel(Cr.NS_BINDING_ABORTED);
             if (channel instanceof Ci.nsIJARChannel)

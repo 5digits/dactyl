@@ -243,7 +243,7 @@ var Overlay = Module("Overlay", {
 
                         defineModule.loadLog.push("Load" + (isString(prereq) ? " " + prereq + " dependency: " : ": ") + module.className);
                         if (frame && frame.filename)
-                            defineModule.loadLog.push(" from: " + frame.filename.replace(/.* -> /, "") + ":" + frame.lineNumber);
+                            defineModule.loadLog.push(" from: " + util.fixURI(frame.filename) + ":" + frame.lineNumber);
 
                         delete modules[module.className];
                         modules[module.className] = defineModule.time(module.className, "init", module);
