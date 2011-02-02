@@ -75,7 +75,7 @@ update(Sheet.prototype, {
                                                          : "domain")
                                     + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
                               .join(", ");
-        return "/* Dactyl style #" + this.id + (this.agent ? " (agent)" : "") + " */ "
+        return "/* " + this.uri + (this.agent ? " (agent)" : "") + " */\n"
              + namespace + " @-moz-document " + selectors + "{\n" + css + "\n}\n";
     }
 });

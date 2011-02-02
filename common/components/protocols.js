@@ -35,7 +35,7 @@ function makeChannel(url, orig) {
             return fakeChannel(orig);
 
         if (typeof url === "function")
-            return let ([type, data] = url()) StringChannel(data, type, orig);
+            return let ([type, data] = url(orig)) StringChannel(data, type, orig);
 
         if (isArray(url))
             return let ([type, data] = url) StringChannel(data, type, orig);
