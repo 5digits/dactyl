@@ -167,7 +167,10 @@ var Buffer = Module("buffer", {
             let type = node.contentType || node.QueryInterface(Ci.nsIImageLoadingContent)
                                                .getRequest(0).mimeType;
 
-            var ext = "." + services.mime.getPrimaryExtension(type, currExt);
+            if (type === "text/plain")
+                var ext = "." + (currExt || "txt");
+            else
+                ext = "." + services.mime.getPrimaryExtension(type, currExt);
         }
         else if (currExt)
             ext = "." + currExt;
