@@ -434,9 +434,9 @@ var CommandPromptMode = Class("CommandPromptMode", CommandMode, {
         init.supercall(this);
     },
 
-    complete: function () {
+    complete: function (context) {
         if (this.completer)
-            return this.completer.apply(this, arguments);
+            context.forkapply("prompt", 0, this, "completer", Array.slice(arguments, 1));
     },
 
     get mode() modes.PROMPT

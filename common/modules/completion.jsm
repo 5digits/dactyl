@@ -651,6 +651,10 @@ var CompletionContext = Class("CompletionContext", {
      *      interpreted as a method to access on *self*.
      */
     fork: function fork(name, offset, self, completer) {
+        return this.forkapply(name, offset, self, completer, Array.slice(arguments, fork.length));
+    },
+
+    forkapply: function forkapply(name, offset, self, completer, args) {
         if (isString(completer))
             completer = self[completer];
         let context = this.constructor(this, name, offset);
@@ -660,7 +664,7 @@ var CompletionContext = Class("CompletionContext", {
         if (!context.autoComplete && !context.tabPressed && context.editor)
             context.waitingForTab = true;
         else if (completer) {
-            let res = completer.apply(self || this, [context].concat(Array.slice(arguments, fork.length)));
+            let res = completer.apply(self || this, [context].concat(args));
             if (res && !isArray(res) && !isArray(res.__proto__))
                 res = [k for (k in res)];
             if (res)
