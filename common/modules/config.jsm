@@ -12,8 +12,8 @@ let global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
-    require: ["highlight", "services", "storage", "util", "template"],
-    use: ["highlight", "io"]
+    require: ["services", "storage", "util", "template"],
+    use: ["io"]
 }, this);
 
 var ConfigBase = Class("ConfigBase", {
@@ -22,23 +22,6 @@ var ConfigBase = Class("ConfigBase", {
      * initialization code. Must call superclass's init function.
      */
     init: function init() {
-
-        this.timeout(function () {
-            highlight.styleableChrome = this.styleableChrome;
-            highlight.loadCSS(this.CSS);
-            highlight.loadCSS(this.helpCSS);
-            if (!util.haveGecko("2b"))
-                highlight.loadCSS(<![CDATA[
-                    !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
-                    !TabIconNumber {
-                        font-weight: bold;
-                        color: white;
-                        text-align: center;
-                        text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
-                    }
-                ]]>);
-        });
-
         this.features.push = deprecated("set.add", function push(feature) set.add(this, feature));
         if (util.haveGecko("2b"))
             set.add(this.features, "Gecko2");
@@ -51,6 +34,23 @@ var ConfigBase = Class("ConfigBase", {
                   .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
                   .join("\n")]
         });
+    },
+
+    loadStyles: function loadStyles() {
+        const { highlight } = require("highlight");
+        highlight.styleableChrome = this.styleableChrome;
+        highlight.loadCSS(this.CSS);
+        highlight.loadCSS(this.helpCSS);
+        if (!util.haveGecko("2b"))
+            highlight.loadCSS(<![CDATA[
+                !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
+                !TabIconNumber {
+                    font-weight: bold;
+                    color: white;
+                    text-align: center;
+                    text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
+                }
+            ]]>);
     },
 
     get addonID() this.name + "@dactyl.googlecode.com",
@@ -169,6 +169,7 @@ var ConfigBase = Class("ConfigBase", {
     ],
 
     styleHelp: function styleHelp() {
+        const { highlight } = require("highlight");
         if (!this.helpStyled)
             for (let k in keys(highlight.loaded))
                 if (/^(Help|StatusLine)|^(Boolean|Indicator|MoreMsg|Number|Logo|Key(word)?|String)$/.test(k))
@@ -725,6 +726,8 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
 });
 
 endModule();
+
+config.loadStyles();
 
 } catch(e){ if (isString(e)) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
