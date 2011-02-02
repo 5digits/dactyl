@@ -19,6 +19,7 @@ var teardownModule = function (module) {
     dactyl.teardown();
 }
 
+function hasNItems(nItems) function (context) context.allItems.items.length == nItems;
 function hasItems(context) context.allItems.items.length;
 function hasntNullItems(context) hasItems(context) &&
     !context.allItems.items.some(function ({ text, description }) [text, description].some(function (text) /^\[object/.test(text)));
@@ -455,9 +456,9 @@ var tests = {
         ],
         singleOutput: ["some-nonexistent-file.js"],
         completions: [
-            "",
-            "plugins/",
-            "info/"
+            ["", hasItems],
+            ["some-nonexistent/", hasItems],
+            ["info/", hasItems]
         ]
     },
     sanitize: {
@@ -503,13 +504,67 @@ var tests = {
         ],
         completions: [["", hasItems]]
     },
-    source: {},
-    stop: {},
-    stopall: {},
-    style: {},
-    styledisable: {},
-    styleenable: {},
-    styletoggle: {},
+    get source() ({
+        init: this.runtime.init,
+        cleanup: this.runtime.cleanup,
+        noOutput: [
+            ".pentadactyl/some-nonexistent/good.css",
+            ".pentadactyl/some-nonexistent/good.js",
+            ".pentadactyl/some-nonexistent/good.penta"
+        ],
+        errors: [
+            "~/.pentadactyl/some-nonexistent/bad.js",
+            "~/.pentadactyl/some-nonexistent/bad.penta",
+            "./.pentadactyl/some-nonexistent/bad.js",
+            "./.pentadactyl/some-nonexistent/bad.penta",
+            ".pentadactyl/some-nonexistent/bad.js",
+            ".pentadactyl/some-nonexistent/bad.penta"
+        ],
+        singleOutput: [".pentadactyl/some-nonexistent-file.js"],
+        completions: this.runtime.completions
+    }),
+    stop: { noOutput: [""] },
+    stopall: { noOutput: [""] },
+    style: {
+        cleanup: ["delstyle -n foo"],
+        noOutput: [
+            "-name=foo http://does.not.exist/* div { display: inline; }",
+            "-name=foo -append http://does.not.exist/* span { display: block; }"
+        ],
+        multiOutput: [
+            "",
+            "-name=foo"
+        ],
+        completions: [
+            ["", hasItems],
+            ["-name=", hasItems],
+            ["http:* div { -moz", hasItems],
+            ["http:* div { foo: bar; -moz", hasItems],
+            ["http:* div { foo: bar; } span { -moz", hasItems],
+            ["http:* div { foo: bar; } span { foo: bar; -moz", hasItems]
+        ]
+    },
+    styledisable: {
+        init: ["style -n foo http:* div {}", "style -n bar ftp:* div", "styledisable -n bar"],
+        cleanup: ["delstyle -n foo", "delstyle -n bar"],
+        noOutput: ["-name=foo"],
+        completions: [
+            ["", hasItems],
+            ["-name=", hasNItems(1)],
+            ["-index=", hasNItems(1)]
+        ]
+    },
+    get styleenable() this.styledisable,
+    styletoggle: {
+        init: ["style -n foo http:* div {}", "style -n bar ftp:* div", "styledisable -n bar"],
+        cleanup: ["delstyle -n foo", "delstyle -n bar"],
+        noOutput: ["-name=foo"],
+        completions: [
+            ["", hasItems],
+            ["-name=", hasNItems(2)],
+            ["-index=", hasNItems(2)]
+        ]
+    },
     tab: {},
     tabattach: {},
     tabdetach: {},

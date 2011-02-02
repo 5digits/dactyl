@@ -1257,8 +1257,6 @@ var CommandLine = Module("commandline", {
                 this.wildIndex++;
                 this.preview();
 
-                modes.dumpStack();
-                util.dumpStack();
                 if (this.selected == null)
                     statusline.progress = "";
                 else
