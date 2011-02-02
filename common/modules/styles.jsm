@@ -45,7 +45,7 @@ update(Sheet.prototype, {
         if (on != this._enabled || this.fullCSS != this._fullCSS) {
             if (on)
                 this.enabled = false;
-            else if (!this._uri)
+            else if (!this._fullCSS)
                 return;
 
             let meth = on ? "registerSheet" : "unregisterSheet";
