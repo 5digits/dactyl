@@ -74,9 +74,9 @@ update(Sheet.prototype, {
                                      /[\/:]/.test(part)  ? "url"
                                                          : "domain")
                                     + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
-                              .join(", ");
-        return "/* " + this.uri + (this.agent ? " (agent)" : "") + " */\n"
-             + namespace + " @-moz-document " + selectors + "{\n" + css + "\n}\n";
+                              .join(",\n               ");
+        return "/* " + this.uri + (this.agent ? " (agent)" : "") + " */\n\n"
+             + namespace + "\n@-moz-document " + selectors + " {\n\n" + css + "\n\n}\n";
     }
 });
 
