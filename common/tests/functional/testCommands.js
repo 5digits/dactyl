@@ -372,7 +372,7 @@ var tests = {
     normal: {
         noOutput: ["<Nop>"],
         singleOutput: ["<C-g>"],
-        multiOutput: ["g<C-g>"] // FIXME: broken feature
+        multiOutput: ["g<C-g>"]
     },
     open: {
         noOutput: ["about:blank | about:home"],

@@ -38,6 +38,7 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     execute: function execute(result, force) {
+        function dbg() {}
 
         if (force && this.actions.length)
             this.processors.length = 0;
@@ -70,10 +71,15 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (result === undefined)
             result = Events.PASS;
 
+        dbg("RESULT: " + (result === Events.KILL  ? "KILL"  :
+                          result === Events.PASS  ? "PASS"  :
+                          result === Events.ABORT ? "ABORT" : result));
+
         if (result !== Events.PASS)
             Events.kill(this.events[this.events.length - 1]);
 
-        if (result === Events.PASS || result === Events.ABORT)
+        if (result === Events.PASS || result === Events.ABORT) {
+            dbg("REREED: " + this.events.filter(function (e) e.getPreventDefault()).map(events.closure.toString).join(""));
             this.events.filter(function (e) e.getPreventDefault())
                 .forEach(function (event, i) {
                     let elem = event.originalTarget;
@@ -85,6 +91,7 @@ var ProcessorStack = Class("ProcessorStack", {
                     else if (i > 0)
                         events.events.keypress.call(events, event);
                 });
+        }
 
         if (force && this.processors.length === 0)
             events.processor = null;
@@ -321,6 +328,8 @@ var Events = Module("events", {
                 names = this._keyTable[k];
             this._code_key[v] = names[0];
             for (let [, name] in Iterator(names)) {
+                if (name.length == 1)
+                    name = name.toLowerCase();
                 this._key_key[name.toLowerCase()] = name;
                 this._key_code[name.toLowerCase()] = v;
             }
@@ -533,7 +542,7 @@ var Events = Module("events", {
                     let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
                     if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
                         events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event, evt);
-                    else
+                    else if (type === "keypress")
                         events.events.keypress.call(events, event);
                 }
 
@@ -1112,6 +1121,7 @@ var Events = Module("events", {
 
                 let processor = this.processor;
                 this.processor = null;
+
                 if (!processor.process(event))
                     this.processor = processor;
 
