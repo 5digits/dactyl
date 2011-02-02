@@ -37,6 +37,9 @@ function makeChannel(url, orig) {
         if (typeof url === "function")
             return let ([type, data] = url()) StringChannel(data, type, orig);
 
+        if (isArray(url))
+            return let ([type, data] = url) StringChannel(data, type, orig);
+
         let uri = ioService.newURI(url, null, null);
         return (new XMLChannel(uri)).channel;
     }
@@ -114,6 +117,7 @@ function Dactyl() {
     this.OVERLAY_MAP = {};
 
     this.pages = {};
+    this.providers = {};
 
     Cu.import("resource://dactyl/bootstrap.jsm");
     if (!JSMLoader.initialized)
@@ -162,6 +166,9 @@ Dactyl.prototype = {
             if (/^help/.test(uri.host) && !("all" in this.FILE_MAP))
                 return redirect(uri.spec, uri, 1);
 
+            if (uri.host in this.providers)
+                return makeChannel(this.providers[uri.host](uri), uri);
+
             let path = decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""));
             switch(uri.host) {
             case "content":
@@ -182,7 +189,9 @@ Dactyl.prototype = {
                 return makeChannel(["resource://dactyl-local-locale", config.locale, path].join("/"), uri);
             }
         }
-        catch (e) {}
+        catch (e) {
+            util.reportError(e);
+        }
         return fakeChannel(uri);
     },
 

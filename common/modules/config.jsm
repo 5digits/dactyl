@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
     require: ["highlight", "services", "storage", "util", "template"],
-    use: ["io"]
+    use: ["highlight", "io"]
 }, this);
 
 var ConfigBase = Class("ConfigBase", {
@@ -23,19 +23,21 @@ var ConfigBase = Class("ConfigBase", {
      */
     init: function init() {
 
-        highlight.styleableChrome = this.styleableChrome;
-        highlight.loadCSS(this.CSS);
-        highlight.loadCSS(this.helpCSS);
-        if (!util.haveGecko("2b"))
-            highlight.loadCSS(<![CDATA[
-                !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
-                !TabIconNumber {
-                    font-weight: bold;
-                    color: white;
-                    text-align: center;
-                    text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
-                }
-            ]]>);
+        this.timeout(function () {
+            highlight.styleableChrome = this.styleableChrome;
+            highlight.loadCSS(this.CSS);
+            highlight.loadCSS(this.helpCSS);
+            if (!util.haveGecko("2b"))
+                highlight.loadCSS(<![CDATA[
+                    !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
+                    !TabIconNumber {
+                        font-weight: bold;
+                        color: white;
+                        text-align: center;
+                        text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
+                    }
+                ]]>);
+        });
 
         this.features.push = deprecated("set.add", function push(feature) set.add(this, feature));
         if (util.haveGecko("2b"))

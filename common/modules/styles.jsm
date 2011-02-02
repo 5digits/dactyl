@@ -38,23 +38,22 @@ update(Sheet.prototype, {
 
     remove: function () { this.hive.remove(this); },
 
-    get uri() cssUri(this.fullCSS),
+    get uri() "dactyl://style/" + this.id + "/" + this.hive.name + "/" + (this.name || ""),
 
     get enabled() this._enabled,
     set enabled(on) {
-        if (on != this._enabled || this.uri != this._uri) {
+        if (on != this._enabled || this.fullCSS != this._fullCSS) {
             if (on)
                 this.enabled = false;
             else if (!this._uri)
                 return;
 
             let meth = on ? "registerSheet" : "unregisterSheet";
-            styles[meth](on ? this.uri   : this._uri,
-                         on ? this.agent : this._agent);
+            styles[meth](this.uri, on ? this.agent : this._agent);
 
             this._agent = this.agent;
             this._enabled = Boolean(on);
-            this._uri = this.uri;
+            this._fullCSS = this.fullCSS;
         }
     },
 
@@ -82,7 +81,8 @@ update(Sheet.prototype, {
 });
 
 var Hive = Class("Hive", {
-    init: function () {
+    init: function (name) {
+        this.name = name;
         this.sheets = [];
         this.names = {};
     },
@@ -124,6 +124,8 @@ var Hive = Class("Hive", {
             sheet = Sheet(name, styles._id++, filter.filter(util.identity), String(css), this, agent);
             this.sheets.push(sheet);
         }
+
+        styles.allSheets[sheet.id] = sheet;
 
         if (!lazy)
             sheet.enabled = true;
@@ -208,6 +210,7 @@ var Hive = Class("Hive", {
             sheet.enabled = false;
             if (sheet.name)
                 delete this.names[sheet.name];
+            delete styles.allSheets[sheet.id];
         }
         this.sheets = this.sheets.filter(function (s) matches.indexOf(s) == -1);
         return matches.length;
@@ -224,8 +227,16 @@ try {
 var Styles = Module("Styles", {
     init: function () {
         this._id = 0;
-        this.user = Hive();
-        this.system = Hive();
+        this.user = Hive("user");
+        this.system = Hive("system");
+        this.allSheets = {};
+
+        services["dactyl:"].providers["style"] = function styleProvider(uri) {
+            let id = /^\/(\d*)/.exec(uri.path)[1];
+            if (set.has(styles.allSheets, id))
+                return ["text/css", styles.allSheets[id].fullCSS];
+            return null;
+        };
     },
 
     cleanup: function cleanup() {
