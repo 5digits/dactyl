@@ -91,7 +91,7 @@ var tests = {
         completions: ["", "1"]
     },
     cd: {
-        lineOutput: ["", "~/"],
+        singleOutput: ["", "~/"],
         completions: ["", "~/"]
     },
     colorscheme: {
@@ -99,7 +99,7 @@ var tests = {
     },
     command: {
         init: ["comclear"],
-        lineOutput: ["", "foobar"],
+        singleOutput: ["", "foobar"],
         noOutput: ["foo bar", "-js bar baz"],
         multiOutput: [""],
         error: ["foo bar", "-js bar baz"]
@@ -371,15 +371,15 @@ var tests = {
     },
     normal: {
         noOutput: ["<Nop>"],
-        lineOutput: ["<C-g>"],
-        multiOutput: ["g<C-g>"]
+        singleOutput: ["<C-g>"],
+        multiOutput: ["g<C-g>"] // FIXME: broken feature
     },
     open: {
         noOutput: ["about:blank | about:home"],
         completions: [
             ["", hasItems],
             ["./", hasItems],
-            ["./ | ", hasItems],
+            ["./ | ", hasItems], // FIXME: broken feature
             ["chrome://", hasItems],
             ["chrome://browser/", hasItems],
             ["chrome://browser/content/", hasItems],
@@ -401,13 +401,13 @@ var tests = {
         singleOutput: [""]
     },
     qmark: {
-        lineOutput: [
+        singleOutput: [
             "m",
             "m foo bar"
         ],
         error: ["", "#"],
         completions: [
-            ["", hasItems], // Fails. Why?
+            ["", hasItems],
             ["m ", hasItems]
         ]
     },
