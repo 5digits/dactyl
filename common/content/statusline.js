@@ -219,18 +219,18 @@ var StatusLine = Module("statusline", {
      *    Any other number  - The progress is cleared.
      */
     progress: Modes.boundProperty({
-        set: function setProgress(progress) {
-            if (!progress)
-                progress = "";
+        get: function progress() this._progress,
+        set: function  progress(progress) {
+            this._progress = progress || "";
 
             if (typeof progress == "string")
-                this.widgets.progress.value = progress;
+                this.widgets.progress.value = this._progress;
             else if (typeof progress == "number") {
                 let progressStr = "";
-                if (progress <= 0)
+                if (this._progress <= 0)
                     progressStr = "[ Loading...         ]";
-                else if (progress < 1) {
-                    progress = Math.round(progress * 20);
+                else if (this._progress < 1) {
+                    let progress = Math.round(this._progress * 20);
                     progressStr = "["
                         + "===================>                    "
                             .substr(20 - progress, 20)
