@@ -984,9 +984,11 @@ var Completion = Module("completion", {
 
         modules.CompletionContext = Class("CompletionContext", CompletionContext, {
             init: function init() {
-                this.options = modules.options;
+                this.modules = modules;
                 return init.superapply(this, arguments);
-            }
+            },
+
+            get options() this.modules.options
         });
     },
     commands: function (dactyl, modules, window) {

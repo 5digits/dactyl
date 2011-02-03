@@ -22,6 +22,7 @@ var StatusLine = Module("statusline", {
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
+
             highlight.loadCSS(util.compileMacro(<![CDATA[
                 !AddonBar;#addon-bar  {
                     padding-left: 0 !important;

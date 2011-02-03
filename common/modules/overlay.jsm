@@ -159,7 +159,7 @@ var Overlay = Module("Overlay", {
                      "services",
                      "storage",
                      "util"
-                    ].forEach(function (name) require(jsmodules, name));
+                    ].forEach(function (name) defineModule.time("load", name, require, null, jsmodules, name));
 
                     ["dactyl",
                      "modes",
@@ -181,7 +181,7 @@ var Overlay = Module("Overlay", {
                      "statusline",
                      "styles",
                      "template"
-                     ].forEach(modules.load);
+                     ].forEach(function (name) defineModule.time("load", name, modules.load, modules, name));
 
                     config.scripts.forEach(modules.load);
                 }, this);

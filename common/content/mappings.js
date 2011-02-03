@@ -36,8 +36,7 @@ var Map = Class("Map", {
 
         this.id = ++Map.id;
         this.modes = modes;
-        this.names = keys.map(events.closure.canonicalKeys);
-        this.name = this.names[0];
+        this._keys = keys;
         this.action = action;
         this.description = description;
 
@@ -48,14 +47,17 @@ var Map = Class("Map", {
             update(this, extraInfo);
     },
 
+    name: Class.memoize(function () this.names[0]),
+
+    /** @property {string[]} All of this mapping's names (key sequences). */
+    names: Class.memoize(function () this._keys.map(events.closure.canonicalKeys)),
+
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
 
     /** @property {number} A unique ID for this mapping. */
     id: null,
     /** @property {number[]} All of the modes for which this mapping applies. */
     modes: null,
-    /** @property {string[]} All of this mapping's names (key sequences). */
-    names: null,
     /** @property {function (number)} The function called to execute this mapping. */
     action: null,
     /** @property {string} This mapping's description, as shown in :listkeys. */

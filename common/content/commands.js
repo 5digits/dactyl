@@ -111,13 +111,13 @@ update(CommandOption, {
 var Command = Class("Command", {
     init: function (specs, description, action, extraInfo) {
         specs = Array.concat(specs); // XXX
-        let parsedSpecs = Command.parseSpecs(specs);
+        let parsedSpecs = extraInfo.parsedSpecs || Command.parseSpecs(specs);
 
         this.specs = specs;
         this.shortNames = array.compact(parsedSpecs.map(function (n) n[1]));
         this.longNames = parsedSpecs.map(function (n) n[0]);
         this.name = this.longNames[0];
-        this.names = array(parsedSpecs).flatten();
+        this.names = array.flatten(parsedSpecs);
         this.description = description;
         this.action = action;
 
@@ -471,11 +471,15 @@ var Commands = Module("commands", {
         args[3].definedAt = commands.getCaller(Components.stack.caller.caller);
 
         let names = array.flatten(Command.parseSpecs(args[0]));
+        args.parsedSpecs = names;
+
         dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
                       "E182: Can't replace non-user command: " + args[0][0]);
+
         if (!replace || !args[3].user)
             dactyl.assert(!names.some(function (name) name in this._exMap, this),
                           "Not replacing command " + args[0]);
+
         for (let name in values(names)) {
             ex.__defineGetter__(name, function () this._run(name));
             if (name in this._exMap)
@@ -484,8 +488,10 @@ var Commands = Module("commands", {
 
         let name = names[0];
         let closure = function () commands._exMap[name];
+
         memoize(this._exMap, name, function () Command.apply(null, args));
         memoize(this._exCommands, this._exCommands.length, closure);
+
         for (let alias in values(names.slice(1)))
             memoize(this._exMap, alias, closure);
 
