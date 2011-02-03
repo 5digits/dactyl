@@ -468,7 +468,7 @@ var Commands = Module("commands", {
     _addCommand: function (args, replace) {
         if (!args[3])
             args[3] = {};
-        args[3].definedAt = Commands.getCaller(Components.stack.caller.caller);
+        args[3].definedAt = commands.getCaller(Components.stack.caller.caller);
 
         let names = array.flatten(Command.parseSpecs(args[0]));
         args.parsedSpecs = names;
@@ -657,6 +657,23 @@ var Commands = Module("commands", {
      */
     getUserCommands: function () {
         return this._exCommands.filter(function (cmd) cmd.user);
+    },
+
+    /**
+     * Returns a frame object describing the currently executing
+     * command, if applicable, otherwise returns the passed frame.
+     *
+     * @param {nsIStackFrame} frame
+     */
+    getCaller: function (frame) {
+        if (io.sourcing)
+           return {
+                __proto__: frame,
+                filename: io.sourcing.file[0] == "[" ? io.sourcing.file :
+                            services.io.newFileURI(File(io.sourcing.file)).spec,
+                lineNumber: io.sourcing.line
+            };
+        return frame;
     },
 
     /**
@@ -1162,23 +1179,6 @@ var Commands = Module("commands", {
             delete this._exMap[name];
     }
 }, {
-    /**
-     * Returns a frame object describing the currently executing
-     * command, if applicable, otherwise returns the passed frame.
-     *
-     * @param {nsIStackFrame} frame
-     */
-    getCaller: function (frame) {
-        if (io.sourcing)
-           return {
-                __proto__: frame,
-                filename: io.sourcing.file[0] == "[" ? io.sourcing.file :
-                            services.io.newFileURI(File(io.sourcing.file)).spec,
-                lineNumber: io.sourcing.line
-            };
-        return frame;
-    },
-
     // returns [count, parsed_argument]
     parseArg: function parseArg(str, sep, keepQuotes) {
         let arg = "";

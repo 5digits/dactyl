@@ -844,7 +844,7 @@ var Completion = Module("completion", {
     get setFunctionCompleter() JavaScript.setCompleter, // Backward compatibility
 
     Local: function (dactyl, modules, window) ({
-        get options() modules.options,
+        options: modules.options,
 
         // FIXME
         _runCompleter: function _runCompleter(name, filter, maxItems) {

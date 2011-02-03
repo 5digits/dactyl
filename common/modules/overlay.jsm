@@ -246,11 +246,9 @@ var Overlay = Module("Overlay", {
                             defineModule.loadLog.push(" from: " + util.fixURI(frame.filename) + ":" + frame.lineNumber);
 
                         delete modules[module.className];
-                        // util.dump("INIT: " + module.className);
                         modules[module.className] = defineModule.time(module.className, "init", module);
-                        frob(module.className);
 
-                        // init(modules[module.className]);
+                        init(modules[module.className]);
                     }
                     catch (e) {
                         util.dump("Loading " + (module && module.className) + ":");
@@ -259,38 +257,16 @@ var Overlay = Module("Overlay", {
                     return modules[module.className];
                 }
 
-                Module.list.forEach(function (mod) {
-                    Object.keys(mod.prototype.INIT).forEach(function (name) {
-                        deferredInit[name] = deferredInit[name] || [];
-                        deferredInit[name].push(function () {
-                            // util.dump("INIT: " + mod.className + ":" + name);
-                            defineModule.time(mod.className, name,
-                                              name, mod.prototype.INIT,
-                                              modules.dactyl, modules, window);
-                        });
-                    });
-                });
-                defineModule.modules.forEach(function (mod) {
-                    Object.keys(mod.INIT).forEach(function (name) {
-                        deferredInit[name] = deferredInit[name] || [];
-                        deferredInit[name].push(function () {
-                            // util.dump("INIT: " + mod.constructor.className + ":" + name);
-                            defineModule.time(mod.constructor.className, name,
-                                              mod.INIT[name], mod,
-                                              modules.dactyl, modules, window);
-                        });
-                    });
-                });
+                for each (let module in defineModule.modules)
+                    if (module.INIT.init)
+                        defineModule.time(module.constructor.className, "init",
+                                          module.INIT.init, module,
+                                          modules.dactyl, modules, window);
 
-                function frob(name) {
-                    (deferredInit[name] || []).forEach(call);
-                }
+                defineModule.modules.map(init);
 
-                frob("init");
-                defineModule.modules.forEach(function (mod) { frob(mod.className); });
-
-                // Module.list.forEach(load);
-                frob("load");
+                Module.list.forEach(load);
+                deferredInit["load"].forEach(call);
                 modules.times = update({}, defineModule.times);
 
                 defineModule.loadLog.push("Loaded in " + (Date.now() - start) + "ms");

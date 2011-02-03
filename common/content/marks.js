@@ -208,7 +208,7 @@ var Marks = Module("marks", {
     events: function () {
         let appContent = document.getElementById("appcontent");
         if (appContent)
-            events.addSessionListener(appContent, "load", marks.closure._onPageLoad, true);
+            events.addSessionListener(appContent, "load", this.closure._onPageLoad, true);
     },
     mappings: function () {
         var myModes = config.browserModes;

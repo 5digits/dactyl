@@ -172,7 +172,7 @@ var MapHive = Class("MapHive", {
         extra = extra || {};
 
         let map = Map(modes, keys, description, action, extra);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = commands.getCaller(Components.stack.caller);
         map.hive = this;
 
         if (this.name !== "builtin")
@@ -344,7 +344,7 @@ var Mappings = Module("mappings", {
      */
     add: function () {
         let map = this.builtin.add.apply(this.builtin, arguments);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = commands.getCaller(Components.stack.caller);
         return map;
     },
 
@@ -361,7 +361,7 @@ var Mappings = Module("mappings", {
      */
     addUserMap: function () {
         let map = this.user.add.apply(this.user, arguments);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = commands.getCaller(Components.stack.caller);
         return map;
     },
 

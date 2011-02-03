@@ -147,9 +147,6 @@ defineModule.modules = [];
 defineModule.times = { all: 0 };
 defineModule.time = function time(major, minor, func, self) {
     let time = Date.now();
-    if (typeof func !== "function")
-        func = self[func];
-
     try {
         var res = func.apply(self, Array.slice(arguments, 4));
     }
