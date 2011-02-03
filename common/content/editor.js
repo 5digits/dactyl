@@ -405,7 +405,7 @@ var Editor = Module("editor", {
 
         if (forward) {
             advance(true);
-            if (!sameWord);
+            if (!sameWord)
                 advance(false);
         }
         else {
