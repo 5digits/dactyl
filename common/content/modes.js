@@ -487,7 +487,7 @@ var Modes = Module("modes", {
             function () { events.feedkeys("<Esc>"); });
     },
     prefs: function () {
-        prefs.watch("accessibility.browsewithcaret", modes.closure.onCaretChange);
+        prefs.watch("accessibility.browsewithcaret", function () modes.onCaretChange.apply(modes, arguments));
     }
 });
 
