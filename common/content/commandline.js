@@ -983,6 +983,8 @@ var CommandLine = Module("commandline", {
             this.itemList = commandline.completionList;
             this.itemList.setItems(this.context);
 
+            dactyl.registerObserver("events.doneFeeding", this.closure.onDoneFeeding, true);
+
             this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
                 if (!events.feedingKeys && options["autocomplete"].length) {
                     this.complete(true, false);
@@ -999,6 +1001,10 @@ var CommandLine = Module("commandline", {
             this.tabTimer.reset();
             this.autocompleteTimer.reset();
             this.itemList.visible = false;
+        },
+
+        onDoneFeeding: function onDoneFeeding() {
+            this.autocompleteTimer.flush(true);
         },
 
         UP: {},

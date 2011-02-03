@@ -558,6 +558,7 @@ var Events = Module("events", {
             this.feedingKeys = wasFeeding;
             if (quiet)
                 commandline.quiet = wasQuiet;
+            dactyl.triggerObserver("events.doneFeeding");
         }
         return true;
     },
