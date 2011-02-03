@@ -245,9 +245,15 @@ var Overlay = Module("Overlay", {
                         if (frame && frame.filename)
                             defineModule.loadLog.push(" from: " + util.fixURI(frame.filename) + ":" + frame.lineNumber);
 
-                        delete modules[module.className];
-                        // util.dump("INIT: " + module.className);
-                        modules[module.className] = defineModule.time(module.className, "init", module);
+                        let obj = defineModule.time(module.className, "init", module);
+                        try {
+                            delete modules[module.className];
+                            modules[module.className] = obj;
+                        }
+                        catch (e) {
+                            Class.replaceProperty(modules, module.className, obj);
+                        }
+
                         frob(module.className);
 
                         // init(modules[module.className]);
