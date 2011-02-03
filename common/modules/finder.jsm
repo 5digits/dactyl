@@ -29,6 +29,7 @@ var RangeFinder = Module("rangefinder", {
     get options() this.modules.options,
 
     openPrompt: function (mode) {
+        this.commandline;
         this.CommandMode(mode).open();
 
         if (this.rangeFind && this.rangeFind.window.get() === this.window)
@@ -318,6 +319,8 @@ var RangeFind = Class("RangeFind", {
         this.lastString = "";
     },
 
+    get store() this.content.document.dactylStore = this.content.document.dactylStore || {},
+
     get backward() this.finder.findBackwards,
 
     get matchCase() this.finder.caseSensitive,
@@ -336,9 +339,7 @@ var RangeFind = Class("RangeFind", {
     get findString() this.lastString,
 
     get selectedRange() {
-        let win = this.content, store = this.content.document.dactylStore;;
-        if (store)
-            win = store.focusedFrame && store.focusedFrame.get() || win;
+        let win = this.store.focusedFrame && this.store.focusedFrame.get() || this.content;
 
         let selection = win.getSelection();
         return (selection.rangeCount ? selection.getRangeAt(0) : this.ranges[0].range).cloneRange();
@@ -349,7 +350,7 @@ var RangeFind = Class("RangeFind", {
         this.range.selectionController.scrollSelectionIntoView(
             this.range.selectionController.SELECTION_NORMAL, 0, false);
 
-        services.focus.focusedWindow = range.startContainer.ownerDocument.defaultView;
+        this.store.focusedFrame = Cu.getWeakReference(range.startContainer.ownerDocument.defaultView);
     },
 
     cancel: function () {

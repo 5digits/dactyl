@@ -510,6 +510,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
         catch (e) {}
 
+        util.dumpStack(" ================ FOCUS CONTENT ================ ");
         if (clearFocusedElement) {
             if (dactyl.focusedElement)
                 dactyl.focusedElement.blur();

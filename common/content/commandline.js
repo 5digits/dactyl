@@ -102,7 +102,7 @@ var CommandWidgets = Class("CommandWidgets", {
             },
             getElement: CommandWidgets.getEditor,
             getGroup: function (value) this.activeGroup.commandline,
-            onChange: function (elem) {
+            onChange: function (elem, value) {
                 if (elem.inputField != dactyl.focusedElement)
                     try {
                         elem.selectionStart = elem.value.length;
@@ -113,7 +113,10 @@ var CommandWidgets = Class("CommandWidgets", {
                 if (!elem.collapsed)
                     dactyl.focus(elem);
             },
-            onVisibility: function (elem, visible) { visible && dactyl.focus(elem); }
+            onVisibility: function (elem, visible) {
+                if (visible)
+                    dactyl.focus(elem);
+            }
         });
 
         this.addElement({
@@ -191,7 +194,7 @@ var CommandWidgets = Class("CommandWidgets", {
                                     .join(" "));
                             elem.value = val[1];
                             if (obj.onChange)
-                                obj.onChange.call(this, elem);
+                                obj.onChange.call(this, elem, val);
                         }
                     }, this);
 
@@ -799,10 +802,8 @@ var CommandLine = Module("commandline", {
             ]).toObject(),
         {
             blur: function onBlur(event) {
-                this.timeout(function () {
-                    if (this.commandMode && event.originalTarget === this.widgets.active.command.inputField)
-                        dactyl.focus(this.widgets.active.command.inputField);
-                });
+                if (this.commandMode && event.originalTarget === this.widgets.active.command.inputField)
+                    dactyl.focus(this.widgets.active.command.inputField);
             },
             focus: function onFocus(event) {
                 if (!this.commandMode
