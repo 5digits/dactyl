@@ -23,12 +23,16 @@ function wrapAssertNoErrors(func, message) {
 function assertMessage(funcName, want, got, message) {
     if (typeof want === "string")
         return utils.assertEqual(funcName, want, got, message);
-    else if (typeof want === "function")
-        return utils.test(want(got), {
+    else if (typeof want === "function") {
+        var res = want(got);
+        if (res === undefined)
+            return true;
+        return utils.test(res, {
             function: funcName,
             want: want, got: got,
             comment: message
         });
+    }
     else
         return utils.test(want.test(got), {
             function: funcName,

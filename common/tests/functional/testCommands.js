@@ -14,14 +14,19 @@ var setupModule = function (module) {
     dactyl.modules.options["wildmode"] = ["list"];
 
     dactyl.modules.prefs.set("browser.tabs.closeWindowWithLastTab", false);
+    dactyl.elements.multilineContainer.setAttribute("moz-collapsed", "true");
 };
 var teardownModule = function (module) {
+    dactyl.elements.multilineContainer.removeAttribute("moz-collapsed");
     dactyl.teardown();
 }
 
 function $(selector) controller.window.document.querySelector(selector);
 
-function hasNItems(nItems) function (context) utils.assertEqual("testCommand.hasNItems", nItems, context.allItems.items.length);
+function hasNItems(nItems)
+    function hasNItems(context) {
+        utils.assertEqual("testCommand.hasNItems", nItems, context.allItems.items.length);
+    };
 
 function hasItems(context) context.allItems.items.length;
 
@@ -29,9 +34,15 @@ function hasntNullItems(context) hasItems(context) &&
     !context.allItems.items.some(function ({ text, description }) [text, description].some(function (text) /^\[object/.test(text)));
 
 function sidebarState(state)
-    function () utils.assertEqual("testCommand.sidebarState", state,
-                                  typeof state == "string" ? $("#sidebar-title").value
-                                                           : !$("#sidebar-box").hidden);
+    function sidebarState() {
+        utils.assertEqual("testCommand.sidebarState", state,
+                          typeof state == "string" ? $("#sidebar-title").value
+                                                   : !$("#sidebar-box").hidden);
+    };
+function toolbarState(selector, state)
+    function toolbarState() {
+        utils.assertEqual("testCommand.toolbarState", state, !$(selector).collapsed)
+    };
 
 var tests = {
     "!": {
@@ -128,7 +139,7 @@ var tests = {
     },
     delbmarks: { anyOutput: ["", "about:pentadactyl"] },
     delcommand: {
-        noOutput: ["foo"]
+        noOutput: ["foo"] // TODO: Why is this failing? "Unexpected command output: delcommand foo"
     },
     delmacros: {
         error: [""],
@@ -600,9 +611,36 @@ var tests = {
     tabprevious: {},
     tabrewind: {},
     time: {},
-    toolbarhide: {},
-    toolbarshow: {},
-    toolbartoggle: {},
+    toolbarhide: {
+        init: [
+            ["tbs Navigation Toolbar", toolbarState("#nav-bar", true)],
+            ["tbs Bookmarks Toolbar", toolbarState("#PersonalToolbar", true)]
+        ],
+        completions: [["", hasItems]],
+        noOutput: [
+            ["Navigation Toolbar", toolbarState("#nav-bar", false)],
+            ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", false)]
+        ],
+        error: ["", "foo"]
+    },
+    toolbarshow: {
+        completions: [["", hasItems]],
+        noOutput: [
+            ["Navigation Toolbar", toolbarState("#nav-bar", true)],
+            ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", true)]
+        ],
+        error: ["", "foo"]
+    },
+    toolbartoggle: {
+        completions: [["", hasItems]],
+        noOutput: [
+            ["Navigation Toolbar", toolbarState("#nav-bar", false)],
+            ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", false)],
+            ["Navigation Toolbar", toolbarState("#nav-bar", true)],
+            ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", true)]
+        ],
+        error: ["", "foo"]
+    },
     tunmap: {},
     unabbreviate: {},
     undo: {},
@@ -610,14 +648,34 @@ var tests = {
     unlet: {},
     unmap: {},
     verbose: {},
-    version: {},
+    version: {
+        multiOutput: [
+            ["", function (msg) {
+                var res = /(\w+dactyl) (\S+) \(([\^)]+)\) running on:\nMozilla/;
+                return res && res[2] != "null" && res[3] != "null";
+            }]
+        ]
+    },
     viewsource: {},
     winclose: {},
     window: {},
     winonly: {},
     winopen: {},
     wqall: {},
-    yank: {},
+    yank: {
+        multiOutput: [
+            ["foo".quote(), /foo/],
+            [":echo " + "bar".quote(), /bar/],
+            [":addons", /Pentadactyl/]
+        ],
+        error: [
+            ":echoerr " + "foo".quote()
+        ],
+        completions: [
+            ["", hasItems],
+            [":", hasItems]
+        ]
+    },
     zoom: {}
 };
 
@@ -655,10 +713,17 @@ function _runCommands(cmdName, testName, commands) {
             dump("CMD: " + testName + " " + cmdName + " " + cmd + "\n");
             var res = dactyl.runExCommand(cmd);
             controller.waitForPageLoad(controller.tabs.activeTab);
-            if (test)
-                jumlib.assert(test(), "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
+            runTest("Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test,
+                    test);
         });
     });
+}
+
+function runTest(message, test) {
+    if (test)
+        var res = test.apply(null, Array.slice(arguments, runTest.length));
+    if (res !== undefined)
+        jumlib.assert(res, message);
 }
 
 for (var val in Iterator(tests)) (function ([command, paramsList]) {
@@ -696,14 +761,14 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
                     var res = dactyl.assertMessageLine(/./, "Expected command output: " + cmd);
                     if (res && test != null)
                         dactyl.assertMessageLine(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
-                }, true && !params.errorsOk);
+                }, !params.errorsOk);
                 break;
             case "multiOutput":
                 runCommands(command, testName, commands, function (cmd, test) {
                     var res = dactyl.assertMessageWindowOpen(true, "Expected command output: " + cmd);
                     if (res && test != null)
                         dactyl.assertMessageWindow(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
-                }, true && !params.errorsOk);
+                }, !params.errorsOk);
                 break;
             case "error":
                 addTest(command, testName, function () {
@@ -717,7 +782,7 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
                         }, null, [], cmd);
 
                         if (res && test != null)
-                            dactyl.runExCommand(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
+                            dactyl.assertMessage(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
                     });
                 });
                 break;
@@ -730,8 +795,9 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
                         dactyl.assertNoErrorMessages(function () {
                             dump("COMPL: " + cmd + "\n");
                             var context = dactyl.runExCompletion(cmd);
-                            if (context && test)
-                                jumlib.assert(test(context), "Completion tests failed: " + cmd.quote() + " " + test);
+                            if (context)
+                                runTest("Completion tests failed: " + cmd.quote() + " " + test,
+                                        test, context);
                         });
                     });
                 });

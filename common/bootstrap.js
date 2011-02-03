@@ -85,9 +85,7 @@ function startup(data, reason) {
 
         addonData = data;
         addon = data;
-        dump("dactyl: bootstrap: pre-getAddonByID\n");
         AddonManager.getAddonByID(addon.id, function (a) {
-            dump("dactyl: bootstrap: getAddonByID: " + a + "\n");
             addon = a;
             updateVersion();
         });
