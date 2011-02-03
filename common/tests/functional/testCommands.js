@@ -19,10 +19,18 @@ var teardownModule = function (module) {
     dactyl.teardown();
 }
 
-function hasNItems(nItems) function (context) context.allItems.items.length == nItems;
+function $(selector) controller.window.document.querySelector(selector);
+
+function hasNItems(nItems) function (context) utils.assertEqual("testCommand.hasNItems", nItems, context.allItems.items.length);
+
 function hasItems(context) context.allItems.items.length;
+
 function hasntNullItems(context) hasItems(context) &&
     !context.allItems.items.some(function ({ text, description }) [text, description].some(function (text) /^\[object/.test(text)));
+
+function sidebarState(state)
+    function () typeof state == "string" ? $("#sidebar-title").value == state
+                                         : $("#sidebar-box").hidden == state;
 
 var tests = {
     "!": {
@@ -480,16 +488,24 @@ var tests = {
     get setlocal() this.set,
     sidebar: {
         error: ["!", ""],
-        noOutput: [
-            "! Add-ons",       "Add-ons",       "! Add-ons",
-            "! Bookmarks",     "Bookmarks",     "! Bookmarks",
-            "! Console",       "Console",       "! Console",
-            "! Downloads",     "Downloads",     "! Downloads",
-            "! History",       "History",       "! History",
-            "! Preferences",   "Preferences",   "! Preferences",
-            // "!" Previous sidebar isn't saved until the window loads.
-            //     We don't give it enough time.
+        test: function (name) [
+            ["! " + name, sidebarState(name)],
+            [name, sidebarState(name)],
+            ["! " + name, sidebarState(false)]
         ],
+        get noOutput()
+            Array.concat.apply([],
+                ["Add-ons", // Final "! Add-ons" currently failing
+                 "Bookmarks",
+                 "Downloads",
+                 "Console",
+                 "History",
+                 "Preferences"]
+            .map(this.test))
+            .concat([
+                ["!", sidebarState("Preferences")],
+                ["!", sidebarState(false)]
+            ]),
         completions: [
             ["", hasntNullItems],
             "! "
@@ -518,10 +534,15 @@ var tests = {
             "./.pentadactyl/some-nonexistent/bad.js",
             "./.pentadactyl/some-nonexistent/bad.penta",
             ".pentadactyl/some-nonexistent/bad.js",
-            ".pentadactyl/some-nonexistent/bad.penta"
+            ".pentadactyl/some-nonexistent/bad.penta",
+            ".pentadactyl/some-nonexistent-file.js"
         ],
-        singleOutput: [".pentadactyl/some-nonexistent-file.js"],
-        completions: this.runtime.completions
+        completions: [
+            ["", hasItems],
+            [".pentadactyl/some-nonexistent/", hasItems],
+            ["chrome://browser/content/", hasItems],
+            ["resource://dactyl/", hasItems]
+        ]
     }),
     stop: { noOutput: [""] },
     stopall: { noOutput: [""] },
@@ -547,12 +568,12 @@ var tests = {
     styledisable: {
         init: ["style -n foo http:* div {}", "style -n bar ftp:* div", "styledisable -n bar"],
         cleanup: ["delstyle -n foo", "delstyle -n bar"],
-        noOutput: ["-name=foo"],
         completions: [
             ["", hasItems],
             ["-name=", hasNItems(1)],
             ["-index=", hasNItems(1)]
-        ]
+        ],
+        noOutput: ["-name=foo", "-name=bar"]
     },
     get styleenable() this.styledisable,
     styletoggle: {
@@ -653,13 +674,13 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
                 runCommands(command, testName, commands, function (cmd, test) {
                     var res = dactyl.assertMessage(function (msg) !msg, "Unexpected command output: " + cmd);
                     if (res && test)
-                        jumlib.assert(test(), "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
+                        dactyl.assertMessage(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
                 });
                 break;
             case "anyOutput":
                 runCommands(command, testName, commands, function (cmd, test) {
                     if (test)
-                        jumlib.assert(test(), "Initializing for " + cmdName + " tests failed: " + cmd.quote() + " " + test);
+                        dactyl.assertMessage(test, "Running " + testName + " tests failed: " + cmd.quote() + " " + test.toSource());
                 });
                 break;
             case "someOutput":
