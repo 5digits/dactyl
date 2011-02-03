@@ -15,6 +15,17 @@
 <h2 tag="various">Various commands</h2>
 
 <item>
+    <tags>:comp :completions</tags>
+    <spec>:comp<oa>letions</oa> <a>ex-command</a></spec>
+    <description>
+        <p>
+            List the completion results for a given command substring.
+        </p>
+        <example><ex>:completions :set! <str delim="">browser.tabs.</str></ex></example>
+    </description>
+</item>
+
+<item>
     <tags>:contexts</tags>
     <spec>:contexts <a>ex-command</a></spec>
     <description>

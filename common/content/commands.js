@@ -1447,6 +1447,15 @@ var Commands = Module("commands", {
             },
             { argCount: "0" });
 
+        commands.add(["comp[letions]"],
+            "List the completion results for a given command substring",
+            function (args) { completion.listCompleter("ex", args[0]); },
+            {
+                argCount: "1",
+                completer: function (context, args) completion.ex(context),
+                literal: 0
+            });
+
         commands.add(["delc[ommand]"],
             "Delete the specified user-defined command",
             function (args) {

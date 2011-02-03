@@ -81,6 +81,7 @@
       - Added -arg flag to :map. [b6]
       - :extensions has been replaced with a more powerful :addons.
       - Added -literal flag to :command. [b6]
+      - Added :completions command. [b6]
       - Added :cookies command. [b3]
       - :extadd now supports remote URLs as well as local files on Firefox 4. [b2]
       - Added :if/:elseif/:else/:endif conditionals. [b3]
