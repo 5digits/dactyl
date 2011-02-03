@@ -1,9 +1,9 @@
 // Runs a slew of generic command tests
 
-var dactyllib = require("dactyl");
 var utils = require("utils");
-
 const { module } = utils;
+
+var dactyllib = module("dactyl");
 var jumlib = module("resource://mozmill/modules/jum.js");
 
 var setupModule = function (module) {
@@ -29,8 +29,9 @@ function hasntNullItems(context) hasItems(context) &&
     !context.allItems.items.some(function ({ text, description }) [text, description].some(function (text) /^\[object/.test(text)));
 
 function sidebarState(state)
-    function () typeof state == "string" ? $("#sidebar-title").value == state
-                                         : $("#sidebar-box").hidden == state;
+    function () utils.assertEqual("testCommand.sidebarState", state,
+                                  typeof state == "string" ? $("#sidebar-title").value
+                                                           : !$("#sidebar-box").hidden);
 
 var tests = {
     "!": {
@@ -503,7 +504,7 @@ var tests = {
                  "Preferences"]
             .map(this.test))
             .concat([
-                ["!", sidebarState("Preferences")],
+                ["Preferences", sidebarState("Preferences")],
                 ["!", sidebarState(false)]
             ]),
         completions: [
@@ -728,17 +729,9 @@ for (var val in Iterator(tests)) (function ([command, paramsList]) {
 
                         dactyl.assertNoErrorMessages(function () {
                             dump("COMPL: " + cmd + "\n");
-                            dactyl.runExCompletion(cmd);
-                            if (test) {
-                                /* Freezes. :(
-                                var context = dactyl.modules.commandline.commandSession.completions.context;
-                                */
-                                var context = dactyl.modules.CompletionContext(cmd);
-                                context.tabPressed = true;
-                                context.fork("ex", 0, dactyl.modules.completion, "ex");
-                                jumlib.assert(context.wait(5000), "Completion failed: " + cmd.quote());
+                            var context = dactyl.runExCompletion(cmd);
+                            if (context && test)
                                 jumlib.assert(test(context), "Completion tests failed: " + cmd.quote() + " " + test);
-                            }
                         });
                     });
                 });

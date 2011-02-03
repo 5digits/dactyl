@@ -1,4 +1,4 @@
-var dactyllib = require("dactyl");
+var dactyllib = require("utils").module("dactyl");
 
 const FIND_TEST_PAGE = collector.addHttpResource("./data/") + "find.html";
 

@@ -1,5 +1,6 @@
-var jumlib = {}; Components.utils.import("resource://mozmill/modules/jum.js", jumlib);
-var dactyllib = require("dactyl");
+const { module } = require("utils");
+var jumlib = module("resource://mozmill/modules/jum.js");
+var dactyllib = module("dactyl");
 
 var setupModule = function (module) {
     controller = mozmill.getBrowserController();

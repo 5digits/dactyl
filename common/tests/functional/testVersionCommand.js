@@ -1,4 +1,4 @@
-var dactyllib = require("dactyl");
+var dactyllib = require("utils").module("dactyl");
 
 var setupModule = function (module) {
     controller = mozmill.getBrowserController();

@@ -1,6 +1,16 @@
+function module(uri) {
+    if (!/^[a-z-]+:/.exec(uri))
+        uri = /([^ ]+\/)[^\/]+$/.exec(Components.stack.filename)[1] + uri + ".jsm";
 
-var utils = require("utils");
-const { module, NS } = utils;
+    let obj = {};
+    Components.utils.import(uri, obj);
+    return obj;
+}
+
+var EXPORTED_SYMBOLS = ["Controller"];
+
+var utils = module("utils");
+const { NS } = utils;
 
 var elementslib = module("resource://mozmill/modules/elementslib.js");
 var frame = module("resource://mozmill/modules/frame.js");
@@ -175,7 +185,7 @@ Controller.prototype = {
             errorCount = this.modules.util.errorCount;
 
             try {
-                func.apply(self || this, args || []);
+                var returnVal = func.apply(self || this, args || []);
             }
             catch (e) {
                 this.modules.util.reportError(e);
@@ -193,9 +203,11 @@ Controller.prototype = {
             var errors = this.modules.util.errors.slice(errorCount - this.modules.util.errorCount)
                              .join("\n");
 
-        return utils.assertEqual('dactyl.assertNoErrors',
-                                 errorCount, this.modules.util.errorCount,
-                                 "Errors were reported during the execution of this test" + msg + "\n" + errors);
+        var res = utils.assertEqual('dactyl.assertNoErrors',
+                                    errorCount, this.modules.util.errorCount,
+                                    "Errors were reported during the execution of this test" + msg + "\n" + errors);
+
+        return returnVal === undefined ? res : returnVal;
     },
 
     /**
@@ -377,39 +389,58 @@ Controller.prototype = {
      *
      * @param {string} cmd The Ex command string as entered on the command
      *     line.
+     * @param {boolean} longWay Whether to test the completion by
+     *     entering it into the command line and dispatching a <Tab> key
+     *     press.
      */
-    runExCompletion: wrapAssertNoErrors(function (cmd) {
-        this.setExMode();
-
-        utils.assertEqual("dactyl.assertCommandLineFocused",
-                          this.elements.commandInput,
-                          this.elements.focused,
-                          "Running Ex Completion: The command line is not focused");
-
+    runExCompletion: wrapAssertNoErrors(function (cmd, longWay) {
         // dump("runExCompletion " + cmd + "\n");
-        if (true) {
-            let input = this.elements.commandInput;
-            input.value = cmd;
+        if (!longWay) {
+            var context = this.modules.CompletionContext(cmd);
+            context.tabPressed = true;
+            context.fork("ex", 0, this.modules.completion, "ex");
 
-            var event = input.ownerDocument.createEvent("Events");
-            event.initEvent("change", true, false);
-            input.dispatchEvent(event);
+            utils.assert("dactyl.runCompletions", context.wait(5000),
+                         "Completion failed: " + cmd.quote());
+
+            for (var [, ctxt] in Iterator(context.contextList))
+                for (var [, item] in Iterator(ctxt.items))
+                    ctxt.createRow(item);
+
+            return context;
         }
         else {
-            this.controller.type(null, cmd);
+            this.setExMode();
 
-            utils.assertEqual("dactyl.runExCompletion", cmd,
-                              this.elements.commandInput.editor.rootElement.firstChild.textContent,
-                              "Command line does not have the expected value: " + cmd);
+            utils.assertEqual("dactyl.assertCommandLineFocused",
+                              this.elements.commandInput,
+                              this.elements.focused,
+                              "Running Ex Completion: The command line is not focused");
+
+            if (true) {
+                let input = this.elements.commandInput;
+                input.value = cmd;
+
+                var event = input.ownerDocument.createEvent("Events");
+                event.initEvent("change", true, false);
+                input.dispatchEvent(event);
+            }
+            else {
+                this.controller.type(null, cmd);
+
+                utils.assertEqual("dactyl.runExCompletion", cmd,
+                                  this.elements.commandInput.editor.rootElement.firstChild.textContent,
+                                  "Command line does not have the expected value: " + cmd);
+            }
+
+            this.controller.keypress(null, "VK_TAB", {});
+
+            // XXX
+            if (this.modules.commandline._tabTimer)
+                this.modules.commandline._tabTimer.flush();
+            else if (this.modules.commandline.commandSession && this.modules.commandline.commandSession.completions)
+                this.modules.commandline.commandSession.completions.tabTimer.flush();
         }
-
-        this.controller.keypress(null, "VK_TAB", {});
-
-        // XXX
-        if (this.modules.commandline._tabTimer)
-            this.modules.commandline._tabTimer.flush();
-        else if (this.modules.commandline.commandSession && this.modules.commandline.commandSession.completions)
-            this.modules.commandline.commandSession.completions.tabTimer.flush();
     }),
 
     /**
@@ -461,6 +492,4 @@ Controller.prototype = {
     get applicationName() this.modules.config.appName // XXX
 };
 
-exports.Controller = Controller;
-
-// vim: sw=4 ts=8 et:
+// vim: sw=4 ts=8 et ft=javascript:
