@@ -730,7 +730,10 @@ var RangeFind = Class("RangeFind", {
     },
     nodeRange: function (node) {
         let range = node.ownerDocument.createRange();
-        range.selectNode(node);
+        try {
+            range.selectNode(node);
+        }
+        catch (e) {}
         return range;
     },
     sameDocument: function (r1, r2) r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument,

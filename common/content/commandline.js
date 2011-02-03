@@ -843,13 +843,11 @@ var CommandLine = Module("commandline", {
 
         let output = [];
         function observe(str, highlight, dom) {
-            util.dumpStack();
             output.push(dom && !isString(str) ? dom : str);
         }
 
         this.savingOutput = true;
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
-        util.dump(output);
         this.savingOutput = false;
         return output.map(function (elem) elem instanceof Node ? util.domToString(elem) : elem)
                      .join("\n");
