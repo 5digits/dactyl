@@ -651,7 +651,7 @@ var CommandLine = Module("commandline", {
     _echoLine: function echoLine(str, highlightGroup, forceSingle, silent) {
         this.widgets.message = str ? [highlightGroup, str] : null;
 
-        dactyl.triggerObserver("echoLine", str, highlightGroup, forceSingle);
+        dactyl.triggerObserver("echoLine", str, highlightGroup, null, forceSingle);
 
         if (!this.commandVisible)
             this.hide();
@@ -843,11 +843,13 @@ var CommandLine = Module("commandline", {
 
         let output = [];
         function observe(str, highlight, dom) {
+            util.dumpStack();
             output.push(dom && !isString(str) ? dom : str);
         }
 
         this.savingOutput = true;
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
+        util.dump(output);
         this.savingOutput = false;
         return output.map(function (elem) elem instanceof Node ? util.domToString(elem) : elem)
                      .join("\n");
