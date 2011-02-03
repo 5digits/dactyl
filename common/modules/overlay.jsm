@@ -253,6 +253,7 @@ var Overlay = Module("Overlay", {
                         catch (e) {
                             Class.replaceProperty(modules, module.className, obj);
                         }
+                        loaded[module.className] = true;
 
                         frob(module.className);
 

@@ -129,6 +129,9 @@ var Command = Class("Command", {
 
     get helpTag() ":" + this.name,
 
+    get lastCommand() this._lastCommand || commandline.command,
+    set lastCommand(val) { this._lastCommand = val; },
+
     /**
      * Execute this command.
      *

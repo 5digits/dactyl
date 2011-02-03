@@ -346,7 +346,8 @@ var Buffer = Module("buffer", {
             util.timeout(function () {
                 statusline.updateBufferPosition();
                 statusline.updateZoomLevel();
-                commandline.clear();
+                if (loaded.commandline)
+                    commandline.clear();
             }, 500);
         },
         // called at the very end of a page load

@@ -1026,7 +1026,7 @@ unlet s:cpo_save
 
     },
     modes: function (dactyl, modules, window) {
-        const { commandline, modes } = modules;
+        const { modes } = modules;
 
         modes.addMode("FILE_INPUT", {
             extended: true,

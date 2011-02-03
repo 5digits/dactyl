@@ -589,17 +589,14 @@ var CommandLine = Module("commandline", {
 
     get command() {
         if (this.commandVisible && this.widgets.command)
-            return this._lastCommand = this.widgets.command[1];
-        return this._lastCommand;
+            return commands.lastCommand = this.widgets.command[1];
+        return commands.lastCommand;
     },
     set command(val) {
         if (this.commandVisible && (modes.extended & modes.EX))
             return this.widgets.command = val;
-        return this._lastCommand = val;
+        return commands.lastCommand = val;
     },
-
-    get lastCommand() this._lastCommand || this.command,
-    set lastCommand(val) { this._lastCommand = val; },
 
     clear: function clear() {
         if (this.widgets.message && this.widgets.message[1] === this._lastClearable)

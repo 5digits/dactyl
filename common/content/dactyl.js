@@ -369,13 +369,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      *     See {@link CommandLine#echo}.
      */
     echomsg: function (str, verbosity, flags) {
-        flags |= commandline.APPEND_TO_MESSAGES;
-
         if (verbosity == null)
             verbosity = 0; // verbosity level is exclusionary
 
         if (options["verbose"] >= verbosity)
-            commandline.echo(str, commandline.HL_INFOMSG, flags);
+            commandline.echo(str, commandline.HL_INFOMSG,
+                             flags | commandline.APPEND_TO_MESSAGES);
     },
 
     /**
@@ -455,7 +454,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         modifiers = modifiers || {};
 
         if (!silent)
-            commandline.lastCommand = str.replace(/^\s*:\s*/, "");
+            commands.lastCommand = str.replace(/^\s*:\s*/, "");
         let res = true;
         for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
             if (command === null)
@@ -1484,7 +1483,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     M: ["Always show messages outside of the status line"]
                 },
                 setter: function (opts) {
-                    commandline.widgets.updateVisibility();
+                    if (loaded.commandline)
+                        commandline.widgets.updateVisibility();
                 }
             },
             {
