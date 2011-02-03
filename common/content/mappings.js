@@ -482,6 +482,7 @@ var Mappings = Module("mappings", {
                         args["-description"],
                         Command.bindMacro(args, "-keys", function (params) params),
                         {
+                            arg: args["-arg"],
                             count: args["-count"],
                             noremap: args["-builtin"],
                             persist: !args["-nopersist"],
@@ -506,6 +507,10 @@ var Mappings = Module("mappings", {
                     hereDoc: true,
                     literal: 1,
                     options: [
+                        {
+                            names: ["-arg", "-a"],
+                            description: "Accept an argument after the requisite key press",
+                        },
                         {
                             names: ["-builtin", "-b"],
                             description: "Execute this mapping as if there were no user-defined mappings"

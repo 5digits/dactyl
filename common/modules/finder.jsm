@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("finder", {
     exports: ["RangeFind", "RangeFinder", "rangefinder"],
-    use: ["prefs", "services", "util"]
+    use: ["services", "util"]
 }, this);
 
 /** @instance rangefinder */
@@ -242,6 +242,8 @@ var RangeFinder = Module("rangefinder", {
     },
     options: function (dactyl, modules, window) {
         const { options, rangefinder } = modules;
+        const { prefs } = require("prefs");
+
         // prefs.safeSet("accessibility.typeaheadfind.autostart", false);
         // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
         prefs.safeSet("accessibility.typeaheadfind", false);
