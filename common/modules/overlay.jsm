@@ -303,7 +303,7 @@ var Overlay = Module("Overlay", {
                     modules.__defineGetter__(className, function () {
                         delete modules[className];
                         frob(className);
-                        return modules[className];
+                        return modules[className] = modules[className];
                     });
                 });
 
