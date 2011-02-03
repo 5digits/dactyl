@@ -660,7 +660,7 @@ var Options = Module("options", {
         if (!extraInfo)
             extraInfo = {};
 
-        extraInfo.definedAt = commands.getCaller(Components.stack.caller);
+        extraInfo.definedAt = Commands.getCaller(Components.stack.caller);
 
         let name = names[0];
         if (name in this._optionMap) {
@@ -973,7 +973,7 @@ var Options = Module("options", {
                     }
                     if (res)
                         dactyl.echoerr(res);
-                    option.setFrom = commands.getCaller(null);
+                    option.setFrom = Commands.getCaller(null);
                 }
             }
             flushList();
