@@ -277,7 +277,11 @@ var Overlay = Module("Overlay", {
                     });
                 });
                 defineModule.modules.forEach(function (mod) {
-                    Object.keys(mod.INIT).forEach(function (name) {
+                    let names = set(Object.keys(mod.INIT));
+                    if ("init" in mod.INIT)
+                        set.add(names, "init");
+
+                    keys(names).forEach(function (name) {
                         deferredInit[name] = deferredInit[name] || [];
                         deferredInit[name].push(function () {
                             // util.dump("INIT: " + mod.constructor.className + ":" + name);

@@ -917,6 +917,7 @@ Module.INIT = {
                 module = objs[i] = Object.create(module);
 
             modules.jsmodules[this.constructor.className] = module;
+            util.dump(" ====================================== INIT " + this.constructor.className + " ====================================== ");
             locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)))
             module.instance = module;
             module.init();

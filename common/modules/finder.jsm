@@ -20,13 +20,13 @@ var RangeFinder = Module("rangefinder", {
             this.lastFindPattern = "";
         },
 
-        get commandline() this.modules.commandline,
-        get modes() this.modules.modes,
-        get options() this.modules.options,
-
         get rangeFind() modules.buffer.localStore.rangeFind,
         set rangeFind(val) modules.buffer.localStore.rangeFind = val
     }),
+
+    get commandline() this.modules.commandline,
+    get modes() this.modules.modes,
+    get options() this.modules.options,
 
     openPrompt: function (mode) {
         this.CommandMode(mode).open();
@@ -200,9 +200,9 @@ var RangeFinder = Module("rangefinder", {
 
             get prompt() this.mode === modules.modes.FIND_BACKWARD ? "?" : "/",
 
-            onCancel: this.closure.onCancel,
-            onChange: this.closure.onChange,
-            onSubmit: this.closure.onSubmit
+            get onCancel() modules.rangefinder.closure.onCancel,
+            get onChange() modules.rangefinder.closure.onChange,
+            get onSubmit() modules.rangefinder.closure.onSubmit
         });
     },
     mappings: function (dactyl, modules, window) {
