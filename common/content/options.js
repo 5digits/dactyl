@@ -1246,6 +1246,9 @@ var Options = Module("options", {
                 // Fallthrough
             case "stringlist":
                 break;
+            case "charlist":
+                Option._splitAt = newValues.length;
+                break;
             case "stringmap":
             case "regexpmap":
                 let vals = Option.splitList(context.filter);
