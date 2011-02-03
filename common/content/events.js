@@ -39,7 +39,6 @@ var ProcessorStack = Class("ProcessorStack", {
 
     execute: function execute(result, force) {
         function dbg() {}
-        let dbg = util.closure.dump;
 
         if (force && this.actions.length)
             this.processors.length = 0;
@@ -102,7 +101,6 @@ var ProcessorStack = Class("ProcessorStack", {
 
     process: function process(event) {
         function dbg() {}
-        let dbg = util.closure.dump;
 
         if (this.timer)
             this.timer.cancel();
