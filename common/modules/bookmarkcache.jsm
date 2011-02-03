@@ -117,6 +117,28 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
     isBookmark: function (id) this.rootFolders.indexOf(this.findRoot(id)) >= 0,
 
+    /**
+     * Returns true if the given URL is bookmarked and that bookmark is
+     * not a Live Bookmark.
+     *
+     * @param {nsIURI|string} url The URL of which to check the bookmarked
+     *     state.
+     * @returns {boolean}
+     */
+    isBookmarked: function isBookmarked(uri) {
+        if (isString(uri))
+            uri = util.newURI(uri);
+
+        try {
+            return services.bookmarks
+                           .getBookmarkIdsForURI(uri, {})
+                           .some(this.closure.isRegularBookmark);
+        }
+        catch (e) {
+            return false;
+        }
+    },
+
     isRegularBookmark: function isRegularBookmark(id) {
         do {
             var root = id;

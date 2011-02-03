@@ -168,8 +168,8 @@ var StatusLine = Module("statusline", {
             if (sh && sh.index < sh.count - 1)
                 modified += "-";
         }
-        if (modules.bookmarks) {
-            if (bookmarks.isBookmarked(buffer.uri))
+        if (modules.bookmarkcache) {
+            if (bookmarkcache.isBookmarked(buffer.uri))
                 modified += UTF8("❤");
                 //modified += UTF8("♥");
         }

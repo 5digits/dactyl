@@ -875,7 +875,7 @@ var Tabs = Module("tabs", {
         }
         for (let event in values(["TabMove", "TabOpen", "TabClose"]))
             events.addSessionListener(tabContainer, event, callback, false);
-        events.addSessionListener(tabContainer, "TabSelect", this.closure._onTabSelect, false);
+        events.addSessionListener(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
     },
     mappings: function () {
         mappings.add([modes.NORMAL], ["g0", "g^"],

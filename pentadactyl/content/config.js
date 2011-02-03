@@ -278,7 +278,7 @@ var Config = Module("config", ConfigBase, {
             });
     },
     completion: function (dactyl, modules, window) {
-        const { CompletionContext, bookmarkcache, bookmarks, completion } = modules;
+        const { CompletionContext, bookmarkcache, completion } = modules;
         const { document } = window;
 
         var searchRunning = null; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
@@ -297,7 +297,7 @@ var Config = Module("config", ConfigBase, {
             context.hasItems = context.completions.length > 0; // XXX
             context.incomplete = true;
 
-            context.format = bookmarks.format;
+            context.format = modules.bookmarks.format;
             context.keys.extra = function (item) (bookmarkcache.get(item.url) || {}).extra;
             context.title = ["Smart Completions"];
 

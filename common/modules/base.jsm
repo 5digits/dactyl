@@ -147,6 +147,9 @@ defineModule.modules = [];
 defineModule.times = { all: 0 };
 defineModule.time = function time(major, minor, func, self) {
     let time = Date.now();
+    if (typeof func !== "function")
+        func = self[func];
+
     try {
         var res = func.apply(self, Array.slice(arguments, 4));
     }
@@ -913,7 +916,7 @@ Module.INIT = {
             for (let i in locals)
                 module = objs[i] = Object.create(module);
 
-            modules[this.constructor.className] = module;
+            modules.jsmodules[this.constructor.className] = module;
             locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)))
             module.instance = module;
             module.init();

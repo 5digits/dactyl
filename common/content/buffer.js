@@ -1008,7 +1008,7 @@ var Buffer = Module("buffer", {
                 function (opt) template.map(buffer.pageInfo[opt][0](), util.identity, ", "),
                 ", ");
 
-            if (bookmarks.isBookmarked(this.URL))
+            if (bookmarkcache.isBookmarked(this.URL))
                 info += ", bookmarked";
 
             let pageInfoText = <>{file.quote()} [{info}] {title}</>;
@@ -1640,9 +1640,9 @@ var Buffer = Module("buffer", {
         };
     },
     events: function () {
-        events.addSessionListener(config.browser, "DOMContentLoaded", this.closure.onDOMContentLoaded, true);
-        events.addSessionListener(config.browser, "load", this.closure.onPageLoad, true);
-        events.addSessionListener(config.browser, "scroll", this.closure._updateBufferPosition, false);
+        events.addSessionListener(config.browser, "DOMContentLoaded", buffer.closure.onDOMContentLoaded, true);
+        events.addSessionListener(config.browser, "load", buffer.closure.onPageLoad, true);
+        events.addSessionListener(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
     },
     mappings: function () {
         var myModes = config.browserModes;

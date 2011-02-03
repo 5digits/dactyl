@@ -2023,52 +2023,51 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.log("All modules loaded", 3);
 
-        try {
-            var args = services.fuel && services.fuel.storage.get("dactyl.commandlineArgs", null)
-                    || services.commandLineHandler.optionValue;
-            if (isString(args))
-                args = dactyl.parseCommandLine(args);
+        dactyl.timeout(function () {
+            try {
+                var args = services.fuel && services.fuel.storage.get("dactyl.commandlineArgs", null)
+                        || services.commandLineHandler.optionValue;
+                if (isString(args))
+                    args = dactyl.parseCommandLine(args);
 
-            if (args) {
-                dactyl.commandLineOptions.rcFile = args["+u"];
-                dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
-                dactyl.commandLineOptions.postCommands = args["+c"];
-                dactyl.commandLineOptions.preCommands = args["++cmd"];
-                util.dump("Processing command-line option: " + args.string);
+                if (args) {
+                    dactyl.commandLineOptions.rcFile = args["+u"];
+                    dactyl.commandLineOptions.noPlugins = "++noplugin" in args;
+                    dactyl.commandLineOptions.postCommands = args["+c"];
+                    dactyl.commandLineOptions.preCommands = args["++cmd"];
+                    util.dump("Processing command-line option: " + args.string);
+                }
             }
-        }
-        catch (e) {
-            dactyl.echoerr("Parsing command line options: " + e);
-        }
+            catch (e) {
+                dactyl.echoerr("Parsing command line options: " + e);
+            }
 
-        dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);
+            dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);
 
-        // first time intro message
-        const firstTime = "extensions." + config.name + ".firsttime";
-        if (prefs.get(firstTime, true)) {
-            dactyl.timeout(function () {
-                this.withSavedValues(["forceNewTab"], function () {
-                    this.forceNewTab = true;
-                    this.help();
-                    prefs.set(firstTime, false);
+            // first time intro message
+            const firstTime = "extensions." + config.name + ".firsttime";
+            if (prefs.get(firstTime, true)) {
+                dactyl.timeout(function () {
+                    this.withSavedValues(["forceNewTab"], function () {
+                        this.forceNewTab = true;
+                        this.help();
+                        prefs.set(firstTime, false);
+                    });
+                }, 1000);
+            }
+
+            // TODO: we should have some class where all this guioptions stuff fits well
+            // Dactyl.hideGUI();
+
+            if (dactyl.userEval("typeof document", null, "test.js") === "undefined")
+                jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);
+
+            if (dactyl.commandLineOptions.preCommands)
+                dactyl.commandLineOptions.preCommands.forEach(function (cmd) {
+                    dactyl.execute(cmd);
                 });
-            }, 1000);
-        }
 
-        // TODO: we should have some class where all this guioptions stuff fits well
-        // Dactyl.hideGUI();
-
-        if (dactyl.userEval("typeof document", null, "test.js") === "undefined")
-            jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);
-
-        if (dactyl.commandLineOptions.preCommands)
-            dactyl.commandLineOptions.preCommands.forEach(function (cmd) {
-                dactyl.execute(cmd);
-            });
-
-        // finally, read the RC file and source plugins
-        // make sourcing asynchronous, otherwise commands that open new tabs won't work
-        util.timeout(function () {
+            // finally, read the RC file and source plugins
             let init = services.environment.get(config.idName + "_INIT");
             let rcFile = io.getRCFile("~");
 
@@ -2121,7 +2120,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             dactyl.fullyInitialized = true;
             dactyl.triggerObserver("enter", null);
             autocommands.trigger("Enter", {});
-        }, 0);
+        }, 100);
 
         statusline.update();
         dactyl.log(config.appName + " fully initialized", 0);

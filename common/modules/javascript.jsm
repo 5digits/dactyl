@@ -679,9 +679,11 @@ var JavaScript = Module("javascript", {
         init.superapply(this, arguments);
     },
     completion: function (dactyl, modules, window) {
-        const { completion, javascript } = modules;
-        completion.javascript = javascript.closure.complete;
-        completion.javascriptCompleter = JavaScript; // Backwards compatibility.
+        const { completion } = modules;
+        update(modules.completion, {
+            get javascript() modules.javascript.closure.complete,
+            javascriptCompleter: JavaScript // Backwards compatibility
+        });
     },
     options: function (dactyl, modules, window) {
         modules.options.add(["jsdebugger", "jsd"],

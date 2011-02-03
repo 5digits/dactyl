@@ -62,7 +62,7 @@ var Bookmarks = Module("bookmarks", {
 
         try {
             let uri = util.createURI(url);
-            if (!force && this.isBookmarked(uri))
+            if (!force && bookmarkcache.isBookmarked(uri))
                 for (var bmark in bookmarkcache)
                     if (bmark.url == uri.spec) {
                         if (title)
@@ -146,26 +146,7 @@ var Bookmarks = Module("bookmarks", {
         }
     },
 
-    /**
-     * Returns true if the given URL is bookmarked and that bookmark is
-     * not a Live Bookmark.
-     *
-     * @param {nsIURI|string} url The URL of which to check the bookmarked
-     *     state.
-     * @returns {boolean}
-     */
-    isBookmarked: function isBookmarked(uri) {
-        if (isString(uri))
-            uri = util.newURI(uri);
-        try {
-            return services.bookmarks
-                           .getBookmarkIdsForURI(uri, {})
-                           .some(bookmarkcache.closure.isRegularBookmark);
-        }
-        catch (e) {
-            return false;
-        }
-    },
+    isBookmarked: deprecated("bookmarkcache.isBookmarked", { get: function isBookmarked() bookmarkcache.closure.isBookmarked }),
 
     /**
      * Remove a bookmark or bookmarks. If *ids* is an array, removes the

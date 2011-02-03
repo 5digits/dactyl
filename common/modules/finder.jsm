@@ -162,7 +162,7 @@ var RangeFinder = Module("rangefinder", {
 }, {
 }, {
     modes: function (dactyl, modules, window) {
-        const { commandline, modes } = modules;
+        const { modes } = modules;
         modes.addMode("FIND", {
             extended: true,
             description: "Find mode, active when typing search input",
