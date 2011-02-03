@@ -123,18 +123,21 @@ var Modes = Module("modes", {
         this.addMode("EMBED", {
             input: true,
             description: "Active when an <embed> or <object> element is focused",
-            ownsFocus: true
+            ownsFocus: true,
+            passthrough: true
         });
 
         this.addMode("PASS_THROUGH", {
             description: "All keys but <C-v> are ignored by " + config.appName,
             bases: [this.BASE],
-            hidden: true
+            hidden: true,
+            passthrough: true
         });
         this.addMode("QUOTE", {
-            hidden: true,
             description: "The next key sequence is ignored by " + config.appName + ", unless in Pass Through mode",
             bases: [this.BASE],
+            hidden: true,
+            passthrough: true,
             display: function () modes.getStack(1).main == modes.PASS_THROUGH
                 ? (modes.getStack(2).main.display() || modes.getStack(2).main.name) + " (next)"
                 : "PASS THROUGH (next)"
@@ -146,12 +149,14 @@ var Modes = Module("modes", {
         });
         this.addMode("IGNORE", { hidden: true }, {
             onKeyPress: function (event) Events.KILL,
-            bases: []
+            bases: [],
+            passthrough: true
         });
 
         this.addMode("MENU", {
             description: "Active when a menu or other pop-up is open",
-            input: true
+            input: true,
+            passthrough: true
         });
 
         this.addMode("LINE", {

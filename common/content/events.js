@@ -39,6 +39,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
     execute: function execute(result, force) {
         function dbg() {}
+        let dbg = util.closure.dump;
 
         if (force && this.actions.length)
             this.processors.length = 0;
@@ -79,7 +80,7 @@ var ProcessorStack = Class("ProcessorStack", {
             Events.kill(this.events[this.events.length - 1]);
 
         if (result === Events.PASS || result === Events.ABORT) {
-            dbg("REREED: " + this.events.filter(function (e) e.getPreventDefault()).map(events.closure.toString).join(""));
+            dbg("REFEED: " + this.events.filter(function (e) e.getPreventDefault()).map(events.closure.toString).join(""));
             this.events.filter(function (e) e.getPreventDefault())
                 .forEach(function (event, i) {
                     let elem = event.originalTarget;
@@ -101,6 +102,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
     process: function process(event) {
         function dbg() {}
+        let dbg = util.closure.dump;
 
         if (this.timer)
             this.timer.cancel();
@@ -963,6 +965,7 @@ var Events = Module("events", {
         },
 
         blur: function onBlur(event) {
+            let elem = event.originalTarget;
             if (event.originalTarget instanceof Window && services.focus.activeWindow == null) {
                 // Deals with circumstances where, after the main window
                 // blurs while a collapsed frame has focus, re-activating
@@ -1032,18 +1035,6 @@ var Events = Module("events", {
         keypress: function onKeyPress(event) {
             event.dactylDefaultPrevented = event.getPreventDefault();
 
-            // Hack to deal with <BS> and so forth not dispatching input
-            // events
-            if (event.originalTarget instanceof HTMLInputElement) {
-                let elem = event.originalTarget;
-                elem.dactylKeyPress = elem.value;
-                util.timeout(function () {
-                    if (elem.dactylKeyPress !== undefined && elem.value !== elem.dactylKeyPress)
-                        events.dispatch(elem, events.create(elem.ownerDocument, "input"));
-                    delete events.dactylKeyPress;
-                });
-            }
-
             let duringFeed = this.duringFeed || [];
             this.duringFeed = [];
             try {
@@ -1054,6 +1045,19 @@ var Events = Module("events", {
                 this.feedingEvent = null;
 
                 let key = events.toString(event);
+
+                // Hack to deal with <BS> and so forth not dispatching input
+                // events
+                if (event.originalTarget instanceof HTMLInputElement && !modes.main.passthrough) {
+                    let elem = event.originalTarget;
+                    elem.dactylKeyPress = elem.value;
+                    util.timeout(function () {
+                        if (elem.dactylKeyPress !== undefined && elem.value !== elem.dactylKeyPress)
+                            events.dispatch(elem, events.create(elem.ownerDocument, "input"));
+                        elem.dactylKeyPress = undefined;
+                    });
+                }
+
                 if (!key)
                      return null;
 
