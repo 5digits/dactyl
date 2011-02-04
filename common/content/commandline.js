@@ -998,6 +998,7 @@ var CommandLine = Module("commandline", {
         },
 
         cleanup: function () {
+            dactyl.unregisterObserver("events.doneFeeding", this.closure.onDoneFeeding);
             this.previewClear();
             this.tabTimer.reset();
             this.autocompleteTimer.reset();

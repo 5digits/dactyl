@@ -599,7 +599,7 @@ var Events = Module("events", {
             }
         };
         const TYPES = {
-            change: "", input: "",
+            change: "", input: "", submit: "",
             click: "Mouse", mousedown: "Mouse", mouseup: "Mouse",
             mouseover: "Mouse", mouseout: "Mouse",
             keypress: "Key", keyup: "Key", keydown: "Key"
@@ -659,11 +659,13 @@ var Events = Module("events", {
                     this.feedingEvent = extra;
                     if (target instanceof Element)
                         // This causes a crash on Gecko<2.0, it seems.
-                        (target.ownerDocument || target.document || target).defaultView
+                        return (target.ownerDocument || target.document || target).defaultView
                                .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                                .dispatchDOMEventViaPresShell(target, event, true);
-                    else
+                    else {
                         target.dispatchEvent(event);
+                        return !event.getPreventDefault();
+                    }
                 }
                 catch (e) {
                     util.reportError(e);
