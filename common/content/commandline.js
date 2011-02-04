@@ -329,6 +329,8 @@ var CommandMode = Class("CommandMode", {
             this.completions.complete(true, false);
     },
 
+    get holdFocus() this.widgets.active.command.inputField,
+
     get mappingSelf() this,
 
     get widgets() commandline.widgets,
@@ -801,12 +803,8 @@ var CommandLine = Module("commandline", {
                 }
             ]).toObject(),
         {
-            blur: function onBlur(event) {
-                if (this.commandMode && event.originalTarget === this.widgets.active.command.inputField)
-                    dactyl.focus(this.widgets.active.command.inputField);
-            },
             focus: function onFocus(event) {
-                if (!this.commandMode
+                if (!this.commandSession
                         && event.originalTarget === this.widgets.active.command.inputField) {
                     event.target.blur();
                     dactyl.beep();

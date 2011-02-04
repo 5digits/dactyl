@@ -966,13 +966,20 @@ var Events = Module("events", {
 
         blur: function onBlur(event) {
             let elem = event.originalTarget;
-            if (event.originalTarget instanceof Window && services.focus.activeWindow == null) {
+            if (elem instanceof Window && services.focus.activeWindow == null
+                && document.commandDispatcher.focusedWindow !== window) {
                 // Deals with circumstances where, after the main window
                 // blurs while a collapsed frame has focus, re-activating
                 // the main window does not restore focus and we lose key
                 // input.
                 services.focus.clearFocus(window);
                 document.commandDispatcher.focusedWindow = Editor.getEditor(content) ? window : content;
+            }
+
+            let hold = modes.topOfStack.params.holdFocus;
+            if (elem == hold) {
+                dactyl.focus(hold);
+                this.timeout(function () { dactyl.focus(hold); });
             }
         },
 
