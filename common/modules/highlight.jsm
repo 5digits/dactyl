@@ -18,8 +18,14 @@ var Highlight = Struct("class", "selector", "sites",
 Highlight.liveProperty = function (name, prop) {
     this.prototype.__defineGetter__(name, function () this.get(name));
     this.prototype.__defineSetter__(name, function (val) {
-        if (isObject(val) && name !== "style" && Object.freeze)
-            Object.freeze(val);
+        if (isObject(val) && name !== "style") {
+            if (isArray(val))
+                val = Array.slice(val);
+            else
+                val = update({}, val);
+            if (Object.freeze)
+                Object.freeze(val);
+        }
         this.set(name, val);
 
         if (name === "value" || name === "extends")

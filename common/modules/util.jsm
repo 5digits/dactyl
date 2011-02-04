@@ -1672,7 +1672,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (nodes && node.@key)
                 nodes[node.@key] = domnode;
 
-            if (node.@highlight)
+            if ("@highlight" in node)
                 highlight.highlightNode(domnode, String(node.@highlight), nodes || true);
             return domnode;
         default:
