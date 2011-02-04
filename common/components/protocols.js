@@ -3,7 +3,6 @@
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
 "use strict";
-
 function reportError(e) {
     dump("dactyl: protocols: " + e + "\n" + (e.stack || Error().stack));
     Cu.reportError(e);
@@ -61,11 +60,17 @@ function redirect(to, orig, time) {
 function Factory(clas) ({
     __proto__: clas.prototype,
     createInstance: function (outer, iid) {
-        if (outer != null)
-            throw Components.results.NS_ERROR_NO_AGGREGATION;
-        if (!clas.instance)
-            clas.instance = new clas();
-        return clas.instance.QueryInterface(iid);
+        try {
+            if (outer != null)
+                throw Components.results.NS_ERROR_NO_AGGREGATION;
+            if (!clas.instance)
+                clas.instance = new clas();
+            return clas.instance.QueryInterface(iid);
+        }
+        catch (e) {
+            reportError(e);
+            throw e;
+        }
     }
 });
 
