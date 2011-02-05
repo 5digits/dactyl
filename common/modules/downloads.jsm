@@ -148,10 +148,7 @@ var Download = Class("Download", {
 
     updateStatus: function updateStatus() {
 
-        if (this.alive)
-            this.nodes.row.setAttribute("active", "true");
-        else
-            this.nodes.row.removeAttribute("active");
+        this.nodes.row[this.alive ? "setAttribute" : "removeAttribute"]("active", "true");
 
         this.nodes.row.setAttribute("status", this.status);
         this.nodes.state.textContent = util.capitalize(this.status);

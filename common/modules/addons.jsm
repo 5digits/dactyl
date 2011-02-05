@@ -437,10 +437,8 @@ var Addons = Module("addons", {
                 context.completions = types.map(function (t) [t, util.capitalize(t)]);
             }
 
-            if (AddonManager.getAllAddons)
-                context.incomplete = true;
-
             context.generate = function generate() {
+                context.incomplete = true;
                 update(base);
                 if (AddonManager.getAllAddons)
                     AddonManager.getAllAddons(function (addons) {
