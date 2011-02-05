@@ -291,16 +291,21 @@ var Highlights = Module("Highlight", {
 }, {
     commands: function (dactyl, modules) {
         const { autocommands, commands, completion, CommandOption, config, io } = modules;
+
+        let lastScheme;
         commands.add(["colo[rscheme]"],
             "Load a color scheme",
             function (args) {
                 let scheme = args[0];
+                if (lastScheme)
+                    lastScheme.unload();
 
                 if (scheme == "default")
                     highlight.clear();
-                else
-                    dactyl.assert(modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]),
-                        "E185: Cannot find color scheme " + scheme);
+                else {
+                    lastScheme = modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]);
+                    dactyl.assert(lastScheme, "E185: Cannot find color scheme " + scheme);
+                }
                 autocommands.trigger("ColorScheme", { name: scheme });
             },
             {

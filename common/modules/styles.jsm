@@ -229,8 +229,8 @@ try {
 var Styles = Module("Styles", {
     init: function () {
         this._id = 0;
-        this.user = Hive("user");
-        this.system = Hive("system");
+        this.hives = [];
+        this.cleanup();
         this.allSheets = {};
 
         services["dactyl:"].providers["style"] = function styleProvider(uri) {
@@ -242,8 +242,19 @@ var Styles = Module("Styles", {
     },
 
     cleanup: function cleanup() {
-        for each (let hive in [this.user, this.system])
+        for each (let hive in this.hives)
             hive.cleanup();
+        this.user = this.addHive("user");
+        this.system = this.addHive("system");
+    },
+
+    addHive: function addHive(name) {
+        let hive = array.nth(this.hives, function (h) h.name === name, 0);
+        if (!hive) {
+            hive = Hive(name);
+            this.hives.push(hive);
+        }
+        return hive;
     },
 
     __iterator__: function () Iterator(this.user.sheets.concat(this.system.sheets)),
@@ -425,7 +436,7 @@ var Styles = Module("Styles", {
     })
 }, {
     commands: function (dactyl, modules, window) {
-        const commands = modules.commands;
+        const { commands, contexts } = modules;
 
         commands.add(["sty[le]"],
             "Add or list user styles",
@@ -434,17 +445,17 @@ var Styles = Module("Styles", {
 
                 if (css) {
                     if ("-append" in args) {
-                        let sheet = styles.user.get(args["-name"]);
+                        let sheet = args["-group"].get(args["-name"]);
                         if (sheet) {
                             filter = sheet.sites.concat(filter).join(",");
                             css = sheet.css + " " + css;
 
                         }
                     }
-                    styles.user.add(args["-name"], filter, css, args["-agent"]);
+                    args["-group"].add(args["-name"], filter, css, args["-agent"]);
                 }
                 else {
-                    let list = styles.user.sheets.slice()
+                    let list = args["-group"].sheets.slice()
                                      .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
                                                                             : !!b.name - !!a.name || a.id - b.id);
                     let uris = util.visibleURIs(window.content);
@@ -455,7 +466,7 @@ var Styles = Module("Styles", {
                              "padding: 0 1em 0 1ex; vertical-align: top;",
                              "padding: 0 1em 0 0; vertical-align: top;"],
                             ([sheet.enabled ? "" : UTF8("×"),
-                              sheet.name || styles.user.sheets.indexOf(sheet),
+                              sheet.name || args["-group"].sheets.indexOf(sheet),
                               sheet.formatSites(uris),
                               sheet.css]
                              for (sheet in values(list))
@@ -466,7 +477,7 @@ var Styles = Module("Styles", {
                 bang: true,
                 completer: function (context, args) {
                     let compl = [];
-                    let sheet = styles.user.get(args["-name"]);
+                    let sheet = args["-group"].get(args["-name"]);
                     if (args.completeArg == 0) {
                         if (sheet)
                             context.completions = [[sheet.sites.join(","), "Current Value"]];
@@ -483,10 +494,11 @@ var Styles = Module("Styles", {
                 options: [
                     { names: ["-agent", "-A"],  description: "Apply style as an Agent sheet" },
                     { names: ["-append", "-a"], description: "Append site filter and css to an existing, matching sheet" },
+                    contexts.GroupFlag("styles"),
                     {
                         names: ["-name", "-n"],
                         description: "The name of this stylesheet",
-                        completer: function () [[k, v.css] for ([k, v] in Iterator(styles.user.names))],
+                        completer: function () [[k, v.css] for ([k, v] in Iterator(args["-group"].names))],
                         type: modules.CommandOption.STRING
                     }
                 ],
@@ -586,6 +598,9 @@ var Styles = Module("Styles", {
                     ]
                 });
         });
+    },
+    contexts: function (dactyl, modules, window) {
+        modules.Group.SubGroup("styles", function (group) styles.addHive(group.name));
     },
     completion: function (dactyl, modules, window) {
         const names = Array.slice(util.computedStyle(window.document.createElement("div")));

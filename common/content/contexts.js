@@ -76,11 +76,11 @@ var Contexts = Module("contexts", {
     context: null,
 
     groups: Class.memoize(function () Object.create(Group.groupsProto, {
-        groups: { value: this.groupList.filter(function (g) g.filter(buffer.uri)) }
+        groups: { value: this.activeGroups().filter(function (g) g.filter(buffer.uri)) }
     })),
 
     allGroups: Class.memoize(function () Object.create(Group.groupsProto, {
-        groups: { value: this.groupList }
+        groups: { value: this.activeGroups() }
     })),
 
     activeGroups: function (subgroup)
@@ -174,7 +174,19 @@ var Contexts = Module("contexts", {
         action.toString = function toString() (type === default_ ? "" : type + " ") + rhs;
         args = null;
         return action;
-    }
+    },
+
+    GroupFlag: function (name) ({
+        names: ["-group", "-g"],
+
+        description: "Group to which to add",
+
+        type: ArgType("group", function (group) isString(group) ? contexts.getGroup(group, name) : group[name]),
+
+        get default() (contexts.context && contexts.context.group || contexts.user)[name],
+
+        completer: function (context) completion.group(context)
+    })
 }, {
     Context: modules.Script = function Context(file, group, args) {
         function Const(val) Class.Property({ enumerable: true, value: val });

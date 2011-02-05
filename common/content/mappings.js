@@ -508,7 +508,7 @@ var Mappings = Module("mappings", {
                             names: ["-ex", "-e"],
                             description: "Execute this mapping as an Ex command rather than keys"
                         },
-                        groupFlag,
+                        contexts.GroupFlag("mappings"),
                         {
                             names: ["-javascript", "-js", "-j"],
                             description: "Execute this mapping as JavaScript rather than keys"
@@ -587,7 +587,7 @@ var Mappings = Module("mappings", {
                 {
                     argCount: "0",
                     options: [
-                        groupFlag,
+                        contexts.GroupFlag("mappings"),
                         update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
@@ -616,7 +616,7 @@ var Mappings = Module("mappings", {
                     argCount: "1",
                     completer: opts.completer,
                     options: [
-                        groupFlag,
+                        contexts.GroupFlag("mappings"),
                         update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
@@ -627,13 +627,6 @@ var Mappings = Module("mappings", {
                 });
         }
 
-        let groupFlag = {
-            names: ["-group", "-g"],
-            description: "Mapping group to which to add this mapping",
-            type: ArgType("map-group", function (group) isString(group) ? contexts.getGroup(group, "mappings") : group),
-            get default() (contexts.context && contexts.context.group || contexts.user).mappings,
-            completer: function (context) completion.group(context)
-        };
         let modeFlag = {
             names: ["-mode", "-m"],
             type: CommandOption.STRING,

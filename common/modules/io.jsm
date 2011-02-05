@@ -113,7 +113,7 @@ var IO = Module("io", {
          */
         sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
             let dirs = modules.options.get("runtimepath").files;
-            let found = false;
+            let found = null;
 
             dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + modules.options.get("runtimepath").stringValue, 2);
 
@@ -125,8 +125,7 @@ var IO = Module("io", {
                     dactyl.echomsg("Searching for " + file.path.quote(), 3);
 
                     if (file.exists() && file.isFile() && file.isReadable()) {
-                        io.source(file.path, false);
-                        found = true;
+                        found = io.source(file.path, false) || true;
 
                         if (!all)
                             break outer;
