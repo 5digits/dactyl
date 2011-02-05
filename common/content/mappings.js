@@ -138,16 +138,14 @@ var Map = Class("Map", {
 });
 
 var MapHive = Class("MapHive", {
-    init: function init(name, description, filter) {
-        this.name = name;
+    init: function init(group) {
+        this.group = group;
         this.stacks = {};
-        this.description = description;
-        this.filter = filter || function (uri) true;
     },
 
-    get toStringParams() [this.name],
+    get toStringParams() [this.group.name],
 
-    get builtin() mappings.builtinHives.indexOf(this) >= 0,
+    get builtin() this.group.builtin,
 
     /**
      * Iterates over all mappings present in all of the given *modes*.

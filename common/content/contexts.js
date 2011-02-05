@@ -37,9 +37,7 @@ var Group = Class("Group", {
 
             this.Group = constructor;
             this.name = name;
-            memoize(Group.prototype, name,
-                    function () constructor(this.name, this.description,
-                                            this.filter, this.persist));
+            memoize(Group.prototype, name, function () constructor(this));
 
             memoize(Group.subGroupMap, name,
                     function () Object.create(Object.create(contexts.subGroupProto,
