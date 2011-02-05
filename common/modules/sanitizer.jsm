@@ -434,7 +434,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 bang: true,
                 completer: function (context) {
                     context.title = ["Privacy Item", "Description"];
-                    context.completions = modules.options.get("sanitizeitems").completer();
+                    context.completions = modules.options.get("sanitizeitems").values;
                 },
                 domains: function (args) args["-host"] || [],
                 options: [
