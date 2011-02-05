@@ -324,13 +324,13 @@ var Buffer = Module("buffer", {
             if (win && uri) {
                 statusline.progress = win.dactylProgress;
 
-                let oldURI = webProgress.document.dactylURI;
-                if (webProgress.document.dactylLoadIdx === webProgress.loadedTransIndex
+                let oldURI = win.document.dactylURI;
+                if (win.document.dactylLoadIdx === webProgress.loadedTransIndex
                     || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
                     for (let frame in values(buffer.allFrames(win)))
                         frame.document.dactylFocusAllowed = false;
-                webProgress.document.dactylURI = uri.spec;
-                webProgress.document.dactylLoadIdx = webProgress.loadedTransIndex;
+                win.document.dactylURI = uri.spec;
+                win.document.dactylLoadIdx = webProgress.loadedTransIndex;
             }
 
             // Workaround for bugs 591425 and 606877, dactyl bug #81

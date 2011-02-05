@@ -192,8 +192,8 @@ var Bookmarks = Module("bookmarks", {
         let aliases = {};
         return iter(services.browserSearch.getVisibleEngines({})).map(function ([, engine]) {
             let alias = engine.alias;
-            if (!alias || !/^[a-z-]+$/.test(alias))
-                alias = engine.name.replace(/[^a-z_-]+/gi, "-").replace(/^-|-$/, "").toLowerCase();
+            if (!alias || !/^[a-z0-9-]+$/.test(alias))
+                alias = engine.name.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/, "").toLowerCase();
             if (!alias)
                 alias = "search"; // for search engines which we can't find a suitable alias
 
@@ -247,12 +247,6 @@ var Bookmarks = Module("bookmarks", {
             return null;
         return process(resp);
     },
-
-    /**
-     * Returns an array of bookmark keyword objects.
-     * @deprecated
-     */
-    getKeywords: function getKeywords() bookmarkcache.keywords,
 
     /**
      * Returns an array containing a search URL and POST data for the
@@ -600,7 +594,7 @@ var Bookmarks = Module("bookmarks", {
 
         completion.search = function search(context, noSuggest) {
             let [, keyword, space, args] = context.filter.match(/^\s*(\S*)(\s*)(.*)$/);
-            let keywords = bookmarks.getKeywords();
+            let keywords = bookmarkcache.keywords;
             let engines = bookmarks.searchEngines;
 
             context.title = ["Search Keywords"];
