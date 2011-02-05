@@ -20,9 +20,9 @@ var Group = Class("Group", {
     subGroups: {}
 
 }, {
-    subGroup: {},
+    groupsProto: {},
 
-    subGroups: {},
+    subGroupMap: {},
 
     SubGroup: Class("SubGroup", Class.Property, {
         init: function init(name, constructor) {
@@ -41,10 +41,11 @@ var Group = Class("Group", {
                     function () constructor(this.name, this.description,
                                             this.filter, this.persist));
 
-            memoize(Group.subGroup, name,
-                    function () Object.create({ _subGroup: name, __proto__: contexts.subGroupProto }));
+            memoize(Group.subGroupMap, name,
+                    function () Object.create(Object.create(contexts.subGroupProto,
+                                                            { _subGroup: { value: name } })));
 
-            memoize(Group.subGroups, name,
+            memoize(Group.groupsProto, name,
                     function () [group[name] for (group in values(this.groups)) if (set.has(group, name))]);
         }
     })
@@ -63,17 +64,15 @@ var Contexts = Module("contexts", {
 
     context: null,
 
-    groups: Class.memoize(function () ({
-        __proto__: Group.subGroups,
-        groups: this.groupList.filter(function (g) g.filter(buffer.uri))
+    groups: Class.memoize(function () Object.create(Group.groupsProto, {
+        groups: { value: this.groupList.filter(function (g) g.filter(buffer.uri)) }
     })),
 
-    allGroups: Class.memoize(function () ({
-        __proto__: Group.subGroups,
-        groups: this.groupList
+    allGroups: Class.memoize(function () Object.create(Group.groupsProto, {
+        groups: { value: this.groupList }
     })),
 
-    get subGroup() Group.subGroup,
+    get subGroup() Group.subGroupMap,
 
     addGroup: function addGroup(name, description, filter, persist) {
         this.removeGroup(name);
