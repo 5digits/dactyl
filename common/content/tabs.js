@@ -43,7 +43,7 @@ var Tabs = Module("tabs", {
 
     cleanup: function cleanup() {
         for (let [i, tab] in Iterator(this.allTabs)) {
-            let node = function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
+            let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
             for (let elem in values(["dactyl-tab-icon-number", "dactyl-tab-number"].map(node)))
                 if (elem)
                     elem.parentNode.parentNode.removeChild(elem.parentNode);
@@ -53,7 +53,7 @@ var Tabs = Module("tabs", {
     updateTabCount: function () {
         for (let [i, tab] in Iterator(this.visibleTabs)) {
             if (dactyl.has("Gecko2")) {
-                let node = function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
+                let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
                 if (!node("dactyl-tab-number")) {
                     let img = node("tab-icon-image");
                     if (img) {
