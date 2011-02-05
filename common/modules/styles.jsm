@@ -335,7 +335,7 @@ var Styles = Module("Styles", {
     matchFilter: function (filter) {
         if (filter === "*")
             var test = function test(uri) true;
-        else if (filter[0] === "^") {
+        else if (!/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter)) {
             let re = RegExp(filter);
             test = function test(uri) re.test(uri.spec);
         }
