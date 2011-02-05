@@ -601,12 +601,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     context.completions = this.values;
                 },
                 values: [
-                        ["all",     "Everything"],
-                        ["session", "The current session"],
-                        ["10m",     "Last ten minutes"],
-                        ["1h",      "Past hour"],
-                        ["1d",      "Past day"],
-                        ["1w",      "Past week"]
+                    ["all",     "Everything"],
+                    ["session", "The current session"],
+                    ["10m",     "Last ten minutes"],
+                    ["1h",      "Past hour"],
+                    ["1d",      "Past day"],
+                    ["1w",      "Past week"]
                 ],
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
             });
