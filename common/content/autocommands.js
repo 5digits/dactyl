@@ -156,7 +156,7 @@ var AutoCommands = Module("autocommands", {
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
                         autocommands.remove(event, regexp);
-                    cmd = Command.bindMacro(args, "-ex", function (params) params);
+                    cmd = contexts.bindMacro(args, "-ex", function (params) params);
                     autocommands.add(events, regexp, cmd);
                 }
                 else {
@@ -245,7 +245,7 @@ var AutoCommands = Module("autocommands", {
         };
     },
     javascript: function () {
-        JavaScript.setCompleter(this.get, [function () Iterator(config.autocommands)]);
+        JavaScript.setCompleter(autocommands.get, [function () Iterator(config.autocommands)]);
     },
     options: function () {
         options.add(["eventignore", "ei"],

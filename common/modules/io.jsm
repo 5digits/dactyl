@@ -546,7 +546,7 @@ var IO = Module("io", {
     PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
 }, {
     init: function init(dactyl, modules, window) {
-        modules.plugins.contexts = {};
+        Class.replaceProperty(modules.plugins, "contexts", {});
         modules.Script = function Script(file) {
             const { io, plugins } = modules;
 
@@ -614,15 +614,6 @@ var IO = Module("io", {
                 completer: function (context) completion.directory(context, true),
                 literal: 0
             });
-
-        // NOTE: this command is only used in :source
-        commands.add(["fini[sh]"],
-            "Stop sourcing a script file",
-            function () {
-                dactyl.assert(io.sourcing, "E168: :finish used outside of a sourced file");
-                io.sourcing.finished = true;
-            },
-            { argCount: "0" });
 
         commands.add(["pw[d]"],
             "Print the current directory name",

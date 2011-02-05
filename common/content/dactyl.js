@@ -12,7 +12,6 @@ default xml namespace = XHTML;
 XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
-var plugins = { __proto__: modules };
 var userContext = { __proto__: modules };
 var _userContext = newContext(userContext);
 
@@ -53,7 +52,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     destroy: function () {
         autocommands.trigger("LeavePre", {});
-        storage.saveAll();
         dactyl.triggerObserver("shutdown", null);
         util.dump("All dactyl modules destroyed\n");
         autocommands.trigger("Leave", {});
@@ -337,7 +335,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             dactyl.reportError(str);
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
-        else if (isinstance(str, ["Error"]))
+        else if (isinstance(str, ["Error"]) && str.fileName)
             str = <>{str.fileName.replace(/^.* -> /, "")}: {str.lineNumber}: {str}</>;
 
         if (options["errorbells"])
@@ -395,9 +393,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (jsmodules.__proto__ != window)
             str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
 
+        let info = contexts.context;
         if (fileName == null)
-            if (io.sourcing && io.sourcing.file[0] !== "[")
-                ({ file: fileName, line: lineNumber, context: ctxt }) = io.sourcing;
+            if (info && info.file[0] !== "[")
+                ({ file: fileName, line: lineNumber, context: ctxt }) = info;
             else try {
                 if (!context)
                     context = userContext || ctxt;
@@ -408,8 +407,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 this.loadScript("resource://dactyl-content/eval.js", context);
                 if (context[EVAL_ERROR]) {
                     try {
-                        context[EVAL_ERROR].fileName = io.sourcing.file;
-                        context[EVAL_ERROR].lineNumber += io.sourcing.line;
+                        context[EVAL_ERROR].fileName = context.file;
+                        context[EVAL_ERROR].lineNumber += context.line;
                     }
                     catch (e) {}
                     throw context[EVAL_ERROR];
@@ -1356,7 +1355,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     reportError: function reportError(error, echo) {
         if (error instanceof FailedAssertion || error.message === "Interrupted") {
 
-            let prefix = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
+            let context = contexts.context;
+            let prefix = context ? context.file + ":" + context.line + ": " : "";
             if (error.message && error.message.indexOf(prefix) !== 0)
                 error.message = prefix + error.message;
 

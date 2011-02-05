@@ -4,6 +4,7 @@
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
+"use strict";
 
 var MOW = Module("mow", {
     init: function () {
@@ -71,7 +72,6 @@ var MOW = Module("mow", {
         if (!commandline.commandVisible)
             commandline.hide();
 
-        this._startHints = false;
         if (modes.main != modes.OUTPUT_MULTILINE) {
             modes.push(modes.OUTPUT_MULTILINE, null, {
                 onKeyPress: this.closure.onKeyPress,
@@ -170,6 +170,7 @@ var MOW = Module("mow", {
             event.preventDefault();
         }
     },
+
     contextEvents: {
         popupshowing: function (event) {
             let menu = commandline.widgets.contextMenu;
@@ -261,8 +262,7 @@ var MOW = Module("mow", {
             if (!value && elem && elem.contentWindow == document.commandDispatcher.focusedWindow)
                 document.commandDispatcher.focusedWindow = content;
         }
-    }),
-
+    })
 }, {
 }, {
     mappings: function () {
@@ -277,7 +277,7 @@ var MOW = Module("mow", {
                 mow.echo(mow.lastOutput, "Normal");
             });
 
-        bind = function bind(keys, description, action, test, default_) {
+        let bind = function bind(keys, description, action, test, default_) {
             mappings.add([modes.OUTPUT_MULTILINE],
                 keys, description,
                 function (command) {

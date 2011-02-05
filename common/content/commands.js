@@ -139,8 +139,9 @@ var Command = Class("Command", {
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
     execute: function (args, modifiers) {
-        if (this.deprecated && !set.add(this.complained, io.sourcing ? io.sourcing.file : "[Command Line]")) {
-            let loc = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
+        let context = args.context;
+        if (this.deprecated && !set.add(this.complained, context ? context.file : "[Command Line]")) {
+            let loc = contexts.context ? context.file + ":" + context.line + ": " : "";
             dactyl.echoerr(loc + ":" + this.name + " is deprecated" +
                            (isString(this.deprecated) ? ": " + this.deprecated : ""));
         }
@@ -155,7 +156,7 @@ var Command = Class("Command", {
         return !dactyl.trapErrors(function exec(command) {
             if (this.always)
                 this.always(args, modifiers);
-            if (!io.sourcing || !io.sourcing.noExecute)
+            if (!contexts.context || !contexts.context.noExecute)
                 this.action(args, modifiers);
         }, this);
     },
@@ -271,9 +272,15 @@ var Command = Class("Command", {
                                .toObject(),
             {
                 __iterator__: function () array.iterItems(this),
+
                 command: this,
+
+                get context() contexts.context,
+
                 explicitOpts: Class.memoize(function () ({})),
+
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
+
                 // TODO: string: Class.memoize(function () { ... }),
                 verify: function verify() {
                     if (this.command.argCount) {
@@ -321,51 +328,6 @@ var Command = Class("Command", {
      */
     replacementText: null
 }, {
-    bindMacro: function (args, default_, params) {
-        let process = util.identity;
-
-        if (callable(params))
-            var makeParams = function makeParams(self, args)
-                iter.toObject([k, process(v)]
-                               for ([k, v] in iter(params.apply(self, args))));
-        else if (params)
-            makeParams = function makeParams(self, args)
-                iter.toObject([name, process(args[i])]
-                              for ([i, name] in Iterator(params)));
-
-        let rhs = args.literalArg;
-        let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce(function (a, b) args[b] ? b : a, default_);
-        switch (type) {
-        case "-builtin":
-            let noremap = true;
-            /* fallthrough */
-        case "-keys":
-            let silent = args["-silent"];
-            rhs = events.canonicalKeys(rhs, true);
-            var action = function action() events.feedkeys(action.macro(makeParams(this, arguments)),
-                                                           noremap, silent);
-            action.macro = util.compileMacro(rhs, true);
-            break;
-        case "-ex":
-            action = function action() commands.execute(action.macro, makeParams(this, arguments),
-                                                        false, null, action.sourcing);
-            action.macro = util.compileMacro(rhs, true);
-            action.sourcing = io.sourcing && update({}, io.sourcing);
-            break;
-        case "-javascript":
-            if (callable(params))
-                action = dactyl.userEval("(function action() { with (action.makeParams(this, arguments)) {" + args.literalArg + "} })");
-            else
-                action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
-            process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
-            action.makeParams = makeParams;
-            break;
-        }
-        action.toString = function toString() (type === default_ ? "" : type + " ") + rhs;
-        args = null;
-        return action;
-    },
-
     // TODO: do we really need more than longNames as a convenience anyway?
     /**
      *  Converts command name abbreviation specs of the form
@@ -576,60 +538,62 @@ var Commands = Module("commands", {
      *      interpolated into the command string.
      * @param {object} args Optional arguments object to be passed to
      *      command actions.
-     * @param {object} sourcing An object containing information about
+     * @param {object} context An object containing information about
      *      the file that is being or has been sourced to obtain the
      *      command string.
      */
-    execute: function (string, tokens, silent, args, sourcing) {
-        io.withSavedValues(["readHeredoc", "sourcing"], function () {
-            sourcing = sourcing || this.sourcing || { file: "[Command Line]", line: 1 };
-            this.sourcing = update({}, sourcing);
+    execute: function (string, tokens, silent, args, context) {
+        contexts.withSavedValues(["context"], function () {
+            context = update({}, context || this.context || { file: "[Command Line]", line: 1 });
+            this.context = context;
 
-            args = update({}, args || {});
+            io.withSavedValues(["readHeredoc"], function () {
+                this.readHeredoc = function (end) {
+                    let res = [];
+                    contexts.context.line++;
+                    while (++i < lines.length) {
+                        if (lines[i] === end)
+                            return res.join("\n");
+                        res.push(lines[i]);
+                    }
+                    dactyl.assert(false, "Unexpected end of file waiting for " + end);
+                };
 
-            if (tokens && !callable(string))
-                string = util.compileMacro(string, true);
-            if (callable(string))
-                string = string(tokens || {});
+                args = update({}, args || {});
 
-            let lines = string.split(/\r\n|[\r\n]/);
+                if (tokens && !callable(string))
+                    string = util.compileMacro(string, true);
+                if (callable(string))
+                    string = string(tokens || {});
 
-            this.readHeredoc = function (end) {
-                let res = [];
-                this.sourcing.line++;
-                while (++i < lines.length) {
-                    if (lines[i] === end)
-                        return res.join("\n");
-                    res.push(lines[i]);
-                }
-                dactyl.assert(false, "Unexpected end of file waiting for " + end);
-            };
+                let lines = string.split(/\r\n|[\r\n]/);
 
-            for (var i = 0; i < lines.length && !this.sourcing.finished; i++) {
-                // Deal with editors from Silly OSs.
-                let line = lines[i].replace(/\r$/, "");
+                for (var i = 0; i < lines.length && !context.finished; i++) {
+                    // Deal with editors from Silly OSs.
+                    let line = lines[i].replace(/\r$/, "");
 
-                this.sourcing.line = sourcing.line + i;
+                    context.line = context.line + i;
 
-                // Process escaped new lines
-                while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
-                    line += "\n" + lines[++i].replace(/^\s*\\/, "");
+                    // Process escaped new lines
+                    while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
+                        line += "\n" + lines[++i].replace(/^\s*\\/, "");
 
-                try {
-                    dactyl.execute(line, args);
-                }
-                catch (e) {
-                    if (!silent || silent === "loud") {
-                        if (silent !== "loud")
-                            e.message = this.sourcing.file + ":" + this.sourcing.line + ": " + e.message;
-                        else {
-                            dactyl.echoerr("Error detected while processing " + this.sourcing.file);
-                            dactyl.echomsg("line\t" + this.sourcing.line + ":");
+                    try {
+                        dactyl.execute(line, args);
+                    }
+                    catch (e) {
+                        if (!silent || silent === "loud") {
+                            if (silent !== "loud")
+                                e.message = context.file + ":" + context.line + ": " + e.message;
+                            else {
+                                dactyl.echoerr("Error detected while processing " + context.file);
+                                dactyl.echomsg("line\t" + context.line + ":");
+                            }
+                            dactyl.reportError(e, true);
                         }
-                        dactyl.reportError(e, true);
                     }
                 }
-            }
+            });
         });
     },
 
@@ -1172,12 +1136,12 @@ var Commands = Module("commands", {
      * @param {nsIStackFrame} frame
      */
     getCaller: function (frame) {
-        if (io.sourcing)
+        if (contexts.context)
            return {
                 __proto__: frame,
-                filename: io.sourcing.file[0] == "[" ? io.sourcing.file :
-                            services.io.newFileURI(File(io.sourcing.file)).spec,
-                lineNumber: io.sourcing.line
+                filename: contexts.context.file[0] == "[" ? contexts.context.file :
+                            services.io.newFileURI(File(contexts.context.file)).spec,
+                lineNumber: contexts.context.line
             };
         return frame;
     },
@@ -1302,11 +1266,11 @@ var Commands = Module("commands", {
                         if (/^custom,/.test(completer)) {
                             completer = completer.substr(7);
 
-                            let sourcing = update({}, io.sourcing || {});
+                            let context = update({}, contexts.context || {});
                             completerFunc = function (context) {
                                 try {
-                                    var result = io.withSavedValues(["sourcing"], function () {
-                                        io.sourcing = sourcing;
+                                    var result = contextswithSavedValues(["context"], function () {
+                                        contexts.context = context;
                                         return dactyl.userEval(completer);
                                     });
                                 }
@@ -1328,7 +1292,7 @@ var Commands = Module("commands", {
 
                     let added = commands.addUserCommand(cmd.split(","),
                                     args["-description"],
-                                    Command.bindMacro(args, "-ex",
+                                    contexts.bindMacro(args, "-ex",
                                         function makeParams(args, modifiers) ({
                                             args:  {
                                                 __proto__: args,
@@ -1345,7 +1309,7 @@ var Commands = Module("commands", {
                                         literal: args["-literal"],
                                         persist: !args["-nopersist"],
                                         replacementText: args.literalArg,
-                                        sourcing: io.sourcing && update({}, io.sourcing)
+                                        context: contexts.context && update({}, contexts.context)
                                     }, args.bang);
 
                     if (!added)
@@ -1483,62 +1447,6 @@ var Commands = Module("commands", {
                 help: function (cmd) ":" + cmd.name
             }
         });
-
-        function checkStack(cmd) {
-            util.assert(io.sourcing && io.sourcing.stack &&
-                        io.sourcing.stack[cmd] && io.sourcing.stack[cmd].length,
-                        "Invalid use of conditional");
-        }
-        function pop(cmd) {
-            checkStack(cmd);
-            return io.sourcing.stack[cmd].pop();
-        }
-        function push(cmd, value) {
-            util.assert(io.sourcing, "Invalid use of conditional");
-            if (arguments.length < 2)
-                value = io.sourcing.noExecute;
-            io.sourcing.stack = io.sourcing.stack || {};
-            io.sourcing.stack[cmd] = (io.sourcing.stack[cmd] || []).concat([value]);
-        }
-
-        commands.add(["if"],
-            "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
-            function (args) { io.sourcing.noExecute = !dactyl.userEval(args[0]); },
-            {
-                always: function (args) { push("if"); },
-                argCount: "1",
-                literal: 0
-            });
-        commands.add(["elsei[f]", "elif"],
-            "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
-            function (args) {},
-            {
-                always: function (args) {
-                    checkStack("if");
-                    io.sourcing.noExecute = io.sourcing.stack.if.slice(-1)[0] ||
-                        !io.sourcing.noExecute || !dactyl.userEval(args[0]);
-                },
-                argCount: "1",
-                literal: 0
-            });
-        commands.add(["el[se]"],
-            "Execute commands until the next :endif only if the previous conditionals were not executed",
-            function (args) {},
-            {
-                always: function (args) {
-                    checkStack("if");
-                    io.sourcing.noExecute = io.sourcing.stack.if.slice(-1)[0] ||
-                        !io.sourcing.noExecute;
-                },
-                argCount: "0"
-            });
-        commands.add(["en[dif]", "fi"],
-            "End a string of :if/:elseif/:else conditionals",
-            function (args) {},
-            {
-                always: function (args) { io.sourcing.noExecute = pop("if"); },
-                argCount: "0"
-            });
 
         commands.add(["y[ank]"],
             "Yank the output of the given command to the clipboard",

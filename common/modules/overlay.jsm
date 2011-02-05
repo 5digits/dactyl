@@ -144,6 +144,7 @@ var Overlay = Module("Overlay", {
                         return sandbox;
                     }
                 });
+                modules.plugins = create(modules);
                 modules.modules = modules;
                 window.dactyl = { modules: modules };
 
@@ -163,12 +164,13 @@ var Overlay = Module("Overlay", {
                      "util"
                     ].forEach(function (name) defineModule.time("load", name, require, null, jsmodules, name));
 
-                    ["dactyl",
+                    ["contexts",
+                     "dactyl",
                      "modes",
+                     "commandline",
                      "abbreviations",
                      "autocommands",
                      "buffer",
-                     "commandline",
                      "commands",
                      "editor",
                      "events",

@@ -616,12 +616,12 @@ function update(target) {
             if (desc.value instanceof Class.Property)
                 desc = desc.value.init(k) || desc.value;
             if (typeof desc.value == "function" && Object.getPrototypeOf(target)) {
-                let func = desc.value;
-                desc.value.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
-                desc.value.superapply = function superapply(self, args)
+                let func = desc.value.wrapped || desc.value;
+                func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
+                func.superapply = function superapply(self, args)
                     let (meth = Object.getPrototypeOf(target)[k])
                         meth && meth.apply(self, args);
-                desc.value.supercall = function supercall(self)
+                func.supercall = function supercall(self)
                     func.superapply(self, Array.slice(arguments, 1));
             }
             Object.defineProperty(target, k, desc);
@@ -663,7 +663,7 @@ function Class() {
         superclass = args.shift();
 
     var Constructor = eval(String.replace(<![CDATA[
-        (function constructor() {
+        (function constructor(PARAMS) {
             var self = Object.create(Constructor.prototype, {
                 constructor: { value: Constructor },
             });
@@ -671,7 +671,9 @@ function Class() {
             var res = self.init.apply(self, arguments);
             return res !== undefined ? res : self;
         })]]>,
-        "constructor", (name || superclass.className).replace(/\W/g, "_")));
+        "constructor", (name || superclass.className).replace(/\W/g, "_"))
+            .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]));
+
     Constructor.className = name || superclass.className || superclass.name;
 
     if ("init" in superclass.prototype)

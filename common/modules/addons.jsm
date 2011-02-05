@@ -35,12 +35,12 @@ var AddonListener = Class("AddonListener", {
     onExternalInstall:   function (addon, existingAddon, needsRestart) {},
     onDownloadStarted:   listener("download", "started"),
     onDownloadEnded:     listener("download", "complete"),
-    onDownloadCancelled: listener("download", "cancelled"),
+    onDownloadCancelled: listener("download", "canceled"),
     onDownloadFailed:    listener("download", "failed"),
     onDownloadProgress:  function (install) {},
     onInstallStarted:    function (install) {},
     onInstallEnded:      listener("installation", "complete"),
-    onInstallCancelled:  listener("installation", "cancelled"),
+    onInstallCancelled:  listener("installation", "canceled"),
     onInstallFailed:     listener("installation", "failed")
 });
 

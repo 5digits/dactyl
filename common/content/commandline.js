@@ -352,8 +352,8 @@ var CommandMode = Class("CommandMode", {
             if (this.history)
                 this.history.save();
 
-            commandline.hideCompletions();
             this.resetCompletions();
+            commandline.hideCompletions();
 
             modes.delay(function () {
                 if (!this.keepCommand || commandline.silent || commandline.quiet)
@@ -423,11 +423,13 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
     },
 
     onSubmit: function onSubmit(command) {
-        io.withSavedValues(["readHeredoc", "sourcing"], function () {
-            this.sourcing = { file: "[Command Line]", line: 1 };
+        io.withSavedValues(["readHeredoc"], function () {
             this.readHeredoc = commandline.readHeredoc;
-            commands.repeat = command;
-            dactyl.execute(command);
+            contexts.withSavedValues(["context"], function () {
+                this.context = { file: "[Command Line]", line: 1 };
+                commands.repeat = command;
+                dactyl.execute(command);
+            });
         });
     }
 });
@@ -504,11 +506,6 @@ var CommandLine = Module("commandline", {
                 }, message));
             }
         }; //}}}
-
-        this._silent = false;
-        this._quiet = false;
-        this._lastEcho = null;
-
     },
 
     /**
@@ -546,12 +543,14 @@ var CommandLine = Module("commandline", {
 
     get completionContext() this._completions.context,
 
+    _silent: false,
     get silent() this._silent,
     set silent(val) {
         this._silent = val;
         this.quiet = this.quiet;
     },
 
+    _quite: false,
     get quiet() this._quiet,
     set quiet(val) {
         this._quiet = val;
@@ -664,6 +663,8 @@ var CommandLine = Module("commandline", {
             mow.echo(<span highlight="Message">{str}</span>, highlightGroup, true);
         }
     },
+
+    _lastEcho: null,
 
     /**
      * Output the given string onto the command line. With no flags, the

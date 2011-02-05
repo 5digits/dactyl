@@ -241,7 +241,7 @@ var Abbreviations = Module("abbreviations", {
                         abbreviations.list(modes, lhs || "");
                     else {
                         if (args["-javascript"])
-                            rhs = Command.bindMacro({ literalArg: rhs }, "-javascript", ["editor"]);
+                            rhs = contexts.bindMacro({ literalArg: rhs }, "-javascript", ["editor"]);
                         abbreviations.add(modes, lhs, rhs);
                     }
                 }, {

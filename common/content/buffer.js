@@ -262,7 +262,7 @@ var Buffer = Module("buffer", {
         dactylLoadCount: 0,
 
         // XXX: function may later be needed to detect a canceled synchronous openURL()
-        onStateChange: function onStateChange(webProgress, request, flags, status) {
+        onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
             onStateChange.superapply(this, arguments);
             // STATE_IS_DOCUMENT | STATE_IS_WINDOW is important, because we also
             // receive statechange events for loading images and other parts of the web page
@@ -286,9 +286,9 @@ var Buffer = Module("buffer", {
                     statusline.updateUrl();
                 }
             }
-        },
+        }),
         // for notifying the user about secure web pages
-        onSecurityChange: function onSecurityChange(webProgress, request, state) {
+        onSecurityChange: util.wrapCallback(function onSecurityChange(webProgress, request, state) {
             onSecurityChange.superapply(this, arguments);
             if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
                 statusline.security = "broken";
@@ -300,22 +300,27 @@ var Buffer = Module("buffer", {
                 statusline.security = "insecure";
             if (webProgress && webProgress.DOMWindow)
                 webProgress.DOMWindow.document.dactylSecurity = statusline.security;
-        },
-        onStatusChange: function onStatusChange(webProgress, request, status, message) {
+        }),
+        onStatusChange: util.wrapCallback(function onStatusChange(webProgress, request, status, message) {
             onStatusChange.superapply(this, arguments);
             statusline.updateUrl(message);
-        },
-        onProgressChange: function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
-            onProgressChange.superapply(this, arguments);
-            if (webProgress.DOMWindow)
-                webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
-            statusline.progress = curTotalProgress / maxTotalProgress;
-        },
+        }),
+        onProgressChange: util.wrapCallback(function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
+            try {
+                onProgressChange.superapply(this, arguments);
+                if (webProgress && webProgress.DOMWindow)
+                    webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
+                statusline.progress = curTotalProgress / maxTotalProgress;
+            }
+            catch (e) {
+                util.reportError(e);
+            }
+        }),
         // happens when the users switches tabs
-        onLocationChange: function onLocationChange(webProgress, request, uri) {
+        onLocationChange: util.wrapCallback(function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
 
-            delete mappings.hives;
+            delete contexts.groups;
 
             statusline.updateUrl();
             statusline.progress = "";
@@ -352,13 +357,13 @@ var Buffer = Module("buffer", {
                 if (loaded.commandline)
                     commandline.clear();
             }, 500);
-        },
+        }),
         // called at the very end of a page load
-        asyncUpdateUI: function asyncUpdateUI() {
+        asyncUpdateUI: util.wrapCallback(function asyncUpdateUI() {
             asyncUpdateUI.superapply(this, arguments);
             util.timeout(function () { statusline.updateUrl(); }, 100);
-        },
-        setOverLink: function setOverLink(link, b) {
+        }),
+        setOverLink: util.wrapCallback(function setOverLink(link, b) {
             setOverLink.superapply(this, arguments);
             switch (options["showstatuslinks"]) {
             case "status":
@@ -371,7 +376,7 @@ var Buffer = Module("buffer", {
                     commandline.clear();
                 break;
             }
-        },
+        }),
     },
 
     /**

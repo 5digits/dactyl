@@ -32,8 +32,8 @@ memoize(this, "Commands", function () {
 var FailedAssertion = Class("FailedAssertion", ErrorBase);
 var Point = Struct("x", "y");
 
-var wrapCallback = function wrapCallback(fn)
-    fn.wrapper = (function wrappedCallback () {
+var wrapCallback = function wrapCallback(fn) {
+    fn.wrapper = function wrappedCallback () {
         try {
             return fn.apply(this, arguments);
         }
@@ -41,7 +41,10 @@ var wrapCallback = function wrapCallback(fn)
             util.reportError(e);
             return undefined;
         }
-    })
+    };
+    fn.wrapper.wrapped = fn;
+    return fn.wrapper;
+}
 
 var getAttr = function getAttr(elem, ns, name)
     elem.hasAttributeNS(ns, name) ? elem.getAttributeNS(ns, name) : null;
@@ -1584,6 +1587,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 catch (e if e instanceof StopIteration) {};
             })();
         },
+
+    wrapCallback: wrapCallback,
 
     /**
      * Traps errors in the called function, possibly reporting them.
