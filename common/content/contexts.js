@@ -18,7 +18,7 @@ var Group = Class("Group", {
 
     get toStringParams() [this.name],
 
-    get builtin() dactyl.builtinGroups.indexOf(this) >= 0,
+    get builtin() contexts.builtinGroups.indexOf(this) >= 0,
 
     subGroups: {}
 
@@ -58,8 +58,10 @@ var Contexts = Module("contexts", {
         this.groupList = [];
         this.groupMap = {};
         this.subGroupProto = {};
-        this.builtinGroups = [this.addGroup("builtin", "Builtin items"),
-                              this.addGroup("user", "User-defined items", null, true)];
+
+        this.system = this.addGroup("builtin", "Builtin items");
+        this.user = this.addGroup("user", "User-defined items", null, true);
+        this.builtinGroups = [this.system, this.user];
     },
 
     context: null,

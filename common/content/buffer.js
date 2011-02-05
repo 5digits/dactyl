@@ -306,15 +306,10 @@ var Buffer = Module("buffer", {
             statusline.updateUrl(message);
         }),
         onProgressChange: util.wrapCallback(function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
-            try {
-                onProgressChange.superapply(this, arguments);
-                if (webProgress && webProgress.DOMWindow)
-                    webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
-                statusline.progress = curTotalProgress / maxTotalProgress;
-            }
-            catch (e) {
-                util.reportError(e);
-            }
+            onProgressChange.superapply(this, arguments);
+            if (webProgress && webProgress.DOMWindow)
+                webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
+            statusline.progress = curTotalProgress / maxTotalProgress;
         }),
         // happens when the users switches tabs
         onLocationChange: util.wrapCallback(function onLocationChange(webProgress, request, uri) {

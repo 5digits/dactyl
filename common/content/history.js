@@ -250,7 +250,7 @@ var History = Module("history", {
             context.generate = function () [
                 Array.slice(row.rev_host).reverse().join("").slice(1)
                 for (row in iter(services.history.DBConnection
-                                         .createStatement("SELECT DISTINCT rev_host FROM moz_places;")))
+                                         .createStatement("SELECT DISTINCT rev_host FROM moz_places WHERE rev_host IS NOT NULL;")))
             ].slice(2);
         };
 
