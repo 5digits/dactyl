@@ -11,6 +11,13 @@ var Group = Class("Group", {
         this.description = description;
         this.filter = filter || function (uri) true;
         this.persist = persist || false;
+        this.subGroups = [];
+    },
+
+    cleanup: function cleanup() {
+        for (let subGroup in values(this.subGroups))
+            if (subGroup.cleanup)
+                subGroup.cleanup();
     },
 
     get toStringParams() [this.name],
@@ -37,7 +44,11 @@ var Group = Class("Group", {
 
             this.Group = constructor;
             this.name = name;
-            memoize(Group.prototype, name, function () constructor(this));
+            memoize(Group.prototype, name, function () {
+                let group = constructor(this);
+                this.subGroups.push(group);
+                return group;
+            });
 
             memoize(Group.subGroupMap, name,
                     function () Object.create(Object.create(contexts.subGroupProto,
@@ -89,11 +100,20 @@ var Contexts = Module("contexts", {
     },
 
     removeGroup: function removeGroup(name, filter) {
+        if (isObject(name)) {
+            if (this.groupList.indexOf(name) === -1)
+                return;
+            name = name.name;
+        }
+
         let group = this.getGroup(name);
+
         dactyl.assert(!group || !group.builtin, "Cannot remove builtin group");
 
-        if (group)
+        if (group) {
             this.groupList.splice(this.groupList.indexOf(group), 1);
+            group.cleanup();
+        }
 
         if (this.context && this.context.group === group)
             this.context.group = null;
@@ -180,6 +200,7 @@ var Contexts = Module("contexts", {
                         delete plugins[this.NAME];
                     if (plugins[this.PATH] === this)
                         delete plugins[this.PATH];
+                    contexts.removeGroup(this.GROUP);
                 })
             });
             Class.replaceProperty(plugins, file.path, self);
@@ -189,8 +210,7 @@ var Contexts = Module("contexts", {
                 Object.defineProperty(plugins, self.NAME, {
                     configurable: true,
                     enumerable: true,
-                    value: self,
-                    writeable: false
+                    value: self
                 });
         }
 
