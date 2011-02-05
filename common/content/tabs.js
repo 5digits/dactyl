@@ -979,7 +979,7 @@ var Tabs = Module("tabs", {
                         config.tabbrowser.tabContainer._positionPinnedTabs();
                     return value;
                 },
-                completer: function (context) [
+                values: [
                     ["never",    "Never show the tab bar"],
                     ["multitab", "Show the tab bar when there are multiple tabs"],
                     ["always",   "Always show the tab bar"]
@@ -1005,7 +1005,7 @@ var Tabs = Module("tabs", {
                 "Define when newly created tabs are automatically activated",
                 "stringlist", [g[0] for (g in values(activateGroups.slice(1))) if (!g[2] || !prefs.get("browser.tabs." + g[2]))].join(","),
                 {
-                    completer: function (context) activateGroups,
+                    values: activateGroups,
                     has: Option.has.toggleAll,
                     setter: function (newValues) {
                         let valueSet = set(newValues);
@@ -1022,7 +1022,7 @@ var Tabs = Module("tabs", {
                 "Define which commands should output in a new tab by default",
                 "stringlist", "",
                 {
-                    completer: function (context) [
+                    values: [
                         ["all", "All commands"],
                         ["addons", ":addo[ns] command"],
                         ["downloads", ":downl[oads] command"],
@@ -1056,7 +1056,7 @@ var Tabs = Module("tabs", {
                                       "See 'popups' option.");
                         return values;
                     },
-                    completer: function (context) [
+                    values: [
                         ["tab",     "Open popups in a new tab"],
                         ["window",  "Open popups in a new window"],
                         ["resized", "Open resized popups in a new window"]

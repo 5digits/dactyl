@@ -270,7 +270,7 @@ var Buffer = Module("buffer", {
                 // This fires when the load event is initiated
                 // only thrown for the current tab, not when another tab changes
                 if (flags & Ci.nsIWebProgressListener.STATE_START) {
-                    statusline.updateProgress(0);
+                    statusline.progress = 0;
 
                     buffer._triggerLoadAutocmd("PageLoadPre", webProgress.DOMWindow.document);
 
@@ -307,7 +307,9 @@ var Buffer = Module("buffer", {
         },
         onProgressChange: function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
             onProgressChange.superapply(this, arguments);
-            statusline.updateProgress(curTotalProgress / maxTotalProgress);
+            if (webProgress.DOMWindow)
+                webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
+            statusline.progress = curTotalProgress / maxTotalProgress;
         },
         // happens when the users switches tabs
         onLocationChange: function onLocationChange(webProgress, request, uri) {
@@ -316,10 +318,11 @@ var Buffer = Module("buffer", {
             delete mappings.hives;
 
             statusline.updateUrl();
+            statusline.progress = "";
 
             let win = webProgress.DOMWindow;
             if (win && uri) {
-                statusline.updateProgress(win);
+                statusline.progress = win.dactylProgress;
 
                 let oldURI = webProgress.document.dactylURI;
                 if (webProgress.document.dactylLoadIdx === webProgress.loadedTransIndex
@@ -1924,7 +1927,7 @@ var Buffer = Module("buffer", {
         options.add(["pageinfo", "pa"],
             "Define which sections are shown by the :pageinfo command",
             "charlist", "gfm",
-            { completer: function (context) [[k, v[1]] for ([k, v] in Iterator(buffer.pageInfo))] });
+            { get values() [[k, v[1]] for ([k, v] in Iterator(buffer.pageInfo))] });
 
         options.add(["scroll", "scr"],
             "Number of lines to scroll with <C-u> and <C-d> commands",
@@ -1935,7 +1938,7 @@ var Buffer = Module("buffer", {
             "Where to show the destination of the link under the cursor",
             "string", "status",
             {
-                completer: function (context) [
+                values: [
                     ["", "Don't show link destinations"],
                     ["status", "Show link destinations in the status line"],
                     ["command", "Show link destinations in the command line"]

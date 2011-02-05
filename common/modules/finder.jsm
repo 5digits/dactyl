@@ -262,7 +262,7 @@ var RangeFinder = Module("rangefinder", {
             "Find case matching mode",
             "string", "smart",
             {
-                completer: function () [
+                values: [
                     ["smart", "Case is significant when capital letters are typed"],
                     ["match", "Case is always significant"],
                     ["ignore", "Case is never significant"]

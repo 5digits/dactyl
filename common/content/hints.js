@@ -1181,7 +1181,7 @@ var Hints = Module("hints", {
             "The keys used to label and select hints",
             "string", "0123456789",
             {
-                completer: function () [
+                values: [
                     ["0123456789", "Numbers"],
                     ["asdfg;lkjh", "Home Row"]],
                 validator: function (value) {
@@ -1202,7 +1202,7 @@ var Hints = Module("hints", {
             "Change the behavior of <Return> in hint mode",
             "number", 0,
             {
-                completer: function () [
+                values: [
                     ["0", "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>."],
                     ["1", "Follow the selected hint on <Return>."],
                     ["2", "Follow the selected hint on <Return> only it's been <Tab>-selected."]
@@ -1213,7 +1213,7 @@ var Hints = Module("hints", {
             "How hints are filtered",
             "stringlist", "contains",
             {
-                completer: function (context) [
+                values: [
                     ["contains",       "The typed characters are split on whitespace. The resulting groups must all appear in the hint."],
                     ["custom",         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)"],
                     ["firstletters",   "Behaves like wordstartswith, but all groups must match a sequence of words."],
@@ -1233,7 +1233,7 @@ var Hints = Module("hints", {
             "Which text is used to filter hints for input elements",
             "stringlist", "label,value",
             {
-                completer: function (context) [
+                values: [
                     ["value", "Match against the value of the input field"],
                     ["label", "Match against the text of a label for the input field, if one can be found"],
                     ["name",  "Match against the name of the input field"]

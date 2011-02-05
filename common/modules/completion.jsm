@@ -1015,7 +1015,7 @@ var Completion = Module("completion", {
     options: function (dactyl, modules, window) {
         const { completion, options } = modules;
         let wildmode = {
-            completer: function (context) [
+            values: [
                 // Why do we need ""?
                 // Because its description is useful during completion. --Kris
                 ["",              "Complete only the first match"],
@@ -1047,7 +1047,7 @@ var Completion = Module("completion", {
         options.add(["complete", "cpt"],
             "Items which are completed at the :open prompts",
             "charlist", config.defaults.complete == null ? "slf" : config.defaults.complete,
-            { completer: function (context) values(completion.urlCompleters) });
+            { get values() values(completion.urlCompleters) });
 
         options.add(["wildanchor", "wia"],
             "Define which completion groups only match at the beginning of their text",
@@ -1057,7 +1057,7 @@ var Completion = Module("completion", {
             "Completion case matching mode",
             "regexpmap", ".?:smart",
             {
-                completer: function () [
+                values: [
                     ["smart", "Case is significant when capital letters are typed"],
                     ["match", "Case is always significant"],
                     ["ignore", "Case is never significant"]

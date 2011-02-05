@@ -163,10 +163,6 @@ var Option = Class("Option", {
     setValues: deprecated("Option#set", "set"),
     joinValues: deprecated("Option#stringify", "stringify"),
     parseValues: deprecated("Option#parse", "parse"),
-    values: deprecated("Option#value", {
-        get: function values() this.value,
-        set: function values(val) this.value = val
-    }),
 
     /**
      * @property {value} The option's current value. The option's local value,
@@ -283,7 +279,16 @@ var Option = Class("Option", {
      * @property {function(CompletionContext, Args)} This option's completer.
      * @see CompletionContext
      */
-    completer: null,
+    completer: function (context) {
+        if (this.values)
+            context.completions = this.values;
+    },
+
+    /**
+     * @property {[[string, string]]} This option's possible values.
+     * @see CompletionContext
+     */
+    values: null,
 
     /**
      * @property {function(host, values)} A function which should return a list
@@ -340,7 +345,7 @@ var Option = Class("Option", {
      *     when set.
      */
     validator: function () {
-        if (this.completer)
+        if (this.values || this.completer !== Option.prototype.completer)
             return Option.validateCompleter.apply(this, arguments);
         return true;
     },
@@ -601,13 +606,17 @@ var Option = Class("Option", {
      * @returns {boolean}
      */
     validateCompleter: function (values) {
-        let context = CompletionContext("");
-        let res = context.fork("", 0, this, this.completer);
-        if (!res)
-            res = context.allItems.items.map(function (item) [item.text]);
+        if (this.values)
+            var acceptable = this.values;
+        else {
+            let context = CompletionContext("");
+            acceptable = context.fork("", 0, this, this.completer);
+            if (!acceptable)
+                acceptable = context.allItems.items.map(function (item) [item.text]);
+        }
         if (this.type == "regexpmap")
-            return Array.concat(values).every(function (re) res.some(function (item) item[0] == re.result));
-        return Array.concat(values).every(function (value) res.some(function (item) item[0] == value));
+            return Array.concat(values).every(function (re) acceptable.some(function (item) item[0] == re.result));
+        return Array.concat(values).every(function (value) acceptable.some(function (item) item[0] == value));
     },
 
     validateXPath: function (values) {

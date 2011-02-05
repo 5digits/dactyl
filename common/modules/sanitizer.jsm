@@ -562,7 +562,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "The default list of private items to sanitize",
             "stringlist", "all",
             {
-                completer: function (value) values(sanitizer.itemMap),
+                get values() values(sanitizer.itemMap),
                 has: modules.Option.has.toggleAll,
                 validator: function (values) values.length &&
                     values.every(function (val) val === "all" || set.has(sanitizer.itemMap, val))
@@ -573,7 +573,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "stringlist", "",
             {
                 initialValue: true,
-                completer: function () [i for (i in values(sanitizer.itemMap)) if (i.persistent || i.builtin)],
+                get values() [i for (i in values(sanitizer.itemMap)) if (i.persistent || i.builtin)],
                 getter: function () !sanitizer.runAtShutdown ? [] : [
                     item.name for (item in values(sanitizer.itemMap))
                     if (item.shouldSanitize(true))
@@ -598,36 +598,37 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             {
                 completer: function (context) {
                     context.compare = context.constructor.Sort.Unsorted;
-                    return [
+                    context.completions = this.values;
+                },
+                values: [
                         ["all",     "Everything"],
                         ["session", "The current session"],
                         ["10m",     "Last ten minutes"],
                         ["1h",      "Past hour"],
                         ["1d",      "Past day"],
                         ["1w",      "Past week"]
-                    ];
-                },
+                ],
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
             });
 
         options.add(["cookies", "ck"],
             "The default mode for newly added cookie permissions",
             "stringlist", "session",
-            { completer: function (context) iter(Sanitizer.COMMANDS) });
+            { get values() iter(Sanitizer.COMMANDS) });
 
         options.add(["cookieaccept", "ca"],
             "When to accept cookies",
             "string", "all",
             {
                 PREF: "network.cookie.cookieBehavior",
-                completer: function (context) [
+                values: [
                     ["all", "Accept all cookies"],
                     ["samesite", "Accept all non-third-party cookies"],
                     ["none", "Accept no cookies"]
                 ],
-                getter: function () (this.completer()[prefs.get(this.PREF)] || ["all"])[0],
+                getter: function () (this.values[prefs.get(this.PREF)] || ["all"])[0],
                 setter: function (val) {
-                    prefs.set(this.PREF, this.completer().map(function (i) i[0]).indexOf(val));
+                    prefs.set(this.PREF, this.values.map(function (i) i[0]).indexOf(val));
                     return val;
                 },
                 initialValue: true,
@@ -639,14 +640,14 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "string", "default", {
                 PREF: "network.cookie.lifetimePolicy",
                 PREF_DAYS: "network.cookie.lifetime.days",
-                completer: function (context) [
+                values: [
                     ["default", "The lifetime requested by the setter"],
                     ["prompt",  "Always prompt for a lifetime"],
                     ["session", "The current session"]
                 ],
-                getter: function () (this.completer()[prefs.get(this.PREF)] || [prefs.get(this.PREF_DAYS)])[0],
+                getter: function () (this.values[prefs.get(this.PREF)] || [prefs.get(this.PREF_DAYS)])[0],
                 setter: function (value) {
-                    let val = this.completer().map(function (i) i[0]).indexOf(value);
+                    let val = this.values.map(function (i) i[0]).indexOf(value);
                     if (val > -1)
                         prefs.set(this.PREF, val);
                     else {

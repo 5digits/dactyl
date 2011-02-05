@@ -1559,8 +1559,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     "r" + [k for ([k, v] in iter(groups[1].opts))
                            if (!document.getElementById(v[1][0]).collapsed)].join(""),
 
-                completer: function (context)
-                    array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
+                values: array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
+
                 setter: function (value) {
                     for (let group in values(groups))
                         group.setter(value);

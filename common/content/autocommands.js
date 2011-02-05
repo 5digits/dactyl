@@ -252,7 +252,7 @@ var AutoCommands = Module("autocommands", {
             "List of autocommand event names which should be ignored",
             "stringlist", "",
             {
-                completer: function () Iterator(update({ all: "All Events" }, config.autocommands)),
+                values: iter(update({ all: "All Events" }, config.autocommands)).toArray(),
                 has: Option.has.toggleAll
             });
     }
