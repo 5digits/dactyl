@@ -36,6 +36,8 @@ var Group = Class("Group", {
         return update(siteFilter, {
             toString: function () this.filters.join(","),
 
+            toXML: function () template.map(this.filters, function (f) <span highlight={f(buffer.uri) ? "Filter" : ""}>{f}</span>, <>,</>),
+
             filters: patterns.map(function (pattern) {
                 let [, res, filter] = /^(!?)(.*)/.exec(pattern);
 
@@ -400,9 +402,21 @@ var Contexts = Module("contexts", {
     completion: function initCompletion() {
         completion.group = function group(context, active) {
             context.title = ["Group"];
-            context.keys = { text: "name", description: function (h) h.description || h.filter };
+            let uri = buffer.uri;
+            context.keys = {
+                active: function (group) group.filter(uri),
+                text: "name",
+                description: function (g) <>{g.filter.toXML ? g.filter.toXML() + <>&#xa0;</> : ""}{g.description || ""}</>
+            };
             context.completions = (active === undefined ? contexts.groupList : contexts.activeGroups(active))
                                     .slice(0, -1);
+
+            iter({ Active: true, Inactive: false }).forEach(function ([name, active]) {
+                context.split(name, null, function (context) {
+                    context.title[0] = name + " Groups";
+                    context.filters.push(function (item) item.active == active);
+                });
+            });
         };
     }
 });

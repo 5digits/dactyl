@@ -119,7 +119,7 @@ var AutoCommands = Module("autocommands", {
                             template.map(items, function (item, i)
                                 <tr>
                                     <td highlight="Title" style="padding-right: 1em;">{i == 0 ? event : ""}</td>
-                                    <td>{item.filter}</td>
+                                    <td>{item.filter.toXML ? item.filter.toXML() : item.filter}</td>
                                     <td>{item.command}</td>
                                 </tr>) +
                             <tr style="height: .5ex;"/>) +

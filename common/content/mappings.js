@@ -417,12 +417,12 @@ var Mappings = Module("mappings", {
                 </tr>
                 <col style="min-width: 6em; padding-right: 1em;"/>
                 {
-                    template.map(hives, function (hive) let (i = 0)
+                    template.map(hives, function (hive)
                         <tr style="height: .5ex;"/> +
                         template.map(maps(hive), function (map)
-                            template.map(map.names, function (name)
+                            template.map(map.names, function (name, i)
                             <tr>
-                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
+                                <td highlight="Title">{!i ? hive.group.name : ""}</td>
                                 <td>{modeSign}</td>
                                 <td>{name}</td>
                                 <td>{map.rhs || map.action.toSource()}</td>
