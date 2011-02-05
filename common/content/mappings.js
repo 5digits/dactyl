@@ -633,7 +633,7 @@ var Mappings = Module("mappings", {
             names: ["-group", "-g"],
             description: "Mapping group to which to add this mapping",
             type: ArgType("map-group", function (group) isString(group) ? contexts.getGroup(group, "mappings") : group),
-            get default() (contexts.context && contexts.context.group || contexts.user).subGroups.mappings,
+            get default() (contexts.context && contexts.context.group || contexts.user).mappings,
             completer: function (context) completion.group(context)
         };
         let modeFlag = {

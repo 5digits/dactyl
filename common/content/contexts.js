@@ -11,9 +11,6 @@ var Group = Class("Group", {
         this.description = description;
         this.filter = filter || function (uri) true;
         this.persist = persist || false;
-
-        this.subGroups = { __proto__: this.subGroups, owner: this };
-        this.subGroups.instance = this.subGroups;
     },
 
     get toStringParams() [this.name],
@@ -40,15 +37,15 @@ var Group = Class("Group", {
 
             this.Group = constructor;
             this.name = name;
-            memoize(Group.prototype.subGroups, name,
-                    function () constructor(this.owner.name, this.owner.description,
-                                            this.owner.filter, this.owner.persist));
+            memoize(Group.prototype, name,
+                    function () constructor(this.name, this.description,
+                                            this.filter, this.persist));
 
             memoize(Group.subGroup, name,
                     function () Object.create({ _subGroup: name, __proto__: contexts.subGroupProto }));
 
             memoize(Group.subGroups, name,
-                    function () [g.subGroups[name] for (g in values(this.groups)) if (set.has(g.subGroups, name))]);
+                    function () [group[name] for (group in values(this.groups)) if (set.has(group, name))]);
         }
     })
 });
@@ -84,7 +81,7 @@ var Contexts = Module("contexts", {
         let group = Group(name, description, filter, persist);
         this.groupList.unshift(group);
         this.groupMap[name] = group;
-        this.subGroupProto.__defineGetter__(name, function () group.subGroups[this._subGroup]);
+        this.subGroupProto.__defineGetter__(name, function () group[this._subGroup]);
         return group;
     },
 
@@ -107,7 +104,7 @@ var Contexts = Module("contexts", {
     getGroup: function getGroup(name, subGroup) {
         let group = array.nth(this.groupList, function (h) h.name == name, 0) || null;
         if (group && subGroup)
-            return group.subGroups[subGroup];
+            return group[subGroup];
         return group;
     },
 
