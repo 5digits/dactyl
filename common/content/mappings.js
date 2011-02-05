@@ -862,7 +862,7 @@ var Mappings = Module("mappings", {
         };
     },
     javascript: function () {
-        JavaScript.setCompleter(this.get,
+        JavaScript.setCompleter(mappings.get,
             [
                 null,
                 function (context, obj, args) {

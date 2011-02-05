@@ -144,6 +144,7 @@ var Overlay = Module("Overlay", {
                         return sandbox;
                     }
                 });
+                modules.plugins = create(modules);
                 modules.modules = modules;
                 window.dactyl = { modules: modules };
 

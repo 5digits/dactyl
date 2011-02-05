@@ -12,7 +12,6 @@ default xml namespace = XHTML;
 XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
-var plugins = { __proto__: modules };
 var userContext = { __proto__: modules };
 var _userContext = newContext(userContext);
 
@@ -53,7 +52,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     destroy: function () {
         autocommands.trigger("LeavePre", {});
-        storage.saveAll();
         dactyl.triggerObserver("shutdown", null);
         util.dump("All dactyl modules destroyed\n");
         autocommands.trigger("Leave", {});
@@ -337,7 +335,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             dactyl.reportError(str);
         if (typeof str == "object" && "echoerr" in str)
             str = str.echoerr;
-        else if (isinstance(str, ["Error"]))
+        else if (isinstance(str, ["Error"]) && str.fileName)
             str = <>{str.fileName.replace(/^.* -> /, "")}: {str.lineNumber}: {str}</>;
 
         if (options["errorbells"])

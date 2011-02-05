@@ -152,6 +152,8 @@ var Storage = Module("Storage", {
     },
 
     cleanup: function () {
+        this.saveAll();
+
         for (let key in keys(this.keys)) {
             if (this[key].timer)
                 this[key].timer.flush();

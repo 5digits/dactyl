@@ -1295,7 +1295,7 @@ var Options = Module("options", {
         };
     },
     javascript: function () {
-        JavaScript.setCompleter(this.get, [function () ([o.name, o.description] for (o in options))]);
+        JavaScript.setCompleter(options.get, [function () ([o.name, o.description] for (o in options))]);
     },
     sanitizer: function () {
         sanitizer.addItem("options", {

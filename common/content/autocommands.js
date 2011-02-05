@@ -245,7 +245,7 @@ var AutoCommands = Module("autocommands", {
         };
     },
     javascript: function () {
-        JavaScript.setCompleter(this.get, [function () Iterator(config.autocommands)]);
+        JavaScript.setCompleter(autocommands.get, [function () Iterator(config.autocommands)]);
     },
     options: function () {
         options.add(["eventignore", "ei"],
