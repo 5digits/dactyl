@@ -1791,7 +1791,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         commands.add(["reh[ash]"],
             "Reload the " + config.appName + " add-on",
-            function (args) { util.rehash(args); },
+            function (args) {
+                if (args.trailing)
+                    JSMLoader.rehashCmd = args.trailing; // Hack.
+                args.break = true;
+                util.rehash(args);
+            },
             {
                 argCount: "0",
                 options: [
@@ -2116,6 +2121,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 dactyl.commandLineOptions.postCommands.forEach(function (cmd) {
                     dactyl.execute(cmd);
                 });
+
+            if (JSMLoader.rehashCmd)
+                dactyl.execute(JSMLoader.rehashCmd);
+            JSMLoader.rehashCmd = null;
 
             dactyl.fullyInitialized = true;
             dactyl.triggerObserver("enter", null);

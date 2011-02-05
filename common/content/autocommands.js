@@ -78,7 +78,7 @@ var AutoCommands = Module("autocommands", {
 
     hives: Group.SubGroup("autocmd", AutoCmdHive),
 
-    get activeHives() contexts.activeGroups("autocmd").map(function (h) h.autocmd),
+    get activeHives() contexts.activeGroups("autocmd").map(function (h) h.autocmd).filter(function (h) h._store.length),
 
     add: deprecated("autocommand.user.add", { get: function add() autocommands.user.closure.add }),
     get: deprecated("autocommand.user.get", { get: function get() autocommands.user.closure.get }),

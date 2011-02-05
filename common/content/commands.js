@@ -1090,6 +1090,8 @@ var Commands = Module("commands", {
             args.commandString = str.substr(0, len) + args.string;
             str = args.trailing;
             yield [command, args];
+            if (args.break)
+                break;
         }
         while (str);
     },
