@@ -154,7 +154,7 @@ var IO = Module("io", {
             params = params || {};
 
             let time = Date.now();
-            contexts.withSavedValues(["context"], function _source() {
+            return contexts.withSavedValues(["context"], function _source() {
                 contexts.context = null;
                 try {
                     var file = util.getFile(filename) || io.File(filename);
@@ -172,7 +172,8 @@ var IO = Module("io", {
                     // handle pure JavaScript files specially
                     if (/\.js$/.test(filename)) {
                         try {
-                            dactyl.loadScript(uri.spec, Contexts.Script(file, params.group));
+                            var context = Contexts.Script(file, params.group);
+                            dactyl.loadScript(uri.spec, context);
                             dactyl.helpInitialized = false;
                         }
                         catch (e) {
@@ -190,7 +191,7 @@ var IO = Module("io", {
                     else if (/\.css$/.test(filename))
                         styles.registerSheet(uri.spec, false, true);
                     else {
-                        let context = Contexts.Context(file, params.group);
+                        context = Contexts.Context(file, params.group);
                         modules.commands.execute(file.read(), null, params.silent || "loud",
                                                  null, {
                             context: context,
@@ -206,6 +207,7 @@ var IO = Module("io", {
                     dactyl.echomsg("finished sourcing " + filename.quote(), 2);
 
                     dactyl.log("Sourced: " + filename, 3);
+                    return context;
                 }
                 catch (e) {
                     if (!(e instanceof FailedAssertion))

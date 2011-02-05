@@ -157,6 +157,8 @@ var Contexts = Module("contexts", {
     }
 }, {
     Context: modules.Script = function Context(file, group, args) {
+        function Const(val) Class.Property({ enumerable: true, value: val });
+
         let isPlugin = io.getRuntimeDirectories("plugins")
                          .some(function (dir) dir.contains(file, false))
 
@@ -167,9 +169,18 @@ var Contexts = Module("contexts", {
         }
         else {
             self = update(modules.newContext.apply(null, args || [userContext]), {
-                NAME: file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase()),
-                PATH: file.path,
-                CONTEXT: self
+                NAME: Const(file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
+                PATH: Const(file.path),
+                CONTEXT: Const(self),
+                unload: Const(function unload() {
+                    if (plugins[this.NAME] === this || plugins[this.PATH] === this)
+                        if (this.onUnload)
+                            this.onUnload();
+                    if (plugins[this.NAME] === this)
+                        delete plugins[this.NAME];
+                    if (plugins[this.PATH] === this)
+                        delete plugins[this.PATH];
+                })
             });
             Class.replaceProperty(plugins, file.path, self);
 
