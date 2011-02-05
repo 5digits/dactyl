@@ -438,14 +438,15 @@ var Addons = Module("addons", {
             }
 
             context.generate = function generate() {
-                context.incomplete = true;
                 update(base);
-                if (AddonManager.getAllAddons)
+                if (AddonManager.getAllAddons) {
+                    context.incomplete = true;
                     AddonManager.getAllAddons(function (addons) {
                         context.incomplete = false;
                         update(array.uniq(base.concat(addons.map(function (a) a.type)),
                                           true));
                     });
+                }
             }
         }
 
