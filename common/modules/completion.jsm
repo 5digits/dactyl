@@ -1047,7 +1047,7 @@ var Completion = Module("completion", {
         options.add(["complete", "cpt"],
             "Items which are completed at the :open prompts",
             "charlist", config.defaults.complete == null ? "slf" : config.defaults.complete,
-            { get values() values(completion.urlCompleters) });
+            { get values() values(completion.urlCompleters).toArray() });
 
         options.add(["wildanchor", "wia"],
             "Define which completion groups only match at the beginning of their text",

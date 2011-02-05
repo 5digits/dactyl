@@ -2,7 +2,6 @@
 
 var utils = require("utils");
 const { module } = utils;
-
 var dactyllib = module("dactyl");
 var jumlib = module("resource://mozmill/modules/jum.js");
 
@@ -637,7 +636,9 @@ var tests = {
             ["Navigation Toolbar", toolbarState("#nav-bar", false)],
             ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", false)],
             ["Navigation Toolbar", toolbarState("#nav-bar", true)],
-            ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", true)]
+            ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", true)],
+            ["Navigation Toolbar", toolbarState("#nav-bar", false)],
+            ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", false)]
         ],
         error: ["", "foo"]
     },
