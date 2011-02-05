@@ -63,7 +63,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
     get bookmarks() Class.replaceProperty(this, "bookmarks", this.load()),
 
-    get keywords() array.toObject([[b.keyword, b] for (b in this) if (b.keyword)]),
+    keywords: Class.memoize(function () array.toObject([[b.keyword, b] for (b in this) if (b.keyword)])),
 
     rootFolders: ["toolbarFolder", "bookmarksMenuFolder", "unfiledBookmarksFolder"]
         .map(function (s) services.bookmarks[s]),
@@ -185,11 +185,13 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
                 let bmark = this._loadBookmark(this.readBookmark(itemId));
                 this.bookmarks[bmark.id] = bmark;
                 storage.fireEvent(name, "add", bmark);
+                delete this.keywords;
             }
         }
     },
     onItemRemoved: function onItemRemoved(itemId, folder, index) {
         let result = this._deleteBookmark(itemId);
+        delete this.keywords;
         if (result)
             storage.fireEvent(name, "remove", result);
     },
@@ -204,6 +206,8 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
 
         let bookmark = this.bookmarks[itemId];
         if (bookmark) {
+            if (property == "keyword")
+                delete this.keywords;
             if (property == "tags")
                 value = services.tagging.getTagsForURI(bookmark.uri, {});
             if (property in bookmark) {
