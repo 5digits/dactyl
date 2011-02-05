@@ -407,8 +407,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 this.loadScript("resource://dactyl-content/eval.js", context);
                 if (context[EVAL_ERROR]) {
                     try {
-                        context[EVAL_ERROR].fileName = context.file;
-                        context[EVAL_ERROR].lineNumber += context.line;
+                        context[EVAL_ERROR].fileName = info.file;
+                        context[EVAL_ERROR].lineNumber += info.line;
                     }
                     catch (e) {}
                     throw context[EVAL_ERROR];
