@@ -86,10 +86,10 @@ var Template = Module("Template", {
         let ret = <></>;
         let n = 0;
         for each (let i in Iterator(iter)) {
-            let val = func(i);
+            let val = func(i, n);
             if (val == undefined)
                 continue;
-            if (sep && n++)
+            if (n++ && sep)
                 ret += sep;
             if (interruptable && n % interruptable == 0)
                 util.threadYield(true, true);

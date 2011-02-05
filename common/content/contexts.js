@@ -27,6 +27,26 @@ var Group = Class("Group", {
     subGroups: {}
 
 }, {
+    compileFilter: function (patterns) {
+
+        function siteFilter(uri) siteFilter.filters.every(function (f) f(uri) == f.result);
+
+        patterns = Option.splitList(patterns, true);
+
+        return update(siteFilter, {
+            toString: function () this.filters.join(","),
+
+            filters: patterns.map(function (pattern) {
+                let [, res, filter] = /^(!?)(.*)/.exec(pattern);
+
+                return update(Styles.matchFilter(Option.dequote(filter)), {
+                    result: !res,
+                    toString: function () pattern
+                });
+            })
+        });
+    },
+
     groupsProto: {},
 
     subGroupMap: {},
@@ -256,20 +276,7 @@ var Contexts = Module("contexts", {
                 if (args.length == 2) {
                     dactyl.assert(!group || args.bang, "Group exists");
 
-                    let filter = function siteFilter(uri)
-                        siteFilter.filters.every(function (f) f(uri) == f.result);
-
-                    update(filter, {
-                        toString: function () this.filters.join(","),
-                        filters: Option.splitList(args[1], true).map(function (pattern) {
-                            let [, res, filter] = /^(!?)(.*)/.exec(pattern);
-
-                            return update(Styles.matchFilter(Option.dequote(filter)), {
-                                result: !res,
-                                toString: function () pattern
-                            });
-                        })
-                    });
+                    let filter = Group.compileFilter(args[1]);
 
                     group = contexts.addGroup(name, args["-description"], filter, !args["-nopersist"]);
                 }
