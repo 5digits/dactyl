@@ -1008,7 +1008,7 @@ unlet s:cpo_save
         });
     },
     options: function (dactyl, modules, window) {
-        const { options } = modules;
+        const { completion, options } = modules;
 
         var shell, shellcmdflag;
         if (util.OS.isWindows) {

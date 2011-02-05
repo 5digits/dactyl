@@ -388,6 +388,33 @@ Controller.prototype = {
     }),
 
     /**
+     * Triggers a completion function with the given arguments an
+     * ensures that no errors have occurred during the process.
+     *
+     * @param {object} self The 'this' object for which to trigger the
+     *     completer.
+     * @param {function|string} func The method or method name to call.
+     * @param {string} string The method or method name to call. @optional
+     * @param {string} message The message to display upon assertion failure. @optional
+     * @param {...} Extra arguments are passed to the completion
+     *     function directly.
+     */
+    testCompleter: wrapAssertNoErrors(function testCompleter(self, func, string, message) {
+        var context = this.modules.CompletionContext(string || "");
+        context.tabPressed = true;
+        context.forkapply("completions", 0, self, func, Array.slice(arguments, testCompleter.length));
+
+        utils.assert("dactyl.runCompletions", context.wait(5000),
+                     message || "Completion failed: " + self + "." + func);
+
+        for (var [, ctxt] in Iterator(context.contextList))
+            for (var [, item] in Iterator(ctxt.items))
+                ctxt.createRow(item);
+
+        return context;
+    }),
+
+    /**
      * Triggers Ex completion for the given command string and ensures
      * that no errors have occurred during the process.
      *

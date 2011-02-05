@@ -633,12 +633,12 @@ var Bookmarks = Module("bookmarks", {
         };
 
         completion.searchEngine = function searchEngine(context, suggest) {
-             let engines = services.browserSearch.getEngines({});
-             if (suggest)
-                 engines = engines.filter(function (e) e.supportsResponseType("application/x-suggestions+json"));
-
              context.title = ["Suggest Engine", "Description"];
-             context.completions = engines.map(function (e) [e.alias, e.description]);
+             context.keys = { text: "keyword", description: "title", icon: "icon" };
+             context.completions = values(bookmarks.searchEngines);
+             if (suggest)
+                 context.filters.push(function ({ item }) item.supportsResponseType("application/x-suggestions+json"));
+
         };
 
         completion.searchEngineSuggest = function searchEngineSuggest(context, engineAliases, kludge) {
