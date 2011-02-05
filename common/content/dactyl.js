@@ -1040,7 +1040,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             dir.readDirectory(true).forEach(function (file) {
                 if (file.isFile() && loadplugins.getKey(file.path) && !(file.path in dactyl.pluginFiles)) {
                     try {
-                        io.source(file.path, false);
+                        io.source(file.path);
                         dactyl.pluginFiles[file.path] = true;
                     }
                     catch (e) {
@@ -2075,14 +2075,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (dactyl.commandLineOptions.rcFile) {
                     let filename = dactyl.commandLineOptions.rcFile;
                     if (!/^(NONE|NORC)$/.test(filename))
-                        io.source(io.File(filename).path, false); // let io.source handle any read failure like Vim
+                        io.source(io.File(filename).path, { group: contexts.user });
                 }
                 else {
                     if (init)
                         dactyl.execute(init);
                     else {
                         if (rcFile) {
-                            io.source(rcFile.path, false);
+                            io.source(rcFile.path, { group: contexts.user });
                             services.environment.set("MY_" + config.idName + "RC", rcFile.path);
                         }
                         else
@@ -2092,7 +2092,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
                         let localRCFile = io.getRCFile(io.cwd);
                         if (localRCFile && !localRCFile.equals(rcFile))
-                            io.source(localRCFile.path, false);
+                            io.source(localRCFile.path, { group: contexts.user });
                     }
                 }
 

@@ -29,7 +29,7 @@ var IO = Module("io", {
         this.config = config;
     },
 
-    Local: function (dactyl, modules, window) let ({ Script, io, plugins } = modules) ({
+    Local: function (dactyl, modules, window) let ({ io, plugins } = modules) ({
 
         init: function init() {
             this.config = modules.config;
@@ -144,18 +144,23 @@ var IO = Module("io", {
          * Reads Ex commands, JavaScript or CSS from *filename*.
          *
          * @param {string} filename The name of the file to source.
-         * @param {boolean} silent Whether errors should be reported.
+         * @param {object} params Extra parameters:
+         *      group:  The group in which to execute commands.
+         *      silent: Whether errors should not be reported.
          */
-        source: function source(filename, silent) {
+        source: function source(filename, params) {
+            const { Contexts, contexts } = modules;
             defineModule.loadLog.push("sourcing " + filename);
+            params = params || {};
+
             let time = Date.now();
-            this.withSavedValues(["sourcing"], function _source() {
-                this.sourcing = null;
+            contexts.withSavedValues(["context"], function _source() {
+                contexts.context = null;
                 try {
                     var file = util.getFile(filename) || io.File(filename);
 
                     if (!file.exists() || !file.isReadable() || file.isDirectory()) {
-                        if (!silent)
+                        if (!params.silent)
                             dactyl.echoerr("E484: Can't open file " + filename.quote());
                         return;
                     }
@@ -167,7 +172,7 @@ var IO = Module("io", {
                     // handle pure JavaScript files specially
                     if (/\.js$/.test(filename)) {
                         try {
-                            dactyl.loadScript(uri.spec, Script(file));
+                            dactyl.loadScript(uri.spec, Contexts.Script(file, params.group));
                             dactyl.helpInitialized = false;
                         }
                         catch (e) {
@@ -185,10 +190,14 @@ var IO = Module("io", {
                     else if (/\.css$/.test(filename))
                         styles.registerSheet(uri.spec, false, true);
                     else {
-                        if (!(file.path in plugins))
-                            plugins[file.path] = modules.newContext(modules.userContext);
-                        modules.commands.execute(file.read(), null, silent || "loud", null,
-                            { file: file.path, line: 1, context: plugins[file.path] });
+                        let context = Contexts.Context(file, params.group);
+                        modules.commands.execute(file.read(), null, params.silent || "loud",
+                                                 null, {
+                            context: context,
+                            file: file.path,
+                            group: context.GROUP,
+                            line: 1
+                        });
                     }
 
                     if (this._scriptNames.indexOf(file.path) == -1)
@@ -202,13 +211,13 @@ var IO = Module("io", {
                     if (!(e instanceof FailedAssertion))
                         dactyl.reportError(e);
                     let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
-                    if (!silent)
+                    if (!params.silent)
                         dactyl.echoerr(message);
                 }
                 finally {
                     defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
                 }
-            });
+            }, this);
         },
     }),
 
@@ -545,35 +554,6 @@ var IO = Module("io", {
      */
     PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
 }, {
-    init: function init(dactyl, modules, window) {
-        Class.replaceProperty(modules.plugins, "contexts", {});
-        modules.Script = function Script(file) {
-            const { io, plugins } = modules;
-
-            let self = set.has(plugins, file.path) && plugins[file.path];
-            if (self) {
-                if (set.has(self, "onUnload"))
-                    self.onUnload();
-            }
-            else {
-                self = update(modules.newContext(plugins, true), {
-                    NAME: file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase()),
-                    PATH: file.path,
-                    CONTEXT: self
-                });
-                Class.replaceProperty(plugins, file.path, self);
-
-                // This belongs elsewhere
-                if (io.getRuntimeDirectories("plugins").some(
-                        function (dir) dir.contains(file, false)))
-                    Class.replaceProperty(plugins, self.NAME, self);
-            }
-            plugins.contexts[file.path] = self;
-            return self;
-        }
-
-        init.superapply(this, arguments);
-    },
     commands: function (dactyl, modules, window) {
         const { commands, completion, io } = modules;
 

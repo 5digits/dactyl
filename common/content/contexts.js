@@ -51,6 +51,8 @@ var Group = Class("Group", {
     })
 });
 
+plugins.contexts = {};
+
 var Contexts = Module("contexts", {
     init: function () {
         this.groupList = [];
@@ -71,6 +73,10 @@ var Contexts = Module("contexts", {
     allGroups: Class.memoize(function () Object.create(Group.groupsProto, {
         groups: { value: this.groupList }
     })),
+
+    activeGroups: function (subgroup)
+        let (need = subgroup ? [subgroup] : Object.keys(this.subGroup))
+            this.groupList.filter(function (group) need.some(function (name) set.has(group, name))),
 
     get subGroup() Group.subGroupMap,
 
@@ -152,6 +158,44 @@ var Contexts = Module("contexts", {
         return action;
     }
 }, {
+    Context: modules.Script = function Context(file, group, args) {
+        let isPlugin = io.getRuntimeDirectories("plugins")
+                         .some(function (dir) dir.contains(file, false))
+
+        let self = set.has(plugins, file.path) && plugins[file.path];
+        if (self) {
+            if (set.has(self, "onUnload"))
+                self.onUnload();
+        }
+        else {
+            self = update(modules.newContext.apply(null, args || [userContext]), {
+                NAME: file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase()),
+                PATH: file.path,
+                CONTEXT: self
+            });
+            Class.replaceProperty(plugins, file.path, self);
+
+            // This belongs elsewhere
+            if (isPlugin && args)
+                Object.defineProperty(plugins, self.NAME, {
+                    configurable: true,
+                    enumerable: true,
+                    value: self,
+                    writeable: false
+                });
+        }
+
+        self.GROUP = group ||
+             contexts.addGroup(isPlugin ? "plugin-" + self.NAME
+                                        : "script-" + array(commands.nameRegexp.iterate(file.path)).join("-"),
+                               "Script group for " + file.path,
+                               null, false);
+
+        return plugins.contexts[file.path] = self;
+    },
+    Script: function Script(file, group) {
+        return this.Context(file, group, [plugins, true]);
+    }
 }, {
     commands: function initCommands() {
 
@@ -161,7 +205,7 @@ var Contexts = Module("contexts", {
                 dactyl.assert(args.length <= 2, "Trailing characters");
 
                 if (args.length == 0)
-                    return void completion.listCompleter("group", "");
+                    return void completion.listCompleter("group", "", null, null);
 
                 let name = Option.dequote(args[0]);
                 dactyl.assert(commands.validName.test(name), "Invalid group name");
@@ -306,10 +350,11 @@ var Contexts = Module("contexts", {
             });
     },
     completion: function initCompletion() {
-        completion.group = function group(context, modes) {
+        completion.group = function group(context, active) {
             context.title = ["Group"];
             context.keys = { text: "name", description: function (h) h.description || h.filter };
-            context.completions = contexts.groupList.slice(0, -1);
+            context.completions = (active === undefined ? contexts.groupList : contexts.activeGroups(active))
+                                    .slice(0, -1);
         };
     }
 });
