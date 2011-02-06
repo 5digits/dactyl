@@ -61,23 +61,27 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         "dactyl-cleanup": function dactyl_cleanup() {
             let modules = dactyl.modules;
 
-            for (let name in values(Object.getOwnPropertyNames(modules).reverse())) {
-                let mod = Object.getOwnPropertyDescriptor(modules, name).value;
-                if (mod instanceof Class) {
+            let mods = Object.getOwnPropertyNames(modules).reverse()
+                             .map(function (name) Object.getOwnPropertyDescriptor(modules, name).value);
+
+            for (let mod in values(mods))
+                if (mod instanceof ModuleBase || mod && mod.isLocalModule) {
                     if ("cleanup" in mod)
                         this.trapErrors(mod.cleanup, mod);
                     if ("destroy" in mod)
                         this.trapErrors(mod.destroy, mod);
-                    if ("INIT" in mod && "cleanup" in mod.INIT)
-                        this.trapErrors(mod.cleanup, mod, dactyl, modules, window);
                 }
-            }
+
+            for (let mod in values(mods))
+                if (mod instanceof Class && "INIT" in mod && "cleanup" in mod.INIT)
+                    this.trapErrors(mod.cleanup, mod, dactyl, modules, window);
 
             for (let name in values(Object.getOwnPropertyNames(modules).reverse()))
                 try {
                     delete modules[name];
                 }
                 catch (e) {}
+            modules.__proto__ = {};
         }
     },
 

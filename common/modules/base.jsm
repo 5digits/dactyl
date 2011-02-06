@@ -917,6 +917,7 @@ Module.INIT = {
             let module = this, objs = {};
             for (let i in locals)
                 module = objs[i] = Object.create(module);
+            module.isLocalModule = true;
 
             modules.jsmodules[this.constructor.className] = module;
             locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)))

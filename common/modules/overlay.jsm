@@ -156,11 +156,16 @@ var Overlay = Module("Overlay", {
                      "completion",
                      "config",
                      "downloads",
+                     "finder",
+                     "highlight",
+                     "io",
                      "javascript",
                      "overlay",
                      "prefs",
                      "services",
                      "storage",
+                     "styles",
+                     "template",
                      "util"
                     ].forEach(function (name) defineModule.time("load", name, require, null, jsmodules, name));
 
@@ -174,17 +179,12 @@ var Overlay = Module("Overlay", {
                      "commands",
                      "editor",
                      "events",
-                     "finder",
-                     "highlight",
                      "hints",
-                     "io",
                      "mappings",
                      "marks",
                      "mow",
                      "options",
-                     "statusline",
-                     "styles",
-                     "template"
+                     "statusline"
                      ].forEach(function (name) defineModule.time("load", name, modules.load, modules, name));
 
                     config.scripts.forEach(modules.load);
