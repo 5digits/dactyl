@@ -169,9 +169,11 @@ function init() {
     }
 
     try {
-        module("resource://dactyl-local-content/disable-acr.jsm").init();
+        module("resource://dactyl-content/disable-acr.jsm").init(addon.id);
     }
-    catch (e) {}
+    catch (e) {
+        reportError(e);
+    }
 
     if (JSMLoader && JSMLoader.bump != 3) // Temporary hack
         Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
@@ -197,9 +199,11 @@ function shutdown(data, reason) {
     dump("dactyl: bootstrap: shutdown " + reasonToString(reason) + "\n");
     if (reason != APP_SHUTDOWN) {
         try {
-            module("resource://dactyl-local-content/disable-acr.jsm").cleanup();
+            module("resource://dactyl-content/disable-acr.jsm").init(addon.id);
         }
-        catch (e) {}
+        catch (e) {
+            reportError(e);
+        }
 
         if ([ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason) >= 0)
             Services.obs.notifyObservers(null, "dactyl-purge", null);

@@ -249,13 +249,7 @@ var Overlay = Module("Overlay", {
                             defineModule.loadLog.push(" from: " + util.fixURI(frame.filename) + ":" + frame.lineNumber);
 
                         let obj = defineModule.time(module.className, "init", module);
-                        try {
-                            delete modules[module.className];
-                            modules[module.className] = obj;
-                        }
-                        catch (e) {
-                            Class.replaceProperty(modules, module.className, obj);
-                        }
+                        Class.replaceProperty(modules, module.className, obj);
                         loaded[module.className] = true;
 
                         frob(module.className);

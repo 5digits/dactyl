@@ -1,7 +1,7 @@
 // By Kris Maglione. Public Domain.
 // Please feel free to copy and use at will.
 
-const ADDON_ID     = "pentadactyl@dactyl.googlecode.com";
+var ADDON_ID;
 
 const OVERLAY_URLS = [
     "about:addons",
@@ -18,12 +18,15 @@ function observe(window, topic, url) {
     if (topic === "chrome-document-global-created")
         checkDocument(window.document);
 }
-function init(disable) {
-    Services.obs[disable ? "removeObserver" : "addObserver"](observe, "chrome-document-global-created", false);
+function init(id) {
+    if (id)
+        ADDON_ID = id;
+
+    Services.obs[id ? "addObserver" : "removeObserver"](observe, "chrome-document-global-created", false);
     for (let doc in chromeDocuments)
-        checkDocument(doc, disable);
+        checkDocument(doc, !id);
 }
-function cleanup() { init(true); }
+function cleanup() { init(null); }
 
 function checkPopup(event) {
     let doc = event.originalTarget.ownerDocument;
