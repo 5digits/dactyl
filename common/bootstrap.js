@@ -199,7 +199,7 @@ function shutdown(data, reason) {
     dump("dactyl: bootstrap: shutdown " + reasonToString(reason) + "\n");
     if (reason != APP_SHUTDOWN) {
         try {
-            module("resource://dactyl-content/disable-acr.jsm").init(addon.id);
+            module("resource://dactyl-content/disable-acr.jsm").cleanup();
         }
         catch (e) {
             reportError(e);
