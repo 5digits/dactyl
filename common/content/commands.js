@@ -279,6 +279,8 @@ var Command = Class("Command", {
 
                 explicitOpts: Class.memoize(function () ({})),
 
+                has: function (opt) set.has(this.explicitOpts, opt) || typeof opt === "number" && set.has(this, opt),
+
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
 
                 // TODO: string: Class.memoize(function () { ... }),

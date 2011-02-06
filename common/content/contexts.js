@@ -31,7 +31,8 @@ var Group = Class("Group", {
 
         function siteFilter(uri) siteFilter.filters.every(function (f) f(uri) == f.result);
 
-        patterns = Option.splitList(patterns, true);
+        if (!isArray(patterns))
+            patterns = Option.splitList(patterns, true);
 
         return update(siteFilter, {
             toString: function () this.filters.join(","),
@@ -274,55 +275,58 @@ var Contexts = Module("contexts", {
 }, {
     commands: function initCommands() {
 
-        commands.add(["gr[oup]", "mapg[roup]"],
+        commands.add(["gr[oup]"],
             "Create or select a group",
             function (args) {
-                dactyl.assert(args.length <= 2, "Trailing characters");
+                if (args.length > 0) {
+                    var name = Option.dequote(args[0]);
+                    dactyl.assert(name !== "builtin", "Cannot modify builtin group");
+                    dactyl.assert(commands.validName.test(name), "Invalid group name");
 
-                if (args.length == 0)
+                    var group = contexts.getGroup(name);
+                }
+                else if (args.bang)
+                    var group = args.context && args.context.group;
+                else
                     return void completion.listCompleter("group", "", null, null);
 
-                let name = Option.dequote(args[0]);
-                dactyl.assert(commands.validName.test(name), "Invalid group name");
+                dactyl.assert(group || name, "No current group");
 
-                let group = contexts.getGroup(name);
-
-                if (args.length == 2) {
-                    dactyl.assert(!group || args.bang, "Group exists");
-
-                    let filter = Group.compileFilter(args[1]);
-
+                let filter = Group.compileFilter(args["-locations"]);
+                if (!group)
                     group = contexts.addGroup(name, args["-description"], filter, !args["-nopersist"]);
+                else {
+                    if (args.has("-locations"))
+                        group.filter = filter;
+                    if (args.has("-description"))
+                        group.description = args["-description"]
+                    if (args.has("-nopersist"))
+                        group.persist = !args["-nopersist"]
                 }
 
-                dactyl.assert(group, "No such group: " + name);
-                dactyl.assert(group.name != "builtin", "Cannot modify builtin group");
                 if (args.context)
                     args.context.group = group;
             },
             {
-                argCount: "*",
+                argCount: "?",
                 bang: true,
                 completer: function (context, args) {
                     if (args.length == 1)
                         completion.group(context);
-                    else {
-                        Option.splitList(context.filter);
-                        context.advance(Option._splitAt);
-
-                        context.compare = CompletionContext.Sort.unsorted;
-                        context.completions = [
-                            [buffer.uri.host, "Current Host"],
-                            [buffer.uri.spec, "Current Page"]
-                        ];
-                    }
                 },
                 keepQuotes: true,
                 options: [
                     {
                         names: ["-description", "-desc", "-d"],
                         description: "A description of this group",
+                        default: ["User-defined group"],
                         type: CommandOption.STRING
+                    },
+                    {
+                        names: ["-locations", "-locs", "-loc", "-l"],
+                        description: ["The URLs for which this group should be active"],
+                        default: ["*"],
+                        type: CommandOption.LIST
                     },
                     {
                         names: ["-nopersist", "-n"],
@@ -331,7 +335,7 @@ var Contexts = Module("contexts", {
                 ]
             });
 
-        commands.add(["delg[roup]", "delmapg[roup]"],
+        commands.add(["delg[roup]"],
             "Delete a group",
             function (args) {
                 dactyl.assert(contexts.getGroup(args[0]), "No such group: " + args[0]);
