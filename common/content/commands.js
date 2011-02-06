@@ -982,7 +982,7 @@ var Commands = Module("commands", {
                 <forbid>
             ]
             [^ <forbid> ]*
-        ]]>, "", {
+        ]]>, "g", {
         forbid: util.regexp(String.replace(<![CDATA[
             U0000-U002c // U002d -
             U002e-U002f

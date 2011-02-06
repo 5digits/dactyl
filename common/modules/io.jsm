@@ -993,7 +993,7 @@ unlet s:cpo_save
         modules.JavaScript.setCompleter([File, File.expandPath],
             [function (context, obj, args) {
                 context.quote[2] = "";
-                completion.file(context, true);
+                modules.completion.file(context, true);
             }]);
 
     },

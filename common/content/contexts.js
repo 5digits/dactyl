@@ -147,7 +147,11 @@ var Contexts = Module("contexts", {
     },
 
     getGroup: function getGroup(name, subGroup) {
-        let group = array.nth(this.groupList, function (h) h.name == name, 0) || null;
+        if (name === "default")
+            var group = this.context && this.context.context && this.context.context.GROUP;
+        else
+            group = array.nth(this.groupList, function (h) h.name == name, 0) || null;
+
         if (group && subGroup)
             return group[subGroup];
         return group;
@@ -213,8 +217,12 @@ var Contexts = Module("contexts", {
     Context: modules.Script = function Context(file, group, args) {
         function Const(val) Class.Property({ enumerable: true, value: val });
 
-        let isPlugin = io.getRuntimeDirectories("plugins")
-                         .some(function (dir) dir.contains(file, false))
+        let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
+                                 function (dir) dir.contains(file, true),
+                                 0);
+        let isRuntime = array.nth(io.getRuntimeDirectories(""),
+                                  function (dir) dir.contains(file, true),
+                                  0);
 
         let self = set.has(plugins, file.path) && plugins[file.path];
         if (self) {
@@ -222,8 +230,9 @@ var Contexts = Module("contexts", {
                 self.onUnload();
         }
         else {
+            let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-") : file.leafName;
             self = update(modules.newContext.apply(null, args || [userContext]), {
-                NAME: Const(file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
+                NAME: Const(name.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
                 PATH: Const(file.path),
                 CONTEXT: Const(self),
                 unload: Const(function unload() {
@@ -248,9 +257,12 @@ var Contexts = Module("contexts", {
                 });
         }
 
+        let path = isRuntime ? file.getRelativeDescriptor(isRuntime) : file.path;
+
         self.GROUP = group ||
-             contexts.addGroup(isPlugin ? "plugin-" + self.NAME
-                                        : "script-" + array(commands.nameRegexp.iterate(file.path)).join("-"),
+             contexts.addGroup((isRuntime ? "" : "script-") +
+                                   commands.nameRegexp.iterate(path.replace(/\..*/, ""))
+                                           .join("-"),
                                "Script group for " + file.path,
                                null, false);
 
