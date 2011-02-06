@@ -306,12 +306,6 @@ var CommandWidgets = Class("CommandWidgets", {
 var CommandMode = Class("CommandMode", {
     init: function init() {
         this.keepCommand = userContext.hidden_option_command_afterimage;
-
-        if (this.historyKey)
-            this.history = CommandLine.History(commandline.widgets.active.command.inputField, this.historyKey, this);
-
-        if (this.complete)
-            this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField, this);
     },
 
     open: function (command) {
@@ -325,7 +319,13 @@ var CommandMode = Class("CommandMode", {
         this.widgets.prompt = this.prompt;
         this.widgets.command = command || "";
 
-        if (this.completions && command && options["autocomplete"].length)
+        if (this.historyKey)
+            this.history = CommandLine.History(commandline.widgets.active.command.inputField, this.historyKey, this);
+
+        if (this.complete)
+            this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField, this);
+
+        if (this.completions && command && options["autocomplete"].length && commandline.commandSession === this)
             this.completions.complete(true, false);
     },
 
@@ -337,7 +337,7 @@ var CommandMode = Class("CommandMode", {
 
     enter: function (stack) {
         commandline.commandSession = this;
-        if (this.command || stack.pop && commandline.command) {
+        if (stack.pop && commandline.command) {
             this.onChange(commandline.command);
             if (this.completions && stack.pop)
                 this.completions.complete(true, false);
