@@ -9,7 +9,7 @@ var Group = Class("Group", {
         const self = this;
         this.name = name;
         this.description = description;
-        this.filter = filter || function (uri) true;
+        this.filter = filter || Group.defaultFilter;
         this.persist = persist || false;
         this.subGroups = [];
     },
@@ -19,6 +19,8 @@ var Group = Class("Group", {
             if (subGroup.cleanup)
                 subGroup.cleanup();
     },
+
+    argsExtra: function argsExtra() ({}),
 
     get toStringParams() [this.name],
 
@@ -51,6 +53,8 @@ var Group = Class("Group", {
     },
 
     groupsProto: {},
+
+    defaultFilter: Class.memoize(function () this.compileFilter(["*"])),
 
     subGroupMap: {},
 
@@ -91,7 +95,7 @@ var Contexts = Module("contexts", {
         this.groupMap = {};
         this.subGroupProto = {};
 
-        this.system = this.addGroup("builtin", "Builtin items");
+        this.builtin = this.addGroup("builtin", "Builtin items");
         this.user = this.addGroup("user", "User-defined items", null, true);
         this.builtinGroups = [this.system, this.user];
     },
@@ -295,13 +299,19 @@ var Contexts = Module("contexts", {
                 let filter = Group.compileFilter(args["-locations"]);
                 if (!group)
                     group = contexts.addGroup(name, args["-description"], filter, !args["-nopersist"]);
-                else {
+                else if (!group.builtin) {
                     if (args.has("-locations"))
                         group.filter = filter;
                     if (args.has("-description"))
                         group.description = args["-description"]
                     if (args.has("-nopersist"))
                         group.persist = !args["-nopersist"]
+                }
+
+                if (!group.builtin && args.has("-args")) {
+                    group.argsExtra = contexts.bindMacro({ literalArg: "return " + args["-args"] },
+                                                         "-javascript", util.identity);
+                    group.args = args["-args"];
                 }
 
                 if (args.context)
@@ -316,6 +326,11 @@ var Contexts = Module("contexts", {
                 },
                 keepQuotes: true,
                 options: [
+                    {
+                        names: ["-args", "-a"],
+                        description: "JavaScript Object which augments the arguments passed to commands, mappings, and autocommands",
+                        type: CommandOption.STRING
+                    },
                     {
                         names: ["-description", "-desc", "-d"],
                         description: "A description of this group",
@@ -332,7 +347,26 @@ var Contexts = Module("contexts", {
                         names: ["-nopersist", "-n"],
                         description: "Do not save this group to an auto-generated RC file"
                     }
-                ]
+                ],
+                serialGroup: 20,
+                serialize: function () [
+                    {
+                        command: this.name,
+                        bang: true,
+                        options: iter([v, typeof group[k] == "boolean" ? null : group[k]]
+                                      // FIXME: this map is expressed multiple times
+                                      for ([k, v] in Iterator({
+                                          args: "-args",
+                                          description: "-description",
+                                          filter: "-locations"
+                                      }))
+                                      if (group[k])).toObject(),
+                        arguments: [group.name],
+                        ignoreDefaults: true
+                    }
+                    for (group in values(contexts.activeGroups()))
+                    if (!group.builtin && group.persist)
+                ].concat([{ command: this.name, arguments: ["user"] }])
             });
 
         commands.add(["delg[roup]"],

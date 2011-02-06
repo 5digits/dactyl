@@ -146,7 +146,11 @@ var AutoCommands = Module("autocommands", {
         let uri = args.url ? util.newURI(args.url) : buffer.uri;
 
         event = event.toLowerCase();
-        for (let hive in this.hives.iterValues())
+        for (let hive in this.hives.iterValues()) {
+            let args = update({},
+                              hive.group.argsExtra(arguments[1]),
+                              arguments[1]);
+
             for (let autoCmd in values(hive._store))
                 if (autoCmd.eventName === event && autoCmd.filter(uri)) {
                     if (!lastPattern || lastPattern !== String(autoCmd.filter))
@@ -157,6 +161,7 @@ var AutoCommands = Module("autocommands", {
 
                     dactyl.trapErrors(autoCmd.command, autoCmd, args);
                 }
+        }
     }
 }, {
 }, {

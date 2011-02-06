@@ -107,8 +107,9 @@ var Map = Class("Map", {
                 .map(function ([i, prop]) [prop, this[i]], arguments)
                 .toObject();
 
-        if (!args.context)
-            args.context = contexts.context;
+        args = update({ context: contexts.context },
+                      this.hive.group.argsExtra(args),
+                      args);
 
         let self = this;
         function repeat() self.action(args)
@@ -531,20 +532,16 @@ var Mappings = Module("mappings", {
                     serialize: function () {
                         return this.name != "map" ? [] :
                             array(mappings.userHives)
-                                .filter(function (h) !h.noPersist)
+                                .filter(function (h) h.group.persist)
                                 .map(function (hive) [
-                                    {
-                                        command: "mapgroup",
-                                        bang: true,
-                                        arguments: [hive.name, String(hive.filter)].slice(0, hive.name == "user" ? 1 : 2)
-                                    }
-                                ].concat([
                                     {
                                         command: "map",
                                         options: array([
+                                            hive !== mappings.user && ["-group", hive.group.name],
                                             ["-modes", uniqueModes(map.modes)],
                                             ["-description", map.description],
                                             map.silent && ["-silent"]])
+
                                             .filter(util.identity)
                                             .toObject(),
                                         arguments: [map.names[0]],
@@ -553,7 +550,7 @@ var Mappings = Module("mappings", {
                                     }
                                     for (map in userMappings(hive))
                                     if (map.persist)
-                                ]))
+                                ])
                                 .flatten().array;
                     }
             };

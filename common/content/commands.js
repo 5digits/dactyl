@@ -154,9 +154,12 @@ var Command = Class("Command", {
             throw FailedAssertion("E477: No ! allowed");
 
         return !dactyl.trapErrors(function exec(command) {
+            // update({}, command.hive.group.argsExtra(args), args);
+
             if (this.always)
                 this.always(args, modifiers);
-            if (!contexts.context || !contexts.context.noExecute)
+
+            if (!context || !context.noExecute)
                 this.action(args, modifiers);
         }, this);
     },
@@ -569,12 +572,13 @@ var Commands = Module("commands", {
                     string = string(tokens || {});
 
                 let lines = string.split(/\r\n|[\r\n]/);
+                let startLine = context.line;
 
                 for (var i = 0; i < lines.length && !context.finished; i++) {
                     // Deal with editors from Silly OSs.
                     let line = lines[i].replace(/\r$/, "");
 
-                    context.line = context.line + i;
+                    context.line = startLine + i;
 
                     // Process escaped new lines
                     while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
