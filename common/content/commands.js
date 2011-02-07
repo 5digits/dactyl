@@ -156,7 +156,10 @@ var Command = Class("Command", {
             throw FailedAssertion("E477: No ! allowed");
 
         return !dactyl.trapErrors(function exec() {
-            update({}, this.hive.argsExtra(args), args);
+            let extra = this.hive.argsExtra(args);
+            for (let k in properties(extra))
+                if (!(k in args))
+                    Object.defineProperty(args, k, Object.getOwnPropertyDescriptor(extra, k));
 
             if (this.always)
                 this.always(args, modifiers);
@@ -1339,7 +1342,7 @@ var Commands = Module("commands", {
                                     args["-description"],
                                     contexts.bindMacro(args, "-ex",
                                         function makeParams(args, modifiers) ({
-                                            args:  {
+                                            args: {
                                                 __proto__: args,
                                                 toString: function () this.string,
                                             },

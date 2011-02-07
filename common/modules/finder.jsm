@@ -165,22 +165,16 @@ var RangeFinder = Module("rangefinder", {
     modes: function (dactyl, modules, window) {
         const { modes } = modules;
         modes.addMode("FIND", {
-            extended: true,
             description: "Find mode, active when typing search input",
             bases: [modes.COMMAND_LINE],
-            input: true
         });
         modes.addMode("FIND_FORWARD", {
-            extended: true,
             description: "Forward Find mode, active when typing search input",
-            bases: [modes.FIND],
-            input: true
+            bases: [modes.FIND]
         });
         modes.addMode("FIND_BACKWARD", {
-            extended: true,
             description: "Backward Find mode, active when typing search input",
-            bases: [modes.FIND],
-            input: true
+            bases: [modes.FIND]
         });
     },
     commands: function (dactyl, modules, window) {
@@ -191,7 +185,8 @@ var RangeFinder = Module("rangefinder", {
             { argCount: "0" });
     },
     commandline: function (dactyl, modules, window) {
-        this.CommandMode = Class("CommandFindMode", modules.CommandMode, {
+        const { rangefinder } = modules;
+        rangefinder.CommandMode = Class("CommandFindMode", modules.CommandMode, {
             init: function init(mode) {
                 this.mode = mode;
                 init.supercall(this);
@@ -201,7 +196,7 @@ var RangeFinder = Module("rangefinder", {
 
             get prompt() this.mode === modules.modes.FIND_BACKWARD ? "?" : "/",
 
-            get onCancel() modules.rangefinder.closure.onCancel,
+            get onCancel() rangefinder.closure.onCancel,
             get onChange() modules.rangefinder.closure.onChange,
             get onSubmit() modules.rangefinder.closure.onSubmit
         });

@@ -423,7 +423,7 @@ var Modes = Module("modes", {
 
         hidden: false,
 
-        input: false,
+        input: Class.memoize(function () this.bases.length && this.bases.some(function (b) b.input)),
 
         get passUnknown() this.input,
 

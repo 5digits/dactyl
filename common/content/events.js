@@ -55,8 +55,10 @@ var ProcessorStack = Class("ProcessorStack", {
                 events.feedingKeys = false;
             }
 
-            for (var res = this.actions[0]; callable(res);)
-                res = res();
+            for (var res = this.actions[0]; callable(res);) {
+                res = dactyl.trapErrors(res);
+                events.dbg("ACTION RES: " + res);
+            }
             result = res === Events.PASS ? Events.PASS : Events.KILL;
         }
         else if (result !== Events.KILL && !this.actions.length &&
@@ -402,7 +404,7 @@ var Events = Module("events", {
         }
 
         this._activeMenubar = false;
-        this.listen(window, this, "events");
+        this.listen(window, this, "events", true);
 
         dactyl.registerObserver("modeChange", function () {
             delete self.processor;
