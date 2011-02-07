@@ -9,6 +9,8 @@
 var MOW = Module("mow", {
     init: function () {
 
+        this._resize = Timer(20, 400, function (force) { this.resize(force) }, this);
+
         let fontSize = util.computedStyle(document.documentElement).fontSize;
         styles.system.add("font-size", "dactyl://content/buffer.xhtml",
                           "body { font-size: " + fontSize + "; } \
@@ -112,8 +114,7 @@ var MOW = Module("mow", {
         //        that don't generate output are executed
         if (this.widgets.mowContainer.collapsed) {
             this.body.scrollTop = 0;
-            while (body.firstChild)
-                body.removeChild(body.firstChild);
+            body.textContent = "";
         }
 
         body.appendChild(output);
@@ -122,7 +123,7 @@ var MOW = Module("mow", {
         if (!silent)
             dactyl.triggerObserver("echoMultiline", data, highlightGroup, output);
 
-        this.resize(true);
+        this._resize.tell(true);
 
         if (options["more"] && this.isScrollable(1)) {
             // start the last executed command's output at the top of the screen
