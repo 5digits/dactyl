@@ -431,6 +431,8 @@ var IO = Module("io", {
 
         if (!file || !file.exists()) {
             util.dactyl.echoerr("Command not found: " + program);
+            if (callable(blocking))
+                util.trapErrors(blocking);
             return -1;
         }
 
