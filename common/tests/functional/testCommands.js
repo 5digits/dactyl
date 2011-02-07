@@ -483,7 +483,24 @@ var tests = {
     sanitize: {
         // Skip details for now.
         completions: [
-            "",
+            ["", function (context) ["all",
+                                     "cache",
+                                     "downloads",
+                                     "formdata",
+                                     "offlineapps",
+                                     "passwords",
+                                     "sessions",
+                                     "cookies",
+                                     "history",
+                                     "host",
+                                     "sitesettings",
+                                     "commandline",
+                                     "messages",
+                                     "macros",
+                                     "marks",
+                                     "options"
+                ].every(function (item) context.allItems.items.some(function ({ text }) item == text))
+            ],
             "-",
             "-host=",
             "-timespan="

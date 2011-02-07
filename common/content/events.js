@@ -79,9 +79,11 @@ var ProcessorStack = Class("ProcessorStack", {
             Events.kill(this.events[this.events.length - 1]);
 
         if (result === Events.PASS || result === Events.ABORT) {
-            dbg("REFEED: " + this.events.filter(function (e) e.getPreventDefault()).map(events.closure.toString).join(""));
-            this.events.filter(function (e) e.getPreventDefault())
-                .forEach(function (event, i) {
+            let list = this.events.filter(function (e) e.getPreventDefault());
+            if (list.length)
+                events.dbg("REFEED: " + list.map(events.closure.toString).join(""));
+
+            list.forEach(function (event, i) {
                     let elem = event.originalTarget;
                     if (event.originalTarget) {
                         let doc = elem.ownerDocument || elem.document || elem;
@@ -307,6 +309,8 @@ var EventHive = Class("EventHive", Group.Hive, {
  * @instance events
  */
 var Events = Module("events", {
+    dbg: function () {},
+
     init: function () {
         const self = this;
 
