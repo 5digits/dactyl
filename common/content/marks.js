@@ -288,17 +288,17 @@ var Marks = Module("marks", {
                 function matchhost(url) !host || util.isDomainURL(url, host);
                 function match(marks) (k for ([k, v] in Iterator(marks)) if (timespan.contains(v.timestamp) && matchhost(v.location)));
 
-                for (let [url, local] in storage["local-marks"])
+                for (let [url, local] in marks._localMarks)
                     if (matchhost(url)) {
                         for (let key in match(local))
                             delete local[key];
                         if (!Object.keys(local).length)
-                            storage["local-marks"].remove(url);
+                            marks._localMarks.remove(url);
                     }
-                storage["local-marks"].changed();
+                marks._localMarks.changed();
 
-                for (let key in match(storage["url-marks"]))
-                    storage["url-marks"].remove(key);
+                for (let key in match(marks._urlMarks))
+                    marks._urlMarks.remove(key);
             }
         });
     }

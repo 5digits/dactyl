@@ -134,6 +134,10 @@ var Contexts = Module("contexts", {
             dactyl.trapErrors("cleanup", hive);
             dactyl.trapErrors("destroy", hive);
         }
+
+        for (let plugin in values(plugins.contexts))
+            if (plugin.onUnload)
+                dactyl.trapErrors("onUnload", plugin);
     },
 
     context: null,
@@ -162,8 +166,8 @@ var Contexts = Module("contexts", {
             this.groupList.unshift(group);
             this.groupMap[name] = group;
             this.hiveProto.__defineGetter__(name, function () group[this._hive]);
-            delete this.groups;
         }
+        delete this.groups;
         return group;
     },
 
@@ -309,7 +313,7 @@ var Contexts = Module("contexts", {
 
         if (!group)
             group = contexts.addGroup((isRuntime ? "" : "script-") +
-                                          commands.nameRegexp.iterate(path.replace(/\..*/, ""))
+                                          commands.nameRegexp.iterate(path.replace(/\.[^.]*$/, ""))
                                                   .join("-"),
                                       "Script group for " + file.path,
                                       null, false);

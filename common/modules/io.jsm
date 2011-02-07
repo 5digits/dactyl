@@ -84,9 +84,6 @@ var IO = Module("io", {
 
         destroy: function destroy() {
             services.downloadManager.removeListener(this.downloadListener);
-            for (let [, plugin] in Iterator(plugins.contexts))
-                if (plugin.onUnload)
-                    plugin.onUnload();
         },
 
         /**
