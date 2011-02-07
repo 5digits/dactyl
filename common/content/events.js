@@ -274,11 +274,20 @@ var EventHive = Class("EventHive", Group.Hive, {
      *      phase, otherwise during the bubbling phase.
      */
     listen: function (target, event, callback, capture) {
-        let args = Array.slice(arguments, 0);
-        args[2] = this.wrapListener(callback);
-        args[0].addEventListener.apply(args[0], args.slice(1));
-        args[0] = Cu.getWeakReference(args[0]);
-        this.sessionListeners.push(args);
+        if (isObject(event))
+            var [self, events] = [event, event[callback]];
+        else
+            [self, events] = [null, array.toObject([[event, callback]])];
+
+        for (let [event, callback] in Iterator(events)) {
+            let args = [Cu.getWeakReference(target),
+                        event,
+                        this.wrapListener(callback, self),
+                        capture];
+
+            target.addEventListener.apply(target, args.slice(1));
+            this.sessionListeners.push(args);
+        }
     },
 
     /**
@@ -393,8 +402,7 @@ var Events = Module("events", {
         }
 
         this._activeMenubar = false;
-        for (let [event, callback] in Iterator(this.events))
-            this.listen(window, event, callback, true);
+        this.listen(window, this, "events");
 
         dactyl.registerObserver("modeChange", function () {
             delete self.processor;
