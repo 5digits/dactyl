@@ -137,9 +137,16 @@ var tests = {
         ]
     },
     delbmarks: { anyOutput: ["", "about:pentadactyl"] },
-    delcommand: {
-        noOutput: ["foo"] // TODO: Why is this failing? "Unexpected command output: delcommand foo"
-    },
+    delcommand: [
+        {
+            init: ["comclear", "command foo bar"],
+            noOutput: ["foo"]
+        },
+        {
+            init: ["comclear"],
+            error: ["foo"]
+        }
+    ],
     delmacros: {
         error: [""],
         noOutput: ["x"],
