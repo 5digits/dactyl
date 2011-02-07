@@ -44,7 +44,7 @@ var StatusLine = Module("statusline", {
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
             <toolbarbutton id="appmenu-toolbar-button" label="" image="chrome://branding/content/icon16.png" />
-            <statusbar id="status-bar" highlight="StatusLine">
+            <statusbar id="status-bar" highlight="StatusLine" ordinal="0">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 <hbox key="container" hidden="false" align="center"  flex="1">
                     <stack orient="horizontal"       align="stretch" flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
