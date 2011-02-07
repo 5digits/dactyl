@@ -31,7 +31,7 @@ var ConfigBase = Class("ConfigBase", {
                 iter(config.dtdExtra,
                      (["dactyl." + k, v] for ([k, v] in iter(config.dtd))),
                      (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
-                  .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
+                  .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v || "null", /'/g, "&apos;"), "'>"].join(""))
                   .join("\n")]
         });
     },
