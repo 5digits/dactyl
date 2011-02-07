@@ -874,8 +874,8 @@ var Tabs = Module("tabs", {
             tabs.timeout(function () { this.updateTabCount(); });
         }
         for (let event in values(["TabMove", "TabOpen", "TabClose"]))
-            events.addSessionListener(tabContainer, event, callback, false);
-        events.addSessionListener(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
+            events.listen(tabContainer, event, callback, false);
+        events.listen(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
     },
     mappings: function () {
         mappings.add([modes.NORMAL], ["g0", "g^"],

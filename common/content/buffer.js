@@ -1644,9 +1644,9 @@ var Buffer = Module("buffer", {
         };
     },
     events: function () {
-        events.addSessionListener(config.browser, "DOMContentLoaded", buffer.closure.onDOMContentLoaded, true);
-        events.addSessionListener(config.browser, "load", buffer.closure.onPageLoad, true);
-        events.addSessionListener(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
+        events.listen(config.browser, "DOMContentLoaded", buffer.closure.onDOMContentLoaded, true);
+        events.listen(config.browser, "load", buffer.closure.onPageLoad, true);
+        events.listen(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
     },
     mappings: function () {
         var myModes = config.browserModes;

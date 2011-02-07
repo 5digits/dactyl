@@ -93,6 +93,7 @@ var Hive = Class("Hive", {
         for (let sheet in values(this.sheets))
             sheet.enabled = false;
     },
+    destroy: function destroy() {},
 
     __iterator__: function () Iterator(this.sheets),
 

@@ -16,8 +16,11 @@ var Group = Class("Group", {
 
     cleanup: function cleanup() {
         for (let hive in values(this.hives))
-            if (hive.cleanup)
-                hive.cleanup();
+            dactyl.trapErrors("cleanup", hive);
+    },
+    destroy: function destroy() {
+        for (let hive in values(this.hives))
+            dactyl.trapErrors("destroy", hive);
     },
 
     argsExtra: function argsExtra() ({}),
@@ -57,6 +60,32 @@ var Group = Class("Group", {
     defaultFilter: Class.memoize(function () this.compileFilter(["*"])),
 
     hiveMap: {},
+
+    Hive: Class("Hive", {
+        init: function init(group) {
+            this.group = group;
+        },
+
+        cleanup: function cleanup() {},
+        destroy: function destroy() {},
+
+        get argsExtra() this.group.argsExtra,
+        get builtin() this.group.builtin,
+
+        get name() this.group.name,
+        set name(val) this.group.name = val,
+
+        get description() this.group.description,
+        set description(val) this.group.description = val,
+
+        get filter() this.group.filter,
+        set filter(val) this.group.filter = val,
+
+        get persist() this.group.persist,
+        set persist(val) this.group.persist = val,
+
+        get toStringParams() [this.name]
+    }),
 
     Hives: Class("Hives", Class.Property, {
         init: function init(name, constructor) {
@@ -98,6 +127,13 @@ var Contexts = Module("contexts", {
         this.builtin = this.addGroup("builtin", "Builtin items");
         this.user = this.addGroup("user", "User-defined items", null, true);
         this.builtinGroups = [this.system, this.user];
+    },
+
+    destroy: function () {
+        for (let hive in values(this.groupList)) {
+            dactyl.trapErrors("cleanup", hive);
+            dactyl.trapErrors("destroy", hive);
+        }
     },
 
     context: null,
@@ -145,6 +181,7 @@ var Contexts = Module("contexts", {
         if (group) {
             this.groupList.splice(this.groupList.indexOf(group), 1);
             group.cleanup();
+            group.destroy();
         }
 
         if (this.context && this.context.group === group)

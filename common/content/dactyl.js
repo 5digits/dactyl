@@ -1459,8 +1459,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     }
 }, {
     events: function () {
-        events.addSessionListener(window, "click", dactyl.closure.onClick, true);
-        events.addSessionListener(window, "dactyl.execute", dactyl.closure.onExecute, true);
+        events.listen(window, "click", dactyl.closure.onClick, true);
+        events.listen(window, "dactyl.execute", dactyl.closure.onExecute, true);
     },
     // Only general options are added here, which are valid for all Dactyl extensions
     options: function () {

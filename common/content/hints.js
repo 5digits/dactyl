@@ -677,7 +677,7 @@ var Hints = Module("hints", {
 
         let appContent = document.getElementById("appcontent");
         if (appContent)
-            events.addSessionListener(appContent, "scroll", this.resizeTimer.closure.tell, false);
+            events.listen(appContent, "scroll", this.resizeTimer.closure.tell, false);
 
         const Mode = Hints.Mode;
         Mode.defaultValue("tags", function () function () options["hinttags"]);

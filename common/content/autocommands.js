@@ -17,15 +17,11 @@ update(AutoCommand.prototype, {
     }
 });
 
-var AutoCmdHive = Class("AutoCmdHive", {
+var AutoCmdHive = Class("AutoCmdHive", Group.Hive, {
     init: function init(group) {
-        this.group = group;
+        init.supercall(this, group);
         this._store = [];
     },
-
-    get toStringParams() [this.group.name],
-
-    get builtin() this.group.builtin,
 
     __iterator__: function () array.iterValues(this._store),
 
@@ -111,7 +107,7 @@ var AutoCommands = Module("autocommands", {
                 {
                     template.map(this.activeHives, function (hive)
                         <tr highlight="Title">
-                            <td colspan="3">{hive.group.name}</td>
+                            <td colspan="3">{hive.name}</td>
                         </tr> +
                         <tr style="height: .5ex;"/> +
                         template.map(cmds(hive), function ([event, items])
@@ -148,7 +144,7 @@ var AutoCommands = Module("autocommands", {
         event = event.toLowerCase();
         for (let hive in this.hives.iterValues()) {
             let args = update({},
-                              hive.group.argsExtra(arguments[1]),
+                              hive.argsExtra(arguments[1]),
                               arguments[1]);
 
             for (let autoCmd in values(hive._store))

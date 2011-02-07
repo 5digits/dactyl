@@ -127,7 +127,7 @@ var Command = Class("Command", {
             this.options = this.options.map(CommandOption.fromArray, CommandOption);
     },
 
-    get toStringParams() [this.name, this.hive.group.name],
+    get toStringParams() [this.name, this.hive.name],
 
     get helpTag() ":" + this.name,
 
@@ -155,8 +155,8 @@ var Command = Class("Command", {
         if (args.bang && !this.bang)
             throw FailedAssertion("E477: No ! allowed");
 
-        return !dactyl.trapErrors(function exec(command) {
-            // update({}, command.hive.group.argsExtra(args), args);
+        return !dactyl.trapErrors(function exec() {
+            update({}, this.hive.argsExtra(args), args);
 
             if (this.always)
                 this.always(args, modifiers);
@@ -397,16 +397,12 @@ var ex = {
     __noSuchMethod__: function (meth, args) this._run(meth).apply(this, args)
 };
 
-var CommandHive = Class("CommandHive", {
+var CommandHive = Class("CommandHive", Group.Hive, {
     init: function init(group) {
-        this.group = group;
+        init.supercall(this, group);
         this._map = {};
         this._list = [];
     },
-
-    get toStringParams() [this.group.name],
-
-    get builtin() this.group.builtin,
 
     /** @property {Iterator(Command)} @private */
     __iterator__: function () array.iterValues(this._list.sort(function (a, b) a.name > b.name)),
@@ -610,7 +606,7 @@ var Commands = Module("commands", {
                             template.map(hive, function (cmd)
                                 template.map(cmd.names, function (name)
                                 <tr>
-                                    <td highlight="Title">{!i++ ? hive.group.name : ""}</td>
+                                    <td highlight="Title">{!i++ ? hive.name : ""}</td>
                                     <td>{cmd.bang ? "!" : " "}</td>
                                     <td>{cmd.name}</td>
                                     <td>{cmd.argCount}</td>
@@ -1425,7 +1421,7 @@ var Commands = Module("commands", {
                 literal: 1,
 
                 serialize: function () array(commands.userHives)
-                    .filter(function (h) h.group.persist)
+                    .filter(function (h) h.persist)
                     .map(function (hive) [
                         {
                             command: this.name,
@@ -1485,7 +1481,7 @@ var Commands = Module("commands", {
             iterate: function (args) commands.iterator().map(function (cmd) ({
                 __proto__: cmd,
                 columns: [
-                    cmd.hive == commands.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{cmd.hive.group.name}</span>
+                    cmd.hive == commands.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{cmd.hive.name}</span>
                 ]
             })),
             format: {

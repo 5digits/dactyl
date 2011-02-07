@@ -255,6 +255,54 @@ var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
     }
 });
 
+var EventHive = Class("EventHive", Group.Hive, {
+    init: function init(group) {
+        init.supercall(this, group);
+        this.sessionListeners = [];
+    },
+
+    cleanup: function cleanup() {
+        this.unlisten(null);
+    },
+
+    /**
+     * Adds an event listener for this session and removes it on
+     * dactyl shutdown.
+     *
+     * @param {Element} target The element on which to listen.
+     * @param {string} event The event to listen for.
+     * @param {function} callback The function to call when the event is received.
+     * @param {boolean} capture When true, listen during the capture
+     *      phase, otherwise during the bubbling phase.
+     */
+    listen: function (target, event, callback, capture) {
+        let args = Array.slice(arguments, 0);
+        args[2] = this.wrapListener(callback);
+        args[0].addEventListener.apply(args[0], args.slice(1));
+        args[0] = Cu.getWeakReference(args[0]);
+        this.sessionListeners.push(args);
+    },
+
+    /**
+     * Remove an event listener.
+     *
+     * @param {Element} target The element on which to listen.
+     * @param {string} event The event to listen for.
+     * @param {function} callback The function to call when the event is received.
+     * @param {boolean} capture When true, listen during the capture
+     *      phase, otherwise during the bubbling phase.
+     */
+    unlisten: function (target, event, callback, capture) {
+        this.sessionListeners = this.sessionListeners.filter(function (args) {
+            if (target == null || args[0].get() == target && args[1] == event && args[2] == callback && args[3] == capture) {
+                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
+                return true;
+            }
+            return !args[0].get();
+        });
+    }
+});
+
 /**
  * @instance events
  */
@@ -283,7 +331,9 @@ var Events = Module("events", {
         this._macroKeys = [];
         this._lastMacro = "";
 
-        this.sessionListeners = [];
+        EventHive.prototype.wrapListener = this.closure.wrapListener;
+        this.user = contexts.hives.events.user;
+        this.builtin = contexts.hives.events.builtin;
 
         this._macros = storage.newMap("macros", { privateData: true, store: true });
         for (let [k, m] in this._macros)
@@ -344,19 +394,14 @@ var Events = Module("events", {
 
         this._activeMenubar = false;
         for (let [event, callback] in Iterator(this.events))
-            this.addSessionListener(window, event, callback, true);
+            this.listen(window, event, callback, true);
 
         dactyl.registerObserver("modeChange", function () {
             delete self.processor;
         });
     },
 
-    destroy: function () {
-        util.dump("Removing all event listeners");
-        for (let args in values(this.sessionListeners))
-            if (args[0].get())
-                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
-    },
+    hives: Group.Hives("events", EventHive),
 
     /**
      * Adds an event listener for this session and removes it on
@@ -368,13 +413,8 @@ var Events = Module("events", {
      * @param {boolean} capture When true, listen during the capture
      *      phase, otherwise during the bubbling phase.
      */
-    addSessionListener: function (target, event, callback, capture) {
-        let args = Array.slice(arguments, 0);
-        args[2] = this.wrapListener(callback);
-        args[0].addEventListener.apply(args[0], args.slice(1));
-        args[0] = Cu.getWeakReference(args[0]);
-        this.sessionListeners.push(args);
-    },
+    get addSessionListener() this.builtin.closure.listen,
+    get listen() this.builtin.closure.listen,
 
     /**
      * Wraps an event listener to ensure that errors are reported.

@@ -108,7 +108,7 @@ var Map = Class("Map", {
                 .toObject();
 
         args = update({ context: contexts.context },
-                      this.hive.group.argsExtra(args),
+                      this.hive.argsExtra(args),
                       args);
 
         let self = this;
@@ -138,15 +138,11 @@ var Map = Class("Map", {
     id: 0
 });
 
-var MapHive = Class("MapHive", {
+var MapHive = Class("MapHive", Group.Hive, {
     init: function init(group) {
-        this.group = group;
+        init.supercall(this, group);
         this.stacks = {};
     },
-
-    get toStringParams() [this.group.name],
-
-    get builtin() this.group.builtin,
 
     /**
      * Iterates over all mappings present in all of the given *modes*.
@@ -423,7 +419,7 @@ var Mappings = Module("mappings", {
                         template.map(maps(hive), function (map)
                             template.map(map.names, function (name, i)
                             <tr>
-                                <td highlight="Title">{!i ? hive.group.name : ""}</td>
+                                <td highlight="Title">{!i ? hive.name : ""}</td>
                                 <td>{modeSign}</td>
                                 <td>{name}</td>
                                 <td>{map.rhs || map.action.toSource()}</td>
@@ -532,12 +528,12 @@ var Mappings = Module("mappings", {
                     serialize: function () {
                         return this.name != "map" ? [] :
                             array(mappings.userHives)
-                                .filter(function (h) h.group.persist)
+                                .filter(function (h) h.persist)
                                 .map(function (hive) [
                                     {
                                         command: "map",
                                         options: array([
-                                            hive !== mappings.user && ["-group", hive.group.name],
+                                            hive !== mappings.user && ["-group", hive.name],
                                             ["-modes", uniqueModes(map.modes)],
                                             ["-description", map.description],
                                             map.silent && ["-silent"]])
@@ -678,7 +674,7 @@ var Mappings = Module("mappings", {
                                         name: name,
                                         columns: [
                                             mode == mainMode ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
-                                            hive == mappings.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.group.name}</span>
+                                            hive == mappings.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>
                                         ],
                                         __proto__: map
                                     };
