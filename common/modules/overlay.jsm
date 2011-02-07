@@ -290,18 +290,18 @@ var Overlay = Module("Overlay", {
                     });
                 });
 
-                function frob(name) {
-                    // util.dump(" ======================== FROB " + name + " ======================== ");
-                    (deferredInit[name] || []).forEach(call);
-                }
+                function frob(name) { (deferredInit[name] || []).forEach(call); }
 
                 frob("init");
-                defineModule.modules.forEach(function ({ constructor: { className } }) {
-                    modules.__defineGetter__(className, function () {
-                        delete modules[className];
+                defineModule.modules.forEach(function ({ lazyInit, constructor: { className } }) {
+                    if (!lazyInit)
                         frob(className);
-                        return modules[className] = modules[className];
-                    });
+                    else
+                        modules.__defineGetter__(className, function () {
+                            delete modules[className];
+                            frob(className);
+                            return modules[className] = modules[className];
+                        });
                 });
 
                 // Module.list.forEach(load);
