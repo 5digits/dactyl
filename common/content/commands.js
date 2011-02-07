@@ -672,13 +672,8 @@ var Commands = Module("commands", {
                         dactyl.execute(line, args);
                     }
                     catch (e) {
-                        if (!silent || silent === "loud") {
-                            if (silent !== "loud")
-                                e.message = context.file + ":" + context.line + ": " + e.message;
-                            else {
-                                dactyl.echoerr("Error detected while processing " + context.file);
-                                dactyl.echomsg("line\t" + context.line + ":");
-                            }
+                        if (!silent) {
+                            e.message = context.file + ":" + context.line + ": " + e.message;
                             dactyl.reportError(e, true);
                         }
                     }

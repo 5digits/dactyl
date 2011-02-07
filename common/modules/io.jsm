@@ -188,7 +188,7 @@ var IO = Module("io", {
                         styles.registerSheet(uri.spec, false, true);
                     else {
                         context = Contexts.Context(file, params.group);
-                        modules.commands.execute(file.read(), null, params.silent || "loud",
+                        modules.commands.execute(file.read(), null, params.silent,
                                                  null, {
                             context: context,
                             file: file.path,
