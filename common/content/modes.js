@@ -47,8 +47,7 @@ var Modes = Module("modes", {
             count: false
         });
         this.addMode("COMMAND", {
-            description: "The base mode for most modes which accept commands rather than input",
-            hidden: true
+            description: "The base mode for most modes which accept commands rather than input"
         });
 
         this.addMode("NORMAL", {
