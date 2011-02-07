@@ -98,7 +98,7 @@ var JavaScript = Module("javascript", {
             return cache[key];
 
         context[JavaScript.EVAL_TMP] = tmp;
-        context[JavaScript.EVAL_EXPORT] = function export(obj) cache[key] = obj;
+        context[JavaScript.EVAL_EXPORT] = function export_(obj) cache[key] = obj;
         try {
             if (tmp != null) // Temporary hack until bug 609949 is fixed.
                 this.modules.dactyl.userEval(JavaScript.EVAL_EXPORT + "(" + arg + ")", context, "[Command Line Completion]", 1);
