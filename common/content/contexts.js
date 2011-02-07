@@ -11,13 +11,13 @@ var Group = Class("Group", {
         this.description = description;
         this.filter = filter || Group.defaultFilter;
         this.persist = persist || false;
-        this.subGroups = [];
+        this.hives = [];
     },
 
     cleanup: function cleanup() {
-        for (let subGroup in values(this.subGroups))
-            if (subGroup.cleanup)
-                subGroup.cleanup();
+        for (let hive in values(this.hives))
+            if (hive.cleanup)
+                hive.cleanup();
     },
 
     argsExtra: function argsExtra() ({}),
@@ -26,7 +26,7 @@ var Group = Class("Group", {
 
     get builtin() contexts.builtinGroups.indexOf(this) >= 0,
 
-    subGroups: {}
+    hives: {}
 
 }, {
     compileFilter: function (patterns) {
@@ -56,9 +56,9 @@ var Group = Class("Group", {
 
     defaultFilter: Class.memoize(function () this.compileFilter(["*"])),
 
-    subGroupMap: {},
+    hiveMap: {},
 
-    SubGroup: Class("SubGroup", Class.Property, {
+    Hive: Class("Hive", Class.Property, {
         init: function init(name, constructor) {
             const self = this;
             if (this.Group)
@@ -73,13 +73,13 @@ var Group = Class("Group", {
             this.name = name;
             memoize(Group.prototype, name, function () {
                 let group = constructor(this);
-                this.subGroups.push(group);
+                this.hives.push(group);
                 return group;
             });
 
-            memoize(Group.subGroupMap, name,
-                    function () Object.create(Object.create(contexts.subGroupProto,
-                                                            { _subGroup: { value: name } })));
+            memoize(Group.hiveMap, name,
+                    function () Object.create(Object.create(contexts.hiveProto,
+                                                            { _hive: { value: name } })));
 
             memoize(Group.groupsProto, name,
                     function () [group[name] for (group in values(this.groups)) if (set.has(group, name))]);
@@ -93,7 +93,7 @@ var Contexts = Module("contexts", {
     init: function () {
         this.groupList = [];
         this.groupMap = {};
-        this.subGroupProto = {};
+        this.hiveProto = {};
 
         this.builtin = this.addGroup("builtin", "Builtin items");
         this.user = this.addGroup("user", "User-defined items", null, true);
@@ -110,11 +110,11 @@ var Contexts = Module("contexts", {
         groups: { value: this.activeGroups() }
     })),
 
-    activeGroups: function (subgroup)
-        let (need = subgroup ? [subgroup] : Object.keys(this.subGroup))
+    activeGroups: function (hive)
+        let (need = hive ? [hive] : Object.keys(this.hives))
             this.groupList.filter(function (group) need.some(function (name) set.has(group, name))),
 
-    get subGroup() Group.subGroupMap,
+    get hives() Group.hiveMap,
 
     addGroup: function addGroup(name, description, filter, persist) {
         this.removeGroup(name);
@@ -122,7 +122,7 @@ var Contexts = Module("contexts", {
         let group = Group(name, description, filter, persist);
         this.groupList.unshift(group);
         this.groupMap[name] = group;
-        this.subGroupProto.__defineGetter__(name, function () group[this._subGroup]);
+        this.hiveProto.__defineGetter__(name, function () group[this._hive]);
         return group;
     },
 
@@ -146,19 +146,19 @@ var Contexts = Module("contexts", {
             this.context.group = null;
 
         delete this.groupMap[name];
-        delete this.subGroupProto[name];
+        delete this.hiveProto[name];
         delete this.groups;
         return group;
     },
 
-    getGroup: function getGroup(name, subGroup) {
+    getGroup: function getGroup(name, hive) {
         if (name === "default")
             var group = this.context && this.context.context && this.context.context.GROUP;
         else
             group = array.nth(this.groupList, function (h) h.name == name, 0) || null;
 
-        if (group && subGroup)
-            return group[subGroup];
+        if (group && hive)
+            return group[hive];
         return group;
     },
 

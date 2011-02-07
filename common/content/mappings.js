@@ -301,13 +301,13 @@ var MapHive = Class("MapHive", {
  */
 var Mappings = Module("mappings", {
     init: function () {
-        this.user = contexts.subGroup.mappings.user;
-        this.builtin = contexts.subGroup.mappings.builtin;
+        this.user = contexts.hives.mappings.user;
+        this.builtin = contexts.hives.mappings.builtin;
     },
 
     repeat: Modes.boundProperty(),
 
-    hives: Group.SubGroup("mappings", MapHive),
+    hives: Group.Hive("mappings", MapHive),
 
     get allHives() contexts.allGroups.mappings,
 

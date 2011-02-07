@@ -600,7 +600,7 @@ var Styles = Module("Styles", {
         });
     },
     contexts: function (dactyl, modules, window) {
-        modules.Group.SubGroup("styles", function (group) styles.addHive(group.name));
+        modules.Group.Hive("styles", function (group) styles.addHive(group.name));
     },
     completion: function (dactyl, modules, window) {
         const names = Array.slice(util.computedStyle(window.document.createElement("div")));

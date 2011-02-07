@@ -73,10 +73,10 @@ var AutoCmdHive = Class("AutoCmdHive", {
  */
 var AutoCommands = Module("autocommands", {
     init: function () {
-        this.user = contexts.subGroup.autocmd.user;
+        this.user = contexts.hives.autocmd.user;
     },
 
-    hives: Group.SubGroup("autocmd", AutoCmdHive),
+    hives: Group.Hive("autocmd", AutoCmdHive),
 
     get activeHives() contexts.activeGroups("autocmd").map(function (h) h.autocmd).filter(function (h) h._store.length),
 
