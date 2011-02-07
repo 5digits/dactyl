@@ -103,6 +103,7 @@ var Group = Class("Group", {
             memoize(Group.prototype, name, function () {
                 let group = constructor(this);
                 this.hives.push(group);
+                delete contexts.groups;
                 return group;
             });
 
@@ -126,7 +127,7 @@ var Contexts = Module("contexts", {
 
         this.builtin = this.addGroup("builtin", "Builtin items");
         this.user = this.addGroup("user", "User-defined items", null, true);
-        this.builtinGroups = [this.system, this.user];
+        this.builtinGroups = [this.builtin, this.user];
     },
 
     destroy: function () {
@@ -157,11 +158,16 @@ var Contexts = Module("contexts", {
     get hives() Group.hiveMap,
 
     addGroup: function addGroup(name, description, filter, persist, replace) {
+        let group = this.getGroup(name);
+        if (group)
+            name = group.name;
+
         if (replace)
             this.removeGroup(name);
 
-        let group = this.groupMap[name];
-        if (!group) {
+        if (!group || replace) {
+            dactyl.assert(name !== "default", "Illegal group name");
+
             group = Group(name, description, filter, persist);
             this.groupList.unshift(group);
             this.groupMap[name] = group;
@@ -183,6 +189,7 @@ var Contexts = Module("contexts", {
         dactyl.assert(!group || !group.builtin, "Cannot remove builtin group");
 
         if (group) {
+            name = group.name;
             this.groupList.splice(this.groupList.indexOf(group), 1);
             group.cleanup();
             group.destroy();
@@ -201,7 +208,7 @@ var Contexts = Module("contexts", {
         if (name === "default")
             var group = this.context && this.context.context && this.context.context.GROUP;
         else
-            group = array.nth(this.groupList, function (h) h.name == name, 0) || null;
+            group = set.has(this.groupMap, name) && this.groupMap[name];
 
         if (group && hive)
             return group[hive];

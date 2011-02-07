@@ -1031,7 +1031,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         get: function globalVariables() this._globalVariables
     }),
 
-    loadPlugins: function (args) {
+    loadPlugins: function (args, force) {
         function sourceDirectory(dir) {
             dactyl.assert(dir.isReadable(), "E484: Can't open file " + dir.path);
 
@@ -1042,7 +1042,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 loadplugins = { __proto__: loadplugins, value: args.map(Option.parseRegexp) }
 
             dir.readDirectory(true).forEach(function (file) {
-                if (file.isFile() && loadplugins.getKey(file.path) && !(file.path in dactyl.pluginFiles)) {
+                if (file.isFile() && loadplugins.getKey(file.path) && !(!force && file.path in dactyl.pluginFiles)) {
                     try {
                         io.source(file.path);
                         dactyl.pluginFiles[file.path] = true;
@@ -1756,10 +1756,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         commands.add(["loadplugins", "lpl"],
             "Load all plugins immediately",
             function (args) {
-                dactyl.loadPlugins(args.length ? args : null);
+                dactyl.loadPlugins(args.length ? args : null, args.bang);
             },
             {
                 argCount: "*",
+                bang: true,
                 keepQuotes: true,
                 serialGroup: 10,
                 serialize: function ()  [

@@ -38,8 +38,6 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     execute: function execute(result, force) {
-        function dbg() {}
-
         if (force && this.actions.length)
             this.processors.length = 0;
 
@@ -71,15 +69,15 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (result === undefined)
             result = Events.PASS;
 
-        dbg("RESULT: " + (result === Events.KILL  ? "KILL"  :
-                          result === Events.PASS  ? "PASS"  :
-                          result === Events.ABORT ? "ABORT" : result));
+        events.dbg("RESULT: " + (result === Events.KILL  ? "KILL"  :
+                                 result === Events.PASS  ? "PASS"  :
+                                 result === Events.ABORT ? "ABORT" : result));
 
         if (result !== Events.PASS)
             Events.kill(this.events[this.events.length - 1]);
 
         if (result === Events.PASS || result === Events.ABORT) {
-            let list = this.events.filter(function (e) e.getPreventDefault());
+            let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
             if (list.length)
                 events.dbg("REFEED: " + list.map(events.closure.toString).join(""));
 
@@ -102,8 +100,6 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     process: function process(event) {
-        function dbg() {}
-
         if (this.timer)
             this.timer.cancel();
 
@@ -115,15 +111,15 @@ var ProcessorStack = Class("ProcessorStack", {
         let actions = [];
         let processors = [];
 
-        dbg("\n\n");
-        dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro);
+        events.dbg("\n\n");
+        events.dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro);
 
         for (let [i, input] in Iterator(this.processors)) {
             let res = input.process(event);
             if (res !== Events.ABORT)
                 var result = res;
 
-            dbg("RES: " + input + " " + (callable(res) ? {}.toString.call(res) : res));
+            events.dbg("RES: " + input + " " + (callable(res) ? {}.toString.call(res) : res));
 
             if (res === Events.KILL)
                 break;
@@ -139,9 +135,9 @@ var ProcessorStack = Class("ProcessorStack", {
                 processors.push(input);
         }
 
-        dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
-        dbg("ACTIONS: " + actions.length + " " + this.actions.length);
-        dbg("PROCESSORS:", processors);
+        events.dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
+        events.dbg("ACTIONS: " + actions.length + " " + this.actions.length);
+        events.dbg("PROCESSORS:", processors);
 
         this._actions = actions;
         this.actions = actions.concat(this.actions);
