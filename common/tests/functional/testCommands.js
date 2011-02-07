@@ -115,7 +115,7 @@ var tests = {
         completions: ["", "~/"]
     },
     colorscheme: {
-        error: ["", "some-non-existent-scheme"]
+        error: ["", "some-nonexistent-scheme"]
     },
     command: {
         init: ["comclear"],
@@ -303,7 +303,7 @@ var tests = {
     loadplugins: {},
     macros: {
         multiOutput: [""],
-        completeions: [""]
+        completions: [""]
     },
     map: {
         multiOutput: ["", "i"],
@@ -320,7 +320,7 @@ var tests = {
             "-mode=some-nonexistent-mode <C-a> <C-a>",
             "-gtroup=some-nonexistent-group <C-a> <C-a>"
         ],
-        completeions: [
+        completions: [
             ["", hasItems],
             ["-", hasItems],
             ["-mode=ex ", hasItems],
@@ -333,7 +333,7 @@ var tests = {
     },
     mapclear: {
         noOutput: [""],
-        completeions: [""]
+        completions: [""]
     },
     mapgroup: {
         multiOutput: [""],
@@ -347,7 +347,7 @@ var tests = {
             "some-nonexistent-group",
             "foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'"
         ],
-        completeions: [
+        completions: [
             "",
             "foo "
         ],
@@ -356,13 +356,13 @@ var tests = {
     mark: {
         error: ["", "#", "xy"],
         noOutput: ["y"],
-        completeions: [""]
+        completions: [""]
     },
     marks: {
         init: ["delmarks q"],
         multiOutput: ["", "y"],
         error: ["q", "#"],
-        completeions: [""]
+        completions: [""]
     },
     messages: {
         anyOutput: ["messages"]
@@ -377,7 +377,7 @@ var tests = {
             "! some-nonexistent-rc.penta"
         ],
         error: ["some-nonexistent-rc.penta"],
-        completeions: [""],
+        completions: [""],
         cleanup: ["silent !rm some-nonexistent-rc.penta"]
     },
     mksyntax: {
@@ -391,7 +391,7 @@ var tests = {
             "some-nonexistent-pentadactyl-dir/",
             "some-nonexistent-pentadactyl-dir/foo.vim"
         ],
-        completeions: [
+        completions: [
             ["", hasItems]
         ],
         cleanup: ["silent !rm -r some-nonexistent-pentadactyl-dir/"]
@@ -476,7 +476,7 @@ var tests = {
             "some-nonexistent/good.js",
             "some-nonexistent/good.penta"
         ],
-        errors: [
+        error: [
             "some-nonexistent/bad.js",
             "some-nonexistent/bad.penta"
         ],
@@ -563,7 +563,7 @@ var tests = {
             ".pentadactyl/some-nonexistent/good.js",
             ".pentadactyl/some-nonexistent/good.penta"
         ],
-        errors: [
+        error: [
             "~/.pentadactyl/some-nonexistent/bad.js",
             "~/.pentadactyl/some-nonexistent/bad.penta",
             "./.pentadactyl/some-nonexistent/bad.js",
