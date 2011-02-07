@@ -127,6 +127,8 @@ var Command = Class("Command", {
             this.options = this.options.map(CommandOption.fromArray, CommandOption);
     },
 
+    get toStringParams() [this.name, this.hive.group.name],
+
     get helpTag() ":" + this.name,
 
     get lastCommand() this._lastCommand || commandline.command,
@@ -170,12 +172,8 @@ var Command = Class("Command", {
      * @param {string} name The candidate name.
      * @returns {boolean}
      */
-    hasName: function (name) {
-        return this.specs.some(function (spec) {
-            let [, head, tail] = /([^[]+)(?:\[(.*)])?/.exec(spec);
-            return name.indexOf(head) == 0 && (head + (tail || "")).indexOf(name) == 0;
-        });
-    },
+    hasName: function (name) this.parsedSpecs.some(
+        function ([long, short]) name.indexOf(short) == 0 && long.indexOf(name) == 0),
 
     /**
      * A helper function to parse an argument string.
@@ -399,14 +397,117 @@ var ex = {
     __noSuchMethod__: function (meth, args) this._run(meth).apply(this, args)
 };
 
+var CommandHive = Class("CommandHive", {
+    init: function init(group) {
+        this.group = group;
+        this._map = {};
+        this._list = [];
+    },
+
+    get toStringParams() [this.group.name],
+
+    get builtin() this.group.builtin,
+
+    /** @property {Iterator(Command)} @private */
+    __iterator__: function () array.iterValues(this._list.sort(function (a, b) a.name > b.name)),
+
+    /** @property {string} The last executed Ex command line. */
+    repeat: null,
+
+    /**
+     * Adds a new command.
+     *
+     * @param {string[]} names The names by which this command can be
+     *     invoked. The first name specified is the command's canonical
+     *     name.
+     * @param {string} description A description of the command.
+     * @param {function} action The action invoked by this command.
+     * @param {Object} extra An optional extra configuration hash.
+     * @optional
+     */
+    add: function (names, description, action, extra, replace) {
+        extra = extra || {};
+        if (!extra.definedAt)
+            extra.definedAt = Commands.getCaller(Components.stack.caller);
+
+        extra.hive = this;
+        extra.parsedSpecs = Command.parseSpecs(names);
+
+        let names = array.flatten(extra.parsedSpecs);
+        let name = names[0];
+
+        dactyl.assert(!names.some(function (name) name in commands.builtin._map),
+                      "E182: Can't replace non-user command: " + name);
+
+        dactyl.assert(replace || names.every(function (name) !(name in this._map), this),
+                      "Not replacing command " + name);
+
+        for (let name in values(names)) {
+            ex.__defineGetter__(name, function () this._run(name));
+            if (name in this._map)
+                this.remove(name);
+        }
+
+        let self = this;
+        let closure = function () self._map[name];
+
+        memoize(this._map, name, function () Command(names, description, action, extra));
+        memoize(this._list, this._list.length, closure);
+        for (let alias in values(names.slice(1)))
+            memoize(this._map, alias, closure);
+
+        return name;
+    },
+    _add: function (names, description, action, extra, replace) {
+        extra = extra || {};
+        extra.definedAt = Commands.getCaller(Components.stack.caller.caller);
+        return this.add.apply(this, arguments);
+    },
+
+    /**
+     * Returns the command with matching *name*.
+     *
+     * @param {string} name The name of the command to return. This can be
+     *     any of the command's names.
+     * @param {boolean} full If true, only return a command if one of
+     *     its names matches *name* exactly.
+     * @returns {Command}
+     */
+    get: function (name, full) this._map[name]
+            || !full && array.nth(this._list, function (cmd) cmd.hasName(name), 0)
+            || null,
+
+    /**
+     * Remove the user-defined command with matching *name*.
+     *
+     * @param {string} name The name of the command to remove. This can be
+     *     any of the command's names.
+     */
+    remove: function (name) {
+        dactyl.assert(this.group !== contexts.default,
+                      "Cannot delete non-user commands");
+
+        let cmd = this.get(name);
+        this._list = this._list.filter(function (c) c !== cmd);
+        for (let name in values(cmd.names))
+            delete this._map[name];
+    }
+});
+
 /**
  * @instance commands
  */
 var Commands = Module("commands", {
     init: function () {
-        this._exCommands = [];
-        this._exMap = {};
+        this.user = contexts.hives.commands.user;
+        this.builtin = contexts.hives.commands.builtin;
     },
+
+    hives: Group.Hives("commands", CommandHive),
+
+    get allHives() contexts.allGroups.commands,
+
+    get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
 
     /**
      * @property Indicates that no count was specified for this
@@ -423,84 +524,17 @@ var Commands = Module("commands", {
     COUNT_ALL: -2, // :%...
 
     /** @property {Iterator(Command)} @private */
-    __iterator__: function () {
-        let sorted = this._exCommands.sort(function (a, b) a.name > b.name);
-        return array.iterValues(sorted);
-    },
-    iterator: function () {
-        let sorted = this._exCommands.sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name);
-        return array.iterValues(sorted);
-    },
+    iterator: function () iter.apply(null, this.hives)
+                              .sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name)
+                              .iterValues(),
 
     /** @property {string} The last executed Ex command line. */
     repeat: null,
 
-    _addCommand: function (args, replace) {
-        if (!args[3])
-            args[3] = {};
-        args[3].definedAt = Commands.getCaller(Components.stack.caller.caller);
-
-        let names = array.flatten(Command.parseSpecs(args[0]));
-        args.parsedSpecs = names;
-
-        dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
-                      "E182: Can't replace non-user command: " + args[0][0]);
-
-        if (!replace || !args[3].user)
-            dactyl.assert(!names.some(function (name) name in this._exMap, this),
-                          "Not replacing command " + args[0]);
-
-        for (let name in values(names)) {
-            ex.__defineGetter__(name, function () this._run(name));
-            if (name in this._exMap)
-                commands.removeUserCommand(name);
-        }
-
-        let name = names[0];
-        let closure = function () commands._exMap[name];
-
-        memoize(this._exMap, name, function () Command.apply(null, args));
-        memoize(this._exCommands, this._exCommands.length, closure);
-
-        for (let alias in values(names.slice(1)))
-            memoize(this._exMap, alias, closure);
-
-        return name;
-    },
-
-    /**
-     * Adds a new default command.
-     *
-     * @param {string[]} names The names by which this command can be
-     *     invoked. The first name specified is the command's canonical
-     *     name.
-     * @param {string} description A description of the command.
-     * @param {function} action The action invoked by this command.
-     * @param {Object} extra An optional extra configuration hash.
-     * @optional
-     */
-    add: function (names, description, action, extra) {
-        return this._addCommand([names, description, action, extra], false);
-    },
-
-    /**
-     * Adds a new user-defined command.
-     *
-     * @param {string[]} names The names by which this command can be
-     *     invoked. The first name specified is the command's canonical
-     *     name.
-     * @param {string} description A description of the command.
-     * @param {function} action The action invoked by this command.
-     * @param {Object} extra An optional extra configuration hash.
-     * @param {boolean} replace Overwrite an existing command with the same
-     *     canonical name.
-     */
-    addUserCommand: function (names, description, action, extra, replace) {
-        extra = extra || {};
-        extra.user = true;
-
-        return this._addCommand([names, description, action, extra], replace);
-    },
+    add: function () this.builtin._add.apply(this.builtin, arguments),
+    addUserCommand: deprecated("commands.user.add", { get: function addUserCommand() this.user.closure._add }),
+    getUserCommands: deprecated("iter(commands.user)", function getUserCommands() iter(commands.user).toArray()),
+    removeUserCommand: deprecated("commands.user.remove", { get: function removeUserCommand() this.user.closure.remove }),
 
     /**
      * Returns the specified command invocation object serialized to
@@ -533,6 +567,60 @@ var Commands = Module("commands", {
                      this.hereDoc && false ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
                                            : String.replace(str, /\n/g, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
         return res.join(" ");
+    },
+
+    /**
+     * Returns the command with matching *name*.
+     *
+     * @param {string} name The name of the command to return. This can be
+     *     any of the command's names.
+     * @returns {Command}
+     */
+    get: function (name, full) iter(this.hives).map(function ([i, hive]) hive.get(name, full))
+                                               .nth(util.identity, 0),
+
+    /**
+     * Displays a list of user-defined commands.
+     */
+    list: function list() {
+        function completerToString(completer) {
+            if (completer)
+                return [k for ([k, v] in Iterator(config.completers)) if (completer == completion.closure[v])][0] || "custom";
+            return "";
+        }
+
+        if (!commands.userHives.some(function (h) h._list.length))
+            dactyl.echomsg("No user-defined commands found");
+        else
+            commandline.commandOutput(
+                <table>
+                    <tr highlight="Title">
+                        <td/>
+                        <td style="padding-right: 1em;"></td>
+                        <td style="padding-right: 1ex;">Name</td>
+                        <td style="padding-right: 1ex;">Args</td>
+                        <td style="padding-right: 1ex;">Range</td>
+                        <td style="padding-right: 1ex;">Complete</td>
+                        <td style="padding-right: 1ex;">Definition</td>
+                    </tr>
+                    <col style="min-width: 6em; padding-right: 1em;"/>
+                    {
+                        template.map(commands.userHives, function (hive) let (i = 0)
+                            <tr style="height: .5ex;"/> +
+                            template.map(hive, function (cmd)
+                                template.map(cmd.names, function (name)
+                                <tr>
+                                    <td highlight="Title">{!i++ ? hive.group.name : ""}</td>
+                                    <td>{cmd.bang ? "!" : " "}</td>
+                                    <td>{cmd.name}</td>
+                                    <td>{cmd.argCount}</td>
+                                    <td>{cmd.count ? "0c" : ""}</td>
+                                    <td>{completerToString(cmd.completer)}</td>
+                                    <td>{cmd.replacementText || "function () { ... }"}</td>
+                                </tr>)) +
+                            <tr style="height: .5ex;"/>)
+                    }
+                </table>);
     },
 
     /**
@@ -601,35 +689,6 @@ var Commands = Module("commands", {
                 }
             });
         });
-    },
-
-    /**
-     * Returns the command with matching *name*.
-     *
-     * @param {string} name The name of the command to return. This can be
-     *     any of the command's names.
-     * @returns {Command}
-     */
-    get: function (name, full)
-        this._exMap[name] || !full && array.nth(this._exCommands, function (cmd) cmd.hasName(name), 0) || null,
-
-    /**
-     * Returns the user-defined command with matching *name*.
-     *
-     * @param {string} name The name of the command to return. This can be
-     *     any of the command's names.
-     * @returns {Command}
-     */
-    getUserCommand: function (name)
-        array.nth(this._exCommands, function (cmd) cmd.user && cmd.hasName(name), 0) || null,
-
-    /**
-     * Returns all user-defined commands.
-     *
-     * @returns {Command[]}
-     */
-    getUserCommands: function () {
-        return this._exCommands.filter(function (cmd) cmd.user);
     },
 
     /**
@@ -1121,21 +1180,8 @@ var Commands = Module("commands", {
     get complQuote() Commands.complQuote,
 
     /** @property */
-    get quoteArg() Commands.quoteArg, // XXX: better somewhere else?
+    get quoteArg() Commands.quoteArg // XXX: better somewhere else?
 
-    /**
-     * Remove the user-defined command with matching *name*.
-     *
-     * @param {string} name The name of the command to remove. This can be
-     *     any of the command's names.
-     */
-    removeUserCommand: function (name) {
-        let cmd = this.get(name);
-        dactyl.assert(cmd.user, "E184: No such user-defined command: " + name);
-        this._exCommands = this._exCommands.filter(function (c) c !== cmd);
-        for (let name in values(cmd.names))
-            delete this._exMap[name];
-    }
 }, {
     /**
      * Returns a frame object describing the currently executing
@@ -1199,7 +1245,7 @@ var Commands = Module("commands", {
         completion.command = function command(context) {
             context.title = ["Command"];
             context.keys = { text: "longNames", description: "description" };
-            context.completions = [k for (k in commands)];
+            context.generate = function () commands.hives.map(function (h) h._list).flatten();
         };
 
         // provides completions for ex commands, including their arguments
@@ -1254,8 +1300,6 @@ var Commands = Module("commands", {
     },
 
     commands: function () {
-        let completerMap = config.completers;
-
         // TODO: Vim allows commands to be defined without {rep} if there are {attr}s
         // specified - useful?
         commands.add(["com[mand]"],
@@ -1266,7 +1310,9 @@ var Commands = Module("commands", {
                 dactyl.assert(!cmd || cmd.split(",").every(commands.validName.closure.test),
                               "E182: Invalid command name");
 
-                if (args.literalArg) {
+                if (!args.literalArg)
+                    commands.list();
+                else {
                     let completer  = args["-complete"];
                     let completerFunc = null; // default to no completion for user commands
 
@@ -1295,10 +1341,10 @@ var Commands = Module("commands", {
                             };
                         }
                         else
-                            completerFunc = function (context) completion.closure[completerMap[completer]](context);
+                            completerFunc = function (context) completion.closure[config.completers[completer]](context);
                     }
 
-                    let added = commands.addUserCommand(cmd.split(","),
+                    let added = args["-group"].add(cmd.split(","),
                                     args["-description"],
                                     contexts.bindMacro(args, "-ex",
                                         function makeParams(args, modifiers) ({
@@ -1323,29 +1369,6 @@ var Commands = Module("commands", {
                     if (!added)
                         dactyl.echoerr("E174: Command already exists: add ! to replace it");
                 }
-                else {
-                    let completerToString = function completerToString(completer) {
-                        if (completer)
-                            return [k for ([k, v] in Iterator(completerMap)) if (completer == completion.closure[v])][0] || "custom";
-                        return "";
-                    }
-
-                    // TODO: perhaps we shouldn't allow options in a list call but just ignore them for now
-                    let cmds = commands._exCommands.filter(function (c) c.user && (!cmd || c.name.match("^" + cmd)));
-
-                    if (cmds.length > 0)
-                        commandline.commandOutput(
-                            template.tabular(["", "Name", "Args", "Range", "Complete", "Definition"], ["padding-right: 2em;"],
-                                ([cmd.bang ? "!" : " ",
-                                  cmd.name,
-                                  cmd.argCount,
-                                  cmd.count ? "0c" : "",
-                                  completerToString(cmd.completer),
-                                  cmd.replacementText || "function () { ... }"]
-                                 for ([, cmd] in Iterator(cmds)))));
-                    else
-                        dactyl.echomsg("No user-defined commands found");
-                }
             }, {
                 bang: true,
                 completer: function (context, args) {
@@ -1362,22 +1385,27 @@ var Commands = Module("commands", {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],
                         description: "The argument completion function",
-                        completer: function (context) [[k, ""] for ([k, v] in Iterator(completerMap))],
+                        completer: function (context) [[k, ""] for ([k, v] in Iterator(config.completers))],
                         type: CommandOption.STRING,
-                        validator: function (arg) arg in completerMap || /^custom,/.test(arg),
-                    }, {
+                        validator: function (arg) arg in config.completers || /^custom,/.test(arg),
+                    },
+                    {
                         names: ["-description", "-desc", "-d"],
                         description: "A user-visible description of the command",
                         default: "User-defined command",
                         type: CommandOption.STRING
-                    }, {
+                    },
+                    contexts.GroupFlag("commands"),
+                    {
                         names: ["-javascript", "-js", "-j"],
                         description: "Execute the definition as JavaScript rather than Ex commands"
-                    }, {
+                    },
+                    {
                         names: ["-literal", "-l"],
                         description: "Process the nth ignoring any quoting or meta characters",
                         type: CommandOption.INT
-                    }, {
+                    },
+                    {
                         names: ["-nargs", "-a"],
                         description: "The allowed number of arguments",
                         completer: [["0", "No arguments are allowed (default)"],
@@ -1388,31 +1416,36 @@ var Commands = Module("commands", {
                         default: "0",
                         type: CommandOption.STRING,
                         validator: function (arg) /^[01*?+]$/.test(arg)
-                    }, {
+                    },
+                    {
                         names: ["-nopersist", "-n"],
                         description: "Do not save this command to an auto-generated RC file"
                     }
                 ],
                 literal: 1,
-                serialize: function () [ {
-                        command: this.name,
-                        bang: true,
-                        options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
-                                      // FIXME: this map is expressed multiple times
-                                      for ([k, v] in Iterator({
-                                          argCount: "-nargs",
-                                          bang: "-bang",
-                                          count: "-count",
-                                          description: "-description"
-                                      }))
-                                      if (cmd[k])).toObject(),
-                        arguments: [cmd.name],
-                        literalArg: cmd.action,
-                        ignoreDefaults: true
-                    }
-                    for ([k, cmd] in Iterator(commands._exCommands))
-                    if (cmd.user && cmd.persist)
-                ]
+
+                serialize: function () array(commands.userHives)
+                    .filter(function (h) h.group.persist)
+                    .map(function (hive) [
+                        {
+                            command: this.name,
+                            bang: true,
+                            options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
+                                          // FIXME: this map is expressed multiple times
+                                          for ([k, v] in Iterator({
+                                              argCount: "-nargs",
+                                              bang: "-bang",
+                                              count: "-count",
+                                              description: "-description"
+                                          }))
+                                          if (cmd[k])).toObject(),
+                            arguments: [cmd.name],
+                            literalArg: cmd.action,
+                            ignoreDefaults: true
+                        }
+                        for (cmd in hive) if (cmd.persist)
+                    ], this)
+                    .flatten().array
             });
 
         commands.add(["comc[lear]"],
@@ -1449,8 +1482,14 @@ var Commands = Module("commands", {
             name: ["listc[ommands]", "lc"],
             description: "List all Ex commands along with their short descriptions",
             index: "ex-cmd",
-            iterate: function (args) commands,
+            iterate: function (args) commands.iterator().map(function (cmd) ({
+                __proto__: cmd,
+                columns: [
+                    cmd.hive == commands.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{cmd.hive.group.name}</span>
+                ]
+            })),
             format: {
+                headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
                 help: function (cmd) ":" + cmd.name
             }
@@ -1471,8 +1510,8 @@ var Commands = Module("commands", {
             });
     },
     javascript: function () {
-        JavaScript.setCompleter([commands.get, commands.removeUserCommand],
-                                [function () ([c.name, c.description] for (c in commands))]);
+        JavaScript.setCompleter([commands.user.get, commands.user.remove],
+                                [function () ([c.name, c.description] for (c in this))]);
     },
     mappings: function () {
         mappings.add(config.browserModes,

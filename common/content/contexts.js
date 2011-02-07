@@ -58,7 +58,7 @@ var Group = Class("Group", {
 
     hiveMap: {},
 
-    Hive: Class("Hive", Class.Property, {
+    Hives: Class("Hives", Class.Property, {
         init: function init(name, constructor) {
             const self = this;
             if (this.Group)
@@ -116,13 +116,18 @@ var Contexts = Module("contexts", {
 
     get hives() Group.hiveMap,
 
-    addGroup: function addGroup(name, description, filter, persist) {
-        this.removeGroup(name);
+    addGroup: function addGroup(name, description, filter, persist, replace) {
+        if (replace)
+            this.removeGroup(name);
 
-        let group = Group(name, description, filter, persist);
-        this.groupList.unshift(group);
-        this.groupMap[name] = group;
-        this.hiveProto.__defineGetter__(name, function () group[this._hive]);
+        let group = this.groupMap[name];
+        if (!group) {
+            group = Group(name, description, filter, persist);
+            this.groupList.unshift(group);
+            this.groupMap[name] = group;
+            this.hiveProto.__defineGetter__(name, function () group[this._hive]);
+            delete this.groups;
+        }
         return group;
     },
 
@@ -248,7 +253,8 @@ var Contexts = Module("contexts", {
                         delete plugins[this.NAME];
                     if (plugins[this.PATH] === this)
                         delete plugins[this.PATH];
-                    contexts.removeGroup(this.GROUP);
+                    if (!this.GROUP.builtin)
+                        contexts.removeGroup(this.GROUP);
                 })
             });
             Class.replaceProperty(plugins, file.path, self);
@@ -264,12 +270,15 @@ var Contexts = Module("contexts", {
 
         let path = isRuntime ? file.getRelativeDescriptor(isRuntime) : file.path;
 
-        self.GROUP = group ||
-             contexts.addGroup((isRuntime ? "" : "script-") +
-                                   commands.nameRegexp.iterate(path.replace(/\..*/, ""))
-                                           .join("-"),
-                               "Script group for " + file.path,
-                               null, false);
+        if (!group)
+            group = contexts.addGroup((isRuntime ? "" : "script-") +
+                                          commands.nameRegexp.iterate(path.replace(/\..*/, ""))
+                                                  .join("-"),
+                                      "Script group for " + file.path,
+                                      null, false);
+
+        Class.replaceProperty(self, "GROUP", group);
+        Class.replaceProperty(self, "group", group);
 
         return plugins.contexts[file.path] = self;
     },
@@ -297,8 +306,8 @@ var Contexts = Module("contexts", {
                 dactyl.assert(group || name, "No current group");
 
                 let filter = Group.compileFilter(args["-locations"]);
-                if (!group)
-                    group = contexts.addGroup(name, args["-description"], filter, !args["-nopersist"]);
+                if (!group || args.bang)
+                    group = contexts.addGroup(name, args["-description"], filter, !args["-nopersist"], args.bang);
                 else if (!group.builtin) {
                     if (args.has("-locations"))
                         group.filter = filter;

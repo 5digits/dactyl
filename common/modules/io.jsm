@@ -612,7 +612,7 @@ var IO = Module("io", {
                               "E189: " + file.path.quote() + " exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
-                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator()) if (cmd.serialize)];
+                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator(true)) if (cmd.serialize)];
                 lines = array.flatten(lines);
 
                 lines.unshift('"' + config.version + "\n");

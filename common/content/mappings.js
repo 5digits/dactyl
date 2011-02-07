@@ -307,7 +307,7 @@ var Mappings = Module("mappings", {
 
     repeat: Modes.boundProperty(),
 
-    hives: Group.Hive("mappings", MapHive),
+    hives: Group.Hives("mappings", MapHive),
 
     get allHives() contexts.allGroups.mappings,
 
@@ -668,6 +668,7 @@ var Mappings = Module("mappings", {
             iterate: function (args) {
                 let mainMode = this.getMode(args);
                 let seen = {};
+                // Bloody hell. --Kris
                 for (let mode in values([mainMode].concat(mainMode.bases)))
                     for (let hive in mappings.hives.iterValues())
                         for (let map in array.iterValues(hive.getStack(mode)))
@@ -677,7 +678,7 @@ var Mappings = Module("mappings", {
                                         name: name,
                                         columns: [
                                             mode == mainMode ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
-                                            hive.name == "builtin" ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>
+                                            hive == mappings.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.group.name}</span>
                                         ],
                                         __proto__: map
                                     };
