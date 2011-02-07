@@ -17,7 +17,6 @@ var MOW = Module("mow", {
         }, this);
 
         this._timer = Timer(20, 400, function () {
-            util.dump("RESIZE " + this.window.document.body.textContent);
             this.resize(true);
 
             if (options["more"] && this.isScrollable(1)) {
