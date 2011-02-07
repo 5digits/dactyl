@@ -57,8 +57,10 @@ var ProcessorStack = Class("ProcessorStack", {
                 events.feedingKeys = false;
             }
 
-            for (var res = this.actions[0]; callable(res);)
-                res = res();
+            for (var res = this.actions[0]; callable(res);) {
+                res = dactyl.trapErrors(res);
+                dbg("ACTION RES: " + res);
+            }
             result = res === Events.PASS ? Events.PASS : Events.KILL;
         }
         else if (result !== Events.KILL && !this.actions.length &&

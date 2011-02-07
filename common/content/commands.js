@@ -1330,7 +1330,7 @@ var Commands = Module("commands", {
                                     args["-description"],
                                     Command.bindMacro(args, "-ex",
                                         function makeParams(args, modifiers) ({
-                                            args:  {
+                                            args: {
                                                 __proto__: args,
                                                 toString: function () this.string,
                                             },
