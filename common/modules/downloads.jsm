@@ -85,7 +85,7 @@ var Download = Class("Download", {
     },
 
     commands: {
-        delete: function delete() {
+        delete: function delete_() {
             this.targetFile.remove(false);
             this.updateStatus();
         },
