@@ -260,9 +260,10 @@ var CommandWidgets = Class("CommandWidgets", {
             configurable: true, enumerable: true,
             get: function get_whenReady() {
                 let elem = document.getElementById(id);
-                while (elem.contentDocument.documentURI != elem.getAttribute("src") ||
-                       ["viewable", "complete"].indexOf(elem.contentDocument.readyState) < 0)
-                    util.threadYield();
+
+                util.waitFor(function () elem.contentDocument.documentURI === elem.getAttribute("src") &&
+                       ["viewable", "complete"].indexOf(elem.contentDocument.readyState) >= 0);
+
                 res = res || (processor || util.identity).call(self, elem);
                 return res;
             }
@@ -1196,9 +1197,8 @@ var CommandLine = Module("commandline", {
                     this.waiting = true;
                     for (let [, context] in Iterator(list)) {
                         let done = function done() !(idx >= n + context.items.length || idx == -2 && !context.items.length);
-                        while (context.incomplete && !done())
-                            util.threadYield(false, true);
 
+                        util.waitFor(function () !context.incomplete || done())
                         if (done())
                             break;
 
@@ -1427,7 +1427,7 @@ var CommandLine = Module("commandline", {
                  let command = commandline.command;
 
                  self.accepted = true;
-                 return function () modes.pop();
+                 return function () { modes.pop(); };
              });
 
         [

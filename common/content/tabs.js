@@ -203,12 +203,14 @@ var Tabs = Module("tabs", {
     getGroups: function () {
         if ("_groups" in this)
             return this._groups;
+
         if (window.TabView && TabView._initFrame)
             TabView._initFrame();
+
         let iframe = document.getElementById("tab-view");
-        this._groups = this._groups = iframe ? iframe.contentWindow : null;
-        while (this._groups && !this._groups.TabItems)
-            util.threadYield(false, true);
+        this._groups = iframe ? iframe.contentWindow : null;
+        if (this._groups)
+            util.waitFor(function () this._groups.TabItems, this);
         return this._groups;
     },
 
