@@ -456,8 +456,8 @@ var Tabs = Module("tabs", {
         if (buffer == "#")
             return tabs.selectAlternateTab();
 
-        count = Math.max(1, count || 1);
         reverse = Boolean(reverse);
+        count = Math.max(1, count || 1) * (1 + -2 * reverse);
 
         let matches = buffer.match(/^(\d+):?/);
         if (matches)
@@ -467,17 +467,21 @@ var Tabs = Module("tabs", {
         if (matches)
             return tabs.select(matches, false);
 
-        matches = completion.runCompleter("buffer", buffer);
+        matches = completion.runCompleter("buffer", buffer).map(function (obj) obj.tab);
 
         if (matches.length == 0)
             dactyl.echoerr("E94: No matching buffer for " + buffer);
         else if (matches.length > 1 && !allowNonUnique)
             dactyl.echoerr("E93: More than one match for " + buffer);
         else {
-            let index = (count - 1) % matches.length;
-            if (reverse)
-                index = matches.length - index - 1;
-            tabs.select(matches[index].id, false);
+            let start = matches.indexOf(tabs.getTab());
+            if (start == -1 && reverse)
+                start++;
+
+            let index = (start + count) % matches.length;
+            if (index < 0)
+                index = matches.length + index;
+            tabs.select(matches[index], false);
         }
     },
 
