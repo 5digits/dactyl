@@ -259,8 +259,6 @@ var Buffer = Module("buffer", {
      * @property {Object} The document loading progress listener.
      */
     progressListener: {
-        dactylLoadCount: 0,
-
         // XXX: function may later be needed to detect a canceled synchronous openURL()
         onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
             onStateChange.superapply(this, arguments);
@@ -273,10 +271,6 @@ var Buffer = Module("buffer", {
                     statusline.progress = 0;
 
                     buffer._triggerLoadAutocmd("PageLoadPre", webProgress.DOMWindow.document);
-
-                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.dactylLoadCount++)
-                        util.timeout(function () { modes.reset(false); },
-                                     modes.main == modes.HINTS ? 500 : 0);
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81

@@ -80,8 +80,8 @@ var MOW = Module("mow", {
     widgets: Class.memoize(function () commandline.widgets),
 
     body: Class.memoize(function () this.widget.contentDocument.documentElement),
-    document: Class.memoize(function () this.widget.contentDocument),
-    window: Class.memoize(function () this.widget.contentWindow),
+    get document() this.widget.contentDocument,
+    get window() this.widget.contentWindow,
 
     /**
      * Display a multi-line message.
@@ -90,6 +90,8 @@ var MOW = Module("mow", {
      * @param {string} highlightGroup
      */
     echo: function echo(data, highlightGroup, silent) {
+        this.document;
+        util.dump(String(this.widget), String(this.window), String(this.document));
         let body = this.document.body;
 
         this.widgets.message = null;

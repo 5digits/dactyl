@@ -102,6 +102,7 @@ var Overlay = Module("Overlay", {
 
                 const jsmodules = { NAME: "jsmodules" };
                 const modules = update(create(jsmodules), {
+                    yes_i_know_i_should_not_report_errors_in_these_branches_thanks: [],
 
                     jsmodules: jsmodules,
 
