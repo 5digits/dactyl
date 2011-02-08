@@ -1105,7 +1105,7 @@ var Events = Module("events", {
 
                 // Hack to deal with <BS> and so forth not dispatching input
                 // events
-                if (event.originalTarget instanceof HTMLInputElement && !modes.main.passthrough) {
+                if (key && event.originalTarget instanceof HTMLInputElement && !modes.main.passthrough) {
                     let elem = event.originalTarget;
                     elem.dactylKeyPress = elem.value;
                     util.timeout(function () {

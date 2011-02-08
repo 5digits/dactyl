@@ -986,7 +986,9 @@ var CommandLine = Module("commandline", {
             dactyl.registerObserver("events.doneFeeding", this.closure.onDoneFeeding, true);
 
             this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
-                if (!events.feedingKeys && options["autocomplete"].length) {
+                if (events.feedingKeys)
+                    this.ignoredCount++;
+                if (options["autocomplete"].length) {
                     this.complete(true, false);
                     this.itemList.visible = true;
                 }
@@ -1004,8 +1006,11 @@ var CommandLine = Module("commandline", {
             this.itemList.visible = false;
         },
 
+        ignoredCount: 0,
         onDoneFeeding: function onDoneFeeding() {
-            this.autocompleteTimer.flush(true);
+            if (this.ignoredCount)
+                this.autocompleteTimer.flush(true);
+            this.ignoredCount = 0;
         },
 
         UP: {},
