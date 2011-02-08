@@ -526,8 +526,6 @@ var Events = Module("events", {
             if (quiet)
                 commandline.quiet = quiet;
 
-            util.threadYield(1, true); // Why? --Kris
-
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 let now = Date.now();
                 for (let type in values(["keydown", "keyup", "keypress"])) {
