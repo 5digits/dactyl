@@ -393,7 +393,7 @@ var IO = Module("io", {
                 dir = this.File(dir, true);
 
                 let file = dir.child(bin);
-                if (file.exists())
+                if (file.exists() && file.isFile() && file.isExecutable())
                     return file;
 
                 // TODO: couldn't we just palm this off to the start command?
