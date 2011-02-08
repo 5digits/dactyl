@@ -1191,8 +1191,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 case dactyl.NEW_WINDOW:
                     let win = window.openDialog(document.documentURI, "_blank", "chrome,all,dialog=no");
-                    while (win.document.readyState != "complete")
-                        util.threadYield();
+                    util.waitFor(function () win.document.readyState === "complete");
                     browser = win.getBrowser();
                     // FALLTHROUGH
                 case dactyl.CURRENT_TAB:

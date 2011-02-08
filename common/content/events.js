@@ -526,7 +526,7 @@ var Events = Module("events", {
             if (quiet)
                 commandline.quiet = quiet;
 
-            util.threadYield(1, true);
+            util.threadYield(1, true); // Why? --Kris
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 let now = Date.now();
@@ -922,8 +922,6 @@ var Events = Module("events", {
      * @returns {boolean}
      */
     waitForPageLoad: function (time) {
-        util.threadYield(true); // clear queue
-
         if (buffer.loaded)
             return true;
 
@@ -1267,7 +1265,7 @@ var Events = Module("events", {
 
             let urlbar = document.getElementById("urlbar");
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
-                util.threadYield(true);
+                util.threadYield(true); // Why? --Kris
 
             while (modes.main.ownsFocus)
                  modes.pop(null, { fromFocus: true });
