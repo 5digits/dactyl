@@ -270,7 +270,13 @@ var Contexts = Module("contexts", {
         get default() (contexts.context && contexts.context.group || contexts.user)[name],
 
         completer: function (context) completion.group(context)
-    })
+    }),
+
+    withContext: function withContext(defaults, callback, self)
+        this.withSavedValues(["context"], function () {
+            this.context = defaults && update({}, defaults);
+            return callback.call(self, this.context);
+        })
 }, {
     Context: modules.Script = function Context(file, group, args) {
         function Const(val) Class.Property({ enumerable: true, value: val });

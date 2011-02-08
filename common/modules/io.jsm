@@ -150,8 +150,7 @@ var IO = Module("io", {
             params = params || {};
 
             let time = Date.now();
-            return contexts.withSavedValues(["context"], function _source() {
-                contexts.context = null;
+            return contexts.withContext(null, function () {
                 try {
                     var file = util.getFile(filename) || io.File(filename);
 

@@ -90,8 +90,6 @@ var MOW = Module("mow", {
      * @param {string} highlightGroup
      */
     echo: function echo(data, highlightGroup, silent) {
-        this.document;
-        util.dump(String(this.widget), String(this.window), String(this.document));
         let body = this.document.body;
 
         this.widgets.message = null;

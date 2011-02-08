@@ -424,10 +424,10 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
     },
 
     onSubmit: function onSubmit(command) {
-        io.withSavedValues(["readHeredoc"], function () {
-            this.readHeredoc = commandline.readHeredoc;
-            contexts.withSavedValues(["context"], function () {
-                this.context = { file: "[Command Line]", line: 1 };
+        contexts.withContext({ file: "[Command Line]", line: 1 },
+                             function () {
+            io.withSavedValues(["readHeredoc"], function () {
+                this.readHeredoc = commandline.readHeredoc;
                 commands.repeat = command;
                 dactyl.execute(command);
             });

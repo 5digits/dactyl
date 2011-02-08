@@ -635,10 +635,8 @@ var Commands = Module("commands", {
      *      command string.
      */
     execute: function (string, tokens, silent, args, context) {
-        contexts.withSavedValues(["context"], function () {
-            context = update({}, context || this.context || { file: "[Command Line]", line: 1 });
-            this.context = context;
-
+        contexts.withContext(context || this.context || { file: "[Command Line]", line: 1 },
+                             function (context) {
             io.withSavedValues(["readHeredoc"], function () {
                 this.readHeredoc = function (end) {
                     let res = [];
