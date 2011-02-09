@@ -1159,8 +1159,6 @@ var Hints = Module("hints", {
             function ({ self }) { self.escapeNumbers = !self.escapeNumbers; });
     },
     options: function () {
-        const DEFAULT_HINTTAGS =
-
         function xpath(arg) util.makeXPath(arg);
         options.add(["extendedhinttags", "eht"],
             "XPath strings of hintable elements for extended hint modes",

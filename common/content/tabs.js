@@ -39,6 +39,10 @@ var Tabs = Module("tabs", {
                 xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
             ]]></>, /tab-./g, function (m) util.OS.isMacOSX ? "tab-mac" : m),
             false, true);
+
+        for (let { linkedBrowser: { contentDocument } } in values(this.allTabs))
+            if (contentDocument.readyState === "complete")
+                dactyl.initDocument(contentDocument);
     },
 
     cleanup: function cleanup() {

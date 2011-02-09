@@ -169,7 +169,7 @@ var StatusLine = Module("statusline", {
                 modified += "-";
         }
         if (modules.bookmarkcache) {
-            if (bookmarkcache.isBookmarked(buffer.uri))
+            if (bookmarkcache.isBookmarked(url))
                 modified += UTF8("❤");
                 //modified += UTF8("♥");
         }
@@ -178,7 +178,6 @@ var StatusLine = Module("statusline", {
 
         url = losslessDecodeURI(url);
 
-        // make it even more Vim-like
         if (url == "about:blank") {
             if (!buffer.title)
                 url = "[No Name]";
