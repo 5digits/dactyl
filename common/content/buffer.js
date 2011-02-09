@@ -225,7 +225,7 @@ var Buffer = Module("buffer", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     observers: {
-        "chrome-document-global-created": function (win, uri) { this.observe(win, "content-document-global-created", null); },
+        "chrome-document-global-created": function (win, uri) { this.observe(win, "content-document-global-created", uri); },
         "content-document-global-created": function (win, uri) {
             let top = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
                          .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
