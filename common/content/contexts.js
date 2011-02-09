@@ -17,6 +17,10 @@ var Group = Class("Group", {
     cleanup: function cleanup() {
         for (let hive in values(this.hives))
             dactyl.trapErrors("cleanup", hive);
+
+        this.hives = [];
+        for (let hive in keys(Group.hiveMap))
+            delete this[hive];
     },
     destroy: function destroy() {
         for (let hive in values(this.hives))
@@ -28,8 +32,6 @@ var Group = Class("Group", {
     get toStringParams() [this.name],
 
     get builtin() contexts.builtinGroups.indexOf(this) >= 0,
-
-    hives: {}
 
 }, {
     compileFilter: function (patterns) {
@@ -165,17 +167,22 @@ var Contexts = Module("contexts", {
         if (group)
             name = group.name;
 
-        if (replace)
-            this.removeGroup(name);
-
-        if (!group || replace) {
-            dactyl.assert(name !== "default", "Illegal group name");
-
+        if (!group) {
             group = Group(name, description, filter, persist);
             this.groupList.unshift(group);
             this.groupMap[name] = group;
             this.hiveProto.__defineGetter__(name, function () group[this._hive]);
         }
+
+        if (replace) {
+            dactyl.trapErrors("cleanup", group);
+            if (description)
+                group.description = description;
+            if (filter)
+                group.filter = filter
+            group.persist = persist;
+        }
+
         delete this.groups;
         return group;
     },
