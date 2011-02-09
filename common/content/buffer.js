@@ -14,7 +14,7 @@
  * files.
  * @instance buffer
  */
-var Buffer = Module("buffer", {
+var Buffer = Module("buffer", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function () {
         this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};
@@ -153,10 +153,12 @@ var Buffer = Module("buffer", {
             for (let tab in values(tabs.allTabs))
                 if (tab.linkedBrowser.contentDocument.readyState === "complete")
                     dactyl.initDocument(tab.linkedBrowser.contentDocument);
+        util.addObserver(this);
     },
 
     cleanup: function () {
         this.cleanupProgressListener();
+        this.observe.unregister();
     },
 
     getDefaultNames: function getDefaultNames(node) {
@@ -199,7 +201,7 @@ var Buffer = Module("buffer", {
         if (!(uri || doc.location))
             return;
 
-        uri = uri || util.newURI(doc.location.href);
+        uri = isObject(uri) ? uri : util.newURI(uri || doc.location.href);
         let args = {
             url: { toString: function () uri.spec, valueOf: function () uri },
             title: doc.title
@@ -220,6 +222,18 @@ var Buffer = Module("buffer", {
     _updateBufferPosition: function _updateBufferPosition() {
         statusline.updateBufferPosition();
         commandline.clear();
+    },
+
+    observers: {
+        "chrome-document-global-created": function (win, uri) { this.observe(win, "content-document-global-created", null); },
+        "content-document-global-created": function (win, uri) {
+            let top = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                         .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
+                         .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+
+            if (top == window)
+                this._triggerLoadAutocmd("PageLoadPre", win.document, win.location.href != "null" ? window.location.href : uri);
+        }
     },
 
     onDOMContentLoaded: function onDOMContentLoaded(event) {
@@ -269,8 +283,6 @@ var Buffer = Module("buffer", {
                 // only thrown for the current tab, not when another tab changes
                 if (flags & Ci.nsIWebProgressListener.STATE_START) {
                     statusline.progress = 0;
-
-                    buffer._triggerLoadAutocmd("PageLoadPre", webProgress.DOMWindow.document);
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81
@@ -528,11 +540,8 @@ var Buffer = Module("buffer", {
         let range = selection.getRangeAt(0).cloneRange();
         if (range.collapsed) {
             let re = options.get("iskeyword").regexp;
-            util.dump(String.quote(range));
             Editor.extendRange(range, true,  re, true);
-            util.dump(String.quote(range));
             Editor.extendRange(range, false, re, true);
-            util.dump(String.quote(range) + "\n\n\n");
         }
         return util.domToString(range);
     },

@@ -1832,8 +1832,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function () { dactyl.restart(); });
 
         function findToolbar(name) util.evaluateXPath(
-            "./*[@toolbarname=" + util.escapeString(name, "'") + "]",
-            toolbox).snapshotItem(0);
+            "//*[@toolbarname=" + util.escapeString(name, "'") + "]",
+            document).snapshotItem(0);
 
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {
@@ -2017,7 +2017,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         completion.toolbar = function toolbar(context) {
             context.title = ["Toolbar"];
             context.keys = { text: function (item) item.getAttribute("toolbarname"), description: function () "" };
-            context.completions = util.evaluateXPath("./*[@toolbarname]", toolbox);
+            context.completions = util.evaluateXPath("//*[@toolbarname]", document);
         };
 
         completion.window = function window(context) {

@@ -62,6 +62,13 @@ var Option = Class("Option", {
         if (arguments.length > 3) {
             if (this.type == "string")
                 defaultValue = Commands.quote(defaultValue);
+
+            if (isObject(defaultValue))
+                defaultValue = iter(defaultValue).map(function (val) val.map(Option.quote).join(":")).join(",");
+
+            if (isArray(defaultValue))
+                defaultValue = defaultValue.map(Option.quote).join(",");
+
             this.defaultValue = this.parse(defaultValue);
         }
 

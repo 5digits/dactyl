@@ -512,7 +512,7 @@ var Styles = Module("Styles", {
                     {
                         names: ["-name", "-n"],
                         description: "The name of this stylesheet",
-                        completer: function () [[k, v.css] for ([k, v] in Iterator(args["-group"].names))],
+                        completer: function (context, args) [[k, v.css] for ([k, v] in Iterator(args["-group"].hive.names))],
                         type: modules.CommandOption.STRING
                     }
                 ],

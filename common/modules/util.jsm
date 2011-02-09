@@ -1083,6 +1083,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             this._loadOverlay(window, obj(window));
         }
     },
+
     _loadOverlay: function _loadOverlay(window, obj) {
         let doc = window.document;
         if (!doc.dactylOverlayElements) {

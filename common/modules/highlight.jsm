@@ -81,7 +81,7 @@ update(Highlight.prototype, {
     get cssText() this.inheritedCSS + this.value,
 
     toString: function () "Highlight(" + this.class + ")\n\t" +
-        [k + ": " + String.quote(v) for ([k, v] in this)] .join("\n\t")
+        [k + ": " + String(v).quote() for ([k, v] in this)] .join("\n\t")
 });
 
 /**
