@@ -1132,7 +1132,8 @@ var CommandLine = Module("commandline", {
 
             if (show) {
                 this.itemList.reset();
-                this.itemList.visible = true;
+                if (this.haveType("list"))
+                    this.itemList.visible = true;
                 this.selected = null;
                 this.wildIndex = 0;
             }
