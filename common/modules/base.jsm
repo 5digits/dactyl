@@ -672,7 +672,8 @@ function Class() {
             return res !== undefined ? res : self;
         })]]>,
         "constructor", (name || superclass.className).replace(/\W/g, "_"))
-            .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]));
+            .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]
+                                                       .replace(/\b(self|res|Constructor)\b/g, "$1_")));
 
     Constructor.className = name || superclass.className || superclass.name;
 
