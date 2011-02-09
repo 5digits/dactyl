@@ -497,10 +497,13 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
 
                         case "list":
                             modules.commandline.commandOutput(template.tabular(
-                                ["Host", "Session", "Path", "Value"], ["padding-right: 1em", "padding-right: 1em", "padding-right: 1em"],
+                                ["Host", "Expiry (UTC)", "Path", "Name", "Value"],
+                                ["padding-right: 1em", "padding-right: 1em", "padding-right: 1em", "max-width: 12em; overflow: hidden;", "padding-left: 1ex;"],
                                 ([c.host,
-                                  <span highlight={c.isSession ? "Enabled" : "Disabled"}>{c.isSession ? "session" : "persistent"}</span>,
+                                  c.isSession ? <span highlight="Enabled">session</span>
+                                              : (new Date(c.expiry * 1000).toJSON() || "Never").replace(/:\d\d\.000Z/, "").replace("T", " ").replace(/-/g, "/"),
                                   c.path,
+                                  c.name,
                                   c.value]
                                   for (c in Sanitizer.iterCookies(host)))));
                             return;

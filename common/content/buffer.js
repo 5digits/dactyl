@@ -1594,13 +1594,21 @@ var Buffer = Module("buffer", {
             });
 
             context.pushProcessor(0, function (item, text, next) <>
-                <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
+                <span highlight="Indicator" style="display: inline-block;">{item.indicator}</span>
                 { next.call(this, item, text) }
             </>);
             context.process[1] = function (item, text) template.bookmarkDescription(item, template.highlightFilter(text, this.filter));
 
             context.anchored = false;
-            context.keys = { text: "text", description: "url", icon: "icon", id: "id", command: function () "tabs.select" };
+            context.keys = {
+                text: "text",
+                description: "url",
+                indicator: function (item) item.tab === tabs.getTab()  ? "%" :
+                                           item.tab === tabs.alternate ? "#" : " ",
+                icon: "icon",
+                id: "id",
+                command: function () "tabs.select"
+            };
             context.compare = CompletionContext.Sort.number;
             context.filters = [CompletionContext.Filter.textDescription];
 
@@ -1621,9 +1629,9 @@ var Buffer = Module("buffer", {
 
                             return {
                                 text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
+                                tab: tab,
                                 id: i - 1,
                                 url: url,
-                                indicator: indicator,
                                 icon: tab.image || DEFAULT_FAVICON
                             };
                         });

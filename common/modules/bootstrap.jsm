@@ -14,9 +14,9 @@ var storage = Components.classes["@mozilla.org/fuel/application;1"]
 
 var JSMLoader = storage.get("dactyl.JSMLoader", undefined);
 
-if (!JSMLoader || JSMLoader.bump != 3)
+if (!JSMLoader || JSMLoader.bump != 4)
     JSMLoader = {
-        bump: 3,
+        bump: 4,
         builtin: Components.utils.Sandbox(this),
         canonical: {},
         factories: [],
@@ -33,7 +33,7 @@ if (!JSMLoader || JSMLoader.bump != 3)
 
             this.storage.set("dactyl.JSMLoader", this);
 
-            let base = JSMLoader.load("base.jsm", global);
+            let base = this.load("base.jsm", global);
             global.EXPORTED_SYMBOLS = base.EXPORTED_SYMBOLS;
             global.JSMLoader = this;
             base.JSMLoader = this;
