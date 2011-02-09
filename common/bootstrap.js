@@ -175,11 +175,11 @@ function init() {
         reportError(e);
     }
 
-    if (JSMLoader && JSMLoader.bump != 3) // Temporary hack
+    if (JSMLoader && JSMLoader.bump !== 4) // Temporary hack
         Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
             Cu.import("resource://dactyl/bootstrap.jsm", global));
 
-    if (!JSMLoader || JSMLoader.bump != 3)
+    if (!JSMLoader || JSMLoader.bump !== 4)
         Cu.import("resource://dactyl/bootstrap.jsm", global);
 
     JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
