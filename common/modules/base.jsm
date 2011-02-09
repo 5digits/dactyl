@@ -61,6 +61,8 @@ if (!Object.defineProperties)
         for (let [k, v] in Iterator(props))
             Object.defineProperty(obj, k, v);
     }
+if (!Object.freeze)
+    Object.freeze = function freeze(obj) {};
 if (!Object.getOwnPropertyDescriptor)
     Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
         if (!hasOwnProperty.call(obj, prop))
@@ -101,13 +103,15 @@ if (!Object.keys)
     Object.keys = function keys(obj)
         Object.getOwnPropertyNames(obj).filter(function (k) objproto.propertyIsEnumerable.call(obj, k));
 
+let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
+
 let use = {};
 let loaded = {};
 let currentModule;
 let global = this;
 function defineModule(name, params, module) {
     if (!module)
-        module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
+        module = getGlobalForObject(params);
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];

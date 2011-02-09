@@ -23,8 +23,7 @@ Highlight.liveProperty = function (name, prop) {
                 val = Array.slice(val);
             else
                 val = update({}, val);
-            if (Object.freeze)
-                Object.freeze(val);
+            Object.freeze(val);
         }
         this.set(name, val);
 

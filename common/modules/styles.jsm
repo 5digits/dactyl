@@ -23,7 +23,7 @@ Sheet.liveProperty = function (name) {
     this.prototype.__defineSetter__(name, function (val) {
         if (isArray(val))
             val = Array.slice(val);
-        if (isArray(val) && Object.freeze)
+        if (isArray(val))
             Object.freeze(val);
         this[i] = val;
         this.enabled = this.enabled;
@@ -87,13 +87,25 @@ var Hive = Class("Hive", {
         this.name = name;
         this.sheets = [];
         this.names = {};
+        this.refs = [];
+    },
+
+    addRef: function (obj) {
+        this.refs.push(Cu.getWeakReference(obj));
+        this.dropRef(null);
+    },
+    dropRef: function (obj) {
+        this.refs = this.refs.filter(function (ref) ref.get() && ref.get() !== obj);
+        if (!this.refs.length) {
+            this.cleanup();
+            styles.hives = styles.hives.filter(function (h) h !== this, this);
+        }
     },
 
     cleanup: function cleanup() {
         for (let sheet in values(this.sheets))
             sheet.enabled = false;
     },
-    destroy: function destroy() {},
 
     __iterator__: function () Iterator(this.sheets),
 
@@ -220,7 +232,6 @@ var Hive = Class("Hive", {
     },
 });
 
-try {
 /**
  * Manages named and unnamed user style sheets, which apply to both
  * chrome and content pages.
@@ -230,7 +241,6 @@ try {
 var Styles = Module("Styles", {
     init: function () {
         this._id = 0;
-        this.hives = [];
         this.cleanup();
         this.allSheets = {};
 
@@ -244,17 +254,20 @@ var Styles = Module("Styles", {
 
     cleanup: function cleanup() {
         for each (let hive in this.hives)
-            hive.cleanup();
-        this.user = this.addHive("user");
-        this.system = this.addHive("system");
+            util.trapErrors("cleanup", hive);
+        this.hives = [];
+        this.user = this.addHive("user", this);
+        this.system = this.addHive("system", this);
     },
 
-    addHive: function addHive(name) {
+    addHive: function addHive(name, ref) {
         let hive = array.nth(this.hives, function (h) h.name === name, 0);
         if (!hive) {
             hive = Hive(name);
             this.hives.push(hive);
         }
+        if (ref)
+            hive.addRef(ref);
         return hive;
     },
 
@@ -601,7 +614,23 @@ var Styles = Module("Styles", {
         });
     },
     contexts: function (dactyl, modules, window) {
-        modules.Group.Hives("styles", function (group) styles.addHive(group.name));
+        modules.Group.Hives("styles",
+            Class("LocalHive", modules.Group.Hive, {
+                init: function init(group) {
+                    init.superapply(this, arguments);
+
+                    this.hive = styles.addHive(group.name);
+                    this.hive.addRef(this);
+                },
+
+                __noSuchMethod__: function __noSuchMethod__(meth, args) {
+                    return this.hive[meth].apply(this.hive, args);
+                },
+
+                destroy: function () {
+                    this.hive.dropRef(this);
+                }
+            }));
     },
     completion: function (dactyl, modules, window) {
         const names = Array.slice(util.computedStyle(window.document.createElement("div")));
@@ -658,6 +687,6 @@ var Styles = Module("Styles", {
 
 endModule();
 
-} catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

@@ -130,11 +130,14 @@ var Contexts = Module("contexts", {
         this.builtinGroups = [this.builtin, this.user];
     },
 
-    destroy: function () {
-        for (let hive in values(this.groupList)) {
+    cleanup: function () {
+        for (let hive in values(this.groupList))
             dactyl.trapErrors("cleanup", hive);
+    },
+
+    destroy: function () {
+        for (let hive in values(this.groupList))
             dactyl.trapErrors("destroy", hive);
-        }
 
         for (let plugin in values(plugins.contexts))
             if (plugin.onUnload)
@@ -191,8 +194,7 @@ var Contexts = Module("contexts", {
         if (group) {
             name = group.name;
             this.groupList.splice(this.groupList.indexOf(group), 1);
-            group.cleanup();
-            group.destroy();
+            dactyl.trapErrors("destroy", group);
         }
 
         if (this.context && this.context.group === group)
@@ -295,18 +297,25 @@ var Contexts = Module("contexts", {
         }
         else {
             let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-") : file.leafName;
+
             self = update(modules.newContext.apply(null, args || [userContext]), {
                 NAME: Const(name.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
+
                 PATH: Const(file.path),
+
                 CONTEXT: Const(self),
+
                 unload: Const(function unload() {
                     if (plugins[this.NAME] === this || plugins[this.PATH] === this)
                         if (this.onUnload)
                             this.onUnload();
+
                     if (plugins[this.NAME] === this)
                         delete plugins[this.NAME];
+
                     if (plugins[this.PATH] === this)
                         delete plugins[this.PATH];
+
                     if (!this.GROUP.builtin)
                         contexts.removeGroup(this.GROUP);
                 })
