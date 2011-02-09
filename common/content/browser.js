@@ -58,7 +58,6 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
     events: {
         DOMContentLoaded: function onDOMContentLoaded(event) {
-            util.dump("DOMContentLoaded");
             let doc = event.originalTarget;
             if (doc instanceof HTMLDocument)
                 this._triggerLoadAutocmd("DOMLoad", doc);
@@ -68,7 +67,6 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         // event listener which is is called on each page load, even if the
         // page is loaded in a background tab
         load: function onLoad(event) {
-            util.dump("onLoad");
             let doc = event.originalTarget;
             if (doc instanceof Document)
                 dactyl.initDocument(doc);
