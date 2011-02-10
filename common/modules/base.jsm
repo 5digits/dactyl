@@ -440,25 +440,24 @@ function isinstance(object, interfaces) {
     if (object == null)
         return false;
 
-    interfaces = Array.concat(interfaces);
-    for (var i = 0; i < interfaces.length; i++) {
-        if (typeof interfaces[i] === "string") {
-            if (objproto.toString.call(object) === "[object " + interfaces[i] + "]")
+    return Array.concat(interfaces).some(function isinstance_some(iface) {
+        if (typeof iface === "string") {
+            if (objproto.toString.call(object) === "[object " + iface + "]")
                 return true;
         }
         else if (typeof object === "object" && "isinstance" in object && object.isinstance !== isinstance) {
-            if (object.isinstance(interfaces[i]))
+            if (object.isinstance(iface))
                 return true;
         }
         else {
-            if (object instanceof interfaces[i])
+            if (object instanceof iface)
                 return true;
             var type = isinstance_types[typeof object];
-            if (type && isSubclass(interfaces[i], type))
+            if (type && isSubclass(iface, type))
                 return true;
         }
-    }
-    return false;
+        return false;
+    });
 }
 
 /**

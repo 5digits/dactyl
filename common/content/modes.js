@@ -245,6 +245,8 @@ var Modes = Module("modes", {
 
     getCharModes: function (chr) (this.modeChars[chr] || []).slice(),
 
+    have: function have(mode) this._modeStack.some(function (m) isinstance(m.main, mode)),
+
     matchModes: function (obj)
         this._modes.filter(function (mode) Object.keys(obj)
                                                  .every(function (k) obj[k] == (mode[k] || false))),
@@ -397,7 +399,7 @@ var Modes = Module("modes", {
         },
 
         isinstance: function (obj)
-            this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
+            this === obj || this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
         allBases: Class.memoize(function () {
             let seen = {}, res = [], queue = this.bases;

@@ -10,25 +10,28 @@ var MOW = Module("mow", {
     init: function () {
 
         this._resize = Timer(20, 400, function () {
-            if (this.visible) {
+            if (this.visible)
                 this.resize(false);
+
+            if (this.visible && isinstance(modes.main, modes.OUTPUT_MULTILINE))
                 this.updateMorePrompt();
-            }
         }, this);
 
         this._timer = Timer(20, 400, function () {
-            this.resize(true);
+            if (modes.have(modes.OUTPUT_MULTILINE)) {
+                this.resize(true);
 
-            if (options["more"] && this.isScrollable(1)) {
-                // start the last executed command's output at the top of the screen
-                let elements = this.document.getElementsByClassName("ex-command-output");
-                elements[elements.length - 1].scrollIntoView(true);
+                if (options["more"] && this.isScrollable(1)) {
+                    // start the last executed command's output at the top of the screen
+                    let elements = this.document.getElementsByClassName("ex-command-output");
+                    elements[elements.length - 1].scrollIntoView(true);
+                }
+                else
+                    this.body.scrollTop = this.body.scrollHeight;
+
+                dactyl.focus(this.window);
+                this.updateMorePrompt();
             }
-            else
-                this.body.scrollTop = this.body.scrollHeight;
-
-            dactyl.focus(this.window);
-            this.updateMorePrompt();
         }, this);
 
         events.listen(window, this, "windowEvents");
