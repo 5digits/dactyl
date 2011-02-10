@@ -148,6 +148,23 @@ var Contexts = Module("contexts", {
 
     context: null,
 
+    /**
+     * Returns a frame object describing the currently executing
+     * command, if applicable, otherwise returns the passed frame.
+     *
+     * @param {nsIStackFrame} frame
+     */
+    getCaller: function getCaller(frame) {
+        if (this.context && this.context.file)
+           return {
+                __proto__: frame,
+                filename: this.context.file[0] == "[" ? this.context.file
+                                                      : services.io.newFileURI(File(this.context.file)).spec,
+                lineNumber: this.context.line
+            };
+        return frame;
+    },
+
     groups: Class.memoize(function () Object.create(Group.groupsProto, {
         groups: { value: this.activeGroups().filter(function (g) g.filter(buffer.uri)) }
     })),
@@ -216,8 +233,8 @@ var Contexts = Module("contexts", {
     getGroup: function getGroup(name, hive) {
         if (name === "default")
             var group = this.context && this.context.context && this.context.context.GROUP;
-        else
-            group = set.has(this.groupMap, name) && this.groupMap[name];
+        else if (set.has(this.groupMap, name))
+            group = this.groupMap[name];
 
         if (group && hive)
             return group[hive];

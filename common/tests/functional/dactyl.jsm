@@ -64,7 +64,7 @@ function Controller(controller) {
     }
     this.errors = [];
     this._countError = function countError(message, highlight) {
-        if (/\bErrorMsg\b/.test(highlight))
+        if (/\b(Error|Warning)Msg\b/.test(highlight))
             self.errors.push(String(message));
     }
     this.modules.dactyl.registerObserver("beep", this._countBeep);

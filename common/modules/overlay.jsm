@@ -154,6 +154,7 @@ var Overlay = Module("Overlay", {
                 defineModule.time("load", null, function _load() {
                     ["addons",
                      "base",
+                     "commands",
                      "completion",
                      "config",
                      "downloads",
@@ -161,6 +162,7 @@ var Overlay = Module("Overlay", {
                      "highlight",
                      "io",
                      "javascript",
+                     "options",
                      "overlay",
                      "prefs",
                      "services",
@@ -177,14 +179,12 @@ var Overlay = Module("Overlay", {
                      "abbreviations",
                      "autocommands",
                      "buffer",
-                     "commands",
                      "editor",
                      "events",
                      "hints",
                      "mappings",
                      "marks",
                      "mow",
-                     "options",
                      "statusline"
                      ].forEach(function (name) defineModule.time("load", name, modules.load, modules, name));
 
@@ -324,6 +324,8 @@ var Overlay = Module("Overlay", {
         }));
     }
 });
+
+endModule();
 
 } catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 

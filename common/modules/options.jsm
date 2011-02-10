@@ -6,6 +6,16 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+try {
+
+Components.utils.import("resource://dactyl/bootstrap.jsm");
+defineModule("options", {
+    exports: ["Option", "Options", "ValueError", "options"],
+    require: ["storage"],
+    use: ["commands", "completion", "prefs", "services", "template", "util"]
+}, this);
+
+
 /** @scope modules */
 
 let ValueError = Class("ValueError", ErrorBase);
@@ -83,7 +93,7 @@ var Option = Class("Option", {
     get helpTag() "'" + this.name + "'",
 
     initValue: function () {
-        dactyl.trapErrors(function () this.value = this.value, this);
+        util.trapErrors(function () this.value = this.value, this);
     },
 
     get isDefault() this.stringValue === this.stringDefaultValue,
@@ -127,13 +137,15 @@ var Option = Class("Option", {
 
         let values;
 
-        if (dactyl.has("tabs") && (scope & Option.SCOPE_LOCAL))
+        /*
+        if (config.has("tabs") && (scope & Option.SCOPE_LOCAL))
             values = tabs.options[this.name];
+         */
         if ((scope & Option.SCOPE_GLOBAL) && (values == undefined))
             values = this.globalValue;
 
         if (this.getter)
-            return dactyl.trapErrors(this.getter, this, values);
+            return util.trapErrors(this.getter, this, values);
 
         return values;
     },
@@ -151,19 +163,21 @@ var Option = Class("Option", {
             return;
 
         if (this.setter)
-            newValues = dactyl.trapErrors(this.setter, this, newValues);
+            newValues = this.modules.dactyl.trapErrors(this.setter, this, newValues);
         if (newValues === undefined)
             return;
 
-        if (dactyl.has("tabs") && (scope & Option.SCOPE_LOCAL))
+        /*
+        if (config.has("tabs") && (scope & Option.SCOPE_LOCAL))
             tabs.options[this.name] = newValues;
+        */
         if ((scope & Option.SCOPE_GLOBAL) && !skipGlobal)
             this.globalValue = newValues;
 
         this.hasChanged = true;
         this.setFrom = null;
 
-        dactyl.triggerObserver("options." + this.name, newValues);
+        // dactyl.triggerObserver("options." + this.name, newValues);
     },
 
     getValues: deprecated("Option#get", "get"),
@@ -239,7 +253,7 @@ var Option = Class("Option", {
         }
         catch (e) {
             if (!(e instanceof ValueError))
-                dactyl.reportError(e);
+                util.reportError(e);
             return this.invalidArgument(str || this.stringify(values), operator) + ": " + e.message;
         }
 
@@ -480,6 +494,7 @@ var Option = Class("Option", {
         Option._splitAt = 0;
         return arg;
     },
+
     splitList: function (value, keepQuotes) {
         let res = [];
         Option._splitAt = 0;
@@ -495,6 +510,7 @@ var Option = Class("Option", {
         }
         return res;
     },
+
     quote: function quote(str, re)
         Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str)
             ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
@@ -514,8 +530,8 @@ var Option = Class("Option", {
                 values = values[(values.indexOf(String(this.value)) + 1) % values.length];
 
             let value = parseInt(values);
-            dactyl.assert(Number(values) % 1 == 0,
-                          "E521: Number required after =: " + this.name + "=" + values);
+            util.assert(Number(values) % 1 == 0,
+                        "E521: Number required after =: " + this.name + "=" + values);
 
             switch (operator) {
             case "+":
@@ -627,7 +643,7 @@ var Option = Class("Option", {
     },
 
     validateXPath: function (values) {
-        let evaluator = XPathEvaluator();
+        let evaluator = services.XPathEvaluator();
         return this.testValues(values,
             function (value) evaluator.createExpression(value, util.evaluateXPath.resolver));
     }
@@ -637,72 +653,123 @@ var Option = Class("Option", {
  * @instance options
  */
 var Options = Module("options", {
-    init: function () {
-        this.needInit = [];
-        this._options = [];
-        this._optionMap = {};
+    Local: function (dactyl, modules, window) let ({ contexts } = modules) ({
+        init: function init() {
+            const self = this;
+            this.needInit = [];
+            this._options = [];
+            this._optionMap = {};
+            this.Option = Class("Option", Option, { modules: modules });
 
-        storage.newMap("options", { store: false });
-        storage.addObserver("options", function optionObserver(key, event, option) {
-            // Trigger any setters.
-            let opt = options.get(option);
-            if (event == "change" && opt)
-                opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
-        }, window);
-    },
+            storage.newMap("options", { store: false });
+            storage.addObserver("options", function optionObserver(key, event, option) {
+                // Trigger any setters.
+                let opt = self.get(option);
+                if (event == "change" && opt)
+                    opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
+            }, window);
+        },
 
-    cleanup: function cleanup() {
-        for (let opt in this)
-            if (opt.cleanupValue != null)
-                opt.value = opt.parse(opt.cleanupValue);
-    },
+        dactyl: dactyl,
+
+        /**
+         * Lists all options in *scope* or only those with changed values if
+         * *onlyNonDefault* is specified.
+         *
+         * @param {function(Option)} filter Limit the list
+         * @param {number} scope Only list options in this scope (see
+         *     {@link Option#scope}).
+         */
+        list: function (filter, scope) {
+            if (!scope)
+                scope = Option.SCOPE_BOTH;
+
+            function opts(opt) {
+                for (let opt in Iterator(options)) {
+                    let option = {
+                        __proto__: opt,
+                        isDefault: opt.isDefault,
+                        default:   opt.stringDefaultValue,
+                        pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
+                        value:     <></>
+                    };
+
+                    if (filter && !filter(opt))
+                        continue;
+                    if (!(opt.scope & scope))
+                        continue;
+
+                    if (opt.type == "boolean") {
+                        if (!opt.value)
+                            option.pre = "no";
+                        option.default = (opt.defaultValue ? "" : "no") + opt.name;
+                    }
+                    else if (isArray(opt.value))
+                        option.value = <>={template.map(opt.value, function (v) template.highlight(String(v)), <>,<span style="width: 0; display: inline-block"> </span></>)}</>;
+                    else
+                        option.value = <>={template.highlight(opt.stringValue)}</>;
+                    yield option;
+                }
+            };
+
+            modules.commandline.commandOutput(template.options("Options", opts(), options["verbose"] > 0));
+        },
+
+        cleanup: function cleanup() {
+            for (let opt in this)
+                if (opt.cleanupValue != null)
+                    opt.value = opt.parse(opt.cleanupValue);
+        },
+
+        /**
+         * Adds a new option.
+         *
+         * @param {string[]} names All names for the option.
+         * @param {string} description A description of the option.
+         * @param {string} type The option type (see {@link Option#type}).
+         * @param {value} defaultValue The option's default value.
+         * @param {Object} extra An optional extra configuration hash (see
+         *     {@link Map#extraInfo}).
+         * @optional
+         */
+        add: function (names, description, type, defaultValue, extraInfo) {
+            const self = this;
+
+            if (!extraInfo)
+                extraInfo = {};
+
+            extraInfo.definedAt = contexts.getCaller(Components.stack.caller);
+
+            let name = names[0];
+            if (name in this._optionMap) {
+                this.dactyl.log("Warning: " + name.quote() + " already exists: replacing existing option.", 1);
+                this.remove(name);
+            }
+
+            let closure = function () self._optionMap[name];
+
+            memoize(this._optionMap, name, function () self.Option(names, description, type, defaultValue, extraInfo));
+            for (let alias in values(names.slice(1)))
+                memoize(this._optionMap, alias, closure);
+
+            if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
+                if (this.dactyl.initialized)
+                    closure().initValue();
+                else
+                    memoize(this.needInit, this.needInit.length, closure);
+
+            this._floptions = (this._floptions || []).concat(name);
+            memoize(this._options, this._options.length, closure);
+
+            // quickly access options with options["wildmode"]:
+            this.__defineGetter__(name, function () this._optionMap[name].value);
+            this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
+        }
+    }),
 
     /** @property {Iterator(Option)} @private */
     __iterator__: function ()
         values(this._options.sort(function (a, b) String.localeCompare(a.name, b.name))),
-
-    /**
-     * Adds a new option.
-     *
-     * @param {string[]} names All names for the option.
-     * @param {string} description A description of the option.
-     * @param {string} type The option type (see {@link Option#type}).
-     * @param {value} defaultValue The option's default value.
-     * @param {Object} extra An optional extra configuration hash (see
-     *     {@link Map#extraInfo}).
-     * @optional
-     */
-    add: function (names, description, type, defaultValue, extraInfo) {
-        if (!extraInfo)
-            extraInfo = {};
-
-        extraInfo.definedAt = Commands.getCaller(Components.stack.caller);
-
-        let name = names[0];
-        if (name in this._optionMap) {
-            dactyl.log("Warning: " + name.quote() + " already exists: replacing existing option.", 1);
-            this.remove(name);
-        }
-
-        let closure = function () options._optionMap[name];
-
-        memoize(this._optionMap, name, function () Option(names, description, type, defaultValue, extraInfo));
-        for (let alias in values(names.slice(1)))
-            memoize(this._optionMap, alias, closure);
-
-        if (extraInfo.setter && (!extraInfo.scope || extraInfo.scope & Option.SCOPE_GLOBAL))
-            if (dactyl.initialized)
-                closure().initValue();
-            else
-                memoize(this.needInit, this.needInit.length, closure);
-
-        this._floptions = (this._floptions || []).concat(name);
-        memoize(this._options, this._options.length, closure);
-
-        // quickly access options with options["wildmode"]:
-        this.__defineGetter__(name, function () this._optionMap[name].value);
-        this.__defineSetter__(name, function (value) { this._optionMap[name].value = value; });
-    },
 
     allPrefs: deprecated("prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
     getPref: deprecated("prefs.get", function getPref() prefs.get.apply(prefs, arguments)),
@@ -735,49 +802,6 @@ var Options = Module("options", {
     },
 
     /**
-     * Lists all options in *scope* or only those with changed values if
-     * *onlyNonDefault* is specified.
-     *
-     * @param {function(Option)} filter Limit the list
-     * @param {number} scope Only list options in this scope (see
-     *     {@link Option#scope}).
-     */
-    list: function (filter, scope) {
-        if (!scope)
-            scope = Option.SCOPE_BOTH;
-
-        function opts(opt) {
-            for (let opt in Iterator(options)) {
-                let option = {
-                    __proto__: opt,
-                    isDefault: opt.isDefault,
-                    default:   opt.stringDefaultValue,
-                    pre:       "\u00a0\u00a0", // Unicode nonbreaking space.
-                    value:     <></>
-                };
-
-                if (filter && !filter(opt))
-                    continue;
-                if (!(opt.scope & scope))
-                    continue;
-
-                if (opt.type == "boolean") {
-                    if (!opt.value)
-                        option.pre = "no";
-                    option.default = (opt.defaultValue ? "" : "no") + opt.name;
-                }
-                else if (isArray(opt.value))
-                    option.value = <>={template.map(opt.value, function (v) template.highlight(String(v)), <>,<span style="width: 0; display: inline-block"> </span></>)}</>;
-                else
-                    option.value = <>={template.highlight(opt.stringValue)}</>;
-                yield option;
-            }
-        };
-
-        commandline.commandOutput(template.options("Options", opts(), options["verbose"] > 0));
-    },
-
-    /**
      * Parses a :set command's argument string.
      *
      * @param {string} args The :set command's argument string.
@@ -801,7 +825,7 @@ var Options = Module("options", {
         }
 
         if (matches) {
-            ret.option = options.get(ret.name, ret.scope);
+            ret.option = this.get(ret.name, ret.scope);
             if (!ret.option && (ret.option = options.get(prefix + ret.name, ret.scope))) {
                 ret.name = prefix + ret.name;
                 prefix = "";
@@ -849,7 +873,9 @@ var Options = Module("options", {
     get store() storage.options
 }, {
 }, {
-    commands: function () {
+    commands: function initCommands(dactyl, modules, window) {
+        const { commands, contexts, options } = modules;
+
         let args = {
             getMode: function (args) findMode(args["-mode"]),
             iterate: function (args) {
@@ -916,7 +942,7 @@ var Options = Module("options", {
                     }
 
                     if (name == "all" && reset)
-                        commandline.input("Warning: Resetting all preferences may make " + config.host + " unusable. Continue (yes/[no]): ",
+                        modules.commandline.input("Warning: Resetting all preferences may make " + config.host + " unusable. Continue (yes/[no]): ",
                             function (resp) {
                                 if (resp == "yes")
                                     for (let pref in values(prefs.getNames()))
@@ -946,22 +972,21 @@ var Options = Module("options", {
                         prefs.set(name, value);
                     }
                     else
-                        commandline.commandOutput(prefs.list(onlyNonDefault, name));
+                        modules.commandline.commandOutput(prefs.list(onlyNonDefault, name));
                     return;
                 }
 
-                let opt = options.parseOpt(arg, modifiers);
-                dactyl.assert(opt, "Error parsing :set command: " + arg);
+                let opt = modules.options.parseOpt(arg, modifiers);
+                util.assert(opt, "Error parsing :set command: " + arg);
 
                 let option = opt.option;
-                dactyl.assert(option != null || opt.all,
-                    "E518: Unknown option: " + opt.name);
+                util.assert(option != null || opt.all, "E518: Unknown option: " + opt.name);
 
                 // reset a variable to its default value
                 if (opt.reset) {
                     flushList();
                     if (opt.all) {
-                        for (let option in options)
+                        for (let option in modules.options)
                             option.reset();
                     }
                     else {
@@ -975,7 +1000,7 @@ var Options = Module("options", {
                 else {
                     flushList();
                     if (opt.option.type === "boolean") {
-                        dactyl.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
+                        util.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
                         opt.values = !opt.unsetBoolean;
                     }
                     else if (/^(string|number)$/.test(opt.option.type) && opt.invert)
@@ -989,7 +1014,7 @@ var Options = Module("options", {
                     }
                     if (res)
                         dactyl.echoerr(res);
-                    option.setFrom = Commands.getCaller(null);
+                    option.setFrom = contexts.getCaller(null);
                 }
             }
             flushList();
@@ -1014,7 +1039,7 @@ var Options = Module("options", {
                 return completion.preference(context);
             }
 
-            let opt = options.parseOpt(filter, modifiers);
+            let opt = modules.options.parseOpt(filter, modifiers);
             let prefix = opt.prefix;
 
             context.highlight();
@@ -1055,7 +1080,7 @@ var Options = Module("options", {
             }
 
             let optcontext = context.fork("values");
-            completion.optionValue(optcontext, opt.name, opt.operator);
+            modules.completion.optionValue(optcontext, opt.name, opt.operator);
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
@@ -1065,7 +1090,7 @@ var Options = Module("options", {
                 context.maxItems = optcontext.maxItems;
 
                 context.filters.push(function (i) !set.has(have, i.text));
-                completion.optionValue(context, opt.name, opt.operator, null,
+                modules.completion.optionValue(context, opt.name, opt.operator, null,
                                        function (context) {
                                            context.generate = function () option.value.map(function (o) [o, ""]);
                                        });
@@ -1108,10 +1133,10 @@ var Options = Module("options", {
                     let [, scope, name, op, expr] = matches;
                     let fullName = (scope || "") + name;
 
-                    dactyl.assert(scope == "g:" || scope == null,
-                        "E461: Illegal variable name: " + scope + name);
-                    dactyl.assert(set.has(globalVariables, name) || (expr && !op),
-                        "E121: Undefined variable: " + fullName);
+                    util.assert(scope == "g:" || scope == null,
+                                "E461: Illegal variable name: " + scope + name);
+                    util.assert(set.has(globalVariables, name) || (expr && !op),
+                                "E121: Undefined variable: " + fullName);
 
                     if (!expr)
                         dactyl.echo(fullName + "\t\t" + fmt(globalVariables[name]));
@@ -1120,7 +1145,7 @@ var Options = Module("options", {
                             var newValue = dactyl.userEval(expr);
                         }
                         catch (e) {}
-                        dactyl.assert(newValue !== undefined,
+                        util.assert(newValue !== undefined,
                             "E15: Invalid expression: " + expr);
 
                         let value = newValue;
@@ -1167,7 +1192,7 @@ var Options = Module("options", {
                             literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
                                                                : opt.name + "=" + opt.stringValue]
                         }
-                        for (opt in options)
+                        for (opt in modules.options)
                         if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
                     ]
                 }
@@ -1182,18 +1207,18 @@ var Options = Module("options", {
                     completer: setCompleter,
                     domains: function (args) array.flatten(args.map(function (spec) {
                         try {
-                            let opt = options.parseOpt(spec);
+                            let opt = modules.options.parseOpt(spec);
                             if (opt.option && opt.option.domains)
                                 return opt.option.domains(opt.values);
                         }
                         catch (e) {
-                            dactyl.reportError(e);
+                            util.reportError(e);
                         }
                         return [];
                     })),
                     keepQuotes: true,
                     privateData: function (args) args.some(function (spec) {
-                        let opt = options.parseOpt(spec);
+                        let opt = modules.options.parseOpt(spec);
                         return opt.option && opt.option.privateData &&
                             (!callable(opt.option.privateData) ||
                              opt.option.privateData(opt.values));
@@ -1223,12 +1248,14 @@ var Options = Module("options", {
                 deprecated: "the options system"
             });
     },
-    completion: function () {
+    completion: function initCompletion(dactyl, modules, window) {
+        const { completion } = modules;
+
         completion.option = function option(context, scope, prefix) {
             context.title = ["Option"];
             context.keys = { text: "names", description: "description" };
             context.anchored = false;
-            context.completions = options;
+            context.completions = modules.options;
             if (prefix == "inv")
                 context.keys.text = function (opt)
                     opt.type == "boolean" || isArray(opt.value) ? opt.names.map(function (n) "inv" + n)
@@ -1238,7 +1265,7 @@ var Options = Module("options", {
         };
 
         completion.optionValue = function (context, name, op, curValue, completer) {
-            let opt = options.get(name);
+            let opt = modules.options.get(name);
             completer = completer || opt.completer;
             if (!completer || !opt)
                 return;
@@ -1301,15 +1328,18 @@ var Options = Module("options", {
                 context.completions = res;
         };
     },
-    javascript: function () {
+    javascript: function initJavascript(dactyl, modules, window) {
+        const { options, JavaScript } = modules;
         JavaScript.setCompleter(options.get, [function () ([o.name, o.description] for (o in options))]);
     },
-    sanitizer: function () {
+    sanitizer: function initSanitizer(dactyl, modules, window) {
+        const { sanitizer } = modules;
+
         sanitizer.addItem("options", {
             description: "Options containing hostname data",
             action: function (timespan, host) {
                 if (host)
-                    for (let opt in values(options._options))
+                    for (let opt in values(modules.options._options))
                         if (timespan.contains(opt.lastSet * 1000) && opt.domains)
                             try {
                                 opt.value = opt.filterDomain(host, opt.value);
@@ -1319,12 +1349,12 @@ var Options = Module("options", {
                             }
             },
             privateEnter: function () {
-                for (let opt in values(options._options))
+                for (let opt in values(modules.options._options))
                     if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.value)))
                         opt.oldValue = opt.value;
             },
             privateLeave: function () {
-                for (let opt in values(options._options))
+                for (let opt in values(modules.options._options))
                     if (opt.oldValue != null) {
                         opt.value = opt.oldValue;
                         opt.oldValue = null;
@@ -1334,4 +1364,8 @@ var Options = Module("options", {
     }
 });
 
-// vim: set fdm=marker sw=4 ts=4 et:
+endModule();
+
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

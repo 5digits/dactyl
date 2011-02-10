@@ -170,7 +170,7 @@ var MapHive = Class("MapHive", Group.Hive, {
         extra = extra || {};
 
         let map = Map(modes, keys, description, action, extra);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = contexts.getCaller(Components.stack.caller);
         map.hive = this;
 
         if (this.name !== "builtin")
@@ -341,7 +341,7 @@ var Mappings = Module("mappings", {
      */
     add: function () {
         let map = this.builtin.add.apply(this.builtin, arguments);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
     },
 
@@ -358,7 +358,7 @@ var Mappings = Module("mappings", {
      */
     addUserMap: function () {
         let map = this.user.add.apply(this.user, arguments);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
     },
 
@@ -454,6 +454,9 @@ var Mappings = Module("mappings", {
                 if (!rhs) // list the mapping
                     mappings.list(mapmodes, mappings.expandLeader(lhs), hives);
                 else {
+                    util.assert(args["-group"] !== mappings.builtin,
+                                "Cannot change mappings in the builtin group");
+
                     args["-group"].add(mapmodes, [lhs],
                         args["-description"],
                         contexts.bindMacro(args, "-keys", function (params) params),
@@ -572,6 +575,9 @@ var Mappings = Module("mappings", {
             commands.add([ch + "mapc[lear]"],
                 "Remove all mappings" + modeDescription,
                 function (args) {
+                    util.assert(args["-group"] !== mappings.builtin,
+                                "Cannot change mappings in the builtin group");
+
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
                     mapmodes.forEach(function (mode) {
                         args["-group"].clear(mode);
@@ -593,6 +599,9 @@ var Mappings = Module("mappings", {
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,
                 function (args) {
+                    util.assert(args["-group"] !== mappings.builtin,
+                                "Cannot change mappings in the builtin group");
+
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
 
                     let found = false;

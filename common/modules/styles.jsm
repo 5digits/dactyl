@@ -623,6 +623,9 @@ var Styles = Module("Styles", {
                     this.hive.addRef(this);
                 },
 
+                get names() this.hive.names,
+                get sheets() this.hive.sheets,
+
                 __noSuchMethod__: function __noSuchMethod__(meth, args) {
                     return this.hive[meth].apply(this.hive, args);
                 },

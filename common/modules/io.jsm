@@ -748,16 +748,17 @@ unlet s:cpo_save
                     return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
                 }
 
+                const { commands, options } = modules;
                 file.write(template({
                     name: config.name,
                     autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
                                        keys(config.autocommands)),
                     commands: wrap("syn keyword " + config.name + "Command ",
-                                  array(c.specs for (c in commands)).flatten()),
+                                  array(c.specs for (c in commands.iterator())).flatten()),
                     options: wrap("syn keyword " + config.name + "Option ",
-                                  array(o.names for (o in modules.options) if (o.type != "boolean")).flatten()),
+                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
                     toggleoptions: wrap("let s:toggleOptions = [",
-                                        array(o.realNames for (o in modules.options) if (o.type == "boolean"))
+                                        array(o.realNames for (o in options) if (o.type == "boolean"))
                                             .flatten().map(String.quote),
                                         ", ") + "]"
                 }));

@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("util", {
     exports: ["frag", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
-    use: ["config", "highlight", "storage", "template"]
+    use: ["commands", "config", "highlight", "storage", "template"]
 }, this);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
@@ -21,13 +21,6 @@ var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
 var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
-
-memoize(this, "Commands", function () {
-    // FIXME
-    let obj = { Module: Class };
-    JSMLoader.loadSubScript("resource://dactyl-content/commands.js", obj);
-    return obj.Commands;
-});
 
 var FailedAssertion = Class("FailedAssertion", ErrorBase);
 var Point = Struct("x", "y");
