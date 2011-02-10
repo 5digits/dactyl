@@ -1545,7 +1545,9 @@ var Commands = Module("commands", {
         const { JavaScript, commands } = modules;
 
         JavaScript.setCompleter([commands.user.get, commands.user.remove],
-                                [function () [[c.name, c.description] for (c in this)]]);
+                                [function () [[c.names, c.description] for (c in this)]]);
+        JavaScript.setCompleter([commands.get],
+                                [function () [[c.names, c.description] for (c in this.iterator())]]);
     },
     mappings: function (dactyl, modules, window) {
         const { commands, mappings, modes } = modules;

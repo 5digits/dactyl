@@ -746,16 +746,10 @@ var Mappings = Module("mappings", {
         };
     },
     javascript: function () {
-        JavaScript.setCompleter(mappings.get,
+        JavaScript.setCompleter([mappings.get, mappings.builtin.get],
             [
                 null,
-                function (context, obj, args) {
-                    let mode = args[0];
-                    return array.flatten([
-                        [[name, map.description] for ([i, name] in Iterator(map.names))]
-                        for (map in mappings.iterate(mode))
-                    ]);
-                }
+                function (context, obj, args) [[m.names, m.description] for (m in this.iterate(args[0]))]
             ]);
     },
     options: function () {
