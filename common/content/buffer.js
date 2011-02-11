@@ -331,21 +331,8 @@ var Buffer = Module("buffer", {
      *
      * @returns {string}
      */
-    getCurrentWord: function (win) {
-        let selection = win.getSelection();
-        if (selection.rangeCount == 0)
-            return "";
-
-        let range = selection.getRangeAt(0).cloneRange();
-        if (range.collapsed) {
-            let re = options.get("iskeyword").regexp;
-            Editor.extendRange(range, true,  re, true);
-            Editor.extendRange(range, false, re, true);
-        }
-        return util.domToString(range);
-    },
-
-    get currentWord() this.getCurrentWord(this.focusedFrame),
+    get currentWord() Buffer.currentWord(this.focusedFrame),
+    getCurrentWord: deprecated("buffer.currentWord", function getCurrentWord() this.currentWord),
 
     /**
      * Returns true if a scripts are allowed to focus the given input
@@ -1043,6 +1030,26 @@ var Buffer = Module("buffer", {
 
     setZoom: deprecated("buffer.setZoom", function setZoom() buffer.setZoom.apply(buffer, arguments)),
     bumpZoomLevel: deprecated("buffer.bumpZoomLevel", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),
+
+    /**
+     * Returns the currently selected word in *win*. If the selection is
+     * null, it tries to guess the word that the caret is positioned in.
+     *
+     * @returns {string}
+     */
+    currentWord: function (win) {
+        let selection = win.getSelection();
+        if (selection.rangeCount == 0)
+            return "";
+
+        let range = selection.getRangeAt(0).cloneRange();
+        if (range.collapsed) {
+            let re = options.get("iskeyword").regexp;
+            Editor.extendRange(range, true,  re, true);
+            Editor.extendRange(range, false, re, true);
+        }
+        return util.domToString(range);
+    },
 
     getDefaultNames: function getDefaultNames(node) {
         let url = node.href || node.src || node.documentURI;
