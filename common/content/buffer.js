@@ -1430,7 +1430,7 @@ var Buffer = Module("buffer", {
             let tabGroups = {};
             tabs.getGroups();
             tabs.allTabs.forEach(function (tab, i) {
-                let group = (tab.tabItem || defItem).parent || defItem.parent;
+                let group = (tab.tabItem || tab._tabViewTabItem || defItem).parent || defItem.parent;
                 if (!set.has(tabGroups, group.id))
                     tabGroups[group.id] = [group.getTitle(), []];
                 group = tabGroups[group.id];
