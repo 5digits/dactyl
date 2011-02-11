@@ -75,8 +75,7 @@ var AutoCommands = Module("autocommands", {
         });
     },
 
-    get activeHives() contexts.initializedGroups("autocmd")
-                              .filter(function (h) h._store.length),
+    get activeHives() contexts.allGroups.autocmd.filter(function (h) h._store.length),
 
     add: deprecated("autocommand.user.add", { get: function add() autocommands.user.closure.add }),
     get: deprecated("autocommand.user.get", { get: function get() autocommands.user.closure.get }),
