@@ -335,7 +335,7 @@ var Contexts = Module("contexts", {
     },
 
     bindMacro: function (args, default_, params) {
-        const { dactyl, events } = this.modules;
+        const { dactyl, events, modules } = this.modules;
 
         let process = util.identity;
 
@@ -362,9 +362,9 @@ var Contexts = Module("contexts", {
             action.macro = util.compileMacro(rhs, true);
             break;
         case "-ex":
-            action = function action() this.modules.commands
-                                           .execute(action.macro, makeParams(this, arguments),
-                                                    false, null, action.context);
+            action = function action() modules.commands
+                                              .execute(action.macro, makeParams(this, arguments),
+                                                       false, null, action.context);
             action.macro = util.compileMacro(rhs, true);
             action.context = this.context && update({}, this.context);
             break;
