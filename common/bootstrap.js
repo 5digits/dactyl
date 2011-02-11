@@ -32,7 +32,7 @@ const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplica
 let JSMLoader = storage.get("dactyl.JSMLoader", undefined);
 
 function reportError(e) {
-    dump("dactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack));
+    dump("\ndactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
     Cu.reportError(e);
 }
 
@@ -92,9 +92,9 @@ function startup(data, reason) {
 
         if (basePath.isDirectory())
             getURI = function getURI(path) {
-                let file = basePath.clone().QueryInterface(Ci.nsILocalFile);
-                file.appendRelativePath(path);
-                return Services.io.newFileURI(file);
+                let uri = Services.io.newFileURI(basePath);
+                uri.path += path;
+                return Services.io.newFileURI(uri.QueryInterface(Ci.nsIFileURL).file);
             };
         else
             getURI = function getURI(path)
