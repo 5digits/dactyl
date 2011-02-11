@@ -678,7 +678,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
             fileMap["versions"] = function () {
-                let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec).responseText;
+                let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec,
+                                        { mimeType: "text/plain;charset=UTF-8" })
+                               .responseText;
 
                 let re = util.regexp(<![CDATA[
                     ^ (?P<space> \s*)

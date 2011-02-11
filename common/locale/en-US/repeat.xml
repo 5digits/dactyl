@@ -133,6 +133,99 @@
 </item>
 
 
+<h2 tag="group groups">Groups</h2>
+
+<p>
+    In order to facilitate script writing, especially scripts which only
+    apply to certain web sites, many types of commands and mappings can
+    be assigned to a named group. In addition to helping identify the
+    source of such mappings in listings, and aiding in the cleanup of
+    scripts, these groups can be configured to apply only to certain web
+    sites.
+</p>
+
+<item>
+    <tags>:gr :group</tags>
+    <spec>:group<oa>!</oa> <a>group</a> …</spec>
+    <description>
+        <p>List all active <t>groups</t>.</p>
+    </description>
+</item>
+
+<item>
+    <spec>:group<oa>!</oa> <a>group</a> …</spec>
+    <description>
+        <p>
+            Select, create, or modify a <t>group</t>. After invocation,
+            <a>group</a> becomes the default group for all further commands
+            issued in the current script. If <oa>!</oa> is given the group is
+            cleared of all mappings, commands, and any other entries bound to
+            it.
+        </p>
+
+        <p>The following <a>group</a> names have special meanings:</p>
+
+        <dl>
+            <dt>builtin</dt> <dd>The default group for builtin items. Can not be modified in any way by scripts.</dd>
+            <dt>default</dt> <dd>The default group for this script.</dd>
+            <dt>user</dt> <dd>The default group for the command line and <t>&dactyl.name;rc</t>.</dd>
+        </dl>
+
+        <p>The following arguments are available:</p>
+
+        <dl>
+            <dt>-args=<a>javascript</a></dt> <dd>JavaScript Object which augments the arguments passed to commands, mappings, and autocommands (short name: <em>-a</em>)</dd>
+            <dt>-description</dt> <dd>A description of this group (short names: <em>-desc</em>, <em>-d</em>)</dd>
+            <dt>-locations=<a>filters</a></dt> <dd>The URLs for which this group should be active. See <t>site-filters</t> (short names: <em>-locs</em>, <em>-loc</em>, <em>-l</em>)</dd>
+            <dt>-nopersist</dt> <dd>Do not save this group to an auto-generated RC file (short name: <em>-n</em>)</dd>
+        </dl>
+    </description>
+</item>
+
+
+<h2 tag="site-filter site-filters">Site Filters</h2>
+
+<p>
+    Many &dactyl.appName; commands accept filters so that they may be applied
+    only to specific sites. Most of these commands accept filters in any of the
+    following formats:
+</p>
+
+<dl>
+    <dd>domain</dd>
+    <dt>
+        Any filter which is a valid domain name will match any site on that
+        domain or any sub-domain thereof. These filters may contain any letter
+        of the Roman alphabet, Arabic numerals, hyphens, and full stops.
+        Non-Latin domain names must be punycode encoded.
+    </dt>
+
+    <dd>URL prefix</dd>
+    <dt>
+        Any URL beginning with a valid protocol name and ending with a
+        <tt>*</tt> is treated as a URL prefix. It will match any URL which
+        begins with the given filter sans the trailing asterisk.
+    </dt>
+
+    <dd>Full URL</dd>
+    <dt>
+        Any URL beginning with a valid protocol name and not ending with an
+        asterisk is treated as a full URL match. It will match any page which
+        has a URL identical to the filter.
+    </dt>
+
+    <dd>Regular expression</dd>
+    <dt>
+        Any filter which does not fall into one of the above categories is
+        treated as a case-sensitive regular expression.
+    </dt>
+</dl>
+
+<p>
+    In most cases, any of the above may be prefixed with a <tt>!</tt> character
+    to invert the sense of the match.
+</p>
+
 <h2 tag="using-scripts">Using scripts</h2>
 
 <item>
@@ -155,6 +248,32 @@
             value, and the prefix <em>~</em> is replaced with the value of
             <em>$HOME</em>. See <t>expand-env</t> and <t>initialization</t>
             for more information.
+        </p>
+
+        <h3 tag=":source-contexts">Script Contexts</h3>
+
+        <p>
+            Each script executes in its own JavaScript context. This means that
+            any global variable or function, including those defined by
+            <ex>:javascript</ex> and the <tt>-javascript</tt> flag of
+            <ex>:map</ex>, <ex>:command</ex>, and <ex>:autocmd</ex>,
+            is directly available only within the current script. Outside of the
+            current script, they can only be accessed as properties of the
+            script's global object, which is stored in the <tt>plugins</tt>
+            global under the script's full path.
+        </p>
+
+        <h3 tag=":source-groups">Script Groups</h3>
+
+        <p>
+            In addition to its own JavaScript context, each script is executed
+            with its own default <link topic="groups">group</link> into which
+            its styles, mappings, commands, and autocommands are placed. This
+            means that commands such as <ex>:comclear!</ex> can be issued
+            without fear of trampling other user-defined mappings. The command
+            <ex>:group! default</ex> can be issued to clear all such items at
+            once, and should be placed at the head of most scripts to prevent
+            the accumulation of stale items when the script is re-sourced.
         </p>
 
         <h3 tag=":source-css">Cascading Stylesheets</h3>

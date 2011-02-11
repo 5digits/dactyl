@@ -41,6 +41,12 @@
             interpreted as an Ex command.
         </p>
 
+        <p>
+            If the <em>-group</em>=<a>group</a> flag is given, add this autocmd
+            to the named <t>group</t>. Any filters for <a>group</a> apply in
+            addition to <oa>pat</oa>.
+        </p>
+
         <note>
             This behavior differs from Vim's implementation in that
             <oa>pat</oa> is a regular expression rather than a glob.

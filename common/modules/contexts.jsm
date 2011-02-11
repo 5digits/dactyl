@@ -9,7 +9,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("contexts", {
     exports: ["Contexts", "Group", "contexts"],
-    use: ["commands", "options", "services", "storage", "styles", "util"]
+    use: ["commands", "options", "services", "storage", "styles", "template", "util"]
 }, this);
 
 var Group = Class("Group", {

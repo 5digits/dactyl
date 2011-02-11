@@ -95,7 +95,7 @@
                 Windows only. If this file exists, its contents
                 are executed and <tt>$MY_&dactyl.idName;RC</tt> set to its path.
             </li>
-            <li>
+            <li tag="&dactyl.name;rc ">
                 <em>~/.&dactyl.name;rc</em>
                 <strut/>
                 If this file exists, its contents are executed.

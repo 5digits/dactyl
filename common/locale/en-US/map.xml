@@ -119,6 +119,7 @@
     <dt>-count</dt> <dd>Accept a count before the requisite key press. Sets the <tt>count</tt> parameter to the result. (short name <em>-c</em>)</dd>
     <dt>-description</dt> <dd>A description of this mapping (short name <em>-d</em>)</dd>
     <dt>-ex</dt> <dd>Execute <a>rhs</a> as an Ex command rather than keys (short name <em>-e</em>)</dd>
+    <dt>-group=<a>group</a></dt> <dd>Add this command to the given <t>group</t> (short name <em>-g</em>)</dd>
     <dt>-javascript</dt> <dd>Execute <a>rhs</a> as JavaScript rather than keys (short names <em>-js</em>, <em>-j</em>)</dd>
     <dt>-literal=<a>n</a></dt> <dd>Parse the <a>n</a>th argument without specially processing any quote or meta characters. (short name <em>-l</em>)</dd>
     <dt>-modes</dt> <dd>Create this mapping in the given modes (short names <em>-mode</em>, <em>-m</em>)</dd>
@@ -198,7 +199,10 @@
     <spec>:tm<oa>ap</oa></spec>
     <spec>:cm<oa>ap</oa></spec>
     <description>
-        <p>List all mappings for the applicable mode(s).</p>
+        <p>
+            List all mappings for the applicable mode(s). Mappings are
+            partitioned into <t>groups</t>.
+        </p>
     </description>
 </item>
 
@@ -561,9 +565,12 @@
 </item>
 
 <item>
-    <spec>:com<oa>mand</oa> <a>cmd</a></spec>
+    <spec>:com<oa>mand</oa> <oa>cmd</oa></spec>
     <description>
-        <p>List all user-defined commands that start with <a>cmd</a>.</p>
+        <p>
+            List all user-defined commands that start with <oa>cmd</oa>. Commands
+            are partitioned into <t>groups</t>.
+        </p>
     </description>
 </item>
 
@@ -598,11 +605,18 @@
             options when the command is defined.
         </p>
 
+        <h3 tag=":command-group">Grouping</h3>
+
+        <p>
+            The <em>-group</em> flag (short name: <em>-g</em>) can be used to
+            assign this command to a specific <t>group</t>.
+        </p>
+
         <h3 tag="E175 E176 :command-nargs">Argument handling</h3>
 
         <p>
             By default, user commands accept no arguments. This can be changed by specifying
-            the -nargs option.
+            the <tt>-nargs</tt> option.
         </p>
 
         <p>The valid values are:</p>
