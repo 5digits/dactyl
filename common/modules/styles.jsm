@@ -316,7 +316,8 @@ var Styles = Module("Styles", {
                      .join(" ");
     },
 
-    completeSite: function (context, content) {
+    completeSite: function (context, content, group) {
+        group = group || styles.user;
         context.anchored = false;
         try {
             context.fork("current", 0, this, function (context) {
@@ -328,10 +329,18 @@ var Styles = Module("Styles", {
             });
         }
         catch (e) {}
-        context.fork("others", 0, this, function (context) {
-            context.title = ["Site"];
-            context.completions = [[s, ""] for ([, s] in Iterator(styles.user.sites))];
-        });
+
+        let uris = util.visibleURIs(content);
+
+        context.generate = function () values(group.sites);
+
+        context.keys.text = util.identity;
+        context.keys.description = function (site) this.sheets.length + " sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
+            array.compact(this.sheets.map(function (s) s.name)).join(", ");
+        context.keys.sheets = function (site) group.sheets.filter(function (s) s.sites.indexOf(site) >= 0);
+        context.keys.active = function (site) uris.some(Styles.matchFilter(site));
+
+        Styles.splitContext(context, "Sites");
     },
 
     /**
@@ -365,6 +374,17 @@ var Styles = Module("Styles", {
         if (arguments.length < 2)
             return test;
         return test(arguments[1]);
+    },
+
+
+    splitContext: function splitContext(context, title) {
+        for (let item in Iterator({ Active: true, Inactive: false })) {
+            let [name, active] = item;
+            context.split(name, null, function (context) {
+                context.title[0] = name + " " + (title || "Sheets");
+                context.filters.push(function (item) !!item.active == active);
+            });
+        }
     },
 
     propertyIter: function (str, always) {
@@ -452,6 +472,28 @@ var Styles = Module("Styles", {
     commands: function (dactyl, modules, window) {
         const { commands, contexts } = modules;
 
+        function sheets(context, args, filter) {
+            let uris = util.visibleURIs(window.content);
+            context.compare = modules.CompletionContext.Sort.number;
+            context.generate = function () args["-group"].sheets;
+            context.keys.active = function (sheet) uris.some(sheet.closure.match);
+            context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>
+            if (filter)
+                context.filters.push(function ({ item }) filter(item));
+            Styles.splitContext(context);
+        }
+
+        function nameFlag(filter) ({
+            names: ["-name", "-n"],
+            description: "The name of this stylesheet",
+            type: modules.CommandOption.STRING,
+            completer: function (context, args) {
+                context.keys.text = function (sheet) sheet.name;
+                context.filters.push(function ({ item }) item.name);
+                sheets(context, args, filter);
+            }
+        });
+
         commands.add(["sty[le]"],
             "Add or list user styles",
             function (args) {
@@ -495,7 +537,7 @@ var Styles = Module("Styles", {
                     if (args.completeArg == 0) {
                         if (sheet)
                             context.completions = [[sheet.sites.join(","), "Current Value"]];
-                        context.fork("sites", 0, Styles, "completeSite", window.content);
+                        context.fork("sites", 0, Styles, "completeSite", window.content, args["-group"]);
                     }
                     else if (args.completeArg == 1) {
                         if (sheet)
@@ -509,12 +551,7 @@ var Styles = Module("Styles", {
                     { names: ["-agent", "-A"],  description: "Apply style as an Agent sheet" },
                     { names: ["-append", "-a"], description: "Append site filter and css to an existing, matching sheet" },
                     contexts.GroupFlag("styles"),
-                    {
-                        names: ["-name", "-n"],
-                        description: "The name of this stylesheet",
-                        completer: function (context, args) [[k, v.css] for ([k, v] in Iterator(args["-group"].hive.names))],
-                        type: modules.CommandOption.STRING
-                    }
+                    nameFlag()
                 ],
                 serialize: function () [
                     {
@@ -551,64 +588,30 @@ var Styles = Module("Styles", {
                 action: function (sheet) sheet.remove()
             }
         ].forEach(function (cmd) {
-
-            function splitContext(context, generate) {
-                for (let item in Iterator({ Active: true, Inactive: false })) {
-                    let [name, active] = item;
-                    context.split(name, null, function (context) {
-                        context.title[0] = name + " Sheets";
-                        context.filters.push(function (item) item.active == active);
-                    });
-                }
-            }
-            function sheets(context) {
-                let uris = util.visibleURIs(window.content);
-                context.compare = modules.CompletionContext.Sort.number;
-                context.generate = function () styles.user.sheets;
-                context.keys.active = function (sheet) uris.some(sheet.closure.match);
-                context.keys.description = function (sheet) <>{sheet.formatSites(uris)}: {sheet.css.replace("\n", "\\n")}</>
-                if (cmd.filter)
-                    context.filters.push(function ({ item }) cmd.filter(item));
-                splitContext(context);
-            }
-
             commands.add(cmd.name, cmd.desc,
                 function (args) {
-                    styles.user.find(args["-name"], args[0], args.literalArg, args["-index"])
-                          .forEach(cmd.action);
+                    args["-group"].find(args["-name"], args[0], args.literalArg, args["-index"])
+                                  .forEach(cmd.action);
                 }, {
-                    completer: function (context) {
+                    completer: function (context, args) {
                         let uris = util.visibleURIs(window.content);
-                        context.generate = function () styles.user.sites;
-                        context.keys.text = util.identity;
-                        context.keys.description = function (site) this.sheets.length + " sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
-                            array.compact(this.sheets.map(function (s) s.name)).join(", ");
-                        context.keys.sheets = function (site) styles.user.sheets.filter(function (s) s.sites.indexOf(site) >= 0);
-                        context.keys.active = function (site) uris.some(Styles.matchFilter(site));
 
                         if (cmd.filter)
                             context.filters.push(function ({ sheets }) sheets.some(cmd.filter));
-
-                        splitContext(context);
+                        Styles.completeSite(context, window.content, args["-group"]);
                     },
                     literal: 1,
                     options: [
+                        contexts.GroupFlag("styles"),
                         {
                             names: ["-index", "-i"],
                             type: modules.CommandOption.INT,
-                            completer: function (context) {
-                                context.keys.text = function (sheet) styles.user.sheets.indexOf(sheet);
-                                sheets(context);
-                            },
-                        }, {
-                            names: ["-name", "-n"],
-                            type: modules.CommandOption.STRING,
-                            completer: function (context) {
-                                context.keys.text = function (sheet) sheet.name;
-                                context.filters.push(function ({ item }) item.name);
-                                sheets(context);
+                            completer: function (context, args) {
+                                context.keys.text = function (sheet) args["-group"].sheets.indexOf(sheet);
+                                sheets(context, args, cmd.filter);
                             }
-                        }
+                        },
+                        nameFlag(cmd.filter)
                     ]
                 });
         });
@@ -625,6 +628,7 @@ var Styles = Module("Styles", {
 
                 get names() this.hive.names,
                 get sheets() this.hive.sheets,
+                get sites() this.hive.sites,
 
                 __noSuchMethod__: function __noSuchMethod__(meth, args) {
                     return this.hive[meth].apply(this.hive, args);

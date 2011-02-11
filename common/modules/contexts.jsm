@@ -227,7 +227,7 @@ var Contexts = Module("contexts", {
         if (!group)
             group = this.addGroup(commands.nameRegexp
                                           .iterate(name.replace(/\.[^.]*$/, ""))
-                                          .join("-"),
+                                          .join("-").replace(/--+/g, "-"),
                                   "Script group for " + file.path,
                                   null, false);
 
@@ -608,7 +608,7 @@ var Contexts = Module("contexts", {
             iter({ Active: true, Inactive: false }).forEach(function ([name, active]) {
                 context.split(name, null, function (context) {
                     context.title[0] = name + " Groups";
-                    context.filters.push(function (item) item.active == active);
+                    context.filters.push(function ({ item }) !!item.filter(modules.buffer.uri) == active);
                 });
             });
         };
