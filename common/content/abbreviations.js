@@ -80,8 +80,8 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      */
     get merged() {
         // Wth? --Kris;
-        let map = array(values(this._store)).map(Iterator).map(iter.toArray)
-                                            .flatten().toObject();
+        let map = values(this._store).map(Iterator).map(iter.toArray)
+                                     .flatten().toObject();
         return Object.keys(map).sort().map(function (k) map[k]);
     },
 
