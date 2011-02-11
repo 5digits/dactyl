@@ -9,7 +9,7 @@
         gt/gn/gN, etc. [b1]
     * Improved startup time by a factor of 7. [b1]
     * Further improved startup time. [b6]
-    * Added site-local and script-local groups:
+    * Added site-local and script-local groups: [b6]
       - Added the :group command to define and select groups.
       - Added the -group flag to :autocmd, :command, :map, :style,
         and friends.
