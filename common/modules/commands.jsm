@@ -1348,7 +1348,7 @@ var Commands = Module("commands", {
                 if (!args.literalArg)
                     commands.list();
                 else {
-                    util.assert(args["-group"] !== commands.builtin,
+                    util.assert(args["-group"].modifiable,
                                 "Cannot change commands in the builtin group");
 
                     let completer  = args["-complete"];

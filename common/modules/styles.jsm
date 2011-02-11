@@ -83,12 +83,15 @@ update(Sheet.prototype, {
 });
 
 var Hive = Class("Hive", {
-    init: function (name) {
+    init: function (name, persist) {
         this.name = name;
         this.sheets = [];
         this.names = {};
         this.refs = [];
+        this.persist = persist;
     },
+
+    get modifiable() this.name !== "system",
 
     addRef: function (obj) {
         this.refs.push(Cu.getWeakReference(obj));
@@ -239,6 +242,8 @@ var Hive = Class("Hive", {
  * @author Kris Maglione <maglione.k@gmail.com>
  */
 var Styles = Module("Styles", {
+    Local: function (dactyl, modules, window) ({}),
+
     init: function () {
         this._id = 0;
         this.cleanup();
@@ -256,16 +261,17 @@ var Styles = Module("Styles", {
         for each (let hive in this.hives)
             util.trapErrors("cleanup", hive);
         this.hives = [];
-        this.user = this.addHive("user", this);
-        this.system = this.addHive("system", this);
+        this.user = this.addHive("user", this, true);
+        this.system = this.addHive("system", this, false);
     },
 
-    addHive: function addHive(name, ref) {
+    addHive: function addHive(name, ref, persist) {
         let hive = array.nth(this.hives, function (h) h.name === name, 0);
         if (!hive) {
-            hive = Hive(name);
+            hive = Hive(name, persist);
             this.hives.push(hive);
         }
+        hive.persist = persist;
         if (ref)
             hive.addRef(ref);
         return hive;
@@ -287,6 +293,52 @@ var Styles = Module("Styles", {
     userNames: Class.Property({ get: deprecated("Styles#user.names", function userNames() this.user.names) }),
     systemNames: Class.Property({ get: deprecated("Styles#system.names", function systemNames() this.system.names) }),
     sites: Class.Property({ get: deprecated("Styles#user.sites", function sites() this.user.sites) }),
+
+    list: function list(content, filter, name, hives) {
+        const { commandline, dactyl } = this.modules;
+
+        hives = hives || styles.hives.filter(function (h) h.modifiable && h.sheets.length);
+
+        function sheets(group)
+            group.sheets.slice()
+                 .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
+                                                        : !!b.name - !!a.name || a.id - b.id);
+
+        let uris = util.visibleURIs(content);
+
+        let list = <table>
+                <tr highlight="Title">
+                    <td/>
+                    <td/>
+                    <td style="padding-right: 1em;">Name</td>
+                    <td style="padding-right: 1em;">Filter</td>
+                    <td style="padding-right: 1em;">CSS</td>
+                </tr>
+                <col style="min-width: 4em; padding-right: 1em;"/>
+                <col style="min-width: 1em; text-align: center; color: red; font-weight: bold;"/>
+                <col style="padding: 0 1em 0 1ex; vertical-align: top;"/>
+                <col style="padding: 0 1em 0 0; vertical-align: top;"/>
+                {
+                    template.map(hives, function (hive) let (i = 0)
+                        <tr style="height: .5ex;"/> +
+                        template.map(sheets(hive), function (sheet)
+                            <tr>
+                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
+                                <td>{sheet.enabled ? "" : UTF8("×")}</td>
+                                <td>{sheet.name || hive.sheets.indexOf(sheet)}</td>
+                                <td>{sheet.formatSites(uris)}</td>
+                                <td>{sheet.css}</td>
+                            </tr>) +
+                        <tr style="height: .5ex;"/>)
+                }
+                </table>;
+
+        // TODO: Move this to an ItemList to show this automatically
+        if (list.*.length() === list.text().length() + 2)
+            dactyl.echomsg("No mapping found");
+        else
+            commandline.commandOutput(list);
+    },
 
     registerSheet: function registerSheet(url, agent, reload) {
         let uri = services.io.newURI(url, null, null);
@@ -470,7 +522,7 @@ var Styles = Module("Styles", {
     })
 }, {
     commands: function (dactyl, modules, window) {
-        const { commands, contexts } = modules;
+        const { commands, contexts, styles } = modules;
 
         function sheets(context, args, filter) {
             let uris = util.visibleURIs(window.content);
@@ -489,7 +541,7 @@ var Styles = Module("Styles", {
             type: modules.CommandOption.STRING,
             completer: function (context, args) {
                 context.keys.text = function (sheet) sheet.name;
-                context.filters.push(function ({ item }) item.name);
+                context.filters.unshift(function ({ item }) item.name);
                 sheets(context, args, filter);
             }
         });
@@ -499,8 +551,13 @@ var Styles = Module("Styles", {
             function (args) {
                 let [filter, css] = args;
 
-                if (css) {
-                    if ("-append" in args) {
+                if (!css)
+                    styles.list(window.content, filter, args["-name"], args.explicitOpts["-group"] ? [args["-group"]] : null);
+                else {
+                    util.assert(args["-group"].modifiable && args["-group"].hive.modifiable,
+                                "Cannot modify styles in the builtin group");
+
+                    if (args["-append"]) {
                         let sheet = args["-group"].get(args["-name"]);
                         if (sheet) {
                             filter = sheet.sites.concat(filter).join(",");
@@ -508,25 +565,10 @@ var Styles = Module("Styles", {
 
                         }
                     }
-                    args["-group"].add(args["-name"], filter, css, args["-agent"]);
-                }
-                else {
-                    let list = args["-group"].sheets.slice()
-                                     .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
-                                                                            : !!b.name - !!a.name || a.id - b.id);
-                    let uris = util.visibleURIs(window.content);
-                    let name = args["-name"];
-                    modules.commandline.commandOutput(
-                        template.tabular(["", "Name", "Filter", "CSS"],
-                            ["min-width: 1em; text-align: center; color: red; font-weight: bold;",
-                             "padding: 0 1em 0 1ex; vertical-align: top;",
-                             "padding: 0 1em 0 0; vertical-align: top;"],
-                            ([sheet.enabled ? "" : UTF8("×"),
-                              sheet.name || args["-group"].sheets.indexOf(sheet),
-                              sheet.formatSites(uris),
-                              sheet.css]
-                             for (sheet in values(list))
-                             if ((!filter || sheet.sites.indexOf(filter) >= 0) && (!name || sheet.name == name)))));
+                    let style = args["-group"].add(args["-name"], filter, css, args["-agent"]);
+
+                    if (args["-nopersist"] || !args["-append"] || style.persist === undefined)
+                        style.persist = !args["-nopersist"];
                 }
             },
             {
@@ -551,17 +593,26 @@ var Styles = Module("Styles", {
                     { names: ["-agent", "-A"],  description: "Apply style as an Agent sheet" },
                     { names: ["-append", "-a"], description: "Append site filter and css to an existing, matching sheet" },
                     contexts.GroupFlag("styles"),
-                    nameFlag()
+                    nameFlag(),
+                    { names: ["-nopersist", "-N"], description: "Do not save this style to an auto-generated RC file" }
                 ],
-                serialize: function () [
-                    {
-                        command: this.name,
-                        arguments: [sty.sites.join(",")],
-                        bang: true,
-                        literalArg: sty.css,
-                        options: sty.name ? { "-name": sty.name } : {}
-                    } for ([k, sty] in Iterator(styles.user.sheets.slice().sort(function (a, b) String.localeCompare(a.name || "", b.name || ""))))
-                ]
+                serialize: function ()
+                    array(styles.hives)
+                        .filter(function (hive) hive.persist)
+                        .map(function (hive)
+                             hive.sheets.filter(function (style) style.persist)
+                                 .sort(function (a, b) String.localeCompare(a.name || "", b.name || ""))
+                                 .map(function (style) ({
+                                    command: "style",
+                                    arguments: [style.sites.join(",")],
+                                    bang: true,
+                                    literalArg: style.css,
+                                    options: update({
+                                            "-group": hive.name,
+                                        },
+                                        style.name ? { "-name": style.name } : {})
+                                })))
+                        .flatten().array
             });
 
         [
@@ -621,9 +672,7 @@ var Styles = Module("Styles", {
             Class("LocalHive", Contexts.Hive, {
                 init: function init(group) {
                     init.superapply(this, arguments);
-
-                    this.hive = styles.addHive(group.name);
-                    this.hive.addRef(this);
+                    this.hive = styles.addHive(group.name, this, this.persist);
                 },
 
                 get names() this.hive.names,

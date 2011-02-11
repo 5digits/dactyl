@@ -919,8 +919,10 @@ Module.INIT = {
 
         if (locals.length) {
             let module = this, objs = {};
-            for (let i in locals)
+            for (let i in locals) {
                 module = objs[i] = Object.create(module);
+                module.modules = modules;
+            }
             module.isLocalModule = true;
 
             modules.jsmodules[this.constructor.className] = module;
