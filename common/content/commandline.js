@@ -1064,7 +1064,7 @@ var CommandLine = Module("commandline", {
             this.context.reset();
             this.context.tabPressed = tabPressed;
             this.session.complete(this.context);
-            if (this.session.active)
+            if (!this.session.active)
                 return;
             this.context.updateAsync = true;
             this.reset(show, tabPressed);
