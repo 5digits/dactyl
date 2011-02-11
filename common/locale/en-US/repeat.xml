@@ -146,21 +146,21 @@
 
 <item>
     <tags>:gr :group</tags>
-    <spec>:group<oa>!</oa> <a>group</a> …</spec>
+    <spec>:gr<oa>oup</oa></spec>
     <description>
         <p>List all active <t>groups</t>.</p>
     </description>
 </item>
 
 <item>
-    <spec>:group<oa>!</oa> <a>group</a> …</spec>
+    <spec>:gr<oa>oup</oa><oa>!</oa> <a>group</a> …</spec>
     <description>
         <p>
             Select, create, or modify a <t>group</t>. After invocation,
             <a>group</a> becomes the default group for all further commands
             issued in the current script. If <oa>!</oa> is given the group is
             cleared of all mappings, commands, and any other entries bound to
-            it.
+            it before making the specified additions (if any).
         </p>
 
         <p>The following <a>group</a> names have special meanings:</p>
@@ -174,9 +174,16 @@
         <p>The following arguments are available:</p>
 
         <dl>
-            <dt>-args=<a>javascript</a></dt> <dd>JavaScript Object which augments the arguments passed to commands, mappings, and autocommands (short name: <em>-a</em>)</dd>
+            <dt>-args=<a>javascript</a></dt> <dd>JavaScript Object which
+                augments the arguments passed to commands, mappings, and
+                autocommands, e.g., given <str delim="">{ foo: "bar" }</str>,
+                <tt>foo</tt> (<tt>&lt;foo></tt> if the Ex syntax is used) will
+                be replaced by <str delim="">bar</str> inside the definitions
+                (short name: <em>-a</em>)</dd>
             <dt>-description</dt> <dd>A description of this group (short names: <em>-desc</em>, <em>-d</em>)</dd>
-            <dt>-locations=<a>filters</a></dt> <dd>The URLs for which this group should be active. See <t>site-filters</t> (short names: <em>-locs</em>, <em>-loc</em>, <em>-l</em>)</dd>
+            <dt>-locations=<a>filters</a></dt> <dd>The URLs for which this
+                group should be active. See <t>site-filters</t> (short names:
+                <em>-locs</em>, <em>-loc</em>, <em>-l</em>)</dd>
             <dt>-nopersist</dt> <dd>Do not save this group to an auto-generated RC file (short name: <em>-n</em>)</dd>
         </dl>
     </description>
@@ -192,33 +199,33 @@
 </p>
 
 <dl>
-    <dd>domain</dd>
-    <dt>
+    <dt>domain</dt>
+    <dd>
         Any filter which is a valid domain name will match any site on that
         domain or any sub-domain thereof. These filters may contain any letter
         of the Roman alphabet, Arabic numerals, hyphens, and full stops.
         Non-Latin domain names must be punycode encoded.
-    </dt>
+    </dd>
 
-    <dd>URL prefix</dd>
-    <dt>
+    <dt>URL prefix</dt>
+    <dd>
         Any URL beginning with a valid protocol name and ending with a
         <tt>*</tt> is treated as a URL prefix. It will match any URL which
         begins with the given filter sans the trailing asterisk.
-    </dt>
+    </dd>
 
-    <dd>Full URL</dd>
-    <dt>
+    <dt>Full URL</dt>
+    <dd>
         Any URL beginning with a valid protocol name and not ending with an
         asterisk is treated as a full URL match. It will match any page which
         has a URL identical to the filter.
-    </dt>
+    </dd>
 
-    <dd>Regular expression</dd>
-    <dt>
+    <dt>Regular expression</dt>
+    <dd>
         Any filter which does not fall into one of the above categories is
         treated as a case-sensitive regular expression.
-    </dt>
+    </dd>
 </dl>
 
 <p>
