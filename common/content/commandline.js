@@ -326,8 +326,8 @@ var CommandMode = Class("CommandMode", {
         if (this.complete)
             this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField, this);
 
-        if (this.completions && command && options["autocomplete"].length && commandline.commandSession === this)
-            this.completions.complete(true, false);
+        if (this.completions && command && commandline.commandSession === this)
+            this.completions.autocompleteTimer.flush(true);
     },
 
     get holdFocus() this.widgets.active.command.inputField,
