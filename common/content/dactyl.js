@@ -1146,7 +1146,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (typeof urls == "string")
             urls = dactyl.parseURLs(urls);
 
-        if (urls.length > 20 && !force)
+        if (urls.length > prefs.get("browser.tabs.maxOpenBeforeWarn", 20) && !force)
             return commandline.input("This will open " + urls.length + " new tabs. Would you like to continue? (yes/[no]) ",
                 function (resp) {
                     if (resp && resp.match(/^y(es)?$/i))
