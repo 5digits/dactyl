@@ -230,7 +230,7 @@
 
 <p>
     In most cases, any of the above may be prefixed with a <tt>!</tt> character
-    to invert the sense of the match.
+    to exclude matching sites.
 </p>
 
 <h2 tag="using-scripts">Using scripts</h2>

@@ -47,7 +47,9 @@ var Group = Class("Group", {
 }, {
     compileFilter: function (patterns) {
 
-        function siteFilter(uri) siteFilter.filters.every(function (f) f(uri) == f.result);
+        function siteFilter(uri)
+            let (match = array.nth(siteFilter.filters, function (f) f(uri), 0))
+                match && match.result;
 
         if (!isArray(patterns))
             patterns = Option.splitList(patterns, true);
