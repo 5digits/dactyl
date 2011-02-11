@@ -605,7 +605,6 @@ var Styles = Module("Styles", {
                                  .map(function (style) ({
                                     command: "style",
                                     arguments: [style.sites.join(",")],
-                                    bang: true,
                                     literalArg: style.css,
                                     options: update({
                                             "-group": hive.name,

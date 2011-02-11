@@ -146,7 +146,7 @@
 
 <item>
     <tags>:sty :style</tags>
-    <spec>:sty<oa>le</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-append</oa> <a>filter</a> <oa>css</oa></spec>
+    <spec>:sty<oa>le</oa> <oa>-name=<a>name</a></oa> <oa>-append</oa> <a>filter</a> <oa>css</oa></spec>
     <description>
         <p>
             Add CSS styles to the browser or to web pages. <a>filter</a> is a
