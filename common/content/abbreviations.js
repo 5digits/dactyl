@@ -79,27 +79,10 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      *     each mode.
      */
     get merged() {
-        let result = [];
-        let lhses = [];
-        let modes = [mode for (mode in this._store)];
-
-        for (let [, abbrevs] in Iterator(this._store))
-            lhses = lhses.concat([key for (key in abbrevs)]);
-        lhses.sort();
-        lhses = array.uniq(lhses);
-
-        for (let [, lhs] in Iterator(lhses)) {
-            let exists = {};
-            for (let [, abbrevs] in Iterator(this._store)) {
-                let abbr = abbrevs[lhs];
-                if (abbr && !exists[abbr.rhs]) {
-                    exists[abbr.rhs] = 1;
-                    result.push(abbr);
-                }
-            }
-        }
-
-        return result;
+        // Wth? --Kris;
+        let map = array(values(this._store)).map(Iterator).map(iter.toArray)
+                                            .flatten().toObject();
+        return Object.keys(map).sort().map(function (k) map[k]);
     },
 
     /**
