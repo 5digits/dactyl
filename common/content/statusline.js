@@ -38,12 +38,17 @@ var StatusLine = Module("statusline", {
                 }
                 AddonButton:not(:hover)  background: transparent !important;
             ]]>)({ padding: util.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
+
+            if (document.getElementById("appmenu-button"))
+                highlight.loadCSS(<![CDATA[
+                    AppmenuButton       min-width: 0 !important; padding: 0 .5em !important;
+                ]]>);
         }
 
         XML.ignoreWhitespace = true;
         let _commandline = "if (window.dactyl) return dactyl.modules.commandline";
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
-            <button id="appmenu-button" label="" image="chrome://branding/content/icon16.png" />
+            <button id="appmenu-button" label="" image="chrome://branding/content/icon16.png" highlight="AppmenuButton" />
             <toolbarbutton id="appmenu-toolbar-button" label="" image="chrome://branding/content/icon16.png" />
             <statusbar id="status-bar" highlight="StatusLine" ordinal="0">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
