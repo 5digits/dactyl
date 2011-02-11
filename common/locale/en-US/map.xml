@@ -436,9 +436,9 @@
 
 <item>
     <tags>:ab :abbreviate</tags>
-    <spec>:ab<oa>breviate</oa> <a>lhs</a> <a>rhs</a></spec>
-    <spec>:ab<oa>breviate</oa> <a>lhs</a></spec>
-    <spec>:ab<oa>breviate</oa></spec>
+    <spec>:ab<oa>breviate</oa> <oa>-group=<a>group</a></oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:ab<oa>breviate</oa> <oa>-group=<a>group</a></oa> <a>lhs</a></spec>
+    <spec>:ab<oa>breviate</oa> <oa>-group=<a>group</a></oa></spec>
     <description>
         <p>
             Abbreviate <a>lhs</a> to <a>rhs</a>. If only <a>lhs</a>
@@ -456,6 +456,11 @@
             abbreviation is currently being expanded in. The code
             should <em>not</em> make any changes to the contents of
             the editor.
+        </p>
+
+        <p>
+            If <a>group</a> is specified than abbreviations are created or
+            listed for the given <t>group</t>.
         </p>
     </description>
 </item>

@@ -11,8 +11,8 @@
     * Further improved startup time. [b6]
     * Added site-local and script-local groups: [b6]
       - Added the :group command to define and select groups.
-      - Added the -group flag to :autocmd, :command, :map, :style,
-        and friends.
+      - Added the -group flag to :abbreviate, :autocmd, :command,
+        :map, :style, and friends.
       - Mappings and commands can now be bound to groups which
         execute only for certain websites.
       - Autocommands, commands, mappings, and styles are now
