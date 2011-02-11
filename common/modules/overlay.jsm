@@ -102,6 +102,7 @@ var Overlay = Module("Overlay", {
 
                 const jsmodules = { NAME: "jsmodules" };
                 const modules = update(create(jsmodules), {
+                    yes_i_know_i_should_not_report_errors_in_these_branches_thanks: [],
 
                     jsmodules: jsmodules,
 
@@ -153,13 +154,16 @@ var Overlay = Module("Overlay", {
                 defineModule.time("load", null, function _load() {
                     ["addons",
                      "base",
+                     "commands",
                      "completion",
                      "config",
+                     "contexts",
                      "downloads",
                      "finder",
                      "highlight",
                      "io",
                      "javascript",
+                     "options",
                      "overlay",
                      "prefs",
                      "services",
@@ -171,18 +175,16 @@ var Overlay = Module("Overlay", {
 
                     ["dactyl",
                      "modes",
+                     "commandline",
                      "abbreviations",
                      "autocommands",
                      "buffer",
-                     "commandline",
-                     "commands",
                      "editor",
                      "events",
                      "hints",
                      "mappings",
                      "marks",
                      "mow",
-                     "options",
                      "statusline"
                      ].forEach(function (name) defineModule.time("load", name, modules.load, modules, name));
 
@@ -294,8 +296,10 @@ var Overlay = Module("Overlay", {
 
                 frob("init");
                 defineModule.modules.forEach(function ({ lazyInit, constructor: { className } }) {
-                    if (!lazyInit)
+                    if (!lazyInit) {
                         frob(className);
+                        modules[className] = modules[className];
+                    }
                     else
                         modules.__defineGetter__(className, function () {
                             delete modules[className];
@@ -322,6 +326,8 @@ var Overlay = Module("Overlay", {
         }));
     }
 });
+
+endModule();
 
 } catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 

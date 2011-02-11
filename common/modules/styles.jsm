@@ -8,13 +8,13 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("styles", {
     exports: ["Style", "Styles", "styles"],
     require: ["services", "util"],
-    use: ["template"]
+    use: ["contexts", "template"]
 }, this);
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 var namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
-                  "@namespace xul " + XUL.uri.quote() + ";\n" +
-                  "@namespace dactyl " + NS.uri.quote() + ";\n";
+                "@namespace xul " + XUL.uri.quote() + ";\n" +
+                "@namespace dactyl " + NS.uri.quote() + ";\n";
 
 var Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
 Sheet.liveProperty = function (name) {
@@ -23,7 +23,7 @@ Sheet.liveProperty = function (name) {
     this.prototype.__defineSetter__(name, function (val) {
         if (isArray(val))
             val = Array.slice(val);
-        if (isArray(val) && Object.freeze)
+        if (isArray(val))
             Object.freeze(val);
         this[i] = val;
         this.enabled = this.enabled;
@@ -87,6 +87,19 @@ var Hive = Class("Hive", {
         this.name = name;
         this.sheets = [];
         this.names = {};
+        this.refs = [];
+    },
+
+    addRef: function (obj) {
+        this.refs.push(Cu.getWeakReference(obj));
+        this.dropRef(null);
+    },
+    dropRef: function (obj) {
+        this.refs = this.refs.filter(function (ref) ref.get() && ref.get() !== obj);
+        if (!this.refs.length) {
+            this.cleanup();
+            styles.hives = styles.hives.filter(function (h) h !== this, this);
+        }
     },
 
     cleanup: function cleanup() {
@@ -219,7 +232,6 @@ var Hive = Class("Hive", {
     },
 });
 
-try {
 /**
  * Manages named and unnamed user style sheets, which apply to both
  * chrome and content pages.
@@ -229,8 +241,7 @@ try {
 var Styles = Module("Styles", {
     init: function () {
         this._id = 0;
-        this.user = Hive("user");
-        this.system = Hive("system");
+        this.cleanup();
         this.allSheets = {};
 
         services["dactyl:"].providers["style"] = function styleProvider(uri) {
@@ -242,8 +253,22 @@ var Styles = Module("Styles", {
     },
 
     cleanup: function cleanup() {
-        for each (let hive in [this.user, this.system])
-            hive.cleanup();
+        for each (let hive in this.hives)
+            util.trapErrors("cleanup", hive);
+        this.hives = [];
+        this.user = this.addHive("user", this);
+        this.system = this.addHive("system", this);
+    },
+
+    addHive: function addHive(name, ref) {
+        let hive = array.nth(this.hives, function (h) h.name === name, 0);
+        if (!hive) {
+            hive = Hive(name);
+            this.hives.push(hive);
+        }
+        if (ref)
+            hive.addRef(ref);
+        return hive;
     },
 
     __iterator__: function () Iterator(this.user.sheets.concat(this.system.sheets)),
@@ -324,7 +349,7 @@ var Styles = Module("Styles", {
     matchFilter: function (filter) {
         if (filter === "*")
             var test = function test(uri) true;
-        else if (filter[0] === "^") {
+        else if (!/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter)) {
             let re = RegExp(filter);
             test = function test(uri) re.test(uri.spec);
         }
@@ -425,7 +450,7 @@ var Styles = Module("Styles", {
     })
 }, {
     commands: function (dactyl, modules, window) {
-        const commands = modules.commands;
+        const { commands, contexts } = modules;
 
         commands.add(["sty[le]"],
             "Add or list user styles",
@@ -434,17 +459,17 @@ var Styles = Module("Styles", {
 
                 if (css) {
                     if ("-append" in args) {
-                        let sheet = styles.user.get(args["-name"]);
+                        let sheet = args["-group"].get(args["-name"]);
                         if (sheet) {
                             filter = sheet.sites.concat(filter).join(",");
                             css = sheet.css + " " + css;
 
                         }
                     }
-                    styles.user.add(args["-name"], filter, css, args["-agent"]);
+                    args["-group"].add(args["-name"], filter, css, args["-agent"]);
                 }
                 else {
-                    let list = styles.user.sheets.slice()
+                    let list = args["-group"].sheets.slice()
                                      .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
                                                                             : !!b.name - !!a.name || a.id - b.id);
                     let uris = util.visibleURIs(window.content);
@@ -455,7 +480,7 @@ var Styles = Module("Styles", {
                              "padding: 0 1em 0 1ex; vertical-align: top;",
                              "padding: 0 1em 0 0; vertical-align: top;"],
                             ([sheet.enabled ? "" : UTF8("×"),
-                              sheet.name || styles.user.sheets.indexOf(sheet),
+                              sheet.name || args["-group"].sheets.indexOf(sheet),
                               sheet.formatSites(uris),
                               sheet.css]
                              for (sheet in values(list))
@@ -466,7 +491,7 @@ var Styles = Module("Styles", {
                 bang: true,
                 completer: function (context, args) {
                     let compl = [];
-                    let sheet = styles.user.get(args["-name"]);
+                    let sheet = args["-group"].get(args["-name"]);
                     if (args.completeArg == 0) {
                         if (sheet)
                             context.completions = [[sheet.sites.join(","), "Current Value"]];
@@ -483,10 +508,11 @@ var Styles = Module("Styles", {
                 options: [
                     { names: ["-agent", "-A"],  description: "Apply style as an Agent sheet" },
                     { names: ["-append", "-a"], description: "Append site filter and css to an existing, matching sheet" },
+                    contexts.GroupFlag("styles"),
                     {
                         names: ["-name", "-n"],
                         description: "The name of this stylesheet",
-                        completer: function () [[k, v.css] for ([k, v] in Iterator(styles.user.names))],
+                        completer: function (context, args) [[k, v.css] for ([k, v] in Iterator(args["-group"].hive.names))],
                         type: modules.CommandOption.STRING
                     }
                 ],
@@ -587,6 +613,28 @@ var Styles = Module("Styles", {
                 });
         });
     },
+    contexts: function (dactyl, modules, window) {
+        modules.contexts.Hives("styles",
+            Class("LocalHive", Contexts.Hive, {
+                init: function init(group) {
+                    init.superapply(this, arguments);
+
+                    this.hive = styles.addHive(group.name);
+                    this.hive.addRef(this);
+                },
+
+                get names() this.hive.names,
+                get sheets() this.hive.sheets,
+
+                __noSuchMethod__: function __noSuchMethod__(meth, args) {
+                    return this.hive[meth].apply(this.hive, args);
+                },
+
+                destroy: function () {
+                    this.hive.dropRef(this);
+                }
+            }));
+    },
     completion: function (dactyl, modules, window) {
         const names = Array.slice(util.computedStyle(window.document.createElement("div")));
         modules.completion.css = function (context) {
@@ -642,6 +690,6 @@ var Styles = Module("Styles", {
 
 endModule();
 
-} catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:

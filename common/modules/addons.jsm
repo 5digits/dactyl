@@ -437,17 +437,16 @@ var Addons = Module("addons", {
                 context.completions = types.map(function (t) [t, util.capitalize(t)]);
             }
 
-            if (AddonManager.getAllAddons)
-                context.incomplete = true;
-
             context.generate = function generate() {
                 update(base);
-                if (AddonManager.getAllAddons)
+                if (AddonManager.getAllAddons) {
+                    context.incomplete = true;
                     AddonManager.getAllAddons(function (addons) {
                         context.incomplete = false;
                         update(array.uniq(base.concat(addons.map(function (a) a.type)),
                                           true));
                     });
+                }
             }
         }
 

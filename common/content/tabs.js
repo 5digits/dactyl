@@ -39,11 +39,17 @@ var Tabs = Module("tabs", {
                 xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
             ]]></>, /tab-./g, function (m) util.OS.isMacOSX ? "tab-mac" : m),
             false, true);
+
+        this.timeout(function () {
+            for (let { linkedBrowser: { contentDocument } } in values(this.allTabs))
+                if (contentDocument.readyState === "complete")
+                    dactyl.initDocument(contentDocument);
+        });
     },
 
     cleanup: function cleanup() {
         for (let [i, tab] in Iterator(this.allTabs)) {
-            let node = function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
+            let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
             for (let elem in values(["dactyl-tab-icon-number", "dactyl-tab-number"].map(node)))
                 if (elem)
                     elem.parentNode.parentNode.removeChild(elem.parentNode);
@@ -53,7 +59,7 @@ var Tabs = Module("tabs", {
     updateTabCount: function () {
         for (let [i, tab] in Iterator(this.visibleTabs)) {
             if (dactyl.has("Gecko2")) {
-                let node = function node(clas) document.getAnonymousElementByAttribute(tab, "class", clas);
+                let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
                 if (!node("dactyl-tab-number")) {
                     let img = node("tab-icon-image");
                     if (img) {
@@ -880,8 +886,8 @@ var Tabs = Module("tabs", {
             tabs.timeout(function () { this.updateTabCount(); });
         }
         for (let event in values(["TabMove", "TabOpen", "TabClose"]))
-            events.addSessionListener(tabContainer, event, callback, false);
-        events.addSessionListener(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
+            events.listen(tabContainer, event, callback, false);
+        events.listen(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
     },
     mappings: function () {
         mappings.add([modes.NORMAL], ["g0", "g^"],

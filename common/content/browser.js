@@ -11,63 +11,206 @@
 /**
  * @instance browser
  */
-var Browser = Module("browser", {
-}, {
-    climbUrlPath: function (count) {
-        let url = buffer.documentURI.clone();
-        dactyl.assert(url instanceof Ci.nsIURL);
-
-        while (count-- && url.path != "/")
-            url.path = url.path.replace(/[^\/]+\/*$/, "");
-
-        dactyl.assert(!url.equals(buffer.documentURI));
-        dactyl.open(url.spec);
+var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
+    init: function init() {
+        this.cleanupProgressListener = util.overlayObject(window.XULBrowserWindow,
+                                                          this.progressListener);
+        util.addObserver(this);
     },
 
-    incrementURL: function (count) {
-        let matches = buffer.uri.spec.match(/(.*?)(\d+)(\D*)$/);
-        dactyl.assert(matches);
-        let oldNum = matches[2];
+    cleanup: function () {
+        this.cleanupProgressListener();
+        this.observe.unregister();
+    },
 
-        // disallow negative numbers as trailing numbers are often proceeded by hyphens
-        let newNum = String(Math.max(parseInt(oldNum, 10) + count, 0));
-        if (/^0/.test(oldNum))
-            while (newNum.length < oldNum.length)
-                newNum = "0" + newNum;
+    observers: {
+        "chrome-document-global-created": function (win, uri) { this.observe(win, "content-document-global-created", uri); },
+        "content-document-global-created": function (win, uri) {
+            let top = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                         .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
+                         .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
 
-        matches[2] = newNum;
-        dactyl.open(matches.slice(1).join(""));
+            if (top == window)
+                this._triggerLoadAutocmd("PageLoadPre", win.document, win.location.href != "null" ? window.location.href : uri);
+        }
+    },
+
+    _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc, uri) {
+        if (!(uri || doc.location))
+            return;
+
+        uri = isObject(uri) ? uri : util.newURI(uri || doc.location.href);
+        let args = {
+            url: { toString: function () uri.spec, valueOf: function () uri },
+            title: doc.title
+        };
+
+        if (dactyl.has("tabs")) {
+            args.tab = tabs.getContentIndex(doc) + 1;
+            args.doc = {
+                valueOf: function () doc,
+                toString: function () "tabs.getTab(" + (args.tab - 1) + ").linkedBrowser.contentDocument"
+            };
+        }
+
+        autocommands.trigger(name, args);
+    },
+
+    events: {
+        DOMContentLoaded: function onDOMContentLoaded(event) {
+            let doc = event.originalTarget;
+            if (doc instanceof HTMLDocument)
+                this._triggerLoadAutocmd("DOMLoad", doc);
+        },
+
+        // TODO: see what can be moved to onDOMContentLoaded()
+        // event listener which is is called on each page load, even if the
+        // page is loaded in a background tab
+        load: function onLoad(event) {
+            let doc = event.originalTarget;
+            if (doc instanceof Document)
+                dactyl.initDocument(doc);
+
+            if (doc instanceof HTMLDocument) {
+                if (doc.defaultView.frameElement) {
+                    // document is part of a frameset
+
+                    // hacky way to get rid of "Transferring data from ..." on sites with frames
+                    // when you click on a link inside a frameset, because asyncUpdateUI
+                    // is not triggered there (Gecko bug?)
+                    this.timeout(function () { statusline.updateUrl(); }, 10);
+                }
+                else {
+                    // code which should happen for all (also background) newly loaded tabs goes here:
+                    if (doc != config.browser.contentDocument)
+                        dactyl.echomsg({ domains: [util.getHost(doc.location)], message: "Background tab loaded: " + (doc.title || doc.location.href) }, 3);
+
+                    this._triggerLoadAutocmd("PageLoad", doc);
+                }
+            }
+        }
+    },
+
+    /**
+     * @property {Object} The document loading progress listener.
+     */
+    progressListener: {
+        // XXX: function may later be needed to detect a canceled synchronous openURL()
+        onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
+            onStateChange.superapply(this, arguments);
+            // STATE_IS_DOCUMENT | STATE_IS_WINDOW is important, because we also
+            // receive statechange events for loading images and other parts of the web page
+            if (flags & (Ci.nsIWebProgressListener.STATE_IS_DOCUMENT | Ci.nsIWebProgressListener.STATE_IS_WINDOW)) {
+                // This fires when the load event is initiated
+                // only thrown for the current tab, not when another tab changes
+                if (flags & Ci.nsIWebProgressListener.STATE_START) {
+                    statusline.progress = 0;
+                    while (document.commandDispatcher.focusedWindow == webProgress.DOMWindow
+                           && modes.have(modes.INPUT))
+                        modes.pop();
+
+                }
+                else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
+                    // Workaround for bugs 591425 and 606877, dactyl bug #81
+                    config.browser.mCurrentBrowser.collapsed = false;
+                    if (!dactyl.focusedElement || dactyl.focusedElement === document.documentElement)
+                        dactyl.focusContent();
+                    statusline.updateUrl();
+                }
+            }
+        }),
+        // for notifying the user about secure web pages
+        onSecurityChange: util.wrapCallback(function onSecurityChange(webProgress, request, state) {
+            onSecurityChange.superapply(this, arguments);
+            if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
+                statusline.security = "broken";
+            else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
+                statusline.security = "extended";
+            else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
+                statusline.security = "secure";
+            else // if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
+                statusline.security = "insecure";
+            if (webProgress && webProgress.DOMWindow)
+                webProgress.DOMWindow.document.dactylSecurity = statusline.security;
+        }),
+        onStatusChange: util.wrapCallback(function onStatusChange(webProgress, request, status, message) {
+            onStatusChange.superapply(this, arguments);
+            statusline.updateUrl(message);
+        }),
+        onProgressChange: util.wrapCallback(function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
+            onProgressChange.superapply(this, arguments);
+            if (webProgress && webProgress.DOMWindow)
+                webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
+            statusline.progress = curTotalProgress / maxTotalProgress;
+        }),
+        // happens when the users switches tabs
+        onLocationChange: util.wrapCallback(function onLocationChange(webProgress, request, uri) {
+            onLocationChange.superapply(this, arguments);
+
+            delete contexts.groups;
+
+            statusline.updateUrl();
+            statusline.progress = "";
+
+            let win = webProgress.DOMWindow;
+            if (win && uri) {
+                statusline.progress = win.dactylProgress;
+
+                let oldURI = win.document.dactylURI;
+                if (win.document.dactylLoadIdx === webProgress.loadedTransIndex
+                    || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
+                    for (let frame in values(buffer.allFrames(win)))
+                        frame.document.dactylFocusAllowed = false;
+                win.document.dactylURI = uri.spec;
+                win.document.dactylLoadIdx = webProgress.loadedTransIndex;
+            }
+
+            // Workaround for bugs 591425 and 606877, dactyl bug #81
+            let collapse = uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
+            if (collapse)
+                dactyl.focus(document.documentElement);
+            config.browser.mCurrentBrowser.collapsed = collapse;
+
+            util.timeout(function () {
+                browser._triggerLoadAutocmd("LocationChange",
+                                            (win || content).document,
+                                            uri);
+            });
+
+            // if this is not delayed we get the position of the old buffer
+            util.timeout(function () {
+                statusline.updateBufferPosition();
+                statusline.updateZoomLevel();
+                if (loaded.commandline)
+                    commandline.clear();
+            }, 500);
+        }),
+        // called at the very end of a page load
+        asyncUpdateUI: util.wrapCallback(function asyncUpdateUI() {
+            asyncUpdateUI.superapply(this, arguments);
+            util.timeout(function () { statusline.updateUrl(); }, 100);
+        }),
+        setOverLink: util.wrapCallback(function setOverLink(link, b) {
+            setOverLink.superapply(this, arguments);
+            switch (options["showstatuslinks"]) {
+            case "status":
+                statusline.updateUrl(link ? "Link: " + link : null);
+                break;
+            case "command":
+                if (link)
+                    dactyl.echo("Link: " + link, commandline.DISALLOW_MULTILINE);
+                else
+                    commandline.clear();
+                break;
+            }
+        }),
     }
 }, {
-    options: function () {
-        options.add(["encoding", "enc"],
-            "The current buffer's character encoding",
-            "string", "UTF-8",
-            {
-                scope: Option.SCOPE_LOCAL,
-                getter: function () config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset,
-                setter: function (val) {
-                    if (options["encoding"] == val)
-                        return val;
-
-                    // Stolen from browser.jar/content/browser/browser.js, more or less.
-                    try {
-                        config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
-                        PlacesUtils.history.setCharsetForURI(getWebNavigation().currentURI, val);
-                        getWebNavigation().reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
-                    }
-                    catch (e) { dactyl.reportError(e); }
-                    return null;
-                },
-                completer: function (context) completion.charset(context)
-            });
+}, {
+    events: function () {
+        events.listen(config.browser, browser, "events", true);
     },
-
     mappings: function () {
-        mappings.add([modes.NORMAL],
-            ["y", "<yank-location>"], "Yank current location to the clipboard",
-            function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
-
         // opening websites
         mappings.add([modes.NORMAL],
             ["o"], "Open one or more URLs",
@@ -93,16 +236,6 @@ var Browser = Module("browser", {
             "Open one or more URLs in a new window, based on current location",
             function () { CommandExMode().open("winopen " + buffer.uri.spec); });
 
-        mappings.add([modes.NORMAL],
-            ["<C-a>"], "Increment last number in URL",
-            function (args) { Browser.incrementURL(Math.max(args.count, 1)); },
-            { count: true });
-
-        mappings.add([modes.NORMAL],
-            ["<C-x>"], "Decrement last number in URL",
-            function (args) { Browser.incrementURL(-Math.max(args.count, 1)); },
-            { count: true });
-
         mappings.add([modes.NORMAL], ["~"],
             "Open home directory",
             function () { dactyl.open("~"); });
@@ -118,29 +251,12 @@ var Browser = Module("browser", {
                 dactyl.open(homepages, { from: "homepage", where: dactyl.NEW_TAB });
             });
 
-        mappings.add([modes.NORMAL], ["gu"],
-            "Go to parent directory",
-            function (args) { Browser.climbUrlPath(Math.max(args.count, 1)); },
-            { count: true });
-
-        mappings.add([modes.NORMAL], ["gU"],
-            "Go to the root of the website",
-            function () { Browser.climbUrlPath(-1); });
-
         mappings.add(modes.all, ["<C-l>"],
             "Redraw the screen",
             function () { ex.redraw(); });
     },
 
     commands: function () {
-        commands.add(["old-downl[oads]", "old-dl"],
-            "Show progress of current downloads",
-            function () {
-                dactyl.open("chrome://mozapps/content/downloads/downloads.xul",
-                    { from: "downloads"});
-            },
-            { argCount: "0" });
-
         commands.add(["o[pen]"],
             "Open one or more URLs in the current tab",
             function (args) { dactyl.open(args[0] || "about:blank"); },

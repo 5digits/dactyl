@@ -42,9 +42,11 @@ var CompletionContext = Class("CompletionContext", {
             let parent = editor;
             name = parent.name + "/" + name;
 
-            this.autoComplete = this.options.get("autocomplete").getKey(name);
-            this.sortResults  = this.options.get("wildsort").getKey(name);
-            this.wildcase     = this.options.get("wildcase").getKey(name);
+            if (this.options) {
+                this.autoComplete = this.options.get("autocomplete").getKey(name);
+                this.sortResults  = this.options.get("wildsort").getKey(name);
+                this.wildcase     = this.options.get("wildcase").getKey(name);
+            }
 
             this.contexts = parent.contexts;
             if (name in this.contexts)
@@ -448,7 +450,7 @@ var CompletionContext = Class("CompletionContext", {
         let self = this;
         delete this._substrings;
 
-        if (!this.forceAnchored)
+        if (!this.forceAnchored && this.options)
             this.anchored = this.options.get("wildanchor").getKey(this.name, this.anchored);
 
         // Item matchers

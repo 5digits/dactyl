@@ -31,7 +31,7 @@ var ConfigBase = Class("ConfigBase", {
                 iter(config.dtdExtra,
                      (["dactyl." + k, v] for ([k, v] in iter(config.dtd))),
                      (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
-                  .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v, /'/g, "&apos;"), "'>"].join(""))
+                  .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v || "null", /'/g, "&apos;"), "'>"].join(""))
                   .join("\n")]
         });
     },
@@ -115,6 +115,23 @@ var ConfigBase = Class("ConfigBase", {
             .nth(function (l) set.has(langs, l), 0);
     },
 
+    haveHg: Class.memoize(function () {
+        if (/pre$/.test(this.addon.version)) {
+            let uri = this.addon.getResourceURI("../.hg");
+            if (uri instanceof Ci.nsIFileURL &&
+                    uri.QueryInterface(Ci.nsIFileURL).file.exists() &&
+                    io.pathSearch("hg"))
+                return ["hg", "-R", uri.file.parent.path];
+        }
+        return null;
+    }),
+
+    branch: Class.memoize(function () {
+        if (this.haveHg)
+            return io.system(this.haveHg.concat(["branch"])).output;
+        return (/pre-hg\d+-(.*)$/.exec(this.version) || [])[1];
+    }),
+
     /** @property {string} The Dactyl version string. */
     version: Class.memoize(function () {
         if (/pre$/.test(this.addon.version)) {
@@ -124,11 +141,11 @@ var ConfigBase = Class("ConfigBase", {
                     io.pathSearch("hg")) {
                 return io.system(["hg", "-R", uri.file.parent.path,
                                   "log", "-r.",
-                                  "--template=hg{rev} ({date|isodate})"]).output;
+                                  "--template=hg{rev}-" + this.branch + " ({date|isodate})"]).output;
             }
         }
         let version = this.addon.version;
-        if ("@DATE" !== "@" + "DATE@")
+        if ("@DATE@" !== "@" + "DATE@")
             version += " (created: @DATE@)";
         return version;
     }),
@@ -723,6 +740,15 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
                  {"}"}</>);
             img = null;
         };
+    },
+
+    load: function load(dactyl, modules, window) {
+        load.superapply(this, arguments);
+
+        if (this.branch && this.branch !== "default" &&
+                modules.yes_i_know_i_should_not_report_errors_in_these_branches_thanks.indexOf(this.branch) === -1)
+            dactyl.warn("You are running " + config.appName + " from a testing branch: " + this.branch + ". " +
+                        "Please do not report errors which do not also occur in the default branch.");
     }
 });
 

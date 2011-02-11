@@ -107,6 +107,10 @@ var Map = Class("Map", {
                 .map(function ([i, prop]) [prop, this[i]], arguments)
                 .toObject();
 
+        args = update({ context: contexts.context },
+                      this.hive.argsExtra(args),
+                      args);
+
         let self = this;
         function repeat() self.action(args)
         if (this.names[0] != ".") // FIXME: Kludge.
@@ -134,17 +138,11 @@ var Map = Class("Map", {
     id: 0
 });
 
-var MapHive = Class("MapHive", {
-    init: function init(name, description, filter) {
-        this.name = name;
+var MapHive = Class("MapHive", Contexts.Hive, {
+    init: function init(group) {
+        init.supercall(this, group);
         this.stacks = {};
-        this.description = description;
-        this.filter = filter || function (uri) true;
     },
-
-    get toStringParams() [this.name],
-
-    get builtin() mappings.builtinHives.indexOf(this) >= 0,
 
     /**
      * Iterates over all mappings present in all of the given *modes*.
@@ -172,7 +170,7 @@ var MapHive = Class("MapHive", {
         extra = extra || {};
 
         let map = Map(modes, keys, description, action, extra);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = contexts.getCaller(Components.stack.caller);
         map.hive = this;
 
         if (this.name !== "builtin")
@@ -299,16 +297,11 @@ var MapHive = Class("MapHive", {
  */
 var Mappings = Module("mappings", {
     init: function () {
-        this.user = MapHive("user", "User-defined mappings");
-        this.builtin = MapHive("builtin", "Builtin mappings");
-
-        this.builtinHives = array([this.user, this.builtin]);
-        this.allHives = [this.user, this.builtin];
     },
 
     repeat: Modes.boundProperty(),
 
-    hives: Class.memoize(function () array(this.allHives.filter(function (h) h.filter(buffer.uri)))),
+    get allHives() contexts.allGroups.mappings,
 
     get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
 
@@ -344,7 +337,7 @@ var Mappings = Module("mappings", {
      */
     add: function () {
         let map = this.builtin.add.apply(this.builtin, arguments);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
     },
 
@@ -361,32 +354,9 @@ var Mappings = Module("mappings", {
      */
     addUserMap: function () {
         let map = this.user.add.apply(this.user, arguments);
-        map.definedAt = Commands.getCaller(Components.stack.caller);
+        map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
     },
-
-    addHive: function addHive(name, filter, description) {
-        this.removeHive(name);
-
-        let hive = MapHive(name, description, filter);
-        this.allHives.unshift(hive);
-        return hive;
-    },
-
-    removeHive: function removeHive(name, filter) {
-        let hive = this.getHive(name);
-        dactyl.assert(!hive || !hive.builtin, "Cannot remove builtin group");
-        if (hive)
-            this.allHives.splice(this.allHives.indexOf(hive), 1);
-
-        if (io.sourcing && io.sourcing.mapHive == hive)
-            io.sourcing.mapHive = null;
-
-        delete this.hives;
-        return hive;
-    },
-
-    getHive: function getHive(name) array.nth(this.allHives, function (h) h.name == name, 0) || null,
 
     /**
      * Returns the map from *mode* named *cmd*.
@@ -417,7 +387,7 @@ var Mappings = Module("mappings", {
      * @param {string} filter The filter string to match.
      */
     list: function (modes, filter, hives) {
-        hives = hives || mappings.userHives;
+        hives = (hives || mappings.userHives).filter(function (h) modes.some(function (m) h.getStack(m).length));
 
         let modeSign = "";
         modes.filter(function (m)  m.char).forEach(function (m) { modeSign += m.char; });
@@ -462,7 +432,14 @@ var Mappings = Module("mappings", {
     }
 }, {
 }, {
-    commands: function () {
+    contexts: function initContexts(dactyl, modules, window) {
+        update(Mappings.prototype, {
+            hives: contexts.Hives("mappings", MapHive),
+            user: contexts.hives.mappings.user,
+            builtin: contexts.hives.mappings.builtin
+        });
+    },
+    commands: function initCommands(dactyl, modules, window) {
         function addMapCommands(ch, mapmodes, modeDescription) {
             function map(args, noremap) {
                 let mapmodes = array.uniq(args["-modes"].map(findMode));
@@ -480,9 +457,12 @@ var Mappings = Module("mappings", {
                 if (!rhs) // list the mapping
                     mappings.list(mapmodes, mappings.expandLeader(lhs), hives);
                 else {
+                    util.assert(args["-group"].modifiable,
+                                "Cannot change mappings in the builtin group");
+
                     args["-group"].add(mapmodes, [lhs],
                         args["-description"],
-                        Command.bindMacro(args, "-keys", function (params) params),
+                        contexts.bindMacro(args, "-keys", function (params) params),
                         {
                             arg: args["-arg"],
                             count: args["-count"],
@@ -531,7 +511,7 @@ var Mappings = Module("mappings", {
                             names: ["-ex", "-e"],
                             description: "Execute this mapping as an Ex command rather than keys"
                         },
-                        groupFlag,
+                        contexts.GroupFlag("mappings"),
                         {
                             names: ["-javascript", "-js", "-j"],
                             description: "Execute this mapping as JavaScript rather than keys"
@@ -554,20 +534,16 @@ var Mappings = Module("mappings", {
                     serialize: function () {
                         return this.name != "map" ? [] :
                             array(mappings.userHives)
-                                .filter(function (h) !h.noPersist)
+                                .filter(function (h) h.persist)
                                 .map(function (hive) [
-                                    {
-                                        command: "mapgroup",
-                                        bang: true,
-                                        arguments: [hive.name, String(hive.filter)].slice(0, hive.name == "user" ? 1 : 2)
-                                    }
-                                ].concat([
                                     {
                                         command: "map",
                                         options: array([
+                                            hive !== mappings.user && ["-group", hive.name],
                                             ["-modes", uniqueModes(map.modes)],
                                             ["-description", map.description],
                                             map.silent && ["-silent"]])
+
                                             .filter(util.identity)
                                             .toObject(),
                                         arguments: [map.names[0]],
@@ -576,7 +552,7 @@ var Mappings = Module("mappings", {
                                     }
                                     for (map in userMappings(hive))
                                     if (map.persist)
-                                ]))
+                                ])
                                 .flatten().array;
                     }
             };
@@ -602,6 +578,9 @@ var Mappings = Module("mappings", {
             commands.add([ch + "mapc[lear]"],
                 "Remove all mappings" + modeDescription,
                 function (args) {
+                    util.assert(args["-group"].modifiable,
+                                "Cannot change mappings in the builtin group");
+
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
                     mapmodes.forEach(function (mode) {
                         args["-group"].clear(mode);
@@ -610,7 +589,7 @@ var Mappings = Module("mappings", {
                 {
                     argCount: "0",
                     options: [
-                        groupFlag,
+                        contexts.GroupFlag("mappings"),
                         update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
@@ -623,6 +602,9 @@ var Mappings = Module("mappings", {
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,
                 function (args) {
+                    util.assert(args["-group"].modifiable,
+                                "Cannot change mappings in the builtin group");
+
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
 
                     let found = false;
@@ -639,7 +621,7 @@ var Mappings = Module("mappings", {
                     argCount: "1",
                     completer: opts.completer,
                     options: [
-                        groupFlag,
+                        contexts.GroupFlag("mappings"),
                         update({}, modeFlag, {
                             names: ["-modes", "-mode", "-m"],
                             type: CommandOption.LIST,
@@ -650,97 +632,6 @@ var Mappings = Module("mappings", {
                 });
         }
 
-        commands.add(["mapg[roup]"],
-            "Create or select a mapping group",
-            function (args) {
-                dactyl.assert(args.length <= 2, "Trailing characters");
-
-                if (args.length == 0)
-                    return void completion.listCompleter("mapGroup", "");
-
-                let name = Option.dequote(args[0]);
-                let hive = mappings.getHive(name);
-
-                if (args.length == 2) {
-                    dactyl.assert(!hive || args.bang, "Group exists");
-
-                    let filter = function siteFilter(uri)
-                        siteFilter.filters.every(function (f) f(uri) == f.result);
-
-                    update(filter, {
-                        toString: function () this.filters.join(","),
-                        filters: Option.splitList(args[1], true).map(function (pattern) {
-                            let [, res, filter] = /^(!?)(.*)/.exec(pattern);
-
-                            return update(Styles.matchFilter(Option.dequote(filter)), {
-                                result: !res,
-                                toString: function () pattern
-                            });
-                        })
-                    });
-
-                    hive = mappings.addHive(name, filter, args["-description"]);
-                    if (args["-nopersist"])
-                        hive.noPersist = true;
-                }
-
-                dactyl.assert(hive, "No mapping group: " + name);
-                dactyl.assert(hive.name != "builtin", "Can't map to builtin hive");
-                if (io.sourcing)
-                    io.sourcing.mapHive = hive;
-            },
-            {
-                argCount: "*",
-                bang: true,
-                completer: function (context, args) {
-                    if (args.length == 1)
-                        completion.mapGroup(context);
-                    else {
-                        Option.splitList(context.filter);
-                        context.advance(Option._splitAt);
-
-                        context.compare = CompletionContext.Sort.unsorted;
-                        context.completions = [
-                            [buffer.uri.host, "Current Host"],
-                            [buffer.uri.spec, "Current Page"]
-                        ];
-                    }
-                },
-                keepQuotes: true,
-                options: [
-                    {
-                        names: ["-description", "-desc", "-d"],
-                        description: "A description of this mapping group",
-                        type: CommandOption.STRING
-                    },
-                    {
-                        names: ["-nopersist", "-n"],
-                        description: "Do not save this mapping group to an auto-generated RC file"
-                    }
-                ]
-            });
-
-        commands.add(["delmapg[roup]"],
-            "Delete a mapping group",
-            function (args) {
-                dactyl.assert(mappings.getHive(args[0]), "No mapping group: " + args[0]);
-                mappings.removeHive(args[0]);
-            },
-            {
-                argCount: "1",
-                completer: function (context, args) {
-                    completion.mapGroup(context);
-                    context.filters.push(function ({ item }) !item.builtin);
-                }
-            });
-
-        let groupFlag = {
-            names: ["-group", "-g"],
-            description: "Mapping group to which to add this mapping",
-            type: ArgType("map-group", function (group) isString(group) ? mappings.getHive(group) : group),
-            get default() io.sourcing && io.sourcing.mapHive || mappings.user,
-            completer: function (context) completion.mapGroup(context)
-        };
         let modeFlag = {
             names: ["-mode", "-m"],
             type: CommandOption.STRING,
@@ -780,11 +671,18 @@ var Mappings = Module("mappings", {
 
         addMapCommands("", [modes.NORMAL, modes.VISUAL], "");
 
+        for (let mode in modes.mainModes)
+            if (mode.char && !commands.get(mode.char + "map", true))
+                addMapCommands(mode.char,
+                               [m.mask for (m in modes.mainModes) if (m.char == mode.char)],
+                               [mode.name.toLowerCase()]);
+
         let args = {
             getMode: function (args) findMode(args["-mode"]),
             iterate: function (args) {
                 let mainMode = this.getMode(args);
                 let seen = {};
+                // Bloody hell. --Kris
                 for (let mode in values([mainMode].concat(mainMode.bases)))
                     for (let hive in mappings.hives.iterValues())
                         for (let map in array.iterValues(hive.getStack(mode)))
@@ -794,7 +692,7 @@ var Mappings = Module("mappings", {
                                         name: name,
                                         columns: [
                                             mode == mainMode ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
-                                            hive.name == "builtin" ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>
+                                            hive == mappings.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>
                                         ],
                                         __proto__: map
                                     };
@@ -840,19 +738,8 @@ var Mappings = Module("mappings", {
                     options: []
                 });
         });
-
-        for (let mode in modes.mainModes)
-            if (mode.char && !commands.get(mode.char + "map", true))
-                addMapCommands(mode.char,
-                               [m.mask for (m in modes.mainModes) if (m.char == mode.char)],
-                               [mode.name.toLowerCase()]);
     },
-    completion: function () {
-        completion.mapGroup = function mapGroup(context, modes) {
-            context.title = ["Map group"];
-            context.keys = { text: "name", description: function (h) h.description || h.filter };
-            context.completions = mappings.userHives;
-        };
+    completion: function initCompletion(dactyl, modules, window) {
         completion.userMapping = function userMapping(context, modes, hive) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
             hive = hive || mappings.user;
@@ -861,20 +748,14 @@ var Mappings = Module("mappings", {
             context.completions = hive.iterate(modes);
         };
     },
-    javascript: function () {
-        JavaScript.setCompleter(mappings.get,
+    javascript: function initJavascript(dactyl, modules, window) {
+        JavaScript.setCompleter([mappings.get, mappings.builtin.get],
             [
                 null,
-                function (context, obj, args) {
-                    let mode = args[0];
-                    return array.flatten([
-                        [[name, map.description] for ([i, name] in Iterator(map.names))]
-                        for (map in mappings.iterate(mode))
-                    ]);
-                }
+                function (context, obj, args) [[m.names, m.description] for (m in this.iterate(args[0]))]
             ]);
     },
-    options: function () {
+    options: function initOptions(dactyl, modules, window) {
         options.add(["mapleader", "ml"],
             "Define the replacement keys for the <Leader> pseudo-key",
             "string", "\\", {

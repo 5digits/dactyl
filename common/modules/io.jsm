@@ -29,7 +29,7 @@ var IO = Module("io", {
         this.config = config;
     },
 
-    Local: function (dactyl, modules, window) let ({ Script, io, plugins } = modules) ({
+    Local: function (dactyl, modules, window) let ({ io, plugins } = modules) ({
 
         init: function init() {
             this.config = modules.config;
@@ -84,9 +84,6 @@ var IO = Module("io", {
 
         destroy: function destroy() {
             services.downloadManager.removeListener(this.downloadListener);
-            for (let [, plugin] in Iterator(plugins.contexts))
-                if (plugin.onUnload)
-                    plugin.onUnload();
         },
 
         /**
@@ -113,7 +110,7 @@ var IO = Module("io", {
          */
         sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
             let dirs = modules.options.get("runtimepath").files;
-            let found = false;
+            let found = null;
 
             dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + modules.options.get("runtimepath").stringValue, 2);
 
@@ -125,8 +122,7 @@ var IO = Module("io", {
                     dactyl.echomsg("Searching for " + file.path.quote(), 3);
 
                     if (file.exists() && file.isFile() && file.isReadable()) {
-                        io.source(file.path, false);
-                        found = true;
+                        found = io.source(file.path, false) || true;
 
                         if (!all)
                             break outer;
@@ -144,18 +140,22 @@ var IO = Module("io", {
          * Reads Ex commands, JavaScript or CSS from *filename*.
          *
          * @param {string} filename The name of the file to source.
-         * @param {boolean} silent Whether errors should be reported.
+         * @param {object} params Extra parameters:
+         *      group:  The group in which to execute commands.
+         *      silent: Whether errors should not be reported.
          */
-        source: function source(filename, silent) {
+        source: function source(filename, params) {
+            const { contexts } = modules;
             defineModule.loadLog.push("sourcing " + filename);
+            params = params || {};
+
             let time = Date.now();
-            this.withSavedValues(["sourcing"], function _source() {
-                this.sourcing = null;
+            return contexts.withContext(null, function () {
                 try {
                     var file = util.getFile(filename) || io.File(filename);
 
                     if (!file.exists() || !file.isReadable() || file.isDirectory()) {
-                        if (!silent)
+                        if (!params.silent)
                             dactyl.echoerr("E484: Can't open file " + filename.quote());
                         return;
                     }
@@ -167,7 +167,8 @@ var IO = Module("io", {
                     // handle pure JavaScript files specially
                     if (/\.js$/.test(filename)) {
                         try {
-                            dactyl.loadScript(uri.spec, Script(file));
+                            var context = contexts.Script(file, params.group);
+                            dactyl.loadScript(uri.spec, context);
                             dactyl.helpInitialized = false;
                         }
                         catch (e) {
@@ -185,10 +186,14 @@ var IO = Module("io", {
                     else if (/\.css$/.test(filename))
                         styles.registerSheet(uri.spec, false, true);
                     else {
-                        if (!(file.path in plugins))
-                            plugins[file.path] = modules.newContext(modules.userContext);
-                        modules.commands.execute(file.read(), null, silent || "loud", null,
-                            { file: file.path, line: 1, context: plugins[file.path] });
+                        context = contexts.Context(file, params.group);
+                        modules.commands.execute(file.read(), null, params.silent,
+                                                 null, {
+                            context: context,
+                            file: file.path,
+                            group: context.GROUP,
+                            line: 1
+                        });
                     }
 
                     if (this._scriptNames.indexOf(file.path) == -1)
@@ -197,18 +202,19 @@ var IO = Module("io", {
                     dactyl.echomsg("finished sourcing " + filename.quote(), 2);
 
                     dactyl.log("Sourced: " + filename, 3);
+                    return context;
                 }
                 catch (e) {
                     if (!(e instanceof FailedAssertion))
                         dactyl.reportError(e);
                     let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
-                    if (!silent)
+                    if (!params.silent)
                         dactyl.echoerr(message);
                 }
                 finally {
                     defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
                 }
-            });
+            }, this);
         },
     }),
 
@@ -547,35 +553,6 @@ var IO = Module("io", {
      */
     PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
 }, {
-    init: function init(dactyl, modules, window) {
-        modules.plugins.contexts = {};
-        modules.Script = function Script(file) {
-            const { io, plugins } = modules;
-
-            let self = set.has(plugins, file.path) && plugins[file.path];
-            if (self) {
-                if (set.has(self, "onUnload"))
-                    self.onUnload();
-            }
-            else {
-                self = update(modules.newContext(plugins, true), {
-                    NAME: file.leafName.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase()),
-                    PATH: file.path,
-                    CONTEXT: self
-                });
-                Class.replaceProperty(plugins, file.path, self);
-
-                // This belongs elsewhere
-                if (io.getRuntimeDirectories("plugins").some(
-                        function (dir) dir.contains(file, false)))
-                    Class.replaceProperty(plugins, self.NAME, self);
-            }
-            plugins.contexts[file.path] = self;
-            return self;
-        }
-
-        init.superapply(this, arguments);
-    },
     commands: function (dactyl, modules, window) {
         const { commands, completion, io } = modules;
 
@@ -617,15 +594,6 @@ var IO = Module("io", {
                 literal: 0
             });
 
-        // NOTE: this command is only used in :source
-        commands.add(["fini[sh]"],
-            "Stop sourcing a script file",
-            function () {
-                dactyl.assert(io.sourcing, "E168: :finish used outside of a sourced file");
-                io.sourcing.finished = true;
-            },
-            { argCount: "0" });
-
         commands.add(["pw[d]"],
             "Print the current directory name",
             function () { dactyl.echomsg(io.cwd.path); },
@@ -642,7 +610,7 @@ var IO = Module("io", {
                               "E189: " + file.path.quote() + " exists (add ! to override)");
 
                 // TODO: Use a set/specifiable list here:
-                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator()) if (cmd.serialize)];
+                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator(true)) if (cmd.serialize)];
                 lines = array.flatten(lines);
 
                 lines.unshift('"' + config.version + "\n");
@@ -780,16 +748,17 @@ unlet s:cpo_save
                     return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
                 }
 
+                const { commands, options } = modules;
                 file.write(template({
                     name: config.name,
                     autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
                                        keys(config.autocommands)),
                     commands: wrap("syn keyword " + config.name + "Command ",
-                                  array(c.specs for (c in commands)).flatten()),
+                                  array(c.specs for (c in commands.iterator())).flatten()),
                     options: wrap("syn keyword " + config.name + "Option ",
-                                  array(o.names for (o in modules.options) if (o.type != "boolean")).flatten()),
+                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
                     toggleoptions: wrap("let s:toggleOptions = [",
-                                        array(o.realNames for (o in modules.options) if (o.type == "boolean"))
+                                        array(o.realNames for (o in options) if (o.type == "boolean"))
                                             .flatten().map(String.quote),
                                         ", ") + "]"
                 }));

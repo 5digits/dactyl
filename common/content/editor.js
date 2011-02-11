@@ -36,6 +36,8 @@ var Editor = Module("editor", {
             let text = dactyl.clipboardRead(clipboard);
             if (!text)
                 return;
+            if (isinstance(elem, [HTMLInputElement, XULTextBoxElement]))
+                text = text.replace(/\n+/g, "");
 
             // This is a hacky fix - but it works.
             // <s-insert> in the bottom of a long textarea bounces up
@@ -46,7 +48,9 @@ var Editor = Module("editor", {
             let end = elem.selectionEnd;
             let value = elem.value.substring(0, start) + text + elem.value.substring(end);
             elem.value = value;
+
             Editor.getEditor(elem).rootElement.firstChild.textContent = value;
+
             elem.selectionStart = Math.min(start + (toStart ? 0 : text.length), elem.value.length);
             elem.selectionEnd = elem.selectionStart;
 

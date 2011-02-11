@@ -38,8 +38,6 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     execute: function execute(result, force) {
-        function dbg() {}
-
         if (force && this.actions.length)
             this.processors.length = 0;
 
@@ -59,7 +57,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
             for (var res = this.actions[0]; callable(res);) {
                 res = dactyl.trapErrors(res);
-                dbg("ACTION RES: " + res);
+                events.dbg("ACTION RES: " + res);
             }
             result = res === Events.PASS ? Events.PASS : Events.KILL;
         }
@@ -73,17 +71,19 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (result === undefined)
             result = Events.PASS;
 
-        dbg("RESULT: " + (result === Events.KILL  ? "KILL"  :
-                          result === Events.PASS  ? "PASS"  :
-                          result === Events.ABORT ? "ABORT" : result));
+        events.dbg("RESULT: " + (result === Events.KILL  ? "KILL"  :
+                                 result === Events.PASS  ? "PASS"  :
+                                 result === Events.ABORT ? "ABORT" : result));
 
         if (result !== Events.PASS)
             Events.kill(this.events[this.events.length - 1]);
 
         if (result === Events.PASS || result === Events.ABORT) {
-            dbg("REFEED: " + this.events.filter(function (e) e.getPreventDefault()).map(events.closure.toString).join(""));
-            this.events.filter(function (e) e.getPreventDefault())
-                .forEach(function (event, i) {
+            let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
+            if (list.length)
+                events.dbg("REFEED: " + list.map(events.closure.toString).join(""));
+
+            list.forEach(function (event, i) {
                     let elem = event.originalTarget;
                     if (event.originalTarget) {
                         let doc = elem.ownerDocument || elem.document || elem;
@@ -102,8 +102,6 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     process: function process(event) {
-        function dbg() {}
-
         if (this.timer)
             this.timer.cancel();
 
@@ -115,15 +113,15 @@ var ProcessorStack = Class("ProcessorStack", {
         let actions = [];
         let processors = [];
 
-        dbg("\n\n");
-        dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro);
+        events.dbg("\n\n");
+        events.dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro);
 
         for (let [i, input] in Iterator(this.processors)) {
             let res = input.process(event);
             if (res !== Events.ABORT)
                 var result = res;
 
-            dbg("RES: " + input + " " + (callable(res) ? {}.toString.call(res) : res));
+            events.dbg("RES: " + input + " " + (callable(res) ? {}.toString.call(res) : res));
 
             if (res === Events.KILL)
                 break;
@@ -139,9 +137,9 @@ var ProcessorStack = Class("ProcessorStack", {
                 processors.push(input);
         }
 
-        dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
-        dbg("ACTIONS: " + actions.length + " " + this.actions.length);
-        dbg("PROCESSORS:", processors);
+        events.dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
+        events.dbg("ACTIONS: " + actions.length + " " + this.actions.length);
+        events.dbg("PROCESSORS:", processors);
 
         this._actions = actions;
         this.actions = actions.concat(this.actions);
@@ -257,12 +255,79 @@ var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
     }
 });
 
+var EventHive = Class("EventHive", Contexts.Hive, {
+    init: function init(group) {
+        init.supercall(this, group);
+        this.sessionListeners = [];
+    },
+
+    cleanup: function cleanup() {
+        this.unlisten(null);
+    },
+
+    /**
+     * Adds an event listener for this session and removes it on
+     * dactyl shutdown.
+     *
+     * @param {Element} target The element on which to listen.
+     * @param {string} event The event to listen for.
+     * @param {function} callback The function to call when the event is received.
+     * @param {boolean} capture When true, listen during the capture
+     *      phase, otherwise during the bubbling phase.
+     */
+    listen: function (target, event, callback, capture) {
+        if (isObject(event))
+            var [self, events] = [event, event[callback]];
+        else
+            [self, events] = [null, array.toObject([[event, callback]])];
+
+        for (let [event, callback] in Iterator(events)) {
+            let args = [Cu.getWeakReference(target),
+                        event,
+                        this.wrapListener(callback, self),
+                        capture];
+
+            target.addEventListener.apply(target, args.slice(1));
+            this.sessionListeners.push(args);
+        }
+    },
+
+    /**
+     * Remove an event listener.
+     *
+     * @param {Element} target The element on which to listen.
+     * @param {string} event The event to listen for.
+     * @param {function} callback The function to call when the event is received.
+     * @param {boolean} capture When true, listen during the capture
+     *      phase, otherwise during the bubbling phase.
+     */
+    unlisten: function (target, event, callback, capture) {
+        this.sessionListeners = this.sessionListeners.filter(function (args) {
+            if (target == null || args[0].get() == target && args[1] == event && args[2] == callback && args[3] == capture) {
+                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
+                return true;
+            }
+            return !args[0].get();
+        });
+    }
+});
+
 /**
  * @instance events
  */
 var Events = Module("events", {
+    dbg: function () {},
+
     init: function () {
         const self = this;
+
+        update(this, {
+            hives: contexts.Hives("events", EventHive),
+            user: contexts.hives.events.user,
+            builtin: contexts.hives.events.builtin
+        });
+
+        EventHive.prototype.wrapListener = this.closure.wrapListener;
 
         XML.ignoreWhitespace = true;
         util.overlayWindow(window, {
@@ -284,8 +349,6 @@ var Events = Module("events", {
         this._currentMacro = "";
         this._macroKeys = [];
         this._lastMacro = "";
-
-        this.sessionListeners = [];
 
         this._macros = storage.newMap("macros", { privateData: true, store: true });
         for (let [k, m] in this._macros)
@@ -345,19 +408,11 @@ var Events = Module("events", {
         }
 
         this._activeMenubar = false;
-        for (let [event, callback] in Iterator(this.events))
-            this.addSessionListener(window, event, callback, true);
+        this.listen(window, this, "events", true);
 
         dactyl.registerObserver("modeChange", function () {
             delete self.processor;
         });
-    },
-
-    destroy: function () {
-        util.dump("Removing all event listeners");
-        for (let args in values(this.sessionListeners))
-            if (args[0].get())
-                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
     },
 
     /**
@@ -370,13 +425,8 @@ var Events = Module("events", {
      * @param {boolean} capture When true, listen during the capture
      *      phase, otherwise during the bubbling phase.
      */
-    addSessionListener: function (target, event, callback, capture) {
-        let args = Array.slice(arguments, 0);
-        args[2] = this.wrapListener(callback);
-        args[0].addEventListener.apply(args[0], args.slice(1));
-        args[0] = Cu.getWeakReference(args[0]);
-        this.sessionListeners.push(args);
-    },
+    get addSessionListener() this.builtin.closure.listen,
+    get listen() this.builtin.closure.listen,
 
     /**
      * Wraps an event listener to ensure that errors are reported.
@@ -1053,7 +1103,7 @@ var Events = Module("events", {
 
                 // Hack to deal with <BS> and so forth not dispatching input
                 // events
-                if (event.originalTarget instanceof HTMLInputElement && !modes.main.passthrough) {
+                if (key && event.originalTarget instanceof HTMLInputElement && !modes.main.passthrough) {
                     let elem = event.originalTarget;
                     elem.dactylKeyPress = elem.value;
                     util.timeout(function () {

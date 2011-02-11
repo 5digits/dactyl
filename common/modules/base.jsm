@@ -61,6 +61,8 @@ if (!Object.defineProperties)
         for (let [k, v] in Iterator(props))
             Object.defineProperty(obj, k, v);
     }
+if (!Object.freeze)
+    Object.freeze = function freeze(obj) {};
 if (!Object.getOwnPropertyDescriptor)
     Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
         if (!hasOwnProperty.call(obj, prop))
@@ -101,13 +103,15 @@ if (!Object.keys)
     Object.keys = function keys(obj)
         Object.getOwnPropertyNames(obj).filter(function (k) objproto.propertyIsEnumerable.call(obj, k));
 
+let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
+
 let use = {};
 let loaded = {};
 let currentModule;
 let global = this;
 function defineModule(name, params, module) {
     if (!module)
-        module = Cu.getGlobalForObject ? Cu.getGlobalForObject(params) : params.__parent__;
+        module = getGlobalForObject(params);
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
@@ -436,25 +440,24 @@ function isinstance(object, interfaces) {
     if (object == null)
         return false;
 
-    interfaces = Array.concat(interfaces);
-    for (var i = 0; i < interfaces.length; i++) {
-        if (typeof interfaces[i] === "string") {
-            if (objproto.toString.call(object) === "[object " + interfaces[i] + "]")
+    return Array.concat(interfaces).some(function isinstance_some(iface) {
+        if (typeof iface === "string") {
+            if (objproto.toString.call(object) === "[object " + iface + "]")
                 return true;
         }
         else if (typeof object === "object" && "isinstance" in object && object.isinstance !== isinstance) {
-            if (object.isinstance(interfaces[i]))
+            if (object.isinstance(iface))
                 return true;
         }
         else {
-            if (object instanceof interfaces[i])
+            if (object instanceof iface)
                 return true;
             var type = isinstance_types[typeof object];
-            if (type && isSubclass(interfaces[i], type))
+            if (type && isSubclass(iface, type))
                 return true;
         }
-    }
-    return false;
+        return false;
+    });
 }
 
 /**
@@ -978,7 +981,8 @@ let StructBase = Class("StructBase", Array, {
     }
 }, {
     fromArray: function (ary) {
-        ary.__proto__ = this.prototype;
+        if (!(ary instanceof this))
+            ary.__proto__ = this.prototype;
         return ary;
     },
 
@@ -1013,7 +1017,7 @@ var Timer = Class("Timer", {
 
     notify: function (timer, force) {
         try {
-            if (loaded.util && util.rehashing || typeof util === "undefined" || !force && this.doneAt == 0)
+            if (!loaded || loaded.util && util.rehashing || typeof util === "undefined" || !force && this.doneAt == 0)
                 return;
 
             this._timer.cancel();

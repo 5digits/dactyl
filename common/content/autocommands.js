@@ -8,13 +8,18 @@
 
 /** @scope modules */
 
-var AutoCommand = Struct("event", "patterns", "command");
+var AutoCommand = Struct("event", "filter", "command");
+update(AutoCommand.prototype, {
+    eventName: Class.memoize(function () this.event.toLowerCase()),
 
-/**
- * @instance autocommands
- */
-var AutoCommands = Module("autocommands", {
-    init: function () {
+    match: function (event, pattern) {
+        return (!event || this.eventName == event.toLowerCase()) && (!pattern || String(this.filter) === pattern);
+    }
+});
+
+var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
+    init: function init(group) {
+        init.supercall(this, group);
         this._store = [];
     },
 
@@ -26,24 +31,26 @@ var AutoCommands = Module("autocommands", {
      *
      * @param {Array} events The array of event names for which this
      *     autocommand should be executed.
-     * @param {string} regexp The URL pattern to match against the buffer URL.
+     * @param {string} pattern The URL pattern to match against the buffer URL.
      * @param {string} cmd The Ex command to run.
      */
-    add: function (events, regexp, cmd) {
-        events.forEach(function (event) {
-            this._store.push(AutoCommand(event, Option.parse.regexplist(regexp.source || regexp), cmd));
-        }, this);
+    add: function (events, pattern, cmd) {
+        if (!callable(pattern))
+            pattern = Group.compileFilter(pattern);
+
+        for (let event in values(events))
+            this._store.push(AutoCommand(event, pattern, cmd));
     },
 
     /**
      * Returns all autocommands with a matching *event* and *regexp*.
      *
      * @param {string} event The event name filter.
-     * @param {string} regexp The URL pattern filter.
+     * @param {string} pattern The URL pattern filter.
      * @returns {AutoCommand[]}
      */
-    get: function (event, regexp) {
-        return this._store.filter(function (autoCmd) AutoCommands.matchAutoCmd(autoCmd, event, regexp));
+    get: function (event, pattern) {
+        return this._store.filter(function (autoCmd) autoCmd.match(event, regexp));
     },
 
     /**
@@ -53,8 +60,27 @@ var AutoCommands = Module("autocommands", {
      * @param {string} regexp The URL pattern filter.
      */
     remove: function (event, regexp) {
-        this._store = this._store.filter(function (autoCmd) !AutoCommands.matchAutoCmd(autoCmd, event, regexp));
+        this._store = this._store.filter(function (autoCmd) !autoCmd.match(event, regexp));
     },
+});
+
+/**
+ * @instance autocommands
+ */
+var AutoCommands = Module("autocommands", {
+    init: function () {
+        update(this, {
+            hives: contexts.Hives("autocmd", AutoCmdHive),
+            user: contexts.hives.autocmd.user
+        });
+    },
+
+    get activeHives() contexts.initializedGroups("autocmd")
+                              .filter(function (h) h._store.length),
+
+    add: deprecated("autocommand.user.add", { get: function add() autocommands.user.closure.add }),
+    get: deprecated("autocommand.user.get", { get: function get() autocommands.user.closure.get }),
+    remove: deprecated("autocommand.user.remove", { get: function remove() autocommands.user.closure.remove }),
 
     /**
      * Lists all autocommands with a matching *event* and *regexp*.
@@ -63,32 +89,39 @@ var AutoCommands = Module("autocommands", {
      * @param {string} regexp The URL pattern filter.
      */
     list: function (event, regexp) {
-        let cmds = {};
 
-        // XXX
-        this._store.forEach(function (autoCmd) {
-            if (AutoCommands.matchAutoCmd(autoCmd, event, regexp)) {
-                cmds[autoCmd.event] = cmds[autoCmd.event] || [];
-                cmds[autoCmd.event].push(autoCmd);
-            }
-        });
+        function cmds(hive) {
+            let cmds = {};
+            hive._store.forEach(function (autoCmd) {
+                if (autoCmd.match(event, regexp)) {
+                    cmds[autoCmd.event] = cmds[autoCmd.event] || [];
+                    cmds[autoCmd.event].push(autoCmd);
+                }
+            });
+            return cmds;
+        }
 
         commandline.commandOutput(
             <table>
                 <tr highlight="Title">
-                    <td colspan="2">----- Auto Commands -----</td>
+                    <td colspan="3">----- Auto Commands -----</td>
                 </tr>
                 {
-                    template.map(cmds, function ([event, items])
+                    template.map(this.activeHives, function (hive)
                         <tr highlight="Title">
-                            <td colspan="2">{event}</td>
-                        </tr>
-                        +
-                        template.map(items, function (item)
-                            <tr>
-                                <td>&#xa0;{item.patterns}</td>
-                                <td>{item.command}</td>
-                            </tr>))
+                            <td colspan="3">{hive.name}</td>
+                        </tr> +
+                        <tr style="height: .5ex;"/> +
+                        template.map(cmds(hive), function ([event, items])
+                            <tr style="height: .5ex;"/> +
+                            template.map(items, function (item, i)
+                                <tr>
+                                    <td highlight="Title" style="padding-right: 1em;">{i == 0 ? event : ""}</td>
+                                    <td>{item.filter.toXML ? item.filter.toXML() : item.filter}</td>
+                                    <td>{item.command}</td>
+                                </tr>) +
+                            <tr style="height: .5ex;"/>) +
+                        <tr style="height: .5ex;"/>)
                 }
             </table>);
     },
@@ -104,29 +137,31 @@ var AutoCommands = Module("autocommands", {
         if (options.get("eventignore").has(event))
             return;
 
-        let autoCmds = this._store.filter(function (autoCmd) autoCmd.event == event);
 
         dactyl.echomsg('Executing ' + event + ' Auto commands for "*"', 8);
 
         let lastPattern = null;
-        let url = args.url || "";
+        let uri = args.url ? util.newURI(args.url) : buffer.uri;
 
-        for (let [, autoCmd] in Iterator(autoCmds)) {
-            if (autoCmd.patterns.some(function (re) re.test(url) ^ !re.result)) {
-                if (!lastPattern || String(lastPattern) != String(autoCmd.patterns))
-                    dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.patterns, 8);
+        event = event.toLowerCase();
+        for (let hive in this.hives.iterValues()) {
+            let args = update({},
+                              hive.argsExtra(arguments[1]),
+                              arguments[1]);
 
-                lastPattern = autoCmd.patterns;
-                dactyl.echomsg("autocommand " + autoCmd.command, 9);
+            for (let autoCmd in values(hive._store))
+                if (autoCmd.eventName === event && autoCmd.filter(uri)) {
+                    if (!lastPattern || lastPattern !== String(autoCmd.filter))
+                        dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.filter, 8);
 
-                dactyl.trapErrors(autoCmd.command, autoCmd, args);
-            }
+                    lastPattern = String(autoCmd.filter);
+                    dactyl.echomsg("autocommand " + autoCmd.command, 9);
+
+                    dactyl.trapErrors(autoCmd.command, autoCmd, args);
+                }
         }
     }
 }, {
-    matchAutoCmd: function (autoCmd, event, regexp) {
-        return (!event || autoCmd.event == event) && (!regexp || String(autoCmd.patterns) == regexp);
-    }
 }, {
     commands: function () {
         commands.add(["au[tocmd]"],
@@ -135,29 +170,21 @@ var AutoCommands = Module("autocommands", {
                 let [event, regexp, cmd] = args;
                 let events = [];
 
-                try {
-                    if (args.length > 1)
-                        Option.parse.regexplist(regexp);
-                }
-                catch (e) {
-                    dactyl.assert(false, "E475: Invalid argument: " + regexp);
-                }
-
                 if (event) {
                     // NOTE: event can only be a comma separated list for |:au {event} {pat} {cmd}|
-                    let validEvents = Object.keys(config.autocommands);
+                    let validEvents = Object.keys(config.autocommands).map(String.toLowerCase);
                     validEvents.push("*");
 
                     events = Option.parse.stringlist(event);
-                    dactyl.assert(events.every(function (event) validEvents.indexOf(event) >= 0),
-                        "E216: No such group or event: " + event);
+                    dactyl.assert(events.every(function (event) validEvents.indexOf(event.toLowerCase()) >= 0),
+                                  "E216: No such group or event: " + event);
                 }
 
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
-                        autocommands.remove(event, regexp);
-                    cmd = Command.bindMacro(args, "-ex", function (params) params);
-                    autocommands.add(events, regexp, cmd);
+                        args["-group"].remove(event, regexp);
+                    cmd = contexts.bindMacro(args, "-ex", function (params) params);
+                    args["-group"].add(events, regexp, cmd);
                 }
                 else {
                     if (event == "*")
@@ -166,7 +193,7 @@ var AutoCommands = Module("autocommands", {
                     if (args.bang) {
                         // TODO: "*" only appears to work in Vim when there is a {group} specified
                         if (args[0] != "*" || args.length > 1)
-                            autocommands.remove(event, regexp); // remove all
+                            args["-group"].remove(event, regexp); // remove all
                     }
                     else
                         autocommands.list(event, regexp); // list all
@@ -183,6 +210,7 @@ var AutoCommands = Module("autocommands", {
                 keepQuotes: true,
                 literal: 2,
                 options: [
+                    contexts.GroupFlag("autocmd"),
                     {
                         names: ["-javascript", "-js"],
                         description: "Interpret the action as JavaScript code rather than an Ex command"
@@ -245,7 +273,7 @@ var AutoCommands = Module("autocommands", {
         };
     },
     javascript: function () {
-        JavaScript.setCompleter(autocommands.get, [function () Iterator(config.autocommands)]);
+        JavaScript.setCompleter(autocommands.user.get, [function () Iterator(config.autocommands)]);
     },
     options: function () {
         options.add(["eventignore", "ei"],

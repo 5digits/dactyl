@@ -122,7 +122,17 @@ var tests = {
         singleOutput: ["", "foobar"],
         noOutput: ["foo bar", "-js bar baz"],
         multiOutput: [""],
-        error: ["foo bar", "-js bar baz"]
+        error: [
+            "foo bar",
+            "-js bar baz",
+            "-group=builtin baz quux",
+            "! -group=builtin baz quux",
+        ],
+        completions: [
+            ["", hasItems],
+            ["-group=", hasItems],
+            ["-group=user ", hasItems]
+        ]
     },
     comclear: {
         noOutput: [""]
@@ -140,6 +150,11 @@ var tests = {
     delcommand: [
         {
             init: ["comclear", "command foo bar"],
+            completions: [
+                ["", hasItems],
+                ["-group=", hasItems],
+                ["-group=user ", hasItems]
+            ],
             noOutput: ["foo"]
         },
         {
@@ -152,7 +167,6 @@ var tests = {
         noOutput: ["x"],
         completions: ["", "x"]
     },
-    delmapgroup: {}, // Skip for now
     get delmarks() this.delmacros,
     get delqmarks() this.delmacros,
     delstyle: {
@@ -233,6 +247,25 @@ var tests = {
     finish: { noOutput: [""] },
     forward: { noOutput: [""] },
     frameonly: { noOutput: [""] },
+    delgroup: {
+        error: ["builtin"],
+        completions: [""]
+    },
+    group: {
+        multiOutput: [""],
+        noOutput: [
+            "foo -d='foo group' -nopersist -l 'bar.com','http://bar/*','http://bar','^http:'",
+            "! foo -d='foo group' -nopersist -l 'bar.com','http://bar/*','http://bar','^http:'",
+            "foo",
+            "user"
+        ],
+        error: ["builtin"],
+        completions: [
+            "",
+            "foo "
+        ],
+        cleanup: ["delmapgroup foo"]
+    },
     hardcopy: {}, // Skip for now
     help: {
         noOutput: ["", "intro"],
@@ -279,7 +312,21 @@ var tests = {
             ["window", hasItems],
             ["window.", hasItems],
             ["window['", hasItems],
-            ["commands.get('", hasItems]
+            ["File('", hasItems],
+            ["File.expandPath('", hasItems],
+            "autocommands.user.get('",
+            ["commands.get('", hasItems],
+            ["commands.builtin.get('", hasItems],
+            ["highlight.get('", hasItems],
+            ["highlight.highlightNode(null, '", hasItems],
+            ["mappings.get(modes.NORMAL, '", hasItems],
+            // ["mappings.builtin.get(modes.NORMAL, '", hasItems],
+            ["options.get('", hasItems],
+            ["prefs.get('", hasItems],
+            ["prefs.defaults.get('", hasItems],
+            ["localPrefs.get('", hasItems],
+            ["localPrefs.defaults.get('", hasItems],
+            ["styles.system.get('", hasItems],
         ]
     },
     jumps: {
@@ -318,7 +365,8 @@ var tests = {
         ],
         error: [
             "-mode=some-nonexistent-mode <C-a> <C-a>",
-            "-gtroup=some-nonexistent-group <C-a> <C-a>"
+            "-group=some-nonexistent-group <C-a> <C-a>",
+            "-group=builtin <C-a> <C-a>"
         ],
         completions: [
             ["", hasItems],
@@ -333,25 +381,13 @@ var tests = {
     },
     mapclear: {
         noOutput: [""],
-        completions: [""]
-    },
-    mapgroup: {
-        multiOutput: [""],
-        noOutput: [
-            "foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'",
-            "! foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'",
-            "foo",
-            "user"
-        ],
         error: [
-            "some-nonexistent-group",
-            "foo -d='foo group' -nopersist 'bar.com,http://bar/*,http://bar,^http:'"
+            "-group=builtin"
         ],
         completions: [
             "",
-            "foo "
-        ],
-        cleanup: ["delmapgroup foo"]
+            "-group="
+        ]
     },
     mark: {
         error: ["", "#", "xy"],

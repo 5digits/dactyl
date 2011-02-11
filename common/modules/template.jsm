@@ -6,7 +6,7 @@
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("template", {
-    exports: ["Template", "template"],
+    exports: ["Binding", "Template", "template"],
     require: ["util"],
     use: ["services"]
 }, this);
@@ -14,8 +14,9 @@ defineModule("template", {
 default xml namespace = XHTML;
 
 var Binding = Class("Binding", {
-    init: function (node) {
+    init: function (node, nodes) {
         this.node = node;
+        this.nodes = nodes;
         node.dactylBinding = this;
 
         Object.defineProperties(node, this.constructor.properties);
@@ -32,9 +33,13 @@ var Binding = Class("Binding", {
     },
     get collapsed() !!this.getAttribute("collapsed"),
 
-    __noSuchMethod__: function __noSuchMethod__(meth, args) {
-        return this.node[meth].apply(this.node, args);
-    }
+    __noSuchMethod__: Class.Property({
+        configurable: true,
+        writeable: true,
+        value: function __noSuchMethod__(meth, args) {
+            return this.node[meth].apply(this.node, args);
+        }
+    })
 }, {
     get bindings() {
         let bindingProto = Object.getPrototypeOf(Binding.prototype);
@@ -66,10 +71,12 @@ var Binding = Class("Binding", {
         for (let obj in this.bindings)
             for (let prop in properties(obj)) {
                 let desc = Object.getOwnPropertyDescriptor(obj, prop);
-                for (let k in values(["get", "set", "value"]))
-                    if (typeof desc[k] === "function")
-                        desc[k] = this.bind(desc[k]);
-                res[prop] = desc;
+                if (desc.enumerable) {
+                    for (let k in values(["get", "set", "value"]))
+                        if (typeof desc[k] === "function")
+                            desc[k] = this.bind(desc[k]);
+                    res[prop] = desc;
+                }
             }
         return res;
     })
@@ -86,10 +93,10 @@ var Template = Module("Template", {
         let ret = <></>;
         let n = 0;
         for each (let i in Iterator(iter)) {
-            let val = func(i);
+            let val = func(i, n);
             if (val == undefined)
                 continue;
-            if (sep && n++)
+            if (n++ && sep)
                 ret += sep;
             if (interruptable && n % interruptable == 0)
                 util.threadYield(true, true);

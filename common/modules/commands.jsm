@@ -6,7 +6,14 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-/** @scope modules */
+try {
+
+Components.utils.import("resource://dactyl/bootstrap.jsm");
+defineModule("commands", {
+    exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
+    require: ["contexts"],
+    use: ["config", "options", "template", "util"]
+}, this);
 
 /**
  * A structure representing the options available for a command.
@@ -127,6 +134,8 @@ var Command = Class("Command", {
             this.options = this.options.map(CommandOption.fromArray, CommandOption);
     },
 
+    get toStringParams() [this.name, this.hive.name],
+
     get helpTag() ":" + this.name,
 
     get lastCommand() this._lastCommand || commandline.command,
@@ -139,8 +148,11 @@ var Command = Class("Command", {
      * @param {Object} modifiers Any modifiers to be passed to {@link #action}.
      */
     execute: function (args, modifiers) {
-        if (this.deprecated && !set.add(this.complained, io.sourcing ? io.sourcing.file : "[Command Line]")) {
-            let loc = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
+        const { dactyl } = this.modules;
+
+        let context = args.context;
+        if (this.deprecated && !set.add(this.complained, context ? context.file : "[Command Line]")) {
+            let loc = contexts.context ? context.file + ":" + context.line + ": " : "";
             dactyl.echoerr(loc + ":" + this.name + " is deprecated" +
                            (isString(this.deprecated) ? ": " + this.deprecated : ""));
         }
@@ -152,10 +164,16 @@ var Command = Class("Command", {
         if (args.bang && !this.bang)
             throw FailedAssertion("E477: No ! allowed");
 
-        return !dactyl.trapErrors(function exec(command) {
+        return !dactyl.trapErrors(function exec() {
+            let extra = this.hive.argsExtra(args);
+            for (let k in properties(extra))
+                if (!(k in args))
+                    Object.defineProperty(args, k, Object.getOwnPropertyDescriptor(extra, k));
+
             if (this.always)
                 this.always(args, modifiers);
-            if (!io.sourcing || !io.sourcing.noExecute)
+
+            if (!context || !context.noExecute)
                 this.action(args, modifiers);
         }, this);
     },
@@ -166,12 +184,8 @@ var Command = Class("Command", {
      * @param {string} name The candidate name.
      * @returns {boolean}
      */
-    hasName: function (name) {
-        return this.specs.some(function (spec) {
-            let [, head, tail] = /([^[]+)(?:\[(.*)])?/.exec(spec);
-            return name.indexOf(head) == 0 && (head + (tail || "")).indexOf(name) == 0;
-        });
-    },
+    hasName: function (name) this.parsedSpecs.some(
+        function ([long, short]) name.indexOf(short) == 0 && long.indexOf(name) == 0),
 
     /**
      * A helper function to parse an argument string.
@@ -185,7 +199,7 @@ var Command = Class("Command", {
      * @returns {Args}
      * @see Commands#parseArgs
      */
-    parseArgs: function (args, complete, extra) commands.parseArgs(args, {
+    parseArgs: function parseArgs(args, complete, extra) this.modules.commands.parseArgs(args, {
         __proto__: this,
         complete: complete,
         extra: extra
@@ -257,36 +271,55 @@ var Command = Class("Command", {
      * @see Commands@parseArguments
      */
     options: [],
+
     optionMap: Class.memoize(function () array(this.options)
                 .map(function (opt) opt.names.map(function (name) [name, opt]))
                 .flatten().toObject()),
-    newArgs: function () {
+
+    newArgs: function (base) {
         let res = [];
+        update(res, base);
         res.__proto__ = this.argsPrototype;
         return res;
     },
-    argsPrototype: Class.memoize(function () update([],
-            array(this.options).filter(function (opt) opt.default !== undefined)
-                               .map(function (opt) [opt.names[0], Class.Property(Object.getOwnPropertyDescriptor(opt, "default"))])
-                               .toObject(),
-            {
+
+    argsPrototype: Class.memoize(function () {
+        let res = update([], {
                 __iterator__: function () array.iterItems(this),
+
                 command: this,
+
                 explicitOpts: Class.memoize(function () ({})),
+
+                has: function (opt) set.has(this.explicitOpts, opt) || typeof opt === "number" && set.has(this, opt),
+
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
+
                 // TODO: string: Class.memoize(function () { ... }),
+
                 verify: function verify() {
                     if (this.command.argCount) {
-                        dactyl.assert((this.length > 0 || !/^[1+]$/.test(this.command.argCount)) &&
-                                      (this.literal == null || !/[1+]/.test(this.command.argCount) || /\S/.test(this.literalArg || "")),
-                                      "E471: Argument required");
+                        util.assert((this.length > 0 || !/^[1+]$/.test(this.command.argCount)) &&
+                                    (this.literal == null || !/[1+]/.test(this.command.argCount) || /\S/.test(this.literalArg || "")),
+                                     "E471: Argument required");
 
-                        dactyl.assert((this.length == 0 || this.command.argCount !== "0") &&
-                                      (this.length <= 1 || !/^[01?]$/.test(this.command.argCount)),
-                                      "E488: Trailing characters");
+                        util.assert((this.length == 0 || this.command.argCount !== "0") &&
+                                    (this.length <= 1 || !/^[01?]$/.test(this.command.argCount)),
+                                    "E488: Trailing characters");
                     }
                 }
-            })),
+        });
+
+        this.options.forEach(function (opt) {
+            if (opt.default !== undefined)
+                Object.defineProperty(res, opt.names[0],
+                                      Object.getOwnPropertyDescriptor(opt, "default") ||
+                                          { configurable: true, enumerable: true, get: function () opt.default });
+        });
+
+        return res;
+    }),
+
     /**
      * @property {boolean|function(args)} When true, invocations of this
      *     command may contain private data which should be purged from
@@ -321,51 +354,6 @@ var Command = Class("Command", {
      */
     replacementText: null
 }, {
-    bindMacro: function (args, default_, params) {
-        let process = util.identity;
-
-        if (callable(params))
-            var makeParams = function makeParams(self, args)
-                iter.toObject([k, process(v)]
-                               for ([k, v] in iter(params.apply(self, args))));
-        else if (params)
-            makeParams = function makeParams(self, args)
-                iter.toObject([name, process(args[i])]
-                              for ([i, name] in Iterator(params)));
-
-        let rhs = args.literalArg;
-        let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce(function (a, b) args[b] ? b : a, default_);
-        switch (type) {
-        case "-builtin":
-            let noremap = true;
-            /* fallthrough */
-        case "-keys":
-            let silent = args["-silent"];
-            rhs = events.canonicalKeys(rhs, true);
-            var action = function action() events.feedkeys(action.macro(makeParams(this, arguments)),
-                                                           noremap, silent);
-            action.macro = util.compileMacro(rhs, true);
-            break;
-        case "-ex":
-            action = function action() commands.execute(action.macro, makeParams(this, arguments),
-                                                        false, null, action.sourcing);
-            action.macro = util.compileMacro(rhs, true);
-            action.sourcing = io.sourcing && update({}, io.sourcing);
-            break;
-        case "-javascript":
-            if (callable(params))
-                action = dactyl.userEval("(function action() { with (action.makeParams(this, arguments)) {" + args.literalArg + "} })");
-            else
-                action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
-            process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
-            action.makeParams = makeParams;
-            break;
-        }
-        action.toString = function toString() (type === default_ ? "" : type + " ") + rhs;
-        args = null;
-        return action;
-    },
-
     // TODO: do we really need more than longNames as a convenience anyway?
     /**
      *  Converts command name abbreviation specs of the form
@@ -384,11 +372,16 @@ var Command = Class("Command", {
 });
 
 // Prototype.
-var ex = {
+var Ex = Module("Ex", {
+    Local: function Local(dactyl, modules, window) ({
+        get commands() modules.commands,
+        get context() modules.contexts.context
+    }),
+
     _args: function (cmd, args) {
         args = Array.slice(args);
 
-        let res = cmd.newArgs();
+        let res = cmd.newArgs({ context: this.context });
         if (isObject(args[0]))
             for (let [k, v] in Iterator(args.shift()))
                 if (k == "!")
@@ -398,8 +391,8 @@ var ex = {
                 else {
                     let opt = cmd.optionMap["-" + k];
                     let val = opt.type && opt.type.parse(v);
-                    dactyl.assert(val != null && (typeof val !== "number" || !isNaN(val)),
-                                  "No such option: " + k);
+                    util.assert(val != null && (typeof val !== "number" || !isNaN(val)),
+                                "No such option: " + k);
                     Class.replaceProperty(args, opt.names[0], val);
                     args.explicitOpts[opt.names[0]] = val;
                 }
@@ -408,38 +401,267 @@ var ex = {
         return res;
     },
 
-    _complete: function (cmd)
+    _complete: function (cmd) let (self = this)
         function _complete(context, func, obj, args) {
-            args = ex._args(cmd, args);
+            args = self._args(cmd, args);
             args.completeArg = args.length - 1;
             if (cmd.completer && args.length)
                 return cmd.completer(context, args);
         },
 
     _run: function (name) {
-        let cmd = commands.get(name);
-        dactyl.assert(cmd, "No such command");
+        const self = this;
+        let cmd = this.commands.get(name);
+        util.assert(cmd, "No such command");
 
         return update(function exCommand(options) {
-            let args = ex._args(cmd, arguments);
+            let args = self._args(cmd, arguments);
             args.verify();
             return cmd.execute(args);
         }, {
-            dactylCompleter: ex._complete(cmd)
+            dactylCompleter: self._complete(cmd)
         });
     },
 
     __noSuchMethod__: function (meth, args) this._run(meth).apply(this, args)
-};
+});
+
+var CommandHive = Class("CommandHive", Contexts.Hive, {
+    init: function init(group) {
+        init.supercall(this, group);
+        this._map = {};
+        this._list = [];
+    },
+
+    /** @property {Iterator(Command)} @private */
+    __iterator__: function () array.iterValues(this._list.sort(function (a, b) a.name > b.name)),
+
+    /** @property {string} The last executed Ex command line. */
+    repeat: null,
+
+    /**
+     * Adds a new command.
+     *
+     * @param {string[]} names The names by which this command can be
+     *     invoked. The first name specified is the command's canonical
+     *     name.
+     * @param {string} description A description of the command.
+     * @param {function} action The action invoked by this command.
+     * @param {Object} extra An optional extra configuration hash.
+     * @optional
+     */
+    add: function (names, description, action, extra, replace) {
+        const { commands, contexts } = this.modules;
+
+        extra = extra || {};
+        if (!extra.definedAt)
+            extra.definedAt = contexts.getCaller(Components.stack.caller);
+
+        extra.hive = this;
+        extra.parsedSpecs = Command.parseSpecs(names);
+
+        let names = array.flatten(extra.parsedSpecs);
+        let name = names[0];
+
+        util.assert(!names.some(function (name) name in commands.builtin._map),
+                    "E182: Can't replace non-user command: " + name);
+
+        util.assert(replace || names.every(function (name) !(name in this._map), this),
+                    "Not replacing command " + name);
+
+        for (let name in values(names)) {
+            ex.__defineGetter__(name, function () this._run(name));
+            if (name in this._map)
+                this.remove(name);
+        }
+
+        let self = this;
+        let closure = function () self._map[name];
+
+        memoize(this._map, name, function () commands.Command(names, description, action, extra));
+        memoize(this._list, this._list.length, closure);
+        for (let alias in values(names.slice(1)))
+            memoize(this._map, alias, closure);
+
+        return name;
+    },
+
+    _add: function (names, description, action, extra, replace) {
+        const { contexts } = this.modules;
+
+        extra = extra || {};
+        extra.definedAt = contexts.getCaller(Components.stack.caller.caller);
+        return this.add.apply(this, arguments);
+    },
+
+    /**
+     * Clear all commands.
+     * @returns {Command}
+     */
+    clear: function clear() {
+        util.assert(this.group.modifiable, "Cannot delete non-user commands");
+        this._map = {};
+        this._list = [];
+    },
+
+    /**
+     * Returns the command with matching *name*.
+     *
+     * @param {string} name The name of the command to return. This can be
+     *     any of the command's names.
+     * @param {boolean} full If true, only return a command if one of
+     *     its names matches *name* exactly.
+     * @returns {Command}
+     */
+    get: function get(name, full) this._map[name]
+            || !full && array.nth(this._list, function (cmd) cmd.hasName(name), 0)
+            || null,
+
+    /**
+     * Remove the user-defined command with matching *name*.
+     *
+     * @param {string} name The name of the command to remove. This can be
+     *     any of the command's names.
+     */
+    remove: function remove(name) {
+        util.assert(this.group.modifiable, "Cannot delete non-user commands");
+
+        let cmd = this.get(name);
+        this._list = this._list.filter(function (c) c !== cmd);
+        for (let name in values(cmd.names))
+            delete this._map[name];
+    }
+});
 
 /**
  * @instance commands
  */
 var Commands = Module("commands", {
-    init: function () {
-        this._exCommands = [];
-        this._exMap = {};
-    },
+    lazyInit: true,
+
+    Local: function Local(dactyl, modules, window) let ({ Group, contexts } = modules) ({
+        init: function () {
+            this.Command = Class("Command", Command, { modules: modules });
+            update(this, {
+                hives: contexts.Hives("commands", Class("CommandHive", CommandHive, { modules: modules })),
+                user: contexts.hives.commands.user,
+                builtin: contexts.hives.commands.builtin
+            });
+        },
+
+        get context() contexts.context,
+
+        get readHeredoc() modules.io.readHeredoc,
+
+        get allHives() contexts.allGroups.commands,
+
+        get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
+
+        /**
+         * Executes an Ex command script.
+         *
+         * @param {string} string A string containing the commands to execute.
+         * @param {object} tokens An optional object containing tokens to be
+         *      interpolated into the command string.
+         * @param {object} args Optional arguments object to be passed to
+         *      command actions.
+         * @param {object} context An object containing information about
+         *      the file that is being or has been sourced to obtain the
+         *      command string.
+         */
+        execute: function (string, tokens, silent, args, context) {
+            contexts.withContext(context || this.context || { file: "[Command Line]", line: 1 },
+                                 function (context) {
+                modules.io.withSavedValues(["readHeredoc"], function () {
+                    this.readHeredoc = function (end) {
+                        let res = [];
+                        contexts.context.line++;
+                        while (++i < lines.length) {
+                            if (lines[i] === end)
+                                return res.join("\n");
+                            res.push(lines[i]);
+                        }
+                        util.assert(false, "Unexpected end of file waiting for " + end);
+                    };
+
+                    args = update({}, args || {});
+
+                    if (tokens && !callable(string))
+                        string = util.compileMacro(string, true);
+                    if (callable(string))
+                        string = string(tokens || {});
+
+                    let lines = string.split(/\r\n|[\r\n]/);
+                    let startLine = context.line;
+
+                    for (var i = 0; i < lines.length && !context.finished; i++) {
+                        // Deal with editors from Silly OSs.
+                        let line = lines[i].replace(/\r$/, "");
+
+                        context.line = startLine + i;
+
+                        // Process escaped new lines
+                        while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
+                            line += "\n" + lines[++i].replace(/^\s*\\/, "");
+
+                        try {
+                            dactyl.execute(line, args);
+                        }
+                        catch (e) {
+                            if (!silent) {
+                                e.message = context.file + ":" + context.line + ": " + e.message;
+                                dactyl.reportError(e, true);
+                            }
+                        }
+                    }
+                });
+            });
+        },
+
+        /**
+         * Displays a list of user-defined commands.
+         */
+        list: function list() {
+            function completerToString(completer) {
+                if (completer)
+                    return [k for ([k, v] in Iterator(config.completers)) if (completer == completion.closure[v])][0] || "custom";
+                return "";
+            }
+
+            if (!this.userHives.some(function (h) h._list.length))
+                dactyl.echomsg("No user-defined commands found");
+            else
+                modules.commandline.commandOutput(
+                    <table>
+                        <tr highlight="Title">
+                            <td/>
+                            <td style="padding-right: 1em;"></td>
+                            <td style="padding-right: 1ex;">Name</td>
+                            <td style="padding-right: 1ex;">Args</td>
+                            <td style="padding-right: 1ex;">Range</td>
+                            <td style="padding-right: 1ex;">Complete</td>
+                            <td style="padding-right: 1ex;">Definition</td>
+                        </tr>
+                        <col style="min-width: 6em; padding-right: 1em;"/>
+                        {
+                            template.map(this.userHives, function (hive) let (i = 0)
+                                <tr style="height: .5ex;"/> +
+                                template.map(hive, function (cmd)
+                                    template.map(cmd.names, function (name)
+                                    <tr>
+                                        <td highlight="Title">{!i++ ? hive.name : ""}</td>
+                                        <td>{cmd.bang ? "!" : " "}</td>
+                                        <td>{cmd.name}</td>
+                                        <td>{cmd.argCount}</td>
+                                        <td>{cmd.count ? "0c" : ""}</td>
+                                        <td>{completerToString(cmd.completer)}</td>
+                                        <td>{cmd.replacementText || "function () { ... }"}</td>
+                                    </tr>)) +
+                                <tr style="height: .5ex;"/>)
+                        }
+                    </table>);
+        }
+    }),
 
     /**
      * @property Indicates that no count was specified for this
@@ -456,84 +678,17 @@ var Commands = Module("commands", {
     COUNT_ALL: -2, // :%...
 
     /** @property {Iterator(Command)} @private */
-    __iterator__: function () {
-        let sorted = this._exCommands.sort(function (a, b) a.name > b.name);
-        return array.iterValues(sorted);
-    },
-    iterator: function () {
-        let sorted = this._exCommands.sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name);
-        return array.iterValues(sorted);
-    },
+    iterator: function () iter.apply(null, this.hives)
+                              .sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name)
+                              .iterValues(),
 
     /** @property {string} The last executed Ex command line. */
     repeat: null,
 
-    _addCommand: function (args, replace) {
-        if (!args[3])
-            args[3] = {};
-        args[3].definedAt = Commands.getCaller(Components.stack.caller.caller);
-
-        let names = array.flatten(Command.parseSpecs(args[0]));
-        args.parsedSpecs = names;
-
-        dactyl.assert(!names.some(function (name) name in this._exMap && !this._exMap[name].user, this),
-                      "E182: Can't replace non-user command: " + args[0][0]);
-
-        if (!replace || !args[3].user)
-            dactyl.assert(!names.some(function (name) name in this._exMap, this),
-                          "Not replacing command " + args[0]);
-
-        for (let name in values(names)) {
-            ex.__defineGetter__(name, function () this._run(name));
-            if (name in this._exMap)
-                commands.removeUserCommand(name);
-        }
-
-        let name = names[0];
-        let closure = function () commands._exMap[name];
-
-        memoize(this._exMap, name, function () Command.apply(null, args));
-        memoize(this._exCommands, this._exCommands.length, closure);
-
-        for (let alias in values(names.slice(1)))
-            memoize(this._exMap, alias, closure);
-
-        return name;
-    },
-
-    /**
-     * Adds a new default command.
-     *
-     * @param {string[]} names The names by which this command can be
-     *     invoked. The first name specified is the command's canonical
-     *     name.
-     * @param {string} description A description of the command.
-     * @param {function} action The action invoked by this command.
-     * @param {Object} extra An optional extra configuration hash.
-     * @optional
-     */
-    add: function (names, description, action, extra) {
-        return this._addCommand([names, description, action, extra], false);
-    },
-
-    /**
-     * Adds a new user-defined command.
-     *
-     * @param {string[]} names The names by which this command can be
-     *     invoked. The first name specified is the command's canonical
-     *     name.
-     * @param {string} description A description of the command.
-     * @param {function} action The action invoked by this command.
-     * @param {Object} extra An optional extra configuration hash.
-     * @param {boolean} replace Overwrite an existing command with the same
-     *     canonical name.
-     */
-    addUserCommand: function (names, description, action, extra, replace) {
-        extra = extra || {};
-        extra.user = true;
-
-        return this._addCommand([names, description, action, extra], replace);
-    },
+    add: function () this.builtin._add.apply(this.builtin, arguments),
+    addUserCommand: deprecated("commands.user.add", { get: function addUserCommand() this.user.closure._add }),
+    getUserCommands: deprecated("iter(commands.user)", function getUserCommands() iter(this.user).toArray()),
+    removeUserCommand: deprecated("commands.user.remove", { get: function removeUserCommand() this.user.closure.remove }),
 
     /**
      * Returns the specified command invocation object serialized to
@@ -547,7 +702,8 @@ var Commands = Module("commands", {
 
         let defaults = {};
         if (args.ignoreDefaults)
-            defaults = array(this.options).map(function (opt) [opt.names[0], opt.default]).toObject();
+            defaults = array(this.options).map(function (opt) [opt.names[0], opt.default])
+                                          .toObject();
 
         for (let [opt, val] in Iterator(args.options || {})) {
             if (val != null && defaults[opt] === val)
@@ -569,98 +725,14 @@ var Commands = Module("commands", {
     },
 
     /**
-     * Executes an Ex command script.
-     *
-     * @param {string} string A string containing the commands to execute.
-     * @param {object} tokens An optional object containing tokens to be
-     *      interpolated into the command string.
-     * @param {object} args Optional arguments object to be passed to
-     *      command actions.
-     * @param {object} sourcing An object containing information about
-     *      the file that is being or has been sourced to obtain the
-     *      command string.
-     */
-    execute: function (string, tokens, silent, args, sourcing) {
-        io.withSavedValues(["readHeredoc", "sourcing"], function () {
-            sourcing = sourcing || this.sourcing || { file: "[Command Line]", line: 1 };
-            this.sourcing = update({}, sourcing);
-
-            args = update({}, args || {});
-
-            if (tokens && !callable(string))
-                string = util.compileMacro(string, true);
-            if (callable(string))
-                string = string(tokens || {});
-
-            let lines = string.split(/\r\n|[\r\n]/);
-
-            this.readHeredoc = function (end) {
-                let res = [];
-                this.sourcing.line++;
-                while (++i < lines.length) {
-                    if (lines[i] === end)
-                        return res.join("\n");
-                    res.push(lines[i]);
-                }
-                dactyl.assert(false, "Unexpected end of file waiting for " + end);
-            };
-
-            for (var i = 0; i < lines.length && !this.sourcing.finished; i++) {
-                // Deal with editors from Silly OSs.
-                let line = lines[i].replace(/\r$/, "");
-
-                this.sourcing.line = sourcing.line + i;
-
-                // Process escaped new lines
-                while (i < lines.length && /^\s*\\/.test(lines[i + 1]))
-                    line += "\n" + lines[++i].replace(/^\s*\\/, "");
-
-                try {
-                    dactyl.execute(line, args);
-                }
-                catch (e) {
-                    if (!silent || silent === "loud") {
-                        if (silent !== "loud")
-                            e.message = this.sourcing.file + ":" + this.sourcing.line + ": " + e.message;
-                        else {
-                            dactyl.echoerr("Error detected while processing " + this.sourcing.file);
-                            dactyl.echomsg("line\t" + this.sourcing.line + ":");
-                        }
-                        dactyl.reportError(e, true);
-                    }
-                }
-            }
-        });
-    },
-
-    /**
      * Returns the command with matching *name*.
      *
      * @param {string} name The name of the command to return. This can be
      *     any of the command's names.
      * @returns {Command}
      */
-    get: function (name, full)
-        this._exMap[name] || !full && array.nth(this._exCommands, function (cmd) cmd.hasName(name), 0) || null,
-
-    /**
-     * Returns the user-defined command with matching *name*.
-     *
-     * @param {string} name The name of the command to return. This can be
-     *     any of the command's names.
-     * @returns {Command}
-     */
-    getUserCommand: function (name)
-        array.nth(this._exCommands, function (cmd) cmd.user && cmd.hasName(name), 0) || null,
-
-    /**
-     * Returns all user-defined commands.
-     *
-     * @returns {Command[]}
-     */
-    getUserCommands: function () {
-        return this._exCommands.filter(function (cmd) cmd.user);
-    },
+    get: function (name, full) iter(this.hives).map(function ([i, hive]) hive.get(name, full))
+                                               .nth(util.identity, 0),
 
     /**
      * Returns true if a command invocation contains a URL referring to the
@@ -677,7 +749,7 @@ var Commands = Module("commands", {
                     return true;
         }
         catch (e) {
-            dactyl.reportError(e);
+            util.reportError(e);
         }
         return false;
     },
@@ -743,7 +815,9 @@ var Commands = Module("commands", {
      *     Args object.
      * @returns {Args}
      */
-    parseArgs: function (str, params) {
+    parseArgs: function parseArgs(str, params) {
+        const self = this;
+
         function getNextArg(str, _keepQuotes) {
             if (arguments.length < 2)
                 _keepQuotes = keepQuotes;
@@ -753,7 +827,7 @@ var Commands = Module("commands", {
                 let count = arg.length + 2;
                 if (complete)
                     return [count, "", ""];
-                return [count, io.readHeredoc(arg), ""];
+                return [count, self.readHeredoc(arg), ""];
             }
 
             let [count, arg, quote] = Commands.parseArg(str, null, _keepQuotes);
@@ -774,7 +848,7 @@ var Commands = Module("commands", {
             if (!argCount)
                 argCount = "*";
 
-            var args = (params.newArgs || Array).call(params); // parsed options
+            var args = params.newArgs ? params.newArgs() : [];
             args.string = str; // for access to the unparsed string
 
             // FIXME!
@@ -811,7 +885,7 @@ var Commands = Module("commands", {
                 if (complete)
                     complete.message = error;
                 else
-                    dactyl.assert(false, error);
+                    util.assert(false, error);
             };
 
             outer:
@@ -852,7 +926,7 @@ var Commands = Module("commands", {
                                 if (sep == "=" || /\s/.test(sep) && opt.type != CommandOption.NOARG) {
                                     [count, quoted, quote, error] = getNextArg(sub.substr(optname.length + 1), true);
                                     arg = Option.dequote(quoted);
-                                    dactyl.assert(!error, error);
+                                    util.assert(!error, error);
 
                                     // if we add the argument to an option after a space, it MUST not be empty
                                     if (sep != "=" && !quote && arg.length == 0)
@@ -953,7 +1027,7 @@ var Commands = Module("commands", {
 
                 // if not an option, treat this token as an argument
                 let [count, arg, quote, error] = getNextArg(sub);
-                dactyl.assert(!error, error);
+                util.assert(!error, error);
 
                 if (complete) {
                     args.quote = Commands.complQuote[quote] || Commands.complQuote[""];
@@ -1018,7 +1092,7 @@ var Commands = Module("commands", {
                 <forbid>
             ]
             [^ <forbid> ]*
-        ]]>, "", {
+        ]]>, "g", {
         forbid: util.regexp(String.replace(<![CDATA[
             U0000-U002c // U002d -
             U002e-U002f
@@ -1106,7 +1180,7 @@ var Commands = Module("commands", {
     parseCommands: function (str, complete) {
         do {
             let [count, cmd, bang, args, len] = commands.parseCommand(str);
-            let command = commands.get(cmd || "");
+            let command = this.get(cmd || "");
 
             if (command == null) {
                 yield [null, { commandString: str }];
@@ -1121,11 +1195,14 @@ var Commands = Module("commands", {
             if (!complete || /(\w|^)[!\s]/.test(str))
                 args = command.parseArgs(args, context, { count: count, bang: bang });
             else
-                args = commands.parseArgs(args, { extra: { count: count, bang: bang } });
+                args = this.parseArgs(args, { extra: { count: count, bang: bang } });
+            args.context = this.context;
             args.commandName = cmd;
             args.commandString = str.substr(0, len) + args.string;
             str = args.trailing;
             yield [command, args];
+            if (args.break)
+                break;
         }
         while (str);
     },
@@ -1149,39 +1226,9 @@ var Commands = Module("commands", {
     get complQuote() Commands.complQuote,
 
     /** @property */
-    get quoteArg() Commands.quoteArg, // XXX: better somewhere else?
+    get quoteArg() Commands.quoteArg // XXX: better somewhere else?
 
-    /**
-     * Remove the user-defined command with matching *name*.
-     *
-     * @param {string} name The name of the command to remove. This can be
-     *     any of the command's names.
-     */
-    removeUserCommand: function (name) {
-        let cmd = this.get(name);
-        dactyl.assert(cmd.user, "E184: No such user-defined command: " + name);
-        this._exCommands = this._exCommands.filter(function (c) c !== cmd);
-        for (let name in values(cmd.names))
-            delete this._exMap[name];
-    }
 }, {
-    /**
-     * Returns a frame object describing the currently executing
-     * command, if applicable, otherwise returns the passed frame.
-     *
-     * @param {nsIStackFrame} frame
-     */
-    getCaller: function (frame) {
-        if (io.sourcing)
-           return {
-                __proto__: frame,
-                filename: io.sourcing.file[0] == "[" ? io.sourcing.file :
-                            services.io.newFileURI(File(io.sourcing.file)).spec,
-                lineNumber: io.sourcing.line
-            };
-        return frame;
-    },
-
     // returns [count, parsed_argument]
     parseArg: function parseArg(str, sep, keepQuotes) {
         let arg = "";
@@ -1223,15 +1270,19 @@ var Commands = Module("commands", {
         /[\s"'\\]|^$|^-/.test(str) ? "'"
                                    : ""](str)
 }, {
-    completion: function () {
+    completion: function initCompletion(dactyl, modules, window) {
+        const { completion } = modules;
+
         completion.command = function command(context) {
             context.title = ["Command"];
             context.keys = { text: "longNames", description: "description" };
-            context.completions = [k for (k in commands)];
+            context.generate = function () modules.commands.hives.map(function (h) h._list).flatten();
         };
 
         // provides completions for ex commands, including their arguments
         completion.ex = function ex(context) {
+            const { commands } = modules;
+
             // if there is no space between the command name and the cursor
             // then get completions of the command name
             for (var [command, args] in commands.parseCommands(context.filter, context))
@@ -1270,19 +1321,19 @@ var Commands = Module("commands", {
                 }
             }
             catch (e) {
-                dactyl.reportError(e);
+                util.reportError(e);
             }
         };
 
-        completion.userCommand = function userCommand(context) {
+        completion.userCommand = function userCommand(context, group) {
             context.title = ["User Command", "Definition"];
             context.keys = { text: "name", description: "replacementText" };
-            context.completions = commands.getUserCommands();
+            context.completions = group || modules.commands.user;
         };
     },
 
-    commands: function () {
-        let completerMap = config.completers;
+    commands: function (dactyl, modules, window) {
+        const { commands, contexts } = modules;
 
         // TODO: Vim allows commands to be defined without {rep} if there are {attr}s
         // specified - useful?
@@ -1291,10 +1342,15 @@ var Commands = Module("commands", {
             function (args) {
                 let cmd = args[0];
 
-                dactyl.assert(!cmd || cmd.split(",").every(commands.validName.closure.test),
-                              "E182: Invalid command name");
+                util.assert(!cmd || cmd.split(",").every(commands.validName.closure.test),
+                            "E182: Invalid command name");
 
-                if (args.literalArg) {
+                if (!args.literalArg)
+                    commands.list();
+                else {
+                    util.assert(args["-group"] !== commands.builtin,
+                                "Cannot change commands in the builtin group");
+
                     let completer  = args["-complete"];
                     let completerFunc = null; // default to no completion for user commands
 
@@ -1302,11 +1358,11 @@ var Commands = Module("commands", {
                         if (/^custom,/.test(completer)) {
                             completer = completer.substr(7);
 
-                            let sourcing = update({}, io.sourcing || {});
+                            let context = update({}, contexts.context || {});
                             completerFunc = function (context) {
                                 try {
-                                    var result = io.withSavedValues(["sourcing"], function () {
-                                        io.sourcing = sourcing;
+                                    var result = contextswithSavedValues(["context"], function () {
+                                        contexts.context = context;
                                         return dactyl.userEval(completer);
                                     });
                                 }
@@ -1323,12 +1379,12 @@ var Commands = Module("commands", {
                             };
                         }
                         else
-                            completerFunc = function (context) completion.closure[completerMap[completer]](context);
+                            completerFunc = function (context) modules.completion.closure[config.completers[completer]](context);
                     }
 
-                    let added = commands.addUserCommand(cmd.split(","),
+                    let added = args["-group"].add(cmd.split(","),
                                     args["-description"],
-                                    Command.bindMacro(args, "-ex",
+                                    contexts.bindMacro(args, "-ex",
                                         function makeParams(args, modifiers) ({
                                             args: {
                                                 __proto__: args,
@@ -1345,40 +1401,18 @@ var Commands = Module("commands", {
                                         literal: args["-literal"],
                                         persist: !args["-nopersist"],
                                         replacementText: args.literalArg,
-                                        sourcing: io.sourcing && update({}, io.sourcing)
+                                        context: contexts.context && update({}, contexts.context)
                                     }, args.bang);
 
                     if (!added)
                         dactyl.echoerr("E174: Command already exists: add ! to replace it");
                 }
-                else {
-                    let completerToString = function completerToString(completer) {
-                        if (completer)
-                            return [k for ([k, v] in Iterator(completerMap)) if (completer == completion.closure[v])][0] || "custom";
-                        return "";
-                    }
-
-                    // TODO: perhaps we shouldn't allow options in a list call but just ignore them for now
-                    let cmds = commands._exCommands.filter(function (c) c.user && (!cmd || c.name.match("^" + cmd)));
-
-                    if (cmds.length > 0)
-                        commandline.commandOutput(
-                            template.tabular(["", "Name", "Args", "Range", "Complete", "Definition"], ["padding-right: 2em;"],
-                                ([cmd.bang ? "!" : " ",
-                                  cmd.name,
-                                  cmd.argCount,
-                                  cmd.count ? "0c" : "",
-                                  completerToString(cmd.completer),
-                                  cmd.replacementText || "function () { ... }"]
-                                 for ([, cmd] in Iterator(cmds)))));
-                    else
-                        dactyl.echomsg("No user-defined commands found");
-                }
             }, {
                 bang: true,
                 completer: function (context, args) {
+                    const { completion } = modules;
                     if (args.completeArg == 0)
-                        completion.userCommand(context);
+                        completion.userCommand(context, args["-group"]);
                     else
                         args["-javascript"] ? completion.javascript(context) : completion.ex(context);
                 },
@@ -1390,22 +1424,27 @@ var Commands = Module("commands", {
                         // TODO: "E180: invalid complete value: " + arg
                         names: ["-complete", "-C"],
                         description: "The argument completion function",
-                        completer: function (context) [[k, ""] for ([k, v] in Iterator(completerMap))],
+                        completer: function (context) [[k, ""] for ([k, v] in Iterator(config.completers))],
                         type: CommandOption.STRING,
-                        validator: function (arg) arg in completerMap || /^custom,/.test(arg),
-                    }, {
+                        validator: function (arg) arg in config.completers || /^custom,/.test(arg),
+                    },
+                    {
                         names: ["-description", "-desc", "-d"],
                         description: "A user-visible description of the command",
                         default: "User-defined command",
                         type: CommandOption.STRING
-                    }, {
+                    },
+                    contexts.GroupFlag("commands"),
+                    {
                         names: ["-javascript", "-js", "-j"],
                         description: "Execute the definition as JavaScript rather than Ex commands"
-                    }, {
+                    },
+                    {
                         names: ["-literal", "-l"],
                         description: "Process the nth ignoring any quoting or meta characters",
                         type: CommandOption.INT
-                    }, {
+                    },
+                    {
                         names: ["-nargs", "-a"],
                         description: "The allowed number of arguments",
                         completer: [["0", "No arguments are allowed (default)"],
@@ -1416,46 +1455,54 @@ var Commands = Module("commands", {
                         default: "0",
                         type: CommandOption.STRING,
                         validator: function (arg) /^[01*?+]$/.test(arg)
-                    }, {
+                    },
+                    {
                         names: ["-nopersist", "-n"],
                         description: "Do not save this command to an auto-generated RC file"
                     }
                 ],
                 literal: 1,
-                serialize: function () [ {
-                        command: this.name,
-                        bang: true,
-                        options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
-                                      // FIXME: this map is expressed multiple times
-                                      for ([k, v] in Iterator({
-                                          argCount: "-nargs",
-                                          bang: "-bang",
-                                          count: "-count",
-                                          description: "-description"
-                                      }))
-                                      if (cmd[k])).toObject(),
-                        arguments: [cmd.name],
-                        literalArg: cmd.action,
-                        ignoreDefaults: true
-                    }
-                    for ([k, cmd] in Iterator(commands._exCommands))
-                    if (cmd.user && cmd.persist)
-                ]
+
+                serialize: function () array(commands.userHives)
+                    .filter(function (h) h.persist)
+                    .map(function (hive) [
+                        {
+                            command: this.name,
+                            bang: true,
+                            options: iter([v, typeof cmd[k] == "boolean" ? null : cmd[k]]
+                                          // FIXME: this map is expressed multiple times
+                                          for ([k, v] in Iterator({
+                                              argCount: "-nargs",
+                                              bang: "-bang",
+                                              count: "-count",
+                                              description: "-description"
+                                          }))
+                                          if (cmd[k])).toObject(),
+                            arguments: [cmd.name],
+                            literalArg: cmd.action,
+                            ignoreDefaults: true
+                        }
+                        for (cmd in hive) if (cmd.persist)
+                    ], this)
+                    .flatten().array
             });
 
         commands.add(["comc[lear]"],
             "Delete all user-defined commands",
-            function () {
-                commands.getUserCommands().forEach(function (cmd) { commands.removeUserCommand(cmd.name); });
+            function (args) {
+                args["-group"].clear();
             },
-            { argCount: "0" });
+            {
+                argCount: "0",
+                options: [contexts.GroupFlag("commands")]
+            });
 
         commands.add(["comp[letions]"],
             "List the completion results for a given command substring",
-            function (args) { completion.listCompleter("ex", args[0]); },
+            function (args) { modules.completion.listCompleter("ex", args[0]); },
             {
                 argCount: "1",
-                completer: function (context, args) completion.ex(context),
+                completer: function (context, args) modules.completion.ex(context),
                 literal: 0
             });
 
@@ -1464,102 +1511,62 @@ var Commands = Module("commands", {
             function (args) {
                 let name = args[0];
 
-                if (commands.get(name))
-                    commands.removeUserCommand(name);
+                if (args["-group"].get(name))
+                    args["-group"].remove(name);
                 else
                     dactyl.echoerr("E184: No such user-defined command: " + name);
             }, {
                 argCount: "1",
-                completer: function (context) completion.userCommand(context)
+                completer: function (context, args) modules.completion.userCommand(context, args["-group"]),
+                options: [contexts.GroupFlag("commands")]
             });
 
         dactyl.addUsageCommand({
             name: ["listc[ommands]", "lc"],
             description: "List all Ex commands along with their short descriptions",
             index: "ex-cmd",
-            iterate: function (args) commands,
+            iterate: function (args) commands.iterator().map(function (cmd) ({
+                __proto__: cmd,
+                columns: [
+                    cmd.hive == commands.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{cmd.hive.name}</span>
+                ]
+            })),
             format: {
+                headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),
                 help: function (cmd) ":" + cmd.name
             }
         });
 
-        function checkStack(cmd) {
-            util.assert(io.sourcing && io.sourcing.stack &&
-                        io.sourcing.stack[cmd] && io.sourcing.stack[cmd].length,
-                        "Invalid use of conditional");
-        }
-        function pop(cmd) {
-            checkStack(cmd);
-            return io.sourcing.stack[cmd].pop();
-        }
-        function push(cmd, value) {
-            util.assert(io.sourcing, "Invalid use of conditional");
-            if (arguments.length < 2)
-                value = io.sourcing.noExecute;
-            io.sourcing.stack = io.sourcing.stack || {};
-            io.sourcing.stack[cmd] = (io.sourcing.stack[cmd] || []).concat([value]);
-        }
-
-        commands.add(["if"],
-            "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
-            function (args) { io.sourcing.noExecute = !dactyl.userEval(args[0]); },
-            {
-                always: function (args) { push("if"); },
-                argCount: "1",
-                literal: 0
-            });
-        commands.add(["elsei[f]", "elif"],
-            "Execute commands until the next :elseif, :else, or :endif only if the argument returns true",
-            function (args) {},
-            {
-                always: function (args) {
-                    checkStack("if");
-                    io.sourcing.noExecute = io.sourcing.stack.if.slice(-1)[0] ||
-                        !io.sourcing.noExecute || !dactyl.userEval(args[0]);
-                },
-                argCount: "1",
-                literal: 0
-            });
-        commands.add(["el[se]"],
-            "Execute commands until the next :endif only if the previous conditionals were not executed",
-            function (args) {},
-            {
-                always: function (args) {
-                    checkStack("if");
-                    io.sourcing.noExecute = io.sourcing.stack.if.slice(-1)[0] ||
-                        !io.sourcing.noExecute;
-                },
-                argCount: "0"
-            });
-        commands.add(["en[dif]", "fi"],
-            "End a string of :if/:elseif/:else conditionals",
-            function (args) {},
-            {
-                always: function (args) { io.sourcing.noExecute = pop("if"); },
-                argCount: "0"
-            });
-
         commands.add(["y[ank]"],
             "Yank the output of the given command to the clipboard",
             function (args) {
                 let cmd = /^:/.test(args[0]) ? args[0] : ":echo " + args[0];
-                let res = commandline.withOutputToString(commands.execute, commands, cmd);
+
+                let res = modules.commandline.withOutputToString(commands.execute, commands, cmd);
+
                 dactyl.clipboardWrite(res);
+
                 let lines = res.split("\n").length;
                 dactyl.echomsg("Yanked " + lines + " line" + (lines == 1 ? "" : "s"));
             },
             {
-                completer: function (context) completion[/^:/.test(context.filter) ? "ex" : "javascript"](context),
+                completer: function (context) modules.completion[/^:/.test(context.filter) ? "ex" : "javascript"](context),
                 literal: 0
             });
     },
-    javascript: function () {
-        JavaScript.setCompleter([commands.get, commands.removeUserCommand],
-                                [function () ([c.name, c.description] for (c in commands))]);
+    javascript: function (dactyl, modules, window) {
+        const { JavaScript, commands } = modules;
+
+        JavaScript.setCompleter([commands.user.get, commands.user.remove],
+                                [function () [[c.names, c.description] for (c in this)]]);
+        JavaScript.setCompleter([commands.get],
+                                [function () [[c.names, c.description] for (c in this.iterator())]]);
     },
-    mappings: function () {
-        mappings.add(config.browserModes,
+    mappings: function (dactyl, modules, window) {
+        const { commands, mappings, modes } = modules;
+
+        mappings.add([modes.COMMAND],
             ["@:"], "Repeat the last Ex command",
             function (args) {
                 if (commands.repeat) {
@@ -1607,4 +1614,8 @@ var Commands = Module("commands", {
     };
 })();
 
-// vim: set fdm=marker sw=4 ts=4 et:
+endModule();
+
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

@@ -149,10 +149,11 @@
     <spec>:sty<oa>le</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-append</oa> <a>filter</a> <oa>css</oa></spec>
     <description>
         <p>
-            Add CSS styles to the browser or to web pages. <a>filter</a> is a comma-separated
-            list of URLs to match. URLs ending with <em>*</em> are matched as prefixes, URLs not
-            containing any <em>:</em> or <em>/</em> characters are matched as domains. <oa>css</oa> is a full
-            CSS rule set (e.g., <tt>body { color: blue; }</tt>).
+            Add CSS styles to the browser or to web pages. <a>filter</a> is a
+            comma-separated list of <t>site-filters</t> for which the style will
+            apply. Regular expression filters may not be used and the <tt>!</tt>
+            character may not be used to invert the sense of the match.
+            <oa>css</oa> is a full CSS rule set (e.g., <tt>body { color: blue; }</tt>).
         </p>
 
         <p>The following options are available:</p>
@@ -165,6 +166,11 @@
             <dd>If provided, the style is installed as an Agent sheet, which
                 applies to contents user interface widgets as well as normal
                 elements. (short name <em>-A</em>)</dd>
+
+            <dt>-group=<a>group</a></dt>
+            <dd>The <t>group</t> to which to add this style. Please note that
+                this grouping is for semantic and cleanup purposes only. No
+                additional site filtering is applied.</dd>
 
             <dt>-name=<a>name</a></dt>
             <dd>If provided, any existing style with the same name is

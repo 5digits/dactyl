@@ -196,7 +196,7 @@ var RangeFinder = Module("rangefinder", {
 
             get prompt() this.mode === modules.modes.FIND_BACKWARD ? "?" : "/",
 
-            get onCancel() modules.rangefinder.closure.onCancel,
+            get onCancel() rangefinder.closure.onCancel,
             get onChange() modules.rangefinder.closure.onChange,
             get onSubmit() modules.rangefinder.closure.onSubmit
         });

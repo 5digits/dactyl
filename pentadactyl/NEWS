@@ -8,6 +8,16 @@
       - Only visible tabs are considered in tab numbering,
         gt/gn/gN, etc. [b1]
     * Improved startup time by a factor of 7. [b1]
+    * Further improved startup time. [b6]
+    * Added site-local and script-local groups: [b6]
+      - Added the :group command to define and select groups.
+      - Added the -group flag to :autocmd, :command, :map, :style,
+        and friends.
+      - Mappings and commands can now be bound to groups which
+        execute only for certain websites.
+      - Autocommands, commands, mappings, and styles are now
+        automatically added to per-script groups so that most traces
+        of a script can be easily purged.
     * Significant completion speed improvements, especially for
       JavaScript. [b1]
     * Greatly improved private mode support and :sanitize command.
@@ -76,8 +86,6 @@
         and linking to source code locations). [b4]
       - :downloads now opens a download list in the multi-line output
         buffer. [b6]
-      - Added :mapgroup command and -group flag to :map, :unmap, and
-        :mapclear. [b6]
       - Added -arg flag to :map. [b6]
       - :extensions has been replaced with a more powerful :addons.
       - Added -literal flag to :command. [b6]

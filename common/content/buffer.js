@@ -145,233 +145,12 @@ var Buffer = Module("buffer", {
             let elem = event.originalTarget;
             buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))]);
         };
-
-        this.cleanupProgressListener = util.overlayObject(window.XULBrowserWindow,
-                                                          this.progressListener);
-
-        if (dactyl.has("tabs"))
-            for (let tab in values(tabs.allTabs))
-                if (tab.linkedBrowser.contentDocument.readyState === "complete")
-                    dactyl.initDocument(tab.linkedBrowser.contentDocument);
-    },
-
-    cleanup: function () {
-        this.cleanupProgressListener();
-    },
-
-    getDefaultNames: function getDefaultNames(node) {
-        let url = node.href || node.src || node.documentURI;
-        let currExt = url.replace(/^.*?(?:\.([a-z0-9]+))?$/i, "$1").toLowerCase();
-
-        if (isinstance(node, [Document, HTMLImageElement])) {
-            let type = node.contentType || node.QueryInterface(Ci.nsIImageLoadingContent)
-                                               .getRequest(0).mimeType;
-
-            if (type === "text/plain")
-                var ext = "." + (currExt || "txt");
-            else
-                ext = "." + services.mime.getPrimaryExtension(type, currExt);
-        }
-        else if (currExt)
-            ext = "." + currExt;
-        else
-            ext = "";
-        let re = ext ? RegExp("(\\." + currExt + ")?$", "i") : /$/;
-
-        var names = [];
-        if (node.title)
-            names.push([node.title, "Page Name"]);
-
-        if (node.alt)
-            names.push([node.alt, "Alternate Text"]);
-
-        if (!isinstance(node, Document) && node.textContent)
-            names.push([node.textContent, "Link Text"]);
-
-        names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
-
-        return names.filter(function ([leaf, title]) leaf)
-                    .map(function ([leaf, title]) [leaf.replace(util.OS.illegalCharacters, encodeURIComponent)
-                                                       .replace(re, ext), title]);
-    },
-
-    _triggerLoadAutocmd: function _triggerLoadAutocmd(name, doc, uri) {
-        if (!(uri || doc.location))
-            return;
-
-        uri = uri || util.newURI(doc.location.href);
-        let args = {
-            url: { toString: function () uri.spec, valueOf: function () uri },
-            title: doc.title
-        };
-
-        if (dactyl.has("tabs")) {
-            args.tab = tabs.getContentIndex(doc) + 1;
-            args.doc = {
-                valueOf: function () doc,
-                toString: function () "tabs.getTab(" + (args.tab - 1) + ").linkedBrowser.contentDocument"
-            };
-        }
-
-        autocommands.trigger(name, args);
     },
 
     // called when the active document is scrolled
     _updateBufferPosition: function _updateBufferPosition() {
         statusline.updateBufferPosition();
         commandline.clear();
-    },
-
-    onDOMContentLoaded: function onDOMContentLoaded(event) {
-        let doc = event.originalTarget;
-        if (doc instanceof HTMLDocument)
-            this._triggerLoadAutocmd("DOMLoad", doc);
-    },
-
-    // TODO: see what can be moved to onDOMContentLoaded()
-    // event listener which is is called on each page load, even if the
-    // page is loaded in a background tab
-    onPageLoad: function onPageLoad(event) {
-        let doc = event.originalTarget;
-        if (doc instanceof Document)
-            dactyl.initDocument(doc);
-
-        if (doc instanceof HTMLDocument) {
-            if (doc.defaultView.frameElement) {
-                // document is part of a frameset
-
-                // hacky way to get rid of "Transferring data from ..." on sites with frames
-                // when you click on a link inside a frameset, because asyncUpdateUI
-                // is not triggered there (Gecko bug?)
-                this.timeout(function () { statusline.updateUrl(); }, 10);
-            }
-            else {
-                // code which should happen for all (also background) newly loaded tabs goes here:
-                if (doc != config.browser.contentDocument)
-                    dactyl.echomsg({ domains: [util.getHost(doc.location)], message: "Background tab loaded: " + (doc.title || doc.location.href) }, 3);
-
-                this._triggerLoadAutocmd("PageLoad", doc);
-            }
-        }
-    },
-
-    /**
-     * @property {Object} The document loading progress listener.
-     */
-    progressListener: {
-        dactylLoadCount: 0,
-
-        // XXX: function may later be needed to detect a canceled synchronous openURL()
-        onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
-            onStateChange.superapply(this, arguments);
-            // STATE_IS_DOCUMENT | STATE_IS_WINDOW is important, because we also
-            // receive statechange events for loading images and other parts of the web page
-            if (flags & (Ci.nsIWebProgressListener.STATE_IS_DOCUMENT | Ci.nsIWebProgressListener.STATE_IS_WINDOW)) {
-                // This fires when the load event is initiated
-                // only thrown for the current tab, not when another tab changes
-                if (flags & Ci.nsIWebProgressListener.STATE_START) {
-                    statusline.progress = 0;
-
-                    buffer._triggerLoadAutocmd("PageLoadPre", webProgress.DOMWindow.document);
-
-                    if (document.commandDispatcher.focusedWindow == webProgress.DOMWindow && this.dactylLoadCount++)
-                        util.timeout(function () { modes.reset(false); },
-                                     modes.main == modes.HINTS ? 500 : 0);
-                }
-                else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
-                    // Workaround for bugs 591425 and 606877, dactyl bug #81
-                    config.browser.mCurrentBrowser.collapsed = false;
-                    if (!dactyl.focusedElement || dactyl.focusedElement === document.documentElement)
-                        dactyl.focusContent();
-                    statusline.updateUrl();
-                }
-            }
-        }),
-        // for notifying the user about secure web pages
-        onSecurityChange: util.wrapCallback(function onSecurityChange(webProgress, request, state) {
-            onSecurityChange.superapply(this, arguments);
-            if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
-                statusline.security = "broken";
-            else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
-                statusline.security = "extended";
-            else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
-                statusline.security = "secure";
-            else // if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
-                statusline.security = "insecure";
-            if (webProgress && webProgress.DOMWindow)
-                webProgress.DOMWindow.document.dactylSecurity = statusline.security;
-        }),
-        onStatusChange: util.wrapCallback(function onStatusChange(webProgress, request, status, message) {
-            onStatusChange.superapply(this, arguments);
-            statusline.updateUrl(message);
-        }),
-        onProgressChange: util.wrapCallback(function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
-            onProgressChange.superapply(this, arguments);
-            if (webProgress && webProgress.DOMWindow)
-                webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
-            statusline.progress = curTotalProgress / maxTotalProgress;
-        }),
-        // happens when the users switches tabs
-        onLocationChange: util.wrapCallback(function onLocationChange(webProgress, request, uri) {
-            onLocationChange.superapply(this, arguments);
-
-            delete mappings.hives;
-
-            statusline.updateUrl();
-            statusline.progress = "";
-
-            let win = webProgress.DOMWindow;
-            if (win && uri) {
-                statusline.progress = win.dactylProgress;
-
-                let oldURI = win.document.dactylURI;
-                if (win.document.dactylLoadIdx === webProgress.loadedTransIndex
-                    || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
-                    for (let frame in values(buffer.allFrames(win)))
-                        frame.document.dactylFocusAllowed = false;
-                win.document.dactylURI = uri.spec;
-                win.document.dactylLoadIdx = webProgress.loadedTransIndex;
-            }
-
-            // Workaround for bugs 591425 and 606877, dactyl bug #81
-            let collapse = uri && uri.scheme === "dactyl" && webProgress.isLoadingDocument;
-            if (collapse)
-                dactyl.focus(document.documentElement);
-            config.browser.mCurrentBrowser.collapsed = collapse;
-
-            util.timeout(function () {
-                buffer._triggerLoadAutocmd("LocationChange",
-                                           (win || content).document,
-                                           uri);
-            });
-
-            // if this is not delayed we get the position of the old buffer
-            util.timeout(function () {
-                statusline.updateBufferPosition();
-                statusline.updateZoomLevel();
-                if (loaded.commandline)
-                    commandline.clear();
-            }, 500);
-        }),
-        // called at the very end of a page load
-        asyncUpdateUI: util.wrapCallback(function asyncUpdateUI() {
-            asyncUpdateUI.superapply(this, arguments);
-            util.timeout(function () { statusline.updateUrl(); }, 100);
-        }),
-        setOverLink: util.wrapCallback(function setOverLink(link, b) {
-            setOverLink.superapply(this, arguments);
-            switch (options["showstatuslinks"]) {
-            case "status":
-                statusline.updateUrl(link ? "Link: " + link : null);
-                break;
-            case "command":
-                if (link)
-                    dactyl.echo("Link: " + link, commandline.DISALLOW_MULTILINE);
-                else
-                    commandline.clear();
-                break;
-            }
-        }),
     },
 
     /**
@@ -384,6 +163,32 @@ var Buffer = Module("buffer", {
         return stylesheets.filter(
             function (stylesheet) /^(screen|all|)$/i.test(stylesheet.media.mediaText) && !/^\s*$/.test(stylesheet.title)
         );
+    },
+
+    climbUrlPath: function (count) {
+        let url = buffer.documentURI.clone();
+        dactyl.assert(url instanceof Ci.nsIURL);
+
+        while (count-- && url.path != "/")
+            url.path = url.path.replace(/[^\/]+\/*$/, "");
+
+        dactyl.assert(!url.equals(buffer.documentURI));
+        dactyl.open(url.spec);
+    },
+
+    incrementURL: function (count) {
+        let matches = buffer.uri.spec.match(/(.*?)(\d+)(\D*)$/);
+        dactyl.assert(matches);
+        let oldNum = matches[2];
+
+        // disallow negative numbers as trailing numbers are often proceeded by hyphens
+        let newNum = String(Math.max(parseInt(oldNum, 10) + count, 0));
+        if (/^0/.test(oldNum))
+            while (newNum.length < oldNum.length)
+                newNum = "0" + newNum;
+
+        matches[2] = newNum;
+        dactyl.open(matches.slice(1).join(""));
     },
 
     /**
@@ -534,11 +339,8 @@ var Buffer = Module("buffer", {
         let range = selection.getRangeAt(0).cloneRange();
         if (range.collapsed) {
             let re = options.get("iskeyword").regexp;
-            util.dump(String.quote(range));
             Editor.extendRange(range, true,  re, true);
-            util.dump(String.quote(range));
             Editor.extendRange(range, false, re, true);
-            util.dump(String.quote(range) + "\n\n\n");
         }
         return util.domToString(range);
     },
@@ -772,7 +574,7 @@ var Buffer = Module("buffer", {
                 onSubmit: function (path) {
                     let file = io.File(path);
                     if (file.exists() && file.isDirectory())
-                        file.append(buffer.getDefaultNames(elem)[0][0]);
+                        file.append(Buffer.getDefaultNames(elem)[0][0]);
 
                     try {
                         if (!file.exists())
@@ -1242,6 +1044,42 @@ var Buffer = Module("buffer", {
     setZoom: deprecated("buffer.setZoom", function setZoom() buffer.setZoom.apply(buffer, arguments)),
     bumpZoomLevel: deprecated("buffer.bumpZoomLevel", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),
 
+    getDefaultNames: function getDefaultNames(node) {
+        let url = node.href || node.src || node.documentURI;
+        let currExt = url.replace(/^.*?(?:\.([a-z0-9]+))?$/i, "$1").toLowerCase();
+
+        if (isinstance(node, [Document, HTMLImageElement])) {
+            let type = node.contentType || node.QueryInterface(Ci.nsIImageLoadingContent)
+                                               .getRequest(0).mimeType;
+
+            if (type === "text/plain")
+                var ext = "." + (currExt || "txt");
+            else
+                ext = "." + services.mime.getPrimaryExtension(type, currExt);
+        }
+        else if (currExt)
+            ext = "." + currExt;
+        else
+            ext = "";
+        let re = ext ? RegExp("(\\." + currExt + ")?$", "i") : /$/;
+
+        var names = [];
+        if (node.title)
+            names.push([node.title, "Page Name"]);
+
+        if (node.alt)
+            names.push([node.alt, "Alternate Text"]);
+
+        if (!isinstance(node, Document) && node.textContent)
+            names.push([node.textContent, "Link Text"]);
+
+        names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
+
+        return names.filter(function ([leaf, title]) leaf)
+                    .map(function ([leaf, title]) [leaf.replace(util.OS.illegalCharacters, encodeURIComponent)
+                                                       .replace(re, ext), title]);
+    },
+
     findScrollableWindow: deprecated("buffer.findScrollableWindow", function findScrollableWindow() buffer.findScrollableWindow.apply(buffer, arguments)),
     findScrollable: deprecated("buffer.findScrollable", function findScrollable() buffer.findScrollable.apply(buffer, arguments)),
 
@@ -1495,7 +1333,7 @@ var Buffer = Module("buffer", {
                     let file = io.File(filename.replace(RegExp(File.PATH_SEP + "*$"), ""));
 
                     if (filename.substr(-1) === File.PATH_SEP || file.exists() && file.isDirectory())
-                        file.append(buffer.getDefaultNames(doc)[0][0]);
+                        file.append(Buffer.getDefaultNames(doc)[0][0]);
 
                     dactyl.assert(args.bang || !file.exists(), "E13: File exists (add ! to override)");
 
@@ -1647,19 +1485,38 @@ var Buffer = Module("buffer", {
         completion.savePage = function savePage(context, node) {
             context.fork("generated", context.filter.replace(/[^/]*$/, "").length,
                          this, function (context) {
-                context.completions = buffer.getDefaultNames(node);
+                context.completions = Buffer.getDefaultNames(node);
             });
         };
     },
     events: function () {
-        events.addSessionListener(config.browser, "DOMContentLoaded", buffer.closure.onDOMContentLoaded, true);
-        events.addSessionListener(config.browser, "load", buffer.closure.onPageLoad, true);
-        events.addSessionListener(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
+        events.listen(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
     },
     mappings: function () {
-        var myModes = config.browserModes;
+        mappings.add([modes.NORMAL],
+            ["y", "<yank-location>"], "Yank current location to the clipboard",
+            function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
 
-        mappings.add(myModes, [".", "<repeat-key>"],
+        mappings.add([modes.NORMAL],
+            ["<C-a>"], "Increment last number in URL",
+            function (args) { buffer.incrementURL(Math.max(args.count, 1)); },
+            { count: true });
+
+        mappings.add([modes.NORMAL],
+            ["<C-x>"], "Decrement last number in URL",
+            function (args) { buffer.incrementURL(-Math.max(args.count, 1)); },
+            { count: true });
+
+        mappings.add([modes.NORMAL], ["gu"],
+            "Go to parent directory",
+            function (args) { buffer.climbUrlPath(Math.max(args.count, 1)); },
+            { count: true });
+
+        mappings.add([modes.NORMAL], ["gU"],
+            "Go to the root of the website",
+            function () { buffer.climbUrlPath(-1); });
+
+        mappings.add(modes.COMMAND, [".", "<repeat-key>"],
             "Repeat the last key event",
             function (args) {
                 if (mappings.repeat) {
@@ -1669,54 +1526,54 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add(myModes, ["i", "<Insert>"],
+        mappings.add(modes.COMMAND, ["i", "<Insert>"],
             "Start caret mode",
             function () { modes.push(modes.CARET); });
 
-        mappings.add(myModes, ["<C-c>"],
+        mappings.add(modes.COMMAND, ["<C-c>"],
             "Stop loading the current web page",
             function () { ex.stop(); });
 
         // scrolling
-        mappings.add(myModes, ["j", "<Down>", "<C-e>", "<scroll-down-line>"],
+        mappings.add(modes.COMMAND, ["j", "<Down>", "<C-e>", "<scroll-down-line>"],
             "Scroll document down",
             function (args) { buffer.scrollVertical("lines", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["k", "<Up>", "<C-y>", "<scroll-up-line>"],
+        mappings.add(modes.COMMAND, ["k", "<Up>", "<C-y>", "<scroll-up-line>"],
             "Scroll document up",
             function (args) { buffer.scrollVertical("lines", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, dactyl.has("mail") ? ["h", "<scroll-left-column>"] : ["h", "<Left>", "<scroll-left-column>"],
+        mappings.add(modes.COMMAND, dactyl.has("mail") ? ["h", "<scroll-left-column>"] : ["h", "<Left>", "<scroll-left-column>"],
             "Scroll document to the left",
             function (args) { buffer.scrollHorizontal("columns", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, dactyl.has("mail") ? ["l", "<scroll-right-column>"] : ["l", "<Right>", "<scroll-right-column>"],
+        mappings.add(modes.COMMAND, dactyl.has("mail") ? ["l", "<scroll-right-column>"] : ["l", "<Right>", "<scroll-right-column>"],
             "Scroll document to the right",
             function (args) { buffer.scrollHorizontal("columns", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["0", "^", "<scroll-begin>"],
+        mappings.add(modes.COMMAND, ["0", "^", "<scroll-begin>"],
             "Scroll to the absolute left of the document",
             function () { buffer.scrollToPercent(0, null); });
 
-        mappings.add(myModes, ["$", "<scroll-end>"],
+        mappings.add(modes.COMMAND, ["$", "<scroll-end>"],
             "Scroll to the absolute right of the document",
             function () { buffer.scrollToPercent(100, null); });
 
-        mappings.add(myModes, ["gg", "<Home>"],
+        mappings.add(modes.COMMAND, ["gg", "<Home>"],
             "Go to the top of the document",
             function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 0); },
             { count: true });
 
-        mappings.add(myModes, ["G", "<End>"],
+        mappings.add(modes.COMMAND, ["G", "<End>"],
             "Go to the end of the document",
             function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 100); },
             { count: true });
 
-        mappings.add(myModes, ["%", "<scroll-percent>"],
+        mappings.add(modes.COMMAND, ["%", "<scroll-percent>"],
             "Scroll to {count} percent of the document",
             function (args) {
                 dactyl.assert(args.count > 0 && args.count <= 100);
@@ -1724,59 +1581,59 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add(myModes, ["<C-d>", "<scroll-down>"],
+        mappings.add(modes.COMMAND, ["<C-d>", "<scroll-down>"],
             "Scroll window downwards in the buffer",
             function (args) { buffer._scrollByScrollSize(args.count, true); },
             { count: true });
 
-        mappings.add(myModes, ["<C-u>", "<scroll-up>"],
+        mappings.add(modes.COMMAND, ["<C-u>", "<scroll-up>"],
             "Scroll window upwards in the buffer",
             function (args) { buffer._scrollByScrollSize(args.count, false); },
             { count: true });
 
-        mappings.add(myModes, ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-page-up>"],
+        mappings.add(modes.COMMAND, ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-page-up>"],
             "Scroll up a full page",
             function (args) { buffer.scrollVertical("pages", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["<C-f>", "<PageDown>", "<Space>", "<scroll-page-down>"],
+        mappings.add(modes.COMMAND, ["<C-f>", "<PageDown>", "<Space>", "<scroll-page-down>"],
             "Scroll down a full page",
             function (args) { buffer.scrollVertical("pages", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["]f", "<previous-frame>"],
+        mappings.add(modes.COMMAND, ["]f", "<previous-frame>"],
             "Focus next frame",
             function (args) { buffer.shiftFrameFocus(Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["[f", "<next-frame>"],
+        mappings.add(modes.COMMAND, ["[f", "<next-frame>"],
             "Focus previous frame",
             function (args) { buffer.shiftFrameFocus(-Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add(myModes, ["]]", "<next-page>"],
+        mappings.add(modes.COMMAND, ["]]", "<next-page>"],
             "Follow the link labeled 'next' or '>' if it exists",
             function (args) {
                 buffer.findLink("next", options["nextpattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
-        mappings.add(myModes, ["[[", "<previous-page>"],
+        mappings.add(modes.COMMAND, ["[[", "<previous-page>"],
             "Follow the link labeled 'prev', 'previous' or '<' if it exists",
             function (args) {
                 buffer.findLink("previous", options["previouspattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
-        mappings.add(myModes, ["gf", "<view-source>"],
+        mappings.add(modes.COMMAND, ["gf", "<view-source>"],
             "Toggle between rendered and source view",
             function () { buffer.viewSource(null, false); });
 
-        mappings.add(myModes, ["gF", "<view-source-externally>"],
+        mappings.add(modes.COMMAND, ["gF", "<view-source-externally>"],
             "View source with an external editor",
             function () { buffer.viewSource(null, true); });
 
-        mappings.add(myModes, ["gi", "<focus-input>"],
+        mappings.add(modes.COMMAND, ["gi", "<focus-input>"],
             "Focus last used input field",
             function (args) {
                 let elem = buffer.lastInputField;
@@ -1808,7 +1665,7 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add(myModes, ["gP"],
+        mappings.add(modes.COMMAND, ["gP"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1816,7 +1673,7 @@ var Buffer = Module("buffer", {
                 dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB, background: true });
             });
 
-        mappings.add(myModes, ["p", "<MiddleMouse>", "<open-clipboard-url>"],
+        mappings.add(modes.COMMAND, ["p", "<MiddleMouse>", "<open-clipboard-url>"],
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1824,7 +1681,7 @@ var Buffer = Module("buffer", {
                 dactyl.open(url);
             });
 
-        mappings.add(myModes, ["P", "<tab-open-clipboard-url>"],
+        mappings.add(modes.COMMAND, ["P", "<tab-open-clipboard-url>"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1833,16 +1690,16 @@ var Buffer = Module("buffer", {
             });
 
         // reloading
-        mappings.add(myModes, ["r", "<reload>"],
+        mappings.add(modes.COMMAND, ["r", "<reload>"],
             "Reload the current web page",
             function () { tabs.reload(tabs.getTab(), false); });
 
-        mappings.add(myModes, ["R", "<full-reload>"],
+        mappings.add(modes.COMMAND, ["R", "<full-reload>"],
             "Reload while skipping the cache",
             function () { tabs.reload(tabs.getTab(), true); });
 
         // yanking
-        mappings.add(myModes, ["Y", "<yank-word>"],
+        mappings.add(modes.COMMAND, ["Y", "<yank-word>"],
             "Copy selected text or current word",
             function () {
                 let sel = buffer.currentWord;
@@ -1851,66 +1708,88 @@ var Buffer = Module("buffer", {
             });
 
         // zooming
-        mappings.add(myModes, ["zi", "+", "<text-zoom-in>"],
+        mappings.add(modes.COMMAND, ["zi", "+", "<text-zoom-in>"],
             "Enlarge text zoom of current web page",
             function (args) { buffer.zoomIn(Math.max(args.count, 1), false); },
             { count: true });
 
-        mappings.add(myModes, ["zm", "<text-zoom-more>"],
+        mappings.add(modes.COMMAND, ["zm", "<text-zoom-more>"],
             "Enlarge text zoom of current web page by a larger amount",
             function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
-        mappings.add(myModes, ["zo", "-", "<text-zoom-out>"],
+        mappings.add(modes.COMMAND, ["zo", "-", "<text-zoom-out>"],
             "Reduce text zoom of current web page",
             function (args) { buffer.zoomOut(Math.max(args.count, 1), false); },
             { count: true });
 
-        mappings.add(myModes, ["zr", "<text-zoom-reduce>"],
+        mappings.add(modes.COMMAND, ["zr", "<text-zoom-reduce>"],
             "Reduce text zoom of current web page by a larger amount",
             function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
-        mappings.add(myModes, ["zz", "<text-zoom>"],
+        mappings.add(modes.COMMAND, ["zz", "<text-zoom>"],
             "Set text zoom value of current web page",
             function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, false); },
             { count: true });
 
-        mappings.add(myModes, ["ZI", "zI", "<full-zoom-in>"],
+        mappings.add(modes.COMMAND, ["ZI", "zI", "<full-zoom-in>"],
             "Enlarge full zoom of current web page",
             function (args) { buffer.zoomIn(Math.max(args.count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["ZM", "zM", "<full-zoom-more>"],
+        mappings.add(modes.COMMAND, ["ZM", "zM", "<full-zoom-more>"],
             "Enlarge full zoom of current web page by a larger amount",
             function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["ZO", "zO", "<full-zoom-out>"],
+        mappings.add(modes.COMMAND, ["ZO", "zO", "<full-zoom-out>"],
             "Reduce full zoom of current web page",
             function (args) { buffer.zoomOut(Math.max(args.count, 1), true); },
             { count: true });
 
-        mappings.add(myModes, ["ZR", "zR", "<full-zoom-reduce>"],
+        mappings.add(modes.COMMAND, ["ZR", "zR", "<full-zoom-reduce>"],
             "Reduce full zoom of current web page by a larger amount",
             function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
-        mappings.add(myModes, ["zZ", "<full-zoom>"],
+        mappings.add(modes.COMMAND, ["zZ", "<full-zoom>"],
             "Set full zoom value of current web page",
             function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, true); },
             { count: true });
 
         // page info
-        mappings.add(myModes, ["<C-g>", "<page-info>"],
+        mappings.add(modes.COMMAND, ["<C-g>", "<page-info>"],
             "Print the current file name",
             function () { buffer.showPageInfo(false); });
 
-        mappings.add(myModes, ["g<C-g>", "<more-page-info>"],
+        mappings.add(modes.COMMAND, ["g<C-g>", "<more-page-info>"],
             "Print file information",
             function () { buffer.showPageInfo(true); });
     },
     options: function () {
+        options.add(["encoding", "enc"],
+            "The current buffer's character encoding",
+            "string", "UTF-8",
+            {
+                scope: Option.SCOPE_LOCAL,
+                getter: function () config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset,
+                setter: function (val) {
+                    if (options["encoding"] == val)
+                        return val;
+
+                    // Stolen from browser.jar/content/browser/browser.js, more or less.
+                    try {
+                        config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
+                        PlacesUtils.history.setCharsetForURI(getWebNavigation().currentURI, val);
+                        getWebNavigation().reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
+                    }
+                    catch (e) { dactyl.reportError(e); }
+                    return null;
+                },
+                completer: function (context) completion.charset(context)
+            });
+
         options.add(["iskeyword", "isk"],
             "Regular expression defining which characters constitute word characters",
             "string", '[^\\s.,!?:;/"\'^$%&?()[\\]{}<>#*+|=~_-]',

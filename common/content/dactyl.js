@@ -397,9 +397,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (jsmodules.__proto__ != window)
             str = "with (window) { with (modules) { (this.eval || eval)(" + str.quote() + ") } }";
 
+        let info = contexts.context;
         if (fileName == null)
-            if (io.sourcing && io.sourcing.file[0] !== "[")
-                ({ file: fileName, line: lineNumber, context: ctxt }) = io.sourcing;
+            if (info && info.file[0] !== "[")
+                ({ file: fileName, line: lineNumber, context: ctxt }) = info;
             else try {
                 if (!context)
                     context = userContext || ctxt;
@@ -410,8 +411,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 this.loadScript("resource://dactyl-content/eval.js", context);
                 if (context[EVAL_ERROR]) {
                     try {
-                        context[EVAL_ERROR].fileName = io.sourcing.file;
-                        context[EVAL_ERROR].lineNumber += io.sourcing.line;
+                        context[EVAL_ERROR].fileName = info.file;
+                        context[EVAL_ERROR].lineNumber += info.line;
                     }
                     catch (e) {}
                     throw context[EVAL_ERROR];
@@ -677,7 +678,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
             fileMap["versions"] = function () {
-                let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec).responseText;
+                let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec,
+                                        { mimeType: "text/plain;charset=UTF-8" })
+                               .responseText;
 
                 let re = util.regexp(<![CDATA[
                     ^ (?P<space> \s*)
@@ -725,8 +728,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             }
 
                             list = null;
-                            if (level == 0 && /^.*:\n$/.test())
-                                var elem = <h2>{template.linkifyHelp(par.slice(0, -1), true)}</h2>;
+                            if (level == 0 && /^.*:\n$/.test(match.par))
+                                res += <h2>{template.linkifyHelp(par.slice(0, -1), true)}</h2>;
                             else {
                                 let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
                                 res += <p highlight={group + " HelpNews"}>{
@@ -756,7 +759,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     unescape(encodeURI( // UTF-8 handling hack.
                     <document xmlns={NS} xmlns:dactyl={NS}
                         name="versions" title={config.appName + " Versions"}>
-                        <h1 tag="versions news">{config.appName} Versions</h1>
+                        <h1 tag="versions news NEWS">{config.appName} Versions</h1>
                         <toc start="2"/>
 
                         {rec(NEWS, 0)}
@@ -1030,7 +1033,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         get: function globalVariables() this._globalVariables
     }),
 
-    loadPlugins: function (args) {
+    loadPlugins: function (args, force) {
         function sourceDirectory(dir) {
             dactyl.assert(dir.isReadable(), "E484: Can't open file " + dir.path);
 
@@ -1041,9 +1044,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 loadplugins = { __proto__: loadplugins, value: args.map(Option.parseRegexp) }
 
             dir.readDirectory(true).forEach(function (file) {
-                if (file.isFile() && loadplugins.getKey(file.path) && !(file.path in dactyl.pluginFiles)) {
+                if (file.isFile() && loadplugins.getKey(file.path) && !(!force && file.path in dactyl.pluginFiles)) {
                     try {
-                        io.source(file.path, false);
+                        io.source(file.path);
                         dactyl.pluginFiles[file.path] = true;
                     }
                     catch (e) {
@@ -1356,8 +1359,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      */
     reportError: function reportError(error, echo) {
         if (error instanceof FailedAssertion || error.message === "Interrupted") {
-
-            let prefix = io.sourcing ? io.sourcing.file + ":" + io.sourcing.line + ": " : "";
+            let context = contexts.context;
+            let prefix = context ? context.file + ":" + context.line + ": " : "";
             if (error.message && error.message.indexOf(prefix) !== 0)
                 error.message = prefix + error.message;
 
@@ -1456,8 +1459,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     }
 }, {
     events: function () {
-        events.addSessionListener(window, "click", dactyl.closure.onClick, true);
-        events.addSessionListener(window, "dactyl.execute", dactyl.closure.onExecute, true);
+        events.listen(window, "click", dactyl.closure.onClick, true);
+        events.listen(window, "dactyl.execute", dactyl.closure.onExecute, true);
     },
     // Only general options are added here, which are valid for all Dactyl extensions
     options: function () {
@@ -1753,10 +1756,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         commands.add(["loadplugins", "lpl"],
             "Load all plugins immediately",
             function (args) {
-                dactyl.loadPlugins(args.length ? args : null);
+                dactyl.loadPlugins(args.length ? args : null, args.bang);
             },
             {
                 argCount: "*",
+                bang: true,
                 keepQuotes: true,
                 serialGroup: 10,
                 serialize: function ()  [
@@ -1792,7 +1796,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         commands.add(["reh[ash]"],
             "Reload the " + config.appName + " add-on",
-            function (args) { util.rehash(args); },
+            function (args) {
+                if (args.trailing)
+                    JSMLoader.rehashCmd = args.trailing; // Hack.
+                args.break = true;
+                util.rehash(args);
+            },
             {
                 argCount: "0",
                 options: [
@@ -1825,8 +1834,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function () { dactyl.restart(); });
 
         function findToolbar(name) util.evaluateXPath(
-            "./*[@toolbarname=" + util.escapeString(name, "'") + "]",
-            toolbox).snapshotItem(0);
+            "//*[@toolbarname=" + util.escapeString(name, "'") + "]",
+            document).snapshotItem(0);
 
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {
@@ -2010,7 +2019,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         completion.toolbar = function toolbar(context) {
             context.title = ["Toolbar"];
             context.keys = { text: function (item) item.getAttribute("toolbarname"), description: function () "" };
-            context.completions = util.evaluateXPath("./*[@toolbarname]", toolbox);
+            context.completions = util.evaluateXPath("//*[@toolbarname]", document);
         };
 
         completion.window = function window(context) {
@@ -2076,14 +2085,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (dactyl.commandLineOptions.rcFile) {
                     let filename = dactyl.commandLineOptions.rcFile;
                     if (!/^(NONE|NORC)$/.test(filename))
-                        io.source(io.File(filename).path, false); // let io.source handle any read failure like Vim
+                        io.source(io.File(filename).path, { group: contexts.user });
                 }
                 else {
                     if (init)
                         dactyl.execute(init);
                     else {
                         if (rcFile) {
-                            io.source(rcFile.path, false);
+                            io.source(rcFile.path, { group: contexts.user });
                             services.environment.set("MY_" + config.idName + "RC", rcFile.path);
                         }
                         else
@@ -2093,7 +2102,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
                         let localRCFile = io.getRCFile(io.cwd);
                         if (localRCFile && !localRCFile.equals(rcFile))
-                            io.source(localRCFile.path, false);
+                            io.source(localRCFile.path, { group: contexts.user });
                     }
                 }
 
@@ -2117,6 +2126,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 dactyl.commandLineOptions.postCommands.forEach(function (cmd) {
                     dactyl.execute(cmd);
                 });
+
+            if (JSMLoader.rehashCmd)
+                dactyl.execute(JSMLoader.rehashCmd);
+            JSMLoader.rehashCmd = null;
 
             dactyl.fullyInitialized = true;
             dactyl.triggerObserver("enter", null);

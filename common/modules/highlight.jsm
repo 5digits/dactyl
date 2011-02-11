@@ -23,8 +23,7 @@ Highlight.liveProperty = function (name, prop) {
                 val = Array.slice(val);
             else
                 val = update({}, val);
-            if (Object.freeze)
-                Object.freeze(val);
+            Object.freeze(val);
         }
         this.set(name, val);
 
@@ -82,7 +81,7 @@ update(Highlight.prototype, {
     get cssText() this.inheritedCSS + this.value,
 
     toString: function () "Highlight(" + this.class + ")\n\t" +
-        [k + ": " + String.quote(v) for ([k, v] in this)] .join("\n\t")
+        [k + ": " + String(v).quote() for ([k, v] in this)] .join("\n\t")
 });
 
 /**
@@ -291,16 +290,21 @@ var Highlights = Module("Highlight", {
 }, {
     commands: function (dactyl, modules) {
         const { autocommands, commands, completion, CommandOption, config, io } = modules;
+
+        let lastScheme;
         commands.add(["colo[rscheme]"],
             "Load a color scheme",
             function (args) {
                 let scheme = args[0];
+                if (lastScheme)
+                    lastScheme.unload();
 
                 if (scheme == "default")
                     highlight.clear();
-                else
-                    dactyl.assert(modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]),
-                        "E185: Cannot find color scheme " + scheme);
+                else {
+                    lastScheme = modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]);
+                    dactyl.assert(lastScheme, "E185: Cannot find color scheme " + scheme);
+                }
                 autocommands.trigger("ColorScheme", { name: scheme });
             },
             {

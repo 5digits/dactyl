@@ -677,7 +677,7 @@ var Hints = Module("hints", {
 
         let appContent = document.getElementById("appcontent");
         if (appContent)
-            events.addSessionListener(appContent, "scroll", this.resizeTimer.closure.tell, false);
+            events.listen(appContent, "scroll", this.resizeTimer.closure.tell, false);
 
         const Mode = Hints.Mode;
         Mode.defaultValue("tags", function () function () options["hinttags"]);
@@ -1159,22 +1159,22 @@ var Hints = Module("hints", {
             function ({ self }) { self.escapeNumbers = !self.escapeNumbers; });
     },
     options: function () {
-        const DEFAULT_HINTTAGS =
-            util.makeXPath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
-                            "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or @tabindex or @role='link' or @role='button']"]);
-
-        function xpath(arg) Option.quote(util.makeXPath(arg));
+        function xpath(arg) util.makeXPath(arg);
         options.add(["extendedhinttags", "eht"],
             "XPath strings of hintable elements for extended hint modes",
-            "regexpmap", "[iI]:" + xpath(["img"]) +
-                        ",[asOTivVWy]:" + xpath(["{a,area}[@href]", "{img,iframe}[@src]"]) +
-                        ",[F]:" + xpath(["body", "code", "div", "html", "p", "pre", "span"]) +
-                        ",[S]:" + xpath(["input[not(@type='hidden')]", "textarea", "button", "select"]),
+            "regexpmap", {
+                "[iI]": xpath(["img"]),
+                "[asOTivVWy]": xpath(["{a,area}[@href]", "{img,iframe}[@src]"]),
+                "[F]": xpath(["body", "code", "div", "html", "p", "pre", "span"]),
+                "[S]": xpath(["input[not(@type='hidden')]", "textarea", "button", "select"])
+            },
             { validator: Option.validateXPath });
 
         options.add(["hinttags", "ht"],
             "XPath string of hintable elements activated by 'f' and 'F'",
-            "string", DEFAULT_HINTTAGS,
+            "string", xpath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
+                             "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or " +
+                               "@tabindex or @role='link' or @role='button']"]),
             { validator: Option.validateXPath });
 
         options.add(["hintkeys", "hk"],

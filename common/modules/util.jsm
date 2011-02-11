@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("util", {
     exports: ["frag", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
-    use: ["config", "highlight", "storage", "template"]
+    use: ["commands", "config", "highlight", "storage", "template"]
 }, this);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
@@ -21,13 +21,6 @@ var XHTML = Namespace("html", "http://www.w3.org/1999/xhtml");
 var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
-
-memoize(this, "Commands", function () {
-    // FIXME
-    let obj = { Module: Class };
-    JSMLoader.loadSubScript("resource://dactyl-content/commands.js", obj);
-    return obj.Commands;
-});
 
 var FailedAssertion = Class("FailedAssertion", ErrorBase);
 var Point = Struct("x", "y");
@@ -132,7 +125,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         obj.observers[target].call(obj, subject, data);
                 }
                 catch (e) {
-                    util.reportError(e);
+                    if (typeof util === "undefined")
+                        dump("dactyl: error: " + e + "\n" + (e.stack || Error().stack).replace(/^/gm, "dactyl:    "));
+                    else
+                        util.reportError(e);
                 }
             });
 
@@ -770,14 +766,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         try {
             let xmlhttp = services.Xmlhttp();
             xmlhttp.mozBackgroundRequest = true;
-            if (params.callback) {
-                xmlhttp.onload = function handler(event) { util.trapErrors(params.callback, params, xmlhttp, event) };
-                xmlhttp.onerror = xmlhttp.onload;
+
+            let async = params.callback || params.onload || params.onerror;
+            if (async) {
+                xmlhttp.onload = function handler(event) { util.trapErrors(params.onload || params.callback, params, xmlhttp, event) };
+                xmlhttp.onerror = function handler(event) { util.trapErrors(params.onerror || params.callback, params, xmlhttp, event) };
             }
             if (params.mimeType)
                 xmlhttp.overrideMimeType(params.mimeType);
 
-            xmlhttp.open(params.method || "GET", url, !!params.callback, params.user, params.pass);
+            xmlhttp.open(params.method || "GET", url, async,
+                         params.user, params.pass);
+
             xmlhttp.send(null);
             return xmlhttp;
         }
@@ -1042,7 +1042,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             JSMLoader.cleanup();
 
-            services.observer.addObserver(this, "dactyl-rehash", true);
+            if (!this.rehashing)
+                services.observer.addObserver(this, "dactyl-rehash", true);
         },
         "dactyl-rehash": function () {
             services.observer.removeObserver(this, "dactyl-rehash");
@@ -1083,6 +1084,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             this._loadOverlay(window, obj(window));
         }
     },
+
     _loadOverlay: function _loadOverlay(window, obj) {
         let doc = window.document;
         if (!doc.dactylOverlayElements) {
@@ -1353,7 +1355,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
          * @param {string} string The string to search.
          * @param {number} lastIndex The index at which to begin searching. @optional
          */
-        iterate: function iterate(regexp, string, lastIndex) {
+        iterate: function iterate(regexp, string, lastIndex) iter(function () {
             regexp.lastIndex = lastIndex = lastIndex || 0;
             let match;
             while (match = regexp.exec(string)) {
@@ -1363,7 +1365,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (match[0].length == 0 || !regexp.global)
                     break;
             }
-        }
+        }())
     }),
 
     rehash: function (args) {
@@ -1407,6 +1409,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             catch (e) { dump(e + "\n"); }
         }
+
+        // ctypes.open("libc.so.6").declare("kill", ctypes.default_abi, ctypes.void_t, ctypes.int, ctypes.int)(
+        //     ctypes.open("libc.so.6").declare("getpid", ctypes.default_abi, ctypes.int)(), 2)
     },
 
     /**
@@ -1598,6 +1603,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     trapErrors: function trapErrors(func, self) {
         try {
+            if (isString(func))
+                func = self[func];
             return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {

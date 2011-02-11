@@ -106,9 +106,13 @@ var Download = Class("Download", {
 
             let file = io.File(this.targetFile);
             if (file.isExecutable() && prefs.get("browser.download.manager.alertOnEXEOpen", true))
-                this.list.modules.commandline.input("This will launch an executable download. Continue? (yes/[no]) ",
+                this.list.modules.commandline.input("This will launch an executable download. Continue? (yes/[no]/always) ",
                     function (resp) {
-                        if (resp && resp.match(/^y(es)?$/i))
+                        if (/^a(lways)$/i.test(resp)) {
+                            prefs.set("browser.download.manager.alertOnEXEOpen", false);
+                            resp = "yes";
+                        }
+                        if (/^y(es)?$/i.test(resp))
                             action.call(self);
                     });
             else
@@ -144,10 +148,7 @@ var Download = Class("Download", {
 
     updateStatus: function updateStatus() {
 
-        if (this.alive)
-            this.nodes.row.setAttribute("active", "true");
-        else
-            this.nodes.row.removeAttribute("active");
+        this.nodes.row[this.alive ? "setAttribute" : "removeAttribute"]("active", "true");
 
         this.nodes.row.setAttribute("status", this.status);
         this.nodes.state.textContent = util.capitalize(this.status);

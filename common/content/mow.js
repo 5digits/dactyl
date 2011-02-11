@@ -9,6 +9,33 @@
 var MOW = Module("mow", {
     init: function () {
 
+        this._resize = Timer(20, 400, function () {
+            if (this.visible)
+                this.resize(false);
+
+            if (this.visible && isinstance(modes.main, modes.OUTPUT_MULTILINE))
+                this.updateMorePrompt();
+        }, this);
+
+        this._timer = Timer(20, 400, function () {
+            if (modes.have(modes.OUTPUT_MULTILINE)) {
+                this.resize(true);
+
+                if (options["more"] && this.isScrollable(1)) {
+                    // start the last executed command's output at the top of the screen
+                    let elements = this.document.getElementsByClassName("ex-command-output");
+                    elements[elements.length - 1].scrollIntoView(true);
+                }
+                else
+                    this.body.scrollTop = this.body.scrollHeight;
+
+                dactyl.focus(this.window);
+                this.updateMorePrompt();
+            }
+        }, this);
+
+        events.listen(window, this, "windowEvents");
+
         let fontSize = util.computedStyle(document.documentElement).fontSize;
         styles.system.add("font-size", "dactyl://content/buffer.xhtml",
                           "body { font-size: " + fontSize + "; } \
@@ -56,8 +83,8 @@ var MOW = Module("mow", {
     widgets: Class.memoize(function () commandline.widgets),
 
     body: Class.memoize(function () this.widget.contentDocument.documentElement),
-    document: Class.memoize(function () this.widget.contentDocument),
-    window: Class.memoize(function () this.widget.contentWindow),
+    get document() this.widget.contentDocument,
+    get window() this.widget.contentWindow,
 
     /**
      * Display a multi-line message.
@@ -110,10 +137,9 @@ var MOW = Module("mow", {
 
         // FIXME: need to make sure an open MOW is closed when commands
         //        that don't generate output are executed
-        if (this.widgets.mowContainer.collapsed) {
+        if (!this.visible) {
             this.body.scrollTop = 0;
-            while (body.firstChild)
-                body.removeChild(body.firstChild);
+            body.textContent = "";
         }
 
         body.appendChild(output);
@@ -122,18 +148,9 @@ var MOW = Module("mow", {
         if (!silent)
             dactyl.triggerObserver("echoMultiline", data, highlightGroup, output);
 
-        this.resize(true);
-
-        if (options["more"] && this.isScrollable(1)) {
-            // start the last executed command's output at the top of the screen
-            let elements = this.document.getElementsByClassName("ex-command-output");
-            elements[elements.length - 1].scrollIntoView(true);
-        }
-        else
-            this.body.scrollTop = this.body.scrollHeight;
-
-        dactyl.focus(this.window);
-        this.updateMorePrompt();
+        this._timer.tell();
+        if (!this.visible)
+            this._timer.flush();
     },
 
     events: {
@@ -168,6 +185,12 @@ var MOW = Module("mow", {
         },
         unload: function onUnload(event) {
             event.preventDefault();
+        }
+    },
+
+    windowEvents: {
+        resize: function onResize(event) {
+            this._resize.tell();
         }
     },
 
@@ -207,14 +230,14 @@ var MOW = Module("mow", {
      *     already so.
      */
     resize: function updateOutputHeight(open, extra) {
-        if (!open && this.widgets.mowContainer.collapsed)
+        if (!(open || this.visible))
             return;
 
         let doc = this.widget.contentDocument;
 
         let availableHeight = config.outputHeight;
-        if (!this.widgets.mowContainer.collapsed)
-            availableHeight += parseFloat(this.widgets.mowContainer.height);
+        if (this.visible)
+            availableHeight += parseFloat(this.widgets.mowContainer.height || 0);
         availableHeight -= extra || 0;
 
         doc.body.style.minWidth = this.widgets.commandbar.commandline.scrollWidth + "px";
@@ -224,6 +247,7 @@ var MOW = Module("mow", {
             0);
 
         doc.body.style.minWidth = "";
+
         this.visible = true;
     },
 
@@ -242,7 +266,7 @@ var MOW = Module("mow", {
      *     and what they do.
      */
     updateMorePrompt: function updateMorePrompt(force, showHelp) {
-        if (this.widgets.mowContainer.collapsed)
+        if (!this.visible)
             return this.widgets.message = null;
         let elem = this.widget.contentDocument.documentElement;
 
@@ -255,6 +279,7 @@ var MOW = Module("mow", {
     },
 
     visible: Modes.boundProperty({
+        get: function get_mowVisible() !this.widgets.mowContainer.collapsed,
         set: function set_mowVisible(value) {
             this.widgets.mowContainer.collapsed = !value;
 

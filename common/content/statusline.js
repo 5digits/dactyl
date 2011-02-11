@@ -161,24 +161,25 @@ var StatusLine = Module("statusline", {
         // when session information is available, add [+] when we can go
         // backwards, [-] when we can go forwards
         let modified = "";
-        if (window.getWebNavigation) {
-            let sh = window.getWebNavigation().sessionHistory;
-            if (sh && sh.index > 0)
-                modified += "+";
-            if (sh && sh.index < sh.count - 1)
-                modified += "-";
+        if (url === buffer.uri.spec) {
+            if (window.getWebNavigation) {
+                let sh = window.getWebNavigation().sessionHistory;
+                if (sh && sh.index > 0)
+                    modified += "+";
+                if (sh && sh.index < sh.count - 1)
+                    modified += "-";
+            }
+            if (modules.bookmarkcache) {
+                if (bookmarkcache.isBookmarked(url))
+                    modified += UTF8("❤");
+                    //modified += UTF8("♥");
+            }
+            if (modules.quickmarks)
+                modified += quickmarks.find(url.replace(/#.*/, "")).join("");
         }
-        if (modules.bookmarkcache) {
-            if (bookmarkcache.isBookmarked(buffer.uri))
-                modified += UTF8("❤");
-                //modified += UTF8("♥");
-        }
-        if (modules.quickmarks)
-            modified += quickmarks.find(url.replace(/#.*/, "")).join("");
 
         url = losslessDecodeURI(url);
 
-        // make it even more Vim-like
         if (url == "about:blank") {
             if (!buffer.title)
                 url = "[No Name]";
