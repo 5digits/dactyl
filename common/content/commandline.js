@@ -330,6 +330,8 @@ var CommandMode = Class("CommandMode", {
             this.completions.autocompleteTimer.flush(true);
     },
 
+    get active() this === commandline.commandSession,
+
     get holdFocus() this.widgets.active.command.inputField,
 
     get mappingSelf() this,
@@ -347,6 +349,8 @@ var CommandMode = Class("CommandMode", {
 
     leave: function (stack) {
         if (!stack.push) {
+            commandline.commandSession = null;
+
             if (this.completions)
                 this.completions.cleanup();
 
@@ -361,7 +365,6 @@ var CommandMode = Class("CommandMode", {
                     commandline.hide();
                 this[this.accepted ? "onSubmit" : "onCancel"](commandline.command);
             }, this);
-            commandline.commandSession = null;
         }
     },
 
@@ -990,8 +993,8 @@ var CommandLine = Module("commandline", {
                 if (events.feedingKeys)
                     this.ignoredCount++;
                 if (options["autocomplete"].length) {
-                    this.complete(true, false);
                     this.itemList.visible = true;
+                    this.complete(true, false);
                 }
             }, this);
             this.tabTimer = Timer(0, 0, function tabTell(event) {
@@ -1061,6 +1064,8 @@ var CommandLine = Module("commandline", {
             this.context.reset();
             this.context.tabPressed = tabPressed;
             this.session.complete(this.context);
+            if (this.session.active)
+                return;
             this.context.updateAsync = true;
             this.reset(show, tabPressed);
             this.wildIndex = 0;
