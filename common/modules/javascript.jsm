@@ -319,115 +319,109 @@ var JavaScript = Module("javascript", {
         return [dot + 1 + space.length, obj, key];
     },
 
-    _fill: function (context, args) {
-        context.title = [args.name];
-        context.anchored = args.anchored;
-        context.filter = args.filter;
-        context.itemCache = context.parent.itemCache;
-        context.key = args.name + args.last;
-
-        if (args.last == null)
-            // We're not looking for a quoted string, so filter out anything that's not a valid identifier
-            context.filters.push(function (item) /^[a-zA-Z_$][\w$]*$/.test(item.text));
-        else {
-            context.quote = [args.last, function (text) util.escapeString(text, ""), args.last];
-            if (args.prefix)
-                context.filters.push(function (item) item.item.indexOf(args.prefix) === 0);
-        }
-
-        args.completer.call(this, context, args);
-    },
-
     _complete: function (objects, key, compl, string, last) {
         const self = this;
 
         if (!this.window.Object.getOwnPropertyNames && !services.debugger.isOn && !this.context.message)
             this.context.message = "For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
 
-        let orig = compl;
+        let base = this.context.fork("js", this._top.offset);
+        base.forceAnchored = true;
+        base.filter = last == null ? key : string;
+        let prefix  = last != null ? key : "";
+
+        if (last == null) // We're not looking for a quoted string, so filter out anything that's not a valid identifier
+            base.filters.push(function (item) /^[a-zA-Z_$][\w$]*$/.test(item.text));
+        else {
+            base.quote = [last, function (text) util.escapeString(text, ""), last];
+            if (prefix)
+                base.filters.push(function (item) item.item.indexOf(prefix) === 0);
+        }
+
         if (!compl) {
-            compl = function (context, args, recurse) {
+            base.process[1] = function highlight(item, v)
+                template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
 
-                context.process[1] = function highlight(item, v)
-                    template.highlight(typeof v == "xml" ? new String(v.toXMLString()) : v, true, 200);
+            // Sort in a logical fashion for object keys:
+            //  Numbers are sorted as numbers, rather than strings, and appear first.
+            //  Constants are unsorted, and appear before other non-null strings.
+            //  Other strings are sorted in the default manner.
 
-                // Sort in a logical fashion for object keys:
-                //  Numbers are sorted as numbers, rather than strings, and appear first.
-                //  Constants are unsorted, and appear before other non-null strings.
-                //  Other strings are sorted in the default manner.
-                let compare = context.compare;
-                function isnan(item) item != '' && isNaN(item);
-                context.compare = function (a, b) {
-                    if (!isnan(a.key) && !isnan(b.key))
-                        return a.key - b.key;
-                    return isnan(b.key) - isnan(a.key) || compare(a, b);
-                };
-                context.keys = {
-                    text: args.prefix ? function (text) text.substr(args.prefix.length) : util.identity,
-                    description: function (item) self.getKey(args.obj, item),
-                    key: function (item) {
-                        if (!isNaN(key))
-                            return parseInt(key);
-                         if (/^[A-Z_][A-Z0-9_]*$/.test(key))
-                            return "";
-                        return item;
-                    }
-                };
+            let isnan = function isnan(item) item != '' && isNaN(item);
+            let compare = base.compare;
 
-                if (!context.anchored) // We've already listed anchored matches, so don't list them again here.
-                    context.filters.push(function (item) util.compareIgnoreCase(item.text.substr(0, this.filter.length), this.filter));
-                if (args.obj == self.cache.evalContext)
-                    context.regenerate = true;
-                context.generate = function () self.objectKeys(args.obj, !recurse);
+            base.compare = function (a, b) {
+                if (!isnan(a.key) && !isnan(b.key))
+                    return a.key - b.key;
+                return isnan(b.key) - isnan(a.key) || compare(a, b);
+            };
+
+            base.keys = {
+                text: prefix ? function (text) text.substr(prefix.length) : util.identity,
+                description: function (item) self.getKey(this.obj, item),
+                key: function (item) {
+                    if (!isNaN(key))
+                        return parseInt(key);
+                     if (/^[A-Z_][A-Z0-9_]*$/.test(key))
+                        return "";
+                    return item;
+                }
             };
         }
 
-        let args = {
-            filter: last == null ? key : string,
-            last: last,
-            prefix: last != null ? key : ""
-        };
+        // We've already listed anchored matches, so don't list them again here.
+        function unanchored(item) util.compareIgnoreCase(item.text.substr(0, this.filter.length), this.filter);
 
-        this.context.forceAnchored = true;
+        objects.forEach(function (obj) {
+            let context = base.fork(obj[1]);
+            context.title = [obj[1]];
+            context.keys.obj = function () obj[0];
+            context.key = obj[1] + last;
+            if (obj[0] == this.cache.evalContext)
+                context.regenerate = true;
+
+            obj.ctxt_t = context.fork("toplevel");
+            if (!compl) {
+                obj.ctxt_p = context.fork("prototypes");
+                obj.ctxt_t.generate = function () self.objectKeys(obj[0], true);
+                obj.ctxt_p.generate = function () self.objectKeys(obj[0], false);
+            }
+        }, this);
+
         // TODO: Make this a generic completion helper function.
-        for (let [, obj] in Iterator(objects))
-            this.context.fork(obj[1], this._top.offset, this, this._fill,
-                update({
-                    obj: obj[0],
-                    name: obj[1],
-                    anchored: true,
-                    completer: compl
-                }, args));
+        objects.forEach(function (obj) {
+            obj.ctxt_t.split(obj[1] + "/anchored", this, function (context) {
+                context.anchored = true;
+                if (compl)
+                    compl(context, obj[0]);
+            });
+        });
 
-        if (orig)
+        if (compl)
             return;
 
-        for (let [, obj] in Iterator(objects))
-            this.context.fork(obj[1] + "/prototypes", this._top.offset, this, this._fill,
-                update({
-                    obj: obj[0],
-                    name: obj[1] + " (prototypes)",
-                    anchored: true,
-                    completer: function (a, b) compl(a, b, true)
-                }, args));
+        objects.forEach(function (obj) {
+            obj.ctxt_p.split(obj[1] + "/anchored", this, function (context) {
+                context.anchored = true;
+                context.title[0] += " (prototypes)";
+            });
+        });
 
-        for (let [, obj] in Iterator(objects))
-            this.context.fork(obj[1] + "/substrings", this._top.offset, this, this._fill,
-                update({
-                    obj: obj[0],
-                    name: obj[1] + " (substrings)",
-                    anchored: false,
-                    completer: compl
-                }, args));
+        objects.forEach(function (obj) {
+            obj.ctxt_t.split(obj[1] + "/unanchored", this, function (context) {
+                context.anchored = false;
+                context.title[0] += " (substrings)";
+                context.filters.push(unanchored);
+            });
+        });
 
-        for (let [, obj] in Iterator(objects))
-            this.context.fork(obj[1] + "/prototypes/substrings", this._top.offset, this, this._fill,
-                update({
-                    obj: obj[0],
-                    name: obj[1] + " (prototype substrings)",
-                    anchored: false,
-                    completer: function (a, b) compl(a, b, true)
-                }, args));
+        objects.forEach(function (obj) {
+            obj.ctxt_p.split(obj[1] + "/unanchored", this, function (context) {
+                context.anchored = false;
+                context.title[0] += " (prototype substrings)";
+                context.filters.push(unanchored);
+            });
+        });
     },
 
     _getKey: function () {
@@ -561,7 +555,7 @@ var JavaScript = Module("javascript", {
                 args.push(key + string);
 
                 let compl = function (context, obj) {
-                    let res = completer.call(self, context, funcName, obj.obj, args);
+                    let res = completer.call(self, context, funcName, obj, args);
                     if (res)
                         context.completions = res;
                 };
