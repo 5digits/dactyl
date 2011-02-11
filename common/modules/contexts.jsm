@@ -151,7 +151,7 @@ var Contexts = Module("contexts", {
                 memoize(contexts.Group.prototype, name, function () {
                     let group = constructor(this);
                     this.hives.push(group);
-                    delete contexts.groups;
+                    contexts.flush();
                     return group;
                 });
 
@@ -270,6 +270,11 @@ var Contexts = Module("contexts", {
 
     activeGroups: function (hive) this.initializedGroups().filter(function (g) g.filter(this), this.modules.buffer.uri),
 
+    flush: function flush() {
+        delete this.groups;
+        delete this.allGroups;
+    },
+
     initializedGroups: function (hive)
         let (need = hive ? [hive] : Object.keys(this.hives))
             this.groupList.filter(function (group) need.some(function (name) set.has(group, name))),
@@ -295,7 +300,7 @@ var Contexts = Module("contexts", {
             group.persist = persist;
         }
 
-        delete this.groups;
+        this.flush();
         return group;
     },
 
@@ -321,7 +326,7 @@ var Contexts = Module("contexts", {
 
         delete this.groupMap[name];
         delete this.hiveProto[name];
-        delete this.groups;
+        this.flush();
         return group;
     },
 

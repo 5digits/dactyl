@@ -39,9 +39,104 @@ var Abbreviation = Class("Abbreviation", {
     }
 });
 
+var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
+    init: function init(group) {
+        init.superapply(this, arguments);
+        this._store = {};
+    },
+
+    get empty() !values(this._store).nth(util.identity, 0),
+
+    /**
+     * Adds a new abbreviation.
+     *
+     * @param {Abbreviation} abbr The abbreviation to add.
+     */
+    add: function (abbr) {
+        if (!(abbr instanceof Abbreviation))
+            abbr = Abbreviation.apply(null, arguments);
+
+        for (let [, mode] in Iterator(abbr.modes)) {
+            if (!this._store[mode])
+                this._store[mode] = {};
+            this._store[mode][abbr.lhs] = abbr;
+        }
+    },
+
+    /**
+     * Returns the abbreviation with *lhs* in the given *mode*.
+     *
+     * @param {Mode} mode The mode of the abbreviation.
+     * @param {string} lhs The LHS of the abbreviation.
+     */
+    get: function (mode, lhs) {
+        let abbrevs = this._store[mode];
+        return abbrevs && set.has(abbrevs, lhs) ? abbrevs[lhs] : null;
+    },
+
+    /**
+     * @property {Abbreviation[]} The list of the abbreviations merged from
+     *     each mode.
+     */
+    get merged() {
+        let result = [];
+        let lhses = [];
+        let modes = [mode for (mode in this._store)];
+
+        for (let [, abbrevs] in Iterator(this._store))
+            lhses = lhses.concat([key for (key in abbrevs)]);
+        lhses.sort();
+        lhses = array.uniq(lhses);
+
+        for (let [, lhs] in Iterator(lhses)) {
+            let exists = {};
+            for (let [, abbrevs] in Iterator(this._store)) {
+                let abbr = abbrevs[lhs];
+                if (abbr && !exists[abbr.rhs]) {
+                    exists[abbr.rhs] = 1;
+                    result.push(abbr);
+                }
+            }
+        }
+
+        return result;
+    },
+
+    /**
+     * Remove the specified abbreviations.
+     *
+     * @param {Array} modes List of modes.
+     * @param {string} lhs The LHS of the abbreviation.
+     * @returns {boolean} Did the deleted abbreviation exist?
+     */
+    remove: function (modes, lhs) {
+        let result = false;
+        for (let [, mode] in Iterator(modes)) {
+            if ((mode in this._store) && (lhs in this._store[mode])) {
+                result = true;
+                this._store[mode][lhs].removeMode(mode);
+                delete this._store[mode][lhs];
+            }
+        }
+        return result;
+    },
+
+    /**
+     * Removes all abbreviations specified in *modes*.
+     *
+     * @param {Array} modes List of modes.
+     */
+    clear: function (modes) {
+        for (let mode in values(modes)) {
+            for (let abbr in values(this._store[mode]))
+                abbr.removeMode(mode);
+            delete this._store[mode];
+        }
+    }
+});
+
 var Abbreviations = Module("abbreviations", {
     init: function () {
-        this._store = {};
 
         // (summarized from Vim's ":help abbreviations")
         //
@@ -89,32 +184,10 @@ var Abbreviations = Module("abbreviations", {
         ]]></>, "", params);
     },
 
-    /**
-     * Adds a new abbreviation.
-     *
-     * @param {Abbreviation} abbr The abbreviation to add.
-     */
-    add: function (abbr) {
-        if (!(abbr instanceof Abbreviation))
-            abbr = Abbreviation.apply(null, arguments);
-
-        for (let [, mode] in Iterator(abbr.modes)) {
-            if (!this._store[mode])
-                this._store[mode] = {};
-            this._store[mode][abbr.lhs] = abbr;
-        }
-    },
-
-    /**
-     * Returns the abbreviation with *lhs* in the given *mode*.
-     *
-     * @param {Mode} mode The mode of the abbreviation.
-     * @param {string} lhs The LHS of the abbreviation.
-     */
-    get: function (mode, lhs) {
-        let abbrevs = this._store[mode];
-        return abbrevs && set.has(abbrevs, lhs) ? abbrevs[lhs] : null;
-    },
+    get: deprecated("group.abbrevs.get", { get: function get() this.user.closure.get }),
+    set: deprecated("group.abbrevs.set", { get: function set() this.user.closure.set }),
+    remove: deprecated("group.abbrevs.remove", { get: function remove() this.user.closure.remove }),
+    removeAll: deprecated("group.abbrevs.clear", { get: function removeAll() this.user.closure.clear }),
 
     /**
      * Returns the abbreviation for the given *mode* if *text* matches the
@@ -128,36 +201,8 @@ var Abbreviations = Module("abbreviations", {
     match: function (mode, text) {
         let match = this._match.exec(text);
         if (match)
-            return abbreviations.get(mode, match[2] || match[4] || match[6]);
+            return this.hives.map(function (h) h.get(mode, match[2] || match[4] || match[6])).nth(util.identity, 0);
         return null;
-    },
-
-    /**
-     * @property {Abbreviation[]} The list of the abbreviations merged from
-     *     each mode.
-     */
-    get merged() {
-        let result = [];
-        let lhses = [];
-        let modes = [mode for (mode in this._store)];
-
-        for (let [, abbrevs] in Iterator(this._store))
-            lhses = lhses.concat([key for (key in abbrevs)]);
-        lhses.sort();
-        lhses = array.uniq(lhses);
-
-        for (let [, lhs] in Iterator(lhses)) {
-            let exists = {};
-            for (let [, abbrevs] in Iterator(this._store)) {
-                let abbr = abbrevs[lhs];
-                if (abbr && !exists[abbr.rhs]) {
-                    exists[abbr.rhs] = 1;
-                    result.push(abbr);
-                }
-            }
-        }
-
-        return result;
     },
 
     /**
@@ -167,61 +212,54 @@ var Abbreviations = Module("abbreviations", {
      * @param {string} lhs The LHS of the abbreviation.
      */
     list: function (modes, lhs) {
-        let list = this.merged.filter(function (abbr) (abbr.inModes(modes) && abbr.lhs.indexOf(lhs) == 0));
+        let hives = contexts.allGroups.abbrevs.filter(function (h) !h.empty);
 
-        if (!list.length)
+        function abbrevs(hive)
+            hive.merged.filter(function (abbr) (abbr.inModes(modes) && abbr.lhs.indexOf(lhs) == 0));
+
+        let list = <table>
+                <tr highlight="Title">
+                    <td/>
+                    <td style="padding-right: 1em;">Mode</td>
+                    <td style="padding-right: 1em;">Abbrev</td>
+                    <td style="padding-right: 1em;">Replacement</td>
+                </tr>
+                <col style="min-width: 6em; padding-right: 1em;"/>
+                {
+                    template.map(hives, function (hive) let (i = 0)
+                        <tr style="height: .5ex;"/> +
+                        template.map(abbrevs(hive), function (abbrev)
+                            <tr>
+                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
+                                <td>{abbrev.modeChar}</td>
+                                <td>{abbrev.lhs}</td>
+                                <td>{abbrev.rhs}</td>
+                            </tr>) +
+                        <tr style="height: .5ex;"/>)
+                }
+                </table>;
+
+        // TODO: Move this to an ItemList to show this automatically
+        if (list.*.length() === list.text().length() + 2)
             dactyl.echomsg("No abbreviations found");
-        else if (list.length == 1) {
-            let head = list[0];
-            dactyl.echo(head.modeChar + "  " + head.lhs + "   " + head.rhs, commandline.FORCE_SINGLELINE); // 2 spaces, 3 spaces
-        }
-        else {
-            list = list.map(function (abbr) [abbr.modeChar, abbr.lhs, abbr.rhs]);
-            list = template.tabular(["", "LHS", "RHS"], [], list);
-            commandline.echo(list, commandline.HL_NORMAL, commandline.FORCE_MULTILINE);
-        }
-    },
-
-    /**
-     * Remove the specified abbreviations.
-     *
-     * @param {Array} modes List of modes.
-     * @param {string} lhs The LHS of the abbreviation.
-     * @returns {boolean} Did the deleted abbreviation exist?
-     */
-    remove: function (modes, lhs) {
-        let result = false;
-        for (let [, mode] in Iterator(modes)) {
-            if ((mode in this._store) && (lhs in this._store[mode])) {
-                result = true;
-                this._store[mode][lhs].removeMode(mode);
-                delete this._store[mode][lhs];
-            }
-        }
-        return result;
-    },
-
-    /**
-     * Removes all abbreviations specified in *modes*.
-     *
-     * @param {Array} modes List of modes.
-     */
-    removeAll: function (modes) {
-        for (let [, mode] in modes) {
-            if (!(mode in this._store))
-                return;
-            for (let [, abbr] in this._store[mode])
-                abbr.removeMode(mode);
-            delete this._store[mode];
-        }
+        else
+            commandline.commandOutput(list);
     }
+
 }, {
 }, {
+    contexts: function initContexts(dactyl, modules, window) {
+        update(Abbreviations.prototype, {
+            hives: contexts.Hives("abbrevs", AbbrevHive),
+            user: contexts.hives.abbrevs.user
+        });
+    },
     completion: function () {
-        completion.abbreviation = function abbreviation(context, modes) {
+        completion.abbreviation = function abbreviation(context, modes, group) {
+            group = group || abbreviations.user;
             let fn = modes ? function (abbr) abbr.inModes(modes) : util.identity;
             context.keys = { text: "lhs" , description: "rhs" };
-            context.completions = abbreviations.merged.filter(fn);
+            context.completions = group.merged.filter(fn);
         };
     },
 
@@ -242,18 +280,19 @@ var Abbreviations = Module("abbreviations", {
                     else {
                         if (args["-javascript"])
                             rhs = contexts.bindMacro({ literalArg: rhs }, "-javascript", ["editor"]);
-                        abbreviations.add(modes, lhs, rhs);
+                        args["-group"].add(modes, lhs, rhs);
                     }
                 }, {
                     completer: function (context, args) {
                         if (args.length == 1)
-                            return completion.abbreviation(context, modes);
+                            return completion.abbreviation(context, modes, args["-group"]);
                         else if (args["-javascript"])
                             return completion.javascript(context);
                     },
                     hereDoc: true,
                     literal: 1,
                     options: [
+                        contexts.GroupFlag("abbrevs"),
                         {
                             names: ["-javascript", "-js", "-j"],
                             description: "Expand this abbreviation by evaluating its right-hand-side as JavaScript"
@@ -266,7 +305,7 @@ var Abbreviations = Module("abbreviations", {
                             literalArg: abbr.rhs,
                             options: callable(abbr.rhs) ? {"-javascript": null} : {}
                         }
-                        for ([, abbr] in Iterator(abbreviations.merged))
+                        for ([, abbr] in Iterator(abbreviations.user.merged))
                         if (abbr.modesEqual(modes))
                     ]
                 });
@@ -277,18 +316,22 @@ var Abbreviations = Module("abbreviations", {
                     let lhs = args.literalArg;
                     if (!lhs)
                         return dactyl.echoerr("E474: Invalid argument");
-                    if (!abbreviations.remove(modes, lhs))
+                    if (!args["-group"].remove(modes, lhs))
                         return dactyl.echoerr("E24: No such abbreviation");
                 }, {
                     argCount: "1",
-                    completer: function (context) completion.abbreviation(context, modes),
-                    literal: 0
+                    completer: function (context) completion.abbreviation(context, modes, args["-group"]),
+                    literal: 0,
+                    options: [contexts.GroupFlag("abbrevs")]
                 });
 
             commands.add([ch + "abc[lear]"],
                 "Remove all abbreviations" + modeDescription,
-                function () { abbreviations.removeAll(modes); },
-                { argCount: "0" });
+                function (args) { args["-group"].clear(modes); },
+                {
+                    argCount: "0",
+                    options: [contexts.GroupFlag("abbrevs")]
+                });
         }
 
         addAbbreviationCommands([modes.INSERT, modes.COMMAND_LINE], "", "");

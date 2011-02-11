@@ -321,9 +321,9 @@ var Mappings = Module("mappings", {
 
     getDefault: deprecated("mappings.builtin.get", function getDefault(mode, cmd) this.builtin.get(mode, cmd)),
     getUserIterator: deprecated("mappings.user.iterator", function getUserIterator(modes) this.user.iterator(modes)),
-    hasMap: deprecated("mappings.user.has", function hasMap(mode, cmd) this.user.has(mode, cmd)),
-    remove: deprecated("mappings.user.remove", function remove(mode, cmd) this.user.remove(mode, cmd)),
-    removeAll: deprecated("mappings.user.clear", function removeAll(mode) this.user.clear(mode)),
+    hasMap: deprecated("group.mappings.has", function hasMap(mode, cmd) this.user.has(mode, cmd)),
+    remove: deprecated("group.mappings.remove", function remove(mode, cmd) this.user.remove(mode, cmd)),
+    removeAll: deprecated("group.mappings.clear", function removeAll(mode) this.user.clear(mode)),
 
     /**
      * Adds a new default key mapping.
@@ -352,11 +352,11 @@ var Mappings = Module("mappings", {
      *     {@link Map#extraInfo}).
      * @optional
      */
-    addUserMap: function () {
+    addUserMap: deprecated("groups.mappings.add", function addUserMap() {
         let map = this.user.add.apply(this.user, arguments);
         map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
-    },
+    }),
 
     /**
      * Returns the map from *mode* named *cmd*.
@@ -425,7 +425,7 @@ var Mappings = Module("mappings", {
                 </table>;
 
         // TODO: Move this to an ItemList to show this automatically
-        if (list.*.length() === list.text().length())
+        if (list.*.length() === list.text().length() + 2)
             dactyl.echomsg("No mapping found");
         else
             commandline.commandOutput(list);

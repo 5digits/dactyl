@@ -147,7 +147,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         onLocationChange: util.wrapCallback(function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
 
-            delete contexts.groups;
+            contexts.flush();
 
             statusline.updateUrl();
             statusline.progress = "";

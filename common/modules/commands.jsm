@@ -686,9 +686,9 @@ var Commands = Module("commands", {
     repeat: null,
 
     add: function () this.builtin._add.apply(this.builtin, arguments),
-    addUserCommand: deprecated("commands.user.add", { get: function addUserCommand() this.user.closure._add }),
-    getUserCommands: deprecated("iter(commands.user)", function getUserCommands() iter(this.user).toArray()),
-    removeUserCommand: deprecated("commands.user.remove", { get: function removeUserCommand() this.user.closure.remove }),
+    addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() this.user.closure._add }),
+    getUserCommands: deprecated("iter(group.commands)", function getUserCommands() iter(this.user).toArray()),
+    removeUserCommand: deprecated("group.commands.remove", { get: function removeUserCommand() this.user.closure.remove }),
 
     /**
      * Returns the specified command invocation object serialized to
