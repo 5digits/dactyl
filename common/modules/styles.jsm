@@ -596,9 +596,9 @@ var Styles = Module("Styles", {
                     completer: function (context, args) {
                         let uris = util.visibleURIs(window.content);
 
+                        Styles.completeSite(context, window.content, args["-group"]);
                         if (cmd.filter)
                             context.filters.push(function ({ sheets }) sheets.some(cmd.filter));
-                        Styles.completeSite(context, window.content, args["-group"]);
                     },
                     literal: 1,
                     options: [
