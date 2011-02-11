@@ -1017,7 +1017,7 @@ var Timer = Class("Timer", {
 
     notify: function (timer, force) {
         try {
-            if (loaded.util && util.rehashing || typeof util === "undefined" || !force && this.doneAt == 0)
+            if (!loaded || loaded.util && util.rehashing || typeof util === "undefined" || !force && this.doneAt == 0)
                 return;
 
             this._timer.cancel();

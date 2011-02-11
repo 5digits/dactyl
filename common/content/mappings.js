@@ -387,7 +387,7 @@ var Mappings = Module("mappings", {
      * @param {string} filter The filter string to match.
      */
     list: function (modes, filter, hives) {
-        hives = hives || mappings.userHives;
+        hives = (hives || mappings.userHives).filter(function (h) modes.some(function (m) h.getStack(m).length));
 
         let modeSign = "";
         modes.filter(function (m)  m.char).forEach(function (m) { modeSign += m.char; });
@@ -410,12 +410,12 @@ var Mappings = Module("mappings", {
                 </tr>
                 <col style="min-width: 6em; padding-right: 1em;"/>
                 {
-                    template.map(hives, function (hive)
+                    template.map(hives, function (hive) let (i = 0)
                         <tr style="height: .5ex;"/> +
                         template.map(maps(hive), function (map)
-                            template.map(map.names, function (name, i)
+                            template.map(map.names, function (name)
                             <tr>
-                                <td highlight="Title">{!i ? hive.name : ""}</td>
+                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
                                 <td>{modeSign}</td>
                                 <td>{name}</td>
                                 <td>{map.rhs || map.action.toSource()}</td>

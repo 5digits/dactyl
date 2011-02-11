@@ -105,6 +105,10 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 // only thrown for the current tab, not when another tab changes
                 if (flags & Ci.nsIWebProgressListener.STATE_START) {
                     statusline.progress = 0;
+                    while (document.commandDispatcher.focusedWindow == webProgress.DOMWindow
+                           && modes.have(modes.INPUT))
+                        modes.pop();
+
                 }
                 else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81

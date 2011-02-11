@@ -80,14 +80,16 @@ var Contexts = Module("contexts", {
             const contexts = this;
             this.modules = modules;
 
+            modules.plugins.contexts = {};
+
             this.groupList = [];
             this.groupMap = {};
             this.groupsProto = {};
             this.hives = {};
             this.hiveProto = {};
 
-            this.user = this.addGroup("user", "User-defined items", null, true);
             this.builtin = this.addGroup("builtin", "Builtin items");
+            this.user = this.addGroup("user", "User-defined items", null, true);
             this.builtinGroups = [this.builtin, this.user];
             this.builtin.modifiable = false;
 
@@ -122,8 +124,8 @@ var Contexts = Module("contexts", {
             for (let hive in values(this.groupList))
                 util.trapErrors("destroy", hive);
 
-            for (let plugin in values(plugins.contexts))
-                if (plugin.onUnload)
+            for (let [name, plugin] in iter(this.modules.plugins.contexts))
+                if (plugin && "onUnload" in plugin)
                     util.trapErrors("onUnload", plugin);
         },
 
@@ -360,8 +362,9 @@ var Contexts = Module("contexts", {
             action.macro = util.compileMacro(rhs, true);
             break;
         case "-ex":
-            action = function action() commands.execute(action.macro, makeParams(this, arguments),
-                                                        false, null, action.context);
+            action = function action() this.modules.commands
+                                           .execute(action.macro, makeParams(this, arguments),
+                                                    false, null, action.context);
             action.macro = util.compileMacro(rhs, true);
             action.context = this.context && update({}, this.context);
             break;

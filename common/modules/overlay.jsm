@@ -296,8 +296,10 @@ var Overlay = Module("Overlay", {
 
                 frob("init");
                 defineModule.modules.forEach(function ({ lazyInit, constructor: { className } }) {
-                    if (!lazyInit)
+                    if (!lazyInit) {
                         frob(className);
+                        modules[className] = modules[className];
+                    }
                     else
                         modules.__defineGetter__(className, function () {
                             delete modules[className];
