@@ -19,23 +19,21 @@
 
 <item>
     <tags>:au :autocmd</tags>
-    <spec>:au<oa>tocmd</oa><oa>!</oa> <oa>events</oa> <oa>pat</oa> <oa>cmd</oa></spec>
+    <spec>:au<oa>tocmd</oa><oa>!</oa> <oa>events</oa> <oa>filter</oa> <oa>cmd</oa></spec>
     <description>
         <p>Execute commands automatically on events.</p>
 
         <p>
             When <oa>cmd</oa> is not given, list all commands
-            defined for the given <oa>events</oa> and <oa>pat</oa>.
+            defined for the given <oa>events</oa> and <oa>filter</oa>.
             When <oa>!</oa> is given, delete the matching commands
             rather than listing them.
         </p>
 
         <p>
             When <oa>cmd</oa> is given, add it to the list of commands to be
-            executed when <oa>events</oa> occur for pages matching the regular
-            expression <oa>pat</oa>.  If <oa>pat</oa> is preceded by an
-            unquoted <em>!</em>, then the autocommand is executed only for
-            pages not matching the following regular expression.  If the
+            executed when <oa>events</oa> occur for pages matching the
+            comma-separated list of <t>site-filters</t>, <oa>filter</oa>. If the
             <em>-javascript</em> (short name <em>-js</em>) option is given,
             <oa>cmd</oa> is interpreted as JavaScript code. Otherwise, it is
             interpreted as an Ex command.
@@ -44,13 +42,8 @@
         <p>
             If the <em>-group</em>=<a>group</a> flag is given, add this autocmd
             to the named <t>group</t>. Any filters for <a>group</a> apply in
-            addition to <oa>pat</oa>.
+            addition to <oa>filter</oa>.
         </p>
-
-        <note>
-            This behavior differs from Vim's implementation in that
-            <oa>pat</oa> is a regular expression rather than a glob.
-        </note>
 
         <p>Available <oa>events</oa>:</p>
 
