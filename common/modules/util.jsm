@@ -125,7 +125,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         obj.observers[target].call(obj, subject, data);
                 }
                 catch (e) {
-                    util.reportError(e);
+                    if (typeof util === "undefined")
+                        dump("dactyl: error: " + e + "\n" + (e.stack || Error().stack).replace(/^/gm, "dactyl:    "));
+                    else
+                        util.reportError(e);
                 }
             });
 
@@ -1039,7 +1042,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             JSMLoader.cleanup();
 
-            services.observer.addObserver(this, "dactyl-rehash", true);
+            if (!this.rehashing)
+                services.observer.addObserver(this, "dactyl-rehash", true);
         },
         "dactyl-rehash": function () {
             services.observer.removeObserver(this, "dactyl-rehash");

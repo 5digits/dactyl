@@ -728,8 +728,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             }
 
                             list = null;
-                            if (level == 0 && /^.*:\n$/.test())
-                                var elem = <h2>{template.linkifyHelp(par.slice(0, -1), true)}</h2>;
+                            if (level == 0 && /^.*:\n$/.test(match.par))
+                                res += <h2>{template.linkifyHelp(par.slice(0, -1), true)}</h2>;
                             else {
                                 let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
                                 res += <p highlight={group + " HelpNews"}>{
@@ -759,7 +759,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     unescape(encodeURI( // UTF-8 handling hack.
                     <document xmlns={NS} xmlns:dactyl={NS}
                         name="versions" title={config.appName + " Versions"}>
-                        <h1 tag="versions news">{config.appName} Versions</h1>
+                        <h1 tag="versions news NEWS">{config.appName} Versions</h1>
                         <toc start="2"/>
 
                         {rec(NEWS, 0)}

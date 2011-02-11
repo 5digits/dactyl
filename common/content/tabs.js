@@ -40,9 +40,11 @@ var Tabs = Module("tabs", {
             ]]></>, /tab-./g, function (m) util.OS.isMacOSX ? "tab-mac" : m),
             false, true);
 
-        for (let { linkedBrowser: { contentDocument } } in values(this.allTabs))
-            if (contentDocument.readyState === "complete")
-                dactyl.initDocument(contentDocument);
+        this.timeout(function () {
+            for (let { linkedBrowser: { contentDocument } } in values(this.allTabs))
+                if (contentDocument.readyState === "complete")
+                    dactyl.initDocument(contentDocument);
+        });
     },
 
     cleanup: function cleanup() {
