@@ -11,11 +11,9 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("commands", {
     exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
+    require: ["contexts"],
     use: ["config", "options", "template", "util"]
 }, this);
-
-
-/** @scope modules */
 
 /**
  * A structure representing the options available for a command.
@@ -273,20 +271,20 @@ var Command = Class("Command", {
      * @see Commands@parseArguments
      */
     options: [],
+
     optionMap: Class.memoize(function () array(this.options)
                 .map(function (opt) opt.names.map(function (name) [name, opt]))
                 .flatten().toObject()),
+
     newArgs: function (base) {
         let res = [];
         update(res, base);
         res.__proto__ = this.argsPrototype;
         return res;
     },
-    argsPrototype: Class.memoize(function () update([],
-            array(this.options).filter(function (opt) opt.default !== undefined)
-                               .map(function (opt) [opt.names[0], Class.Property(Object.getOwnPropertyDescriptor(opt, "default"))])
-                               .toObject(),
-            {
+
+    argsPrototype: Class.memoize(function () {
+        let res = update([], {
                 __iterator__: function () array.iterItems(this),
 
                 command: this,
@@ -298,6 +296,7 @@ var Command = Class("Command", {
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
 
                 // TODO: string: Class.memoize(function () { ... }),
+
                 verify: function verify() {
                     if (this.command.argCount) {
                         util.assert((this.length > 0 || !/^[1+]$/.test(this.command.argCount)) &&
@@ -309,7 +308,18 @@ var Command = Class("Command", {
                                     "E488: Trailing characters");
                     }
                 }
-            })),
+        });
+
+        this.options.forEach(function (opt) {
+            if (opt.default !== undefined)
+                Object.defineProperty(res, opt.names[0],
+                                      Object.getOwnPropertyDescriptor(opt, "default") ||
+                                          { configurable: true, enumerable: true, get: function () opt.default });
+        });
+
+        return res;
+    }),
+
     /**
      * @property {boolean|function(args)} When true, invocations of this
      *     command may contain private data which should be purged from
@@ -416,6 +426,113 @@ var Ex = Module("Ex", {
     __noSuchMethod__: function (meth, args) this._run(meth).apply(this, args)
 });
 
+var CommandHive = Class("CommandHive", Contexts.Hive, {
+    init: function init(group) {
+        init.supercall(this, group);
+        this._map = {};
+        this._list = [];
+    },
+
+    /** @property {Iterator(Command)} @private */
+    __iterator__: function () array.iterValues(this._list.sort(function (a, b) a.name > b.name)),
+
+    /** @property {string} The last executed Ex command line. */
+    repeat: null,
+
+    /**
+     * Adds a new command.
+     *
+     * @param {string[]} names The names by which this command can be
+     *     invoked. The first name specified is the command's canonical
+     *     name.
+     * @param {string} description A description of the command.
+     * @param {function} action The action invoked by this command.
+     * @param {Object} extra An optional extra configuration hash.
+     * @optional
+     */
+    add: function (names, description, action, extra, replace) {
+        const { commands, contexts } = this.modules;
+
+        extra = extra || {};
+        if (!extra.definedAt)
+            extra.definedAt = contexts.getCaller(Components.stack.caller);
+
+        extra.hive = this;
+        extra.parsedSpecs = Command.parseSpecs(names);
+
+        let names = array.flatten(extra.parsedSpecs);
+        let name = names[0];
+
+        util.assert(!names.some(function (name) name in commands.builtin._map),
+                    "E182: Can't replace non-user command: " + name);
+
+        util.assert(replace || names.every(function (name) !(name in this._map), this),
+                    "Not replacing command " + name);
+
+        for (let name in values(names)) {
+            ex.__defineGetter__(name, function () this._run(name));
+            if (name in this._map)
+                this.remove(name);
+        }
+
+        let self = this;
+        let closure = function () self._map[name];
+
+        memoize(this._map, name, function () commands.Command(names, description, action, extra));
+        memoize(this._list, this._list.length, closure);
+        for (let alias in values(names.slice(1)))
+            memoize(this._map, alias, closure);
+
+        return name;
+    },
+
+    _add: function (names, description, action, extra, replace) {
+        const { contexts } = this.modules;
+
+        extra = extra || {};
+        extra.definedAt = contexts.getCaller(Components.stack.caller.caller);
+        return this.add.apply(this, arguments);
+    },
+
+    /**
+     * Clear all commands.
+     * @returns {Command}
+     */
+    clear: function clear() {
+        util.assert(this.group.modifiable, "Cannot delete non-user commands");
+        this._map = {};
+        this._list = [];
+    },
+
+    /**
+     * Returns the command with matching *name*.
+     *
+     * @param {string} name The name of the command to return. This can be
+     *     any of the command's names.
+     * @param {boolean} full If true, only return a command if one of
+     *     its names matches *name* exactly.
+     * @returns {Command}
+     */
+    get: function get(name, full) this._map[name]
+            || !full && array.nth(this._list, function (cmd) cmd.hasName(name), 0)
+            || null,
+
+    /**
+     * Remove the user-defined command with matching *name*.
+     *
+     * @param {string} name The name of the command to remove. This can be
+     *     any of the command's names.
+     */
+    remove: function remove(name) {
+        util.assert(this.group.modifiable, "Cannot delete non-user commands");
+
+        let cmd = this.get(name);
+        this._list = this._list.filter(function (c) c !== cmd);
+        for (let name in values(cmd.names))
+            delete this._map[name];
+    }
+});
+
 /**
  * @instance commands
  */
@@ -425,120 +542,16 @@ var Commands = Module("commands", {
     Local: function Local(dactyl, modules, window) let ({ Group, contexts } = modules) ({
         init: function () {
             this.Command = Class("Command", Command, { modules: modules });
-            this.user = contexts.hives.commands.user;
-            this.builtin = contexts.hives.commands.builtin;
+            update(this, {
+                hives: contexts.Hives("commands", Class("CommandHive", CommandHive, { modules: modules })),
+                user: contexts.hives.commands.user,
+                builtin: contexts.hives.commands.builtin
+            });
         },
 
         get context() contexts.context,
 
         get readHeredoc() modules.io.readHeredoc,
-
-        hives: Group.Hives("commands", Class("CommandHive", Group.Hive, {
-            init: function init(group) {
-                init.supercall(this, group);
-                this._map = {};
-                this._list = [];
-            },
-
-            /** @property {Iterator(Command)} @private */
-            __iterator__: function () array.iterValues(this._list.sort(function (a, b) a.name > b.name)),
-
-            /** @property {string} The last executed Ex command line. */
-            repeat: null,
-
-            /**
-             * Adds a new command.
-             *
-             * @param {string[]} names The names by which this command can be
-             *     invoked. The first name specified is the command's canonical
-             *     name.
-             * @param {string} description A description of the command.
-             * @param {function} action The action invoked by this command.
-             * @param {Object} extra An optional extra configuration hash.
-             * @optional
-             */
-            add: function (names, description, action, extra, replace) {
-                const { commands } = modules;
-
-                extra = extra || {};
-                if (!extra.definedAt)
-                    extra.definedAt = contexts.getCaller(Components.stack.caller);
-
-                extra.hive = this;
-                extra.parsedSpecs = Command.parseSpecs(names);
-
-                let names = array.flatten(extra.parsedSpecs);
-                let name = names[0];
-
-                util.assert(!names.some(function (name) name in commands.builtin._map),
-                            "E182: Can't replace non-user command: " + name);
-
-                util.assert(replace || names.every(function (name) !(name in this._map), this),
-                            "Not replacing command " + name);
-
-                for (let name in values(names)) {
-                    ex.__defineGetter__(name, function () this._run(name));
-                    if (name in this._map)
-                        this.remove(name);
-                }
-
-                let self = this;
-                let closure = function () self._map[name];
-
-                memoize(this._map, name, function () commands.Command(names, description, action, extra));
-                memoize(this._list, this._list.length, closure);
-                for (let alias in values(names.slice(1)))
-                    memoize(this._map, alias, closure);
-
-                return name;
-            },
-
-            _add: function (names, description, action, extra, replace) {
-                extra = extra || {};
-                extra.definedAt = contexts.getCaller(Components.stack.caller.caller);
-                return this.add.apply(this, arguments);
-            },
-
-            /**
-             * Clear all commands.
-             * @returns {Command}
-             */
-            clear: function clear() {
-                util.assert(this.group !== contexts.default,
-                            "Cannot delete non-user commands");
-                this._map = {};
-                this._list = [];
-            },
-
-            /**
-             * Returns the command with matching *name*.
-             *
-             * @param {string} name The name of the command to return. This can be
-             *     any of the command's names.
-             * @param {boolean} full If true, only return a command if one of
-             *     its names matches *name* exactly.
-             * @returns {Command}
-             */
-            get: function get(name, full) this._map[name]
-                    || !full && array.nth(this._list, function (cmd) cmd.hasName(name), 0)
-                    || null,
-
-            /**
-             * Remove the user-defined command with matching *name*.
-             *
-             * @param {string} name The name of the command to remove. This can be
-             *     any of the command's names.
-             */
-            remove: function remove(name) {
-                util.assert(this.group !== contexts.default,
-                            "Cannot delete non-user commands");
-
-                let cmd = this.get(name);
-                this._list = this._list.filter(function (c) c !== cmd);
-                for (let name in values(cmd.names))
-                    delete this._map[name];
-            }
-        })),
 
         get allHives() contexts.allGroups.commands,
 
@@ -689,7 +702,8 @@ var Commands = Module("commands", {
 
         let defaults = {};
         if (args.ignoreDefaults)
-            defaults = array(this.options).map(function (opt) [opt.names[0], opt.default]).toObject();
+            defaults = array(this.options).map(function (opt) [opt.names[0], opt.default])
+                                          .toObject();
 
         for (let [opt, val] in Iterator(args.options || {})) {
             if (val != null && defaults[opt] === val)

@@ -145,7 +145,7 @@ var IO = Module("io", {
          *      silent: Whether errors should not be reported.
          */
         source: function source(filename, params) {
-            const { Contexts, contexts } = modules;
+            const { contexts } = modules;
             defineModule.loadLog.push("sourcing " + filename);
             params = params || {};
 
@@ -167,7 +167,7 @@ var IO = Module("io", {
                     // handle pure JavaScript files specially
                     if (/\.js$/.test(filename)) {
                         try {
-                            var context = Contexts.Script(file, params.group);
+                            var context = contexts.Script(file, params.group);
                             dactyl.loadScript(uri.spec, context);
                             dactyl.helpInitialized = false;
                         }
@@ -186,7 +186,7 @@ var IO = Module("io", {
                     else if (/\.css$/.test(filename))
                         styles.registerSheet(uri.spec, false, true);
                     else {
-                        context = Contexts.Context(file, params.group);
+                        context = contexts.Context(file, params.group);
                         modules.commands.execute(file.read(), null, params.silent,
                                                  null, {
                             context: context,

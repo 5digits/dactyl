@@ -138,7 +138,7 @@ var Map = Class("Map", {
     id: 0
 });
 
-var MapHive = Class("MapHive", Group.Hive, {
+var MapHive = Class("MapHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
         this.stacks = {};
@@ -297,13 +297,9 @@ var MapHive = Class("MapHive", Group.Hive, {
  */
 var Mappings = Module("mappings", {
     init: function () {
-        this.user = contexts.hives.mappings.user;
-        this.builtin = contexts.hives.mappings.builtin;
     },
 
     repeat: Modes.boundProperty(),
-
-    hives: Group.Hives("mappings", MapHive),
 
     get allHives() contexts.allGroups.mappings,
 
@@ -436,7 +432,14 @@ var Mappings = Module("mappings", {
     }
 }, {
 }, {
-    commands: function () {
+    contexts: function initContexts(dactyl, modules, window) {
+        update(Mappings.prototype, {
+            hives: contexts.Hives("mappings", MapHive),
+            user: contexts.hives.mappings.user,
+            builtin: contexts.hives.mappings.builtin
+        });
+    },
+    commands: function initCommands(dactyl, modules, window) {
         function addMapCommands(ch, mapmodes, modeDescription) {
             function map(args, noremap) {
                 let mapmodes = array.uniq(args["-modes"].map(findMode));
@@ -454,7 +457,7 @@ var Mappings = Module("mappings", {
                 if (!rhs) // list the mapping
                     mappings.list(mapmodes, mappings.expandLeader(lhs), hives);
                 else {
-                    util.assert(args["-group"] !== mappings.builtin,
+                    util.assert(args["-group"].modifiable,
                                 "Cannot change mappings in the builtin group");
 
                     args["-group"].add(mapmodes, [lhs],
@@ -575,7 +578,7 @@ var Mappings = Module("mappings", {
             commands.add([ch + "mapc[lear]"],
                 "Remove all mappings" + modeDescription,
                 function (args) {
-                    util.assert(args["-group"] !== mappings.builtin,
+                    util.assert(args["-group"].modifiable,
                                 "Cannot change mappings in the builtin group");
 
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
@@ -599,7 +602,7 @@ var Mappings = Module("mappings", {
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,
                 function (args) {
-                    util.assert(args["-group"] !== mappings.builtin,
+                    util.assert(args["-group"].modifiable,
                                 "Cannot change mappings in the builtin group");
 
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
@@ -668,6 +671,12 @@ var Mappings = Module("mappings", {
 
         addMapCommands("", [modes.NORMAL, modes.VISUAL], "");
 
+        for (let mode in modes.mainModes)
+            if (mode.char && !commands.get(mode.char + "map", true))
+                addMapCommands(mode.char,
+                               [m.mask for (m in modes.mainModes) if (m.char == mode.char)],
+                               [mode.name.toLowerCase()]);
+
         let args = {
             getMode: function (args) findMode(args["-mode"]),
             iterate: function (args) {
@@ -729,14 +738,8 @@ var Mappings = Module("mappings", {
                     options: []
                 });
         });
-
-        for (let mode in modes.mainModes)
-            if (mode.char && !commands.get(mode.char + "map", true))
-                addMapCommands(mode.char,
-                               [m.mask for (m in modes.mainModes) if (m.char == mode.char)],
-                               [mode.name.toLowerCase()]);
     },
-    completion: function () {
+    completion: function initCompletion(dactyl, modules, window) {
         completion.userMapping = function userMapping(context, modes, hive) {
             // FIXME: have we decided on a 'standard' way to handle this clash? --djk
             hive = hive || mappings.user;
@@ -745,14 +748,14 @@ var Mappings = Module("mappings", {
             context.completions = hive.iterate(modes);
         };
     },
-    javascript: function () {
+    javascript: function initJavascript(dactyl, modules, window) {
         JavaScript.setCompleter([mappings.get, mappings.builtin.get],
             [
                 null,
                 function (context, obj, args) [[m.names, m.description] for (m in this.iterate(args[0]))]
             ]);
     },
-    options: function () {
+    options: function initOptions(dactyl, modules, window) {
         options.add(["mapleader", "ml"],
             "Define the replacement keys for the <Leader> pseudo-key",
             "string", "\\", {

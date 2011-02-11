@@ -157,6 +157,7 @@ var Overlay = Module("Overlay", {
                      "commands",
                      "completion",
                      "config",
+                     "contexts",
                      "downloads",
                      "finder",
                      "highlight",
@@ -172,8 +173,7 @@ var Overlay = Module("Overlay", {
                      "util"
                     ].forEach(function (name) defineModule.time("load", name, require, null, jsmodules, name));
 
-                    ["contexts",
-                     "dactyl",
+                    ["dactyl",
                      "modes",
                      "commandline",
                      "abbreviations",

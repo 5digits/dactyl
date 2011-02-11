@@ -4,34 +4,45 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+try {
+
+Components.utils.import("resource://dactyl/bootstrap.jsm");
+defineModule("contexts", {
+    exports: ["Contexts", "Group", "contexts"],
+    use: ["commands", "options", "services", "storage", "styles", "util"]
+}, this);
+
 var Group = Class("Group", {
     init: function init(name, description, filter, persist) {
         const self = this;
+
         this.name = name;
         this.description = description;
-        this.filter = filter || Group.defaultFilter;
+        this.filter = filter || this.constructor.defaultFilter;
         this.persist = persist || false;
         this.hives = [];
     },
 
+    modifiable: true,
+
     cleanup: function cleanup() {
         for (let hive in values(this.hives))
-            dactyl.trapErrors("cleanup", hive);
+            util.trapErrors("cleanup", hive);
 
         this.hives = [];
-        for (let hive in keys(Group.hiveMap))
+        for (let hive in keys(this.hiveMap))
             delete this[hive];
     },
     destroy: function destroy() {
         for (let hive in values(this.hives))
-            dactyl.trapErrors("destroy", hive);
+            util.trapErrors("destroy", hive);
     },
 
     argsExtra: function argsExtra() ({}),
 
     get toStringParams() [this.name],
 
-    get builtin() contexts.builtinGroups.indexOf(this) >= 0,
+    get builtin() this.modules.contexts.builtinGroups.indexOf(this) >= 0,
 
 }, {
     compileFilter: function (patterns) {
@@ -44,7 +55,10 @@ var Group = Class("Group", {
         return update(siteFilter, {
             toString: function () this.filters.join(","),
 
-            toXML: function () template.map(this.filters, function (f) <span highlight={f(buffer.uri) ? "Filter" : ""}>{f}</span>, <>,</>),
+            toXML: function (modules) let (uri = modules && modules.buffer.uri)
+                template.map(this.filters,
+                             function (f) <span highlight={uri && f(uri) ? "Filter" : ""}>{f}</span>,
+                             <>,</>),
 
             filters: patterns.map(function (pattern) {
                 let [, res, filter] = /^(!?)(.*)/.exec(pattern);
@@ -57,93 +71,170 @@ var Group = Class("Group", {
         });
     },
 
-    groupsProto: {},
-
-    defaultFilter: Class.memoize(function () this.compileFilter(["*"])),
-
-    hiveMap: {},
-
-    Hive: Class("Hive", {
-        init: function init(group) {
-            this.group = group;
-        },
-
-        cleanup: function cleanup() {},
-        destroy: function destroy() {},
-
-        get argsExtra() this.group.argsExtra,
-        get builtin() this.group.builtin,
-
-        get name() this.group.name,
-        set name(val) this.group.name = val,
-
-        get description() this.group.description,
-        set description(val) this.group.description = val,
-
-        get filter() this.group.filter,
-        set filter(val) this.group.filter = val,
-
-        get persist() this.group.persist,
-        set persist(val) this.group.persist = val,
-
-        get toStringParams() [this.name]
-    }),
-
-    Hives: Class("Hives", Class.Property, {
-        init: function init(name, constructor) {
-            const self = this;
-            if (this.Group)
-                return {
-                    enumerable: true,
-
-                    get: function () array(contexts.groups[self.name])
-                };
-
-
-            this.Group = constructor;
-            this.name = name;
-            memoize(Group.prototype, name, function () {
-                let group = constructor(this);
-                this.hives.push(group);
-                delete contexts.groups;
-                return group;
-            });
-
-            memoize(Group.hiveMap, name,
-                    function () Object.create(Object.create(contexts.hiveProto,
-                                                            { _hive: { value: name } })));
-
-            memoize(Group.groupsProto, name,
-                    function () [group[name] for (group in values(this.groups)) if (set.has(group, name))]);
-        }
-    })
+    defaultFilter: Class.memoize(function () this.compileFilter(["*"]))
 });
 
-plugins.contexts = {};
-
 var Contexts = Module("contexts", {
-    init: function () {
-        this.groupList = [];
-        this.groupMap = {};
-        this.hiveProto = {};
+    Local: function Local(dactyl, modules, window) ({
+        init: function () {
+            const contexts = this;
+            this.modules = modules;
 
-        this.builtin = this.addGroup("builtin", "Builtin items");
-        this.user = this.addGroup("user", "User-defined items", null, true);
-        this.builtinGroups = [this.builtin, this.user];
+            this.groupList = [];
+            this.groupMap = {};
+            this.groupsProto = {};
+            this.hives = {};
+            this.hiveProto = {};
+
+            this.user = this.addGroup("user", "User-defined items", null, true);
+            this.builtin = this.addGroup("builtin", "Builtin items");
+            this.builtinGroups = [this.builtin, this.user];
+            this.builtin.modifiable = false;
+
+            this.GroupFlag = Class("GroupFlag", CommandOption, {
+                init: function (name) {
+                    this.name = name;
+
+                    this.type = ArgType("group", function (group) {
+                        return isString(group) ? contexts.getGroup(group, name)
+                                               : group[name];
+                    });
+                },
+
+                get toStringParams() [this.name],
+
+                names: ["-group", "-g"],
+
+                description: "Group to which to add",
+
+                get default() (contexts.context && contexts.context.group || contexts.user)[this.name],
+
+                completer: function (context) modules.completion.group(context)
+            });
+        },
+
+        cleanup: function () {
+            for (let hive in values(this.groupList))
+                util.trapErrors("cleanup", hive);
+        },
+
+        destroy: function () {
+            for (let hive in values(this.groupList))
+                util.trapErrors("destroy", hive);
+
+            for (let plugin in values(plugins.contexts))
+                if (plugin.onUnload)
+                    util.trapErrors("onUnload", plugin);
+        },
+
+        Group: Class("Group", Group, { modules: modules, get hiveMap() modules.contexts.hives }),
+
+        Hives: Class("Hives", Class.Property, {
+            init: function init(name, constructor) {
+                const { contexts } = modules;
+                const self = this;
+
+                if (this.Hive)
+                    return {
+                        enumerable: true,
+
+                        get: function () array(contexts.groups[self.name])
+                    };
+
+
+                this.Hive = constructor;
+                this.name = name;
+                memoize(contexts.Group.prototype, name, function () {
+                    let group = constructor(this);
+                    this.hives.push(group);
+                    delete contexts.groups;
+                    return group;
+                });
+
+                memoize(contexts.hives, name,
+                        function () Object.create(Object.create(contexts.hiveProto,
+                                                                { _hive: { value: name } })));
+
+                memoize(contexts.groupsProto, name,
+                        function () [group[name] for (group in values(this.groups)) if (set.has(group, name))]);
+            },
+
+            get toStringParams() [this.name, this.Hive]
+        })
+    }),
+
+    Context: function Context(file, group, args) {
+        const { contexts, io, newContext, plugins, userContext } = this.modules;
+
+        function Const(val) Class.Property({ enumerable: true, value: val });
+
+        let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
+                                 function (dir) dir.contains(file, true),
+                                 0);
+        let isRuntime = array.nth(io.getRuntimeDirectories(""),
+                                  function (dir) dir.contains(file, true),
+                                  0);
+
+        let self = set.has(plugins, file.path) && plugins[file.path];
+        if (self) {
+            if (set.has(self, "onUnload"))
+                self.onUnload();
+        }
+        else {
+            let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
+                                : file.leafName;
+
+            self = update(newContext.apply(null, args || [userContext]), {
+                NAME: Const(name.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
+
+                PATH: Const(file.path),
+
+                CONTEXT: Const(self),
+
+                unload: Const(function unload() {
+                    if (plugins[this.NAME] === this || plugins[this.PATH] === this)
+                        if (this.onUnload)
+                            this.onUnload();
+
+                    if (plugins[this.NAME] === this)
+                        delete plugins[this.NAME];
+
+                    if (plugins[this.PATH] === this)
+                        delete plugins[this.PATH];
+
+                    if (!this.GROUP.builtin)
+                        contexts.removeGroup(this.GROUP);
+                })
+            });
+            Class.replaceProperty(plugins, file.path, self);
+
+            // This belongs elsewhere
+            if (isPlugin && args)
+                Object.defineProperty(plugins, self.NAME, {
+                    configurable: true,
+                    enumerable: true,
+                    value: self
+                });
+        }
+
+        let path = isRuntime ? file.getRelativeDescriptor(isRuntime) : file.path;
+        let name = isRuntime ? path.replace(/^(plugin|color)s([\\\/])/, "$1$2") : "script-" + path;
+
+        if (!group)
+            group = this.addGroup(commands.nameRegexp
+                                          .iterate(name.replace(/\.[^.]*$/, ""))
+                                          .join("-"),
+                                  "Script group for " + file.path,
+                                  null, false);
+
+        Class.replaceProperty(self, "GROUP", group);
+        Class.replaceProperty(self, "group", group);
+
+        return plugins.contexts[file.path] = self;
     },
 
-    cleanup: function () {
-        for (let hive in values(this.groupList))
-            dactyl.trapErrors("cleanup", hive);
-    },
-
-    destroy: function () {
-        for (let hive in values(this.groupList))
-            dactyl.trapErrors("destroy", hive);
-
-        for (let plugin in values(plugins.contexts))
-            if (plugin.onUnload)
-                dactyl.trapErrors("onUnload", plugin);
+    Script: function Script(file, group) {
+        return this.Context(file, group, [this.modules.plugins, true]);
     },
 
     context: null,
@@ -165,19 +256,19 @@ var Contexts = Module("contexts", {
         return frame;
     },
 
-    groups: Class.memoize(function () Object.create(Group.groupsProto, {
-        groups: { value: this.activeGroups().filter(function (g) g.filter(buffer.uri)) }
+    groups: Class.memoize(function () Object.create(this.groupsProto, {
+        groups: { value: this.activeGroups() },
     })),
 
-    allGroups: Class.memoize(function () Object.create(Group.groupsProto, {
-        groups: { value: this.activeGroups() }
+    allGroups: Class.memoize(function () Object.create(this.groupsProto, {
+        groups: { value: this.initializedGroups() }
     })),
 
-    activeGroups: function (hive)
+    activeGroups: function (hive) this.initializedGroups().filter(function (g) g.filter(this), this.modules.buffer.uri),
+
+    initializedGroups: function (hive)
         let (need = hive ? [hive] : Object.keys(this.hives))
             this.groupList.filter(function (group) need.some(function (name) set.has(group, name))),
-
-    get hives() Group.hiveMap,
 
     addGroup: function addGroup(name, description, filter, persist, replace) {
         let group = this.getGroup(name);
@@ -185,14 +276,14 @@ var Contexts = Module("contexts", {
             name = group.name;
 
         if (!group) {
-            group = Group(name, description, filter, persist);
+            group = this.Group(name, description, filter, persist);
             this.groupList.unshift(group);
             this.groupMap[name] = group;
             this.hiveProto.__defineGetter__(name, function () group[this._hive]);
         }
 
         if (replace) {
-            dactyl.trapErrors("cleanup", group);
+            util.trapErrors("cleanup", group);
             if (description)
                 group.description = description;
             if (filter)
@@ -213,12 +304,12 @@ var Contexts = Module("contexts", {
 
         let group = this.getGroup(name);
 
-        dactyl.assert(!group || !group.builtin, "Cannot remove builtin group");
+        util.assert(!group || !group.builtin, "Cannot remove builtin group");
 
         if (group) {
             name = group.name;
             this.groupList.splice(this.groupList.indexOf(group), 1);
-            dactyl.trapErrors("destroy", group);
+            util.trapErrors("destroy", group);
         }
 
         if (this.context && this.context.group === group)
@@ -242,6 +333,8 @@ var Contexts = Module("contexts", {
     },
 
     bindMacro: function (args, default_, params) {
+        const { dactyl, events } = this.modules;
+
         let process = util.identity;
 
         if (callable(params))
@@ -286,111 +379,59 @@ var Contexts = Module("contexts", {
         return action;
     },
 
-    GroupFlag: function (name) ({
-        names: ["-group", "-g"],
-
-        description: "Group to which to add",
-
-        type: ArgType("group", function (group) isString(group) ? contexts.getGroup(group, name) : group[name]),
-
-        get default() (contexts.context && contexts.context.group || contexts.user)[name],
-
-        completer: function (context) completion.group(context)
-    }),
-
     withContext: function withContext(defaults, callback, self)
         this.withSavedValues(["context"], function () {
             this.context = defaults && update({}, defaults);
             return callback.call(self, this.context);
         })
 }, {
-    Context: modules.Script = function Context(file, group, args) {
-        function Const(val) Class.Property({ enumerable: true, value: val });
+    Hive: Class("Hive", {
+        init: function init(group) {
+            this.group = group;
+        },
 
-        let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
-                                 function (dir) dir.contains(file, true),
-                                 0);
-        let isRuntime = array.nth(io.getRuntimeDirectories(""),
-                                  function (dir) dir.contains(file, true),
-                                  0);
+        cleanup: function cleanup() {},
+        destroy: function destroy() {},
 
-        let self = set.has(plugins, file.path) && plugins[file.path];
-        if (self) {
-            if (set.has(self, "onUnload"))
-                self.onUnload();
-        }
-        else {
-            let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-") : file.leafName;
+        get modifiable() this.group.modifiable,
 
-            self = update(modules.newContext.apply(null, args || [userContext]), {
-                NAME: Const(name.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
+        get argsExtra() this.group.argsExtra,
+        get builtin() this.group.builtin,
 
-                PATH: Const(file.path),
+        get name() this.group.name,
+        set name(val) this.group.name = val,
 
-                CONTEXT: Const(self),
+        get description() this.group.description,
+        set description(val) this.group.description = val,
 
-                unload: Const(function unload() {
-                    if (plugins[this.NAME] === this || plugins[this.PATH] === this)
-                        if (this.onUnload)
-                            this.onUnload();
+        get filter() this.group.filter,
+        set filter(val) this.group.filter = val,
 
-                    if (plugins[this.NAME] === this)
-                        delete plugins[this.NAME];
+        get persist() this.group.persist,
+        set persist(val) this.group.persist = val,
 
-                    if (plugins[this.PATH] === this)
-                        delete plugins[this.PATH];
-
-                    if (!this.GROUP.builtin)
-                        contexts.removeGroup(this.GROUP);
-                })
-            });
-            Class.replaceProperty(plugins, file.path, self);
-
-            // This belongs elsewhere
-            if (isPlugin && args)
-                Object.defineProperty(plugins, self.NAME, {
-                    configurable: true,
-                    enumerable: true,
-                    value: self
-                });
-        }
-
-        let path = isRuntime ? file.getRelativeDescriptor(isRuntime) : file.path;
-
-        if (!group)
-            group = contexts.addGroup((isRuntime ? "" : "script-") +
-                                          commands.nameRegexp.iterate(path.replace(/\.[^.]*$/, ""))
-                                                  .join("-"),
-                                      "Script group for " + file.path,
-                                      null, false);
-
-        Class.replaceProperty(self, "GROUP", group);
-        Class.replaceProperty(self, "group", group);
-
-        return plugins.contexts[file.path] = self;
-    },
-    Script: function Script(file, group) {
-        return this.Context(file, group, [plugins, true]);
-    }
+        get toStringParams() [this.name]
+    })
 }, {
-    commands: function initCommands() {
+    commands: function initCommands(dactyl, modules, window) {
+        const { commands, contexts } = modules;
 
         commands.add(["gr[oup]"],
             "Create or select a group",
             function (args) {
                 if (args.length > 0) {
                     var name = Option.dequote(args[0]);
-                    dactyl.assert(name !== "builtin", "Cannot modify builtin group");
-                    dactyl.assert(commands.validName.test(name), "Invalid group name");
+                    util.assert(name !== "builtin", "Cannot modify builtin group");
+                    util.assert(commands.validName.test(name), "Invalid group name");
 
                     var group = contexts.getGroup(name);
                 }
                 else if (args.bang)
                     var group = args.context && args.context.group;
                 else
-                    return void completion.listCompleter("group", "", null, null);
+                    return void modules.completion.listCompleter("group", "", null, null);
 
-                dactyl.assert(group || name, "No current group");
+                util.assert(group || name, "No current group");
 
                 let filter = Group.compileFilter(args["-locations"]);
                 if (!group || args.bang)
@@ -418,7 +459,7 @@ var Contexts = Module("contexts", {
                 bang: true,
                 completer: function (context, args) {
                     if (args.length == 1)
-                        completion.group(context);
+                        modules.completion.group(context);
                 },
                 keepQuotes: true,
                 options: [
@@ -460,7 +501,7 @@ var Contexts = Module("contexts", {
                         arguments: [group.name],
                         ignoreDefaults: true
                     }
-                    for (group in values(contexts.activeGroups()))
+                    for (group in values(contexts.initializedGroups()))
                     if (!group.builtin && group.persist)
                 ].concat([{ command: this.name, arguments: ["user"] }])
             });
@@ -468,13 +509,13 @@ var Contexts = Module("contexts", {
         commands.add(["delg[roup]"],
             "Delete a group",
             function (args) {
-                dactyl.assert(contexts.getGroup(args[0]), "No such group: " + args[0]);
+                util.assert(contexts.getGroup(args[0]), "No such group: " + args[0]);
                 contexts.removeGroup(args[0]);
             },
             {
                 argCount: "1",
                 completer: function (context, args) {
-                    completion.group(context);
+                    modules.completion.group(context);
                     context.filters.push(function ({ item }) !item.builtin);
                 }
             });
@@ -483,7 +524,7 @@ var Contexts = Module("contexts", {
         commands.add(["fini[sh]"],
             "Stop sourcing a script file",
             function (args) {
-                dactyl.assert(args.context, "E168: :finish used outside of a sourced file");
+                util.assert(args.context, "E168: :finish used outside of a sourced file");
                 args.context.finished = true;
             },
             { argCount: "0" });
@@ -545,16 +586,18 @@ var Contexts = Module("contexts", {
                 argCount: "0"
             });
     },
-    completion: function initCompletion() {
+    completion: function initCompletion(dactyl, modules, window) {
+        const { completion, contexts } = modules;
+
         completion.group = function group(context, active) {
             context.title = ["Group"];
-            let uri = buffer.uri;
+            let uri = modules.buffer.uri;
             context.keys = {
                 active: function (group) group.filter(uri),
                 text: "name",
-                description: function (g) <>{g.filter.toXML ? g.filter.toXML() + <>&#xa0;</> : ""}{g.description || ""}</>
+                description: function (g) <>{g.filter.toXML ? g.filter.toXML(modules) + <>&#xa0;</> : ""}{g.description || ""}</>
             };
-            context.completions = (active === undefined ? contexts.groupList : contexts.activeGroups(active))
+            context.completions = (active === undefined ? contexts.groupList : contexts.initializedGroups(active))
                                     .slice(0, -1);
 
             iter({ Active: true, Inactive: false }).forEach(function ([name, active]) {
@@ -567,3 +610,8 @@ var Contexts = Module("contexts", {
     }
 });
 
+endModule();
+
+} catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+
+// vim: set fdm=marker sw=4 ts=4 et ft=javascript:

@@ -1405,6 +1405,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             catch (e) { dump(e + "\n"); }
         }
+
+        // ctypes.open("libc.so.6").declare("kill", ctypes.default_abi, ctypes.void_t, ctypes.int, ctypes.int)(
+        //     ctypes.open("libc.so.6").declare("getpid", ctypes.default_abi, ctypes.int)(), 2)
     },
 
     /**
@@ -1596,6 +1599,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     trapErrors: function trapErrors(func, self) {
         try {
+            if (isString(func))
+                func = self[func];
             return func.apply(self || this, Array.slice(arguments, 2));
         }
         catch (e) {

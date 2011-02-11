@@ -255,7 +255,7 @@ var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
     }
 });
 
-var EventHive = Class("EventHive", Group.Hive, {
+var EventHive = Class("EventHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
         this.sessionListeners = [];
@@ -321,6 +321,14 @@ var Events = Module("events", {
     init: function () {
         const self = this;
 
+        update(this, {
+            hives: contexts.Hives("events", EventHive),
+            user: contexts.hives.events.user,
+            builtin: contexts.hives.events.builtin
+        });
+
+        EventHive.prototype.wrapListener = this.closure.wrapListener;
+
         XML.ignoreWhitespace = true;
         util.overlayWindow(window, {
             append: <e4x xmlns={XUL}>
@@ -341,10 +349,6 @@ var Events = Module("events", {
         this._currentMacro = "";
         this._macroKeys = [];
         this._lastMacro = "";
-
-        EventHive.prototype.wrapListener = this.closure.wrapListener;
-        this.user = contexts.hives.events.user;
-        this.builtin = contexts.hives.events.builtin;
 
         this._macros = storage.newMap("macros", { privateData: true, store: true });
         for (let [k, m] in this._macros)
@@ -410,8 +414,6 @@ var Events = Module("events", {
             delete self.processor;
         });
     },
-
-    hives: Group.Hives("events", EventHive),
 
     /**
      * Adds an event listener for this session and removes it on

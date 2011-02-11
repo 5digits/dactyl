@@ -17,7 +17,7 @@ update(AutoCommand.prototype, {
     }
 });
 
-var AutoCmdHive = Class("AutoCmdHive", Group.Hive, {
+var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
         this._store = [];
@@ -69,12 +69,14 @@ var AutoCmdHive = Class("AutoCmdHive", Group.Hive, {
  */
 var AutoCommands = Module("autocommands", {
     init: function () {
-        this.user = contexts.hives.autocmd.user;
+        update(this, {
+            hives: contexts.Hives("autocmd", AutoCmdHive),
+            user: contexts.hives.autocmd.user
+        });
     },
 
-    hives: Group.Hives("autocmd", AutoCmdHive),
-
-    get activeHives() contexts.activeGroups("autocmd").map(function (h) h.autocmd).filter(function (h) h._store.length),
+    get activeHives() contexts.initializedGroups("autocmd")
+                              .filter(function (h) h._store.length),
 
     add: deprecated("autocommand.user.add", { get: function add() autocommands.user.closure.add }),
     get: deprecated("autocommand.user.get", { get: function get() autocommands.user.closure.get }),

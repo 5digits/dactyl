@@ -981,7 +981,8 @@ let StructBase = Class("StructBase", Array, {
     }
 }, {
     fromArray: function (ary) {
-        ary.__proto__ = this.prototype;
+        if (!(ary instanceof this))
+            ary.__proto__ = this.prototype;
         return ary;
     },
 

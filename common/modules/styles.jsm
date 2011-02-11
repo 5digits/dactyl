@@ -8,13 +8,13 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("styles", {
     exports: ["Style", "Styles", "styles"],
     require: ["services", "util"],
-    use: ["template"]
+    use: ["contexts", "template"]
 }, this);
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);
 var namespace = "@namespace html " + XHTML.uri.quote() + ";\n" +
-                  "@namespace xul " + XUL.uri.quote() + ";\n" +
-                  "@namespace dactyl " + NS.uri.quote() + ";\n";
+                "@namespace xul " + XUL.uri.quote() + ";\n" +
+                "@namespace dactyl " + NS.uri.quote() + ";\n";
 
 var Sheet = Struct("name", "id", "sites", "css", "hive", "agent");
 Sheet.liveProperty = function (name) {
@@ -614,8 +614,8 @@ var Styles = Module("Styles", {
         });
     },
     contexts: function (dactyl, modules, window) {
-        modules.Group.Hives("styles",
-            Class("LocalHive", modules.Group.Hive, {
+        modules.contexts.Hives("styles",
+            Class("LocalHive", Contexts.Hive, {
                 init: function init(group) {
                     init.superapply(this, arguments);
 
