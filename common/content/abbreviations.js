@@ -305,7 +305,7 @@ var Abbreviations = Module("abbreviations", {
                 }, {
                     argCount: "?",
                     bang: true,
-                    completer: function (context) completion.abbreviation(context, modes, args["-group"]),
+                    completer: function (context, args) completion.abbreviation(context, modes, args["-group"]),
                     literal: 0,
                     options: [contexts.GroupFlag("abbrevs")]
                 });
