@@ -826,7 +826,7 @@ var Options = Module("options", {
 
         if (matches) {
             ret.option = this.get(ret.name, ret.scope);
-            if (!ret.option && (ret.option = options.get(prefix + ret.name, ret.scope))) {
+            if (!ret.option && (ret.option = this.get(prefix + ret.name, ret.scope))) {
                 ret.name = prefix + ret.name;
                 prefix = "";
             }
@@ -1021,6 +1021,8 @@ var Options = Module("options", {
         }
 
         function setCompleter(context, args, modifiers) {
+            const { completion } = modules;
+
             let filter = context.filter;
 
             if (args.bang) { // list completions for about:config entries
