@@ -636,14 +636,18 @@ var Styles = Module("Styles", {
             {
                 name: ["dels[tyle]"],
                 desc: "Remove a user style sheet",
-                action: function (sheet) sheet.remove()
+                action: function (sheet) sheet.remove(),
             }
         ].forEach(function (cmd) {
             commands.add(cmd.name, cmd.desc,
                 function (args) {
+                    dactyl.assert(args.bang ^ !!(args[0] || args[1] || args["-name"] || args["-index"]),
+                                  "Argument or ! required");
+
                     args["-group"].find(args["-name"], args[0], args.literalArg, args["-index"])
                                   .forEach(cmd.action);
                 }, {
+                    bang: true,
                     completer: function (context, args) {
                         let uris = util.visibleURIs(window.content);
 

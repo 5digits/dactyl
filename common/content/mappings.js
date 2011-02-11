@@ -575,50 +575,31 @@ var Mappings = Module("mappings", {
                 function (args) { map(args, true); },
                 opts);
 
-            commands.add([ch + "mapc[lear]"],
-                "Remove all mappings" + modeDescription,
-                function (args) {
-                    util.assert(args["-group"].modifiable,
-                                "Cannot change mappings in the builtin group");
-
-                    let mapmodes = array.uniq(args["-modes"].map(findMode));
-                    mapmodes.forEach(function (mode) {
-                        args["-group"].clear(mode);
-                    });
-                },
-                {
-                    argCount: "0",
-                    options: [
-                        contexts.GroupFlag("mappings"),
-                        update({}, modeFlag, {
-                            names: ["-modes", "-mode", "-m"],
-                            type: CommandOption.LIST,
-                            description: "Remove all mappings from the given modes",
-                            default: mapmodes || ["n", "v"]
-                        })
-                    ]
-                });
-
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,
                 function (args) {
                     util.assert(args["-group"].modifiable,
                                 "Cannot change mappings in the builtin group");
 
+                    util.assert(args.bang ^ !!args[0], "Argument or ! required");
+
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
 
-                    let found = false;
-                    for (let [, mode] in Iterator(mapmodes)) {
-                        if (args["-group"].has(mode, args[0])) {
+                    let found = 0;
+                    for (let mode in values(mapmodes))
+                        if (args.bang)
+                            args["-group"].clear(mode);
+                        else if (args["-group"].has(mode, args[0])) {
                             args["-group"].remove(mode, args[0]);
-                            found = true;
+                            found++;
                         }
-                    }
-                    if (!found)
+
+                    if (!found && !args.bang)
                         dactyl.echoerr("E31: No such mapping");
                 },
                 {
-                    argCount: "1",
+                    argCount: "?",
+                    bang: true,
                     completer: opts.completer,
                     options: [
                         contexts.GroupFlag("mappings"),

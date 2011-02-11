@@ -296,23 +296,17 @@ var Abbreviations = Module("abbreviations", {
             commands.add([ch + "una[bbreviate]"],
                 "Remove an abbreviation" + modeDescription,
                 function (args) {
-                    let lhs = args.literalArg;
-                    if (!lhs)
-                        return dactyl.echoerr("E474: Invalid argument");
-                    if (!args["-group"].remove(modes, lhs))
+                    util.assert(args.bang ^ !!args[0], "Argument or ! required");
+
+                    if (args.bang)
+                        args["-group"].clear(modes);
+                    else if (!args["-group"].remove(modes, lhs))
                         return dactyl.echoerr("E24: No such abbreviation");
                 }, {
-                    argCount: "1",
+                    argCount: "?",
+                    bang: true,
                     completer: function (context) completion.abbreviation(context, modes, args["-group"]),
                     literal: 0,
-                    options: [contexts.GroupFlag("abbrevs")]
-                });
-
-            commands.add([ch + "abc[lear]"],
-                "Remove all abbreviations" + modeDescription,
-                function (args) { args["-group"].clear(modes); },
-                {
-                    argCount: "0",
                     options: [contexts.GroupFlag("abbrevs")]
                 });
         }

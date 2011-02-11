@@ -622,6 +622,7 @@ var Commands = Module("commands", {
          * Displays a list of user-defined commands.
          */
         list: function list() {
+            const { commandline, completion } = this.modules;
             function completerToString(completer) {
                 if (completer)
                     return [k for ([k, v] in Iterator(config.completers)) if (completer == completion.closure[v])][0] || "custom";
@@ -631,7 +632,7 @@ var Commands = Module("commands", {
             if (!this.userHives.some(function (h) h._list.length))
                 dactyl.echomsg("No user-defined commands found");
             else
-                modules.commandline.commandOutput(
+                commandline.commandOutput(
                     <table>
                         <tr highlight="Title">
                             <td/>
@@ -1487,13 +1488,22 @@ var Commands = Module("commands", {
                     .flatten().array
             });
 
-        commands.add(["comc[lear]"],
-            "Delete all user-defined commands",
+        commands.add(["delc[ommand]"],
+            "Delete the specified user-defined command",
             function (args) {
-                args["-group"].clear();
-            },
-            {
-                argCount: "0",
+                util.assert(args.bang ^ !!args[0], "Argument or ! required");
+                let name = args[0];
+
+                if (args.bang)
+                    args["-group"].clear();
+                else if (args["-group"].get(name))
+                    args["-group"].remove(name);
+                else
+                    dactyl.echoerr("E184: No such user-defined command: " + name);
+            }, {
+                argCount: "?",
+                bang: true,
+                completer: function (context, args) modules.completion.userCommand(context, args["-group"]),
                 options: [contexts.GroupFlag("commands")]
             });
 
@@ -1504,21 +1514,6 @@ var Commands = Module("commands", {
                 argCount: "1",
                 completer: function (context, args) modules.completion.ex(context),
                 literal: 0
-            });
-
-        commands.add(["delc[ommand]"],
-            "Delete the specified user-defined command",
-            function (args) {
-                let name = args[0];
-
-                if (args["-group"].get(name))
-                    args["-group"].remove(name);
-                else
-                    dactyl.echoerr("E184: No such user-defined command: " + name);
-            }, {
-                argCount: "1",
-                completer: function (context, args) modules.completion.userCommand(context, args["-group"]),
-                options: [contexts.GroupFlag("commands")]
             });
 
         dactyl.addUsageCommand({
