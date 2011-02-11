@@ -156,38 +156,25 @@
 <item>
     <tags>:unm :unmap</tags>
     <spec>:unmap <a>lhs</a></spec>
+    <spec>:unmap!</spec>
     <tags>:nun :nunmap</tags>
     <spec>:nun<oa>map</oa> <a>lhs</a></spec>
+    <spec>:nun<oa>map</oa>!</spec>
     <tags>:vun :vunmap</tags>
     <spec>:vun<oa>map</oa> <a>lhs</a></spec>
+    <spec>:vun<oa>map</oa>!</spec>
     <tags>:iu :iunmap</tags>
     <spec>:iu<oa>nmap</oa> <a>lhs</a></spec>
+    <spec>:iu<oa>nmap</oa>!</spec>
     <tags>:tu :tunmap</tags>
     <spec>:tu<oa>nmap</oa> <a>lhs</a></spec>
+    <spec>:tu<oa>nmap</oa>!</spec>
     <tags>:cu :cunmap</tags>
     <spec>:cu<oa>nmap</oa> <a>lhs</a></spec>
+    <spec>:cu<oa>nmap</oa>!</spec>
     <description>
-        <p>Remove the mapping of <a>lhs</a> for the applicable mode(s).</p>
-    </description>
-</item>
-
-<item>
-    <tags>:mapc :mapclear</tags>
-    <spec>:mapc<oa>lear</oa></spec>
-    <tags>:nmapc :nmapclear</tags>
-    <spec>:nmapc<oa>lear</oa></spec>
-    <tags>:vmapc :vmapclear</tags>
-    <spec>:vmapc<oa>lear</oa></spec>
-    <tags>:imapc :imapclear</tags>
-    <spec>:imapc<oa>lear</oa></spec>
-    <tags>:tmapc :tmapclear</tags>
-    <spec>:tmapc<oa>lear</oa></spec>
-    <tags>:cmapc :cmapclear</tags>
-    <spec>:cmapc<oa>lear</oa></spec>
-    <description>
-        <p>
-            Remove all user-defined mappings for the applicable mode(s).
-        </p>
+        <p>Remove the mapping of <a>lhs</a> (or all mappings if <oa>!</oa> is
+            given) for the applicable mode(s).</p>
     </description>
 </item>
 
@@ -459,7 +446,7 @@
         </p>
 
         <p>
-            If <a>group</a> is specified than abbreviations are created or
+            If <a>group</a> is specified then abbreviations are created or
             listed for the given <t>group</t>.
         </p>
     </description>
@@ -495,17 +482,19 @@
 <item>
     <tags>:una :unabbreviate</tags>
     <spec>:una<oa>bbreviate</oa> <a>lhs</a></spec>
+    <spec>:una<oa>bbreviate</oa>!</spec>
     <description>
-        <p>Remove an abbreviation.</p>
+        <p>Remove an abbreviation. With <oa>!</oa>, remove all abbreviations.</p>
     </description>
 </item>
 
 <item>
     <tags>:cuna :cunabbreviate</tags>
     <spec>:cuna<oa>bbreviate</oa> <a>lhs</a></spec>
+    <spec>:cuna<oa>bbreviate</oa>!</spec>
     <description>
         <p>
-            Remove an abbreviation for Command-line mode. Same as
+            Remove abbreviation(s) for Command-line mode. Same as
             <ex>:una<oa>bbreviate</oa></ex>, but for
             <t>command-line</t> mode only.
         </p>
@@ -515,36 +504,13 @@
 <item>
     <tags>:iuna :iunabbreviate</tags>
     <spec>:iuna<oa>bbreviate</oa> <a>lhs</a></spec>
+    <spec>:iuna<oa>bbreviate</oa>!</spec>
     <description>
         <p>
-            Remove an abbreviation for Insert mode. Same as
+            Remove abbreviation(s) for Insert mode. Same as
             <ex>:una<oa>bbreviate</oa></ex> but for Insert mode
             only.
         </p>
-    </description>
-</item>
-
-<item>
-    <tags>:abc :abclear</tags>
-    <spec>:abc<oa>lear</oa></spec>
-    <description short="true">
-        <p>Remove all abbreviations.</p>
-    </description>
-</item>
-
-<item>
-    <tags>:cabc :cabclear</tags>
-    <spec>:cabc<oa>lear</oa></spec>
-    <description short="true">
-        <p>Remove all abbreviations for command-line mode.</p>
-    </description>
-</item>
-
-<item>
-    <tags>:iabc :iabclear</tags>
-    <spec>:iabc<oa>lear</oa></spec>
-    <description short="true">
-        <p>Remove all abbreviations for Insert mode.</p>
     </description>
 </item>
 
@@ -726,18 +692,12 @@
 </item>
 
 <item>
-    <tags>:comc :comclear</tags>
-    <spec>:comc<oa>lear</oa></spec>
-    <description short="true">
-        <p>Delete all user-defined commands.</p>
-    </description>
-</item>
-
-<item>
     <tags>:delc :delcommand</tags>
     <spec>:delc<oa>ommand</oa> <a>cmd</a></spec>
+    <spec>:delc<oa>ommand</oa>!</spec>
     <description>
-        <p>Delete the user-defined command <a>cmd</a>.</p>
+        <p>Delete the user-defined command <a>cmd</a>. With <oa>!</oa>, delete
+            all user commands.</p>
     </description>
 </item>
 

@@ -572,7 +572,6 @@ var Styles = Module("Styles", {
                 }
             },
             {
-                bang: true,
                 completer: function (context, args) {
                     let compl = [];
                     let sheet = args["-group"].get(args["-name"]);

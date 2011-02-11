@@ -66,7 +66,7 @@
             <dt>CompGroup</dt>         <dd>The top-level container for a group of completion results</dd>
             <dt>CompIcon</dt>          <dd>The favicon of a completion row</dd>
             <dt>CompItem</dt>          <dd>A row of completion list</dd>
-            <dt>CompItem[selected]</dt><dd>    A selected row of completion list</dd>
+            <dt>CompItem[selected]</dt><dd>A selected row of completion list</dd>
             <dt>CompLess::after</dt>   <dd>The character of indicator shown when completions may be scrolled up</dd>
             <dt>CompLess</dt>          <dd>The indicator shown when completions may be scrolled up</dd>
             <dt>CompMore::after</dt>   <dd>The character of indicator shown when completions may be scrolled down</dd>
@@ -103,7 +103,7 @@
             <dt>StatusLine</dt>        <dd>The status bar</dd>
             <dt>StatusLineNormal</dt>  <dd>The status bar for an ordinary web page</dd>
             <dt>StatusLineBroken</dt>  <dd>The status bar for a broken web page</dd>
-            <dt>StatusLineExtended</dt><dd>    The status bar for a secure web page with an Extended Validation (EV) certificate</dd>
+            <dt>StatusLineExtended</dt><dd>The status bar for a secure web page with an Extended Validation (EV) certificate</dd>
             <dt>StatusLineSecure</dt>  <dd>The status bar for a secure web page</dd>
             <dt>String</dt>            <dd>A JavaScript String object</dd>
             <dt>TabClose</dt>          <dd>The close button of a browser tab</dd>
@@ -185,14 +185,15 @@
 
 <item>
     <tags>:dels :delstyle</tags>
-    <spec>:dels<oa>tyle</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
+    <spec>:dels<oa>tyle</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
         <p>
-            Delete any matching styles. If <oa>filter</oa> is provided, only
-            matching elements of the filter are disabled. For instance, when
-            run with a filter <str>mozilla.org</str>, an existing style with a
-            filter <str>www.google.com,mozilla.org</str>, will result in a
-            style for <str>www.google.com</str>.
+            Delete any matching styles. With <oa>!</oa>, delete all styles.
+            If <oa>filter</oa> is provided, only matching elements of the
+            filter are disabled. For instance, when run with a filter
+            <str>mozilla.org</str>, an existing style with a filter
+            <str>www.google.com,mozilla.org</str>, will result in a style for
+            <str>www.google.com</str>.
         </p>
 
         <p>The available options are:</p>
@@ -209,9 +210,9 @@
     <tags>:styleenable :stylee</tags>
     <tags>:styenable :stye</tags>
     <strut/>
-    <spec>:styled<oa>isable</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
+    <spec>:styled<oa>isable</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
-        <p>Enable any matching styles. Arguments are the same as for <ex>:delstyle</ex></p>
+        <p>Enable any matching styles. With <oa>!</oa>, enable all styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
 </item>
 
@@ -219,9 +220,9 @@
     <tags>:styledisable :styled</tags>
     <tags>:stydisable :styd</tags>
     <strut/>
-    <spec>:stylee<oa>nable</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
+    <spec>:stylee<oa>nable</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
-        <p>Disable any matching styles. Arguments are the same as for <ex>:delstyle</ex></p>
+        <p>Disable any matching styles. With <oa>!</oa>, disable all styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
 </item>
 
@@ -229,9 +230,9 @@
     <tags>:styletoggle :stylet</tags>
     <tags>:stytoggle :styt</tags>
     <strut/>
-    <spec>:stylet<oa>oggle</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
+    <spec>:stylet<oa>oggle</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
-        <p>Toggle any matching styles. Arguments are the same as for <ex>:delstyle</ex></p>
+        <p>Toggle any matching styles. With <oa>!</oa>, toggle all styles. Arguments are the same as for <ex>:delstyle</ex></p>
     </description>
 </item>
 

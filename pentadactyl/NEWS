@@ -96,6 +96,8 @@
       - Added -charset and -post to :bmark. [b5]
       - Added -keyword, -tags, -title to :delbmarks. [b2]
       - Added :extrehash, :exttoggle, :extupdate, and :rehash commands. [b5]
+      - :abclear, :comclear and :mapclear have been substituted by a bang now
+        accepted by :unabbreviate, :delcommand and :unmap, respectively. [b6]
       - Added :feedkeys command. [b4]
       - Added -sort option to :history. [b4]
       - Added several new options, including -javascript, to :abbreviate and
@@ -123,6 +125,8 @@
       - :style-related commands now divide their completions between
         those active and inactive for the current site. [b4]
       - CSS property name completion is now available. [b4]
+      - :delstyle, :styleenable, :styledisable and :styletoggle accept a !
+        to operate on all styles. [b6]
     * IMPORTANT option changes:
       - Option value quoting has changed. List options will
         no longer be split at quoted commas and the option name, operators, and
