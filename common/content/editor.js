@@ -375,19 +375,20 @@ var Editor = Module("editor", {
      * @see Abbreviation#expand
      */
     expandAbbreviation: function (mode) {
-        let editor = Editor.getEditor();
-        if (!(editor && editor.value))
+        let elem = dactyl.focusedElement;
+        if (!(elem && elem.value))
             return;
-        let text   = editor.value;
-        let start  = editor.selectionStart;
-        let end    = editor.selectionEnd;
+
+        let text   = elem.value;
+        let start  = elem.selectionStart;
+        let end    = elem.selectionEnd;
         let abbrev = abbreviations.match(mode, text.substring(0, start).replace(/.*\s/g, ""));
         if (abbrev) {
             let len = abbrev.lhs.length;
-            let rhs = abbrev.expand(editor);
-            editor.value = text.substring(0, start - len) + rhs + text.substring(start);
-            editor.selectionStart = start - len + rhs.length;
-            editor.selectionEnd   = end   - len + rhs.length;
+            let rhs = abbrev.expand(elem);
+            elem.value = text.substring(0, start - len) + rhs + text.substring(start);
+            elem.selectionStart = start - len + rhs.length;
+            elem.selectionEnd   = end   - len + rhs.length;
         }
     },
 }, {

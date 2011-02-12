@@ -1277,7 +1277,8 @@ var Events = Module("events", {
                 return;
             }
 
-            if (elem instanceof HTMLTextAreaElement || (elem && util.computedStyle(elem).MozUserModify == "read-write")
+            if (elem instanceof HTMLTextAreaElement
+               || elem instanceof Element && util.computedStyle(elem).MozUserModify === "read-write"
                || elem == null && win && Editor.getEditor(win)) {
 
                 if (modes.main == modes.VISUAL && elem.selectionEnd == elem.selectionStart)

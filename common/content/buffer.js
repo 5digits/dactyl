@@ -221,7 +221,9 @@ var Buffer = Module("buffer", {
      */
     get lastInputField() {
         let field = this.localStore.lastInputField && this.localStore.lastInputField.get();
-        return field && field.ownerDocument == field.ownerDocument.defaultView.document ? field : null;
+        let doc = field && field.ownerDocument;
+        let win = doc && doc.defaultView;
+        return win && doc === win.document ? field : null;
     },
     set lastInputField(value) { this.localStore.lastInputField = value && Cu.getWeakReference(value); },
 
