@@ -1036,12 +1036,8 @@ var Events = Module("events", {
             let elem = event.originalTarget;
 
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
-                for (let e = elem; e instanceof Element; e = e.parentNode)
-                    if (util.computedStyle(e).visibility !== "visible" ||
-                            e.boxObject && e.boxObject.height === 0) {
-                        elem.blur();
-                        break;
-                    }
+                if (Events.isHidden(elem))
+                    elem.blur();
 
             let win = (elem.ownerDocument || elem).defaultView || elem;
 
@@ -1233,7 +1229,11 @@ var Events = Module("events", {
 
         popupshown: function onPopupShown(event) {
             if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
-                if (modes.main != modes.MENU)
+                if (Events.isHidden(event.originalTarget)) {
+                    if (event.originalTarget.hidePopup)
+                        event.originalTarget.hidePopup();
+                }
+                else if (modes.main != modes.MENU)
                     modes.push(modes.MENU);
         },
 
@@ -1352,6 +1352,14 @@ var Events = Module("events", {
     isEscape: function isEscape(event)
         let (key = isString(event) ? event : events.toString(event))
             key === "<Esc>" || key === "<C-[>",
+
+    isHidden: function isHidden(elem) {
+        for (let e = elem; e instanceof Element; e = e.parentNode)
+            if (util.computedStyle(e).visibility !== "visible" ||
+                    e.boxObject && e.boxObject.height === 0)
+                return true;
+        return false;
+    },
 
     isInputElement: function isInputElement(elem) {
         return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
