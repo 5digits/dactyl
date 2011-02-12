@@ -685,7 +685,7 @@ var Options = Module("options", {
                 scope = Option.SCOPE_BOTH;
 
             function opts(opt) {
-                for (let opt in Iterator(options)) {
+                for (let opt in Iterator(this)) {
                     let option = {
                         __proto__: opt,
                         isDefault: opt.isDefault,
@@ -712,7 +712,7 @@ var Options = Module("options", {
                 }
             };
 
-            modules.commandline.commandOutput(template.options("Options", opts(), options["verbose"] > 0));
+            modules.commandline.commandOutput(template.options("Options", opts.call(this), this["verbose"] > 0));
         },
 
         cleanup: function cleanup() {
