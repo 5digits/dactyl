@@ -12,6 +12,8 @@ defineModule("contexts", {
     use: ["commands", "options", "services", "storage", "styles", "template", "util"]
 }, this);
 
+var Const = function Const(val) Class.Property({ enumerable: true, value: val });
+
 var Group = Class("Group", {
     init: function init(name, description, filter, persist) {
         const self = this;
@@ -82,7 +84,7 @@ var Contexts = Module("contexts", {
             const contexts = this;
             this.modules = modules;
 
-            modules.plugins.contexts = {};
+            Object.defineProperty(modules.plugins, "contexts", Const({}));
 
             this.groupList = [];
             this.groupMap = {};
@@ -170,8 +172,6 @@ var Contexts = Module("contexts", {
     Context: function Context(file, group, args) {
         const { contexts, io, newContext, plugins, userContext } = this.modules;
 
-        function Const(val) Class.Property({ enumerable: true, value: val });
-
         let isPlugin = array.nth(io.getRuntimeDirectories("plugins"),
                                  function (dir) dir.contains(file, true),
                                  0);
@@ -179,7 +179,9 @@ var Contexts = Module("contexts", {
                                   function (dir) dir.contains(file, true),
                                   0);
 
-        let self = set.has(plugins, file.path) && plugins[file.path];
+        let contextPath = file.path;
+        let self = set.has(plugins, contextPath) && plugins.contexts[contextPath];
+
         if (self) {
             if (set.has(self, "onUnload"))
                 self.onUnload();
@@ -189,7 +191,7 @@ var Contexts = Module("contexts", {
                                 : file.leafName;
 
             self = update(newContext.apply(null, args || [userContext]), {
-                NAME: Const(name.replace(/\..*/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
+                NAME: Const(name.replace(/\.[^.]*$/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
 
                 PATH: Const(file.path),
 
@@ -205,6 +207,9 @@ var Contexts = Module("contexts", {
 
                     if (plugins[this.PATH] === this)
                         delete plugins[this.PATH];
+
+                    if (plugins.contexts[contextPath] === this)
+                        delete plugins.contexts[contextPath];
 
                     if (!this.GROUP.builtin)
                         contexts.removeGroup(this.GROUP);
@@ -234,11 +239,11 @@ var Contexts = Module("contexts", {
         Class.replaceProperty(self, "GROUP", group);
         Class.replaceProperty(self, "group", group);
 
-        return plugins.contexts[file.path] = self;
+        return plugins.contexts[contextPath] = self;
     },
 
     Script: function Script(file, group) {
-        return this.Context(file, group, [this.modules.plugins, true]);
+        return this.Context(file, group, [this.modules.userContext, true]);
     },
 
     context: null,
