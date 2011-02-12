@@ -1036,7 +1036,7 @@ var Events = Module("events", {
             let elem = event.originalTarget;
 
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
-                if (Events.isHidden(elem))
+                if (Events.isHidden(elem, true))
                     elem.blur();
 
             let win = (elem.ownerDocument || elem).defaultView || elem;
@@ -1229,7 +1229,7 @@ var Events = Module("events", {
 
         popupshown: function onPopupShown(event) {
             if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
-                if (false && Events.isHidden(event.originalTarget)) {
+                if (Events.isHidden(event.originalTarget)) {
                     if (event.originalTarget.hidePopup)
                         event.originalTarget.hidePopup();
                 }
@@ -1353,10 +1353,10 @@ var Events = Module("events", {
         let (key = isString(event) ? event : events.toString(event))
             key === "<Esc>" || key === "<C-[>",
 
-    isHidden: function isHidden(elem) {
+    isHidden: function isHidden(elem, despotic) {
         for (let e = elem; e instanceof Element; e = e.parentNode)
             if (util.computedStyle(e).visibility !== "visible" ||
-                    e.boxObject && e.boxObject.height === 0)
+                    despotic && e.boxObject && e.boxObject.height === 0)
                 return true;
         return false;
     },
