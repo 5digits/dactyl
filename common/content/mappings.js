@@ -352,7 +352,7 @@ var Mappings = Module("mappings", {
      *     {@link Map#extraInfo}).
      * @optional
      */
-    addUserMap: deprecated("groups.mappings.add", function addUserMap() {
+    addUserMap: deprecated("group.mappings.add", function addUserMap() {
         let map = this.user.add.apply(this.user, arguments);
         map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
@@ -387,17 +387,18 @@ var Mappings = Module("mappings", {
      * @param {string} filter The filter string to match.
      */
     list: function (modes, filter, hives) {
-        hives = (hives || mappings.userHives).filter(function (h) modes.some(function (m) h.getStack(m).length));
-
         let modeSign = "";
         modes.filter(function (m)  m.char).forEach(function (m) { modeSign += m.char; });
         modes.filter(function (m) !m.char).forEach(function (m) { modeSign += " " + m.name; });
         modeSign = modeSign.replace(/^ /, "");
 
+        hives = (hives || mappings.userHives).map(function (h) [h, maps(h)])
+                                             .filter(function ([h, m]) !filter || m.length);
+
         function maps(hive) {
-            let maps = hive.iterate(modes);
+            let maps = iter.toArray(hive.iterate(modes));
             if (filter)
-                maps = [map for (map in maps) if (map.names[0] == filter)];
+                maps = maps.filter(function (m) m.names[0] === filter);
             return maps;
         }
 
@@ -410,9 +411,9 @@ var Mappings = Module("mappings", {
                 </tr>
                 <col style="min-width: 6em; padding-right: 1em;"/>
                 {
-                    template.map(hives, function (hive) let (i = 0)
+                    template.map(hives, function ([hive, maps]) let (i = 0)
                         <tr style="height: .5ex;"/> +
-                        template.map(maps(hive), function (map)
+                        template.map(maps, function (map)
                             template.map(map.names, function (name)
                             <tr>
                                 <td highlight="Title">{!i++ ? hive.name : ""}</td>

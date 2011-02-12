@@ -1368,7 +1368,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 dactyl.echoerr(template.linkifyHelp(error.message));
             else
                 dactyl.beep();
-            util.reportError(error);
             return;
         }
         if (error.result == Cr.NS_BINDING_ABORTED)

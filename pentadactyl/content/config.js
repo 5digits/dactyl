@@ -344,8 +344,10 @@ var Config = Module("config", ConfigBase, {
     modes: function (dactyl, modules, window) {
         const { config, modes } = modules;
         config.ignoreKeys = {
-            "<Up>": modes.NORMAL | modes.INSERT,
-            "<Down>": modes.NORMAL | modes.INSERT
+            "<Return>": modes.NORMAL,
+            "<Space>": modes.NORMAL,
+            "<Up>": modes.NORMAL,
+            "<Down>": modes.NORMAL
         };
         config.modes.forEach(function (mode) { modes.addMode.apply(this, mode); });
     },

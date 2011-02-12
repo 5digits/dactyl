@@ -300,7 +300,7 @@ var Abbreviations = Module("abbreviations", {
 
                     if (args.bang)
                         args["-group"].clear(modes);
-                    else if (!args["-group"].remove(modes, lhs))
+                    else if (!args["-group"].remove(modes, args[0]))
                         return dactyl.echoerr("E24: No such abbreviation");
                 }, {
                     argCount: "?",

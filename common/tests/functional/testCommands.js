@@ -52,9 +52,6 @@ var tests = {
         noOutput: ["abc def", "-js abc def"],
         completions: ["", "abc ", "-js abc "]
     },
-    abclear: {
-        noOutput: [""]
-    },
     addons: {
         multiOutput: ["", "dactyl", "-type=extension", "-type=extension dactyl"],
         completions: [
@@ -118,7 +115,7 @@ var tests = {
         error: ["", "some-nonexistent-scheme"]
     },
     command: {
-        init: ["comclear"],
+        init: ["delc!"],
         singleOutput: ["", "foobar"],
         noOutput: ["foo bar", "-js bar baz"],
         multiOutput: [""],
@@ -134,9 +131,6 @@ var tests = {
             ["-group=user ", hasItems]
         ]
     },
-    comclear: {
-        noOutput: [""]
-    },
     contexts: {}, // Not testable in this manner
     cookies: {
         anyOutput: ["dactyl.sf.net", "dactyl.sf.net list"],
@@ -149,13 +143,14 @@ var tests = {
     delbmarks: { anyOutput: ["", "about:pentadactyl"] },
     delcommand: [
         {
-            init: ["comclear", "command foo bar"],
+            init: ["delc!", "command foo bar"],
+            error: [""],
             completions: [
                 ["", hasItems],
                 ["-group=", hasItems],
                 ["-group=user ", hasItems]
             ],
-            noOutput: ["foo"]
+            noOutput: ["foo", "! "]
         },
         {
             init: ["comclear"],
@@ -353,7 +348,9 @@ var tests = {
         completions: [""]
     },
     map: {
-        multiOutput: ["", "i"],
+        init: ["unmap!"],
+        anyOutput: [""],
+        singleOutput: ["i"],
         noOutput: [
             "i j",
             "-builtin i j",
@@ -363,6 +360,7 @@ var tests = {
             "-silent i :j",
             "-mode=ex -b <C-a> <C-a>"
         ],
+        multiOutput: ["", "i"],
         error: [
             "-mode=some-nonexistent-mode <C-a> <C-a>",
             "-group=some-nonexistent-group <C-a> <C-a>",
@@ -377,16 +375,6 @@ var tests = {
             ["-builtin i ", hasItems],
             ["-ex i ", hasItems],
             ["-javascript i ", hasItems]
-        ]
-    },
-    mapclear: {
-        noOutput: [""],
-        error: [
-            "-group=builtin"
-        ],
-        completions: [
-            "",
-            "-group="
         ]
     },
     mark: {
@@ -554,7 +542,31 @@ var tests = {
         noOutput: [""]
     },
     scriptnames: {},
-    set: {},
+    set: {
+        multiOutput: [
+            "vb?", "cpt?", "messages?", "titlestring?", "au?", "eht?",
+            "cpt", "messages", "titlestring", "au", "eht"
+        ],
+        noOutput: ["vb", "novb"],
+        completions: [
+            ["", hasItems],
+            ["c", hasItems],
+            ["cpt=", hasItems],
+            ["cpt=l", hasItems],
+            ["cpt+=", hasItems],
+            ["cpt+=f", hasItems],
+            ["activate=", hasItems],
+            ["activate=links,", hasItems],
+            ["activate+=", hasItems],
+            ["activate+=links,", hasItems],
+            ["activate^=", hasItems],
+            ["activate^=links,", hasItems],
+            ["activate-=", hasItems],
+            ["activate-=links,", hasItems],
+            ["activate!=", hasItems],
+            ["activate!=links,", hasItems]
+        ]
+    },
     get setglobal() this.set,
     get setlocal() this.set,
     sidebar: {
@@ -702,12 +714,28 @@ var tests = {
         ],
         error: ["", "foo"]
     },
-    tunmap: {},
-    unabbreviate: {},
+    unabbreviate: {
+        noOutput: ["abc", "! "],
+        error: [""]
+    },
     undo: {},
     undoall: {},
     unlet: {},
-    unmap: {},
+    unmap: {
+        noOutput: [
+            "i",
+            "! "
+        ],
+        error: [
+            "i",
+            "-group=builtin k",
+            "! -group=builtin"
+        ],
+        completions: [
+            "",
+            "-group="
+        ]
+    },
     verbose: {},
     version: {
         multiOutput: [
