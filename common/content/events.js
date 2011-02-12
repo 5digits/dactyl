@@ -1229,7 +1229,7 @@ var Events = Module("events", {
 
         popupshown: function onPopupShown(event) {
             if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
-                if (Events.isHidden(event.originalTarget)) {
+                if (false && Events.isHidden(event.originalTarget)) {
                     if (event.originalTarget.hidePopup)
                         event.originalTarget.hidePopup();
                 }
