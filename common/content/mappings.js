@@ -539,7 +539,7 @@ var Mappings = Module("mappings", {
                                     {
                                         command: "map",
                                         options: array([
-                                            hive !== mappings.user && ["-group", hive.name],
+                                            hive.name !== "user" && ["-group", hive.name],
                                             ["-modes", uniqueModes(map.modes)],
                                             ["-description", map.description],
                                             map.silent && ["-silent"]])
@@ -568,12 +568,12 @@ var Mappings = Module("mappings", {
             commands.add([ch ? ch + "m[ap]" : "map"],
                 "Map a key sequence" + modeDescription,
                 function (args) { map(args, false); },
-                opts);
+                update({}, opts));
 
             commands.add([ch + "no[remap]"],
                 "Map a key sequence without remapping keys" + modeDescription,
                 function (args) { map(args, true); },
-                opts);
+                update({}, opts));
 
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,

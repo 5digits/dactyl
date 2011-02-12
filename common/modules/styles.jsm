@@ -242,7 +242,9 @@ var Hive = Class("Hive", {
  * @author Kris Maglione <maglione.k@gmail.com>
  */
 var Styles = Module("Styles", {
-    Local: function (dactyl, modules, window) ({}),
+    Local: function (dactyl, modules, window) ({
+        cleanup: function () {}
+    }),
 
     init: function () {
         this._id = 0;
