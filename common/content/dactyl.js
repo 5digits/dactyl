@@ -1839,6 +1839,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {
+            let hidden = function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true";
+
             let toolbarCommand = function (names, desc, action, filter) {
                 commands.add(names, desc,
                     function (args) {
@@ -1859,12 +1861,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             toolbarCommand(["toolbars[how]", "tbs[how]"], "Show the named toolbar",
                 function (toolbar) dactyl.setNodeVisible(toolbar, true),
-                function (item) item.item.collapsed);
+                function ({ item }) hidden(item));
             toolbarCommand(["toolbarh[ide]", "tbh[ide]"], "Hide the named toolbar",
                 function (toolbar) dactyl.setNodeVisible(toolbar, false),
-                function (item) !item.item.collapsed);
+                function ({ item }) !hidden(item));
             toolbarCommand(["toolbart[oggle]", "tbt[oggle]"], "Toggle the named toolbar",
-                function (toolbar) dactyl.setNodeVisible(toolbar, toolbar.collapsed));
+                function (toolbar) dactyl.setNodeVisible(toolbar, hidden(toolbar)));
         }
 
         commands.add(["time"],
