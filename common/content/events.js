@@ -44,12 +44,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (this.ownsBuffer)
             statusline.updateInputBuffer(this.processors.length ? this.buffer : "");
 
-        if (this.processors.length) {
-            result = Events.KILL;
-            if (this.actions.length && options["timeout"])
-                this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
-        }
-        else if (this.actions.length) {
+        if (!this.processors.some(function (p) !p.extended) && this.actions.length) {
             if (this._actions.length == 0) {
                 dactyl.beep();
                 events.feedingKeys = false;
@@ -60,6 +55,13 @@ var ProcessorStack = Class("ProcessorStack", {
                 events.dbg("ACTION RES: " + res);
             }
             result = res === Events.PASS ? Events.PASS : Events.KILL;
+            if (res !== Events.PASS)
+                this.processors.length = 0;
+        }
+        else if (this.processors.length) {
+            result = Events.KILL;
+            if (this.actions.length && options["timeout"])
+                this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
         else if (result !== Events.KILL && !this.actions.length &&
                  (this.events.length > 1 ||
@@ -98,7 +100,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (force && this.processors.length === 0)
             events.processor = null;
 
-        return this.processors.length == 0;
+        return this.processors.length === 0;
     },
 
     process: function process(event) {
@@ -237,6 +239,8 @@ var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
         this.argName = argName;
         this.wantCount = wantCount;
     },
+
+    extended: true,
 
     onKeyPress: function onKeyPress(event) {
         if (Events.isEscape(event))

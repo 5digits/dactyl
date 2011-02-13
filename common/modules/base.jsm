@@ -627,7 +627,10 @@ function update(target) {
                 func.supercall = function supercall(self)
                     func.superapply(self, Array.slice(arguments, 1));
             }
-            Object.defineProperty(target, k, desc);
+            try {
+                Object.defineProperty(target, k, desc);
+            }
+            catch (e) {}
         });
     }
     return target;
@@ -829,8 +832,9 @@ memoize(Class.prototype, "closure", function () {
         try {
             return fn.apply(self, arguments);
         }
-        catch (e) {
+        catch (e if !(e instanceof FailedAssertion)) {
             util.reportError(e);
+            throw e.stack ? e : Error(e);
         }
     }
     iter(properties(this), properties(this, true)).forEach(function (k) {
@@ -838,6 +842,8 @@ memoize(Class.prototype, "closure", function () {
             closure[k] = closure(this[k]);
         else if (!(k in closure))
             Object.defineProperty(closure, k, {
+                configurable: true,
+                enumerable: true,
                 get: function get_proxy() self[k],
                 set: function set_proxy(val) self[k] = val,
             });
