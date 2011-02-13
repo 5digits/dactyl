@@ -384,7 +384,7 @@ var Addons = Module("addons", {
             }, {
                 argCount: "1",
                 completer: function (context) {
-                    context.filters.push(function ({ item }) item.isDirectory() || /\.xpi$/.test(item.leafName));
+                    context.filters.push(function ({ isdir, text }) isdir || /\.xpi$/.test(text));
                     completion.file(context);
                 },
                 literal: 0

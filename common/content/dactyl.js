@@ -1281,7 +1281,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} str
      * @returns {string[]}
      */
-    stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
     parseURLs: function parseURLs(str) {
         let urls;
 
@@ -1290,7 +1289,24 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         else
             urls = [str];
 
+        let re = util.regexp(<![CDATA[
+                ^ ( <domain>+ (:\d+)? (/ .*)?) $
+            ]]>, "g", {
+            domain: util.regexp(String.replace(<![CDATA[
+                [^
+                    U0000-U002c // U002d-U002e --.
+                    U002f       // /
+                                // U0030-U0039 0-9
+                    U003a-U0040 // U0041-U005a a-z
+                    U005b-U0060 // U0061-U007a A-Z
+                    U007b-U007f
+                ]
+            ]]>, /U/g, "\\u"))
+        });
+
         return urls.map(function (url) {
+            url = url.trim();
+
             if (/^(\.{0,2}|~)(\/|$)/.test(url)) {
                 try {
                     // Try to find a matching file.
@@ -1301,35 +1317,26 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 catch (e) {}
             }
 
-            // strip each 'URL' - makes things simpler later on
-            url = url.trim();
+            // If it starts with a valid protocol, pass it through.
+            let proto = /^([-\w]+):/.exec(url);
+            if (proto && "@mozilla.org/network/protocol;1?name=" + proto[1] in Cc)
+                return url.replace(/\s+/g, "");
 
-            // Look for a valid protocol
-            let proto = url.match(/^([-\w]+):/);
-            if (proto && Cc["@mozilla.org/network/protocol;1?name=" + proto[1]])
-                // Handle as URL, but remove spaces. Useful for copied/'p'asted URLs.
-                return url.replace(/\s*\n+\s*/g, "");
-
-            // Ok, not a valid proto. If it looks like URL-ish (foo.com/bar),
-            // let Gecko figure it out.
-            if (/^[a-zA-Z0-9-.]+(?:\/|$)/.test(url) && /[.\/]/.test(url) && !/\s/.test(url) || /^[a-zA-Z0-9-.]+:\d+(?:\/|$)/.test(url))
-                return url;
-
-            // TODO: it would be clearer if the appropriate call to
-            // getSearchURL was made based on whether or not the first word was
-            // indeed an SE alias rather than seeing if getSearchURL can
-            // process the call usefully and trying again if it fails
-
-            // check for a search engine match in the string, then try to
-            // search for the whole string in the default engine
-            let searchURL = bookmarks.getSearchURL(url, false) || bookmarks.getSearchURL(url, true);
+            // Check for a matching search keyword.
+            let searchURL = bookmarks.getSearchURL(url, false);
             if (searchURL)
                 return searchURL;
 
-            // Hmm. No defsearch? Let the host app deal with it, then.
-            return url;
+            // If it looks like URL-ish (foo.com/bar), let Gecko figure it out.
+            if (re.test(url))
+                return util.createURI(url).spec;
+
+            // Pass it off to the default search engine or, failing
+            // that, let Gecko deal with it as is.
+            return bookmarks.getSearchURL(url, true) || util.createURI(url).spec;
         });
     },
+    stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
 
     get assert() util.assert,
 

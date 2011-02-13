@@ -899,32 +899,27 @@ var Completion = Module("completion", {
     // depending on the 'complete' option
     // if the 'complete' argument is passed like "h", it temporarily overrides the complete option
     url: function url(context, complete) {
-        let numLocationCompletions = 0; // how many async completions did we already return to the caller?
-        let start = 0;
-        let skip = 0;
 
         if (this.options["urlseparator"])
-            skip = context.filter.match("^.*" + this.options["urlseparator"]); // start after the last 'urlseparator'
-
+            var skip = RegExp("^.*" + this.options["urlseparator"] + "\\s*").exec(context.filter);
         if (skip)
             context.advance(skip[0].length);
 
-        if (complete == null)
-            complete = this.options["complete"];
-
-        if (/^about:/.test(context.filter)) {
+        if (/^about:/.test(context.filter))
             context.fork("about", 6, this, function (context) {
                 context.generate = function () {
                     const PREFIX = "@mozilla.org/network/protocol/about;1?what=";
                     return [[k.substr(PREFIX.length), ""] for (k in Cc) if (k.indexOf(PREFIX) == 0)];
                 };
             });
-        }
+
+        if (complete == null)
+            complete = this.options["complete"];
 
         // Will, and should, throw an error if !(c in opts)
         Array.forEach(complete, function (c) {
             let completer = this.urlCompleters[c];
-            context.fork.apply(context, [c, 0, this, completer.completer].concat(completer.args));
+            context.forkapply(c, 0, this, completer.completer, completer.args);
         }, this);
     },
 
