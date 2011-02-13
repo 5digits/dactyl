@@ -1169,8 +1169,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     if (String(val).indexOf(sentinel) < 0)
                         Class.replaceProperty(this, k, val);
                     else {
-                        util.reportError(Error("Not replacing property with eval-generated overlay"));
-                        util.dactyl.echoerr("Not replacing property with eval-generated overlay");
+                        let package_ = util.newURI(util.fixURI(Components.stack.caller.filename)).host;
+                        util.reportError(Error("Not replacing property with eval-generated overlay by " + package_));
+                        util.dactyl.echoerr("Not replacing property with eval-generated overlay by " + package_);
                     }
                 };
             }
