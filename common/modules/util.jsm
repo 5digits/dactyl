@@ -1144,7 +1144,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let original = Object.create(object);
         overrides = update(Object.create(original), overrides);
 
-        for each (let k in Object.getOwnPropertyNames(overrides)) {
+        Object.getOwnPropertyNames(overrides).forEach(function (k) {
             let orig, desc = Object.getOwnPropertyDescriptor(overrides, k);
             if (desc.value instanceof Class.Property)
                 desc = desc.value.init(k) || desc.value;
@@ -1153,8 +1153,31 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (orig = Object.getOwnPropertyDescriptor(obj, k))
                     Object.defineProperty(original, k, orig);
 
+            // Guard against horrible add-ons that use eval-based monkey
+            // patching.
+            if (callable(desc.value)) {
+                let value = desc.value;
+
+                let sentinel = "(function DactylOverlay() {}())"
+                value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
+                value.toSource = function toSource() toString.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
+
+                delete desc.value;
+                delete desc.writable;
+                desc.get = function get() value;
+                desc.set = function set(val) {
+                    if (String(val).indexOf(sentinel) < 0)
+                        Class.replaceProperty(this, k, val);
+                    else {
+                        util.reportError(Error("Not replacing property with eval-generated overlay"));
+                        util.dactyl.echoerr("Not replacing property with eval-generated overlay");
+                    }
+                };
+            }
+
             Object.defineProperty(object, k, desc);
-        }
+        }, this);
+
         return function unwrap() {
             for each (let k in Object.getOwnPropertyNames(original))
                 Object.defineProperty(object, k, Object.getOwnPropertyDescriptor(original, k));
