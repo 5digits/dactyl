@@ -265,15 +265,17 @@ var Contexts = Module("contexts", {
         return frame;
     },
 
-    groups: Class.memoize(function () Object.create(this.groupsProto, {
-        groups: { value: this.activeGroups() },
-    })),
+    groups: Class.memoize(function () this.matchingGroups(this.modules.buffer.uri)),
 
     allGroups: Class.memoize(function () Object.create(this.groupsProto, {
         groups: { value: this.initializedGroups() }
     })),
 
-    activeGroups: function (hive) this.initializedGroups().filter(function (g) g.filter(this), this.modules.buffer.uri),
+    matchingGroups: function (uri) Object.create(this.groupsProto, {
+        groups: { value: this.activeGroups(uri) },
+    }),
+
+    activeGroups: function (uri) this.initializedGroups().filter(function (g) g.filter(this), uri || this.modules.buffer.uri),
 
     flush: function flush() {
         delete this.groups;

@@ -71,7 +71,9 @@ var AutoCommands = Module("autocommands", {
     init: function () {
         update(this, {
             hives: contexts.Hives("autocmd", AutoCmdHive),
-            user: contexts.hives.autocmd.user
+            user: contexts.hives.autocmd.user,
+            allHives: contexts.allGroups.autocmd,
+            matchingHives: function matchingHives(uri) contexts.matchingGroups(uri).autocmd
         });
     },
 
@@ -143,7 +145,7 @@ var AutoCommands = Module("autocommands", {
         let uri = args.url ? util.newURI(args.url) : buffer.uri;
 
         event = event.toLowerCase();
-        for (let hive in this.hives.iterValues()) {
+        for (let hive in values(this.matchingHives(uri))) {
             let args = update({},
                               hive.argsExtra(arguments[1]),
                               arguments[1]);
