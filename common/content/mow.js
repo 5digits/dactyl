@@ -214,7 +214,7 @@ var MOW = Module("mow", {
         const KILL = false, PASS = true;
 
         if (options["more"] && mow.isScrollable(1))
-            commandline.updateMorePrompt(false, true);
+            this.updateMorePrompt(false, true);
         else {
             modes.pop();
             events.feedkeys(events.toString(event));
