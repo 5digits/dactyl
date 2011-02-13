@@ -710,7 +710,9 @@ var Commands = Module("commands", {
             if (val != null && defaults[opt] === val)
                 continue;
             let chr = /^-.$/.test(opt) ? " " : "=";
-            if (val != null)
+            if (isArray(val))
+                opt += chr + Option.stringify.stringlist(val);
+            else if (val != null)
                 opt += chr + Commands.quote(val);
             res.push(opt);
         }

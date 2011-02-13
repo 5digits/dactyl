@@ -546,7 +546,7 @@ var Bookmarks = Module("bookmarks", {
                     if (bmark.post)
                         options["-post"] = bmark.post;
                     if (bmark.tags.length > 0)
-                        options["-tags"] = bmark.tags.join(", ");
+                        options["-tags"] = bmark.tags;
                 }
                 else {
                     if (buffer.title != buffer.uri.spec)
