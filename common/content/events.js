@@ -1232,10 +1232,11 @@ var Events = Module("events", {
         },
 
         popupshown: function onPopupShown(event) {
-            if (event.originalTarget.localName !== "tooltip" && event.originalTarget.id !== "dactyl-visualbell")
-                if (Events.isHidden(event.originalTarget)) {
-                    if (event.originalTarget.hidePopup)
-                        event.originalTarget.hidePopup();
+            let elem = event.originalTarget;
+            if (elem.localName !== "tooltip" && elem.id !== "dactyl-visualbell")
+                if (Events.isHidden(elem)) {
+                    if (elem.hidePopup && Events.isHidden(elem.parentNode))
+                        elem.hidePopup();
                 }
                 else if (modes.main != modes.MENU)
                     modes.push(modes.MENU);
@@ -1357,11 +1358,12 @@ var Events = Module("events", {
         let (key = isString(event) ? event : events.toString(event))
             key === "<Esc>" || key === "<C-[>",
 
-    isHidden: function isHidden(elem, despotic) {
-        for (let e = elem; e instanceof Element; e = e.parentNode)
+    isHidden: function isHidden(elem, aggressive) {
+        for (let e = elem; e instanceof Element; e = e.parentNode) {
             if (util.computedStyle(e).visibility !== "visible" ||
-                    despotic && e.boxObject && e.boxObject.height === 0)
+                    aggressive && e.boxObject && e.boxObject.height === 0)
                 return true;
+        }
         return false;
     },
 
