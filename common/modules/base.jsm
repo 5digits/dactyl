@@ -160,6 +160,7 @@ defineModule.time = function time(major, minor, func, self) {
     catch (e) {
         loaded.util && util.reportError(e);
     }
+
     let delta = Date.now() - time;
     defineModule.times.all += delta;
     defineModule.times[major] = (defineModule.times[major] || 0) + delta;

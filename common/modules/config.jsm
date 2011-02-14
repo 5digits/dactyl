@@ -745,10 +745,12 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
     load: function load(dactyl, modules, window) {
         load.superapply(this, arguments);
 
-        if (this.branch && this.branch !== "default" &&
-                modules.yes_i_know_i_should_not_report_errors_in_these_branches_thanks.indexOf(this.branch) === -1)
-            dactyl.warn("You are running " + config.appName + " from a testing branch: " + this.branch + ". " +
-                        "Please do not report errors which do not also occur in the default branch.");
+        this.timeout(function () {
+            if (this.branch && this.branch !== "default" &&
+                    modules.yes_i_know_i_should_not_report_errors_in_these_branches_thanks.indexOf(this.branch) === -1)
+                dactyl.warn("You are running " + config.appName + " from a testing branch: " + this.branch + ". " +
+                            "Please do not report errors which do not also occur in the default branch.");
+        }, 1000);
     }
 });
 
