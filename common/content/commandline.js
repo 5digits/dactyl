@@ -260,20 +260,15 @@ var CommandWidgets = Class("CommandWidgets", {
                ["viewable", "complete"].indexOf(elem.contentDocument.readyState) >= 0;
     },
 
-    _whenReady: function _whenReady(id) {
+    _whenReady: function _whenReady(id, init) {
         let elem = document.getElementById(id);
-
-        util.waitFor(bind(this._ready, this, elem));
-
-        return elem;
-    },
-
-    completionList: Class.memoize(function () {
-        let elem = document.getElementById(elem);
         while (!this._ready(elem))
             yield 10;
+
+        if (init)
+            init.call(this, elem);
         yield elem;
-    }, true),
+    },
 
     completionContainer: Class.memoize(function () this.completionList.parentNode),
 
@@ -287,16 +282,11 @@ var CommandWidgets = Class("CommandWidgets", {
         return document.getElementById("dactyl-contextmenu");
     }),
 
-    multilineOutput: Class.memoize(function () {
-        let elem = document.getElementById("dactyl-multiline-output");
-        while (!this._ready(elem))
-            yield 10;
-
+    multilineOutput: Class.memoize(function () this._whenReady("dactyl-multiline-output", function (elem) {
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
-        yield elem;
-    }, true),
+    }), true),
 
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
 
@@ -581,7 +571,9 @@ var CommandLine = Module("commandline", {
     get completionList() {
         let node = this.widgets.active.commandline;
         if (!node.completionList) {
-            let elem = this.widgets._whenReady("dactyl-completions-" + node.id);
+            let elem = document.getElementById("dactyl-completions-" + node.id);
+            util.waitFor(bind(this.widgets._ready, null, elem));
+
             node.completionList = ItemList(elem.id);
         }
         return node.completionList;
