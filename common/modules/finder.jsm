@@ -20,7 +20,12 @@ var RangeFinder = Module("rangefinder", {
             this.lastFindPattern = "";
         },
 
-        get rangeFind() modules.buffer.localStore.rangeFind,
+        get rangeFind() {
+            let find = modules.buffer.localStore.rangeFind;
+            if (find && find.stale || !isinstance(find, RangeFind))
+                return this.rangeFind = null;
+            return find;
+        },
         set rangeFind(val) modules.buffer.localStore.rangeFind = val
     }),
 
@@ -38,9 +43,6 @@ var RangeFinder = Module("rangefinder", {
     },
 
     bootstrap: function (str, backward) {
-        if (this.rangeFind && this.rangeFind.stale)
-            this.rangeFind = null;
-
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;
         let linksOnly = false;
@@ -69,7 +71,7 @@ var RangeFinder = Module("rangefinder", {
         // It's possible, with :tabdetach for instance, for the rangeFind to
         // actually move from one window to another, which breaks things.
         if (!this.rangeFind
-            || this.rangeFind.window.get() != this.window
+            || this.rangeFind.window.get() !== this.window
             || linksOnly  != !!this.rangeFind.elementPath
             || regexp     != this.rangeFind.regexp
             || matchCase  != this.rangeFind.matchCase
@@ -98,7 +100,7 @@ var RangeFinder = Module("rangefinder", {
     },
 
     findAgain: function (reverse) {
-        if (!this.rangeFind || this.rangeFind.stale)
+        if (!this.rangeFind)
             this.find(this.lastFindPattern);
         else if (!this.rangeFind.find(null, reverse))
             this.dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern,
@@ -196,7 +198,7 @@ var RangeFinder = Module("rangefinder", {
 
             get prompt() this.mode === modules.modes.FIND_BACKWARD ? "?" : "/",
 
-            get onCancel() rangefinder.closure.onCancel,
+            get onCancel() modules.rangefinder.closure.onCancel,
             get onChange() modules.rangefinder.closure.onChange,
             get onSubmit() modules.rangefinder.closure.onSubmit
         });
@@ -293,7 +295,7 @@ var RangeFinder = Module("rangefinder", {
  * large amounts of data are concerned (e.g., for API documents).
  */
 var RangeFind = Class("RangeFind", {
-    init: function (window, matchCase, backward, elementPath, regexp) {
+    init: function init(window, matchCase, backward, elementPath, regexp) {
         this.window = Cu.getWeakReference(window);
         this.content = window.content;
 
@@ -304,8 +306,6 @@ var RangeFind = Class("RangeFind", {
         this.finder = services.Find();
         this.matchCase = Boolean(matchCase);
         this.regexp = Boolean(regexp);
-
-        this.ranges = this.makeFrameList(this.content);
 
         this.reset();
 
@@ -348,13 +348,13 @@ var RangeFind = Class("RangeFind", {
         this.store.focusedFrame = Cu.getWeakReference(range.startContainer.ownerDocument.defaultView);
     },
 
-    cancel: function () {
+    cancel: function cancel() {
         this.purgeListeners();
         this.range.deselect();
         this.range.descroll();
     },
 
-    compareRanges: function (r1, r2) {
+    compareRanges: function compareRanges(r1, r2) {
         try {
             return this.backward ?  r1.compareBoundaryPoints(r1.END_TO_START, r2)
                                  : -r1.compareBoundaryPoints(r1.START_TO_END, r2);
@@ -365,7 +365,7 @@ var RangeFind = Class("RangeFind", {
         }
     },
 
-    findRange: function (range) {
+    findRange: function findRange(range) {
         let doc = range.startContainer.ownerDocument;
         let win = doc.defaultView;
         let ranges = this.ranges.filter(function (r)
@@ -376,7 +376,7 @@ var RangeFind = Class("RangeFind", {
         return ranges[0];
     },
 
-    findSubRanges: function (range) {
+    findSubRanges: function findSubRanges(range) {
         let doc = range.startContainer.ownerDocument;
         for (let elem in util.evaluateXPath(this.elementPath, doc)) {
             let r = RangeFind.nodeRange(elem);
@@ -385,7 +385,7 @@ var RangeFind = Class("RangeFind", {
         }
     },
 
-    focus: function () {
+    focus: function focus() {
         if (this.lastRange)
             var node = util.evaluateXPath(RangeFind.selectNodePath,
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
@@ -396,8 +396,7 @@ var RangeFind = Class("RangeFind", {
         }
     },
 
-    highlight: function (clear) {
-
+    highlight: function highlight(clear) {
         if (!clear && (!this.lastString || this.lastString == this.highlighted))
             return;
         if (clear && !this.highlighted)
@@ -516,6 +515,8 @@ var RangeFind = Class("RangeFind", {
     },
 
     reset: function () {
+        this.ranges = this.makeFrameList(this.content);
+
         this.startRange = this.selectedRange;
         this.startRange.collapse(!this.reverse);
         this.lastRange = this.selectedRange;
@@ -636,7 +637,7 @@ var RangeFind = Class("RangeFind", {
     onUnload: function (event) {
         this.purgeListeners();
         if (this.highlighted)
-            this.highlight(false);
+            this.highlight(true);
         this.stale = true;
     }
 }, {

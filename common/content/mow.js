@@ -266,8 +266,9 @@ var MOW = Module("mow", {
      *     and what they do.
      */
     updateMorePrompt: function updateMorePrompt(force, showHelp) {
-        if (!this.visible)
+        if (!this.visible || !isinstance(modes.main, modes.OUTPUT_MULTILINE))
             return this.widgets.message = null;
+
         let elem = this.widget.contentDocument.documentElement;
 
         if (showHelp)
