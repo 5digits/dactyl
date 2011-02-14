@@ -983,7 +983,7 @@ var Events = Module("events", {
         util.waitFor(function () !events.feedingKeys || buffer.loaded, this, maxWaitTime * 1000, true);
 
         if (!buffer.loaded)
-            dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds. Macro stopped.");
+            dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds.");
 
         return buffer.loaded;
     },

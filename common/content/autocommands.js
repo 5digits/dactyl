@@ -142,7 +142,7 @@ var AutoCommands = Module("autocommands", {
         dactyl.echomsg('Executing ' + event + ' Auto commands for "*"', 8);
 
         let lastPattern = null;
-        let uri = args.url ? util.newURI(args.url) : buffer.uri;
+        let uri = args.url ? util.createURI(args.url) : buffer.uri;
 
         event = event.toLowerCase();
         for (let hive in values(this.matchingHives(uri))) {
