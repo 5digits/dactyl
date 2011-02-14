@@ -523,9 +523,11 @@ function memoize(obj, key, getter) {
         }
         return obj;
     }
+
     obj.__defineGetter__(key, function g_replaceProperty() (
         Class.replaceProperty(this.instance || this, key, null),
         Class.replaceProperty(this.instance || this, key, getter.call(this, key))));
+
     obj.__defineSetter__(key, function s_replaceProperty(val)
         Class.replaceProperty(this.instance || this, key, val));
 }
@@ -765,14 +767,33 @@ Class.extend = function extend(subclass, superclass, overrides) {
  *      property's value.
  * @return {Class.Property}
  */
-Class.memoize = function memoize(getter)
+Class.memoize = function memoize(getter, wait)
     Class.Property({
         configurable: true,
         enumerable: true,
         init: function (key) {
-            this.get = function replace() let (obj = this.instance || this) (
-                Class.replaceProperty(obj, key, null),
-                Class.replaceProperty(obj, key, getter.call(this, key)))
+            let done = false;
+            let prop = { configurable: true, enumerable: true, value: null, writable: true };
+            if (wait)
+                prop = {
+                    configurable: true, enumerable: false,
+                    get: function get() {
+                        util.waitFor(function () done);
+                        return this[key];
+                    }
+                }
+
+            this.get = function replace() {
+                let obj = this.instance || this;
+                Object.defineProperty(obj, key, prop);
+                try {
+                    return Class.replaceProperty(obj, key, getter.call(this, key));
+                }
+                finally {
+                    done = true;
+                }
+            }
+
             this.set = function replace(val) Class.replaceProperty(this.instance || this, val);
         }
     });

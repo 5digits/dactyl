@@ -61,13 +61,13 @@ var ConfigBase = Class("ConfigBase", {
             if (addon && !addon.getResourceURI)
                 util.reportError(Error("Don't have add-on yet"));
 
-            return !addon || addon.getResourceURI();
+            return !addon || addon.getResourceURI;
         });
 
         if (!addon)
             addon = require("addons").AddonManager.getAddonByID(this.addonID);
         return addon;
-    }),
+    }, true),
 
     /**
      * The current application locale.

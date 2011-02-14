@@ -255,24 +255,16 @@ var CommandWidgets = Class("CommandWidgets", {
     commandbar: Class.memoize(function () ({ group: "Cmd" })),
     statusbar: Class.memoize(function ()  ({ group: "Status" })),
 
-    _whenReady: function _whenReady(name, id, processor) {
-        Object.defineProperty(this, name, {
-            configurable: true, enumerable: true,
-            get: function get_whenReady() {
-                let elem = document.getElementById(id);
+    _whenReady: function _whenReady(name, id) {
+        let elem = document.getElementById(id);
 
-                util.waitFor(function () elem.contentDocument.documentURI === elem.getAttribute("src") &&
-                       ["viewable", "complete"].indexOf(elem.contentDocument.readyState) >= 0);
+        util.waitFor(function () elem.contentDocument.documentURI === elem.getAttribute("src") &&
+               ["viewable", "complete"].indexOf(elem.contentDocument.readyState) >= 0);
 
-                res = res || (processor || util.identity).call(self, elem);
-                return res;
-            }
-        });
-        let res, self = this;
-        return Class.replaceProperty(this, name, this[name]);
+        return elem;
     },
 
-    get completionList() this._whenReady("completionList", "dactyl-completions"),
+    completionList: Class.memoize(function () this._whenReady("completionList", "dactyl-completions"), true),
 
     completionContainer: Class.memoize(function () this.completionList.parentNode),
 
@@ -286,13 +278,13 @@ var CommandWidgets = Class("CommandWidgets", {
         return document.getElementById("dactyl-contextmenu");
     }),
 
-    get multilineOutput() this._whenReady("multilineOutput", "dactyl-multiline-output",
-                                          function (elem) {
+    multilineOutput: Class.memoize(function () {
+        let elem = this._whenReady("multilineOutput", "dactyl-multiline-output");
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
         return elem;
-    }),
+    }, true),
 
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
 
@@ -576,9 +568,10 @@ var CommandLine = Module("commandline", {
 
     get completionList() {
         let node = this.widgets.active.commandline;
-        if (!node.completionList)
-            this.widgets._whenReady.call(node, "completionList", "dactyl-completions-" + node.id,
-                                         function (node) ItemList(node.id));
+        if (!node.completionList) {
+            let elem = this.widgets._whenReady("completionList", "dactyl-completions-" + node.id);
+            node.completionList = ItemList(elem.id);
+        }
         return node.completionList;
     },
 
