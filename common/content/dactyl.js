@@ -1223,6 +1223,76 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         });
     },
 
+    /**
+     * Returns an array of URLs parsed from *str*.
+     *
+     * Given a string like 'google bla, www.osnews.com' return an array
+     * ['www.google.com/search?q=bla', 'www.osnews.com']
+     *
+     * @param {string} str
+     * @returns {string[]}
+     */
+    parseURLs: function parseURLs(str) {
+        let urls;
+
+        if (options["urlseparator"])
+            urls = util.splitLiteral(str, RegExp("\\s*" + options["urlseparator"] + "\\s*"));
+        else
+            urls = [str];
+
+        let re = util.regexp(<![CDATA[
+                ^ (
+                    <domain>+ \. [a-z0-9]+ (:\d+)? (/ .*)? |
+                    <domain>+ (:\d+)? (/ .*)
+                    <domain>+ (:\d+)
+                ) $
+            ]]>, "gi", {
+            domain: util.regexp(String.replace(<![CDATA[
+                [^
+                    U0000-U002c // U002d-U002e --.
+                    U002f       // /
+                                // U0030-U0039 0-9
+                    U003a-U0040 // U0041-U005a a-z
+                    U005b-U0060 // U0061-U007a A-Z
+                    U007b-U007f
+                ]
+            ]]>, /U/g, "\\u"))
+        });
+
+        return urls.map(function (url) {
+            url = url.trim();
+
+            if (/^(\.{0,2}|~)(\/|$)/.test(url)) {
+                try {
+                    // Try to find a matching file.
+                    let file = io.File(url);
+                    if (file.exists() && file.isReadable())
+                        return services.io.newFileURI(file).spec;
+                }
+                catch (e) {}
+            }
+
+            // If it starts with a valid protocol, pass it through.
+            let proto = /^([-\w]+):/.exec(url);
+            if (proto && "@mozilla.org/network/protocol;1?name=" + proto[1] in Cc)
+                return url.replace(/\s+/g, "");
+
+            // Check for a matching search keyword.
+            let searchURL = bookmarks.getSearchURL(url, false);
+            if (searchURL)
+                return searchURL;
+
+            // If it looks like URL-ish (foo.com/bar), let Gecko figure it out.
+            if (re.test(url))
+                return util.createURI(url).spec;
+
+            // Pass it off to the default search engine or, failing
+            // that, let Gecko deal with it as is.
+            return bookmarks.getSearchURL(url, true) || util.createURI(url).spec;
+        });
+    },
+    stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
+
     pluginFiles: {},
 
     get plugins() plugins,
@@ -1271,72 +1341,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         services.appStartup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
     },
-
-    /**
-     * Returns an array of URLs parsed from *str*.
-     *
-     * Given a string like 'google bla, www.osnews.com' return an array
-     * ['www.google.com/search?q=bla', 'www.osnews.com']
-     *
-     * @param {string} str
-     * @returns {string[]}
-     */
-    parseURLs: function parseURLs(str) {
-        let urls;
-
-        if (options["urlseparator"])
-            urls = util.splitLiteral(str, RegExp("\\s*" + options["urlseparator"] + "\\s*"));
-        else
-            urls = [str];
-
-        let re = util.regexp(<![CDATA[
-                ^ ( <domain>+ (:\d+)? (/ .*)?) $
-            ]]>, "g", {
-            domain: util.regexp(String.replace(<![CDATA[
-                [^
-                    U0000-U002c // U002d-U002e --.
-                    U002f       // /
-                                // U0030-U0039 0-9
-                    U003a-U0040 // U0041-U005a a-z
-                    U005b-U0060 // U0061-U007a A-Z
-                    U007b-U007f
-                ]
-            ]]>, /U/g, "\\u"))
-        });
-
-        return urls.map(function (url) {
-            url = url.trim();
-
-            if (/^(\.{0,2}|~)(\/|$)/.test(url)) {
-                try {
-                    // Try to find a matching file.
-                    let file = io.File(url);
-                    if (file.exists() && file.isReadable())
-                        return services.io.newFileURI(file).spec;
-                }
-                catch (e) {}
-            }
-
-            // If it starts with a valid protocol, pass it through.
-            let proto = /^([-\w]+):/.exec(url);
-            if (proto && "@mozilla.org/network/protocol;1?name=" + proto[1] in Cc)
-                return url.replace(/\s+/g, "");
-
-            // Check for a matching search keyword.
-            let searchURL = bookmarks.getSearchURL(url, false);
-            if (searchURL)
-                return searchURL;
-
-            // If it looks like URL-ish (foo.com/bar), let Gecko figure it out.
-            if (re.test(url))
-                return util.createURI(url).spec;
-
-            // Pass it off to the default search engine or, failing
-            // that, let Gecko deal with it as is.
-            return bookmarks.getSearchURL(url, true) || util.createURI(url).spec;
-        });
-    },
-    stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
 
     get assert() util.assert,
 
