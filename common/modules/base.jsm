@@ -205,7 +205,7 @@ defineModule("base", {
     exports: [
         "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object", "Runnable",
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
-        "array", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
+        "array", "bind", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator", "isinstance", "isObject",
         "isString", "isSubclass", "iter", "iterAll", "keys", "memoize", "octal", "properties",
         "require", "set", "update", "values", "withCallerGlobal"
@@ -580,6 +580,14 @@ function curry(fn, length, self, acc) {
     };
 }
 
+if (curry.bind)
+    var bind = function bind(func) func.bind.apply(func, Array.slice(arguments, bind.length));
+else
+    var bind = function bind(func, self) {
+        let args = Array.slice(arguments, bind.length);
+        return function bound() func.apply(self, args.concat(Array.slice(arguments)));
+    };
+
 let sandbox = Cu.Sandbox(this);
 sandbox.__proto__ = this;
 /**
@@ -774,26 +782,37 @@ Class.memoize = function memoize(getter, wait)
         enumerable: true,
         init: function (key) {
             let done = false;
-            let prop = { configurable: true, enumerable: true, value: null, writable: true };
-            if (wait)
-                prop = {
-                    configurable: true, enumerable: false,
-                    get: function get() {
-                        util.waitFor(function () done);
-                        return this[key];
-                    }
-                }
 
-            this.get = function replace() {
-                let obj = this.instance || this;
-                Object.defineProperty(obj, key, prop);
-                try {
+            if (wait)
+                this.get = function replace() {
+                    let obj = this.instance || this;
+                    Object.defineProperty(obj, key,  {
+                        configurable: true, enumerable: false,
+                        get: function get() {
+                            util.waitFor(function () done);
+                            return this[key];
+                        }
+                    });
+
+                    util.yieldable(function () {
+                        let wait;
+                        for (var res in getter.call(obj)) {
+                            if (wait !== undefined)
+                                yield wait;
+                            wait = res;
+                        }
+                        Class.replaceProperty(obj, key, res);
+                        done = true;
+                    })();
+
+                    return this[key];
+                };
+            else
+                this.get = function replace() {
+                    let obj = this.instance || this;
+                    Class.replaceProperty(obj, key, null);
                     return Class.replaceProperty(obj, key, getter.call(this, key));
-                }
-                finally {
-                    done = true;
-                }
-            }
+                };
 
             this.set = function replace(val) Class.replaceProperty(this.instance || this, val);
         }

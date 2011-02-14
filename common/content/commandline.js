@@ -255,16 +255,25 @@ var CommandWidgets = Class("CommandWidgets", {
     commandbar: Class.memoize(function () ({ group: "Cmd" })),
     statusbar: Class.memoize(function ()  ({ group: "Status" })),
 
-    _whenReady: function _whenReady(name, id) {
+    _ready: function _ready(elem) {
+        return elem.contentDocument.documentURI === elem.getAttribute("src") &&
+               ["viewable", "complete"].indexOf(elem.contentDocument.readyState) >= 0;
+    },
+
+    _whenReady: function _whenReady(id) {
         let elem = document.getElementById(id);
 
-        util.waitFor(function () elem.contentDocument.documentURI === elem.getAttribute("src") &&
-               ["viewable", "complete"].indexOf(elem.contentDocument.readyState) >= 0);
+        util.waitFor(bind(this._ready, this, elem));
 
         return elem;
     },
 
-    completionList: Class.memoize(function () this._whenReady("completionList", "dactyl-completions"), true),
+    completionList: Class.memoize(function () {
+        let elem = document.getElementById(elem);
+        while (!this._ready(elem))
+            yield 10;
+        yield elem;
+    }, true),
 
     completionContainer: Class.memoize(function () this.completionList.parentNode),
 
@@ -279,11 +288,14 @@ var CommandWidgets = Class("CommandWidgets", {
     }),
 
     multilineOutput: Class.memoize(function () {
-        let elem = this._whenReady("multilineOutput", "dactyl-multiline-output");
+        let elem = document.getElementById("dactyl-multiline-output");
+        while (!this._ready(elem))
+            yield 10;
+
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
-        return elem;
+        yield elem;
     }, true),
 
     multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
@@ -569,7 +581,7 @@ var CommandLine = Module("commandline", {
     get completionList() {
         let node = this.widgets.active.commandline;
         if (!node.completionList) {
-            let elem = this.widgets._whenReady("completionList", "dactyl-completions-" + node.id);
+            let elem = this.widgets._whenReady("dactyl-completions-" + node.id);
             node.completionList = ItemList(elem.id);
         }
         return node.completionList;

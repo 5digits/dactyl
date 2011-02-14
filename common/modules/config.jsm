@@ -56,17 +56,18 @@ var ConfigBase = Class("ConfigBase", {
     get addonID() this.name + "@dactyl.googlecode.com",
     addon: Class.memoize(function () {
         let addon;
-        util.waitFor(function () {
+        do {
             addon = services.fuel.storage.get("dactyl.bootstrap", {}).addon;
-            if (addon && !addon.getResourceURI)
+            if (addon && !addon.getResourceURI) {
                 util.reportError(Error("Don't have add-on yet"));
-
-            return !addon || addon.getResourceURI;
-        });
+                yield 10;
+            }
+        }
+        while (addon && !addon.getResourceURI);
 
         if (!addon)
             addon = require("addons").AddonManager.getAddonByID(this.addonID);
-        return addon;
+        yield addon;
     }, true),
 
     /**
