@@ -168,7 +168,7 @@ var Modes = Module("modes", {
                     prefs.set("accessibility.browsewithcaret", false);
 
                 statusline.updateUrl();
-                if (!stack.fromFocus && (prev.main.input || prev.main.ownsFocus))
+                if (!stack.fromFocus && prev.main.ownsFocus)
                     dactyl.focusContent(true);
                 if (prev.main == modes.NORMAL) {
                     dactyl.focusContent(true);

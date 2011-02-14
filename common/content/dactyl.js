@@ -1242,9 +1242,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         let re = util.regexp(<![CDATA[
                 ^ (
-                    <domain>+ \. [a-z0-9]+ (:\d+)? (/ .*)? |
                     <domain>+ (:\d+)? (/ .*) |
                     <domain>+ (:\d+) |
+                    <domain>+ \. [a-z0-9]+ |
                     localhost
                 ) $
             ]]>, "gi", {
