@@ -133,10 +133,10 @@ var ProcessorStack = Class("ProcessorStack", {
             if (callable(res))
                 actions.push(res);
 
-            if (isinstance(res, KeyProcessor))
-                processors.push(res);
             if (res === Events.WAIT || input.waiting)
                 processors.push(input);
+            if (isinstance(res, KeyProcessor))
+                processors.push(res);
         }
 
         events.dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
