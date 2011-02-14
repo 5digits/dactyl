@@ -10,6 +10,8 @@ defineModule("finder", {
     use: ["services", "util"]
 }, this);
 
+function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
+
 /** @instance rangefinder */
 var RangeFinder = Module("rangefinder", {
     Local: function (dactyl, modules, window) ({
@@ -37,7 +39,7 @@ var RangeFinder = Module("rangefinder", {
         this.commandline;
         this.CommandMode(mode).open();
 
-        if (this.rangeFind && this.rangeFind.window.get() === this.window)
+        if (this.rangeFind && equals(this.rangeFind.window.get(), this.window))
             this.rangeFind.reset();
         this.find("", mode === this.modes.FIND_BACKWARD);
     },
@@ -71,7 +73,7 @@ var RangeFinder = Module("rangefinder", {
         // It's possible, with :tabdetach for instance, for the rangeFind to
         // actually move from one window to another, which breaks things.
         if (!this.rangeFind
-            || this.rangeFind.window.get() !== this.window
+            || !equals(this.rangeFind.window.get(), this.window)
             || linksOnly  != !!this.rangeFind.elementPath
             || regexp     != this.rangeFind.regexp
             || matchCase  != this.rangeFind.matchCase
@@ -667,7 +669,7 @@ var RangeFind = Class("RangeFind", {
                 this.initialSelection = this.selection.getRangeAt(0);
         },
 
-        descroll: function (range) {
+        descroll: function () {
             this.window.scrollTo(this.scroll.x, this.scroll.y);
         },
 
