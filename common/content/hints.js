@@ -465,7 +465,7 @@ var HintSession = Class("HintSession", CommandMode, {
         }
 
         this.timeout(function () {
-            if ((modes.extended & modes.HINTS) && !this.continue)
+            if (isinstance(modes.main, modes.HINTS) && !this.continue)
                 modes.pop();
             commandline.lastEcho = null; // Hack.
             dactyl.trapErrors("action", this.hintMode,
@@ -671,7 +671,7 @@ var HintSession = Class("HintSession", CommandMode, {
 var Hints = Module("hints", {
     init: function init() {
         this.resizeTimer = Timer(100, 500, function () {
-            if (modes.extended & modes.HINTS)
+            if (isinstance(modes.main, modes.HINTS))
                 modes.getStack(0).params.onResize();
         });
 
