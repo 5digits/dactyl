@@ -155,7 +155,15 @@ var Modes = Module("modes", {
         this.addMode("MENU", {
             description: "Active when a menu or other pop-up is open",
             input: true,
-            passthrough: true
+            passthrough: true,
+            ownsInput: false
+        }, {
+            leave: function leave(stack) {
+                util.timeout(function () {
+                    if (stack.pop && !modes.main.input && !Events.isInputElement(dactyl.focusedElement));
+                        modes.push(modes.INSERT);
+                });
+            }
         });
 
         this.addMode("LINE", {
@@ -260,8 +268,13 @@ var Modes = Module("modes", {
             commandline.widgets.mode = msg || null;
     },
 
-    remove: function remove(mode) {
-        if (this.stack.some(function (m) m.main == mode)) {
+    remove: function remove(mode, covert) {
+        if (covert && this.topOfStack.main != mode) {
+            util.assert(mode != this.NORMAL);
+            for (let m; m = array.nth(this.modeStack, function (m) m.main == mode, 0);)
+                this._modeStack.splice(this._modeStack.indexOf(m));
+        }
+        else if (this.stack.some(function (m) m.main == mode)) {
             this.pop(mode);
             this.pop();
         }

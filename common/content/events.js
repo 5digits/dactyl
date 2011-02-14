@@ -1013,7 +1013,7 @@ var Events = Module("events", {
 
         DOMMenuBarInactive: function () {
             this._activeMenubar = false;
-            modes.remove(modes.MENU);
+            modes.remove(modes.MENU, true);
         },
 
         blur: function onBlur(event) {
@@ -1244,7 +1244,7 @@ var Events = Module("events", {
         popuphidden: function onPopupHidden() {
             // gContextMenu is set to NULL, when a context menu is closed
             if (window.gContextMenu == null && !this._activeMenubar)
-                modes.remove(modes.MENU);
+                modes.remove(modes.MENU, true);
         },
 
         resize: function onResize(event) {
