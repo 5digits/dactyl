@@ -1247,7 +1247,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     <domain>+ \. [a-z0-9]+ |
                     localhost
                 ) $
-            ]]>, "gi", {
+            ]]>, "i", {
             domain: util.regexp(String.replace(<![CDATA[
                 [^
                     U0000-U002c // U002d-U002e --.
