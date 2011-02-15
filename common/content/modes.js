@@ -160,7 +160,7 @@ var Modes = Module("modes", {
         }, {
             leave: function leave(stack) {
                 util.timeout(function () {
-                    if (stack.pop && !modes.main.input && !Events.isInputElement(dactyl.focusedElement));
+                    if (stack.pop && !modes.main.input && Events.isInputElement(dactyl.focusedElement))
                         modes.push(modes.INSERT);
                 });
             }
