@@ -142,10 +142,10 @@ var Highlights = Module("Highlight", {
 
         let highlight = this.highlight[key] || this._create(false, [key]);
 
-        let extends = extend || highlight.extend;
+        let bases = extend || highlight.extend;
         if (append) {
             newStyle = Styles.append(highlight.value || "", newStyle);
-            extends = highlight.extends.concat(extends);
+            bases = highlight.extends.concat(bases);
         }
 
         if (/^\s*$/.test(newStyle))
@@ -158,11 +158,11 @@ var Highlights = Module("Highlight", {
                 return null;
             }
             newStyle = highlight.defaultValue;
-            extends = highlight.defaultExtends;
+            bases = highlight.defaultExtends;
         }
 
         highlight.set("value", newStyle || "");
-        highlight.extends = array.uniq(extends, true);
+        highlight.extends = array.uniq(bases, true);
         if (force)
             highlight.style.enabled = true;
         this.highlight[highlight.class] = highlight;

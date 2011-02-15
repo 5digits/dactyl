@@ -55,7 +55,7 @@ var StoreBase = Class("StoreBase", {
         this.fireEvent("change", null);
     },
 
-    delete: function delete() {
+    delete: function delete_() {
         delete storage.keys[this.name];
         delete storage[this.name];
         storage.infoPath.child(this.name).remove(false);
