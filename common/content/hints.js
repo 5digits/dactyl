@@ -1165,6 +1165,7 @@ var Hints = Module("hints", {
             "regexpmap", {
                 "[iI]": xpath(["img"]),
                 "[asOTivVWy]": xpath(["{a,area}[@href]", "{img,iframe}[@src]"]),
+                "[f]": xpath(["body"]),
                 "[F]": xpath(["body", "code", "div", "html", "p", "pre", "span"]),
                 "[S]": xpath(["input[not(@type='hidden')]", "textarea", "button", "select"])
             },
