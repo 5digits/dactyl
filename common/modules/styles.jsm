@@ -473,7 +473,7 @@ var Styles = Module("Styles", {
                 )?
             )
             (?P<postSpace> <space>* (?: ; | $) )
-        ]]>, "gi",
+        ]]>, "gix",
         {
             space: /(?: \s | \/\* .*? \*\/ )/,
             string: /(?:" (?:[^\\"]|\\.)* (?:"|$) | '(?:[^\\']|\\.)* (?:'|$) )/
@@ -491,7 +491,7 @@ var Styles = Module("Styles", {
                     )?
                 )
                 (?P<postSpace> <space>* (?: ; | $) )
-            ]]>, "gi", this),
+            ]]>, "gix", this),
 
         get function() util.regexp(<![CDATA[
                 (?P<function>
@@ -499,7 +499,7 @@ var Styles = Module("Styles", {
                         (?: <string> | [^)]*  )
                     \s* (?: \) | $)
                 )
-            ]]>, "g", this),
+            ]]>, "gx", this),
 
         space: /(?: \s | \/\* .*? \*\/ )/,
 
@@ -508,7 +508,7 @@ var Styles = Module("Styles", {
                     " (?:[^\\"]|\\.)* (?:"|$) |
                     ' (?:[^\\']|\\.)* (?:'|$)
                 )
-            ]]>, "g", this),
+            ]]>, "gx", this),
 
         get token() util.regexp(<![CDATA[
             (?P<token>
@@ -520,7 +520,7 @@ var Styles = Module("Styles", {
                 | <space>+
                 | [^;}\s]+
             )
-        ]]>, "gi", this)
+        ]]>, "gix", this)
     })
 }, {
     commands: function (dactyl, modules, window) {

@@ -966,7 +966,7 @@ unlet s:cpo_save
                 )
                 (?P<path> \/[^\/]* )?
                 $
-            ]]>).exec(context.filter);
+            ]]>, "x").exec(context.filter);
             if (match) {
                 if (!match.path) {
                     context.key = match.proto;

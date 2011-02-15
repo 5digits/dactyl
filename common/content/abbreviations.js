@@ -157,14 +157,14 @@ var Abbreviations = Module("abbreviations", {
             (^ | \s | <nonkeyword>) (<keyword>+             )$ | // full-id
             (^ | \s | <keyword>   ) (<nonkeyword>+ <keyword>)$ | // end-id
             (^ | \s               ) (\S* <nonkeyword>       )$   // non-id
-        ]]></>, "", params);
+        ]]></>, "x", params);
         this._check = util.regexp(<><![CDATA[
             ^ (?:
               <keyword>+              | // full-id
               <nonkeyword>+ <keyword> | // end-id
               \S* <nonkeyword>          // non-id
             ) $
-        ]]></>, "", params);
+        ]]></>, "x", params);
     },
 
     get: deprecated("group.abbrevs.get", { get: function get() this.user.closure.get }),

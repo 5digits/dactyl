@@ -349,7 +349,7 @@ var Template = Module("Template", {
             (?P<pre> [/\s]|^)
             (?P<tag> '[\w-]+' | :(?:[\w-]+|!) | (?:._)?<[\w-]+> )
             (?=      [[\)!,;./\s]|$)
-        ]]>, "g");
+        ]]>, "gx");
         return this.highlightSubstrings(str, (function () {
             for (let res in re.iterate(str))
                 yield [res.index + res.pre.length, res.tag.length];

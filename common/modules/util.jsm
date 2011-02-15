@@ -349,7 +349,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 (< ((?:[a-z]-)?[a-z-]+?) >) | // 3 4
                 (\}>) // 5
             )
-        ]]>, "giy");
+        ]]>, "gixy");
         macro = String(macro);
         let end = 0;
         for (let match in re.iterate(macro)) {
@@ -1323,14 +1323,21 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {RegExp} A custom regexp object.
      */
     regexp: update(function (expr, flags, tokens) {
+        flags = flags || [k for ([k, v] in Iterator({ g: "global", i: "ignorecase", m: "multiline", y: "sticky" }))
+                          if (expr[v])].join("");
+
         if (isinstance(expr, ["RegExp"]))
             expr = expr.source;
 
+        // Replace replacement <tokens>.
         if (tokens)
             expr = String.replace(expr, /(\(?P)?<(\w+)>/g, function (m, n1, n2) !n1 && set.has(tokens, n2) ? tokens[n2].dactylSource || tokens[n2].source || tokens[n2] : m);
 
-        expr = String.replace(expr, /(\\.)|\/\/[^\n]*|\/\*[^]*?\*\/|\s+/gm, function (m, m1) m1 || "");
+        // Strip comments and white space.
+        if (/x/.test(flags))
+            expr = String.replace(expr, /(\\.)|\/\/[^\n]*|\/\*[^]*?\*\/|\s+/gm, function (m, m1) m1 || "");
 
+        // Replace (?P<named> parameters)
         if (/\(\?P</.test(expr)) {
             var source = expr;
             let groups = ["wholeMatch"];
@@ -1343,11 +1350,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             var struct = Struct.apply(null, groups);
         }
 
-        let res = update(RegExp(expr, flags), {
+        let res = update(RegExp(expr, flags.replace("x", "")), {
             closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
             dactylPropertyNames: ["exec", "match", "test", "toSource", "toString", "global", "ignoreCase", "lastIndex", "multiLine", "source", "sticky"],
             iterate: function (str, idx) util.regexp.iterate(this, str, idx)
         });
+
+        // Return a struct with properties for named parameters if we
+        // have them.
         if (struct)
             update(res, {
                 exec: function exec() let (match = exec.superapply(this, arguments)) match && struct.fromArray(match),

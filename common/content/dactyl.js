@@ -696,9 +696,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     )
                     |
                     (?: ^ [^\S\n]* \n) +
-                ]]>, "gmy");
+                ]]>, "gmxy");
 
-                let betas = util.regexp(/\[(b\d)\]/, "g");
+                let betas = util.regexp(/\[(b\d)\]/, "gx");
 
                 let beta = array(betas.iterate(NEWS))
                             .map(function (m) m[1]).uniq().slice(-1)[0];
@@ -1240,26 +1240,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         else
             urls = [str];
 
-        let re = util.regexp(<![CDATA[
-                ^ (
-                    <domain>+ (:\d+)? (/ .*) |
-                    <domain>+ (:\d+) |
-                    <domain>+ \. [a-z0-9]+ |
-                    localhost
-                ) $
-            ]]>, "i", {
-            domain: util.regexp(String.replace(<![CDATA[
-                [^
-                    U0000-U002c // U002d-U002e --.
-                    U002f       // /
-                                // U0030-U0039 0-9
-                    U003a-U0040 // U0041-U005a a-z
-                    U005b-U0060 // U0061-U007a A-Z
-                    U007b-U007f
-                ]
-            ]]>, /U/g, "\\u"))
-        });
-
         return urls.map(function (url) {
             url = url.trim();
 
@@ -1284,15 +1264,34 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 return searchURL;
 
             // If it looks like URL-ish (foo.com/bar), let Gecko figure it out.
-            if (re.test(url))
+            if (this.urlish.test(url))
                 return util.createURI(url).spec;
 
             // Pass it off to the default search engine or, failing
             // that, let Gecko deal with it as is.
             return bookmarks.getSearchURL(url, true) || util.createURI(url).spec;
-        });
+        }, this);
     },
     stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
+    urlish: Class.memoize(function () util.regexp(<![CDATA[
+            ^ (
+                <domain>+ (:\d+)? (/ .*) |
+                <domain>+ (:\d+) |
+                <domain>+ \. [a-z0-9]+ |
+                localhost
+            ) $
+        ]]>, "ix", {
+        domain: util.regexp(String.replace(<![CDATA[
+            [^
+                U0000-U002c // U002d-U002e --.
+                U002f       // /
+                            // U0030-U0039 0-9
+                U003a-U0040 // U0041-U005a a-z
+                U005b-U0060 // U0061-U007a A-Z
+                U007b-U007f
+            ]
+        ]]>, /U/g, "\\u"), "x")
+    })),
 
     pluginFiles: {},
 

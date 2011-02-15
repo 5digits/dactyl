@@ -224,7 +224,7 @@ var Highlights = Module("Highlight", {
         \{ ([^}]*) \}
         \s*
         $
-    ]]>, "gm"),
+    ]]>, "gmx"),
     sheetRegexp: util.regexp(<![CDATA[
         ^\s*
         !? \*?
@@ -234,7 +234,7 @@ var Highlights = Module("Highlight", {
         (?:; (?P<extends>  (?:[^;\s]|\s[^;\s])+ )? )?
         \s*  (?P<css>      .*)
         $
-    ]]>),
+    ]]>, "x"),
 
     /**
      * Bulk loads new CSS rules, in the format of,

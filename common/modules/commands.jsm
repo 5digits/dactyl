@@ -1095,7 +1095,7 @@ var Commands = Module("commands", {
                 <forbid>
             ]
             [^ <forbid> ]*
-        ]]>, "g", {
+        ]]>, "gx", {
         forbid: util.regexp(String.replace(<![CDATA[
             U0000-U002c // U002d -
             U002e-U002f
@@ -1119,7 +1119,7 @@ var Commands = Module("commands", {
             Ufe70-Ufeff // Arabic Presentation Forms-B
             Uff00-Uffef // Halfwidth and Fullwidth Forms
             Ufff0-Uffff // Specials
-        ]]>, /U/g, "\\u"))
+        ]]>, /U/g, "\\u"), "x")
     }),
 
     validName: Class.memoize(function () util.regexp("^" + this.nameRegexp.source + "$")),
@@ -1137,7 +1137,7 @@ var Commands = Module("commands", {
                 (?:. | \n)*?
             )?
             $
-        ]]>, "", {
+        ]]>, "x", {
             name: this.nameRegexp
         })),
 

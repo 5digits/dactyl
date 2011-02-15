@@ -257,7 +257,7 @@ function XMLChannel(uri, contentType) {
                 ([^]*)
             )?
             $
-        ]]>).exec(stream.read(4096));
+        ]]>, "x").exec(stream.read(4096));
     this.writes.push(pre);
     if (doctype) {
         this.writes.push(doctype + "[\n");
