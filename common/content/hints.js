@@ -357,9 +357,9 @@ var HintSession = Class("HintSession", CommandMode, {
      *
      * @param {Event} event The event to handle.
      */
-    onKeyPress: function onKeyPress(events) {
+    onKeyPress: function onKeyPress(eventList) {
         const KILL = false, PASS = true;
-        let key = events.toString(events[0]);
+        let key = events.toString(eventList[0]);
 
         this.clearTimeout();
 
