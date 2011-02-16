@@ -380,8 +380,7 @@ var CommandMode = Class("CommandMode", {
 
     keepCommand: false,
 
-    onKeyPress: function onKeyPress(event) {
-        let key = events.toString(event);
+    onKeyPress: function onKeyPress(events) {
         if (this.completions)
             this.completions.previewClear();
 

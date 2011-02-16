@@ -27,8 +27,8 @@ var ProcessorStack = Class("ProcessorStack", {
             if (params.postExecute)
                 input.postExecute = params.postExecute;
             if (params.onKeyPress && input.hive === mappings.builtin)
-                input.fallthrough = function (event) {
-                    return params.onKeyPress(event) === false ? Events.KILL : Events.PASS;
+                input.fallthrough = function fallthrough(events) {
+                    return params.onKeyPress(events) === false ? Events.KILL : Events.PASS;
                 };
             }
     },
@@ -84,17 +84,7 @@ var ProcessorStack = Class("ProcessorStack", {
             let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
             if (list.length)
                 events.dbg("REFEED: " + list.map(events.closure.toString).join(""));
-
-            list.forEach(function (event, i) {
-                    let elem = event.originalTarget;
-                    if (event.originalTarget) {
-                        let doc = elem.ownerDocument || elem.document || elem;
-                        let evt = events.create(doc, event.type, event);
-                        events.dispatch(elem, evt, { skipmap: true, isMacro: true, isReplay: true });
-                    }
-                    else if (i > 0)
-                        events.events.keypress.call(events, event);
-                });
+            events.feedevents(null, list, { skipmap: true, isMacro: true, isReplay: true });
         }
 
         if (force && this.processors.length === 0)
@@ -153,7 +143,7 @@ var ProcessorStack = Class("ProcessorStack", {
                 if (input.fallthrough) {
                     if (result === Events.KILL)
                         break;
-                    result = dactyl.trapErrors(input.fallthrough, input, event);
+                    result = dactyl.trapErrors(input.fallthrough, input, this.events);
                 }
 
         this.processors = processors;
@@ -555,6 +545,29 @@ var Events = Module("events", {
             if (!filter || re.test(item))
                 this._macros.remove(item);
         }
+    },
+
+    /**
+     * Feeds a list of events to *target* or the originalTarget member
+     * of each event if *target* is null.
+     *
+     * @param {EventTarget} target The destination node for the events.
+     *      @optional
+     * @param {[Event]} list The events to dispatch.
+     * @param {object} extra Extra properties for processing by dactyl.
+     *      @optional
+     */
+    feedevents: function feedevents(target, list, extra) {
+        list.forEach(function (event, i) {
+            let elem = target || event.originalTarget;
+            if (elem) {
+                let doc = elem.ownerDocument || elem.document || elem;
+                let evt = events.create(doc, event.type, event);
+                events.dispatch(elem, evt, extra);
+            }
+            else if (i > 0 && event.type === "keypress")
+                events.events.keypress.call(events, event);
+        });
     },
 
     /**

@@ -210,14 +210,14 @@ var MOW = Module("mow", {
         }
     },
 
-    onKeyPress: function onKeyPress(event) {
+    onKeyPress: function onKeyPress(eventList) {
         const KILL = false, PASS = true;
 
         if (options["more"] && mow.isScrollable(1))
             this.updateMorePrompt(false, true);
         else {
             modes.pop();
-            events.feedkeys(events.toString(event));
+            events.feedevents(null, eventList);
             return KILL;
         }
         return PASS;
