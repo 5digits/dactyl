@@ -111,7 +111,7 @@
 <item>
     <tags><![CDATA[<sleep> <A-m>s]]></tags>
     <strut/>
-    <spec><a>count</a>&lt;m>s</spec>
+    <spec><a>count</a><![CDATA[<A-m>s]]></spec>
     <description>
         <p>
             Sleep for <a>count</a> milliseconds before resuming playback.
