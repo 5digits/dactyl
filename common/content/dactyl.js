@@ -401,7 +401,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (fileName == null)
             if (info && info.file[0] !== "[")
                 ({ file: fileName, line: lineNumber, context: ctxt }) = info;
-            else try {
+
+        if (!context)
+            context = _userContext || ctxt;
+
+        if (isinstance(context, ["Sandbox"]))
+            return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
+        else
+            try {
                 if (!context)
                     context = userContext || ctxt;
 
@@ -424,10 +431,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 delete context[EVAL_RESULT];
                 delete context[EVAL_STRING];
             }
-
-        if (!context)
-            context = _userContext || ctxt;
-        return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
     },
 
     /**
@@ -1748,21 +1751,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     literal: 0
                 });
         });
-
-        commands.add(["javas[cript]", "js"],
-            "Evaluate a JavaScript string",
-            function (args) {
-                if (args.bang) // open JavaScript console
-                    dactyl.open("chrome://global/content/console.xul",
-                        { from: "javascript" });
-                else
-                    dactyl.userEval(args[0]);
-            }, {
-                bang: true,
-                completer: function (context) completion.javascript(context),
-                hereDoc: true,
-                literal: 0
-            });
 
         commands.add(["loadplugins", "lpl"],
             "Load all plugins immediately",

@@ -447,6 +447,11 @@ var ConfigBase = Class("ConfigBase", {
         EditorBlink1;;*    background: yellow !important;
         EditorBlink2;;*
 
+        REPL                overflow: auto; max-height: 40em;
+        REPL-R;;;Question
+        REPL-E              white-space: pre-wrap;
+        REPL-P              white-space: pre-wrap; margin-bottom: 1em;
+
         Indicator   color: blue; width: 1.5em; text-align: center;
         Filter      font-weight: bold;
 

@@ -986,7 +986,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             obj = Object.prototype.toString.call(obj);
         }
         obj = template.highlightFilter(util.clip(obj, 150), "\n", !color ? function () "^J" : function () <span highlight="NonText">^J</span>);
-        let string = <><span highlight="Title Object">{obj}</span>::<br/>&#x0a;</>;
+        let string = <><span highlight="Title Object">{obj}</span>::&#x0a;</>;
 
         let keys = [];
 
@@ -1016,7 +1016,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     i = parseInt(i);
                 else if (/^[A-Z_]+$/.test(i))
                     i = "";
-                keys.push([i, <>{key}{noVal ? "" : <>: {value}</>}<br/>&#x0a;</>]);
+                keys.push([i, <>{key}{noVal ? "" : <>: {value}</>}&#x0a;</>]);
             }
         }
         catch (e) {}
@@ -1027,7 +1027,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return String.localeCompare(a[0], b[0]);
         }
         string += template.map(keys.sort(compare), function (f) f[1]);
-        return color ? string : [s for each (s in string)].join("");
+        return color ? <div style="white-space: pre-wrap;">{string}</div> : [s for each (s in string)].join("");
     },
 
     observers: {

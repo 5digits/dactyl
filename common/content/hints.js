@@ -10,6 +10,8 @@
 /** @instance hints */
 
 var HintSession = Class("HintSession", CommandMode, {
+    get extendedMode() modes.HINTS,
+
     init: function init(mode, opts) {
         init.supercall(this);
 
@@ -465,7 +467,7 @@ var HintSession = Class("HintSession", CommandMode, {
         }
 
         this.timeout(function () {
-            if (isinstance(modes.main, modes.HINTS) && !this.continue)
+            if ((modes.extended & modes.HINTS) && !this.continue)
                 modes.pop();
             commandline.lastEcho = null; // Hack.
             dactyl.trapErrors("action", this.hintMode,

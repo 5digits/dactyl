@@ -31,6 +31,8 @@ var Editor = Module("editor", {
         }
 
         let elem = dactyl.focusedElement;
+        if (elem.inputField)
+            elem = elem.inputField;
 
         if (elem.setSelectionRange) {
             let text = dactyl.clipboardRead(clipboard);
@@ -49,7 +51,8 @@ var Editor = Module("editor", {
             let value = elem.value.substring(0, start) + text + elem.value.substring(end);
             elem.value = value;
 
-            Editor.getEditor(elem).rootElement.firstChild.textContent = value;
+            if (/^(search|text)$/.test(elem.type))
+                Editor.getEditor(elem).rootElement.firstChild.textContent = value;
 
             elem.selectionStart = Math.min(start + (toStart ? 0 : text.length), elem.value.length);
             elem.selectionEnd = elem.selectionStart;

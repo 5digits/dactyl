@@ -336,7 +336,7 @@ var Config = Module("config", ConfigBase, {
             completion.location);
     },
     events: function (dactyl, modules, window) {
-        modules.events.addSessionListener(window, "SidebarFocused", function (event) {
+        modules.events.listen(window, "SidebarFocused", function (event) {
             modules.config.lastSidebar = window.document.getElementById("sidebar-box")
                                                .getAttribute("sidebarcommand");
         }, false);

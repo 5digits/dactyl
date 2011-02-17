@@ -303,24 +303,29 @@ var CommandMode = Class("CommandMode", {
         this.keepCommand = userContext.hidden_option_command_afterimage;
     },
 
-    open: function (command) {
-        this.command = command;
+    get command() this.widgets.command[1],
+    set command(val) this.widgets.command = val,
 
+    get prompt() this.widgets.prompt,
+    set prompt(val) this.widgets.prompt = val,
+
+    open: function (command) {
         dactyl.assert(isinstance(this.mode, modes.COMMAND_LINE),
                       "Not opening command line in non-command-line mode.");
 
         commandline.clearMessage();
-        modes.push(this.mode, null, this.closure);
+        modes.push(this.mode, this.extendedMode, this.closure);
 
         this.widgets.active.commandline.collapsed = false;
         this.widgets.prompt = this.prompt;
         this.widgets.command = command || "";
 
+        this.input = this.widgets.active.command.inputField;
         if (this.historyKey)
-            this.history = CommandLine.History(commandline.widgets.active.command.inputField, this.historyKey, this);
+            this.history = CommandLine.History(this.input, this.historyKey, this);
 
         if (this.complete)
-            this.completions = CommandLine.Completions(commandline.widgets.active.command.inputField, this);
+            this.completions = CommandLine.Completions(this.input, this);
 
         if (this.completions && command && commandline.commandSession === this)
             this.completions.autocompleteTimer.flush(true);
@@ -346,6 +351,7 @@ var CommandMode = Class("CommandMode", {
     leave: function (stack) {
         if (!stack.push) {
             commandline.commandSession = null;
+            this.input.dactylKeyPress = undefined;
 
             if (this.completions)
                 this.completions.cleanup();
@@ -1010,6 +1016,7 @@ var CommandLine = Module("commandline", {
             this.tabTimer.reset();
             this.autocompleteTimer.reset();
             this.itemList.visible = false;
+            this.input.dactylKeyPress = undefined;
         },
 
         ignoredCount: 0,

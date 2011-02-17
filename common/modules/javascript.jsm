@@ -108,6 +108,7 @@ var JavaScript = Module("javascript", {
             return cache[key];
         }
         catch (e) {
+            util.reportError(e);
             this.context.message = "Error: " + e;
             return null;
         }
@@ -306,6 +307,7 @@ var JavaScript = Module("javascript", {
 
         this._cacheKey = null;
         let obj = [[this.cache.evalContext, "Local Variables"],
+                   [this.replContext, "REPL Variables"],
                    [this.modules.userContext, "Global Variables"],
                    [this.modules, "modules"],
                    [this.window, "window"]]; // Default objects;
@@ -673,6 +675,7 @@ var JavaScript = Module("javascript", {
 }, {
     init: function init(dactyl, modules, window) {
         init.superapply(this, arguments);
+        modules.JavaScript = Class("JavaScript", JavaScript, { modules: modules, window: window });
     },
     completion: function (dactyl, modules, window) {
         const { completion } = modules;
@@ -680,6 +683,142 @@ var JavaScript = Module("javascript", {
             get javascript() modules.javascript.closure.complete,
             javascriptCompleter: JavaScript // Backwards compatibility
         });
+    },
+    modes: function initModes(dactyl, modules, window) {
+        const { modes } = modules;
+
+        modes.addMode("REPL", {
+            description: "JavaScript Read Eval Print Loop",
+            bases: [modes.COMMAND_LINE]
+        });
+    },
+    commandline: function initCommandLine(dactyl, modules, window) {
+        const { modes } = modules;
+
+        var REPL = Class("REPL", {
+            init: function init(context) {
+                this.context = context;
+                this.results = [];
+            },
+
+            addOutput: function addOutput(js) {
+                default xml namespace = XHTML;
+                this.count++;
+
+                try {
+                    var result = dactyl.userEval(js, this.context);
+                    var xml = util.objectToString(result, true);
+                }
+                catch (e) {
+                    util.reportError(e);
+                    result = e;
+
+                    if (e.fileName)
+                        e = util.fixURI(e.fileName) + ":" + e.lineNumber + ": " + e;
+                    xml = <span highlight="ErrorMsg">{e}</span>;
+                }
+
+                let prompt = "js" + this.count;
+                Class.replaceProperty(this.context, prompt, result);
+
+                XML.ignoreWhitespace = XML.prettyPrinting = false;
+                let nodes = {};
+                this.rootNode.appendChild(
+                    util.xmlToDom(<e4x>
+                        <div highlight="REPL-E" key="e"><span highlight="REPL-R">{prompt}></span> {js}</div>
+                        <div highlight="REPL-P" key="p">{xml}</div>
+                    </e4x>.elements(), this.document, nodes));
+
+                this.rootNode.scrollTop = nodes.e.getBoundingClientRect().top
+                                        - this.rootNode.getBoundingClientRect().top;
+            },
+
+            count: 0,
+
+            message: Class.memoize(function () {
+                default xml namespace = XHTML;
+                util.xmlToDom(<div highlight="REPL" key="rootNode"/>,
+                              this.document, this);
+
+                return this.rootNode;
+            })
+        });
+
+        modules.CommandREPLMode = Class("CommandREPLMode", modules.CommandMode, {
+            open: function open() {
+                let self = this;
+
+                this.context = modules.newContext(modules.userContext, true);
+                this.js = modules.JavaScript();
+                this.js.replContext = this.context;
+                this.js.newContext = function newContext() modules.newContext(self.context, true);
+                this.repl = REPL(this.context);
+
+                this.updatePrompt();
+
+                modules.mow.echo(this.repl);
+
+                open.superapply(this, arguments);
+            },
+
+            complete: function complete(context) {
+                context.fork("js", 0, this.js, "complete");
+            },
+
+            historyKey: "javascript",
+
+            mode: modes.REPL,
+
+            accept: function accept() {
+                dactyl.trapErrors(function () { this.repl.addOutput(this.command) }, this);
+
+                this.updatePrompt();
+                this.completions.cleanup();
+                this.history.save();
+
+                modules.mow.resize();
+            },
+
+            leave: function leave(params) {
+                leave.superapply(this, arguments);
+                if (!params.push)
+                    modes.delay(function () { modes.pop(); });
+            },
+
+            updatePrompt: function updatePrompt() {
+                this.command = "";
+                this.prompt = ["REPL-R", "js" + (this.repl.count + 1) + "> "];
+            }
+        });
+    },
+    commands: function initCommands(dactyl, modules, window) {
+        const { commands } = modules;
+
+        commands.add(["javas[cript]", "js"],
+            "Evaluate a JavaScript string",
+            function (args) {
+                if (args.bang) // open JavaScript console
+                    dactyl.open("chrome://global/content/console.xul",
+                                { from: "javascript" });
+                else if (args[0])
+                    dactyl.userEval(args[0]);
+                else {
+                    modules.commandline;
+                    modules.CommandREPLMode().open();
+                }
+            }, {
+                bang: true,
+                completer: function (context) modules.completion.javascript(context),
+                hereDoc: true,
+                literal: 0
+            });
+    },
+    mappings: function initMappings(dactyl, modules, window) {
+        const { mappings, modes } = modules;
+
+        mappings.add([modes.REPL], ["<Return>"],
+            "Accept the current input",
+            function ({ self }) { self.accept(); });
     },
     options: function (dactyl, modules, window) {
         modules.options.add(["jsdebugger", "jsd"],

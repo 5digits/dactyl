@@ -217,7 +217,12 @@ var KeyProcessor = Class("KeyProcessor", {
             else if (map.motion)
                 return KeyArgProcessor(this, map, true, "motion");
 
-            return this.execute(map, { count: this.count, command: this.command, events: this.events, allEvents: this.allEvents });
+            return this.execute(map, {
+                allEvents: this.allEvents,
+                command: this.command,
+                count: this.count,
+                events: this.events
+            });
         }
 
         if (!this.waiting)
@@ -347,7 +352,6 @@ var Events = Module("events", {
 
         this._fullscreen = window.fullScreen;
         this._lastFocus = null;
-        this._currentMacro = "";
         this._macroKeys = [];
         this._lastMacro = "";
 
@@ -426,8 +430,8 @@ var Events = Module("events", {
      * @param {boolean} capture When true, listen during the capture
      *      phase, otherwise during the bubbling phase.
      */
-    get addSessionListener() this.builtin.closure.listen,
     get listen() this.builtin.closure.listen,
+    addSessionListener: deprecated("events.listen", { get: function addSessionListener() this.listen }),
 
     /**
      * Wraps an event listener to ensure that errors are reported.
@@ -462,34 +466,33 @@ var Events = Module("events", {
      *
      * @param {string} macro The name for the macro.
      */
-    startRecording: function (macro) {
-        // TODO: ignore this like Vim?
-        dactyl.assert(/[a-zA-Z0-9]/.test(macro),
+    _recording: null,
+    get recording() this._recording,
+
+    set recording(macro) {
+        dactyl.assert(macro == null || /[a-zA-Z0-9]/.test(macro),
                       "E354: Invalid register name: '" + macro + "'");
 
-        modes.recording = true;
+        modes.recording = !!macro;
 
         if (/[A-Z]/.test(macro)) { // uppercase (append)
-            this._currentMacro = macro.toLowerCase();
-            this._macroKeys = events.fromString((this._macros.get(this._currentMacro) || { keys: "" }).keys, true)
+            macro = macro.toLowerCase();
+            this._macroKeys = events.fromString((this._macros.get(macro) || { keys: "" }).keys, true)
                                     .map(events.closure.toString);
         }
-        else {
-            this._currentMacro = macro;
+        else if (macro) {
             this._macroKeys = [];
         }
-    },
+        else {
+            this._macros.set(this.recording, {
+                keys: this._macroKeys.join(""),
+                timeRecorded: Date.now()
+            });
 
-    /** Terminates the recording of the current key event macro. */
-    finishRecording: function () {
-        modes.recording = false;
-        this._macros.set(this._currentMacro, {
-            keys: this._macroKeys.join(""),
-            timeRecorded: Date.now()
-        });
-
-        dactyl.log("Recorded " + this._currentMacro + ": " + this._macroKeys.join(""), 9);
-        dactyl.echomsg("Recorded macro '" + this._currentMacro + "'");
+            dactyl.log("Recorded " + this.recording + ": " + this._macroKeys.join(""), 9);
+            dactyl.echomsg("Recorded macro '" + this.recording + "'");
+        }
+        this._recording = macro || null;
     },
 
     /**
@@ -1457,7 +1460,7 @@ var Events = Module("events", {
             ["q", "<record-macro>"], "Record a key sequence into a macro",
             function ({ arg }) {
                 events._macroKeys.pop();
-                events[modes.recording ? "finishRecording" : "startRecording"](arg);
+                events.recording = arg;
             },
             { get arg() !modes.recording });
 
