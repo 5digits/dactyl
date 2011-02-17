@@ -308,6 +308,8 @@ var CommandMode = Class("CommandMode", {
 
         dactyl.assert(isinstance(this.mode, modes.COMMAND_LINE),
                       "Not opening command line in non-command-line mode.");
+
+        commandline.clearMessage();
         modes.push(this.mode, null, this.closure);
 
         this.widgets.active.commandline.collapsed = false;
@@ -603,8 +605,7 @@ var CommandLine = Module("commandline", {
     },
 
     clear: function clear() {
-        if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
-            this.widgets.message = null;
+        this.clearMessage();
 
         if (!this.commandSession) {
             this.widgets.command = null;
@@ -616,6 +617,11 @@ var CommandLine = Module("commandline", {
 
         if (modes.main != modes.OUTPUT_MULTILINE)
             mow.visible = false;
+    },
+
+    clearMessage: function clearMessage() {
+        if (this.widgets.message && this.widgets.message[1] === this._lastClearable)
+            this.widgets.message = null;
     },
 
     /**
