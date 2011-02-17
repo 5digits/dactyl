@@ -632,7 +632,7 @@
 <item>
     <tags>'eht' 'extendedhinttags'</tags>
     <strut/>
-    <spec>'extendedhinttags'</spec>
+    <spec>'extendedhinttags' 'eht'</spec>
     <type>regexpmap</type>
     <default style="display: block;">[asOTivVWy]:a[href],area[href],img[src],iframe[src],
           [f]:body,
