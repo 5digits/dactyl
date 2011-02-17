@@ -4,6 +4,8 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+let { getOwnPropertyNames } = Object;
+
 try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
@@ -334,7 +336,7 @@ var JavaScript = Module("javascript", {
     _complete: function (objects, key, compl, string, last) {
         const self = this;
 
-        if (!this.window.Object.getOwnPropertyNames && !services.debugger.isOn && !this.context.message)
+        if (!getOwnPropertyNames && !services.debugger.isOn && !this.context.message)
             this.context.message = "For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
 
         let base = this.context.fork("js", this._top.offset);
