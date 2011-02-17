@@ -153,8 +153,8 @@
             global context.
         </p>
 
-        <example><code><hl key="REPL">
-<hl key="REPL-E"><hl key="REPL-R">js1></hl> ({ <hl key="Key">foo</hl>: <str>bar</str> })</hl
+        <example><code><hl key="REPL"
+><hl key="REPL-E"><hl key="REPL-R">js1></hl> ({ <hl key="Key">foo</hl>: <str>bar</str> })</hl
 ><hl key="REPL-P" style="display: block;"><hl key="Title Object">[object Object]</hl>::
 <hl key="Key">foo</hl>: <hl key="String">"bar"</hl></hl
 ><hl key="REPL-E"><hl key="REPL-R">js2></hl> js1.foo</hl
