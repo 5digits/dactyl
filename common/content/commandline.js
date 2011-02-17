@@ -1383,6 +1383,7 @@ var CommandLine = Module("commandline", {
             char: "c",
             description: "Active when the command line is focused",
             input: true,
+            ownsFocus: true,
             get mappingSelf() commandline.commandSession
         });
         // this._extended modes, can include multiple modes, and even main modes

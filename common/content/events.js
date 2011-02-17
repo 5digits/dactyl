@@ -1346,7 +1346,7 @@ var Events = Module("events", {
             if (elem == null && urlbar && urlbar.inputField == this._lastFocus)
                 util.threadYield(true); // Why? --Kris
 
-            while (modes.main.ownsFocus)
+            while (modes.main.ownsFocus && !modes.topOfStack.params.holdFocus)
                  modes.pop(null, { fromFocus: true });
         }
         finally {

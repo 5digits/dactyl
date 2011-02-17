@@ -440,6 +440,8 @@ var Modes = Module("modes", {
 
         input: Class.memoize(function () this.bases.length && this.bases.some(function (b) b.input)),
 
+        ownsFocus: Class.memoize(function () this.bases.length && this.bases.some(function (b) b.ownsFocus)),
+
         get passUnknown() this.input,
 
         get mask() this,
