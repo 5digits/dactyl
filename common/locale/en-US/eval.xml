@@ -128,17 +128,14 @@
             to be executed requires an explicit <k name="Tab" mode="c"/> press
             to commence.
         </p>
-
-        <p>
-            The special version <ex>:javascript!</ex> opens the JavaScript console of
-            &dactyl.host;.
-        </p>
     </description>
 </item>
 
 <item>
     <tags>REPL</tags>
-    <spec>:javascript<oa>!</oa> <oa>context</oa></spec>
+    <spec>:js! <oa>context</oa></spec>
+    <tags>:js! :javas! :javascript!</tags>
+    <spec>:javas<oa>cript</oa>! <oa>context</oa></spec>
     <description>
         <p>
             Starts the JavaScript Read Eval Print Loop, where JavaScript
