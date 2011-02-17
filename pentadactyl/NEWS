@@ -152,10 +152,13 @@
       - 'mapleader' is now an option rather than a :let
         variable. [b4]
       - 'showstatuslinks' and 'showtabline' are now string options. [b4]
+      - 'passkeys' is now a sitemap rather than a regexpmap. [b6]
     * IMPORTANT: Command script files now use the *.penta file extension. [b2]
     * IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'. [b1]
     * Option changes:
+      - Added stringmap, regexplist and regexpmap option types. [b1]
+      - Added sitelist and sitemap option types. [b6]
       - Added "bookmarks", "diverted", and "links" to 'activate'
         option. [b2]
       - Added 'altwildmode' and c_<A-Tab> command-line key binding. [b2]
