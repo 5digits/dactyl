@@ -53,9 +53,6 @@ var Group = Class("Group", {
             let (match = array.nth(siteFilter.filters, function (f) f(uri), 0))
                 match && match.result;
 
-        if (!isArray(patterns))
-            patterns = Option.splitList(patterns, true);
-
         return update(siteFilter, {
             toString: function () this.filters.join(","),
 
@@ -64,14 +61,7 @@ var Group = Class("Group", {
                              function (f) <span highlight={uri && f(uri) ? "Filter" : ""}>{f}</span>,
                              <>,</>),
 
-            filters: patterns.map(function (pattern) {
-                let [, res, filter] = /^(!?)(.*)/.exec(pattern);
-
-                return update(Styles.matchFilter(Option.dequote(filter)), {
-                    result: !res,
-                    toString: function () pattern
-                });
-            })
+            filters: Option.parse.sitelist(patterns)
         });
     },
 

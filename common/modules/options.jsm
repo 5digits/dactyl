@@ -12,7 +12,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("options", {
     exports: ["Option", "Options", "ValueError", "options"],
     require: ["storage"],
-    use: ["commands", "completion", "prefs", "services", "template", "util"]
+    use: ["commands", "completion", "prefs", "services", "styles", "template", "util"]
 }, this);
 
 
@@ -428,17 +428,35 @@ var Option = Class("Option", {
     unparseRegexp: function (re) re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
         (typeof re.result === "boolean" ? "" : ":" + Option.quote(re.result)),
 
+    parseSite: function parseSite(pattern, result, rest) {
+        if (isArray(rest)) // Called by Array.map
+            result = undefined;
+
+        let [, bang, filter] = /^(!?)(.*)/.exec(pattern);
+        filter = Option.dequote(filter);
+
+        return update(Styles.matchFilter(filter), {
+            bang: bang,
+            filter: filter,
+            result: result !== undefined ? result : !bang,
+            toString: function () this.bang + Option.quote(this.filter) +
+                (typeof this.result === "boolean" ? "" : ":" + Option.quote(this.result)),
+        });
+    },
+
     getKey: {
         stringlist: function (k) this.value.indexOf(k) >= 0,
         get charlist() this.stringlist,
 
         regexplist: function (k, default_) {
             for (let re in values(this.value))
-                if (re.test(k))
+                if (re(k))
                     return re.result;
             return arguments.length > 1 ? default_ : null;
         },
-        get regexpmap() this.regexplist
+        get regexpmap() this.regexplist,
+        get sitelist() this.regexplist,
+        get sitemap() this.regexplist
     },
 
     stringify: {
@@ -449,7 +467,9 @@ var Option = Class("Option", {
         stringmap:   function (vals) [Option.quote(k, /:/) + ":" + Option.quote(v) for ([k, v] in Iterator(vals))].join(","),
 
         regexplist:  function (vals) vals.join(","),
-        get regexpmap() this.regexplist
+        get regexpmap() this.regexplist,
+        get sitelist() this.regexplist,
+        get sitemap() this.regexplist
     },
 
     parse: {
@@ -466,6 +486,14 @@ var Option = Class("Option", {
             Option.splitList(value, true)
                   .map(function (re) Option.parseRegexp(re, undefined, this.regexpFlags), this),
 
+        sitelist: function (value) {
+            if (value === "")
+                return [];
+            if (!isArray(value))
+                value = Option.splitList(value, true);
+            return value.map(Option.parseSite);
+        },
+
         stringmap:  function (value) array.toObject(
             Option.splitList(value, true).map(function (v) {
                 let [count, key, quote] = Commands.parseArg(v, /:/);
@@ -479,11 +507,21 @@ var Option = Class("Option", {
                 if (count === v.length)
                     [val, re] = [re, ".?"];
                 return Option.parseRegexp(re, val, this.regexpFlags);
+            }, this),
+
+        sitemap:  function (value)
+            Option.splitList(value, true).map(function (v) {
+                let [count, re, quote] = Commands.parseArg(v, /:/, true);
+                let val = Option.dequote(v.substr(count + 1));
+                if (count === v.length)
+                    [val, re] = [re, "*"];
+                return Option.parseSite(re, val);
             }, this)
     },
 
     testValues: {
         regexpmap:  function (vals, validator) vals.every(function (re) validator(re.result)),
+        get sitemap() this.regexpmap,
         stringlist: function (vals, validator) vals.every(validator, this),
         stringmap:  function (vals, validator) values(vals).every(validator, this)
     },
@@ -597,6 +635,8 @@ var Option = Class("Option", {
         get charlist() this.stringlist,
         get regexplist() this.stringlist,
         get regexpmap() this.stringlist,
+        get sitelist() this.stringlist,
+        get sitemap() this.stringlist,
 
         string: function (operator, values, scope, invert) {
             if (invert)
@@ -637,7 +677,7 @@ var Option = Class("Option", {
             if (!acceptable)
                 acceptable = context.allItems.items.map(function (item) [item.text]);
         }
-        if (this.type == "regexpmap")
+        if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(values).every(function (re) acceptable.some(function (item) item[0] == re.result));
         return Array.concat(values).every(function (value) acceptable.some(function (item) item[0] == value));
     },
@@ -1286,6 +1326,7 @@ var Options = Module("options", {
             switch (opt.type) {
             case "boolean":
                 return;
+            case "sitelist":
             case "regexplist":
                 newValues = Option.splitList(context.filter);
                 // Fallthrough
@@ -1295,6 +1336,7 @@ var Options = Module("options", {
                 Option._splitAt = newValues.length;
                 break;
             case "stringmap":
+            case "sitemap":
             case "regexpmap":
                 let vals = Option.splitList(context.filter);
                 let target = vals.pop() || "";

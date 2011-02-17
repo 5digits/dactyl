@@ -1117,7 +1117,7 @@
 <item>
     <tags>'pk' 'passkeys'</tags>
     <spec>'passkeys' 'pk'</spec>
-    <type>regexpmap</type>
+    <type>sitemap</type>
     <default/>
     <description>
         <p>

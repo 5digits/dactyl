@@ -1501,18 +1501,18 @@ var Events = Module("events", {
     options: function () {
         options.add(["passkeys", "pk"],
             "Pass certain keys through directly for the given URLs",
-            "regexpmap", "", {
+            "sitemap", "", {
                 has: function (key) {
-                    let url = buffer.documentURI.spec;
-                    for (let re in values(this.value))
-                        if (re.test(url) && re.result.some(function (k) k === key))
+                    let uri = buffer.documentURI;
+                    for (let filter in values(this.value))
+                        if (filter(uri) && filter.result.some(function (k) k === key))
                             return true;
                     return false;
                 },
                 setter: function (values) {
-                    values.forEach(function (re) {
-                        re.result = events.fromString(re.result).map(events.closure.toString);
-                        re.result.toString = function toString() this.join("");
+                    values.forEach(function (filter) {
+                        filter.result = events.fromString(filter.result).map(events.closure.toString);
+                        filter.result.toString = function toString() this.join("");
                     });
                     return values;
                 }

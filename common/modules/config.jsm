@@ -728,6 +728,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpXMLText                                 color: #E5E5E5;
         // </css>
     ]]></>)
+}, {
 });
 
 JSMLoader.loadSubScript("resource://dactyl-local-content/config.js", this);

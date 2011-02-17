@@ -17,7 +17,7 @@ try {
 catch (e) {}
 
 let objproto = Object.prototype;
-let hasOwnProperty = objproto.hasOwnProperty;
+let { __lookupGetter__, __lookupSetter__, hasOwnProperty, propertyIsEnumerable } = objproto;
 
 if (typeof XPCSafeJSObjectWrapper === "undefined")
     this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
@@ -39,8 +39,8 @@ if (!Object.defineProperty)
     Object.defineProperty = function defineProperty(obj, prop, desc) {
         let value = desc.value;
         if ("value" in desc)
-            if (desc.writable && !objproto.__lookupGetter__.call(obj, prop)
-                              && !objproto.__lookupSetter__.call(obj, prop))
+            if (desc.writable && !__lookupGetter__.call(obj, prop)
+                              && !__lookupSetter__.call(obj, prop))
                 try {
                     obj[prop] = value;
                 }
@@ -69,10 +69,10 @@ if (!Object.getOwnPropertyDescriptor)
             return undefined;
         let desc = {
             configurable: true,
-            enumerable: objproto.propertyIsEnumerable.call(obj, prop)
+            enumerable: propertyIsEnumerable.call(obj, prop)
         };
-        var get = obj.__lookupGetter__(prop),
-            set = obj.__lookupSetter__(prop);
+        var get = __lookupGetter__.call(obj, prop),
+            set = __lookupSetter__.call(obj, prop);
         if (!get && !set) {
             desc.value = obj[prop];
             desc.writable = true;
@@ -101,7 +101,7 @@ if (!Object.getPrototypeOf)
     Object.getPrototypeOf = function getPrototypeOf(obj) obj.__proto__;
 if (!Object.keys)
     Object.keys = function keys(obj)
-        Object.getOwnPropertyNames(obj).filter(function (k) objproto.propertyIsEnumerable.call(obj, k));
+        Object.getOwnPropertyNames(obj).filter(function (k) propertyIsEnumerable.call(obj, k));
 
 let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
 
@@ -376,7 +376,7 @@ set.add = function (set, key) {
  * @returns {boolean}
  */
 set.has = function (set, key) hasOwnProperty.call(set, key) &&
-               objproto.propertyIsEnumerable.call(set, key);
+                              propertyIsEnumerable.call(set, key);
 /**
  * Returns a new set containing the members of the first argument which
  * do not exist in any of the other given arguments.
@@ -518,7 +518,7 @@ function memoize(obj, key, getter) {
     if (arguments.length == 1) {
         obj = update({}, obj);
         for (let prop in Object.getOwnPropertyNames(obj)) {
-            let get = objproto.__lookupGetter__.call(obj, prop);
+            let get = __lookupGetter__.call(obj, prop);
             if (get)
                 memoize(obj, prop, get);
         }
@@ -628,7 +628,7 @@ function update(target) {
         Object.getOwnPropertyNames(src || {}).forEach(function (k) {
             let desc = Object.getOwnPropertyDescriptor(src, k);
             if (desc.value instanceof Class.Property)
-                desc = desc.value.init(k) || desc.value;
+                desc = desc.value.init(k, target) || desc.value;
             if (typeof desc.value == "function" && Object.getPrototypeOf(target)) {
                 let func = desc.value.wrapped || desc.value;
                 func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
@@ -879,7 +879,7 @@ memoize(Class.prototype, "closure", function () {
         }
     }
     iter(properties(this), properties(this, true)).forEach(function (k) {
-        if (!this.__lookupGetter__(k) && callable(this[k]))
+        if (!__lookupGetter__.call(this, k) && callable(this[k]))
             closure[k] = closure(this[k]);
         else if (!(k in closure))
             Object.defineProperty(closure, k, {
@@ -1241,7 +1241,7 @@ update(iter, {
         let obj = {};
         for (let [k, v] in iter)
             if (v instanceof Class.Property)
-                Object.defineProperty(obj, k, v.init(k) || v);
+                Object.defineProperty(obj, k, v.init(k, obj) || v);
             else
                 obj[k] = v;
         return obj;
@@ -1388,7 +1388,7 @@ var array = Class("array", Array, {
         let obj = {};
         assoc.forEach(function ([k, v]) {
             if (v instanceof Class.Property)
-                Object.defineProperty(obj, k, v.init(k) || v);
+                Object.defineProperty(obj, k, v.init(k, obj) || v);
             else
                 obj[k] = v;
         });
