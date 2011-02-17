@@ -57,7 +57,7 @@ var ProcessorStack = Class("ProcessorStack", {
                 res = dactyl.trapErrors(res);
                 events.dbg("ACTION RES: " + res);
             }
-            result = res === Events.PASS ? Events.PASS : Events.KILL;
+            result = res !== undefined ? res : Events.KILL;
             if (res !== Events.PASS)
                 this.processors.length = 0;
         }
@@ -77,11 +77,12 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (result === undefined)
             result = Events.PASS;
 
-        events.dbg("RESULT: " + (result === Events.KILL  ? "KILL"  :
-                                 result === Events.PASS  ? "PASS"  :
-                                 result === Events.ABORT ? "ABORT" : result));
+        events.dbg("RESULT: " + (result === Events.KILL         ? "KILL"  :
+                                 result === Events.PASS         ? "PASS"  :
+                                 result === Events.PASS_THROUGH ? "PASS_THROUGH"  :
+                                 result === Events.ABORT        ? "ABORT" : result));
 
-        if (result !== Events.PASS)
+        if (result !== Events.PASS || this.events.length > 1)
             Events.kill(this.events[this.events.length - 1]);
 
         if (result === Events.PASS_THROUGH)
@@ -216,7 +217,7 @@ var KeyProcessor = Class("KeyProcessor", {
             else if (map.motion)
                 return KeyArgProcessor(this, map, true, "motion");
 
-            return this.execute(map, { count: this.count, command: this.command, events: this.events });
+            return this.execute(map, { count: this.count, command: this.command, events: this.events, allEvents: this.allEvents });
         }
 
         if (!this.waiting)
