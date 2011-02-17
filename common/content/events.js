@@ -34,13 +34,9 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     notify: function () {
-        let kill = events.withSavedValues(["processor"], function () {
-            events.processor = null;
-            return this.execute(Events.KILL, true);
-        }, this);
-
-        if (kill)
-            events.processor = null;
+        events.processor = null;
+        if (!this.execute(Events.KILL, true))
+            events.processor = this;
     },
 
     execute: function execute(result, force) {
