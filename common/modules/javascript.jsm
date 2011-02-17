@@ -693,7 +693,7 @@ var JavaScript = Module("javascript", {
         });
     },
     commandline: function initCommandLine(dactyl, modules, window) {
-        const { modes } = modules;
+        const { Buffer, modes } = modules;
 
         var REPL = Class("REPL", {
             init: function init(context) {
@@ -741,7 +741,9 @@ var JavaScript = Module("javascript", {
                               this.document, this);
 
                 return this.rootNode;
-            })
+            }),
+
+            __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.rootNode].concat(args)),
         });
 
         modules.CommandREPLMode = Class("CommandREPLMode", modules.CommandMode, {
@@ -816,9 +818,29 @@ var JavaScript = Module("javascript", {
     mappings: function initMappings(dactyl, modules, window) {
         const { mappings, modes } = modules;
 
-        mappings.add([modes.REPL], ["<Return>"],
-            "Accept the current input",
-            function ({ self }) { self.accept(); });
+        function bind() mappings.add.apply(mappings,
+                                           [[modes.REPL]].concat(Array.slice(arguments)))
+
+        bind(["<Return>"], "Accept the current input",
+             function ({ self }) { self.accept(); });
+
+        bind(["<C-e>"], "Scroll down one line",
+             function ({ self }) { self.repl.scrollVertical("lines", 1); });
+
+        bind(["<C-y>"], "Scroll up one line",
+             function ({ self }) { self.repl.scrollVertical("lines", -1); });
+
+        bind(["<C-d>"], "Scroll down half a page",
+             function ({ self }) { self.repl.scrollVertical("pages", .5); });
+
+        bind(["<C-f>", "<PageDown>"], "Scroll down one page",
+             function ({ self }) { self.repl.scrollVertical("pages", 1); });
+
+        bind(["<C-u>"], "Scroll up half a page",
+             function ({ self }) { self.repl.scrollVertical("pages", -.5); });
+
+        bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
+             function ({ self }) { self.repl.scrollVertical("pages", -1); });
     },
     options: function (dactyl, modules, window) {
         modules.options.add(["jsdebugger", "jsd"],

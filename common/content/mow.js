@@ -306,13 +306,13 @@ var MOW = Module("mow", {
         let bind = function bind(keys, description, action, test, default_) {
             mappings.add([modes.OUTPUT_MULTILINE],
                 keys, description,
-                function (command) {
+                function (args) {
                     if (!options["more"])
                         var res = PASS;
-                    else if (test && !test(command))
+                    else if (test && !test(args))
                         res = default_;
                     else
-                        res = action.call(command);
+                        res = action.call(this, args);
 
                     if (res === PASS || res === DROP)
                         modes.pop();
@@ -321,48 +321,50 @@ var MOW = Module("mow", {
                     if (res === BEEP)
                         dactyl.beep();
                     else if (res === PASS)
-                        events.feedkeys(command);
+                        events.feedkeys(args.command);
+                }, {
+                    count: action.length > 0
                 });
         };
 
         bind(["j", "<C-e>", "<Down>"], "Scroll down one line",
-             function () { mow.scrollVertical("lines", 1); },
+             function ({ count }) { mow.scrollVertical("lines", 1 * (count || 1)); },
              function () mow.isScrollable(1), BEEP);
 
         bind(["k", "<C-y>", "<Up>"], "Scroll up one line",
-             function () { mow.scrollVertical("lines", -1); },
+             function ({ count }) { mow.scrollVertical("lines", -1 * (count || 1)); },
              function () mow.isScrollable(-1), BEEP);
 
         bind(["<C-j>", "<C-m>", "<Return>"], "Scroll down one line, exit on last line",
-             function () { mow.scrollVertical("lines", 1); },
+             function ({ count }) { mow.scrollVertical("lines", 1 * (count || 1)); },
              function () mow.isScrollable(1), DROP);
 
         // half page down
         bind(["<C-d>"], "Scroll down half a page",
-             function () { mow.scrollVertical("pages", .5); },
+             function ({ count }) { mow.scrollVertical("pages", .5 * (count || 1)); },
              function () mow.isScrollable(1), BEEP);
 
         bind(["<C-f>", "<PageDown>"], "Scroll down one page",
-             function () { mow.scrollVertical("pages", 1); },
+             function ({ count }) { mow.scrollVertical("pages", 1 * (count || 1)); },
              function () mow.isScrollable(1), BEEP);
 
         bind(["<Space>"], "Scroll down one page",
-             function () { mow.scrollVertical("pages", 1); },
+             function ({ count }) { mow.scrollVertical("pages", 1 * (count || 1)); },
              function () mow.isScrollable(1), DROP);
 
         bind(["<C-u>"], "Scroll up half a page",
-             function () { mow.scrollVertical("pages", -.5); },
+             function ({ count }) { mow.scrollVertical("pages", -.5 * (count || 1)); },
              function () mow.isScrollable(-1), BEEP);
 
         bind(["<C-b>", "<PageUp>"], "Scroll up half a page",
-             function () { mow.scrollVertical("pages", -1); },
+             function ({ count }) { mow.scrollVertical("pages", -1 * (count || 1)); },
              function () mow.isScrollable(-1), BEEP);
 
         bind(["gg"], "Scroll to the beginning of output",
              function () { mow.scrollToPercent(null, 0); });
 
         bind(["G"], "Scroll to the end of output",
-             function () { mow.body.scrollTop = mow.body.scrollHeight; });
+             function ({ count }) { mow.scrollToPercent(null, count || 100); });
 
         // copy text to clipboard
         bind(["<C-y>"], "Yank selection to clipboard",
