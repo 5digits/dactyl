@@ -631,10 +631,10 @@
 
 <item>
     <tags>'eht' 'extendedhinttags'</tags>
-    <strut/>
     <spec>'extendedhinttags' 'eht'</spec>
+    <strut/>
     <type>regexpmap</type>
-    <default style="display: block;">[asOTivVWy]:a[href],area[href],img[src],iframe[src],
+    <default>[asOTivVWy]:a[href],area[href],img[src],iframe[src],
           [f]:body,
           [F]:body,code,div,html,p,pre,span,
           [iI]:img,
@@ -849,7 +849,7 @@
     <strut/>
     <spec>'hinttags' 'ht'</spec>
     <type>stringlist</type>
-    <default style="display: block;">a,area,button,iframe,input:not([type=hidden]),select,textarea,
+    <default>a,area,button,iframe,input:not([type=hidden]),select,textarea,
           [onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand],
           [tabindex],[role=link],[role=button]</default>
     <description>

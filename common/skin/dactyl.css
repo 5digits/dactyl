@@ -27,6 +27,9 @@ input[type=file][dactyl|highlight~=HintElem] {
 [dactyl|highlight~=HelpDefault] {
     -moz-binding: url(resource://dactyl-content/bindings.xml#compitem-td);
 }
+[dactyl|highlight~=HelpDefault] > .td-span {
+    width: auto;
+}
 
 }
 
