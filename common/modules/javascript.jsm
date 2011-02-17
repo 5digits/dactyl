@@ -15,24 +15,28 @@ defineModule("javascript", {
 // TODO: Clean this up.
 
 var JavaScript = Module("javascript", {
+    init: function () {
+        this._stack = [];
+        this._functions = [];
+        this._top = {};  // The element on the top of the stack.
+        this._last = ""; // The last opening char pushed onto the stack.
+        this._lastNonwhite = ""; // Last non-whitespace character we saw.
+        this._lastChar = "";     // Last character we saw, used for \ escaping quotes.
+        this._str = "";
+
+        this._lastIdx = 0;
+
+        this._cacheKey = null;
+
+        this._nullSandbox = Cu.Sandbox("about:blank");
+    },
+
     Local: function (dactyl, modules, window) ({
-        init: function () {
+        init: function init() {
             this.modules = modules;
             this.window = window;
 
-            this._stack = [];
-            this._functions = [];
-            this._top = {};  // The element on the top of the stack.
-            this._last = ""; // The last opening char pushed onto the stack.
-            this._lastNonwhite = ""; // Last non-whitespace character we saw.
-            this._lastChar = "";     // Last character we saw, used for \ escaping quotes.
-            this._str = "";
-
-            this._lastIdx = 0;
-
-            this._cacheKey = null;
-
-            this._nullSandbox = Cu.Sandbox("about:blank");
+            init.supercall(this);
         },
     }),
 
@@ -743,7 +747,7 @@ var JavaScript = Module("javascript", {
                 return this.rootNode;
             }),
 
-            __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.rootNode].concat(args)),
+            __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.rootNode].concat(args))
         });
 
         modules.CommandREPLMode = Class("CommandREPLMode", modules.CommandMode, {
