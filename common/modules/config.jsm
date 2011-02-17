@@ -186,11 +186,12 @@ var ConfigBase = Class("ConfigBase", {
         "version"
     ],
 
+    helpStyles: /^(Help|StatusLine|REPL)|^(Boolean|Indicator|MoreMsg|Number|Object|Logo|Key(word)?|String)$/,
     styleHelp: function styleHelp() {
         if (!this.helpStyled) {
             const { highlight } = require("highlight");
             for (let k in keys(highlight.loaded))
-                if (/^(Help|StatusLine)|^(Boolean|Indicator|MoreMsg|Number|Logo|Key(word)?|String)$/.test(k))
+                if (this.helpStyles.test(k))
                     highlight.loaded[k] = true;
         }
         this.helpCSS = true;
