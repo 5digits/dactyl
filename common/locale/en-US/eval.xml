@@ -90,7 +90,6 @@
     <tags>:js :javas :javascript</tags>
     <spec>:javas<oa>cript</oa> <a>cmd</a></spec>
     <spec>:javascript &lt;&lt;<a>endpattern</a>\n<a>cmd</a>\n<a>endpattern</a></spec>
-    <spec>:javascript<oa>!</oa></spec>
     <description>
         <p>
             Evaluates the given <a>cmd</a> as JavaScript. Behaves exactly as
@@ -134,6 +133,32 @@
             The special version <ex>:javascript!</ex> opens the JavaScript console of
             &dactyl.host;.
         </p>
+    </description>
+</item>
+
+<item>
+    <tags>REPL</tags>
+    <spec>:javascript<oa>!</oa> <oa>context</oa></spec>
+    <description>
+        <p>
+            Starts the JavaScript Read Eval Print Loop, where JavaScript
+            statements are entered and evaluated, their results printed, and the
+            input modified and entered again. Within the REPL, the results of a
+            given evaluation are available as variables named for the given
+            prompt.
+        </p>
+
+        <p>
+            If <oa>context</oa> is given, then statements are executed in that
+            global context.
+        </p>
+
+        <example><code><hl key="REPL">
+<hl key="REPL-E"><hl key="REPL-R">js1></hl> ({ <hl key="Key">foo</hl>: <str>bar</str> })</hl
+><hl key="REPL-P" style="display: block;"><hl key="Title Object">[object Object]</hl>::
+<hl key="Key">foo</hl>: <hl key="String">"bar"</hl></hl
+><hl key="REPL-E"><hl key="REPL-R">js2></hl> js1.foo</hl
+><hl key="REPL-P" style="display: block;"><str>bar</str></hl></hl></code></example>
     </description>
 </item>
 

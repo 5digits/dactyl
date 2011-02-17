@@ -12,6 +12,8 @@ defineModule("javascript", {
     use: ["services", "template", "util"]
 }, this);
 
+let isPrototypeOf = Object.prototype.isPrototypeOf;
+
 // TODO: Clean this up.
 
 var JavaScript = Module("javascript", {
@@ -39,6 +41,14 @@ var JavaScript = Module("javascript", {
             init.supercall(this);
         },
     }),
+
+    globals: Class.memoize(function () [
+       [this.modules.userContext, "Global Variables"],
+       [this.modules, "modules"],
+       [this.window, "window"]
+    ]),
+
+    toplevel: Class.memoize(function () this.modules.jsmodules),
 
     lazyInit: true,
 
@@ -83,7 +93,7 @@ var JavaScript = Module("javascript", {
             return [];
         if (isinstance(obj, ["Sandbox"]) && !toplevel) // Temporary hack.
             return [];
-        if (this.modules.jsmodules.isPrototypeOf(obj) && !toplevel)
+        if (isPrototypeOf.call(this.toplevel, obj) && !toplevel)
             return [];
 
         let completions = [k for (k in this.iter(obj, toplevel))];
@@ -310,11 +320,7 @@ var JavaScript = Module("javascript", {
         let end = (frame == -1 ? this._lastIdx : this._get(frame + 1).offset);
 
         this._cacheKey = null;
-        let obj = [[this.cache.evalContext, "Local Variables"],
-                   [this.replContext, "REPL Variables"],
-                   [this.modules.userContext, "Global Variables"],
-                   [this.modules, "modules"],
-                   [this.window, "window"]]; // Default objects;
+        let obj = [[this.cache.evalContext, "Local Variables"]].concat(this.globals);
         // Is this an object dereference?
         if (dot < statement) // No.
             dot = statement - 1;
@@ -751,15 +757,34 @@ var JavaScript = Module("javascript", {
         });
 
         modules.CommandREPLMode = Class("CommandREPLMode", modules.CommandMode, {
-            open: function open() {
-                let self = this;
+            init: function init(context) {
+                init.supercall(this);
 
-                this.context = modules.newContext(modules.userContext, true);
+                let self = this;
+                let sandbox = isinstance(context, ["Sandbox"]);
+
+                this.context = modules.newContext(context, !sandbox);
                 this.js = modules.JavaScript();
                 this.js.replContext = this.context;
-                this.js.newContext = function newContext() modules.newContext(self.context, true);
-                this.repl = REPL(this.context);
+                this.js.newContext = function newContext() modules.newContext(self.context, !sandbox);
 
+                this.js.globals = [
+                   [this.context, "REPL Variables"],
+                   [context, "REPL Global"]
+                ].concat(this.js.globals.filter(function ([global]) isPrototypeOf.call(global, context)));
+
+                if (!isPrototypeOf.call(modules.jsmodules, context))
+                    this.js.toplevel = context;
+
+                if (!isPrototypeOf.call(window, context))
+                    this.js.window = context;
+
+                if (this.js.globals.slice(2).some(function ([global]) global === context))
+                    this.js.globals.splice(1);
+
+                this.repl = REPL(this.context);
+            },
+            open: function open(context) {
                 this.updatePrompt();
 
                 modules.mow.echo(this.repl);
@@ -803,14 +828,14 @@ var JavaScript = Module("javascript", {
         commands.add(["javas[cript]", "js"],
             "Evaluate a JavaScript string",
             function (args) {
-                if (args.bang) // open JavaScript console
-                    dactyl.open("chrome://global/content/console.xul",
-                                { from: "javascript" });
-                else if (args[0])
+                modules.commandline;
+
+                if (args[0] && !args.bang)
                     dactyl.userEval(args[0]);
                 else {
                     modules.commandline;
-                    modules.CommandREPLMode().open();
+                    modules.CommandREPLMode(args[0] ? dactyl.userEval(args[0]) : modules.userContext)
+                           .open();
                 }
             }, {
                 bang: true,

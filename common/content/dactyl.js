@@ -402,7 +402,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             if (info && info.file[0] !== "[")
                 ({ file: fileName, line: lineNumber, context: ctxt }) = info;
 
-        if (!context)
+        if (!context && fileName && fileName[0] !== "[")
             context = _userContext || ctxt;
 
         if (isinstance(context, ["Sandbox"]))
