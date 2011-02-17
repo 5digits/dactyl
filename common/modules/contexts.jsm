@@ -388,6 +388,7 @@ var Contexts = Module("contexts", {
             else
                 action = dactyl.userFunc.apply(dactyl, params.concat(args.literalArg).array);
             process = function (param) isObject(param) && param.valueOf ? param.valueOf() : param;
+            action.params = params;
             action.makeParams = makeParams;
             break;
         }

@@ -67,7 +67,8 @@ var ProcessorStack = Class("ProcessorStack", {
                  (this.events.length > 1 ||
                      this.processors.some(function (p) !p.main.passUnknown))) {
             result = Events.KILL;
-            dactyl.beep();
+            if (!Events.isEscape(this.events.slice(-1)[0]))
+                dactyl.beep();
             events.feedingKeys = false;
         }
         else if (result === undefined)
@@ -80,7 +81,9 @@ var ProcessorStack = Class("ProcessorStack", {
         if (result !== Events.PASS)
             Events.kill(this.events[this.events.length - 1]);
 
-        if (result === Events.PASS || result === Events.ABORT) {
+        if (result === Events.PASS_THROUGH)
+            events.feedevents(null, this.allEvents, { skipmap: true, isMacro: true, isReplay: true });
+        else if (result === Events.PASS || result === Events.ABORT) {
             let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
             if (list.length)
                 events.dbg("REFEED: " + list.map(events.closure.toString).join(""));
@@ -99,6 +102,8 @@ var ProcessorStack = Class("ProcessorStack", {
 
         let key = events.toString(event);
         this.events.push(event);
+        if (this.allEvents)
+            this.allEvents.push(event);
 
         this.buffer += key;
 
@@ -314,6 +319,7 @@ var Events = Module("events", {
 
     init: function () {
         const self = this;
+        this.keyEvents = [];
 
         update(this, {
             hives: contexts.Hives("events", EventHive),
@@ -1190,6 +1196,7 @@ var Events = Module("events", {
                     let keyModes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
 
                     this.processor = ProcessorStack(mode, hives, keyModes);
+                    this.processor.allEvents = this.keyEvents;
                 }
 
                 let processor = this.processor;
@@ -1197,6 +1204,8 @@ var Events = Module("events", {
 
                 if (!processor.process(event))
                     this.processor = processor;
+                else
+                    this.keyEvents = [];
 
             }
             catch (e) {
@@ -1223,13 +1232,12 @@ var Events = Module("events", {
             // "keypress" event.
 
             if (modes.main == modes.PASS_THROUGH ||
-                modes.main == modes.QUOTE
-                    && modes.getStack(1).main !== modes.PASS_THROUGH
-                    && !events.shouldPass(event) ||
-                !modes.passThrough && events.shouldPass(event))
-                return;
-
-            if (!Events.isInputElement(dactyl.focusedElement))
+                    modes.main == modes.QUOTE
+                        && modes.getStack(1).main !== modes.PASS_THROUGH
+                        && !events.shouldPass(event) ||
+                    !modes.passThrough && events.shouldPass(event))
+                this.keyEvents.push(event);
+            else if (!Events.isInputElement(dactyl.focusedElement))
                 event.stopPropagation();
         },
         keydown: function onKeyDown(event) {
@@ -1365,6 +1373,7 @@ var Events = Module("events", {
     ABORT: {},
     KILL: true,
     PASS: false,
+    PASS_THROUGH: {},
     WAIT: null,
 
     isEscape: function isEscape(event)
