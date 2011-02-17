@@ -772,9 +772,9 @@ var JavaScript = Module("javascript", {
             accept: function accept() {
                 dactyl.trapErrors(function () { this.repl.addOutput(this.command) }, this);
 
-                this.updatePrompt();
                 this.completions.cleanup();
                 this.history.save();
+                this.updatePrompt();
 
                 modules.mow.resize();
             },
