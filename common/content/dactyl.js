@@ -754,6 +754,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     return res;
                 }
 
+                let body = rec(NEWS, 0);
+                for each (let li in body..li) {
+                    let list = li..li.(@NS::highlight == "HelpNewsOld");
+                    if (list.length() && list.length() == li..li.length()) {
+                        for each (let li in list)
+                            li.@NS::highlight = "";
+                        li.@NS::highlight = "HelpNewsOld";
+                    }
+                }
+
                 XML.prettyPrinting = XML.ignoreWhitespace = false;
                 return ["application/xml",
                     '<?xml version="1.0"?>\n' +
@@ -765,7 +775,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         <h1 tag="versions news NEWS">{config.appName} Versions</h1>
                         <toc start="2"/>
 
-                        {rec(NEWS, 0)}
+                        {body}
                     </document>.toXMLString()))
                 ];
             }
