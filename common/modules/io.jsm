@@ -205,8 +205,7 @@ var IO = Module("io", {
                     return context;
                 }
                 catch (e) {
-                    if (!(e instanceof FailedAssertion))
-                        dactyl.reportError(e);
+                    dactyl.reportError(e);
                     let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
                     if (!params.silent)
                         dactyl.echoerr(message);

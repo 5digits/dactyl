@@ -231,7 +231,9 @@
 
     <xsl:template match="dactyl:default[not(@type='plain')]" mode="help-2">
         <xsl:variable name="type" select="preceding-sibling::dactyl:type[1] | following-sibling::dactyl:type[1]"/>
-        <span dactyl:highlight="HelpDefault">(default:<xsl:text> </xsl:text>
+        <span dactyl:highlight="HelpDefault">
+            <xsl:copy-of select="@*"/>
+            <xsl:text>(default: </xsl:text>
             <xsl:choose>
                 <xsl:when test="$type = 'string'">
                     <span dactyl:highlight="HelpString" delim="'"><xsl:apply-templates mode="help-1"/></span>

@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "dactyl://content/dtd" [
-  <!ENTITY hinttags "//*[@onclick or @onmouseover or @onmousedown or
-               @onmouseup or @oncommand or @role='link'] |
-           //input[not(@type='hidden')] | //xhtml:input[not(@type='hidden')] |
-           //a      | //xhtml:a      | //area     | //xhtml:area    |
-           //button | //xhtml:button | //iframe   | //xhtml:iframe  |
-           //select | //xhtml:select | //textarea | //xhtml:textarea">
-]>
+<!DOCTYPE document SYSTEM "dactyl://content/dtd">
 
 <document
     name="options"
@@ -631,26 +624,19 @@
 
 <item>
     <tags>'eht' 'extendedhinttags'</tags>
-    <spec>'extendedhinttags' 'eht'</spec>
     <strut/>
+    <spec>'extendedhinttags'</spec>
     <type>regexpmap</type>
-    <default>[iI]:'//img | //xhtml:img',
-          [OTivVWy]:'//a[@href]     | //xhtml:a[@href]    |
-                     //area[@href]  | //xhtml:area[@href] |
-                     //img[@src]    | //xhtml:img[@src]   |
-                     //iframe[@src] | //xhtml:iframe[@src]',
-          [F]:'//div  | //xhtml:div  | //span | //xhtml:span |
-               //p    | //xhtml:p    | //body | //xhtml:body |
-               //html | //xhtml:html'
-          [S]:'//input[not(@type=''hidden'')]       |
-               //xhtml:input[not(@type=''hidden'')] |
-               //textarea | //xhtml:textarea |
-               //button   | //xhtml:button   |
-               //select   | //xhtml:select'</default>
+    <default style="display: block;">[asOTivVWy]:a[href],area[href],img[src],iframe[src],
+          [f]:body,
+          [F]:body,code,div,html,p,pre,span,
+          [iI]:img,
+          [S]:button,'input:not([type=hidden])',select,textarea</default>
     <description>
         <p>
-            Defines specialized XPath expressions for arbitrary
-            <t>extended-hints</t> modes. If no matches are found, the value of
+            Defines specialized CSS selectors or XPath expressions for arbitrary
+            <t>extended-hints</t> modes. The syntax is the same as for
+            <o>hinttags</o>. If no matches are found, the value of
             <o>hinttags</o> is used.
         </p>
     </description>
@@ -855,12 +841,16 @@
     <tags>'ht' 'hinttags'</tags>
     <strut/>
     <spec>'hinttags' 'ht'</spec>
-    <type>string</type>
-    <default>&hinttags;</default>
+    <type>stringlist</type>
+    <default style="display: block;">a,area,button,iframe,input:not([type=hidden]),select,textarea,
+          [onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand],
+          [tabindex],[role=link],[role=button]</default>
     <description>
         <p>
-            The XPath string used to select elements for
-            <link topic="hints">hinting</link>. Can be overridden for
+            A list of CSS selectors or XPath expressions used to select elements
+            for <link topic="hints">hinting</link>. Values beginning with the
+            string <str>xpath:</str> are treated as XPath expressions, while any
+            other values are treated as CSS selectors. Can be overridden for
             individual <t>extended-hints</t> modes with the
             <o>extendedhinttags</o> option.
         </p>

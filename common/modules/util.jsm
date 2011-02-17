@@ -22,7 +22,18 @@ var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is
 var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
 
-var FailedAssertion = Class("FailedAssertion", ErrorBase);
+var FailedAssertion = Class("FailedAssertion", ErrorBase, {
+    init: function init(message, level, noTrace) {
+        if (noTrace !== undefined)
+            this.noTrace = noTrace;
+        init.supercall(this, message, level);
+    },
+
+    level: 3,
+
+    noTrace: true
+});
+
 var Point = Struct("x", "y");
 
 var wrapCallback = function wrapCallback(fn) {
@@ -144,9 +155,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} message The message to present to the
      *     user on failure.
      */
-    assert: function (condition, message) {
+    assert: function (condition, message, quiet) {
         if (!condition)
-            throw FailedAssertion(message, 1);
+            throw FailedAssertion(message, 1, quiet === undefined ? true : quiet);
     },
 
     /**
@@ -1417,6 +1428,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     errors: Class.memoize(function () []),
     maxErrors: 15,
     reportError: function (error) {
+        if (error.noTrace)
+            return;
+
         if (Cu.reportError)
             Cu.reportError(error);
 

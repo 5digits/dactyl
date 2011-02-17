@@ -415,18 +415,23 @@ var Option = Class("Option", {
     },
 
     parseRegexp: function (value, result, flags) {
+        let keepQuotes = this && this.keepQuotes;
         if (isArray(flags)) // Called by Array.map
             result = flags = undefined;
+
+        if (flags == null)
+            flags = this && this.regexpFlags || "";
 
         let [, bang, val] = /^(!?)(.*)/.exec(value);
         let re = RegExp(Option.dequote(val), flags);
         re.bang = bang;
         re.result = result !== undefined ? result : !bang;
-        re.toString = function () Option.unparseRegexp(this);
+        re.toString = function () Option.unparseRegexp(this, keepQuotes);
         return re;
     },
-    unparseRegexp: function (re) re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
-        (typeof re.result === "boolean" ? "" : ":" + Option.quote(re.result)),
+
+    unparseRegexp: function (re, quoted) re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
+        (typeof re.result === "boolean" ? "" : ":" + (quoted ? re.result : Option.quote(re.result))),
 
     parseSite: function parseSite(pattern, result, rest) {
         if (isArray(rest)) // Called by Array.map
@@ -500,23 +505,25 @@ var Option = Class("Option", {
                 return [key, Option.dequote(v.substr(count + 1))];
             })),
 
-        regexpmap:  function (value)
-            Option.splitList(value, true).map(function (v) {
-                let [count, re, quote] = Commands.parseArg(v, /:/, true);
-                let val = Option.dequote(v.substr(count + 1));
-                if (count === v.length)
-                    [val, re] = [re, ".?"];
-                return Option.parseRegexp(re, val, this.regexpFlags);
-            }, this),
+        regexpmap: function (value) Option.parse.list.call(this, value, Option.parseRegexp),
 
-        sitemap:  function (value)
-            Option.splitList(value, true).map(function (v) {
-                let [count, re, quote] = Commands.parseArg(v, /:/, true);
-                let val = Option.dequote(v.substr(count + 1));
-                if (count === v.length)
-                    [val, re] = [re, "*"];
-                return Option.parseSite(re, val);
-            }, this)
+        sitemap: function (value) Option.parse.list.call(this, value, Option.parseSite),
+
+        list: function (value, parse) let (prev = null)
+            array.compact(Option.splitList(value, true).map(function (v) {
+                let [count, filter, quote] = Commands.parseArg(v, /:/, true);
+
+                let val = v.substr(count + 1);
+                if (!this.keepQuotes)
+                    val = Option.dequote(val);
+
+                if (v.length > count)
+                    return prev = parse.call(this, filter, val);
+                else {
+                    util.assert(prev, "Syntax error", false);
+                    prev.result += "," + v;
+                }
+            }, this))
     },
 
     testValues: {
@@ -549,7 +556,7 @@ var Option = Class("Option", {
         return res;
     },
 
-    quote: function quote(str, re)
+    quote: function quote(str, re) isArray(str) ? str.map(function (s) quote(s, re)).join(",") :
         Commands.quoteArg[/[\s|"'\\,]|^$/.test(str) || re && re.test && re.test(str)
             ? (/[\b\f\n\r\t]/.test(str) ? '"' : "'")
             : ""](str, re),
@@ -683,6 +690,7 @@ var Option = Class("Option", {
     },
 
     validateXPath: function (values) {
+        return true; // For now.
         let evaluator = services.XPathEvaluator();
         return this.testValues(values,
             function (value) evaluator.createExpression(value, util.evaluateXPath.resolver));

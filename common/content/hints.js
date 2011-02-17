@@ -271,7 +271,7 @@ var HintSession = Class("HintSession", CommandMode, {
             return true;
         }
 
-        let body = doc.body || util.evaluateXPath(["body"], doc).snapshotItem(0);
+        let body = doc.body || doc.querySelector("body");
         if (body) {
             let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
             body.appendChild(fragment);
@@ -281,7 +281,7 @@ var HintSession = Class("HintSession", CommandMode, {
             let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none"/>, doc);
 
             let mode = this.hintMode;
-            let res = util.evaluateXPath(mode.xpath, doc, true);
+            let res = mode.matcher(doc);
 
             let start = this.pageHints.length;
             for (let elem in res) {
@@ -670,6 +670,29 @@ var HintSession = Class("HintSession", CommandMode, {
     },
 });
 
+function compileMatcher(list) {
+    let xpath = [], css = [];
+    for (let elem in values(list))
+        if (/^xpath:/.test(elem))
+            xpath.push(elem.substr(6));
+        else
+            css.push(elem);
+
+    return update(
+        function matcher(node) {
+            if (matcher.xpath)
+                for (let elem in util.evaluateXPath(matcher.xpath, node))
+                    yield elem;
+
+            if (matcher.css)
+                for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
+                    yield elem;
+        }, {
+            css: css.join(", "),
+            xpath: xpath.join(" | ")
+        });
+}
+
 var Hints = Module("hints", {
     init: function init() {
         this.resizeTimer = Timer(100, 500, function () {
@@ -682,8 +705,8 @@ var Hints = Module("hints", {
             events.listen(appContent, "scroll", this.resizeTimer.closure.tell, false);
 
         const Mode = Hints.Mode;
-        Mode.defaultValue("tags", function () function () options["hinttags"]);
-        Mode.prototype.__defineGetter__("xpath", function ()
+        Mode.defaultValue("tags", function () function () options.get("hinttags").matcher);
+        Mode.prototype.__defineGetter__("matcher", function ()
             options.get("extendedhinttags").getKey(this.name, this.tags()));
 
         this.modes = {};
@@ -1162,23 +1185,41 @@ var Hints = Module("hints", {
     },
     options: function () {
         function xpath(arg) util.makeXPath(arg);
+
         options.add(["extendedhinttags", "eht"],
-            "XPath strings of hintable elements for extended hint modes",
+            "XPath or CSS selector strings of hintable elements for extended hint modes",
             "regexpmap", {
-                "[iI]": xpath(["img"]),
-                "[asOTivVWy]": xpath(["{a,area}[@href]", "{img,iframe}[@src]"]),
-                "[f]": xpath(["body"]),
-                "[F]": xpath(["body", "code", "div", "html", "p", "pre", "span"]),
-                "[S]": xpath(["input[not(@type='hidden')]", "textarea", "button", "select"])
+                "[iI]": "img",
+                "[asOTivVWy]": ["a[href]", "area[href]", "img[src]", "iframe[src]"],
+                "[f]": "body",
+                "[F]": ["body", "code", "div", "html", "p", "pre", "span"],
+                "[S]": ["input:not([type=hidden])", "textarea", "button", "select"]
             },
-            { validator: Option.validateXPath });
+            {
+                keepQuotes: true,
+                getKey: function (val, default_)
+                    let (res = array.nth(this.value, function (re) re.test(val), 0))
+                        res ? res.matcher : default_,
+                setter: function (vals) {
+                    for (let value in values(vals))
+                        value.matcher = compileMatcher(Option.splitList(value.result));
+                    return vals;
+                },
+                validator: Option.validateXPath
+            });
 
         options.add(["hinttags", "ht"],
             "XPath string of hintable elements activated by 'f' and 'F'",
-            "string", xpath(["input[not(@type='hidden')]", "a", "area", "iframe", "textarea", "button", "select",
-                             "*[@onclick or @onmouseover or @onmousedown or @onmouseup or @oncommand or " +
-                               "@tabindex or @role='link' or @role='button']"]),
-            { validator: Option.validateXPath });
+            "stringlist", "input:not([type=hidden]),a,area,iframe,textarea,button,select," +
+                          "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
+                          "[tabindex],[role=link],[role=button]",
+            {
+                setter: function (values) {
+                    this.matcher = compileMatcher(values);
+                    return values;
+                },
+                validator: Option.validateXPath
+            });
 
         options.add(["hintkeys", "hk"],
             "The keys used to label and select hints",
