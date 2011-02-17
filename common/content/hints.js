@@ -693,6 +693,18 @@ function compileMatcher(list) {
         });
 }
 
+function validateMatcher(values) {
+    let evaluator = services.XPathEvaluator();
+    let node = util.xmlToDom(<div/>, document);
+    return this.testValues(values, function (value) {
+        if (/^xpath:/.test(value))
+            evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);
+        else
+            node.querySelector(value);
+        return true;
+    });
+}
+
 var Hints = Module("hints", {
     init: function init() {
         this.resizeTimer = Timer(100, 500, function () {
@@ -1205,7 +1217,7 @@ var Hints = Module("hints", {
                         value.matcher = compileMatcher(Option.splitList(value.result));
                     return vals;
                 },
-                validator: Option.validateXPath
+                validator: validateMatcher
             });
 
         options.add(["hinttags", "ht"],
@@ -1218,7 +1230,7 @@ var Hints = Module("hints", {
                     this.matcher = compileMatcher(values);
                     return values;
                 },
-                validator: Option.validateXPath
+                validator: validateMatcher
             });
 
         options.add(["hintkeys", "hk"],

@@ -687,13 +687,6 @@ var Option = Class("Option", {
         if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(values).every(function (re) acceptable.some(function (item) item[0] == re.result));
         return Array.concat(values).every(function (value) acceptable.some(function (item) item[0] == value));
-    },
-
-    validateXPath: function (values) {
-        return true; // For now.
-        let evaluator = services.XPathEvaluator();
-        return this.testValues(values,
-            function (value) evaluator.createExpression(value, util.evaluateXPath.resolver));
     }
 });
 
