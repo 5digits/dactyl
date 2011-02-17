@@ -59,6 +59,13 @@
         expression will be considered a match and <html:i>vice versa</html:i>.
         The first <a>key</a> to match yields value.
     </dd>
+
+    <dt>sitelist</dt> <dd tag="sitelist sitemap"/>
+    <dt>sitemap</dt>
+    <dd>
+        Like <t>regexplist</t> and <t>regexpmap</t>, but the keys are
+        <t>site-filters</t> rather than regular expressions.
+    </dd>
 </dl>
 
 <p tag="macro-string">
