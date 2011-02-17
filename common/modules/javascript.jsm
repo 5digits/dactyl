@@ -739,8 +739,8 @@ var JavaScript = Module("javascript", {
                         <div highlight="REPL-P" key="p">{xml}</div>
                     </e4x>.elements(), this.document, nodes));
 
-                this.rootNode.scrollTop = nodes.e.getBoundingClientRect().top
-                                        - this.rootNode.getBoundingClientRect().top;
+                this.rootNode.scrollTop += nodes.e.getBoundingClientRect().top
+                                         - this.rootNode.getBoundingClientRect().top;
             },
 
             count: 0,
@@ -788,6 +788,7 @@ var JavaScript = Module("javascript", {
                 this.updatePrompt();
 
                 modules.mow.echo(this.repl);
+                this.widgets.message = null;
 
                 open.superapply(this, arguments);
             },

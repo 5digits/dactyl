@@ -623,7 +623,7 @@ var CommandLine = Module("commandline", {
         if (modes.main == modes.OUTPUT_MULTILINE && !mow.isScrollable(1))
             modes.pop();
 
-        if (modes.main != modes.OUTPUT_MULTILINE)
+        if (!modes.have(modes.OUTPUT_MULTILINE))
             mow.visible = false;
     },
 
@@ -1580,6 +1580,9 @@ var ItemList = Class("ItemList", {
     _dom: function _dom(xml, map) util.xmlToDom(xml instanceof XML ? xml : <>{xml}</>, this._doc, map),
 
     _autoSize: function _autoSize() {
+        if (!this._div)
+            return;
+
         if (this._container.collapsed)
             this._div.style.minWidth = document.getElementById("dactyl-commandline").scrollWidth + "px";
 
@@ -1638,7 +1641,7 @@ var ItemList = Class("ItemList", {
             this._divNodes.completions.appendChild(context.cache.nodes.root);
         }, this);
 
-        this.timeout(this._autoSize, 0);
+        this.timeout(this._autoSize);
     },
 
     /**
