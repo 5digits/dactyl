@@ -1258,7 +1258,11 @@ var Events = Module("events", {
 
         popupshown: function onPopupShown(event) {
             let elem = event.originalTarget;
-            if (elem.localName !== "tooltip" && elem.id !== "dactyl-visualbell")
+            if (elem instanceof Ci.nsIAutoCompletePopup) {
+                if (modes.main != modes.AUTOCOMPLETE)
+                    modes.push(modes.AUTOCOMPLETE);
+            }
+            else if (elem.localName !== "tooltip")
                 if (Events.isHidden(elem)) {
                     if (elem.hidePopup && Events.isHidden(elem.parentNode))
                         elem.hidePopup();
@@ -1271,6 +1275,7 @@ var Events = Module("events", {
             // gContextMenu is set to NULL, when a context menu is closed
             if (window.gContextMenu == null && !this._activeMenubar)
                 modes.remove(modes.MENU, true);
+            modes.remove(modes.AUTOCOMPLETE);
         },
 
         resize: function onResize(event) {

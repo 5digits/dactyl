@@ -118,6 +118,11 @@ var Modes = Module("modes", {
             input: true,
             ownsFocus: true
         });
+        this.addMode("AUTOCOMPLETE", {
+            description: "Active when an input autocomplete pop-up is active",
+            display: function () "INSERT (autocomplete)",
+            bases: [this.INSERT]
+        });
 
         this.addMode("EMBED", {
             input: true,
