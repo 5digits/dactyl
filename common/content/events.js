@@ -34,10 +34,17 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     notify: function () {
-        this.execute(Events.KILL, true);
+        let kill = events.withSavedValues(["processor"], function () {
+            events.processor = null;
+            return this.execute(Events.KILL, true);
+        }, this);
+
+        if (kill)
+            events.processor = null;
     },
 
     execute: function execute(result, force) {
+
         if (force && this.actions.length)
             this.processors.length = 0;
 
@@ -89,9 +96,6 @@ var ProcessorStack = Class("ProcessorStack", {
                 events.dbg("REFEED: " + list.map(events.closure.toString).join(""));
             events.feedevents(null, list, { skipmap: true, isMacro: true, isReplay: true });
         }
-
-        if (force && this.processors.length === 0)
-            events.processor = null;
 
         return this.processors.length === 0;
     },
