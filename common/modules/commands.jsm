@@ -1129,7 +1129,9 @@ var Commands = Module("commands", {
             (?P<spec>
                 (?P<prespace> [:\s]*)
                 (?P<count>    (?:\d+ | %)? )
-                (?P<cmd>      (?:<name> | !)? )
+                (?P<fullCmd>
+                    (?: (?P<group>   <name>) : )?
+                    (?P<cmd>      (?:<name> | !)? ))
                 (?P<bang>     !?)
                 (?P<space>    \s*)
             )
@@ -1164,7 +1166,7 @@ var Commands = Module("commands", {
         if (!matches)
             return [];
 
-        let [, spec, prespace, count, cmd, bang, space, args] = matches;
+        let { spec, count, group, cmd, bang, space, args } = matches;
         if (!cmd && bang)
             [cmd, bang] = [bang, cmd];
 
@@ -1177,13 +1179,17 @@ var Commands = Module("commands", {
         else
             count = this.COUNT_NONE;
 
-        return [count, cmd, !!bang, args || "", spec.length];
+        return [count, cmd, !!bang, args || "", spec.length, group];
     },
 
     parseCommands: function (str, complete) {
+        const { contexts } = this.modules;
         do {
-            let [count, cmd, bang, args, len] = commands.parseCommand(str);
-            let command = this.get(cmd || "");
+            let [count, cmd, bang, args, len, group] = commands.parseCommand(str);
+            if (!group)
+                var command = this.get(cmd || "");
+            else if (group = contexts.getGroup(group, "commands"))
+                command = group.get(cmd || "");
 
             if (command == null) {
                 yield [null, { commandString: str }];
@@ -1274,12 +1280,15 @@ var Commands = Module("commands", {
                                    : ""](str)
 }, {
     completion: function initCompletion(dactyl, modules, window) {
-        const { completion } = modules;
+        const { completion, contexts } = modules;
 
-        completion.command = function command(context) {
+        completion.command = function command(context, group) {
             context.title = ["Command"];
             context.keys = { text: "longNames", description: "description" };
-            context.generate = function () modules.commands.hives.map(function (h) h._list).flatten();
+            if (group)
+                context.generate = function () group._list;
+            else
+                context.generate = function () modules.commands.hives.map(function (h) h._list).flatten();
         };
 
         // provides completions for ex commands, including their arguments
@@ -1298,9 +1307,12 @@ var Commands = Module("commands", {
             if (!match)
                 return;
 
+            if (match.group)
+                context.advance(match.group.length + 1);
+
             context.advance(match.prespace.length + match.count.length);
             if (!(match.bang || match.space)) {
-                context.fork("", 0, this, "command");
+                context.fork("", 0, this, "command", match.group && contexts.getGroup(match.group, "commands"));
                 return;
             }
 
@@ -1312,7 +1324,7 @@ var Commands = Module("commands", {
                 return;
             }
 
-            let cmdContext = context.fork(command.name, match.cmd.length + match.bang.length + match.space.length);
+            let cmdContext = context.fork(command.name, match.fullCmd.length + match.bang.length + match.space.length);
             try {
                 if (!cmdContext.waitingForTab) {
                     if (!args.completeOpt && command.completer && args.completeStart != null) {
