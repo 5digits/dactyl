@@ -805,6 +805,7 @@ var JavaScript = Module("javascript", {
 
                 this.completions.cleanup();
                 this.history.save();
+                this.history.reset();
                 this.updatePrompt();
 
                 modules.mow.resize();
