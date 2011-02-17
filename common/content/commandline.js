@@ -313,7 +313,7 @@ var CommandMode = Class("CommandMode", {
         dactyl.assert(isinstance(this.mode, modes.COMMAND_LINE),
                       "Not opening command line in non-command-line mode.");
 
-        commandline.clearMessage();
+        this.messageCount = commandline.messageCount;
         modes.push(this.mode, this.extendedMode, this.closure);
 
         this.widgets.active.commandline.collapsed = false;
@@ -366,6 +366,8 @@ var CommandMode = Class("CommandMode", {
                 if (!this.keepCommand || commandline.silent || commandline.quiet)
                     commandline.hide();
                 this[this.accepted ? "onSubmit" : "onCancel"](commandline.command);
+                if (commandline.messageCount === this.messageCount)
+                    commandline.clearMessage();
             }, this);
         }
     },
@@ -699,10 +701,13 @@ var CommandLine = Module("commandline", {
      *   commandline.FORCE_MULTILINE    - Forces the message to appear in
      *          the MOW.
      */
+    messageCount: 0,
     echo: function echo(data, highlightGroup, flags) {
         // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
         if (this._silent)
             return;
+
+        this.messageCount++;
 
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
