@@ -846,20 +846,20 @@ var Editor = Module("editor", {
         bind(["<Esc>"], "Return to INSERT mode",
              function () Events.PASS);
 
-        bind(["<Up>"], "Select the next autocompletion result",
-             function () Events.PASS);
-
-        bind(["<Down>"], "Select the next autocompletion result",
-             function () Events.PASS);
-
         bind(["<C-[>"], "Return to INSERT mode",
              function () { events.feedkeys("<Esc>", { skipmap: true }); });
 
-        bind(["<C-n>"], "Select the next autocompletion result",
-             function () { events.feedkeys("<Down>", { skipmap: true }); });
+        bind(["<Up>"], "Select the previous autocomplete result",
+             function () Events.PASS);
 
-        bind(["<C-p>"], "Select the next previous result",
+        bind(["<C-p>"], "Select the previous autocomplete result",
              function () { events.feedkeys("<Up>", { skipmap: true }); });
+
+        bind(["<Down>"], "Select the next autocomplete result",
+             function () Events.PASS);
+
+        bind(["<C-n>"], "Select the next autocomplete result",
+             function () { events.feedkeys("<Down>", { skipmap: true }); });
     },
 
     options: function () {
