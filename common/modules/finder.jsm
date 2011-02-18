@@ -82,7 +82,7 @@ var RangeFinder = Module("rangefinder", {
             if (this.rangeFind)
                 this.rangeFind.cancel();
             this.rangeFind = RangeFind(this.window, matchCase, backward,
-                                       linksOnly && this.options["hinttags"],
+                                       linksOnly && this.options.get("hinttags").matcher,
                                        regexp);
             this.rangeFind.highlighted = highlighted;
             this.rangeFind.selections = selections;
@@ -380,7 +380,7 @@ var RangeFind = Class("RangeFind", {
 
     findSubRanges: function findSubRanges(range) {
         let doc = range.startContainer.ownerDocument;
-        for (let elem in util.evaluateXPath(this.elementPath, doc)) {
+        for (let elem in this.elementPath(doc)) {
             let r = RangeFind.nodeRange(elem);
             if (RangeFind.contains(range, r))
                 yield r;
