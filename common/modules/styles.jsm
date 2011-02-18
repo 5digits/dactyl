@@ -254,7 +254,7 @@ var Styles = Module("Styles", {
         services["dactyl:"].providers["style"] = function styleProvider(uri) {
             let id = /^\/(\d*)/.exec(uri.path)[1];
             if (set.has(styles.allSheets, id))
-                return ["text/css", styles.allSheets[id].fullCSS];
+                return ["text/css", unescape(encodeURI(styles.allSheets[id].fullCSS))];
             return null;
         };
     },

@@ -421,14 +421,14 @@ var Buffer = Module("buffer", {
      * @param {[RegExp]} regexps The regular expressions to search for.
      * @param {number} count The nth matching link to follow.
      * @param {bool} follow Whether to follow the matching link.
-     * @param {string} path The XPath to use for the search. @optional
+     * @param {string} path The CSS to use for the search. @optional
      */
     followDocumentRelationship: deprecated("buffer.findLink",
         function followDocumentRelationship(rel) {
             this.findLink(rel, options[rel + "pattern"], 0, true);
         }),
     findLink: function (rel, regexps, count, follow, path) {
-        path = path || options.get("hinttags").defaultValue;
+        let selector = path || options.get("hinttags").stringDefaultValue;
 
         function followFrame(frame) {
             function iter(elems) {
@@ -447,10 +447,10 @@ var Buffer = Module("buffer", {
             for (let elem in iter(elems))
                 yield elem;
 
-            let res = util.evaluateXPath(path, frame.document);
+            let res = frame.document.querySelectorAll(selector);
             for (let regexp in values(regexps)) {
-                for (let i in util.range(res.snapshotLength, 0, -1)) {
-                    let elem = res.snapshotItem(i);
+                for (let i in util.range(res.length, 0, -1)) {
+                    let elem = res[i];
                     if (regexp.test(elem.textContent) === regexp.result || regexp.test(elem.title) === regexp.result ||
                             Array.some(elem.childNodes, function (child) regexp.test(child.alt) === regexp.result))
                         yield elem;

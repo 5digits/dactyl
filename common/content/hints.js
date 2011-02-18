@@ -670,41 +670,6 @@ var HintSession = Class("HintSession", CommandMode, {
     },
 });
 
-function compileMatcher(list) {
-    let xpath = [], css = [];
-    for (let elem in values(list))
-        if (/^xpath:/.test(elem))
-            xpath.push(elem.substr(6));
-        else
-            css.push(elem);
-
-    return update(
-        function matcher(node) {
-            if (matcher.xpath)
-                for (let elem in util.evaluateXPath(matcher.xpath, node))
-                    yield elem;
-
-            if (matcher.css)
-                for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
-                    yield elem;
-        }, {
-            css: css.join(", "),
-            xpath: xpath.join(" | ")
-        });
-}
-
-function validateMatcher(values) {
-    let evaluator = services.XPathEvaluator();
-    let node = util.xmlToDom(<div/>, document);
-    return this.testValues(values, function (value) {
-        if (/^xpath:/.test(value))
-            evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);
-        else
-            node.querySelector(value);
-        return true;
-    });
-}
-
 var Hints = Module("hints", {
     init: function init() {
         this.resizeTimer = Timer(100, 500, function () {
@@ -1044,6 +1009,42 @@ var Hints = Module("hints", {
         this.hintSession = HintSession(mode, opts);
     }
 }, {
+
+    compileMatcher: function compileMatcher(list) {
+        let xpath = [], css = [];
+        for (let elem in values(list))
+            if (/^xpath:/.test(elem))
+                xpath.push(elem.substr(6));
+            else
+                css.push(elem);
+
+        return update(
+            function matcher(node) {
+                if (matcher.xpath)
+                    for (let elem in util.evaluateXPath(matcher.xpath, node))
+                        yield elem;
+
+                if (matcher.css)
+                    for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
+                        yield elem;
+            }, {
+                css: css.join(", "),
+                xpath: xpath.join(" | ")
+            });
+    },
+
+    validateMatcher: function validateMatcher(values) {
+        let evaluator = services.XPathEvaluator();
+        let node = util.xmlToDom(<div/>, document);
+        return this.testValues(values, function (value) {
+            if (/^xpath:/.test(value))
+                evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);
+            else
+                node.querySelector(value);
+            return true;
+        });
+    },
+
     translitTable: Class.memoize(function () {
         const table = {};
         [
@@ -1214,10 +1215,10 @@ var Hints = Module("hints", {
                         res ? res.matcher : default_,
                 setter: function (vals) {
                     for (let value in values(vals))
-                        value.matcher = compileMatcher(Option.splitList(value.result));
+                        value.matcher = Hints.compileMatcher(Option.splitList(value.result));
                     return vals;
                 },
-                validator: validateMatcher
+                validator: Hints.validateMatcher
             });
 
         options.add(["hinttags", "ht"],
@@ -1227,10 +1228,10 @@ var Hints = Module("hints", {
                           "[tabindex],[role=link],[role=button]",
             {
                 setter: function (values) {
-                    this.matcher = compileMatcher(values);
+                    this.matcher = Hints.compileMatcher(values);
                     return values;
                 },
-                validator: validateMatcher
+                validator: Hints.validateMatcher
             });
 
         options.add(["hintkeys", "hk"],
