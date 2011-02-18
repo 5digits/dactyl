@@ -839,6 +839,27 @@ var Editor = Module("editor", {
                 modes.pop(modes.TEXT_EDIT);
             },
             { count: true });
+
+        function bind() mappings.add.apply(mappings,
+                                           [[modes.AUTOCOMPLETE]].concat(Array.slice(arguments)))
+
+        bind(["<Esc>"], "Return to INSERT mode",
+             function () Events.PASS);
+
+        bind(["<Up>"], "Select the next autocompletion result",
+             function () Events.PASS);
+
+        bind(["<Down>"], "Select the next autocompletion result",
+             function () Events.PASS);
+
+        bind(["<C-[>"], "Return to INSERT mode",
+             function () { events.feedkeys("<Esc>", { skipmap: true }); });
+
+        bind(["<C-n>"], "Select the next autocompletion result",
+             function () { events.feedkeys("<Down>", { skipmap: true }); });
+
+        bind(["<C-p>"], "Select the next previous result",
+             function () { events.feedkeys("<Up>", { skipmap: true }); });
     },
 
     options: function () {

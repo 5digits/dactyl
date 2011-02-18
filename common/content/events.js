@@ -894,9 +894,9 @@ var Events = Module("events", {
             // For more information, see:
             //     [*] Referenced mailing list msg: http://www.mozdev.org/pipermail/pentadactyl/2008-May/001548.html
             //     [*] Mozilla bug 416227: event.charCode in keypress handler has unexpected values on Mac for Ctrl with chars in "[ ] _ \"
-            //         https://bugzilla.mozilla.org/show_bug.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&id=416227
+            //         https://bugzilla.mozilla.org/show_bug.cgi?id=416227
             //     [*] Mozilla bug 432951: Ctrl+'foo' doesn't seem same charCode as Meta+'foo' on Cocoa
-            //         https://bugzilla.mozilla.org/show_bug.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&id=432951
+            //         https://bugzilla.mozilla.org/show_bug.cgi?id=432951
             // ---
             //
             // The following fixes are only activated if util.OS.isMacOSX.
