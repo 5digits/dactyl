@@ -725,7 +725,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             let t = tags;
                             tags = array(betas.iterate(tags)).map(function (m) m[1]);
 
-                            let group = tags.length && !tags.some(function (t) t == beta) ? "HelpNewsOld" : "";
+                            let group = !tags.length                       ? "" :
+                                        !tags.some(function (t) t == beta) ? "HelpNewsOld" : "HelpNewsNew";
                             if (i === 0 && li) {
                                 li.@highlight = group;
                                 group = "";

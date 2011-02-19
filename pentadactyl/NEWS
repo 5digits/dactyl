@@ -88,7 +88,7 @@
         buffer. [b6]
       - :javascript! now opens a Read Eval Print Loop. [b6]
       - Added -arg flag to :map. [b6]
-      - :extensions has been replaced with a more powerful :addons.
+      - :extensions has been replaced with a more powerful :addons. [b6]
       - Added -literal flag to :command. [b6]
       - Added :completions command. [b6]
       - Added :cookies command. [b3]

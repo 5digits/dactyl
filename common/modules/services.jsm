@@ -78,11 +78,11 @@ var Services = Module("Services", {
         this.addClass("Process",      "@mozilla.org/process/util;1",               Ci.nsIProcess, "init");
         this.addClass("StreamChannel","@mozilla.org/network/input-stream-channel;1",
                       [Ci.nsIChannel, Ci.nsIInputStreamChannel, Ci.nsIRequest], "setURI");
+        this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1",Ci.nsIAsyncStreamCopier, "init");
         this.addClass("String",       "@mozilla.org/supports-string;1",            Ci.nsISupportsString, "data");
         this.addClass("StringStream", "@mozilla.org/io/string-input-stream;1",     Ci.nsIStringInputStream, "data");
         this.addClass("Transfer",     "@mozilla.org/transfer;1",                   Ci.nsITransfer, "init");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      Ci.nsITimer, "initWithCallback");
-        this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1",Ci.nsIAsyncStreamCopier, "init");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   Ci.nsIXMLHttpRequest);
         this.addClass("XPathEvaluator", "@mozilla.org/dom/xpath-evaluator;1",      Ci.nsIDOMXPathEvaluator);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          Ci.nsIZipReader, "open");
