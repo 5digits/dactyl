@@ -437,12 +437,10 @@ var Buffer = Module("buffer", {
                         yield elems[i];
             }
 
-            // <link>s have higher priority than normal <a> hrefs
             let elems = frame.document.getElementsByTagName("link");
             for (let elem in iter(elems))
                 yield elem;
 
-            // no links? ok, look for hrefs
             elems = frame.document.getElementsByTagName("a");
             for (let elem in iter(elems))
                 yield elem;

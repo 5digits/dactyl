@@ -607,11 +607,13 @@ var tests = {
         init: this.runtime.init,
         cleanup: this.runtime.cleanup,
         noOutput: [
+            "! .pentadactyl/some-nonexistent/really-nonexistent.js",
             ".pentadactyl/some-nonexistent/good.css",
             ".pentadactyl/some-nonexistent/good.js",
             ".pentadactyl/some-nonexistent/good.penta"
         ],
         error: [
+            ".pentadactyl/some-nonexistent/really-nonexistent.js",
             "~/.pentadactyl/some-nonexistent/bad.js",
             "~/.pentadactyl/some-nonexistent/bad.penta",
             "./.pentadactyl/some-nonexistent/bad.js",

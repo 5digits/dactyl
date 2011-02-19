@@ -147,7 +147,9 @@ var IO = Module("io", {
         source: function source(filename, params) {
             const { contexts } = modules;
             defineModule.loadLog.push("sourcing " + filename);
-            params = params || {};
+
+            if (!isObject(params))
+                params = { silent: params };
 
             let time = Date.now();
             return contexts.withContext(null, function () {
@@ -793,7 +795,7 @@ unlet s:cpo_save
                 if (args.length > 1)
                     dactyl.echoerr("E172: Only one file name allowed");
                 else
-                    io.source(args[0], args.bang);
+                    io.source(args[0], { silent: args.bang });
             }, {
                 argCount: "+", // FIXME: should be "1" but kludged for proper error message
                 bang: true,
