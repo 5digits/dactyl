@@ -1466,15 +1466,15 @@ var CommandLine = Module("commandline", {
         });
 
         bind(["<A-Tab>", "<Tab>"], "Select the next matching completion item",
-             function ({ events, self }) {
+             function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
-                 self.completions.tabTimer.tell(events[0]);
+                 self.completions.tabTimer.tell(keypressEvents[0]);
              });
 
         bind(["<A-S-Tab>", "<S-Tab>"], "Select the previous matching completion item",
-             function ({ events, self }) {
+             function ({ keypressEvents, self }) {
                  dactyl.assert(self.completions);
-                 self.completions.tabTimer.tell(events[0]);
+                 self.completions.tabTimer.tell(keypressEvents[0]);
              });
 
         bind(["<BS>", "<C-h>"], "Delete the previous character",
