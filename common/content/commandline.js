@@ -1083,6 +1083,7 @@ var CommandLine = Module("commandline", {
             this.context.updateAsync = true;
             this.reset(show, tabPressed);
             this.wildIndex = 0;
+            this._caret = this.caret;
         },
 
         haveType: function haveType(type)
@@ -1270,7 +1271,7 @@ var CommandLine = Module("commandline", {
                     break;
                 case "longest":
                     if (this.items.length > 1) {
-                        if (this.substring && this.substring != this.completion)
+                        if (this.substring && this.substring.length > this.completion.length)
                             this.completion = this.substring;
                         break;
                     }

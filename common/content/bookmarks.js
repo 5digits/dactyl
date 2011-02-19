@@ -231,10 +231,10 @@ var Bookmarks = Module("bookmarks", {
         if (!queryURI)
             return (callback || util.identity)([]);
 
-        function process(resp) {
+        function process(req) {
             let results = [];
             try {
-                results = JSON.parse(resp.responseText)[1].filter(isString);
+                results = JSON.parse(req.responseText)[1].filter(isString);
             }
             catch (e) {}
             if (callback)
@@ -242,10 +242,10 @@ var Bookmarks = Module("bookmarks", {
             return results;
         }
 
-        let resp = util.httpGet(queryURI, callback && process);
+        let req = util.httpGet(queryURI, callback && process);
         if (callback)
-            return null;
-        return process(resp);
+            return req;
+        return process(req);
     },
 
     /**
@@ -659,10 +659,17 @@ var Bookmarks = Module("bookmarks", {
                 ctxt.title = [engine.description + " Suggestions"];
                 ctxt.keys = { text: util.identity, description: function () "" };
                 ctxt.compare = CompletionContext.Sort.unsorted;
+                ctxt.filterFunc = null;
+
+                let words = ctxt.filter.split(/\s+/g);
+                ctxt.completions = ctxt.completions.filter(function (i) words.every(function (w) i.toLowerCase().indexOf(w) >= 0));
+
+                ctxt.hasItems = ctxt.completions.length;
                 ctxt.incomplete = true;
-                bookmarks.getSuggestions(name, ctxt.filter, function (compl) {
+                ctxt.cache.request = bookmarks.getSuggestions(name, ctxt.filter, function (compl) {
                     ctxt.incomplete = false;
-                    ctxt.completions = compl;
+                    ctxt.completions = array.uniq(ctxt.completions.filter(function (c) compl.indexOf(c) >= 0)
+                                                      .concat(compl), true);
                 });
             });
         };

@@ -325,15 +325,15 @@ var Config = Module("config", ConfigBase, {
             searchRunning = context;
         };
 
+        completion.addUrlCompleter("l",
+            "Firefox location bar entries (bookmarks and history sorted in an intelligent way)",
+            completion.location);
+
         completion.sidebar = function sidebar(context) {
             let menu = document.getElementById("viewSidebarMenu");
             context.title = ["Sidebar Panel"];
             context.completions = Array.map(menu.childNodes, function (n) [n.getAttribute("label"), ""]);
         };
-
-        completion.addUrlCompleter("l",
-            "Firefox location bar entries (bookmarks and history sorted in an intelligent way)",
-            completion.location);
     },
     events: function (dactyl, modules, window) {
         modules.events.listen(window, "SidebarFocused", function (event) {

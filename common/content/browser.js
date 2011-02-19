@@ -18,7 +18,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         util.addObserver(this);
     },
 
-    cleanup: function () {
+    destroy: function () {
         this.cleanupProgressListener();
         this.observe.unregister();
     },

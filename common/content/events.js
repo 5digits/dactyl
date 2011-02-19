@@ -1523,7 +1523,7 @@ var Events = Module("events", {
                 setter: function (values) {
                     values.forEach(function (filter) {
                         filter.result = events.fromString(filter.result).map(events.closure.toString);
-                        filter.result.toString = function toString() this.join("");
+                        filter.result.toString = bind(filter.results.join, filter.results);
                     });
                     return values;
                 }
