@@ -2055,8 +2055,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.timeout(function () {
             try {
-                var args = services.fuel && services.fuel.storage.get("dactyl.commandlineArgs", null)
-                        || services.commandLineHandler.optionValue;
+                var args = JSMLoader.commandlineArgs || services.commandLineHandler.optionValue;
                 if (isString(args))
                     args = dactyl.parseCommandLine(args);
 

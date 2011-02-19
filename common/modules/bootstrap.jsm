@@ -8,11 +8,10 @@ try {
 
 var EXPORTED_SYMBOLS = ["JSMLoader"];
 var global = this;
-var storage = Components.classes["@mozilla.org/fuel/application;1"]
-                        .getService(Components.interfaces.fuelIApplication)
-                        .storage;
 
-var JSMLoader = storage.get("dactyl.JSMLoader", undefined);
+var BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
+var JSMLoader = BOOTSTRAP_CONTRACT in Components.classes &&
+    Components.classes[BOOTSTRAP_CONTRACT].getService().wrappedJSObject;
 
 if (!JSMLoader || JSMLoader.bump != 4)
     JSMLoader = {
@@ -25,13 +24,10 @@ if (!JSMLoader || JSMLoader.bump != 4)
         loader: Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader),
         manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
         stale: JSMLoader ? JSMLoader.stale : {},
-        storage: storage,
         suffix: "",
         init: function init(suffix) {
             this.initialized = true;
             this.suffix = suffix || "";
-
-            this.storage.set("dactyl.JSMLoader", this);
 
             let base = this.load("base.jsm", global);
             global.EXPORTED_SYMBOLS = base.EXPORTED_SYMBOLS;

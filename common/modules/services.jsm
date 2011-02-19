@@ -41,7 +41,6 @@ var Services = Module("Services", {
         this.add("externalProtocol",    "@mozilla.org/uriloader/external-protocol-service;1", Ci.nsIExternalProtocolService);
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           Ci.nsIFaviconService);
         this.add("focus",               "@mozilla.org/focus-manager;1",                     Ci.nsIFocusManager);
-        this.add("fuel",                "@mozilla.org/fuel/application;1",                  Ci.extIApplication);
         this.add("history",             "@mozilla.org/browser/global-history;2",
                  [Ci.nsIBrowserHistory, Ci.nsIGlobalHistory3, Ci.nsINavHistoryService, Ci.nsPIPlacesDatabase]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                Ci.nsIIOService);

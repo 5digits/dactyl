@@ -28,8 +28,15 @@ const resourceProto = Services.io.getProtocolHandler("resource")
                               .QueryInterface(Ci.nsIResProtocolHandler);
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
-const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication).storage;
-let JSMLoader = storage.get("dactyl.JSMLoader", undefined);
+
+try { // Temporary migration code.
+    const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication).storage;
+    var JSMLoader = storage.get("dactyl.JSMLoader", undefined);
+}
+catch (e) {}
+
+const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
+JSMLoader = JSMLoader || BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject;
 
 function reportError(e) {
     dump("\ndactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
@@ -52,7 +59,6 @@ let categories = [];
 let components = {};
 let resources = [];
 let getURI = null;
-storage.set("dactyl.bootstrap", this);
 
 function updateVersion() {
     try {
@@ -182,10 +188,25 @@ function init() {
     if (!JSMLoader || JSMLoader.bump !== 4)
         Cu.import("resource://dactyl/bootstrap.jsm", global);
 
+    JSMLoader.bootstrap = this;
+
     JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
 
     JSMLoader.init(suffix);
     JSMLoader.load("base.jsm", global);
+
+    if (!(BOOTSTRAP_CONTRACT in Cc))
+        manager.registerFactory(Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}"),
+                                String("{f541c8b0-fe26-4621-a30b-e77d21721fb5}"),
+                                BOOTSTRAP_CONTRACT, {
+            QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory]),
+            instance: {
+                QueryInterface: XPCOMUtils.generateQI([]),
+                contractID: BOOTSTRAP_CONTRACT,
+                wrappedJSObject: JSMLoader
+            },
+            createInstance: function () this.instance
+        })
 
     for each (let component in components)
         component.register();

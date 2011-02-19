@@ -57,7 +57,7 @@ var ConfigBase = Class("ConfigBase", {
     addon: Class.memoize(function () {
         let addon;
         do {
-            addon = services.fuel.storage.get("dactyl.bootstrap", {}).addon;
+            addon = (JSMLoader.bootstrap || {}).addon;
             if (addon && !addon.getResourceURI) {
                 util.reportError(Error("Don't have add-on yet"));
                 yield 10;

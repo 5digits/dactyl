@@ -1414,8 +1414,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     }),
 
     rehash: function (args) {
-        if (services.fuel)
-            services.fuel.storage.set("dactyl.commandlineArgs", args);
+        JSMLoader.commandlineArgs = args;
         this.timeout(function () {
             this.rehashing = true;
             let addon = config.addon;
