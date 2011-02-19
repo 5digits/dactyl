@@ -196,28 +196,44 @@ var Template = Module("Template", {
         // </e4x>
     },
 
-    helpLink: function (topic, text, type) {
+    helpLink: function (token, text, type) {
         if (!services["dactyl:"].initialized)
             util.dactyl.initHelp();
 
+        let topic = token; // FIXME: Evil duplication!
+        if (/^\[.*\]$/.test(topic))
+            topic = topic.slice(1, -1);
+        else if (/^n_/.test(topic))
+            topic = topic.slice(2);
+
         if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
-            return <span highlight={type || ""}>{text || topic}</span>;
+            return <span highlight={type || ""}>{text || token}</span>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
-        type = type || (/^'.*'$/.test(topic) ? "HelpOpt" :
-                        /^:\w/.test(topic)   ? "HelpEx"  : "HelpKey");
+        type = type || (/^'.*'$/.test(token)   ? "HelpOpt" :
+                        /^\[.*\]$/.test(token) ? "HelpTopic" :
+                        /^:\w/.test(token)     ? "HelpEx"  : "HelpKey");
+
         return <a highlight={type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>;
     },
-    HelpLink: function (topic) {
+    HelpLink: function (token) {
         if (!services["dactyl:"].initialized)
             util.dactyl.initHelp();
 
+        let topic = token; // FIXME: Evil duplication!
+        if (/^\[.*\]$/.test(topic))
+            topic = topic.slice(1, -1);
+        else if (/^n_/.test(topic))
+            topic = topic.slice(2);
+
         if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
-            return <>{topic}</>;
+            return <>{token}</>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
-        let tag = (/^'.*'$/.test(topic) ? "o" :
-                   /^:\w/.test(topic)   ? "ex"  : "k");
+        let tag = (/^'.*'$/.test(token)   ? "o" :
+                   /^\[.*\]$/.test(token) ? "t" :
+                   /^:\w/.test(token)     ? "ex"  : "k");
+
         topic = topic.replace(/^'(.*)'$/, "$1");
         return <{tag} xmlns={NS}>{topic}</{tag}>;
     },
@@ -347,7 +363,7 @@ var Template = Module("Template", {
     linkifyHelp: function linkifyHelp(str, help) {
         let re = util.regexp(<![CDATA[
             (?P<pre> [/\s]|^)
-            (?P<tag> '[\w-]+' | :(?:[\w-]+|!) | (?:._)?<[\w-]+> )
+            (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | [a-zA-Z]_\w+ | \[[\w-]+\] )
             (?=      [[\)!,;./\s]|$)
         ]]>, "gx");
         return this.highlightSubstrings(str, (function () {

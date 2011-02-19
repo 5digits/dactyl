@@ -687,19 +687,21 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                .responseText;
 
                 let re = util.regexp(<![CDATA[
-                    ^ (?P<space> \s*)
-                      (?P<char>  [-*+]) \ //
-                    (?P<content> .*\n
-                       (?: \1\ \ .*\n | \s*\n)* )
-                    |
-                    (?P<par>
-                        (?: ^ [^\S\n]*
-                            (?:[^-*+\s] | [-*+]\S)
-                            .*\n
-                        )+
-                    )
-                    |
-                    (?: ^ [^\S\n]* \n) +
+                      ^ (?P<comment> \s* # .*\n)
+
+                    | ^ (?P<space> \s*)
+                        (?P<char>  [-•*+]) \ //
+                      (?P<content> .*\n
+                         (?: \2\ \ .*\n | \s*\n)* )
+
+                    | (?P<par>
+                          (?: ^ [^\S\n]*
+                              (?:[^-•*+\s] | [-•*+]\S)
+                              .*\n
+                          )+
+                      )
+
+                    | (?: ^ [^\S\n]* \n) +
                 ]]>, "gmxy");
 
                 let betas = util.regexp(/\[(b\d)\]/, "gx");
@@ -713,7 +715,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     let list, space, i = 0;
 
                     for (let match in re.iterate(text)) {
-                        if (match.char) {
+                        if (match.comment)
+                            continue;
+                        else if (match.char) {
                             if (!list)
                                 res += list = <ul/>;
                             let li = <li/>;
@@ -759,7 +763,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let body = rec(NEWS, 0);
                 for each (let li in body..li) {
                     let list = li..li.(@NS::highlight == "HelpNewsOld");
-                    if (list.length() && list.length() == li..li.length()) {
+                    if (list.length() && list.length() == li..li.(@NS::highlight != "").length()) {
                         for each (let li in list)
                             li.@NS::highlight = "";
                         li.@NS::highlight = "HelpNewsOld";

@@ -1,15 +1,18 @@
 1.0b6pre:
-    * Extensive Firefox 4 support, including:
+    • Extensive Firefox 4 support, including:
       - Fully restartless. Can now be installed, uninstalled,
         enabled, disabled, and upgraded without restarting Firefox.
         [b4]
       - Tabs in :buffer completions and listings are grouped
         by panorama groups. [b1]
       - Only visible tabs are considered in tab numbering,
-        gt/gn/gN, etc. [b1]
-    * Improved startup time by a factor of 7. [b1]
-    * Further improved startup time. [b6]
-    * Added site-local and script-local groups: [b6]
+        n_gt, n_gn, etc. [b1]
+    • Performance improvements:
+      - Improved startup time by a factor of 7. [b1]
+      - Further improved startup time. [b6]
+      - Significant completion speed improvements, especially for
+        JavaScript. [b1]
+    • Added site-local and script-local groups: [b6]
       - Added the :group command to define and select groups.
       - Added the -group flag to :abbreviate, :autocmd, :command,
         :map, :style, and friends.
@@ -18,9 +21,7 @@
       - Autocommands, commands, mappings, and styles are now
         automatically added to per-script groups so that most traces
         of a script can be easily purged.
-    * Significant completion speed improvements, especially for
-      JavaScript. [b1]
-    * Greatly improved private mode support and :sanitize command.
+    • Greatly improved private mode support and :sanitize command.
       - Full integration with Firefox data clearing dialogs. [b3]
       - Support for sanitizing items at shutdown. [b3]
       - Fine-grained control over what data is sanitized and for
@@ -28,7 +29,7 @@
       - Support for sanitizing reference to particular hosts,
         everywhere from command-line and message history to option
         values and cookies. [b1]
-    * New and much more powerful incremental search implementation.
+    • New and much more powerful incremental search implementation.
       Improvements over the standard Firefox find include: [b1]
       - Starts at the cursor position in the currently selected
         frame, unlike Firefox, which always starts at the start of
@@ -39,15 +40,15 @@
         backspace.
       - Supports reverse incremental search.
       - Input boxes are not focused when matches are highlighted.
-    * Ex command parsing improvements, including:
+    • Ex command parsing improvements, including:
       - Multiple Ex commands may now be separated by | [b1]
       - Commands can continue over multiple lines in RC files by
         prefixing the continuation lines with a \ [b3]
       - The \ character is no longer treated specially within single
         quotes, i.e., 'fo\o''bar' ⇒ fo\o'bar [b1]
-    * Command line is now hidden by default. Added c, C, and M to
+    • The command line is now hidden by default. Added c, C, and M to
       'guioptions'. [b4]
-    * Hint mode improvements, including:
+    • Hint mode improvements, including:
       - Added g; continued extended hint mode, which allows
         selecting multiple hints. Removed ;F. [b1]
       - Hints are now updated after scrolling and window resizing. [b3]
@@ -56,18 +57,19 @@
       - Added ;a and ;S modes for creating bookmarks and search keywords. [b4][b3]
       - Added 'hintkeys' option. [b2]
       - Added "transliterated" option to 'hintmatching'. [b1]
-    * JavaScript completion improvements, including: [b2]
-      - The prototype of the function whose arguments are currently
-        being typed is displayed during completion.
-      - Non-enumerable global properties are now completed for the
-        global object, including XMLHttpRequest and encodeURI.
-    * The concept of completion contexts is now exposed to the user
-      (see :h :contexts), allowing for powerful and fine-grained
-      completion system customization. [b1]
-    * The external editor can now be configured to open to a given
+    • General completion improvements
+      - JavaScript completion improvements, including: [b2]
+        + The prototype of the function whose arguments are currently
+          being typed is displayed during completion.
+        + Non-enumerable global properties are now completed for the
+          global object, including XMLHttpRequest and encodeURI.
+      - The concept of completion contexts is now exposed to the user
+        (see :contexts), allowing for powerful and fine-grained
+        completion system customization. [b1]
+    • The external editor can now be configured to open to a given
       line number and column, used for opening source links and
       editing input fields with i_<C-i>. See :h 'editor'. [b4]
-    * Mapping changes:
+    • Mapping changes:
       - It's now possible to map keys in many more modes, including
         Hint, Multi-line Output, and Menu. [b4]
       - Added site-specific mapping groups and related command
@@ -78,17 +80,17 @@
       - Removed the implicit page load delays during macro playback. [b6]
       - Added the base modes Base, Main, and Command which other
         modes inherit key bindings from. [b6]
-    * Command changes:
+    • Command changes:
       - :viusage, :optionusage and :exusage were replaced with :listkeys,
         :listoptions and :listcommands, providing more powerful and
         consistent interactive help facility (improvements include
-        listing keys for modes other than Normal, filtering the output
+        listing keys for modes other than Normal, filtering the output,
         and linking to source code locations). [b4]
       - :downloads now opens a download list in the multi-line output
         buffer. [b6]
+      - :extensions has been replaced with a more powerful :addons. [b6]
       - :javascript! now opens a Read Eval Print Loop. [b6]
       - Added -arg flag to :map. [b6]
-      - :extensions has been replaced with a more powerful :addons. [b6]
       - Added -literal flag to :command. [b6]
       - Added :completions command. [b6]
       - Added :cookies command. [b3]
@@ -117,7 +119,7 @@
       - :command now accepts comma-separated alternative command names. [b4]
       - :command -complete custom now also accepts a completions array, see
         :h :command-completion-custom. [b4]
-    * Improvements to :style and :highlight:
+    • Improvements to :style and :highlight:
       - Added -link flag to :highlight. [b4]
       - Added -agent flag to :style. [b2]
       - The -append flag now updates existing properties rather than
@@ -128,22 +130,23 @@
       - CSS property name completion is now available. [b4]
       - :delstyle, :styleenable, :styledisable and :styletoggle accept a !
         to operate on all styles. [b6]
-    * IMPORTANT option changes:
-      - 'hinttags' and 'extendedhinttags' now treat their values as
-        CSS selectors by default. [b6]
-      - 'showmode' is now a regexplist. [b6]
+    • IMPORTANT option changes:
       - Option value quoting has changed. List options will
-        no longer be split at quoted commas and the option name, operators, and
-        = sign may no longer be quoted. This will break certain
-        automatically-generated configuration files. See :help stringlist. [b2]
+        no longer be split at quoted commas and the option name,
+        operators, and = sign may no longer be quoted. This will
+        break certain automatically-generated configuration files.
+        See :help
+        [stringlist]. [b2]
       - Boolean options no longer accept an argument. [b4]
       - 'cdpath' and 'runtimepath' no longer treat ",,"
         specially. Use "." instead. [b2]
-      - 'incsearch', 'hlsearch', 'ignorecase', and 'smartcase' have
-        been replaced with 'incfind', 'hlfind', and 'findcase'. [b4]
-      - 'extendedhinttags' is now a regexpmap rather than a
+      - 'extendedhinttags' is now a [regexpmap] rather than a
         string. [b2]
       - 'guioptions' default value has changed. [b4]
+      - 'hinttags' and 'extendedhinttags' now treat their values as
+        CSS selectors by default. [b6]
+      - 'incsearch', 'hlsearch', 'ignorecase', and 'smartcase' have
+        been replaced with 'incfind', 'hlfind', and 'findcase'. [b4]
       - 'laststatus' has been replaced with the "s" flag in
         'guioptions'. [b4]
       - 'linksearch' has been removed.  The \l search modifier can
@@ -152,14 +155,16 @@
         a boolean. [b2]
       - 'mapleader' is now an option rather than a :let
         variable. [b4]
-      - 'showstatuslinks' and 'showtabline' are now string options. [b4]
       - 'passkeys' is now a sitemap rather than a regexpmap. [b6]
-    * IMPORTANT: Command script files now use the *.penta file extension. [b2]
-    * IMPORTANT: Plugins are now loaded from the 'plugins/'
+      - 'showmode' is now a regexplist. [b6]
+      - 'showstatuslinks' and 'showtabline' are now string options. [b4]
+    • IMPORTANT: Command script files now use the *.penta file extension. [b2]
+    • IMPORTANT: Plugins are now loaded from the 'plugins/'
       directory in 'runtimepath' rather than 'plugin/'. [b1]
-    * Option changes:
-      - Added stringmap, regexplist and regexpmap option types. [b1]
-      - Added sitelist and sitemap option types. [b6]
+    • Option changes:
+      - Added [stringmap], [regexplist], and [regexpmap] option
+        types. [b1]
+      - Added [sitelist] and [sitemap] option types. [b6]
       - Added "bookmarks", "diverted", and "links" to 'activate'
         option. [b2]
       - Added 'altwildmode' and c_<A-Tab> command-line key binding. [b2]
@@ -174,23 +179,25 @@
       - Added "passwords" and "venkman" dialogs to :dialog. [b2]
       - Added 'wildanchor' option. [b2]
       - Added 'cookies', 'cookieaccept', and 'cookielifetime' options. [b3]
-    * Added BookmarkChange, BookmarkRemove autocommands. [b2]
-    * Removed the :source line at the end of files generated by
+    • Added [BookmarkChange], [BookmarkRemove] autocommands. [b2]
+    • Removed the :source line at the end of files generated by
       :mkpentadactylrc. [b2]
-    * gf now toggles between source and content view.
+    • gf now toggles between source and content view.
       The | key binding has been removed. [b1]
-    * Page zoom information is now shown in the status bar, and
+    • Page zoom information is now shown in the status bar, and
       change in zoom status no longer appears in :messages. [b1]
-    * Added ZO, ZI, ZM, and ZR as aliases for zO, zI, zM, and zR. [b1]
-    * Completion list now behaves better when the multi-line output
+    • Added n_ZO, n_ZI, n_ZM, and n_ZR as aliases for n_zO, n_zI,
+      n_zM, and n_zR. [b1]
+    • Completion list now behaves better when the multi-line output
       window is displayed. [b1]
-    * Major help system improvements:
+    • Major help system improvements:
       - Plugins may now provide full-fledged :help documentation. [b1]
       - Add basic plugin authorship documentation. [b1]
       - The help system is newly modularized and features significant
         updates, rewrites, and formatting improvements. [b1]
       - Added <A-F1> to open the single unchunked help page. [b5]
-    * Removed :beep. [b2]
-    * Removed :edit, :tabedit, and :winedit aliases. [b2]
-    * Removed :play. [b2]
+    • Removed :beep. [b2]
+    • Removed :edit, :tabedit, and :winedit aliases. [b2]
+    • Removed :play. [b2]
 
+# vim:set ft=conf sts=2 sw=2 et fo=tcn2 tw=68:
