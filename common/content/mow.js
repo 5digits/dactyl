@@ -7,9 +7,9 @@
 "use strict";
 
 var MOW = Module("mow", {
-    init: function () {
+    init: function init() {
 
-        this._resize = Timer(20, 400, function () {
+        this._resize = Timer(20, 400, function _resize() {
             if (this.visible)
                 this.resize(false);
 
@@ -17,7 +17,7 @@ var MOW = Module("mow", {
                 this.updateMorePrompt();
         }, this);
 
-        this._timer = Timer(20, 400, function () {
+        this._timer = Timer(20, 400, function _timer() {
             if (modes.have(modes.OUTPUT_MULTILINE)) {
                 this.resize(true);
 
@@ -80,9 +80,9 @@ var MOW = Module("mow", {
     __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args)),
 
     get widget() this.widgets.multilineOutput,
-    widgets: Class.memoize(function () commandline.widgets),
+    widgets: Class.memoize(function widgets() commandline.widgets),
 
-    body: Class.memoize(function () this.widget.contentDocument.documentElement),
+    body: Class.memoize(function body() this.widget.contentDocument.documentElement),
     get document() this.widget.contentDocument,
     get window() this.widget.contentWindow,
 
@@ -195,7 +195,7 @@ var MOW = Module("mow", {
     },
 
     contextEvents: {
-        popupshowing: function (event) {
+        popupshowing: function onPopupShowing(event) {
             let menu = commandline.widgets.contextMenu;
             let enabled = {
                 link: window.document.popupNode instanceof HTMLAnchorElement,
@@ -229,7 +229,7 @@ var MOW = Module("mow", {
      * @param {boolean} open If true, the widget will be opened if it's not
      *     already so.
      */
-    resize: function updateOutputHeight(open, extra) {
+    resize: function resize(open, extra) {
         if (!(open || this.visible))
             return;
 
@@ -266,7 +266,6 @@ var MOW = Module("mow", {
      *     and what they do.
      */
     updateMorePrompt: function updateMorePrompt(force, showHelp) {
-        util.dump("\n"); modes.dumpStack(); util.dumpStack(); util.dump("\n");
         if (!this.visible || !isinstance(modes.main, modes.OUTPUT_MULTILINE))
             return this.widgets.message = null;
 
@@ -286,13 +285,19 @@ var MOW = Module("mow", {
             this.widgets.mowContainer.collapsed = !value;
 
             let elem = this.widget;
-            if (!value && elem && elem.contentWindow == document.commandDispatcher.focusedWindow)
+            if (!value && elem && elem.contentWindow == document.commandDispatcher.focusedWindow) {
+
+                let focused = content.document.activeElement;
+                if (Events.isInputElement(focused))
+                    focused.blur();
+
                 document.commandDispatcher.focusedWindow = content;
+            }
         }
     })
 }, {
 }, {
-    mappings: function () {
+    mappings: function initMappings() {
         const PASS = true;
         const DROP = false;
         const BEEP = {};
@@ -376,7 +381,7 @@ var MOW = Module("mow", {
              function () {},
              function () false, DROP);
     },
-    options: function () {
+    options: function initOptions() {
         options.add(["more"],
             "Pause the message list window when the full output will not fit on one page",
             "boolean", true);

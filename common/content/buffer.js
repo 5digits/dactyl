@@ -15,7 +15,7 @@
  * @instance buffer
  */
 var Buffer = Module("buffer", {
-    init: function () {
+    init: function init() {
         this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};
 
@@ -165,7 +165,7 @@ var Buffer = Module("buffer", {
         );
     },
 
-    climbUrlPath: function (count) {
+    climbUrlPath: function climbUrlPath(count) {
         let url = buffer.documentURI.clone();
         dactyl.assert(url instanceof Ci.nsIURL);
 
@@ -176,7 +176,7 @@ var Buffer = Module("buffer", {
         dactyl.open(url.spec);
     },
 
-    incrementURL: function (count) {
+    incrementURL: function incrementURL(count) {
         let matches = buffer.uri.spec.match(/(.*?)(\d+)(\D*)$/);
         dactyl.assert(matches);
         let oldNum = matches[2];
@@ -302,7 +302,7 @@ var Buffer = Module("buffer", {
     /**
      * Returns a list of all frames in the given window or current buffer.
      */
-    allFrames: function (win, focusedFirst) {
+    allFrames: function allFrames(win, focusedFirst) {
         let frames = [];
         (function rec(frame) {
             if (frame.document.body instanceof HTMLBodyElement)
@@ -343,7 +343,7 @@ var Buffer = Module("buffer", {
      * @param {Node|Window}
      * @returns {boolean}
      */
-    focusAllowed: function (elem) {
+    focusAllowed: function focusAllowed(elem) {
         if (elem instanceof Window && !Editor.getEditor(elem))
             return true;
         let doc = elem.ownerDocument || elem.document || elem;
@@ -357,7 +357,7 @@ var Buffer = Module("buffer", {
      *
      * @param {Node} elem The element to focus.
      */
-    focusElement: function (elem) {
+    focusElement: function focusElement(elem) {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
         win.document.dactylFocusAllowed = true;
 
@@ -427,7 +427,7 @@ var Buffer = Module("buffer", {
         function followDocumentRelationship(rel) {
             this.findLink(rel, options[rel + "pattern"], 0, true);
         }),
-    findLink: function (rel, regexps, count, follow, path) {
+    findLink: function findLink(rel, regexps, count, follow, path) {
         let selector = path || options.get("hinttags").stringDefaultValue;
 
         function followFrame(frame) {
@@ -475,7 +475,7 @@ var Buffer = Module("buffer", {
      * @param {number} where Where to open the link. See
      *     {@link dactyl.open}.
      */
-    followLink: function (elem, where) {
+    followLink: function followLink(elem, where) {
         let doc = elem.ownerDocument;
         let view = doc.defaultView;
         let { left: offsetX, top: offsetY } = elem.getBoundingClientRect();
@@ -538,7 +538,7 @@ var Buffer = Module("buffer", {
      *
      * @param {Node} elem The context element.
      */
-    openContextMenu: function (elem) {
+    openContextMenu: function openContextMenu(elem) {
         document.popupNode = elem;
         let menu = document.getElementById("contentAreaContextMenu");
         menu.showPopup(elem, -1, -1, "context", "bottomleft", "topleft");
@@ -549,7 +549,7 @@ var Buffer = Module("buffer", {
      *
      * @param {HTMLAnchorElement} elem The page link to save.
      */
-    saveLink: function (elem) {
+    saveLink: function saveLink(elem) {
         let doc      = elem.ownerDocument;
         let uri      = util.newURI(elem.href || elem.src, null, util.newURI(elem.baseURI));
         let referrer = util.newURI(doc.documentURI, doc.characterSet);
@@ -588,7 +588,7 @@ var Buffer = Module("buffer", {
      * @param {nsIURI} uri The URI to save
      * @param {nsIFile} file The file into which to write the result.
      */
-    saveURI: function (uri, file, callback, self) {
+    saveURI: function saveURI(uri, file, callback, self) {
         var persist = services.Persist();
         persist.persistFlags = persist.PERSIST_FLAGS_FROM_CACHE
                              | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
@@ -645,7 +645,7 @@ var Buffer = Module("buffer", {
      * @param {number} count The multiple of 'scroll' lines to scroll.
      * @optional
      */
-    scrollByScrollSize: function (direction, count) {
+    scrollByScrollSize: function scrollByScrollSize(direction, count) {
         direction = direction ? 1 : -1;
         count = count || 1;
 
@@ -732,7 +732,7 @@ var Buffer = Module("buffer", {
      * @param {number} count The number of frames to skip through.  A negative
      *     count skips backwards.
      */
-    shiftFrameFocus: function (count) {
+    shiftFrameFocus: function shiftFrameFocus(count) {
         if (!(content.document instanceof HTMLDocument))
             return;
 
@@ -780,7 +780,7 @@ var Buffer = Module("buffer", {
      *
      * @param {Node} elem The element to query.
      */
-    showElementInfo: function (elem) {
+    showElementInfo: function showElementInfo(elem) {
         dactyl.echo(<>Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
     },
 
@@ -791,7 +791,7 @@ var Buffer = Module("buffer", {
      * @param {string} sections A string limiting the displayed sections.
      * @default The value of 'pageinfo'.
      */
-    showPageInfo: function (verbose, sections) {
+    showPageInfo: function showPageInfo(verbose, sections) {
         // Ctrl-g single line output
         if (!verbose) {
             let file = content.location.pathname.split("/").pop() || "[No Name]";
@@ -830,7 +830,7 @@ var Buffer = Module("buffer", {
      * Opens a viewer to inspect the source of the currently selected
      * range.
      */
-    viewSelectionSource: function () {
+    viewSelectionSource: function viewSelectionSource() {
         // copied (and tuned somewhat) from browser.jar -> nsContextMenu.js
         let win = document.commandDispatcher.focusedWindow;
         if (win == window)
@@ -852,7 +852,7 @@ var Buffer = Module("buffer", {
      * @default The current buffer.
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
-    viewSource: function (url, useExternalEditor) {
+    viewSource: function viewSource(url, useExternalEditor) {
         let doc = this.focusedFrame.document;
 
         if (isArray(url)) {
@@ -893,7 +893,7 @@ var Buffer = Module("buffer", {
      */
     viewSourceExternally: Class("viewSourceExternally",
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
-        init: function (doc, callback) {
+        init: function init(doc, callback) {
             this.callback = callable(callback) ? callback :
                 function (file, temp) {
                     editor.editFileExternally({ file: file.path, line: callback },
@@ -924,7 +924,7 @@ var Buffer = Module("buffer", {
             return null;
         },
 
-        onStateChange: function (progress, request, flag, status) {
+        onStateChange: function onStateChange(progress, request, flag, status) {
             if ((flag & this.STATE_STOP) && status == 0) {
                 try {
                     var ok = this.callback(this.file, true);
@@ -944,7 +944,7 @@ var Buffer = Module("buffer", {
      * @param {number} steps The number of zoom levels to jump.
      * @param {boolean} fullZoom Whether to use full zoom or text zoom.
      */
-    zoomIn: function (steps, fullZoom) {
+    zoomIn: function zoomIn(steps, fullZoom) {
         this.bumpZoomLevel(steps, fullZoom);
     },
 
@@ -954,7 +954,7 @@ var Buffer = Module("buffer", {
      * @param {number} steps The number of zoom levels to jump.
      * @param {boolean} fullZoom Whether to use full zoom or text zoom.
      */
-    zoomOut: function (steps, fullZoom) {
+    zoomOut: function zoomOut(steps, fullZoom) {
         this.bumpZoomLevel(-steps, fullZoom);
     },
 
@@ -1037,7 +1037,7 @@ var Buffer = Module("buffer", {
      *
      * @returns {string}
      */
-    currentWord: function (win) {
+    currentWord: function currentWord(win) {
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
@@ -1206,7 +1206,7 @@ var Buffer = Module("buffer", {
 
     openUploadPrompt: function openUploadPrompt(elem) {
         io.CommandFileMode("Upload file: ", {
-            onSubmit: function (path) {
+            onSubmit: function onSubmit(path) {
                 let file = io.File(path);
                 dactyl.assert(file.exists());
 
@@ -1216,7 +1216,7 @@ var Buffer = Module("buffer", {
         }).open(elem.value);
     }
 }, {
-    commands: function () {
+    commands: function initCommands(dactyl, modules, window) {
         commands.add(["frameo[nly]"],
             "Show only the current frame's page",
             function (args) {
@@ -1417,7 +1417,7 @@ var Buffer = Module("buffer", {
                 bang: true
             });
     },
-    completion: function () {
+    completion: function initCompletion(dactyl, modules, window) {
         completion.alternateStyleSheet = function alternateStylesheet(context) {
             context.title = ["Stylesheet", "Location"];
 
@@ -1496,10 +1496,10 @@ var Buffer = Module("buffer", {
             });
         };
     },
-    events: function () {
+    events: function initEvents(dactyl, modules, window) {
         events.listen(config.browser, "scroll", buffer.closure._updateBufferPosition, false);
     },
-    mappings: function () {
+    mappings: function initMappings(dactyl, modules, window) {
         mappings.add([modes.NORMAL],
             ["y", "<yank-location>"], "Yank current location to the clipboard",
             function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
@@ -1774,7 +1774,7 @@ var Buffer = Module("buffer", {
             "Print file information",
             function () { buffer.showPageInfo(true); });
     },
-    options: function () {
+    options: function initOptions(dactyl, modules, window) {
         options.add(["encoding", "enc"],
             "The current buffer's character encoding",
             "string", "UTF-8",

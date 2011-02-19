@@ -828,9 +828,9 @@ Class.prototype = {
      * Initializes new instances of this class. Called automatically
      * when new instances are created.
      */
-    init: function () {},
+    init: function c_init() {},
 
-    withSavedValues: function (names, callback, self) {
+    withSavedValues: function withSavedValues(names, callback, self) {
         let vals = names.map(function (name) this[name], this);
         try {
             return callback.call(self || this);
@@ -840,7 +840,7 @@ Class.prototype = {
         }
     },
 
-    toString: function () {
+    toString: function C_toString() {
         if (this.toStringParams)
             var params = "(" + this.toStringParams.map(function (m) isArray(m)  ? "[" + m + "]" :
                                                                     isString(m) ? m.quote() : String(m))
@@ -857,19 +857,20 @@ Class.prototype = {
      *     before calling *callback*.
      * @returns {nsITimer} The timer which backs this timeout.
      */
-    timeout: function (callback, timeout) {
+    timeout: function timeout(callback, timeout) {
         const self = this;
-        function notify(timer) {
-            if (util.rehashing && !isinstance(Cu.getGlobalForObject(callback), ["BackstagePass"]))
+        function timeout_notify(timer) {
+            if (self.stale ||
+                    util.rehashing && !isinstance(Cu.getGlobalForObject(callback), ["BackstagePass"]))
                 return;
             util.trapErrors(callback, self);
         }
-        return services.Timer(notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
+        return services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
     }
 };
-memoize(Class.prototype, "closure", function () {
+memoize(Class.prototype, "closure", function closure() {
     const self = this;
-    function closure(fn) function () {
+    function closure(fn) function _closure() {
         try {
             return fn.apply(self, arguments);
         }
@@ -919,7 +920,7 @@ function XPCOM(interfaces, superClass) {
  */
 var ErrorBase = Class("ErrorBase", Error, {
     level: 2,
-    init: function (message, level) {
+    init: function EB_init(message, level) {
         level = level || 0;
         update(this, Error(message))
         this.message = message;
@@ -957,7 +958,7 @@ function Module(name, prototype) {
     return module;
 }
 Module.INIT = {
-    init: function (dactyl, modules, window) {
+    init: function Module_INIT_init(dactyl, modules, window) {
         let args = arguments;
 
         let locals = [];
@@ -1008,28 +1009,28 @@ function Struct() {
     return Struct;
 }
 let StructBase = Class("StructBase", Array, {
-    init: function () {
+    init: function struct_init() {
         for (let i = 0; i < arguments.length; i++)
             if (arguments[i] != undefined)
                 this[i] = arguments[i];
     },
 
-    clone: function clone() this.constructor.apply(null, this.slice()),
+    clone: function struct_clone() this.constructor.apply(null, this.slice()),
 
     closure: Class.Property(Object.getOwnPropertyDescriptor(Class.prototype, "closure")),
 
-    get: function (key, val) this[this.members[key]],
-    set: function (key, val) this[this.members[key]] = val,
+    get: function struct_get(key, val) this[this.members[key]],
+    set: function struct_set(key, val) this[this.members[key]] = val,
 
-    toString: function () Class.prototype.toString.apply(this, arguments),
+    toString: function struct_toString() Class.prototype.toString.apply(this, arguments),
 
     // Iterator over our named members
-    __iterator__: function () {
+    __iterator__: function struct__iterator__() {
         let self = this;
         return ([k, self[k]] for (k in keys(self.members)))
     }
 }, {
-    fromArray: function (ary) {
+    fromArray: function fromArray(ary) {
         if (!(ary instanceof this))
             ary.__proto__ = this.prototype;
         return ary;
@@ -1045,7 +1046,7 @@ let StructBase = Class("StructBase", Array, {
      * @param {function} val The function which is to generate
      *     the default value.
      */
-    defaultValue: function (key, val) {
+    defaultValue: function defaultValue(key, val) {
         let i = this.prototype.members[key];
         this.prototype.__defineGetter__(i, function () (this[i] = val.call(this)));
         this.prototype.__defineSetter__(i, function (value)
@@ -1054,7 +1055,7 @@ let StructBase = Class("StructBase", Array, {
 });
 
 var Timer = Class("Timer", {
-    init: function (minInterval, maxInterval, callback, self) {
+    init: function init(minInterval, maxInterval, callback, self) {
         this._timer = services.Timer();
         this.callback = callback;
         this.self = self || this;
@@ -1064,7 +1065,7 @@ var Timer = Class("Timer", {
         this.latest = 0;
     },
 
-    notify: function (timer, force) {
+    notify: function notify(timer, force) {
         try {
             if (!loaded || loaded.util && util.rehashing || typeof util === "undefined" || !force && this.doneAt == 0)
                 return;
@@ -1087,7 +1088,7 @@ var Timer = Class("Timer", {
         }
     },
 
-    tell: function (arg) {
+    tell: function tell(arg) {
         if (arguments.length > 0)
             this.arg = arg;
 
@@ -1107,12 +1108,12 @@ var Timer = Class("Timer", {
         this.doneAt = -1;
     },
 
-    reset: function () {
+    reset: function reset() {
         this._timer.cancel();
         this.doneAt = 0;
     },
 
-    flush: function (force) {
+    flush: function flush(force) {
         if (this.doneAt == -1 || force)
             this.notify(null, true);
     }

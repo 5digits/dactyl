@@ -317,9 +317,12 @@ var Overlay = Module("Overlay", {
                 modules.events.listen(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
                     for (let prop in properties(modules)) {
-                        let desc = Object.getOwnPropertyDescriptor(modules, prop);
-                        if (desc.value instanceof ModuleBase && "destroy" in desc.value)
-                            util.trapErrors(desc.value.destroy, desc.value);
+                        let mod = Object.getOwnPropertyDescriptor(modules, prop).value;
+                        if (mod instanceof ModuleBase || mod && mod.isLocalModule) {
+                            mod.stale = true;
+                            if ("destroy" in mod)
+                                util.trapErrors("destroy", mod);
+                        }
                     }
                 }, false);
             }

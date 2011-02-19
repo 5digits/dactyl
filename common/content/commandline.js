@@ -88,9 +88,9 @@ var CommandWidgets = Class("CommandWidgets", {
 
         this.addElement({
             name: "command",
-            test: function (stack, prev) stack.pop && !isinstance(prev.main, modes.COMMAND_LINE),
+            test: function test(stack, prev) stack.pop && !isinstance(prev.main, modes.COMMAND_LINE),
             id: "commandline-command",
-            get: function (elem) {
+            get: function command_get(elem) {
                 // The long path is because of complications with the
                 // completion preview.
                 try {
@@ -102,7 +102,7 @@ var CommandWidgets = Class("CommandWidgets", {
             },
             getElement: CommandWidgets.getEditor,
             getGroup: function (value) this.activeGroup.commandline,
-            onChange: function (elem, value) {
+            onChange: function command_onChange(elem, value) {
                 if (elem.inputField != dactyl.focusedElement)
                     try {
                         elem.selectionStart = elem.value.length;
@@ -113,7 +113,7 @@ var CommandWidgets = Class("CommandWidgets", {
                 if (!elem.collapsed)
                     dactyl.focus(elem);
             },
-            onVisibility: function (elem, visible) {
+            onVisibility: function command_onVisibility(elem, visible) {
                 if (visible)
                     dactyl.focus(elem);
             }
@@ -431,8 +431,8 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
 
     onSubmit: function onSubmit(command) {
         contexts.withContext({ file: "[Command Line]", line: 1 },
-                             function () {
-            io.withSavedValues(["readHeredoc"], function () {
+                             function _onSubmit() {
+            io.withSavedValues(["readHeredoc"], function _onSubmit() {
                 this.readHeredoc = commandline.readHeredoc;
                 commands.repeat = command;
                 dactyl.execute(command);
