@@ -846,6 +846,8 @@ var Completion = Module("completion", {
     get setFunctionCompleter() JavaScript.setCompleter, // Backward compatibility
 
     Local: function (dactyl, modules, window) ({
+        urlCompleters: {},
+
         get options() modules.options,
 
         // FIXME
@@ -922,8 +924,6 @@ var Completion = Module("completion", {
             context.forkapply(c, 0, this, completer.completer, completer.args);
         }, this);
     },
-
-    urlCompleters: {},
 
     addUrlCompleter: function addUrlCompleter(opt) {
         let completer = Completion.UrlCompleter.apply(null, Array.slice(arguments));

@@ -264,6 +264,9 @@ var Storage = Module("Storage", {
         return this._privateMode = Boolean(val);
     }
 }, {
+    Replacer: {
+        skipXpcom: function skipXpcom(key, val) val instanceof Ci.nsISupports ? null : val
+    }
 }, {
     init: function init(dactyl, modules) {
         init.superapply(this, arguments);

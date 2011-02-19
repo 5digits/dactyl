@@ -12,9 +12,8 @@
  */
 var Marks = Module("marks", {
     init: function init() {
-        function replacer(key, val) val instanceof Ci.nsISupports ? null : val;
-        this._localMarks = storage.newMap("local-marks", { privateData: true, replacer: replacer, store: true });
-        this._urlMarks = storage.newMap("url-marks", { privateData: true, replacer: replacer, store: true });
+        this._localMarks = storage.newMap("local-marks", { privateData: true, replacer: Storage.Replacer.skipXpcom, store: true });
+        this._urlMarks = storage.newMap("url-marks", { privateData: true, replacer: Storage.Replacer.skipXpcom, store: true });
 
         try {
             if (isArray(Iterator(this._localMarks).next()[1]))

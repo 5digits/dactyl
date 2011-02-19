@@ -661,7 +661,7 @@ var Bookmarks = Module("bookmarks", {
                 ctxt.compare = CompletionContext.Sort.unsorted;
                 ctxt.filterFunc = null;
 
-                let words = ctxt.filter.split(/\s+/g);
+                let words = ctxt.filter.toLowerCase().split(/\s+/g);
                 ctxt.completions = ctxt.completions.filter(function (i) words.every(function (w) i.toLowerCase().indexOf(w) >= 0));
 
                 ctxt.hasItems = ctxt.completions.length;

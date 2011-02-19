@@ -294,7 +294,10 @@ var Config = Module("config", ConfigBase, {
             context.anchored = false;
             context.compare = CompletionContext.Sort.unsorted;
             context.filterFunc = null;
-            context.hasItems = context.completions.length > 0; // XXX
+
+            let words = context.filter.toLowerCase().split(/\s+/g);
+            context.completions = context.completions.filter(function ({ url, title })
+                words.every(function (w) (url + " " + title).toLowerCase().indexOf(w) >= 0))
             context.incomplete = true;
 
             context.format = modules.bookmarks.format;
