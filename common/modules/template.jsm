@@ -465,11 +465,13 @@ var Template = Module("Template", {
         // <e4x>
         return <table>
             { format.headings ?
-                <tr highlight="Title" align="left">
-                {
-                    this.map(format.headings, function (h) <th>{h}</th>)
-                }
-                </tr> : ""
+                <thead highlight="UsageHead">
+                    <tr highlight="Title" align="left">
+                    {
+                        this.map(format.headings, function (h) <th>{h}</th>)
+                    }
+                    </tr>
+                </thead> : ""
             }
             { format.columns ?
                 <colgroup>
@@ -478,9 +480,9 @@ var Template = Module("Template", {
                 }
                 </colgroup> : ""
             }
-            {
+            <tbody highlight="UsageBody">{
                 this.map(iter, function (item)
-                <tr>
+                <tr highlight="UsageItem">
                     <td style="padding-right: 2em;">
                         <span highlight="Usage Link">{
                             let (name = item.name || item.names[0], frame = item.definedAt)
@@ -492,8 +494,8 @@ var Template = Module("Template", {
                     { item.columns ? template.map(item.columns, function (c) <td>{c}</td>) : "" }
                     <td>{desc(item)}</td>
                 </tr>)
-            }
-            </table>;
+            }</tbody>
+        </table>;
         // </e4x>
     }
 });

@@ -453,6 +453,12 @@ var ConfigBase = Class("ConfigBase", {
         REPL-E              white-space: pre-wrap;
         REPL-P              white-space: pre-wrap; margin-bottom: 1em;
 
+        Usage               width: 100%;
+        UsageBody
+        UsageHead
+        UsageItem
+        UsageItem:nth-of-type(2n)    background: rgba(0, 0, 0, .04);
+
         Indicator   color: blue; width: 1.5em; text-align: center;
         Filter      font-weight: bold;
 
@@ -499,7 +505,7 @@ var ConfigBase = Class("ConfigBase", {
             text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
         }
 
-        Title       color: magenta; background: white; font-weight: bold;
+        Title       color: magenta; font-weight: bold;
         URL         text-decoration: none; color: green; background: inherit;
         URL:hover   text-decoration: underline; cursor: pointer;
         URLExtra    color: gray;
