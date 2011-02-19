@@ -53,8 +53,7 @@ var Modes = Module("modes", {
         this.addMode("NORMAL", {
             char: "n",
             description: "Active when nothing is focused",
-            bases: [this.COMMAND],
-            display: function () null
+            bases: [this.COMMAND]
         });
         this.addMode("VISUAL", {
             char: "v",
@@ -120,7 +119,7 @@ var Modes = Module("modes", {
         });
         this.addMode("AUTOCOMPLETE", {
             description: "Active when an input autocomplete pop-up is active",
-            display: function () "INSERT (autocomplete)",
+            display: function () "AUTOCOMPLETE (insert)",
             bases: [this.INSERT]
         });
 
@@ -143,9 +142,10 @@ var Modes = Module("modes", {
             bases: [this.BASE],
             hidden: true,
             passthrough: true,
-            display: function () modes.getStack(1).main == modes.PASS_THROUGH
-                ? (modes.getStack(2).main.display() || modes.getStack(2).main.name) + " (next)"
-                : "PASS THROUGH (next)"
+            display: function ()
+                (modes.getStack(1).main == modes.PASS_THROUGH
+                    ? (modes.getStack(2).main.display() || modes.getStack(2).main.name)
+                    : "PASS THROUGH") + " (next)"
         }, {
             // Fix me.
             preExecute: function (map) { if (modes.main == modes.QUOTE && map.name !== "<C-v>") modes.pop(); },
@@ -268,7 +268,7 @@ var Modes = Module("modes", {
     // show the current mode string in the command line
     show: function show() {
         let msg = null;
-        if (options["showmode"])
+        if (options.get("showmode").getKey(this.main.name, true))
             msg = this._getModeMessage();
         if (loaded.commandline)
             commandline.widgets.mode = msg || null;
@@ -509,7 +509,7 @@ var Modes = Module("modes", {
         }, desc));
     }
 }, {
-    mappings: function () {
+    mappings: function initMappings() {
         mappings.add([modes.BASE, modes.NORMAL],
             ["<Esc>", "<C-[>"],
             "Return to NORMAL mode",
@@ -528,7 +528,13 @@ var Modes = Module("modes", {
             "Close the current popup",
             function () { events.feedkeys("<Esc>"); });
     },
-    prefs: function () {
+    options: function initOptions() {
+        options.add(["showmode", "smd"],
+            "Show the current mode in the command line when it matches this expression",
+            "regexplist", "!^normal$",
+            { regexpFlags: "i" });
+    },
+    prefs: function initPrefs() {
         prefs.watch("accessibility.browsewithcaret", function () modes.onCaretChange.apply(modes, arguments));
     }
 });

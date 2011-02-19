@@ -131,6 +131,7 @@
     * IMPORTANT option changes:
       - 'hinttags' and 'extendedhinttags' now treat their values as
         CSS selectors by default. [b6]
+      - 'showmode' is now a regexplist. [b6]
       - Option value quoting has changed. List options will
         no longer be split at quoted commas and the option name, operators, and
         = sign may no longer be quoted. This will break certain

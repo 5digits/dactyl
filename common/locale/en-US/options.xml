@@ -1318,10 +1318,10 @@
     <tags>'nosmd' 'noshowmode'</tags>
     <tags>'smd' 'showmode'</tags>
     <spec>'showmode' 'smd'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>regexplist</type>
+    <default>!^normal$</default>
     <description>
-        <p>Show the current mode in the command line.</p>
+        <p>Show the current mode in the command line if it matches this expression.</p>
     </description>
 </item>
 

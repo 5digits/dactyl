@@ -1503,10 +1503,6 @@ var CommandLine = Module("commandline", {
             "Number of messages to store in the :messages history",
             "number", 100,
             { validator: function (value) value >= 0 });
-
-        options.add(["showmode", "smd"],
-            "Show the current mode in the command line",
-            "boolean", true);
     },
     sanitizer: function init_sanitizer() {
         sanitizer.addItem("commandline", {
