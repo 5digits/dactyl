@@ -844,19 +844,19 @@ var Editor = Module("editor", {
                                            [[modes.AUTOCOMPLETE]].concat(Array.slice(arguments)))
 
         bind(["<Esc>"], "Return to INSERT mode",
-             function () Events.PASS);
+             function () Events.PASS_THROUGH);
 
         bind(["<C-[>"], "Return to INSERT mode",
              function () { events.feedkeys("<Esc>", { skipmap: true }); });
 
         bind(["<Up>"], "Select the previous autocomplete result",
-             function () Events.PASS);
+             function () Events.PASS_THROUGH);
 
         bind(["<C-p>"], "Select the previous autocomplete result",
              function () { events.feedkeys("<Up>", { skipmap: true }); });
 
         bind(["<Down>"], "Select the next autocomplete result",
-             function () Events.PASS);
+             function () Events.PASS_THROUGH);
 
         bind(["<C-n>"], "Select the next autocomplete result",
              function () { events.feedkeys("<Down>", { skipmap: true }); });
