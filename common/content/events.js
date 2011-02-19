@@ -9,12 +9,18 @@
 /** @scope modules */
 
 var ProcessorStack = Class("ProcessorStack", {
-    init: function (mode, hives, keyModes) {
+    init: function (mode, hives, builtin) {
         this.main = mode.main;
         this._actions = [];
         this.actions = [];
         this.buffer = "";
         this.events = [];
+
+        let main = { __proto__: mode.main, params: mode.params };
+        let keyModes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
+
+        if (builtin)
+            hives = hives.filter(function (h) h.name === "builtin");
 
         this.processors = keyModes.map(function (m) hives.map(function (h) KeyProcessor(m, h)))
                                   .flatten().array;
@@ -31,6 +37,9 @@ var ProcessorStack = Class("ProcessorStack", {
                     return params.onKeyPress(events) === false ? Events.KILL : Events.PASS;
                 };
             }
+
+        if (!builtin && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
+            this.processors.unshift(KeyProcessor(modes.BASE, options.get("passkeys").hive));
     },
 
     notify: function () {
@@ -1207,12 +1216,7 @@ var Events = Module("events", {
                     if (config.ignoreKeys[key] & mode.main)
                         return null;
 
-                    let hives = mappings.hives.slice(event.noremap ? -1 : 0);
-
-                    let main = { __proto__: mode.main, params: mode.params };
-                    let keyModes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
-
-                    this.processor = ProcessorStack(mode, hives, keyModes);
+                    this.processor = ProcessorStack(mode, mappings.hives.array, event.noremap);
                     this.processor.allEvents = this.keyEvents;
                 }
 
@@ -1392,7 +1396,7 @@ var Events = Module("events", {
     },
 
     shouldPass: function shouldPass(event)
-        (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
+        !event.noremap && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)) &&
         options.get("passkeys").has(events.toString(event))
 }, {
     ABORT: {},
@@ -1460,6 +1464,14 @@ var Events = Module("events", {
         };
     },
     mappings: function () {
+
+        mappings.add(modes.MAIN,
+            ["<A-b>"], "Process the next key as a builtin mapping",
+            function () {
+                events.processor = ProcessorStack(modes.getStack(0), mappings.hives.array, true);
+                events.processor.allEvents = events.keyEvents;
+            });
+
         mappings.add(modes.MAIN,
             ["<C-z>", "<pass-all-keys>"], "Temporarily ignore all " + config.appName + " key bindings",
             function () { modes.push(modes.PASS_THROUGH); });
@@ -1518,18 +1530,35 @@ var Events = Module("events", {
         options.add(["passkeys", "pk"],
             "Pass certain keys through directly for the given URLs",
             "sitemap", "", {
-                has: function (key) {
-                    let uri = buffer.documentURI;
-                    for (let filter in values(this.value))
-                        if (filter(uri) && filter.result.some(function (k) k === key))
-                            return true;
-                    return false;
+                flush: function flush() {
+                    memoize(this, "hive", function hive()
+                        let (values = this.value.filter(function (f) f(buffer.documentURI))) {
+                            get: function get(mode, key) this.stack.mappings[key],
+
+                            getCandidates: function getCandidates(mode, key) this.stack.candidates[key],
+
+                            pass: set(array.flatten(values.map(function (v) v.keys))),
+
+                            stack: MapHive.Stack(values.map(function (v) v.map))
+                        });
                 },
+
+                has: function (key) set.has(this.hive.pass, key),
+
+                get hive() (this.flush(), this.hive),
+
+                keepQuotes: true,
+
                 setter: function (values) {
                     values.forEach(function (filter) {
-                        filter.result = events.fromString(filter.result).map(events.closure.toString);
-                        filter.result.toString = bind(filter.result.join, filter.result);
+                        let vals = Option.splitList(filter.result);
+                        filter.keys = events.fromString(vals[0]).map(events.closure.toString);
+                        filter.map = {
+                            execute: function () Events.PASS_THROUGH,
+                            keys: vals.slice(1).map(events.closure.canonicalKeys)
+                        };
                     });
+                    this.flush();
                     return values;
                 }
             });

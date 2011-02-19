@@ -1122,9 +1122,12 @@
             For any page with a URL matching a given regexp, all key
             events for keys listed in that regexp's value are passed
             through directly to &dactyl.host;, and are not processed
-            by &dactyl.appName; in any way.
+            by &dactyl.appName; in any way. Key names are separated
+            by commas, where the first key name is treated as a list
+            of individual keys and each subsequent key is treated as
+            a key chain.
         </p>
-        <example><set opt="passkeys" op="+="><str delim="'">https://mail\.google\.com/</str>:<str delim="">jk<k name="Return"/></str></set></example>
+        <example><set opt="passkeys" op="+="><str delim="">mail.google.com</str>:<str delim="">jk&lt;Return></str>,<str delim="">gi</str></set></example>
     </description>
 </item>
 

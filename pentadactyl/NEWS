@@ -75,6 +75,7 @@
       - Added site-specific mapping groups and related command
         changes. [b6]
       - Added 'timeout' and 'timeoutlen' options. [b6]
+      - Added <A-b> to execute a builtin mapping. [b6]
       - Added <A-m>l and <A-m>s to aid in the construction of
         macros. [b6]
       - Removed the implicit page load delays during macro playback. [b6]

@@ -148,6 +148,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             onLocationChange.superapply(this, arguments);
 
             contexts.flush();
+            options.get("passkeys").flush();
 
             statusline.updateUrl();
             statusline.progress = "";

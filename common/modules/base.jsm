@@ -525,12 +525,17 @@ function memoize(obj, key, getter) {
         return obj;
     }
 
-    obj.__defineGetter__(key, function g_replaceProperty() (
-        Class.replaceProperty(this.instance || this, key, null),
-        Class.replaceProperty(this.instance || this, key, getter.call(this, key))));
+    Object.defineProperty(obj, key, {
+        configurable: true,
+        enumerable: true,
 
-    obj.__defineSetter__(key, function s_replaceProperty(val)
-        Class.replaceProperty(this.instance || this, key, val));
+        get: function g_replaceProperty() (
+            Class.replaceProperty(this.instance || this, key, null),
+            Class.replaceProperty(this.instance || this, key, getter.call(this, key))),
+
+        set: function s_replaceProperty(val)
+            Class.replaceProperty(this.instance || this, key, val)
+    });
 }
 
 /**
