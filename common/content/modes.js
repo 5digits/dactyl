@@ -97,6 +97,7 @@ var Modes = Module("modes", {
             char: "t",
             description: "Vim-like editing of input elements",
             bases: [this.COMMAND],
+            input: true,
             ownsFocus: true,
             passUnknown: false
         });
@@ -109,12 +110,12 @@ var Modes = Module("modes", {
             char: "I",
             description: "The base mode for input modes, including Insert and Command Line",
             bases: [this.MAIN],
-            input: true
+            insert: true
         });
         this.addMode("INSERT", {
             char: "i",
             description: "Active when an input element is focused",
-            input: true,
+            insert: true,
             ownsFocus: true
         });
         this.addMode("AUTOCOMPLETE", {
@@ -125,7 +126,7 @@ var Modes = Module("modes", {
 
         this.addMode("EMBED", {
             description: "Active when an <embed> or <object> element is focused",
-            input: true,
+            insert: true,
             ownsFocus: true,
             passthrough: true
         });
@@ -134,7 +135,7 @@ var Modes = Module("modes", {
             description: "All keys but <C-v> are ignored by " + config.appName,
             bases: [this.BASE],
             hidden: true,
-            input: true,
+            insert: true,
             passthrough: true
         });
         this.addMode("QUOTE", {
@@ -445,7 +446,7 @@ var Modes = Module("modes", {
 
         get bases() this.input ? [modes.INPUT] : [modes.MAIN],
 
-        get count() !this.input,
+        get count() !this.insert,
 
         get description() this._display,
 
@@ -457,7 +458,9 @@ var Modes = Module("modes", {
 
         hidden: false,
 
-        input: Class.memoize(function input() this.bases.length && this.bases.some(function (b) b.input)),
+        input: Class.memoize(function input() this.insert || this.bases.length && this.bases.some(function (b) b.input)),
+
+        insert: Class.memoize(function insert() this.bases.length && this.bases.some(function (b) b.insert)),
 
         ownsFocus: Class.memoize(function ownsFocus() this.bases.length && this.bases.some(function (b) b.ownsFocus)),
 

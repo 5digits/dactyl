@@ -771,10 +771,7 @@ var Editor = Module("editor", {
             ["p"], "Paste clipboard contents",
             function ({ count }) {
                 dactyl.assert(!editor.isCaret);
-                if (!count)
-                    count = 1;
-                while (count--)
-                    editor.executeCommand("cmd_paste", count);
+                editor.executeCommand("cmd_paste", count || 1);
                 modes.pop(modes.TEXT_EDIT);
             },
             { count: true });

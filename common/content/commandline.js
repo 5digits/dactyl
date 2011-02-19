@@ -1383,25 +1383,22 @@ var CommandLine = Module("commandline", {
         modes.addMode("COMMAND_LINE", {
             char: "c",
             description: "Active when the command line is focused",
-            input: true,
+            insert: true,
             ownsFocus: true,
             get mappingSelf() commandline.commandSession
         });
         // this._extended modes, can include multiple modes, and even main modes
         modes.addMode("EX", {
             description: "Ex command mode, active when the command line is open for Ex commands",
-            bases: [modes.COMMAND_LINE],
-            input: true
+            bases: [modes.COMMAND_LINE]
         });
         modes.addMode("PROMPT", {
             description: "Active when a prompt is open in the command line",
-            bases: [modes.COMMAND_LINE],
-            input: true
+            bases: [modes.COMMAND_LINE]
         });
 
         modes.addMode("INPUT_MULTILINE", {
-            bases: [modes.INSERT],
-            input: true
+            bases: [modes.INSERT]
         });
     },
     mappings: function init_mappings() {

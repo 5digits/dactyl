@@ -231,7 +231,7 @@ var KeyProcessor = Class("KeyProcessor", {
         }
 
         if (!this.waiting)
-            return this.main.input ? Events.PASS : Events.ABORT;
+            return this.main.insert ? Events.PASS : Events.ABORT;
 
         return Events.WAIT;
     }
