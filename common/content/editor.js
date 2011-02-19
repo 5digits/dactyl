@@ -99,7 +99,7 @@ var Editor = Module("editor", {
 
     // cmd = y, d, c
     // motion = b, 0, gg, G, etc.
-    executeCommandWithMotion: function (cmd, motion, count) {
+    selectMotion: function selectMotion(cmd, motion, count) {
         // XXX: better as a precondition
         if (count == null)
             count = 1;
@@ -156,25 +156,6 @@ var Editor = Module("editor", {
         default:
             dactyl.beep();
             return;
-        }
-
-        switch (cmd) {
-        case "d":
-            this.executeCommand("cmd_delete", 1);
-            modes.pop(modes.TEXT_EDIT);
-            break;
-        case "c":
-            this.executeCommand("cmd_delete", 1);
-            modes.pop(modes.TEXT_EDIT);
-            modes.push(modes.INSERT);
-            break;
-        case "y":
-            this.executeCommand("cmd_copy", 1);
-            modes.pop(modes.TEXT_EDIT);
-            break;
-
-        default:
-            dactyl.beep();
         }
     },
 
@@ -457,7 +438,7 @@ var Editor = Module("editor", {
     mappings: function () {
 
         // add mappings for commands like h,j,k,l,etc. in CARET, VISUAL and TEXT_EDIT mode
-        function addMovementMap(keys, hasCount, caretModeMethod, caretModeArg, textEditCommand, visualTextEditCommand) {
+        function addMovementMap(keys, description, hasCount, caretModeMethod, caretModeArg, textEditCommand, visualTextEditCommand) {
             let extraInfo = {};
             if (hasCount)
                 extraInfo.count = true;
@@ -485,7 +466,7 @@ var Editor = Module("editor", {
                 }
             }
 
-            mappings.add([modes.CARET], keys, "",
+            mappings.add([modes.CARET], keys, description,
                 function ({ count }) {
                     if (!count)
                        count = 1;
@@ -495,7 +476,7 @@ var Editor = Module("editor", {
                 },
                 extraInfo);
 
-            mappings.add([modes.VISUAL], keys, "",
+            mappings.add([modes.VISUAL], keys, description,
                 function ({ count }) {
                     if (!count)
                         count = 1;
@@ -515,7 +496,7 @@ var Editor = Module("editor", {
                 },
                 extraInfo);
 
-            mappings.add([modes.TEXT_EDIT], keys, "",
+            mappings.add([modes.TEXT_EDIT], keys, description,
                 function ({ count }) {
                     if (!count)
                         count = 1;
@@ -533,15 +514,6 @@ var Editor = Module("editor", {
                         editor.executeCommand(cmd, 1));
                     modes.push(modes.INSERT);
                 });
-        }
-
-        function addMotionMap(key) {
-            mappings.add([modes.TEXT_EDIT], [key],
-                "Motion command",
-                function ({ count,  motion }) {
-                    editor.executeCommandWithMotion(key, motion, Math.max(count, 1));
-                },
-                { count: true, motion: true });
         }
 
         function selectPreviousLine() {
@@ -576,24 +548,41 @@ var Editor = Module("editor", {
             move(true, /\S/)(editor_);
         }
 
-        //             KEYS                          COUNT  CARET                   TEXT_EDIT            VISUAL_TEXT_EDIT
-        addMovementMap(["k", "<Up>"],                true,  "lineMove", false,      "cmd_linePrevious", selectPreviousLine);
-        addMovementMap(["j", "<Down>", "<Return>"],  true,  "lineMove", true,       "cmd_lineNext",     selectNextLine);
-        addMovementMap(["h", "<Left>", "<BS>"],      true,  "characterMove", false, "cmd_charPrevious", "cmd_selectCharPrevious");
-        addMovementMap(["l", "<Right>", "<Space>"],  true,  "characterMove", true,  "cmd_charNext",     "cmd_selectCharNext");
-        addMovementMap(["b", "<C-Left>"],            true,  "wordMove", false,      "cmd_wordPrevious", "cmd_selectWordPrevious");
-        addMovementMap(["w", "<C-Right>"],           true,  "wordMove", true,       "cmd_wordNext",     "cmd_selectWordNext");
-        addMovementMap(["B"],                        true,  "wordMove", false,      move(false, /\S/),  select(false, /\S/));
-        addMovementMap(["W"],                        true,  "wordMove", true,       move(true,  /\S/),  select(true,  /\S/));
-        addMovementMap(["e"],                        true,  "wordMove", false,      move(true,  /\W/),  select(true,  /\W/));
-        addMovementMap(["E"],                        true,  "wordMove", true,       move(true,  /\s/),  select(true,  /\s/));
-        addMovementMap(["<C-f>", "<PageDown>"],      true,  "pageMove", true,       "cmd_movePageDown", "cmd_selectNextPage");
-        addMovementMap(["<C-b>", "<PageUp>"],        true,  "pageMove", false,      "cmd_movePageUp",   "cmd_selectPreviousPage");
-        addMovementMap(["gg", "<C-Home>"],           false, "completeMove", false,  "cmd_moveTop",      "cmd_selectTop");
-        addMovementMap(["G", "<C-End>"],             false, "completeMove", true,   "cmd_moveBottom",   "cmd_selectBottom");
-        addMovementMap(["0", "<Home>"],              false, "intraLineMove", false, "cmd_beginLine",    "cmd_selectBeginLine");
-        addMovementMap(["^"],                        false, "intraLineMove", false, beginLine,          "cmd_selectBeginLine");
-        addMovementMap(["$", "<End>"],               false, "intraLineMove", true,  "cmd_endLine" ,     "cmd_selectEndLine");
+        //             COUNT  CARET                   TEXT_EDIT            VISUAL_TEXT_EDIT
+        addMovementMap(["k", "<Up>"],                 "Move up one line",
+                       true,  "lineMove", false,      "cmd_linePrevious", selectPreviousLine);
+        addMovementMap(["j", "<Down>", "<Return>"],   "Move down one line",
+                       true,  "lineMove", true,       "cmd_lineNext",     selectNextLine);
+        addMovementMap(["h", "<Left>", "<BS>"],       "Move left one character",
+                       true,  "characterMove", false, "cmd_charPrevious", "cmd_selectCharPrevious");
+        addMovementMap(["l", "<Right>", "<Space>"],   "Move right one character",
+                       true,  "characterMove", true,  "cmd_charNext",     "cmd_selectCharNext");
+        addMovementMap(["b", "<C-Left>"],             "Move left one word",
+                       true,  "wordMove", false,      "cmd_wordPrevious", "cmd_selectWordPrevious");
+        addMovementMap(["w", "<C-Right>"],            "Move right one word",
+                       true,  "wordMove", true,       "cmd_wordNext",     "cmd_selectWordNext");
+        addMovementMap(["B"],                         "Move left to the previous white space",
+                       true,  "wordMove", false,      move(false, /\S/),  select(false, /\S/));
+        addMovementMap(["W"],                         "Move right to just beyond the next white space",
+                       true,  "wordMove", true,       move(true,  /\S/),  select(true,  /\S/));
+        addMovementMap(["e"],                         "Move to the end of the current word",
+                       true,  "wordMove", false,      move(true,  /\W/),  select(true,  /\W/));
+        addMovementMap(["E"],                         "Move right to the next white space",
+                       true,  "wordMove", true,       move(true,  /\s/),  select(true,  /\s/));
+        addMovementMap(["<C-f>", "<PageDown>"],       "Move down one page",
+                       true,  "pageMove", true,       "cmd_movePageDown", "cmd_selectNextPage");
+        addMovementMap(["<C-b>", "<PageUp>"],         "Move up one page",
+                       true,  "pageMove", false,      "cmd_movePageUp",   "cmd_selectPreviousPage");
+        addMovementMap(["gg", "<C-Home>"],            "Move to the start of text",
+                       false, "completeMove", false,  "cmd_moveTop",      "cmd_selectTop");
+        addMovementMap(["G", "<C-End>"],              "Move to the end of text",
+                       false, "completeMove", true,   "cmd_moveBottom",   "cmd_selectBottom");
+        addMovementMap(["0", "<Home>"],               "Move to the beginning of the line",
+                       false, "intraLineMove", false, "cmd_beginLine",    "cmd_selectBeginLine");
+        addMovementMap(["^"],                         "Move to the first non-whitespace character of the line",
+                       false, "intraLineMove", false, beginLine,          "cmd_selectBeginLine");
+        addMovementMap(["$", "<End>"],                "Move to the end of the current line",
+                       false, "intraLineMove", true,  "cmd_endLine" ,     "cmd_selectEndLine");
 
         addBeginInsertModeMap(["i", "<Insert>"], []);
         addBeginInsertModeMap(["a"],             ["cmd_charNext"]);
@@ -603,11 +592,27 @@ var Editor = Module("editor", {
         addBeginInsertModeMap(["S"],             ["cmd_deleteToEndOfLine", "cmd_deleteToBeginningOfLine"]);
         addBeginInsertModeMap(["C"],             ["cmd_deleteToEndOfLine"]);
 
-        addMotionMap("d"); // delete
-        addMotionMap("c"); // change
-        addMotionMap("y"); // yank
+        function addMotionMap(key, desc, cmd, mode) {
+            mappings.add([modes.TEXT_EDIT], [key],
+                desc,
+                function ({ count,  motion }) {
+                    editor.selectMotion(key, motion, Math.max(count, 1));
+                    if (callable(cmd))
+                        cmd.call(events, Editor.getEditor(null));
+                    else {
+                        editor.executeCommand(cmd, 1);
+                        modes.pop(modes.TEXT_EDIT);
+                    }
+                    if (mode)
+                        modes.push(mode);
+                },
+                { count: true, motion: true });
+        }
 
-        // insert mode mappings
+        addMotionMap("d", "Delete motion", "cmd_delete");
+        addMotionMap("c", "Change motion", "cmd_delete", modes.INSERT);
+        addMotionMap("y", "Yank motion",   "cmd_copy");
+
         mappings.add([modes.INPUT],
             ["<C-w>"], "Delete previous word",
             function () { editor.executeCommand("cmd_deleteWordBackward", 1); });
@@ -615,8 +620,9 @@ var Editor = Module("editor", {
         mappings.add([modes.INPUT],
             ["<C-u>"], "Delete until beginning of current line",
             function () {
-                // broken in FF3, deletes the whole line:
+                // Deletes the whole line. What the hell.
                 // editor.executeCommand("cmd_deleteToBeginningOfLine", 1);
+
                 editor.executeCommand("cmd_selectBeginLine", 1);
                 if (Editor.getController().isCommandEnabled("cmd_delete"))
                     editor.executeCommand("cmd_delete", 1);
@@ -641,14 +647,6 @@ var Editor = Module("editor", {
         mappings.add([modes.INPUT],
             ["<C-d>"], "Delete character to the right",
             function () { editor.executeCommand("cmd_deleteCharForward", 1); });
-
-        /*mappings.add([modes.INPUT],
-            ["<C-Home>"], "Move cursor to beginning of text field",
-            function () { editor.executeCommand("cmd_moveTop", 1); });
-
-        mappings.add([modes.INPUT],
-            ["<C-End>"], "Move cursor to end of text field",
-            function () { editor.executeCommand("cmd_moveBottom", 1); });*/
 
         mappings.add([modes.INPUT],
             ["<S-Insert>"], "Insert clipboard/selection",
