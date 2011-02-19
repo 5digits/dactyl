@@ -45,7 +45,7 @@ let ValueError = Class("ValueError", ErrorBase);
  * @private
  */
 var Option = Class("Option", {
-    init: function (names, description, type, defaultValue, extraInfo) {
+    init: function init(names, description, type, defaultValue, extraInfo) {
         this.name = names[0];
         this.names = names;
         this.realNames = names;
@@ -92,7 +92,7 @@ var Option = Class("Option", {
 
     get helpTag() "'" + this.name + "'",
 
-    initValue: function () {
+    initValue: function initValue() {
         util.trapErrors(function () this.value = this.value, this);
     },
 
@@ -109,7 +109,7 @@ var Option = Class("Option", {
      * @param {value} value The option value.
      * @returns {value|string[]}
      */
-    parse: function (value) Option.dequote(value),
+    parse: function parse(value) Option.dequote(value),
 
     /**
      * Returns *values* packed in the appropriate format for the option type.
@@ -117,7 +117,7 @@ var Option = Class("Option", {
      * @param {value|string[]} values The option value.
      * @returns {value}
      */
-    stringify: function (vals) Commands.quote(vals),
+    stringify: function stringify(vals) Commands.quote(vals),
 
     /**
      * Returns the option's value as an array of parsed values if the option
@@ -127,7 +127,7 @@ var Option = Class("Option", {
      *     {@link Option#scope}).
      * @returns {value|string[]}
      */
-    get: function (scope) {
+    get: function get(scope) {
         if (scope) {
             if ((scope & this.scope) == 0) // option doesn't exist in this scope
                 return null;
@@ -157,13 +157,13 @@ var Option = Class("Option", {
      * @param {number} scope The scope to apply these values to (see
      *     {@link Option#scope}).
      */
-    set: function (newValues, scope, skipGlobal) {
+    set: function set(newValues, scope, skipGlobal) {
         scope = scope || this.scope;
         if ((scope & this.scope) == 0) // option doesn't exist in this scope
             return;
 
         if (this.setter)
-            newValues = this.modules.dactyl.trapErrors(this.setter, this, newValues);
+            newValues = this.setter(newValues);
         if (newValues === undefined)
             return;
 
@@ -198,7 +198,7 @@ var Option = Class("Option", {
 
     get stringDefaultValue() this.stringify(this.defaultValue),
 
-    getKey: function (key) undefined,
+    getKey: function getKey(key) undefined,
 
     /**
      * Returns whether the option value contains one or more of the specified
@@ -206,7 +206,7 @@ var Option = Class("Option", {
      *
      * @returns {boolean}
      */
-    has: function () Array.some(arguments, function (val) this.value.indexOf(val) >= 0, this),
+    has: function has() Array.some(arguments, function (val) this.value.indexOf(val) >= 0, this),
 
     /**
      * Returns whether this option is identified by *name*.
@@ -214,21 +214,21 @@ var Option = Class("Option", {
      * @param {string} name
      * @returns {boolean}
      */
-    hasName: function (name) this.names.indexOf(name) >= 0,
+    hasName: function hasName(name) this.names.indexOf(name) >= 0,
 
     /**
      * Returns whether the specified *values* are valid for this option.
      * @see Option#validator
      */
-    isValidValue: function (values) this.validator(values),
+    isValidValue: function isValidValue(values) this.validator(values),
 
-    invalidArgument: function (arg, op) "E474: Invalid argument: " +
+    invalidArgument: function invalidArgument(arg, op) "E474: Invalid argument: " +
         this.name + (op || "").replace(/=?$/, "=") + arg,
 
     /**
      * Resets the option to its default value.
      */
-    reset: function () {
+    reset: function reset() {
         this.value = this.defaultValue;
     },
 
@@ -241,7 +241,7 @@ var Option = Class("Option", {
      *     {@link #scope}).
      * @param {boolean} invert Whether this is an invert boolean operation.
      */
-    op: function (operator, values, scope, invert, str) {
+    op: function op(operator, values, scope, invert, str) {
 
         try {
             var newValues = this._op(operator, values, scope, invert);
@@ -250,14 +250,14 @@ var Option = Class("Option", {
 
             if (!this.isValidValue(newValues))
                 return this.invalidArgument(str || this.stringify(values), operator);
+
+            this.set(newValues, scope);
         }
         catch (e) {
             if (!(e instanceof ValueError))
                 util.reportError(e);
             return this.invalidArgument(str || this.stringify(values), operator) + ": " + e.message;
         }
-
-        this.set(newValues, scope);
         return null;
     },
 
@@ -300,7 +300,7 @@ var Option = Class("Option", {
      * @property {function(CompletionContext, Args)} This option's completer.
      * @see CompletionContext
      */
-    completer: function (context) {
+    completer: function completer(context) {
         if (this.values)
             context.completions = this.values;
     },
@@ -359,13 +359,13 @@ var Option = Class("Option", {
      */
     setter: null,
 
-    testValues: function (values, validator) validator(values),
+    testValues: function testValues(values, validator) validator(values),
 
     /**
      * @property {function} The function called to validate the option's value
      *     when set.
      */
-    validator: function () {
+    validator: function validator() {
         if (this.values || this.completer !== Option.prototype.completer)
             return Option.validateCompleter.apply(this, arguments);
         return true;
@@ -414,7 +414,7 @@ var Option = Class("Option", {
         toggleAll: function toggleAll() toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments),
     },
 
-    parseRegexp: function (value, result, flags) {
+    parseRegexp: function parseRegexp(value, result, flags) {
         let keepQuotes = this && this.keepQuotes;
         if (isArray(flags)) // Called by Array.map
             result = flags = undefined;
@@ -430,7 +430,7 @@ var Option = Class("Option", {
         return re;
     },
 
-    unparseRegexp: function (re, quoted) re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
+    unparseRegexp: function unparseRegexp(re, quoted) re.bang + Option.quote(util.regexp.getSource(re), /^!|:/) +
         (typeof re.result === "boolean" ? "" : ":" + (quoted ? re.result : Option.quote(re.result))),
 
     parseSite: function parseSite(pattern, result, rest) {
@@ -444,16 +444,16 @@ var Option = Class("Option", {
             bang: bang,
             filter: filter,
             result: result !== undefined ? result : !bang,
-            toString: function () this.bang + Option.quote(this.filter) +
+            toString: function toString() this.bang + Option.quote(this.filter) +
                 (typeof this.result === "boolean" ? "" : ":" + Option.quote(this.result)),
         });
     },
 
     getKey: {
-        stringlist: function (k) this.value.indexOf(k) >= 0,
+        stringlist: function stringlist(k) this.value.indexOf(k) >= 0,
         get charlist() this.stringlist,
 
-        regexplist: function (k, default_) {
+        regexplist: function regexplist(k, default_) {
             for (let re in values(this.value))
                 if (re(k))
                     return re.result;
@@ -481,17 +481,17 @@ var Option = Class("Option", {
         number:     function (value) let (val = Option.dequote(value))
                             Option.validIf(Number(val) % 1 == 0, "Integer value required") && parseInt(val),
 
-        boolean:    function (value) Option.dequote(value) == "true" || value == true ? true : false,
+        boolean:    function boolean(value) Option.dequote(value) == "true" || value == true ? true : false,
 
-        charlist:   function (value) Array.slice(Option.dequote(value)),
+        charlist:   function charlist(value) Array.slice(Option.dequote(value)),
 
-        stringlist: function (value) (value === "") ? [] : Option.splitList(value),
+        stringlist: function stringlist(value) (value === "") ? [] : Option.splitList(value),
 
-        regexplist: function (value) (value === "") ? [] :
+        regexplist: function regexplist(value) (value === "") ? [] :
             Option.splitList(value, true)
                   .map(function (re) Option.parseRegexp(re, undefined, this.regexpFlags), this),
 
-        sitelist: function (value) {
+        sitelist: function sitelist(value) {
             if (value === "")
                 return [];
             if (!isArray(value))
@@ -499,17 +499,17 @@ var Option = Class("Option", {
             return value.map(Option.parseSite);
         },
 
-        stringmap:  function (value) array.toObject(
+        stringmap: function stringmap(value) array.toObject(
             Option.splitList(value, true).map(function (v) {
                 let [count, key, quote] = Commands.parseArg(v, /:/);
                 return [key, Option.dequote(v.substr(count + 1))];
             })),
 
-        regexpmap: function (value) Option.parse.list.call(this, value, Option.parseRegexp),
+        regexpmap: function regexpmap(value) Option.parse.list.call(this, value, Option.parseRegexp),
 
-        sitemap: function (value) Option.parse.list.call(this, value, Option.parseSite),
+        sitemap: function sitemap(value) Option.parse.list.call(this, value, Option.parseSite),
 
-        list: function (value, parse) let (prev = null)
+        list: function list(value, parse) let (prev = null)
             array.compact(Option.splitList(value, true).map(function (v) {
                 let [count, filter, quote] = Commands.parseArg(v, /:/, true);
 
@@ -527,20 +527,20 @@ var Option = Class("Option", {
     },
 
     testValues: {
-        regexpmap:  function (vals, validator) vals.every(function (re) validator(re.result)),
+        regexpmap:  function regexpmap(vals, validator) vals.every(function (re) validator(re.result)),
         get sitemap() this.regexpmap,
-        stringlist: function (vals, validator) vals.every(validator, this),
-        stringmap:  function (vals, validator) values(vals).every(validator, this)
+        stringlist: function stringlist(vals, validator) vals.every(validator, this),
+        stringmap:  function stringmap(vals, validator) values(vals).every(validator, this)
     },
 
-    dequote: function (value) {
+    dequote: function dequote(value) {
         let arg;
         [, arg, Option._quote] = Commands.parseArg(String(value), "");
         Option._splitAt = 0;
         return arg;
     },
 
-    splitList: function (value, keepQuotes) {
+    splitList: function splitList(value, keepQuotes) {
         let res = [];
         Option._splitAt = 0;
         while (value.length) {
@@ -562,7 +562,7 @@ var Option = Class("Option", {
             : ""](str, re),
 
     ops: {
-        boolean: function (operator, values, scope, invert) {
+        boolean: function boolean(operator, values, scope, invert) {
             if (operator != "=")
                 return null;
             if (invert)
@@ -570,7 +570,7 @@ var Option = Class("Option", {
             return values;
         },
 
-        number: function (operator, values, scope, invert) {
+        number: function number(operator, values, scope, invert) {
             if (invert)
                 values = values[(values.indexOf(String(this.value)) + 1) % values.length];
 
@@ -591,7 +591,7 @@ var Option = Class("Option", {
             return null;
         },
 
-        stringmap: function (operator, values, scope, invert) {
+        stringmap: function stringmap(operator, values, scope, invert) {
             let res = update({}, this.value);
 
             switch (operator) {
@@ -618,7 +618,7 @@ var Option = Class("Option", {
             return null;
         },
 
-        stringlist: function (operator, values, scope, invert) {
+        stringlist: function stringlist(operator, values, scope, invert) {
             values = Array.concat(values);
 
             switch (operator) {
@@ -645,7 +645,7 @@ var Option = Class("Option", {
         get sitelist() this.stringlist,
         get sitemap() this.stringlist,
 
-        string: function (operator, values, scope, invert) {
+        string: function string(operator, values, scope, invert) {
             if (invert)
                 return values[(values.indexOf(this.value) + 1) % values.length];
             switch (operator) {
@@ -662,7 +662,7 @@ var Option = Class("Option", {
         }
     },
 
-    validIf: function (test, error) {
+    validIf: function validIf(test, error) {
         if (test)
             return true;
         throw ValueError(error);
@@ -675,7 +675,7 @@ var Option = Class("Option", {
      * @param {value|string[]} values The value or array of values to validate.
      * @returns {boolean}
      */
-    validateCompleter: function (values) {
+    validateCompleter: function validateCompleter(values) {
         if (this.values)
             var acceptable = this.values;
         else {
@@ -694,7 +694,7 @@ var Option = Class("Option", {
  * @instance options
  */
 var Options = Module("options", {
-    Local: function (dactyl, modules, window) let ({ contexts } = modules) ({
+    Local: function Local(dactyl, modules, window) let ({ contexts } = modules) ({
         init: function init() {
             const self = this;
             this.needInit = [];
@@ -809,7 +809,7 @@ var Options = Module("options", {
     }),
 
     /** @property {Iterator(Option)} @private */
-    __iterator__: function ()
+    __iterator__: function __iterator__()
         values(this._options.sort(function (a, b) String.localeCompare(a.name, b.name))),
 
     allPrefs: deprecated("prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
@@ -833,7 +833,7 @@ var Options = Module("options", {
      * @optional
      * @returns {Option} The matching option.
      */
-    get: function (name, scope) {
+    get: function get(name, scope) {
         if (!scope)
             scope = Option.SCOPE_BOTH;
 
@@ -903,7 +903,7 @@ var Options = Module("options", {
      * @param {string} name The name of the option to remove. This can be
      *     any of the option's names.
      */
-    remove: function (name) {
+    remove: function remove(name) {
         let opt = this.get(name);
         this._options = this._options.filter(function (o) o != opt);
         for (let name in values(opt.names))
@@ -1248,7 +1248,7 @@ var Options = Module("options", {
                 update({
                     bang: true,
                     completer: setCompleter,
-                    domains: function (args) array.flatten(args.map(function (spec) {
+                    domains: function domains(args) array.flatten(args.map(function (spec) {
                         try {
                             let opt = modules.options.parseOpt(spec);
                             if (opt.option && opt.option.domains)
@@ -1260,7 +1260,7 @@ var Options = Module("options", {
                         return [];
                     })),
                     keepQuotes: true,
-                    privateData: function (args) args.some(function (spec) {
+                    privateData: function privateData(args) args.some(function (spec) {
                         let opt = modules.options.parseOpt(spec);
                         return opt.option && opt.option.privateData &&
                             (!callable(opt.option.privateData) ||
@@ -1382,7 +1382,7 @@ var Options = Module("options", {
 
         sanitizer.addItem("options", {
             description: "Options containing hostname data",
-            action: function (timespan, host) {
+            action: function sanitize_action(timespan, host) {
                 if (host)
                     for (let opt in values(modules.options._options))
                         if (timespan.contains(opt.lastSet * 1000) && opt.domains)
@@ -1393,12 +1393,12 @@ var Options = Module("options", {
                                 dactyl.reportError(e);
                             }
             },
-            privateEnter: function () {
+            privateEnter: function privateEnter() {
                 for (let opt in values(modules.options._options))
                     if (opt.privateData && (!callable(opt.privateData) || opt.privateData(opt.value)))
                         opt.oldValue = opt.value;
             },
-            privateLeave: function () {
+            privateLeave: function privateLeave() {
                 for (let opt in values(modules.options._options))
                     if (opt.oldValue != null) {
                         opt.value = opt.oldValue;
