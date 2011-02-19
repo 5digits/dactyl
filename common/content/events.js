@@ -53,12 +53,17 @@ var ProcessorStack = Class("ProcessorStack", {
                 events.feedingKeys = false;
             }
 
-            for (var res = this.actions[0]; callable(res);) {
-                res = dactyl.trapErrors(res);
-                events.dbg("ACTION RES: " + res);
+            for (var action in values(this.actions)) {
+                while (callable(action)) {
+                    action = dactyl.trapErrors(action);
+                    events.dbg("ACTION RES: " + action);
+                }
+                if (action !== Events.PASS)
+                    break;
             }
-            result = res !== undefined ? res : Events.KILL;
-            if (res !== Events.PASS)
+
+            result = action !== undefined ? action : Events.KILL;
+            if (action !== Events.PASS)
                 this.processors.length = 0;
         }
         else if (this.processors.length) {
@@ -221,7 +226,7 @@ var KeyProcessor = Class("KeyProcessor", {
                 allEvents: this.allEvents,
                 command: this.command,
                 count: this.count,
-                events: this.events
+                keypressEvents: this.events
             });
         }
 
