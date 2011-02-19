@@ -202,7 +202,7 @@ var Highlights = Module("Highlight", {
 
         if (applyBindings)
             for each (let group in groups) {
-                if ("bindings" in applyBindings && group in applyBindings.bindings)
+                if (applyBindings.bindings && group in applyBindings.bindings)
                     applyBindings.bindings[group](node, applyBindings);
                 else if (group in template.bindings)
                     template.bindings[group](node, applyBindings);
