@@ -361,8 +361,10 @@ var Contexts = Module("contexts", {
         case "-keys":
             let silent = args["-silent"];
             rhs = events.canonicalKeys(rhs, true);
-            var action = function action() events.feedkeys(action.macro(makeParams(this, arguments)),
-                                                           noremap, silent);
+            var action = function action() {
+                events.feedkeys(action.macro(makeParams(this, arguments)),
+                                noremap, silent);
+            }
             action.macro = util.compileMacro(rhs, true);
             break;
         case "-ex":
