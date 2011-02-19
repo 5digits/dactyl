@@ -387,19 +387,24 @@ var Events = Module("events", {
         this._key_code = {};
 
         for (let list in values(this._keyTable))
-            for (let v in values(list))
+            for (let v in values(list)) {
+                if (v.length == 1)
+                    v = v.toLowerCase();
                 this._key_key[v.toLowerCase()] = v;
+            }
 
         for (let [k, v] in Iterator(KeyEvent)) {
             k = k.substr(7).toLowerCase();
             let names = [k.replace(/(^|_)(.)/g, function (m, n1, n2) n2.toUpperCase())
                           .replace(/^NUMPAD/, "k")];
+
+            if (names[0].length == 1)
+                names[0] = names[0].toLowerCase();
+
             if (k in this._keyTable)
                 names = this._keyTable[k];
             this._code_key[v] = names[0];
             for (let [, name] in Iterator(names)) {
-                if (name.length == 1)
-                    name = name.toLowerCase();
                 this._key_key[name.toLowerCase()] = name;
                 this._key_code[name.toLowerCase()] = v;
             }
@@ -1185,6 +1190,9 @@ var Events = Module("events", {
                     else if (!event.isMacro && !event.noremap && events.shouldPass(event))
                         ignore = true;
 
+                    events.dbg("ON KEYPRESS " + key + " ignore: " + ignore,
+                               event.originalTarget instanceof Element ? event.originalTarget : String(event.originalTarget));
+
                     if (ignore)
                         return null;
 
@@ -1231,17 +1239,20 @@ var Events = Module("events", {
         },
 
         keyup: function onKeyUp(event) {
-            // Prevent certain sites from transferring focus to an input box
-            // before we get a chance to process our key bindings on the
-            // "keypress" event.
+            this.keyEvents.push(event);
 
-            if (modes.main == modes.PASS_THROUGH ||
+            let pass = modes.main == modes.PASS_THROUGH ||
                     modes.main == modes.QUOTE
                         && modes.getStack(1).main !== modes.PASS_THROUGH
-                        && !events.shouldPass(event) ||
-                    !modes.passThrough && events.shouldPass(event))
-                this.keyEvents.push(event);
-            else if (!Events.isInputElement(dactyl.focusedElement))
+                        && !this.shouldPass(event) ||
+                    !modes.passThrough && this.shouldPass(event);
+
+            events.dbg("ON " + event.type.toUpperCase() + " " + this.toString(event) + " pass: " + pass);
+
+            // Prevents certain sites from transferring focus to an input box
+            // before we get a chance to process our key bindings on the
+            // "keypress" event.
+            if (!pass && !Events.isInputElement(dactyl.focusedElement))
                 event.stopPropagation();
         },
         keydown: function onKeyDown(event) {

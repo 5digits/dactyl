@@ -125,8 +125,8 @@ var Modes = Module("modes", {
         });
 
         this.addMode("EMBED", {
-            input: true,
             description: "Active when an <embed> or <object> element is focused",
+            input: true,
             ownsFocus: true,
             passthrough: true
         });
@@ -135,6 +135,7 @@ var Modes = Module("modes", {
             description: "All keys but <C-v> are ignored by " + config.appName,
             bases: [this.BASE],
             hidden: true,
+            input: true,
             passthrough: true
         });
         this.addMode("QUOTE", {
