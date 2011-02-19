@@ -11,7 +11,7 @@ var global = this;
 
 var BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 var JSMLoader = BOOTSTRAP_CONTRACT in Components.classes &&
-    Components.classes[BOOTSTRAP_CONTRACT].getService().wrappedJSObject;
+    Components.classes[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 
 if (!JSMLoader || JSMLoader.bump != 4)
     JSMLoader = {

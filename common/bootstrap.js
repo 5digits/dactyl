@@ -36,7 +36,7 @@ try { // Temporary migration code.
 catch (e) {}
 
 const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
-JSMLoader = JSMLoader || BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject;
+JSMLoader = JSMLoader || BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 
 function reportError(e) {
     dump("\ndactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
@@ -203,10 +203,12 @@ function init() {
             instance: {
                 QueryInterface: XPCOMUtils.generateQI([]),
                 contractID: BOOTSTRAP_CONTRACT,
-                wrappedJSObject: JSMLoader
+                wrappedJSObject: {}
             },
             createInstance: function () this.instance
         })
+
+    Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = JSMLoader;
 
     for each (let component in components)
         component.register();
