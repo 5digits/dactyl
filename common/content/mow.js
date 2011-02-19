@@ -266,6 +266,7 @@ var MOW = Module("mow", {
      *     and what they do.
      */
     updateMorePrompt: function updateMorePrompt(force, showHelp) {
+        util.dump("\n"); modes.dumpStack(); util.dumpStack(); util.dump("\n");
         if (!this.visible || !isinstance(modes.main, modes.OUTPUT_MULTILINE))
             return this.widgets.message = null;
 

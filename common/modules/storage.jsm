@@ -6,7 +6,7 @@
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("storage", {
-    exports: ["File", "storage"],
+    exports: ["File", "Storage", "storage"],
     require: ["services", "util"]
 }, this);
 
