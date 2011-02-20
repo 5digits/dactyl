@@ -507,8 +507,8 @@ var Editor = Module("editor", {
         }
 
         // add mappings for commands like i,a,s,c,etc. in TEXT_EDIT mode
-        function addBeginInsertModeMap(keys, commands) {
-            mappings.add([modes.TEXT_EDIT], keys, "",
+        function addBeginInsertModeMap(keys, commands, description) {
+            mappings.add([modes.TEXT_EDIT], keys, description || "",
                 function () {
                     commands.forEach(function (cmd)
                         editor.executeCommand(cmd, 1));
@@ -584,13 +584,13 @@ var Editor = Module("editor", {
         addMovementMap(["$", "<End>"],                "Move to the end of the current line",
                        false, "intraLineMove", true,  "cmd_endLine" ,     "cmd_selectEndLine");
 
-        addBeginInsertModeMap(["i", "<Insert>"], []);
-        addBeginInsertModeMap(["a"],             ["cmd_charNext"]);
-        addBeginInsertModeMap(["I"],             ["cmd_beginLine"]);
-        addBeginInsertModeMap(["A"],             ["cmd_endLine"]);
-        addBeginInsertModeMap(["s"],             ["cmd_deleteCharForward"]);
-        addBeginInsertModeMap(["S"],             ["cmd_deleteToEndOfLine", "cmd_deleteToBeginningOfLine"]);
-        addBeginInsertModeMap(["C"],             ["cmd_deleteToEndOfLine"]);
+        addBeginInsertModeMap(["i", "<Insert>"], [], "Insert text before the cursor");
+        addBeginInsertModeMap(["a"],             ["cmd_charNext"], "Append text after the cursor");
+        addBeginInsertModeMap(["I"],             ["cmd_beginLine"], "Insert text at the beginning of the line");
+        addBeginInsertModeMap(["A"],             ["cmd_endLine"], "Append text at the end of the line");
+        addBeginInsertModeMap(["s"],             ["cmd_deleteCharForward"], "Delete the character in front of the cursor and start insert");
+        addBeginInsertModeMap(["S"],             ["cmd_deleteToEndOfLine", "cmd_deleteToBeginningOfLine"], "Delete the current line and start insert");
+        addBeginInsertModeMap(["C"],             ["cmd_deleteToEndOfLine"], "Delete from the cursor to the end of the line and start insert");
 
         function addMotionMap(key, desc, cmd, mode) {
             mappings.add([modes.TEXT_EDIT], [key],
