@@ -17,7 +17,7 @@
 <include href="browsing" tag="browsing.xml"/>
 <include href="buffer" tag="buffer.xml"/>
 <include href="cmdline" tag="cmdline.xml"/>
-<include href="insert" tag="insert.xml"/>
+<include href="editing" tag="editing.xml"/>
 <include href="options" tag="options.xml"/>
 <include href="pattern" tag="pattern.xml"/>
 <include href="tabs" tag="tabs.xml"/>

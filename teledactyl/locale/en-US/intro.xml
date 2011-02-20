@@ -39,8 +39,8 @@
         Command-line editing.
     </li>
     <li>
-        <link topic="insert">Insert mode</link>:
-        Insert-mode editing.
+        <link topic="editing">Editing text</link>:
+        Text area and input field editing.
     </li>
     <li>
         <link topic="options">Options</link>:

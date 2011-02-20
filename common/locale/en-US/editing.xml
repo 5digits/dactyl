@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
+
+<!DOCTYPE document SYSTEM "dactyl://content/dtd">
+
+<document
+    name="editing"
+    title="&dactyl.appName; Editing Text"
+    xmlns="&xmlns.dactyl;"
+    xmlns:html="&xmlns.html;">
+
+<h1 tag="text-area text-field editing">Editing Text Fields</h1>
+<toc start="2"/>
+
+<p>
+    &dactyl.appName; provides several ways to edit text areas or input fields.
+    After switching focus to a text field, Insert mode or Text Edit mode is
+    activated, depending on your <o>insertmode</o> settings. You can also
+    use an <link topic="'editor'">external editor</link>.
+</p>
+
+<h2 tag="insert-mode insert">Insert mode</h2>
+
+<p>
+    In Insert mode, all keys except for those described in the
+    <link topic="i-map-index">index</link> are passed directly to &dactyl.host;.
+</p>
+
+
+<h2 tag="text-edit-mode text-edit">Text Edit mode</h2>
+
+<p>
+    Text Edit mode provides basic Vim-like text editing. It can be entered
+    from Insert mode by pressing <k name="C-t" mode="i"/> or started directly
+    when a text area is focused if <o>insertmode</o> is unset. See
+    <link topic="t-map-index">here</link> for a list of currently supported
+    mappings.
+</p>
+
+</document>
+
+<!-- vim:se sts=4 sw=4 et: -->
