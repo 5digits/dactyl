@@ -38,7 +38,8 @@ var ProcessorStack = Class("ProcessorStack", {
                 };
             }
 
-        if (!builtin && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
+        if (!builtin && options.get("passkeys").hive.values.length
+                && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
             this.processors.unshift(KeyProcessor(modes.BASE, options.get("passkeys").hive));
     },
 
@@ -1539,11 +1540,13 @@ var Events = Module("events", {
 
                             pass: set(array.flatten(values.map(function (v) v.keys))),
 
-                            stack: MapHive.Stack(values.map(function (v) v.map))
+                            stack: MapHive.Stack(values.map(function (v) v.map)),
+
+                            values: values
                         });
                 },
 
-                has: function (key) set.has(this.hive.pass, key),
+                has: function (key) set.has(this.hive.pass, key) || set.has(this.hive.stack.mappings, key),
 
                 get hive() (this.flush(), this.hive),
 

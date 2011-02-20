@@ -589,6 +589,8 @@ var ConfigBase = Class("ConfigBase", {
 
     helpCSS: UTF8(<><![CDATA[
         // <css>
+        InlineHelpLink                              font-size: inherit !important; font-family: inherit !important;
+
         Help;;;FontProportional                     line-height: 1.4em;
 
         HelpArg;;;FontCode                          color: #6A97D4;

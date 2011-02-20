@@ -221,7 +221,7 @@ var Template = Module("Template", {
                         /^\[.*\]$/.test(token) ? "HelpTopic" :
                         /^:\w/.test(token)     ? "HelpEx"  : "HelpKey");
 
-        return <a highlight={type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>;
+        return <a highlight={"InlineHelpLink " + type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>;
     },
     HelpLink: function (token) {
         if (!services["dactyl:"].initialized)
