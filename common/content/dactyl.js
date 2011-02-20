@@ -213,9 +213,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort(function (a, b) String.localeCompare(a.name, b.name));
 
-                for (let obj in values(results))
-                    if (obj.helpTag in services["dactyl:"].HELP_TAGS)
-                        yield dactyl.generateHelp(obj, null, null, true);
+                for (let obj in values(results)) {
+                    let res = dactyl.generateHelp(obj, null, null, true);
+                    if (!set.has(services["dactyl:"].HELP_TAGS, obj.helpTag))
+                        res[1].@tag = obj.helpTag;
+
+                    yield res;
+                }
             };
     },
 
@@ -786,6 +790,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 ];
             }
             addTags("versions", util.httpGet("dactyl://help/versions").responseXML);
+            addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
 
             default xml namespace = NS;
 
@@ -799,7 +804,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     }</dl>, <>{"\n\n"}</>))) +
                 '\n</overlay>'];
 
-            addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
+            addTags("index", util.httpGet("dactyl://help/index").responseXML);
+
             this.helpInitialized = true;
         }
     },
@@ -969,7 +975,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     template.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)
                 }</dd></res>;
         if (specOnly)
-            return res.*;
+            return res.elements();
 
         res.* += <>
             <item>
