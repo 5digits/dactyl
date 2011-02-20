@@ -39,6 +39,7 @@ var HintSession = Class("HintSession", CommandMode, {
 
         this.top = opts.window || content;
         this.top.addEventListener("resize", hints.resizeTimer.closure.tell, true);
+        this.top.addEventListener("dactyl-commandupdate", hints.resizeTimer.closure.tell, true);
 
         this.generate();
 
@@ -90,8 +91,10 @@ var HintSession = Class("HintSession", CommandMode, {
         if (!stack.push) {
             if (hints.hintSession == this)
                 hints.hintSession = null;
-            if (this.top)
+            if (this.top) {
                 this.top.removeEventListener("resize", hints.resizeTimer.closure.tell, true);
+                this.top.removeEventListener("dactyl-commandupdate", hints.resizeTimer.closure.tell, true);
+            }
 
             this.removeHints(0);
         }

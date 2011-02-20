@@ -296,7 +296,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
      */
     listen: function (target, event, callback, capture) {
         if (isObject(event))
-            var [self, events] = [event, event[callback]];
+            var [self, events] = [event, event[callback || "events"]];
         else
             [self, events] = [null, array.toObject([[event, callback]])];
 
