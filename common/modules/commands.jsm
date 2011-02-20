@@ -66,7 +66,7 @@ update(CommandOption, {
      * @property {object} The option accepts a boolean argument.
      * @final
      */
-    BOOL: ArgType("boolean", function parseBool(val) Commands.parseBool(val)),
+    BOOL: ArgType("boolean", function parseBoolArg(val) Commands.parseBool(val)),
     /**
      * @property {object} The option accepts a string argument.
      * @final
@@ -76,18 +76,18 @@ update(CommandOption, {
      * @property {object} The option accepts an integer argument.
      * @final
      */
-    INT: ArgType("int", function parseInt(val) parseInt(val)),
+    INT: ArgType("int", function parseIntArg(val) parseInt(val)),
     /**
      * @property {object} The option accepts a float argument.
      * @final
      */
-    FLOAT: ArgType("float", function parseFloat(val) parseFloat(val)),
+    FLOAT: ArgType("float", function parseFloatArg(val) parseFloat(val)),
     /**
      * @property {object} The option accepts a string list argument.
      *     E.g. "foo,bar"
      * @final
      */
-    LIST: ArgType("list", function parseList(arg, quoted) Option.splitList(quoted))
+    LIST: ArgType("list", function parseListArg(arg, quoted) Option.splitList(quoted))
 });
 
 /**
