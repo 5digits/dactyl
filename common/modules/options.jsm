@@ -895,7 +895,12 @@ var Options = Module("options", {
 
         ret.optionValue = ret.option.get(ret.scope);
 
-        ret.values = ret.option.parse(ret.value);
+        try {
+            ret.values = ret.option.parse(ret.value);
+        }
+        catch (e) {
+            ret.error = e;
+        }
 
         return ret;
     },
@@ -1095,21 +1100,23 @@ var Options = Module("options", {
                 return completion.option(context, opt.scope, prefix);
             }
 
-            let option = opt.option;
-            if (!option) {
-                context.message = "No such option: " + opt.name;
-                context.highlight(0, opt.name.length, "SPELLCHECK");
-                return;
+            function error(length, message) {
+                context.message = message;
+                context.highlight(0, length, "SPELLCHECK");
             }
+
+            let option = opt.option;
+            if (!option)
+                return error(opt.name.length, "No such option: " + opt.name);
 
             context.advance(context.filter.indexOf("="));
-            if (option.type == "boolean") {
-                context.message = "Trailing characters";
-                context.highlight(0, context.filter.length, "SPELLCHECK");
-                return;
-            }
+            if (option.type == "boolean")
+                return error(context.filter.length, "Trailing characters");
 
             context.advance(1);
+            if (opt.error)
+                return error(context.filter.length, opt.error);
+
             if (opt.get || opt.reset || !option || prefix)
                 return null;
 

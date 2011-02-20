@@ -208,14 +208,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 },
                 options: params.options || []
             });
+
         if (params.index)
             this.indices[params.index] = function () {
                 let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort(function (a, b) String.localeCompare(a.name, b.name));
 
+                let tags = services["dactyl:"].HELP_TAGS;
                 for (let obj in values(results)) {
                     let res = dactyl.generateHelp(obj, null, null, true);
-                    if (!set.has(services["dactyl:"].HELP_TAGS, obj.helpTag))
+                    if (!set.has(tags, obj.helpTag))
                         res[1].@tag = obj.helpTag;
 
                     yield res;
@@ -794,7 +796,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             default xml namespace = NS;
 
-            overlayMap["index"] = function () ['text/xml;charset=UTF-8',
+            overlayMap["index"] = ['text/xml;charset=UTF-8',
                 '<?xml version="1.0"?>\n' +
                 '<overlay xmlns="' + NS + '">\n' +
                 unescape(encodeURI( // UTF-8 handling hack.
@@ -804,6 +806,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     }</dl>, <>{"\n\n"}</>))) +
                 '\n</overlay>'];
 
+            addTags("index", util.httpGet("dactyl://help-overlay/index").responseXML);
             addTags("index", util.httpGet("dactyl://help/index").responseXML);
 
             this.helpInitialized = true;
