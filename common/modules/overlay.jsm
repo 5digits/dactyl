@@ -246,8 +246,7 @@ var Overlay = Module("Overlay", {
                         callee.frobbed = true;
                     };
 
-                    if (name !== "init" && name !== "load")
-                        INIT[name].superapply = function (name) { init[name](); };
+                    INIT[name].require = function (name) { init[name](); };
                 }
 
                 function frobModules() {

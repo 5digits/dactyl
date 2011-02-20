@@ -807,7 +807,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 '\n</overlay>'];
 
             addTags("index", util.httpGet("dactyl://help-overlay/index").responseXML);
-            addTags("index", util.httpGet("dactyl://help/index").responseXML);
 
             this.helpInitialized = true;
         }
