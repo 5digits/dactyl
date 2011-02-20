@@ -228,6 +228,10 @@ var Addon = Class("Addon", {
         for (let node in values(this.nodes))
             if (node.update && node.update !== callee)
                 node.update();
+
+        let event = this.document.createEvent("Events");
+        event.initEvent("dactyl-commandupdate", true, false);
+        this.document.dispatchEvent(event);
     }
 });
 

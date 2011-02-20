@@ -258,6 +258,10 @@ var DownloadList = Class("DownloadList",
             if (node.update && node.update != update)
                 node.update();
         this.updateProgress();
+
+        let event = this.document.createEvent("Events");
+        event.initEvent("dactyl-commandupdate", true, false);
+        this.document.dispatchEvent(event);
     },
 
     timeRemaining: Infinity,

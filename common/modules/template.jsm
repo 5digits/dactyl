@@ -141,8 +141,8 @@ var Template = Module("Template", {
 
                 if (collapsed == this.commandAllowed) {
                     let event = this.node.ownerDocument.createEvent("Events");
-                    event.initEvent("dactyl-commandupdate", false, false);
-                    this.node.dispatchEvent(event);
+                    event.initEvent("dactyl-commandupdate", true, false);
+                    this.node.ownerDocument.dispatchEvent(event);
                 }
             }
         }),
