@@ -38,9 +38,10 @@ var ProcessorStack = Class("ProcessorStack", {
                 };
             }
 
-        if (!builtin && options.get("passkeys").hive.active
+        let hive = this.main.input ? "inputHive" : "commandHive";
+        if (!builtin && options.get("passkeys")[hive].active
                 && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
-            this.processors.unshift(KeyProcessor(modes.BASE, options.get("passkeys").hive));
+            this.processors.unshift(KeyProcessor(modes.BASE, options.get("passkeys")[hive]));
     },
 
     notify: function () {
@@ -1549,27 +1550,30 @@ var Events = Module("events", {
             { count: true });
     },
     options: function () {
+        const Hive = Class("Hive", {
+            init: function init(values, map) {
+                this.stack = MapHive.Stack(values.map(function (v) v[map]));
+            },
+
+            get active() this.stack.length,
+
+            get: function get(mode, key) this.stack.mappings[key],
+
+            getCandidates: function getCandidates(mode, key) this.stack.candidates[key]
+        });
         options.add(["passkeys", "pk"],
             "Pass certain keys through directly for the given URLs",
             "sitemap", "", {
                 flush: function flush() {
-                    memoize(this, "hive", function hive()
-                        let (values = this.value.filter(function (f) f(buffer.documentURI))) {
-                            get active() this.stack.length,
-
-                            get: function get(mode, key) this.stack.mappings[key],
-
-                            getCandidates: function getCandidates(mode, key) this.stack.candidates[key],
-
-                            pass: set(array.flatten(values.map(function (v) v.keys))),
-
-                            stack: MapHive.Stack(values.map(function (v) v.map))
-                        });
+                    memoize(this, "filters", function () this.value.filter(function (f) f(buffer.documentURI)));
+                    memoize(this, "pass", function () set(array.flatten(this.filters.map(function (f) f.keys))));
+                    memoize(this, "commandHive", function hive() Hive(this.filters, "commandMap"));
+                    memoize(this, "inputHive", function hive() Hive(this.filters, "inputMap"));
                 },
 
-                has: function (key) set.has(this.hive.pass, key) || set.has(this.hive.stack.mappings, key),
+                has: function (key) set.has(this.pass, key) || set.has(this.commandHive.stack.mappings, key),
 
-                get hive() (this.flush(), this.hive),
+                get pass() (this.flush(), this.pass),
 
                 keepQuotes: true,
 
@@ -1577,9 +1581,15 @@ var Events = Module("events", {
                     values.forEach(function (filter) {
                         let vals = Option.splitList(filter.result);
                         filter.keys = events.fromString(vals[0]).map(events.closure.toString);
-                        filter.map = {
+
+                        let keys = vals.slice(1).map(events.closure.canonicalKeys);
+                        filter.commandMap = {
                             execute: function () Events.PASS_THROUGH,
-                            keys: vals.slice(1).map(events.closure.canonicalKeys)
+                            keys: keys
+                        };
+                        filter.inputMap = {
+                            execute: function () Events.PASS_THROUGH,
+                            keys: keys.filter(/^<[ACM]-/)
                         };
                     });
                     this.flush();

@@ -1125,9 +1125,19 @@
             by &dactyl.appName; in any way. Key names are separated
             by commas, where the first key name is treated as a list
             of individual keys and each subsequent key is treated as
-            a key chain.
+            a key chain. Individual key entries always apply to all
+            modes. Key chains apply only to non-input modes unless
+            they begin with a key requiring a modifier other than
+            shift.
         </p>
+
         <example><set opt="passkeys" op="+="><str delim="">mail.google.com</str>:<str delim="">jk&lt;Return></str>,<str delim="">gi</str></set></example>
+
+        <p>
+            More subtle and complex pass through can be achieved
+            using <k>groups</k> and mode-specific mappings utilizing
+            the <k name="Pass"/> pseudo-key.
+        </p>
     </description>
 </item>
 

@@ -112,12 +112,10 @@ window[dactyl|highlight~=Bell] > * {
 }
 
 [dactyl|highlight~=CmdLine] {
-    /* background: inherit !important; */
     color: inherit !important;
 }
 
 .dactyl-status-field-url {
-    /* background-color: inherit !important; */
     color: inherit !important;
 }
 
@@ -137,10 +135,8 @@ label[collapsed=true] {
 
 .dactyl-completions {
     -moz-user-focus: ignore;
-    overflow: -moz-scrollbars-none !important; /* does not seem to work fully */
     border-width: 0px !important;
     border-top: 1px solid black !important;
-    /*-moz-appearance: none !important; /* prevent an ugly 3D border */
 }
 
 /* fixes the min-height: 22px from firefox */
