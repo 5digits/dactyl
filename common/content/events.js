@@ -44,9 +44,12 @@ var ProcessorStack = Class("ProcessorStack", {
     },
 
     notify: function () {
+        events.keyEvents = [];
         events.processor = null;
-        if (!this.execute(Events.KILL, true))
+        if (!this.execute(Events.KILL, true)) {
             events.processor = this;
+            events.keyEvents = this.keyEvents;
+        }
     },
 
     execute: function execute(result, force) {
@@ -101,7 +104,7 @@ var ProcessorStack = Class("ProcessorStack", {
             Events.kill(this.events[this.events.length - 1]);
 
         if (result === Events.PASS_THROUGH)
-            events.feedevents(null, this.allEvents, { skipmap: true, isMacro: true, isReplay: true });
+            events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
         else if (result === Events.PASS || result === Events.ABORT) {
             let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
             if (list.length)
@@ -118,8 +121,8 @@ var ProcessorStack = Class("ProcessorStack", {
 
         let key = events.toString(event);
         this.events.push(event);
-        if (this.allEvents)
-            this.allEvents.push(event);
+        if (this.keyEvents)
+            this.keyEvents.push(event);
 
         this.buffer += key;
 
@@ -233,7 +236,7 @@ var KeyProcessor = Class("KeyProcessor", {
                 return KeyArgProcessor(this, map, true, "motion");
 
             return this.execute(map, {
-                allEvents: this.allEvents,
+                keyEvents: this.keyEvents,
                 command: this.command,
                 count: this.count,
                 keypressEvents: this.events
@@ -389,13 +392,14 @@ var Events = Module("events", {
             leader: ["Leader"],
             left_shift: ["LT", "<"],
             nop: ["Nop"],
+            pass: ["Pass"],
             return: ["Return", "CR", "Enter"],
             right_shift: [">"],
             space: ["Space", " "],
             subtract: ["Minus", "Subtract"]
         };
 
-        this._pseudoKeys = set(["count", "leader", "nop"]);
+        this._pseudoKeys = set(["count", "leader", "nop", "pass"]);
 
         this._key_key = {};
         this._code_key = {};
@@ -616,6 +620,8 @@ var Events = Module("events", {
      */
     feedkeys: function (keys, noremap, quiet, mode) {
         try {
+            var savedEvents = this._processor && this._processor.keyEvents;
+
             var wasFeeding = this.feedingKeys;
             this.feedingKeys = true;
 
@@ -634,6 +640,7 @@ var Events = Module("events", {
                         evt.noremap = !!noremap;
                     evt.isMacro = true;
                     evt.dactylMode = mode;
+                    evt.dactylSavedEvents = savedEvents;
                     this.feedingEvent = evt;
 
                     let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
@@ -1218,16 +1225,18 @@ var Events = Module("events", {
                         return null;
 
                     this.processor = ProcessorStack(mode, mappings.hives.array, event.noremap);
-                    this.processor.allEvents = this.keyEvents;
+                    this.processor.keyEvents = this.keyEvents;
                 }
 
-                let processor = this.processor;
+                let { keyEvents, processor } = this;
+                this._processor = processor;
                 this.processor = null;
+                this.keyEvents = [];
 
-                if (!processor.process(event))
+                if (!processor.process(event)) {
+                    this.keyEvents = keyEvents;
                     this.processor = processor;
-                else
-                    this.keyEvents = [];
+                }
 
             }
             catch (e) {
@@ -1333,6 +1342,8 @@ var Events = Module("events", {
                 return;
             }
 
+            let haveInput = modes.stack.some(function (m) m.main.input);
+
             if (elem instanceof HTMLTextAreaElement
                || elem instanceof Element && util.computedStyle(elem).MozUserModify === "read-write"
                || elem == null && win && Editor.getEditor(win)) {
@@ -1340,7 +1351,7 @@ var Events = Module("events", {
                 if (modes.main == modes.VISUAL && elem.selectionEnd == elem.selectionStart)
                     modes.pop();
 
-                if (!modes.main.input)
+                if (!haveInput)
                     if (options["insertmode"])
                         modes.push(modes.INSERT);
                     else {
@@ -1355,7 +1366,7 @@ var Events = Module("events", {
             }
 
             if (Events.isInputElement(elem)) {
-                if (!modes.main.input)
+                if (!haveInput)
                     modes.push(modes.INSERT);
 
                 if (hasHTMLDocument(win))
@@ -1466,18 +1477,18 @@ var Events = Module("events", {
     },
     mappings: function () {
 
-        mappings.add(modes.MAIN,
+        mappings.add([modes.MAIN],
             ["<A-b>"], "Process the next key as a builtin mapping",
             function () {
                 events.processor = ProcessorStack(modes.getStack(0), mappings.hives.array, true);
-                events.processor.allEvents = events.keyEvents;
+                events.processor.keyEvents = events.keyEvents;
             });
 
-        mappings.add(modes.MAIN,
+        mappings.add([modes.MAIN],
             ["<C-z>", "<pass-all-keys>"], "Temporarily ignore all " + config.appName + " key bindings",
             function () { modes.push(modes.PASS_THROUGH); });
 
-        mappings.add(modes.MAIN,
+        mappings.add([modes.MAIN],
             ["<C-v>", "<pass-next-key>"], "Pass through next key",
             function () {
                 if (modes.main == modes.QUOTE)
@@ -1485,9 +1496,19 @@ var Events = Module("events", {
                 modes.push(modes.QUOTE);
             });
 
-        mappings.add(modes.BASE,
+        mappings.add([modes.BASE],
             ["<Nop>"], "Do nothing",
             function () {});
+
+        mappings.add([modes.BASE],
+            ["<Pass>"], "Pass the events consumed by the last executed mapping",
+            function ({ keypressEvents: [event] }) {
+                dactyl.assert(event.dactylSavedEvents, "No events to pass");
+                return function () {
+                    events.feedevents(null, event.dactylSavedEvents,
+                                      { skipmap: true, isMacro: true, isReplay: true });
+                };
+            });
 
         // macros
         mappings.add([modes.COMMAND],

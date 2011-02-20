@@ -352,7 +352,7 @@
 <item>
     <tags><![CDATA[<Nop>]]></tags>
     <strut/>
-    <spec>&lt;Nop></spec>
+    <spec><![CDATA[<Nop>]]></spec>
     <description>
         <p>
             Do nothing. This pseudo-key is useful for disabling a
@@ -364,9 +364,19 @@
 </item>
 
 <item>
+    <tags><![CDATA[<Pass>]]></tags>
+    <spec><![CDATA[<Pass>]]></spec>
+    <description short="true">
+        <p>
+            Pass the events consumed by the last executed mapping through to &dactyl.host;.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags><![CDATA[<CR> map_return]]></tags>
     <strut/>
-    <spec>&lt;CR></spec>
+    <spec><![CDATA[<CR>]]></spec>
     <description>
         <p>
             Expand to a line terminator in a key mapping. An Ex command in the <a>rhs</a> of a
@@ -379,7 +389,7 @@
 <item>
     <tags><![CDATA[<Leader> \]]></tags>
     <strut/>
-    <spec>&lt;Leader></spec>
+    <spec><![CDATA[<Leader>]]></spec>
     <description>
         <p>
             A pseudo-key which expands to the value of the <o>mapleader</o>

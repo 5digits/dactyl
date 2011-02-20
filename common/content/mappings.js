@@ -50,7 +50,7 @@ var Map = Class("Map", {
     name: Class.memoize(function () this.names[0]),
 
     /** @property {string[]} All of this mapping's names (key sequences). */
-    names: Class.memoize(function () this._keys.map(events.closure.canonicalKeys)),
+    names: Class.memoize(function () this._keys.map(function (k) events.canonicalKeys(k))),
 
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
 
@@ -393,7 +393,7 @@ var Mappings = Module("mappings", {
         modeSign = modeSign.replace(/^ /, "");
 
         hives = (hives || mappings.userHives).map(function (h) [h, maps(h)])
-                                             .filter(function ([h, m]) !filter || m.length);
+                                             .filter(function ([h, m]) m.length);
 
         function maps(hive) {
             let maps = iter.toArray(hive.iterate(modes));

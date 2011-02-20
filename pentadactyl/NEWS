@@ -78,6 +78,7 @@
       - Added <A-b> to execute a builtin mapping. [b6]
       - Added <A-m>l and <A-m>s to aid in the construction of
         macros. [b6]
+      - Added <Pass> pseudo-key. [b6]
       - Removed the implicit page load delays during macro playback. [b6]
       - Added the base modes Base, Main, and Command which other
         modes inherit key bindings from. [b6]
