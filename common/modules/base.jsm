@@ -873,7 +873,7 @@ Class.prototype = {
         return services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
     }
 };
-memoize(Class.prototype, "closure", function closure() {
+Class.makeClosure = function makeClosure() {
     const self = this;
     function closure(fn) function _closure() {
         try {
@@ -896,7 +896,8 @@ memoize(Class.prototype, "closure", function closure() {
             });
     }, this);
     return closure;
-});
+};
+memoize(Class.prototype, "closure", Class.makeClosure);
 
 /**
  * A base class generator for classes which implement XPCOM interfaces.

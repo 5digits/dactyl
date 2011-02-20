@@ -465,7 +465,7 @@ var Addons = Module("addons", {
     }
 });
 
-if (!("nsIExtensionManager" in Ci) || !services.extensionManager)
+if (!services.has("extensionManager"))
     Components.utils.import("resource://gre/modules/AddonManager.jsm");
 else
     var AddonManager = {

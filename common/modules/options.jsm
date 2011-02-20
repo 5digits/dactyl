@@ -69,7 +69,10 @@ var Option = Class("Option", {
         if (extraInfo)
             update(this, extraInfo);
 
-        if (arguments.length > 3) {
+        if (set.has(this.modules.config.defaults, this.name))
+            defaultValue = this.modules.config.defaults[this.name];
+
+        if (defaultValue !== undefined) {
             if (this.type == "string")
                 defaultValue = Commands.quote(defaultValue);
 

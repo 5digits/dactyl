@@ -1430,6 +1430,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (error.noTrace)
             return;
 
+        if (isString(error))
+            error = Error(error);
+
         if (Cu.reportError)
             Cu.reportError(error);
 

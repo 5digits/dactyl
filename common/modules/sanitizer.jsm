@@ -114,13 +114,14 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             },
             override: true
         });
-        this.addItem("host", {
-            description: "All data from the given host",
-            action: function (range, host) {
-                if (host)
-                    services.privateBrowsing.removeDataFromDomain(host);
-            }
-        });
+        if (services.has("privateBrowsing"))
+            this.addItem("host", {
+                description: "All data from the given host",
+                action: function (range, host) {
+                    if (host)
+                        services.privateBrowsing.removeDataFromDomain(host);
+                }
+            });
         this.addItem("sitesettings", {
             builtin: true,
             description: "Site preferences",
@@ -547,7 +548,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     },
     options: function (dactyl, modules) {
         const options = modules.options;
-        if (services.privateBrowsing)
+        if (services.has("privateBrowsing"))
             options.add(["private", "pornmode"],
                 "Set the 'private browsing' option",
                 "boolean", false,

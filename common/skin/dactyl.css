@@ -156,8 +156,11 @@ statusbarpanel {
 .statusbar-resizerpanel {
     display: none;
 }
-#statusbar-display, #statusbar-progresspanel {
+#statusbar-display,
+#statusbar-progresspanel,
+#status-bar > #statusTextBox > #statusText {
     display: none;
+    visibility: collapse;
 }
 
 .dactyl-commandline-prompt {

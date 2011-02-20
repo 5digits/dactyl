@@ -27,13 +27,13 @@ var ModuleBase = Class("ModuleBase", {
 });
 
 var Overlay = Module("Overlay", {
-    init: function () {
+    init: function init() {
         services["dactyl:"]; // Hack. Force module initialization.
 
         config.loadStyles();
 
-        util.overlayWindow(config.overlayChrome, function (window) ({
-            init: function (document) {
+        util.overlayWindow(config.overlayChrome, function overlay(window) ({
+            init: function onInit(document) {
                 /**
                  * @constructor Module
                  *
@@ -187,47 +187,19 @@ var Overlay = Module("Overlay", {
                      "mow",
                      "statusline"
                      ].forEach(function (name) defineModule.time("load", name, modules.load, modules, name));
-
-                    config.scripts.forEach(modules.load);
                 }, this);
             },
-            load: function (document) {
+            load: function onLoad(document) {
+                // This is getting to be horrible. --Kris
+
                 var { modules, Module } = window.dactyl.modules;
                 delete window.dactyl;
 
-                Module.list.forEach(function (module) {
-                    modules.__defineGetter__(module.className, function () {
-                        delete modules[module.className];
-                        return load(module.className, null, Components.stack.caller);
-                    });
-                });
-
                 const start = Date.now();
-                const deferredInit = { load: [] };
+                const deferredInit = { load: {} };
                 const seen = set();
                 const loaded = set();
                 modules.loaded = loaded;
-
-                function init(module) {
-                    let name = module.constructor.className;
-
-                    function init(func, mod)
-                        function () defineModule.time(module.className || module.constructor.className, mod,
-                                                      func, modules[name],
-                                                      modules.dactyl, modules, window);
-
-                    set.add(loaded, name);
-                    for (let [mod, func] in Iterator(module.INIT)) {
-                        if (mod in loaded)
-                            init(func, mod)();
-                        else {
-                            deferredInit[mod] = deferredInit[mod] || [];
-                            deferredInit[mod].push(init(func, mod));
-                        }
-                    }
-                    for (let [, fn] in iter(deferredInit[module.constructor.className] || []))
-                        fn();
-                }
 
                 function load(module, prereq, frame) {
                     if (isString(module)) {
@@ -255,8 +227,6 @@ var Overlay = Module("Overlay", {
                         loaded[module.className] = true;
 
                         frob(module.className);
-
-                        // init(modules[module.className]);
                     }
                     catch (e) {
                         util.dump("Loading " + (module && module.className) + ":");
@@ -265,36 +235,48 @@ var Overlay = Module("Overlay", {
                     return modules[module.className];
                 }
 
-                Module.list.forEach(function (mod) {
-                    Object.keys(mod.prototype.INIT).forEach(function (name) {
-                        deferredInit[name] = deferredInit[name] || [];
-                        deferredInit[name].push(function () {
-                            // util.dump("INIT: " + mod.className + ":" + name);
-                            defineModule.time(mod.className, name,
-                                              name, mod.prototype.INIT,
+                function deferInit(name, INIT, mod) {
+                    let init = deferredInit[name] = deferredInit[name] || {};
+                    let className = mod.className || mod.constructor.className;
+
+                    init[className] = function callee() {
+                        if (!callee.frobbed)
+                            defineModule.time(className, name, INIT[name], mod,
                                               modules.dactyl, modules, window);
-                        });
+                        callee.frobbed = true;
+                    };
+
+                    if (name !== "init" && name !== "load")
+                        INIT[name].superapply = function (name) { init[name](); };
+                }
+
+                function frobModules() {
+                    Module.list.forEach(function frobModule(mod) {
+                        if (!mod.frobbed) {
+                            modules.__defineGetter__(mod.className, function () {
+                                delete modules[mod.className];
+                                return load(mod.className, null, Components.stack.caller);
+                            });
+                            Object.keys(mod.prototype.INIT).forEach(function (name) { deferInit(name, mod.prototype.INIT, mod); });
+                        }
+                        mod.frobbed = true;
                     });
-                });
-                defineModule.modules.forEach(function (mod) {
+                }
+                defineModule.modules.forEach(function defModule(mod) {
                     let names = set(Object.keys(mod.INIT));
                     if ("init" in mod.INIT)
                         set.add(names, "init");
 
-                    keys(names).forEach(function (name) {
-                        deferredInit[name] = deferredInit[name] || [];
-                        deferredInit[name].push(function () {
-                            // util.dump("INIT: " + mod.constructor.className + ":" + name);
-                            defineModule.time(mod.constructor.className, name,
-                                              mod.INIT[name], mod,
-                                              modules.dactyl, modules, window);
-                        });
-                    });
+                    keys(names).forEach(function (name) { deferInit(name, mod.INIT, mod); });
                 });
 
-                function frob(name) { (deferredInit[name] || []).forEach(call); }
+                function frob(name) { values(deferredInit[name] || {}).forEach(call); }
 
+                frobModules();
                 frob("init");
+                modules.config.scripts.forEach(modules.load);
+                frobModules();
+
                 defineModule.modules.forEach(function ({ lazyInit, constructor: { className } }) {
                     if (!lazyInit) {
                         frob(className);
@@ -316,10 +298,13 @@ var Overlay = Module("Overlay", {
 
                 modules.events.listen(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
+
                     for (let prop in properties(modules)) {
                         let mod = Object.getOwnPropertyDescriptor(modules, prop).value;
+
                         if (mod instanceof ModuleBase || mod && mod.isLocalModule) {
                             mod.stale = true;
+
                             if ("destroy" in mod)
                                 util.trapErrors("destroy", mod);
                         }

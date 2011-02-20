@@ -1193,7 +1193,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (urls.length == 0)
             return;
 
-        let browser = config.browser;
+        let browser = config.tabbrowser;
         function open(urls, where) {
             try {
                 let url = Array.concat(urls)[0];
@@ -1214,7 +1214,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 case dactyl.NEW_WINDOW:
                     let win = window.openDialog(document.documentURI, "_blank", "chrome,all,dialog=no");
                     util.waitFor(function () win.document.readyState === "complete");
-                    browser = win.getBrowser();
+                    browser = win.dactyl && win.dactyl.modules.config.tabbrowser || win.getBrowser();
                     // FALLTHROUGH
                 case dactyl.CURRENT_TAB:
                     browser.loadURIWithFlags(url, flags, null, null, postdata);
@@ -1278,12 +1278,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 return url.replace(/\s+/g, "");
 
             // Check for a matching search keyword.
-            let searchURL = bookmarks.getSearchURL(url, false);
+            let searchURL = loaded.bookmarks && bookmarks.getSearchURL(url, false);
             if (searchURL)
                 return searchURL;
 
             // If it looks like URL-ish (foo.com/bar), let Gecko figure it out.
-            if (this.urlish.test(url))
+            if (this.urlish.test(url) || !loaded.bookmarks)
                 return util.createURI(url).spec;
 
             // Pass it off to the default search engine or, failing
@@ -1626,9 +1626,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         document.title = document.title.replace(RegExp("(.*)" + util.regexp.escape(old)), "$1" + current);
                     }
 
-                    // TODO: remove this FF3.5 test when we no longer support 3.0
-                    //     : make this a config feature
-                    if (services.privateBrowsing) {
+                    if (services.has("privateBrowsing")) {
                         let oldValue = win.getAttribute("titlemodifier_normal");
                         let suffix = win.getAttribute("titlemodifier_privatebrowsing").substr(oldValue.length);
 

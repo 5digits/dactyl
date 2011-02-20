@@ -10,9 +10,10 @@ var Config = Module("config", ConfigBase, {
     name: "pentadactyl",
     appName: "Pentadactyl",
     idName: "PENTADACTYL",
-    fileExt: "penta",
     host: "Firefox",
     hostbin: "firefox",
+
+    commandContainer: "browser-bottombox",
 
     Local: function Local(dactyl, modules, window)
         let ({ config } = modules) ({

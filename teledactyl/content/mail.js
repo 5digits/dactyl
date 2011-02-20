@@ -5,9 +5,7 @@
 "use strict";
 
 const Mail = Module("mail", {
-    init: function () {
-        services.add("smtpService", "@mozilla.org/messengercompose/smtp;1", Ci.nsISmtpService);
-
+    init: function init() {
         // used for asynchronously selecting messages after wrapping folders
         this._selectMessageKeys = [];
         this._selectMessageCount = 1;
@@ -133,7 +131,7 @@ const Mail = Module("mail", {
 
     /** @property {nsISmtpServer[]} The list of configured SMTP servers. */
     get smtpServers() {
-        let servers = services.smtpService.smtpServers;
+        let servers = services.smtp.smtpServers;
         let ret = [];
 
         while (servers.hasMoreElements()) {
@@ -395,7 +393,7 @@ const Mail = Module("mail", {
     }
 }, {
 }, {
-    commands: function () {
+    commands: function initCommands(dactyl, modules, window) {
         commands.add(["go[to]"],
             "Select a folder",
             function (args) {
@@ -482,7 +480,7 @@ const Mail = Module("mail", {
                 bang: true,
             });
     },
-    completion: function () {
+    completion: function initCompletion(dactyl, modules, window) {
         completion.mailFolder = function mailFolder(context) {
             let folders = mail.getFolders(context.filter);
             context.anchored = false;
@@ -492,7 +490,7 @@ const Mail = Module("mail", {
                      "Unread: " + folder.getNumUnread(false)]);
         };
     },
-    mappings: function () {
+    mappings: function initMappings(dactyl, modules, window) {
         var myModes = config.mailModes;
 
         mappings.add(myModes, ["<Return>", "i"],
@@ -876,7 +874,18 @@ const Mail = Module("mail", {
                 }
             });
     },
-    options: function () {
+    services: function initServices(dactyl, modules, window) {
+        services.add("smtp", "@mozilla.org/messengercompose/smtp;1", Ci.nsISmtpService);
+    },
+
+    modes: function initModes(dactyl, modules, window) {
+        modes.addMode("MESSAGE", {
+            char: "m",
+            description: "Active the message is focused",
+            bases: [modes.COMMAND]
+        });
+    },
+    options: function initOptions(dactyl, modules, window) {
         // FIXME: why does this default to "Archive", I don't have one? The default
         // value won't validate now. mst please fix. --djk
         options.add(["archivefolder"],
@@ -911,12 +920,12 @@ const Mail = Module("mail", {
 
         options.add(["smtpserver", "smtp"],
             "Set the default SMTP server",
-            "string", services.smtpService.defaultServer.key, // TODO: how should we handle these persistent external defaults - "inherit" or null?
+            "string", services.smtp.defaultServer.key, // TODO: how should we handle these persistent external defaults - "inherit" or null?
             {
-                getter: function () services.smtpService.defaultServer.key,
+                getter: function () services.smtp.defaultServer.key,
                 setter: function (value) {
                     let server = mail.smtpServers.filter(function (s) s.key == value)[0];
-                    services.smtpService.defaultServer = server;
+                    services.smtp.defaultServer = server;
                     return value;
                 },
                 completer: function (context) [[s.key, s.serverURI] for ([, s] in Iterator(mail.smtpServers))]

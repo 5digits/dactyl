@@ -5,10 +5,119 @@
 "use strict";
 
 const Config = Module("config", ConfigBase, {
-    init: function init() {
-        init.supercall(this);
-        // don't wait too long when selecting new messages
-        // GetThreadTree()._selectDelay = 300; // TODO: make configurable
+    name: "teledactyl",
+    appName: "Teledactyl",
+    idName: "TELEDACTYL",
+    host: "Thunderbird",
+    hostbin: "thunderbird",
+
+    Local: function Local(dactyl, modules, window)
+        let ({ config } = modules, { document } = window) {
+        init: function init() {
+            init.superapply(this, arguments);
+
+            modules.__defineGetter__("content", function () window.content);
+
+            util.overlayWindow(window, { append: <><hbox id="statusTextBox" flex=""/></> });
+        },
+
+        get browser() window.getBrowser(),
+
+        get commandContainer() document.documentElement.id,
+
+        tabbrowser: {
+            __proto__: Class.makeClosure.call(window.document.getElementById("tabmail")),
+            get mTabContainer() this.tabContainer,
+            get mTabs() this.tabContainer.childNodes,
+            get mCurrentTab() this.tabContainer.selectedItem,
+            get mStrip() this.tabStrip,
+            get browsers() [browser for (browser in Iterator(this.mTabs))],
+
+            loadOneTab: function loadOneTab(uri) {
+                return this.openTab("contentTab", { contentPage: uri });
+            },
+            loadURIWithFlags: function loadURIWithFlags() {
+                return this.mCurrentTab.loadURIWithFlags.apply(this.mCurrentTab, arguments);
+            }
+        },
+
+        get hasTabbrowser() !this.isComposeWindow,
+
+        get tabStip() this.tabbrowser.tabContainer,
+
+        get isComposeWindow() window.wintype == "msgcompose",
+
+        get mainWidget() this.isComposeWindow ? document.getElementById("content-frame") : window.GetThreadTree(),
+
+        get mainWindowId() this.isComposeWindow ? "msgcomposeWindow" : "messengerWindow",
+        get browserModes() [modules.modes.MESSAGE],
+        get mailModes() [modules.modes.NORMAL],
+
+        // NOTE: as I don't use TB I have no idea how robust this is. --djk
+        get outputHeight() {
+            if (!this.isComposeWindow) {
+                let container = document.getElementById("tabpanelcontainer").boxObject;
+                let deck      = document.getElementById("displayDeck");
+                let box       = document.getElementById("messagepanebox");
+                let splitter  = document.getElementById("threadpane-splitter").boxObject;
+
+                if (splitter.width > splitter.height)
+                    return container.height - deck.minHeight - box.minHeight- splitter.height;
+                else
+                    return container.height - Math.max(deck.minHeight, box.minHeight);
+            }
+            else
+                return document.getElementById("appcontent").boxObject.height;
+        },
+
+        removeTab: function removeTab(tab) {
+            if (this.tabbrowser.mTabs.length > 1)
+                this.tabbrowser.removeTab(tab);
+            else
+                dactyl.beep();
+        },
+
+        completers: Class.memoize(function () update({ mailfolder: "mailFolder" }, this.__proto__.completers)),
+
+        dialogs: {
+            about: ["About Thunderbird",
+                function () { window.openAboutDialog(); }],
+            addons: ["Manage Add-ons",
+                function () { window.openAddonsMgr(); }],
+            addressbook: ["Address book",
+                function () { window.toAddressBook(); }],
+            checkupdates: ["Check for updates",
+                function () { window.checkForUpdates(); }],
+            console: ["JavaScript console",
+                function () { window.toJavaScriptConsole(); }],
+            dominspector: ["DOM Inspector",
+                function () { window.inspectDOMDocument(content.document); }],
+            downloads: ["Manage Downloads",
+                function () { window.toOpenWindowByType('Download:Manager', 'chrome://mozapps/content/downloads/downloads.xul', 'chrome,dialog=no,resizable'); }],
+            preferences: ["Show Thunderbird preferences dialog",
+                function () { window.openOptionsDialog(); }],
+            printsetup: ["Setup the page size and orientation before printing",
+                function () { window.PrintUtils.showPageSetup(); }],
+            print: ["Show print dialog",
+                function () { window.PrintUtils.print(); }],
+            saveframe: ["Save frame to disk",
+                function () { window.saveFrameDocument(); }],
+            savepage: ["Save page to disk",
+                function () { window.saveDocument(window.content.document); }],
+        },
+
+
+        focusChange: function focusChange(win) {
+            const { modes } = modules;
+
+            // we switch to -- MESSAGE -- mode for Teledactyl when the main HTML widget gets focus
+            if (win && win.document instanceof Ci.nsIHTMLDocument || dactyl.focus instanceof Ci.nsIHTMLAnchorElement) {
+                if (this.isComposeWindow)
+                    modes.set(modes.INSERT, modes.TEXT_EDIT);
+                else if (dactyl.mode != modes.MESSAGE)
+                    modes.main = modes.MESSAGE;
+            }
+        }
     },
 
     autocommands: {
@@ -21,55 +130,17 @@ const Config = Module("config", ConfigBase, {
         LeavePre: "Triggered before exiting Thunderbird"
     },
 
-    get browser() getBrowser(),
-
-    completers: Class.memoize(function () update({ mailfolder: "mailFolder" }, this.__proto__.completers)),
-
-    dialogs: {
-        about: ["About Thunderbird",
-            function () { window.openAboutDialog(); }],
-        addons: ["Manage Add-ons",
-            function () { window.openAddonsMgr(); }],
-        addressbook: ["Address book",
-            function () { window.toAddressBook(); }],
-        checkupdates: ["Check for updates",
-            function () { window.checkForUpdates(); }],
-        console: ["JavaScript console",
-            function () { window.toJavaScriptConsole(); }],
-        dominspector: ["DOM Inspector",
-            function () { window.inspectDOMDocument(content.document); }],
-        downloads: ["Manage Downloads",
-            function () { window.toOpenWindowByType('Download:Manager', 'chrome://mozapps/content/downloads/downloads.xul', 'chrome,dialog=no,resizable'); }],
-        preferences: ["Show Thunderbird preferences dialog",
-            function () { openOptionsDialog(); }],
-        printsetup: ["Setup the page size and orientation before printing",
-            function () { PrintUtils.showPageSetup(); }],
-        print: ["Show print dialog",
-            function () { PrintUtils.print(); }],
-        saveframe: ["Save frame to disk",
-            function () { window.saveFrameDocument(); }],
-        savepage: ["Save page to disk",
-            function () { window.saveDocument(window.content.document); }],
-    },
-
     defaults: {
-        guioptions: "bfrs",
+        guioptions: "bCfrs",
+        complete: "f",
         showtabline: 1,
         titlestring: "Teledactyl"
     },
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: ["hints", "mail", "marks", "addressbook", "tabs"],
-
-    focusChange: function (win) {
-        // we switch to -- MESSAGE -- mode for Teledactyl when the main HTML widget gets focus
-        if (win && win.document instanceof HTMLDocument || dactyl.focus instanceof HTMLAnchorElement) {
-            if (config.isComposeWindow)
-                modes.set(modes.INSERT, modes.TEXT_EDIT);
-            else if (dactyl.mode != modes.MESSAGE)
-                dactyl.mode = modes.MESSAGE;
-        }
-    },
+    features: Class.memoize(function () set(
+        this.isComposeWindow ? ["addressbook"]
+                             : ["hints", "mail", "marks", "addressbook", "tabs"])),
 
     guioptions: {
         m: ["MenuBar",            ["mail-toolbar-menubar2"]],
@@ -81,74 +152,37 @@ const Config = Module("config", ConfigBase, {
     // they are sorted by relevance, not alphabetically
     helpFiles: ["intro.html", "version.html"],
 
-    get isComposeWindow() window.wintype == "msgcompose",
-
-    get mainWidget() this.isComposeWindow ? document.getElementById("content-frame") : GetThreadTree(),
-
-    get mainWindowId() this.isComposeWindow ? "msgcomposeWindow" : "messengerWindow",
-
     modes: [
         ["MESSAGE", { char: "m" }],
         ["COMPOSE"]
     ],
-    get browserModes() [modes.MESSAGE],
-    get mailModes() [modes.NORMAL],
 
-    // NOTE: as I don't use TB I have no idea how robust this is. --djk
-    get outputHeight() {
-        if (!this.isComposeWindow) {
-            let container = document.getElementById("tabpanelcontainer").boxObject;
-            let deck      = document.getElementById("displayDeck");
-            let box       = document.getElementById("messagepanebox");
-            let splitter  = document.getElementById("threadpane-splitter").boxObject;
-
-            if (splitter.width > splitter.height)
-                return container.height - deck.minHeight - box.minHeight- splitter.height;
-            else
-                return container.height - Math.max(deck.minHeight, box.minHeight);
-        }
-        else
-            return document.getElementById("appcontent").boxObject.height;
-    },
-
-    removeTab: function (tab) {
-        if (config.tabbrowser.mTabs.length > 1)
-            config.tabbrowser.removeTab(tab);
-        else
-            dactyl.beep();
-    },
-
-    get scripts() this.isComposeWindow ? ["compose/compose.js"] : [
+    get scripts() this.isComposeWindow ? ["compose/compose"] : [
         "addressbook",
         "mail",
         "tabs",
     ],
 
+    overlayChrome: ["chrome://messenger/content/messenger.xul",
+                      "chrome://messenger/content/messengercompose/messengercompose.xul"],
     styleableChrome: ["chrome://messenger/content/messenger.xul",
                       "chrome://messenger/content/messengercompose/messengercompose.xul"],
 
-    tabbrowser: {
-        __proto__: document.getElementById("tabmail"),
-        get mTabContainer() this.tabContainer,
-        get mTabs() this.tabContainer.childNodes,
-        get mCurrentTab() this.tabContainer.selectedItem,
-        get mStrip() this.tabStrip,
-        get browsers() [browser for (browser in Iterator(this.mTabs))]
-    },
-
     // to allow Vim to :set ft=mail automatically
-    tempFile: "mutt-ator-mail",
+    tempFile: "teledactyl.eml"
+}, {
+}, {
+    commands: function initCommands(dactyl, modules, window) {
+        const { commands } = modules;
 
-    get visualbellWindow() document.getElementById(this.mainWindowId),
-}, {
-}, {
-    commands: function () {
         commands.add(["pref[erences]", "prefs"],
             "Show " + config.host + " preferences",
             function () { window.openOptionsDialog(); },
             { argCount: "0" });
     },
-    modes: function () {
+    modes: function initModes(dactyl, modules, window) {
+        const { modes } = modules;
+
         this.ignoreKeys = {
             "<Return>": modes.NORMAL | modes.INSERT,
             "<Space>": modes.NORMAL | modes.INSERT,
@@ -156,7 +190,9 @@ const Config = Module("config", ConfigBase, {
             "<Down>": modes.NORMAL | modes.INSERT
         };
     },
-    options: function () {
+    options: function initOptions(dactyl, modules, window) {
+        const { options } = modules;
+
         // FIXME: comment obviously incorrect
         // 0: never automatically edit externally
         // 1: automatically edit externally when message window is shown the first time
@@ -170,11 +206,11 @@ const Config = Module("config", ConfigBase, {
             "boolean", true,
             {
                 setter: function (value) {
-                    if (MailOfflineMgr.isOnline() != value)
-                        MailOfflineMgr.toggleOfflineStatus();
+                    if (window.MailOfflineMgr.isOnline() != value)
+                        window.MailOfflineMgr.toggleOfflineStatus();
                     return value;
                 },
-                getter: function () MailOfflineMgr.isOnline()
+                getter: function () window.MailOfflineMgr.isOnline()
             });
     }
 });

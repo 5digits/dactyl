@@ -1,4 +1,3 @@
-# Firefox
 resource dactyl-local-content content/
 resource dactyl-local-skin    skin/
 resource dactyl-local-locale  locale/

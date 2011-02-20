@@ -18,7 +18,6 @@ defineModule("services", {
  */
 var Services = Module("Services", {
     init: function () {
-        this.classes = {};
         this.services = {};
 
         this.add("annotation",          "@mozilla.org/browser/annotation-service;1",        Ci.nsIAnnotationService);
@@ -129,6 +128,7 @@ var Services = Module("Services", {
      */
     add: function (name, class_, ifaces, meth) {
         const self = this;
+        this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []) };
         if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
         memoize(this, name, function () self._create(class_, ifaces, meth));
@@ -164,11 +164,18 @@ var Services = Module("Services", {
      * @param {string} name The service's cache key.
      */
     get: function (name) this[name],
+
+    /**
+     * Returns true if the given service is available.
+     *
+     * @param {string} name The service's cache key.
+     */
+    has: function (name) set.has(this.services, name) && this.services[name].class in Cc &&
+        this.services[name].interfaces.every(function (iface) iface in Ci)
 }, {
 }, {
     javascript: function (dactyl, modules) {
         modules.JavaScript.setCompleter(this.get, [function () [[k, v] for ([k, v] in Iterator(services)) if (v instanceof Ci.nsISupports)]]);
-        modules.JavaScript.setCompleter(this.create, [function () [[c, ""] for (c in services.classes)]]);
     }
 });
 

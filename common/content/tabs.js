@@ -15,8 +15,6 @@
  */
 var Tabs = Module("tabs", {
     init: function () {
-        this._alternates = [config.tabbrowser.mCurrentTab, null];
-
         // used for the "gb" and "gB" mappings to remember the last :buffer[!] command
         this._lastBufferSwitchArgs = "";
         this._lastBufferSwitchSpecial = true;
@@ -27,9 +25,9 @@ var Tabs = Module("tabs", {
             config.tabStrip.collapsed = true;
 
         this.tabStyle = styles.system.add("tab-strip-hiding", config.styleableChrome,
-                                        (config.tabStrip.id ? "#" + config.tabStrip.id : ".tabbrowser-strip") +
-                                            "{ visibility: collapse; }",
-                                        false, true);
+                                          (config.tabStrip.id ? "#" + config.tabStrip.id : ".tabbrowser-strip") +
+                                              "{ visibility: collapse; }",
+                                          false, true);
 
         dactyl.commands["tabs.select"] = function (event) {
             tabs.select(event.originalTarget.getAttribute("identifier"));
@@ -46,6 +44,8 @@ var Tabs = Module("tabs", {
                     dactyl.initDocument(contentDocument);
         });
     },
+
+    _alternates: Class.memoize(function () [config.tabbrowser.mCurrentTab, null]),
 
     cleanup: function cleanup() {
         for (let [i, tab] in Iterator(this.allTabs)) {

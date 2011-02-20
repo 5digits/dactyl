@@ -9,7 +9,7 @@
 /** @scope modules */
 
 var StatusLine = Module("statusline", {
-    init: function () {
+    init: function init() {
         this._statusLine = document.getElementById("status-bar");
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
         this.statusBar.collapsed = true;
@@ -22,6 +22,8 @@ var StatusLine = Module("statusline", {
                 #addon-bar > #addonbar-closebutton { visibility: collapse; }
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
+
+            util.overlayWindow(window, { append: <><statusbar id="status-bar" ordinal="0"/></> });
 
             highlight.loadCSS(util.compileMacro(<![CDATA[
                 !AddonBar;#addon-bar  {
@@ -50,7 +52,7 @@ var StatusLine = Module("statusline", {
         let prepend = <e4x xmlns={XUL} xmlns:dactyl={NS}>
             <button id="appmenu-button" label="" image="chrome://branding/content/icon16.png" highlight="AppmenuButton" />
             <toolbarbutton id="appmenu-toolbar-button" label="" image="chrome://branding/content/icon16.png" />
-            <statusbar id="status-bar" highlight="StatusLine" ordinal="0">
+            <statusbar id="status-bar" highlight="StatusLine">
                 <!-- insertbefore="dactyl.statusBefore;" insertafter="dactyl.statusAfter;" -->
                 <hbox key="container" hidden="false" align="center"  flex="1">
                     <stack orient="horizontal"       align="stretch" flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
@@ -82,7 +84,10 @@ var StatusLine = Module("statusline", {
             prepend: prepend.elements()
         });
 
-        this.security = content.document.dactylSecurity || "insecure";
+        try {
+            this.security = content.document.dactylSecurity || "insecure";
+        }
+        catch (e) {}
     },
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,

@@ -166,8 +166,10 @@ var RangeFinder = Module("rangefinder", {
     }
 }, {
 }, {
-    modes: function (dactyl, modules, window) {
+    modes: function initModes(dactyl, modules, window) {
         const { modes } = modules;
+        initModes.superapply("commandline", arguments);
+
         modes.addMode("FIND", {
             description: "Find mode, active when typing search input",
             bases: [modes.COMMAND_LINE],
@@ -181,14 +183,14 @@ var RangeFinder = Module("rangefinder", {
             bases: [modes.FIND]
         });
     },
-    commands: function (dactyl, modules, window) {
+    commands: function initCommands(dactyl, modules, window) {
         const { commands, rangefinder } = modules;
         commands.add(["noh[lfind]"],
             "Remove the find highlighting",
             function () { rangefinder.clear(); },
             { argCount: "0" });
     },
-    commandline: function (dactyl, modules, window) {
+    commandline: function initCommandline(dactyl, modules, window) {
         const { rangefinder } = modules;
         rangefinder.CommandMode = Class("CommandFindMode", modules.CommandMode, {
             init: function init(mode) {

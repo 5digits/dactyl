@@ -151,6 +151,8 @@ var ConfigBase = Class("ConfigBase", {
         return version;
     }),
 
+    get fileExt() this.name.slice(0, -5),
+
     dtd: memoize({
         get name() config.name,
         get home() "http://dactyl.sourceforge.net/",
@@ -242,8 +244,6 @@ var ConfigBase = Class("ConfigBase", {
      *     for completion results.
      */
     autocommands: {},
-
-    commandContainer: "browser-bottombox",
 
     /**
      * @property {Object} A map of :command-complete option values to completer
@@ -349,6 +349,8 @@ var ConfigBase = Class("ConfigBase", {
      *    initialization.
      */
     scripts: [],
+
+    sidebars: {},
 
     /**
      * @property {string} The leaf name of any temp files created by

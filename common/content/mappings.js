@@ -30,9 +30,9 @@
  */
 var Map = Class("Map", {
     init: function (modes, keys, description, action, extraInfo) {
-        modes = Array.concat(modes).map(function (m) isObject(m) ? m.mask : m);
+        modes = Array.concat(modes);
         if (!modes.every(util.identity))
-            throw Error("Invalid modes");
+            throw TypeError("Invalid modes: " + modes);
 
         this.id = ++Map.id;
         this.modes = modes;
