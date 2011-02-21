@@ -1,16 +1,8 @@
-function module(uri) {
-    if (!/^[a-z-]+:/.exec(uri))
-        uri = /([^ ]+\/)[^\/]+$/.exec(Components.stack.filename)[1] + uri + ".jsm";
-
-    let obj = {};
-    Components.utils.import(uri, obj);
-    return obj;
-}
+var utils = {}; Components.utils.import(/([^ ]+\/)[^\/]+$/.exec(Components.stack.filename)[1] + "utils.jsm", utils);
 
 var EXPORTED_SYMBOLS = ["Controller"];
 
-var utils = module("utils");
-const { NS } = utils;
+const { module, NS } = utils;
 
 var elementslib = module("resource://mozmill/modules/elementslib.js");
 var frame = module("resource://mozmill/modules/frame.js");

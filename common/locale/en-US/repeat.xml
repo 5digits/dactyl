@@ -276,7 +276,7 @@
             In addition to its own JavaScript context, each script is executed
             with its own default <link topic="groups">group</link> into which
             its styles, mappings, commands, and autocommands are placed. This
-            means that commands such as <ex>:comclear!</ex> can be issued
+            means that commands such as <ex>:delcommand!</ex> can be issued
             without fear of trampling other user-defined mappings. The command
             <ex>:group! default</ex> can be issued to clear all such items at
             once, and should be placed at the head of most scripts to prevent

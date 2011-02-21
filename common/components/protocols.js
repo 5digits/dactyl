@@ -188,6 +188,7 @@ Dactyl.prototype = {
                     return redirect("dactyl://help/" + tag, uri);
                 if (tag in this.HELP_TAGS)
                     return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag.replace(/#/g, encodeURIComponent), uri);
+                break;
             case "locale":
                 return makeChannel(["resource://dactyl-locale", config.locale, path].join("/"), uri);
             case "locale-local":
@@ -228,7 +229,7 @@ function StringChannel(data, contentType, uri) {
 }
 
 function XMLChannel(uri, contentType) {
-    let channel = services.io.newChannelFromURI(uri);
+    var channel = services.io.newChannelFromURI(uri);
     try {
         var channelStream = channel.open();
     }

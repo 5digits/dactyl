@@ -463,6 +463,11 @@ var Contexts = Module("contexts", {
 
                 if (args.context)
                     args.context.group = group;
+
+                util.assert(!group.builtin ||
+                                !["-description", "-locations", "-nopersist"]
+                                    .some(function (arg) set.has(args.explicitOpts, arg)),
+                            "Cannot modify builtin group");
             },
             {
                 argCount: "?",

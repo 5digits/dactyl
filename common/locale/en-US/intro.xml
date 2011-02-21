@@ -21,7 +21,7 @@
     navigation, and tool bars by default. If you find it uncomfortable to work
     without them, you can re-enable them by typing
 </p>
-<set opt="guioptions" op="+="><str delim="">mT</str><k name="Return"/></set>
+<set opt="guioptions" op="+="><str delim="">mT</str><k name="CR"/></set>
 <p>
     If you have trouble remembering commands or keyboard shortcuts, you can
     bring up this help page at any time by typing <ex>:help</ex> or

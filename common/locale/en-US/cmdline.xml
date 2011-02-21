@@ -181,7 +181,7 @@
             <ul>
                 <li><ex>:abbreviate</ex></li>
                 <li><ex>:autocmd</ex></li>
-                <li><ex>:cabbrev</ex></li>
+                <li><ex>:cabbreviate</ex></li>
                 <li><ex>:cmap</ex></li>
                 <li><ex>:cnoremap</ex></li>
                 <li><ex>:command</ex></li>
@@ -195,7 +195,7 @@
                 <li><ex>:elseif</ex></li>
                 <li><ex>:execute</ex></li>
                 <li><ex>:highlight</ex></li>
-                <li><ex>:iabbrev</ex></li>
+                <li><ex>:iabbreviate</ex></li>
                 <li><ex>:if</ex></li>
                 <li><ex>:imap</ex></li>
                 <li><ex>:inoremap</ex></li>
@@ -286,8 +286,8 @@
     form and a long form, such as <em>-name</em> and <em>-n</em>. Most options
     accept arguments, which come after the option separated by either a space
     or an equal sign. For instance, the following three forms,
-    <ex>-name=<str>foo</str></ex>, <ex>-name <str>foo</str></ex>, and
-    <ex>-n <str>foo</str></ex>, are all acceptable and entirely equivalent.
+    <em>-name=<str>foo</str></em>, <em>-name <str>foo</str></em>, and
+    <em>-n <str>foo</str></em>, are all acceptable and entirely equivalent.
 </p>
 
 </document>

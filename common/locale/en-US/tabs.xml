@@ -43,7 +43,7 @@
 
         <dl dt="width: 6em;">
             <dt><hl key="Indicator">%</hl></dt><dd>The current buffer</dd>
-            <dt><hl key="Indicator">#</hl></dt><dd>The alternate buffer for <ex>:e #</ex> and <k name="C-^"/></dd>
+            <dt><hl key="Indicator">#</hl></dt><dd>The alternate buffer for <ex>:buffer #</ex> and <k name="C-^"/></dd>
         </dl>
     </description>
 </item>

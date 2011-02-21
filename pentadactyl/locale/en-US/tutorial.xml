@@ -26,11 +26,12 @@
     regain these by issuing the command
 </p>
 
-<set opt="go+"><str delim="">mTB</str><k name="CR"/></set>
+<set opt="go" op="+="><str delim="">mTB</str><k name="CR"/></set>
 
 <p>
-    where <k name="CR"/> represents pressing the <k name="Enter"/> or <k name="Return"/> key.
-    If you're a veteran Vim user, this may look familiar. It should.
+    where <k name="CR"/> represents pressing the <k name="Enter" link="false"/>
+    or <k name="Return" link="false"/> key. If you're a veteran Vim user, this
+    may look familiar. It should.
 </p>
 
 <p>
@@ -143,7 +144,7 @@
 </dl>
 
 <p>
-    Your standard buttons (<k name="Up"/>/<k name="Down"/>/<k name="PgUp"/>/<k name="PgDn"/>) will
+    Your standard buttons (<k name="Up"/>/<k name="Down"/>/<k name="PageUp"/>/<k name="PageDown"/>) will
     also work as expected.
 </p>
 

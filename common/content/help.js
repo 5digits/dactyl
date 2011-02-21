@@ -6,14 +6,18 @@
 
 function checkFragment() {
     document.title = document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "title")[0].textContent;
-    var frag = document.location.hash.substr(1);
-    var elem = document.getElementById(frag);
+
     function action() {
         content.scrollTo(0, content.scrollY + elem.getBoundingClientRect().top - 10); // 10px context
     }
-    if (elem) {
-        action();
-        setTimeout(action, 10);
+
+    var frag = document.location.hash.substr(1);
+    if (frag) {
+        var elem = document.getElementById(frag);
+        if (elem) {
+            action();
+            setTimeout(action, 10);
+        }
     }
 }
 

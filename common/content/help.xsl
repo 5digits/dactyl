@@ -295,7 +295,10 @@
     <xsl:template name="linkify-tag">
         <xsl:param name="contents" select="text()"/>
         <xsl:variable name="tag" select="$contents"/>
-        <a href="dactyl://help-tag/{$tag}" style="color: inherit;">
+        <a style="color: inherit;">
+            <xsl:if test="@link != 'false'">
+                <xsl:attribute name="href">dactyl://help-tag/<xsl:value-of select="$tag"/></xsl:attribute>
+            </xsl:if>
             <xsl:if test="contains(ancestor::*/@document-tags, concat(' ', $tag, ' '))">
                 <xsl:attribute name="href">#<xsl:value-of select="$tag"/></xsl:attribute>
             </xsl:if>
@@ -370,6 +373,7 @@
     <xsl:template match="dactyl:link" mode="help-2">
         <a>
             <xsl:choose>
+                <xsl:when test="not(@topic)"/>
                 <xsl:when test="regexp:match(@topic, '^([a-zA-Z]*:|[^/]*#|/)', '')">
                     <xsl:attribute name="href"><xsl:value-of select="@topic"/></xsl:attribute>
                 </xsl:when>
@@ -468,7 +472,12 @@
             <html:span style="display: inline-block;">
                 <ex>:set</ex>
                 <xsl:text> </xsl:text>
-                <link topic="'{@opt}'"><hl key="HelpOpt"><xsl:value-of select="@opt"/></hl></link>
+                <link>
+                    <xsl:if test="@link != 'false'">
+                        <xsl:attribute name="topic">'<xsl:value-of select="@opt"/>'</xsl:attribute>
+                    </xsl:if>
+                    <hl key="HelpOpt"><xsl:value-of select="@opt"/></hl>
+                </link>
                 <xsl:choose>
                     <xsl:when test="@op and @op != ''"><xsl:value-of select="@op"/></xsl:when>
                     <xsl:otherwise>=</xsl:otherwise>
@@ -482,7 +491,7 @@
     <xsl:template match="dactyl:set" mode="help-2">
         <xsl:variable name="nodes">
             <code xmlns="&xmlns.dactyl;">
-                <se opt="{@opt}" op="{@op}">
+                <se opt="{@opt}" op="{@op}" link="{@link}">
                     <xsl:copy-of select="@*|node()"/>
                 </se>
             </code>

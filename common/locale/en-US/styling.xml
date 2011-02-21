@@ -82,7 +82,7 @@
             <dt>FrameIndicator</dt>    <dd>The indicator shown when a new frame is selected</dd>
             <dt>Function</dt>          <dd>A JavaScript Function object</dd>
             <dt>Hint</dt>              <dd>A hint indicator. See <ex>:help hints</ex></dd>
-            <dt>HintActive</dt>        <dd>The hint element of link which will be followed by <k name="Return"/></dd>
+            <dt>HintActive</dt>        <dd>The hint element of link which will be followed by <k name="CR"/></dd>
             <dt>HintElem</dt>          <dd>The hintable element</dd>
             <dt>HintImage</dt>         <dd>The indicator which floats above hinted images</dd>
             <dt>Indicator</dt>         <dd>The <em>#</em> and  <em>%</em> in the <ex>:buffers</ex> list</dd>

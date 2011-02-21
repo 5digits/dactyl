@@ -5,7 +5,7 @@ const Ci = Components.interfaces;
 
 function module(uri) {
     if (!/^[a-z-]+:/.exec(uri))
-        uri = /([^ ]+\/)[^\/]+$/.exec(Components.stack.filename)[1] + uri + ".jsm";
+        uri = /([^ ]+\/)[^\/]+$/.exec(Components.stack.caller.filename)[1] + uri + ".jsm";
 
     let obj = {};
     Components.utils.import(uri, obj);

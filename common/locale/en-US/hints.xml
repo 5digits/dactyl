@@ -41,7 +41,7 @@
             special meanings in QuickHint mode:
         </p>
         <dl>
-            <dt><k name="Return"/></dt>
+            <dt><k name="CR"/></dt>
             <dd>Selects the first highlighted element, or that
                 focused by <k name="Tab"/>.</dd>
 

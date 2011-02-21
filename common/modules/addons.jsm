@@ -229,9 +229,9 @@ var Addon = Class("Addon", {
             if (node.update && node.update !== callee)
                 node.update();
 
-        let event = this.document.createEvent("Events");
+        let event = this.list.document.createEvent("Events");
         event.initEvent("dactyl-commandupdate", true, false);
-        this.document.dispatchEvent(event);
+        this.list.document.dispatchEvent(event);
     }
 });
 
@@ -261,14 +261,20 @@ var AddonList = Class("AddonList", {
         this.ready = false;
 
         AddonManager.getAddonsByTypes(types, this.closure(function (addons) {
-            addons.forEach(this.closure.addAddon);
-            this.ready = true;
-            this.update();
+            this._addons = addons;
+            if (this.document)
+                this._init();
         }));
         AddonManager.addAddonListener(this);
     },
     cleanup: function cleanup() {
         AddonManager.removeAddonListener(this);
+    },
+
+    _init: function _init() {
+        this._addons.forEach(this.closure.addAddon);
+        this.ready = true;
+        this.update();
     },
 
     message: Class.memoize(function () {
@@ -283,6 +289,9 @@ var AddonList = Class("AddonList", {
                             <td>Description</td>
                         </tr>
                       </table>, this.document, this.nodes);
+
+        if (this._addons)
+            this._init();
 
         return this.nodes.list;
     }),

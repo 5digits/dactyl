@@ -27,7 +27,7 @@
     Key mappings are the most basic means &dactyl.appName; provides
     for altering the actions of key presses. Each key mapping is
     associated with a mode, such as <link topic="insert-mode">insert</link>,
-    <link topic="normal-mode">normal</link>, or
+    <link>normal</link>, or
     <link topic="command-line-mode">command-line</link>, and only
     has effect when that mode is active. Although each mode has a
     full suite of internal mappings, they may be easily augmented,
@@ -277,7 +277,7 @@
         expected.
    </li>
     <li>
-        <k name="Return"/> or <k name="CR"/> represent the carriage
+        <k name="Return" link="false"/> or <k name="CR"/> represent the carriage
         return key.
     </li>
     <li><k name="BS"/> represents the backspace key.</li>

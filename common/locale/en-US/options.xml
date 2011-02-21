@@ -158,11 +158,11 @@
 
         <p style="text-align: left;">
             If the option is a list, the given values are toggled. Given,
-            <se opt="opt"><str delim="">foo</str>,<str delim="">bar</str></se>
+            <se opt="opt" link="false"><str delim="">foo</str>,<str delim="">bar</str></se>
             then,
-            <se opt="opt" op="!="><str delim="">foo</str>,<str delim="">baz</str></se>
+            <se opt="opt" op="!=" link="false"><str delim="">foo</str>,<str delim="">baz</str></se>
             has the same result as
-            <se opt="opt"><str delim="">bar</str>,<str delim="">baz</str></se>
+            <se opt="opt" link="false"><str delim="">bar</str>,<str delim="">baz</str></se>
         </p>
 
         <p>
@@ -690,8 +690,8 @@
 
         <dl dt="width: 6em;">
             <dt>0</dt>      <dd>Follow the first hint as soon as typed text uniquely identifies it.</dd>
-            <dt>1</dt>      <dd>Follow the selected hint on <k name="Return"/>.</dd>
-            <dt>2</dt>      <dd>Follow the selected hint on <k name="Return"/> only if it's been <k name="Tab" mode="c"/>-selected.</dd>
+            <dt>1</dt>      <dd>Follow the selected hint on <k name="CR"/>.</dd>
+            <dt>2</dt>      <dd>Follow the selected hint on <k name="CR"/> only if it's been <k name="Tab" mode="c"/>-selected.</dd>
         </dl>
     </description>
 </item>
@@ -875,7 +875,7 @@
             hint. The timeout is measured since the last time a key listed in
             <o>hintkeys</o> was pressed. It has no effect when narrowing hints
             by typing part of their text. Set to 0 (the default) to only follow
-            hints after pressing <k name="Return"/> or when the hint is unique.
+            hints after pressing <k name="CR"/> or when the hint is unique.
         </p>
     </description>
 </item>
@@ -1131,7 +1131,7 @@
             shift.
         </p>
 
-        <example><set opt="passkeys" op="+="><str delim="">mail.google.com</str>:<str delim="">jk&lt;Return></str>,<str delim="">gi</str></set></example>
+        <example><set opt="passkeys" op="+="><str delim="">mail.google.com</str>:<str delim="">jk&lt;CR></str>,<str delim="">gi</str></set></example>
 
         <p>
             More subtle and complex pass through can be achieved
