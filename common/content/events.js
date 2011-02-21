@@ -38,10 +38,10 @@ var ProcessorStack = Class("ProcessorStack", {
                 };
             }
 
-        let hive = this.main.input ? "inputHive" : "commandHive";
-        if (!builtin && options.get("passkeys")[hive].active
+        let hive = options.get("passkeys")[this.main.input ? "inputHive" : "commandHive"];
+        if (!builtin && hive.active
                 && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
-            this.processors.unshift(KeyProcessor(modes.BASE, options.get("passkeys")[hive]));
+            this.processors.unshift(KeyProcessor(modes.BASE, hive));
     },
 
     notify: function () {
@@ -52,6 +52,12 @@ var ProcessorStack = Class("ProcessorStack", {
             events.keyEvents = this.keyEvents;
         }
     },
+
+    _result: function (result) (result === Events.KILL         ? "KILL"  :
+                                result === Events.PASS         ? "PASS"  :
+                                result === Events.PASS_THROUGH ? "PASS_THROUGH"  :
+                                result === Events.ABORT        ? "ABORT" :
+                                callable(result) ? result.toSource().substr(0, 50) : result),
 
     execute: function execute(result, force) {
 
@@ -70,7 +76,7 @@ var ProcessorStack = Class("ProcessorStack", {
             for (var action in values(this.actions)) {
                 while (callable(action)) {
                     action = dactyl.trapErrors(action);
-                    events.dbg("ACTION RES: " + action);
+                    events.dbg("ACTION RES: " + this._result(action));
                 }
                 if (action !== Events.PASS)
                     break;
@@ -96,10 +102,7 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (result === undefined)
             result = Events.PASS;
 
-        events.dbg("RESULT: " + (result === Events.KILL         ? "KILL"  :
-                                 result === Events.PASS         ? "PASS"  :
-                                 result === Events.PASS_THROUGH ? "PASS_THROUGH"  :
-                                 result === Events.ABORT        ? "ABORT" : result));
+        events.dbg("RESULT: " + this._result(result));
 
         if (result !== Events.PASS || this.events.length > 1)
             Events.kill(this.events[this.events.length - 1]);
@@ -138,7 +141,7 @@ var ProcessorStack = Class("ProcessorStack", {
             if (res !== Events.ABORT)
                 var result = res;
 
-            events.dbg("RES: " + input + " " + (callable(res) ? {}.toString.call(res) : res));
+            events.dbg("RES: " + input + " " + this._result(res));
 
             if (res === Events.KILL)
                 break;
@@ -154,7 +157,7 @@ var ProcessorStack = Class("ProcessorStack", {
                 processors.push(res);
         }
 
-        events.dbg("RESULT: " + (callable(result) ? {}.toString.call(result) : result) + " " + event.getPreventDefault());
+        events.dbg("RESULT: " + event.getPreventDefault() + " " + this._result(result));
         events.dbg("ACTIONS: " + actions.length + " " + this.actions.length);
         events.dbg("PROCESSORS:", processors);
 
@@ -1261,7 +1264,9 @@ var Events = Module("events", {
         keyup: function onKeyUp(event) {
             this.keyEvents.push(event);
 
-            let pass = modes.main == modes.PASS_THROUGH ||
+            let pass = this.feedingEvent && this.feedingEvent.isReplay ||
+                    event.isReplay ||
+                    modes.main == modes.PASS_THROUGH ||
                     modes.main == modes.QUOTE
                         && modes.getStack(1).main !== modes.PASS_THROUGH
                         && !this.shouldPass(event) ||
@@ -1552,6 +1557,7 @@ var Events = Module("events", {
     options: function () {
         const Hive = Class("Hive", {
             init: function init(values, map) {
+                this.name = "passkeys:" + map;
                 this.stack = MapHive.Stack(values.map(function (v) v[map]));
             },
 
