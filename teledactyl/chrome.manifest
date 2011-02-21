@@ -13,12 +13,10 @@ component {16dc34f7-6d22-4aa4-a67f-2921fb5dcb69} components/commandline-handler.
 contract  @mozilla.org/commandlinehandler/general-startup;1?type=dactyl {16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}
 category  command-line-handler m-dactyl @mozilla.org/commandlinehandler/general-startup;1?type=dactyl
 
-component {c1b67a07-18f7-4e13-b361-2edcc35a5a0d}	   components/protocols.js
+component {c1b67a07-18f7-4e13-b361-2edcc35a5a0d}           components/protocols.js
 contract  @mozilla.org/network/protocol;1?name=chrome-data {c1b67a07-18f7-4e13-b361-2edcc35a5a0d}
-component {9c8f2530-51c8-4d41-b356-319e0b155c44}	   components/protocols.js
-contract  @mozilla.org/network/protocol;1?name=dactyl {9c8f2530-51c8-4d41-b356-319e0b155c44}
+component {9c8f2530-51c8-4d41-b356-319e0b155c44}           components/protocols.js
+contract  @mozilla.org/network/protocol;1?name=dactyl      {9c8f2530-51c8-4d41-b356-319e0b155c44}
 component {f4506a17-5b4d-4cd9-92d4-2eb4630dc388}           components/protocols.js
 contract  @dactyl.googlecode.com/base/xpc-interface-shim   {f4506a17-5b4d-4cd9-92d4-2eb4630dc388}
-component {81495d80-89ee-4c36-a88d-ea7c4e5ac63f}	   components/protocols.js
-contract  @mozilla.org/network/protocol/about;1?what=teledactyl {81495d80-89ee-4c36-a88d-ea7c4e5ac63f}
 

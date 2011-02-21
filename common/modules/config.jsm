@@ -749,8 +749,9 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
         init.superapply(this, arguments);
 
         let img = window.Image();
-        img.src = this.logo || "chrome://dactyl-local-content/logo.png";
-        img.onload = function () {
+        img.src = this.logo || "resource://dactyl-local-content/logo.png";
+        img.onload = util.wrapCallback(function () {
+            const { highlight } = require("highlight");
             highlight.loadCSS(<>{"!Logo  {"}
                      display:    inline-block;
                      background: url({img.src});
@@ -758,7 +759,7 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
                      height:     {img.height}px;
                  {"}"}</>);
             img = null;
-        };
+        });
     },
 
     load: function load(dactyl, modules, window) {
