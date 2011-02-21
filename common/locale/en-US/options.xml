@@ -1135,7 +1135,7 @@
 
         <p>
             More subtle and complex pass through can be achieved
-            using <k>groups</k> and mode-specific mappings utilizing
+            using <t>groups</t> and mode-specific mappings utilizing
             the <k name="Pass"/> pseudo-key.
         </p>
     </description>
