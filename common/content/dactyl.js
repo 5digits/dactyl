@@ -1676,11 +1676,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     mappings: function () {
-        mappings.add(modes.all, ["<F1>"],
+        mappings.add([modes.MAIN], ["<F1>"],
             "Open the introductory help page",
             function () { dactyl.help(); });
 
-        mappings.add(modes.all, ["<A-F1>"],
+        mappings.add([modes.MAIN], ["<A-F1>"],
             "Open the single, consolidated help page",
             function () { ex.helpall(); });
 

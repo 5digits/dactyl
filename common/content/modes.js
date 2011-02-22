@@ -36,6 +36,7 @@ var Modes = Module("modes", {
         this.boundProperties = {};
 
         this.addMode("BASE", {
+            char: "b",
             description: "The base mode for all other modes",
             bases: [],
             count: false
@@ -47,6 +48,7 @@ var Modes = Module("modes", {
             count: false
         });
         this.addMode("COMMAND", {
+            char: "C",
             description: "The base mode for most modes which accept commands rather than input"
         });
 

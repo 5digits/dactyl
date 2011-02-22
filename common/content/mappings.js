@@ -661,11 +661,14 @@ var Mappings = Module("mappings", {
 
         let args = {
             getMode: function (args) findMode(args["-mode"]),
-            iterate: function (args) {
-                let mainMode = this.getMode(args);
+            iterate: function (args, mainOnly) {
+                let modes = [this.getMode(args)];
+                if (!mainOnly)
+                    modes = modes.concat(modes[0].bases);
+
                 let seen = {};
                 // Bloody hell. --Kris
-                for (let mode in values([mainMode].concat(mainMode.bases)))
+                for (let [i, mode] in Iterator(modes))
                     for (let hive in mappings.hives.iterValues())
                         for (let map in array.iterValues(hive.getStack(mode)))
                             for (let name in values(map.names))
@@ -673,7 +676,7 @@ var Mappings = Module("mappings", {
                                     yield {
                                         name: name,
                                         columns: [
-                                            mode == mainMode ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
+                                            i === 0 ? "" : <span highlight="Object" style="padding-right: 1em;">{mode.name}</span>,
                                             hive == mappings.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{hive.name}</span>
                                         ],
                                         __proto__: map
@@ -711,9 +714,11 @@ var Mappings = Module("mappings", {
                     __proto__: args,
                     name: [mode.char + "listk[eys]", mode.char + "lk"],
                     iterateIndex: function (args)
-                            let (self = this, prefix = mode.char == "n" ? "" : mode.char + "_")
+                            let (self = this, prefix = /^[bCmn]$/.test(mode.char) ? "" : mode.char + "_",
+                                 tags = services["dactyl:"].HELP_TAGS)
                                     ({ helpTag: prefix + map.name, __proto__: map }
-                                     for (map in self.iterate(args))),
+                                     for (map in self.iterate(args, true))
+                                     if (map.hive === mappings.builtin || set.has(tags, prefix + map.name))),
                     description: "List all " + mode.name + " mode mappings along with their short descriptions",
                     index: mode.char + "-map",
                     getMode: function (args) mode,

@@ -14,7 +14,15 @@
 
 This file contains a list of all available commands, mappings and options.
 
+<h2 tag="b-map-index">Base mode</h2>
+
+<h2 tag="m-map-index">Main mode</h2>
+
+<h2 tag="I-map-index">Input mode</h2>
+
 <h2 tag="i-map-index">Insert mode</h2>
+
+<h2 tag="C-map-index">Command mode</h2>
 
 <h2 tag="n-map-index">Normal mode</h2>
 

@@ -252,7 +252,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 dactyl.open(homepages, { from: "homepage", where: dactyl.NEW_TAB });
             });
 
-        mappings.add(modes.all, ["<C-l>"],
+        mappings.add([modes.MAIN], ["<C-l>"],
             "Redraw the screen",
             function () { ex.redraw(); });
     },
