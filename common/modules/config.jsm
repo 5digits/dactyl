@@ -593,6 +593,8 @@ var ConfigBase = Class("ConfigBase", {
 
         Help;;;FontProportional                     line-height: 1.4em;
 
+        HelpInclude                                 margin: 2em 0;
+
         HelpArg;;;FontCode                          color: #6A97D4;
         HelpOptionalArg;;;FontCode                  color: #6A97D4;
 
