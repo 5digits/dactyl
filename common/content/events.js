@@ -1569,7 +1569,11 @@ var Events = Module("events", {
         const Hive = Class("Hive", {
             init: function init(values, map) {
                 this.name = "passkeys:" + map;
-                this.stack = MapHive.Stack(values.map(function (v) v[map]));
+                this.stack = MapHive.Stack(values.map(function (v) Map(v[map + "Keys"])));
+                function Map(keys) ({
+                    execute: function () Events.PASS_THROUGH,
+                    keys: keys
+                });
             },
 
             get active() this.stack.length,
@@ -1584,8 +1588,8 @@ var Events = Module("events", {
                 flush: function flush() {
                     memoize(this, "filters", function () this.value.filter(function (f) f(buffer.documentURI)));
                     memoize(this, "pass", function () set(array.flatten(this.filters.map(function (f) f.keys))));
-                    memoize(this, "commandHive", function hive() Hive(this.filters, "commandMap"));
-                    memoize(this, "inputHive", function hive() Hive(this.filters, "inputMap"));
+                    memoize(this, "commandHive", function hive() Hive(this.filters, "command"));
+                    memoize(this, "inputHive", function hive() Hive(this.filters, "input"));
                 },
 
                 has: function (key) set.has(this.pass, key) || set.has(this.commandHive.stack.mappings, key),
@@ -1599,15 +1603,8 @@ var Events = Module("events", {
                         let vals = Option.splitList(filter.result);
                         filter.keys = events.fromString(vals[0]).map(events.closure.toString);
 
-                        let keys = vals.slice(1).map(events.closure.canonicalKeys);
-                        filter.commandMap = {
-                            execute: function () Events.PASS_THROUGH,
-                            keys: keys
-                        };
-                        filter.inputMap = {
-                            execute: function () Events.PASS_THROUGH,
-                            keys: keys.filter(/^<[ACM]-/)
-                        };
+                        filter.commandKeys = vals.slice(1).map(events.closure.canonicalKeys);
+                        filter.inputKeys = filter.commandKeys.filter(/^<[ACM]-/);
                     });
                     this.flush();
                     return values;
