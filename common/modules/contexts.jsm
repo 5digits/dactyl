@@ -47,11 +47,13 @@ var Group = Class("Group", {
     get builtin() this.modules.contexts.builtinGroups.indexOf(this) >= 0,
 
 }, {
-    compileFilter: function (patterns) {
+    compileFilter: function (patterns, default_) {
+        if (arguments.length < 2)
+            default_ = false;
 
         function siteFilter(uri)
             let (match = array.nth(siteFilter.filters, function (f) f(uri), 0))
-                match && match.result;
+                match ? match.result : default_;
 
         return update(siteFilter, {
             toString: function () this.filters.join(","),

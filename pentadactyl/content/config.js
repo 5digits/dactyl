@@ -32,8 +32,6 @@ var Config = Module("config", ConfigBase, {
             checkupdates: ["Check for updates",
                 function () { window.checkForUpdates(); },
                 function () "checkForUpdates" in window],
-            cleardata: ["Clear private data",
-                function () { Cc["@mozilla.org/browser/browserglue;1"].getService(Ci.nsIBrowserGlue).sanitize(window || null); }],
             cookies: ["List your cookies",
                 function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
             console: ["JavaScript console",
@@ -79,8 +77,6 @@ var Config = Module("config", ConfigBase, {
                 function () { dactyl.assert("start_venkman" in window, "Venkman is not installed"); window.start_venkman() },
                 function () "start_venkman" in window]
         },
-
-        get visualbellWindow() this.browser.mPanelContainer,
 
         removeTab: function removeTab(tab) {
             if (this.tabbrowser.mTabs.length > 1)

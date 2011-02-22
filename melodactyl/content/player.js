@@ -440,10 +440,36 @@ const Player = Module("player", {
     }
 }, {
 }, {
+    modes: function initModes(dactyl, modules, window) {
+        modes.addMode("SEARCH_VIEW", {
+            description: "Search View mode",
+            bases: [modes.COMMAND_LINE],
+        });
+        modes.addMode("SEARCH_VIEW_FORWARD", {
+            description: "Forward Search View mode",
+            bases: [modes.SEARCH_VIEW]
+        });
+        modes.addMode("SEARCH_VIEW_BACKWARD", {
+            description: "Backward Search View mode",
+            bases: [modes.SEARCH_VIEW]
+        });
+
+    },
     commandline: function () {
-        commandline.registerCallback("change", modes.SEARCH_VIEW_FORWARD, this.closure.onSearchKeyPress);
-        commandline.registerCallback("submit", modes.SEARCH_VIEW_FORWARD, this.closure.onSearchSubmit);
-        commandline.registerCallback("cancel", modes.SEARCH_VIEW_FORWARD, this.closure.onSearchCancel);
+        player.CommandMode = Class("CommandSearchViewMode", modules.CommandMode, {
+            init: function init(mode) {
+                this.mode = mode;
+                init.supercall(this);
+            },
+
+            historyKey: "search-view",
+
+            get prompt() this.mode === modules.modes.SEARCH_VIEW_BACKWARD ? "?" : "/",
+
+            get onCancel() player.closure.onSearchCancel,
+            get onChange() player.closure.onSearchKeyPress,
+            get onSubmit() player.closure.onSearchSubmit
+        });
     },
     commands: function () {
         commands.add(["f[ilter]"],
@@ -754,7 +780,7 @@ const Player = Module("player", {
 
         mappings.add([modes.PLAYER],
              ["/"], "Search forward for a track",
-             function () { commandline.open("/", "", modes.SEARCH_VIEW_FORWARD); });
+             function () { player.CommandMode(modes.SEARCH_VIEW_FORWARD).open(); });
 
         mappings.add([modes.PLAYER],
              ["n"], "Find the next track",

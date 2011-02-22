@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
     require: ["services", "storage", "util", "template"],
-    use: ["io"]
+    use: ["io", "prefs"]
 }, this);
 
 var ConfigBase = Class("ConfigBase", {

@@ -263,63 +263,56 @@ var Bookmarks = Module("bookmarks", {
      * @returns {[string, string | null] | null}
      */
     getSearchURL: function getSearchURL(text, useDefsearch) {
-        let searchString = (useDefsearch ? options["defsearch"] + " " : "") + text;
+        let query = (useDefsearch ? options["defsearch"] + " " : "") + text;
 
         // ripped from Firefox
-        function getShortcutOrURI(url) {
-            var keyword = url;
-            var param = "";
-            var offset = url.indexOf(" ");
-            if (offset > 0) {
-                keyword = url.substr(0, offset);
-                param = url.substr(offset + 1);
-            }
-
-            var engine = bookmarks.searchEngines[keyword];
-            if (engine) {
-                if (engine.searchForm && !param)
-                    return [engine.searchForm, null];
-                let submission = engine.getSubmission(param, null);
-                return [submission.uri.spec, submission.postData];
-            }
-
-            let [shortcutURL, postData] = PlacesUtils.getURLAndPostDataForKeyword(keyword);
-            if (!shortcutURL)
-                return [url, null];
-            let bmark = bookmarkcache.keywords[keyword];
-
-            let data = window.unescape(postData || "");
-            if (/%s/i.test(shortcutURL) || /%s/i.test(data)) {
-                var charset = "";
-                var matches = shortcutURL.match(/^(.*)\&mozcharset=([a-zA-Z][_\-a-zA-Z0-9]+)\s*$/);
-                if (matches)
-                    [, shortcutURL, charset] = matches;
-                else
-                    try {
-                        charset = services.history.getCharsetForURI(util.newURI(shortcutURL));
-                    }
-                    catch (e) {}
-                if (charset)
-                    var encodedParam = escape(window.convertFromUnicode(charset, param));
-                else
-                    encodedParam = bmark.encodeURIComponent(param);
-
-                shortcutURL = shortcutURL.replace(/%s/g, encodedParam).replace(/%S/g, param);
-                if (/%s/i.test(data))
-                    postData = window.getPostDataStream(data, param, encodedParam, "application/x-www-form-urlencoded");
-            }
-            else if (param)
-                return [shortcutURL, null];
-            return [shortcutURL, postData];
+        var keyword = query;
+        var param = "";
+        var offset = query.indexOf(" ");
+        if (offset > 0) {
+            keyword = query.substr(0, offset);
+            param = query.substr(offset + 1);
         }
 
-        let [url, postData] = getShortcutOrURI(searchString);
+        var engine = bookmarks.searchEngines[keyword];
+        if (engine) {
+            if (engine.searchForm && !param)
+                return engine.searchForm;
+            let submission = engine.getSubmission(param, null);
+            return [submission.uri.spec, submission.postData];
+        }
 
-        if (url == searchString)
+        let [url, postData] = PlacesUtils.getURLAndPostDataForKeyword(keyword);
+        if (!url)
             return null;
+
+        let data = window.unescape(postData || "");
+        if (/%s/i.test(url) || /%s/i.test(data)) {
+            var charset = "";
+            var matches = url.match(/^(.*)\&mozcharset=([a-zA-Z][_\-a-zA-Z0-9]+)\s*$/);
+            if (matches)
+                [, url, charset] = matches;
+            else
+                try {
+                    charset = services.history.getCharsetForURI(util.newURI(url));
+                }
+                catch (e) {}
+
+            if (charset)
+                var encodedParam = escape(window.convertFromUnicode(charset, param));
+            else
+                encodedParam = bookmarkcache.keywords[keyword].encodeURIComponent(param);
+
+            url = url.replace(/%s/g, encodedParam).replace(/%S/g, param);
+            if (/%s/i.test(data))
+                postData = window.getPostDataStream(data, param, encodedParam, "application/x-www-form-urlencoded");
+        }
+        else if (param)
+            postData = null;
+
         if (postData)
             return [url, postData];
-        return url; // can be null
+        return url;
     },
 
     /**

@@ -166,6 +166,7 @@ var Overlay = Module("Overlay", {
                      "options",
                      "overlay",
                      "prefs",
+                     "sanitizer",
                      "services",
                      "storage",
                      "styles",
@@ -276,7 +277,7 @@ var Overlay = Module("Overlay", {
                 modules.config.scripts.forEach(modules.load);
                 frobModules();
 
-                defineModule.modules.forEach(function ({ lazyInit, constructor: { className } }) {
+                defineModule.modules.forEach(function defModule({ lazyInit, constructor: { className } }) {
                     if (!lazyInit) {
                         frob(className);
                         modules[className] = modules[className];

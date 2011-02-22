@@ -10,20 +10,134 @@
 Components.utils.import("resource://gre/modules/utils.js"); // XXX: PlacesUtils
 
 const Config = Module("config", ConfigBase, {
-    init: function init() {
-        init.supercall(this);
+    name: "melodactyl",
+    appName: "Melodactyl",
+    idName: "MELODACTYL",
+    host: "Songbird",
+    hostbin: "songbird",
 
-        // TODO: mention this to SB devs, they seem keen to provide these
-        // functions to make porting from FF as simple as possible.
-        window.toJavaScriptConsole = function () {
-            toOpenWindowByType("global:console", "chrome://global/content/console.xul");
-        };
+    commandContainer: "mainplayer",
+
+    Local: function Local(dactyl, modules, window) let ({ config } = modules, { document } = window) {
+        init: function init() {
+            init.supercall(this);
+
+            // TODO: mention this to SB devs, they seem keen to provide these
+            // functions to make porting from FF as simple as possible.
+            window.toJavaScriptConsole = function () {
+                toOpenWindowByType("global:console", "chrome://global/content/console.xul");
+            };
+        },
+
+        // FIXME: unless I'm seeing double in in the wee small hours gBrowser is
+        // first set from getBrowser which they've deprecated in FF.
+        get browser() window.getBrowser(),
+        get tabbrowser() window.getBrowser(),
+
+        dialogs: {
+            about: ["About Songbird",
+                function () { window.openDialog("chrome://songbird/content/xul/about.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
+            addons: ["Manage Add-ons",
+                function () { window.SBOpenPreferences("paneAddons"); }],
+            checkupdates: ["Check for updates",
+                function () { window.checkForUpdates(); }],
+            cookies: ["List your cookies",
+                function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
+            console: ["JavaScript console",
+                function () { window.toJavaScriptConsole(); }],
+            dominspector: ["DOM Inspector",
+                function () { window.inspectDOMDocument(window.content.document); },
+                function () "inspectDOMDocument" in window],
+            downloads: ["Manage Downloads",
+                function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
+            newsmartplaylist: ["Open the file selector dialog",
+                function () { window.SBNewSmartPlaylist(); }],
+            openfile: ["Open the file selector dialog",
+                function () { window.SBFileOpen(); }],
+            pagesource: ["View page source",
+                function () { window.BrowserViewSourceOfDocument(window.content.document); }],
+            preferences: ["Show Songbird preferences dialog",
+                function () { window.openPreferences(); }],
+            printsetup: ["Setup the page size and orientation before printing",
+                function () { window.PrintUtils.showPageSetup(); }],
+            print: ["Show print dialog",
+                function () { window.PrintUtils.print(); }],
+            saveframe: ["Save frame to disk",
+                function () { window.saveFrameDocument(); }],
+            savepage: ["Save page to disk",
+                function () { window.saveDocument(window.content.document); }],
+            searchengines: ["Manage installed search engines",
+                function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
+            selectionsource: ["View selection source",
+                function () { modules.buffer.viewSelectionSource(); }],
+            subscribe: ["Add a new subscription",
+                function () { window.SBSubscribe(); }]
+        },
+
+        // TODO: clean this up
+        focusChange: function (win) {
+            const { modes } = modules;
+
+            // Switch to -- PLAYER -- mode for Songbird Media Player.
+            if (this.isPlayerWindow)
+                modes.set(modes.PLAYER);
+            else
+                if (modes.main == modes.PLAYER)
+                    modes.pop();
+        },
+
+        get isPlayerWindow() SBGetBrowser().mCurrentTab == SBGetBrowser().mediaTab,
+
+        /**
+         * Shows or hides the main service pane.
+         *
+         * @param {boolean} value Show the service pane if true, hide it if false.
+         */
+        showServicePane: function (value) {
+            const key = "splitter.servicepane_splitter.was_collapsed";
+            window.gServicePane.open = value;
+            window.SBDataSetBoolValue(key, window.gServicePane.open);
+        },
+
+        /**
+         * Opens the display panel with the specified *id*.
+         *
+         * @param {string} id The ID of the display pane.
+         */
+        openDisplayPane: function (id) {
+            if (id == "servicepane")
+                this.showServicePane(true);
+            else {
+                let pane = document.getElementById(id);
+                let manager = services.displayPaneManager;
+                let paneinfo = manager.getPaneInfo(pane._lastURL.stringValue);
+
+                if (!paneinfo)
+                    paneinfo = manager.defaultPaneInfo;
+
+                pane.loadContent(paneinfo);
+            }
+        },
+
+        /**
+         * Closes the display panel with the specified *id*
+         *
+         * @param {string} id The ID of the display pane.
+         */
+        closeDisplayPane: function (id) {
+            if (id == "servicepane")
+                this.showServicePane(false);
+            else
+                document.getElementById(id).hide();
+        }
     },
 
+
     /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: ["bookmarks", "hints", "marks", "history", "quickmarks", "session", "tabs", "player"],
+    features: set(["bookmarks", "hints", "marks", "history", "quickmarks", "session", "tabs", "player"]),
+
     defaults: {
-        guioptions: "smprb",
+        guioptions: "bCmprs",
         showtabline: 2,
         get titlestring() config.name
     },
@@ -34,9 +148,7 @@ const Config = Module("config", ConfigBase, {
         p: ["Player controls", ["player_wrapper"]]
     },
 
-    get isPlayerWindow() SBGetBrowser().mCurrentTab == SBGetBrowser().mediaTab,
-    // focusContent() focuses this widget gSongbirdWindowController takes care of the focus.
-    get visualbellWindow() document.getElementById(this.mainWindowId),
+    overlayChrome: ["chrome://purplerain/content/xul/mainplayer.xul"],
 
     styleableChrome: ["chrome://purplerain/content/xul/mainplayer.xul"],
 
@@ -71,64 +183,7 @@ const Config = Module("config", ConfigBase, {
         song: "song"
     }, this.__proto__.completers)),
 
-    dialogs: {
-        about: ["About Songbird",
-            function () { window.openDialog("chrome://songbird/content/xul/about.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        addons: ["Manage Add-ons",
-            function () { SBOpenPreferences("paneAddons"); }],
-        checkupdates: ["Check for updates",
-            function () { window.checkForUpdates(); }],
-        cleardata: ["Clear private data",
-            function () {  Sanitizer.showUI(); }],
-        cookies: ["List your cookies",
-            function () { window.toOpenWindowByType("Browser:Cookies", "chrome://browser/content/preferences/cookies.xul", "chrome,dialog=no,resizable"); }],
-        console: ["JavaScript console",
-            function () { window.toJavaScriptConsole(); }],
-        dominspector: ["DOM Inspector",
-            function () { try { window.inspectDOMDocument(content.document); } catch (e) { dactyl.echoerr("DOM Inspector extension not installed"); } }],
-        downloads: ["Manage Downloads",
-            function () { window.toOpenWindowByType("Download:Manager", "chrome://mozapps/content/downloads/downloads.xul", "chrome,dialog=no,resizable"); }],
-        newsmartplaylist: ["Open the file selector dialog",
-            function () { SBNewSmartPlaylist(); }],
-        openfile: ["Open the file selector dialog",
-            function () { SBFileOpen(); }],
-        pagesource: ["View page source",
-            function () { window.BrowserViewSourceOfDocument(content.document); }],
-        preferences: ["Show Songbird preferences dialog",
-            function () { window.openPreferences(); }],
-        printsetup: ["Setup the page size and orientation before printing",
-            function () { PrintUtils.showPageSetup(); }],
-        print: ["Show print dialog",
-            function () { PrintUtils.print(); }],
-        saveframe: ["Save frame to disk",
-            function () { window.saveFrameDocument(); }],
-        savepage: ["Save page to disk",
-            function () { window.saveDocument(window.content.document); }],
-        searchengines: ["Manage installed search engines",
-            function () { window.openDialog("chrome://browser/content/search/engineManager.xul", "_blank", "chrome,dialog,modal,centerscreen"); }],
-        selectionsource: ["View selection source",
-            function () { buffer.viewSelectionSource(); }],
-        subscribe: ["Add a new subscription",
-            function () { SBSubscribe(); }]
-    },
-
-    // TODO: clean this up
-    focusChange: function (win) {
-        // Switch to -- PLAYER -- mode for Songbird Media Player.
-        if (config.isPlayerWindow)
-            modes.set(modes.PLAYER);
-        else
-            if (modes.main == modes.PLAYER)
-                modes.pop();
-    },
-
     hasTabbrowser: true,
-    // FIXME: unless I'm seeing double in in the wee small hours gBrowser is
-    // first set from getBrowser which they've deprecated in FF.
-    get tabbrowser() window.getBrowser(),
-    get browser() window.getBrowser(),
-
-    modes: [["PLAYER", { char: "p" }]],
 
     removeTab: function (tab) {
         if (config.tabbrowser.mTabs.length > 1)
@@ -153,55 +208,18 @@ const Config = Module("config", ConfigBase, {
         "library"
     ],
 
+    sidebars: {
+        viewAddons:      ["Add-ons",     "A", "chrome://mozapps/content/extensions/extensions.xul"],
+        viewConsole:     ["Console",     "C", "chrome://global/content/console.xul"],
+        viewDownloads:   ["Downloads",   "D", "chrome://mozapps/content/downloads/downloads.xul"],
+        viewPreferences: ["Preferences", "P", "about:config"]
+    },
+
     // FIXME: tab arg and media tab exception?
     stop: function (tab) {
         SBGetBrowser().mCurrentBrowser.stop();
     }
 }, {
-
-    /**
-     * Shows or hides the main service pane.
-     *
-     * @param {boolean} value Show the service pane if true, hide it if false.
-     */
-    showServicePane: function (value) {
-        const key = "splitter.servicepane_splitter.was_collapsed";
-        gServicePane.open = value;
-        SBDataSetBoolValue(key, gServicePane.open);
-    },
-
-    /**
-     * Opens the display panel with the specified *id*.
-     *
-     * @param {string} id The ID of the display pane.
-     */
-    openDisplayPane: function (id) {
-        if (id == "servicepane")
-            this.showServicePane(true);
-        else {
-            let pane = document.getElementById(id);
-            let manager = services.displayPaneManager;
-            let paneinfo = manager.getPaneInfo(pane._lastURL.stringValue);
-
-            if (!paneinfo)
-                paneinfo = manager.defaultPaneInfo;
-
-            pane.loadContent(paneinfo);
-        }
-    },
-
-    /**
-     * Closes the display panel with the specified *id*
-     *
-     * @param {string} id The ID of the display pane.
-     */
-    closeDisplayPane: function (id) {
-        if (id == "servicepane")
-            this.showServicePane(false);
-        else
-            document.getElementById(id).hide();
-    },
-
     /**
      * @property {object} A map of display pane command argument strings to
      *     panel element IDs.
@@ -213,13 +231,15 @@ const Config = Module("config", ConfigBase, {
         "rightsidebar" : "displaypane_right_sidebar"
     }
 }, {
-    commands: function () {
+    commands: function initCommands(dactyl, modules, window) {
+        const { commands, completion, options } = modules;
+
         commands.add(["dpcl[ose]"],
             "Close a display pane",
             function (args) {
                 let arg = args.literalArg;
                 dactyl.assert(arg in Config.displayPanes, "E475: Invalid argument: " + arg);
-                Config.closeDisplayPane(Config.displayPanes[arg]);
+                config.closeDisplayPane(Config.displayPanes[arg]);
             },
             {
                 argCount: "1",
@@ -234,7 +254,7 @@ const Config = Module("config", ConfigBase, {
                 let arg = args.literalArg;
                 dactyl.assert(arg in Config.displayPanes, "E475: Invalid argument: " + arg);
                 // TODO: focus when we have better key handling of these extended modes
-                Config.openDisplayPane(Config.displayPanes[arg]);
+                config.openDisplayPane(Config.displayPanes[arg]);
             },
             {
                 argCount: "1",
@@ -258,22 +278,31 @@ const Config = Module("config", ConfigBase, {
                 bang: true
             });
     },
-    completion: function () {
+    completion: function initCompletion(dactyl, modules, window) {
+        const completion = require("completion");
+
         completion.displayPane = function (context) {
             context.title = ["Display Pane"];
             context.completions = Config.displayPanes; // FIXME: useful description etc
         };
     },
-    modes: function () {
+    modes: function initModes(dactyl, modules, window) {
+        const { modes } = modules;
+
         this.ignoreKeys = {
             "<Return>": modes.NORMAL | modes.INSERT,
             "<Space>": modes.NORMAL | modes.INSERT,
             "<Up>": modes.NORMAL | modes.INSERT,
             "<Down>": modes.NORMAL | modes.INSERT
         };
-        config.modes.forEach(function (mode) { modes.addMode.apply(modes, mode); }); // XXX
+
+        modes.addMode("PLAYER", {
+            char: "p"
+        });
     },
-    options: function () {
+    options: function initOptions(dactyl, modules, window) {
+        const { options } = modules;
+
         // TODO: SB doesn't explicitly support an offline mode. Should we? --djk
         options.add(["online"],
             "Set the 'work offline' option",
@@ -288,12 +317,13 @@ const Config = Module("config", ConfigBase, {
                 getter: function () !services.io.offline
             });
     },
-    services: function () {
-        services.add("displayPaneManager", "@songbirdnest.com/Songbird/DisplayPane/Manager;1", Ci.sbIDisplayPaneManager);
-        services.add("mediaPageManager", "@songbirdnest.com/Songbird/MediaPageManager;1", Ci.sbIMediaPageManager);
-        services.add("propertyManager","@songbirdnest.com/Songbird/Properties/PropertyManager;1", Ci.sbIPropertyManager);
+    services: function initServices(dactyl, modules, window) {
+        services.add("displayPaneManager",      "@songbirdnest.com/Songbird/DisplayPane/Manager;1",         Ci.sbIDisplayPaneManager);
+        services.add("mediaPageManager",        "@songbirdnest.com/Songbird/MediaPageManager;1",            Ci.sbIMediaPageManager);
+        services.add("propertyManager",         "@songbirdnest.com/Songbird/Properties/PropertyManager;1",  Ci.sbIPropertyManager);
+
         services.addClass("mutablePropertyArray", "@songbirdnest.com/Songbird/Properties/MutablePropertyArray;1",
-            Ci.sbIMutablePropertyArray);
+                          Ci.sbIMutablePropertyArray);
     }
 });
 
