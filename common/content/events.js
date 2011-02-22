@@ -920,8 +920,11 @@ var Events = Module("events", {
 
                     if (event.shiftKey && (key.length > 1 || event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
                         modifier += "S-";
-                    else if (!modifier && key.length === 1 && !event.shiftKey)
-                        key = key.toLowerCase();
+                    else if (!modifier && key.length === 1)
+                        if (event.shiftKey)
+                            key = key.toLowerCase();
+                        else
+                            key = key.toUpperCase();
                     if (!modifier && /^[a-z0-9]$/i.test(key))
                         return key;
                 }
