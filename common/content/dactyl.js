@@ -556,14 +556,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Returns the URL of the specified help *topic* if it exists.
      *
      * @param {string} topic The help topic to look up.
-     * @param {boolean} unchunked Whether to search the unchunked help page.
+     * @param {boolean} consolidated Whether to search the consolidated help page.
      * @returns {string}
      */
-    findHelp: function (topic, unchunked) {
-        if (!unchunked && topic in services["dactyl:"].FILE_MAP)
+    findHelp: function (topic, consolidated) {
+        if (!consolidated && topic in services["dactyl:"].FILE_MAP)
             return topic;
-        unchunked = !!unchunked;
-        let items = completion._runCompleter("help", topic, null, unchunked).items;
+        let items = completion._runCompleter("help", topic, null, !!consolidated).items;
         let partialMatch = null;
 
         function format(item) item.description + "#" + encodeURIComponent(item.text);
@@ -1030,12 +1029,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Opens the help page containing the specified *topic* if it exists.
      *
      * @param {string} topic The help topic to open.
-     * @param {boolean} unchunked Whether to use the unchunked help page.
+     * @param {boolean} consolidated Whether to use the consolidated help page.
      */
-    help: function (topic, unchunked) {
+    help: function (topic, consolidated) {
         dactyl.initHelp();
         if (!topic) {
-            let helpFile = unchunked ? "all" : options["helpfile"];
+            let helpFile = consolidated ? "all" : options["helpfile"];
 
             if (helpFile in services["dactyl:"].FILE_MAP)
                 dactyl.open("dactyl://help/" + helpFile, { from: "help" });
@@ -1044,7 +1043,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return;
         }
 
-        let page = this.findHelp(topic, unchunked);
+        let page = this.findHelp(topic, consolidated);
         dactyl.assert(page != null, "E149: Sorry, no help for " + topic);
 
         dactyl.open("dactyl://help/" + page, { from: "help" });
@@ -1682,7 +1681,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function () { dactyl.help(); });
 
         mappings.add(modes.all, ["<A-F1>"],
-            "Open the single unchunked help page",
+            "Open the single, consolidated help page",
             function () { ex.helpall(); });
 
         if (dactyl.has("session"))
@@ -1759,20 +1758,20 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 description: "Open the introductory help page"
             }, {
                 name: "helpa[ll]",
-                description: "Open the single unchunked help page"
+                description: "Open the single consolidated help page"
             }
         ].forEach(function (command) {
-            let unchunked = command.name == "helpa[ll]";
+            let consolidated = command.name == "helpa[ll]";
 
             commands.add([command.name],
                 command.description,
                 function (args) {
                     dactyl.assert(!args.bang, "E478: Don't panic!");
-                    dactyl.help(args.literalArg, unchunked);
+                    dactyl.help(args.literalArg, consolidated);
                 }, {
                     argCount: "?",
                     bang: true,
-                    completer: function (context) completion.help(context, unchunked),
+                    completer: function (context) completion.help(context, consolidated),
                     literal: 0
                 });
         });
@@ -2025,12 +2024,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             context.completions = [[k, v[0], v[2]] for ([k, v] in Iterator(config.dialogs))];
         };
 
-        completion.help = function help(context, unchunked) {
+        completion.help = function help(context, consolidated) {
             dactyl.initHelp();
             context.title = ["Help"];
             context.anchored = false;
             context.completions = services["dactyl:"].HELP_TAGS;
-            if (unchunked)
+            if (consolidated)
                 context.keys = { text: 0, description: function () "all" };
         };
 

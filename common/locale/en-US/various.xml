@@ -185,7 +185,7 @@
     <spec>&lt;A-F1></spec>
     <description>
         <p>
-            Open all help pages coalesced into a single page and scroll to
+            Open all help pages consolidated into a single page and scroll to
             <oa>subject</oa> if given.
         </p>
 
