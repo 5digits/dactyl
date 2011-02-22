@@ -90,16 +90,20 @@
 
 <p>Enable <em>passthrough</em> mode on all Google sites:</p>
 
-<code><ex>:autocmd LocationChange</ex> <str delim="'">google\.com</str> <hl key="HelpArg">-js</hl> modes.set(modes.PASS_THROUGH)</code>
+<code><ex>:autocmd LocationChange</ex> <str delim="">google.com</str> <ex>:normal!</ex> <k name="C-z"/></code>
 
 <p>Enable <em>passthrough</em> mode on <em>some</em> Google sites:</p>
 
-<code><ex>:autocmd LocationChange</ex> <str delim="'">(www|mail)\.google\.com</str> <hl key="HelpArg">-js</hl> modes.set(modes.PASS_THROUGH)</code>
+<code><ex>:autocmd LocationChange</ex> <str delim="'">^https?://(www|mail)\.google\.com/</str> <ex>:normal!</ex> <k name="C-z"/></code>
+
+<p>or</p>
+
+<code><ex>:autocmd LocationChange</ex> <str delim="">www.google.com</str>,<str delim="">mail.google.com</str> <ex>:normal!</ex> <k name="C-z"/></code>
 
 <p>Set the filetype to mail when editing email at Gmail:</p>
 
-<code><ex>:autocmd LocationChange</ex> !<str delim="'">mail\.google\.com</str> <se opt="editor"><str>gvim -f</str></se>
-<ex>:autocmd LocationChange</ex> <str delim="'">mail\.google\.com</str> <se opt="editor"><str>gvim -f -c 'set ft=mail'</str></se></code>
+<code><ex>:autocmd LocationChange</ex> !<str delim="">mail.google.com</str>,<str delim="">*</str> <se opt="editor" op="&amp;"/>
+<ex>:autocmd LocationChange</ex> <str delim="'">mail.google.com</str> <se opt="editor"><str>gvim -f -c 'set ft=mail' +&lt;line></str></se></code>
 
 </document>
 

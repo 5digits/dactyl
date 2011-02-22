@@ -248,7 +248,7 @@
         as per &dactyl.host;. The color of the status bar also changes to reflect the
         current security status of the loaded page.
         <dl>
-            <dt style="border:1px solid white" dactyl:highlight="StatusLine">black</dt>
+            <dt style="border:1px solid white" dactyl:highlight="StatusLineNormal">black</dt>
             <dd>The site's identity is unverified and the connection is unencrypted</dd>
 
             <dt style="border:1px solid white" dactyl:highlight="StatusLineBroken">red</dt>

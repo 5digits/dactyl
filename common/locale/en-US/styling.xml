@@ -185,15 +185,16 @@
 
 <item>
     <tags>:dels :delstyle</tags>
+    <strut/>
     <spec>:dels<oa>tyle</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>-index=<a>index</a></oa> <oa>filter</oa> <oa>css</oa></spec>
     <description>
         <p>
             Delete any matching styles. With <oa>!</oa>, delete all styles.
             If <oa>filter</oa> is provided, only matching elements of the
             filter are disabled. For instance, when run with a filter
-            <str>mozilla.org</str>, an existing style with a filter
-            <str>www.google.com,mozilla.org</str>, will result in a style for
-            <str>www.google.com</str>.
+            <str delim="">mozilla.org</str>, an existing style with a filter
+            <str delim="">www.google.com,mozilla.org</str>, will result in a style for
+            <str delim="">www.google.com</str>.
         </p>
 
         <p>The available options are:</p>
