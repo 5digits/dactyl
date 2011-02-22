@@ -296,7 +296,7 @@
         <xsl:param name="contents" select="text()"/>
         <xsl:variable name="tag" select="$contents"/>
         <a style="color: inherit;">
-            <xsl:if test="1">
+            <xsl:if test="not(@link) or @link != 'false'">
                 <xsl:choose>
                     <xsl:when test="contains(ancestor::*/@document-tags, concat(' ', $tag, ' '))">
                         <xsl:attribute name="href">#<xsl:value-of select="$tag"/></xsl:attribute>
