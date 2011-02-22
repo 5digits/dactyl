@@ -296,11 +296,15 @@
         <xsl:param name="contents" select="text()"/>
         <xsl:variable name="tag" select="$contents"/>
         <a style="color: inherit;">
-            <xsl:if test="@link != 'false'">
-                <xsl:attribute name="href">dactyl://help-tag/<xsl:value-of select="$tag"/></xsl:attribute>
-            </xsl:if>
-            <xsl:if test="contains(ancestor::*/@document-tags, concat(' ', $tag, ' '))">
-                <xsl:attribute name="href">#<xsl:value-of select="$tag"/></xsl:attribute>
+            <xsl:if test="1">
+                <xsl:choose>
+                    <xsl:when test="contains(ancestor::*/@document-tags, concat(' ', $tag, ' '))">
+                        <xsl:attribute name="href">#<xsl:value-of select="$tag"/></xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="href">dactyl://help-tag/<xsl:value-of select="$tag"/></xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:if>
             <xsl:value-of select="$contents"/>
         </a>

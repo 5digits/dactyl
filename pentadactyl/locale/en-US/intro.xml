@@ -126,25 +126,25 @@
 </ol>
 
 <ul tag="features-list" replace="features-list">
-    <li>Vim-like keybindings (<k>h</k>, <k>j</k>, <k>gg</k>, <k>ZZ</k>, <k name="C-f"/>, etc.)</li>
-    <li>Ex commands (<ex>:quit</ex>, <ex>:open www.foo.com</ex>, …)</li>
-    <li>Tab completion for all commands, highly configurable via <o>wildmode</o>, <o>autocomplete</o>, ...</li>
-    <li>Hit-a-hint like navigation of links (start with <k>f</k> to follow a link)</li>
-    <li>Advanced completion of bookmark and history URLs</li>
-    <li>Vim-like status line with a Wget-like progress bar</li>
-    <li>Minimal GUI (easily hide superfluous menubar and toolbar with <se opt="guioptions"/>)</li>
+    <li>Vim-like key bindings (<k>h</k>, <k>j</k>, <k>gg</k>, <k>ZZ</k>, <k name="C-f"/>, etc.)</li>
+    <li><link topic="cmdline.xml">Ex commands</link> (<ex>:quit</ex>, <ex>:open www.foo.com</ex>, …)</li>
+    <li>Powerful tab completion for all commands and options</li>
+    <li>Powerful <t>privacy</t> features</li>
+    <li><link topic="pattern.xml">Page search</link> with many fixes for long-standing Firefox annoyances</li>
+    <li>Quick and powerful <link topic="hints">keyboard navigation</link> for links, input fields, etc.</li>
+    <li>Vim-like <link topic="status-line">status line</link></li>
+    <li>Keyboard <t>macros</t>, along with custom key mappings and commands</li>
+    <li>Minimal GUI, along with commands to <link href=":toolbarhide">hide</link> and <link href=":toolbartoggle">toggle</link> toolbars and menus</li>
     <li>Ability to <ex>:source</ex> JavaScript, CSS, and &dactyl.appName; command files</li>
-    <li>Easy quick searches (see <ex>:open</ex>)</li>
-    <li>Count supported for many commands (<em>3</em><k name="C-o"/> will go back 3 pages)</li>
+    <li>Ability to <link topic="marks">mark</link> the current page position and return to it</li>
+    <li>Count support for many commands (<tt>3</tt><k name="C-o"/> will go back <tt>3</tt> pages)</li>
     <li>Visual bell for errors (<o>visualbell</o>)</li>
-    <li>Marks support (<k>m</k><em>a</em> to set mark a, <k>'</k><em>a</em> to jump to it)</li>
+    <li><link topic="marks">Marks</link> support (<k>m</k><tt>M</tt> to set mark <tt>M</tt>, <k>'</k><tt>M</tt> to jump to it)</li>
     <li><link topic="quickmarks">QuickMark</link> support</li>
-    <li><ex>:map</ex>, <ex>:command</ex>, <ex>:normal</ex>, and <t>macros</t></li>
     <li><link topic="i_&lt;C-i>">Editing of text fields</link> with an <link topic="'editor'">external editor</link></li>
-    <li>AutoCommands to execute actions on certain events</li>
-    <li>A comprehensive help system, explaining all commands, mappings, options, and plugins</li>
+    <li><link topic="autocommands">AutoCommands</link> to execute actions on certain events</li>
+    <li>A comprehensive help system, explaining all <link topic="cmdline.xml">commands</link>, <link topic="mapping">mappings</link>, <t>options</t>, and <t>plugins</t></li>
 </ul>
-
 </overlay>
 
 <!-- vim:se sts=4 sw=4 et: -->

@@ -157,7 +157,8 @@
         a boolean. [b2]
       - 'mapleader' is now an option rather than a :let
         variable. [b4]
-      - 'passkeys' is now a sitemap rather than a regexpmap. [b6]
+      - 'passkeys' is now a sitemap with key chain support rather
+        than a regexpmap. [b6]
       - 'showmode' is now a regexplist. [b6]
       - 'showstatuslinks' and 'showtabline' are now string options. [b4]
     • IMPORTANT: Command script files now use the *.penta file extension. [b2]
