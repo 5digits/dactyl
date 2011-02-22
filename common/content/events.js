@@ -133,8 +133,7 @@ var ProcessorStack = Class("ProcessorStack", {
         let actions = [];
         let processors = [];
 
-        events.dbg("\n\n");
-        events.dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro);
+        events.dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro + " replay: " + event.isReplay);
 
         for (let [i, input] in Iterator(this.processors)) {
             let res = input.process(event);
@@ -596,7 +595,7 @@ var Events = Module("events", {
      *      @optional
      */
     feedevents: function feedevents(target, list, extra) {
-        list.forEach(function (event, i) {
+        list.forEach(function _feedevent(event, i) {
             let elem = target || event.originalTarget;
             if (elem) {
                 let doc = elem.ownerDocument || elem.document || elem;
@@ -762,7 +761,7 @@ var Events = Module("events", {
      */
     dispatch: Class.memoize(function ()
         util.haveGecko("2b")
-            ? function (target, event, extra) {
+            ? function dispatch(target, event, extra) {
                 try {
                     this.feedingEvent = extra;
                     if (target instanceof Element)
@@ -782,7 +781,15 @@ var Events = Module("events", {
                     this.feedingEvent = null;
                 }
             }
-            : function (target, event, extra) target.dispatchEvent(event)),
+            : function dispatch(target, event, extra) {
+                try {
+                    this.feedingEvent = extra;
+                    target.dispatchEvent(update(event, extra));
+                }
+                finally {
+                    this.feedingEvent = null;
+                }
+            }),
 
     get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,
 
@@ -1216,6 +1223,7 @@ var Events = Module("events", {
                     else if (!event.isMacro && !event.noremap && events.shouldPass(event))
                         ignore = true;
 
+                    events.dbg("\n\n");
                     events.dbg("ON KEYPRESS " + key + " ignore: " + ignore,
                                event.originalTarget instanceof Element ? event.originalTarget : String(event.originalTarget));
 
