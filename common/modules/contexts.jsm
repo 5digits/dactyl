@@ -267,7 +267,11 @@ var Contexts = Module("contexts", {
         groups: { value: this.activeGroups(uri) },
     }),
 
-    activeGroups: function (uri) this.initializedGroups().filter(function (g) g.filter(this), uri || this.modules.buffer.uri),
+    activeGroups: function (uri, doc) {
+        if (!uri)
+            ({ uri, doc }) = this.modules.buffer;
+        return this.initializedGroups().filter(function (g) g.filter(uri, doc));
+    },
 
     flush: function flush() {
         delete this.groups;

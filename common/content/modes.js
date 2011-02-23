@@ -310,13 +310,13 @@ var Modes = Module("modes", {
             return;
         }
 
+        params = params || this.getMode(mainMode || this.main).params;
+
+        if (!stack && mainMode != null && this._modeStack.length > 1)
+            this.reset();
+
         this.withSavedValues(["inSet"], function set() {
             this.inSet = true;
-
-            params = params || this.getMode(mainMode || this.main).params;
-
-            if (!stack && mainMode != null && this._modeStack.length > 1)
-                this.reset();
 
             oldMain = this._main, oldExtended = this._extended;
 

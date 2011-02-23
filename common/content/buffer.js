@@ -228,9 +228,15 @@ var Buffer = Module("buffer", {
     set lastInputField(value) { this.localStore.lastInputField = value && Cu.getWeakReference(value); },
 
     /**
+     * @property {nsIURI} The current top-level document.
+     */
+    get doc() window.content.document,
+
+    /**
      * @property {nsIURI} The current top-level document's URI.
      */
     get uri() util.newURI(content.location.href),
+
     /**
      * @property {nsIURI} The current top-level document's URI, sans any
      *     fragment identifier.

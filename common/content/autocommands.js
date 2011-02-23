@@ -73,15 +73,15 @@ var AutoCommands = Module("autocommands", {
             hives: contexts.Hives("autocmd", AutoCmdHive),
             user: contexts.hives.autocmd.user,
             allHives: contexts.allGroups.autocmd,
-            matchingHives: function matchingHives(uri) contexts.matchingGroups(uri).autocmd
+            matchingHives: function matchingHives(uri, doc) contexts.matchingGroups(uri, doc).autocmd
         });
     },
 
     get activeHives() contexts.allGroups.autocmd.filter(function (h) h._store.length),
 
-    add: deprecated("autocommand.user.add", { get: function add() autocommands.user.closure.add }),
-    get: deprecated("autocommand.user.get", { get: function get() autocommands.user.closure.get }),
-    remove: deprecated("autocommand.user.remove", { get: function remove() autocommands.user.closure.remove }),
+    add: deprecated("group.autocmd.add", { get: function add() autocommands.user.closure.add }),
+    get: deprecated("group.autocmd.get", { get: function get() autocommands.user.closure.get }),
+    remove: deprecated("group.autocmd.remove", { get: function remove() autocommands.user.closure.remove }),
 
     /**
      * Lists all autocommands with a matching *event* and *regexp*.
@@ -142,16 +142,18 @@ var AutoCommands = Module("autocommands", {
         dactyl.echomsg('Executing ' + event + ' Auto commands for "*"', 8);
 
         let lastPattern = null;
-        let uri = args.url ? util.createURI(args.url) : buffer.uri;
+        let { uri, doc } = args;
+        if (!uri)
+            ({ uri, doc }) = buffer;
 
         event = event.toLowerCase();
-        for (let hive in values(this.matchingHives(uri))) {
+        for (let hive in values(this.matchingHives(uri, doc))) {
             let args = update({},
                               hive.argsExtra(arguments[1]),
                               arguments[1]);
 
             for (let autoCmd in values(hive._store))
-                if (autoCmd.eventName === event && autoCmd.filter(uri)) {
+                if (autoCmd.eventName === event && autoCmd.filter(uri, doc)) {
                     if (!lastPattern || lastPattern !== String(autoCmd.filter))
                         dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.filter, 8);
 
