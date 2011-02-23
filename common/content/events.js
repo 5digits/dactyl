@@ -922,9 +922,9 @@ var Events = Module("events", {
                         modifier += "S-";
                     else if (!modifier && key.length === 1)
                         if (event.shiftKey)
-                            key = key.toLowerCase();
-                        else
                             key = key.toUpperCase();
+                        else
+                            key = key.toLowerCase();
                     if (!modifier && /^[a-z0-9]$/i.test(key))
                         return key;
                 }
