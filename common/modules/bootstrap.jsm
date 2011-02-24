@@ -7,18 +7,20 @@
 try {
 
 var EXPORTED_SYMBOLS = ["JSMLoader"];
-var global = this;
 
 var BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 var JSMLoader = BOOTSTRAP_CONTRACT in Components.classes &&
     Components.classes[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 
-if (!JSMLoader || JSMLoader.bump != 4)
+if (JSMLoader && JSMLoader.bump === 4)
+    JSMLoader.global = this;
+else
     JSMLoader = {
         bump: 4,
         builtin: Components.utils.Sandbox(this),
         canonical: {},
         factories: [],
+        global: this,
         globals: JSMLoader ? JSMLoader.globals : {},
         io: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
         loader: Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader),
@@ -29,9 +31,9 @@ if (!JSMLoader || JSMLoader.bump != 4)
             this.initialized = true;
             this.suffix = suffix || "";
 
-            let base = this.load("base.jsm", global);
-            global.EXPORTED_SYMBOLS = base.EXPORTED_SYMBOLS;
-            global.JSMLoader = this;
+            let base = this.load("base.jsm", this.global);
+            this.global.EXPORTED_SYMBOLS = base.EXPORTED_SYMBOLS;
+            this.global.JSMLoader = this;
             base.JSMLoader = this;
         },
         getTarget: function getTarget(url) {

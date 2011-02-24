@@ -270,7 +270,7 @@ var Contexts = Module("contexts", {
     activeGroups: function (uri, doc) {
         if (!uri)
             ({ uri, doc }) = this.modules.buffer;
-        return this.initializedGroups().filter(function (g) g.filter(uri, doc));
+        return this.initializedGroups().filter(function (g) uri && g.filter(uri, doc));
     },
 
     flush: function flush() {

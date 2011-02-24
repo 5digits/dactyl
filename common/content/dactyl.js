@@ -68,9 +68,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 if (mod instanceof ModuleBase || mod && mod.isLocalModule) {
                     mod.stale = true;
                     if ("cleanup" in mod)
-                        this.trapErrors(mod.cleanup, mod);
+                        this.trapErrors("cleanup", mod);
                     if ("destroy" in mod)
-                        this.trapErrors(mod.destroy, mod);
+                        this.trapErrors("destroy", mod);
                 }
 
             for (let mod in values(mods))
