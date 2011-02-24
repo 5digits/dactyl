@@ -679,7 +679,7 @@ var Commands = Module("commands", {
     COUNT_ALL: -2, // :%...
 
     /** @property {Iterator(Command)} @private */
-    iterator: function iterator() iter.apply(null, this.hives)
+    iterator: function iterator() iter.apply(null, this.hives.array)
                               .sort(function (a, b) a.serialGroup - b.serialGroup || a.name > b.name)
                               .iterValues(),
 
