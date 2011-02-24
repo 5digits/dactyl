@@ -527,9 +527,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             if (dactyl.focusedElement)
                 dactyl.focusedElement.blur();
             if (win && Editor.getEditor(win)) {
-                win.blur();
-                if (win.frameElement && false)
-                    win.frameElement.blur();
+                this.withSavedValues(["ignoreFocus"], function _focusContent() {
+                    this.ignoreFocus = true;
+                    if (win.frameElement)
+                        win.frameElement.blur();
+                });
             }
         }
 

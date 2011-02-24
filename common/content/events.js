@@ -1340,6 +1340,8 @@ var Events = Module("events", {
     // Huh? --djk
     onFocusChange: function onFocusChange(event) {
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
+        if (dactyl.ignoreFocus)
+            return;
 
         let win  = window.document.commandDispatcher.focusedWindow;
         let elem = window.document.commandDispatcher.focusedElement;
