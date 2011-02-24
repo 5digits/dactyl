@@ -86,7 +86,7 @@ const Config = Module("config", ConfigBase, {
                     modes.pop();
         },
 
-        get isPlayerWindow() SBGetBrowser().mCurrentTab == SBGetBrowser().mediaTab,
+        get isPlayerWindow() window.SBGetBrowser().mCurrentTab == window.SBGetBrowser().mediaTab,
 
         /**
          * Shows or hides the main service pane.
