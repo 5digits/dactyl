@@ -1285,12 +1285,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 return url.replace(/\s+/g, "");
 
             // Check for a matching search keyword.
-            let searchURL = loaded.bookmarks && bookmarks.getSearchURL(url, false);
+            let searchURL = this.has("bookmarks") && bookmarks.getSearchURL(url, false);
             if (searchURL)
                 return searchURL;
 
             // If it looks like URL-ish (foo.com/bar), let Gecko figure it out.
-            if (this.urlish.test(url) || !loaded.bookmarks)
+            if (this.urlish.test(url) || !this.has("bookmarks"))
                 return util.createURI(url).spec;
 
             // Pass it off to the default search engine or, failing
