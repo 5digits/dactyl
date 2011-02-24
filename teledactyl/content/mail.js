@@ -451,7 +451,7 @@ const Mail = Module("mail", {
 
         commands.add(["copy[to]"],
             "Copy selected messages",
-            function (args) { this._moveOrCopy(true, args.literalArg); },
+            function (args) { mail._moveOrCopy(true, args.literalArg); },
             {
                 argCount: 1,
                 completer: function (context) completion.mailFolder(context),
@@ -460,7 +460,7 @@ const Mail = Module("mail", {
 
         commands.add(["move[to]"],
             "Move selected messages",
-            function (args) { this._moveOrCopy(false, args.literalArg); },
+            function (args) { mail._moveOrCopy(false, args.literalArg); },
             {
                 argCount: 1,
                 completer: function (context) completion.mailFolder(context),
@@ -583,7 +583,7 @@ const Mail = Module("mail", {
             "Compose a new message to the sender of selected mail",
             function () {
               try {
-                  let to = this._escapeRecipient(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor);
+                  let to = mail._escapeRecipient(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor);
                   commandline.open(":", "mail " + to + " -subject=", modes.EX);
               }
               catch (e) {
@@ -670,7 +670,7 @@ const Mail = Module("mail", {
 
         mappings.add(myModes, ["<C-s>"],
             "Archive message",
-            function () { this._moveOrCopy(false, options["archivefolder"]); });
+            function () { mail._moveOrCopy(false, options["archivefolder"]); });
 
         mappings.add(myModes, ["]s"],
             "Select next starred message",
@@ -707,7 +707,7 @@ const Mail = Module("mail", {
         mappings.add(myModes, ["<C-n>"],
             "Select next folder",
             function (args) {
-                let newPos = this._getCurrentFolderIndex() + Math.max(1, args.count);
+                let newPos = mail._getCurrentFolderIndex() + Math.max(1, args.count);
                 if (newPos >= gFolderTreeView.rowCount) {
                     newPos = newPos % gFolderTreeView.rowCount;
                     commandline.echo("search hit BOTTOM, continuing at TOP", commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
@@ -719,14 +719,14 @@ const Mail = Module("mail", {
         mappings.add(myModes, ["<C-N>"],
             "Go to next mailbox with unread messages",
             function (args) {
-                this._selectUnreadFolder(false, args.count);
+                mail._selectUnreadFolder(false, args.count);
             },
             { count: true });
 
         mappings.add(myModes, ["<C-p>"],
             "Select previous folder",
             function (args) {
-                let newPos = this._getCurrentFolderIndex() - Math.max(1, args.count);
+                let newPos = mail._getCurrentFolderIndex() - Math.max(1, args.count);
                 if (newPos < 0) {
                     newPos = (newPos % gFolderTreeView.rowCount) + gFolderTreeView.rowCount;
                     commandline.echo("search hit TOP, continuing at BOTTOM", commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
@@ -738,7 +738,7 @@ const Mail = Module("mail", {
         mappings.add(myModes, ["<C-P>"],
             "Go to previous mailbox with unread messages",
             function (args) {
-                this._selectUnreadFolder(true, args.count);
+                mail._selectUnreadFolder(true, args.count);
             },
             { count: true });
 
@@ -853,7 +853,7 @@ const Mail = Module("mail", {
             function () {
                 try {
                     if (mail.currentAccount.server.type == "rss")
-                        dactyl.clipboardWrite(this._getRSSUrl(), true);
+                        dactyl.clipboardWrite(mail._getRSSUrl(), true);
                     else
                         dactyl.clipboardWrite(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor, true);
                 }
@@ -866,7 +866,7 @@ const Mail = Module("mail", {
             function () {
                 try {
                     if (mail.currentAccount.server.type == "rss")
-                        messenger.launchExternalURL(this._getRSSUrl());
+                        messenger.launchExternalURL(mail._getRSSUrl());
                     // TODO: what to do for non-rss message?
                 }
                 catch (e) {
