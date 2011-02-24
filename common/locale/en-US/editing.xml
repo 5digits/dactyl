@@ -32,8 +32,8 @@
 <p>
     Text Edit mode provides basic Vim-like text editing. It can be entered
     from Insert mode by pressing <k name="C-t" mode="i"/> or started directly
-    when a text area is focused if <o>insertmode</o> is unset. See
-    <link topic="t-map-index">here</link> for a list of currently supported
+    when a text area is focused if <o>insertmode</o> is unset. See the
+    <link topic="t-map-index">index</link> for a list of currently supported
     mappings.
 </p>
 
