@@ -15,7 +15,6 @@ defineModule("options", {
     use: ["commands", "completion", "prefs", "services", "styles", "template", "util"]
 }, this);
 
-
 /** @scope modules */
 
 let ValueError = Class("ValueError", ErrorBase);

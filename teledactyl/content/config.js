@@ -106,7 +106,6 @@ const Config = Module("config", ConfigBase, {
                 function () { window.saveDocument(window.content.document); }],
         },
 
-
         focusChange: function focusChange(win) {
             const { modes } = modules;
 

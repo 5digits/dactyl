@@ -430,7 +430,6 @@ var Styles = Module("Styles", {
         return test(arguments[1]);
     },
 
-
     splitContext: function splitContext(context, title) {
         for (let item in Iterator({ Active: true, Inactive: false })) {
             let [name, active] = item;

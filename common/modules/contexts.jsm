@@ -139,7 +139,6 @@ var Contexts = Module("contexts", {
                         get: function () array(contexts.groups[self.name])
                     };
 
-
                 this.Hive = constructor;
                 this.name = name;
                 memoize(contexts.Group.prototype, name, function () {
@@ -541,7 +540,6 @@ var Contexts = Module("contexts", {
                 }
             });
 
-
         commands.add(["fini[sh]"],
             "Stop sourcing a script file",
             function (args) {
@@ -549,7 +547,6 @@ var Contexts = Module("contexts", {
                 args.context.finished = true;
             },
             { argCount: "0" });
-
 
         function checkStack(cmd) {
             util.assert(contexts.context && contexts.context.stack &&
