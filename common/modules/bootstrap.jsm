@@ -112,3 +112,4 @@ else
 
 }catch(e){ dump(e + "\n" + (e.stack || Error().stack)); Components.utils.reportError(e) }
 
+// vim: set fdm=marker sw=4 sts=4 et ft=javascript:
