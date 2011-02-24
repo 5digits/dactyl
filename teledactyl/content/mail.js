@@ -506,10 +506,6 @@ const Mail = Module("mail", {
                 MsgOpenNewTabForMessage();
             });
 
-        /*mappings.add([modes.NORMAL],
-            ["o"], "Open a message",
-            function () { commandline.open(":", "open ", modes.EX); });*/
-
         mappings.add(myModes, ["<Space>"],
             "Scroll message or select next unread one",
             function () Events.PASS);
@@ -555,40 +551,29 @@ const Mail = Module("mail", {
         mappings.add(myModes, ["*"],
             "Select next message from the same sender",
             function (args) {
-                try {
-                    let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
-                    mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, false, args.count);
-                }
-                catch (e) { dactyl.beep(); }
+                let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
+                mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, false, args.count);
             },
             { count: true });
 
         mappings.add(myModes, ["#"],
             "Select previous message from the same sender",
             function (args) {
-                try {
-                    let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
-                    mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, true, args.count);
-                }
-                catch (e) { dactyl.beep(); }
+                let author = gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor.toLowerCase();
+                mail.selectMessage(function (msg) msg.mime2DecodedAuthor.toLowerCase().indexOf(author) == 0, true, true, true, args.count);
             },
             { count: true });
 
         // SENDING MESSAGES
         mappings.add(myModes, ["m"],
             "Compose a new message",
-            function () { commandline.open(":", "mail -subject=", modes.EX); });
+            function () { CommandExMode().open("mail -subject="); });
 
         mappings.add(myModes, ["M"],
             "Compose a new message to the sender of selected mail",
             function () {
-              try {
-                  let to = mail._escapeRecipient(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor);
-                  commandline.open(":", "mail " + to + " -subject=", modes.EX);
-              }
-              catch (e) {
-                  dactyl.beep();
-              }
+                let to = mail._escapeRecipient(gDBView.hdrForFirstSelectedMessage.mime2DecodedAuthor);
+                CommandExMode().open("mail " + to + " -subject=");
             });
 
         mappings.add(myModes, ["r"],
@@ -658,15 +643,15 @@ const Mail = Module("mail", {
         // MOVING MAIL
         mappings.add(myModes, ["c"],
             "Change folders",
-            function () { commandline.open(":", "goto ", modes.EX); });
+            function () { CommandExMode().open("goto "); });
 
         mappings.add(myModes, ["s"],
             "Move selected messages",
-            function () { commandline.open(":", "moveto ", modes.EX); });
+            function () { CommandExMode().open("moveto "); });
 
         mappings.add(myModes, ["S"],
             "Copy selected messages",
-            function () { commandline.open(":", "copyto ", modes.EX); });
+            function () { CommandExMode().open("copyto "); });
 
         mappings.add(myModes, ["<C-s>"],
             "Archive message",

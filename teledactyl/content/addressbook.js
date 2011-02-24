@@ -144,7 +144,7 @@ const Addressbook = Module("addressbook", {
                 else
                     displayName = "-name=\"" + displayName.replace(/"/g, "") + "\"";
 
-                commandline.open(":", "contact " + address + " " + displayName, modes.EX);
+                CommandExMode().open("contact " + address + " " + displayName);
             });
     },
     services: function initServices(dactyl, modules, window) {
