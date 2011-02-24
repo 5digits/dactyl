@@ -42,7 +42,7 @@ const Addressbook = Module("addressbook", {
     // TODO: add telephone number support
     list: function (filter, newMail) {
         let addresses = [];
-        let dirs = abManager.directories;
+        let dirs = services.abManager.directories;
         let lowerFilter = filter.toLowerCase();
 
         while (dirs.hasMoreElements()) {
@@ -146,6 +146,9 @@ const Addressbook = Module("addressbook", {
 
                 commandline.open(":", "contact " + address + " " + displayName, modes.EX);
             });
+    },
+    services: function initServices(dactyl, modules, window) {
+        services.add("abManager", "@mozilla.org/abmanager;1", Ci.nsIAbManager);
     }
 });
 
