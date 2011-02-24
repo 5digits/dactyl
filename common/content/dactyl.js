@@ -483,10 +483,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         try {
             if (elem instanceof Document)
                 elem = elem.defaultView;
-            if (elem instanceof Window)
-                services.focus.focusedWindow = elem;
-            else
+            if (elem instanceof Element)
                 services.focus.setFocus(elem, flags);
+            else if (elem instanceof Window)
+                services.focus.focusedWindow = elem;
         }
         catch (e) {
             util.dump(elem);
@@ -531,6 +531,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     this.ignoreFocus = true;
                     if (win.frameElement)
                         win.frameElement.blur();
+                    // Grr.
+                    if (content.document.activeElement instanceof HTMLIFrameElement)
+                        content.document.activeElement.blur();
                 });
             }
         }
