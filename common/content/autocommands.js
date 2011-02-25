@@ -138,12 +138,13 @@ var AutoCommands = Module("autocommands", {
         if (options.get("eventignore").has(event))
             return;
 
-
         dactyl.echomsg('Executing ' + event + ' Auto commands for "*"', 8);
 
         let lastPattern = null;
-        var { uri, doc } = args;
-        if (!uri)
+        var { url, doc } = args;
+        if (url)
+            uri = util.newURI(url);
+        else
             var { uri, doc } = buffer;
 
         event = event.toLowerCase();
