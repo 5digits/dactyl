@@ -237,7 +237,7 @@ var AutoCommands = Module("autocommands", {
                 function (args) {
                     // Vim compatible
                     if (args.length == 0)
-                        return void dactyl.echomsg(_("msg.noMatchingAutocmd"));
+                        return void dactyl.echomsg(_("autocmd.noMatching"));
 
                     let [event, url] = args;
                     let defaultURL = url || buffer.uri.spec;
