@@ -409,7 +409,7 @@ var Tabs = Module("tabs", {
      */
     selectAlternateTab: function () {
         dactyl.assert(tabs.alternate != null && tabs.getTab() != tabs.alternate,
-            "E23: No alternate page");
+                      _("buffer.noAlternate"));
         tabs.select(tabs.alternate);
     },
 
@@ -476,9 +476,9 @@ var Tabs = Module("tabs", {
         matches = completion.runCompleter("buffer", buffer).map(function (obj) obj.tab);
 
         if (matches.length == 0)
-            dactyl.echoerr("E94: No matching buffer for " + buffer);
+            dactyl.echoerr(_("buffer.noMatching", buffer));
         else if (matches.length > 1 && !allowNonUnique)
-            dactyl.echoerr("E93: More than one match for " + buffer);
+            dactyl.echoerr(_("buffer.multipleMatching", buffer));
         else {
             let start = matches.indexOf(tabs.getTab());
             if (start == -1 && reverse)
@@ -565,9 +565,9 @@ var Tabs = Module("tabs", {
                     }
 
                     if (removed > 0)
-                        dactyl.echomsg(removed + " fewer tab(s)", 9);
+                        dactyl.echomsg(_("buffer.fewer", removed, removed == 1 ? "" : "s"), 9);
                     else
-                        dactyl.echoerr("E94: No matching tab for " + arg);
+                        dactyl.echoerr(_("buffer.noMatching", arg));
                 }
                 else // just remove the current tab
                     tabs.remove(tabs.getTab(), Math.max(count, 1), special);
@@ -644,7 +644,7 @@ var Tabs = Module("tabs", {
                     if (/^\d+$/.test(arg))
                         tabs.select("-" + arg, true);
                     else
-                        dactyl.echoerr("E488: Trailing characters");
+                        dactyl.echoerr(_("error.trailing"));
                 }
                 else if (count > 0)
                     tabs.select("-" + count, true);
@@ -667,7 +667,7 @@ var Tabs = Module("tabs", {
 
                     // count is ignored if an arg is specified, as per Vim
                     if (arg) {
-                        dactyl.assert(/^\d+$/.test(arg), "E488: Trailing characters");
+                        dactyl.assert(/^\d+$/.test(arg), _("error.trailing"));
                         index = arg - 1;
                     }
                     else
@@ -736,7 +736,7 @@ var Tabs = Module("tabs", {
 
                     // FIXME: tabmove! N should probably produce an error
                     dactyl.assert(!arg || /^([+-]?\d+)$/.test(arg),
-                        "E488: Trailing characters");
+                                  _("error.trailing"));
 
                     // if not specified, move to after the last tab
                     tabs.move(config.tabbrowser.mCurrentTab, arg || "$", args.bang);
@@ -764,11 +764,7 @@ var Tabs = Module("tabs", {
 
             commands.add(["tabde[tach]"],
                 "Detach current tab to its own window",
-                function () {
-                    dactyl.assert(tabs.count > 1, "Can't detach the last tab");
-
-                    tabs.detachTab(null);
-                },
+                function () { tabs.detachTab(null); },
                 { argCount: "0" });
 
             commands.add(["tabdu[plicate]"],
@@ -795,13 +791,13 @@ var Tabs = Module("tabs", {
                 "Attach the current tab to another window",
                 function (args) {
                     dactyl.assert(args.length <= 2 && !args.some(function (i) !/^\d+$/.test(i)),
-                        "E488: Trailing characters");
+                                  _("error.trailing"));
 
                     let [winIndex, tabIndex] = args.map(parseInt);
                     let win = dactyl.windows[winIndex - 1];
 
-                    dactyl.assert(win, "Window " + winIndex + " does not exist");
-                    dactyl.assert(win != window, "Can't reattach to the same window");
+                    dactyl.assert(win, _("window.noIndex", winIndex));
+                    dactyl.assert(win != window, _("window.cantAttachSame"));
 
                     let browser = win.getBrowser();
                     let dummy = browser.addTab("about:blank");
@@ -846,7 +842,7 @@ var Tabs = Module("tabs", {
                                 return;
                             }
 
-                        dactyl.echoerr("Exxx: No matching closed tab");
+                        dactyl.echoerr(_("buffer.noClosed"));
                     }
                 }, {
                     argCount: "?",

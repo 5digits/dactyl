@@ -224,7 +224,7 @@ var Abbreviations = Module("abbreviations", {
 
         // TODO: Move this to an ItemList to show this automatically
         if (list.*.length() === list.text().length() + 2)
-            dactyl.echomsg("No abbreviations found");
+            dactyl.echomsg(_("abbrev.none"));
         else
             commandline.commandOutput(list);
     }
@@ -256,7 +256,7 @@ var Abbreviations = Module("abbreviations", {
                 function (args) {
                     let [lhs, rhs] = args;
                     dactyl.assert(!args.length || abbreviations._check.test(lhs),
-                                  "E474: Invalid argument");
+                                  _("error.invalidArgument"));
 
                     if (!rhs)
                         abbreviations.list(modes, lhs || "");
@@ -296,12 +296,12 @@ var Abbreviations = Module("abbreviations", {
             commands.add([ch + "una[bbreviate]"],
                 "Remove an abbreviation" + modeDescription,
                 function (args) {
-                    util.assert(args.bang ^ !!args[0], "Argument or ! required");
+                    util.assert(args.bang ^ !!args[0], _("error.argumentOrBang"));
 
                     if (args.bang)
                         args["-group"].clear(modes);
                     else if (!args["-group"].remove(modes, args[0]))
-                        return dactyl.echoerr("E24: No such abbreviation");
+                        return dactyl.echoerr(_("abbrev.noSuch"));
                 }, {
                     argCount: "?",
                     bang: true,

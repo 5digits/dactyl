@@ -163,6 +163,7 @@ var Overlay = Module("Overlay", {
                      "highlight",
                      "io",
                      "javascript",
+                     "messages",
                      "options",
                      "overlay",
                      "prefs",

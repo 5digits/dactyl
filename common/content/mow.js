@@ -36,6 +36,7 @@ var MOW = Module("mow", {
 
         events.listen(window, this, "windowEvents");
 
+        modules.mow = this;
         let fontSize = util.computedStyle(document.documentElement).fontSize;
         styles.system.add("font-size", "dactyl://content/buffer.xhtml",
                           "body { font-size: " + fontSize + "; } \
@@ -126,7 +127,7 @@ var MOW = Module("mow", {
             data.document = this.document;
             output.appendChild(data.message);
 
-            this.messages.push(data);
+            this._("push", data);
         }
         else {
             let style = isString(data) ? "pre" : "nowrap";
@@ -305,7 +306,7 @@ var MOW = Module("mow", {
         mappings.add([modes.COMMAND],
             ["g<lt>"], "Redisplay the last command output",
             function () {
-                dactyl.assert(commandline.lastOutput, "No previous command output");
+                dactyl.assert(commandline.lastOutput, _("mow.noPreviousOutput"));
                 mow.echo(mow.lastOutput, "Normal");
             });
 

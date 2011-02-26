@@ -195,11 +195,12 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             setOverLink.superapply(this, arguments);
             switch (options["showstatuslinks"]) {
             case "status":
-                statusline.updateUrl(link ? "Link: " + link : null);
+                statusline.updateUrl(link ? _("status.link", link) : null);
                 break;
             case "command":
                 if (link)
-                    dactyl.echo("Link: " + link, commandline.DISALLOW_MULTILINE);
+                    dactyl.echo(_("status.link", link),
+                                commandline.DISALLOW_MULTILINE);
                 else
                     commandline.clear();
                 break;

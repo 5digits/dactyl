@@ -89,7 +89,7 @@ var QuickMarks = Module("quickmarks", {
         if (url)
             dactyl.open(url, where);
         else
-            dactyl.echoerr("E20: QuickMark not set");
+            dactyl.echoerr(_("quickmark.notSet"));
     },
 
     /**
@@ -105,12 +105,12 @@ var QuickMarks = Module("quickmarks", {
 
         marks = Array.concat(lowercaseMarks, uppercaseMarks, numberMarks);
 
-        dactyl.assert(marks.length > 0, "No QuickMarks set");
+        dactyl.assert(marks.length > 0, _("quickmark.none"));
 
         if (filter.length > 0) {
             let pattern = util.charListToRegexp(filter, "a-zA-Z0-9");
             marks = marks.filter(function (qmark) pattern.test(qmark));
-            dactyl.assert(marks.length >= 0, "E283: No QuickMarks matching " + filter.quote());
+            dactyl.assert(marks.length >= 0, _("quickmark.noMatching", filter.quote()));
         }
 
         commandline.commandOutput(template.tabular(["QuickMark", "URL"], [],
@@ -124,8 +124,8 @@ var QuickMarks = Module("quickmarks", {
             function (args) {
                 // TODO: finish arg parsing - we really need a proper way to do this. :)
                 // assert(args.bang ^ args[0])
-                dactyl.assert( args.bang ||  args[0], "E471: Argument required");
-                dactyl.assert(!args.bang || !args[0], "E474: Invalid argument");
+                dactyl.assert( args.bang ||  args[0], _("error.argumentRequired"));
+                dactyl.assert(!args.bang || !args[0], _("error.invalidArgument"));
 
                 if (args.bang)
                     quickmarks.removeAll();
@@ -142,7 +142,7 @@ var QuickMarks = Module("quickmarks", {
             "Mark a URL with a letter for quick access",
             function (args) {
                 dactyl.assert(/^[a-zA-Z0-9]$/.test(args[0]),
-                    "E191: Argument must be an ASCII letter or digit");
+                              _("quickmark.invalid"));
                 if (!args[1])
                     quickmarks.add(args[0], buffer.uri.spec);
                 else
@@ -197,7 +197,7 @@ var QuickMarks = Module("quickmarks", {
         mappings.add(myModes,
             ["M"], "Add new QuickMark for current URL",
             function ({ arg }) {
-                dactyl.assert(/^[a-zA-Z0-9]$/.test(arg), "E191: Argument must be an ASCII letter or digit");
+                dactyl.assert(/^[a-zA-Z0-9]$/.test(arg), _("quickmark.invalid"));
                 quickmarks.add(arg, buffer.uri.spec);
             },
             { arg: true });

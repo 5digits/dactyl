@@ -344,7 +344,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         if (isinstance(str, ["Error", "Exception"]))
             dactyl.reportError(str);
-        if (typeof str == "object" && "echoerr" in str)
+        if (isObject(str) && "echoerr" in str)
             str = str.echoerr;
         else if (isinstance(str, ["Error"]) && str.fileName)
             str = <>{str.fileName.replace(/^.* -> /, "")}: {str.lineNumber}: {str}</>;
@@ -377,7 +377,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {number} flags These control the multi-line message behavior.
      *     See {@link CommandLine#echo}.
      */
-    echomsg: function (str, verbosity, flags) {
+    echomsg: function echomsg(str, verbosity, flags) {
         if (verbosity == null)
             verbosity = 0; // verbosity level is exclusionary
 
@@ -1044,12 +1044,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             if (helpFile in services["dactyl:"].FILE_MAP)
                 dactyl.open("dactyl://help/" + helpFile, { from: "help" });
             else
-                dactyl.echomsg("Sorry, help file " + helpFile.quote() + " not found");
+                dactyl.echomsg(_("help.noFile", helpFile.quote()));
             return;
         }
 
         let page = this.findHelp(topic, consolidated);
-        dactyl.assert(page != null, "E149: Sorry, no help for " + topic);
+        dactyl.assert(page != null, _("help.noTopic", topic));
 
         dactyl.open("dactyl://help/" + page, { from: "help" });
     },
@@ -1066,7 +1066,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     loadPlugins: function (args, force) {
         function sourceDirectory(dir) {
-            dactyl.assert(dir.isReadable(), "E484: Can't open file " + dir.path);
+            dactyl.assert(dir.isReadable(), _("io.notReadable", dir.path));
 
             dactyl.log("Sourcing plugin directory: " + dir.path + "...", 3);
 
@@ -1096,12 +1096,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return;
         }
 
-        dactyl.echomsg('Searching for "plugins/**/*.{js,' + config.fileExtension + '}" in '
-                            + [dir.path.replace(/.plugins$/, "") for ([, dir] in Iterator(dirs))]
-                                .join(",").quote(), 2);
+        dactyl.echomsg(
+            _("plugin.searchingForIn",
+                ("plugins/**/*.{js," + config.fileExtension + "}").quote(),
+                [dir.path.replace(/.plugins$/, "") for ([, dir] in Iterator(dirs))]
+                    .join(",").quote()),
+            2);
 
         dirs.forEach(function (dir) {
-            dactyl.echomsg("Searching for " + (dir.path + "/**/*.{js," + config.fileExtension + "}").quote(), 3);
+            dactyl.echomsg(_("plugin.searchingFor", (dir.path + "/**/*.{js," + config.fileExtension + "}").quote()), 3);
             sourceDirectory(dir);
         });
     },
@@ -1705,14 +1708,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function (args) {
                 let dialog = args[0];
 
-                dactyl.assert(dialog in config.dialogs, "E475: Invalid argument: " + dialog);
+                dactyl.assert(dialog in config.dialogs,
+                              _("error.invalidArgument", dialog));
                 dactyl.assert(!config.dialogs[dialog][2] || config.dialogs[dialog][2](),
-                              "Dialog " + dialog + " not available");
+                              _("dialog.notAvailable", dialog));
                 try {
                     config.dialogs[dialog][1]();
                 }
                 catch (e) {
-                    dactyl.echoerr("Error opening " + dialog.quote() + ": " + (e.message || e));
+                    dactyl.echoerr(_("error.cantOpen", dialog.quote(), e.message || e));
                 }
             }, {
                 argCount: "1",
@@ -1730,7 +1734,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let items = Dactyl.getMenuItems();
 
                 dactyl.assert(items.some(function (i) i.fullMenuPath == arg),
-                    "E334: Menu not found: " + arg);
+                              _("emenu.notFound", arg));
 
                 for (let [, item] in Iterator(items)) {
                     if (item.fullMenuPath == arg)
@@ -1771,7 +1775,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             commands.add([command.name],
                 command.description,
                 function (args) {
-                    dactyl.assert(!args.bang, "E478: Don't panic!");
+                    dactyl.assert(!args.bang, _("help.dontPanic"));
                     dactyl.help(args.literalArg, consolidated);
                 }, {
                     argCount: "?",
@@ -1873,7 +1877,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 commands.add(names, desc,
                     function (args) {
                         let toolbar = findToolbar(args[0] || "");
-                        dactyl.assert(toolbar, "E474: Invalid argument");
+                        dactyl.assert(toolbar, _("error.invalidArgument"));
                         action(toolbar);
                         events.checkFocus();
                     }, {
@@ -1959,9 +1963,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         let afterTime = Date.now();
 
                         if (afterTime - beforeTime >= 100)
-                            dactyl.echo("Total time: " + ((afterTime - beforeTime) / 1000.0).toFixed(2) + " sec");
+                            dactyl.echo(_("time.total", ((afterTime - beforeTime) / 1000.0).toFixed(2) + " sec"));
                         else
-                            dactyl.echo("Total time: " + (afterTime - beforeTime) + " msec");
+                            dactyl.echo(_("time.total", (afterTime - beforeTime) + " msec"));
                     }
                 }
                 catch (e) {
@@ -2078,7 +2082,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 }
             }
             catch (e) {
-                dactyl.echoerr("Parsing command line options: " + e);
+                dactyl.echoerr(_("dactyl.parsingCommandLine", e));
             }
 
             dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);

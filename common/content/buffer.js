@@ -574,7 +574,7 @@ var Buffer = Module("buffer", {
                             file.create(File.NORMAL_FILE_TYPE, octal(644));
                     }
                     catch (e) {
-                        util.assert(false, "Invalid destination: " + e.name);
+                        util.assert(false, _("save.invalidDestination", e.name));
                     }
 
                     buffer.saveURI(uri, file);
@@ -978,7 +978,7 @@ var Buffer = Module("buffer", {
      */
     setZoom: function setZoom(value, fullZoom) {
         dactyl.assert(value >= Buffer.ZOOM_MIN || value <= Buffer.ZOOM_MAX,
-            "Zoom value out of range (" + Buffer.ZOOM_MIN + " - " + Buffer.ZOOM_MAX + "%)");
+                      _("zoom.outOfRange", Buffer.ZOOM_MIN, Buffer.ZOOM_MAX));
 
         if (fullZoom !== undefined)
             ZoomManager.useFullZoom = fullZoom;
@@ -986,7 +986,7 @@ var Buffer = Module("buffer", {
             ZoomManager.zoom = value / 100;
         }
         catch (e if e == Cr.NS_ERROR_ILLEGAL_VALUE) {
-            return dactyl.echoerr("Illegal zoom value"); // XXX
+            return dactyl.echoerr(_("zoom.illegal"));
         }
 
         if ("FullZoom" in window)
@@ -1237,16 +1237,16 @@ var Buffer = Module("buffer", {
 
                 // FIXME: arg handling is a bit of a mess, check for filename
                 dactyl.assert(!arg || arg[0] == ">" && !util.OS.isWindows,
-                    "E488: Trailing characters");
+                              _("error.trailing"));
 
                 prefs.withContext(function () {
                     if (arg) {
                         prefs.set("print.print_to_file", "true");
                         prefs.set("print.print_to_filename", io.File(arg.substr(1)).path);
-                        dactyl.echomsg("Printing to file: " + arg.substr(1));
+                        dactyl.echomsg(_("print.toFile", arg.substr(1)));
                     }
                     else
-                        dactyl.echomsg("Sending to printer...");
+                        dactyl.echomsg(_("print.sending"));
 
                     prefs.set("print.always_print_silent", args.bang);
                     prefs.set("print.show_print_progress", !args.bang);
@@ -1255,9 +1255,9 @@ var Buffer = Module("buffer", {
                 });
 
                 if (arg)
-                    dactyl.echomsg("Printed: " + arg.substr(1));
+                    dactyl.echomsg(_("print.printed", arg.substr(1)));
                 else
-                    dactyl.echomsg("Print job sent.");
+                    dactyl.echomsg(messgaes.print.sent());
             },
             {
                 argCount: "?",
@@ -1271,7 +1271,8 @@ var Buffer = Module("buffer", {
                 let arg = args[0];
                 let opt = options.get("pageinfo");
 
-                dactyl.assert(!arg || opt.validator(opt.parse(arg)), "E475: Invalid argument: " + arg);
+                dactyl.assert(!arg || opt.validator(opt.parse(arg)),
+                              _("error.invalidArgument", arg));
                 buffer.showPageInfo(true, arg);
             },
             {
@@ -1290,7 +1291,7 @@ var Buffer = Module("buffer", {
                 let titles = buffer.alternateStyleSheets.map(function (stylesheet) stylesheet.title);
 
                 dactyl.assert(!arg || titles.indexOf(arg) >= 0,
-                    "E475: Invalid argument: " + arg);
+                              _("error.invalidArgument", arg));
 
                 if (options["usermode"])
                     options["usermode"] = false;
@@ -1331,14 +1332,15 @@ var Buffer = Module("buffer", {
 
                     if (/^>>/.test(filename)) {
                         let file = io.File(filename.replace(/^>>\s*/, ""));
-                        dactyl.assert(args.bang || file.exists() && file.isWritable(), file.path.quote() + ": E212: Can't open file for writing");
+                        dactyl.assert(args.bang || file.exists() && file.isWritable(),
+                                      _("io.notWriteable", file.path.quote()));
                         return buffer.viewSourceExternally(buffer.focusedFrame.document,
                             function (tmpFile) {
                                 try {
                                     file.write(tmpFile, ">>");
                                 }
                                 catch (e) {
-                                    dactyl.echoerr(file.path.quote() + ": E212: Can't open file for writing");
+                                    dactyl.echoerr(_("io.notWriteable", file.path.quote()));
                                 }
                             });
                     }
@@ -1348,7 +1350,7 @@ var Buffer = Module("buffer", {
                     if (filename.substr(-1) === File.PATH_SEP || file.exists() && file.isDirectory())
                         file.append(Buffer.getDefaultNames(doc)[0][0]);
 
-                    dactyl.assert(args.bang || !file.exists(), "E13: File exists (add ! to override)");
+                    dactyl.assert(args.bang || !file.exists(), _("io.exists"));
 
                     chosenData = { file: file, uri: util.newURI(doc.location.href) };
                 }
@@ -1414,7 +1416,7 @@ var Buffer = Module("buffer", {
                     level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
                 else
-                    dactyl.assert(false, "E488: Trailing characters");
+                    dactyl.assert(false, _("error.trailing"));
 
                 buffer.setZoom(level, args.bang);
             },
@@ -1682,7 +1684,7 @@ var Buffer = Module("buffer", {
             "Open (]put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
-                dactyl.assert(url, "No clipboard data");
+                dactyl.assert(url, _("error.clipboardEmpty"));
                 dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB, background: true });
             });
 
@@ -1690,7 +1692,7 @@ var Buffer = Module("buffer", {
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
                 let url = dactyl.clipboardRead();
-                dactyl.assert(url, "No clipboard data");
+                dactyl.assert(url, _("error.clipboardEmpty"));
                 dactyl.open(url);
             });
 
@@ -1698,7 +1700,7 @@ var Buffer = Module("buffer", {
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
-                dactyl.assert(url, "No clipboard data");
+                dactyl.assert(url, _("error.clipboardEmpty"));
                 dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB });
             });
 

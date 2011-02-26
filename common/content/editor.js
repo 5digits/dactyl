@@ -252,7 +252,7 @@ var Editor = Module("editor", {
 
         let args = options.get("editor").format(args);
 
-        dactyl.assert(args.length >= 1, "No editor specified");
+        dactyl.assert(args.length >= 1, _("editor.noEditor"));
 
         io.run(args.shift(), args, blocking);
     },

@@ -473,9 +473,9 @@ var Events = Module("events", {
             catch (e) {
                 dactyl.reportError(e);
                 if (e.message == "Interrupted")
-                    dactyl.echoerr("Interrupted", commandline.FORCE_SINGLELINE);
+                    dactyl.echoerr(_("error.interrupted"), commandline.FORCE_SINGLELINE);
                 else
-                    dactyl.echoerr("Processing " + event.type + " event: " + (e.echoerr || e),
+                    dactyl.echoerr(_("event.error", event.type, e.echoerr || e),
                                    commandline.FORCE_SINGLELINE);
             }
         };
@@ -498,7 +498,7 @@ var Events = Module("events", {
 
     set recording(macro) {
         dactyl.assert(macro == null || /[a-zA-Z0-9]/.test(macro),
-                      "E354: Invalid register name: '" + macro + "'");
+                      _("macro.invalid", macro));
 
         modes.recording = !!macro;
 
@@ -517,7 +517,7 @@ var Events = Module("events", {
             });
 
             dactyl.log("Recorded " + this.recording + ": " + this._macroKeys.join(""), 9);
-            dactyl.echomsg("Recorded macro '" + this.recording + "'");
+            dactyl.echomsg(_("macro.recorded", this.recording));
         }
         this._recording = macro || null;
     },
@@ -530,17 +530,11 @@ var Events = Module("events", {
      */
     playMacro: function (macro) {
         let res = false;
-        if (!/[a-zA-Z0-9@]/.test(macro) && macro.length == 1) {
-            dactyl.echoerr("E354: Invalid register name: '" + macro + "'");
-            return false;
-        }
+        dactyl.assert(!/[a-zA-Z0-9@]/.test(macro) && macro.length == 1,
+                      _("macro.invalid", macro));
 
-        if (macro == "@") { // use lastMacro if it's set
-            if (!this._lastMacro) {
-                dactyl.echoerr("E748: No previously used register");
-                return false;
-            }
-        }
+        if (macro == "@")
+            dactyl.assert(this._lastMacro, _("macro.noPrevious"));
         else
             this._lastMacro = macro.toLowerCase(); // XXX: sets last played macro, even if it does not yet exist
 
@@ -555,7 +549,7 @@ var Events = Module("events", {
         }
         else
             // TODO: ignore this like Vim?
-            dactyl.echoerr("Exxx: Register '" + this._lastMacro + "' not set");
+            dactyl.echoerr(_("macro.notSet", this._lastMacro));
         return res;
     },
 
@@ -1041,13 +1035,13 @@ var Events = Module("events", {
         if (buffer.loaded)
             return true;
 
-        dactyl.echo("Waiting for page to load...", commandline.DISALLOW_MULTILINE);
+        dactyl.echo(_("macro.loadWaiting"), commandline.DISALLOW_MULTILINE);
 
         const maxWaitTime = (time || 25);
         util.waitFor(function () !events.feedingKeys || buffer.loaded, this, maxWaitTime * 1000, true);
 
         if (!buffer.loaded)
-            dactyl.echoerr("Page did not load completely in " + maxWaitTime + " seconds.");
+            dactyl.echoerr(_("macro.loadFailed", maxWaitTime));
 
         return buffer.loaded;
     },
@@ -1192,7 +1186,7 @@ var Events = Module("events", {
                         events.feedingKeys = false;
                         if (modes.replaying) {
                             modes.replaying = false;
-                            this.timeout(function () { dactyl.echomsg("Canceled playback of macro '" + this._lastMacro + "'"); }, 100);
+                            this.timeout(function () { dactyl.echomsg(_("macro.canceled", this._lastMacro)); }, 100);
                         }
                     }
                     else
@@ -1467,14 +1461,14 @@ var Events = Module("events", {
         commands.add(["delmac[ros]"],
             "Delete macros",
             function (args) {
-                dactyl.assert(!args.bang || !args[0], "E474: Invalid argument");
+                dactyl.assert(!args.bang || !args[0], _("error.invalidArgument"));
 
                 if (args.bang)
                     events.deleteMacros();
                 else if (args[0])
                     events.deleteMacros(args[0]);
                 else
-                    dactyl.echoerr("E471: Argument required");
+                    dactyl.echoerr(_("error.argumentRequired"));
             }, {
                 bang: true,
                 completer: function (context) completion.macro(context),
@@ -1522,7 +1516,8 @@ var Events = Module("events", {
         mappings.add([modes.BASE],
             ["<Pass>"], "Pass the events consumed by the last executed mapping",
             function ({ keypressEvents: [event] }) {
-                dactyl.assert(event.dactylSavedEvents, "No events to pass");
+                dactyl.assert(event.dactylSavedEvents,
+                              _("event.nothingToPass"));
                 return function () {
                     events.feedevents(null, event.dactylSavedEvents,
                                       { skipmap: true, isMacro: true, isReplay: true });
@@ -1542,8 +1537,8 @@ var Events = Module("events", {
             ["@", "<play-macro>"], "Play a macro",
             function ({ arg, count }) {
                 count = Math.max(count, 1);
-                while (count-- && events.playMacro(arg))
-                    ;
+                while (count--)
+                    events.playMacro(arg);
             },
             { arg: true, count: true });
 
@@ -1551,7 +1546,7 @@ var Events = Module("events", {
             ["<A-m>s", "<sleep>"], "Sleep for {count} milliseconds before continuing macro playback",
             function ({ command, count }) {
                 let now = Date.now();
-                dactyl.assert(count, "Count required for " + command);
+                dactyl.assert(count, _("error.countRequired", command));
                 if (events.feedingKeys)
                     util.sleep(count);
             },

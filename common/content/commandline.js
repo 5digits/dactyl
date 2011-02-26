@@ -704,7 +704,7 @@ var CommandLine = Module("commandline", {
     messageCount: 0,
     echo: function echo(data, highlightGroup, flags) {
         // dactyl.echo uses different order of flags as it omits the highlight group, change commandline.echo argument order? --mst
-        if (this._silent)
+        if (this._silent || !this.widgets)
             return;
 
         this.messageCount++;

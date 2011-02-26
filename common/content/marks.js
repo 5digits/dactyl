@@ -101,7 +101,7 @@ var Marks = Module("marks", {
     jumpTo: function (char) {
         if (Marks.isURLMark(char)) {
             let mark = this._urlMarks.get(char);
-            dactyl.assert(mark, "E20: Mark not set: " + char);
+            dactyl.assert(mark, _("mark.unset", char));
 
             let tab = mark.tab && mark.tab.get();
             if (!tab || !tab.linkedBrowser || tabs.allTabs.indexOf(tab) == -1)
@@ -144,13 +144,13 @@ var Marks = Module("marks", {
         }
         else if (Marks.isLocalMark(char)) {
             let mark = (this._localMarks.get(this.localURI) || {})[char];
-            dactyl.assert(mark, "E20: Mark not set: " + char);
+            dactyl.assert(mark, _("mark.unset", char));
 
             dactyl.log("Jumping to local mark: " + Marks.markToString(char, mark), 5);
             buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
         }
         else
-            dactyl.echoerr("E20: Invalid mark");
+            dactyl.echoerr(_("mark.invalid"));
 
     },
 
@@ -162,12 +162,12 @@ var Marks = Module("marks", {
     list: function (filter) {
         let marks = this.all;
 
-        dactyl.assert(marks.length > 0, "No marks set");
+        dactyl.assert(marks.length > 0, _("mark.none"));
 
         if (filter.length > 0) {
             let pattern = util.charListToRegexp(filter, "a-zA-Z");
             marks = marks.filter(function ([k, ]) pattern.test(k));
-            dactyl.assert(marks.length > 0, "E283: No marks matching " + filter.quote());
+            dactyl.assert(marks.length > 0, _("mark.noMatching", filter.quote()));
         }
 
         commandline.commandOutput(
@@ -215,8 +215,7 @@ var Marks = Module("marks", {
         mappings.add(myModes,
             ["m"], "Set mark at the cursor position",
             function ({ arg }) {
-                dactyl.assert(/^[a-zA-Z]$/.test(arg),
-                    "E191: Argument must be an ASCII letter");
+                dactyl.assert(/^[a-zA-Z]$/.test(arg), _("mark.invalid"));
                 marks.add(arg);
             },
             { arg: true });
@@ -235,8 +234,8 @@ var Marks = Module("marks", {
                 let arg = args[0] || "";
 
                 // assert(special ^ args)
-                dactyl.assert( special ||  arg, "E471: Argument required");
-                dactyl.assert(!special || !arg, "E474: Invalid argument");
+                dactyl.assert( special ||  arg, _("error.argumentRequired"));
+                dactyl.assert(!special || !arg, _("error.invalidArgument"));
 
                 marks.remove(arg, special);
             },
@@ -250,9 +249,8 @@ var Marks = Module("marks", {
             "Mark current location within the web page",
             function (args) {
                 let mark = args[0] || "";
-                dactyl.assert(mark.length <= 1, "E488: Trailing characters");
-                dactyl.assert(/[a-zA-Z]/.test(mark),
-                    "E191: Argument must be an ASCII letter");
+                dactyl.assert(mark.length <= 1, _("error.trailing"));
+                dactyl.assert(/[a-zA-Z]/.test(mark), _("mark.invalid"));
 
                 marks.add(mark);
             },

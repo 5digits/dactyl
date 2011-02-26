@@ -963,7 +963,7 @@ var Hints = Module("hints", {
         case "wordstartswith": return wordStartsWithMatcher(hintString, true);
         case "firstletters"  : return wordStartsWithMatcher(hintString, false);
         case "custom"        : return dactyl.plugins.customHintMatcher(hintString);
-        default              : dactyl.echoerr("Invalid hintmatching type: " + hintMatching);
+        default              : dactyl.echoerr(_("hints.noMatcher", hintMatching));
         }
         return null;
     }, //}}}

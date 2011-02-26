@@ -118,7 +118,7 @@ var Map = Class("Map", {
 
         if (this.executing)
             util.dumpStack("Attempt to execute mapping recursively: " + args.command);
-        dactyl.assert(!this.executing, "Attempt to execute mapping recursively: " + args.command);
+        dactyl.assert(!this.executing, _("map.recursive", args.command));
 
         try {
             this.executing = true;
@@ -427,7 +427,7 @@ var Mappings = Module("mappings", {
 
         // TODO: Move this to an ItemList to show this automatically
         if (list.*.length() === list.text().length() + 2)
-            dactyl.echomsg("No mapping found");
+            dactyl.echomsg(_("map.none"));
         else
             commandline.commandOutput(list);
     }
@@ -459,7 +459,7 @@ var Mappings = Module("mappings", {
                     mappings.list(mapmodes, mappings.expandLeader(lhs), hives);
                 else {
                     util.assert(args["-group"].modifiable,
-                                "Cannot change mappings in the builtin group");
+                                _("map.builtinImmutable"));
 
                     args["-group"].add(mapmodes, [lhs],
                         args["-description"],
@@ -579,10 +579,9 @@ var Mappings = Module("mappings", {
             commands.add([ch + "unm[ap]"],
                 "Remove a mapping" + modeDescription,
                 function (args) {
-                    util.assert(args["-group"].modifiable,
-                                "Cannot change mappings in the builtin group");
+                    util.assert(args["-group"].modifiable, _("map.builtinImmutable"));
 
-                    util.assert(args.bang ^ !!args[0], "Argument or ! required");
+                    util.assert(args.bang ^ !!args[0], _("error.argumentOrBang"));
 
                     let mapmodes = array.uniq(args["-modes"].map(findMode));
 
@@ -596,7 +595,7 @@ var Mappings = Module("mappings", {
                         }
 
                     if (!found && !args.bang)
-                        dactyl.echoerr("E31: No such mapping");
+                        dactyl.echoerr(_("map.noSuch", args[0]));
                 },
                 {
                     argCount: "?",

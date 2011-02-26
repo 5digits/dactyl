@@ -26,7 +26,7 @@ var History = Module("history", {
                       (order = "SORT_BY_" + order[2].toUpperCase() + "_" +
                         (order[1] == "+" ? "ASCENDING" : "DESCENDING")) &&
                       order in options,
-                     "Invalid sort order");
+                     _("error.invalidSort", order));
 
         options.sortingMode = options[order];
         options.resultType = options.RESULTS_AS_URI;
@@ -113,9 +113,9 @@ var History = Module("history", {
             return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0)
-            dactyl.echoerr("E283: No history matching " + filter.quote());
+            dactyl.echoerr(_("history.noMatching", filter.quote()));
         else
-            dactyl.echoerr("No history set");
+            dactyl.echoerr(_("history.none"));
         return null;
     }
 }, {
@@ -137,7 +137,7 @@ var History = Module("history", {
                         for (let [i, ent] in Iterator(sh.slice(0, sh.index).reverse()))
                             if (ent.URI.spec == url)
                                 return void window.getWebNavigation().gotoIndex(i);
-                        dactyl.echoerr("Exxx: URL not found in history");
+                        dactyl.echoerr(_("history.noURL"));
                     }
                     else
                         history.stepTo(-Math.max(args.count, 1));
@@ -177,7 +177,7 @@ var History = Module("history", {
                         for (let [i, ent] in Iterator(sh.slice(sh.index + 1)))
                             if (ent.URI.spec == url)
                                 return void window.getWebNavigation().gotoIndex(i);
-                        dactyl.echoerr("Exxx: URL not found in history");
+                        dactyl.echoerr(_("history.noURL"));
                     }
                     else
                         history.stepTo(Math.max(args.count, 1));

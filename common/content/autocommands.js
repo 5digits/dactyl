@@ -138,7 +138,7 @@ var AutoCommands = Module("autocommands", {
         if (options.get("eventignore").has(event))
             return;
 
-        dactyl.echomsg('Executing ' + event + ' Auto commands for "*"', 8);
+        dactyl.echomsg(_("autocmd.executing", event, "*".quote()), 8);
 
         let lastPattern = null;
         var { url, doc } = args;
@@ -156,10 +156,10 @@ var AutoCommands = Module("autocommands", {
             for (let autoCmd in values(hive._store))
                 if (autoCmd.eventName === event && autoCmd.filter(uri, doc)) {
                     if (!lastPattern || lastPattern !== String(autoCmd.filter))
-                        dactyl.echomsg("Executing " + event + " Auto commands for " + autoCmd.filter, 8);
+                        dactyl.echomsg(_("autocmd.executing", event, autoCmd.filter), 8);
 
                     lastPattern = String(autoCmd.filter);
-                    dactyl.echomsg("autocommand " + autoCmd.command, 9);
+                    dactyl.echomsg(_("autocmd.autocommand", autoCmd.command), 9);
 
                     dactyl.trapErrors(autoCmd.command, autoCmd, args);
                 }
@@ -181,7 +181,7 @@ var AutoCommands = Module("autocommands", {
 
                     events = Option.parse.stringlist(event);
                     dactyl.assert(events.every(function (event) validEvents.indexOf(event.toLowerCase()) >= 0),
-                                  "E216: No such group or event: " + event);
+                                  _("autocmd.noGroup", event));
                 }
 
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
@@ -237,7 +237,7 @@ var AutoCommands = Module("autocommands", {
                 function (args) {
                     // Vim compatible
                     if (args.length == 0)
-                        return void dactyl.echomsg("No matching autocommands");
+                        return void dactyl.echomsg(_("msg.noMatchingAutocmd"));
 
                     let [event, url] = args;
                     let defaultURL = url || buffer.uri.spec;
@@ -245,11 +245,11 @@ var AutoCommands = Module("autocommands", {
 
                     // TODO: add command validators
                     dactyl.assert(event != "*",
-                                  "E217: Can't execute autocommands for ALL events");
+                                  _("autocmd.cantExecuteAll"));
                     dactyl.assert(validEvents.indexOf(event) >= 0,
-                                  "E216: No such group or event: " + args);
+                                  _("autocmd.noGroup", args));
                     dactyl.assert(autocommands.get(event).some(function (c) c.patterns.some(function (re) re.test(defaultURL) ^ !re.result)),
-                                  "No matching autocommands");
+                                  _("autocmd.noMatching"));
 
                     if (this.name == "doautoall" && dactyl.has("tabs")) {
                         let current = tabs.index();

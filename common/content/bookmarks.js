@@ -344,13 +344,13 @@ var Bookmarks = Module("bookmarks", {
             return dactyl.open(items.map(function (i) i.url), dactyl.NEW_TAB);
 
         if (filter.length > 0 && tags.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.map(String.quote) + " and string: " + filter.quote());
+            dactyl.echoerr(_("bookmark.noMatching", tags.map(String.quote), filter.quote()));
         else if (filter.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching string: " + filter.quote());
+            dactyl.echoerr(_("bookmark.noMatchingString", filter.quote()));
         else if (tags.length > 0)
-            dactyl.echoerr("E283: No bookmarks matching tags: " + tags.map(String.quote));
+            dactyl.echoerr(_("bookmark.noMatchingTags", tags.map(String.quote)));
         else
-            dactyl.echoerr("No bookmarks set");
+            dactyl.echoerr(_("bookmark.none"));
         return null;
     }
 }, {
@@ -433,7 +433,7 @@ var Bookmarks = Module("bookmarks", {
                                    1, commandline.FORCE_SINGLELINE);
                 }
                 else
-                    dactyl.echoerr("Exxx: Could not add bookmark " + opts.title.quote(), commandline.FORCE_SINGLELINE);
+                    dactyl.echoerr(_("bookmark.cantAdd", opts.title.quote()));
             }, {
                 argCount: "?",
                 bang: true,
@@ -489,7 +489,7 @@ var Bookmarks = Module("bookmarks", {
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
                                 bookmarks.remove(Object.keys(bookmarkcache.bookmarks));
-                                dactyl.echomsg("All bookmarks deleted");
+                                dactyl.echomsg(_("bookmark.allGone"));
                             }
                         });
                 else {
