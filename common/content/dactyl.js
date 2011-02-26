@@ -1130,15 +1130,17 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     onClick: function onClick(event) {
-        let command = event.originalTarget.getAttributeNS(NS, "command");
-        if (command && event.button == 0) {
-            event.preventDefault();
+        if (event.originalTarget instanceof Element) {
+            let command = event.originalTarget.getAttributeNS(NS, "command");
+            if (command && event.button == 0) {
+                event.preventDefault();
 
-            if (dactyl.commands[command])
-                dactyl.withSavedValues(["forceNewTab"], function () {
-                    dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
-                    dactyl.commands[command](event);
-                });
+                if (dactyl.commands[command])
+                    dactyl.withSavedValues(["forceNewTab"], function () {
+                        dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
+                        dactyl.commands[command](event);
+                    });
+            }
         }
     },
 
