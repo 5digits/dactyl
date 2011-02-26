@@ -127,7 +127,7 @@ var MOW = Module("mow", {
             data.document = this.document;
             output.appendChild(data.message);
 
-            this._("push", data);
+            this.messages.push(data);
         }
         else {
             let style = isString(data) ? "pre" : "nowrap";
