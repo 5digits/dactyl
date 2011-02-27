@@ -346,7 +346,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             dactyl.reportError(str);
         if (isObject(str) && "echoerr" in str)
             str = str.echoerr;
-        else if (isinstance(str, ["Error"]) && str.fileName)
+        else if (isinstance(str, ["Error", FailedAssertion]) && str.fileName)
             str = <>{str.fileName.replace(/^.* -> /, "")}: {str.lineNumber}: {str}</>;
 
         if (options["errorbells"])
@@ -1405,7 +1405,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {Object} error The error object.
      */
     reportError: function reportError(error, echo) {
-        if (error instanceof FailedAssertion || error.message === "Interrupted") {
+        if (error instanceof FailedAssertion && error.noTrace || error.message === "Interrupted") {
             let context = contexts.context;
             let prefix = context ? context.file + ":" + context.line + ": " : "";
             if (error.message && error.message.indexOf(prefix) !== 0)
@@ -1424,7 +1424,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return;
         if (echo)
             dactyl.echoerr(error, commandline.FORCE_SINGLELINE);
-        util.reportError(error);
+        else
+            util.reportError(error);
     },
 
     /**
