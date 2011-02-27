@@ -548,7 +548,7 @@ var Events = Module("events", {
         }
         else
             // TODO: ignore this like Vim?
-            dactyl.echoerr(_("macro.notSet", this._lastMacro));
+            dactyl.echoerr(_("macro.noSuch", this._lastMacro));
         return res;
     },
 
