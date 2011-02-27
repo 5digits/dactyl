@@ -273,7 +273,7 @@ var Modes = Module("modes", {
         let msg = null;
         if (options.get("showmode").getKey(this.main.name, true))
             msg = this._getModeMessage();
-        if (loaded.commandline)
+        if (msg || loaded.commandline)
             commandline.widgets.mode = msg || null;
     },
 

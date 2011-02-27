@@ -61,19 +61,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         "dactyl-cleanup": function dactyl_cleanup() {
             let modules = dactyl.modules;
 
-            let mods = Object.getOwnPropertyNames(modules).reverse()
-                             .map(function (name) Object.getOwnPropertyDescriptor(modules, name).value);
+            for (let mod in values(modules.moduleList.reverse())) {
+                mod.stale = true;
+                if ("cleanup" in mod)
+                    this.trapErrors("cleanup", mod);
+                if ("destroy" in mod)
+                    this.trapErrors("destroy", mod);
+            }
 
-            for (let mod in values(mods))
-                if (mod instanceof ModuleBase || mod && mod.isLocalModule) {
-                    mod.stale = true;
-                    if ("cleanup" in mod)
-                        this.trapErrors("cleanup", mod);
-                    if ("destroy" in mod)
-                        this.trapErrors("destroy", mod);
-                }
-
-            for (let mod in values(mods))
+            for (let mod in values(modules.ownPropertyValues.reverse()))
                 if (mod instanceof Class && "INIT" in mod && "cleanup" in mod.INIT)
                     this.trapErrors(mod.cleanup, mod, dactyl, modules, window);
 
@@ -145,20 +141,24 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         postCommands: null
     },
 
-    registerObserver: function (type, callback, weak) {
+    registerObserver: function registerObserver(type, callback, weak) {
         if (!(type in this._observers))
             this._observers[type] = [];
         this._observers[type].push(weak ? Cu.getWeakReference(callback) : { get: function () callback });
     },
 
-    unregisterObserver: function (type, callback) {
+    registerObservers: function registerObservers(obj, prop) {
+        for (let [signal, func] in Iterator(obj[prop || "signals"]))
+            this.registerObserver(signal, obj.closure(func), false);
+    },
+
+    unregisterObserver: function unregisterObserver(type, callback) {
         if (type in this._observers)
             this._observers[type] = this._observers[type].filter(function (c) c.get() != callback);
     },
 
     // TODO: "zoom": if the zoom value of the current buffer changed
-    triggerObserver: function (type) {
-        let args = Array.slice(arguments, 1);
+    applyTriggerObserver: function triggerObserver(type, args) {
         if (type in this._observers)
             this._observers[type] = this._observers[type].filter(function (callback) {
                 if (callback.get()) {
@@ -177,6 +177,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     return true;
                 }
             });
+    },
+
+    triggerObserver: function triggerObserver(type) {
+        return this.applyTriggerObserver(type, Array.slice(arguments, 1));
     },
 
     addUsageCommand: function (params) {

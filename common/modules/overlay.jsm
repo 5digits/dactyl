@@ -79,6 +79,7 @@ var Overlay = Module("Overlay", {
                     const module = Class(name, base, prototype, classProperties);
 
                     module.INIT = moduleInit || {};
+                    module.modules = modules;
                     module.prototype.INIT = module.INIT;
                     module.requires = prototype.requires || [];
                     Module.list.push(module);
@@ -143,7 +144,13 @@ var Overlay = Module("Overlay", {
                         sandbox.Math = jsmodules.Math;
                         sandbox.__proto__ = proto || modules;
                         return sandbox;
-                    }
+                    },
+
+                    get ownPropertyValues() array.compact(
+                            Object.getOwnPropertyNames(this)
+                                  .map(function (name) Object.getOwnPropertyDescriptor(this, name).value, this)),
+
+                    get moduleList() this.ownPropertyValues.filter(function (mod) mod instanceof this.ModuleBase || mod.isLocalModule, this)
                 });
                 modules.plugins = create(modules);
                 modules.modules = modules;
@@ -228,6 +235,9 @@ var Overlay = Module("Overlay", {
                         Class.replaceProperty(modules, module.className, obj);
                         loaded[module.className] = true;
 
+                        if (loaded.dactyl && obj.signals)
+                            modules.dactyl.registerObservers(obj);
+
                         frob(module.className);
                     }
                     catch (e) {
@@ -258,7 +268,8 @@ var Overlay = Module("Overlay", {
                                 delete modules[mod.className];
                                 return load(mod.className, null, Components.stack.caller);
                             });
-                            Object.keys(mod.prototype.INIT).forEach(function (name) { deferInit(name, mod.prototype.INIT, mod); });
+                            Object.keys(mod.prototype.INIT)
+                                  .forEach(function (name) { deferInit(name, mod.prototype.INIT, mod); });
                         }
                         mod.frobbed = true;
                     });
@@ -300,15 +311,12 @@ var Overlay = Module("Overlay", {
                 modules.events.listen(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
 
-                    for (let prop in properties(modules)) {
-                        let mod = Object.getOwnPropertyDescriptor(modules, prop).value;
+                    util.dump("unload", modules.moduleList);
+                    for each (let mod in modules.moduleList.reverse()) {
+                        mod.stale = true;
 
-                        if (mod instanceof ModuleBase || mod && mod.isLocalModule) {
-                            mod.stale = true;
-
-                            if ("destroy" in mod)
-                                util.trapErrors("destroy", mod);
-                        }
+                        if ("destroy" in mod)
+                            util.trapErrors("destroy", mod);
                     }
                 }, false);
             }

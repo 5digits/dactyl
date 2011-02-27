@@ -983,6 +983,9 @@ Module.INIT = {
             locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)))
             module.instance = module;
             module.init();
+
+            if (module.signals)
+                modules.dactyl.registerObservers
         }
     }
 }

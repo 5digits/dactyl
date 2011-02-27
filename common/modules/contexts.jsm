@@ -125,6 +125,12 @@ var Contexts = Module("contexts", {
                     util.trapErrors("onUnload", plugin);
         },
 
+        signals: {
+            "browser.locationChange": function (webProgress, request, uri) {
+                this.flush();
+            }
+        },
+
         Group: Class("Group", Group, { modules: modules, get hiveMap() modules.contexts.hives }),
 
         Hives: Class("Hives", Class.Property, {

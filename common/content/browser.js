@@ -26,9 +26,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
     observers: {
         "chrome-document-global-created": function (win, uri) { this.observe(win, "content-document-global-created", uri); },
         "content-document-global-created": function (win, uri) {
-            let top = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-                         .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
-                         .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+            let top = util.topWindow(win);
 
             if (top == window)
                 this._triggerLoadAutocmd("PageLoadPre", win.document, win.location.href != "null" ? window.location.href : uri);
@@ -101,10 +99,10 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             // STATE_IS_DOCUMENT | STATE_IS_WINDOW is important, because we also
             // receive statechange events for loading images and other parts of the web page
             if (flags & (Ci.nsIWebProgressListener.STATE_IS_DOCUMENT | Ci.nsIWebProgressListener.STATE_IS_WINDOW)) {
+                dactyl.applyTriggerObserver("browser.stateChange", arguments);
                 // This fires when the load event is initiated
                 // only thrown for the current tab, not when another tab changes
                 if (flags & Ci.nsIWebProgressListener.STATE_START) {
-                    statusline.progress = 0;
                     while (document.commandDispatcher.focusedWindow == webProgress.DOMWindow
                            && modes.have(modes.INPUT))
                         modes.pop();
@@ -115,48 +113,29 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                     config.browser.mCurrentBrowser.collapsed = false;
                     if (!dactyl.focusedElement || dactyl.focusedElement === document.documentElement)
                         dactyl.focusContent();
-                    statusline.updateUrl();
                 }
             }
         }),
-        // for notifying the user about secure web pages
         onSecurityChange: util.wrapCallback(function onSecurityChange(webProgress, request, state) {
             onSecurityChange.superapply(this, arguments);
-            if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
-                statusline.security = "broken";
-            else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
-                statusline.security = "extended";
-            else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
-                statusline.security = "secure";
-            else // if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
-                statusline.security = "insecure";
-            if (webProgress && webProgress.DOMWindow)
-                webProgress.DOMWindow.document.dactylSecurity = statusline.security;
+            dactyl.applyTriggerObserver("browser.securityChange", arguments);
         }),
         onStatusChange: util.wrapCallback(function onStatusChange(webProgress, request, status, message) {
             onStatusChange.superapply(this, arguments);
-            statusline.updateUrl(message);
+            dactyl.applyTriggerObserver("browser.statusChange", arguments);
         }),
         onProgressChange: util.wrapCallback(function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
             onProgressChange.superapply(this, arguments);
-            if (webProgress && webProgress.DOMWindow)
-                webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
-            statusline.progress = curTotalProgress / maxTotalProgress;
+            dactyl.applyTriggerObserver("browser.progressChange", arguments);
         }),
         // happens when the users switches tabs
         onLocationChange: util.wrapCallback(function onLocationChange(webProgress, request, uri) {
             onLocationChange.superapply(this, arguments);
 
-            contexts.flush();
-            options.get("passkeys").flush();
-
-            statusline.updateUrl();
-            statusline.progress = "";
+            dactyl.applyTriggerObserver("browser.locationChange", arguments);
 
             let win = webProgress.DOMWindow;
             if (win && uri) {
-                statusline.progress = win.dactylProgress;
-
                 let oldURI = win.document.dactylURI;
                 if (win.document.dactylLoadIdx === webProgress.loadedTransIndex
                     || !oldURI || uri.spec.replace(/#.*/, "") !== oldURI.replace(/#.*/, ""))
@@ -177,14 +156,6 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                                             (win || content).document,
                                             uri);
             });
-
-            // if this is not delayed we get the position of the old buffer
-            util.timeout(function () {
-                statusline.updateBufferPosition();
-                statusline.updateZoomLevel();
-                if (loaded.commandline)
-                    commandline.clear();
-            }, 500);
         }),
         // called at the very end of a page load
         asyncUpdateUI: util.wrapCallback(function asyncUpdateUI() {
@@ -193,26 +164,37 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         }),
         setOverLink: util.wrapCallback(function setOverLink(link, b) {
             setOverLink.superapply(this, arguments);
-            switch (options["showstatuslinks"]) {
-            case "status":
-                statusline.updateUrl(link ? _("status.link", link) : null);
-                break;
-            case "command":
-                if (link)
-                    dactyl.echo(_("status.link", link),
-                                commandline.DISALLOW_MULTILINE);
-                else
-                    commandline.clear();
-                break;
-            }
+            dactyl.triggerObserver("browser.overLink", link);
         }),
     }
 }, {
 }, {
-    events: function () {
+    events: function initEvents(dactyl, modules, window) {
         events.listen(config.browser, browser, "events", true);
     },
-    mappings: function () {
+    commands: function initCommands(dactyl, modules, window) {
+        commands.add(["o[pen]"],
+            "Open one or more URLs in the current tab",
+            function (args) { dactyl.open(args[0] || "about:blank"); },
+            {
+                completer: function (context) completion.url(context),
+                domains: function (args) array.compact(dactyl.parseURLs(args[0] || "").map(
+                    function (url) util.getHost(url))),
+                literal: 0,
+                privateData: true
+            });
+
+        commands.add(["redr[aw]"],
+            "Redraw the screen",
+            function () {
+                window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                      .redraw();
+                statusline.updateUrl();
+                commandline.clear();
+            },
+            { argCount: "0" });
+    },
+    mappings: function initMappings(dactyl, modules, window) {
         // opening websites
         mappings.add([modes.NORMAL],
             ["o"], "Open one or more URLs",
@@ -256,29 +238,6 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         mappings.add([modes.MAIN], ["<C-l>"],
             "Redraw the screen",
             function () { ex.redraw(); });
-    },
-
-    commands: function () {
-        commands.add(["o[pen]"],
-            "Open one or more URLs in the current tab",
-            function (args) { dactyl.open(args[0] || "about:blank"); },
-            {
-                completer: function (context) completion.url(context),
-                domains: function (args) array.compact(dactyl.parseURLs(args[0] || "").map(
-                    function (url) util.getHost(url))),
-                literal: 0,
-                privateData: true
-            });
-
-        commands.add(["redr[aw]"],
-            "Redraw the screen",
-            function () {
-                window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                      .redraw();
-                statusline.updateUrl();
-                commandline.clear();
-            },
-            { argCount: "0" });
     }
 });
 

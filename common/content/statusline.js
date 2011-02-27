@@ -92,6 +92,63 @@ var StatusLine = Module("statusline", {
 
     get visible() !this.statusBar.collapsed && !this.statusBar.hidden,
 
+    signals: {
+        "browser.locationChange": function (webProgress, request, uri) {
+            let win = webProgress.DOMWindow;
+            this.updateUrl();
+            this.progress = uri && win && win.dactylProgress || "";
+
+            // if this is not delayed we get the position of the old buffer
+            this.timeout(function () {
+                this.updateBufferPosition();
+                this.updateZoomLevel();
+            }, 500);
+        },
+        "browser.overLink": function (link) {
+            switch (options["showstatuslinks"]) {
+            case "status":
+                this.updateUrl(link ? _("status.link", link) : null);
+                break;
+            case "command":
+                if (link)
+                    dactyl.echo(_("status.link", link), commandline.DISALLOW_MULTILINE);
+                else
+                    commandline.clear();
+                break;
+            }
+        },
+        "browser.progressChange": function onProgressChange(webProgress, request, curSelfProgress, maxSelfProgress, curTotalProgress, maxTotalProgress) {
+            if (webProgress && webProgress.DOMWindow)
+                webProgress.DOMWindow.dactylProgress = curTotalProgress / maxTotalProgress;
+            this.progress = curTotalProgress / maxTotalProgress;
+        },
+        "browser.securityChange": function onSecurityChange(webProgress, request, state) {
+
+            if (state & Ci.nsIWebProgressListener.STATE_IS_BROKEN)
+                this.security = "broken";
+            else if (state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL)
+                this.security = "extended";
+            else if (state & Ci.nsIWebProgressListener.STATE_SECURE_HIGH)
+                this.security = "secure";
+            else // if (state & Ci.nsIWebProgressListener.STATE_IS_INSECURE)
+                this.security = "insecure";
+
+            if (webProgress && webProgress.DOMWindow)
+                webProgress.DOMWindow.document.dactylSecurity = this.security;
+        },
+        "browser.stateChange": function onStateChange(webProgress, request, flags, status) {
+            if (flags & Ci.nsIWebProgressListener.STATE_START)
+                this.progress = 0;
+            if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
+                this.progress = "";
+                this.updateUrl();
+            }
+        },
+        "browser.statusChange": function onStatusChange(webProgress, request, status, message) {
+            this.updateUrl(message);
+        },
+    },
+
     /**
      * Update the status bar to indicate how secure the website is:
      * extended - Secure connection with Extended Validation(EV) certificate.

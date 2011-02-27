@@ -515,6 +515,12 @@ var CommandLine = Module("commandline", {
         }; //}}}
     },
 
+    signals: {
+        "browser.locationChange": function (webProgress, request, uri) {
+            this.clear();
+        }
+    },
+
     /**
      * Determines whether the command line should be visible.
      *

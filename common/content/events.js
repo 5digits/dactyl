@@ -447,6 +447,12 @@ var Events = Module("events", {
         });
     },
 
+    signals: {
+        "browser.locationChange": function (webProgress, request, uri) {
+            options.get("passkeys").flush();
+        }
+    },
+
     /**
      * Adds an event listener for this session and removes it on
      * dactyl shutdown.

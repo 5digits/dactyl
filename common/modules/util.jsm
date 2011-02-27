@@ -1646,6 +1646,17 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     wrapCallback: wrapCallback,
 
     /**
+     * Returns the top-level chrome window for the given window.
+     *
+     * @param {Window} win The child window.
+     * @returns {Window} The top-level parent window.
+     */
+    topWindow: function topWindow(win)
+            win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+               .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
+               .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow),
+
+    /**
      * Traps errors in the called function, possibly reporting them.
      *
      * @param {function} func The function to call
