@@ -6,6 +6,8 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+function isDactyl(frame) /^resource:\/\/dactyl\S+( -> resource:\/\/dactyl(?!-content\/eval.js)\S+)?$/.test(frame.filename);
+
 try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
@@ -440,7 +442,8 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
     repeat: null,
 
     /**
-     * Adds a new command.
+     * Adds a new command to the builtin hive. Accessible only to core
+     * dactyl code. Plugins should use group.commands.add instead.
      *
      * @param {string[]} names The names by which this command can be
      *     invoked. The first name specified is the command's canonical
@@ -686,7 +689,11 @@ var Commands = Module("commands", {
     /** @property {string} The last executed Ex command line. */
     repeat: null,
 
-    add: function add() this.builtin._add.apply(this.builtin, arguments),
+    add: function add() {
+        util.assert(isDactyl(Components.stack.caller),
+                    "User scripts may not add builtin commands. Please use group.commands.add instead.");
+        return this.builtin._add.apply(this.builtin, arguments);
+    },
     addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() this.user.closure._add }),
     getUserCommands: deprecated("iter(group.commands)", function getUserCommands() iter(this.user).toArray()),
     removeUserCommand: deprecated("group.commands.remove", { get: function removeUserCommand() this.user.closure.remove }),
