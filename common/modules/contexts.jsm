@@ -213,7 +213,10 @@ var Contexts = Module("contexts", {
                 Object.defineProperty(plugins, self.NAME, {
                     configurable: true,
                     enumerable: true,
-                    value: self
+                    get: function () self,
+                    set: function (val) {
+                        throw TypeError("Not replacing plugin context for " + self.NAME);
+                    }
                 });
         }
 
