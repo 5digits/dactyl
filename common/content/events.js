@@ -530,8 +530,7 @@ var Events = Module("events", {
      */
     playMacro: function (macro) {
         let res = false;
-        dactyl.assert(!/[a-zA-Z0-9@]/.test(macro) && macro.length == 1,
-                      _("macro.invalid", macro));
+        dactyl.assert(/^[a-zA-Z0-9@]$/.test(macro), _("macro.invalid", macro));
 
         if (macro == "@")
             dactyl.assert(this._lastMacro, _("macro.noPrevious"));
