@@ -341,14 +341,15 @@ var Config = Module("config", ConfigBase, {
                                                .getAttribute("sidebarcommand");
         }, false);
     },
+    mappings: function initMappings(dactyl, modules, window) {
+        const { Events, mappings, modes } = modules;
+        mappings.add([modes.NORMAL],
+                     ["<Return>", "<Space>", "<Up>", "<Down>"],
+                     "Handled by " + config.host,
+                     function () Events.PASS_THROUGH);
+    },
     modes: function (dactyl, modules, window) {
-        const { config, modes } = modules;
-        config.ignoreKeys = {
-            "<Return>": modes.NORMAL,
-            "<Space>": modes.NORMAL,
-            "<Up>": modes.NORMAL,
-            "<Down>": modes.NORMAL
-        };
+        const { modes } = modules;
         config.modes.forEach(function (mode) { modes.addMode.apply(this, mode); });
     },
     options: function (dactyl, modules, window) {

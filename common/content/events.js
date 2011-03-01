@@ -1232,11 +1232,9 @@ var Events = Module("events", {
                     if (ignore)
                         return null;
 
+                    // FIXME: Why is this hard coded? --Kris
                     if (key == "<C-c>")
                         util.interrupted = true;
-
-                    if (config.ignoreKeys[key] & mode.main)
-                        return null;
 
                     this.processor = ProcessorStack(mode, mappings.hives.array, event.noremap);
                     this.processor.keyEvents = this.keyEvents;
