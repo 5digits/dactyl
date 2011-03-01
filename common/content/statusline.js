@@ -95,7 +95,7 @@ var StatusLine = Module("statusline", {
     signals: {
         "browser.locationChange": function (webProgress, request, uri) {
             let win = webProgress.DOMWindow;
-            this.updateUrl();
+            this.status = buffer.uri;
             this.progress = uri && win && win.dactylProgress || "";
 
             // if this is not delayed we get the position of the old buffer
@@ -107,7 +107,7 @@ var StatusLine = Module("statusline", {
         "browser.overLink": function (link) {
             switch (options["showstatuslinks"]) {
             case "status":
-                this.updateUrl(link ? _("status.link", link) : null);
+                this.status = link ? _("status.link", link) : buffer.uri;
                 break;
             case "command":
                 if (link)
@@ -141,11 +141,11 @@ var StatusLine = Module("statusline", {
                 this.progress = 0;
             if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                 this.progress = "";
-                this.updateUrl();
+                this.status = buffer.uri;
             }
         },
         "browser.statusChange": function onStatusChange(webProgress, request, status, message) {
-            this.updateUrl(message);
+            this.status = message || buffer.uri;
         },
     },
 
@@ -174,12 +174,41 @@ var StatusLine = Module("statusline", {
 
     // update all fields of the statusline
     update: function update() {
-        this.updateUrl();
-        this.updateInputBuffer();
-        this.updateProgress();
+        this.status = buffer.uri;
+        this.inputBuffer = "";
+        this.progress = "";
         this.updateTabCount();
         this.updateBufferPosition();
         this.updateZoomLevel();
+    },
+
+    // ripped from Firefox; modified
+    unsafeURI: util.regexp(String.replace(<![CDATA[
+            [
+                \s
+                // Invisible characters (bug 452979)
+                U001C U001D U001E U001F // file/group/record/unit separator
+                U00AD // Soft hyphen
+                UFEFF // BOM
+                U2060 // Word joiner
+                U2062 U2063  // Invisible times/separator
+                U200B UFFFC // Zero-width space/no-break space
+
+                // Bidi formatting characters. (RFC 3987 sections 3.2 and 4.1 paragraph 6)
+                U200E U200F U202A U202B U202C U202D U202E
+            ]
+        ]]>, /U/g, "\\u"),
+        "gx"),
+    losslessDecodeURI: function losslessDecodeURI(url) {
+        return url.split("%25").map(function (url) {
+                // Non-UTF-8 compliant URLs cause "malformed URI sequence" errors.
+                try {
+                    return decodeURI(url).replace(this.unsafeURI, encodeURIComponent);
+                }
+                catch (e) {
+                    return url;
+                }
+            }, this).join("%25");
     },
 
     /**
@@ -189,64 +218,32 @@ var StatusLine = Module("statusline", {
      * respectively.
      *
      * @param {string} url The URL to display.
-     * @default buffer.uri
      */
-    updateUrl: function updateUrl(url) {
-        // ripped from Firefox; modified
-        function losslessDecodeURI(url) {
-            // 1. decodeURI decodes %25 to %, which creates unintended
-            //    encoding sequences.
-            url = url.split("%25").map(function (url) {
-                    // Non-UTF-8 compliant URLs cause "malformed URI sequence" errors.
-                    try {
-                        return decodeURI(url);
-                    }
-                    catch (e) {
-                        return url;
-                    }
-                }).join("%25");
-            // 2. Re-encode whitespace so that it doesn't get eaten away
-            //    by the location bar (bug 410726).
-            url = url.replace(/[\r\n\t]/g, encodeURIComponent);
-
-            // Encode invisible characters (soft hyphen, zero-width space, BOM,
-            // line and paragraph separator, word joiner, invisible times,
-            // invisible separator, object replacement character) (bug 452979)
-            url = url.replace(/[\v\x0c\x1c\x1d\x1e\x1f\u00ad\u200b\ufeff\u2028\u2029\u2060\u2062\u2063\ufffc]/g,
-                encodeURIComponent);
-
-            // Encode bidirectional formatting characters.
-            // (RFC 3987 sections 3.2 and 4.1 paragraph 6)
-            url = url.replace(/[\u200e\u200f\u202a\u202b\u202c\u202d\u202e]/g,
-                encodeURIComponent);
-            return url;
-        };
-
-        // TODO: this probably needs a more general solution.
-        if (url == null)
-            url = buffer.uri.spec;
-
-        // when session information is available, add [+] when we can go
-        // backwards, [-] when we can go forwards
+    get status() this._uri,
+    set status(uri) {
         let modified = "";
-        if (url === buffer.uri.spec) {
-            if (window.getWebNavigation) {
+        let url = uri;
+        if (isinstance(uri, Ci.nsIURI)) {
+            // when session information is available, add [+] when we can go
+            // backwards, [-] when we can go forwards
+            if (uri.equals(buffer.uri) && window.getWebNavigation) {
                 let sh = window.getWebNavigation().sessionHistory;
                 if (sh && sh.index > 0)
                     modified += "+";
                 if (sh && sh.index < sh.count - 1)
                     modified += "-";
             }
-            if (modules.bookmarkcache) {
-                if (bookmarkcache.isBookmarked(url))
-                    modified += UTF8("❤");
-                    //modified += UTF8("♥");
-            }
-            if (modules.quickmarks)
-                modified += quickmarks.find(url.replace(/#.*/, "")).join("");
-        }
 
-        url = losslessDecodeURI(url);
+            if (modules.bookmarkcache) {
+                if (bookmarkcache.isBookmarked(uri))
+                    modified += UTF8("❤");
+            }
+
+            if (modules.quickmarks)
+                modified += quickmarks.find(uri.spec.replace(/#.*/, "")).join("");
+
+            url = this.losslessDecodeURI(uri.spec);
+        }
 
         if (url == "about:blank") {
             if (!buffer.title)
@@ -261,7 +258,13 @@ var StatusLine = Module("statusline", {
             url += " [" + modified + "]";
 
         this.widgets.url.value = url;
+        this._status = uri;
+
     },
+
+    updateStatus: function updateStatus() { this.status = buffer.uri; },
+
+    updateUrl: deprecated("statusline.status", function updateUrl(url) { this.status = url || buffer.uri }),
 
     /**
      * Set the contents of the status line's input buffer to the given
@@ -272,12 +275,9 @@ var StatusLine = Module("statusline", {
      * @param {string} buffer
      * @optional
      */
-    updateInputBuffer: function updateInputBuffer(buffer) {
-        if (buffer == null)
-            buffer = "";
-
-        this.widgets.inputbuffer.value = buffer;
-    },
+    get inputBuffer() this.widgets.inputbuffer.value,
+    set inputBuffer(val) this.widgets.inputbuffer.value = val == null ? "" : val,
+    updateInputBuffer: deprecated("statusline.inputBuffer", function updateInputBuffer(val) { this.inputBuffer = val; }),
 
     /**
      * Update the page load progress bar.
@@ -310,9 +310,9 @@ var StatusLine = Module("statusline", {
             }
         }
     }),
-    updateProgress: function updateProgress(progress) {
+    updateProgress: deprecated("statusline.progress", function updateProgress(progress) {
         this.progress = progress;
-    },
+    }),
 
     /**
      * Display the correct tabcount (e.g., [1/5]) on the status bar.

@@ -668,8 +668,8 @@ var HintSession = Class("HintSession", CommandMode, {
      * Display the current status to the user.
      */
     updateStatusline: function _updateStatusline() {
-        statusline.updateInputBuffer((this.escapeNumbers ? options["mapleader"] : "") +
-                                     (this.hintNumber ? this.getHintString(this.hintNumber) : ""));
+        statusline.inputBuffer = (this.escapeNumbers ? options["mapleader"] : "") +
+                                 (this.hintNumber ? this.getHintString(this.hintNumber) : "");
     },
 });
 

@@ -20,7 +20,7 @@ var Bookmarks = Module("bookmarks", {
                              valueOf: function () arg
                          }
                      }, arg));
-            statusline.updateUrl();
+            statusline.updateStatus();
         }, window);
     },
 

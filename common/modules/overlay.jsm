@@ -311,7 +311,6 @@ var Overlay = Module("Overlay", {
                 modules.events.listen(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
 
-                    util.dump("unload", modules.moduleList);
                     for each (let mod in modules.moduleList.reverse()) {
                         mod.stale = true;
 

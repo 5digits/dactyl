@@ -15,7 +15,7 @@ var QuickMarks = Module("quickmarks", {
     init: function () {
         this._qmarks = storage.newMap("quickmarks", { store: true });
         storage.addObserver("quickmarks", function () {
-            statusline.updateUrl();
+            statusline.updateStatus();
         }, window);
     },
 

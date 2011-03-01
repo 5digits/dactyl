@@ -875,15 +875,20 @@ Class.prototype = {
 };
 Class.makeClosure = function makeClosure() {
     const self = this;
-    function closure(fn) function _closure() {
-        try {
-            return fn.apply(self, arguments);
+    function closure(fn) {
+        function _closure() {
+            try {
+                return fn.apply(self, arguments);
+            }
+            catch (e if !(e instanceof FailedAssertion)) {
+                util.reportError(e);
+                throw e.stack ? e : Error(e);
+            }
         }
-        catch (e if !(e instanceof FailedAssertion)) {
-            util.reportError(e);
-            throw e.stack ? e : Error(e);
-        }
+        _closure.wrapped = fn;
+        return _closure;
     }
+
     iter(properties(this), properties(this, true)).forEach(function (k) {
         if (!__lookupGetter__.call(this, k) && callable(this[k]))
             closure[k] = closure(this[k]);
@@ -895,6 +900,7 @@ Class.makeClosure = function makeClosure() {
                 set: function set_proxy(val) self[k] = val,
             });
     }, this);
+
     return closure;
 };
 memoize(Class.prototype, "closure", Class.makeClosure);
@@ -981,11 +987,13 @@ Module.INIT = {
 
             modules.jsmodules[this.constructor.className] = module;
             locals.reverse().forEach(function (fn, i) update(objs[i], fn.apply(module, args)))
+
+            memoize(module, "closure", Class.makeClosure);
             module.instance = module;
             module.init();
 
             if (module.signals)
-                modules.dactyl.registerObservers
+                modules.dactyl.registerObservers(module);
         }
     }
 }

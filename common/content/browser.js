@@ -76,7 +76,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                     // hacky way to get rid of "Transferring data from ..." on sites with frames
                     // when you click on a link inside a frameset, because asyncUpdateUI
                     // is not triggered there (Gecko bug?)
-                    this.timeout(function () { statusline.updateUrl(); }, 10);
+                    this.timeout(function () { statusline.updateStatus(); }, 10);
                 }
                 else {
                     // code which should happen for all (also background) newly loaded tabs goes here:
@@ -160,7 +160,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         // called at the very end of a page load
         asyncUpdateUI: util.wrapCallback(function asyncUpdateUI() {
             asyncUpdateUI.superapply(this, arguments);
-            util.timeout(function () { statusline.updateUrl(); }, 100);
+            util.timeout(function () { statusline.updateStatus(); }, 100);
         }),
         setOverLink: util.wrapCallback(function setOverLink(link, b) {
             setOverLink.superapply(this, arguments);
@@ -189,7 +189,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             function () {
                 window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                       .redraw();
-                statusline.updateUrl();
+                statusline.updateStatus();
                 commandline.clear();
             },
             { argCount: "0" });

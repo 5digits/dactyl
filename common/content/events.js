@@ -65,7 +65,7 @@ var ProcessorStack = Class("ProcessorStack", {
             this.processors.length = 0;
 
         if (this.ownsBuffer)
-            statusline.updateInputBuffer(this.processors.length ? this.buffer : "");
+            statusline.inputBuffer = this.processors.length ? this.buffer : "";
 
         if (!this.processors.some(function (p) !p.extended) && this.actions.length) {
             if (this._actions.length == 0) {
