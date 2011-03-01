@@ -6,16 +6,18 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-function isDactyl(frame) /^resource:\/\/dactyl\S+( -> resource:\/\/dactyl(?!-content\/eval.js)\S+)?$/.test(frame.filename);
-
 try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("commands", {
     exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
-    require: ["contexts"],
-    use: ["config", "options", "services", "template", "util"]
+    require: ["contexts", "util"],
+    use: ["config", "options", "services", "template"]
 }, this);
+
+let base = util.regexp.escape(Components.stack.filename.replace(/[^\/]+$/, ""));
+let re = RegExp("^(resource://dactyl|" + base + ")\\S+( -> resource://dactyl(?!-content/eval.js)\\S+)?$");
+let isDactyl = function isDactyl(frame) re.test(frame.filename);
 
 /**
  * A structure representing the options available for a command.
