@@ -847,8 +847,8 @@ var Hints = Module("hints", {
          *     hints that match as above.
          */
         function wordStartsWithMatcher(hintString, allowWordOverleaping) { //{{{
-            let hintStrings    = tokenize(/\s+/, hintString);
-            let wordSplitRegexp = RegExp(options["wordseparators"]);
+            let hintStrings     = tokenize(/\s+/, hintString);
+            let wordSplitRegexp = util.regexp(options["wordseparators"]);
 
             /**
              * Match a set of characters to the start of words.

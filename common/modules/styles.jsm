@@ -413,7 +413,7 @@ var Styles = Module("Styles", {
         if (filter === "*")
             var test = function test(uri) true;
         else if (!/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter)) {
-            let re = RegExp(filter);
+            let re = util.regexp(filter);
             test = function test(uri) re.test(uri.spec);
         }
         else if (/[*]$/.test(filter)) {

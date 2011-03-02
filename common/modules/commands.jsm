@@ -15,10 +15,6 @@ defineModule("commands", {
     use: ["config", "messages", "options", "services", "template"]
 }, this);
 
-let base = util.regexp.escape(Components.stack.filename.replace(/[^\/]+$/, ""));
-let re = RegExp("^(resource://dactyl|" + base + ")\\S+( -> resource://dactyl(?!-content/eval.js)\\S+)?$");
-let isDactyl = function isDactyl(frame) re.test(frame.filename);
-
 /**
  * A structure representing the options available for a command.
  *
@@ -692,7 +688,7 @@ var Commands = Module("commands", {
     repeat: null,
 
     add: function add() {
-        util.assert(isDactyl(Components.stack.caller),
+        util.assert(util.isDactyl(Components.stack.caller),
                     "User scripts may not add builtin commands. Please use group.commands.add instead.");
         return this.builtin._add.apply(this.builtin, arguments);
     },

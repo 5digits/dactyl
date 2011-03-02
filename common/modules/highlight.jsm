@@ -406,12 +406,14 @@ var Highlights = Module("Highlight", {
     completion: function (dactyl, modules) {
         const { completion, config, io } = modules;
         completion.colorScheme = function colorScheme(context) {
+            let extRe = RegExp("\\." + config.fileExtension + "$");
+
             context.title = ["Color Scheme", "Runtime Path"];
-            context.keys = { text: function (f) f.leafName.replace(RegExp("\\." + config.fileExtension + "$"), ""), description: ".parent.path" };
+            context.keys = { text: function (f) f.leafName.replace(extRe, ""), description: ".parent.path" };
             context.completions = array.flatten(
                 io.getRuntimeDirectories("colors").map(
                     function (dir) dir.readDirectory().filter(
-                        function (file) RegExp("\\." + config.fileExtension + "$").test(file.leafName))));
+                        function (file) extRe.test(file.leafName))));
 
         };
 

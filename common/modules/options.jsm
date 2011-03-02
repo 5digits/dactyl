@@ -425,7 +425,7 @@ var Option = Class("Option", {
             flags = this && this.regexpFlags || "";
 
         let [, bang, val] = /^(!?)(.*)/.exec(value);
-        let re = RegExp(Option.dequote(val), flags);
+        let re = util.regexp(Option.dequote(val), flags);
         re.bang = bang;
         re.result = result !== undefined ? result : !bang;
         re.toString = function () Option.unparseRegexp(this, keepQuotes);

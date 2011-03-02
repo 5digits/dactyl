@@ -300,6 +300,8 @@ var EventHive = Class("EventHive", Contexts.Hive, {
      * @param {function} callback The function to call when the event is received.
      * @param {boolean} capture When true, listen during the capture
      *      phase, otherwise during the bubbling phase.
+     * @param {boolean} allowUntrusted When true, allow capturing of
+     *      untrusted events.
      */
     listen: function (target, event, callback, capture, allowUntrusted) {
         if (!isObject(event))
@@ -821,9 +823,7 @@ var Events = Module("events", {
             unknownOk = true;
 
         let out = [];
-        let re = RegExp("<.*?>?>|[^<]|<(?!.*>)", "g");
-        let match;
-        while ((match = re.exec(input))) {
+        for (let match in util.regexp.iterate(/<.*?>?>|[^<]|<(?!.*>)/g, input)) {
             let evt_str = match[0];
             let evt_obj = { ctrlKey: false, shiftKey: false, altKey: false, metaKey: false,
                             keyCode: 0, charCode: 0, type: "keypress" };

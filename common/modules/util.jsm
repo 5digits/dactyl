@@ -177,20 +177,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {RegExp}
      */
     charListToRegexp: function charListToRegexp(list, accepted) {
-        let list = list.replace(/\s+/g, "");
+        list = list.replace(/\s+/g, "");
 
         // check for chars not in the accepted range
         this.assert(RegExp("^[" + accepted + "-]+$").test(list),
-                "Character list outside the range " + accepted.quote());
+                    "Character list outside the range " + accepted.quote());
 
         // check for illegal ranges
-        let matches = list.match(RegExp("[" + accepted + "]-[" + accepted + "]", "g"));
-        if (matches) {
-            for (let match in values(matches))
-                this.assert(match[0] <= match[2],
-                    "Invalid character range: " + list.match(match + ".*")[0]);
-        }
-        return RegExp("[" + list + "]");
+        for (let [match] in this.regexp.iterate(/.-./g, list))
+            this.assert(match.charCodeAt(0) <= match.charCodeAt(2),
+                        "Invalid character range: " + list.slice(list.indexOf(match)))
+
+        return RegExp("[" + util.regexp.escape(list) + "]");
     },
 
     get chromePackages() {
@@ -823,6 +821,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     }),
 
     /**
+     * Returns true if the given stack frame resides in Dactyl code.
+     *
+     * @param {nsIStackFrame} frame
+     * @returns {boolean}
+     */
+    isDactyl: Class.memoize(function () {
+        let base = util.regexp.escape(Components.stack.filename.replace(/[^\/]+$/, ""));
+        let re = RegExp("^(resource://dactyl|" + base + ")\\S+( -> resource://dactyl(?!-content/eval.js)\\S+)?$");
+        return function isDactyl(frame) re.test(frame.filename);
+    }),
+
+    /**
      * Returns true if *url* is in the domain *domain*.
      *
      * @param {string} url
@@ -1339,6 +1349,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         if (isinstance(expr, ["RegExp"]))
             expr = expr.source;
+
+        expr = String.replace(expr, /\\(.)/, function (m, m1) {
+            if (m1 === "c")
+                flags = flags.replace(/i/g, "") + "i";
+            else if (m === "C")
+                flags = flags.replace(/i/g, "");
+            else
+                return m;
+            return "";
+        });
 
         // Replace replacement <tokens>.
         if (tokens)

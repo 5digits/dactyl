@@ -903,7 +903,9 @@ var Completion = Module("completion", {
     url: function url(context, complete) {
 
         if (this.options["urlseparator"])
-            var skip = RegExp("^.*" + this.options["urlseparator"] + "\\s*").exec(context.filter);
+            var skip = util.regexp("^.*" + this.options["urlseparator"] + "\\s*")
+                           .exec(context.filter);
+
         if (skip)
             context.advance(skip[0].length);
 

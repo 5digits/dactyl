@@ -1276,7 +1276,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let urls;
 
         if (options["urlseparator"])
-            urls = util.splitLiteral(str, RegExp("\\s*" + options["urlseparator"] + "\\s*"));
+            urls = util.splitLiteral(str, util.regexp("\\s*" + options["urlseparator"] + "\\s*"));
         else
             urls = [str];
 
