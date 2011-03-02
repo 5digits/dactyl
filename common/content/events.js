@@ -301,7 +301,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
      * @param {boolean} capture When true, listen during the capture
      *      phase, otherwise during the bubbling phase.
      */
-    listen: function (target, event, callback, capture) {
+    listen: function (target, event, callback, capture, allowUntrusted) {
         if (isObject(event))
             var [self, events] = [event, event[callback || "events"]];
         else
@@ -311,7 +311,8 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             let args = [Cu.getWeakReference(target),
                         event,
                         this.wrapListener(callback, self),
-                        capture];
+                        capture,
+                        allowUntrusted];
 
             target.addEventListener.apply(target, args.slice(1));
             this.sessionListeners.push(args);
@@ -331,7 +332,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
         this.sessionListeners = this.sessionListeners.filter(function (args) {
             if (target == null || args[0].get() == target && args[1] == event && args[2] == callback && args[3] == capture) {
                 args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
-                return true;
+                return false;
             }
             return !args[0].get();
         });
