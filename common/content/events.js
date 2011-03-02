@@ -302,10 +302,12 @@ var EventHive = Class("EventHive", Contexts.Hive, {
      *      phase, otherwise during the bubbling phase.
      */
     listen: function (target, event, callback, capture, allowUntrusted) {
-        if (isObject(event))
-            var [self, events] = [event, event[callback || "events"]];
-        else
-            [self, events] = [null, array.toObject([[event, callback]])];
+        if (!isObject(event))
+            var [self, events] = [null, array.toObject([[event, callback]])];
+        else {
+            [self, events] = [event, event[callback || "events"]];
+            [,, capture, allowUntrusted] = arguments;
+        }
 
         for (let [event, callback] in Iterator(events)) {
             let args = [Cu.getWeakReference(target),

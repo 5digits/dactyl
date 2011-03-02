@@ -12,7 +12,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("commands", {
     exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
     require: ["contexts", "util"],
-    use: ["config", "options", "services", "template"]
+    use: ["config", "messages", "options", "services", "template"]
 }, this);
 
 let base = util.regexp.escape(Components.stack.filename.replace(/[^\/]+$/, ""));
@@ -305,11 +305,11 @@ var Command = Class("Command", {
                     if (this.command.argCount) {
                         util.assert((this.length > 0 || !/^[1+]$/.test(this.command.argCount)) &&
                                     (this.literal == null || !/[1+]/.test(this.command.argCount) || /\S/.test(this.literalArg || "")),
-                                     "E471: Argument required");
+                                     _("error.argumentRequired"));
 
                         util.assert((this.length == 0 || this.command.argCount !== "0") &&
                                     (this.length <= 1 || !/^[01?]$/.test(this.command.argCount)),
-                                    "E488: Trailing characters");
+                                    _("error.trailing"));
                     }
                 }
         });
@@ -396,7 +396,7 @@ var Ex = Module("Ex", {
                     let opt = cmd.optionMap["-" + k];
                     let val = opt.type && opt.type.parse(v);
                     util.assert(val != null && (typeof val !== "number" || !isNaN(val)),
-                                "No such option: " + k);
+                                _("option.noSuch", k));
                     Class.replaceProperty(args, opt.names[0], val);
                     args.explicitOpts[opt.names[0]] = val;
                 }
@@ -416,7 +416,7 @@ var Ex = Module("Ex", {
     _run: function E_run(name) {
         const self = this;
         let cmd = this.commands.get(name);
-        util.assert(cmd, "No such command");
+        util.assert(cmd, _("command.noSuch"));
 
         return update(function exCommand(options) {
             let args = self._args(cmd, arguments);
@@ -469,10 +469,10 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         let name = names[0];
 
         util.assert(!names.some(function (name) name in commands.builtin._map),
-                    "E182: Can't replace non-user command: " + name);
+                    _("command.cantReplace", name));
 
         util.assert(replace || names.every(function (name) !(name in this._map), this),
-                    "Not replacing command " + name);
+                    _("command.wontReplace", name));
 
         for (let name in values(names)) {
             ex.__defineGetter__(name, function () this._run(name));
@@ -504,7 +504,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      * @returns {Command}
      */
     clear: function clear() {
-        util.assert(this.group.modifiable, "Cannot delete non-user commands");
+        util.assert(this.group.modifiable, _("command.cantDelete"));
         this._map = {};
         this._list = [];
     },
@@ -529,7 +529,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      *     any of the command's names.
      */
     remove: function remove(name) {
-        util.assert(this.group.modifiable, "Cannot delete non-user commands");
+        util.assert(this.group.modifiable, _("command.cantDelete"));
 
         let cmd = this.get(name);
         this._list = this._list.filter(function (c) c !== cmd);
@@ -586,7 +586,7 @@ var Commands = Module("commands", {
                                 return res.join("\n");
                             res.push(lines[i]);
                         }
-                        util.assert(false, "Unexpected end of file waiting for " + end);
+                        util.assert(false, _("command.eof", end));
                     };
 
                     args = update({}, args || {});
@@ -932,11 +932,12 @@ var Commands = Module("commands", {
                             if (sub.indexOf(optname) == 0) {
                                 let count = 0;
                                 let invalid = false;
-                                let arg, uote, quoted;
+                                let arg, quote, quoted;
 
                                 let sep = sub[optname.length];
+                                let argString = sub.substr(optname.length + 1);
                                 if (sep == "=" || /\s/.test(sep) && opt.type != CommandOption.NOARG) {
-                                    [count, quoted, quote, error] = getNextArg(sub.substr(optname.length + 1), true);
+                                    [count, quoted, quote, error] = getNextArg(argString, true);
                                     arg = Option.dequote(quoted);
                                     util.assert(!error, error);
 
@@ -951,7 +952,7 @@ var Commands = Module("commands", {
 
                                 let context = null;
                                 if (!complete && quote)
-                                    fail("Invalid argument for option " + optname);
+                                    fail(_("command.invalidOptArg", optname, argString));
 
                                 if (!invalid) {
                                     if (complete && !/[\s=]/.test(sep))
@@ -975,7 +976,7 @@ var Commands = Module("commands", {
 
                                             if (arg == null || (typeof arg == "number" && isNaN(arg))) {
                                                 if (!complete || orig != "" || args.completeStart != str.length)
-                                                    fail("Invalid argument for " + opt.type.description + " option: " + optname);
+                                                    fail(_("command.invalidOptTypeArg", opt.type.description, optname, argString));
                                                 if (complete)
                                                     complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
                                             }
@@ -984,7 +985,7 @@ var Commands = Module("commands", {
                                         // we have a validator function
                                         if (typeof opt.validator == "function") {
                                             if (opt.validator(arg, quoted) == false && (arg || !complete)) {
-                                                fail("Invalid argument for option: " + optname);
+                                                fail(_("command.invalidOptArg", optname, argString));
                                                 if (complete) // Always true.
                                                     complete.highlight(args.completeStart, count - 1, "SPELLCHECK");
                                             }
@@ -1046,9 +1047,9 @@ var Commands = Module("commands", {
                     args.completeFilter = arg || "";
                 }
                 else if (count == -1)
-                    fail("Error parsing arguments: " + arg);
+                    fail(_("command.parsing", arg));
                 else if (!onlyArgumentsRemaining && sub[0] === "-")
-                    fail("Invalid option: " + arg);
+                    fail(_("command.invalidOpt", arg));
 
                 if (arg != null)
                     args.push(arg);
@@ -1367,13 +1368,13 @@ var Commands = Module("commands", {
                 let cmd = args[0];
 
                 util.assert(!cmd || cmd.split(",").every(commands.validName.closure.test),
-                            "E182: Invalid command name");
+                            _("command.invalidName", cmd));
 
                 if (!args.literalArg)
                     commands.list();
                 else {
                     util.assert(args["-group"].modifiable,
-                                "Cannot change commands in the builtin group");
+                                _("group.cantChangeBuiltin", _("command.commands")));
 
                     let completer  = args["-complete"];
                     let completerFunc = null; // default to no completion for user commands
@@ -1514,7 +1515,7 @@ var Commands = Module("commands", {
         commands.add(["delc[ommand]"],
             "Delete the specified user-defined command",
             function (args) {
-                util.assert(args.bang ^ !!args[0], "Argument or ! required");
+                util.assert(args.bang ^ !!args[0], _("error.argumentOrBang"));
                 let name = args[0];
 
                 if (args.bang)
@@ -1522,7 +1523,7 @@ var Commands = Module("commands", {
                 else if (args["-group"].get(name))
                     args["-group"].remove(name);
                 else
-                    dactyl.echoerr("E184: No such user-defined command: " + name);
+                    dactyl.echoerr(_("command.noSuchUser", name));
             }, {
                 argCount: "?",
                 bang: true,

@@ -8,7 +8,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("template", {
     exports: ["Binding", "Template", "template"],
     require: ["util"],
-    use: ["services"]
+    use: ["messages", "services"]
 }, this);
 
 default xml namespace = XHTML;

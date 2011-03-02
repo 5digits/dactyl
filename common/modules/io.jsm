@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("io", {
     exports: ["IO", "io"],
     require: ["services"],
-    use: ["config", "storage", "styles", "template", "util"]
+    use: ["config", "messages", "storage", "styles", "template", "util"]
 }, this);
 
 // TODO: why are we passing around strings rather than file objects?
@@ -251,12 +251,12 @@ var IO = Module("io", {
         newDir = newDir && newDir.path || newDir || "~";
 
         if (newDir == "-") {
-            util.assert(this._oldcwd != null, "E186: No previous directory");
+            util.assert(this._oldcwd != null, _("io.noPrevDir"));
             [this._cwd, this._oldcwd] = [this._oldcwd, this.cwd];
         }
         else {
             let dir = io.File(newDir);
-            util.assert(dir.exists() && dir.isDirectory(), "E344: Can't find directory " + dir.path.quote());
+            util.assert(dir.exists() && dir.isDirectory(), _("io.noSuchDir", dir.path.quote()));
             dir.normalize();
             [this._cwd, this._oldcwd] = [dir.path, this.cwd];
         }
@@ -483,7 +483,7 @@ var IO = Module("io", {
 
             let shell = io.pathSearch(storage["options"].get("shell").value);
             let shcf = storage["options"].get("shellcmdflag").value;
-            util.assert(shell, "Invalid 'shell'");
+            util.assert(shell, _("error.invalid", "'shell'"));
 
             if (isArray(command))
                 command = command.map(escape).join(" ");

@@ -11,7 +11,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("addons", {
     exports: ["AddonManager", "Addons", "Addon", "addons"],
     require: ["services"],
-    use: ["completion", "config", "io", "prefs", "template", "util"]
+    use: ["completion", "config", "io", "messages", "prefs", "template", "util"]
 }, this);
 
 var callResult = function callResult(method) {
@@ -49,7 +49,7 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
         init.supercall(this, modules);
 
         util.assert(!addons.length || addons[0].findUpdates,
-                    "Not available on " + config.host + " " + services.runtime.version);
+                    _("error.unavailible", config.host, services.runtime.version));
 
         this.remaining = addons;
         this.upgrade = [];
@@ -110,7 +110,7 @@ var actions = {
         name: "extr[ehash]",
         description: "Reload an extension",
         action: function (addon) {
-            util.assert(util.haveGecko("2b"), "This command is not useful in this version of " + config.host);
+            util.assert(util.haveGecko("2b"), _("error.notUseful", config.host));
             util.timeout(function () {
                 addon.userDisabled = true;
                 addon.userDisabled = false;
@@ -413,17 +413,17 @@ var Addons = Module("addons", {
                 function (args) {
                     let name = args[0];
                     if (args.bang && !command.bang)
-                        dactyl.assert(!name, "E488: Trailing characters");
+                        dactyl.assert(!name, _("error.trailing"));
                     else
-                        dactyl.assert(name, "E471: Argument required");
+                        dactyl.assert(name, _("error.argumentRequired"));
 
                     AddonManager.getAddonsByTypes(["extension"], dactyl.wrapCallback(function (list) {
                         if (!args.bang || command.bang) {
                             list = list.filter(function (extension) extension.name == name);
                             if (list.length == 0)
-                                return void dactyl.echoerr("E475: Invalid argument: " + name);
+                                return void dactyl.echoerr(_("error.invalidArgument", name));
                             if (!list.every(ok))
-                                return void dactyl.echoerr("Permission denied");
+                                return void dactyl.echoerr(_("error.invalidOperation"));
                         }
                         if (command.actions)
                             command.actions(list, this.modules);
@@ -563,7 +563,7 @@ else
             });
         },
         getInstallForURL: function (url, callback, mimetype) {
-            util.assert(false, "Install by URL not implemented");
+            util.assert(false, _("error.unavailable", config.host, services.runtime.version));
         },
         observers: [],
         addAddonListener: function (listener) {

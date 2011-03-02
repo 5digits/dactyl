@@ -9,7 +9,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("contexts", {
     exports: ["Contexts", "Group", "contexts"],
-    use: ["commands", "options", "services", "storage", "styles", "template", "util"]
+    use: ["commands", "messages", "options", "services", "storage", "styles", "template", "util"]
 }, this);
 
 var Const = function Const(val) Class.Property({ enumerable: true, value: val });
@@ -324,7 +324,7 @@ var Contexts = Module("contexts", {
 
         let group = this.getGroup(name);
 
-        util.assert(!group || !group.builtin, "Cannot remove builtin group");
+        util.assert(!group || !group.builtin, _("group.cantRemoveBuiltin"));
 
         if (group) {
             name = group.name;
@@ -445,8 +445,8 @@ var Contexts = Module("contexts", {
             function (args) {
                 if (args.length > 0) {
                     var name = Option.dequote(args[0]);
-                    util.assert(name !== "builtin", "Cannot modify builtin group");
-                    util.assert(commands.validName.test(name), "Invalid group name");
+                    util.assert(name !== "builtin", _("group.cantModifyBuiltin"));
+                    util.assert(commands.validName.test(name), _("group.invalidName", name));
 
                     var group = contexts.getGroup(name);
                 }
@@ -455,7 +455,7 @@ var Contexts = Module("contexts", {
                 else
                     return void modules.completion.listCompleter("group", "", null, null);
 
-                util.assert(group || name, "No current group");
+                util.assert(group || name, _("group.noCurrent"));
 
                 let filter = Group.compileFilter(args["-locations"]);
                 if (!group || args.bang)
@@ -481,7 +481,7 @@ var Contexts = Module("contexts", {
                 util.assert(!group.builtin ||
                                 !["-description", "-locations", "-nopersist"]
                                     .some(function (arg) set.has(args.explicitOpts, arg)),
-                            "Cannot modify builtin group");
+                            _("group.cantModifyBuiltin"));
             },
             {
                 argCount: "?",
@@ -538,7 +538,7 @@ var Contexts = Module("contexts", {
         commands.add(["delg[roup]"],
             "Delete a group",
             function (args) {
-                util.assert(contexts.getGroup(args[0]), "No such group: " + args[0]);
+                util.assert(contexts.getGroup(args[0]), _("group.noSuch", args[0]));
                 contexts.removeGroup(args[0]);
             },
             {
@@ -552,7 +552,7 @@ var Contexts = Module("contexts", {
         commands.add(["fini[sh]"],
             "Stop sourcing a script file",
             function (args) {
-                util.assert(args.context, "E168: :finish used outside of a sourced file");
+                util.assert(args.context, _("command.finish.illegal"));
                 args.context.finished = true;
             },
             { argCount: "0" });
@@ -560,14 +560,14 @@ var Contexts = Module("contexts", {
         function checkStack(cmd) {
             util.assert(contexts.context && contexts.context.stack &&
                         contexts.context.stack[cmd] && contexts.context.stack[cmd].length,
-                        "Invalid use of conditional");
+                        _("command.conditional.illegal"));
         }
         function pop(cmd) {
             checkStack(cmd);
             return contexts.context.stack[cmd].pop();
         }
         function push(cmd, value) {
-            util.assert(contexts.context, "Invalid use of conditional");
+            util.assert(contexts.context, _("command.conditional.illegal"));
             if (arguments.length < 2)
                 value = contexts.context.noExecute;
             contexts.context.stack = contexts.context.stack || {};

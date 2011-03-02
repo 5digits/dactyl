@@ -20,11 +20,19 @@ var Messages = Module("messages", {
 
         this.bundle = services.stringBundle.createBundle(JSMLoader.getTarget("dactyl://locale/messages.properties"));
 
+        this._ = function _(message) {
+            if (arguments.length > 1) {
+                let args = Array.slice(arguments, 1);
+                return this.format(message + "-" + args.length, args, null) || this.format(message, args);
+            }
+            return this.get(message);
+        };
+
         let seen = {};
         for (let prop in iter(this.bundle.getSimpleEnumeration())) {
             let key = prop.QueryInterface(Ci.nsIPropertyElement).key.split(".")[0];
             if (!set.add(seen, key))
-                this[key] = {
+                this._[key] = this[key] = {
                     __noSuchMethod__: function __(prop, args) self._.apply(self, [prop].concat(args))
                 };
         }
@@ -34,19 +42,14 @@ var Messages = Module("messages", {
         services.stringBundle.flushBundles();
     },
 
-    _: function _(message) {
-        if (arguments.length > 1) {
-            let args = Array.slice(arguments, 1);
-            return this.format(message + "-", args, null) || this.format(message, args);
-        }
-        return this.get(message);
-    },
-
     get: function get(value, default_) {
         try {
             return this.bundle.GetStringFromName(value);
         }
         catch (e) {
+            // Report error so tests fail, but don't throw
+            if (arguments.length < 2)
+                util.reportError(Error("Invalid locale string: " + value + ": " + e));
             return arguments.length > 1 ? default_ : value;
         }
     },
@@ -56,6 +59,9 @@ var Messages = Module("messages", {
             return this.bundle.formatStringFromName(value, args, args.length);
         }
         catch (e) {
+            // Report error so tests fail, but don't throw
+            if (arguments.length < 3)
+                util.reportError(Error("Invalid locale string: " + value + ": " + e));
             return arguments.length > 2 ? default_ : value;
         }
     }

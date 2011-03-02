@@ -8,7 +8,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("highlight", {
     exports: ["Highlight", "Highlights", "highlight"],
     require: ["services", "styles", "util"],
-    use: ["template"]
+    use: ["messages", "template"]
 }, this);
 
 var Highlight = Struct("class", "selector", "sites",
@@ -306,7 +306,7 @@ var Highlights = Module("Highlight", {
                     highlight.clear();
                 else {
                     lastScheme = modules.io.sourceFromRuntimePath(["colors/" + scheme + "." + config.fileExtension]);
-                    dactyl.assert(lastScheme, "E185: Cannot find color scheme " + scheme);
+                    dactyl.assert(lastScheme, _("command.colorscheme.notFound", scheme));
                 }
                 autocommands.trigger("ColorScheme", { name: scheme });
             },
@@ -337,7 +337,7 @@ var Highlights = Module("Highlight", {
                 if (!modify && /&$/.test(key))
                     [clear, modify, key] = [true, true, key.replace(/&$/, "")];
 
-                dactyl.assert(!(clear && css), "E488: Trailing characters");
+                dactyl.assert(!(clear && css), _("error.trailing"));
 
                 if (!modify)
                     modules.commandline.commandOutput(
@@ -355,7 +355,7 @@ var Highlights = Module("Highlight", {
                 else if (key)
                     highlight.set(key, css, clear, "-append" in args, args["-link"]);
                 else
-                    util.assert(false, "Invalid arguments");
+                    util.assert(false, _("error.invalidArgument"));
             },
             {
                 // TODO: add this as a standard highlight completion function?
