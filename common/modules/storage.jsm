@@ -127,9 +127,10 @@ var ObjectStore = Class("ObjectStore", StoreBase, {
     keys: function keys() Object.keys(this._object),
 
     remove: function remove(key) {
-        var ret = this._object[key];
+        var res = this._object[key];
         delete this._object[key];
         this.fireEvent("remove", key);
+        return res;
     },
 
     set: function set(key, val) {
