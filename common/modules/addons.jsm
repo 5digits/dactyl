@@ -49,7 +49,7 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
         init.supercall(this, modules);
 
         util.assert(!addons.length || addons[0].findUpdates,
-                    _("error.unavailible", config.host, services.runtime.version));
+                    _("error.unavailable", config.host, services.runtime.version));
 
         this.remaining = addons;
         this.upgrade = [];
