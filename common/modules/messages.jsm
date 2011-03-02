@@ -20,23 +20,34 @@ var Messages = Module("messages", {
 
         this.bundle = services.stringBundle.createBundle(JSMLoader.getTarget("dactyl://locale/messages.properties"));
 
-        this._ = function _(message) {
-            if (arguments.length > 1) {
-                let args = Array.slice(arguments, 1);
-                return this.format(message + "-" + args.length, args, null) || this.format(message, args);
-            }
-            return this.get(message);
-        };
+        this._ = Class("_", String, {
+            init: function _(message) {
+                this.args = arguments;
+            },
+            value: Class.memoize(function () {
+                let message = this.args[0];
+
+                if (this.args.length > 1) {
+                    let args = Array.slice(this.args, 1);
+                    return self.format(message + "-" + args.length, args, null) || self.format(message, args);
+                }
+                return self.get(message);
+            }),
+            valueOf: function valueOf() this.value,
+            toString: function toString() this.value
+        });
 
         let seen = {};
-        for (let prop in iter(this.bundle.getSimpleEnumeration())) {
-            let key = prop.QueryInterface(Ci.nsIPropertyElement).key.split(".")[0];
+        for (let { key } in this.iterate()) {
             if (!set.add(seen, key))
                 this._[key] = this[key] = {
                     __noSuchMethod__: function __(prop, args) self._.apply(self, [prop].concat(args))
                 };
         }
     },
+
+    iterate: function () let (bundle = this.bundle)
+        iter(prop.QueryInterface(Ci.nsIPropertyElement) for (prop in iter(bundle.getSimpleEnumeration()))),
 
     cleanup: function cleanup() {
         services.stringBundle.flushBundles();
@@ -68,9 +79,17 @@ var Messages = Module("messages", {
 
 }, {
 }, {
+    javascript: function initJavascript(dactyl, modules, window) {
+        modules.JavaScript.setCompleter([this._, this.get, this.format], [
+            function (context) {
+                context.keys = { text: "key", description: "value" };
+                return messages.iterate();
+            }
+        ]);
+    }
 });
 
-var { _ } = messages.closure;
+var { _ } = messages;
 
 endModule();
 
