@@ -228,9 +228,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         case "string":
             assertType(Ci.nsIPrefBranch.PREF_STRING);
 
-            let supportString = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
-            supportString.data = value;
-            this.branch.setComplexValue(name, Ci.nsISupportsString, supportString);
+            this.branch.setComplexValue(name, Ci.nsISupportsString, services.String(value));
             break;
         case "number":
             assertType(Ci.nsIPrefBranch.PREF_INT);

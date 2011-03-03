@@ -634,7 +634,8 @@ function update(target) {
             let desc = Object.getOwnPropertyDescriptor(src, k);
             if (desc.value instanceof Class.Property)
                 desc = desc.value.init(k, target) || desc.value;
-            if (typeof desc.value == "function" && Object.getPrototypeOf(target)) {
+
+            if (typeof desc.value === "function" && target.__proto__) {
                 let func = desc.value.wrapped || desc.value;
                 func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
                 func.superapply = function superapply(self, args)
