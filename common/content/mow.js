@@ -119,15 +119,20 @@ var MOW = Module("mow", {
         // after interpolated data.
         XML.ignoreWhitespace = XML.prettyPrinting = false;
 
-        if (isObject(data)) {
+        if (isObject(data) && !isinstance(data, _)) {
             this.lastOutput = null;
 
             var output = util.xmlToDom(<div class="ex-command-output" style="white-space: nowrap" highlight={highlightGroup}/>,
                                        this.document);
             data.document = this.document;
-            output.appendChild(data.message);
-
-            this.messages.push(data);
+            try {
+                output.appendChild(data.message);
+            }
+            catch (e) {
+                util.reportError(e);
+                util.dump(data);
+                this.messages.push(data);
+            }
         }
         else {
             let style = isString(data) ? "pre" : "nowrap";

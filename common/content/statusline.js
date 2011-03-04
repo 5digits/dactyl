@@ -32,11 +32,12 @@ var StatusLine = Module("statusline", {
                     -moz-appearance: none !important;
                     <padding>
                 }
-                !AddonButton;#addon-bar>xul|toolbarbutton,#addon-bar>xul|toolbarbutton>xul|toolbarbutton  {
+                !AddonButton;#addon-bar xul|toolbarbutton  {
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
                     min-width: 0 !important;
+                    color: inherit !important;
                 }
                 AddonButton:not(:hover)  background: transparent !important;
             ]]>)({ padding: util.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
@@ -111,7 +112,7 @@ var StatusLine = Module("statusline", {
                 break;
             case "command":
                 if (link)
-                    dactyl.echo(_("status.link", link), commandline.DISALLOW_MULTILINE);
+                    dactyl.echo(_("status.link", link), commandline.FORCE_SINGLELINE);
                 else
                     commandline.clear();
                 break;

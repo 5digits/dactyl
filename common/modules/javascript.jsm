@@ -627,7 +627,7 @@ var JavaScript = Module("javascript", {
         "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
         "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date",
         "Error", "EvalError", "Float32Array", "Float64Array", "Function",
-        "HTMLDelElement", "HTMLInsElement", "Infinity",
+        "HTMLDelElement", "HTMLInsElement", "HTMLSpanElement", "Infinity",
         "InnerModalContentWindow", "InnerWindow", "Int16Array", "Int32Array",
         "Int8Array", "InternalError", "Iterator", "JSON", "KeyboardEvent",
         "Math", "NaN", "Namespace", "Number", "Object", "Proxy", "QName",
@@ -635,9 +635,10 @@ var JavaScript = Module("javascript", {
         "StopIteration", "String", "SyntaxError", "TypeError", "URIError",
         "Uint16Array", "Uint32Array", "Uint8Array", "XML",
         "XMLHttpProgressEvent", "XMLList", "XMLSerializer", "XPCNativeWrapper",
-        "XPCSafeJSWrapper", "XULControllers", "decodeURI", "decodeURIComponent",
-        "encodeURI", "encodeURIComponent", "escape", "eval", "isFinite", "isNaN",
-        "isXMLName", "parseFloat", "parseInt", "undefined", "unescape", "uneval"
+        "XPCSafeJSWrapper", "XULControllers", "constructor", "decodeURI",
+        "decodeURIComponent", "encodeURI", "encodeURIComponent", "escape",
+        "eval", "isFinite", "isNaN", "isXMLName", "parseFloat", "parseInt",
+        "undefined", "unescape", "uneval"
     ].concat([k.substr(6) for (k in keys(Ci)) if (/^nsIDOM/.test(k))])
      .concat([k.substr(3) for (k in keys(Ci)) if (/^nsI/.test(k))])
      .concat(this.magicalNames)

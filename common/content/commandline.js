@@ -135,7 +135,7 @@ var CommandWidgets = Class("CommandWidgets", {
                     return this.statusbar;
 
                 let statusElem = this.statusbar.message;
-                if (value && statusElem.editor && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
+                if (value && !value[2] && statusElem.editor && statusElem.editor.rootElement.scrollWidth > statusElem.scrollWidth)
                     return this.commandbar;
                 return this.activeGroup.mode;
             }
@@ -173,7 +173,8 @@ var CommandWidgets = Class("CommandWidgets", {
                     let elem = self.getGroup(obj.name, obj.value)[obj.name];
                     if (obj.value != null)
                         return [obj.value[0],
-                                obj.get ? obj.get.call(this, elem) : elem.value];
+                                obj.get ? obj.get.call(this, elem) : elem.value]
+                                .concat(obj.value.slice(2))
                     return null;
                 },
 
@@ -670,7 +671,7 @@ var CommandLine = Module("commandline", {
      *     messages move to the MOW.
      */
     _echoLine: function echoLine(str, highlightGroup, forceSingle, silent) {
-        this.widgets.message = str ? [highlightGroup, str] : null;
+        this.widgets.message = str ? [highlightGroup, str, forceSingle] : null;
 
         dactyl.triggerObserver("echoLine", str, highlightGroup, null, forceSingle);
 
@@ -718,7 +719,7 @@ var CommandLine = Module("commandline", {
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
         if (flags & this.APPEND_TO_MESSAGES) {
-            let message = isObject(data) ? data : { message: data };
+            let message = isObject(data) && !isinstance(data, _) ? data : { message: String(data) };
             this._messageHistory.add(update({ highlight: highlightGroup }, message));
             data = message.message;
         }
@@ -1684,8 +1685,10 @@ var ItemList = Class("ItemList", {
             let items = nodes.items;
             let [start, end, waiting] = getRows(context);
 
-            if (context.message)
+            if (context.message) {
+                nodes.message.textContent = "";
                 nodes.message.appendChild(this._dom(context.message));
+            }
             nodes.message.style.display = context.message ? "block" : "none";
             nodes.waiting.style.display = waiting ? "block" : "none";
             nodes.up.style.opacity = "0";
