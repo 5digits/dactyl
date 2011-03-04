@@ -190,9 +190,9 @@ Dactyl.prototype = {
                     return redirect("dactyl://help/" + this.HELP_TAGS[tag] + "#" + tag.replace(/#/g, encodeURIComponent), uri);
                 break;
             case "locale":
-                return makeChannel(["resource://dactyl-locale", config.locale, path].join("/"), uri);
+                return LocaleChannel("dactyl-locale", path, uri);
             case "locale-local":
-                return makeChannel(["resource://dactyl-local-locale", config.locale, path].join("/"), uri);
+                return LocaleChannel("dactyl-local-locale", path, uri);
             }
         }
         catch (e) {
@@ -215,6 +215,15 @@ Dactyl.prototype = {
         }
     }
 };
+
+function LocaleChannel(base, path, orig) {
+    for each (let locale in [config.locale, "en-US"]) {
+        var channel = makeChannel(["resource:/", base, config.locale, path].join("/"), orig);
+        if (channel.name !== DNE)
+            break;
+    }
+    return channel;
+}
 
 function StringChannel(data, contentType, uri) {
     let channel = services.StreamChannel(uri);
