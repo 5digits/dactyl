@@ -91,15 +91,29 @@ var ConfigBase = Class("ConfigBase", {
         let jar = io.isJarURL(uri);
         if (jar) {
             let prefix = getDir(jar.JAREntry);
-            return iter(s.slice(prefix.length).replace(/\/.*/, "") for (s in io.listJar(jar.JARFile, prefix)))
-                        .uniq().toArray();
+            var res = iter(s.slice(prefix.length).replace(/\/.*/, "") for (s in io.listJar(jar.JARFile, prefix)))
+                        .toArray();
         }
         else {
-            return array(f.leafName
-                         // Fails on FF3: for (f in util.getFile(uri).iterDirectory())
-                         for (f in values(util.getFile(uri).readDirectory()))
-                         if (f.isDirectory())).array;
+            res = array(f.leafName
+                        // Fails on FF3: for (f in util.getFile(uri).iterDirectory())
+                        for (f in values(util.getFile(uri).readDirectory()))
+                        if (f.isDirectory())).array;
         }
+
+        function exists(pkg) {
+            try {
+                services["resource:"].getSubstitution(pkg);
+                return true;
+            }
+            catch (e) {
+                return false;
+            }
+        }
+
+        return array.uniq([this.appLocale, this.appLocale.replace(/-.*/, "")]
+                            .filter(function (locale) exists("dactyl-locale-" + locale))
+                            .concat(res));
     }),
 
     /**

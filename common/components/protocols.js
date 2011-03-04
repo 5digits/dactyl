@@ -21,12 +21,14 @@ var global = this;
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
-var DNE = "resource://dactyl/content/does/not/exist";
-
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
+
+var DNE = "resource://dactyl/content/does/not/exist";
+var _DNE = ioService.newChannel(DNE, null, null).name;
+
+Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 function makeChannel(url, orig) {
     try {
@@ -216,12 +218,13 @@ Dactyl.prototype = {
     }
 };
 
-function LocaleChannel(base, path, orig) {
-    for each (let locale in [config.locale, "en-US"]) {
-        var channel = makeChannel(["resource:/", base, config.locale, path].join("/"), orig);
-        if (channel.name !== DNE)
-            break;
-    }
+function LocaleChannel(pkg, path, orig) {
+    for each (let locale in [config.locale, "en-US"])
+        for each (let sep in "-/") {
+            var channel = makeChannel(["resource:/", pkg + sep + config.locale, path].join("/"), orig);
+            if (channel.name !== _DNE)
+                return channel;
+        }
     return channel;
 }
 
@@ -238,8 +241,8 @@ function StringChannel(data, contentType, uri) {
 }
 
 function XMLChannel(uri, contentType) {
-    var channel = services.io.newChannelFromURI(uri);
     try {
+        var channel = services.io.newChannelFromURI(uri);
         var channelStream = channel.open();
     }
     catch (e) {
