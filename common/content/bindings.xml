@@ -26,7 +26,7 @@
 
     <binding id="tab" display="xul:hbox"
              extends="chrome://browser/content/tabbrowser.xml#tabbrowser-tab">
-        <content context="tabContextMenu" closetabtext="Close Tab">
+        <content closetabtext="Close Tab">
             <xul:stack class="tab-icon dactyl-tab-stack">
                 <xul:image xbl:inherits="validate,src=image" role="presentation" class="tab-icon-image"/>
                 <xul:vbox>
