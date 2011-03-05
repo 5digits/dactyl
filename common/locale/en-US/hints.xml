@@ -80,14 +80,12 @@
     <spec>;<a>mode</a><a>hint</a></spec>
     <description>
         <p>
-            Start an extended hint mode. <t>ExtendedHint</t> mode is
-            exactly like <t>QuickHint</t> mode, except that each
-            sub-mode highlights a more specialized set of elements,
-            and performs a unique action on the selected link.
-            Because of the panoply of extended hint modes available,
-            after pressing <k>;</k>, pressing <k name="Tab"/> brings
-            up the <k>completion-list</k> with a list of each hint
-            mode and its description.
+            Start an extended hint mode. <t>ExtendedHint</t> mode is exactly
+            like <t>QuickHint</t> mode, except that each sub-mode highlights a
+            more specialized set of elements, and performs a unique action on
+            the selected link. Because of the panoply of extended hint modes
+            available, after pressing <k>;</k>, pressing <k name="Tab"/> brings
+            up the completion list with each hint mode and its description.
         </p>
 
         <p><a>mode</a> may be one of:</p>
