@@ -337,7 +337,7 @@ var Styles = Module("Styles", {
 
         // TODO: Move this to an ItemList to show this automatically
         if (list.*.length() === list.text().length() + 2)
-            dactyl.echomsg("No mapping found");
+            dactyl.echomsg(_("style.none"));
         else
             commandline.commandOutput(list);
     },

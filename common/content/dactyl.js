@@ -475,7 +475,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let res = true;
         for (let [command, args] in commands.parseCommands(str.replace(/^'(.*)'$/, "$1"))) {
             if (command === null)
-                throw FailedAssertion("E492: Not a " + config.appName + " command: " + args.commandString);
+                throw FailedAssertion(_("dactyl.notCommand", config.appName, args.commandString));
 
             res = res && command.execute(args, modifiers);
         }

@@ -237,8 +237,8 @@ var Option = Class("Option", {
      */
     isValidValue: function isValidValue(values) this.validator(values),
 
-    invalidArgument: function invalidArgument(arg, op) "E474: Invalid argument: " +
-        this.name + (op || "").replace(/=?$/, "=") + arg,
+    invalidArgument: function invalidArgument(arg, op) _("error.invalidArgument",
+        this.name + (op || "").replace(/=?$/, "=") + arg),
 
     /**
      * Resets the option to its default value.
@@ -1066,7 +1066,7 @@ var Options = Module("options", {
                 else {
                     flushList();
                     if (opt.option.type === "boolean") {
-                        util.assert(!opt.valueGiven, "E474: Invalid argument: " + arg);
+                        util.assert(!opt.valueGiven, _("error.invalidArgument", arg));
                         opt.values = !opt.unsetBoolean;
                     }
                     else if (/^(string|number)$/.test(opt.option.type) && opt.invert)
@@ -1192,7 +1192,7 @@ var Options = Module("options", {
                         }
                         </table>;
                     if (str.text().length() == str.*.length())
-                        dactyl.echomsg("No variables found");
+                        dactyl.echomsg(_("variable.none"));
                     else
                         dactyl.echo(str, commandline.FORCE_MULTILINE);
                     return;
@@ -1204,9 +1204,9 @@ var Options = Module("options", {
                     let fullName = (scope || "") + name;
 
                     util.assert(scope == "g:" || scope == null,
-                                "E461: Illegal variable name: " + scope + name);
+                                _("command.let.illegalVar", scope + name));
                     util.assert(set.has(globalVariables, name) || (expr && !op),
-                                "E121: Undefined variable: " + fullName);
+                                _("command.let.undefinedVar", fullName));
 
                     if (!expr)
                         dactyl.echo(fullName + "\t\t" + fmt(globalVariables[name]));
@@ -1216,7 +1216,7 @@ var Options = Module("options", {
                         }
                         catch (e) {}
                         util.assert(newValue !== undefined,
-                            "E15: Invalid expression: " + expr);
+                            _("command.let.invalidExpression", expr));
 
                         let value = newValue;
                         if (op) {
@@ -1232,7 +1232,7 @@ var Options = Module("options", {
                     }
                 }
                 else
-                    dactyl.echoerr("E18: Unexpected characters in :let");
+                    dactyl.echoerr(_("command.let.unexpectedChar"));
             },
             {
                 deprecated: "the options system",
@@ -1305,7 +1305,7 @@ var Options = Module("options", {
                     name = name.replace(/^g:/, ""); // throw away the scope prefix
                     if (!set.has(dactyl._globalVariables, name)) {
                         if (!args.bang)
-                            dactyl.echoerr("E108: No such variable: " + name);
+                            dactyl.echoerr(_("command.let.noSuch", name));
                         return;
                     }
 

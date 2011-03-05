@@ -264,7 +264,7 @@ const Player = Module("player", {
             this.focusTrack(searchView.getItemByIndex(this._lastSearchIndex));
         }
         else
-            dactyl.echoerr("E486 Pattern not found: " + searchString, commandline.FORCE_SINGLELINE);
+            dactyl.echoerr(_("finder.notFound", searchString), commandline.FORCE_SINGLELINE);
     },
 
     /**
@@ -283,7 +283,7 @@ const Player = Module("player", {
         if (reverse) {
             if (this._lastSearchIndex == 0) {
                 this._lastSearchIndex = this._lastSearchView.length - 1;
-                echo("Search hit TOP, continuing at BOTTOM");
+                echo(_("finder.atTop"));
             }
             else
                 this._lastSearchIndex = this._lastSearchIndex - 1;
@@ -291,7 +291,7 @@ const Player = Module("player", {
         else {
             if (this._lastSearchIndex == (this._lastSearchView.length - 1)) {
                 this._lastSearchIndex = 0;
-                echo("Search hit BOTTOM, continuing at TOP");
+                echo(_("finder.atBottom"));
             }
             else
                 this._lastSearchIndex = this._lastSearchIndex + 1;
@@ -504,7 +504,7 @@ const Player = Module("player", {
                             return;
                         }
                     }
-                    dactyl.echoerr("E475: Invalid argument: " + arg);
+                    dactyl.echoerr(_("error.invalidArgument", arg));
                 }
                 else {
                     // load main library if there are no args
@@ -547,7 +547,7 @@ const Player = Module("player", {
 
                 // intentionally supports 999:99:99
                 dactyl.assert(/^[+-]?(\d+[smh]?|(\d+:\d\d:|\d+:)?\d{2})$/.test(arg),
-                    "E475: Invalid argument: " + arg);
+                    _("error.invalidArgument", arg));
 
                 function ms(t, m) Math.abs(parseInt(t, 10) * { s: 1000, m: 60000, h: 3600000 }[m])
 
@@ -588,7 +588,7 @@ const Player = Module("player", {
                             return;
                         }
                     }
-                    dactyl.echoerr("E475: Invalid argument: " + arg);
+                    dactyl.echoerr(_("error.invalidArgument", arg));
                 }
             },
             {
@@ -659,8 +659,8 @@ const Player = Module("player", {
             function (args) {
                 let arg = args[0];
 
-                dactyl.assert(arg, "E471: Argument required");
-                dactyl.assert(/^[+-]?\d+$/.test(arg), "E488: Trailing characters");
+                dactyl.assert(arg, _("error.argumentRequired"));
+                dactyl.assert(/^[+-]?\d+$/.test(arg), _("error.trailing"));
 
                 let level = parseInt(arg, 10) / 100;
 

@@ -158,7 +158,7 @@ var IO = Module("io", {
 
                     if (!file.exists() || !file.isReadable() || file.isDirectory()) {
                         if (!params.silent)
-                            dactyl.echoerr("E484: Can't open file " + filename.quote());
+                            dactyl.echoerr(_("io.notReadable", filename.quote()));
                         return;
                     }
 
@@ -430,7 +430,7 @@ var IO = Module("io", {
         let file = this.pathSearch(program);
 
         if (!file || !file.exists()) {
-            util.dactyl.echoerr("Command not found: " + program);
+            util.dactyl.echoerr(_("io.noCommand", program));
             if (callable(blocking))
                 util.trapErrors(blocking);
             return -1;
@@ -586,8 +586,8 @@ var IO = Module("io", {
                         }
                     }
 
-                    dactyl.echoerr("E344: Can't find directory " + arg.quote() + " in cdpath");
-                    dactyl.echoerr("E472: Command failed");
+                    dactyl.echoerr(_("io.noSuchDir", arg.quote()));
+                    dactyl.echoerr(_("io.commandFailed"));
                 }
             }, {
                 argCount: "?",
@@ -603,12 +603,11 @@ var IO = Module("io", {
         commands.add([config.name.replace(/(.)(.*)/, "mk$1[$2rc]")],
             "Write current key mappings and changed options to the config file",
             function (args) {
-                dactyl.assert(args.length <= 1, "E172: Only one file name allowed");
+                dactyl.assert(args.length <= 1, _("io.oneFileAllowed"));
 
                 let file = io.File(args[0] || io.getRCFile(null, true));
 
-                dactyl.assert(!file.exists() || args.bang,
-                              "E189: " + file.path.quote() + " exists (add ! to override)");
+                dactyl.assert(!file.exists() || args.bang, _("io.exists", file.path.quote()));
 
                 // TODO: Use a set/specifiable list here:
                 let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator(true)) if (cmd.serialize)];
@@ -621,7 +620,7 @@ var IO = Module("io", {
                     file.write(lines.join("\n"));
                 }
                 catch (e) {
-                    dactyl.echoerr("E190: Cannot open " + file.path.quote() + " for writing");
+                    dactyl.echoerr(_("io.notWriteable"), file.path.quote());
                     dactyl.log("Could not write to " + file.path + ": " + e.message); // XXX
                 }
             }, {
@@ -793,7 +792,7 @@ unlet s:cpo_save
             "Read Ex commands from a file",
             function (args) {
                 if (args.length > 1)
-                    dactyl.echoerr("E172: Only one file name allowed");
+                    dactyl.echoerr(_("io.oneFileAllowed"));
                 else
                     io.source(args[0], { silent: args.bang });
             }, {

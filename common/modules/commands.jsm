@@ -164,9 +164,9 @@ var Command = Class("Command", {
         modifiers = modifiers || {};
 
         if (args.count != null && !this.count)
-            throw FailedAssertion("E481: No range allowed");
+            throw FailedAssertion(_("command.noRange"));
         if (args.bang && !this.bang)
-            throw FailedAssertion("E477: No ! allowed");
+            throw FailedAssertion(_("command.noBang"));
 
         return !dactyl.trapErrors(function exec() {
             let extra = this.hive.argsExtra(args);
@@ -635,7 +635,7 @@ var Commands = Module("commands", {
             }
 
             if (!this.userHives.some(function (h) h._list.length))
-                dactyl.echomsg("No user-defined commands found");
+                dactyl.echomsg(_("command.none"));
             else
                 commandline.commandOutput(
                     <table>
@@ -1396,7 +1396,7 @@ var Commands = Module("commands", {
                                 }
                                 catch (e) {
                                     dactyl.echo(":" + this.name + " ...");
-                                    dactyl.echoerr("E117: Unknown function: " + completer);
+                                    dactyl.echoerr(_("command.unknownCompleter", completer));
                                     dactyl.log(e);
                                     return undefined;
                                 }
@@ -1433,7 +1433,7 @@ var Commands = Module("commands", {
                                     }, args.bang);
 
                     if (!added)
-                        dactyl.echoerr("E174: Command already exists: add ! to replace it");
+                        dactyl.echoerr(_("command.exists"));
                 }
             }, {
                 bang: true,
@@ -1598,7 +1598,7 @@ var Commands = Module("commands", {
                         dactyl.execute(commands.repeat);
                 }
                 else
-                    dactyl.echoerr("E30: No previous command line");
+                    dactyl.echoerr(_("command.noPrevious"));
             },
             { count: true });
     }

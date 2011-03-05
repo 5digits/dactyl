@@ -53,7 +53,7 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
 
         this.remaining = addons;
         this.upgrade = [];
-        this.dactyl.echomsg("Checking updates for addons: " + addons.map(function (a) a.name).join(", "));
+        this.dactyl.echomsg(_("addon.check", addons.map(function (a) a.name).join(", ")));
         for (let addon in values(addons))
             addon.findUpdates(this, AddonManager.UPDATE_WHEN_USER_REQUESTED, null, null);
 
@@ -391,9 +391,9 @@ var Addons = Module("addons", {
                 else if (file.isReadable() && file.isFile())
                     AddonManager.getInstallForFile(file, install, "application/x-xpinstall");
                 else if (file.isDirectory())
-                    dactyl.echoerr("Cannot install a directory: " + file.path.quote());
+                    dactyl.echoerr(_("addon.cantInstallDir", file.path.quote()));
                 else
-                    dactyl.echoerr("E484: Can't open file " + file.path);
+                    dactyl.echoerr(_("io.notReadable-1", file.path));
             }, {
                 argCount: "1",
                 completer: function (context) {

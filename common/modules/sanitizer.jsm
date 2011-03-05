@@ -17,7 +17,8 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
-    require: ["prefs", "services", "storage", "template", "util"]
+    require: ["prefs", "services", "storage", "template", "util"],
+    use: ["messages"]
 }, this);
 
 let tmp = {};
@@ -389,7 +390,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             }, window);
     },
     commands: function (dactyl, modules, window) {
-        const commands = modules.commands;
+        const { commands } = modules;
         commands.add(["sa[nitize]"],
             "Clear private data",
             function (args) {
@@ -408,7 +409,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     args[0] = "all";
 
                 if (args.bang) {
-                    dactyl.assert(args.length == 0, "E488: Trailing characters");
+                    dactyl.assert(args.length == 0, _("error.trailing"));
                     items = Object.keys(sanitizer.itemMap).filter(
                         function (k) modules.options.get("sanitizeitems").has(k));
                 }
@@ -509,7 +510,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                   for (c in Sanitizer.iterCookies(host)))));
                             return;
                         default:
-                            util.assert(cmd in Sanitizer.PERMS, "Invalid argument");
+                            util.assert(cmd in Sanitizer.PERMS, _("error.invalidArgument"));
                             setPerms(host, cmd);
                         }
                 }, {

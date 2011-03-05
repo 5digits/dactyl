@@ -12,7 +12,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("prefs", {
     exports: ["Prefs", "localPrefs", "prefs"],
     require: ["services", "util"],
-    use: ["config", "template"]
+    use: ["config", "messages", "template"]
 }, this);
 
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
@@ -221,7 +221,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
                 type === Ci.nsIPrefBranch.PREF_INT
                                 ? "E521: Number required after =: " + name + "=" + value
-                                : "E474: Invalid argument: " + name + "=" + value);
+                                : _("error.invalidArgument", name + "=" + value));
 
         let type = this.branch.getPrefType(name);
         switch (typeof value) {
@@ -289,7 +289,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     toggle: function (name) {
         util.assert(this.branch.getPrefType(name) === Ci.nsIPrefBranch.PREF_BOOL,
-                    "E488: Trailing characters: " + name + "!");
+                    _("error.trailing", name + "!"));
         this.set(name, !this.get(name));
     },
 

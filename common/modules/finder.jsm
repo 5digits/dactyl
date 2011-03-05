@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("finder", {
     exports: ["RangeFind", "RangeFinder", "rangefinder"],
-    use: ["services", "util"]
+    use: ["messages", "services", "util"]
 }, this);
 
 function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
@@ -93,7 +93,7 @@ var RangeFinder = Module("rangefinder", {
     find: function (pattern, backwards) {
         let str = this.bootstrap(pattern, backwards);
         if (!this.rangeFind.find(str))
-            this.dactyl.echoerr("E486: Pattern not found: " + pattern,
+            this.dactyl.echoerr(_("finder.notFound", pattern),
                                 this.commandline.FORCE_SINGLELINE);
 
         return this.rangeFind.found;
@@ -103,11 +103,11 @@ var RangeFinder = Module("rangefinder", {
         if (!this.rangeFind)
             this.find(this.lastFindPattern);
         else if (!this.rangeFind.find(null, reverse))
-            this.dactyl.echoerr("E486: Pattern not found: " + this.lastFindPattern,
+            this.dactyl.echoerr(_("finder.notFound", this.lastFindPattern),
                                 this.commandline.FORCE_SINGLELINE);
         else if (this.rangeFind.wrapped) {
-            let msg = this.rangeFind.backward ? "find hit TOP, continuing at BOTTOM"
-                                              : "find hit BOTTOM, continuing at TOP";
+            let msg = this.rangeFind.backward ? _("finder.atTop")
+                                              : _("finder.atBottom");
             this.commandline.echo(msg, "WarningMsg", this.commandline.APPEND_TO_MESSAGES
                                                    | this.commandline.FORCE_SINGLELINE);
         }

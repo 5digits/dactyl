@@ -237,7 +237,7 @@ const Config = Module("config", ConfigBase, {
             "Close a display pane",
             function (args) {
                 let arg = args.literalArg;
-                dactyl.assert(arg in Config.displayPanes, "E475: Invalid argument: " + arg);
+                dactyl.assert(arg in Config.displayPanes, _("error.invalidArgument", arg));
                 config.closeDisplayPane(Config.displayPanes[arg]);
             },
             {
@@ -251,7 +251,7 @@ const Config = Module("config", ConfigBase, {
             "Open a display pane",
             function (args) {
                 let arg = args.literalArg;
-                dactyl.assert(arg in Config.displayPanes, "E475: Invalid argument: " + arg);
+                dactyl.assert(arg in Config.displayPanes, _("error.invalidArgument", arg));
                 // TODO: focus when we have better key handling of these extended modes
                 config.openDisplayPane(Config.displayPanes[arg]);
             },

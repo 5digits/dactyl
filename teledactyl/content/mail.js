@@ -695,7 +695,7 @@ const Mail = Module("mail", {
                 let newPos = mail._getCurrentFolderIndex() + Math.max(1, args.count);
                 if (newPos >= gFolderTreeView.rowCount) {
                     newPos = newPos % gFolderTreeView.rowCount;
-                    commandline.echo("search hit BOTTOM, continuing at TOP", commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
+                    commandline.echo(_("finder.atBottom"), commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
                 }
                 gFolderTreeView.selection.timedSelect(newPos, 500);
             },
@@ -714,7 +714,7 @@ const Mail = Module("mail", {
                 let newPos = mail._getCurrentFolderIndex() - Math.max(1, args.count);
                 if (newPos < 0) {
                     newPos = (newPos % gFolderTreeView.rowCount) + gFolderTreeView.rowCount;
-                    commandline.echo("search hit TOP, continuing at BOTTOM", commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
+                    commandline.echo(_("finder.atTop"), commandline.HL_WARNINGMSG, commandline.APPEND_TO_MESSAGES);
                 }
                 gFolderTreeView.selection.timedSelect(newPos, 500);
             },
