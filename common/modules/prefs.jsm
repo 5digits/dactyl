@@ -221,7 +221,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
                 type === Ci.nsIPrefBranch.PREF_INT
                                 ? "E521: Number required after =: " + name + "=" + value
-                                : _("error.invalidArgument", name + "=" + value));
+                                : "E474: Invalid argument: " + name + "=" + value);
 
         let type = this.branch.getPrefType(name);
         switch (typeof value) {
