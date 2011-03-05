@@ -26,7 +26,7 @@ var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOServi
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
 var DNE = "resource://dactyl/content/does/not/exist";
-var _DNE = ioService.newChannel(DNE, null, null).name;
+var _DNE;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -133,6 +133,7 @@ function Dactyl() {
     require(global, "config");
     require(global, "services");
     require(global, "util");
+    _DNE = ioService.newChannel(DNE, null, null).name;
 
     // Doesn't belong here:
     AboutHandler.prototype.register();
