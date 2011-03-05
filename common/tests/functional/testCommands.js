@@ -143,7 +143,7 @@ var tests = {
     delbmarks: { anyOutput: ["", "about:pentadactyl"] },
     delcommand: [
         {
-            init: ["delc!", "command foo bar"],
+            init: ["delcommand!", "command foo bar"],
             error: [""],
             completions: [
                 ["", hasItems],
@@ -153,7 +153,7 @@ var tests = {
             noOutput: ["foo", "! "]
         },
         {
-            init: ["comclear"],
+            init: ["delcommand!"],
             error: ["foo"]
         }
     ],
