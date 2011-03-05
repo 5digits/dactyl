@@ -338,6 +338,9 @@ var Mappings = Module("mappings", {
      * @optional
      */
     add: function () {
+        util.assert(util.isDactyl(Components.stack.caller),
+                    "User scripts may not add builtin mappings. Please use group.mappings.add instead.");
+
         let map = this.builtin.add.apply(this.builtin, arguments);
         map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
