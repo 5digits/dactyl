@@ -150,7 +150,7 @@ var Buffer = Module("buffer", {
     // called when the active document is scrolled
     _updateBufferPosition: function _updateBufferPosition() {
         statusline.updateBufferPosition();
-        commandline.clear();
+        commandline.clear(true);
     },
 
     /**

@@ -60,6 +60,9 @@ var Option = Class("Option", {
         if (this.type in Option.stringify)
             this.stringify = Option.stringify[this.type];
 
+        if (this.type in Option.domains)
+            this.domains = Option.domains[this.type];
+
         if (this.type in Option.testValues)
             this.testValues = Option.testValues[this.type];
 
@@ -331,7 +334,7 @@ var Option = Class("Option", {
      *     references to a given domain from the given values.
      */
     filterDomain: function filterDomain(host, values)
-        Array.filter(values, function (val) !util.isSubdomain(val, host)),
+        Array.filter(values, function (val) !this.domains([val]).some(function (val) util.isSubdomain(val, host)), this),
 
     /**
      * @property {value} The option's default value. This value will be used
@@ -469,6 +472,11 @@ var Option = Class("Option", {
         get regexpmap() this.regexplist,
         get sitelist() this.regexplist,
         get sitemap() this.regexplist
+    },
+
+    domains: {
+        sitelist: function (vals) array.compact(vals.map(function (site) util.getHost(site.filter))),
+        get sitemap() this.sitelist
     },
 
     stringify: {

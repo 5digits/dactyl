@@ -619,8 +619,10 @@ var CommandLine = Module("commandline", {
         return commands.lastCommand = val;
     },
 
-    clear: function clear() {
-        this.clearMessage();
+    clear: function clear(scroll) {
+        if (!scroll || Date.now() - this._lastEchoTime > 5000)
+            this.clearMessage();
+        this._lastEchoTime = 0;
 
         if (!this.commandSession) {
             this.widgets.command = null;
@@ -754,10 +756,12 @@ var CommandLine = Module("commandline", {
         }
 
         this._lastClearable = action === this._echoLine && String(data);
+        this._lastEchoTime = (flags & this.FORCE_SINGLELINE) && Date.now();
 
         if (action)
             action.call(this, data, highlightGroup, single);
     },
+    _lastEchoTime: 0,
 
     /**
      * Prompt the user. Sets modes.main to COMMAND_LINE, which the user may
