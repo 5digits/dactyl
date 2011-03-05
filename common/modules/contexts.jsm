@@ -288,7 +288,7 @@ var Contexts = Module("contexts", {
 
     initializedGroups: function (hive)
         let (need = hive ? [hive] : Object.keys(this.hives))
-            this.groupList.filter(function (group) need.some(function (name) set.has(group, name))),
+            this.groupList.filter(function (group) need.some(set.has(group))),
 
     addGroup: function addGroup(name, description, filter, persist, replace) {
         let group = this.getGroup(name);
@@ -482,7 +482,7 @@ var Contexts = Module("contexts", {
 
                 util.assert(!group.builtin ||
                                 !["-description", "-locations", "-nopersist"]
-                                    .some(function (arg) set.has(args.explicitOpts, arg)),
+                                    .some(set.has(args.explicitOpts)),
                             _("group.cantModifyBuiltin"));
             },
             {

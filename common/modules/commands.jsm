@@ -1084,7 +1084,7 @@ var Commands = Module("commands", {
                 complete.advance(args.completeStart);
                 complete.keys = {
                     text: "names",
-                    description: function (opt) messages.get(["command", params.name, opt.names[0], "description"].join("."), opt.description)
+                    description: function (opt) messages.get(["command", params.name, "options", opt.names[0], "description"].join("."), opt.description)
                 };
                 complete.title = ["Options"];
                 if (completeOpts)

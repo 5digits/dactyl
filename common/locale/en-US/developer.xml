@@ -102,8 +102,8 @@
                         </dd>
     <dt>&tab;@mode</dt> <dd>The mode attribute to &lt;k>. Some keys have different functions in different modes.
                             You can use this attribute to specify which of the modes (other than Normal) a key pertains to.
-                            The &lt;<a>value</a>> is prepended to the element's contents, i.e., <em>&lt;k name="C-i" mode="i"/></em>
-                            becomes <em><k name="C-i" mode="i"/></em>, and <em>&lt;k mode="i">i&lt;/k></em> becomes <em><k mode="i">i</k></em>.
+                            The &lt;<a>value</a>> is prepended to the element's contents, i.e., <em>&lt;k name="C-i" mode="I"/></em>
+                            becomes <em><k name="C-i" mode="I"/></em>, and <em>&lt;k mode="t">i&lt;/k></em> becomes <em><k mode="t">i</k></em>.
                         </dd>
     <dt>t</dt>          <dd>Links to an arbitrary help topic. (HelpTopic)</dd>
 </dl>

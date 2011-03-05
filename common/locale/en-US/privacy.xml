@@ -147,7 +147,7 @@
             If no <oa>action</oa> is given, the value of <o>cookies</o> is used.
         </p>
 
-        <example><ex>:map -b</ex> <k>c</k> <ex>:cookies</ex> <k name="A-Tab"/></example>
+        <example><ex>:map -b</ex> <k link="false">c</k> <ex>:cookies</ex> <k name="A-Tab" link="false"/></example>
     </description>
 </item>
 

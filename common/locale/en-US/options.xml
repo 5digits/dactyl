@@ -548,7 +548,7 @@
     <description>
         <p>
             Set the external text editor.
-            This is the editor used by <k name="C-i" mode="i"/>, <k>gF</k>, and
+            This is the editor used by <k name="C-i" mode="I"/>, <k>gF</k>, and
             other commands which launch an external text editor.
         </p>
 
@@ -930,7 +930,7 @@
         </p>
 
         <p>
-            TextEdit mode can be entered with <k name="C-t" mode="i"/> from Insert mode.
+            TextEdit mode can be entered with <k name="C-t" mode="I"/> from Insert mode.
         </p>
     </description>
 </item>

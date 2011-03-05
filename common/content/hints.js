@@ -1241,9 +1241,10 @@ var Hints = Module("hints", {
             "The keys used to label and select hints",
             "string", "0123456789",
             {
-                values: [
-                    ["0123456789", "Numbers"],
-                    ["asdfg;lkjh", "Home Row"]],
+                values: {
+                    "0123456789": "Numbers",
+                    "asdfg;lkjh": "Home Row"
+                },
                 validator: function (value) {
                     let values = events.fromString(value).map(events.closure.toString);
                     return Option.validIf(array.uniq(values).length === values.length,
@@ -1262,24 +1263,24 @@ var Hints = Module("hints", {
             "Change the behavior of <Return> in hint mode",
             "number", 0,
             {
-                values: [
-                    ["0", "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>."],
-                    ["1", "Follow the selected hint on <Return>."],
-                    ["2", "Follow the selected hint on <Return> only it's been <Tab>-selected."]
-                ]
+                values: {
+                    "0": "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>.",
+                    "1": "Follow the selected hint on <Return>.",
+                    "2": "Follow the selected hint on <Return> only it's been <Tab>-selected."
+                }
             });
 
         options.add(["hintmatching", "hm"],
             "How hints are filtered",
             "stringlist", "contains",
             {
-                values: [
-                    ["contains",       "The typed characters are split on whitespace. The resulting groups must all appear in the hint."],
-                    ["custom",         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)"],
-                    ["firstletters",   "Behaves like wordstartswith, but all groups must match a sequence of words."],
-                    ["wordstartswith", "The typed characters are split on whitespace. The resulting groups must all match the beginnings of words, in order."],
-                    ["transliterated", UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")]
-                ],
+                values: {
+                    "contains":       "The typed characters are split on whitespace. The resulting groups must all appear in the hint.",
+                    "custom":         "Delegate to a custom function: dactyl.plugins.customHintMatcher(hintString)",
+                    "firstletters":   "Behaves like wordstartswith, but all groups must match a sequence of words.",
+                    "wordstartswith": "The typed characters are split on whitespace. The resulting groups must all match the beginnings of words, in order.",
+                    "transliterated": UTF8("When true, special latin characters are translated to their ASCII equivalents (e.g., é ⇒ e)")
+                },
                 validator: function (values) Option.validateCompleter.call(this, values) &&
                     1 === values.reduce(function (acc, v) acc + (["contains", "custom", "firstletters", "wordstartswith"].indexOf(v) >= 0), 0)
             });
@@ -1293,11 +1294,11 @@ var Hints = Module("hints", {
             "Which text is used to filter hints for input elements",
             "stringlist", "label,value",
             {
-                values: [
-                    ["value", "Match against the value of the input field"],
-                    ["label", "Match against the text of a label for the input field, if one can be found"],
-                    ["name",  "Match against the name of the input field"]
-                ]
+                values: {
+                    "value": "Match against the value of the input field",
+                    "label": "Match against the text of a label for the input field, if one can be found",
+                    "name":  "Match against the name of the input field"
+                }
             });
     }
 });

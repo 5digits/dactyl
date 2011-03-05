@@ -37,11 +37,11 @@
     For instance,
 </p>
 
-<code><ex>:map <k name="F2"/></ex> <ex>:echo Date()<k name="CR"/></ex></code>
+<code><ex>:map <k name="F2" link="false"/></ex> <ex>:echo Date()<k name="CR"/></ex></code>
 
 <p>
     causes “<ex>:echo Date()<k name="CR"/></ex>” to be typed out
-    whenever <k name="F2"/> is pressed, thus echoing the full date
+    whenever <k name="F2" link="false"/> is pressed, thus echoing the full date
     to the command line.
 </p>
 
@@ -221,15 +221,6 @@
 
 <h3 tag=":map-arguments">Special arguments</h3>
 
-<tags>:map-&lt;silent></tags>
-
-<p>
-    When the first argument to one of the mapping commands is
-    <k name="silent"/>, the keys in <a>rhs</a> are not shown in the
-    command line as they are generated. Nor, for that matter, is
-    anything else until the command has completed.
-</p>
-
 <p>
     Below is an overview of which modes each map command applies to:
 </p>
@@ -262,7 +253,7 @@
         quotation marks or back-slashes. A space may additionally be
         typed as <k name="Space"/>.
     </li>
-    <li>
+    <li key="&lt;lt>">
         As special key names start with the <em>&lt;</em> character,
         a literal &lt; must be typed as <k name="lt"/>.
     </li>
@@ -271,8 +262,8 @@
         and <k name="Down"/> represent the standard arrow keys.
     </li>
     <li>
-        <k name="CapsLock"/>, <k name="NumLock"/>, <k name="Ins"/>
-        <k name="Del"/>, <k name="Tab"/>, <k name="PageUp"/>,
+        <k name="CapsLock" link="false"/>, <k name="NumLock" link="false"/>, <k name="Insert"/>
+        <k name="Del" link="false"/>, <k name="Tab"/>, <k name="PageUp"/>,
         <k name="PageDown"/>, and <k name="Esc"/> work as
         expected.
    </li>
@@ -280,16 +271,16 @@
         <k name="Return" link="false"/> or <k name="CR"/> represent the carriage
         return key.
     </li>
-    <li><k name="BS"/> represents the backspace key.</li>
-    <li><k name="F1"/> through <k name="F12"/> work as expected.</li>
+    <li><k name="BS" link="false"/> represents the backspace key.</li>
+    <li><k name="F1"/> through <k name="F12" link="false"/> work as expected.</li>
     <li>
-        <k name="K0"/> through <k name="K9"/> represent keys on the
+        <k name="K0" link="false"/> through <k name="K9" link="false"/> represent keys on the
         numeric keypad.
     </li>
     <li>
-        <k name="Uxxxx"/>, where <em>xxxx</em> is any 4 hexadecimal
+        <k name="Uxxxx" link="false"/>, where <em>xxxx</em> is any 4 hexadecimal
         digits, represents the character at that Unicode codepoint.
-        For instance, <k name="U263a"/> represents ☺.
+        For instance, <k name="U263a" link="false"/> represents ☺.
     </li>
 </ul>
 
@@ -299,10 +290,10 @@
 </p>
 
 <ol>
-    <li><k name="C-␣"/>: The control or ctrl key.</li>
-    <li><k name="A-␣"/>: The alt key.</li>
-    <li><k name="M-␣"/>: The meta key, windows key, or command key.</li>
-    <li><k name="S-␣"/>: The shift key.</li>
+    <li><k name="C-␣" link="false"/>: The control or ctrl key.</li>
+    <li><k name="A-␣" link="false"/>: The alt key.</li>
+    <li><k name="M-␣" link="false"/>: The meta key, windows key, or command key.</li>
+    <li><k name="S-␣" link="false"/>: The shift key.</li>
 </ol>
 
 <p>
@@ -319,31 +310,31 @@
 </p>
 
 <dl dt="width: 10em;">
-    <dt><k>xc</k></dt>
+    <dt><k link="false">xc</k></dt>
     <dd>Type the ‘X’ key followed by the ‘C’ key.</dd>
 
-    <dt><k name="C-x">c</k></dt>
+    <dt><k name="C-x" link="false">c</k></dt>
     <dd>
         Type the ‘X’ key while holding the ‘Control’ key, followed
         by the ‘C’ key.
     </dd>
 
-    <dt><k name="C-2"/></dt>
+    <dt><k name="C-2" link="false"/></dt>
     <dd>Type the ‘2’ while holding the ‘Control’ key.</dd>
 
-    <dt><k name="C-@"/></dt>
+    <dt><k name="C-@" link="false"/></dt>
     <dd>Type the ‘@’ key while holding the ‘Control’ key.</dd>
 
-    <dt><k name="S-Space"/></dt>
+    <dt><k name="S-Space" link="false"/></dt>
     <dd>Press the space bar while holding the ‘Shift’ key.</dd>
 
-    <dt><k name="C-A-j"/></dt>
+    <dt><k name="C-A-j" link="false"/></dt>
     <dd>Type the ‘J’ key while while holding both the ‘Control’ and ‘Alt’ keys.</dd>
 
-    <dt><k name="C-A-J"/></dt>
+    <dt><k name="C-A-J" link="false"/></dt>
     <dd>Exactly the same as above.</dd>
 
-    <dt><k name="C-A-S-j"/></dt>
+    <dt><k name="C-A-S-j" link="false"/></dt>
     <dd>Type the ‘J’ key while while holding both the ‘Control’, ‘Alt’, and ‘Shift’ keys.</dd>
 </dl>
 

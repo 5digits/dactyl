@@ -84,6 +84,8 @@ var CompletionContext = Class("CompletionContext", {
              */
             self.waitingForTab = false;
 
+            self.hasItems = null;
+
             delete self._generate;
             delete self.ignoreCase;
             if (self != this)
@@ -329,7 +331,7 @@ var CompletionContext = Class("CompletionContext", {
      * The message displayed at the head of the completions for the
      * current context.
      */
-    get message() this._message || (this.waitingForTab ? "Waiting for <Tab>" : null),
+    get message() this._message || (this.waitingForTab && this.hasItems !== false ? "Waiting for <Tab>" : null),
     set message(val) this._message = val,
 
     /**
@@ -1014,16 +1016,16 @@ var Completion = Module("completion", {
     options: function (dactyl, modules, window) {
         const { completion, options } = modules;
         let wildmode = {
-            values: [
+            values: {
                 // Why do we need ""?
                 // Because its description is useful during completion. --Kris
-                ["",              "Complete only the first match"],
-                ["full",          "Complete the next full match"],
-                ["longest",       "Complete the longest common string"],
-                ["list",          "If more than one match, list all matches"],
-                ["list:full",     "List all and complete first match"],
-                ["list:longest",  "List all and complete the longest common string"]
-            ],
+                "":              "Complete only the first match",
+                "full":          "Complete the next full match",
+                "longest":       "Complete the longest common string",
+                "list":          "If more than one match, list all matches",
+                "list:full":     "List all and complete first match",
+                "list:longest":  "List all and complete the longest common string"
+            },
             checkHas: function (value, val) {
                 let [first, second] = value.split(":", 2);
                 return first == val || second == val;
@@ -1056,11 +1058,11 @@ var Completion = Module("completion", {
             "Completion case matching mode",
             "regexpmap", ".?:smart",
             {
-                values: [
-                    ["smart", "Case is significant when capital letters are typed"],
-                    ["match", "Case is always significant"],
-                    ["ignore", "Case is never significant"]
-                ]
+                values: {
+                    "smart": "Case is significant when capital letters are typed",
+                    "match": "Case is always significant",
+                    "ignore": "Case is never significant"
+                }
             });
 
         options.add(["wildmode", "wim"],

@@ -66,20 +66,43 @@
 </p>
 
 <dl>
-    <dt><k name="CR"/> or j or <k name="Down"/></dt>  <dd>one more line</dd>
-    <dt>d</dt>                                        <dd>down a page (half a screen)</dd>
-    <dt><k name="Space"/> or <k name="PageDown"/></dt><dd>down a screen</dd>
-    <dt>G</dt>                                        <dd>down all the way, until the hit-enter prompt</dd>
+    <dt><k name="CR" link="false"/> or j or <k name="Down" link="false"/></dt>
+    <dd>one more line</dd>
+
+    <dt>d</dt>
+    <dd>down a page (half a screen)</dd>
+
+    <dt><k name="Space" link="false"/> or <k name="PageDown" link="false"/></dt>
+    <dd>down a screen</dd>
+
+    <dt>G</dt>
+    <dd>down all the way, until the hit-enter prompt</dd>
+
     <dt/><dd/>
-    <dt><k name="BS"/> or k or <k name="Up"/></dt>    <dd>one line back</dd>
-    <dt>u</dt>                                        <dd>up a page (half a screen)</dd>
-    <dt>b or <k name="PageUp"/></dt>                            <dd>back a screen</dd>
-    <dt>g</dt>                                        <dd>back to the start</dd>
+    <dt><k name="BS" link="false"/> or k or <k name="Up" link="false"/></dt>
+    <dd>one line back</dd>
+
+    <dt>u</dt>
+    <dd>up a page (half a screen)</dd>
+
+    <dt>b or <k name="PageUp" link="false"/></dt>
+    <dd>back a screen</dd>
+
+    <dt>g</dt>
+    <dd>back to the start</dd>
+
     <dt/><dd/>
-    <dt>q, <k name="Esc"/> or <k name="C-c"></k></dt> <dd>stop the listing</dd>
-    <dt>:</dt>                                        <dd>stop the listing and enter a command line</dd>
-    <dt>;</dt>                                        <dd>start an <t>extended-hints</t> command</dd>
-    <dt><k name="C-y"/></dt>                          <dd>yank (copy) a modeless selection to the clipboard</dd>
+    <dt>q, <k name="Esc" link="false"/> or <k name="C-c"></k></dt>
+    <dd>stop the listing</dd>
+
+    <dt>:</dt>
+    <dd>stop the listing and enter a command line</dd>
+
+    <dt>;</dt>
+    <dd>start an <t>extended-hints</t> command</dd>
+
+    <dt><k name="C-y" link="false"/></dt>
+    <dd>yank (copy) a modeless selection to the clipboard</dd>
 </dl>
 
 </document>

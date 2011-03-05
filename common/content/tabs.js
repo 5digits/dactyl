@@ -987,11 +987,11 @@ var Tabs = Module("tabs", {
                         config.tabbrowser.tabContainer._positionPinnedTabs();
                     return value;
                 },
-                values: [
-                    ["never",    "Never show the tab bar"],
-                    ["multitab", "Show the tab bar when there are multiple tabs"],
-                    ["always",   "Always show the tab bar"]
-                ]
+                values: {
+                    "never":    "Never show the tab bar",
+                    "multitab": "Show the tab bar when there are multiple tabs",
+                    "always":   "Always show the tab bar"
+                }
             });
 
         if (config.hasTabbrowser) {
@@ -1030,15 +1030,15 @@ var Tabs = Module("tabs", {
                 "Define which commands should output in a new tab by default",
                 "stringlist", "",
                 {
-                    values: [
-                        ["all", "All commands"],
-                        ["addons", ":addo[ns] command"],
-                        ["downloads", ":downl[oads] command"],
-                        ["extoptions", ":exto[ptions] command"],
-                        ["help", ":h[elp] command"],
-                        ["javascript", ":javascript! or :js! command"],
-                        ["prefs", ":pref[erences]! or :prefs! command"]
-                    ],
+                    values: {
+                        "all": "All commands",
+                        "addons": ":addo[ns] command",
+                        "downloads": ":downl[oads] command",
+                        "extoptions": ":exto[ptions] command",
+                        "help": ":h[elp] command",
+                        "javascript": ":javascript! or :js! command",
+                        "prefs": ":pref[erences]! or :prefs! command"
+                    },
                     has: Option.has.toggleAll
                 });
 
@@ -1064,11 +1064,11 @@ var Tabs = Module("tabs", {
                                       "See 'popups' option.");
                         return values;
                     },
-                    values: [
-                        ["tab",     "Open popups in a new tab"],
-                        ["window",  "Open popups in a new window"],
-                        ["resized", "Open resized popups in a new window"]
-                    ]
+                    values: {
+                        "tab":     "Open popups in a new tab",
+                        "window":  "Open popups in a new window",
+                        "resized": "Open resized popups in a new window"
+                    }
                 });
         }
     }

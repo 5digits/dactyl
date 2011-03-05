@@ -1840,11 +1840,11 @@ var Buffer = Module("buffer", {
             "Where to show the destination of the link under the cursor",
             "string", "status",
             {
-                values: [
-                    ["", "Don't show link destinations"],
-                    ["status", "Show link destinations in the status line"],
-                    ["command", "Show link destinations in the command line"]
-                ]
+                values: {
+                    "": "Don't show link destinations",
+                    "status": "Show link destinations in the status line",
+                    "command": "Show link destinations in the command line"
+                }
             });
 
         options.add(["usermode", "um"],

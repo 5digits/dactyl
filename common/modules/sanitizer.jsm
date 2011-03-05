@@ -566,7 +566,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "The default list of private items to sanitize",
             "stringlist", "all",
             {
-                get values() values(sanitizer.itemMap),
+                get values() values(sanitizer.itemMap).toArray(),
                 has: modules.Option.has.toggleAll,
                 validator: function (values) values.length &&
                     values.every(function (val) val === "all" || set.has(sanitizer.itemMap, val))
@@ -604,14 +604,14 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     context.compare = context.constructor.Sort.Unsorted;
                     context.completions = this.values;
                 },
-                values: [
-                    ["all",     "Everything"],
-                    ["session", "The current session"],
-                    ["10m",     "Last ten minutes"],
-                    ["1h",      "Past hour"],
-                    ["1d",      "Past day"],
-                    ["1w",      "Past week"]
-                ],
+                values: {
+                    "all":     "Everything",
+                    "session": "The current session",
+                    "10m":     "Last ten minutes",
+                    "1h":      "Past hour",
+                    "1d":      "Past day",
+                    "1w":      "Past week"
+                },
                 validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
             });
 

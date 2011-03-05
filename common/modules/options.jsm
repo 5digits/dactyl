@@ -691,11 +691,13 @@ var Option = Class("Option", {
             if (!acceptable)
                 acceptable = context.allItems.items.map(function (item) [item.text]);
         }
-        if (this.type === "regexpmap" || this.type === "sitemap")
-            return Array.concat(values).every(function (re) acceptable.some(function (item) item[0] == re.result));
 
         if (isArray(acceptable))
             acceptable = set(acceptable.map(function ([k]) k));
+
+        if (this.type === "regexpmap" || this.type === "sitemap")
+            return Array.concat(values).every(function (re) set.has(acceptable, re.result));
+
         return Array.concat(values).every(set.has(acceptable));
     }
 });

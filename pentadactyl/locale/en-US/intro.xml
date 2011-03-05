@@ -141,7 +141,7 @@
     <li>Visual bell for errors (<o>visualbell</o>)</li>
     <li><link topic="marks">Marks</link> support (<k>m</k><tt>M</tt> to set mark <tt>M</tt>, <k>'</k><tt>M</tt> to jump to it)</li>
     <li><link topic="quickmarks">QuickMark</link> support</li>
-    <li><link topic="i_&lt;C-i>">Editing of text fields</link> with an <link topic="'editor'">external editor</link></li>
+    <li><link topic="I_&lt;C-i>">Editing of text fields</link> with an <link topic="'editor'">external editor</link></li>
     <li><link topic="autocommands">AutoCommands</link> to execute actions on certain events</li>
     <li>A comprehensive help system, explaining all <link topic="cmdline.xml">commands</link>, <link topic="mapping">mappings</link>, <t>options</t>, and <t>plugins</t></li>
 </ul>

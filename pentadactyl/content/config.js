@@ -293,6 +293,7 @@ var Config = Module("config", ConfigBase, {
             context.filterFunc = null;
 
             let words = context.filter.toLowerCase().split(/\s+/g);
+            context.hasItems = true;
             context.completions = context.completions.filter(function ({ url, title })
                 words.every(function (w) (url + " " + title).toLowerCase().indexOf(w) >= 0))
             context.incomplete = true;

@@ -65,7 +65,7 @@
     <description>
         <p>
             Start <t>QuickHint</t> mode, but the selected elements
-            are clicked with the <k name="Shift"/> key pressed,
+            are clicked with the <k name="Shift" link="false"/> key pressed,
             which has the normal effect of opening it in a new tab
             (depending on the value of the
             <pref>browser.tabs.loadInBackground</pref> preference).
