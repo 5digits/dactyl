@@ -434,6 +434,8 @@ var Contexts = Module("contexts", {
         get persist() this.group.persist,
         set persist(val) this.group.persist = val,
 
+        prefix: Class.memoize(function () this.name === "builtin" ? "" : this.name + ":"),
+
         get toStringParams() [this.name]
     })
 }, {

@@ -11,7 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("options", {
     exports: ["Option", "Options", "ValueError", "options"],
-    require: ["storage"],
+    require: ["messages", "storage"],
     use: ["commands", "completion", "prefs", "services", "styles", "template", "util"]
 }, this);
 
@@ -65,6 +65,11 @@ var Option = Class("Option", {
 
         this._op = Option.ops[this.type];
 
+        // Need to trigger setter
+        if (extraInfo && "values" in extraInfo)
+            this.values = extraInfo.values;
+        delete extraInfo.values;
+
         if (extraInfo)
             update(this, extraInfo);
 
@@ -91,6 +96,11 @@ var Option = Class("Option", {
         if (this.globalValue == undefined && !this.initialValue)
             this.globalValue = this.defaultValue;
     },
+
+    /**
+     * @property {string} This option's description, as shown in :listoptions.
+     */
+    description: Messages.Localized(""),
 
     get helpTag() "'" + this.name + "'",
 
@@ -291,11 +301,6 @@ var Option = Class("Option", {
      */
     scope: 1, // Option.SCOPE_GLOBAL // XXX set to BOTH by default someday? - kstep
 
-    /**
-     * @property {string} This option's description, as shown in :listoptions.
-     */
-    description: "",
-
     cleanupValue: null,
 
     /**
@@ -311,7 +316,7 @@ var Option = Class("Option", {
      * @property {[[string, string]]} This option's possible values.
      * @see CompletionContext
      */
-    values: null,
+    values: Messages.Localized(null),
 
     /**
      * @property {function(host, values)} A function which should return a list
@@ -679,7 +684,7 @@ var Option = Class("Option", {
      */
     validateCompleter: function validateCompleter(values) {
         if (this.values)
-            var acceptable = this.values;
+            var acceptable = this.values.array || this.values;
         else {
             let context = CompletionContext("");
             acceptable = context.fork("", 0, this, this.completer);
@@ -688,7 +693,10 @@ var Option = Class("Option", {
         }
         if (this.type === "regexpmap" || this.type === "sitemap")
             return Array.concat(values).every(function (re) acceptable.some(function (item) item[0] == re.result));
-        return Array.concat(values).every(function (value) acceptable.some(function (item) item[0] == value));
+
+        if (isArray(acceptable))
+            acceptable = set(acceptable.map(function ([k]) k));
+        return Array.concat(values).every(set.has(acceptable));
     }
 });
 

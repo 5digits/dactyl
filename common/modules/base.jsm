@@ -363,11 +363,11 @@ function set(ary) {
  * @param {string} key The key to add.
  * @returns boolean
  */
-set.add = function (set, key) {
+set.add = curry(function set_add(set, key) {
     let res = this.has(set, key);
     set[key] = true;
     return res;
-}
+});
 /**
  * Returns true if the given set contains the given key.
  *
@@ -375,8 +375,8 @@ set.add = function (set, key) {
  * @param {string} key The key to check.
  * @returns {boolean}
  */
-set.has = function (set, key) hasOwnProperty.call(set, key) &&
-                              propertyIsEnumerable.call(set, key);
+set.has = curry(function set_has(set, key) hasOwnProperty.call(set, key) &&
+                                           propertyIsEnumerable.call(set, key));
 /**
  * Returns a new set containing the members of the first argument which
  * do not exist in any of the other given arguments.
@@ -384,13 +384,13 @@ set.has = function (set, key) hasOwnProperty.call(set, key) &&
  * @param {object} set The set.
  * @returns {object}
  */
-set.subtract = function (set) {
+set.subtract = function set_subtract(set) {
     set = update({}, set);
     for (let i = 1; i < arguments.length; i++)
         for (let k in keys(arguments[i]))
             delete set[k];
     return set;
-}
+};
 /**
  * Removes an element from a set and returns true if the element was
  * previously contained.
@@ -399,11 +399,66 @@ set.subtract = function (set) {
  * @param {string} key The key to remove.
  * @returns boolean
  */
-set.remove = function (set, key) {
+set.remove = curry(function set_remove(set, key) {
     let res = set.has(set, key);
     delete set[key];
     return res;
+});
+
+/**
+ * Curries a function to the given number of arguments. Each
+ * call of the resulting function returns a new function. When
+ * a call does not contain enough arguments to satisfy the
+ * required number, the resulting function is another curried
+ * function with previous arguments accumulated.
+ *
+ *     function foo(a, b, c) [a, b, c].join(" ");
+ *     curry(foo)(1, 2, 3) -> "1 2 3";
+ *     curry(foo)(4)(5, 6) -> "4 5 6";
+ *     curry(foo)(7)(8)(9) -> "7 8 9";
+ *
+ * @param {function} fn The function to curry.
+ * @param {integer} length The number of arguments expected.
+ *     @default fn.length
+ *     @optional
+ * @param {object} self The 'this' value for the returned function. When
+ *     omitted, the value of 'this' from the first call to the function is
+ *     preserved.
+ *     @optional
+ */
+function curry(fn, length, self, acc) {
+    if (length == null)
+        length = fn.length;
+    if (length == 0)
+        return fn;
+
+    // Close over function with 'this'
+    function close(self, fn) function () fn.apply(self, Array.slice(arguments));
+
+    if (acc == null)
+        acc = [];
+
+    return function curried() {
+        let args = acc.concat(Array.slice(arguments));
+
+        // The curried result should preserve 'this'
+        if (arguments.length == 0)
+            return close(self || this, curried);
+
+        if (args.length >= length)
+            return fn.apply(self || this, args);
+
+        return curry(fn, length, self || this, args);
+    };
 }
+
+if (curry.bind)
+    var bind = function bind(func) func.bind.apply(func, Array.slice(arguments, bind.length));
+else
+    var bind = function bind(func, self) {
+        let args = Array.slice(arguments, bind.length);
+        return function bound() func.apply(self, args.concat(Array.slice(arguments)));
+    };
 
 /**
  * Returns true if both arguments are functions and
@@ -537,61 +592,6 @@ function memoize(obj, key, getter) {
             Class.replaceProperty(this.instance || this, key, val)
     });
 }
-
-/**
- * Curries a function to the given number of arguments. Each
- * call of the resulting function returns a new function. When
- * a call does not contain enough arguments to satisfy the
- * required number, the resulting function is another curried
- * function with previous arguments accumulated.
- *
- *     function foo(a, b, c) [a, b, c].join(" ");
- *     curry(foo)(1, 2, 3) -> "1 2 3";
- *     curry(foo)(4)(5, 6) -> "4 5 6";
- *     curry(foo)(7)(8)(9) -> "7 8 9";
- *
- * @param {function} fn The function to curry.
- * @param {integer} length The number of arguments expected.
- *     @default fn.length
- *     @optional
- * @param {object} self The 'this' value for the returned function. When
- *     omitted, the value of 'this' from the first call to the function is
- *     preserved.
- *     @optional
- */
-function curry(fn, length, self, acc) {
-    if (length == null)
-        length = fn.length;
-    if (length == 0)
-        return fn;
-
-    // Close over function with 'this'
-    function close(self, fn) function () fn.apply(self, Array.slice(arguments));
-
-    if (acc == null)
-        acc = [];
-
-    return function curried() {
-        let args = acc.concat(Array.slice(arguments));
-
-        // The curried result should preserve 'this'
-        if (arguments.length == 0)
-            return close(self || this, curried);
-
-        if (args.length >= length)
-            return fn.apply(self || this, args);
-
-        return curry(fn, length, self || this, args);
-    };
-}
-
-if (curry.bind)
-    var bind = function bind(func) func.bind.apply(func, Array.slice(arguments, bind.length));
-else
-    var bind = function bind(func, self) {
-        let args = Array.slice(arguments, bind.length);
-        return function bound() func.apply(self, args.concat(Array.slice(arguments)));
-    };
 
 let sandbox = Cu.Sandbox(this);
 sandbox.__proto__ = this;

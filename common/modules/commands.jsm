@@ -11,8 +11,8 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("commands", {
     exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
-    require: ["contexts", "util"],
-    use: ["config", "messages", "options", "services", "template"]
+    require: ["contexts", "messages", "util"],
+    use: ["config", "options", "services", "template"]
 }, this);
 
 /**
@@ -132,9 +132,13 @@ var Command = Class("Command", {
             update(this, extraInfo);
         if (this.options)
             this.options = this.options.map(CommandOption.fromArray, CommandOption);
+        for each (let option in this.options)
+            option.localeName = ["command", this.name, option.names[0]];
     },
 
     get toStringParams() [this.name, this.hive.name],
+
+    get identifier() this.hive.prefix + this.name,
 
     get helpTag() ":" + this.name,
 
@@ -224,7 +228,7 @@ var Command = Class("Command", {
     names: null,
 
     /** @property {string} This command's description, as shown in :listcommands */
-    description: "",
+    description: Messages.Localized(""),
     /**
      * @property {function (Args)} The function called to execute this command.
      */
@@ -1078,7 +1082,10 @@ var Commands = Module("commands", {
                         context.completions = compl;
                 }
                 complete.advance(args.completeStart);
-                complete.keys = { text: "names", description: "description" };
+                complete.keys = {
+                    text: "names",
+                    description: function (opt) messages.get(["command", params.name, opt.names[0], "description"].join("."), opt.description)
+                };
                 complete.title = ["Options"];
                 if (completeOpts)
                     complete.completions = completeOpts;

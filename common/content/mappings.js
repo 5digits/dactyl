@@ -54,6 +54,8 @@ var Map = Class("Map", {
 
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
 
+    get identifier() [this.modes[0].name, this.hive.prefix + this.names[0]].join("."),
+
     /** @property {number} A unique ID for this mapping. */
     id: null,
     /** @property {number[]} All of the modes for which this mapping applies. */
@@ -61,7 +63,7 @@ var Map = Class("Map", {
     /** @property {function (number)} The function called to execute this mapping. */
     action: null,
     /** @property {string} This mapping's description, as shown in :listkeys. */
-    description: "",
+    description: Messages.Localized(""),
 
     /** @property {boolean} Whether this mapping accepts an argument. */
     arg: false,

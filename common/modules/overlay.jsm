@@ -161,6 +161,7 @@ var Overlay = Module("Overlay", {
                 defineModule.time("load", null, function _load() {
                     ["addons",
                      "base",
+                     "io",
                      "commands",
                      "completion",
                      "config",
@@ -168,7 +169,6 @@ var Overlay = Module("Overlay", {
                      "downloads",
                      "finder",
                      "highlight",
-                     "io",
                      "javascript",
                      "messages",
                      "options",

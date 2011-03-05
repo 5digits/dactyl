@@ -852,7 +852,7 @@ var Events = Module("events", {
 
                         evt_obj.charCode = keyname.charCodeAt(0);
                     }
-                    else if (set.has(this._pseudoKeys)) {
+                    else if (set.has(this._pseudoKeys, keyname)) {
                         evt_obj.dactylString = "<" + this._key_key[keyname] + ">";
                     }
                     else if (/mouse$/.test(keyname)) { // mouse events
