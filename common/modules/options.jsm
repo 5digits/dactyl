@@ -803,7 +803,7 @@ var Options = Module("options", {
 
             let name = names[0];
             if (name in this._optionMap) {
-                this.dactyl.log("Warning: " + name.quote() + " already exists: replacing existing option.", 1);
+                this.dactyl.log(_("option.replaceExisting", name.quote()), 1);
                 this.remove(name);
             }
 

@@ -112,14 +112,14 @@ var IO = Module("io", {
             let dirs = modules.options.get("runtimepath").files;
             let found = null;
 
-            dactyl.echomsg("Searching for " + paths.join(" ").quote() + " in " + modules.options.get("runtimepath").stringValue, 2);
+            dactyl.echomsg(_("io.searchingFor", paths.join(" ").quote(), modules.options.get("runtimepath").stringValue), 2);
 
         outer:
             for (let dir in values(dirs)) {
                 for (let [,path] in Iterator(paths)) {
                     let file = dir.child(path);
 
-                    dactyl.echomsg("Searching for " + file.path.quote(), 3);
+                    dactyl.echomsg(_("io.searchingFor", file.path.quote()), 3);
 
                     if (file.exists() && file.isFile() && file.isReadable()) {
                         found = io.source(file.path, false) || true;
@@ -131,7 +131,7 @@ var IO = Module("io", {
             }
 
             if (!found)
-                dactyl.echomsg("not found in 'runtimepath': " + paths.join(" ").quote(), 1);
+                dactyl.echomsg(_("io.notInRTP", paths.join(" ").quote()), 1);
 
             return found;
         },
@@ -162,7 +162,7 @@ var IO = Module("io", {
                         return;
                     }
 
-                    dactyl.echomsg("sourcing " + filename.quote(), 2);
+                    dactyl.echomsg(_("io.sourcing", filename.quote()), 2);
 
                     let uri = services.io.newFileURI(file);
 
@@ -201,7 +201,7 @@ var IO = Module("io", {
                     if (this._scriptNames.indexOf(file.path) == -1)
                         this._scriptNames.push(file.path);
 
-                    dactyl.echomsg("finished sourcing " + filename.quote(), 2);
+                    dactyl.echomsg(_("io.sourcingEnd", filename.quote()), 2);
 
                     dactyl.log("Sourced: " + filename, 3);
                     return context;
@@ -471,7 +471,7 @@ var IO = Module("io", {
      * @returns {object}
      */
     system: function (command, input) {
-        util.dactyl.echomsg("Calling shell to execute: " + command, 4);
+        util.dactyl.echomsg(_("io.callingShell", command), 4);
 
         function escape(str) '"' + str.replace(/[\\"$]/g, "\\$&") + '"';
 
