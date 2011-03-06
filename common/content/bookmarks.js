@@ -225,7 +225,7 @@ var Bookmarks = Module("bookmarks", {
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
-        let engine = this.searchEngines[engineName];
+        let engine = set.has(this.searchEngines, engineName) && this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
         if (!queryURI)
@@ -274,7 +274,7 @@ var Bookmarks = Module("bookmarks", {
             param = query.substr(offset + 1);
         }
 
-        var engine = bookmarks.searchEngines[keyword];
+        var engine = set.has(bookmarks.searchEngines, keyword) && bookmarks.searchEngines[keyword];
         if (engine) {
             if (engine.searchForm && !param)
                 return engine.searchForm;
