@@ -617,8 +617,7 @@ var Tabs = Module("tabs", {
             function (args) {
                 for (let tab in values(tabs.visibleTabs)) {
                     tabs.select(tab);
-                    if (!commands.execute(args[0] || "", null, true))
-                        break;
+                    dactyl.execute(args[0], null, true);
                 }
             }, {
                 argCount: "1",
