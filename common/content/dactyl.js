@@ -1072,7 +1072,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         function sourceDirectory(dir) {
             dactyl.assert(dir.isReadable(), _("io.notReadable", dir.path));
 
-            dactyl.log("Sourcing plugin directory: " + dir.path + "...", 3);
+            dactyl.log(_("dactyl.sourcingPlugins", dir.path), 3);
 
             let loadplugins = options.get("loadplugins");
             if (args)
@@ -1096,7 +1096,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let dirs = io.getRuntimeDirectories("plugins");
 
         if (dirs.length == 0) {
-            dactyl.log("No user plugin directory found", 3);
+            dactyl.log(_("dactyl.noPluginDir"), 3);
             return;
         }
 
@@ -1126,7 +1126,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let verbose = localPrefs.get("loglevel", 0);
 
         if (!level || level <= verbose) {
-            if (isObject(msg))
+            if (isObject(msg) && !isinstance(msg, _))
                 msg = util.objectToString(msg, false);
 
             services.console.logStringMessage(config.name + ": " + msg);
@@ -2072,7 +2072,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     load: function () {
         dactyl.triggerObserver("load");
 
-        dactyl.log("All modules loaded", 3);
+        dactyl.log(_("dactyl.modulesLoaded"), 3);
 
         dactyl.timeout(function () {
             try {
@@ -2092,7 +2092,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 dactyl.echoerr(_("dactyl.parsingCommandLine", e));
             }
 
-            dactyl.log("Command-line options: " + util.objectToString(dactyl.commandLineOptions), 3);
+            dactyl.log(_("dactyl.commandlineOpts", util.objectToString(dactyl.commandLineOptions)), 3);
 
             // first time intro message
             const firstTime = "extensions." + config.name + ".firsttime";
@@ -2136,7 +2136,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             services.environment.set("MY_" + config.idName + "RC", rcFile.path);
                         }
                         else
-                            dactyl.log("No user RC file found", 3);
+                            dactyl.log(_("dactyl.noRCFile"), 3);
                     }
 
                     if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
@@ -2177,7 +2177,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }, 100);
 
         statusline.update();
-        dactyl.log(config.appName + " fully initialized", 0);
+        dactyl.log(_("dactyl.initialized", config.appName), 0);
         dactyl.initialized = true;
     }
 });
