@@ -336,7 +336,7 @@ var Styles = Module("Styles", {
                 </table>;
 
         // TODO: Move this to an ItemList to show this automatically
-        if (list.*.length() === list.text().length() + 2)
+        if (list.*.length() === list.text().length() + 5)
             dactyl.echomsg(_("style.none"));
         else
             commandline.commandOutput(list);
