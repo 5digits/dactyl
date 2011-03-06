@@ -513,8 +513,6 @@ var Buffer = Module("buffer", {
             break;
         case dactyl.CURRENT_TAB:
             break;
-        default:
-            dactyl.log("Invalid where argument for followLink()", 0);
         }
 
         this.focusElement(elem);
