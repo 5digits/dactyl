@@ -148,7 +148,7 @@ var Services = Module("Services", {
     addClass: function (name, class_, ifaces, init) {
         const self = this;
         this[name] = function () self._create(class_, ifaces, "createInstance", init, arguments);
-        update.apply(null, [this[name]].concat([Ci[i] for each (i in ifaces)]));
+        update.apply(null, [this[name]].concat([Ci[i] for each (i in Array.concat(ifaces))]));
         return this[name];
     },
 
