@@ -144,7 +144,7 @@ var ConfigBase = Class("ConfigBase", {
     branch: Class.memoize(function () {
         if (this.haveHg)
             return io.system(this.haveHg.concat(["branch"])).output;
-        return (/pre-hg\d+-(\S*)$/.exec(this.version) || [])[1];
+        return (/pre-hg\d+-(\S*)/.exec(this.version) || [])[1];
     }),
 
     /** @property {string} The Dactyl version string. */
