@@ -1112,7 +1112,8 @@ var Hints = Module("hints", {
         return -1;
     },
 
-    Mode: Struct("name", "prompt", "action", "tags", "filter")
+    Mode: Struct("HintMode", "name", "prompt", "action", "tags", "filter")
+            .localize("prompt")
 }, {
     modes: function () {
         modes.addMode("HINTS", {
