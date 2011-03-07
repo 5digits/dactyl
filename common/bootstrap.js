@@ -29,14 +29,18 @@ const resourceProto = Services.io.getProtocolHandler("resource")
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 
-try { // Temporary migration code.
-    const storage = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication).storage;
-    var JSMLoader = storage.get("dactyl.JSMLoader", undefined);
-}
-catch (e) {}
-
 const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 JSMLoader = JSMLoader || BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
+
+var JSMLoader = BOOTSTRAP_CONTRACT in Components.classes &&
+    Components.classes[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
+
+// Temporary migration code.
+if (!JSMLoader && "@mozilla.org/fuel/application;1" in Components.classes)
+    JSMLoader = Components.classes["@mozilla.org/fuel/application;1"]
+                          .getService(Components.interfaces.extIApplication)
+                          .storage.get("dactyl.JSMLoader", null);
+
 
 function reportError(e) {
     dump("\ndactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
@@ -152,6 +156,7 @@ function init() {
     let chars = "0123456789abcdefghijklmnopqrstuv";
     for (let n = Date.now(); n; n = Math.round(n / chars.length))
         suffix += chars[n % chars.length];
+    suffix = "";
 
     for each (let line in manifest.split("\n")) {
         let fields = line.split(/\s+/);

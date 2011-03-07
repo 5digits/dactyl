@@ -292,7 +292,7 @@ var Overlay = Module("Overlay", {
                 defineModule.modules.forEach(function defModule({ lazyInit, constructor: { className } }) {
                     if (!lazyInit) {
                         frob(className);
-                        modules[className] = modules[className];
+                        Class.replaceProperty(modules, className, modules[className]);
                     }
                     else
                         modules.__defineGetter__(className, function () {

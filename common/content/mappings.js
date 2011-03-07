@@ -337,11 +337,14 @@ var Mappings = Module("mappings", {
      * @param {Object} extra An optional extra configuration hash.
      * @optional
      */
-    add: function () {
-        util.assert(util.isDactyl(Components.stack.caller),
-                    "User scripts may not add builtin mappings. Please use group.mappings.add instead.");
+    add: function add() {
+        let group = this.builtin;
+        if (!util.isDactyl(Components.stack.caller)) {
+            deprecated.warn(add, "mappings.add", "group.mappings.add");
+            group = this.user;
+        }
 
-        let map = this.builtin.add.apply(this.builtin, arguments);
+        let map = group.add.apply(group, arguments);
         map.definedAt = contexts.getCaller(Components.stack.caller);
         return map;
     },

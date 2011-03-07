@@ -864,7 +864,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     isDactyl: Class.memoize(function () {
         let base = util.regexp.escape(Components.stack.filename.replace(/[^\/]+$/, ""));
-        let re = RegExp("^(resource://dactyl|" + base + ")\\S+( -> resource://dactyl(?!-content/eval.js)\\S+)?$");
+        let re = RegExp("^(?:.* -> )?(?:resource://dactyl(?!-content/eval.js)|" + base + ")\\S+$");
         return function isDactyl(frame) re.test(frame.filename);
     }),
 

@@ -692,9 +692,13 @@ var Commands = Module("commands", {
     repeat: null,
 
     add: function add() {
-        util.assert(util.isDactyl(Components.stack.caller),
-                    "User scripts may not add builtin commands. Please use group.commands.add instead.");
-        return this.builtin._add.apply(this.builtin, arguments);
+        let group = this.builtin;
+        if (!util.isDactyl(Components.stack.caller)) {
+            deprecated.warn(add, "commands.add", "group.commands.add");
+            group = this.user;
+        }
+
+        return group._add.apply(group, arguments);
     },
     addUserCommand: deprecated("group.commands.add", { get: function addUserCommand() this.user.closure._add }),
     getUserCommands: deprecated("iter(group.commands)", function getUserCommands() iter(this.user).toArray()),

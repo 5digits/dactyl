@@ -287,26 +287,32 @@ function deprecated(alternative, fn) {
     let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
 
     function deprecatedMethod() {
-        let frame = Components.stack.caller;
         let obj = this.className             ? this.className + "#" :
                   this.constructor.className ? this.constructor.className + "#" :
                       "";
-        let filename = util.fixURI(frame.filename || "unknown");
-        if (!set.add(deprecatedMethod.seen, filename))
-            util.dactyl(fn).warn(
-                util.urlPath(filename) + ":" + frame.lineNumber + ": " +
-                obj + (fn.name || name) + " is deprecated: Please use " + alternative + " instead");
+
+        deprecated.warn(func, obj + (fn.name || name), alternative);
         return func.apply(this, arguments);
     }
-    memoize(deprecatedMethod, "seen", function () set([
-        "resource://dactyl" + JSMLoader.suffix + "/javascript.jsm",
-        "resource://dactyl" + JSMLoader.suffix + "/util.jsm"
-    ]));
 
     return callable(fn) ? deprecatedMethod : Class.Property({
         get: function () deprecatedMethod,
         init: function (prop) { name = prop; }
     });
+}
+deprecated.warn = function warn(func, name, alternative, frame) {
+    if (!func.seenCaller)
+        func.seenCaller = set([
+            "resource://dactyl" + JSMLoader.suffix + "/javascript.jsm",
+            "resource://dactyl" + JSMLoader.suffix + "/util.jsm"
+        ]);
+
+    frame = frame || Components.stack.caller.caller;
+    let filename = util.fixURI(frame.filename || "unknown");
+    if (!set.add(func.seenCaller, filename))
+        util.dactyl(func).warn(
+            util.urlPath(filename) + ":" + frame.lineNumber + ": " +
+            name + " is deprecated: Please use " + alternative + " instead");
 }
 
 /**

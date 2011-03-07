@@ -24,7 +24,7 @@ var Messages = Module("messages", {
             init: function _(message) {
                 this.args = arguments;
             },
-            value: Class.memoize(function () {
+            message: Class.memoize(function () {
                 let message = this.args[0];
 
                 if (this.args.length > 1) {
@@ -33,8 +33,8 @@ var Messages = Module("messages", {
                 }
                 return self.get(message);
             }),
-            valueOf: function valueOf() this.value,
-            toString: function toString() this.value
+            valueOf: function valueOf() this.message,
+            toString: function toString() this.message
         });
 
         let seen = {};

@@ -721,7 +721,7 @@ var CommandLine = Module("commandline", {
         highlightGroup = highlightGroup || this.HL_NORMAL;
 
         if (flags & this.APPEND_TO_MESSAGES) {
-            let message = isObject(data) && !isinstance(data, _) ? data : { message: String(data) };
+            let message = isObject(data) ? data : { message: String(data) };
             this._messageHistory.add(update({ highlight: highlightGroup }, message));
             data = message.message;
         }
