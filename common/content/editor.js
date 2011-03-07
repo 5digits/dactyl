@@ -303,7 +303,6 @@ var Editor = Module("editor", {
             if (tmpfile && tmpfile.exists())
                 tmpfile.remove(false);
 
-            // blink the textbox after returning
             if (textBox) {
                 dactyl.focus(textBox);
                 for (let group in values(blink.concat(blink, ""))) {

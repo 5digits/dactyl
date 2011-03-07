@@ -405,6 +405,42 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return stack.top;
     },
 
+    compileMatcher: function compileMatcher(list) {
+        let xpath = [], css = [];
+        for (let elem in values(list))
+            if (/^xpath:/.test(elem))
+                xpath.push(elem.substr(6));
+            else
+                css.push(elem);
+
+        return update(
+            function matcher(node) {
+                if (matcher.xpath)
+                    for (let elem in util.evaluateXPath(matcher.xpath, node))
+                        yield elem;
+
+                if (matcher.css)
+                    for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
+                        yield elem;
+            }, {
+                css: css.join(", "),
+                xpath: xpath.join(" | ")
+            });
+    },
+
+    validateMatcher: function validateMatcher(values) {
+        let evaluator = services.XPathEvaluator();
+        let node = util.xmlToDom(<div/>, document);
+        return this.testValues(values, function (value) {
+            if (/^xpath:/.test(value))
+                evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);
+            else
+                node.querySelector(value);
+            return true;
+        });
+    },
+
+
     /**
      * Returns an object representing a Node's computed CSS style.
      *

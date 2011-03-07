@@ -1012,42 +1012,6 @@ var Hints = Module("hints", {
         this.hintSession = HintSession(mode, opts);
     }
 }, {
-
-    compileMatcher: function compileMatcher(list) {
-        let xpath = [], css = [];
-        for (let elem in values(list))
-            if (/^xpath:/.test(elem))
-                xpath.push(elem.substr(6));
-            else
-                css.push(elem);
-
-        return update(
-            function matcher(node) {
-                if (matcher.xpath)
-                    for (let elem in util.evaluateXPath(matcher.xpath, node))
-                        yield elem;
-
-                if (matcher.css)
-                    for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
-                        yield elem;
-            }, {
-                css: css.join(", "),
-                xpath: xpath.join(" | ")
-            });
-    },
-
-    validateMatcher: function validateMatcher(values) {
-        let evaluator = services.XPathEvaluator();
-        let node = util.xmlToDom(<div/>, document);
-        return this.testValues(values, function (value) {
-            if (/^xpath:/.test(value))
-                evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);
-            else
-                node.querySelector(value);
-            return true;
-        });
-    },
-
     translitTable: Class.memoize(function () {
         const table = {};
         [
@@ -1218,10 +1182,10 @@ var Hints = Module("hints", {
                         res ? res.matcher : default_,
                 setter: function (vals) {
                     for (let value in values(vals))
-                        value.matcher = Hints.compileMatcher(Option.splitList(value.result));
+                        value.matcher = util.compileMatcher(Option.splitList(value.result));
                     return vals;
                 },
-                validator: Hints.validateMatcher
+                validator: util.validateMatcher
             });
 
         options.add(["hinttags", "ht"],
@@ -1231,10 +1195,10 @@ var Hints = Module("hints", {
                           "[tabindex],[role=link],[role=button]",
             {
                 setter: function (values) {
-                    this.matcher = Hints.compileMatcher(values);
+                    this.matcher = util.compileMatcher(values);
                     return values;
                 },
-                validator: Hints.validateMatcher
+                validator: util.validateMatcher
             });
 
         options.add(["hintkeys", "hk"],
