@@ -1255,7 +1255,7 @@ var Buffer = Module("buffer", {
                 if (arg)
                     dactyl.echomsg(_("print.printed", arg.substr(1)));
                 else
-                    dactyl.echomsg(messgaes.print.sent());
+                    dactyl.echomsg(_("print.sent"));
             },
             {
                 argCount: "?",
