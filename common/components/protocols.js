@@ -165,6 +165,8 @@ Dactyl.prototype = {
         var uri = Cc["@mozilla.org/network/standard-url;1"]
                         .createInstance(Ci.nsIStandardURL)
                         .QueryInterface(Ci.nsIURI);
+        if (baseURI && baseURI.host === "data")
+            baseURI = null;
         uri.init(uri.URLTYPE_STANDARD, this.defaultPort, spec, charset, baseURI);
         return uri;
     },
@@ -181,6 +183,19 @@ Dactyl.prototype = {
             switch(uri.host) {
             case "content":
                 return makeChannel(this.pages[path] || "resource://dactyl-content/" + path, uri);
+            case "data":
+                try {
+                    var channel = ioService.newChannel(uri.path.replace(/^\/(.*)(?:#.*)?/, "data:$1"),
+                                                       null, null);
+                }
+                catch (e) {
+                    var error = e;
+                    break;
+                }
+                channel.contentCharset = "UTF-8";
+                channel.owner = systemPrincipal;
+                channel.originalURI = uri;
+                return channel;
             case "help":
                 return makeChannel(this.FILE_MAP[path], uri);
             case "help-overlay":
@@ -201,6 +216,8 @@ Dactyl.prototype = {
         catch (e) {
             util.reportError(e);
         }
+        if (error)
+            throw error;
         return fakeChannel(uri);
     },
 
