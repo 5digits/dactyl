@@ -180,8 +180,7 @@ var JavaScript = Module("javascript", {
             this._top.statements.pop();
         this._top = this._get(-2);
         this._last = this._top.char;
-        let ret = this._stack.pop();
-        return ret;
+        return this._stack.pop();
     },
 
     _buildStack: function (filter) {

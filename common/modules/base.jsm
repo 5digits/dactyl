@@ -230,9 +230,9 @@ Runnable.prototype.QueryInterface = XPCOMUtils.generateQI([Ci.nsIRunnable]);
  */
 function debuggerProperties(obj) {
     if (loaded.services && services.debugger.isOn) {
-        let ret = {};
-        services.debugger.wrapValue(obj).getProperties(ret, {});
-        return ret.value;
+        let res = {};
+        services.debugger.wrapValue(obj).getProperties(res, {});
+        return res.value;
     }
 }
 
@@ -1487,20 +1487,20 @@ var array = Class("array", Array, {
      * @returns {Array}
      */
     uniq: function uniq(ary, unsorted) {
-        let ret = [];
+        let res = [];
         if (unsorted) {
             for (let item in values(ary))
-                if (ret.indexOf(item) == -1)
-                    ret.push(item);
+                if (res.indexOf(item) == -1)
+                    res.push(item);
         }
         else {
             for (let [, item] in Iterator(ary.sort())) {
-                if (item != last || !ret.length)
-                    ret.push(item);
+                if (item != last || !res.length)
+                    res.push(item);
                 var last = item;
             }
         }
-        return ret;
+        return res;
     },
 
     /**

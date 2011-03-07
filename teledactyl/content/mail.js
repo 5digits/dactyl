@@ -132,15 +132,15 @@ const Mail = Module("mail", {
     /** @property {nsISmtpServer[]} The list of configured SMTP servers. */
     get smtpServers() {
         let servers = services.smtp.smtpServers;
-        let ret = [];
+        let res = [];
 
         while (servers.hasMoreElements()) {
             let server = servers.getNext();
             if (server instanceof Ci.nsISmtpServer)
-                ret.push(server);
+                res.push(server);
         }
 
-        return ret;
+        return res;
     },
 
     composeNewMail: function (args) {

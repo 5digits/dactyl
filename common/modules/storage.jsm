@@ -83,20 +83,20 @@ var ArrayStore = Class("ArrayStore", StoreBase, {
     },
 
     pop: function pop(value) {
-        var ret = this._object.pop();
+        var res = this._object.pop();
         this.fireEvent("pop", this._object.length);
-        return ret;
+        return res;
     },
 
     truncate: function truncate(length, fromEnd) {
-        var ret = this._object.length;
+        var res = this._object.length;
         if (this._object.length > length) {
             if (fromEnd)
                 this._object.splice(0, this._object.length - length);
             this._object.length = length;
             this.fireEvent("truncate", length);
         }
-        return ret;
+        return res;
     },
 
     // XXX: Awkward.

@@ -872,54 +872,54 @@ var Options = Module("options", {
      * @returns {Object} The parsed command object.
      */
     parseOpt: function parseOpt(args, modifiers) {
-        let ret = {};
+        let res = {};
         let matches, prefix, postfix;
 
-        [matches, prefix, ret.name, postfix, ret.valueGiven, ret.operator, ret.value] =
+        [matches, prefix, res.name, postfix, res.valueGiven, res.operator, res.value] =
         args.match(/^\s*(no|inv)?([^=]+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
 
-        ret.args = args;
-        ret.onlyNonDefault = false; // used for :set to print non-default options
+        res.args = args;
+        res.onlyNonDefault = false; // used for :set to print non-default options
         if (!args) {
-            ret.name = "all";
-            ret.onlyNonDefault = true;
+            res.name = "all";
+            res.onlyNonDefault = true;
         }
 
         if (matches) {
-            ret.option = this.get(ret.name, ret.scope);
-            if (!ret.option && (ret.option = this.get(prefix + ret.name, ret.scope))) {
-                ret.name = prefix + ret.name;
+            res.option = this.get(res.name, res.scope);
+            if (!res.option && (res.option = this.get(prefix + res.name, res.scope))) {
+                res.name = prefix + res.name;
                 prefix = "";
             }
         }
 
-        ret.prefix = prefix;
-        ret.postfix = postfix;
+        res.prefix = prefix;
+        res.postfix = postfix;
 
-        ret.all = (ret.name == "all");
-        ret.get = (ret.all || postfix == "?" || (ret.option && ret.option.type != "boolean" && !ret.valueGiven));
-        ret.invert = (prefix == "inv" || postfix == "!");
-        ret.reset = (postfix == "&");
-        ret.unsetBoolean = (prefix == "no");
+        res.all = (res.name == "all");
+        res.get = (res.all || postfix == "?" || (res.option && res.option.type != "boolean" && !res.valueGiven));
+        res.invert = (prefix == "inv" || postfix == "!");
+        res.reset = (postfix == "&");
+        res.unsetBoolean = (prefix == "no");
 
-        ret.scope = modifiers && modifiers.scope;
+        res.scope = modifiers && modifiers.scope;
 
-        if (!ret.option)
-            return ret;
+        if (!res.option)
+            return res;
 
-        if (ret.value === undefined)
-            ret.value = "";
+        if (res.value === undefined)
+            res.value = "";
 
-        ret.optionValue = ret.option.get(ret.scope);
+        res.optionValue = res.option.get(res.scope);
 
         try {
-            ret.values = ret.option.parse(ret.value);
+            res.values = res.option.parse(res.value);
         }
         catch (e) {
-            ret.error = e;
+            res.error = e;
         }
 
-        return ret;
+        return res;
     },
 
     /**

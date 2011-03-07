@@ -90,19 +90,19 @@ var Template = Module("Template", {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         if (iter.length) // FIXME: Kludge?
             iter = array.iterValues(iter);
-        let ret = <></>;
+        let res = <></>;
         let n = 0;
         for each (let i in Iterator(iter)) {
             let val = func(i, n);
             if (val == undefined)
                 continue;
             if (n++ && sep)
-                ret += sep;
+                res += sep;
             if (interruptable && n % interruptable == 0)
                 util.threadYield(true, true);
-            ret += val;
+            res += val;
         }
-        return ret;
+        return res;
     },
 
     bindings: {
