@@ -731,12 +731,11 @@ var Mappings = Module("mappings", {
         });
     },
     completion: function initCompletion(dactyl, modules, window) {
-        completion.userMapping = function userMapping(context, modes, hive) {
-            // FIXME: have we decided on a 'standard' way to handle this clash? --djk
+        completion.userMapping = function userMapping(context, modes_, hive) {
             hive = hive || mappings.user;
-            modes = modes || [modules.modes.NORMAL];
+            modes_ = modes_ || [modes.NORMAL];
             context.keys = { text: function (m) m.names[0], description: function (m) m.description + ": " + m.action };
-            context.completions = hive.iterate(modes);
+            context.completions = hive.iterate(modes_);
         };
     },
     javascript: function initJavascript(dactyl, modules, window) {
