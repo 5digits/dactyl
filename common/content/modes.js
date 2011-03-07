@@ -306,7 +306,7 @@ var Modes = Module("modes", {
         var delayed, oldExtended, oldMain, prev, push;
 
         if (this.inSet) {
-            dactyl.reportError(Error("Not executing modes.set recursively"), true);
+            dactyl.reportError(Error(_("mode.recursiveSet")), true);
             return;
         }
 

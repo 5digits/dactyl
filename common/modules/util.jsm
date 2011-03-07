@@ -455,8 +455,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
         catch (e) {}
         if (res == null) {
-            util.dumpStack("Computed style is null: " + node);
-            Cu.reportError(Error("Computed style is null: " + node));
+            util.dumpStack(_("error.nullComputedStyle", node));
+            Cu.reportError(Error(_("error.nullComputedStyle", node)));
             return {};
         }
         return res;
@@ -1227,8 +1227,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         Class.replaceProperty(this, k, val);
                     else {
                         let package_ = util.newURI(util.fixURI(Components.stack.caller.filename)).host;
-                        util.reportError(Error("Not replacing property with eval-generated overlay by " + package_));
-                        util.dactyl.echoerr("Not replacing property with eval-generated overlay by " + package_);
+                        util.reportError(Error(_("error.monkeyPatchOverlay", package_)));
+                        util.dactyl.echoerr(_("error.monkeyPatchOverlay", package_));
                     }
                 };
             }

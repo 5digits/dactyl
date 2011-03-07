@@ -28,7 +28,7 @@ var QuickMarks = Module("quickmarks", {
      */
     add: function add(qmark, location) {
         this._qmarks.set(qmark, location);
-        dactyl.echomsg({ domains: [util.getHost(location)], message: "Added Quick Mark '" + qmark + "': " + location }, 1);
+        dactyl.echomsg({ domains: [util.getHost(location)], message: _("quickmark.added", qmark, location) }, 1);
     },
 
     /**

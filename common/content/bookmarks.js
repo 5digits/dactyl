@@ -135,14 +135,14 @@ var Bookmarks = Module("bookmarks", {
 
         let count = this.remove(url);
         if (count > 0)
-            dactyl.echomsg({ domains: [util.getHost(url)], message: "Removed bookmark: " + url });
+            dactyl.echomsg({ domains: [util.getHost(url)], message: _("bookmark.removed", url) });
         else {
             let title = buffer.uri.spec == url && buffer.title || url;
             let extra = "";
             if (title != url)
                 extra = " (" + title + ")";
             this.add({ unfiled: true, title: title, url: url });
-            dactyl.echomsg({ domains: [util.getHost(url)], message: "Added bookmark: " + url + extra });
+            dactyl.echomsg({ domains: [util.getHost(url)], message: _("bookmark.added", url + extra) });
         }
     },
 
@@ -429,7 +429,7 @@ var Bookmarks = Module("bookmarks", {
 
                 if (bookmarks.add(opts)) {
                     let extra = (opts.title == opts.url) ? "" : " (" + opts.title + ")";
-                    dactyl.echomsg({ domains: [util.getHost(opts.url)], message: "Added bookmark: " + opts.url + extra },
+                    dactyl.echomsg({ domains: [util.getHost(opts.url)], message: _("bookmark.added", opts.url + extra) },
                                    1, commandline.FORCE_SINGLELINE);
                 }
                 else
@@ -502,7 +502,7 @@ var Bookmarks = Module("bookmarks", {
                         var deletedCount = bookmarks.remove(context.allItems.items.map(function (item) item.item.id));
                     }
 
-                    dactyl.echomsg({ message: deletedCount + " bookmark(s) deleted" });
+                    dactyl.echomsg({ message: _("bookmark.deleted", deletedCount) });
                 }
 
             },

@@ -59,7 +59,7 @@ var ConfigBase = Class("ConfigBase", {
         do {
             addon = (JSMLoader.bootstrap || {}).addon;
             if (addon && !addon.getResourceURI) {
-                util.reportError(Error("Don't have add-on yet"));
+                util.reportError(Error(_("addon.unavailable")));
                 yield 10;
             }
         }

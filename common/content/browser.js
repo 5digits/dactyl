@@ -81,7 +81,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
                 else {
                     // code which should happen for all (also background) newly loaded tabs goes here:
                     if (doc != config.browser.contentDocument)
-                        dactyl.echomsg({ domains: [util.getHost(doc.location)], message: "Background tab loaded: " + (doc.title || doc.location.href) }, 3);
+                        dactyl.echomsg({ domains: [util.getHost(doc.location)], message: _("buffer.backgroundLoaded", (doc.title || doc.location.href)) }, 3);
 
                     this._triggerLoadAutocmd("PageLoad", doc);
                 }

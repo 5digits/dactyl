@@ -48,7 +48,7 @@ var IO = Module("io", {
                         let file  = download.targetFile.path;
                         let size  = download.size;
 
-                        dactyl.echomsg({ domains: [util.getHost(url)], message: "Download of " + title + " to " + file + " finished" },
+                        dactyl.echomsg({ domains: [util.getHost(url)], message: _("io.downloadFinished", title, file) },
                                        1, modules.commandline.ACTIVE_WINDOW);
                         modules.autocommands.trigger("DownloadPost", { url: url, title: title, file: file, size: size });
                     }

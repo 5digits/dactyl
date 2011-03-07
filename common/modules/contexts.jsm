@@ -221,7 +221,7 @@ var Contexts = Module("contexts", {
                     enumerable: true,
                     get: function () self,
                     set: function (val) {
-                        util.dactyl(val).reportError(FailedAssertion("Not replacing plugin context for " + self.NAME, 3, false), true);
+                        util.dactyl(val).reportError(FailedAssertion(_("plugin.notReplacingContext", self.NAME), 3, false), true);
                     }
                 });
         }
