@@ -1021,8 +1021,14 @@ Module.INIT = {
  * @returns {function} The constructor for the new Struct.
  */
 function Struct() {
-    let args = Array.slice(arguments);
-    const Struct = Class("Struct", StructBase, {
+    if (!/^[A-Z]/.test(arguments[0]))
+        var args = Array.slice(arguments, 0);
+    else {
+        var className = arguments[0];
+        args = Array.slice(arguments, 1);
+    }
+
+    const Struct = Class(className || "Struct", StructBase, {
         length: args.length,
         members: array.toObject(args.map(function (v, k) [v, k]))
     });
@@ -1075,6 +1081,13 @@ let StructBase = Class("StructBase", Array, {
         this.prototype.__defineGetter__(i, function () (this[i] = val.call(this)));
         this.prototype.__defineSetter__(i, function (value)
             Class.replaceProperty(this, i, value));
+        return this;
+    },
+
+    localize: function localize(key, defaultValue) {
+        let i = this.prototype.members[key];
+        Object.defineProperty(this.prototype, i, require("messages").Messages.Localized(defaultValue).init(key, this.prototype));
+        return this;
     }
 });
 

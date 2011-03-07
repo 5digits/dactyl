@@ -302,7 +302,7 @@ var Buffer = Module("buffer", {
      *     section's output.
      */
     addPageInfoSection: function addPageInfoSection(option, title, func) {
-        this.pageInfo[option] = [func, title]; // TODO: are these reversed intentionally? --djk
+        this.pageInfo[option] = Buffer.PageInfo(option, title, func);
     },
 
     /**
@@ -802,7 +802,7 @@ var Buffer = Module("buffer", {
             let title = content.document.title || "[No Title]";
 
             let info = template.map("gf",
-                function (opt) template.map(buffer.pageInfo[opt][0](), util.identity, ", "),
+                function (opt) template.map(buffer.pageInfo[opt].action(), util.identity, ", "),
                 ", ");
 
             if (bookmarkcache.isBookmarked(this.URL))
@@ -814,8 +814,8 @@ var Buffer = Module("buffer", {
         }
 
         let list = template.map(sections || options["pageinfo"], function (option) {
-            let [data, title] = buffer.pageInfo[option];
-            return template.table(title, data(true));
+            let { action, title } = buffer.pageInfo[option];
+            return template.table(title, action(true));
         }, <br/>);
         dactyl.echo(list, commandline.FORCE_MULTILINE);
     },
@@ -1029,6 +1029,9 @@ var Buffer = Module("buffer", {
     scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) content.scrollTo(x, y)),
     textZoom: deprecated("buffer.zoomValue and buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
 }, {
+    PageInfo: Struct("PageInfo", "name", "title", "action")
+                        .localize("title"),
+
     ZOOM_MIN: Class.memoize(function () prefs.get("zoom.minPercent")),
     ZOOM_MAX: Class.memoize(function () prefs.get("zoom.maxPercent")),
 
@@ -1827,7 +1830,7 @@ var Buffer = Module("buffer", {
         options.add(["pageinfo", "pa"],
             "Define which sections are shown by the :pageinfo command",
             "charlist", "gfm",
-            { get values() [[k, v[1]] for ([k, v] in Iterator(buffer.pageInfo))] });
+            { get values() values(buffer.pageInfo).toObject() });
 
         options.add(["scroll", "scr"],
             "Number of lines to scroll with <C-u> and <C-d> commands",
