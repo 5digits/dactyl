@@ -778,8 +778,7 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
         this.timeout(function () {
             if (this.branch && this.branch !== "default" &&
                     modules.yes_i_know_i_should_not_report_errors_in_these_branches_thanks.indexOf(this.branch) === -1)
-                dactyl.warn("You are running " + config.appName + " from a testing branch: " + this.branch + ". " +
-                            "Please do not report errors which do not also occur in the default branch.");
+                dactyl.warn(_("warn.notDefaultBranch", config.appName, this.branch));
         }, 1000);
     }
 });

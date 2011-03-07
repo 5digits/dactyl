@@ -440,7 +440,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         });
     },
 
-
     /**
      * Returns an object representing a Node's computed CSS style.
      *
