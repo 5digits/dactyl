@@ -69,9 +69,10 @@ var Option = Class("Option", {
         this._op = Option.ops[this.type];
 
         // Need to trigger setter
-        if (extraInfo && "values" in extraInfo)
+        if (extraInfo && "values" in extraInfo && !extraInfo.__lookupGetter__("values")) {
             this.values = extraInfo.values;
-        delete extraInfo.values;
+            delete extraInfo.values;
+        }
 
         if (extraInfo)
             update(this, extraInfo);
