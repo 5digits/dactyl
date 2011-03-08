@@ -17,6 +17,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
+    use: ["config"],
     require: ["messages", "prefs", "services", "storage", "template", "util"],
 }, this);
 
