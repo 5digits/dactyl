@@ -565,7 +565,7 @@ var Editor = Module("editor", {
         addMovementMap(["W"],                         "Move right to just beyond the next white space",
                        true,  "wordMove", true,       move(true,  /\S/),  select(true,  /\S/));
         addMovementMap(["e"],                         "Move to the end of the current word",
-                       true,  "wordMove", false,      move(true,  /\W/),  select(true,  /\W/));
+                       true,  "wordMove", true,       move(true,  /\W/),  select(true,  /\W/));
         addMovementMap(["E"],                         "Move right to the next white space",
                        true,  "wordMove", true,       move(true,  /\s/),  select(true,  /\s/));
         addMovementMap(["<C-f>", "<PageDown>"],       "Move down one page",
