@@ -218,7 +218,7 @@ var Template = Module("Template", {
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         type = type || (/^'.*'$/.test(token)   ? "HelpOpt" :
-                        /^\[.*\]$/.test(token) ? "HelpTopic" :
+                        /^\[.*\]$|^E\d{3}$/.test(token) ? "HelpTopic" :
                         /^:\w/.test(token)     ? "HelpEx"  : "HelpKey");
 
         return <a highlight={"InlineHelpLink " + type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>;
@@ -237,12 +237,23 @@ var Template = Module("Template", {
             return <>{token}</>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
-        let tag = (/^'.*'$/.test(token)   ? "o" :
-                   /^\[.*\]$/.test(token) ? "t" :
-                   /^:\w/.test(token)     ? "ex"  : "k");
+        let tag = (/^'.*'$/.test(token)            ? "o" :
+                   /^\[.*\]$|^E\d{3}$/.test(token) ? "t" :
+                   /^:\w/.test(token)              ? "ex"  : "k");
 
         topic = topic.replace(/^'(.*)'$/, "$1");
         return <{tag} xmlns={NS}>{topic}</{tag}>;
+    },
+    linkifyHelp: function linkifyHelp(str, help) {
+        let re = util.regexp(<![CDATA[
+            (?P<pre> [/\s]|^)
+            (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | [a-zA-Z]_\w+ | \[[\w-]+\] | E\d{3} )
+            (?=      [[\)!,:;./\s]|$)
+        ]]>, "gx");
+        return this.highlightSubstrings(str, (function () {
+            for (let res in re.iterate(str))
+                yield [res.index + res.pre.length, res.tag.length];
+        })(), template[help ? "HelpLink" : "helpLink"]);
     },
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
@@ -365,18 +376,6 @@ var Template = Module("Template", {
                 }
             </table>;
         // </e4x>
-    },
-
-    linkifyHelp: function linkifyHelp(str, help) {
-        let re = util.regexp(<![CDATA[
-            (?P<pre> [/\s]|^)
-            (?P<tag> '[\w-]+' | :(?:[\w-]+!?|!) | (?:._)?<[\w-]+>\w* | [a-zA-Z]_\w+ | \[[\w-]+\] )
-            (?=      [[\)!,;./\s]|$)
-        ]]>, "gx");
-        return this.highlightSubstrings(str, (function () {
-            for (let res in re.iterate(str))
-                yield [res.index + res.pre.length, res.tag.length];
-        })(), template[help ? "HelpLink" : "helpLink"]);
     },
 
     options: function options(title, opts, verbose) {
