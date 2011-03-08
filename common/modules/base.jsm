@@ -207,8 +207,8 @@ defineModule("base", {
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
         "array", "bind", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator", "isinstance", "isObject",
-        "isString", "isSubclass", "iter", "iterAll", "keys", "memoize", "octal", "properties",
-        "require", "set", "update", "values", "withCallerGlobal"
+        "isString", "isSubclass", "iter", "iterAll", "iterOwnProperties","keys", "memoize", "octal",
+        "properties", "require", "set", "update", "values", "withCallerGlobal"
     ],
     use: ["config", "services", "util"]
 }, this);
@@ -277,6 +277,11 @@ function properties(obj, prototypes, debugger_) {
             if (!prototypes || !set.add(seen, key) && obj != orig)
                 yield key;
     }
+}
+
+function iterOwnProperties(obj) {
+    for (let prop in properties(obj))
+        yield [prop, Object.getOwnPropertyDescriptor(obj, prop)];
 }
 
 function deprecated(alternative, fn) {

@@ -9,7 +9,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("overlay", {
     exports: ["ModuleBase"],
-    require: ["config", "sanitizer", "services", "util"]
+    require: ["config", "services", "util"]
 }, this);
 
 /**

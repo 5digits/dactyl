@@ -17,8 +17,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
-    require: ["prefs", "services", "storage", "template", "util"],
-    use: ["messages"]
+    require: ["messages", "prefs", "services", "storage", "template", "util"],
 }, this);
 
 let tmp = {};
@@ -36,14 +35,17 @@ update(Range.prototype, {
     get native() this.isEternity ? null : [range.min || 0, range.max == null ? Number.MAX_VALUE : range.max]
 });
 
-var Item = Class("Item", {
-    init: function (name) {
+var Item = Class("SanitizeItem", {
+    init: function (name, params) {
         this.name = name;
+        this.description = params.description;
     },
 
     // Hack for completion:
     "0": Class.Property({ get: function () this.name }),
     "1": Class.Property({ get: function () this.description }),
+
+    description: Messages.Localized(""),
 
     get cpdPref() (this.builtin ? "" : Item.PREFIX) + Item.BRANCH + Sanitizer.argToPref(this.name),
     get shutdownPref() (this.builtin ? "" : Item.PREFIX) + Item.SHUTDOWN_BRANCH + Sanitizer.argToPref(this.name),
@@ -231,10 +233,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     },
 
     addItem: function addItem(name, params) {
-        this.itemMap[name] = update(this.itemMap[name] || Item(name),
-            iter.toObject([k, v]
-                          for ([k, v] in Iterator(params))
-                          if (!callable(v))));
+        let item = this.itemMap[name] || Item(name, params);
+        this.itemMap[name] = item;
+
+        for (let [k, prop] in iterOwnProperties(params))
+            if (!("value" in prop) || !callable(prop.value) && !(k in item))
+                Object.defineProperty(item, k, prop);
 
         let names = set([name].concat(params.contains || []).map(function (e) "clear-" + e));
         if (params.action)
