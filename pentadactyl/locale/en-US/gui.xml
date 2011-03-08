@@ -13,7 +13,6 @@
     <dt>addons</dt>          <dd>Manage Add-ons</dd>
     <dt>bookmarks</dt>       <dd>List your bookmarks</dd>
     <dt>checkupdates</dt>    <dd>Check for updates</dd>
-    <dt>cleardata</dt>       <dd>Clear private data</dd>
     <dt>cookies</dt>         <dd>List your cookies</dd>
     <dt>console</dt>         <dd>JavaScript console</dd>
     <dt>customizetoolbar</dt><dd>Customize the Toolbar</dd>
