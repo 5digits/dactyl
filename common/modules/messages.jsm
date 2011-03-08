@@ -15,10 +15,16 @@ defineModule("messages", {
 // TODO: Lazy instantiation
 var Messages = Module("messages", {
 
-    init: function init() {
+    init: function init(name) {
         let self = this;
+        name = name || "messages";
 
-        this.bundle = services.stringBundle.createBundle(JSMLoader.getTarget("dactyl://locale/messages.properties"));
+        this.bundles = array.uniq([JSMLoader.getTarget("dactyl://locale/" + name + ".properties"),
+                                   JSMLoader.getTarget("dactyl://locale-local/" + name + ".properties"),
+                                   "resource://dactyl-locale/en-US/" + name + ".properties",
+                                   "resource://dactyl-locale-local/en-US/" + name + ".properties"])
+                            .map(services.stringBundle.createBundle)
+                            .filter(function (bundle) { try { bundle.getSimpleEnumeration(); return true; } catch (e) { return false; } });
 
         this._ = Class("_", String, {
             init: function _(message) {
@@ -46,7 +52,7 @@ var Messages = Module("messages", {
         }
     },
 
-    iterate: function () let (bundle = this.bundle)
+    iterate: function () let (bundle = this.bundles[0])
         iter(prop.QueryInterface(Ci.nsIPropertyElement) for (prop in iter(bundle.getSimpleEnumeration()))),
 
     cleanup: function cleanup() {
@@ -54,27 +60,29 @@ var Messages = Module("messages", {
     },
 
     get: function get(value, default_) {
-        try {
-            return this.bundle.GetStringFromName(value);
-        }
-        catch (e) {
-            // Report error so tests fail, but don't throw
-            if (arguments.length < 2)
-                util.reportError(Error("Invalid locale string: " + value + ": " + e));
-            return arguments.length > 1 ? default_ : value;
-        }
+        for (let bundle in values(this.bundles))
+            try {
+                return bundle.GetStringFromName(value);
+            }
+            catch (e) {}
+
+        // Report error so tests fail, but don't throw
+        if (arguments.length < 2)
+            util.reportError(Error("Invalid locale string: " + value));
+        return arguments.length > 1 ? default_ : value;
     },
 
     format: function format(value, args, default_) {
-        try {
-            return this.bundle.formatStringFromName(value, args, args.length);
-        }
-        catch (e) {
-            // Report error so tests fail, but don't throw
-            if (arguments.length < 3)
-                util.reportError(Error("Invalid locale string: " + value + ": " + e));
-            return arguments.length > 2 ? default_ : value;
-        }
+        for (let bundle in values(this.bundles))
+            try {
+                return bundle.formatStringFromName(value, args, args.length);
+            }
+            catch (e) {}
+
+        // Report error so tests fail, but don't throw
+        if (arguments.length < 3)
+            util.reportError(Error("Invalid locale string: " + value));
+        return arguments.length > 2 ? default_ : value;
     }
 
 }, {
