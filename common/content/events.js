@@ -104,6 +104,10 @@ var ProcessorStack = Class("ProcessorStack", {
 
         events.dbg("RESULT: " + this._result(result));
 
+        if (result === Events.PASS || result === Events.PASS_THROUGH)
+            if (this.events[0].originalTarget)
+                this.events[0].originalTarget.dactylKeyPress = undefined;
+
         if (result !== Events.PASS || this.events.length > 1)
             Events.kill(this.events[this.events.length - 1]);
 
