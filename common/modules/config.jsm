@@ -453,7 +453,7 @@ var ConfigBase = Class("ConfigBase", {
         CompMore::after      content: "⌄";
 
 
-        EditorEditing;;*   background: #bbb !important; -moz-user-input: none; -moz-user-modify: read-only;
+        EditorEditing;;*   background: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
         EditorError;;*     background: red !important;
         EditorBlink1;;*    background: yellow !important;
         EditorBlink2;;*
