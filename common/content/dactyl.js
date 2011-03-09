@@ -751,8 +751,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             }
 
                             list = null;
-                            if (level == 0 && /^.*:\n$/.test(match.par))
-                                res += <h2>{template.linkifyHelp(par.slice(0, -1), true)}</h2>;
+                            if (level == 0 && /^.*:\n$/.test(match.par)) {
+                                let text = par.slice(0, -1);
+                                res += <h2 tag={"news-" + text}>{template.linkifyHelp(text, true)}</h2>;
+                            }
                             else {
                                 let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
                                 res += <p highlight={group + " HelpNews"}>{
@@ -907,7 +909,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         for (let [file, ] in Iterator(services["dactyl:"].FILE_MAP)) {
             dactyl.open("dactyl://help/" + file);
             dactyl.modules.events.waitForPageLoad();
-            let data = [
+            var data = [
                 '<?xml version="1.0" encoding="UTF-8"?>\n',
                 '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',
                 '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'

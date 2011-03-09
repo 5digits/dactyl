@@ -386,7 +386,7 @@ var ConfigBase = Class("ConfigBase", {
         Disabled     color: red;
 
         FontFixed                            font-family: monospace !important;
-        FontCode            font-size: 9pt;  font-family: -mox-fixed, monospace !important;
+        FontCode            font-size: 9pt;  font-family: monospace !important;
         FontProportional    font-size: 10pt; font-family: "Droid Sans", "Helvetica LT Std", Helvetica, "DejaVu Sans", Verdana, sans-serif !important;
 
         // Hack to give these groups slightly higher precedence
