@@ -426,6 +426,10 @@ var Modes = Module("modes", {
 }, {
     Mode: Class("Mode", {
         init: function init(name, options, params) {
+            if (options.bases)
+                util.assert(options.bases.every(function (m) m instanceof this, this.constructor),
+                            "Invalid bases", true);
+
             update(this, {
                 id: 1 << Modes.Mode._id++,
                 name: name,

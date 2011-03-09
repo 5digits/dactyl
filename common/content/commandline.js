@@ -1390,7 +1390,7 @@ var CommandLine = Module("commandline", {
                 subCommand: 0
             });
     },
-    modes: function () {
+    modes: function initModes() {
         modes.addMode("COMMAND_LINE", {
             char: "c",
             description: "Active when the command line is focused",

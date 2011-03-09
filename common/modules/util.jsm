@@ -931,7 +931,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
                                                                       Ci.nsIDocShell.ENUMERATE_FORWARDS);
                 while (docShells.hasMoreElements())
-                    yield docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer.DOMDocument;
+                    let (viewer = docShells.getNext().QueryInterface(Ci.nsIDocShell).contentViewer) {
+                        if (viewer)
+                            yield viewer.DOMDocument;
+                    }
             }
         }
     },

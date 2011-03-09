@@ -1115,7 +1115,8 @@ var Hints = Module("hints", {
     Mode: Struct("HintMode", "name", "prompt", "action", "tags", "filter")
             .localize("prompt")
 }, {
-    modes: function () {
+    modes: function initModes() {
+        initModes.require("commandline");
         modes.addMode("HINTS", {
             extended: true,
             description: "Active when selecting elements in QuickHint or ExtendedHint mode",

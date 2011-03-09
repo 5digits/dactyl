@@ -700,6 +700,7 @@ var JavaScript = Module("javascript", {
         });
     },
     modes: function initModes(dactyl, modules, window) {
+        initModes.require("commandline");
         const { modes } = modules;
 
         modes.addMode("REPL", {

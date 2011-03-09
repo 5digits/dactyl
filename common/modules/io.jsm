@@ -996,7 +996,8 @@ unlet s:cpo_save
             }]);
 
     },
-    modes: function (dactyl, modules, window) {
+    modes: function initModes(dactyl, modules, window) {
+        initModes.require("commandline");
         const { modes } = modules;
 
         modes.addMode("FILE_INPUT", {
