@@ -78,8 +78,8 @@ var Download = Class("Download", {
     })),
 
     command: function command(name) {
-        util.assert(set.has(this.allowedCommands, name), "Unknown command");
-        util.assert(this.allowedCommands[name], "Command not allowed");
+        util.assert(set.has(this.allowedCommands, name), _("download.unknownCommand"));
+        util.assert(this.allowedCommands[name], _("download.commandNotAllowed"));
 
         services.downloadManager[name + "Download"](this.id);
     },

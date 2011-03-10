@@ -119,7 +119,7 @@ var Map = Class("Map", {
             mappings.repeat = repeat;
 
         if (this.executing)
-            util.dumpStack("Attempt to execute mapping recursively: " + args.command);
+            util.dumpStack(_("map.recursive", args.command));
         dactyl.assert(!this.executing, _("map.recursive", args.command));
 
         try {

@@ -556,7 +556,7 @@ var Styles = Module("Styles", {
                     styles.list(window.content, filter, args["-name"], args.explicitOpts["-group"] ? [args["-group"]] : null);
                 else {
                     util.assert(args["-group"].modifiable && args["-group"].hive.modifiable,
-                                "Cannot modify styles in the builtin group");
+                                _("command.style.cantChangeBuiltin"));
 
                     if (args["-append"]) {
                         let sheet = args["-group"].get(args["-name"]);
@@ -642,7 +642,7 @@ var Styles = Module("Styles", {
             commands.add(cmd.name, cmd.desc,
                 function (args) {
                     dactyl.assert(args.bang ^ !!(args[0] || args[1] || args["-name"] || args["-index"]),
-                                  "Argument or ! required");
+                                  _("error.argumentOrBang"));
 
                     args["-group"].find(args["-name"], args[0], args.literalArg, args["-index"])
                                   .forEach(cmd.action);

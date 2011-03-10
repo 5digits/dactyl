@@ -536,7 +536,7 @@ var Option = Class("Option", {
                 if (v.length > count)
                     return prev = parse.call(this, filter, val);
                 else {
-                    util.assert(prev, "Syntax error", false);
+                    util.assert(prev, _("error.syntaxError"), false);
                     prev.result += "," + v;
                 }
             }, this))
@@ -592,7 +592,7 @@ var Option = Class("Option", {
 
             let value = parseInt(values);
             util.assert(Number(values) % 1 == 0,
-                        "E521: Number required after =: " + this.name + "=" + values);
+                        _("command.set.numberRequired", this.name, values));
 
             switch (operator) {
             case "+":
@@ -1044,10 +1044,10 @@ var Options = Module("options", {
                 }
 
                 let opt = modules.options.parseOpt(arg, modifiers);
-                util.assert(opt, "Error parsing :set command: " + arg);
+                util.assert(opt, _("command.set.errorParsing", arg));
 
                 let option = opt.option;
-                util.assert(option != null || opt.all, "E518: Unknown option: " + opt.name);
+                util.assert(option != null || opt.all, _("command.set.unknownOption", opt.name));
 
                 // reset a variable to its default value
                 if (opt.reset) {

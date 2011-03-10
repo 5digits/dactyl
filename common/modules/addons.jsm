@@ -165,7 +165,7 @@ var Addon = Class("Addon", {
     },
 
     commandAllowed: function commandAllowed(cmd) {
-        util.assert(set.has(actions, cmd), "Unknown command");
+        util.assert(set.has(actions, cmd), _("addon.unknownCommand"));
 
         let action = actions[cmd];
         if ("perm" in action && !(this.permissions & AddonManager["PERM_CAN_" + action.perm.toUpperCase()]))
@@ -176,7 +176,7 @@ var Addon = Class("Addon", {
     },
 
     command: function command(cmd) {
-        util.assert(this.commandAllowed(cmd), "Command not allowed");
+        util.assert(this.commandAllowed(cmd), _("addon.commandNotAllowed"));
 
         let action = actions[cmd];
         if (action.action)

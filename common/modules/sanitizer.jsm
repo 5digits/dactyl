@@ -399,7 +399,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         commands.add(["sa[nitize]"],
             "Clear private data",
             function (args) {
-                dactyl.assert(!modules.options['private'], "Cannot sanitize items in private mode");
+                dactyl.assert(!modules.options['private'], _("command.sanitize.privateMode"));
 
                 let timespan = args["-timespan"] || modules.options["sanitizetimespan"];
 
@@ -419,7 +419,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         function (k) modules.options.get("sanitizeitems").has(k));
                 }
                 else
-                    dactyl.assert(modules.options.get("sanitizeitems").validator(items), "Valid items required");
+                    dactyl.assert(modules.options.get("sanitizeitems").validator(items), _("error.invalidArgument"));
 
                 if (items.indexOf("all") >= 0)
                     items = Object.keys(sanitizer.itemMap).filter(function (k) items.indexOf(k) === -1);

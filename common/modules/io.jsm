@@ -639,7 +639,7 @@ var IO = Module("io", {
 
                 if (file.exists() && file.isDirectory() || args[0] && /\/$/.test(args[0]))
                     file.append(config.name + ".vim");
-                dactyl.assert(!file.exists() || args.bang, "File exists");
+                dactyl.assert(!file.exists() || args.bang, _("io.exists"));
 
                 let template = util.compileMacro(<![CDATA[
 " Vim syntax file
@@ -819,7 +819,7 @@ unlet s:cpo_save
                 if (modules.options["banghist"]) {
                     // replaceable bang and no previous command?
                     dactyl.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
-                        "E34: No previous command");
+                        _("command.run.noPrevious"));
 
                     arg = arg.replace(/(\\)*!/g,
                         function (m) /^\\(\\\\)*!$/.test(m) ? m.replace("\\!", "!") : m.replace("!", io._lastRunCommand)

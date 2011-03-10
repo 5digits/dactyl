@@ -428,7 +428,7 @@ var Modes = Module("modes", {
         init: function init(name, options, params) {
             if (options.bases)
                 util.assert(options.bases.every(function (m) m instanceof this, this.constructor),
-                            "Invalid bases", true);
+                           _("mode.invalidBases"), true);
 
             update(this, {
                 id: 1 << Modes.Mode._id++,
