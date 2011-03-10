@@ -38,12 +38,13 @@ var HintSession = Class("HintSession", CommandMode, {
         this.open();
 
         this.top = opts.window || content;
-        this.top.addEventListener("resize", hints.resizeTimer.closure.tell, true);
-        this.top.addEventListener("dactyl-commandupdate", hints.resizeTimer.closure.tell, false, true);
+        this.top.addEventListener("resize", this.closure._onResize, true);
+        this.top.addEventListener("dactyl-commandupdate", this.closure._onResize, false, true);
 
         this.generate();
 
         this.show();
+        this.magic = true;
 
         if (this.validHints.length == 0) {
             dactyl.beep();
@@ -76,7 +77,6 @@ var HintSession = Class("HintSession", CommandMode, {
             this.span.style.display = (val ? "" : "none");
             if (this.imgSpan)
                 this.imgSpan.style.display = (val ? "" : "none");
-
             this.active = this.active;
         }
     },
@@ -92,8 +92,8 @@ var HintSession = Class("HintSession", CommandMode, {
             if (hints.hintSession == this)
                 hints.hintSession = null;
             if (this.top) {
-                this.top.removeEventListener("resize", hints.resizeTimer.closure.tell, true);
-                this.top.removeEventListener("dactyl-commandupdate", hints.resizeTimer.closure.tell, true);
+                this.top.removeEventListener("resize", this.closure._onResize, true);
+                this.top.removeEventListener("dactyl-commandupdate", this.closure._onResize, true);
             }
 
             this.removeHints(0);
@@ -255,6 +255,11 @@ var HintSession = Class("HintSession", CommandMode, {
 
         let doc = win.document;
 
+        memoize(doc, "dactylLabels", function ()
+            iter([l.getAttribute("for"), l]
+                 for (l in array.iterValues(doc.querySelectorAll("label[for]"))))
+             .toObject());
+
         let [offsetX, offsetY] = this.getContainerOffsets(doc);
 
         offsets = offsets || { left: 0, right: 0, top: 0, bottom: 0 };
@@ -281,17 +286,24 @@ var HintSession = Class("HintSession", CommandMode, {
             util.computedStyle(fragment).height; // Force application of binding.
             let container = doc.getAnonymousElementByAttribute(fragment, "anonid", "hints") || fragment;
 
-            let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none"/>, doc);
+            let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none;"/>, doc);
 
             let mode = this.hintMode;
             let res = mode.matcher(doc);
 
             let start = this.pageHints.length;
-            for (let elem in res) {
-                let hint = { elem: elem, showText: false, __proto__: this.Hint };
+            let _hints = [];
+            for (let elem in res)
+                if (isVisible(elem) && (!mode.filter || mode.filter(elem)))
+                    _hints.push({
+                        elem: elem,
+                        rect: elem.getClientRects()[0] || elem.getBoundingClientRect(),
+                        showText: false,
+                        __proto__: this.Hint
+                    });
 
-                if (!isVisible(elem) || mode.filter && !mode.filter(elem))
-                    continue;
+            for (let hint in values(_hints)) {
+                let { elem, rect } = hint;
 
                 if (elem.hasAttributeNS(NS, "hint"))
                     [hint.text, hint.showText] = [elem.getAttributeNS(NS, "hint"), true];
@@ -302,17 +314,15 @@ var HintSession = Class("HintSession", CommandMode, {
                 else
                     hint.text = elem.textContent.toLowerCase();
 
-                hint.span = baseNodeAbsolute.cloneNode(true);
+                hint.span = baseNodeAbsolute.cloneNode(false);
 
-                let rect = elem.getClientRects()[0] || elem.getBoundingClientRect();
                 let leftPos = Math.max((rect.left + offsetX), offsetX);
                 let topPos  = Math.max((rect.top + offsetY), offsetY);
 
                 if (elem instanceof HTMLAreaElement)
                     [leftPos, topPos] = this.getAreaOffset(elem, leftPos, topPos);
 
-                hint.span.style.left = leftPos + "px";
-                hint.span.style.top =  topPos + "px";
+                hint.span.setAttribute("style", ["display: none; left:", leftPos, "px; top:", topPos, "px"].join(""));
                 container.appendChild(hint.span);
 
                 this.pageHints.push(hint);
@@ -399,10 +409,15 @@ var HintSession = Class("HintSession", CommandMode, {
         return PASS;
     },
 
-    onResize: function () {
+    onResize: function onResize() {
         this.removeHints(0);
         this.generate(this.top);
         this.show();
+    },
+
+    _onResize: function _onResize() {
+        if (this.magic)
+            hints.resizeTimer.tell();
     },
 
     /**
@@ -491,6 +506,7 @@ var HintSession = Class("HintSession", CommandMode, {
      */
     removeHints: function _removeHints(timeout) {
         for (let { doc, start, end } in values(this.docs)) {
+            delete doc.dactylLabels;
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1))
@@ -776,15 +792,14 @@ var Hints = Module("hints", {
                             return [elem.alt.toLowerCase(), true];
                     }
                     else if (elem.value && type != "password") {
-                        // radio's and checkboxes often use internal ids as values - maybe make this an option too...
+                        // radios and checkboxes often use internal ids as values - maybe make this an option too...
                         if (! ((type == "radio" || type == "checkbox") && !isNaN(elem.value)))
                             return [elem.value.toLowerCase(), (type == "radio" || type == "checkbox")];
                     }
                 }
                 else if (option == "label") {
                     if (elem.id) {
-                        // TODO: (possibly) do some guess work for label-like objects
-                        let label = util.evaluateXPath(["label[@for=" + elem.id.quote() + "]"], doc).snapshotItem(0);
+                        let label = elem.ownerDocument.dactylLabels[elem.id];
                         if (label)
                             return [label.textContent.toLowerCase(), true];
                     }

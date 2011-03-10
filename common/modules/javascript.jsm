@@ -836,8 +836,6 @@ var JavaScript = Module("javascript", {
         commands.add(["javas[cript]", "js"],
             "Evaluate a JavaScript string",
             function (args) {
-                modules.commandline;
-
                 if (args[0] && !args.bang)
                     dactyl.userEval(args[0]);
                 else {

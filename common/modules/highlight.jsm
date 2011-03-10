@@ -100,7 +100,7 @@ var Highlights = Module("Highlight", {
     __iterator__: function () values(this.highlight).sort(function (a, b) String.localeCompare(a.class, b.class))
                                                     .iterValues(),
 
-    _create: function (agent, args) {
+    _create: function _create(agent, args) {
         let obj = Highlight.apply(Highlight, args);
 
         if (!isArray(obj.sites))
@@ -143,9 +143,9 @@ var Highlights = Module("Highlight", {
         return obj;
     },
 
-    get: function (k) this.highlight[k],
+    get: function get(k) this.highlight[k],
 
-    set: function (key, newStyle, force, append, extend) {
+    set: function set(key, newStyle, force, append, extend) {
         let [, class_, selectors] = key.match(/^([a-zA-Z_-]+)(.*)/);
 
         let highlight = this.highlight[key] || this._create(false, [key]);
@@ -181,7 +181,7 @@ var Highlights = Module("Highlight", {
      * Clears all highlighting rules. Rules with default values are
      * reset.
      */
-    clear: function () {
+    clear: function clear() {
         for (let [k, v] in Iterator(this.highlight))
             this.set(k, null, true);
     },
@@ -193,7 +193,7 @@ var Highlights = Module("Highlight", {
      * @param {Node} node
      * @param {string} group
      */
-    highlightNode: function (node, group, applyBindings) {
+    highlightNode: function highlightNode(node, group, applyBindings) {
         node.setAttributeNS(NS.uri, "highlight", group);
 
         let groups = group.split(" ");
@@ -214,7 +214,7 @@ var Highlights = Module("Highlight", {
      *
      * @param {string} class
      */
-    selector: function (class_)
+    selector: function selector(class_)
         let (self = this)
            class_.replace(/(^|[>\s])([A-Z][\w-]+)\b/g,
             function (m, n1, hl) n1 +
@@ -275,7 +275,7 @@ var Highlights = Module("Highlight", {
      * @param {string} css The rules to load. See {@link Highlights#css}.
      * @param {boolean} eager When true, load all provided rules immediately.
      */
-    loadCSS: function (css, eager) {
+    loadCSS: function loadCSS(css, eager) {
         String.replace(css, this.groupRegexp, function (m, m1, m2) m1 + " " + m2.replace(/\n\s*/g, " "))
               .split("\n").filter(function (s) /\S/.test(s) && !/^\s*\/\//.test(s))
               .forEach(function (highlight) {
@@ -291,7 +291,7 @@ var Highlights = Module("Highlight", {
     }
 }, {
 }, {
-    commands: function (dactyl, modules) {
+    commands: function initCommands(dactyl, modules) {
         const { autocommands, commands, completion, CommandOption, config, io } = modules;
 
         let lastScheme;
@@ -403,8 +403,9 @@ var Highlights = Module("Highlight", {
                 ]
             });
     },
-    completion: function (dactyl, modules) {
+    completion: function initCompletion(dactyl, modules) {
         const { completion, config, io } = modules;
+
         completion.colorScheme = function colorScheme(context) {
             let extRe = RegExp("\\." + config.fileExtension + "$");
 
@@ -422,7 +423,7 @@ var Highlights = Module("Highlight", {
             context.completions = [[v.class, v.value] for (v in highlight)];
         };
     },
-    javascript: function (dactyl, modules, window) {
+    javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter(["get", "set"].map(function (m) highlight[m]),
             [ function (context, obj, args) Iterator(highlight.highlight) ]);
         modules.JavaScript.setCompleter(["highlightNode"].map(function (m) highlight[m]),
