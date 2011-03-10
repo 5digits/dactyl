@@ -354,7 +354,7 @@ var IO = Module("io", {
      */
     listJar: function listJar(file, path) {
         file = util.getFile(file);
-        if (file) {
+        if (file && file.exists() && file.isFile() && file.isReadable()) {
             // let jar = services.zipReader.getZip(file); Crashes.
             let jar = services.ZipReader(file);
             try {
@@ -366,7 +366,8 @@ var IO = Module("io", {
                         yield entry;
             }
             finally {
-                jar.close();
+                if (jar)
+                    jar.close();
             }
         }
     },
@@ -878,6 +879,9 @@ unlet s:cpo_save
         };
 
         completion.file = function file(context, full, dir) {
+            if (/^jar:[^!]*$/.test(context.filter))
+                context.advance(4);
+
             // dir == "" is expanded inside readDirectory to the current dir
             function getDir(str) str.match(/^(?:.*[\/\\])?/)[0];
             dir = getDir(dir || context.filter);

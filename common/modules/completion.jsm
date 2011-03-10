@@ -340,7 +340,7 @@ var CompletionContext = Class("CompletionContext", {
     get itemPrototype() {
         let res = {};
         function result(quote) {
-            yield ["result", quote ? function () quote[0] + quote[1](this.text) + quote[2]
+            yield ["result", quote ? function () quote[0] + util.trapErrors(1, quote, this.text) + quote[2]
                                    : function () this.text];
         };
         for (let i in iter(this.keys, result(this.quote))) {
@@ -903,6 +903,13 @@ var Completion = Module("completion", {
     // depending on the 'complete' option
     // if the 'complete' argument is passed like "h", it temporarily overrides the complete option
     url: function url(context, complete) {
+        if (/^jar:[^!]*$/.test(context.filter)) {
+            context.advance(4);
+
+            context.quote = context.quote || ["", util.identity, ""];
+            let quote = context.quote[1];
+            context.quote[1] = function (str) quote(str.replace(/!/g, escape));
+        }
 
         if (this.options["urlseparator"])
             var skip = util.regexp("^.*" + this.options["urlseparator"] + "\\s*")
