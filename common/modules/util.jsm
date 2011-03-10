@@ -430,7 +430,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     validateMatcher: function validateMatcher(values) {
         let evaluator = services.XPathEvaluator();
-        let node = util.xmlToDom(<div/>, document);
+        let node = services.XMLDocument();
         return this.testValues(values, function (value) {
             if (/^xpath:/.test(value))
                 evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);

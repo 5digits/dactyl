@@ -84,6 +84,7 @@ var Services = Module("Services", {
         this.addClass("Timer",        "@mozilla.org/timer;1",                      "nsITimer", "initWithCallback");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   "nsIXMLHttpRequest");
         this.addClass("XPathEvaluator", "@mozilla.org/dom/xpath-evaluator;1",      "nsIDOMXPathEvaluator");
+        this.addClass("XMLDocument",  "@mozilla.org/xml/xml-document;1",           ["nsIDOMXMLDocument", "nsIDOMNodeSelector"]);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          "nsIZipReader", "open");
         this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  "nsIZipWriter");
     },
