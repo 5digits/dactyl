@@ -60,7 +60,7 @@ var StatusLine = Module("statusline", {
                         <hbox                                                 highlight="CmdLine StatusCmdLine" class="dactyl-container">
                             <label key="mode"          crop="end"                                               class="plain" collapsed="true"/>
                             <stack  id="dactyl-statusline-stack"     flex="1" highlight="CmdLine StatusCmdLine" class="dactyl-container">
-                                <textbox key="url"     crop="end"    flex="1"                                   class="plain dactyl-status-field-url" readonly="true"/>
+                                <textbox key="url"     crop="end"    flex="1" style="background: transparent;"  class="plain dactyl-status-field-url" readonly="true"/>
                                 <textbox key="message" crop="end"    flex="1" highlight="Normal StatusNormal"   class="plain"                         readonly="true"/>
                             </stack>
                         </hbox>
