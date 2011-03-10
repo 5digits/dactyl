@@ -964,7 +964,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {nsIURI}
      */
     // FIXME: createURI needed too?
-    newURI: function (uri, charset, base) services.io.newURI(uri, charset, base),
+    newURI: function newURI(uri, charset, base) this.withProperErrors("newURI", services.io, uri, charset, base),
 
     /**
      * Removes leading garbage prepended to URIs by the subscript
@@ -1763,6 +1763,23 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             Array.forEach(frame.frames, rec);
         })(win);
         return res.filter(function (h) !set.add(seen, h.spec));
+    },
+
+    /**
+     * Wraps native exceptions thrown by the called function so that a
+     * proper stack trace may be retrieved from them.
+     *
+     * @param {function|string} meth The method to call.
+     * @param {object} self The 'this' object of the method.
+     * @param ... Arguments to pass to *meth*.
+     */
+    withProperErrors: function withProperErrors(meth, self) {
+        try {
+            return (callable(meth) ? meth : self[meth]).apply(self, Array.slice(arguments, withProperErrors.length));
+        }
+        catch (e) {
+            throw e.stack ? e : Error(e);
+        }
     },
 
     /**

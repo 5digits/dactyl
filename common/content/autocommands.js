@@ -143,7 +143,7 @@ var AutoCommands = Module("autocommands", {
         let lastPattern = null;
         var { url, doc } = args;
         if (url)
-            uri = util.newURI(url);
+            uri = util.createURI(url);
         else
             var { uri, doc } = buffer;
 
