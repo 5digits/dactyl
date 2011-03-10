@@ -189,50 +189,41 @@ var Editor = Module("editor", {
         }
     },
 
-    // returns the position of char
-    findCharForward: function (ch, count) {
-        if (!Editor.getEditor())
+    findChar: function (key, count, backward) {
+
+        let editor = Editor.getEditor();
+        if (!editor)
             return -1;
 
-        let text = Editor.getEditor().value;
         // XXX
         if (count == null)
             count = 1;
 
-        for (let i = Editor.getEditor().selectionEnd + 1; i < text.length; i++) {
-            if (text[i] == "\n")
-                break;
-            if (text[i] == ch)
-                count--;
-            if (count == 0)
-                return i + 1; // always position the cursor after the char
+        let code = events.fromString(key)[0].charCode;
+        util.assert(code);
+        let char = String.fromCharCode(code);
+
+        let text = editor.value;
+        let caret = editor.selectionEnd;
+        if (backward) {
+            let end = text.lastIndexOf("\n", caret);
+            while (caret > end && caret >= 0 && count--)
+                caret = text.lastIndexOf(char, caret - 1);
+        }
+        else {
+            let end = text.indexOf("\n", caret);
+            if (end == -1)
+                end = text.length;
+
+            while (caret < end && caret >= 0 && count--)
+                caret = text.indexOf(char, caret + 1);
         }
 
-        dactyl.beep();
-        return -1;
-    },
-
-    // returns the position of char
-    findCharBackward: function (ch, count) {
-        if (!Editor.getEditor())
-            return -1;
-
-        let text = Editor.getEditor().value;
-        // XXX
-        if (count == null)
-            count = 1;
-
-        for (let i = Editor.getEditor().selectionStart - 1; i >= 0; i--) {
-            if (text[i] == "\n")
-                break;
-            if (text[i] == ch)
-                count--;
-            if (count == 0)
-                return i;
-        }
-
-        dactyl.beep();
-        return -1;
+        if (count > 0)
+            caret = -1;
+        if (caret == -1)
+            dactyl.beep();
+        return caret;
     },
 
     /**
@@ -777,7 +768,7 @@ var Editor = Module("editor", {
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["f"], "Move to a character on the current line after the cursor",
             function ({ arg, count }) {
-                let pos = editor.findCharForward(arg, Math.max(count, 1));
+                let pos = editor.findChar(arg, Math.max(count, 1));
                 if (pos >= 0)
                     editor.moveToPosition(pos, true, modes.main == modes.VISUAL);
             },
@@ -786,7 +777,7 @@ var Editor = Module("editor", {
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["F"], "Move to a character on the current line before the cursor",
             function ({ arg, count }) {
-                let pos = editor.findCharBackward(arg, Math.max(count, 1));
+                let pos = editor.findChar(arg, Math.max(count, 1), true);
                 if (pos >= 0)
                     editor.moveToPosition(pos, false, modes.main == modes.VISUAL);
             },
@@ -795,7 +786,7 @@ var Editor = Module("editor", {
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["t"], "Move before a character on the current line",
             function ({ arg, count }) {
-                let pos = editor.findCharForward(arg, Math.max(count, 1));
+                let pos = editor.findChar(arg, Math.max(count, 1));
                 if (pos >= 0)
                     editor.moveToPosition(pos - 1, true, modes.main == modes.VISUAL);
             },
@@ -804,7 +795,7 @@ var Editor = Module("editor", {
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
             ["T"], "Move before a character on the current line, backwards",
             function ({ arg, count }) {
-                let pos = editor.findCharBackward(arg, Math.max(count, 1));
+                let pos = editor.findChar(arg, Math.max(count, 1), true);
                 if (pos >= 0)
                     editor.moveToPosition(pos + 1, false, modes.main == modes.VISUAL);
             },

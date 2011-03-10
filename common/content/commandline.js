@@ -152,6 +152,7 @@ var CommandWidgets = Class("CommandWidgets", {
                 return this.commandbar;
             }
         });
+        this.updateVisibility();
     },
     addElement: function addElement(obj) {
         const self = this;
