@@ -393,7 +393,7 @@ var Addons = Module("addons", {
                 else if (file.isDirectory())
                     dactyl.echoerr(_("addon.cantInstallDir", file.path.quote()));
                 else
-                    dactyl.echoerr(_("io.notReadable-1", file.path));
+                    dactyl.echoerr(_("io.notReadable", file.path));
             }, {
                 argCount: "1",
                 completer: function (context) {
