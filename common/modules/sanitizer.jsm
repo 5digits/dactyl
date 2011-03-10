@@ -33,7 +33,7 @@ update(Range.prototype, {
     get isEternity() this.max == null && this.min == null,
     get isSession() this.max == null && this.min == sanitizer.sessionStart,
 
-    get native() this.isEternity ? null : [range.min || 0, range.max == null ? Number.MAX_VALUE : range.max]
+    get native() this.isEternity ? null : [this.min || 0, this.max == null ? Number.MAX_VALUE : this.max]
 });
 
 var Item = Class("SanitizeItem", {
