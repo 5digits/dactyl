@@ -111,8 +111,10 @@ var ProcessorStack = Class("ProcessorStack", {
         if (result !== Events.PASS || this.events.length > 1)
             Events.kill(this.events[this.events.length - 1]);
 
-        if (result === Events.PASS_THROUGH)
+        if (result === Events.PASS_THROUGH) {
+            events.passing = true;
             events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
+        }
         else if (result === Events.PASS || result === Events.ABORT) {
             let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
             if (list.length)
@@ -1288,7 +1290,8 @@ var Events = Module("events", {
         keyup: function onKeyUp(event) {
             this.keyEvents.push(event);
 
-            let pass = this.feedingEvent && this.feedingEvent.isReplay ||
+            let pass = this.passing && !event.isMacro ||
+                    this.feedingEvent && this.feedingEvent.isReplay ||
                     event.isReplay ||
                     modes.main == modes.PASS_THROUGH ||
                     modes.main == modes.QUOTE
@@ -1296,7 +1299,10 @@ var Events = Module("events", {
                         && !this.shouldPass(event) ||
                     !modes.passThrough && this.shouldPass(event);
 
-            events.dbg("ON " + event.type.toUpperCase() + " " + this.toString(event) + " pass: " + pass);
+            if (event.type === "keydown")
+                this.passing = pass;
+
+            events.dbg("ON " + event.type.toUpperCase() + " " + this.toString(event) + " pass: " + pass + " replay: " + event.isReplay + " macro: " + event.isMacro);
 
             // Prevents certain sites from transferring focus to an input box
             // before we get a chance to process our key bindings on the
@@ -1305,6 +1311,8 @@ var Events = Module("events", {
                 event.stopPropagation();
         },
         keydown: function onKeyDown(event) {
+            if (!event.isMacro)
+                this.passing = false;
             this.events.keyup.call(this, event);
         },
 

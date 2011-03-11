@@ -909,7 +909,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         for (let [file, ] in Iterator(services["dactyl:"].FILE_MAP)) {
             let url = "dactyl://help/" + file;
             dactyl.open(url);
-            util.waitFor(function () content.location.href == url, 5000);
+            util.waitFor(function () content.location.href == url && buffer.loaded
+                            && content.document.documentElement instanceof HTMLHtmlElement,
+                         15000);
             events.waitForPageLoad();
             var data = [
                 '<?xml version="1.0" encoding="UTF-8"?>\n',
