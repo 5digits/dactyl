@@ -1055,11 +1055,12 @@ var Events = Module("events", {
         if (buffer.loaded)
             return true;
 
-        dactyl.echo(_("macro.loadWaiting"), commandline.DISALLOW_MULTILINE);
+        dactyl.echo(_("macro.loadWaiting"), commandline.FORCE_SINGLELINE);
 
         const maxWaitTime = (time || 25);
-        util.waitFor(function () !events.feedingKeys || buffer.loaded, this, maxWaitTime * 1000, true);
+        util.waitFor(function () buffer.loaded, this, maxWaitTime * 1000, true);
 
+        dactyl.echo("", commandline.FORCE_SINGLELINE);
         if (!buffer.loaded)
             dactyl.echoerr(_("macro.loadFailed", maxWaitTime));
 

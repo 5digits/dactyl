@@ -871,7 +871,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             value = "hl-" + value;
                         }
                         if (name == "href") {
-                            value = node.href;
+                            value = node.href || value;
                             if (value.indexOf("dactyl://help-tag/") == 0) {
                                 let uri = services.io.newChannel(value, null, null).originalURI;
                                 value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
@@ -907,8 +907,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let chromeFiles = {};
         let styles = {};
         for (let [file, ] in Iterator(services["dactyl:"].FILE_MAP)) {
-            dactyl.open("dactyl://help/" + file);
-            dactyl.modules.events.waitForPageLoad();
+            let url = "dactyl://help/" + file;
+            dactyl.open(url);
+            util.waitFor(function () content.location.href == url, 5000);
+            events.waitForPageLoad();
             var data = [
                 '<?xml version="1.0" encoding="UTF-8"?>\n',
                 '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',

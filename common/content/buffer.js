@@ -311,7 +311,7 @@ var Buffer = Module("buffer", {
     allFrames: function allFrames(win, focusedFirst) {
         let frames = [];
         (function rec(frame) {
-            if (frame.document.body instanceof HTMLBodyElement)
+            if (true || frame.document.body instanceof HTMLBodyElement)
                 frames.push(frame);
             Array.forEach(frame.frames, rec);
         })(win || content);
