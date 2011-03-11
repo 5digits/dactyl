@@ -886,7 +886,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         data.push(" ");
                         data.push(name);
                         data.push('="');
-                        data.push(<>{value}</>.toXMLString());
+                        data.push(<>{value}</>.toXMLString().replace(/"/g, "&quot;"));
                         data.push('"');
                     }
                     if (node.localName in empty)

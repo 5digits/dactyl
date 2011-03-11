@@ -642,8 +642,10 @@ var Events = Module("events", {
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 let now = Date.now();
-                for (let type in values(["keydown", "keyup", "keypress"])) {
+                for (let type in values(["keydown", "keypress", "keyup"])) {
                     let evt = update({}, evt_obj, { type: type });
+                    if (type !== "keypress" && !evt.keyCode)
+                        evt.keyCode = evt._keyCode || 0;
 
                     if (isObject(noremap))
                         update(evt, noremap);
@@ -654,9 +656,12 @@ var Events = Module("events", {
                     evt.dactylSavedEvents = savedEvents;
                     this.feedingEvent = evt;
 
-                    let event = events.create(document.commandDispatcher.focusedWindow.document, type, evt);
+                    let doc = document.commandDispatcher.focusedWindow.document;
+                    let event = events.create(doc, type, evt);
+
                     if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
-                        events.dispatch(dactyl.focusedElement || buffer.focusedFrame, event, evt);
+                        events.dispatch(dactyl.focusedElement || doc.documentElement || doc.defaultView,
+                                        event, evt);
                     else if (type === "keypress")
                         events.events.keypress.call(events, event);
                 }
@@ -855,6 +860,7 @@ var Events = Module("events", {
                         }
 
                         evt_obj.charCode = keyname.charCodeAt(0);
+                        evt_obj._keyCode = this._key_code[keyname];
                     }
                     else if (set.has(this._pseudoKeys, keyname)) {
                         evt_obj.dactylString = "<" + this._key_key[keyname] + ">";
@@ -875,8 +881,10 @@ var Events = Module("events", {
                     continue;
                 }
             }
-            else // a simple key (no <...>)
+            else {// a simple key (no <...>)
                 evt_obj.charCode = evt_str.charCodeAt(0);
+                evt_obj._keyCode = this._key_code[evt_str[0]];
+            }
 
             // TODO: make a list of characters that need keyCode and charCode somewhere
             if (evt_obj.keyCode == 32 || evt_obj.charCode == 32)
