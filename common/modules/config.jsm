@@ -130,35 +130,38 @@ var ConfigBase = Class("ConfigBase", {
             .nth(function (l) set.has(langs, l), 0);
     },
 
-    haveHg: Class.memoize(function () {
+    /**
+     * @property {string} The pathname of the VCS repository clone's root
+     *     directory if the application is running from one via an extension
+     *     proxy file.
+     */
+    VCSPath: Class.memoize(function () {
         if (/pre$/.test(this.addon.version)) {
             let uri = this.addon.getResourceURI("../.hg");
             if (uri instanceof Ci.nsIFileURL &&
                     uri.QueryInterface(Ci.nsIFileURL).file.exists() &&
                     io.pathSearch("hg"))
-                return ["hg", "-R", uri.file.parent.path];
+                return uri.file.parent.path;
         }
         return null;
     }),
 
+    /**
+     * @property {string} The name of the VCS branch that the application is
+     *     running from if using an extension proxy file or was built from if
+     *     installed as an XPI.
+     */
     branch: Class.memoize(function () {
-        if (this.haveHg)
-            return io.system(this.haveHg.concat(["branch"])).output;
+        if (this.VCSPath)
+            return io.system(["hg", "-R", this.VCSPath, "branch"]).output;
         return (/pre-hg\d+-(\S*)/.exec(this.version) || [])[1];
     }),
 
     /** @property {string} The Dactyl version string. */
     version: Class.memoize(function () {
-        if (/pre$/.test(this.addon.version)) {
-            let uri = this.addon.getResourceURI("../.hg");
-            if (uri instanceof Ci.nsIFileURL &&
-                    uri.QueryInterface(Ci.nsIFileURL).file.exists() &&
-                    io.pathSearch("hg")) {
-                return io.system(["hg", "-R", uri.file.parent.path,
-                                  "log", "-r.",
-                                  "--template=hg{rev}-" + this.branch + " ({date|isodate})"]).output;
-            }
-        }
+        if (this.VCSPath)
+            return io.system(["hg", "-R", this.VCSPath, "log", "-r.",
+                              "--template=hg{rev}-" + this.branch + " ({date|isodate})"]).output;
         let version = this.addon.version;
         if ("@DATE@" !== "@" + "DATE@")
             version += " (created: @DATE@)";
