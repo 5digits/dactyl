@@ -1470,7 +1470,7 @@ var Buffer = Module("buffer", {
                 command: function () "tabs.select"
             };
             context.compare = CompletionContext.Sort.number;
-            context.filters = [CompletionContext.Filter.textDescription];
+            context.filters[0] = CompletionContext.Filter.textDescription;
 
             for (let [id, vals] in Iterator(tabGroups))
                 context.fork(id, 0, this, function (context, [name, browsers]) {

@@ -447,7 +447,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      * Adds a new command to the builtin hive. Accessible only to core
      * dactyl code. Plugins should use group.commands.add instead.
      *
-     * @param {string[]} names The names by which this command can be
+     * @param {string[]} specs The names by which this command can be
      *     invoked. The first name specified is the command's canonical
      *     name.
      * @param {string} description A description of the command.
@@ -455,7 +455,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      * @param {Object} extra An optional extra configuration hash.
      * @optional
      */
-    add: function add(names, description, action, extra, replace) {
+    add: function add(specs, description, action, extra, replace) {
         const { commands, contexts } = this.modules;
 
         extra = extra || {};
@@ -463,7 +463,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
             extra.definedAt = contexts.getCaller(Components.stack.caller);
 
         extra.hive = this;
-        extra.parsedSpecs = Command.parseSpecs(names);
+        extra.parsedSpecs = Command.parseSpecs(specs);
 
         let names = array.flatten(extra.parsedSpecs);
         let name = names[0];
@@ -483,7 +483,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
         let self = this;
         let closure = function () self._map[name];
 
-        memoize(this._map, name, function () commands.Command(names, description, action, extra));
+        memoize(this._map, name, function () commands.Command(specs, description, action, extra));
         memoize(this._list, this._list.length, closure);
         for (let alias in values(names.slice(1)))
             memoize(this._map, alias, closure);

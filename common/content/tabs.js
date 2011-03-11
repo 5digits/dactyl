@@ -527,50 +527,17 @@ var Tabs = Module("tabs", {
         commands.add(["bd[elete]", "bw[ipeout]", "bun[load]", "tabc[lose]"],
             "Delete current buffer",
             function (args) {
-                let special = args.bang;
-                let count   = args.count;
-                let arg     = args[0] || "";
+                let removed = 0;
+                for (let tab in matchTabs(args, args.bang)) {
+                    config.removeTab(tab);
+                    removed++;
+                }
 
-                if (arg) {
-                    let removed = 0;
-                    let matches = arg.match(/^(\d+):?/);
-
-                    if (matches) {
-                        config.removeTab(tabs.getTab(parseInt(matches[1], 10) - 1));
-                        removed = 1;
-                    }
-                    else {
-                        let str = arg.toLowerCase();
-                        let browsers = config.tabbrowser.browsers;
-
-                        for (let i = browsers.length - 1; i >= 0; i--) {
-                            let host, title, uri = browsers[i].currentURI.spec;
-                            if (browsers[i].currentURI.schemeIs("about")) {
-                                host = "";
-                                title = "(Untitled)";
-                            }
-                            else {
-                                host = browsers[i].currentURI.host;
-                                title = browsers[i].contentTitle;
-                            }
-
-                            [host, title, uri] = [host, title, uri].map(String.toLowerCase);
-
-                            if (host.indexOf(str) >= 0 || uri == str ||
-                                (special && (title.indexOf(str) >= 0 || uri.indexOf(str) >= 0))) {
-                                config.removeTab(tabs.getTab(i));
-                                removed++;
-                            }
-                        }
-                    }
-
+                if (args[0])
                     if (removed > 0)
-                        dactyl.echomsg(_("buffer.fewer", removed, removed == 1 ? "" : "s"), 9);
+                        dactyl.echomsg(_("buffer.fewerTab" + (removed == 1 ? "" : "s"), removed), 9);
                     else
                         dactyl.echoerr(_("buffer.noMatching", arg));
-                }
-                else // just remove the current tab
-                    tabs.remove(tabs.getTab(), Math.max(count, 1), special);
             }, {
                 argCount: "?",
                 bang: true,
@@ -578,6 +545,76 @@ var Tabs = Module("tabs", {
                 completer: function (context) completion.buffer(context),
                 literal: 0,
                 privateData: true
+            });
+
+        function matchTabs(args, substr) {
+            let filter = args[0];
+
+            if (!filter && args.count == null)
+                yield tabs.getTab();
+            else if (!filter)
+                yield dactyl.assert(tabs.getTab(args.count - 1));
+            else {
+                let matches = /^(\d+):?/.exec(filter);
+                if (matches)
+                    yield dactyl.assert(args.count == null &&
+                                        tabs.getTab(parseInt(matches[1], 10) - 1));
+                else {
+                    let str = filter.toLowerCase();
+                    for (let tab in values(tabs.allTabs)) {
+                        let host, title;
+                        let browser = tab.linkedBrowser;
+                        let uri = browser.currentURI.spec;
+                        if (browser.currentURI.schemeIs("about")) {
+                            host = "";
+                            title = "(Untitled)";
+                        }
+                        else {
+                            host = browser.currentURI.host;
+                            title = browser.contentTitle;
+                        }
+
+                        [host, title, uri] = [host, title, uri].map(String.toLowerCase);
+
+                        if (host.indexOf(str) >= 0 || uri == str ||
+                            (substr && (title.indexOf(str) >= 0 || uri.indexOf(str) >= 0)))
+                            if (args.count == null || --args.count == 0)
+                                yield tab;
+                    }
+                }
+            }
+        }
+
+        commands.add(["pin[tab]"],
+            "Pin tab as an application tab",
+            function (args) {
+                for (let tab in matchTabs(args, true))
+                    config.browser[!args.bang || !tab.pinned ? "pinTab" : "unpinTab"](tab);
+            },
+            {
+                argCount: "?",
+                bang: true,
+                count: true,
+                completer: function (context, args) {
+                    if (!args.bang)
+                        context.filters.push(function ({ item }) !item.tab.pinned);
+                    completion.buffer(context);
+                }
+            });
+
+        commands.add(["unpin[tab]"],
+            "Unpin tab as an application tab",
+            function (args) {
+                for (let tab in matchTabs(args, true))
+                    config.browser.unpinTab(tab);
+            },
+            {
+                argCount: "?",
+                count: true,
+                completer: function (context, args) {
+                    context.filters.push(function ({ item }) item.tab.pinned);
+                    completion.buffer(context);
+                }
             });
 
         commands.add(["keepa[lt]"],

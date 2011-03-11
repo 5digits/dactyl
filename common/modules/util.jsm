@@ -158,6 +158,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     assert: function (condition, message, quiet) {
         if (!condition)
             throw FailedAssertion(message, 1, quiet === undefined ? true : quiet);
+        return condition;
     },
 
     /**

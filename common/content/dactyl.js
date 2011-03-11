@@ -960,7 +960,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         if (obj instanceof Command) {
             link = function (cmd) <ex>{cmd}</ex>;
             args = obj.parseArgs("", CompletionContext(str || ""));
-            spec = function (cmd) cmd + (obj.bang ? <oa>!</oa> : <></>);
+            spec = function (cmd) <>{
+                    obj.count ? <oa>count</oa> : <></>
+                }{
+                    cmd
+                }{
+                    obj.bang ? <oa>!</oa> : <></>
+                }</>;
         }
         else if (obj instanceof Map) {
             spec = function (map) obj.count ? <><oa>count</oa>{map}</> : <>{map}</>;

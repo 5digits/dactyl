@@ -381,6 +381,32 @@
     </description>
 </item>
 
+<h2 tag="app-tabs application-tabs pinned-tabs">Application Tabs</h2>
+
+<item>
+    <tags>pin pintab</tags>
+    <spec><oa>count</oa>pin<oa>tab</oa><oa>!</oa> <oa>arg</oa></spec>
+    <description>
+        <p>
+            Pin tab as an application tab. If <oa>!</oa> is given,
+            the tab's pinned state is toggled. Arguments and count
+            are the same as for <ex>:bdelete</ex> and <ex>:buffer</ex>.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>unpin unpintab</tags>
+    <spec><oa>count</oa>pin<oa>tab</oa> <oa>arg</oa></spec>
+    <description>
+        <p>
+            Unpin tab as an application tab. Arguments and count
+            are the same as for <ex>:pintab</ex>.
+        </p>
+    </description>
+</item>
+
+
 </document>
 
 <!-- vim:se sts=4 sw=4 et: -->
