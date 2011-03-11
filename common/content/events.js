@@ -662,7 +662,9 @@ var Events = Module("events", {
                     let event = events.create(doc, type, evt);
 
                     if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
-                        events.dispatch(dactyl.focusedElement || doc.defaultView,
+                        events.dispatch(dactyl.focusedElement
+                                            || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
+                                            || doc.defaultView,
                                         event, evt);
                     else if (type === "keypress")
                         events.events.keypress.call(events, event);
