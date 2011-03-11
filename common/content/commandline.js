@@ -1015,9 +1015,9 @@ var CommandLine = Module("commandline", {
             dactyl.registerObserver("events.doneFeeding", this.closure.onDoneFeeding, true);
 
             this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
-                if (events.feedingKeys)
+                if (events.feedingKeys && !tabPressed)
                     this.ignoredCount++;
-                if (options["autocomplete"].length) {
+                else if (options["autocomplete"].length) {
                     this.itemList.visible = true;
                     this.complete(true, false);
                 }
@@ -1087,6 +1087,7 @@ var CommandLine = Module("commandline", {
         get wildtype() this.wildtypes[this.wildIndex] || "",
 
         complete: function complete(show, tabPressed) {
+            this.session.ignoredCount = 0;
             this.context.reset();
             this.context.tabPressed = tabPressed;
             this.session.complete(this.context);
@@ -1260,6 +1261,7 @@ var CommandLine = Module("commandline", {
 
         tab: function tab(reverse, wildmode) {
             this.autocompleteTimer.flush();
+            this.ignoredCount = 0;
 
             if (this._caret != this.caret)
                 this.reset();
