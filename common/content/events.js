@@ -103,10 +103,6 @@ var ProcessorStack = Class("ProcessorStack", {
 
         events.dbg("RESULT: " + length + " " + this._result(result));
 
-        if (result === Events.PASS || result === Events.PASS_THROUGH)
-            if (this.events[0].originalTarget)
-                this.events[0].originalTarget.dactylKeyPress = undefined;
-
         if (result !== Events.PASS || this.events.length > 1)
             if (result !== Events.ABORT || !this.events[0].isReplay)
                 Events.kill(this.events[this.events.length - 1]);
@@ -326,6 +322,9 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             [self, events] = [event, event[callback || "events"]];
             [,, capture, allowUntrusted] = arguments;
         }
+
+        if (set.has(events, "input") && !set.has(events, "dactyl-input"))
+            events["dactyl-input"] = events.input;
 
         for (let [event, callback] in Iterator(events)) {
             let args = [Cu.getWeakReference(target),
@@ -731,7 +730,7 @@ var Events = Module("events", {
             }
         };
         const TYPES = {
-            change: "", input: "", submit: "",
+            change: "", "dactyl-input": "", input: "", submit: "",
             click: "Mouse", mousedown: "Mouse", mouseup: "Mouse",
             mouseover: "Mouse", mouseout: "Mouse",
             keypress: "Key", keyup: "Key", keydown: "Key"
@@ -1199,7 +1198,7 @@ var Events = Module("events", {
                     elem.dactylKeyPress = elem.value;
                     util.timeout(function () {
                         if (elem.dactylKeyPress !== undefined && elem.value !== elem.dactylKeyPress)
-                            events.dispatch(elem, events.create(elem.ownerDocument, "input"));
+                            events.dispatch(elem, events.create(elem.ownerDocument, "dactyl-input"));
                         elem.dactylKeyPress = undefined;
                     });
                 }

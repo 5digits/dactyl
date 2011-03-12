@@ -132,6 +132,10 @@ var RangeFinder = Module("rangefinder", {
         }
     },
 
+    onHistory: function () {
+        this.rangeFind.found = false;
+    },
+
     onSubmit: function (command) {
         if (!this.options["incfind"] || !this.rangeFind || !this.rangeFind.found) {
             this.clear();
@@ -200,6 +204,7 @@ var RangeFinder = Module("rangefinder", {
 
             get onCancel() modules.rangefinder.closure.onCancel,
             get onChange() modules.rangefinder.closure.onChange,
+            get onHistory() modules.rangefinder.closure.onHistory,
             get onSubmit() modules.rangefinder.closure.onSubmit
         });
     },

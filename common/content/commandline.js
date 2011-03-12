@@ -399,14 +399,13 @@ var CommandMode = Class("CommandMode", {
         return true; /* Pass event */
     },
 
-    onCancel: function (value) {
-    },
+    onCancel: function (value) {},
 
-    onChange: function (value) {
-    },
+    onChange: function (value) {},
 
-    onSubmit: function (value) {
-    },
+    onHistory: function (value) {},
+
+    onSubmit: function (value) {},
 
     resetCompletions: function resetCompletions() {
         if (this.completions) {
@@ -941,6 +940,7 @@ var CommandLine = Module("commandline", {
             if (this.completions)
                 this.completions.previewClear();
             this.input.value = val;
+            this.session.onHistory(val);
         },
 
         /**
