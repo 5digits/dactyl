@@ -797,7 +797,7 @@ var Options = Module("options", {
          *     {@link Map#extraInfo}).
          * @optional
          */
-        add: function (names, description, type, defaultValue, extraInfo) {
+        add: function add(names, description, type, defaultValue, extraInfo) {
             const self = this;
 
             if (!extraInfo)
