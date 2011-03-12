@@ -61,7 +61,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
     execute: function execute(result, force) {
         let processors = this.processors;
-        util.dump("execute", this._result(result), force, String(processors.map(function (p) [p.main, p.main.passUnknown])));
+        let length = 1;
 
         if (force)
             this.processors = [];
@@ -70,15 +70,11 @@ var ProcessorStack = Class("ProcessorStack", {
             statusline.inputBuffer = this.processors.length ? this.buffer : "";
 
         if (!processors.some(function (p) !p.extended) && this.actions.length) {
-            if (this._actions.length == 0) {
-                dactyl.beep();
-                events.feedingKeys = false;
-            }
-
             for (var action in values(this.actions)) {
                 while (callable(action)) {
+                    length = action.eventLength;
                     action = dactyl.trapErrors(action);
-                    events.dbg("ACTION RES: " + this._result(action));
+                    events.dbg("ACTION RES: " + length + " " + this._result(action));
                 }
                 if (action !== Events.PASS)
                     break;
@@ -94,9 +90,8 @@ var ProcessorStack = Class("ProcessorStack", {
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
         else if (result !== Events.KILL && !this.actions.length &&
-                 (this.events.length > 1 ||
-                     processors.some(function (p) !p.main.passUnknown))) {
-            result = Events.KILL;
+                 processors.some(function (p) !p.main.passUnknown)) {
+            result = Events.ABORT;
             if (!Events.isEscape(this.events.slice(-1)[0]))
                 dactyl.beep();
             events.feedingKeys = false;
@@ -104,7 +99,7 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (result === undefined)
             result = Events.PASS;
 
-        events.dbg("RESULT: " + this._result(result));
+        events.dbg("RESULT: " + length + " " + this._result(result));
 
         if (result === Events.PASS || result === Events.PASS_THROUGH)
             if (this.events[0].originalTarget)
@@ -117,11 +112,17 @@ var ProcessorStack = Class("ProcessorStack", {
             events.passing = true;
             events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
         }
-        else if (result === Events.PASS || result === Events.ABORT) {
+        else {
             let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
-            if (list.length)
-                events.dbg("REFEED: " + list.map(events.closure.toString).join(""));
-            events.feedevents(null, list, { skipmap: true, isMacro: true, isReplay: true });
+            if (result === Events.PASS)
+                events.dbg("PASS THROUGH: " + list.slice(0, length).filter(function (e) e.type === "keypress").map(events.toString));
+            if (list.length > length)
+                events.dbg("REFEED: " + list.slice(length).filter(function (e) e.type === "keypress").map(events.toString));
+
+            if (result === Events.PASS)
+                events.feedevents(null, list.slice(0, length), { skipmap: true, isMacro: true, isReplay: true });
+            if (list.length > length)
+                events.feedevents(null, list.slice(length));
         }
 
         return this.processors.length === 0;
@@ -170,6 +171,10 @@ var ProcessorStack = Class("ProcessorStack", {
 
         this._actions = actions;
         this.actions = actions.concat(this.actions);
+
+        for (let action in values(actions))
+            if (!("eventLength" in action))
+                action.eventLength = this.events.length;
 
         if (result === Events.KILL)
             this.actions = [];
