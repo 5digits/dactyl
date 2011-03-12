@@ -262,7 +262,7 @@ var Option = Class("Option", {
         try {
             var newValues = this._op(operator, values, scope, invert);
             if (newValues == null)
-                return "Operator " + operator + " not supported for option type " + this.type;
+                return _("option.operatorNotSupported", operator, this.type);
 
             if (!this.isValidValue(newValues))
                 return this.invalidArgument(str || this.stringify(values), operator);
@@ -498,7 +498,7 @@ var Option = Class("Option", {
 
     parse: {
         number:     function (value) let (val = Option.dequote(value))
-                            Option.validIf(Number(val) % 1 == 0, "Integer value required") && parseInt(val),
+                            Option.validIf(Number(val) % 1 == 0, _("option.intRequired")) && parseInt(val),
 
         boolean:    function boolean(value) Option.dequote(value) == "true" || value == true ? true : false,
 
@@ -959,7 +959,9 @@ var Options = Module("options", {
             format: {
                 description: function (map) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
                         {options.get("passkeys").has(map.name)
-                            ? <span highlight="URLExtra">(passed by {template.helpLink("'passkeys'")})</span>
+                            ? <span highlight="URLExtra">({
+                                tempate.linkifyHelp(_("option.passkeys.passedBy"))
+                              })</span>
                             : <></>}
                         {template.linkifyHelp(map.description)}
                 </>)
@@ -974,7 +976,7 @@ var Options = Module("options", {
             format: {
                 description: function (opt) (XML.ignoreWhitespace = false, XML.prettyPrinting = false, <>
                         {opt.scope == Option.SCOPE_LOCAL
-                            ? <span highlight="URLExtra">(buffer local)</span> : ""}
+                            ? <span highlight="URLExtra">({_("option.bufferLocal")})</span> : ""}
                         {template.linkifyHelp(opt.description)}
                 </>),
                 help: function (opt) "'" + opt.name + "'"
@@ -1015,7 +1017,7 @@ var Options = Module("options", {
                     }
 
                     if (name == "all" && reset)
-                        modules.commandline.input("Warning: Resetting all preferences may make " + config.host + " unusable. Continue (yes/[no]): ",
+                        modules.commandline.input(_("pref.prompt.resetAll", config.host),
                             function (resp) {
                                 if (resp == "yes")
                                     for (let pref in values(prefs.getNames()))
@@ -1105,8 +1107,8 @@ var Options = Module("options", {
 
                     context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
                     context.completions = [
-                            [prefs.get(filter), "Current Value"],
-                            [prefs.defaults.get(filter), "Default Value"]
+                            [prefs.get(filter), _("opt.currentValue")],
+                            [prefs.defaults.get(filter), _("opt.defaultValue")]
                     ].filter(function (k) k[0] != null);
                     return null;
                 }
@@ -1131,11 +1133,11 @@ var Options = Module("options", {
 
             let option = opt.option;
             if (!option)
-                return error(opt.name.length, "No such option: " + opt.name);
+                return error(opt.name.length, _("option.noSuch", opt.name));
 
             context.advance(context.filter.indexOf("="));
             if (option.type == "boolean")
-                return error(context.filter.length, "Trailing characters");
+                return error(context.filter.length, _("error.trailing"));
 
             context.advance(1);
             if (opt.error)
@@ -1149,8 +1151,8 @@ var Options = Module("options", {
                     context.title = ["Extra Completions"];
                     context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
                     context.completions = [
-                            [option.stringValue, "Current value"],
-                            [option.stringDefaultValue, "Default value"]
+                            [option.stringValue, _("option.currentValue")],
+                            [option.stringDefaultValue, _("option.defaultValue")]
                     ].filter(function (f) f[0] !== "");
                     context.quote = ["", util.identity, ""];
                 });
@@ -1352,7 +1354,7 @@ var Options = Module("options", {
                 var newValues = opt.parse(context.filter);
             }
             catch (e) {
-                context.message = "Error: " + e;
+                context.message = _("error.error", e);
                 context.completions = [];
                 return;
             }

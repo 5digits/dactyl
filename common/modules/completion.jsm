@@ -396,7 +396,7 @@ var CompletionContext = Class("CompletionContext", {
             }
             catch (e) {
                 util.reportError(e);
-                this.message = "Error: " + e;
+                this.message = _("error.error", e);
             }
         }
         // XXX
@@ -495,7 +495,7 @@ var CompletionContext = Class("CompletionContext", {
             return this.cache.filtered = filtered;
         }
         catch (e) {
-            this.message = "Error: " + e;
+            this.message = _("error.error", e);
             util.reportError(e);
             return [];
         }

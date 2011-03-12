@@ -976,7 +976,8 @@ var ErrorBase = Class("ErrorBase", Error, {
         }
         this.fileName = frame.filename;
         this.lineNumber = frame.lineNumber;
-    }
+    },
+    toString: function () String(this.message)
 });
 
 /**
