@@ -950,7 +950,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     makeXPath: function makeXPath(nodes) {
         return array(nodes).map(util.debrace).flatten()
-                           .map(function (node) [node, "xhtml:" + node]).flatten()
+                           .map(function (node) /^[a-z]+:/.test(node) ? node : [node, "xhtml:" + node]).flatten()
                            .map(function (node) "//" + node).join(" | ");
     },
 

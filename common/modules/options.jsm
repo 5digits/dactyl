@@ -311,7 +311,10 @@ var Option = Class("Option", {
      * @property {function(CompletionContext, Args)} This option's completer.
      * @see CompletionContext
      */
-    completer: function completer(context) {
+    completer: function completer(context, extra) {
+        if (/map$/.test(this.type) && extra.value == null)
+            return;
+
         if (this.values)
             context.completions = this.values;
     },

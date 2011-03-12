@@ -352,8 +352,16 @@ var Buffer = Module("buffer", {
     focusAllowed: function focusAllowed(elem) {
         if (elem instanceof Window && !Editor.getEditor(elem))
             return true;
+
         let doc = elem.ownerDocument || elem.document || elem;
-        return !options["strictfocus"] || doc.dactylFocusAllowed;
+        switch (options.get("strictfocus").getKey(doc.documentURI, "moderate")) {
+        case "despotic":
+            return elem.dactylFocusAllowed;
+        case "moderate":
+            return doc.dactylFocusAllowed;
+        default:
+            return true;
+        }
     },
 
     /**
@@ -365,6 +373,7 @@ var Buffer = Module("buffer", {
      */
     focusElement: function focusElement(elem) {
         let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
+        elem.dactylFocusAllowed = true;
         win.document.dactylFocusAllowed = true;
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
@@ -1655,7 +1664,7 @@ var Buffer = Module("buffer", {
                 let elem = buffer.lastInputField;
 
                 if (args.count >= 1 || !elem || !events.isContentNode(elem)) {
-                    let xpath = ["frame", "iframe", "input", "textarea[not(@disabled) and not(@readonly)]"];
+                    let xpath = ["frame", "iframe", "input", "xul:textbox", "textarea[not(@disabled) and not(@readonly)]"];
 
                     let frames = buffer.allFrames(null, true);
 
@@ -1670,7 +1679,8 @@ var Buffer = Module("buffer", {
                         let computedStyle = util.computedStyle(elem);
                         let rect = elem.getBoundingClientRect();
                         return computedStyle.visibility != "hidden" && computedStyle.display != "none" &&
-                            computedStyle.MozUserFocus != "ignore" && rect.width && rect.height;
+                            (elem instanceof Ci.nsIDOMXULTextBoxElement || computedStyle.MozUserFocus != "ignore") &&
+                            rect.width && rect.height;
                     });
 
                     dactyl.assert(elements.length > 0);

@@ -1135,14 +1135,19 @@ var Events = Module("events", {
 
             let win = (elem.ownerDocument || elem).defaultView || elem;
 
-            if (events.isContentNode(elem) && !buffer.focusAllowed(elem)
-                && !(services.focus.getLastFocusMethod(win) & 0x7000)
+            if (!(services.focus.getLastFocusMethod(win) & 0x7000)
+                && events.isContentNode(elem)
+                && !buffer.focusAllowed(elem)
                 && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {
+
                 if (elem.frameElement)
                     dactyl.focusContent(true);
                 else if (!(elem instanceof Window) || Editor.getEditor(elem))
                     dactyl.focus(window);
             }
+
+            if (elem instanceof Element)
+                elem.dactylFocusAllowed = undefined;
         },
 
         /*
@@ -1329,8 +1334,11 @@ var Events = Module("events", {
             let elem = event.target;
             let win = elem.ownerDocument && elem.ownerDocument.defaultView || elem;
 
-            for (; win; win = win != win.parent && win.parent)
+            for (; win; win = win != win.parent && win.parent) {
+                for (; elem instanceof Element; elem = elem.parentNode)
+                    elem.dactylFocusAllowed = true;
                 win.document.dactylFocusAllowed = true;
+            }
         },
 
         popupshown: function onPopupShown(event) {
@@ -1650,7 +1658,14 @@ var Events = Module("events", {
 
         options.add(["strictfocus", "sf"],
             "Prevent scripts from focusing input elements without user intervention",
-            "boolean", true);
+            "sitemap", "*:moderate",
+            {
+                values: {
+                    despotic: "Only allow focus changes when explicitly requested by the user",
+                    moderate: "Allow focus changes after user-initiated focus change",
+                    "laisses-faire": "Always allow focus changes"
+                }
+            });
 
         options.add(["timeout", "tmo"],
             "Whether to execute a shorter key command after a timeout when a longer command exists",

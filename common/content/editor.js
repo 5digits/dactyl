@@ -654,7 +654,10 @@ var Editor = Module("editor", {
             });
 
         mappings.add([modes.INPUT],
-            ["<BS>", "<Del>", "<Left>", "<Right>", "<Up>", "<Down>"],
+            ["<BS>", "<Del>", "<Left>", "<Right>", "<Up>", "<Down>",
+             "<Home>", "<End>", "<PageUp>", "<PageDown>",
+             "<C-BS>", "<C-Del>", "<C-Left>", "<C-Right>", "<C-Up>", "<C-Down>",
+             "<C-Home>", "<C-End>", "<C-PageUp>", "<C-PageDown>"],
             "Handled by " + config.host,
             function () Events.PASS);
 
