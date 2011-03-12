@@ -428,12 +428,16 @@ var Modes = Module("modes", {
                 util.assert(options.bases.every(function (m) m instanceof this, this.constructor),
                            _("mode.invalidBases"), true);
 
+            this.description = options.description || name;
+
             update(this, {
                 id: 1 << Modes.Mode._id++,
                 name: name,
                 params: params || {}
             }, options);
         },
+
+        description: Messages.Localized(""),
 
         isinstance: function isinstance(obj)
             this === obj || this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
@@ -452,8 +456,6 @@ var Modes = Module("modes", {
 
         get count() !this.insert,
 
-        get description() this._display,
-
         _display: Class.memoize(function _display() this.name.replace("_", " ", "g")),
 
         display: function display() this._display,
@@ -470,7 +472,7 @@ var Modes = Module("modes", {
 
         passEvent: function passEvent(event) this.input && event.charCode && !(event.ctrlKey || event.altKey || event.metaKey),
 
-        passUnknown: Class.memoize(function () options.get("passunknown").getKey(this.name)),
+        passUnknown: Class.memoize(function () options.get("passunknown").has(this.name)),
 
         get mask() this,
 
@@ -543,12 +545,16 @@ var Modes = Module("modes", {
     options: function initOptions() {
         options.add(["passunknown"],
             "Pass through unknown keys in these modes",
-            "regexplist", "",
+            "stringlist", "",
             {
-                regexpFlags: "i",
+                has: function (val) this.value.indexOf(val.toLowerCase()) >= 0,
+
                 setter: function (val) {
                     modes.all.forEach(function (m) { delete m.passUnknown });
-                }
+                    return val.map(String.toLowerCase);
+                },
+
+                get values() [[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)]
             });
 
         options.add(["showmode", "smd"],

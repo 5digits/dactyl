@@ -1621,7 +1621,16 @@ var Buffer = Module("buffer", {
             function (args) { buffer.scrollVertical("pages", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<C-f>", "<PageDown>", "<Space>", "<scroll-page-down>"],
+        mappings.add([modes.COMMAND], ["<Space>"],
+            "Scroll down a full page",
+            function (args) {
+                if (isinstance(content.document.activeElement, [HTMLInputElement, HTMLButtonElement]))
+                    return Events.PASS;
+                buffer.scrollVertical("pages", Math.max(args.count, 1));
+            },
+            { count: true });
+
+        mappings.add([modes.COMMAND], ["<C-f>", "<PageDown>", "<scroll-page-down>"],
             "Scroll down a full page",
             function (args) { buffer.scrollVertical("pages", Math.max(args.count, 1)); },
             { count: true });
