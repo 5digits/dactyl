@@ -12,7 +12,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("options", {
     exports: ["Option", "Options", "ValueError", "options"],
     require: ["messages", "storage"],
-    use: ["commands", "completion", "prefs", "services", "styles", "template", "util"]
+    use: ["commands", "completion", "config", "prefs", "services", "styles", "template", "util"]
 }, this);
 
 /** @scope modules */
@@ -1017,7 +1017,7 @@ var Options = Module("options", {
                     }
 
                     if (name == "all" && reset)
-                        modules.commandline.input(_("pref.prompt.resetAll", config.host),
+                        modules.commandline.input(_("pref.prompt.resetAll", config.host) + " ",
                             function (resp) {
                                 if (resp == "yes")
                                     for (let pref in values(prefs.getNames()))
