@@ -62,8 +62,7 @@ var Modes = Module("modes", {
             description: "Active when text is selected",
             display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : ""),
             bases: [this.COMMAND],
-            ownsFocus: true,
-            passUnknown: false
+            ownsFocus: true
         }, {
             leave: function (stack, newMode) {
                 if (newMode.main == modes.CARET) {
@@ -100,8 +99,7 @@ var Modes = Module("modes", {
             description: "Vim-like editing of input elements",
             bases: [this.COMMAND],
             input: true,
-            ownsFocus: true,
-            passUnknown: false
+            ownsFocus: true
         });
         this.addMode("OUTPUT_MULTILINE", {
             description: "Active when the multi-line output buffer is open",
@@ -470,7 +468,7 @@ var Modes = Module("modes", {
 
         ownsFocus: Class.memoize(function ownsFocus() this.bases.length && this.bases.some(function (b) b.ownsFocus)),
 
-        get passUnknown() this.input,
+        passUnknown: Class.memoize(function () options.get("passunknown").getKey(this.name)),
 
         get mask() this,
 
@@ -541,6 +539,16 @@ var Modes = Module("modes", {
             function () { events.feedkeys("<Esc>"); });
     },
     options: function initOptions() {
+        options.add(["passunknown"],
+            "Pass through unknown keys in these modes",
+            "regexplist", "^input$",
+            {
+                regexpFlags: "i",
+                setter: function (val) {
+                    modes.all.forEach(function (m) { delete m.passUnknown });
+                }
+            });
+
         options.add(["showmode", "smd"],
             "Show the current mode in the command line when it matches this expression",
             "regexplist", "!^normal$",

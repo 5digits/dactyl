@@ -17,13 +17,13 @@ var ProcessorStack = Class("ProcessorStack", {
         this.events = [];
 
         let main = { __proto__: mode.main, params: mode.params };
-        let keyModes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
+        this.modes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
 
         if (builtin)
             hives = hives.filter(function (h) h.name === "builtin");
 
-        this.processors = keyModes.map(function (m) hives.map(function (h) KeyProcessor(m, h)))
-                                  .flatten().array;
+        this.processors = this.modes.map(function (m) hives.map(function (h) KeyProcessor(m, h)))
+                                    .flatten().array;
         this.ownsBuffer = !this.processors.some(function (p) p.main.ownsBuffer);
 
         for (let [i, input] in Iterator(this.processors)) {
@@ -43,6 +43,8 @@ var ProcessorStack = Class("ProcessorStack", {
                 && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
             this.processors.unshift(KeyProcessor(modes.BASE, hive));
     },
+
+    passUnknown: Class.memoize(function () this.modes.some(function (m) m.passUnknown)),
 
     notify: function () {
         events.keyEvents = [];
@@ -89,8 +91,7 @@ var ProcessorStack = Class("ProcessorStack", {
             if (options["timeout"])
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
-        else if (result !== Events.KILL && !this.actions.length &&
-                 processors.some(function (p) !p.main.passUnknown)) {
+        else if (result !== Events.KILL && !this.actions.length && !this.passUnknown) {
             result = Events.ABORT;
             if (!Events.isEscape(this.events.slice(-1)[0]))
                 dactyl.beep();
