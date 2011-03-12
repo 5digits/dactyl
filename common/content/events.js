@@ -47,7 +47,7 @@ var ProcessorStack = Class("ProcessorStack", {
     notify: function () {
         events.keyEvents = [];
         events.processor = null;
-        if (!this.execute(Events.KILL, true)) {
+        if (!this.execute(undefined, true)) {
             events.processor = this;
             events.keyEvents = this.keyEvents;
         }
@@ -60,14 +60,16 @@ var ProcessorStack = Class("ProcessorStack", {
                                 callable(result) ? result.toSource().substr(0, 50) : result),
 
     execute: function execute(result, force) {
+        let processors = this.processors;
+        util.dump("execute", this._result(result), force, String(processors.map(function (p) [p.main, p.main.passUnknown])));
 
-        if (force && this.actions.length)
-            this.processors.length = 0;
+        if (force)
+            this.processors = [];
 
         if (this.ownsBuffer)
             statusline.inputBuffer = this.processors.length ? this.buffer : "";
 
-        if (!this.processors.some(function (p) !p.extended) && this.actions.length) {
+        if (!processors.some(function (p) !p.extended) && this.actions.length) {
             if (this._actions.length == 0) {
                 dactyl.beep();
                 events.feedingKeys = false;
@@ -88,12 +90,12 @@ var ProcessorStack = Class("ProcessorStack", {
         }
         else if (this.processors.length) {
             result = Events.KILL;
-            if (this.actions.length && options["timeout"])
+            if (options["timeout"])
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
         else if (result !== Events.KILL && !this.actions.length &&
                  (this.events.length > 1 ||
-                     this.processors.some(function (p) !p.main.passUnknown))) {
+                     processors.some(function (p) !p.main.passUnknown))) {
             result = Events.KILL;
             if (!Events.isEscape(this.events.slice(-1)[0]))
                 dactyl.beep();
@@ -356,7 +358,6 @@ var Events = Module("events", {
     dbg: function () {},
 
     init: function () {
-        const self = this;
         this.keyEvents = [];
 
         update(this, {
@@ -452,15 +453,14 @@ var Events = Module("events", {
 
         this._activeMenubar = false;
         this.listen(window, this, "events", true);
-
-        dactyl.registerObserver("modeChange", function () {
-            delete self.processor;
-        });
     },
 
     signals: {
         "browser.locationChange": function (webProgress, request, uri) {
             options.get("passkeys").flush();
+        },
+        "modes.change": function (oldMode, newMode) {
+            delete this.processor;
         }
     },
 

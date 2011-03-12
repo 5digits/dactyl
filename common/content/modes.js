@@ -245,7 +245,7 @@ var Modes = Module("modes", {
         if (!mode.extended)
             this._mainModes.push(mode);
 
-        dactyl.triggerObserver("mode-add", mode);
+        dactyl.triggerObserver("modes.add", mode);
     },
 
     dumpStack: function dumpStack() {
@@ -370,7 +370,7 @@ var Modes = Module("modes", {
                               push ? { push: push } : stack || {},
                               prev);
 
-        dactyl.triggerObserver("modeChange", [oldMain, oldExtended], [this._main, this._extended], stack);
+        dactyl.triggerObserver("modes.change", [oldMain, oldExtended], [this._main, this._extended], stack);
         this.show();
     },
 
