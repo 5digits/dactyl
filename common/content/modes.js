@@ -468,6 +468,8 @@ var Modes = Module("modes", {
 
         ownsFocus: Class.memoize(function ownsFocus() this.bases.length && this.bases.some(function (b) b.ownsFocus)),
 
+        passEvent: function passEvent(event) this.input && event.charCode && !(event.ctrlKey || event.altKey || event.metaKey),
+
         passUnknown: Class.memoize(function () options.get("passunknown").getKey(this.name)),
 
         get mask() this,
@@ -541,7 +543,7 @@ var Modes = Module("modes", {
     options: function initOptions() {
         options.add(["passunknown"],
             "Pass through unknown keys in these modes",
-            "regexplist", "^input$",
+            "regexplist", "",
             {
                 regexpFlags: "i",
                 setter: function (val) {

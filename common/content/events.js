@@ -91,7 +91,8 @@ var ProcessorStack = Class("ProcessorStack", {
             if (options["timeout"])
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
-        else if (result !== Events.KILL && !this.actions.length && !this.passUnknown) {
+        else if (result !== Events.KILL && !this.actions.length &&
+                 !(this.passUnknown || this.modes.some(function (m) m.passEvent(this), this.events[0]))) {
             result = Events.ABORT;
             if (!Events.isEscape(this.events.slice(-1)[0]))
                 dactyl.beep();
@@ -107,7 +108,8 @@ var ProcessorStack = Class("ProcessorStack", {
                 this.events[0].originalTarget.dactylKeyPress = undefined;
 
         if (result !== Events.PASS || this.events.length > 1)
-            Events.kill(this.events[this.events.length - 1]);
+            if (result !== Events.ABORT || !this.events[0].isReplay)
+                Events.kill(this.events[this.events.length - 1]);
 
         if (result === Events.PASS_THROUGH) {
             events.passing = true;
@@ -1543,6 +1545,10 @@ var Events = Module("events", {
                     return Events.PASS;
                 modes.push(modes.QUOTE);
             });
+
+        mappings.add([modes.BASE],
+            ["<CapsLock>"], "Do Nothing",
+            function () {});
 
         mappings.add([modes.BASE],
             ["<Nop>"], "Do nothing",

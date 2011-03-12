@@ -653,6 +653,11 @@ var Editor = Module("editor", {
                 modes.push(modes.TEXT_EDIT);
             });
 
+        mappings.add([modes.INPUT],
+            ["<BS>", "<Del>", "<Left>", "<Right>", "<Up>", "<Down>"],
+            "Handled by " + config.host,
+            function () Events.PASS);
+
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand insert mode abbreviation",
             function () {
