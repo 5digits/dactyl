@@ -92,7 +92,8 @@ var ProcessorStack = Class("ProcessorStack", {
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
         else if (result !== Events.KILL && !this.actions.length &&
-                 !(this.passUnknown || this.modes.some(function (m) m.passEvent(this), this.events[0]))) {
+                 !(this.events[0].isReplay || this.passUnknown
+                   || this.modes.some(function (m) m.passEvent(this), this.events[0]))) {
             result = Events.ABORT;
             if (!Events.isEscape(this.events.slice(-1)[0]))
                 dactyl.beep();
