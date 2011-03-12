@@ -506,7 +506,9 @@ var HintSession = Class("HintSession", CommandMode, {
      */
     removeHints: function _removeHints(timeout) {
         for (let { doc, start, end } in values(this.docs)) {
-            delete doc.dactylLabels;
+            // Goddamn stupid fucking Gecko 1.x security manager bullshit.
+            try { delete doc.dactylLabels; } catch (e) { doc.dactylLabels = undefined; }
+
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1))

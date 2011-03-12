@@ -37,24 +37,29 @@ if (!Object.create)
     };
 if (!Object.defineProperty)
     Object.defineProperty = function defineProperty(obj, prop, desc) {
-        let value = desc.value;
-        if ("value" in desc)
-            if (desc.writable && !__lookupGetter__.call(obj, prop)
-                              && !__lookupSetter__.call(obj, prop))
-                try {
-                    obj[prop] = value;
+        try {
+            let value = desc.value;
+            if ("value" in desc)
+                if (desc.writable && !__lookupGetter__.call(obj, prop)
+                                  && !__lookupSetter__.call(obj, prop))
+                    try {
+                        obj[prop] = value;
+                    }
+                    catch (e if e instanceof TypeError) {}
+                else {
+                    objproto.__defineGetter__.call(obj, prop, function () value);
+                    if (desc.writable)
+                        objproto.__defineSetter__.call(obj, prop, function (val) { value = val; });
                 }
-                catch (e if e instanceof TypeError) {}
-            else {
-                objproto.__defineGetter__.call(obj, prop, function () value);
-                if (desc.writable)
-                    objproto.__defineSetter__.call(obj, prop, function (val) { value = val; });
-            }
 
-        if ("get" in desc)
-            objproto.__defineGetter__.call(obj, prop, desc.get);
-        if ("set" in desc)
-            objproto.__defineSetter__.call(obj, prop, desc.set);
+            if ("get" in desc)
+                objproto.__defineGetter__.call(obj, prop, desc.get);
+            if ("set" in desc)
+                objproto.__defineSetter__.call(obj, prop, desc.set);
+        }
+        catch (e) {
+            throw e.stack ? e : Error(e);
+        }
     };
 if (!Object.defineProperties)
     Object.defineProperties = function defineProperties(obj, props) {
@@ -65,37 +70,47 @@ if (!Object.freeze)
     Object.freeze = function freeze(obj) {};
 if (!Object.getOwnPropertyDescriptor)
     Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
-        if (!hasOwnProperty.call(obj, prop))
-            return undefined;
-        let desc = {
-            configurable: true,
-            enumerable: propertyIsEnumerable.call(obj, prop)
-        };
-        var get = __lookupGetter__.call(obj, prop),
-            set = __lookupSetter__.call(obj, prop);
-        if (!get && !set) {
-            desc.value = obj[prop];
-            desc.writable = true;
+        try {
+            if (!hasOwnProperty.call(obj, prop))
+                return undefined;
+            let desc = {
+                configurable: true,
+                enumerable: propertyIsEnumerable.call(obj, prop)
+            };
+            var get = __lookupGetter__.call(obj, prop),
+                set = __lookupSetter__.call(obj, prop);
+            if (!get && !set) {
+                desc.value = obj[prop];
+                desc.writable = true;
+            }
+            if (get)
+                desc.get = get;
+            if (set)
+                desc.set = set;
+            return desc;
         }
-        if (get)
-            desc.get = get;
-        if (set)
-            desc.set = set;
-        return desc;
+        catch (e) {
+            throw e.stack ? e : Error(e);
+        }
     };
 if (!Object.getOwnPropertyNames)
     Object.getOwnPropertyNames = function getOwnPropertyNames(obj, _debugger) {
-        // This is an ugly and unfortunately necessary hack.
-        if (hasOwnProperty.call(obj, "__iterator__")) {
-            var oldIter = obj.__iterator__;
-            delete obj.__iterator__;
+        try {
+            // This is an ugly and unfortunately necessary hack.
+            if (hasOwnProperty.call(obj, "__iterator__")) {
+                var oldIter = obj.__iterator__;
+                delete obj.__iterator__;
+            }
+            let res = [k for (k in obj) if (hasOwnProperty.call(obj, k))];
+            if (oldIter !== undefined) {
+                obj.__iterator__ = oldIter;
+                res.push("__iterator__");
+            }
+            return res;
         }
-        let res = [k for (k in obj) if (hasOwnProperty.call(obj, k))];
-        if (oldIter !== undefined) {
-            obj.__iterator__ = oldIter;
-            res.push("__iterator__");
+        catch (e) {
+            throw e.stack ? e : Error(e);
         }
-        return res;
     };
 if (!Object.getPrototypeOf)
     Object.getPrototypeOf = function getPrototypeOf(obj) obj.__proto__;
@@ -591,17 +606,22 @@ function memoize(obj, key, getter) {
         return obj;
     }
 
-    Object.defineProperty(obj, key, {
-        configurable: true,
-        enumerable: true,
+    try {
+        Object.defineProperty(obj, key, {
+            configurable: true,
+            enumerable: true,
 
-        get: function g_replaceProperty() (
-            Class.replaceProperty(this.instance || this, key, null),
-            Class.replaceProperty(this.instance || this, key, getter.call(this, key))),
+            get: function g_replaceProperty() (
+                Class.replaceProperty(this.instance || this, key, null),
+                Class.replaceProperty(this.instance || this, key, getter.call(this, key))),
 
-        set: function s_replaceProperty(val)
-            Class.replaceProperty(this.instance || this, key, val)
-    });
+            set: function s_replaceProperty(val)
+                Class.replaceProperty(this.instance || this, key, val)
+        });
+    }
+    catch (e) {
+        obj[key] = getter.call(obj, key);
+    }
 }
 
 let sandbox = Cu.Sandbox(this);
