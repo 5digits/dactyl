@@ -661,6 +661,13 @@ var Editor = Module("editor", {
             "Handled by " + config.host,
             function () Events.PASS);
 
+        mappings.add([modes.INSERT, modes.NORMAL],
+            ["<Tab>"], "Select the next element in the tab sequence",
+            function () Events.PASS);
+        mappings.add([modes.INSERT, modes.NORMAL],
+            ["<S-Tab>"], "Select the previous element in the tab sequence",
+            function () Events.PASS);
+
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand insert mode abbreviation",
             function () {
