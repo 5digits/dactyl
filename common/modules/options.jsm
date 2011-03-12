@@ -745,7 +745,7 @@ var Options = Module("options", {
          * @param {number} scope Only list options in this scope (see
          *     {@link Option#scope}).
          */
-        list: function (filter, scope) {
+        list: function list(filter, scope) {
             if (!scope)
                 scope = Option.SCOPE_BOTH;
 
@@ -890,8 +890,11 @@ var Options = Module("options", {
         }
 
         if (matches) {
-            res.option = this.get(res.name, res.scope);
-            if (!res.option && (res.option = this.get(prefix + res.name, res.scope))) {
+            if (res.option = this.get(res.name, res.scope)) {
+                if (prefix === "no" && res.option.type !== "boolean")
+                    res.option = null;
+            }
+            else if (res.option = this.get(prefix + res.name, res.scope)) {
                 res.name = prefix + res.name;
                 prefix = "";
             }
@@ -988,7 +991,7 @@ var Options = Module("options", {
                 let names = set(list.map(function (opt) opt.option ? opt.option.name : ""));
                 if (list.length)
                     if (list.some(function (opt) opt.all))
-                        options.list(function (opt) !(list[0].onlyNonDefault && opt.isDefault) , list[0].scope);
+                        options.list(function (opt) !(list[0].onlyNonDefault && opt.isDefault), list[0].scope);
                     else
                         options.list(function (opt) set.has(names, opt.name), list[0].scope);
                 list = [];
