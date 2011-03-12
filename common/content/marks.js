@@ -53,14 +53,14 @@ var Marks = Module("marks", {
         if (Marks.isURLMark(mark)) {
             let res = this._urlMarks.set(mark, { location: doc.documentURI, position: position, tab: Cu.getWeakReference(tabs.getTab()), timestamp: Date.now()*1000 });
             if (!silent)
-                dactyl.log("Adding URL mark: " + Marks.markToString(mark, res), 5);
+                dactyl.log(_("mark.addURL", Marks.markToString(mark, res)), 5);
         }
         else if (Marks.isLocalMark(mark)) {
             let marks = this._localMarks.get(doc.documentURI, {});
             marks[mark] = { location: doc.documentURI, position: position, timestamp: Date.now()*1000 };
             this._localMarks.changed();
             if (!silent)
-                dactyl.log("Adding local mark: " + Marks.markToString(mark, marks[mark]), 5);
+                dactyl.log(_("mark.addLocal", Marks.markToString(mark, marks[mark])), 5);
         }
     },
 
@@ -115,7 +115,7 @@ var Marks = Module("marks", {
                 tabs.select(tab);
                 let doc = tab.linkedBrowser.contentDocument;
                 if (doc.documentURI == mark.location) {
-                    dactyl.log("Jumping to URL mark: " + Marks.markToString(char, mark), 5);
+                    dactyl.log(_("mark.jumpingToURL", Marks.markToString(char, mark)), 5);
                     buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
                 }
                 else {
@@ -146,7 +146,7 @@ var Marks = Module("marks", {
             let mark = (this._localMarks.get(this.localURI) || {})[char];
             dactyl.assert(mark, _("mark.unset", char));
 
-            dactyl.log("Jumping to local mark: " + Marks.markToString(char, mark), 5);
+            dactyl.log(_("marks.jumpingToLocal", Marks.markToString(char, mark)), 5);
             buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
         }
         else

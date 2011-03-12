@@ -44,34 +44,35 @@ const Player = Module("player", {
         onMediacoreEvent: function (event) {
             switch (event.type) {
                 case Ci.sbIMediacoreEvent.BEFORE_TRACK_CHANGE:
-                    dactyl.log("Before track changed: " + event.data);
+                    dactyl.log(_("player.preTrackChange", event.data));
                     autocommands.trigger("TrackChangePre", { track: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.TRACK_CHANGE:
+                    dactyl.log(_("player.trackChanged", event.data));
                     autocommands.trigger("TrackChange", { track: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.BEFORE_VIEW_CHANGE:
-                    dactyl.log("Before view changed: " + event.data);
+                    dactyl.log(_("player.preViewChange", event.data));
                     autocommands.trigger("ViewChangePre", { view: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.VIEW_CHANGE:
-                    dactyl.log("View changed: " + event.data);
+                    dactyl.log(_("player.viewChange", event.data));
                     autocommands.trigger("ViewChange", { view: event.data });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_START:
-                    dactyl.log("Track started: " + gMM.sequencer.currentItem);
+                    dactyl.log(_("player.trackStart", gMM.sequencer.currentItem));
                     autocommands.trigger("StreamStart", { track: gMM.sequencer.currentItem });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_PAUSE:
-                    dactyl.log("Track paused: " + gMM.sequencer.currentItem);
+                    dactyl.log(_("player.trackPause", gMM.sequencer.currentItem));
                     autocommands.trigger("StreamPause", { track: gMM.sequencer.currentItem });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_END:
-                    dactyl.log("Track ended: " + gMM.sequencer.currentItem);
+                    dactyl.log(_("player.trackEnd", gMM.sequencer.currentItem));
                     autocommands.trigger("StreamEnd", { track: gMM.sequencer.currentItem });
                     break;
                 case Ci.sbIMediacoreEvent.STREAM_STOP:
-                    dactyl.log("Track stopped: " + gMM.sequencer.currentItem);
+                    dactyl.log(_("player.trackStop", gMM.sequencer.currentItem));
                     autocommands.trigger("StreamStop", { track: gMM.sequencer.currentItem });
                     break;
             }

@@ -1399,7 +1399,7 @@ var Commands = Module("commands", {
                                     });
                                 }
                                 catch (e) {
-                                    dactyl.echo(":" + this.name + " ...");
+                                    dactyl.echo(":" + this.name + " ..."); // XXX
                                     dactyl.echoerr(_("command.unknownCompleter", completer));
                                     dactyl.log(e);
                                     return undefined;

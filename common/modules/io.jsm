@@ -202,8 +202,8 @@ var IO = Module("io", {
                         this._scriptNames.push(file.path);
 
                     dactyl.echomsg(_("io.sourcingEnd", filename.quote()), 2);
+                    dactyl.log(_("dactyl.sourced", filename), 3);
 
-                    dactyl.log("Sourced: " + filename, 3);
                     return context;
                 }
                 catch (e) {
@@ -622,7 +622,7 @@ var IO = Module("io", {
                 }
                 catch (e) {
                     dactyl.echoerr(_("io.notWriteable"), file.path.quote());
-                    dactyl.log("Could not write to " + file.path + ": " + e.message); // XXX
+                    dactyl.log(_("error.notWriteable", file.path, e.message)); // XXX
                 }
             }, {
                 argCount: "*", // FIXME: should be "?" but kludged for proper error message

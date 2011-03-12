@@ -70,9 +70,9 @@ const Mail = Module("mail", {
     _moveOrCopy: function (copy, destinationFolder, operateOnThread) {
         let folders = mail.getFolders(destinationFolder);
         if (folders.length == 0)
-            return void dactyl.echoerr("Exxx: No matching folder for " + destinationFolder);
+            return void dactyl.echoerr(_("addressbook.noMatchingFolder", destinationFolder));
         else if (folders.length > 1)
-            return dactyl.echoerr("Exxx: More than one match for " + destinationFolder);
+            return dactyl.echoerr(_("addressbook.multipleFolderMatches", destinationFolder));
 
         let count = gDBView.selection.count;
         if (!count)
@@ -168,7 +168,7 @@ const Mail = Module("mail", {
                     let url = args.attachments.pop();
                     let file = io.getFile(url);
                     if (!file.exists())
-                        return void dactyl.echoerr("Exxx: Could not attach file `" + url + "'", commandline.FORCE_SINGLELINE);
+                        return void dactyl.echoerr(_("mail.cantAttachFile", url), commandline.FORCE_SINGLELINE);
 
                     attachment = Cc["@mozilla.org/messengercompose/attachment;1"].createInstance(Ci.nsIMsgAttachment);
                     attachment.url = "file://" + file.path;
@@ -402,7 +402,7 @@ const Mail = Module("mail", {
 
                 let folder = mail.getFolders(arg, true, true)[count];
                 if (!folder)
-                    dactyl.echoerr("Exxx: Folder \"" + arg + "\" does not exist");
+                    dactyl.echoerr(_("command.goto.folderNotExist", arg));
                 else if (dactyl.forceNewTab)
                     MsgOpenNewTabForFolder(folder.URI);
                 else
@@ -434,7 +434,7 @@ const Mail = Module("mail", {
 
                 // TODO: is there a better way to check for validity?
                 if (addresses.some(function (recipient) !(/\S@\S+\.\S/.test(recipient))))
-                    return void dactyl.echoerr("Exxx: Invalid e-mail address");
+                    return void dactyl.echoerr(_("command.mail.invalidEmailAddress"));
 
                 mail.composeNewMail(mailargs);
             },

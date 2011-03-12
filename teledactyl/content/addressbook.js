@@ -63,9 +63,9 @@ const Addressbook = Module("addressbook", {
 
         if (addresses.length < 1) {
             if (!filter)
-                dactyl.echoerr("Exxx: No contacts", commandline.FORCE_SINGLELINE);
+                dactyl.echoerr(_("addressbook.noContacts"), commandline.FORCE_SINGLELINE);
             else
-                dactyl.echoerr("Exxx: No contacts matching string '" + filter + "'", commandline.FORCE_SINGLELINE);
+                dactyl.echoerr(_("addressbook.noMatchingContacts"), filter, commandline.FORCE_SINGLELINE);
             return false;
         }
 
@@ -100,9 +100,9 @@ const Addressbook = Module("addressbook", {
                     displayName = this.generateDisplayName(firstName, lastName);
 
                 if (addressbook.add(mailAddr, firstName, lastName, displayName))
-                    dactyl.echomsg("Added address: " + displayName + " <" + mailAddr + ">", 1, commandline.FORCE_SINGLELINE);
+                    dactyl.echomsg(_("addressbook.added", displayName, mailAddr), 1, commandline.FORCE_SINGLELINE);
                 else
-                    dactyl.echoerr("Exxx: Could not add contact `" + mailAddr + "'", commandline.FORCE_SINGLELINE);
+                    dactyl.echoerr(_("addressbook.cantAdd", mailAddr), commandline.FORCE_SINGLELINE);
 
             },
             {

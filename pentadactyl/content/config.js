@@ -205,7 +205,7 @@ var Config = Module("config", ConfigBase, {
                 let title = document.getElementById("sidebar-title");
 
                 dactyl.assert(args.length || title.value || args.bang && config.lastSidebar,
-                              "Argument required");
+                              _("error.argumentRequired"));
 
                 if (!args.length)
                     return window.toggleSidebar(title.value ? null : config.lastSidebar);
@@ -227,7 +227,7 @@ var Config = Module("config", ConfigBase, {
                         return;
                     }
 
-                return dactyl.echoerr("No sidebar " + args[0] + " found");
+                return dactyl.echoerr(_("error.invalidArgument", args[0]));
             },
             {
                 argCount: "?",

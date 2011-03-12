@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("util", {
     exports: ["frag", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
-    use: ["commands", "config", "highlight", "storage", "template"]
+    use: ["commands", "config", "highlight", "messages", "storage", "template"]
 }, this);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
@@ -827,7 +827,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return xmlhttp;
         }
         catch (e) {
-            util.dactyl.log("Error opening " + String.quote(url) + ": " + e, 1);
+            util.dactyl.log(_("error.cantOpen", String.quote(url), e), 1);
             return null;
         }
     },

@@ -539,7 +539,7 @@ var Events = Module("events", {
                 timeRecorded: Date.now()
             });
 
-            dactyl.log("Recorded " + this.recording + ": " + this._macroKeys.join(""), 9);
+            dactyl.log(_("macro.recorded", this.recording, this._macroKeys.join("")), 9);
             dactyl.echomsg(_("macro.recorded", this.recording));
         }
         this._recording = macro || null;
