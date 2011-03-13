@@ -485,7 +485,7 @@ var Bookmarks = Module("bookmarks", {
             "Delete a bookmark",
             function (args) {
                 if (args.bang)
-                    commandline.input("This will delete all bookmarks. Would you like to continue? (yes/[no]) ",
+                    commandline.input(_("bookmark.prompt.deleteAll") + " ",
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
                                 bookmarks.remove(Object.keys(bookmarkcache.bookmarks));

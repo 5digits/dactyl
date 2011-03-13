@@ -1199,7 +1199,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             urls = dactyl.parseURLs(urls);
 
         if (urls.length > prefs.get("browser.tabs.maxOpenBeforeWarn", 20) && !force)
-            return commandline.input("This will open " + urls.length + " new tabs. Would you like to continue? (yes/[no]) ",
+            return commandline.input(_("dactyl.prompt.openMany", urls.length) + " ",
                 function (resp) {
                     if (resp && resp.match(/^y(es)?$/i))
                         dactyl.open(urls, params, true);

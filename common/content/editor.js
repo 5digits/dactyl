@@ -257,7 +257,7 @@ var Editor = Module("editor", {
         let line, column;
 
         if (!forceEditing && textBox && textBox.type == "password") {
-            commandline.input("Editing a password field externally will reveal the password. Would you like to continue? (yes/[no]): ",
+            commandline.input(_("editor.prompt.editPassword") + " ",
                 function (resp) {
                     if (resp && resp.match(/^y(es)?$/i))
                         editor.editFieldExternally(true);

@@ -106,7 +106,7 @@ var Download = Class("Download", {
 
             let file = io.File(this.targetFile);
             if (file.isExecutable() && prefs.get("browser.download.manager.alertOnEXEOpen", true))
-                this.list.modules.commandline.input("This will launch an executable download. Continue? (yes/[no]/always) ",
+                this.list.modules.commandline.input(_("download.prompt.launchExecutable") + " ",
                     function (resp) {
                         if (/^a(lways)$/i.test(resp)) {
                             prefs.set("browser.download.manager.alertOnEXEOpen", false);
