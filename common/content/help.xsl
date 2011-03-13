@@ -378,14 +378,14 @@
         <a>
             <xsl:choose>
                 <xsl:when test="not(@topic)"/>
-                <xsl:when test="regexp:match(@topic, '^([a-zA-Z]*:|[^/]*#|/)', '')">
+                <xsl:when test="regexp:match(@topic, '^([a-zA-Z]+:|[^/]*#|/)', '')">
                     <xsl:attribute name="href"><xsl:value-of select="@topic"/></xsl:attribute>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:attribute name="href"><xsl:value-of select="concat('dactyl://help-tag/', @topic)"/></xsl:attribute>
                 </xsl:otherwise>
             </xsl:choose>
-            <xsl:if test="regexp:match(@topic, '^[a-zA-Z]*:', '')
+            <xsl:if test="regexp:match(@topic, '^[a-zA-Z]+:', '')
                     and not(starts-with(@topic, 'mailto:') or
                             starts-with(@topic, 'chrome:') or
                             starts-with(@topic, 'resource:') or

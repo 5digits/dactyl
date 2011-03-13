@@ -134,7 +134,7 @@
     <li>Quick and powerful <link topic="hints">keyboard navigation</link> for links, input fields, etc.</li>
     <li>Vim-like <link topic="status-line">status line</link></li>
     <li>Keyboard <t>macros</t>, along with custom key mappings and commands</li>
-    <li>Minimal GUI, along with commands to <link href=":toolbarhide">hide</link> and <link href=":toolbartoggle">toggle</link> toolbars and menus</li>
+    <li>Minimal GUI, along with commands to <link topic=":toolbarhide">hide</link> and <link topic=":toolbartoggle">toggle</link> toolbars and menus</li>
     <li>Ability to <ex>:source</ex> JavaScript, CSS, and &dactyl.appName; command files</li>
     <li>Ability to <link topic="marks">mark</link> the current page position and return to it</li>
     <li>Count support for many commands (<tt>3</tt><k name="C-o"/> will go back <tt>3</tt> pages)</li>
