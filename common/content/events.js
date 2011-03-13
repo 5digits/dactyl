@@ -121,7 +121,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
             if (result === Events.PASS)
                 events.feedevents(null, list.slice(0, length), { skipmap: true, isMacro: true, isReplay: true });
-            if (list.length > length)
+            if (list.length > length && this.processors.length === 0)
                 events.feedevents(null, list.slice(length));
         }
 
