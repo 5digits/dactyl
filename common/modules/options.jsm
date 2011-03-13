@@ -44,29 +44,12 @@ let ValueError = Class("ValueError", ErrorBase);
  * @private
  */
 var Option = Class("Option", {
-    init: function init(names, description, type, defaultValue, extraInfo) {
+    init: function init(modules, names, description, defaultValue, extraInfo) {
+        this.modules = modules;
         this.name = names[0];
         this.names = names;
         this.realNames = names;
-        this.type = type;
         this.description = description;
-
-        if (this.type in Option.getKey)
-            this.getKey = Option.getKey[this.type];
-
-        if (this.type in Option.parse)
-            this.parse = Option.parse[this.type];
-
-        if (this.type in Option.stringify)
-            this.stringify = Option.stringify[this.type];
-
-        if (this.type in Option.domains)
-            this.domains = Option.domains[this.type];
-
-        if (this.type in Option.testValues)
-            this.testValues = Option.testValues[this.type];
-
-        this._op = Option.ops[this.type];
 
         // Need to trigger setter
         if (extraInfo && "values" in extraInfo && !extraInfo.__lookupGetter__("values")) {
@@ -81,7 +64,7 @@ var Option = Class("Option", {
             defaultValue = this.modules.config.defaults[this.name];
 
         if (defaultValue !== undefined) {
-            if (this.type == "string")
+            if (this == "string")
                 defaultValue = Commands.quote(defaultValue);
 
             if (isObject(defaultValue))
@@ -711,8 +694,47 @@ var Option = Class("Option", {
             return Array.concat(values).every(function (re) set.has(acceptable, re.result));
 
         return Array.concat(values).every(set.has(acceptable));
-    }
+    },
+
+    types: {}
 });
+
+["Boolean",
+ "Charlist",
+ "Number",
+ "RegexpList",
+ "RegexpMap",
+ "SiteList",
+ "SiteMap",
+ "String",
+ "StringList",
+ "StringMap"].forEach(function (name) {
+     let type = name.toLowerCase();
+     let class_ = Class(name + "Option", Option, {
+         type: type,
+
+         _op: Option.ops[type]
+     })
+
+    if (type in Option.getKey)
+        class_.prototype.getKey = Option.getKey[type];
+
+    if (type in Option.parse)
+        class_.prototype.parse = Option.parse[type];
+
+    if (type in Option.stringify)
+        class_.prototype.stringify = Option.stringify[type];
+
+    if (type in Option.domains)
+        class_.prototype.domains = Option.domains[type];
+
+    if (type in Option.testValues)
+        class_.prototype.testValues = Option.testValues[type];
+
+    Option.types[type] = class_;
+    this[class_.className] = class_;
+    EXPORTED_SYMBOLS.push(class_.className);
+}, this);
 
 /**
  * @instance options
@@ -724,7 +746,6 @@ var Options = Module("options", {
             this.needInit = [];
             this._options = [];
             this._optionMap = {};
-            this.Option = Class("Option", Option, { modules: modules });
 
             storage.newMap("options", { store: false });
             storage.addObserver("options", function optionObserver(key, event, option) {
@@ -813,7 +834,7 @@ var Options = Module("options", {
 
             let closure = function () self._optionMap[name];
 
-            memoize(this._optionMap, name, function () self.Option(names, description, type, defaultValue, extraInfo));
+            memoize(this._optionMap, name, function () Option.types[type](modules, names, description, defaultValue, extraInfo));
             for (let alias in values(names.slice(1)))
                 memoize(this._optionMap, alias, closure);
 
