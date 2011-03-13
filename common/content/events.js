@@ -44,7 +44,7 @@ var ProcessorStack = Class("ProcessorStack", {
             this.processors.unshift(KeyProcessor(modes.BASE, hive));
     },
 
-    passUnknown: Class.memoize(function () this.modes.some(function (m) m.passUnknown)),
+    passUnknown: Class.memoize(function () options.get("passunknown").getKey(this.modes)),
 
     notify: function () {
         events.keyEvents = [];

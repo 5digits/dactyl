@@ -100,6 +100,17 @@ var Modes = Module("modes", {
             bases: [this.COMMAND],
             input: true,
             ownsFocus: true
+        }, {
+            onKeyPress: function (eventList) {
+                const KILL = false, PASS = true;
+
+                // Hack, really.
+                if (eventList[0].charCode || /^<(?:.-)*(?:BS|Del|C-h|C-w|C-u|C-k)>$/.test(events.toString(eventList[0]))) {
+                    dactyl.beep();
+                    return KILL;
+                }
+                return PASS;
+            }
         });
         this.addMode("OUTPUT_MULTILINE", {
             description: "Active when the multi-line output buffer is open",
@@ -472,7 +483,7 @@ var Modes = Module("modes", {
 
         passEvent: function passEvent(event) this.input && event.charCode && !(event.ctrlKey || event.altKey || event.metaKey),
 
-        passUnknown: Class.memoize(function () options.get("passunknown").has(this.name)),
+        passUnknown: Class.memoize(function () options.get("passunknown").getKey(this.name)),
 
         get mask() this,
 
@@ -547,14 +558,35 @@ var Modes = Module("modes", {
             "Pass through unknown keys in these modes",
             "stringlist", "",
             {
-                has: function (val) this.value.indexOf(val.toLowerCase()) >= 0,
-
-                setter: function (val) {
-                    modes.all.forEach(function (m) { delete m.passUnknown });
-                    return val.map(String.toLowerCase);
+                completer: function completer(context, extra) {
+                    if (extra.value && context.filter[0] == "!")
+                        context.advance(1);
+                    return completer.superapply(this, arguments);
                 },
 
-                get values() [[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)]
+                getKey: function getKey(val, default_) {
+                    if (isArray(val))
+                        return (array.nth(this.value, function (v) val.some(function (m) m.name === v.mode), 0)
+                                    || { result: default_ }).result;
+
+                    return set.has(this.valueMap, val) ? this.valueMap[val] : default_;
+                },
+
+                setter: function (vals) {
+                    modes.all.forEach(function (m) { delete m.passUnknown });
+
+                    vals = vals.map(function (v) update(new String(v.toLowerCase()), {
+                        mode: v.replace(/^!/, "").toUpperCase(),
+                        result: v[0] !== "!"
+                    }));
+
+                    this.valueMap = values(vals).map(function (v) [v.mode, v.result]).toObject();
+                    return vals;
+                },
+
+                validator: function validator(vals) vals.map(function (v) v.replace(/^!/, "")).every(set.has(this.values)),
+
+                get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
             });
 
         options.add(["showmode", "smd"],
