@@ -51,14 +51,8 @@ var Option = Class("Option", {
         this.realNames = names;
         this.description = description;
 
-        // Need to trigger setter
-        if (extraInfo && "values" in extraInfo && !extraInfo.__lookupGetter__("values")) {
-            this.values = extraInfo.values;
-            delete extraInfo.values;
-        }
-
         if (extraInfo)
-            update(this, extraInfo);
+            this.update(extraInfo);
 
         if (set.has(this.modules.config.defaults, this.name))
             defaultValue = this.modules.config.defaults[this.name];

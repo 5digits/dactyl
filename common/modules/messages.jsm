@@ -88,12 +88,16 @@ var Messages = Module("messages", {
 }, {
     Localized: Class("Localized", Class.Property, {
         init: function init(prop, obj) {
-            let _prop = "localized_" + prop;
+            let _prop = "unlocalized_" + prop;
             if (this.initialized) {
                 /*
                 if (config.locale === "en-US")
-                    return { configurable: true, enumerable: true, value: null, writable: true };
+                    return { configurable: true, enumerable: true, value: this.default, writable: true };
                 */
+
+                if (!set.has(obj, "localizedProperties"))
+                    obj.localizedProperties = { __proto__: obj.localizedProperties };
+                obj.localizedProperties[prop] = true;
 
                 obj[_prop] = this.default;
                 return {
@@ -103,24 +107,27 @@ var Messages = Module("messages", {
 
                         function getter(key, default_) function getter() messages.get([name, key].join("."), default_);
 
-                        let name = [this.constructor.className.toLowerCase(), this.identifier || this.name, prop].join(".");
-                        if (!isObject(value))
-                            value = messages.get(name, value)
-                        else if (isArray(value))
-                            // Deprecated
-                            iter(value).forEach(function ([k, v]) {
-                                if (isArray(v))
-                                    memoize(v, 1, getter(v[0], v[1]));
-                                else
-                                    memoize(value, k, getter(k, v));
-                            });
-                        else
-                            iter(value).forEach(function ([k, v]) {
-                                memoize(value, k, function () messages.get([name, k].join("."), v));
-                            });
+                        if (value != null) {
+                            let name = [this.constructor.className.toLowerCase(), this.identifier || this.name, prop].join(".");
+                            if (!isObject(value))
+                                value = messages.get(name, value)
+                            else if (isArray(value))
+                                // Deprecated
+                                iter(value).forEach(function ([k, v]) {
+                                    if (isArray(v))
+                                        memoize(v, 1, getter(v[0], v[1]));
+                                    else
+                                        memoize(value, k, getter(k, v));
+                                });
+                            else
+                                iter(value).forEach(function ([k, v]) {
+                                    memoize(value, k, function () messages.get([name, k].join("."), v));
+                                });
+                        }
 
                         return Class.replaceProperty(this, prop, value);
                     },
+
                     set: function set(val) this[_prop] = val
                 }
             }

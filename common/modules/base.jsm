@@ -331,9 +331,8 @@ deprecated.warn = function warn(func, name, alternative, frame) {
     frame = frame || Components.stack.caller.caller;
     let filename = util.fixURI(frame.filename || "unknown");
     if (!set.add(func.seenCaller, filename))
-        util.dactyl(func).warn(
-            util.urlPath(filename) + ":" + frame.lineNumber + ": " +
-            name + " is deprecated: Please use " + alternative + " instead");
+        util.dactyl(func).warn([util.urlPath(filename), frame.lineNumber, " "].join(":")
+                                   + require("messages")._("warn.deprecated", name, alternative));
 }
 
 /**
@@ -904,6 +903,41 @@ Class.prototype = {
             util.trapErrors(callback, self);
         }
         return services.Timer(timeout_notify, timeout || 0, services.Timer.TYPE_ONE_SHOT);
+    },
+
+    /**
+     * Updates this instance with the properties of the given objects.
+     * Like the update function, but with special semantics for
+     * localized properties.
+     */
+    update: function update() {
+        // XXX: Duplication.
+
+        for (let i = 0; i < arguments.length; i++) {
+            let src = arguments[i];
+            Object.getOwnPropertyNames(src || {}).forEach(function (k) {
+                let desc = Object.getOwnPropertyDescriptor(src, k);
+                if (desc.value instanceof Class.Property)
+                    desc = desc.value.init(k, this) || desc.value;
+
+                if (typeof desc.value === "function") {
+                    let func = desc.value.wrapped || desc.value;
+                    func.__defineGetter__("super", function () Object.getPrototypeOf(this)[k]);
+                    func.superapply = function superapply(self, args)
+                        let (meth = Object.getPrototypeOf(this)[k])
+                            meth && meth.apply(self, args);
+                    func.supercall = function supercall(self)
+                        func.superapply(self, Array.slice(arguments, 1));
+                }
+                try {
+                    if ("value" in desc && set.has(this.localizedProperties, k))
+                        this[k] = desc.value;
+                    else
+                        Object.defineProperty(this, k, desc);
+                }
+                catch (e) {}
+            }, this);
+        }
     }
 };
 Class.makeClosure = function makeClosure() {

@@ -39,7 +39,7 @@ var Map = Class("Map", {
         Object.freeze(this.modes);
 
         if (extraInfo)
-            update(this, extraInfo);
+            this.update(extraInfo);
     },
 
     name: Class.memoize(function () this.names[0]),

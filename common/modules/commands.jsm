@@ -129,7 +129,7 @@ var Command = Class("Command", {
         this.action = action;
 
         if (extraInfo)
-            update(this, extraInfo);
+            this.update(extraInfo);
         if (this.options)
             this.options = this.options.map(CommandOption.fromArray, CommandOption);
         for each (let option in this.options)
@@ -155,11 +155,8 @@ var Command = Class("Command", {
         const { dactyl } = this.modules;
 
         let context = args.context;
-        if (this.deprecated && !set.add(this.complained, context ? context.file : "[Command Line]")) {
-            let loc = contexts.context ? context.file + ":" + context.line + ": " : "";
-            dactyl.echoerr(loc + ":" + this.name + " is deprecated" +
-                           (isString(this.deprecated) ? ": " + this.deprecated : ""));
-        }
+        if (this.deprecated)
+            this.warn(context, "deprecated", _("warn.deprecated", ":" + this.name, this.deprecated));
 
         modifiers = modifiers || {};
 
@@ -229,6 +226,10 @@ var Command = Class("Command", {
 
     /** @property {string} This command's description, as shown in :listcommands */
     description: Messages.Localized(""),
+
+    /** @property {string|null} If set, the deprecation message for this command. */
+    deprecated: Messages.Localized(null),
+
     /**
      * @property {function (Args)} The function called to execute this command.
      */
@@ -356,7 +357,21 @@ var Command = Class("Command", {
      * @property {string} For commands defined via :command, contains the Ex
      *     command line to be executed upon invocation.
      */
-    replacementText: null
+    replacementText: null,
+
+    /**
+     * Warns of a misuse of this command once per warning type per file.
+     *
+     * @param {object} context The calling context.
+     * @param {string} type The type of warning.
+     * @param {string} warning The warning message.
+     */
+    warn: function warn(context, type, message) {
+        let loc = !context ? "" : [context.file, context.line, " "].join(":");
+
+        if (!set.add(this.complained, type + ":" + (context ? context.file : "[Command Line]")))
+            this.modules.dactyl.warn(loc + message);
+    }
 }, {
     // TODO: do we really need more than longNames as a convenience anyway?
     /**
