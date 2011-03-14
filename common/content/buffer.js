@@ -1551,11 +1551,11 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["i", "<Insert>"],
+        mappings.add([modes.NORMAL], ["i", "<Insert>"],
             "Start caret mode",
             function () { modes.push(modes.CARET); });
 
-        mappings.add([modes.COMMAND], ["<C-c>"],
+        mappings.add([modes.NORMAL], ["<C-c>"],
             "Stop loading the current web page",
             function () { ex.stop(); });
 
@@ -1635,39 +1635,39 @@ var Buffer = Module("buffer", {
             function (args) { buffer.scrollVertical("pages", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["]f", "<previous-frame>"],
+        mappings.add([modes.NORMAL], ["]f", "<previous-frame>"],
             "Focus next frame",
             function (args) { buffer.shiftFrameFocus(Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["[f", "<next-frame>"],
+        mappings.add([modes.NORMAL], ["[f", "<next-frame>"],
             "Focus previous frame",
             function (args) { buffer.shiftFrameFocus(-Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["]]", "<next-page>"],
+        mappings.add([modes.NORMAL], ["]]", "<next-page>"],
             "Follow the link labeled 'next' or '>' if it exists",
             function (args) {
                 buffer.findLink("next", options["nextpattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["[[", "<previous-page>"],
+        mappings.add([modes.NORMAL], ["[[", "<previous-page>"],
             "Follow the link labeled 'prev', 'previous' or '<' if it exists",
             function (args) {
                 buffer.findLink("previous", options["previouspattern"], (args.count || 1) - 1, true);
             },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["gf", "<view-source>"],
+        mappings.add([modes.NORMAL], ["gf", "<view-source>"],
             "Toggle between rendered and source view",
             function () { buffer.viewSource(null, false); });
 
-        mappings.add([modes.COMMAND], ["gF", "<view-source-externally>"],
+        mappings.add([modes.NORMAL], ["gF", "<view-source-externally>"],
             "View source with an external editor",
             function () { buffer.viewSource(null, true); });
 
-        mappings.add([modes.COMMAND], ["gi", "<focus-input>"],
+        mappings.add([modes.NORMAL], ["gi", "<focus-input>"],
             "Focus last used input field",
             function (args) {
                 let elem = buffer.lastInputField;
@@ -1700,7 +1700,7 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["gP"],
+        mappings.add([modes.NORMAL], ["gP"],
             "Open (]put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1708,7 +1708,7 @@ var Buffer = Module("buffer", {
                 dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB, background: true });
             });
 
-        mappings.add([modes.COMMAND], ["p", "<MiddleMouse>", "<open-clipboard-url>"],
+        mappings.add([modes.NORMAL], ["p", "<MiddleMouse>", "<open-clipboard-url>"],
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1716,7 +1716,7 @@ var Buffer = Module("buffer", {
                 dactyl.open(url);
             });
 
-        mappings.add([modes.COMMAND], ["P", "<tab-open-clipboard-url>"],
+        mappings.add([modes.NORMAL], ["P", "<tab-open-clipboard-url>"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
                 let url = dactyl.clipboardRead();
@@ -1725,11 +1725,11 @@ var Buffer = Module("buffer", {
             });
 
         // reloading
-        mappings.add([modes.COMMAND], ["r", "<reload>"],
+        mappings.add([modes.NORMAL], ["r", "<reload>"],
             "Reload the current web page",
             function () { tabs.reload(tabs.getTab(), false); });
 
-        mappings.add([modes.COMMAND], ["R", "<full-reload>"],
+        mappings.add([modes.NORMAL], ["R", "<full-reload>"],
             "Reload while skipping the cache",
             function () { tabs.reload(tabs.getTab(), true); });
 
@@ -1743,62 +1743,62 @@ var Buffer = Module("buffer", {
             });
 
         // zooming
-        mappings.add([modes.COMMAND], ["zi", "+", "<text-zoom-in>"],
+        mappings.add([modes.NORMAL], ["zi", "+", "<text-zoom-in>"],
             "Enlarge text zoom of current web page",
             function (args) { buffer.zoomIn(Math.max(args.count, 1), false); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["zm", "<text-zoom-more>"],
+        mappings.add([modes.NORMAL], ["zm", "<text-zoom-more>"],
             "Enlarge text zoom of current web page by a larger amount",
             function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["zo", "-", "<text-zoom-out>"],
+        mappings.add([modes.NORMAL], ["zo", "-", "<text-zoom-out>"],
             "Reduce text zoom of current web page",
             function (args) { buffer.zoomOut(Math.max(args.count, 1), false); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["zr", "<text-zoom-reduce>"],
+        mappings.add([modes.NORMAL], ["zr", "<text-zoom-reduce>"],
             "Reduce text zoom of current web page by a larger amount",
             function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, false); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["zz", "<text-zoom>"],
+        mappings.add([modes.NORMAL], ["zz", "<text-zoom>"],
             "Set text zoom value of current web page",
             function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, false); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["ZI", "zI", "<full-zoom-in>"],
+        mappings.add([modes.NORMAL], ["ZI", "zI", "<full-zoom-in>"],
             "Enlarge full zoom of current web page",
             function (args) { buffer.zoomIn(Math.max(args.count, 1), true); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["ZM", "zM", "<full-zoom-more>"],
+        mappings.add([modes.NORMAL], ["ZM", "zM", "<full-zoom-more>"],
             "Enlarge full zoom of current web page by a larger amount",
             function (args) { buffer.zoomIn(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["ZO", "zO", "<full-zoom-out>"],
+        mappings.add([modes.NORMAL], ["ZO", "zO", "<full-zoom-out>"],
             "Reduce full zoom of current web page",
             function (args) { buffer.zoomOut(Math.max(args.count, 1), true); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["ZR", "zR", "<full-zoom-reduce>"],
+        mappings.add([modes.NORMAL], ["ZR", "zR", "<full-zoom-reduce>"],
             "Reduce full zoom of current web page by a larger amount",
             function (args) { buffer.zoomOut(Math.max(args.count, 1) * 3, true); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["zZ", "<full-zoom>"],
+        mappings.add([modes.NORMAL], ["zZ", "<full-zoom>"],
             "Set full zoom value of current web page",
             function (args) { buffer.setZoom(args.count > 1 ? args.count : 100, true); },
             { count: true });
 
         // page info
-        mappings.add([modes.COMMAND], ["<C-g>", "<page-info>"],
+        mappings.add([modes.NORMAL], ["<C-g>", "<page-info>"],
             "Print the current file name",
             function () { buffer.showPageInfo(false); });
 
-        mappings.add([modes.COMMAND], ["g<C-g>", "<more-page-info>"],
+        mappings.add([modes.NORMAL], ["g<C-g>", "<more-page-info>"],
             "Print file information",
             function () { buffer.showPageInfo(true); });
     },

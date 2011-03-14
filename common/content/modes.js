@@ -76,7 +76,7 @@ var Modes = Module("modes", {
         });
         this.addMode("CARET", {
             description: "Active when the caret is visible in the web content",
-            bases: [this.COMMAND]
+            bases: [this.NORMAL]
         }, {
 
             get pref()    prefs.get("accessibility.browsewithcaret"),
@@ -113,7 +113,7 @@ var Modes = Module("modes", {
         });
         this.addMode("OUTPUT_MULTILINE", {
             description: "Active when the multi-line output buffer is open",
-            bases: [this.COMMAND],
+            bases: [this.NORMAL],
         });
 
         this.addMode("INPUT", {

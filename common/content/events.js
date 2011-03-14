@@ -1591,7 +1591,7 @@ var Events = Module("events", {
             },
             { arg: true, count: true });
 
-        mappings.add([modes.COMMAND],
+        mappings.add([modes.MAIN],
             ["<A-m>s", "<sleep>"], "Sleep for {count} milliseconds before continuing macro playback",
             function ({ command, count }) {
                 let now = Date.now();
@@ -1601,7 +1601,7 @@ var Events = Module("events", {
             },
             { count: true });
 
-        mappings.add([modes.COMMAND],
+        mappings.add([modes.MAIN],
             ["<A-m>l", "<wait-for-page-load>"], "Wait for the current page to finish loading before continuing macro playback",
             function ({ count }) {
                 if (events.feedingKeys && !events.waitForPageLoad(count)) {
