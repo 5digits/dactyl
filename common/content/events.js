@@ -1482,8 +1482,11 @@ var Events = Module("events", {
     isHidden: function isHidden(elem, aggressive) {
         for (let e = elem; e instanceof Element; e = e.parentNode) {
             if (util.computedStyle(e).visibility !== "visible" ||
-                    aggressive && e.boxObject && e.boxObject.height === 0)
+                    aggressive && !/set$/.test(e.localName)
+                        && e.boxObject && e.boxObject.height === 0)
                 return true;
+            else if (e.namespaceURI == XUL && e.localName === "panel")
+                break;
         }
         return false;
     },
