@@ -484,10 +484,28 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Example:
      *     "a{b,c}d" => ["abd", "acd"]
      *
-     * @param {string} pattern The pattern to deglob.
+     * @param {string|[string|Array]} pattern The pattern to deglob.
      * @returns [string] The resulting strings.
      */
     debrace: function debrace(pattern) {
+        if (isArray(pattern)) {
+            let res = [];
+            let rec = function rec(acc) {
+                let vals;
+
+                while (isString(vals = pattern[acc.length]))
+                    acc.push(vals);
+
+                if (acc.length == pattern.length)
+                    res.push(acc.join(""))
+                else
+                    for (let val in values(vals))
+                        rec(acc.concat(val));
+            }
+            rec([]);
+            return res;
+        }
+
         if (pattern.indexOf("{") == -1)
             return [pattern];
 
@@ -502,12 +520,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             res.push(pattern.substr(end));
             return res.map(function (s) util.dequote(s, dequote));
         }
-        let patterns = [], res = [];
+        let patterns = [];
         let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
             function (match) {
                 patterns.push(split(match[2], /((?:[^\\,]|\\.)*),/gy,
                     null, ",{}"));
             }, "{}");
+
+        let res = [];
         function rec(acc) {
             if (acc.length == patterns.length)
                 res.push(array(substrings).zip(acc).flatten().join(""));

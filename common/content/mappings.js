@@ -30,18 +30,13 @@
  */
 var Map = Class("Map", {
     init: function (modes, keys, description, action, extraInfo) {
-        modes = Array.concat(modes);
-        if (!modes.every(util.identity))
-            throw TypeError("Invalid modes: " + modes);
-
         this.id = ++Map.id;
         this.modes = modes;
         this._keys = keys;
         this.action = action;
         this.description = description;
 
-        if (Object.freeze)
-            Object.freeze(this.modes);
+        Object.freeze(this.modes);
 
         if (extraInfo)
             update(this, extraInfo);
@@ -96,7 +91,7 @@ var Map = Class("Map", {
      */
     hasName: function (name) this.keys.indexOf(name) >= 0,
 
-    get keys() this.names.map(mappings.expandLeader),
+    get keys() array.flatten(this.names.map(mappings.closure.expand)),
 
     /**
      * Execute the action for this mapping.
@@ -159,7 +154,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
     },
 
     /**
-     * Adds a new default key mapping.
+     * Adds a new key mapping.
      *
      * @param {number[]} modes The modes that this mapping applies to.
      * @param {string[]} keys The key sequences which are bound to *action*.
@@ -170,6 +165,10 @@ var MapHive = Class("MapHive", Contexts.Hive, {
      */
     add: function (modes, keys, description, action, extra) {
         extra = extra || {};
+
+        modes = Array.concat(modes);
+        if (!modes.every(util.identity))
+            throw TypeError("Invalid modes: " + modes);
 
         let map = Map(modes, keys, description, action, extra);
         map.definedAt = contexts.getCaller(Components.stack.caller);
@@ -307,7 +306,25 @@ var Mappings = Module("mappings", {
 
     get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
 
-    expandLeader: function (keyString) keyString.replace(/<Leader>/i, options["mapleader"]),
+    expandLeader: deprecated("expand", function expandLeader(keyString) keyString.replace(/<Leader>/i, options["mapleader"])),
+
+    prefixes: Class.memoize(function () {
+        let list = Array.slice("CASM").map(function (s) s + "-");
+        return iter(util.range(0, 1 << list.length)).map(function (mask)
+            list.filter(function (p, i) mask & (1 << i)).join("")).toArray().concat("*-");
+    }),
+
+    expand: function expand(keys) {
+        keys = keys.replace(/<leader>/i, options["mapleader"]);
+        if (!/<\*-/.test(keys))
+            return keys;
+
+        return util.debrace(events.iterKeys(keys).map(function (key) {
+            if (/^<\*-/.test(key))
+                return ["<", this.prefixes, key.slice(3)];
+            return key;
+        }, this).flatten().array).map(function (k) events.canonicalKeys(k));
+    },
 
     iterate: function (mode) {
         let seen = {};

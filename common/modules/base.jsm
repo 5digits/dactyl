@@ -307,7 +307,8 @@ function deprecated(alternative, fn) {
     let name, func = callable(fn) ? fn : function () this[fn].apply(this, arguments);
 
     function deprecatedMethod() {
-        let obj = this.className             ? this.className + "#" :
+        let obj = !this                      ? "" :
+                  this.className             ? this.className + "#" :
                   this.constructor.className ? this.constructor.className + "#" :
                       "";
 

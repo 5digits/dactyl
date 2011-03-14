@@ -772,11 +772,11 @@ var Events = Module("events", {
         return events.fromString(keys, unknownOk).map(events.closure.toString).join("");
     },
 
-    iterKeys: function (keys) {
+    iterKeys: function (keys) iter(function () {
         let match, re = /<.*?>?>|[^<]/g;
         while (match = re.exec(keys))
             yield match[0];
-    },
+    }()),
 
     /**
      * Dispatches an event to an element as if it were a native event.
@@ -850,8 +850,8 @@ var Events = Module("events", {
                             keyCode: 0, charCode: 0, type: "keypress" };
 
             if (evt_str.length > 1) { // <.*?>
-                let [match, modifier, keyname] = evt_str.match(/^<((?:[CSMA]-)*)(.+?)>$/i) || [false, '', ''];
-                modifier = modifier.toUpperCase();
+                let [match, modifier, keyname] = evt_str.match(/^<((?:[*12CASM]-)*)(.+?)>$/i) || [false, '', ''];
+                modifier = set(modifier.toUpperCase());
                 keyname = keyname.toLowerCase();
                 evt_obj.dactylKeyname = keyname;
                 if (/^u[0-9a-f]+$/.test(keyname))
@@ -859,17 +859,16 @@ var Events = Module("events", {
 
                 if (keyname && (unknownOk || keyname.length == 1 || /mouse$/.test(keyname) ||
                                 this._key_code[keyname] || set.has(this._pseudoKeys, keyname))) {
-                    evt_obj.ctrlKey  = /C-/.test(modifier);
-                    evt_obj.altKey   = /A-/.test(modifier);
-                    evt_obj.shiftKey = /S-/.test(modifier);
-                    evt_obj.metaKey  = /M-/.test(modifier);
+                    evt_obj.globKey  = modifier["*"];
+                    evt_obj.ctrlKey  = modifier["C"];
+                    evt_obj.altKey   = modifier["A"];
+                    evt_obj.shiftKey = modifier["S"];
+                    evt_obj.metaKey  = modifier["M"];
+                    evt_obj.dactylShift = evt_obj.shiftKey;
 
                     if (keyname.length == 1) { // normal characters
-                        if (evt_obj.shiftKey) {
+                        if (evt_obj.shiftKey)
                             keyname = keyname.toUpperCase();
-                            if (keyname == keyname.toLowerCase())
-                                evt_obj.dactylShift = true;
-                        }
 
                         evt_obj.charCode = keyname.charCodeAt(0);
                         evt_obj._keyCode = this._key_code[keyname];
@@ -931,6 +930,8 @@ var Events = Module("events", {
         let key = null;
         let modifier = "";
 
+        if (event.globKey)
+            modifier += "*-";
         if (event.ctrlKey)
             modifier += "C-";
         if (event.altKey)
@@ -951,6 +952,7 @@ var Events = Module("events", {
                             key = key.toUpperCase();
                         else
                             key = key.toLowerCase();
+
                     if (!modifier && /^[a-z0-9]$/i.test(key))
                         return key;
                 }
@@ -995,7 +997,7 @@ var Events = Module("events", {
                 else {
                     // a shift modifier is only allowed if the key is alphabetical and used in a C-A-M- mapping in the uppercase,
                     // or if the shift has been forced for a non-alphabetical character by the user while :map-ping
-                    if (key != key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
+                    if (key !== key.toLowerCase() && (event.ctrlKey || event.altKey || event.metaKey) || event.dactylShift)
                         modifier += "S-";
                     if (/^\s$/.test(key))
                         key = let (s = charCode.toString(16)) "U" + "0000".substr(4 - s.length) + s;
@@ -1003,8 +1005,11 @@ var Events = Module("events", {
                         return key;
                 }
             }
-            if (key == null)
+            if (key == null) {
+                if (event.shiftKey)
+                    modifier += "S-";
                 key = this._key_key[event.dactylKeyname] || event.dactylKeyname;
+            }
             if (key == null)
                 return null;
         }
