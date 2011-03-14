@@ -98,7 +98,6 @@ var Modes = Module("modes", {
             char: "t",
             description: "Vim-like editing of input elements",
             bases: [this.COMMAND],
-            input: true,
             ownsFocus: true
         }, {
             onKeyPress: function (eventList) {

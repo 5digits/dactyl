@@ -64,7 +64,7 @@ var Option = Class("Option", {
             defaultValue = this.modules.config.defaults[this.name];
 
         if (defaultValue !== undefined) {
-            if (this == "string")
+            if (this.type === "string")
                 defaultValue = Commands.quote(defaultValue);
 
             if (isObject(defaultValue))
