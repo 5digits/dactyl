@@ -911,6 +911,7 @@ Class.prototype = {
      * localized properties.
      */
     update: function update() {
+        let self = this;
         // XXX: Duplication.
 
         for (let i = 0; i < arguments.length; i++) {
@@ -922,15 +923,15 @@ Class.prototype = {
 
                 if (typeof desc.value === "function") {
                     let func = desc.value.wrapped || desc.value;
-                    func.__defineGetter__("super", function () Object.getPrototypeOf(this)[k]);
+                    func.__defineGetter__("super", function () Object.getPrototypeOf(self)[k]);
                     func.superapply = function superapply(self, args)
-                        let (meth = Object.getPrototypeOf(this)[k])
+                        let (meth = Object.getPrototypeOf(self)[k])
                             meth && meth.apply(self, args);
                     func.supercall = function supercall(self)
                         func.superapply(self, Array.slice(arguments, 1));
                 }
                 try {
-                    if ("value" in desc && set.has(this.localizedProperties, k))
+                    if ("value" in desc && i in this.localizedProperties)
                         this[k] = desc.value;
                     else
                         Object.defineProperty(this, k, desc);
