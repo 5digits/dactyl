@@ -309,7 +309,8 @@ var Mappings = Module("mappings", {
     expandLeader: deprecated("expand", function expandLeader(keyString) keyString.replace(/<Leader>/i, options["mapleader"])),
 
     prefixes: Class.memoize(function () {
-        let list = Array.slice("CASM").map(function (s) s + "-");
+        let list = Array.map("CASM", function (s) s + "-");
+
         return iter(util.range(0, 1 << list.length)).map(function (mask)
             list.filter(function (p, i) mask & (1 << i)).join("")).toArray().concat("*-");
     }),

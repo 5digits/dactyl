@@ -655,14 +655,8 @@ var Editor = Module("editor", {
 
         // Ugh.
         mappings.add([modes.INPUT, modes.CARET],
-            ["<CR>", "<BS>", "<Del>", "<Left>", "<Right>", "<Up>", "<Down>",
-             "<Home>", "<End>", "<PageUp>", "<PageDown>",
-             "<C-CR>", "<C-BS>", "<C-Del>", "<C-Left>", "<C-Right>", "<C-Up>", "<C-Down>",
-             "<C-Home>", "<C-End>", "<C-PageUp>", "<C-PageDown>",
-             "<S-CR>", "<S-BS>", "<S-Del>", "<S-Left>", "<S-Right>", "<S-Up>", "<S-Down>",
-             "<S-Home>", "<S-End>", "<S-PageUp>", "<S-PageDown>",
-             "<C-S-CR>", "<C-S-BS>", "<C-S-Del>", "<C-S-Left>", "<C-S-Right>", "<C-S-Up>", "<C-S-Down>",
-             "<C-S-Home>", "<C-S-End>", "<C-S-PageUp>", "<C-S-PageDown>"],
+            ["<*-CR>", "<*-BS>", "<*-Del>", "<*-Left>", "<*-Right>", "<*-Up>", "<*-Down>",
+             "<*-Home>", "<*-End>", "<*-PageUp>", "<*-PageDown>"],
             "Handled by " + config.host,
             function () Events.PASS);
 
