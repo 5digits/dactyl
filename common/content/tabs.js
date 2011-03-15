@@ -103,7 +103,8 @@ var Tabs = Module("tabs", {
     get browsers() {
         let browsers = config.tabbrowser.browsers;
         for (let i = 0; i < browsers.length; i++)
-            yield [i, browsers[i]];
+            if (browsers[i] !== undefined) // Bug in Google's Page Speed add-on.
+                yield [i, browsers[i]];
     },
 
     /**
