@@ -556,7 +556,7 @@ var Styles = Module("Styles", {
                     styles.list(window.content, filter, args["-name"], args.explicitOpts["-group"] ? [args["-group"]] : null);
                 else {
                     util.assert(args["-group"].modifiable && args["-group"].hive.modifiable,
-                                _("command.style.cantChangeBuiltin"));
+                                _("group.cantChangeBuiltin", _("style.styles")));
 
                     if (args["-append"]) {
                         let sheet = args["-group"].get(args["-name"]);
