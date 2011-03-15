@@ -109,6 +109,9 @@ var Contexts = Module("contexts", {
 
                 completer: function (context) modules.completion.group(context)
             });
+
+            memoize(modules, "userContext",  function () contexts.Context(modules.io.getRCFile("~"), contexts.user, [modules, true]));
+            memoize(modules, "_userContext", function () contexts.Context(modules.io.getRCFile("~"), contexts.user, [modules.userContext]));
         },
 
         cleanup: function () {
@@ -187,7 +190,7 @@ var Contexts = Module("contexts", {
             let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
                                 : file.leafName;
 
-            self = update(newContext.apply(null, args || [userContext]), {
+            self = update(args && !isArray(args) ? args : newContext.apply(null, args || [userContext]), {
                 NAME: Const(name.replace(/\.[^.]*$/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
 
                 PATH: Const(file.path),
@@ -212,7 +215,7 @@ var Contexts = Module("contexts", {
                         contexts.removeGroup(this.GROUP);
                 })
             });
-            Class.replaceProperty(plugins, file.path, self);
+            // Class.replaceProperty(plugins, file.path, self);
 
             // This belongs elsewhere
             if (isPlugin && args)

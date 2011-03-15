@@ -620,6 +620,7 @@ function memoize(obj, key, getter) {
         });
     }
     catch (e) {
+        util.reportError(e);
         obj[key] = getter.call(obj, key);
     }
 }

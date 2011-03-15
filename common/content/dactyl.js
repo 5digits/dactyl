@@ -12,9 +12,6 @@ default xml namespace = XHTML;
 XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 
-var userContext = { __proto__: modules };
-var _userContext = newContext(userContext);
-
 var EVAL_ERROR = "__dactyl_eval_error";
 var EVAL_RESULT = "__dactyl_eval_result";
 var EVAL_STRING = "__dactyl_eval_string";

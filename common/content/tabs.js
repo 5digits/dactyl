@@ -375,19 +375,14 @@ var Tabs = Module("tabs", {
      *     reloading.
      */
     reloadAll: function (bypassCache) {
-        if (bypassCache) {
-            for (let i = 0; i < config.tabbrowser.mTabs.length; i++) {
-                try {
-                    this.reload(config.tabbrowser.mTabs[i], bypassCache);
-                }
-                catch (e) {
-                    // FIXME: can we do anything useful here without stopping the
-                    //        other tabs from reloading?
-                }
+        this.visibleTabs.forEach(function (tab) {
+            try {
+                this.reload(config.tabbrowser.mTabs[i], bypassCache);
             }
-        }
-        else
-            config.tabbrowser.reloadAllTabs();
+            catch (e) {
+                dactyl.reportError(e, true);
+            }
+        });
     },
 
     /**

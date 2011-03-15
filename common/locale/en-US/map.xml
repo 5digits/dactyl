@@ -122,7 +122,7 @@
     <dt>-group=<a>group</a></dt> <dd>Add this command to the given <t>group</t> (short name <em>-g</em>)</dd>
     <dt>-javascript</dt> <dd>Execute <a>rhs</a> as JavaScript rather than keys (short names <em>-js</em>, <em>-j</em>)</dd>
     <dt>-literal=<a>n</a></dt> <dd>Parse the <a>n</a>th argument without specially processing any quote or meta characters. (short name <em>-l</em>)</dd>
-    <dt>-modes</dt> <dd>Create this mapping in the given modes (short names <em>-mode</em>, <em>-m</em>)</dd>
+    <dt>-modes=<a>modes</a></dt> <dd>Create this mapping in the given modes (short names <em>-mode</em>, <em>-m</em>)</dd>
     <dt>-nopersist</dt> <dd>Do not save this mapping to an auto-generated rc file (short name <em>-n</em>)</dd>
     <dt>-silent</dt> <dd>Do not echo any generated keys to the command line (short name <em>-s</em>, also <em>&lt;silent></em> for Vim compatibility)</dd>
 </dl>
