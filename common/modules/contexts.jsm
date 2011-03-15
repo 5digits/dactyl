@@ -215,7 +215,8 @@ var Contexts = Module("contexts", {
                         contexts.removeGroup(this.GROUP);
                 })
             });
-            // Class.replaceProperty(plugins, file.path, self);
+            if (group !== this.user)
+                Class.replaceProperty(plugins, file.path, self);
 
             // This belongs elsewhere
             if (isPlugin && args)

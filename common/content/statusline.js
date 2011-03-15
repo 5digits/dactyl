@@ -96,7 +96,7 @@ var StatusLine = Module("statusline", {
     signals: {
         "browser.locationChange": function (webProgress, request, uri) {
             let win = webProgress.DOMWindow;
-            this.status = buffer.uri;
+            this.updateStatus();
             this.progress = uri && win && win.dactylProgress || "";
 
             // if this is not delayed we get the position of the old buffer
@@ -142,11 +142,13 @@ var StatusLine = Module("statusline", {
                 this.progress = 0;
             if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
                 this.progress = "";
-                this.status = buffer.uri;
+                this.updateStatus();
             }
         },
         "browser.statusChange": function onStatusChange(webProgress, request, status, message) {
-            this.status = message || buffer.uri;
+            this.timeout(function () {
+                this.status = message || buffer.uri;
+            });
         },
     },
 
@@ -175,7 +177,7 @@ var StatusLine = Module("statusline", {
 
     // update all fields of the statusline
     update: function update() {
-        this.status = buffer.uri;
+        this.updateStatus();
         this.inputBuffer = "";
         this.progress = "";
         this.updateTabCount();
@@ -263,7 +265,11 @@ var StatusLine = Module("statusline", {
 
     },
 
-    updateStatus: function updateStatus() { this.status = buffer.uri; },
+    updateStatus: function updateStatus() {
+        this.timeout(function () {
+            this.status = buffer.uri;
+        });
+    },
 
     updateUrl: deprecated("statusline.status", function updateUrl(url) { this.status = url || buffer.uri }),
 
