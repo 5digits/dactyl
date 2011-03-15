@@ -96,7 +96,7 @@ var StatusLine = Module("statusline", {
     signals: {
         "browser.locationChange": function (webProgress, request, uri) {
             let win = webProgress.DOMWindow;
-            this.updateStatus();
+            this.status = uri;
             this.progress = uri && win && win.dactylProgress || "";
 
             // if this is not delayed we get the position of the old buffer
@@ -235,10 +235,7 @@ var StatusLine = Module("statusline", {
                     modified += "+";
                 if (sh && sh.index < sh.count - 1)
                     modified += "-";
-            }
-
-            if (modules.bookmarkcache) {
-                if (bookmarkcache.isBookmarked(uri))
+                if (this.bookmarked)
                     modified += UTF8("❤");
             }
 
@@ -262,7 +259,12 @@ var StatusLine = Module("statusline", {
 
         this.widgets.url.value = url;
         this._status = uri;
+    },
 
+    get bookmarked() this._bookmarked,
+    set bookmarked(val) {
+        this._bookmarked = val;
+        this.status = this.status;
     },
 
     updateStatus: function updateStatus() {

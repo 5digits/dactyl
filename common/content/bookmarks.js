@@ -11,6 +11,10 @@ var DEFAULT_FAVICON = "chrome://mozapps/skin/places/defaultFavicon.png";
 // also includes methods for dealing with keywords and search engines
 var Bookmarks = Module("bookmarks", {
     init: function () {
+        this.timer = Timer(0, 100, function () {
+            this.checkBookmarked(buffer.uri);
+        }, this);
+
         storage.addObserver("bookmark-cache", function (key, event, arg) {
             if (["add", "change", "remove"].indexOf(event) >= 0)
                 autocommands.trigger("Bookmark" + event[0].toUpperCase() + event.substr(1),
@@ -20,8 +24,14 @@ var Bookmarks = Module("bookmarks", {
                              valueOf: function () arg
                          }
                      }, arg));
-            statusline.updateStatus();
+            bookmarks.timer.tell();
         }, window);
+    },
+
+    signals: {
+        "browser.locationChange": function (webProgress, request, uri) {
+            this.checkBookmarked(uri);
+        }
     },
 
     get format() ({
@@ -103,7 +113,7 @@ var Bookmarks = Module("bookmarks", {
      *
      * @param {Element} elem A form element for which to add a keyword.
      */
-    addSearchKeyword: function (elem) {
+    addSearchKeyword: function addSearchKeyword(elem) {
         if (elem instanceof HTMLFormElement || elem.form)
             var [url, post, charset] = util.parseForm(elem);
         else
@@ -117,6 +127,17 @@ var Bookmarks = Module("bookmarks", {
 
         CommandExMode().open(
             commands.commandToString({ command: "bmark", options: options, arguments: [url] }) + " -keyword ");
+    },
+
+    checkBookmarked: function checkBookmarked(uri) {
+        if (PlacesUtils.asyncGetBookmarkIds)
+            PlacesUtils.asyncGetBookmarkIds(uri, function (ids) {
+                statusline.bookmarked = ids.length;
+            });
+        else
+            this.timeout(function () {
+                statusline.bookmarked = bookmarkcache.isBookmarked(uri);
+            });
     },
 
     /**
