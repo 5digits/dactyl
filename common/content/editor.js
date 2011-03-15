@@ -656,7 +656,8 @@ var Editor = Module("editor", {
         // Ugh.
         mappings.add([modes.INPUT, modes.CARET],
             ["<*-CR>", "<*-BS>", "<*-Del>", "<*-Left>", "<*-Right>", "<*-Up>", "<*-Down>",
-             "<*-Home>", "<*-End>", "<*-PageUp>", "<*-PageDown>"],
+             "<*-Home>", "<*-End>", "<*-PageUp>", "<*-PageDown>",
+             "<M-c>", "<M-v>"],
             "Handled by " + config.host,
             function () Events.PASS);
 

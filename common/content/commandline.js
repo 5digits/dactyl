@@ -737,7 +737,7 @@ var CommandLine = Module("commandline", {
         let single = flags & (this.FORCE_SINGLELINE | this.DISALLOW_MULTILINE);
         let action = this._echoLine;
 
-        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isString(data)) && !(flags & this.FORCE_SINGLELINE))
+        if ((flags & this.FORCE_MULTILINE) || (/\n/.test(data) || !isinstance(data, [_, "String"])) && !(flags & this.FORCE_SINGLELINE))
             action = mow.closure.echo;
 
         if (single)

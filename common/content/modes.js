@@ -554,7 +554,7 @@ var Modes = Module("modes", {
     options: function initOptions() {
         options.add(["passunknown"],
             "Pass through unknown keys in these modes",
-            "stringlist", "",
+            "stringlist", "!text_edit,!input,base",
             {
                 completer: function completer(context, extra) {
                     if (extra.value && context.filter[0] == "!")
