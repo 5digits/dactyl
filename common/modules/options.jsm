@@ -748,6 +748,18 @@ var Options = Module("options", {
                 if (event == "change" && opt)
                     opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
             }, window);
+
+            services["dactyl:"].pages["options.dtd"] = function () [null,
+                util.makeDTD(
+                    iter(([["option", o.name, "default"].join("."),
+                           o.type === "string" ? o.value.replace(/'/g, "''") :
+                           o.value === true    ? "on"  :
+                           o.value === false   ? "off" : o.stringDefaultValue]
+                          for (o in self)),
+
+                         ([["option", o.name, "type"].join("."), o.type] for (o in self)),
+
+                         config.dtd))];
         },
 
         dactyl: dactyl,

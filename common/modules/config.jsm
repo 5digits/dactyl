@@ -27,12 +27,7 @@ var ConfigBase = Class("ConfigBase", {
             set.add(this.features, "Gecko2");
 
         this.timeout(function () {
-            services["dactyl:"].pages.dtd = function () [null,
-                iter(config.dtdExtra,
-                     (["dactyl." + k, v] for ([k, v] in iter(config.dtd))),
-                     (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
-                  .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v || "null", /'/g, "&apos;"), "'>"].join(""))
-                  .join("\n")]
+            services["dactyl:"].pages.dtd = function () [null, util.makeDTD(config.dtd)];
         });
     },
 
@@ -168,9 +163,15 @@ var ConfigBase = Class("ConfigBase", {
         return version;
     }),
 
-    get fileExt() this.name.slice(0, -5),
+    get fileExt() this.name.slice(0, -6),
 
-    dtd: memoize({
+    dtd: Class.memoize(function ()
+        iter(this.dtdExtra,
+             (["dactyl." + k, v] for ([k, v] in iter(config.dtdDactyl))),
+             (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
+            .toObject()),
+
+    dtdDactyl: memoize({
         get name() config.name,
         get home() "http://dactyl.sourceforge.net/",
         get apphome() this.home + this.name,

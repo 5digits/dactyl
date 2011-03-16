@@ -67,7 +67,7 @@ var Messages = Module("messages", {
             catch (e) {}
 
         // Report error so tests fail, but don't throw
-        if (arguments.length < 2)
+        if (arguments.length < 2) // Do *not* localize these strings
             util.reportError(Error("Invalid locale string: " + value));
         return arguments.length > 1 ? default_ : value;
     },
@@ -80,7 +80,7 @@ var Messages = Module("messages", {
             catch (e) {}
 
         // Report error so tests fail, but don't throw
-        if (arguments.length < 3)
+        if (arguments.length < 3) // Do *not* localize these strings
             util.reportError(Error("Invalid locale string: " + value));
         return arguments.length > 2 ? default_ : value;
     }

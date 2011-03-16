@@ -974,6 +974,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                            .map(function (node) "//" + node).join(" | ");
     },
 
+    makeDTD: function makeDTD(obj) unescape(encodeURI(iter(obj)
+          .map(function ([k, v]) ["<!ENTITY ", k, ' "', String.replace(v == null ? "null" : v, /[&"<%]/g,
+                                                                       function (m) ({ '"': "&quot;", "&": "&amp;", "<": "&lt;", "%": "&#x25;" })[m]),
+                                  '">'].join(""))
+          .join("\n"))),
+
     map: deprecated("iter.map", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
     writeToClipboard: deprecated("dactyl.clipboardWrite", function writeToClipboard(str, verbose) util.dactyl.clipboardWrite(str, verbose)),
     readFromClipboard: deprecated("dactyl.clipboardRead", function readFromClipboard() util.dactyl.clipboardRead(false)),

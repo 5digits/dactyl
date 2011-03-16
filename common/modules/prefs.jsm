@@ -171,7 +171,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         let saved  = this.get(this.SAVED + name);
 
         if (saved == null && curval != defval || saved != null && curval != saved) {
-            let msg = "Warning: setting preference " + name + ", but it's changed from its default value.";
+            let msg = _("pref.safeSet.warnChanged", name);
             if (message)
                 msg = template.linkifyHelp(msg + " " + message);
             util.dactyl.warn(msg);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "dactyl://content/dtd">
+<!DOCTYPE document SYSTEM "dactyl://content/options.dtd">
 
 <document
     name="options"
@@ -329,7 +329,7 @@
     <tags>'act' 'activate'</tags>
     <strut/>
     <spec>'activate' 'act'</spec>
-    <type>stringlist</type>
+    <type>&option.activate.type;</type>
     <default>addons,bookmarks,diverted,downloads,extoptions,
           help,homepage,quickmark,tabopen,paste</default>
     <description>
@@ -358,8 +358,8 @@
 <item>
     <tags>'awim' 'altwildmode'</tags>
     <spec>'altwildmode' 'awim'</spec>
-    <type>stringlist</type>
-    <default>list:full</default>
+    <type>&option.altwildmode.type;</type>
+    <default>&option.altwildmode.default;</default>
     <description>
         <p>
             Like <o>wildmode</o>, but when the <k name="A-Tab" mode="c"/> key
@@ -371,8 +371,8 @@
 <item>
     <tags>'au' 'autocomplete'</tags>
     <spec>'autocomplete' 'au'</spec>
-    <type>regexplist</type>
-    <default>.*</default>
+    <type>&option.autocomplete.type;</type>
+    <default>&option.autocomplete.default;</default>
     <description>
         <p>
             Enables automatic completion for completion contexts (see
@@ -413,8 +413,8 @@
 <item>
     <tags>'bh' 'banghist'</tags>
     <spec>'banghist' 'bh'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>&option.banghist.type;</type>
+    <default>&option.banghist.default;</default>
     <description>
         <p>
             Replace occurrences of ! with the previous command when
@@ -427,7 +427,7 @@
     <tags>$CDPATH</tags>
     <tags>'cd' 'cdpath'</tags>
     <spec>'cdpath' 'cd'</spec>
-    <type>stringlist</type>
+    <type>&option.cdpath.type;</type>
     <default type="plain">equivalent to <str>.</str> or <str>.,$CDPATH</str></default>
     <description>
         <p>
@@ -445,8 +445,8 @@
 <item>
     <tags>'ca' 'cookieaccept'</tags>
     <spec>'cookieaccept' 'ca'</spec>
-    <type>string</type>
-    <default>all</default>
+    <type>&option.cookieaccept.type;</type>
+    <default>&option.cookieaccept.default;</default>
     <description>
         <p>When to accept cookies.</p>
 
@@ -461,8 +461,8 @@
 <item>
     <tags>'cl' 'cookielifetime'</tags>
     <spec>'cookielifetime'</spec>
-    <type>string</type>
-    <default>default</default>
+    <type>&option.cookielifetime.type;</type>
+    <default>&option.cookielifetime.default;</default>
     <description>
         <p>
             The lifetime for which to accept cookies. The available
@@ -482,7 +482,8 @@
 <item>
     <tags>'ck' 'cookies'</tags>
     <spec>'cookies' 'ck'</spec>
-    <type>stringlist</type> <default>session</default>
+    <type>&option.cookies.type;</type>
+    <default>&option.cookies.default;</default>
     <description>
         <p>The default action for the <ex>:cookies</ex> command.</p>
     </description>
@@ -491,8 +492,8 @@
 <item>
     <tags>'cpt' 'complete'</tags>
     <spec>'complete' 'cpt'</spec>
-    <type>charlist</type>
-    <default>slf</default>
+    <type>&option.complete.type;</type>
+    <default>&option.complete.default;</default>
     <description>
         <p>Items which are completed at the <ex>:open</ex> prompts. Available items:</p>
 
@@ -521,8 +522,8 @@
 <item>
     <tags>'ds' 'defsearch'</tags>
     <spec>'defsearch' 'ds'</spec>
-    <type>string</type>
-    <default>google</default>
+    <type>&option.defsearch.type;</type>
+    <default>&option.defsearch.default;</default>
     <description>
         <p>
             Sets the default search engine. The default search engine is
@@ -543,8 +544,8 @@
 <item>
     <tags>'editor'</tags>
     <spec>'editor'</spec>
-    <type>string</type>
-    <default><![CDATA[gvim -f +<line> <file>]]></default>
+    <type>&option.editor.type;</type>
+    <default>&option.editor.default;</default>
     <description>
         <p>
             Set the external text editor.
@@ -576,8 +577,8 @@
 <item>
     <tags>'enc' 'encoding'</tags>
     <spec>'encoding' 'enc'</spec>
-    <type>string</type>
-    <default>UTF-8</default>
+    <type>&option.encoding.type;</type>
+    <default>&option.encoding.default;</default>
     <description>
         <p>
             Changes the character encoding of the current buffer. Valid only
@@ -590,8 +591,8 @@
     <tags>'noeb' 'noerrorbells'</tags>
     <tags>'eb' 'errorbells'</tags>
     <spec>'errorbells' 'eb'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.errorbells.type;</type>
+    <default>&option.errorbells.default;</default>
     <description>
         <p>
             Ring the bell when an error message is displayed. See also
@@ -603,8 +604,8 @@
 <item>
     <tags>'ei' 'eventignore'</tags>
     <spec>'eventignore' 'ei'</spec>
-    <type>stringlist</type>
-    <default></default>
+    <type>&option.eventignore.type;</type>
+    <default>&option.eventignore.default;</default>
     <description>
         <p>
             A list of autocommand event names which should be ignored. If the
@@ -618,8 +619,8 @@
     <tags>'noex' 'noexrc'</tags>
     <tags>'ex' 'exrc'</tags>
     <spec>'exrc' 'ex'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.exrc.type;</type>
+    <default>&option.exrc.default;</default>
     <description>
         <p>
             Allow reading of an RC file in the current directory. This file is
@@ -633,7 +634,7 @@
     <tags>'eht' 'extendedhinttags'</tags>
     <spec>'extendedhinttags' 'eht'</spec>
     <strut/>
-    <type>regexpmap</type>
+    <type>&option.extendedhinttags.type;</type>
     <default>[asOTivVWy]:a[href],area[href],img[src],iframe[src],
           [f]:body,
           [F]:body,code,div,html,p,pre,span,
@@ -652,8 +653,8 @@
 <item>
     <tags>'fenc' 'fileencoding'</tags>
     <spec>'fileencoding' 'fenc'</spec>
-    <type>string</type>
-    <default>UTF-8</default>
+    <type>&option.fileencoding.type;</type>
+    <default>&option.fileencoding.default;</default>
     <description>
         <p>
             Changes the character encoding that &dactyl.appName; uses to read
@@ -665,8 +666,8 @@
 <item>
     <tags>'fc' 'findcase'</tags>
     <spec>'findcase' 'fc'</spec>
-    <type>string</type>
-    <default>smart</default>
+    <type>&option.findcase.type;</type>
+    <default>&option.findcase.default;</default>
     <description>
         <p>Find case matching mode.</p>
 
@@ -681,8 +682,8 @@
 <item>
     <tags>'fh' 'followhints'</tags>
     <spec>'followhints' 'fh'</spec>
-    <type>number</type>
-    <default>0</default>
+    <type>&option.followhints.type;</type>
+    <default>&option.followhints.default;</default>
     <description>
         <p>Changes how soon matching hints are followed in Hints mode.</p>
 
@@ -700,8 +701,8 @@
     <tags>'nofs' 'nofullscreen'</tags>
     <tags>'fs' 'fullscreen'</tags>
     <spec>'fullscreen' 'fs'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.fullscreen.type;</type>
+    <default>&option.fullscreen.default;</default>
     <description>
         <p>
             Show the current window full-screen. Also hide certain GUI elements, such as
@@ -713,8 +714,8 @@
 <item>
     <tags>'go' 'guioptions'</tags>
     <spec>'guioptions' 'go'</spec>
-    <type>charlist</type>
-    <default>bCrs</default> <!-- TODO: make this config specific -->
+    <type>&option.guioptions.type;</type>
+    <default>&option.guioptions.default;</default>
     <description>
         <p>Show or hide certain GUI elements.</p>
 
@@ -745,8 +746,8 @@
 <item>
     <tags>'hf' 'helpfile'</tags>
     <spec>'helpfile' 'hf'</spec>
-    <type>string</type>
-    <default>intro</default>
+    <type>&option.helpfile.type;</type>
+    <default>&option.helpfile.default;</default>
     <description>
         <p>
             Name of the main help file. This is that page shown if the
@@ -758,8 +759,8 @@
 <item>
     <tags>'hin' 'hintinputs'</tags>
     <spec>'hintinputs' 'hin'</spec>
-    <type>stringlist</type>
-    <default>label,value</default>
+    <type>&option.hintinputs.type;</type>
+    <default>&option.hintinputs.default;</default>
     <description>
         <p>
             When generating hints for input elements that do not have an
@@ -779,8 +780,8 @@
 <item>
     <tags>'hk' 'hintkeys'</tags>
     <spec>'hintkeys' 'hk'</spec>
-    <type>string</type>
-    <default>0123456789</default>
+    <type>&option.hintkeys.type;</type>
+    <default>&option.hintkeys.default;</default>
     <description>
         <p>
             The keys used to label and select hints. With its default value,
@@ -795,8 +796,8 @@
 <item>
     <tags>'hm' 'hintmatching'</tags>
     <spec>'hintmatching' 'hm'</spec>
-    <type>stringlist</type>
-    <default>contains</default>
+    <type>&option.hintmatching.type;</type>
+    <default>&option.hintmatching.default;</default>
     <description>
         <p>Change the hint matching algorithm used in Hints mode.</p>
 
@@ -848,7 +849,7 @@
     <tags>'ht' 'hinttags'</tags>
     <strut/>
     <spec>'hinttags' 'ht'</spec>
-    <type>stringlist</type>
+    <type>&option.hinttags.type;</type>
     <default>a,area,button,iframe,input:not([type=hidden]),select,textarea,
           [onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand],
           [tabindex],[role=link],[role=button]</default>
@@ -867,8 +868,8 @@
 <item>
     <tags>'hto' 'hinttimeout'</tags>
     <spec>'hinttimeout' 'hto'</spec>
-    <type>number</type>
-    <default>0</default>
+    <type>&option.hinttimeout.type;</type>
+    <default>&option.hinttimeout.default;</default>
     <description>
         <p>
             Timeout in milliseconds before automatically following a non-unique
@@ -883,8 +884,8 @@
 <item>
     <tags>'hi' 'history'</tags>
     <spec>'history' 'hi'</spec>
-    <type>number</type>
-    <default>500</default>
+    <type>&option.history.type;</type>
+    <default>&option.history.default;</default>
     <description>
         <p>
             Maximum number of Ex commands and find patterns to store in the
@@ -897,8 +898,8 @@
     <tags>'nohlf' 'nohlfind'</tags>
     <tags>'hlf' 'hlfind'</tags>
     <spec>'hlfind' 'hlf'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.hlfind.type;</type>
+    <default>&option.hlfind.default;</default>
     <description>
         <p>Highlight previous find pattern matches.</p>
     </description>
@@ -908,8 +909,8 @@
     <tags>'noif' 'noincfind'</tags>
     <tags>'if' 'incfind'</tags>
     <spec>'incfind' 'if'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>&option.incfind.type;</type>
+    <default>&option.incfind.default;</default>
     <description>
         <p>Show the first match for a find pattern as it is typed.</p>
     </description>
@@ -919,8 +920,8 @@
     <tags>'noim' 'noinsertmode'</tags>
     <tags>'im' 'insertmode'</tags>
     <spec>'insertmode' 'im'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>&option.insertmode.type;</type>
+    <default>&option.insertmode.default;</default>
     <description>
         <p>
             Use Insert mode as the default for text areas. This is useful if you
@@ -939,8 +940,8 @@
     <tags>'nojsd' 'nojsdebugger'</tags>
     <tags>'jsd' 'jsdebugger'</tags>
     <spec>'jsdebugger' 'jsd'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.jsdebugger.type;</type>
+    <default>&option.jsdebugger.default;</default>
     <description>
         <p>
             Use the JavaScript debugger service for JavaScript completion.
@@ -952,8 +953,8 @@
     <tags>'nolpl' 'noloadplugins'</tags>
     <tags>'lpl' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
-    <type>regexplist</type>
-    <default>'\.(js|&dactyl.fileExt;)$'</default>
+    <type>&option.loadplugins.type;</type>
+    <default>&option.loadplugins.default;</default>
     <description>
         <p>
             A regular expression list that defines which plugins are loaded at
@@ -990,8 +991,8 @@
 <item>
     <tags>'ml' 'mapleader'</tags>
     <spec>'mapleader' 'ml'</spec>
-    <type>string</type>
-    <default>\</default>
+    <type>&option.mapleader.type;</type>
+    <default>&option.mapleader.default;</default>
     <description>
         <p>Defines the replacement keys for the <k name="Leader"/> pseudo-key.</p>
     </description>
@@ -1000,8 +1001,8 @@
 <item>
     <tags>'maxitems'</tags>
     <spec>'maxitems'</spec>
-    <type>number</type>
-    <default>20</default>
+    <type>&option.maxitems.type;</type>
+    <default>&option.maxitems.default;</default>
     <description>
         <p>Maximum number of items to display at once in a listing.</p>
     </description>
@@ -1010,8 +1011,8 @@
 <item>
     <tags>'msgs' 'messages'</tags>
     <spec>'messages' 'msgs'</spec>
-    <type>number</type>
-    <default>100</default>
+    <type>&option.messages.type;</type>
+    <default>&option.messages.default;</default>
     <description>
         <p>Maximum number of messages to store in the message history.</p>
     </description>
@@ -1020,8 +1021,8 @@
 <item>
     <tags>'nomore' 'more'</tags>
     <spec>'more'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>&option.more.type;</type>
+    <default>&option.more.default;</default>
     <description>
         <p>
             Pause the message list window when more than one screen of
@@ -1033,8 +1034,8 @@
 <item>
     <tags>'newtab'</tags>
     <spec>'newtab'</spec>
-    <type>stringlist</type>
-    <default></default>
+    <type>&option.newtab.type;</type>
+    <default>&option.newtab.default;</default>
     <description>
         <p>
             Defines which Ex commands open pages in new tabs rather than the
@@ -1062,8 +1063,8 @@
     <tags>'nextpattern'</tags>
     <strut/>
     <spec>'nextpattern'</spec>
-    <type>stringlist</type>
-    <default>'\bnext',^>$,'^(>>|»)$','^(>|»)','(>|»)$','\bmore\b'</default>
+    <type>&option.nextpattern.type;</type>
+    <default>&option.nextpattern.default;</default>
     <description>
         <p>
             Patterns to use when guessing the next page in a document
@@ -1078,8 +1079,8 @@
 <item>
     <tags>'noonline' 'online'</tags>
     <spec>'online'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>&option.online.type;</type>
+    <default>&option.online.default;</default>
     <description>
         <p>
             Enables or disables ‘offline’ mode, where network access is
@@ -1091,8 +1092,8 @@
 <item>
     <tags>'pa' 'pageinfo'</tags>
     <spec>'pageinfo' 'pa'</spec>
-    <type>charlist</type>
-    <default>gfm</default>
+    <type>&option.pageinfo.type;</type>
+    <default>&option.pageinfo.default;</default>
     <description>
         <p>Info shown in the <ex>:pageinfo</ex> output.</p>
 
@@ -1114,8 +1115,8 @@
 <item>
     <tags>'pk' 'passkeys'</tags>
     <spec>'passkeys' 'pk'</spec>
-    <type>sitemap</type>
-    <default/>
+    <type>&option.passkeys.type;</type>
+    <default>&option.passkeys.default;</default>
     <description>
         <p>
             Pass certain keys through directly for the given URLs.
@@ -1144,8 +1145,8 @@
 <item>
     <tags>'pps' 'popups'</tags>
     <spec>'popups' 'pps'</spec>
-    <type>stringlist</type>
-    <default>tab</default>
+    <type>&option.popups.type;</type>
+    <default>&option.popups.default;</default>
     <description>
         <p>
             Defines where to show requested pop-up windows. Applies only to
@@ -1179,8 +1180,8 @@
     <tags>'previouspattern'</tags>
     <strut/>
     <spec>'previouspattern'</spec>
-    <type>stringlist</type>
-    <default><![CDATA['\bprev|previous\b',^<$,'^(<<|«)$','^(<|«)','(<|«)$']]></default>
+    <type>&option.previouspattern.type;</type>
+    <default>&option.previouspattern.default;</default>
     <description>
         <p>
             Patterns to use when guessing the previous page in a document
@@ -1195,8 +1196,8 @@
 <item>
     <tags>'noprivate' 'private'</tags>
     <spec>'private'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.private.type;</type>
+    <default>&option.private.default;</default>
     <description>
         <p>
             Set the <str>private browsing</str> option. In private browsing mode
@@ -1213,7 +1214,7 @@
     <tags>$&dactyl.idName;_RUNTIME</tags>
     <tags>'rtp' 'runtimepath'</tags>
     <spec>'runtimepath' 'rtp'</spec>
-    <type>stringlist</type>
+    <type>&option.runtimepath.type;</type>
     <default type="plain"><str>$&dactyl.idName;_RUNTIME</str> or
        Unix, Mac: <str>~/.&dactyl.name;</str>
          Windows: <str>~/&dactyl.name;</str></default>
@@ -1247,8 +1248,8 @@
     <tags>'si' 'sanitizeitems'</tags>
     <spec>'sanitizeitems' 'si'</spec>
     <strut/>
-    <type>stringlist</type>
-    <default>all</default>
+    <type>&option.sanitizeitems.type;</type>
+    <default>&option.sanitizeitems.default;</default>
     <description>
         <p>
             The default list of private items to sanitize. See
@@ -1260,8 +1261,8 @@
 <item>
     <tags>'ss' 'sanitizeshutdown'</tags>
     <spec>'sanitizeshutdown' 'ss'</spec>
-    <type>stringlist</type>
-    <default/>
+    <type>&option.sanitizeshutdown.type;</type>
+    <default>&option.sanitizeshutdown.default;</default>
     <description>
         <p>The items to sanitize automatically at shutdown.</p>
     </description>
@@ -1271,8 +1272,8 @@
     <tags>'sts' 'sanitizetimespan'</tags>
     <spec>'sanitizetimespan' 'sts'</spec>
     <strut/>
-    <type>number</type>
-    <default>all</default>
+    <type>&option.sanitizetimespan.type;</type>
+    <default>&option.sanitizetimespan.default;</default>
     <description>
         <p>
             The default sanitizer time span. Only items created within this timespan are
@@ -1293,8 +1294,8 @@
 <item>
     <tags>'scr' 'scroll'</tags>
     <spec>'scroll' 'scr'</spec>
-    <type>number</type>
-    <default>0</default>
+    <type>&option.scroll.type;</type>
+    <default>&option.scroll.default;</default>
     <description>
         <p>
             Number of lines to scroll with <k name="C-u"/> and <k name="C-d"/>
@@ -1309,7 +1310,7 @@
 <item>
     <tags>'sh' 'shell'</tags>
     <spec>'shell' 'sh'</spec>
-    <type>string</type>
+    <type>&option.shell.type;</type>
     <default type="plain"><em>$SHELL</em> or <str>sh</str>, Windows: <str>cmd.exe</str></default>
     <description>
         <p>Shell to use for executing <ex>:!</ex> and <ex>:run</ex> commands.</p>
@@ -1320,7 +1321,7 @@
     <tags>'shcf' 'shellcmdflag'</tags>
     <spec>'shellcmdflag' 'shcf'</spec>
     <strut/>
-    <type>string</type>
+    <type>&option.shellcmdflag.type;</type>
     <default type="plain"><str>-c</str>, Windows: <str>/c</str></default>
     <description>
         <p>Flag passed to shell when executing <ex>:!</ex> and <ex>:run</ex> commands.</p>
@@ -1331,8 +1332,8 @@
     <tags>'nosmd' 'noshowmode'</tags>
     <tags>'smd' 'showmode'</tags>
     <spec>'showmode' 'smd'</spec>
-    <type>regexplist</type>
-    <default>!^normal$</default>
+    <type>&option.showmode.type;</type>
+    <default>&option.showmode.default;</default>
     <description>
         <p>Show the current mode in the command line if it matches this expression.</p>
     </description>
@@ -1342,8 +1343,8 @@
     <tags>'ssli' 'showstatuslinks'</tags>
     <spec>'showstatuslinks' 'ssli'</spec>
     <strut/>
-    <type>string</type>
-    <default>status</default>
+    <type>&option.showstatuslinks.type;</type>
+    <default>&option.showstatuslinks.default;</default>
     <description>
         <p>
             When the mouse hovers over a link, or a link is otherwise focused,
@@ -1363,8 +1364,8 @@
 <item>
     <tags>'stal' 'showtabline'</tags>
     <spec>'showtabline' 'stal'</spec>
-    <type>string</type>
-    <default>always</default>
+    <type>&option.showtabline.type;</type>
+    <default>&option.showtabline.default;</default>
     <description>
         <p>Define when the tab bar is visible.</p>
 
@@ -1380,8 +1381,8 @@
     <tags>'nosf' 'nostrictfocus'</tags>
     <tags>'sf' 'strictfocus'</tags>
     <spec>'strictfocus' 'sf'</spec>
-    <type>boolean</type>
-    <default>on</default>
+    <type>&option.strictfocus.type;</type>
+    <default>&option.strictfocus.default;</default>
     <description>
         <p>
             Prevent scripts from focusing input elements without user intervention.
@@ -1392,8 +1393,8 @@
 <item>
     <tags>'suggestengines'</tags>
     <spec>'suggestengines'</spec>
-    <type>stringlist</type>
-    <default>google</default>
+    <type>&option.suggestengines.type;</type>
+    <default>&option.suggestengines.default;</default>
     <description>
         <p>
             Set the search engines which can be used for completion
@@ -1406,8 +1407,8 @@
     <tags>'notmo' 'notimeout'</tags>
     <tags>'tmo' 'timeout'</tags>
     <spec>'timeout' 'tmo'</spec>
-    <type>boolean</type>
-    <default>true</default>
+    <type>&option.timeout.type;</type>
+    <default>&option.timeout.default;</default>
     <description>
         <p>
             When this option is set and a key sequence interpretable both as a
@@ -1420,8 +1421,8 @@
 <item>
     <tags>'tmol' 'timeoutlen'</tags>
     <spec>'timeoutlen' 'tmol'</spec>
-    <type>number</type>
-    <default>1000</default>
+    <type>&option.timeoutlen.type;</type>
+    <default>&option.timeoutlen.default;</default>
     <description>
         <p>
             Maximum number of milliseconds to wait for a longer key command
@@ -1434,8 +1435,8 @@
 <item>
     <tags>'titlestring'</tags>
     <spec>'titlestring'</spec>
-    <type>string</type>
-    <default>&dactyl.appName;</default>
+    <type>&option.titlestring.type;</type>
+    <default>&option.titlestring.default;</default>
     <description>
         <p>
             Set the application name shown after the current page title in
@@ -1448,8 +1449,8 @@
 <item>
     <tags>'us' 'urlsep' 'urlseparator'</tags>
     <spec>'urlseparator' 'urlsep' 'us'</spec>
-    <type>string</type>
-    <default>\|</default>
+    <type>&option.urlseparator.type;</type>
+    <default>&option.urlseparator.default;</default>
     <description>
         <p>
             The regular expression used to split URL lists in commands
@@ -1465,8 +1466,8 @@
     <tags>'noum' 'nousermode'</tags>
     <tags>'um' 'usermode'</tags>
     <spec>'usermode' 'um'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.usermode.type;</type>
+    <default>&option.usermode.default;</default>
     <description>
         <p>Show current website with minimal styling.</p>
     </description>
@@ -1475,8 +1476,8 @@
 <item>
     <tags>'vbs' 'verbose'</tags>
     <spec>'verbose' 'vbs'</spec>
-    <type>number</type>
-    <default>1</default>
+    <type>&option.verbose.type;</type>
+    <default>&option.verbose.default;</default>
     <description>
         <p>
             Define which info messages are displayed. As the value increases,
@@ -1493,8 +1494,8 @@
     <tags>'novb' 'novisualbell'</tags>
     <tags>'vb' 'visualbell'</tags>
     <spec>'visualbell' 'vb'</spec>
-    <type>boolean</type>
-    <default>off</default>
+    <type>&option.visualbell.type;</type>
+    <default>&option.visualbell.default;</default>
     <description>
         <p>
             Use visual bell instead of beeping on errors. The visual bell
@@ -1508,8 +1509,8 @@
     <tags>'wia' 'wildanchor'</tags>
     <strut/>
     <spec>'wildanchor' 'wia'</spec>
-    <type>regexplist</type>
-    <default>!'/ex/(back|buffer|ext|forward|help|undo)'</default>
+    <type>&option.wildanchor.type;</type>
+    <default>&option.wildanchor.default;</default>
     <description>
         <p>
             Regular expression list defining which completion groups show only
@@ -1526,8 +1527,8 @@
 <item>
     <tags>'wic' 'wildcase'</tags>
     <spec>'wildcase' 'wic'</spec>
-    <type>regexpmap</type>
-    <default>.?:smart</default>
+    <type>&option.wildcase.type;</type>
+    <default>&option.wildcase.default;</default>
     <description>
         <p>
             Defines how completions are matched with regard to character case.
@@ -1547,8 +1548,8 @@
 <item>
     <tags>'wig' 'wildignore'</tags>
     <spec>'wildignore' 'wig'</spec>
-    <type>regexplist</type>
-    <default></default>
+    <type>&option.wildignore.type;</type>
+    <default>&option.wildignore.default;</default>
     <description>
         <p>
             List of file patterns to ignore when completing files. For example,
@@ -1564,8 +1565,8 @@
 <item>
     <tags>'wim' 'wildmode'</tags>
     <spec>'wildmode' 'wim'</spec>
-    <type>stringlist</type>
-    <default>list:full</default>
+    <type>&option.wildmode.type;</type>
+    <default>&option.wildmode.default;</default>
     <description>
         <p>
             Defines how command-line completion works. It is a comma-separated
@@ -1602,8 +1603,8 @@
 <item>
     <tags>'wis' 'wildsort'</tags>
     <spec>'wildsort' 'wis'</spec>
-    <type>regexplist</type>
-    <default>.*</default>
+    <type>&option.wildsort.type;</type>
+    <default>&option.wildsort.default;</default>
     <description>
         <p>
             A list of regular expressions defining which completion contexts
@@ -1620,8 +1621,8 @@
     <tags>'wsp' 'wordseparators'</tags>
     <spec>'wordseparators' 'wsp'</spec>
     <strut/>
-    <type>string</type>
-    <default><![CDATA[[.,!?:;\\/"^$%&?()[\]{}<>#*+|=~ _-]]]></default>
+    <type>&option.wordseparators.type;</type>
+    <default>&option.wordseparators.default;</default>
     <description>
         <p>
             A regular expression which defines how words are split for

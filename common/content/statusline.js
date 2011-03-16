@@ -264,7 +264,8 @@ var StatusLine = Module("statusline", {
     get bookmarked() this._bookmarked,
     set bookmarked(val) {
         this._bookmarked = val;
-        this.status = this.status;
+        if (this.status)
+            this.status = this.status;
     },
 
     updateStatus: function updateStatus() {
