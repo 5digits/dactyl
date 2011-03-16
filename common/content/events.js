@@ -849,7 +849,12 @@ var Events = Module("events", {
             let evt_obj = { ctrlKey: false, shiftKey: false, altKey: false, metaKey: false,
                             keyCode: 0, charCode: 0, type: "keypress" };
 
-            if (evt_str.length > 1) { // <.*?>
+            if (evt_str.length == 1) {
+                evt_obj.charCode = evt_str.charCodeAt(0);
+                evt_obj._keyCode = this._key_code[evt_str[0]];
+                evt_obj.shiftKey = evt_str !== evt_str.toLowerCase();
+            }
+            else {
                 let [match, modifier, keyname] = evt_str.match(/^<((?:[*12CASM]-)*)(.+?)>$/i) || [false, '', ''];
                 modifier = set(modifier.toUpperCase());
                 keyname = keyname.toLowerCase();
@@ -891,10 +896,6 @@ var Events = Module("events", {
                     out = out.concat(events.fromString("<lt>" + evt_str.substr(1)));
                     continue;
                 }
-            }
-            else {// a simple key (no <...>)
-                evt_obj.charCode = evt_str.charCodeAt(0);
-                evt_obj._keyCode = this._key_code[evt_str[0]];
             }
 
             // TODO: make a list of characters that need keyCode and charCode somewhere
