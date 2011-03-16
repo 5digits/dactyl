@@ -975,9 +975,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     makeDTD: function makeDTD(obj) unescape(encodeURI(iter(obj)
-          .map(function ([k, v]) ["<!ENTITY ", k, ' "', String.replace(v == null ? "null" : v, /[&"<%]/g,
-                                                                       function (m) ({ '"': "&quot;", "&": "&amp;", "<": "&lt;", "%": "&#x25;" })[m]),
-                                  '">'].join(""))
+          .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : v, /['%]/g,
+                                                                       function (m) ({ "'": "&apos;", "%": "&#x25;" })[m]),
+                                  "'>"].join(""))
           .join("\n"))),
 
     map: deprecated("iter.map", function map(obj, fn, self) iter(obj).map(fn, self).toArray()),
