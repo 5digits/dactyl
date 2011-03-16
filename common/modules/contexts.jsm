@@ -110,8 +110,8 @@ var Contexts = Module("contexts", {
                 completer: function (context) modules.completion.group(context)
             });
 
-            memoize(modules, "userContext",  function () contexts.Context(modules.io.getRCFile("~"), contexts.user, [modules, true]));
-            memoize(modules, "_userContext", function () contexts.Context(modules.io.getRCFile("~"), contexts.user, [modules.userContext]));
+            memoize(modules, "userContext",  function () contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules, true]));
+            memoize(modules, "_userContext", function () contexts.Context(modules.io.getRCFile("~", true), contexts.user, [modules.userContext]));
         },
 
         cleanup: function () {
