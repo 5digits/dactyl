@@ -752,7 +752,7 @@ var Options = Module("options", {
             services["dactyl:"].pages["options.dtd"] = function () [null,
                 util.makeDTD(
                     iter(([["option", o.name, "default"].join("."),
-                           o.type === "string" ? o.value.replace(/'/g, "''") :
+                           o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
                            o.value === true    ? "on"  :
                            o.value === false   ? "off" : o.stringDefaultValue]
                           for (o in self)),

@@ -42,7 +42,7 @@ var Tabs = Module("tabs", {
             for (let { linkedBrowser: { contentDocument } } in values(this.allTabs))
                 if (contentDocument.readyState === "complete")
                     dactyl.initDocument(contentDocument);
-        });
+        }, 1000);
     },
 
     _alternates: Class.memoize(function () [config.tabbrowser.mCurrentTab, null]),
