@@ -863,9 +863,9 @@ var Commands = Module("commands", {
 
             let [count, arg, quote] = Commands.parseArg(str, null, _keepQuotes);
             if (quote == "\\" && !complete)
-                return [, , , "Trailing \\"];
+                return [, , , _("error.trailing", "\\")];
             if (quote && !complete)
-                return [, , , "E114: Missing quote: " + quote];
+                return [, , , _("error.missingQuote", quote)];
             return [count, arg, quote];
         }
 
@@ -1351,7 +1351,7 @@ var Commands = Module("commands", {
             // dynamically get completions as specified with the command's completer function
             context.highlight();
             if (!command) {
-                context.message = "No such command: " + match.cmd;
+                context.message = _("command.noSuch", match.cmd);
                 context.highlight(0, match.cmd.length, "SPELLCHECK");
                 return;
             }
@@ -1591,7 +1591,7 @@ var Commands = Module("commands", {
                 dactyl.clipboardWrite(res);
 
                 let lines = res.split("\n").length;
-                dactyl.echomsg("Yanked " + lines + " line" + (lines == 1 ? "" : "s"));
+                dactyl.echomsg(_("command.yank.yankedLine" + (lines == 1 ? "" : "s"), lines));
             },
             {
                 completer: function (context) modules.completion[/^:/.test(context.filter) ? "ex" : "javascript"](context),

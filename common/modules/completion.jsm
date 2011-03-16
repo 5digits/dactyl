@@ -11,7 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("completion", {
     exports: ["CompletionContext", "Completion", "completion"],
-    use: ["config", "template", "util"]
+    use: ["config", "messages", "template", "util"]
 }, this);
 
 /**
@@ -331,7 +331,7 @@ var CompletionContext = Class("CompletionContext", {
      * The message displayed at the head of the completions for the
      * current context.
      */
-    get message() this._message || (this.waitingForTab && this.hasItems !== false ? "Waiting for <Tab>" : null),
+    get message() this._message || (this.waitingForTab && this.hasItems !== false ? _("completion.waitingFor", "<Tab>") : null),
     set message(val) this._message = val,
 
     /**

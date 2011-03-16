@@ -22,8 +22,8 @@ var callResult = function callResult(method) {
 var listener = function listener(action, event)
     function addonListener(install) {
         this.dactyl[install.error ? "echoerr" : "echomsg"](
-            "Add-on " + action + " " + event + ": " + (install.name || install.sourceURI.spec) +
-            (install.error ? ": " + addonErrors[install.error] : ""));
+            _("addon.error", action, event, (install.name || install.sourceURI.spec) +
+                (install.error ? ": " + addons.errors[install.error] : "")));
     }
 
 var AddonListener = Class("AddonListener", {
@@ -68,8 +68,8 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
         if (!this.remaining.length)
             this.dactyl.echomsg(
                 this.upgrade.length
-                    ? "Installing updates for addons: " + this.upgrade.map(function (i) i.name).join(", ")
-                    : "No addon updates found");
+                    ? _("addon.installingUpdates", this.upgrade.map(function (i) i.name).join(", "))
+                    : _("addon.noUpdates"));
     }
 });
 
@@ -151,11 +151,11 @@ var Addon = Class("Addon", {
                 <td highlight="AddonVersion" key="version"/>
                 <td highlight="AddonStatus" key="status"/>
                 <td highlight="AddonButtons Buttons">
-                    <a highlight="Button" key="enable">On&#xa0;</a>
-                    <a highlight="Button" key="disable">Off</a>
-                    <a highlight="Button" key="delete">Del</a>
-                    <a highlight="Button" key="update">Upd</a>
-                    <a highlight="Button" key="options">Opt</a>
+                    <a highlight="Button" key="enable">{_("addon.action.On")}</a>
+                    <a highlight="Button" key="disable">{_("addon.action.Off")}</a>
+                    <a highlight="Button" key="delete">{_("addon.action.Del")}</a>
+                    <a highlight="Button" key="update">{_("addon.action.Upd")}</a>
+                    <a highlight="Button" key="options">{_("addon.action.Opt")}</a>
                 </td>
                 <td highlight="AddonDescription" key="description"/>
             </tr>,
@@ -347,6 +347,11 @@ var AddonList = Class("AddonList", {
 });
 
 var Addons = Module("addons", {
+    errors: Class.memoize(function ()
+            array(["ERROR_NETWORK_FAILURE", "ERROR_INCORRECT_HASH",
+                   "ERROR_CORRUPT_FILE", "ERROR_FILE_ACCESS"])
+                .map(function (e) [AddonManager[e], _("AddonManager." + e)])
+                .toObject())
 }, {
 }, {
     commands: function (dactyl, modules, window) {
@@ -594,12 +599,6 @@ else
             });
         }
     };
-
-var addonErrors = array.toObject([
-    [AddonManager.ERROR_NETWORK_FAILURE, "A network error occurred"],
-    [AddonManager.ERROR_INCORRECT_HASH,  "The downloaded file did not match the expected hash"],
-    [AddonManager.ERROR_CORRUPT_FILE,    "The file appears to be corrupt"],
-    [AddonManager.ERROR_FILE_ACCESS,     "There was an error accessing the filesystem"]]);
 
 endModule();
 

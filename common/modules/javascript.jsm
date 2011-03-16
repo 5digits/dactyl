@@ -11,7 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("javascript", {
     exports: ["JavaScript", "javascript"],
-    use: ["services", "template", "util"]
+    use: ["messages", "services", "template", "util"]
 }, this);
 
 let isPrototypeOf = Object.prototype.isPrototypeOf;
@@ -128,7 +128,7 @@ var JavaScript = Module("javascript", {
         }
         catch (e) {
             util.reportError(e);
-            this.context.message = "Error: " + e;
+            this.context.message = _("error.error", e);
             return null;
         }
         finally {
@@ -598,7 +598,7 @@ var JavaScript = Module("javascript", {
         // Wait for a keypress before completing when there's no key
         if (!this.context.tabPressed && key == "" && obj.length > 1) {
             this.context.waitingForTab = true;
-            this.context.message = "Waiting for key press";
+            this.context.message = _("completion.waitingForKeyPress");
             return null;
         }
 

@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("downloads", {
     exports: ["Download", "Downloads", "downloads"],
-    use: ["io", "prefs", "services", "util"]
+    use: ["io", "messages", "prefs", "services", "util"]
 }, this);
 
 Cu.import("resource://gre/modules/DownloadUtils.jsm", this);
@@ -39,12 +39,12 @@ var Download = Class("Download", {
                 </td>
                 <td highlight="DownloadState" key="state"/>
                 <td highlight="DownloadButtons Buttons">
-                    <a highlight="Button" key="pause">Pause</a>
-                    <a highlight="Button" key="remove">Remove</a>
-                    <a highlight="Button" key="resume">Resume</a>
-                    <a highlight="Button" key="retry">Retry</a>
-                    <a highlight="Button" key="cancel">Cancel</a>
-                    <a highlight="Button" key="delete">Delete</a>
+                    <a highlight="Button" key="pause">{_("download.action.Pause")}</a>
+                    <a highlight="Button" key="remove">{_("download.action.Remove")}</a>
+                    <a highlight="Button" key="resume">{_("download.action.Resume")}</a>
+                    <a highlight="Button" key="retry">{_("download.action.Retry")}</a>
+                    <a highlight="Button" key="cancel">{_("download.action.Cancel")}</a>
+                    <a highlight="Button" key="delete">{_("download.action.Delete")}</a>
                 </td>
                 <td highlight="DownloadProgress" key="progress">
                     <span highlight="DownloadProgressHave" key="progressHave"

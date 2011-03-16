@@ -237,7 +237,7 @@ var Contexts = Module("contexts", {
             group = this.addGroup(commands.nameRegexp
                                           .iterate(name.replace(/\.[^.]*$/, ""))
                                           .join("-").replace(/--+/g, "-"),
-                                  "Script group for " + file.path,
+                                  _("context.scriptGroup", file.path),
                                   null, false);
 
         Class.replaceProperty(self, "GROUP", group);

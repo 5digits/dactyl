@@ -30,6 +30,7 @@ var Bookmarks = Module("bookmarks", {
 
     signals: {
         "browser.locationChange": function (webProgress, request, uri) {
+            statusline.bookmarked = false;
             this.checkBookmarked(uri);
         }
     },

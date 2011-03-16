@@ -385,8 +385,8 @@ var Highlights = Module("Highlight", {
                             let group = args[0] && highlight.get(args[0]);
                             if (group)
                                 context.fork("extra", 0, this, function (context) [
-                                     [String(group.extends), "Current Value"],
-                                     [String(group.defaultExtends) || "", "Default Value"]
+                                     [String(group.extends), _("option.currentValue")],
+                                     [String(group.defaultExtends) || "", _("option.defaultValue")]
                                 ]);
                             context.fork("groups", 0, completion, "highlightGroup");
                         }
