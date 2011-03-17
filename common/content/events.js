@@ -1674,7 +1674,7 @@ var Events = Module("events", {
                 values: {
                     despotic: "Only allow focus changes when explicitly requested by the user",
                     moderate: "Allow focus changes after user-initiated focus change",
-                    "laisses-faire": "Always allow focus changes"
+                    "laissez-faire": "Always allow focus changes"
                 }
             });
 
