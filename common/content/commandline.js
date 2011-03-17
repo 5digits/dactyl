@@ -651,8 +651,9 @@ var CommandLine = Module("commandline", {
         XML.ignoreWhitespace = false;
         XML.prettyPrinting = false;
         if (this.command)
-            this.echo(<>:{this.command}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
-        this.echo(xml, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+            this.echo(<>:{this.command}{xml}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+        else
+            this.echo(xml, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
         this.command = null;
     },
 

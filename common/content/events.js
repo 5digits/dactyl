@@ -62,6 +62,7 @@ var ProcessorStack = Class("ProcessorStack", {
                                 callable(result) ? result.toSource().substr(0, 50) : result),
 
     execute: function execute(result, force) {
+        events.dbg("EXECUTE " + this._result(result) + " " + force + " " + this.events.length + " " + this.processors.length);
         let processors = this.processors;
         let length = 1;
 
@@ -1600,7 +1601,7 @@ var Events = Module("events", {
             },
             { arg: true, count: true });
 
-        mappings.add([modes.MAIN],
+        mappings.add([modes.COMMAND],
             ["<A-m>s", "<sleep>"], "Sleep for {count} milliseconds before continuing macro playback",
             function ({ command, count }) {
                 let now = Date.now();
@@ -1610,7 +1611,7 @@ var Events = Module("events", {
             },
             { count: true });
 
-        mappings.add([modes.MAIN],
+        mappings.add([modes.COMMAND],
             ["<A-m>l", "<wait-for-page-load>"], "Wait for the current page to finish loading before continuing macro playback",
             function ({ count }) {
                 if (events.feedingKeys && !events.waitForPageLoad(count)) {
