@@ -1,13 +1,21 @@
 #### configuration
 
+
+AWK       ?= awk
+B64ENCODE ?= base64
+CURL      ?= curl
+SED       := $(shell if [ "xoo" = x$$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ]; \
+		     then echo sed -E; else echo sed -r;			     \
+		     fi)
+
 TOP           = $(shell pwd)
 OS            = $(shell uname -s)
 BUILD_DATE    = $(shell date "+%Y/%m/%d %H:%M:%S")
 BASE          = $(TOP)/../common
 GOOGLE_PROJ   = dactyl
 GOOGLE	      = https://$(GOOGLE_PROJ).googlecode.com/files
-VERSION	     ?= $(shell sed -n 's/.*em:version\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
-UUID   	     := $(shell sed -n 's/.*em:id\(>\|="\)\(.*\)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
+VERSION	     ?= $(shell $(SED) -n 's/.*em:version(>|=")(.*)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
+UUID   	     := $(shell $(SED) -n 's/.*em:id(>|=")(.*)["<].*/\2/p' $(TOP)/install.rdf | sed 1q)
 MANGLE	     := $(shell date '+%s' | awk '{ printf "%x", $$1 }')
 MOZMILL       = mozmill
 HOSTAPP_PATH  = $(shell which $(HOSTAPP))
@@ -45,13 +53,6 @@ RDF           = ../downloads/update.rdf
 RDF_IN        = $(RDF).in
 
 BUILD_DIR     = build.$(VERSION).$(OS)
-
-AWK       ?= awk
-B64ENCODE ?= base64
-CURL      ?= curl
-SED       := $(shell if [ "xoo" = x$$(echo foo | sed -E 's/f(o)/\1/' 2>/dev/null) ]; \
-		     then echo sed -E; else echo sed -r;			     \
-		     fi)
 
 .SILENT:
 
@@ -121,7 +122,7 @@ install:
 	done; 									\
 										\
 	profile=$$(sed 's/^$$/\#/' "$$dir/profiles.ini" |			\
-		awk -v"profile=$(PROFILE)" 					\
+		awk -v "profile=$(PROFILE)"					\
 			'BEGIN { RS="#" } 					\
 			index($$0, "\nName=" profile "\n") { print; exit } 	\
 			!profile && /\nName=default\n/ { args["name=default"] = $$0 } 	\
