@@ -644,6 +644,10 @@ var ConfigBase = Class("ConfigBase", {
             padding-right: 13px;
         }
 
+        ErrorMsg HelpEx       color: inherit; background: inherit; text-decoration: underline;
+        ErrorMsg HelpKey      color: inherit; background: inherit; text-decoration: underline;
+        ErrorMsg HelpOption   color: inherit; background: inherit; text-decoration: underline;
+        ErrorMsg HelpTopic    color: inherit; background: inherit; text-decoration: underline;
 
         HelpTOC
         HelpTOC>ol ol                               margin-left: -1em;
