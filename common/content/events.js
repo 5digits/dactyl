@@ -670,7 +670,7 @@ var Events = Module("events", {
                     let doc = document.commandDispatcher.focusedWindow.document;
                     let event = events.create(doc, type, evt);
 
-                    if (!evt_obj.dactylString && !evt_obj.dactylShift && !mode)
+                    if (!evt_obj.dactylString && !mode)
                         events.dispatch(dactyl.focusedElement
                                             || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
                                             || doc.defaultView,
@@ -865,11 +865,11 @@ var Events = Module("events", {
 
                 if (keyname && (unknownOk || keyname.length == 1 || /mouse$/.test(keyname) ||
                                 this._key_code[keyname] || set.has(this._pseudoKeys, keyname))) {
-                    evt_obj.globKey  = modifier["*"];
-                    evt_obj.ctrlKey  = modifier["C"];
-                    evt_obj.altKey   = modifier["A"];
-                    evt_obj.shiftKey = modifier["S"];
-                    evt_obj.metaKey  = modifier["M"];
+                    evt_obj.globKey  ="*" in modifier;
+                    evt_obj.ctrlKey  ="C" in modifier;
+                    evt_obj.altKey   ="A" in modifier;
+                    evt_obj.shiftKey ="S" in modifier;
+                    evt_obj.metaKey  ="M" in modifier;
                     evt_obj.dactylShift = evt_obj.shiftKey;
 
                     if (keyname.length == 1) { // normal characters
