@@ -807,15 +807,15 @@ var Buffer = Module("buffer", {
     showPageInfo: function showPageInfo(verbose, sections) {
         // Ctrl-g single line output
         if (!verbose) {
-            let file = content.location.pathname.split("/").pop() || "[No Name]";
-            let title = content.document.title || "[No Title]";
+            let file = content.location.pathname.split("/").pop() || _("buffer.noName");
+            let title = content.document.title || _("buffer.noTitle");
 
             let info = template.map("gf",
                 function (opt) template.map(buffer.pageInfo[opt].action(), util.identity, ", "),
                 ", ");
 
             if (bookmarkcache.isBookmarked(this.URL))
-                info += ", bookmarked";
+                info += ", " + _("buffer.bookmarked");
 
             let pageInfoText = <>{file.quote()} [{info}] {title}</>;
             dactyl.echo(pageInfoText, commandline.FORCE_SINGLELINE);
@@ -1221,7 +1221,7 @@ var Buffer = Module("buffer", {
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {
-        io.CommandFileMode("Upload file: ", {
+        io.CommandFileMode(_("buffer.prompt.uploadFile") + " ", {
             onSubmit: function onSubmit(path) {
                 let file = io.File(path);
                 dactyl.assert(file.exists());
@@ -1443,7 +1443,7 @@ var Buffer = Module("buffer", {
             let styles = iter([s.title, []] for (s in values(buffer.alternateStyleSheets))).toObject();
 
             buffer.alternateStyleSheets.forEach(function (style) {
-                styles[style.title].push(style.href || "inline");
+                styles[style.title].push(style.href || _("style.inline"));
             });
 
             context.completions = [[title, href.join(", ")] for ([title, href] in Iterator(styles))];

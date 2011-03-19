@@ -308,7 +308,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         clipboardHelper.copyString(str);
 
         if (verbose) {
-            let message = { message: "Yanked " + str };
+            let message = { message: _("dactyl.yank", str) };
             try {
                 message.domains = [util.newURI(str).host];
             }

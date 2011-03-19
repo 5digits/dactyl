@@ -1305,7 +1305,7 @@ var CommandLine = Module("commandline", {
                 if (this.selected == null)
                     statusline.progress = "";
                 else
-                    statusline.progress = "match " + (this.selected + 1) + " of " + this.items.length;
+                    statusline.progress = _("completion.matchIndex", this.selected + 1, this.items.length);
             }
 
             if (this.items.length == 0)
@@ -1816,7 +1816,7 @@ var ItemList = Class("ItemList", {
 
     onKeyPress: function onKeyPress(event) false
 }, {
-    WAITING_MESSAGE: "Generating results..."
+    WAITING_MESSAGE: _("completion.generating")
 });
 
 // vim: set fdm=marker sw=4 ts=4 et:
