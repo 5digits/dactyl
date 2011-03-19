@@ -1398,7 +1398,7 @@ var Commands = Module("commands", {
                     util.assert(args["-group"].modifiable,
                                 _("group.cantChangeBuiltin", _("command.commands")));
 
-                    let completer  = args["-complete"];
+                    let completer = args["-complete"];
                     let completerFunc = null; // default to no completion for user commands
 
                     if (completer) {

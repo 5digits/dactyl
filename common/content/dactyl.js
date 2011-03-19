@@ -732,7 +732,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             if (!list)
                                 res += list = <ul/>;
                             let li = <li/>;
-                            li.* += rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1, li)
+                            li.* += rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1, li);
                             list.* += li;
                         }
                         else if (match.par) {
@@ -853,51 +853,51 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                             .split(" "));
         function fix(node) {
             switch(node.nodeType) {
-                case Node.ELEMENT_NODE:
-                    if (isinstance(node, [HTMLBaseElement]))
-                        return;
+            case Node.ELEMENT_NODE:
+                if (isinstance(node, [HTMLBaseElement]))
+                    return;
 
-                    data.push("<"); data.push(node.localName);
-                    if (node instanceof HTMLHtmlElement)
-                        data.push(" xmlns=" + XHTML.uri.quote());
+                data.push("<"); data.push(node.localName);
+                if (node instanceof HTMLHtmlElement)
+                    data.push(" xmlns=" + XHTML.uri.quote());
 
-                    for (let { name, value } in array.iterValues(node.attributes)) {
-                        if (name == "dactyl:highlight") {
-                            set.add(styles, value);
-                            name = "class";
-                            value = "hl-" + value;
-                        }
-                        if (name == "href") {
-                            value = node.href || value;
-                            if (value.indexOf("dactyl://help-tag/") == 0) {
-                                let uri = services.io.newChannel(value, null, null).originalURI;
-                                value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
-                            }
-                            if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
-                                value = value.replace(/(#|$)/, ".xhtml$1");
-                        }
-                        if (name == "src" && value.indexOf(":") > 0) {
-                            chromeFiles[value] = value.replace(/.*\//, "");
-                            value = value.replace(/.*\//, "");
-                        }
-                        data.push(" ");
-                        data.push(name);
-                        data.push('="');
-                        data.push(<>{value}</>.toXMLString().replace(/"/g, "&quot;"));
-                        data.push('"');
+                for (let { name, value } in array.iterValues(node.attributes)) {
+                    if (name == "dactyl:highlight") {
+                        set.add(styles, value);
+                        name = "class";
+                        value = "hl-" + value;
                     }
-                    if (node.localName in empty)
-                        data.push(" />");
-                    else {
-                        data.push(">");
-                        if (node instanceof HTMLHeadElement)
-                            data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
-                        Array.map(node.childNodes, fix);
-                        data.push("</"); data.push(node.localName); data.push(">");
+                    if (name == "href") {
+                        value = node.href || value;
+                        if (value.indexOf("dactyl://help-tag/") == 0) {
+                            let uri = services.io.newChannel(value, null, null).originalURI;
+                            value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
+                        }
+                        if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
+                            value = value.replace(/(#|$)/, ".xhtml$1");
                     }
-                    break;
-                case Node.TEXT_NODE:
-                    data.push(<>{node.textContent}</>.toXMLString());
+                    if (name == "src" && value.indexOf(":") > 0) {
+                        chromeFiles[value] = value.replace(/.*\//, "");
+                        value = value.replace(/.*\//, "");
+                    }
+                    data.push(" ");
+                    data.push(name);
+                    data.push('="');
+                    data.push(<>{value}</>.toXMLString().replace(/"/g, "&quot;"));
+                    data.push('"');
+                }
+                if (node.localName in empty)
+                    data.push(" />");
+                else {
+                    data.push(">");
+                    if (node instanceof HTMLHeadElement)
+                        data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
+                    Array.map(node.childNodes, fix);
+                    data.push("</"); data.push(node.localName); data.push(">");
+                }
+                break;
+            case Node.TEXT_NODE:
+                data.push(<>{node.textContent}</>.toXMLString());
             }
         }
 
@@ -1811,7 +1811,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 bang: true,
                 keepQuotes: true,
                 serialGroup: 10,
-                serialize: function ()  [
+                serialize: function () [
                     {
                         command: this.name,
                         literalArg: options["loadplugins"].join(" ")

@@ -26,13 +26,13 @@ var StatusLine = Module("statusline", {
             util.overlayWindow(window, { append: <><statusbar id="status-bar" ordinal="0"/></> });
 
             highlight.loadCSS(util.compileMacro(<![CDATA[
-                !AddonBar;#addon-bar  {
+                !AddonBar;#addon-bar {
                     padding-left: 0 !important;
                     min-height: 18px !important;
                     -moz-appearance: none !important;
                     <padding>
                 }
-                !AddonButton;#addon-bar xul|toolbarbutton  {
+                !AddonButton;#addon-bar xul|toolbarbutton {
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
@@ -149,7 +149,7 @@ var StatusLine = Module("statusline", {
             this.timeout(function () {
                 this.status = message || buffer.uri;
             });
-        },
+        }
     },
 
     /**
@@ -300,7 +300,7 @@ var StatusLine = Module("statusline", {
      */
     progress: Modes.boundProperty({
         get: function progress() this._progress,
-        set: function  progress(progress) {
+        set: function progress(progress) {
             this._progress = progress || "";
 
             if (typeof progress == "string")

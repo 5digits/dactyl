@@ -175,7 +175,7 @@ var CommandWidgets = Class("CommandWidgets", {
                     if (obj.value != null)
                         return [obj.value[0],
                                 obj.get ? obj.get.call(this, elem) : elem.value]
-                                .concat(obj.value.slice(2))
+                                .concat(obj.value.slice(2));
                     return null;
                 },
 

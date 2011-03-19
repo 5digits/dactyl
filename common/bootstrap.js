@@ -41,7 +41,6 @@ if (!JSMLoader && "@mozilla.org/fuel/application;1" in Components.classes)
                           .getService(Components.interfaces.extIApplication)
                           .storage.get("dactyl.JSMLoader", null);
 
-
 function reportError(e) {
     dump("\ndactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
     Cu.reportError(e);

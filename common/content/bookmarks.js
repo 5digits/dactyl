@@ -403,7 +403,7 @@ var Bookmarks = Module("bookmarks", {
             completer: function title(context, args) {
                 let frames = buffer.allFrames();
                 if (!args.bang)
-                    return  [
+                    return [
                         [win.document.title, frames.length == 1 ? "Current Location" : "Frame: " + win.location.href]
                         for ([, win] in Iterator(frames))];
                 context.keys.text = "title";
@@ -521,7 +521,7 @@ var Bookmarks = Module("bookmarks", {
                         let context = CompletionContext(args.join(" "));
                         context.fork("bookmark", 0, completion, "bookmark",
                                      args["-tags"], { keyword: args["-keyword"], title: args["-title"] });
-                        var deletedCount = bookmarks.remove(context.allItems.items.map(function (item) item.item.id));
+                        deletedCount = bookmarks.remove(context.allItems.items.map(function (item) item.item.id));
                     }
 
                     dactyl.echomsg({ message: _("bookmark.deleted", deletedCount) });

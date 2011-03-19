@@ -87,7 +87,7 @@ In general: Just look at the existing source code!
   https://developer.mozilla.org/en/New_in_JavaScript_1.7#Block_scope_with_let
 
 * Reuse common local variable names E.g. "elem" is generally used for element,
-  "win" for windows, "func" for functions,  "ret" for return values etc.
+  "win" for windows, "func" for functions,  "res" for return values etc.
 
 * Prefer // over /* */ comments (exceptions for big comments are usually OK)
   Right: if (HACK) // TODO: remove hack
@@ -138,12 +138,7 @@ In general: Just look at the existing source code!
 Functional tests are implemented using the Mozmill automated testing framework
 -- https://developer.mozilla.org/en/Mozmill_Tests.
 
-A fresh profile is created for the duration of the test run, however, passing
-arguments to the host application won't be supported until Mozmill 1.5.2, the
-next release, so any user RC and plugin files should be temporarily disabled.
-This can be done by adding the following to the head of the RC file:
-set loadplugins=
-finish
+A fresh profile is created for the duration of the test run.
 
 The host application binary tested can be overridden via the HOSTAPP_PATH
 makefile variable. E.g.,

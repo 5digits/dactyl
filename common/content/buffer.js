@@ -742,7 +742,7 @@ var Buffer = Module("buffer", {
      * Shifts the focus to another frame within the buffer. Each buffer
      * contains at least one frame.
      *
-     * @param {number} count The number of frames to skip through.  A negative
+     * @param {number} count The number of frames to skip through. A negative
      *     count skips backwards.
      */
     shiftFrameFocus: function shiftFrameFocus(count) {
@@ -1006,14 +1006,14 @@ var Buffer = Module("buffer", {
      * Adjusts the page zoom of the current buffer relative to the
      * current zoom level.
      *
-     * @param {number} steps The integral number of natural fractions by
-     *   which to adjust the current page zoom. If positive, the zoom
-     *   level is increased, if negative it is decreased.
+     * @param {number} steps The integral number of natural fractions by which
+     *     to adjust the current page zoom. If positive, the zoom level is
+     *     increased, if negative it is decreased.
      * @param {boolean} fullZoom If true, zoom all content of the page,
-     *   including raster images. If false, zoom only text. If omitted,
-     *   use the current zoom function. @optional
-     * @throws {FailedAssertion} if the buffer's zoom level is already
-     *  at its extreme in the given direction.
+     *     including raster images. If false, zoom only text. If omitted, use
+     *     the current zoom function. @optional
+     * @throws {FailedAssertion} if the buffer's zoom level is already at its
+     *     extreme in the given direction.
      */
     bumpZoomLevel: function bumpZoomLevel(steps, fullZoom) {
         if (fullZoom === undefined)

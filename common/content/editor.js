@@ -230,11 +230,11 @@ var Editor = Module("editor", {
      * Edits the given file in the external editor as specified by the
      * 'editor' option.
      *
-     * @param {object|File|string} args An object specifying the file,
-     *  line, and column to edit. If a non-object is specified, it is
-     *  treated as the file parameter of the object.
+     * @param {object|File|string} args An object specifying the file, line,
+     *     and column to edit. If a non-object is specified, it is treated as
+     *     the file parameter of the object.
      * @param {boolean} blocking If true, this function does not return
-     *  until the editor exits.
+     *     until the editor exits.
      */
     editFileExternally: function (args, blocking) {
         if (!isObject(args) || args instanceof File)

@@ -837,7 +837,7 @@ var Hints = Module("hints", {
          * returns true if each set of characters typed can be found, in any
          * order, in the link.
          *
-         * @param {string} hintString  The string typed by the user.
+         * @param {string} hintString The string typed by the user.
          * @returns {function(String):boolean} A function that takes the text
          *     of a hint and returns true if all the (space-delimited) sets of
          *     characters typed by the user can be found in it.

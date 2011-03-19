@@ -1056,7 +1056,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     }</span>;
 
                 let tag = "<" + [namespaced(elem)].concat(
-                    [namespaced(a) + "=" +  template.highlight(a.value, true)
+                    [namespaced(a) + "=" + template.highlight(a.value, true)
                      for ([i, a] in array.iterItems(elem.attributes))]).join(" ");
                 return tag + (!hasChildren ? "/>" : ">...</" + namespaced(elem) + ">");
             }
