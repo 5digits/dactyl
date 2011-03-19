@@ -294,7 +294,7 @@ var File = Class("File", {
         let file = services.File();
 
         if (path instanceof Ci.nsIFile)
-            file = path.QueryInterface(Ci.nsIFile).clone();
+            file = path.clone();
         else if (/file:\/\//.test(path))
             file = services["file:"]().getFileFromURLSpec(path);
         else {

@@ -779,12 +779,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 uri = util.newURI(util.fixURI(uri));
 
             if (uri instanceof Ci.nsIFileURL)
-                return File(uri.QueryInterface(Ci.nsIFileURL).file);
+                return File(uri.file);
 
             let channel = services.io.newChannelFromURI(uri);
             channel.cancel(Cr.NS_BINDING_ABORTED);
             if (channel instanceof Ci.nsIFileChannel)
-                return File(channel.QueryInterface(Ci.nsIFileChannel).file);
+                return File(channel.file);
         }
         catch (e) {}
         return null;

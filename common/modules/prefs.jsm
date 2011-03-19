@@ -24,8 +24,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         this._prefContexts = [];
 
         this.branch = services.pref[defaults ? "getDefaultBranch" : "getBranch"](branch || "");
-        if (this.branch instanceof Ci.nsIPrefBranch2)
-            this.branch.QueryInterface(Ci.nsIPrefBranch2);
+        this.branch instanceof Ci.nsIPrefBranch2;
 
         this.defaults = defaults ? this : this.constructor(branch, true);
 

@@ -306,7 +306,7 @@ var Mappings = Module("mappings", {
 
     get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
 
-    expandLeader: deprecated("expand", function expandLeader(keyString) keyString.replace(/<Leader>/i, options["mapleader"])),
+    expandLeader: function expandLeader(keyString) keyString.replace(/<Leader>/i, options["mapleader"]),
 
     prefixes: Class.memoize(function () {
         let list = Array.map("CASM", function (s) s + "-");

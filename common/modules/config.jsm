@@ -134,7 +134,7 @@ var ConfigBase = Class("ConfigBase", {
         if (/pre$/.test(this.addon.version)) {
             let uri = this.addon.getResourceURI("../.hg");
             if (uri instanceof Ci.nsIFileURL &&
-                    uri.QueryInterface(Ci.nsIFileURL).file.exists() &&
+                    uri.file.exists() &&
                     io.pathSearch("hg"))
                 return uri.file.parent.path;
         }
@@ -505,10 +505,10 @@ var ConfigBase = Class("ConfigBase", {
         StatusLineSecure;[dactyl|highlight]    color: black !important; background: #a0a0FF !important; /* light-blue */
         StatusLineExtended;[dactyl|highlight]  color: black !important; background: #a0FFa0 !important; /* light-green */
 
-        TabClose;.tab-close-button
-        TabIcon;.tab-icon       min-width: 16px;
-        TabText;.tab-text
-        TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex; cursor: default;
+        !TabClose;.tab-close-button
+        !TabIcon;.tab-icon,.tab-icon-image
+        !TabText;.tab-text
+        TabNumber                              font-weight: bold; margin: 0px; padding-right: .8ex; cursor: default;
         TabIconNumber {
             cursor: default;
             width: 16px;
