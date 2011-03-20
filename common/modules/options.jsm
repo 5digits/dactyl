@@ -1082,6 +1082,7 @@ var Options = Module("options", {
 
                 let opt = modules.options.parseOpt(arg, modifiers);
                 util.assert(opt, _("command.set.errorParsing", arg));
+                util.assert(!opt.error, _("command.set.errorParsing", opt.error));
 
                 let option = opt.option;
                 util.assert(option != null || opt.all, _("command.set.unknownOption", opt.name));

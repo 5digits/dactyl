@@ -30,6 +30,8 @@ update(Bookmark.prototype, {
 })
 Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
 Bookmark.setter("url", function (val) {
+    if (isString(val))
+        val = util.newURI(val);
     let tags = this.tags;
     this.tags = null;
     services.bookmarks.changeBookmarkURI(this.id, val);
