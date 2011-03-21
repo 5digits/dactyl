@@ -1010,7 +1010,7 @@ var Tabs = Module("tabs", {
                         tabs.tabStyle.enabled = true;
                     else {
                         prefs.safeSet("browser.tabs.autoHide", value === "multitab",
-                                      "See 'showtabline' option.");
+                                      _("option.showtabline.safeSet"));
                         tabs.tabStyle.enabled = false;
                     }
                     if (value !== "multitab" || !dactyl.has("Gecko2"))
@@ -1053,7 +1053,7 @@ var Tabs = Module("tabs", {
                             if (group[2])
                                 prefs.safeSet("browser.tabs." + group[2],
                                               !(valueSet["all"] ^ valueSet[group[0]]),
-                                              "See the 'activate' option");
+                                              _("option.activate.safeSet"));
                         return newValues;
                     }
                 });
@@ -1091,9 +1091,9 @@ var Tabs = Module("tabs", {
                         }
 
                         prefs.safeSet("browser.link.open_newwindow", open,
-                                      "See 'popups' option.");
+                                      _("option.popups.safeSet"));
                         prefs.safeSet("browser.link.open_newwindow.restriction", restriction,
-                                      "See 'popups' option.");
+                                      _("option.popups.safeSet"));
                         return values;
                     },
                     values: {

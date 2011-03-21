@@ -1587,7 +1587,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                                       true);
 
                     prefs.safeSet("layout.scrollbar.side", opts.indexOf("l") >= 0 ? 3 : 2,
-                                  "See 'guioptions' scrollbar flags.");
+                                  _("option.guioptions.safeSet"));
                 },
                 validator: function (opts) Option.validIf(!(opts.indexOf("l") >= 0 && opts.indexOf("r") >= 0),
                                                           UTF8("Only one of ‘l’ or ‘r’ allowed"))
@@ -1693,7 +1693,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             {
                 setter: function (value) {
                     prefs.safeSet("accessibility.typeaheadfind.enablesound", !value,
-                                  "See 'visualbell' option");
+                                  _("option.visualbell.safeSet"));
                     return value;
                 }
             });

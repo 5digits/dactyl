@@ -247,11 +247,11 @@ var StatusLine = Module("statusline", {
 
         if (url == "about:blank") {
             if (!buffer.title)
-                url = "[No Name]";
+                url = _("buffer.noName");
         }
         else {
-            url = url.replace(RegExp("^dactyl://help/(\\S+)#(.*)"), function (m, n1, n2) n1 + " " + decodeURIComponent(n2) + " [Help]")
-                     .replace(RegExp("^dactyl://help/(\\S+)"), "$1 [Help]");
+            url = url.replace(RegExp("^dactyl://help/(\\S+)#(.*)"), function (m, n1, n2) n1 + " " + decodeURIComponent(n2) + " " + _("buffer.help"))
+                     .replace(RegExp("^dactyl://help/(\\S+)"), "$1 " + _("buffer.help"));
         }
 
         if (modified)
