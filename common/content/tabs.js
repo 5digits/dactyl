@@ -19,6 +19,8 @@ var Tabs = Module("tabs", {
         this._lastBufferSwitchArgs = "";
         this._lastBufferSwitchSpecial = true;
 
+        this.xulTabs = document.getElementById("tabbrowser-tabs");
+
         // hide tabs initially to prevent flickering when 'stal' would hide them
         // on startup
         if (config.hasTabbrowser)
@@ -1013,8 +1015,13 @@ var Tabs = Module("tabs", {
                                       _("option.showtabline.safeSet"));
                         tabs.tabStyle.enabled = false;
                     }
+
                     if (value !== "multitab" || !dactyl.has("Gecko2"))
-                        config.tabStrip.collapsed = false;
+                        if (tabs.xulTabs)
+                            tabs.xulTabs.visible = value !== "never";
+                        else
+                            config.tabStrip.collapsed = false;
+
                     if (config.tabbrowser.tabContainer._positionPinnedTabs)
                         config.tabbrowser.tabContainer._positionPinnedTabs();
                     return value;
