@@ -859,7 +859,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 data.push("<"); data.push(node.localName);
                 if (node instanceof HTMLHtmlElement)
-                    data.push(" xmlns=" + XHTML.uri.quote());
+                    data.push(" xmlns=" + XHTML.uri.quote(),
+                              " xmlns:dactyl=" + NS.uri.quote());
 
                 for (let { name, value } in array.iterValues(node.attributes)) {
                     if (name == "dactyl:highlight") {
@@ -880,11 +881,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         chromeFiles[value] = value.replace(/.*\//, "");
                         value = value.replace(/.*\//, "");
                     }
-                    data.push(" ");
-                    data.push(name);
-                    data.push('="');
-                    data.push(<>{value}</>.toXMLString().replace(/"/g, "&quot;"));
-                    data.push('"');
+
+                    data.push(" ", name, '="',
+                              <>{value}</>.toXMLString().replace(/"/g, "&quot;"),
+                              '"');
                 }
                 if (node.localName in empty)
                     data.push(" />");
@@ -893,7 +893,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     if (node instanceof HTMLHeadElement)
                         data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
                     Array.map(node.childNodes, fix);
-                    data.push("</"); data.push(node.localName); data.push(">");
+                    data.push("</", node.localName, ">");
                 }
                 break;
             case Node.TEXT_NODE:
