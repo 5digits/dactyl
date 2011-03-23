@@ -804,12 +804,20 @@ var CommandLine = Module("commandline", {
     // FIXME: Buggy, especially when pasting.
     inputMultiline: function inputMultiline(end, callback) {
         let cmd = this.command;
+        let self = {
+            end: "\n" + end + "\n",
+            callback: callback
+        };
+
         modes.push(modes.INPUT_MULTILINE, null, {
-            mappingSelf: {
-                end: "\n" + end + "\n",
-                callback: callback
-            }
+            holdFocus: true,
+            leave: function leave() {
+                if (!self.done)
+                    self.callback(null);
+            },
+            mappingSelf: self
         });
+
         if (cmd != false)
             this._echoLine(cmd, this.HL_NORMAL);
 
@@ -1431,6 +1439,7 @@ var CommandLine = Module("commandline", {
 
                 let index = text.indexOf(self.end);
                 if (index >= 0) {
+                    self.done = true;
                     text = text.substring(1, index);
                     modes.pop();
 
