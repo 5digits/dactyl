@@ -371,12 +371,12 @@ var Modes = Module("modes", {
             this.show();
         });
 
-        delayed.forEach(function ([fn, self]) dactyl.trapErrors(fn, self));
-
         if (this.topOfStack.params.enter && prev)
             dactyl.trapErrors("enter", this.topOfStack.params,
                               push ? { push: push } : stack || {},
                               prev);
+
+        delayed.forEach(function ([fn, self]) dactyl.trapErrors(fn, self));
 
         dactyl.triggerObserver("modes.change", [oldMain, oldExtended], [this._main, this._extended], stack);
         this.show();

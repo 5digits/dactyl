@@ -492,7 +492,7 @@ var Buffer = Module("buffer", {
      */
     followLink: function followLink(elem, where) {
         let doc = elem.ownerDocument;
-        let view = doc.defaultView;
+        let win = doc.defaultView;
         let { left: offsetX, top: offsetY } = elem.getBoundingClientRect();
 
         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
@@ -535,6 +535,8 @@ var Buffer = Module("buffer", {
                     ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: ctrlKey
                 }));
             });
+            let sel = util.selectionController(win);
+            sel.getSelection(sel.SELECTION_FOCUS_REGION).collapseToStart();
         });
     },
 

@@ -1071,11 +1071,8 @@ var Tabs = Module("tabs", {
                 {
                     values: {
                         "all": "All commands",
-                        "addons": ":addo[ns] command",
-                        "downloads": ":downl[oads] command",
                         "extoptions": ":exto[ptions] command",
                         "help": ":h[elp] command",
-                        "javascript": ":javascript! or :js! command",
                         "prefs": ":pref[erences]! or :prefs! command"
                     },
                     has: Option.has.toggleAll

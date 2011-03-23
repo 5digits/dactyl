@@ -124,7 +124,7 @@ var Contexts = Module("contexts", {
                 util.trapErrors("destroy", hive);
 
             for (let [name, plugin] in iter(this.modules.plugins.contexts))
-                if (plugin && "onUnload" in plugin)
+                if (plugin && "onUnload" in plugin && callable(plugin.onUnload))
                     util.trapErrors("onUnload", plugin);
         },
 

@@ -1139,8 +1139,8 @@ var Options = Module("options", {
 
                     context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
                     context.completions = [
-                            [prefs.get(filter), _("opt.currentValue")],
-                            [prefs.defaults.get(filter), _("opt.defaultValue")]
+                            [prefs.get(filter), _("option.currentValue")],
+                            [prefs.defaults.get(filter), _("option.defaultValue")]
                     ].filter(function (k) k[0] != null);
                     return null;
                 }
