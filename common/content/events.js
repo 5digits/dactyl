@@ -1329,7 +1329,7 @@ var Events = Module("events", {
             // Prevents certain sites from transferring focus to an input box
             // before we get a chance to process our key bindings on the
             // "keypress" event.
-            if (!pass && !Events.isInputElement(dactyl.focusedElement))
+            if (!pass)
                 event.stopPropagation();
         },
         keydown: function onKeyDown(event) {
