@@ -431,12 +431,14 @@ var Option = Class("Option", {
         let [, bang, filter] = /^(!?)(.*)/.exec(pattern);
         filter = Option.dequote(filter);
 
+        let quote = this.keepQuotes ? util.identity : Option.quote;
+
         return update(Styles.matchFilter(filter), {
             bang: bang,
             filter: filter,
             result: result !== undefined ? result : !bang,
             toString: function toString() this.bang + Option.quote(this.filter) +
-                (typeof this.result === "boolean" ? "" : ":" + Option.quote(this.result)),
+                (typeof this.result === "boolean" ? "" : ":" + quote(this.result)),
         });
     },
 
@@ -492,7 +494,7 @@ var Option = Class("Option", {
                 return [];
             if (!isArray(value))
                 value = Option.splitList(value, true);
-            return value.map(Option.parseSite);
+            return value.map(Option.parseSite, this);
         },
 
         stringmap: function stringmap(value) array.toObject(

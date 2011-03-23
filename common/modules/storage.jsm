@@ -296,7 +296,7 @@ var File = Class("File", {
         if (path instanceof Ci.nsIFile)
             file = path.clone();
         else if (/file:\/\//.test(path))
-            file = services["file:"]().getFileFromURLSpec(path);
+            file = services["file:"].getFileFromURLSpec(path);
         else {
             try {
                 let expandedPath = File.expandPath(path);
