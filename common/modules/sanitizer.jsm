@@ -108,7 +108,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 if (host)
                     services.history.removePagesFromHost(host, true);
                 else
-                    services.history.removeVisitsByTimeframe(this.range.min, this.range.max);
+                    services.history.removeVisitsByTimeframe(range.min, range.max);
 
                 if (!host)
                     services.observer.notifyObservers(null, "browser:purge-session-history", "");
