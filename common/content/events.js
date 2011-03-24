@@ -852,7 +852,7 @@ var Events = Module("events", {
 
             if (evt_str.length == 1) {
                 evt_obj.charCode = evt_str.charCodeAt(0);
-                evt_obj._keyCode = this._key_code[evt_str[0]];
+                evt_obj._keyCode = this._key_code[evt_str[0].toLowerCase()];
                 evt_obj.shiftKey = evt_str !== evt_str.toLowerCase();
             }
             else {
@@ -877,7 +877,7 @@ var Events = Module("events", {
                             keyname = keyname.toUpperCase();
 
                         evt_obj.charCode = keyname.charCodeAt(0);
-                        evt_obj._keyCode = this._key_code[keyname];
+                        evt_obj._keyCode = this._key_code[keyname.toLowerCase()];
                     }
                     else if (set.has(this._pseudoKeys, keyname)) {
                         evt_obj.dactylString = "<" + this._key_key[keyname] + ">";
