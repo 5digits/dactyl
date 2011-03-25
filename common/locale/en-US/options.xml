@@ -635,7 +635,7 @@
     <spec>'extendedhinttags' 'eht'</spec>
     <strut/>
     <type>&option.extendedhinttags.type;</type>
-    <default>[asOTivVWy]:a[href],area[href],img[src],iframe[src],
+    <default>[asOTvVWy]:a[href],area[href],img[src],iframe[src],
           [f]:body,
           [F]:body,code,div,html,p,pre,span,
           [iI]:img,
