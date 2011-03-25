@@ -108,6 +108,7 @@
       - Added several new options, including -javascript, to :abbreviate and
         :map. [b2]
       - Added :mksyntax command to auto-generate Vim syntax files. [b4]
+      - Added 's' flag to :pageinfo command. [b7]
       - Added :pintab and :unpintab commands. [b7]
       - :open now only opens files beginning with /, ./, ../, or ~/ [b1]
       - :saveas now provides completions for default file names, and
@@ -178,6 +179,7 @@
       - Replaced 'focuscontent' with 'strictfocus'. [b1]
       - 'complete' now defaults to "slf" but file completion only
         triggers when the URL begins as above. [b1]
+      - Added 's' flag to 'pageinfo' and changed default value. [b7]
       - Added 'passkeys' option. [b3]
       - Changed 'urlseparator' default value to "|". [b3]
       - Added "passwords" and "venkman" dialogs to :dialog. [b2]

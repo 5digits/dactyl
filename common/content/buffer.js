@@ -141,6 +141,41 @@ var Buffer = Module("buffer", {
                         .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
         });
 
+        let identity = window.gIdentityHandler;
+        this.addPageInfoSection("s", "Security", function (verbose) {
+            if (!verbose || !identity)
+                return; // For now
+
+            // Modified from Firefox
+            function location(data) array.compact([
+                data.city, data.state, data.country
+            ]).join(", ");
+
+            switch (statusline.security) {
+            case "secure":
+            case "extended":
+                var data = identity.getIdentityData();
+
+                yield ["Host", identity.getEffectiveHost()];
+
+                if (statusline.security === "extended")
+                    yield ["Owner", data.subjectOrg]
+                else
+                    yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)]
+
+                if (location(data).length)
+                    yield ["Location", location(data)];
+
+                yield ["Verified by", data.caOrg];
+
+                if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
+                                                              (identity._lastLocation.port || 443),
+                                                              data.cert, {}, {}))
+                    yield ["User exception", "true"]
+                break;
+            }
+        });
+
         dactyl.commands["buffer.viewSource"] = function (event) {
             let elem = event.originalTarget;
             buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))]);
@@ -1850,7 +1885,7 @@ var Buffer = Module("buffer", {
 
         options.add(["pageinfo", "pa"],
             "Define which sections are shown by the :pageinfo command",
-            "charlist", "gfm",
+            "charlist", "gsfm",
             { get values() values(buffer.pageInfo).toObject() });
 
         options.add(["scroll", "scr"],

@@ -1246,7 +1246,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
                 let sentinel = "(function DactylOverlay() {}())"
                 value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
-                value.toSource = function toSource() toString.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
+                value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
 
                 delete desc.value;
                 delete desc.writable;
