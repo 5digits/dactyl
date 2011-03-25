@@ -1488,7 +1488,7 @@ var Commands = Module("commands", {
                     },
                     {
                         names: ["-literal", "-l"],
-                        description: "Process the nth ignoring any quoting or meta characters",
+                        description: "Process the specified argument ignoring any quoting or meta characters",
                         type: CommandOption.INT
                     },
                     {
