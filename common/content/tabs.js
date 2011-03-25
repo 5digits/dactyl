@@ -379,7 +379,7 @@ var Tabs = Module("tabs", {
     reloadAll: function (bypassCache) {
         this.visibleTabs.forEach(function (tab) {
             try {
-                this.reload(config.tabbrowser.mTabs[i], bypassCache);
+                tabs.reload(tab, bypassCache);
             }
             catch (e) {
                 dactyl.reportError(e, true);
