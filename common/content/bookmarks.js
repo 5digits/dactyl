@@ -404,7 +404,7 @@ var Bookmarks = Module("bookmarks", {
                 let frames = buffer.allFrames();
                 if (!args.bang)
                     return [
-                        [win.document.title, frames.length == 1 ? "Current Location" : "Frame: " + win.location.href]
+                        [win.document.title, frames.length == 1 ? /*L*/"Current Location" : /*L*/"Frame: " + win.location.href]
                         for ([, win] in Iterator(frames))];
                 context.keys.text = "title";
                 context.keys.description = "url";
@@ -464,7 +464,7 @@ var Bookmarks = Module("bookmarks", {
                         context.title = ["Page URL"];
                         let frames = buffer.allFrames();
                         context.completions = [
-                            [win.document.documentURI, frames.length == 1 ? "Current Location" : "Frame: " + win.document.title]
+                            [win.document.documentURI, frames.length == 1 ? /*L*/"Current Location" : /*L*/"Frame: " + win.document.title]
                             for ([, win] in Iterator(frames))];
                         return;
                     }
@@ -626,7 +626,7 @@ var Bookmarks = Module("bookmarks", {
             if (item && item.url.indexOf("%s") > -1)
                 context.fork("keyword/" + keyword, keyword.length + space.length, null, function (context) {
                     context.format = history.format;
-                    context.title = [keyword + " Quick Search"];
+                    context.title = [/*L*/keyword + " Quick Search"];
                     // context.background = true;
                     context.compare = CompletionContext.Sort.unsorted;
                     context.generate = function () {
@@ -671,7 +671,7 @@ var Bookmarks = Module("bookmarks", {
                     return;
                 let ctxt = context.fork(name, 0);
 
-                ctxt.title = [engine.description + " Suggestions"];
+                ctxt.title = [/*L*/engine.description + " Suggestions"];
                 ctxt.keys = { text: util.identity, description: function () "" };
                 ctxt.compare = CompletionContext.Sort.unsorted;
                 ctxt.filterFunc = null;

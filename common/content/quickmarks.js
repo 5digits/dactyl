@@ -157,7 +157,7 @@ var QuickMarks = Module("quickmarks", {
                         context.fork("current", 0, this, function (context) {
                             context.title = ["Extra Completions"];
                             context.completions = [
-                                [quickmarks.get(args[0]), "Current Value"]
+                                [quickmarks.get(args[0]), _("option.currentValue")]
                             ].filter(function ([k, v]) k);
                         });
                         context.fork("url", 0, completion, "url");

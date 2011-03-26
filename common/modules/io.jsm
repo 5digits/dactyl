@@ -208,7 +208,7 @@ var IO = Module("io", {
                 }
                 catch (e) {
                     dactyl.reportError(e);
-                    let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
+                    let message = /*L*/"Sourcing file: " + (e.echoerr || file.path + ": " + e);
                     if (!params.silent)
                         dactyl.echoerr(message);
                 }
@@ -831,7 +831,7 @@ unlet s:cpo_save
 
                 let result = io.system(arg);
                 if (result.returnValue != 0)
-                    result.output += "\nshell returned " + result.returnValue;
+                    result.output += /*L*/"\nshell returned " + result.returnValue;
 
                 modules.commandline.command = "!" + arg;
                 modules.commandline.commandOutput(<span highlight="CmdOutput">{result.output}</span>);
@@ -981,9 +981,9 @@ unlet s:cpo_save
                     context.key = match.prefix;
                     context.advance(match.prefix.length + 1);
                     context.generate = function () iter({
-                        content: "Chrome content",
-                        locale: "Locale-specific content",
-                        skin: "Theme-specific content"
+                        content: /*L*/"Chrome content",
+                        locale: /*L*/"Locale-specific content",
+                        skin: /*L*/"Theme-specific content"
                     });
                 }
             }

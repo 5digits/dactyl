@@ -657,11 +657,11 @@ var Commands = Module("commands", {
                         <tr highlight="Title">
                             <td/>
                             <td style="padding-right: 1em;"></td>
-                            <td style="padding-right: 1ex;">Name</td>
-                            <td style="padding-right: 1ex;">Args</td>
-                            <td style="padding-right: 1ex;">Range</td>
-                            <td style="padding-right: 1ex;">Complete</td>
-                            <td style="padding-right: 1ex;">Definition</td>
+                            <td style="padding-right: 1ex;"><!--L-->Name</td>
+                            <td style="padding-right: 1ex;"><!--L-->Args</td>
+                            <td style="padding-right: 1ex;"><!--L-->Range</td>
+                            <td style="padding-right: 1ex;"><!--L-->Complete</td>
+                            <td style="padding-right: 1ex;"><!--L-->Definition</td>
                         </tr>
                         <col style="min-width: 6em; padding-right: 1em;"/>
                         {

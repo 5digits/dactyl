@@ -53,16 +53,16 @@ var MOW = Module("mow", {
                     <popupset>
                         <menupopup id="dactyl-contextmenu" highlight="Events" events="contextEvents">
                             <menuitem id="dactyl-context-copylink"
-                                      label="Copy Link Location" dactyl:group="link"
+                                      label={/*L*/"Copy Link Location"} dactyl:group="link"
                                       oncommand="goDoCommand('cmd_copyLink');"/>
                             <menuitem id="dactyl-context-copypath"
-                                      label="Copy File Path" dactyl:group="link path"
+                                      label={/*L*/"Copy File Path"} dactyl:group="link path"
                                       oncommand="dactyl.clipboardWrite(document.popupNode.getAttribute('path'));"/>
                             <menuitem id="dactyl-context-copy"
-                                      label="Copy" dactyl:group="selection"
+                                      label={/*L*/"Copy"} dactyl:group="selection"
                                       command="cmd_copy"/>
                             <menuitem id="dactyl-context-selectall"
-                                      label="Select All"
+                                      label={/*L*/"Select All"}
                                       command="cmd_selectAll"/>
                         </menupopup>
                     </popupset>

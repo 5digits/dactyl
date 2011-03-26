@@ -75,7 +75,7 @@ var Buffer = Module("buffer", {
             }
 
             if (!verbose && nFeed)
-                yield nFeed + " feed" + (nFeed > 1 ? "s" : "");
+                yield nFeed + /*L*/" feed" + (nFeed > 1 ? "s" : "");
         });
 
         this.addPageInfoSection("g", "General Info", function (verbose) {
@@ -110,7 +110,7 @@ var Buffer = Module("buffer", {
 
             if (!verbose) {
                 if (pageSize[0])
-                    yield (pageSize[1] || pageSize[0]) + " bytes";
+                    yield (pageSize[1] || pageSize[0]) + /*L*/" bytes";
                 yield lastMod;
                 return;
             }
@@ -171,7 +171,7 @@ var Buffer = Module("buffer", {
                 if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
                                                               (identity._lastLocation.port || 443),
                                                               data.cert, {}, {}))
-                    yield ["User exception", "true"]
+                    yield ["User exception", /*L*/"true"]
                 break;
             }
         });
@@ -607,7 +607,7 @@ var Buffer = Module("buffer", {
         try {
             window.urlSecurityCheck(uri.spec, doc.nodePrincipal);
 
-            io.CommandFileMode("Save link: ", {
+            io.CommandFileMode(/*L*/"Save link: ", {
                 onSubmit: function (path) {
                     let file = io.File(path);
                     if (file.exists() && file.isDirectory())
@@ -831,7 +831,7 @@ var Buffer = Module("buffer", {
      * @param {Node} elem The element to query.
      */
     showElementInfo: function showElementInfo(elem) {
-        dactyl.echo(<>Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
+        dactyl.echo(<><!--L-->Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
     },
 
     /**
@@ -1073,7 +1073,7 @@ var Buffer = Module("buffer", {
     scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) buffer.scrollHorizontal("columns", cols)),
     scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) buffer.scrollVertical("pages", pages)),
     scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) content.scrollTo(x, y)),
-    textZoom: deprecated("buffer.zoomValue and buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
+    textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
 }, {
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),
@@ -1125,13 +1125,13 @@ var Buffer = Module("buffer", {
 
         var names = [];
         if (node.title)
-            names.push([node.title, "Page Name"]);
+            names.push([node.title, /*L*/"Page Name"]);
 
         if (node.alt)
-            names.push([node.alt, "Alternate Text"]);
+            names.push([node.alt, /*L*/"Alternate Text"]);
 
         if (!isinstance(node, Document) && node.textContent)
-            names.push([node.textContent, "Link Text"]);
+            names.push([node.textContent, /*L*/"Link Text"]);
 
         names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
 
@@ -1534,7 +1534,7 @@ var Buffer = Module("buffer", {
                             i = i + 1;
 
                             return {
-                                text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
+                                text: [i + ": " + (tab.label || /*L*/"(Untitled)"), i + ": " + url],
                                 tab: tab,
                                 id: i - 1,
                                 url: url,

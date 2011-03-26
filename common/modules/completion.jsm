@@ -960,7 +960,7 @@ var Completion = Module("completion", {
             context.title = ["URL", "Title"];
 
         context.fork("additional", 0, this, function (context) {
-            context.title[0] += " (additional)";
+            context.title[0] += /*L*/" (additional)";
             context.filter = context.parent.filter; // FIXME
             context.completions = context.parent.completions;
             // For items whose URL doesn't exactly match the filter,

@@ -309,7 +309,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else if (char === "]") {
                 stack.pop();
-                util.assert(stack.length, "Unmatched %] in format");
+                util.assert(stack.length, /*L*/"Unmatched %] in format");
             }
             else {
                 let quote = function quote(obj, char) obj[char];
@@ -328,7 +328,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (end < format.length)
             stack.top.elements.push(format.substr(end));
 
-        util.assert(stack.length === 1, "Unmatched %[ in format");
+        util.assert(stack.length === 1, /*L*/"Unmatched %[ in format");
         return stack.top;
     },
 
@@ -375,7 +375,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else if (close) {
                 stack.pop();
-                util.assert(stack.length, "Unmatched %] in macro");
+                util.assert(stack.length, /*L*/"Unmatched %] in macro");
             }
             else {
                 let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
@@ -402,7 +402,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (end < macro.length)
             stack.top.elements.push(macro.substr(end));
 
-        util.assert(stack.length === 1, "Unmatched <{ in macro");
+        util.assert(stack.length === 1, /*L*/"Unmatched <{ in macro");
         return stack.top;
     },
 
@@ -759,12 +759,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         [hours, minutes]   = div(minutes, 60);
         [days, hours]      = div(hours,   24);
         if (days)
-            return days + " days " + hours + " hours"
+            return /*L*/days + " days " + hours + " hours"
         if (hours)
-            return hours + "h " + minutes + "m";
+            return /*L*/hours + "h " + minutes + "m";
         if (minutes)
-            return minutes + ":" + pad(2, seconds);
-        return seconds + "s";
+            return /*L*/minutes + ":" + pad(2, seconds);
+        return /*L*/seconds + "s";
     },
 
     /**

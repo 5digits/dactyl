@@ -159,7 +159,7 @@ var ConfigBase = Class("ConfigBase", {
                               "--template=hg{rev}-" + this.branch + " ({date|isodate})"]).output;
         let version = this.addon.version;
         if ("@DATE@" !== "@" + "DATE@")
-            version += " (created: @DATE@)";
+            version += /*L*/" (created: @DATE@)";
         return version;
     }),
 
@@ -624,7 +624,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpEx;;;FontCode                           display: inline-block; color: #527BBD;
 
         HelpExample                                 display: block; margin: 1em 0;
-        HelpExample::before                         content: "Example: "; font-weight: bold;
+        HelpExample::before                         content: /*L*/"Example: "; font-weight: bold;
 
         HelpInfo                                    display: block; width: 20em; margin-left: auto;
         HelpInfoLabel                               display: inline-block; width: 6em;  color: magenta; font-weight: bold; vertical-align: text-top;

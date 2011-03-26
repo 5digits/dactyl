@@ -219,7 +219,7 @@ var History = Module("history", {
                         description: "The sort order of the results",
                         completer: function (context, args) {
                             context.compare = CompletionContext.Sort.unsorted;
-                            return array.flatten([
+                            return /*L*/array.flatten([
                                 "annotation",
                                 "date",
                                 "date added",

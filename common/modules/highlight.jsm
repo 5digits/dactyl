@@ -369,7 +369,10 @@ var Highlights = Module("Highlight", {
                     else if (args.completeArg == 1) {
                         let hl = highlight.get(args[0]);
                         if (hl)
-                            context.completions = [[hl.value, "Current Value"], [hl.defaultValue || "", "Default Value"]];
+                            context.completions = [
+                                [hl.value, _("option.currentValue")],
+                                [hl.defaultValue || "", _("option.defaultValue")]
+                            ];
                         context.fork("css", 0, completion, "css");
                     }
                 },

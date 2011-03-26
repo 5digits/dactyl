@@ -313,7 +313,7 @@ var CommandMode = Class("CommandMode", {
 
     open: function (command) {
         dactyl.assert(isinstance(this.mode, modes.COMMAND_LINE),
-                      "Not opening command line in non-command-line mode.");
+                      /*L*/"Not opening command line in non-command-line mode.");
 
         this.messageCount = commandline.messageCount;
         modes.push(this.mode, this.extendedMode, this.closure);
@@ -431,7 +431,7 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
     },
 
     onSubmit: function onSubmit(command) {
-        contexts.withContext({ file: "[Command Line]", line: 1 },
+        contexts.withContext({ file: /*L*/"[Command Line]", line: 1 },
                              function _onSubmit() {
             io.withSavedValues(["readHeredoc"], function _onSubmit() {
                 this.readHeredoc = commandline.readHeredoc;
@@ -1627,7 +1627,7 @@ var ItemList = Class("ItemList", {
     _init: function _init() {
         this._div = this._dom(
             <div class="ex-command-output" highlight="Normal" style="white-space: nowrap">
-                <div highlight="Completions" key="noCompletions"><span highlight="Title">No Completions</span></div>
+                <div highlight="Completions" key="noCompletions"><span highlight="Title"><!--L-->No Completions</span></div>
                 <div key="completions"/>
                 <div highlight="Completions">
                 {

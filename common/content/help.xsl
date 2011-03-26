@@ -185,7 +185,7 @@
 
         <xsl:if test="//dactyl:toc[1 and self::*]">
             <div dactyl:highlight="HelpTOC">
-                <h2>Contents</h2>
+                <h2><!--L-->Contents</h2>
                 <xsl:if test="@start">
                     <xsl:call-template name="toc">
                         <xsl:with-param name="level" select="number(@start)"/>
@@ -240,7 +240,7 @@
                 </xsl:when>
                 <xsl:when test="contains($type, 'list') or contains($type, 'map')">
                     <span dactyl:highlight="HelpString" delim=""><xsl:apply-templates mode="help-1"/></span>
-                    <xsl:if test=". = ''">(empty)</xsl:if>
+                    <xsl:if test=". = ''"><!--L-->(empty)</xsl:if>
                 </xsl:when>
                 <xsl:otherwise>
                     <span>
@@ -430,7 +430,7 @@
     <xsl:template match="dactyl:deprecated" mode="help-2">
         <p style="clear: both;">
             <xsl:apply-templates select="@*" mode="help-1"/>
-            <span dactyl:highlight="HelpWarning">Deprecated:</span>
+            <span dactyl:highlight="HelpWarning"><!--L-->Deprecated:</span>
             <xsl:text> </xsl:text>
             <xsl:apply-templates select="node()" mode="help-1"/>
         </p>
@@ -439,7 +439,7 @@
         <p style="clear: both;">
             <xsl:apply-templates select="@*" mode="help-1"/>
             <div style="clear: both;"/>
-            <span dactyl:highlight="HelpNote">Note:</span>
+            <span dactyl:highlight="HelpNote"><!--L-->Note:</span>
             <xsl:text> </xsl:text>
             <xsl:apply-templates select="node()" mode="help-1"/>
         </p>
@@ -448,7 +448,7 @@
         <p style="clear: both;">
             <xsl:apply-templates select="@*" mode="help-1"/>
             <div style="clear: both;"/>
-            <span dactyl:highlight="HelpWarning">Warning:</span>
+            <span dactyl:highlight="HelpWarning"><!--L-->Warning:</span>
             <xsl:text> </xsl:text>
             <xsl:apply-templates select="node()" mode="help-1"/>
         </p>

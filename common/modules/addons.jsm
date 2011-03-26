@@ -282,11 +282,11 @@ var AddonList = Class("AddonList", {
         XML.ignoreWhitespace = true;
         util.xmlToDom(<table highlight="Addons" key="list" xmlns={XHTML}>
                         <tr highlight="AddonHead">
-                            <td>Name</td>
-                            <td>Version</td>
-                            <td>Status</td>
+                            <td><!--L-->Name</td>
+                            <td><!--L-->Version</td>
+                            <td><!--L-->Status</td>
                             <td/>
-                            <td>Description</td>
+                            <td><!--L-->Description</td>
                         </tr>
                       </table>, this.document, this.nodes);
 

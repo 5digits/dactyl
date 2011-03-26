@@ -45,7 +45,7 @@ var JavaScript = Module("javascript", {
     }),
 
     globals: Class.memoize(function () [
-       [this.modules.userContext, "Global Variables"],
+       [this.modules.userContext, /*L*/"Global Variables"],
        [this.modules, "modules"],
        [this.window, "window"]
     ]),
@@ -120,9 +120,9 @@ var JavaScript = Module("javascript", {
         context[JavaScript.EVAL_EXPORT] = function export_(obj) cache[key] = obj;
         try {
             if (tmp != null) // Temporary hack until bug 609949 is fixed.
-                this.modules.dactyl.userEval(JavaScript.EVAL_EXPORT + "(" + arg + ")", context, "[Command Line Completion]", 1);
+                this.modules.dactyl.userEval(JavaScript.EVAL_EXPORT + "(" + arg + ")", context, /*L*/"[Command Line Completion]", 1);
             else
-                cache[key] = this.modules.dactyl.userEval(arg, context, "[Command Line Completion]", 1);
+                cache[key] = this.modules.dactyl.userEval(arg, context, /*L*/"[Command Line Completion]", 1);
 
             return cache[key];
         }
@@ -170,7 +170,7 @@ var JavaScript = Module("javascript", {
 
         if (this._top.char != arg) {
             this.context.highlight(this._top.offset, this._i - this._top.offset, "SPELLCHECK");
-            throw Error("Invalid JS");
+            throw Error(/*L*/"Invalid JS");
         }
 
         // The closing character of this stack frame will have pushed a new
@@ -308,7 +308,7 @@ var JavaScript = Module("javascript", {
             if (this._checkFunction(prev, dot, cacheKey))
                 return [];
             if (prev != statement && obj == null) {
-                this.context.message = "Error: " + cacheKey.quote() + " is " + String(obj);
+                this.context.message = /*L*/"Error: " + cacheKey.quote() + " is " + String(obj);
                 return [];
             }
 
@@ -324,7 +324,7 @@ var JavaScript = Module("javascript", {
         let end = (frame == -1 ? this._lastIdx : this._get(frame + 1).offset);
 
         this._cacheKey = null;
-        let obj = [[this.cache.evalContext, "Local Variables"]].concat(this.globals);
+        let obj = [[this.cache.evalContext, /*L*/"Local Variables"]].concat(this.globals);
         // Is this an object dereference?
         if (dot < statement) // No.
             dot = statement - 1;
@@ -339,7 +339,7 @@ var JavaScript = Module("javascript", {
         const self = this;
 
         if (!getOwnPropertyNames && !services.debugger.isOn && !this.context.message)
-            this.context.message = "For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
+            this.context.message = /*L*/"For better completion data, please enable the JavaScript debugger (:set jsdebugger)";
 
         let base = this.context.fork("js", this._top.offset);
         base.forceAnchored = true;
@@ -419,14 +419,14 @@ var JavaScript = Module("javascript", {
         objects.forEach(function (obj) {
             obj.ctxt_p.split(obj[1] + "/anchored", this, function (context) {
                 context.anchored = true;
-                context.title[0] += " (prototypes)";
+                context.title[0] += /*L*/" (prototypes)";
             });
         });
 
         objects.forEach(function (obj) {
             obj.ctxt_t.split(obj[1] + "/unanchored", this, function (context) {
                 context.anchored = false;
-                context.title[0] += " (substrings)";
+                context.title[0] += /*L*/" (substrings)";
                 context.filters.push(unanchored);
             });
         });
@@ -434,7 +434,7 @@ var JavaScript = Module("javascript", {
         objects.forEach(function (obj) {
             obj.ctxt_p.split(obj[1] + "/unanchored", this, function (context) {
                 context.anchored = false;
-                context.title[0] += " (prototype substrings)";
+                context.title[0] += /*L*/" (prototype substrings)";
                 context.filters.push(unanchored);
             });
         });
@@ -775,8 +775,8 @@ var JavaScript = Module("javascript", {
                 this.js.newContext = function newContext() modules.newContext(self.context, !sandbox);
 
                 this.js.globals = [
-                   [this.context, "REPL Variables"],
-                   [context, "REPL Global"]
+                   [this.context, /*L*/"REPL Variables"],
+                   [context, /*L*/"REPL Global"]
                 ].concat(this.js.globals.filter(function ([global]) isPrototypeOf.call(global, context)));
 
                 if (!isPrototypeOf.call(modules.jsmodules, context))

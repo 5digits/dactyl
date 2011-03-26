@@ -312,9 +312,9 @@ var Styles = Module("Styles", {
                 <tr highlight="Title">
                     <td/>
                     <td/>
-                    <td style="padding-right: 1em;">Name</td>
-                    <td style="padding-right: 1em;">Filter</td>
-                    <td style="padding-right: 1em;">CSS</td>
+                    <td style="padding-right: 1em;"><!--L-->Name</td>
+                    <td style="padding-right: 1em;"><!--L-->Filter</td>
+                    <td style="padding-right: 1em;"><!--L-->CSS</td>
                 </tr>
                 <col style="min-width: 4em; padding-right: 1em;"/>
                 <col style="min-width: 1em; text-align: center; color: red; font-weight: bold;"/>
@@ -377,8 +377,8 @@ var Styles = Module("Styles", {
             context.fork("current", 0, this, function (context) {
                 context.title = ["Current Site"];
                 context.completions = [
-                    [content.location.host, "Current Host"],
-                    [content.location.href, "Current URL"]
+                    [content.location.host, /*L*/"Current Host"],
+                    [content.location.href, /*L*/"Current URL"]
                 ];
             });
         }
@@ -389,7 +389,7 @@ var Styles = Module("Styles", {
         context.generate = function () values(group.sites);
 
         context.keys.text = util.identity;
-        context.keys.description = function (site) this.sheets.length + " sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
+        context.keys.description = function (site) this.sheets.length + /*L*/" sheet" + (this.sheets.length == 1 ? "" : "s") + ": " +
             array.compact(this.sheets.map(function (s) s.name)).join(", ");
         context.keys.sheets = function (site) group.sheets.filter(function (s) s.sites.indexOf(site) >= 0);
         context.keys.active = function (site) uris.some(Styles.matchFilter(site));
@@ -434,7 +434,7 @@ var Styles = Module("Styles", {
         for (let item in Iterator({ Active: true, Inactive: false })) {
             let [name, active] = item;
             context.split(name, null, function (context) {
-                context.title[0] = name + " " + (title || "Sheets");
+                context.title[0] = /*L*/name + " " + (title || "Sheets");
                 context.filters.push(function (item) !!item.active == active);
             });
         }
@@ -584,7 +584,9 @@ var Styles = Module("Styles", {
                     }
                     else if (args.completeArg == 1) {
                         if (sheet)
-                            context.completions = [[sheet.css, "Current Value"]];
+                            context.completions = [
+                                [sheet.css, _("option.currentValue")]
+                            ];
                         context.fork("css", 0, modules.completion, "css");
                     }
                 },
