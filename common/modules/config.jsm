@@ -206,7 +206,7 @@ var ConfigBase = Class("ConfigBase", {
         "version"
     ],
 
-    helpStyles: /^(Help|StatusLine|REPL)|^(Boolean|Indicator|MoreMsg|Number|Object|Logo|Key(word)?|String)$/,
+    helpStyles: /^(Help|StatusLine|REPL)|^(Boolean|Dense|Indicator|MoreMsg|Number|Object|Logo|Key(word)?|String)$/,
     styleHelp: function styleHelp() {
         if (!this.helpStyled) {
             const { highlight } = require("highlight");
@@ -455,6 +455,9 @@ var ConfigBase = Class("ConfigBase", {
 
         CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
         CompMore::after      content: "⌄";
+
+
+        Dense              margin-top: 0; margin-bottom: 0;
 
 
         EditorEditing;;*   background: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;

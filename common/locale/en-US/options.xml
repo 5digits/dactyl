@@ -1144,6 +1144,21 @@
 </item>
 
 <item>
+    <tags>'pu' 'passunknown'</tags>
+    <spec>'passunknown' 'pu'</spec>
+    <type>&option.showmode.type;</type>
+    <default>&option.showmode.default;</default>
+    <description>
+        <p>
+            Pass unknown keys through to &dactyl.host; in these
+            <t>modes</t>. The first element matching a currently
+            active mode is the one that takes effect. Modes may be
+            negated by prefixing them with a <tt>!</tt>.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>'pps' 'popups'</tags>
     <spec>'popups' 'pps'</spec>
     <type>&option.popups.type;</type>
@@ -1330,13 +1345,17 @@
 </item>
 
 <item>
-    <tags>'nosmd' 'noshowmode'</tags>
     <tags>'smd' 'showmode'</tags>
     <spec>'showmode' 'smd'</spec>
     <type>&option.showmode.type;</type>
     <default>&option.showmode.default;</default>
     <description>
-        <p>Show the current mode in the command line if it matches this expression.</p>
+        <p>
+            Show the current mode in the command line if it or any
+            of its parent <t>modes</t> is included in the list.
+            Modes may be negated by prefixing them with a
+            <tt>!</tt>.
+        </p>
     </description>
 </item>
 

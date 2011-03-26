@@ -1573,7 +1573,7 @@ var Commands = Module("commands", {
                 ]
             })),
             iterateIndex: function (args) let (tags = services["dactyl:"].HELP_TAGS)
-                this.iterate(args).filter(function (cmd) cmd.hive === commands.builtin || set.has(cmd.helpTag)),
+                this.iterate(args).filter(function (cmd) cmd.hive === commands.builtin || set.has(tags, cmd.helpTag)),
             format: {
                 headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),

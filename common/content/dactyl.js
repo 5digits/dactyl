@@ -605,6 +605,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Initialize the help system.
      */
     initHelp: function (force) {
+        // Waits for the add-on to become available, if necessary.
+        config.addon;
+        config.version;
+
         if (force || !this.helpInitialized) {
             if ("noscriptOverlay" in window) {
                 noscriptOverlay.safeAllow("chrome-data:", true, false);
