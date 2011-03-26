@@ -272,10 +272,10 @@ var Editor = Module("editor", {
             column = 1 + pre.replace(/[^]*\n/, "").length;
         }
         else {
-            var editor = window.GetCurrentEditor ? GetCurrentEditor()
-                                                 : Editor.getEditor(document.commandDispatcher.focusedWindow);
-            dactyl.assert(editor);
-            text = Array.map(editor.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
+            var editor_ = window.GetCurrentEditor ? GetCurrentEditor()
+                                                  : Editor.getEditor(document.commandDispatcher.focusedWindow);
+            dactyl.assert(editor_);
+            text = Array.map(editor_.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
         }
 
         let origGroup = textBox && textBox.getAttributeNS(NS, "highlight") || "";
@@ -312,9 +312,9 @@ var Editor = Module("editor", {
             if (textBox)
                 textBox.value = val;
             else {
-                while (editor.rootElement.firstChild)
-                    editor.rootElement.removeChild(editor.rootElement.firstChild);
-                editor.rootElement.innerHTML = val;
+                while (editor_.rootElement.firstChild)
+                    editor_.rootElement.removeChild(editor_.rootElement.firstChild);
+                editor_.rootElement.innerHTML = val;
             }
         }
 
