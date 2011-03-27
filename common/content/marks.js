@@ -146,7 +146,7 @@ var Marks = Module("marks", {
             let mark = (this._localMarks.get(this.localURI) || {})[char];
             dactyl.assert(mark, _("mark.unset", char));
 
-            dactyl.log(_("marks.jumpingToLocal", Marks.markToString(char, mark)), 5);
+            dactyl.log(_("mark.jumpingToLocal", Marks.markToString(char, mark)), 5);
             buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
         }
         else
