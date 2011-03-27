@@ -978,7 +978,7 @@ var Options = Module("options", {
 }, {
 }, {
     commands: function initCommands(dactyl, modules, window) {
-        const { commands, contexts, options } = modules;
+        const { commandline, commands, contexts, options } = modules;
 
         let args = {
             getMode: function (args) findMode(args["-mode"]),
@@ -1048,7 +1048,7 @@ var Options = Module("options", {
                     }
 
                     if (name == "all" && reset)
-                        modules.commandline.input(_("pref.prompt.resetAll", config.host) + " ",
+                        commandline.input(_("pref.prompt.resetAll", config.host) + " ",
                             function (resp) {
                                 if (resp == "yes")
                                     for (let pref in values(prefs.getNames()))
@@ -1078,7 +1078,7 @@ var Options = Module("options", {
                         prefs.set(name, value);
                     }
                     else
-                        modules.commandline.commandOutput(prefs.list(onlyNonDefault, name));
+                        commandline.commandOutput(prefs.list(onlyNonDefault, name));
                     return;
                 }
 
