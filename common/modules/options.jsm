@@ -870,7 +870,7 @@ var Options = Module("options", {
     allPrefs: deprecated("prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
     getPref: deprecated("prefs.get", function getPref() prefs.get.apply(prefs, arguments)),
     invertPref: deprecated("prefs.invert", function invertPref() prefs.invert.apply(prefs, arguments)),
-    listPrefs: deprecated("prefs.list", function listPrefs() { commandline.commandOutput(prefs.list.apply(prefs, arguments)); }),
+    listPrefs: deprecated("prefs.list", function listPrefs() { this.modules.commandline.commandOutput(prefs.list.apply(prefs, arguments)); }),
     observePref: deprecated("prefs.observe", function observePref() prefs.observe.apply(prefs, arguments)),
     popContext: deprecated("prefs.popContext", function popContext() prefs.popContext.apply(prefs, arguments)),
     pushContext: deprecated("prefs.pushContext", function pushContext() prefs.pushContext.apply(prefs, arguments)),
@@ -978,7 +978,7 @@ var Options = Module("options", {
 }, {
 }, {
     commands: function initCommands(dactyl, modules, window) {
-        const { commandline, commands, contexts, options } = modules;
+        const { commands, contexts, options } = modules;
 
         let args = {
             getMode: function (args) findMode(args["-mode"]),
@@ -1048,7 +1048,7 @@ var Options = Module("options", {
                     }
 
                     if (name == "all" && reset)
-                        commandline.input(_("pref.prompt.resetAll", config.host) + " ",
+                        modules.commandline.input(_("pref.prompt.resetAll", config.host) + " ",
                             function (resp) {
                                 if (resp == "yes")
                                     for (let pref in values(prefs.getNames()))
@@ -1056,7 +1056,7 @@ var Options = Module("options", {
                             },
                             { promptHighlight: "WarningMsg" });
                     else if (name == "all")
-                        commandline.commandOutput(prefs.list(onlyNonDefault, ""));
+                        modules.commandline.commandOutput(prefs.list(onlyNonDefault, ""));
                     else if (reset)
                         prefs.reset(name);
                     else if (invertBoolean)
@@ -1078,7 +1078,7 @@ var Options = Module("options", {
                         prefs.set(name, value);
                     }
                     else
-                        commandline.commandOutput(prefs.list(onlyNonDefault, name));
+                        modules.commandline.commandOutput(prefs.list(onlyNonDefault, name));
                     return;
                 }
 
@@ -1235,7 +1235,7 @@ var Options = Module("options", {
                     if (str.text().length() == str.*.length())
                         dactyl.echomsg(_("variable.none"));
                     else
-                        dactyl.echo(str, commandline.FORCE_MULTILINE);
+                        dactyl.echo(str, modules.commandline.FORCE_MULTILINE);
                     return;
                 }
 
