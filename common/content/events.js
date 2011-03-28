@@ -669,12 +669,15 @@ var Events = Module("events", {
 
                     let doc = document.commandDispatcher.focusedWindow.document;
                     let event = events.create(doc, type, evt);
+                    let target = dactyl.focusedElement
+                              || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
+                              || doc.defaultView;
+
+                    if (target instanceof Element && !Events.isInputElement(target))
+                        target = target.ownerDocument.documentElement;
 
                     if (!evt_obj.dactylString && !mode)
-                        events.dispatch(dactyl.focusedElement
-                                            || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
-                                            || doc.defaultView,
-                                        event, evt);
+                        events.dispatch(target, event, evt);
                     else if (type === "keypress")
                         events.events.keypress.call(events, event);
                 }
