@@ -1530,7 +1530,7 @@ var Events = Module("events", {
                 literal: 0
             });
 
-        commands.add(["macros"],
+        commands.add(["mac[ros]"],
             "List all macros",
             function (args) { completion.listCompleter("macro", args[0]); }, {
                 argCount: "?",
