@@ -9,6 +9,7 @@
 
 [dactyl|highlight~=hints] {
     -moz-binding: url(resource://dactyl-content/bindings.xml#hints) !important;
+    position: static !important;
 }
 
 [dactyl|highlight~=HintImage],
