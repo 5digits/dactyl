@@ -337,7 +337,7 @@ var Highlights = Module("Highlight", {
                 if (!modify && /&$/.test(key))
                     [clear, modify, key] = [true, true, key.replace(/&$/, "")];
 
-                dactyl.assert(!(clear && css), _("error.trailing"));
+                dactyl.assert(!(clear && css), _("error.trailingCharacters"));
 
                 if (!modify)
                     modules.commandline.commandOutput(

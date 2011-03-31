@@ -1169,7 +1169,7 @@ var Options = Module("options", {
 
             context.advance(context.filter.indexOf("="));
             if (option.type == "boolean")
-                return error(context.filter.length, _("error.trailing"));
+                return error(context.filter.length, _("error.trailingCharacters"));
 
             context.advance(1);
             if (opt.error)

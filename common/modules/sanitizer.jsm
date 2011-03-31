@@ -416,7 +416,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     args[0] = "all";
 
                 if (args.bang) {
-                    dactyl.assert(args.length == 0, _("error.trailing"));
+                    dactyl.assert(args.length == 0, _("error.trailingCharacters"));
                     items = Object.keys(sanitizer.itemMap).filter(
                         function (k) modules.options.get("sanitizeitems").has(k));
                 }

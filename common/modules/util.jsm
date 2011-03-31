@@ -182,12 +182,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         // check for chars not in the accepted range
         this.assert(RegExp("^[" + accepted + "-]+$").test(list),
-                    _("error.charsOutsideRange", accepted.quote()));
+                    _("error.charactersOutsideRange", accepted.quote()));
 
         // check for illegal ranges
         for (let [match] in this.regexp.iterate(/.-./g, list))
             this.assert(match.charCodeAt(0) <= match.charCodeAt(2),
-                        _("error.invalidCharRange", list.slice(list.indexOf(match))));
+                        _("error.invalidCharacterRange", list.slice(list.indexOf(match))));
 
         return RegExp("[" + util.regexp.escape(list) + "]");
     },

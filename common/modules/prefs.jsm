@@ -288,7 +288,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     toggle: function (name) {
         util.assert(this.branch.getPrefType(name) === Ci.nsIPrefBranch.PREF_BOOL,
-                    _("error.trailing", name + "!"));
+                    _("error.trailingCharacters", name + "!"));
         this.set(name, !this.get(name));
     },
 

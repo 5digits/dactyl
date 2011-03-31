@@ -511,7 +511,7 @@ var Bookmarks = Module("bookmarks", {
                         function (resp) {
                             if (resp && resp.match(/^y(es)?$/i)) {
                                 bookmarks.remove(Object.keys(bookmarkcache.bookmarks));
-                                dactyl.echomsg(_("bookmark.allGone"));
+                                dactyl.echomsg(_("bookmark.allDeleted"));
                             }
                         });
                 else {

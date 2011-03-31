@@ -243,7 +243,7 @@ var Editor = Module("editor", {
 
         let args = options.get("editor").format(args);
 
-        dactyl.assert(args.length >= 1, _("editor.noEditor"));
+        dactyl.assert(args.length >= 1, _("option.notSet", "editor"));
 
         io.run(args.shift(), args, blocking);
     },

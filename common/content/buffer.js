@@ -607,7 +607,7 @@ var Buffer = Module("buffer", {
         try {
             window.urlSecurityCheck(uri.spec, doc.nodePrincipal);
 
-            io.CommandFileMode(/*L*/"Save link: ", {
+            io.CommandFileMode(_("buffer.prompt.saveLink") + " ", {
                 onSubmit: function (path) {
                     let file = io.File(path);
                     if (file.exists() && file.isDirectory())
@@ -1284,7 +1284,7 @@ var Buffer = Module("buffer", {
 
                 // FIXME: arg handling is a bit of a mess, check for filename
                 dactyl.assert(!arg || arg[0] == ">" && !util.OS.isWindows,
-                              _("error.trailing"));
+                              _("error.trailingCharacters"));
 
                 prefs.withContext(function () {
                     if (arg) {
@@ -1463,7 +1463,7 @@ var Buffer = Module("buffer", {
                     level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
                 else
-                    dactyl.assert(false, _("error.trailing"));
+                    dactyl.assert(false, _("error.trailingCharacters"));
 
                 buffer.setZoom(level, args.bang);
             },

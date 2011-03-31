@@ -249,7 +249,7 @@ var Marks = Module("marks", {
             "Mark current location within the web page",
             function (args) {
                 let mark = args[0] || "";
-                dactyl.assert(mark.length <= 1, _("error.trailing"));
+                dactyl.assert(mark.length <= 1, _("error.trailingCharacters"));
                 dactyl.assert(/[a-zA-Z]/.test(mark), _("mark.invalid"));
 
                 marks.add(mark);

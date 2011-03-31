@@ -310,7 +310,7 @@ var Command = Class("Command", {
 
                         util.assert((this.length == 0 || this.command.argCount !== "0") &&
                                     (this.length <= 1 || !/^[01?]$/.test(this.command.argCount)),
-                                    _("error.trailing"));
+                                    _("error.trailingCharacters"));
                     }
                 }
         });
@@ -863,7 +863,7 @@ var Commands = Module("commands", {
 
             let [count, arg, quote] = Commands.parseArg(str, null, _keepQuotes);
             if (quote == "\\" && !complete)
-                return [, , , _("error.trailing", "\\")];
+                return [, , , _("error.trailingCharacters", "\\")];
             if (quote && !complete)
                 return [, , , _("error.missingQuote", quote)];
             return [count, arg, quote];
