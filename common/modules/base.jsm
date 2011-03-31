@@ -142,6 +142,7 @@ function defineModule(name, params, module) {
             use[mod].push(module);
         }
     currentModule = module;
+    module.startTime = Date.now();
 }
 
 defineModule.loadLog = [];
@@ -163,7 +164,6 @@ defineModule.dump = function dump_() {
                .replace(/^./gm, name + ": $&"));
 }
 defineModule.modules = [];
-defineModule.times = { all: 0 };
 defineModule.time = function time(major, minor, func, self) {
     let time = Date.now();
     if (typeof func !== "function")
@@ -176,13 +176,7 @@ defineModule.time = function time(major, minor, func, self) {
         loaded.util && util.reportError(e);
     }
 
-    let delta = Date.now() - time;
-    defineModule.times.all += delta;
-    defineModule.times[major] = (defineModule.times[major] || 0) + delta;
-    if (minor) {
-        defineModule.times[":" + minor] = (defineModule.times[":" + minor] || 0) + delta;
-        defineModule.times[major + ":" + minor] = (defineModule.times[major + ":" + minor] || 0) + delta;
-    }
+    JSMLoader.times.add(major, minor, Date.now() - time);
     return res;
 }
 

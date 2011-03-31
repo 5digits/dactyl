@@ -32,6 +32,26 @@ else
         manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
         stale: JSMLoader ? JSMLoader.stale : {},
         suffix: "",
+
+        times: {
+            all: 0,
+            add: function add(major, minor, delta) {
+                this.all += delta;
+
+                this[major] = (this[major] || 0) + delta;
+                if (minor) {
+                    minor = ":" + minor;
+                    this[minor] = (this[minor] || 0) + delta;
+                    this[major + minor] = (this[major + minor] || 0) + delta;
+                }
+            },
+            clear: function clear() {
+                for (let key in this)
+                    if (typeof this[key] !== "number")
+                        delete this[key];
+            }
+        },
+
         init: function init(suffix) {
             this.initialized = true;
             this.suffix = suffix || "";
@@ -41,6 +61,7 @@ else
             this.global.JSMLoader = this;
             base.JSMLoader = this;
         },
+
         getTarget: function getTarget(url) {
             if (url.indexOf(":") === -1)
                 url = "resource://dactyl" + this.suffix + "/" + url;
@@ -49,6 +70,7 @@ else
             chan.cancel(Components.results.NS_BINDING_ABORTED);
             return chan.name;
         },
+
         load: function load(name, target) {
             let url = name;
             if (url.indexOf(":") === -1)
@@ -68,7 +90,12 @@ else
             }
 
             try {
+                let now = Date.now();
                 let global = Components.utils.import(url, target);
+
+                if (!(name in this.globals))
+                    this.times.add("require", name, Date.now() - now);
+
                 return this.globals[name] = global;
             }
             catch (e) {
@@ -76,11 +103,18 @@ else
                 throw e;
             }
         },
-        loadSubScript: function loadSubScript() this.loader.loadSubScript.apply(this.loader, arguments),
+
+        loadSubScript: function loadSubScript(script) {
+            let now = Date.now();
+            this.loader.loadSubScript.apply(this.loader, arguments);
+            this.times.add("loadSubScript", script, Date.now() - now);
+        },
+
         cleanup: function unregister() {
             for each (let factory in this.factories.splice(0))
                 this.manager.unregisterFactory(factory.classID, factory);
         },
+
         purge: function purge() {
             dump("dactyl: JSMLoader: purge\n");
 

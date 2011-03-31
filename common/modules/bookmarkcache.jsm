@@ -151,7 +151,6 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
         return this.rootFolders.indexOf(root) >= 0;
     },
 
-    // Should be made thread safe.
     load: function load() {
         let bookmarks = {};
 

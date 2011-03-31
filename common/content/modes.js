@@ -640,7 +640,7 @@ var Modes = Module("modes", {
 
         options.add(["showmode", "smd"],
             "Show the current mode in the command line when it matches this expression",
-            "stringlist", "!normal,base",
+            "stringlist", "caret,output_multiline,!normal,base",
             opts);
     },
     prefs: function initPrefs() {

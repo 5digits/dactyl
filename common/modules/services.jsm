@@ -59,6 +59,7 @@ var Services = Module("Services", {
         this.add("stylesheet",          "@mozilla.org/content/style-sheet-service;1",       "nsIStyleSheetService");
         this.add("subscriptLoader",     "@mozilla.org/moz/jssubscript-loader;1",            "mozIJSSubScriptLoader");
         this.add("tagging",             "@mozilla.org/browser/tagging-service;1",           "nsITaggingService");
+        this.add("tld",                 "@mozilla.org/network/effective-tld-service;1",     "nsIEffectiveTLDService");
         this.add("threading",           "@mozilla.org/thread-manager;1",                    "nsIThreadManager");
         this.add("urifixup",            "@mozilla.org/docshell/urifixup;1",                 "nsIURIFixup");
         this.add("versionCompare",      "@mozilla.org/xpcom/version-comparator;1",          "nsIVersionComparator");
