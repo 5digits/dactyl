@@ -134,6 +134,7 @@
       - CSS property name completion is now available. [b4]
       - :delstyle, :styleenable, :styledisable and :styletoggle accept a !
         to operate on all styles. [b6]
+      - Added Find group. [b7]
     • IMPORTANT option changes:
       - Option value quoting has changed. List options will
         no longer be split at quoted commas and the option name,

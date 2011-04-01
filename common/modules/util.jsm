@@ -1694,7 +1694,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             do {
                 mainThread.processNextEvent(!flush);
                 if (util.interrupted)
-                    throw new Error("Interrupted");
+                    throw Error("Interrupted");
             }
             while (flush === true && mainThread.hasPendingEvents());
         }

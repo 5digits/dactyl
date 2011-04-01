@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
     require: ["services", "storage", "util", "template"],
-    use: ["io", "messages", "prefs"]
+    use: ["io", "messages", "prefs", "styles"]
 }, this);
 
 var ConfigBase = Class("ConfigBase", {
@@ -33,9 +33,12 @@ var ConfigBase = Class("ConfigBase", {
 
     loadStyles: function loadStyles() {
         const { highlight } = require("highlight");
+
         highlight.styleableChrome = this.styleableChrome;
+
         highlight.loadCSS(this.CSS);
         highlight.loadCSS(this.helpCSS);
+
         if (!util.haveGecko("2b"))
             highlight.loadCSS(<![CDATA[
                 !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
@@ -46,6 +49,25 @@ var ConfigBase = Class("ConfigBase", {
                     text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
                 }
             ]]>);
+
+        let hl = highlight.set("Find", "");
+        hl.onChange = function () {
+            function hex(val) ("#" + util.regexp.iterate(/\d+/g, val)
+                                         .map(function (num) ("0" + Number(num).toString(16)).slice(-2))
+                                         .join("")
+                              ).slice(0, 7);
+
+            let elem = services.appShell.hiddenDOMWindow.document.createElement("div");
+            elem.style.cssText = this.cssText;
+            let style = util.computedStyle(elem);
+
+            let keys = iter(Styles.propertyIter(this.cssText)).map(function (p) p.name).toArray();
+            let bg = keys.some(function (k) /^background/.test(k));
+            let fg = keys.indexOf("color") >= 0;
+
+            prefs[bg ? "safeSet" : "safeReset"]("ui.textHighlightBackground", hex(style.backgroundColor));
+            prefs[fg ? "safeSet" : "safeReset"]("ui.textHighlightForeground", hex(style.color));
+        };
     },
 
     get addonID() this.name + "@dactyl.googlecode.com",

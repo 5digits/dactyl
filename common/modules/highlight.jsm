@@ -33,6 +33,8 @@ Highlight.liveProperty = function (name, prop) {
                     h.style.css = h.css;
 
         this.style[prop || name] = this[prop || name];
+        if (this.onChange)
+            this.onChange();
     });
 }
 Highlight.liveProperty("agent");

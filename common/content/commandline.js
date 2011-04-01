@@ -648,10 +648,9 @@ var CommandLine = Module("commandline", {
      * @param {XML} xml The output as an E4X XML object.
      */
     commandOutput: function commandOutput(xml) {
-        XML.ignoreWhitespace = false;
-        XML.prettyPrinting = false;
+        XML.ignoreWhitespace = XML.prettyPrinting = false;
         if (this.command)
-            this.echo(<>:{this.command}{xml}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
+            this.echo(<><div xmlns={XHTML}>:{this.command}</div>&#x0d;{xml}</>, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
         else
             this.echo(xml, this.HIGHLIGHT_NORMAL, this.FORCE_MULTILINE);
         this.command = null;
