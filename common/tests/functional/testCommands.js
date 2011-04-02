@@ -301,7 +301,7 @@ var tests = {
     },
     if: {}, // Skip for now
     javascript: {
-        noOutput: ["''", "'\\n'", "<pre>foo bar</pre>", "window"],
+        noOutput: ["''", "'\\n'", "<pre>foo bar</pre>", "window", "<<EOF\n''\nEOF"],
         completions: [
             ["", hasItems],
             ["window", hasItems],
