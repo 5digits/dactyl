@@ -31,7 +31,7 @@ var options = {};
 
 function testCompleters() {
     for (var option in dactyl.modules.options)
-        for (var [,value] in Iterator([""].concat(options[option.name] || []))) {
+        for (var [, value] in Iterator([""].concat(options[option.name] || []))) {
             dump("OPT COMP " + option.name + " " + value + "\n");
             dactyl.testCompleter(option, "completer", value, "Option '" + option.name + "' completer failed");
         }

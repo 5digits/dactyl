@@ -322,7 +322,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             var [self, events] = [null, array.toObject([[event, callback]])];
         else {
             [self, events] = [event, event[callback || "events"]];
-            [,, capture, allowUntrusted] = arguments;
+            [, , capture, allowUntrusted] = arguments;
         }
 
         if (set.has(events, "input") && !set.has(events, "dactyl-input"))

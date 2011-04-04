@@ -450,7 +450,6 @@ var ConfigBase = Class("ConfigBase", {
         CmdInput;.dactyl-commandline-command
         CmdOutput         white-space: pre;
 
-
         CompGroup
         CompGroup:not(:first-of-type)  margin-top: .5em;
         CompGroup:last-of-type         padding-bottom: 1.5ex;
@@ -478,9 +477,7 @@ var ConfigBase = Class("ConfigBase", {
         CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
         CompMore::after      content: "⌄";
 
-
         Dense              margin-top: 0; margin-bottom: 0;
-
 
         EditorEditing;;*   background: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
         EditorError;;*     background: red !important;
@@ -686,7 +683,6 @@ var ConfigBase = Class("ConfigBase", {
         HelpList;html|ul;dactyl://help/*      display: block; list-style-position: outside; margin: 1em 0;
         HelpListItem;html|li;dactyl://help/*  display: list-item;
 
-
         HelpNote                                    color: red; font-weight: bold;
 
         HelpOpt;;;FontCode                          color: #106326;
@@ -732,7 +728,6 @@ var ConfigBase = Class("ConfigBase", {
         }
         HelpHead4;html|h4;dactyl://help/* {
         }
-
 
         HelpTab;html|dl;dactyl://help/* {
             display: table;

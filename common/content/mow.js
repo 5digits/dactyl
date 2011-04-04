@@ -278,11 +278,11 @@ var MOW = Module("mow", {
         let elem = this.widget.contentDocument.documentElement;
 
         if (showHelp)
-	    this.widgets.message = ["MoreMsg", _("mow.moreHelp")];
+            this.widgets.message = ["MoreMsg", _("mow.moreHelp")];
         else if (force || (options["more"] && Buffer.isScrollable(elem, 1)))
-	    this.widgets.message = ["MoreMsg", _("mow.more")];
+            this.widgets.message = ["MoreMsg", _("mow.more")];
         else
-	    this.widgets.message = ["Question", _("mow.continue")];
+            this.widgets.message = ["Question", _("mow.continue")];
     },
 
     visible: Modes.boundProperty({

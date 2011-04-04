@@ -472,7 +472,7 @@ var HintSession = Class("HintSession", CommandMode, {
             else if (n)
                 hints.setClass(elem, n % 2);
             else
-                hints.setClass(elem, this.validHints[Math.max(0, this.hintNumber-1)].elem === elem);
+                hints.setClass(elem, this.validHints[Math.max(0, this.hintNumber - 1)].elem === elem);
 
             if (n--)
                 this.timeout(next, 50);

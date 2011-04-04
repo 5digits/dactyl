@@ -205,7 +205,7 @@ function require(obj, name, from) {
         if (loaded.util)
             util.reportError(e);
         else
-            defineModule.dump("    " + (e.filename || e.fileName) + ":" + e.lineNumber + ": " + e +"\n");
+            defineModule.dump("    " + (e.filename || e.fileName) + ":" + e.lineNumber + ": " + e + "\n");
     }
 }
 
@@ -216,7 +216,7 @@ defineModule("base", {
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
         "array", "bind", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator", "isinstance", "isObject",
-        "isString", "isSubclass", "iter", "iterAll", "iterOwnProperties","keys", "memoize", "octal",
+        "isString", "isSubclass", "iter", "iterAll", "iterOwnProperties", "keys", "memoize", "octal",
         "properties", "require", "set", "update", "values", "withCallerGlobal"
     ],
     use: ["config", "services", "util"]
