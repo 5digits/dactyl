@@ -783,9 +783,13 @@ unlet s:cpo_save
         commands.add(["scrip[tnames]"],
             "List all sourced script names",
             function () {
-                modules.commandline.commandOutput(
-                    template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                        ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
+                if (!io._scriptNames.length)
+                    dactyl.echomsg(_("command.scriptnames.none"));
+                else
+                    modules.commandline.commandOutput(
+                        template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
+                            ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
+
             },
             { argCount: "0" });
 
