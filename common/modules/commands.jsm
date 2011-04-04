@@ -640,47 +640,55 @@ var Commands = Module("commands", {
 
         /**
          * Displays a list of user-defined commands.
+         *
+         * @param {string} filter Limits the list to those commands with a name
+         *     matching this anchored substring.
          */
-        list: function list() {
+        list: function list(filter) {
             const { commandline, completion } = this.modules;
             function completerToString(completer) {
                 if (completer)
                     return [k for ([k, v] in Iterator(config.completers)) if (completer == completion.closure[v])][0] || "custom";
                 return "";
             }
+            // TODO: allow matching of aliases?
+            function cmds(hive) hive._list.filter(function (cmd) cmd.name.indexOf(filter || "") == 0)
 
-            if (!this.userHives.some(function (h) h._list.length))
+            let hives = this.userHives.map(function (h) [h, cmds(h)]).filter(function ([h, c]) c.length);
+
+            let list = <table>
+                <tr highlight="Title">
+                    <td/>
+                    <td style="padding-right: 1em;"></td>
+                    <td style="padding-right: 1ex;"><!--L-->Name</td>
+                    <td style="padding-right: 1ex;"><!--L-->Args</td>
+                    <td style="padding-right: 1ex;"><!--L-->Range</td>
+                    <td style="padding-right: 1ex;"><!--L-->Complete</td>
+                    <td style="padding-right: 1ex;"><!--L-->Definition</td>
+                </tr>
+                <col style="min-width: 6em; padding-right: 1em;"/>
+                {
+                    template.map(hives, function ([hive, cmds]) let (i = 0)
+                        <tr style="height: .5ex;"/> +
+                        template.map(cmds, function (cmd)
+                            template.map(cmd.names, function (name)
+                            <tr>
+                                <td highlight="Title">{!i++ ? hive.name : ""}</td>
+                                <td>{cmd.bang ? "!" : " "}</td>
+                                <td>{cmd.name}</td>
+                                <td>{cmd.argCount}</td>
+                                <td>{cmd.count ? "0c" : ""}</td>
+                                <td>{completerToString(cmd.completer)}</td>
+                                <td>{cmd.replacementText || "function () { ... }"}</td>
+                            </tr>)) +
+                        <tr style="height: .5ex;"/>)
+                }
+            </table>;
+
+            if (list.*.length() === list.text().length() + 2)
                 dactyl.echomsg(_("command.none"));
             else
-                commandline.commandOutput(
-                    <table>
-                        <tr highlight="Title">
-                            <td/>
-                            <td style="padding-right: 1em;"></td>
-                            <td style="padding-right: 1ex;"><!--L-->Name</td>
-                            <td style="padding-right: 1ex;"><!--L-->Args</td>
-                            <td style="padding-right: 1ex;"><!--L-->Range</td>
-                            <td style="padding-right: 1ex;"><!--L-->Complete</td>
-                            <td style="padding-right: 1ex;"><!--L-->Definition</td>
-                        </tr>
-                        <col style="min-width: 6em; padding-right: 1em;"/>
-                        {
-                            template.map(this.userHives, function (hive) let (i = 0)
-                                <tr style="height: .5ex;"/> +
-                                template.map(hive, function (cmd)
-                                    template.map(cmd.names, function (name)
-                                    <tr>
-                                        <td highlight="Title">{!i++ ? hive.name : ""}</td>
-                                        <td>{cmd.bang ? "!" : " "}</td>
-                                        <td>{cmd.name}</td>
-                                        <td>{cmd.argCount}</td>
-                                        <td>{cmd.count ? "0c" : ""}</td>
-                                        <td>{completerToString(cmd.completer)}</td>
-                                        <td>{cmd.replacementText || "function () { ... }"}</td>
-                                    </tr>)) +
-                                <tr style="height: .5ex;"/>)
-                        }
-                    </table>);
+                commandline.commandOutput(list);
         }
     }),
 
@@ -1382,8 +1390,6 @@ var Commands = Module("commands", {
     commands: function initCommands(dactyl, modules, window) {
         const { commands, contexts } = modules;
 
-        // TODO: Vim allows commands to be defined without {rep} if there are {attr}s
-        // specified - useful?
         commands.add(["com[mand]"],
             "List or define commands",
             function (args) {
@@ -1392,8 +1398,8 @@ var Commands = Module("commands", {
                 util.assert(!cmd || cmd.split(",").every(commands.validName.closure.test),
                             _("command.invalidName", cmd));
 
-                if (!args.literalArg)
-                    commands.list();
+                if (args.length <= 1)
+                    commands.list(cmd);
                 else {
                     util.assert(args["-group"].modifiable,
                                 _("group.cantChangeBuiltin", _("command.commands")));
