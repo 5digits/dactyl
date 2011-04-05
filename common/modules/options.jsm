@@ -636,7 +636,7 @@ var Option = Class("Option", {
                 if (invert) {
                     let keepValues = this.value.filter(function (item) !set.has(this, item), set(values));
                     let addValues  = values.filter(function (item) !set.has(this, item), set(this.value));
-                    return this.parse(addValues.concat(keepValues));
+                    return addValues.concat(keepValues);
                 }
                 return values;
             }
