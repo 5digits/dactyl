@@ -154,7 +154,7 @@ var ConfigBase = Class("ConfigBase", {
      */
     VCSPath: Class.memoize(function () {
         if (/pre$/.test(this.addon.version)) {
-            let uri = this.addon.getResourceURI("../.hg");
+            let uri = util.newURI(this.addon.getResourceURI("").spec + "../.hg");
             if (uri instanceof Ci.nsIFileURL &&
                     uri.file.exists() &&
                     io.pathSearch("hg"))
