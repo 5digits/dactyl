@@ -1262,7 +1262,7 @@ var Events = Module("events", {
                         else
                             ignore = true;
 
-                        if (ignore && !Events.isEscape(key))
+                        if (ignore)
                             modes.pop();
                     }
                     else if (!event.isMacro && !event.noremap && events.shouldPass(event))
