@@ -790,6 +790,7 @@ var JavaScript = Module("javascript", {
 
                 this.repl = REPL(this.context);
             },
+
             open: function open(context) {
 
                 modules.mow.echo(this.repl);
@@ -806,6 +807,8 @@ var JavaScript = Module("javascript", {
             historyKey: "javascript",
 
             mode: modes.REPL,
+
+            get completionList() this.widgets.statusbar.commandline.id,
 
             accept: function accept() {
                 dactyl.trapErrors(function () { this.repl.addOutput(this.command) }, this);

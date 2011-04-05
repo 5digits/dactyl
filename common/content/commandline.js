@@ -301,7 +301,7 @@ var CommandWidgets = Class("CommandWidgets", {
 });
 
 var CommandMode = Class("CommandMode", {
-    init: function init() {
+    init: function CM_init() {
         this.keepCommand = userContext.hidden_option_command_afterimage;
     },
 
@@ -311,7 +311,7 @@ var CommandMode = Class("CommandMode", {
     get prompt() this.widgets.prompt,
     set prompt(val) this.widgets.prompt = val,
 
-    open: function (command) {
+    open: function CM_open(command) {
         dactyl.assert(isinstance(this.mode, modes.COMMAND_LINE),
                       /*L*/"Not opening command line in non-command-line mode.");
 
@@ -341,7 +341,7 @@ var CommandMode = Class("CommandMode", {
 
     get widgets() commandline.widgets,
 
-    enter: function (stack) {
+    enter: function CM_enter(stack) {
         commandline.commandSession = this;
         if (stack.pop && commandline.command) {
             this.onChange(commandline.command);
@@ -350,7 +350,7 @@ var CommandMode = Class("CommandMode", {
         }
     },
 
-    leave: function (stack) {
+    leave: function CM_leave(stack) {
         if (!stack.push) {
             commandline.commandSession = null;
             this.input.dactylKeyPress = undefined;
@@ -375,7 +375,7 @@ var CommandMode = Class("CommandMode", {
     },
 
     events: {
-        input: function onInput(event) {
+        input: function CM_onInput(event) {
             if (this.completions) {
                 this.resetCompletions();
 
@@ -383,7 +383,7 @@ var CommandMode = Class("CommandMode", {
             }
             this.onChange(commandline.command);
         },
-        keyup: function onKeyUp(event) {
+        keyup: function CM_onKeyUp(event) {
             let key = events.toString(event);
             if (/-?Tab>$/.test(key) && this.completions)
                 this.completions.tabTimer.flush();
@@ -392,7 +392,7 @@ var CommandMode = Class("CommandMode", {
 
     keepCommand: false,
 
-    onKeyPress: function onKeyPress(events) {
+    onKeyPress: function CM_onKeyPress(events) {
         if (this.completions)
             this.completions.previewClear();
 
@@ -407,7 +407,7 @@ var CommandMode = Class("CommandMode", {
 
     onSubmit: function (value) {},
 
-    resetCompletions: function resetCompletions() {
+    resetCompletions: function CM_resetCompletions() {
         if (this.completions) {
             this.completions.context.cancelAll();
             this.completions.wildIndex = -1;
@@ -426,11 +426,11 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
 
     prompt: ["Normal", ":"],
 
-    complete: function complete(context) {
+    complete: function CEM_complete(context) {
         context.fork("ex", 0, completion, "ex");
     },
 
-    onSubmit: function onSubmit(command) {
+    onSubmit: function CEM_onSubmit(command) {
         contexts.withContext({ file: /*L*/"[Command Line]", line: 1 },
                              function _onSubmit() {
             io.withSavedValues(["readHeredoc"], function _onSubmit() {
@@ -443,13 +443,13 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
 });
 
 var CommandPromptMode = Class("CommandPromptMode", CommandMode, {
-    init: function init(prompt, params) {
+    init: function CPM_init(prompt, params) {
         this.prompt = isArray(prompt) ? prompt : ["Question", prompt];
         update(this, params);
         init.supercall(this);
     },
 
-    complete: function (context) {
+    complete: function CPM_complete(context) {
         if (this.completer)
             context.forkapply("prompt", 0, this, "completer", Array.slice(arguments, 1));
     },
@@ -586,6 +586,9 @@ var CommandLine = Module("commandline", {
 
     get completionList() {
         let node = this.widgets.active.commandline;
+        if (this.commandSession && this.commandSession.completionList)
+            node = document.getElementById(this.commandSession.completionList);
+
         if (!node.completionList) {
             let elem = document.getElementById("dactyl-completions-" + node.id);
             util.waitFor(bind(this.widgets._ready, null, elem));
