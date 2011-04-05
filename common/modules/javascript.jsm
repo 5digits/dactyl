@@ -117,12 +117,8 @@ var JavaScript = Module("javascript", {
             return cache[key];
 
         context[JavaScript.EVAL_TMP] = tmp;
-        context[JavaScript.EVAL_EXPORT] = function export_(obj) cache[key] = obj;
         try {
-            if (tmp != null) // Temporary hack until bug 609949 is fixed.
-                this.modules.dactyl.userEval(JavaScript.EVAL_EXPORT + "(" + arg + ")", context, /*L*/"[Command Line Completion]", 1);
-            else
-                cache[key] = this.modules.dactyl.userEval(arg, context, /*L*/"[Command Line Completion]", 1);
+            cache[key] = this.modules.dactyl.userEval(arg, context, /*L*/"[Command Line Completion]", 1);
 
             return cache[key];
         }
@@ -646,7 +642,6 @@ var JavaScript = Module("javascript", {
 
 }, {
     EVAL_TMP: "__dactyl_eval_tmp",
-    EVAL_EXPORT: "__dactyl_eval_export",
 
     /**
      * A map of argument completion functions for named methods. The
