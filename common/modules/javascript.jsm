@@ -791,12 +791,12 @@ var JavaScript = Module("javascript", {
                 this.repl = REPL(this.context);
             },
             open: function open(context) {
-                this.updatePrompt();
 
                 modules.mow.echo(this.repl);
                 this.widgets.message = null;
 
                 open.superapply(this, arguments);
+                this.updatePrompt();
             },
 
             complete: function complete(context) {

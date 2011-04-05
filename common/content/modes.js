@@ -446,19 +446,22 @@ var Modes = Module("modes", {
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
-                     update({ pop: a }, args || {}));
+                     update({ pop: a },
+                            args || {}));
 
             if (mode == null)
                 return;
         }
     },
 
-    replace: function replace(mode, oldMode) {
+    replace: function replace(mode, oldMode, args) {
         while (oldMode && this._modeStack.length > 1 && this.main != oldMode)
             this.pop();
 
         if (this._modeStack.length > 1)
-            this.set(mode, null, null, { push: this.topOfStack, pop: this._modeStack.pop() });
+            this.set(mode, null, null,
+                     update({ push: this.topOfStack, pop: this._modeStack.pop() },
+                            args || {}));
         this.push(mode);
     },
 
