@@ -619,19 +619,24 @@ var Option = Class("Option", {
         stringlist: function stringlist(operator, values, scope, invert) {
             values = Array.concat(values);
 
+            function uniq(ary) {
+                let seen = {};
+                return ary.filter(function (elem) !set.add(seen, elem));
+            }
+
             switch (operator) {
             case "+":
-                return array.uniq(Array.concat(this.value, values), true);
+                return uniq(Array.concat(this.value, values), true);
             case "^":
                 // NOTE: Vim doesn't prepend if there's a match in the current value
-                return array.uniq(Array.concat(values, this.value), true);
+                return uniq(Array.concat(values, this.value), true);
             case "-":
-                return this.value.filter(function (item) values.indexOf(item) == -1);
+                return this.value.filter(function (item) !set.has(this, item), set(values));
             case "=":
                 if (invert) {
-                    let keepValues = this.value.filter(function (item) values.indexOf(item) == -1);
-                    let addValues  = values.filter(function (item) this.value.indexOf(item) == -1, this);
-                    return addValues.concat(keepValues);
+                    let keepValues = this.value.filter(function (item) !set.has(this, item), set(values));
+                    let addValues  = values.filter(function (item) !set.has(this, item), set(this.value));
+                    return this.parse(addValues.concat(keepValues));
                 }
                 return values;
             }
