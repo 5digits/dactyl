@@ -1490,14 +1490,16 @@ var Events = Module("events", {
             key === "<Esc>" || key === "<C-[>",
 
     isHidden: function isHidden(elem, aggressive) {
-        for (let e = elem; e instanceof Element; e = e.parentNode) {
-            if (util.computedStyle(e).visibility !== "visible" ||
-                    aggressive && !/set$/.test(e.localName)
-                        && e.boxObject && e.boxObject.height === 0)
-                return true;
-            else if (e.namespaceURI == XUL && e.localName === "panel")
-                break;
-        }
+        if (util.computedStyle(elem).visibility !== "visible")
+            return true;
+
+        if (aggressive)
+            for (let e = elem; e instanceof Element; e = e.parentNode) {
+                if (!/set$/.test(e.localName) && e.boxObject && e.boxObject.height === 0)
+                    return true;
+                else if (e.namespaceURI == XUL && e.localName === "panel")
+                    break;
+            }
         return false;
     },
 
