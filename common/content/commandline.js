@@ -443,7 +443,7 @@ var CommandExMode = Class("CommandExMode", CommandMode, {
 });
 
 var CommandPromptMode = Class("CommandPromptMode", CommandMode, {
-    init: function CPM_init(prompt, params) {
+    init: function init(prompt, params) {
         this.prompt = isArray(prompt) ? prompt : ["Question", prompt];
         update(this, params);
         init.supercall(this);
