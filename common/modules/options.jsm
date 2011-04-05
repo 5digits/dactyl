@@ -448,7 +448,7 @@ var Option = Class("Option", {
 
         regexplist: function regexplist(k, default_) {
             for (let re in values(this.value))
-                if (re(k))
+                if ((re.test || re).call(re, k))
                     return re.result;
             return arguments.length > 1 ? default_ : null;
         },
