@@ -579,9 +579,7 @@ var Buffer = Module("buffer", {
      * @property {nsISelectionController} The current document's selection
      *     controller.
      */
-    get selectionController() config.browser.docShell
-            .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
-            .QueryInterface(Ci.nsISelectionController),
+    get selectionController() util.selectionController(this.focusedFrame),
 
     /**
      * Opens the appropriate context menu for *elem*.
