@@ -473,9 +473,13 @@ function curry(fn, length, self, acc) {
 }
 
 if (curry.bind)
-    var bind = function bind(func) func.bind.apply(func, Array.slice(arguments, bind.length));
+    var bind = function bind(meth, self) let (func = callable(meth) ? meth : self[meth])
+        func.bind.apply(func, Array.slice(arguments, 1));
 else
     var bind = function bind(func, self) {
+        if (!callable(func))
+            func = self[func];
+
         let args = Array.slice(arguments, bind.length);
         return function bound() func.apply(self, args.concat(Array.slice(arguments)));
     };

@@ -266,7 +266,10 @@ var Tabs = Module("tabs", {
         let tabs     = this.visibleTabs;
         let position = this.index(null, true);
 
-        if (spec == null || spec === "")
+        if (spec == null)
+            return -1;
+
+        if (spec === "")
             return position;
 
         if (typeof spec === "number")

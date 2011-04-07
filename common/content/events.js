@@ -1665,7 +1665,7 @@ var Events = Module("events", {
                         filter.keys = events.fromString(vals[0]).map(events.closure.toString);
 
                         filter.commandKeys = vals.slice(1).map(events.closure.canonicalKeys);
-                        filter.inputKeys = filter.commandKeys.filter(/^<[ACM]-/);
+                        filter.inputKeys = filter.commandKeys.filter(bind("test", /^<[ACM]-/));
                     });
                     this.flush();
                     return values;
