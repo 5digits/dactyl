@@ -448,7 +448,7 @@ var Option = Class("Option", {
 
         regexplist: function regexplist(k, default_) {
             for (let re in values(this.value))
-                if (re(k))
+                if ((re.test || re).call(re, k))
                     return re.result;
             return arguments.length > 1 ? default_ : null;
         },
@@ -619,18 +619,23 @@ var Option = Class("Option", {
         stringlist: function stringlist(operator, values, scope, invert) {
             values = Array.concat(values);
 
+            function uniq(ary) {
+                let seen = {};
+                return ary.filter(function (elem) !set.add(seen, elem));
+            }
+
             switch (operator) {
             case "+":
-                return array.uniq(Array.concat(this.value, values), true);
+                return uniq(Array.concat(this.value, values), true);
             case "^":
                 // NOTE: Vim doesn't prepend if there's a match in the current value
-                return array.uniq(Array.concat(values, this.value), true);
+                return uniq(Array.concat(values, this.value), true);
             case "-":
-                return this.value.filter(function (item) values.indexOf(item) == -1);
+                return this.value.filter(function (item) !set.has(this, item), set(values));
             case "=":
                 if (invert) {
-                    let keepValues = this.value.filter(function (item) values.indexOf(item) == -1);
-                    let addValues  = values.filter(function (item) this.value.indexOf(item) == -1, this);
+                    let keepValues = this.value.filter(function (item) !set.has(this, item), set(values));
+                    let addValues  = values.filter(function (item) !set.has(this, item), set(this.value));
                     return addValues.concat(keepValues);
                 }
                 return values;
@@ -870,7 +875,7 @@ var Options = Module("options", {
     allPrefs: deprecated("prefs.getNames", function allPrefs() prefs.getNames.apply(prefs, arguments)),
     getPref: deprecated("prefs.get", function getPref() prefs.get.apply(prefs, arguments)),
     invertPref: deprecated("prefs.invert", function invertPref() prefs.invert.apply(prefs, arguments)),
-    listPrefs: deprecated("prefs.list", function listPrefs() { commandline.commandOutput(prefs.list.apply(prefs, arguments)); }),
+    listPrefs: deprecated("prefs.list", function listPrefs() { this.modules.commandline.commandOutput(prefs.list.apply(prefs, arguments)); }),
     observePref: deprecated("prefs.observe", function observePref() prefs.observe.apply(prefs, arguments)),
     popContext: deprecated("prefs.popContext", function popContext() prefs.popContext.apply(prefs, arguments)),
     pushContext: deprecated("prefs.pushContext", function pushContext() prefs.pushContext.apply(prefs, arguments)),
@@ -1056,7 +1061,7 @@ var Options = Module("options", {
                             },
                             { promptHighlight: "WarningMsg" });
                     else if (name == "all")
-                        commandline.commandOutput(prefs.list(onlyNonDefault, ""));
+                        modules.commandline.commandOutput(prefs.list(onlyNonDefault, ""));
                     else if (reset)
                         prefs.reset(name);
                     else if (invertBoolean)
@@ -1169,7 +1174,7 @@ var Options = Module("options", {
 
             context.advance(context.filter.indexOf("="));
             if (option.type == "boolean")
-                return error(context.filter.length, _("error.trailing"));
+                return error(context.filter.length, _("error.trailingCharacters"));
 
             context.advance(1);
             if (opt.error)
@@ -1235,7 +1240,7 @@ var Options = Module("options", {
                     if (str.text().length() == str.*.length())
                         dactyl.echomsg(_("variable.none"));
                     else
-                        dactyl.echo(str, commandline.FORCE_MULTILINE);
+                        dactyl.echo(str, modules.commandline.FORCE_MULTILINE);
                     return;
                 }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>
 
-<!DOCTYPE document SYSTEM "dactyl://content/dtd">
+<!DOCTYPE document SYSTEM "dactyl://content/modes.dtd">
 
 <document
     name="map"
@@ -74,6 +74,15 @@
     they must either be added to your <tt><t>&dactyl.name;rc</t></tt> or
     saved via the <ex>:mk&dactyl.name;rc</ex> command.
 </warning>
+
+<p tag="modes">
+    The following tree represents all of the modes understood by
+    dactyl. Mappings for a mode also apply to its children and
+    descendants. So a mapping in the BASE mode, for instance, is
+    also active in NORMAL and EX mode.
+</p>
+
+&modes.tree;
 
 <h3 tag=":map-commands">Map commands</h3>
 

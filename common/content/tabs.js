@@ -266,7 +266,10 @@ var Tabs = Module("tabs", {
         let tabs     = this.visibleTabs;
         let position = this.index(null, true);
 
-        if (spec == null || spec === "")
+        if (spec == null)
+            return -1;
+
+        if (spec === "")
             return position;
 
         if (typeof spec === "number")
@@ -379,7 +382,7 @@ var Tabs = Module("tabs", {
     reloadAll: function (bypassCache) {
         this.visibleTabs.forEach(function (tab) {
             try {
-                this.reload(config.tabbrowser.mTabs[i], bypassCache);
+                tabs.reload(tab, bypassCache);
             }
             catch (e) {
                 dactyl.reportError(e, true);
@@ -678,7 +681,7 @@ var Tabs = Module("tabs", {
                     if (/^\d+$/.test(arg))
                         tabs.select("-" + arg, true);
                     else
-                        dactyl.echoerr(_("error.trailing"));
+                        dactyl.echoerr(_("error.trailingCharacters"));
                 }
                 else if (count > 0)
                     tabs.select("-" + count, true);
@@ -701,7 +704,7 @@ var Tabs = Module("tabs", {
 
                     // count is ignored if an arg is specified, as per Vim
                     if (arg) {
-                        dactyl.assert(/^\d+$/.test(arg), _("error.trailing"));
+                        dactyl.assert(/^\d+$/.test(arg), _("error.trailingCharacters"));
                         index = arg - 1;
                     }
                     else
@@ -770,7 +773,7 @@ var Tabs = Module("tabs", {
 
                     // FIXME: tabmove! N should probably produce an error
                     dactyl.assert(!arg || /^([+-]?\d+)$/.test(arg),
-                                  _("error.trailing"));
+                                  _("error.trailingCharacters"));
 
                     // if not specified, move to after the last tab
                     tabs.move(config.tabbrowser.mCurrentTab, arg || "$", args.bang);
@@ -825,7 +828,7 @@ var Tabs = Module("tabs", {
                 "Attach the current tab to another window",
                 function (args) {
                     dactyl.assert(args.length <= 2 && !args.some(function (i) !/^\d+$/.test(i)),
-                                  _("error.trailing"));
+                                  _("error.trailingCharacters"));
 
                     let [winIndex, tabIndex] = args.map(parseInt);
                     let win = dactyl.windows[winIndex - 1];

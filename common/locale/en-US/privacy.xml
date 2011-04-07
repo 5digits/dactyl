@@ -92,7 +92,7 @@
 
         <note>
             The following items are always cleared entirely, regardless of
-            <a>timeframe</a>: <em>cache</em>, <em>host</em>, <em>offlineapps</em>,
+            <a>timespan</a>: <em>cache</em>, <em>host</em>, <em>offlineapps</em>,
             <em>passwords</em>, <em>sessions</em>, <em>sitesettings</em>.
             Conversely, <em>host</em> and <em>options</em> are never cleared
             unless a host is specified.

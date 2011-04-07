@@ -197,7 +197,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 argCount: "*",
                 completer: function (context, args) {
                     context.keys.text = util.identity;
-                    context.keys.description = function () seen[this.text] + " matching items";
+                    context.keys.description = function () seen[this.text] + /*L*/" matching items";
                     let seen = {};
                     context.completions = array(item.description.toLowerCase().split(/[()\s]+/)
                                                 for (item in params.iterate(args)))
@@ -605,6 +605,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Initialize the help system.
      */
     initHelp: function (force) {
+        // Waits for the add-on to become available, if necessary.
+        config.addon;
+        config.version;
+
         if (force || !this.helpInitialized) {
             if ("noscriptOverlay" in window) {
                 noscriptOverlay.safeAllow("chrome-data:", true, false);
@@ -685,7 +689,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 unescape(encodeURI( // UTF-8 handling hack.
                 <document xmlns={NS}
                     name="plugins" title={config.appName + " Plugins"}>
-                    <h1 tag="using-plugins">Using Plugins</h1>
+                    <h1 tag="using-plugins"><!--L-->Using Plugins</h1>
                     <toc start="2"/>
 
                     {body}
@@ -1010,7 +1014,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 <description>{
                     obj.description ? br + <p>{template.linkifyHelp(obj.description.replace(/\.?$/, "."), true)}</p> : "" }{
                         extraHelp ? br + extraHelp : "" }{
-                        !(extraHelp || obj.description) ? br + <p>Sorry, no help available.</p> : "" }
+                        !(extraHelp || obj.description) ? br + <p><!--L-->Sorry, no help available.</p> : "" }
                 </description>
             </item></>;
 
@@ -1073,7 +1077,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * These are set and accessed with the "g:" prefix.
      */
     _globalVariables: {},
-    globalVariables: deprecated("the options system", {
+    globalVariables: deprecated(/*L*/"the options system", {
         get: function globalVariables() this._globalVariables
     }),
 
@@ -1160,7 +1164,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     onExecute: function onExecute(event) {
         let cmd = event.originalTarget.getAttribute("dactyl-execute");
         commands.execute(cmd, null, false, null,
-                         { file: "[Command Line]", line: 1 });
+                         { file: /*L*/"[Command Line]", line: 1 });
     },
 
     /**
@@ -1962,7 +1966,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         commandline.commandOutput(
                                 <table>
                                     <tr highlight="Title" align="left">
-                                        <th colspan="3">Code execution summary</th>
+                                        <th colspan="3"><!--L-->Code execution summary</th>
                                     </tr>
                                     <tr><td>&#xa0;&#xa0;Executed:</td><td align="right"><span class="times-executed">{count}</span></td><td>times</td></tr>
                                     <tr><td>&#xa0;&#xa0;Average time:</td><td align="right"><span class="time-average">{each.toFixed(2)}</span></td><td>{eachUnits}</td></tr>

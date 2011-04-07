@@ -308,7 +308,7 @@ var StatusLine = Module("statusline", {
             else if (typeof progress == "number") {
                 let progressStr = "";
                 if (this._progress <= 0)
-                    progressStr = "[ Loading...         ]";
+                    progressStr = /*L*/"[ Loading...         ]";
                 else if (this._progress < 1) {
                     let progress = Math.round(this._progress * 20);
                     progressStr = "["

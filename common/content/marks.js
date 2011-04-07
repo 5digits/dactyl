@@ -146,7 +146,7 @@ var Marks = Module("marks", {
             let mark = (this._localMarks.get(this.localURI) || {})[char];
             dactyl.assert(mark, _("mark.unset", char));
 
-            dactyl.log(_("marks.jumpingToLocal", Marks.markToString(char, mark)), 5);
+            dactyl.log(_("mark.jumpingToLocal", Marks.markToString(char, mark)), 5);
             buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
         }
         else
@@ -249,7 +249,7 @@ var Marks = Module("marks", {
             "Mark current location within the web page",
             function (args) {
                 let mark = args[0] || "";
-                dactyl.assert(mark.length <= 1, _("error.trailing"));
+                dactyl.assert(mark.length <= 1, _("error.trailingCharacters"));
                 dactyl.assert(/[a-zA-Z]/.test(mark), _("mark.invalid"));
 
                 marks.add(mark);

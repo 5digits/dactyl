@@ -203,9 +203,9 @@ var Abbreviations = Module("abbreviations", {
         let list = <table>
                 <tr highlight="Title">
                     <td/>
-                    <td style="padding-right: 1em;">Mode</td>
-                    <td style="padding-right: 1em;">Abbrev</td>
-                    <td style="padding-right: 1em;">Replacement</td>
+                    <td style="padding-right: 1em;"><!--L-->Mode</td>
+                    <td style="padding-right: 1em;"><!--L-->Abbrev</td>
+                    <td style="padding-right: 1em;"><!--L-->Replacement</td>
                 </tr>
                 <col style="min-width: 6em; padding-right: 1em;"/>
                 {
@@ -224,7 +224,7 @@ var Abbreviations = Module("abbreviations", {
 
         // TODO: Move this to an ItemList to show this automatically
         if (list.*.length() === list.text().length() + 2)
-            dactyl.echomsg(_("abbrev.none"));
+            dactyl.echomsg(_("abbreviation.none"));
         else
             commandline.commandOutput(list);
     }
@@ -301,7 +301,7 @@ var Abbreviations = Module("abbreviations", {
                     if (args.bang)
                         args["-group"].clear(modes);
                     else if (!args["-group"].remove(modes, args[0]))
-                        return dactyl.echoerr(_("abbrev.noSuch"));
+                        return dactyl.echoerr(_("abbreviation.noSuch"));
                 }, {
                     argCount: "?",
                     bang: true,

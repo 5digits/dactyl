@@ -183,7 +183,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 append: {
                     SanitizeDialogPane:
                         <groupbox orient="horizontal" xmlns={XUL}>
-                          <caption label={config.appName + " (see :help privacy)"}/>
+                          <caption label={config.appName + /*L*/" (see :help privacy)"}/>
                           <grid flex="1">
                             <columns><column flex="1"/><column flex="1"/></columns>
                             <rows>{
@@ -204,7 +204,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                function (win) prefOverlay(branch, false, {
                 append: {
                     itemList: <>
-                        <listitem xmlns={XUL} label="See :help privacy for the following:" disabled="true" style="font-style: italic; font-weight: bold;"/>
+                        <listitem xmlns={XUL} label={/*L*/"See :help privacy for the following:"} disabled="true" style="font-style: italic; font-weight: bold;"/>
                         {
                           template.map(ourItems(), function ([item, desc])
                             <listitem xmlns={XUL} type="checkbox"
@@ -343,16 +343,18 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         deny:    2,
         session: 8
     },
+
     UNPERMS: Class.memoize(function () iter(this.PERMS).map(Array.reverse).toObject()),
+
     COMMANDS: {
-        unset:   "Unset",
-        allow:   "Allowed",
-        deny:    "Denied",
-        session: "Allowed for the current session",
-        list:    "List all cookies for domain",
-        clear:   "Clear all cookies for domain",
-        "clear-persistent": "Clear all persistent cookies for domain",
-        "clear-session":    "Clear all session cookies for domain"
+        unset:   /*L*/"Unset",
+        allow:   /*L*/"Allowed",
+        deny:    /*L*/"Denied",
+        session: /*L*/"Allowed for the current session",
+        list:    /*L*/"List all cookies for domain",
+        clear:   /*L*/"Clear all cookies for domain",
+        "clear-persistent": /*L*/"Clear all persistent cookies for domain",
+        "clear-session":    /*L*/"Clear all session cookies for domain"
     },
 
     argPrefMap: {
@@ -414,7 +416,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     args[0] = "all";
 
                 if (args.bang) {
-                    dactyl.assert(args.length == 0, _("error.trailing"));
+                    dactyl.assert(args.length == 0, _("error.trailingCharacters"));
                     items = Object.keys(sanitizer.itemMap).filter(
                         function (k) modules.options.get("sanitizeitems").has(k));
                 }

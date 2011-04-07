@@ -207,6 +207,51 @@ var Modes = Module("modes", {
 
             }
         });
+
+        function makeTree() {
+            let list = modes.all.filter(function (m) m.name !== m.description);
+
+            let tree = {};
+
+            for (let mode in values(list))
+                tree[mode.name] = {};
+
+            for (let mode in values(list))
+                for (let base in values(mode.bases))
+                    tree[base.name][mode.name] = tree[mode.name];
+
+            let roots = iter([m.name, tree[m.name]] for (m in values(list)) if (!m.bases.length)).toObject();
+
+            default xml namespace = NS;
+            function rec(obj) {
+                XML.ignoreWhitespace = XML.prettyPrinting = false;
+
+                let res = <ul dactyl:highlight="Dense" xmlns:dactyl={NS}/>;
+                Object.keys(obj).sort().forEach(function (mode) {
+                    res.* += <li><em>{mode}</em>: {modes.getMode(mode).description}{
+                        rec(obj[mode])
+                    }</li>;
+                });
+
+                if (res.*.length())
+                    return res;
+                return <></>;
+            }
+
+            return rec(roots).toXMLString();
+        }
+
+        util.timeout(function () {
+            // Waits for the add-on to become available, if necessary.
+            config.addon;
+            config.version;
+
+            services["dactyl:"].pages["modes.dtd"] = services["dactyl:"].pages["modes.dtd"]();
+        });
+
+        services["dactyl:"].pages["modes.dtd"] = function () [null,
+            util.makeDTD(iter({ "modes.tree": makeTree() },
+                              config.dtd))];
     },
     cleanup: function cleanup() {
         modes.reset();
@@ -278,9 +323,13 @@ var Modes = Module("modes", {
 
     // show the current mode string in the command line
     show: function show() {
+        if (!loaded.modes)
+            return;
+
         let msg = null;
-        if (options.get("showmode").getKey(this.main.name, true))
+        if (options.get("showmode").getKey([this.main].concat(this.main.allBases), false))
             msg = this._getModeMessage();
+
         if (msg || loaded.commandline)
             commandline.widgets.mode = msg || null;
     },
@@ -397,19 +446,22 @@ var Modes = Module("modes", {
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
-                     update({ pop: a }, args || {}));
+                     update({ pop: a },
+                            args || {}));
 
             if (mode == null)
                 return;
         }
     },
 
-    replace: function replace(mode, oldMode) {
+    replace: function replace(mode, oldMode, args) {
         while (oldMode && this._modeStack.length > 1 && this.main != oldMode)
             this.pop();
 
         if (this._modeStack.length > 1)
-            this.set(mode, null, null, { push: this.topOfStack, pop: this._modeStack.pop() });
+            this.set(mode, null, null,
+                     update({ push: this.topOfStack, pop: this._modeStack.pop() },
+                            args || {}));
         this.push(mode);
     },
 
@@ -452,7 +504,7 @@ var Modes = Module("modes", {
             this === obj || this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
         allBases: Class.memoize(function () {
-            let seen = {}, res = [], queue = this.bases;
+            let seen = {}, res = [], queue = this.bases.slice();
             for (let mode in array.iterValues(queue))
                 if (!set.add(seen, mode)) {
                     res.push(mode);
@@ -552,45 +604,47 @@ var Modes = Module("modes", {
             function () { events.feedkeys("<Esc>"); });
     },
     options: function initOptions() {
-        options.add(["passunknown"],
+        let opts = {
+            completer: function completer(context, extra) {
+                if (extra.value && context.filter[0] == "!")
+                    context.advance(1);
+                return completer.superapply(this, arguments);
+            },
+
+            getKey: function getKey(val, default_) {
+                if (isArray(val))
+                    return (array.nth(this.value, function (v) val.some(function (m) m.name === v.mode), 0)
+                                || { result: default_ }).result;
+
+                return set.has(this.valueMap, val) ? this.valueMap[val] : default_;
+            },
+
+            setter: function (vals) {
+                modes.all.forEach(function (m) { delete m.passUnknown });
+
+                vals = vals.map(function (v) update(new String(v.toLowerCase()), {
+                    mode: v.replace(/^!/, "").toUpperCase(),
+                    result: v[0] !== "!"
+                }));
+
+                this.valueMap = values(vals).map(function (v) [v.mode, v.result]).toObject();
+                return vals;
+            },
+
+            validator: function validator(vals) vals.map(function (v) v.replace(/^!/, "")).every(set.has(this.values)),
+
+            get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
+        };
+
+        options.add(["passunknown", "pu"],
             "Pass through unknown keys in these modes",
             "stringlist", "!text_edit,!input,base",
-            {
-                completer: function completer(context, extra) {
-                    if (extra.value && context.filter[0] == "!")
-                        context.advance(1);
-                    return completer.superapply(this, arguments);
-                },
-
-                getKey: function getKey(val, default_) {
-                    if (isArray(val))
-                        return (array.nth(this.value, function (v) val.some(function (m) m.name === v.mode), 0)
-                                    || { result: default_ }).result;
-
-                    return set.has(this.valueMap, val) ? this.valueMap[val] : default_;
-                },
-
-                setter: function (vals) {
-                    modes.all.forEach(function (m) { delete m.passUnknown });
-
-                    vals = vals.map(function (v) update(new String(v.toLowerCase()), {
-                        mode: v.replace(/^!/, "").toUpperCase(),
-                        result: v[0] !== "!"
-                    }));
-
-                    this.valueMap = values(vals).map(function (v) [v.mode, v.result]).toObject();
-                    return vals;
-                },
-
-                validator: function validator(vals) vals.map(function (v) v.replace(/^!/, "")).every(set.has(this.values)),
-
-                get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
-            });
+            opts);
 
         options.add(["showmode", "smd"],
             "Show the current mode in the command line when it matches this expression",
-            "regexplist", "!^normal$",
-            { regexpFlags: "i" });
+            "stringlist", "caret,output_multiline,!normal,base",
+            opts);
     },
     prefs: function initPrefs() {
         prefs.watch("accessibility.browsewithcaret", function () modes.onCaretChange.apply(modes, arguments));

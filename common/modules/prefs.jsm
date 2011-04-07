@@ -115,7 +115,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             }
         };
 
-        return template.options(config.host + " Preferences", prefs.call(this));
+        return template.options(/*L*/config.host + " Preferences", prefs.call(this));
     },
 
     /**
@@ -219,8 +219,8 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         function assertType(needType)
             util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
                 type === Ci.nsIPrefBranch.PREF_INT
-                                ? "E521: Number required after =: " + name + "=" + value
-                                : "E474: Invalid argument: " + name + "=" + value);
+                                ? /*L*/"E521: Number required after =: " + name + "=" + value
+                                : /*L*/"E474: Invalid argument: " + name + "=" + value);
 
         let type = this.branch.getPrefType(name);
         switch (typeof value) {
@@ -288,7 +288,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      */
     toggle: function (name) {
         util.assert(this.branch.getPrefType(name) === Ci.nsIPrefBranch.PREF_BOOL,
-                    _("error.trailing", name + "!"));
+                    _("error.trailingCharacters", name + "!"));
         this.set(name, !this.get(name));
     },
 

@@ -116,7 +116,7 @@ var IO = Module("io", {
 
         outer:
             for (let dir in values(dirs)) {
-                for (let [,path] in Iterator(paths)) {
+                for (let [, path] in Iterator(paths)) {
                     let file = dir.child(path);
 
                     dactyl.echomsg(_("io.searchingFor", file.path.quote()), 3);
@@ -208,7 +208,7 @@ var IO = Module("io", {
                 }
                 catch (e) {
                     dactyl.reportError(e);
-                    let message = "Sourcing file: " + (e.echoerr || file.path + ": " + e);
+                    let message = /*L*/"Sourcing file: " + (e.echoerr || file.path + ": " + e);
                     if (!params.silent)
                         dactyl.echoerr(message);
                 }
@@ -783,9 +783,13 @@ unlet s:cpo_save
         commands.add(["scrip[tnames]"],
             "List all sourced script names",
             function () {
-                modules.commandline.commandOutput(
-                    template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                        ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
+                if (!io._scriptNames.length)
+                    dactyl.echomsg(_("command.scriptnames.none"));
+                else
+                    modules.commandline.commandOutput(
+                        template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
+                            ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
+
             },
             { argCount: "0" });
 
@@ -831,7 +835,7 @@ unlet s:cpo_save
 
                 let result = io.system(arg);
                 if (result.returnValue != 0)
-                    result.output += "\nshell returned " + result.returnValue;
+                    result.output += "\n" + _("io.shellReturn", result.returnValue);
 
                 modules.commandline.command = "!" + arg;
                 modules.commandline.commandOutput(<span highlight="CmdOutput">{result.output}</span>);
@@ -981,9 +985,9 @@ unlet s:cpo_save
                     context.key = match.prefix;
                     context.advance(match.prefix.length + 1);
                     context.generate = function () iter({
-                        content: "Chrome content",
-                        locale: "Locale-specific content",
-                        skin: "Theme-specific content"
+                        content: /*L*/"Chrome content",
+                        locale: /*L*/"Locale-specific content",
+                        skin: /*L*/"Theme-specific content"
                     });
                 }
             }

@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
     require: ["services", "storage", "util", "template"],
-    use: ["io", "messages", "prefs"]
+    use: ["io", "messages", "prefs", "styles"]
 }, this);
 
 var ConfigBase = Class("ConfigBase", {
@@ -33,9 +33,12 @@ var ConfigBase = Class("ConfigBase", {
 
     loadStyles: function loadStyles() {
         const { highlight } = require("highlight");
+
         highlight.styleableChrome = this.styleableChrome;
+
         highlight.loadCSS(this.CSS);
         highlight.loadCSS(this.helpCSS);
+
         if (!util.haveGecko("2b"))
             highlight.loadCSS(<![CDATA[
                 !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
@@ -46,6 +49,25 @@ var ConfigBase = Class("ConfigBase", {
                     text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
                 }
             ]]>);
+
+        let hl = highlight.set("Find", "");
+        hl.onChange = function () {
+            function hex(val) ("#" + util.regexp.iterate(/\d+/g, val)
+                                         .map(function (num) ("0" + Number(num).toString(16)).slice(-2))
+                                         .join("")
+                              ).slice(0, 7);
+
+            let elem = services.appShell.hiddenDOMWindow.document.createElement("div");
+            elem.style.cssText = this.cssText;
+            let style = util.computedStyle(elem);
+
+            let keys = iter(Styles.propertyIter(this.cssText)).map(function (p) p.name).toArray();
+            let bg = keys.some(function (k) /^background/.test(k));
+            let fg = keys.indexOf("color") >= 0;
+
+            prefs[bg ? "safeSet" : "safeReset"]("ui.textHighlightBackground", hex(style.backgroundColor));
+            prefs[fg ? "safeSet" : "safeReset"]("ui.textHighlightForeground", hex(style.color));
+        };
     },
 
     get addonID() this.name + "@dactyl.googlecode.com",
@@ -132,7 +154,7 @@ var ConfigBase = Class("ConfigBase", {
      */
     VCSPath: Class.memoize(function () {
         if (/pre$/.test(this.addon.version)) {
-            let uri = this.addon.getResourceURI("../.hg");
+            let uri = util.newURI(this.addon.getResourceURI("").spec + "../.hg");
             if (uri instanceof Ci.nsIFileURL &&
                     uri.file.exists() &&
                     io.pathSearch("hg"))
@@ -159,7 +181,7 @@ var ConfigBase = Class("ConfigBase", {
                               "--template=hg{rev}-" + this.branch + " ({date|isodate})"]).output;
         let version = this.addon.version;
         if ("@DATE@" !== "@" + "DATE@")
-            version += " (created: @DATE@)";
+            version += /*L*/" (created: @DATE@)";
         return version;
     }),
 
@@ -206,7 +228,7 @@ var ConfigBase = Class("ConfigBase", {
         "version"
     ],
 
-    helpStyles: /^(Help|StatusLine|REPL)|^(Boolean|Indicator|MoreMsg|Number|Object|Logo|Key(word)?|String)$/,
+    helpStyles: /^(Help|StatusLine|REPL)|^(Boolean|Dense|Indicator|MoreMsg|Number|Object|Logo|Key(word)?|String)$/,
     styleHelp: function styleHelp() {
         if (!this.helpStyled) {
             const { highlight } = require("highlight");
@@ -428,7 +450,6 @@ var ConfigBase = Class("ConfigBase", {
         CmdInput;.dactyl-commandline-command
         CmdOutput         white-space: pre;
 
-
         CompGroup
         CompGroup:not(:first-of-type)  margin-top: .5em;
         CompGroup:last-of-type         padding-bottom: 1.5ex;
@@ -456,6 +477,7 @@ var ConfigBase = Class("ConfigBase", {
         CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
         CompMore::after      content: "⌄";
 
+        Dense              margin-top: 0; margin-bottom: 0;
 
         EditorEditing;;*   background: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
         EditorError;;*     background: red !important;
@@ -624,7 +646,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpEx;;;FontCode                           display: inline-block; color: #527BBD;
 
         HelpExample                                 display: block; margin: 1em 0;
-        HelpExample::before                         content: "Example: "; font-weight: bold;
+        HelpExample::before                         content: /*L*/"Example: "; font-weight: bold;
 
         HelpInfo                                    display: block; width: 20em; margin-left: auto;
         HelpInfoLabel                               display: inline-block; width: 6em;  color: magenta; font-weight: bold; vertical-align: text-top;
@@ -660,7 +682,6 @@ var ConfigBase = Class("ConfigBase", {
 
         HelpList;html|ul;dactyl://help/*      display: block; list-style-position: outside; margin: 1em 0;
         HelpListItem;html|li;dactyl://help/*  display: list-item;
-
 
         HelpNote                                    color: red; font-weight: bold;
 
@@ -707,7 +728,6 @@ var ConfigBase = Class("ConfigBase", {
         }
         HelpHead4;html|h4;dactyl://help/* {
         }
-
 
         HelpTab;html|dl;dactyl://help/* {
             display: table;

@@ -75,7 +75,7 @@ var Buffer = Module("buffer", {
             }
 
             if (!verbose && nFeed)
-                yield nFeed + " feed" + (nFeed > 1 ? "s" : "");
+                yield nFeed + /*L*/" feed" + (nFeed > 1 ? "s" : "");
         });
 
         this.addPageInfoSection("g", "General Info", function (verbose) {
@@ -110,7 +110,7 @@ var Buffer = Module("buffer", {
 
             if (!verbose) {
                 if (pageSize[0])
-                    yield (pageSize[1] || pageSize[0]) + " bytes";
+                    yield (pageSize[1] || pageSize[0]) + /*L*/" bytes";
                 yield lastMod;
                 return;
             }
@@ -139,6 +139,41 @@ var Buffer = Module("buffer", {
 
             return Array.map(metaNodes, function (node) [(node.name || node.httpEquiv), template.highlightURL(node.content)])
                         .sort(function (a, b) util.compareIgnoreCase(a[0], b[0]));
+        });
+
+        let identity = window.gIdentityHandler;
+        this.addPageInfoSection("s", "Security", function (verbose) {
+            if (!verbose || !identity)
+                return; // For now
+
+            // Modified from Firefox
+            function location(data) array.compact([
+                data.city, data.state, data.country
+            ]).join(", ");
+
+            switch (statusline.security) {
+            case "secure":
+            case "extended":
+                var data = identity.getIdentityData();
+
+                yield ["Host", identity.getEffectiveHost()];
+
+                if (statusline.security === "extended")
+                    yield ["Owner", data.subjectOrg]
+                else
+                    yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)]
+
+                if (location(data).length)
+                    yield ["Location", location(data)];
+
+                yield ["Verified by", data.caOrg];
+
+                if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
+                                                              (identity._lastLocation.port || 443),
+                                                              data.cert, {}, {}))
+                    yield ["User exception", /*L*/"true"]
+                break;
+            }
         });
 
         dactyl.commands["buffer.viewSource"] = function (event) {
@@ -544,9 +579,7 @@ var Buffer = Module("buffer", {
      * @property {nsISelectionController} The current document's selection
      *     controller.
      */
-    get selectionController() config.browser.docShell
-            .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
-            .QueryInterface(Ci.nsISelectionController),
+    get selectionController() util.selectionController(this.focusedFrame),
 
     /**
      * Opens the appropriate context menu for *elem*.
@@ -572,7 +605,7 @@ var Buffer = Module("buffer", {
         try {
             window.urlSecurityCheck(uri.spec, doc.nodePrincipal);
 
-            io.CommandFileMode("Save link: ", {
+            io.CommandFileMode(_("buffer.prompt.saveLink") + " ", {
                 onSubmit: function (path) {
                     let file = io.File(path);
                     if (file.exists() && file.isDirectory())
@@ -796,7 +829,7 @@ var Buffer = Module("buffer", {
      * @param {Node} elem The element to query.
      */
     showElementInfo: function showElementInfo(elem) {
-        dactyl.echo(<>Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
+        dactyl.echo(<><!--L-->Element:<br/>{util.objectToString(elem, true)}</>, commandline.FORCE_MULTILINE);
     },
 
     /**
@@ -1038,7 +1071,7 @@ var Buffer = Module("buffer", {
     scrollColumns: deprecated("buffer.scrollHorizontal", function scrollColumns(cols) buffer.scrollHorizontal("columns", cols)),
     scrollPages: deprecated("buffer.scrollHorizontal", function scrollPages(pages) buffer.scrollVertical("pages", pages)),
     scrollTo: deprecated("Buffer.scrollTo", function scrollTo(x, y) content.scrollTo(x, y)),
-    textZoom: deprecated("buffer.zoomValue and buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
+    textZoom: deprecated("buffer.zoomValue/buffer.fullZoom", function textZoom() config.browser.markupDocumentViewer.textZoom * 100)
 }, {
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),
@@ -1090,13 +1123,13 @@ var Buffer = Module("buffer", {
 
         var names = [];
         if (node.title)
-            names.push([node.title, "Page Name"]);
+            names.push([node.title, /*L*/"Page Name"]);
 
         if (node.alt)
-            names.push([node.alt, "Alternate Text"]);
+            names.push([node.alt, /*L*/"Alternate Text"]);
 
         if (!isinstance(node, Document) && node.textContent)
-            names.push([node.textContent, "Link Text"]);
+            names.push([node.textContent, /*L*/"Link Text"]);
 
         names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
 
@@ -1249,7 +1282,7 @@ var Buffer = Module("buffer", {
 
                 // FIXME: arg handling is a bit of a mess, check for filename
                 dactyl.assert(!arg || arg[0] == ">" && !util.OS.isWindows,
-                              _("error.trailing"));
+                              _("error.trailingCharacters"));
 
                 prefs.withContext(function () {
                     if (arg) {
@@ -1428,7 +1461,7 @@ var Buffer = Module("buffer", {
                     level = Math.constrain(level, Buffer.ZOOM_MIN, Buffer.ZOOM_MAX);
                 }
                 else
-                    dactyl.assert(false, _("error.trailing"));
+                    dactyl.assert(false, _("error.trailingCharacters"));
 
                 buffer.setZoom(level, args.bang);
             },
@@ -1499,7 +1532,7 @@ var Buffer = Module("buffer", {
                             i = i + 1;
 
                             return {
-                                text: [i + ": " + (tab.label || "(Untitled)"), i + ": " + url],
+                                text: [i + ": " + (tab.label || /*L*/"(Untitled)"), i + ": " + url],
                                 tab: tab,
                                 id: i - 1,
                                 url: url,
@@ -1850,7 +1883,7 @@ var Buffer = Module("buffer", {
 
         options.add(["pageinfo", "pa"],
             "Define which sections are shown by the :pageinfo command",
-            "charlist", "gfm",
+            "charlist", "gsfm",
             { get values() values(buffer.pageInfo).toObject() });
 
         options.add(["scroll", "scr"],

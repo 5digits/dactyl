@@ -384,7 +384,7 @@
 <h2 tag="app-tabs application-tabs pinned-tabs">Application Tabs</h2>
 
 <item>
-    <tags>pin pintab</tags>
+    <tags>:pin :pintab</tags>
     <spec><oa>count</oa>pin<oa>tab</oa><oa>!</oa> <oa>arg</oa></spec>
     <description>
         <p>
@@ -396,7 +396,7 @@
 </item>
 
 <item>
-    <tags>unpin unpintab</tags>
+    <tags>:unpin :unpintab</tags>
     <spec><oa>count</oa>pin<oa>tab</oa> <oa>arg</oa></spec>
     <description>
         <p>

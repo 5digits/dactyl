@@ -322,7 +322,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             var [self, events] = [null, array.toObject([[event, callback]])];
         else {
             [self, events] = [event, event[callback || "events"]];
-            [,, capture, allowUntrusted] = arguments;
+            [, , capture, allowUntrusted] = arguments;
         }
 
         if (set.has(events, "input") && !set.has(events, "dactyl-input"))
@@ -669,12 +669,15 @@ var Events = Module("events", {
 
                     let doc = document.commandDispatcher.focusedWindow.document;
                     let event = events.create(doc, type, evt);
+                    let target = dactyl.focusedElement
+                              || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
+                              || doc.defaultView;
+
+                    if (target instanceof Element && !Events.isInputElement(target))
+                        target = target.ownerDocument.documentElement;
 
                     if (!evt_obj.dactylString && !mode)
-                        events.dispatch(dactyl.focusedElement
-                                            || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
-                                            || doc.defaultView,
-                                        event, evt);
+                        events.dispatch(target, event, evt);
                     else if (type === "keypress")
                         events.events.keypress.call(events, event);
                 }
@@ -1259,7 +1262,7 @@ var Events = Module("events", {
                         else
                             ignore = true;
 
-                        if (ignore && !Events.isEscape(key))
+                        if (ignore)
                             modes.pop();
                     }
                     else if (!event.isMacro && !event.noremap && events.shouldPass(event))
@@ -1487,14 +1490,16 @@ var Events = Module("events", {
             key === "<Esc>" || key === "<C-[>",
 
     isHidden: function isHidden(elem, aggressive) {
-        for (let e = elem; e instanceof Element; e = e.parentNode) {
-            if (util.computedStyle(e).visibility !== "visible" ||
-                    aggressive && !/set$/.test(e.localName)
-                        && e.boxObject && e.boxObject.height === 0)
-                return true;
-            else if (e.namespaceURI == XUL && e.localName === "panel")
-                break;
-        }
+        if (util.computedStyle(elem).visibility !== "visible")
+            return true;
+
+        if (aggressive)
+            for (let e = elem; e instanceof Element; e = e.parentNode) {
+                if (!/set$/.test(e.localName) && e.boxObject && e.boxObject.height === 0)
+                    return true;
+                else if (e.namespaceURI == XUL && e.localName === "panel")
+                    break;
+            }
         return false;
     },
 
@@ -1530,7 +1535,7 @@ var Events = Module("events", {
                 literal: 0
             });
 
-        commands.add(["macros"],
+        commands.add(["mac[ros]"],
             "List all macros",
             function (args) { completion.listCompleter("macro", args[0]); }, {
                 argCount: "?",
@@ -1660,7 +1665,7 @@ var Events = Module("events", {
                         filter.keys = events.fromString(vals[0]).map(events.closure.toString);
 
                         filter.commandKeys = vals.slice(1).map(events.closure.canonicalKeys);
-                        filter.inputKeys = filter.commandKeys.filter(/^<[ACM]-/);
+                        filter.inputKeys = filter.commandKeys.filter(bind("test", /^<[ACM]-/));
                     });
                     this.flush();
                     return values;

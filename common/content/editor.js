@@ -243,7 +243,7 @@ var Editor = Module("editor", {
 
         let args = options.get("editor").format(args);
 
-        dactyl.assert(args.length >= 1, _("editor.noEditor"));
+        dactyl.assert(args.length >= 1, _("option.notSet", "editor"));
 
         io.run(args.shift(), args, blocking);
     },
@@ -272,10 +272,10 @@ var Editor = Module("editor", {
             column = 1 + pre.replace(/[^]*\n/, "").length;
         }
         else {
-            var editor = window.GetCurrentEditor ? GetCurrentEditor()
-                                                 : Editor.getEditor(document.commandDispatcher.focusedWindow);
-            dactyl.assert(editor);
-            text = Array.map(editor.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
+            var editor_ = window.GetCurrentEditor ? GetCurrentEditor()
+                                                  : Editor.getEditor(document.commandDispatcher.focusedWindow);
+            dactyl.assert(editor_);
+            text = Array.map(editor_.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
         }
 
         let origGroup = textBox && textBox.getAttributeNS(NS, "highlight") || "";
@@ -312,16 +312,16 @@ var Editor = Module("editor", {
             if (textBox)
                 textBox.value = val;
             else {
-                while (editor.rootElement.firstChild)
-                    editor.rootElement.removeChild(editor.rootElement.firstChild);
-                editor.rootElement.innerHTML = val;
+                while (editor_.rootElement.firstChild)
+                    editor_.rootElement.removeChild(editor_.rootElement.firstChild);
+                editor_.rootElement.innerHTML = val;
             }
         }
 
         try {
             var tmpfile = io.createTempFile();
             if (!tmpfile)
-                throw Error("Couldn't create temporary file");
+                throw Error(/*L*/"Couldn't create temporary file");
 
             if (textBox) {
                 highlight.highlightNode(textBox, origGroup + " EditorEditing");
@@ -329,7 +329,7 @@ var Editor = Module("editor", {
             }
 
             if (!tmpfile.write(text))
-                throw Error("Input contains characters not valid in the current " +
+                throw Error(/*L*/"Input contains characters not valid in the current " +
                             "file encoding");
 
             var lastUpdate = Date.now();

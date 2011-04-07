@@ -53,16 +53,16 @@ var MOW = Module("mow", {
                     <popupset>
                         <menupopup id="dactyl-contextmenu" highlight="Events" events="contextEvents">
                             <menuitem id="dactyl-context-copylink"
-                                      label="Copy Link Location" dactyl:group="link"
+                                      label={_("mow.contextMenu.copyLink")} dactyl:group="link"
                                       oncommand="goDoCommand('cmd_copyLink');"/>
                             <menuitem id="dactyl-context-copypath"
-                                      label="Copy File Path" dactyl:group="link path"
+                                      label={_("mow.contextMenu.copyPath")} dactyl:group="link path"
                                       oncommand="dactyl.clipboardWrite(document.popupNode.getAttribute('path'));"/>
                             <menuitem id="dactyl-context-copy"
-                                      label="Copy" dactyl:group="selection"
+                                      label={_("mow.contextMenu.copy")} dactyl:group="selection"
                                       command="cmd_copy"/>
                             <menuitem id="dactyl-context-selectall"
-                                      label="Select All"
+                                      label={_("mow.contextMenu.selectAll")}
                                       command="cmd_selectAll"/>
                         </menupopup>
                     </popupset>
@@ -278,11 +278,11 @@ var MOW = Module("mow", {
         let elem = this.widget.contentDocument.documentElement;
 
         if (showHelp)
-	    this.widgets.message = ["MoreMsg", _("mow.moreHelp")];
+            this.widgets.message = ["MoreMsg", _("mow.moreHelp")];
         else if (force || (options["more"] && Buffer.isScrollable(elem, 1)))
-	    this.widgets.message = ["MoreMsg", _("mow.more")];
+            this.widgets.message = ["MoreMsg", _("mow.more")];
         else
-	    this.widgets.message = ["Question", _("mow.continue")];
+            this.widgets.message = ["Question", _("mow.continue")];
     },
 
     visible: Modes.boundProperty({

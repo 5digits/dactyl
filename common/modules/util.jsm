@@ -182,12 +182,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         // check for chars not in the accepted range
         this.assert(RegExp("^[" + accepted + "-]+$").test(list),
-                    _("error.charsOutsideRange", accepted.quote()));
+                    _("error.charactersOutsideRange", accepted.quote()));
 
         // check for illegal ranges
         for (let [match] in this.regexp.iterate(/.-./g, list))
             this.assert(match.charCodeAt(0) <= match.charCodeAt(2),
-                        _("error.invalidCharRange", list.slice(list.indexOf(match))));
+                        _("error.invalidCharacterRange", list.slice(list.indexOf(match))));
 
         return RegExp("[" + util.regexp.escape(list) + "]");
     },
@@ -309,7 +309,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else if (char === "]") {
                 stack.pop();
-                util.assert(stack.length, "Unmatched %] in format");
+                util.assert(stack.length, /*L*/"Unmatched %] in format");
             }
             else {
                 let quote = function quote(obj, char) obj[char];
@@ -328,7 +328,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (end < format.length)
             stack.top.elements.push(format.substr(end));
 
-        util.assert(stack.length === 1, "Unmatched %[ in format");
+        util.assert(stack.length === 1, /*L*/"Unmatched %[ in format");
         return stack.top;
     },
 
@@ -375,7 +375,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else if (close) {
                 stack.pop();
-                util.assert(stack.length, "Unmatched %] in macro");
+                util.assert(stack.length, /*L*/"Unmatched %] in macro");
             }
             else {
                 let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
@@ -402,7 +402,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (end < macro.length)
             stack.top.elements.push(macro.substr(end));
 
-        util.assert(stack.length === 1, "Unmatched <{ in macro");
+        util.assert(stack.length === 1, /*L*/"Unmatched <{ in macro");
         return stack.top;
     },
 
@@ -759,12 +759,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         [hours, minutes]   = div(minutes, 60);
         [days, hours]      = div(hours,   24);
         if (days)
-            return days + " days " + hours + " hours"
+            return /*L*/days + " days " + hours + " hours"
         if (hours)
-            return hours + "h " + minutes + "m";
+            return /*L*/hours + "h " + minutes + "m";
         if (minutes)
-            return minutes + ":" + pad(2, seconds);
-        return seconds + "s";
+            return /*L*/minutes + ":" + pad(2, seconds);
+        return /*L*/seconds + "s";
     },
 
     /**
@@ -1246,7 +1246,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
                 let sentinel = "(function DactylOverlay() {}())"
                 value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
-                value.toSource = function toSource() toString.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
+                value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
 
                 delete desc.value;
                 delete desc.writable;
@@ -1694,7 +1694,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             do {
                 mainThread.processNextEvent(!flush);
                 if (util.interrupted)
-                    throw new Error("Interrupted");
+                    throw Error("Interrupted");
             }
             while (flush === true && mainThread.hasPendingEvents());
         }

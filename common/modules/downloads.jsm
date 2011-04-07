@@ -137,7 +137,7 @@ var Download = Class("Download", {
             if (this.timeRemaining)
                 this.nodes.time.textContent = util.formatSeconds(this.timeRemaining);
             else
-                this.nodes.time.textContent = "~1 second";
+                this.nodes.time.textContent = /*L*/"~1 second";
         }
         let total = this.nodes.progressTotal.textContent = this.size ? util.formatBytes(this.size, 1, true) : "Unknown";
         let suffix = RegExp(/( [a-z]+)?$/i.exec(total)[0] + "$");
@@ -182,20 +182,20 @@ var DownloadList = Class("DownloadList",
 
         util.xmlToDom(<table highlight="Downloads" key="list" xmlns={XHTML}>
                         <tr highlight="DownloadHead">
-                            <span>Title</span>
-                            <span>Status</span>
+                            <span><!--L-->Title</span>
+                            <span><!--L-->Status</span>
                             <span/>
-                            <span>Progress</span>
+                            <span><!--L-->Progress</span>
                             <span/>
-                            <span>Time remaining</span>
-                            <span>Source</span>
+                            <span><!--L-->Time remaining</span>
+                            <span><!--L-->Source</span>
                         </tr>
                         <tr highlight="Download"><span><div style="min-height: 1ex; /* FIXME */"/></span></tr>
                         <tr highlight="Download" key="totals" active="true">
-                            <td><span highlight="Title">Totals:</span>&#xa0;<span key="total"/></td>
+                            <td><span highlight="Title"><!--L-->Totals:</span>&#xa0;<span key="total"/></td>
                             <td/>
                             <td highlight="DownloadButtons">
-                                <a highlight="Button" key="clear">Clear</a>
+                                <a highlight="Button" key="clear"><!--L-->Clear</a>
                             </td>
                             <td highlight="DownloadProgress" key="progress">
                                 <span highlight="DownloadProgressHave" key="progressHave"
@@ -277,7 +277,7 @@ var DownloadList = Class("DownloadList",
 
         let active = downloads.filter(function (dl) dl.alive).length;
         if (active)
-            this.nodes.total.textContent = active + " active";
+            this.nodes.total.textContent = /*L*/active + " active";
         else for (let key in values(["total", "percent", "time"]))
             this.nodes[key].textContent = "";
     },

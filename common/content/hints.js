@@ -472,7 +472,7 @@ var HintSession = Class("HintSession", CommandMode, {
             else if (n)
                 hints.setClass(elem, n % 2);
             else
-                hints.setClass(elem, this.validHints[Math.max(0, this.hintNumber-1)].elem === elem);
+                hints.setClass(elem, this.validHints[Math.max(0, this.hintNumber - 1)].elem === elem);
 
             if (n--)
                 this.timeout(next, 50);
@@ -1189,7 +1189,7 @@ var Hints = Module("hints", {
             "XPath or CSS selector strings of hintable elements for extended hint modes",
             "regexpmap", {
                 "[iI]": "img",
-                "[asOTivVWy]": ["a[href]", "area[href]", "img[src]", "iframe[src]"],
+                "[asOTvVWy]": ["a[href]", "area[href]", "img[src]", "iframe[src]"],
                 "[f]": "body",
                 "[F]": ["body", "code", "div", "html", "p", "pre", "span"],
                 "[S]": ["input:not([type=hidden])", "textarea", "button", "select"]

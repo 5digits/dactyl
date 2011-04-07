@@ -168,7 +168,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
 
         modes = Array.concat(modes);
         if (!modes.every(util.identity))
-            throw TypeError("Invalid modes: " + modes);
+            throw TypeError(/*L*/"Invalid modes: " + modes);
 
         let map = Map(modes, keys, description, action, extra);
         map.definedAt = contexts.getCaller(Components.stack.caller);
@@ -431,9 +431,9 @@ var Mappings = Module("mappings", {
         let list = <table>
                 <tr highlight="Title">
                     <td/>
-                    <td style="padding-right: 1em;">Mode</td>
-                    <td style="padding-right: 1em;">Command</td>
-                    <td style="padding-right: 1em;">Action</td>
+                    <td style="padding-right: 1em;"><!--L-->Mode</td>
+                    <td style="padding-right: 1em;"><!--L-->Command</td>
+                    <td style="padding-right: 1em;"><!--L-->Action</td>
                 </tr>
                 <col style="min-width: 6em; padding-right: 1em;"/>
                 {
@@ -531,7 +531,7 @@ var Mappings = Module("mappings", {
                         {
                             names: ["-description", "-desc", "-d"],
                             description: "A description of this mapping",
-                            default: "User-defined mapping",
+                            default: /*L*/"User-defined mapping",
                             type: CommandOption.STRING
                         },
                         {

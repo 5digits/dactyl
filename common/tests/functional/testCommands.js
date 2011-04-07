@@ -301,7 +301,7 @@ var tests = {
     },
     if: {}, // Skip for now
     javascript: {
-        noOutput: ["''", "'\\n'", "<pre>foo bar</pre>", "window"],
+        noOutput: ["''", "'\\n'", "<pre>foo bar</pre>", "window", "<<EOF\n''\nEOF"],
         completions: [
             ["", hasItems],
             ["window", hasItems],
@@ -545,7 +545,7 @@ var tests = {
     set: {
         multiOutput: [
             "vb?", "cpt?", "messages?", "titlestring?", "au?", "eht?",
-            "cpt", "messages", "titlestring", "au", "eht"
+            "cpt", "messages", "titlestring", "au", "eht", "! "
         ],
         noOutput: ["vb", "novb"],
         completions: [

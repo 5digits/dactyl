@@ -110,7 +110,7 @@ var actions = {
         name: "extr[ehash]",
         description: "Reload an extension",
         action: function (addon) {
-            util.assert(util.haveGecko("2b"), _("error.notUseful", config.host));
+            util.assert(util.haveGecko("2b"), _("command.notUseful", config.host));
             util.timeout(function () {
                 addon.userDisabled = true;
                 addon.userDisabled = false;
@@ -153,9 +153,9 @@ var Addon = Class("Addon", {
                 <td highlight="AddonButtons Buttons">
                     <a highlight="Button" key="enable">{_("addon.action.On")}</a>
                     <a highlight="Button" key="disable">{_("addon.action.Off")}</a>
-                    <a highlight="Button" key="delete">{_("addon.action.Del")}</a>
-                    <a highlight="Button" key="update">{_("addon.action.Upd")}</a>
-                    <a highlight="Button" key="options">{_("addon.action.Opt")}</a>
+                    <a highlight="Button" key="delete">{_("addon.action.Delete")}</a>
+                    <a highlight="Button" key="update">{_("addon.action.Update")}</a>
+                    <a highlight="Button" key="options">{_("addon.action.Options")}</a>
                 </td>
                 <td highlight="AddonDescription" key="description"/>
             </tr>,
@@ -282,11 +282,11 @@ var AddonList = Class("AddonList", {
         XML.ignoreWhitespace = true;
         util.xmlToDom(<table highlight="Addons" key="list" xmlns={XHTML}>
                         <tr highlight="AddonHead">
-                            <td>Name</td>
-                            <td>Version</td>
-                            <td>Status</td>
+                            <td><!--L-->Name</td>
+                            <td><!--L-->Version</td>
+                            <td><!--L-->Status</td>
                             <td/>
-                            <td>Description</td>
+                            <td><!--L-->Description</td>
                         </tr>
                       </table>, this.document, this.nodes);
 
@@ -418,7 +418,7 @@ var Addons = Module("addons", {
                 function (args) {
                     let name = args[0];
                     if (args.bang && !command.bang)
-                        dactyl.assert(!name, _("error.trailing"));
+                        dactyl.assert(!name, _("error.trailingCharacters"));
                     else
                         dactyl.assert(name, _("error.argumentRequired"));
 

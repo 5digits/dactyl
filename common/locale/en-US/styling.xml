@@ -79,6 +79,7 @@
             <dt>Enabled</dt>           <dd>Text indicating enabled status, such as of an extension or style group</dd>
             <dt>ErrorMsg</dt>          <dd>Error messages</dd>
             <dt>Filter</dt>            <dd>The matching text in a completion list</dd>
+            <dt>Find</dt>              <dd>Text find highlighting. Only background and foreground colors apply.</dd>
             <dt>FrameIndicator</dt>    <dd>The indicator shown when a new frame is selected</dd>
             <dt>Function</dt>          <dd>A JavaScript Function object</dd>
             <dt>Hint</dt>              <dd>A hint indicator. See <ex>:help hints</ex></dd>

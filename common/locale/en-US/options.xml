@@ -635,7 +635,7 @@
     <spec>'extendedhinttags' 'eht'</spec>
     <strut/>
     <type>&option.extendedhinttags.type;</type>
-    <default>[asOTivVWy]:a[href],area[href],img[src],iframe[src],
+    <default>[asOTvVWy]:a[href],area[href],img[src],iframe[src],
           [f]:body,
           [F]:body,code,div,html,p,pre,span,
           [iI]:img,
@@ -1103,6 +1103,7 @@
             <dt>g</dt>      <dd>General info</dd>
             <dt>f</dt>      <dd>Feeds</dd>
             <dt>m</dt>      <dd>Meta tags</dd>
+            <dt>s</dt>      <dd>Security information</dd>
         </dl>
 
         <p>
@@ -1138,6 +1139,21 @@
             More subtle and complex pass through can be achieved
             using <t>groups</t> and mode-specific mappings utilizing
             the <k name="Pass"/> pseudo-key.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>'pu' 'passunknown'</tags>
+    <spec>'passunknown' 'pu'</spec>
+    <type>&option.showmode.type;</type>
+    <default>&option.showmode.default;</default>
+    <description>
+        <p>
+            Pass unknown keys through to &dactyl.host; in these
+            <t>modes</t>. The first element matching a currently
+            active mode is the one that takes effect. Modes may be
+            negated by prefixing them with a <tt>!</tt>.
         </p>
     </description>
 </item>
@@ -1329,13 +1345,17 @@
 </item>
 
 <item>
-    <tags>'nosmd' 'noshowmode'</tags>
     <tags>'smd' 'showmode'</tags>
     <spec>'showmode' 'smd'</spec>
     <type>&option.showmode.type;</type>
     <default>&option.showmode.default;</default>
     <description>
-        <p>Show the current mode in the command line if it matches this expression.</p>
+        <p>
+            Show the current mode in the command line if it or any
+            of its parent <t>modes</t> is included in the list.
+            Modes may be negated by prefixing them with a
+            <tt>!</tt>.
+        </p>
     </description>
 </item>
 

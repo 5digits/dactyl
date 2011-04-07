@@ -142,6 +142,7 @@ function defineModule(name, params, module) {
             use[mod].push(module);
         }
     currentModule = module;
+    module.startTime = Date.now();
 }
 
 defineModule.loadLog = [];
@@ -163,7 +164,6 @@ defineModule.dump = function dump_() {
                .replace(/^./gm, name + ": $&"));
 }
 defineModule.modules = [];
-defineModule.times = { all: 0 };
 defineModule.time = function time(major, minor, func, self) {
     let time = Date.now();
     if (typeof func !== "function")
@@ -176,13 +176,7 @@ defineModule.time = function time(major, minor, func, self) {
         loaded.util && util.reportError(e);
     }
 
-    let delta = Date.now() - time;
-    defineModule.times.all += delta;
-    defineModule.times[major] = (defineModule.times[major] || 0) + delta;
-    if (minor) {
-        defineModule.times[":" + minor] = (defineModule.times[":" + minor] || 0) + delta;
-        defineModule.times[major + ":" + minor] = (defineModule.times[major + ":" + minor] || 0) + delta;
-    }
+    JSMLoader.times.add(major, minor, Date.now() - time);
     return res;
 }
 
@@ -211,7 +205,7 @@ function require(obj, name, from) {
         if (loaded.util)
             util.reportError(e);
         else
-            defineModule.dump("    " + (e.filename || e.fileName) + ":" + e.lineNumber + ": " + e +"\n");
+            defineModule.dump("    " + (e.filename || e.fileName) + ":" + e.lineNumber + ": " + e + "\n");
     }
 }
 
@@ -222,7 +216,7 @@ defineModule("base", {
         "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
         "array", "bind", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator", "isinstance", "isObject",
-        "isString", "isSubclass", "iter", "iterAll", "iterOwnProperties","keys", "memoize", "octal",
+        "isString", "isSubclass", "iter", "iterAll", "iterOwnProperties", "keys", "memoize", "octal",
         "properties", "require", "set", "update", "values", "withCallerGlobal"
     ],
     use: ["config", "services", "util"]
@@ -479,9 +473,13 @@ function curry(fn, length, self, acc) {
 }
 
 if (curry.bind)
-    var bind = function bind(func) func.bind.apply(func, Array.slice(arguments, bind.length));
+    var bind = function bind(meth, self) let (func = callable(meth) ? meth : self[meth])
+        func.bind.apply(func, Array.slice(arguments, 1));
 else
     var bind = function bind(func, self) {
+        if (!callable(func))
+            func = self[func];
+
         let args = Array.slice(arguments, bind.length);
         return function bound() func.apply(self, args.concat(Array.slice(arguments)));
     };

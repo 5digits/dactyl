@@ -661,7 +661,7 @@ const Player = Module("player", {
                 let arg = args[0];
 
                 dactyl.assert(arg, _("error.argumentRequired"));
-                dactyl.assert(/^[+-]?\d+$/.test(arg), _("error.trailing"));
+                dactyl.assert(/^[+-]?\d+$/.test(arg), _("error.trailingCharacters"));
 
                 let level = parseInt(arg, 10) / 100;
 
