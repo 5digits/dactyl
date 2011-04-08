@@ -669,7 +669,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 },
                 initialValue: true,
                 persist: false,
-                validator: function (val) parseInt(val) == val || modules.Option.validateCompleter.call(this, val)
+                validator: function validator(val) parseInt(val) == val || validator.superapply(this, arguments)
             });
     }
 });

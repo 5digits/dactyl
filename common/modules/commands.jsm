@@ -1411,20 +1411,13 @@ var Commands = Module("commands", {
                         if (/^custom,/.test(completer)) {
                             completer = completer.substr(7);
 
-                            let context = update({}, contexts.context || {});
+                            if (contexts.context)
+                                var ctxt = update({}, contexts.context || {});
                             completerFunc = function (context) {
-                                try {
-                                    var result = contextswithSavedValues(["context"], function () {
-                                        contexts.context = context;
-                                        return dactyl.userEval(completer);
-                                    });
-                                }
-                                catch (e) {
-                                    dactyl.echo(":" + this.name + " ..."); // XXX
-                                    dactyl.echoerr(_("command.unknownCompleter", completer));
-                                    dactyl.log(e);
-                                    return undefined;
-                                }
+                                var result = contexts.withSavedValues(["context"], function () {
+                                    contexts.context = ctxt;
+                                    return dactyl.userEval(completer);
+                                });
                                 if (callable(result))
                                     return result.apply(this, Array.slice(arguments));
                                 else

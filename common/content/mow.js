@@ -311,7 +311,7 @@ var MOW = Module("mow", {
         mappings.add([modes.COMMAND],
             ["g<lt>"], "Redisplay the last command output",
             function () {
-                dactyl.assert(commandline.lastOutput, _("mow.noPreviousOutput"));
+                dactyl.assert(mow.lastOutput, _("mow.noPreviousOutput"));
                 mow.echo(mow.lastOutput, "Normal");
             });
 
