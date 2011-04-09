@@ -1377,6 +1377,7 @@ var Commands = Module("commands", {
             }
             catch (e) {
                 util.reportError(e);
+                cmdContext.message = _("error.error", e);
             }
         };
 
@@ -1424,8 +1425,11 @@ var Commands = Module("commands", {
                                     return context.completions = result;
                             };
                         }
-                        else
+                        else {
+                            util.assert(set.has(config.completers, completer),
+                                        _("command.unknownCompleter", completer));
                             completerFunc = function (context) modules.completion.closure[config.completers[completer]](context);
+                        }
                     }
 
                     let added = args["-group"].add(cmd.split(","),
