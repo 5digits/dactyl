@@ -107,11 +107,13 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             action: function (range, host) {
                 if (host)
                     services.history.removePagesFromHost(host, true);
-                else
-                    services.history.removeVisitsByTimeframe(range.min, range.max);
-
-                if (!host)
+                else {
+                    if (range.isEternity)
+                        services.history.removeAllPages();
+                    else
+                        services.history.removeVisitsByTimeframe(range.native[0], Math.min(Date.now() * 1000, range.native[1])); // XXX
                     services.observer.notifyObservers(null, "browser:purge-session-history", "");
+                }
 
                 if (!host || util.isDomainURL(prefs.get("general.open_location.last_url"), host))
                     prefs.reset("general.open_location.last_url");
