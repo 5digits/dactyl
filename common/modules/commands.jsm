@@ -1425,11 +1425,8 @@ var Commands = Module("commands", {
                                     return context.completions = result;
                             };
                         }
-                        else {
-                            util.assert(set.has(config.completers, completer),
-                                        _("command.unknownCompleter", completer));
+                        else
                             completerFunc = function (context) modules.completion.closure[config.completers[completer]](context);
-                        }
                     }
 
                     let added = args["-group"].add(cmd.split(","),

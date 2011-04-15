@@ -1000,7 +1000,9 @@ var ErrorBase = Class("ErrorBase", Error, {
     level: 2,
     init: function EB_init(message, level) {
         level = level || 0;
-        update(this, Error(message))
+        let error = Error(message);
+        update(this, error)
+        this.stack = error.stack;
         this.message = message;
 
         let frame = Components.stack;
