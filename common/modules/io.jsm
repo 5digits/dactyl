@@ -992,7 +992,10 @@ unlet s:cpo_save
                 }
             }
             if (!match || match.scheme === "resource" && match.path)
-                if (/^(\.{0,2}|~)\/|^file:/.test(context.filter) || util.getFile(context.filter) || io.isJarURL(context.filter))
+                if (/^(\.{0,2}|~)\/|^file:/.test(context.filter)
+                    || util.OS.isWindows && /^[a-z]:/i.test(url)
+                    || util.getFile(context.filter)
+                    || io.isJarURL(context.filter))
                     completion.file(context, full);
         });
     },

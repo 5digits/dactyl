@@ -609,9 +609,8 @@ var Styles = Module("Styles", {
                                     command: "style",
                                     arguments: [style.sites.join(",")],
                                     literalArg: style.css,
-                                    options: update({
-                                            "-group": hive.name,
-                                        },
+                                    options: update(
+                                        hive.name == "user" ? {} : { "-group": hive.name },
                                         style.name ? { "-name": style.name } : {})
                                 })))
                         .flatten().array

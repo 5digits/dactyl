@@ -1296,7 +1296,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         return urls.map(function (url) {
             url = url.trim();
 
-            if (/^(\.{0,2}|~)(\/|$)/.test(url)) {
+            if (/^(\.{0,2}|~)(\/|$)/.test(url) || util.OS.isWindows && /^[a-z]:/i.test(url)) {
                 try {
                     // Try to find a matching file.
                     let file = io.File(url);
