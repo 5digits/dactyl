@@ -139,10 +139,10 @@
 <item>
     <tags>:no :noremap</tags>
     <spec>:no<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
-    <tags>:nn :nnoremap</tags>
-    <spec>:nn<oa>oremap</oa> <a>lhs</a> <a>rhs</a></spec>
-    <tags>:vn :vnoremap</tags>
-    <spec>:vn<oa>oremap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <tags>:nno :nnoremap</tags>
+    <spec>:nno<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
+    <tags>:vno :vnoremap</tags>
+    <spec>:vno<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:ino :inoremap</tags>
     <spec>:ino<oa>remap</oa> <a>lhs</a> <a>rhs</a></spec>
     <tags>:tno :tnoremap</tags>
