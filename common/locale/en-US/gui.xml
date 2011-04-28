@@ -68,6 +68,21 @@
             Show progress of current downloads. Here, downloads can
             be paused, resumed, and canceled.
         </p>
+
+        <p>Available options include:</p>
+
+        <dl>
+            <dt>-sort</dt> <dd>Sort order (see <o>downloadsort</o>) (short name: <em>-s</em>)</dd>
+        </dl>
+    </description>
+</item>
+
+<item>
+    <tags>:dlc :dlclear</tags>
+    <strut/>
+    <spec>:dlc<oa>lear</oa></spec>
+    <description>
+        <p>Clear completed downloads.</p>
     </description>
 </item>
 

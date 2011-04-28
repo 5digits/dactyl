@@ -983,6 +983,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
         else if (obj instanceof Option) {
             link = function (opt, name) <o>{name}</o>;
+            args = { value: "", values: [] };
         }
 
         XML.prettyPrinting = false;
@@ -1027,7 +1028,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
 
         if (obj.completer)
-            add(completion._runCompleter(obj.completer, "", null, args).items
+            add(completion._runCompleter(obj.closure.completer, "", null, args).items
                           .map(function (i) [i.text, i.description]));
 
         if (obj.options && obj.options.some(function (o) o.description))

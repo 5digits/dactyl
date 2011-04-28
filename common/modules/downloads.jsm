@@ -51,6 +51,7 @@ var Download = Class("Download", {
                     />/<span highlight="DownloadProgressTotal" key="progressTotal"/>
                 </td>
                 <td highlight="DownloadPercent" key="percent"/>
+                <td highlight="DownloadSpeed" key="speed"/>
                 <td highlight="DownloadTime" key="time"/>
                 <td><a highlight="DownloadSource" key="source" href={self.source.spec}>{self.source.spec}</a></td>
             </tr>,
@@ -120,25 +121,46 @@ var Download = Class("Download", {
         }
     },
 
-    compare: function compare(other) String.localeCompare(this.displayName, other.displayName),
+    _compare: {
+        active: function (a, b) a.alive - b.alive,
+        complete: function (a, b) a.percentComplete - b.percentComplete,
+        filename: function (a, b) String.localeCompare(a.targetFile.leafName, b.targetFile.leafName),
+        size: function (a, b) a.size - b.size,
+        speed: function (a, b) a.speed - b.speed,
+        time: function (a, b) a.timeRemaining - b.timeRemaining,
+        url: function (a, b) String.localeCompare(a.source.spec, b.source.spec)
+    },
+
+    compare: function compare(other) values(this.list.sortOrder).map(function (order) {
+        let val = this._compare[order.substr(1)](this, other);
+
+        return (order[0] == "-") ? -val : val;
+    }, this).nth(util.identity, 0) || 0,
 
     timeRemaining: Infinity,
 
     updateProgress: function updateProgress() {
         let self = this.__proto__;
 
-        if (this.amountTransferred === this.size)
+        if (this.amountTransferred === this.size) {
+            this.nodes.speed.textContent = "";
             this.nodes.time.textContent = "";
-        else if (this.speed == 0 || this.size == 0)
-            this.nodes.time.textContent = "Unknown";
-        else {
-            let seconds = (this.size - this.amountTransferred) / this.speed;
-            [, self.timeRemaining] = DownloadUtils.getTimeLeft(seconds, this.timeRemaining);
-            if (this.timeRemaining)
-                this.nodes.time.textContent = util.formatSeconds(this.timeRemaining);
-            else
-                this.nodes.time.textContent = /*L*/"~1 second";
         }
+        else {
+            this.nodes.speed.textContent = util.formatBytes(this.speed, 1, true) + "/s";
+
+            if (this.speed == 0 || this.size == 0)
+                this.nodes.time.textContent = "Unknown";
+            else {
+                let seconds = (this.size - this.amountTransferred) / this.speed;
+                [, self.timeRemaining] = DownloadUtils.getTimeLeft(seconds, this.timeRemaining);
+                if (this.timeRemaining)
+                    this.nodes.time.textContent = util.formatSeconds(this.timeRemaining);
+                else
+                    this.nodes.time.textContent = /*L*/"~1 second";
+            }
+        }
+
         let total = this.nodes.progressTotal.textContent = this.size ? util.formatBytes(this.size, 1, true) : "Unknown";
         let suffix = RegExp(/( [a-z]+)?$/i.exec(total)[0] + "$");
         this.nodes.progressHave.textContent = util.formatBytes(this.amountTransferred, 1, true).replace(suffix, "");
@@ -165,7 +187,8 @@ var DownloadList = Class("DownloadList",
                          XPCOM([Ci.nsIDownloadProgressListener,
                                 Ci.nsIObserver,
                                 Ci.nsISupportsWeakReference]), {
-    init: function init(modules, filter) {
+    init: function init(modules, filter, sort) {
+        this.sortOrder = sort;
         this.modules = modules;
         this.filter = filter && filter.toLowerCase();
         this.nodes = {
@@ -173,6 +196,7 @@ var DownloadList = Class("DownloadList",
         };
         this.downloads = {};
     },
+
     cleanup: function cleanup() {
         this.observe.unregister();
         services.downloadManager.removeListener(this);
@@ -187,6 +211,7 @@ var DownloadList = Class("DownloadList",
                             <span/>
                             <span><!--L-->Progress</span>
                             <span/>
+                            <span><!--L-->Speed</span>
                             <span><!--L-->Time remaining</span>
                             <span><!--L-->Source</span>
                         </tr>
@@ -202,6 +227,7 @@ var DownloadList = Class("DownloadList",
                                 />/<span highlight="DownloadProgressTotal" key="progressTotal"/>
                             </td>
                             <td highlight="DownloadPercent" key="percent"/>
+                            <td highlight="DownloadSpeed" key="speed"/>
                             <td highlight="DownloadTime" key="time"/>
                             <td/>
                         </tr>
@@ -253,6 +279,17 @@ var DownloadList = Class("DownloadList",
         }
     },
 
+    sort: function sort() {
+        let list = values(this.downloads).sort(function (a, b) a.compare(b));
+
+        for (let [i, download] in iter(list))
+            if (this.nodes.list.childNodes[i + 1] != download.nodes.row)
+                this.nodes.list.insertBefore(download.nodes.row,
+                                             this.nodes.list.childNodes[i + 1]);
+    },
+
+    shouldSort: function shouldSort() Array.some(arguments, function (val) this.sortOrder.some(function (v) v.substr(1) == val), this),
+
     update: function update() {
         for (let node in values(this.nodes))
             if (node.update && node.update != update)
@@ -278,8 +315,11 @@ var DownloadList = Class("DownloadList",
         let active = downloads.filter(function (dl) dl.alive).length;
         if (active)
             this.nodes.total.textContent = /*L*/active + " active";
-        else for (let key in values(["total", "percent", "time"]))
+        else for (let key in values(["total", "percent", "speed", "time"]))
             this.nodes[key].textContent = "";
+
+        if (this.shouldSort("complete", "size", "speed", "time"))
+            this.sort();
     },
 
     observers: {
@@ -305,11 +345,15 @@ var DownloadList = Class("DownloadList",
                 this.nodes.list.scrollIntoView(false);
             }
             this.update();
+
+            if (this.shouldSort("active"))
+                this.sort();
         }
         catch (e) {
             util.reportError(e);
         }
     },
+
     onProgressChange: function (webProgress, request,
                                 curProgress, maxProgress,
                                 curTotalProgress, maxTotalProgress,
@@ -328,17 +372,84 @@ var DownloadList = Class("DownloadList",
 var Downloads = Module("downloads", {
 }, {
 }, {
-    commands: function (dactyl, modules, window) {
-        const { commands } = modules;
+    commands: function initCommands(dactyl, modules, window) {
+        const { commands, CommandOption } = modules;
 
         commands.add(["downl[oads]", "dl"],
             "Display the downloads list",
             function (args) {
-                let downloads = DownloadList(modules, args[0]);
+                let downloads = DownloadList(modules, args[0], args["-sort"]);
                 modules.commandline.echo(downloads);
             },
             {
-                argCount: "?"
+                argCount: "?",
+                options: [
+                    {
+                        names: ["-sort", "-s"],
+                        description: "Sort order (see 'downloadsort')",
+                        type: CommandOption.LIST,
+                        get default() modules.options["downloadsort"],
+                        completer: function (context, args) modules.options.get("downloadsort").completer(context, { values: args["-sort"] }),
+                        validator: function (value) modules.options.get("downloadsort").validator(value)
+                    }
+                ]
+            });
+
+        commands.add(["dlc[lear]"],
+            "Clear completed downloads",
+            function (args) { services.downloadManager.cleanUp(); });
+    },
+    options: function initOptions(dactyl, modules, window) {
+        const { options } = modules;
+
+        if (false)
+        options.add(["downloadcolumns", "dlc"],
+            "The columns to show in the download manager",
+            "stringlist", "filename,state,buttons,progress,percent,time,url",
+            {
+                values: {
+                    buttons:    "Control buttons",
+                    filename:   "Target filename",
+                    percent:    "Percent complete",
+                    size:       "File size",
+                    speed:      "Download speed",
+                    state:      "The download's state",
+                    time:       "Time remaining",
+                    url:        "Source URL"
+                }
+            });
+
+        options.add(["downloadsort", "dlsort", "dls"],
+            ":downloads sort order",
+            "stringlist", "-active,+filename",
+            {
+                values: {
+                    active:     "Whether download is active",
+                    complete:   "Percent complete",
+                    filename:   "Target filename",
+                    size:       "File size",
+                    speed:      "Download speed",
+                    time:       "Time remaining",
+                    url:        "Source URL"
+                },
+
+                completer: function (context, extra) {
+                    let seen = set.has(set(extra.values.map(function (val) val.substr(1))));
+
+                    context.completions = iter(this.values).filter(function ([k, v]) !seen(k))
+                                                           .map(function ([k, v]) [["+" + k, [v, " (", _("sort.ascending"), ")"].join("")],
+                                                                                   ["-" + k, [v, " (", _("sort.descending"), ")"].join("")]])
+                                                           .flatten().array;
+                },
+
+                has: function () Array.some(arguments, function (val) this.value.some(function (v) v.substr(1) == val)),
+
+                validator: function (value) {
+                    let seen = {};
+                    return value.every(function (val) /^[+-]/.test(val) && set.has(this.values, val.substr(1))
+                                                                        && !set.add(seen, val.substr(1)),
+                                       this) && value.length;
+                }
             });
     }
 });

@@ -520,6 +520,32 @@
 </item>
 
 <item>
+    <tags>'dls' 'dlsort' 'downloadsort'</tags>
+    <spec>'downloadsort'</spec>
+    <type>stringlist</type>
+    <default>-active,+filename</default>
+    <description>
+        <p>
+            <ex>:downloads</ex> sort order, in order of precedence.
+            Each element must be preceded by a <tt>+</tt> or
+            <tt>-</tt>, indicating ascending or descending sorting,
+            respectively. Valid sort orders are:
+        </p>
+
+        <dl>
+            <dt>active</dt>   <dd>Whether download is active</dd>
+            <dt>complete</dt> <dd>Percent complete</dd>
+            <dt>filename</dt> <dd>Target filename</dd>
+            <dt>size</dt>     <dd>File size</dd>
+            <dt>speed</dt>    <dd>Download speed</dd>
+            <dt>time</dt>     <dd>Time remaining</dd>
+            <dt>url</dt>      <dd>Source URL</dd>
+        </dl>
+    </description>
+</item>
+
+
+<item>
     <tags>'ds' 'defsearch'</tags>
     <spec>'defsearch' 'ds'</spec>
     <type>&option.defsearch.type;</type>

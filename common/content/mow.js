@@ -131,8 +131,8 @@ var MOW = Module("mow", {
             catch (e) {
                 util.reportError(e);
                 util.dump(data);
-                this.messages.push(data);
             }
+            this.messages.push(data);
         }
         else {
             let style = isString(data) ? "pre" : "nowrap";

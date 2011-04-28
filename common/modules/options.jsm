@@ -1439,6 +1439,14 @@ var Options = Module("options", {
                     context.filters.push(function (i) curValues.indexOf(i.text) == -1);
                 if (op == "-")
                     context.filters.push(function (i) curValues.indexOf(i.text) > -1);
+
+                memoize(extra, "values", function () {
+                    if (op == "+")
+                        return curValues.concat(newValues);
+                    if (op == "-")
+                        return curValues.filter(function (v) newValues.indexOf(val) == -1);
+                    return newValues;
+                });
             }
 
             let res = completer.call(opt, context, extra);

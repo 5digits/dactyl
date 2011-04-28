@@ -479,7 +479,7 @@ var ConfigBase = Class("ConfigBase", {
 
         Dense              margin-top: 0; margin-bottom: 0;
 
-        EditorEditing;;*   background: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
+        EditorEditing;;*   background-color: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
         EditorError;;*     background: red !important;
         EditorBlink1;;*    background: yellow !important;
         EditorBlink2;;*
