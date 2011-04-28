@@ -1398,7 +1398,6 @@
 </item>
 
 <item>
-    <tags>'nosf' 'nostrictfocus'</tags>
     <tags>'sf' 'strictfocus'</tags>
     <spec>'strictfocus' 'sf'</spec>
     <type>&option.strictfocus.type;</type>

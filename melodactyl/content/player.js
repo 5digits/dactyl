@@ -376,7 +376,7 @@ const Player = Module("player", {
     },
 
     /**
-     * Loads the the specified media page into *view* with the given *list* of
+     * Loads the specified media page into *view* with the given *list* of
      * media items.
      *
      * @param {sbIMediaPage} page
