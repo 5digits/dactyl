@@ -31,13 +31,14 @@ var ConfigBase = Class("ConfigBase", {
         });
     },
 
-    loadStyles: function loadStyles() {
+    loadStyles: function loadStyles(force) {
         const { highlight } = require("highlight");
+        const { _ } = require("messages");
 
         highlight.styleableChrome = this.styleableChrome;
 
-        highlight.loadCSS(this.CSS);
-        highlight.loadCSS(this.helpCSS);
+        highlight.loadCSS(this.CSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
+        highlight.loadCSS(this.helpCSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
 
         if (!util.haveGecko("2b"))
             highlight.loadCSS(<![CDATA[
@@ -181,7 +182,7 @@ var ConfigBase = Class("ConfigBase", {
                               "--template=hg{rev}-" + this.branch + " ({date|isodate})"]).output;
         let version = this.addon.version;
         if ("@DATE@" !== "@" + "DATE@")
-            version += /*L*/" (created: @DATE@)";
+            version += " " + _("dactyl.created", "@DATE@");
         return version;
     }),
 
@@ -646,7 +647,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpEx;;;FontCode                           display: inline-block; color: #527BBD;
 
         HelpExample                                 display: block; margin: 1em 0;
-        HelpExample::before                         content: /*L*/"Example: "; font-weight: bold;
+        HelpExample::before                         content: "__MSG_help.Example__: "; font-weight: bold;
 
         HelpInfo                                    display: block; width: 20em; margin-left: auto;
         HelpInfoLabel                               display: inline-block; width: 6em;  color: magenta; font-weight: bold; vertical-align: text-top;

@@ -203,9 +203,9 @@ var Abbreviations = Module("abbreviations", {
         let list = <table>
                 <tr highlight="Title">
                     <td/>
-                    <td style="padding-right: 1em;"><!--L-->Mode</td>
-                    <td style="padding-right: 1em;"><!--L-->Abbrev</td>
-                    <td style="padding-right: 1em;"><!--L-->Replacement</td>
+                    <td style="padding-right: 1em;">{_("title.Mode")}</td>
+                    <td style="padding-right: 1em;">{_("title.Abbrev")}</td>
+                    <td style="padding-right: 1em;">{_("title.Replacement")}</td>
                 </tr>
                 <col style="min-width: 6em; padding-right: 1em;"/>
                 {

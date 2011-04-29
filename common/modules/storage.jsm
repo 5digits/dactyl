@@ -321,9 +321,9 @@ var File = Class("File", {
      */
     iterDirectory: function () {
         if (!this.exists())
-            throw Error(/*L*/"File does not exist");
+            throw Error(_("io.noSuchFile"));
         if (!this.isDirectory())
-            throw Error(/*L*/"Not a directory");
+            throw Error(_("io.eNotDir"));
         for (let file in iter(this.directoryEntries))
             yield File(file);
     },
@@ -362,7 +362,7 @@ var File = Class("File", {
      */
     readDirectory: function (sort) {
         if (!this.isDirectory())
-            throw Error(/*L*/"Not a directory");
+            throw Error(_("io.eNotDir"));
 
         let array = [e for (e in this.iterDirectory())];
         if (sort)
@@ -515,7 +515,7 @@ var File = Class("File", {
     DoesNotExist: function (path, error) ({
         path: path,
         exists: function () false,
-        __noSuchMethod__: function () { throw error || Error(/*L*/"Does not exist"); }
+        __noSuchMethod__: function () { throw error || Error("Does not exist"); }
     }),
 
     defaultEncoding: "UTF-8",

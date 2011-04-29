@@ -431,9 +431,9 @@ var Mappings = Module("mappings", {
         let list = <table>
                 <tr highlight="Title">
                     <td/>
-                    <td style="padding-right: 1em;"><!--L-->Mode</td>
-                    <td style="padding-right: 1em;"><!--L-->Command</td>
-                    <td style="padding-right: 1em;"><!--L-->Action</td>
+                    <td style="padding-right: 1em;">{_("title.Mode")}</td>
+                    <td style="padding-right: 1em;">{_("title.Command")}</td>
+                    <td style="padding-right: 1em;">{_("title.Action")}</td>
                 </tr>
                 <col style="min-width: 6em; padding-right: 1em;"/>
                 {

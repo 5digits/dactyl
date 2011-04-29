@@ -689,7 +689,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 unescape(encodeURI( // UTF-8 handling hack.
                 <document xmlns={NS}
                     name="plugins" title={config.appName + " Plugins"}>
-                    <h1 tag="using-plugins"><!--L-->Using Plugins</h1>
+                    <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>
                     <toc start="2"/>
 
                     {body}
@@ -1078,7 +1078,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * These are set and accessed with the "g:" prefix.
      */
     _globalVariables: {},
-    globalVariables: deprecated(/*L*/"the options system", {
+    globalVariables: deprecated(_("deprecated.for.theOptionsSystem"), {
         get: function globalVariables() this._globalVariables
     }),
 
@@ -1967,11 +1967,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         commandline.commandOutput(
                                 <table>
                                     <tr highlight="Title" align="left">
-                                        <th colspan="3"><!--L-->Code execution summary</th>
+                                        <th colspan="3">{_("title.Code execution summary")}</th>
                                     </tr>
-                                    <tr><td>&#xa0;&#xa0;Executed:</td><td align="right"><span class="times-executed">{count}</span></td><td>times</td></tr>
-                                    <tr><td>&#xa0;&#xa0;Average time:</td><td align="right"><span class="time-average">{each.toFixed(2)}</span></td><td>{eachUnits}</td></tr>
-                                    <tr><td>&#xa0;&#xa0;Total time:</td><td align="right"><span class="time-total">{total.toFixed(2)}</span></td><td>{totalUnits}</td></tr>
+                                    <tr><td>&#xa0;&#xa0;{_("title.Executed")}:</td><td align="right"><span class="times-executed">{count}</span></td><td><!--L-->times</td></tr>
+                                    <tr><td>&#xa0;&#xa0;{_("title.Average time")}:</td><td align="right"><span class="time-average">{each.toFixed(2)}</span></td><td>{eachUnits}</td></tr>
+                                    <tr><td>&#xa0;&#xa0;{_("title.Total time")}:</td><td align="right"><span class="time-total">{total.toFixed(2)}</span></td><td>{totalUnits}</td></tr>
                                 </table>);
                     }
                     else {

@@ -208,7 +208,7 @@ var IO = Module("io", {
                 }
                 catch (e) {
                     dactyl.reportError(e);
-                    let message = /*L*/"Sourcing file: " + (e.echoerr || file.path + ": " + e);
+                    let message = _("io.sourcingError", e.echoerr || file.path + ": " + e);
                     if (!params.silent)
                         dactyl.echoerr(message);
                 }

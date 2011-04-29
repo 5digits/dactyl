@@ -115,7 +115,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             }
         };
 
-        return template.options(/*L*/config.host + " Preferences", prefs.call(this));
+        return template.options(_("pref.hostPreferences", config.host), prefs.call(this));
     },
 
     /**

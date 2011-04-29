@@ -363,9 +363,9 @@ var Template = Module("Template", {
         // <e4x>
         return <table>
                 <tr style="text-align: left;" highlight="Title">
-                    <th colspan="2"><!--L-->Jump</th>
-                    <th><!--L-->Title</th>
-                    <th><!--L-->URI</th>
+                    <th colspan="2">{_("title.Jump")}</th>
+                    <th>{_("title.Title")}</th>
+                    <th>{_("title.URI")}</th>
                 </tr>
                 {
                     this.map(Iterator(elems), function ([idx, val])
@@ -496,7 +496,7 @@ var Template = Module("Template", {
                             let (name = item.name || item.names[0], frame = item.definedAt)
                                 !frame ? name :
                                     template.helpLink(help(item), name, "Title") +
-                                    <span highlight="LinkInfo" xmlns:dactyl={NS}><!--L-->Defined at {sourceLink(frame)}</span>
+                                    <span highlight="LinkInfo" xmlns:dactyl={NS}>{_("io.definedAt", sourceLink(frame))}</span>
                         }</span>
                     </td>
                     { item.columns ? template.map(item.columns, function (c) <td>{c}</td>) : "" }

@@ -1629,7 +1629,7 @@ var ItemList = Class("ItemList", {
     _init: function _init() {
         this._div = this._dom(
             <div class="ex-command-output" highlight="Normal" style="white-space: nowrap">
-                <div highlight="Completions" key="noCompletions"><span highlight="Title"><!--L-->No Completions</span></div>
+                <div highlight="Completions" key="noCompletions"><span highlight="Title">{_("completion.noCompletions")}</span></div>
                 <div key="completions"/>
                 <div highlight="Completions">
                 {

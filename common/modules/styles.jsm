@@ -312,9 +312,9 @@ var Styles = Module("Styles", {
                 <tr highlight="Title">
                     <td/>
                     <td/>
-                    <td style="padding-right: 1em;"><!--L-->Name</td>
-                    <td style="padding-right: 1em;"><!--L-->Filter</td>
-                    <td style="padding-right: 1em;"><!--L-->CSS</td>
+                    <td style="padding-right: 1em;">{_("title.Name")}</td>
+                    <td style="padding-right: 1em;">{_("title.Filter")}</td>
+                    <td style="padding-right: 1em;">{_("title.CSS")}</td>
                 </tr>
                 <col style="min-width: 4em; padding-right: 1em;"/>
                 <col style="min-width: 1em; text-align: center; color: red; font-weight: bold;"/>

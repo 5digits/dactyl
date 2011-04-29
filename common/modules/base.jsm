@@ -194,8 +194,10 @@ function require(obj, name, from) {
         if (arguments.length === 1)
             [obj, name] = [{}, obj];
 
+        let caller = Components.stack.caller;
+
         if (!loaded[name])
-            defineModule.loadLog.push((from || "require") + ": loading " + name + (obj.NAME ? " into " + obj.NAME : ""));
+            defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + (obj.NAME || caller.filename + ":" + caller.lineNumber));
 
         JSMLoader.load(name + ".jsm", obj);
         return obj;

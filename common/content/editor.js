@@ -321,7 +321,7 @@ var Editor = Module("editor", {
         try {
             var tmpfile = io.createTempFile();
             if (!tmpfile)
-                throw Error(/*L*/"Couldn't create temporary file");
+                throw Error(_("io.cantCreateTempFile"));
 
             if (textBox) {
                 highlight.highlightNode(textBox, origGroup + " EditorEditing");
@@ -329,8 +329,7 @@ var Editor = Module("editor", {
             }
 
             if (!tmpfile.write(text))
-                throw Error(/*L*/"Input contains characters not valid in the current " +
-                            "file encoding");
+                throw Error(_("io.cantEncode"));
 
             var lastUpdate = Date.now();
 
