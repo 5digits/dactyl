@@ -155,7 +155,6 @@ function init() {
     let chars = "0123456789abcdefghijklmnopqrstuv";
     for (let n = Date.now(); n; n = Math.round(n / chars.length))
         suffix += chars[n % chars.length];
-    suffix = "";
 
     for each (let line in manifest.split("\n")) {
         let fields = line.split(/\s+/);
@@ -172,10 +171,20 @@ function init() {
             break;
 
         case "resource":
+            var hardSuffix = /^[^\/]*/.exec(fields[2])[0];
+
             resources.push(fields[1], fields[1] + suffix);
             resourceProto.setSubstitution(fields[1], getURI(fields[2]));
             resourceProto.setSubstitution(fields[1] + suffix, getURI(fields[2]));
         }
+    }
+
+    // Flush the cache if necessary, just to be paranoid
+    let pref = "extensions.dactyl.cacheFlushCheck";
+    let val  = addon.version + "-" + hardSuffix;
+    if (!Services.prefs.prefHasUserValue(pref) || Services.prefs.getCharPref(pref) != val) {
+        Services.obs.notifyObservers(null, "startupcache-invalidate", "");
+        Services.prefs.setCharPref(pref, val);
     }
 
     try {
