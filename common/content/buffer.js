@@ -375,7 +375,7 @@ var Buffer = Module("buffer", {
      * @returns {string}
      */
     get currentWord() Buffer.currentWord(this.focusedFrame),
-    getCurrentWord: deprecated("buffer.currentWord", function getCurrentWord() this.currentWord),
+    getCurrentWord: deprecated("buffer.currentWord", function getCurrentWord() Buffer.currentWord(this.focusedFrame, true)),
 
     /**
      * Returns true if a scripts are allowed to focus the given input
@@ -1088,7 +1088,7 @@ var Buffer = Module("buffer", {
      *
      * @returns {string}
      */
-    currentWord: function currentWord(win) {
+    currentWord: function currentWord(win, select) {
         let selection = win.getSelection();
         if (selection.rangeCount == 0)
             return "";
@@ -1098,6 +1098,10 @@ var Buffer = Module("buffer", {
             let re = options.get("iskeyword").regexp;
             Editor.extendRange(range, true,  re, true);
             Editor.extendRange(range, false, re, true);
+        }
+        if (select) {
+            selection.removeAllRanges();
+            selection.addRange(range);
         }
         return util.domToString(range);
     },

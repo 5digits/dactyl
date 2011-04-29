@@ -41,10 +41,13 @@ var RangeFinder = Module("rangefinder", {
 
         if (this.rangeFind && equals(this.rangeFind.window.get(), this.window))
             this.rangeFind.reset();
-        this.find("", mode === this.modes.FIND_BACKWARD);
+        this.find("", mode == this.modes.FIND_BACKWARD);
     },
 
     bootstrap: function (str, backward) {
+        if (arguments.length < 2 && this.rangeFind)
+            backward = this.rangeFind.reverse;
+
         let highlighted = this.rangeFind && this.rangeFind.highlighted;
         let selections = this.rangeFind && this.rangeFind.selections;
         let linksOnly = false;
@@ -209,7 +212,7 @@ var RangeFinder = Module("rangefinder", {
         });
     },
     mappings: function (dactyl, modules, window) {
-        const { buffer, config, mappings, modes, rangefinder } = modules;
+        const { Buffer, buffer, config, mappings, modes, rangefinder } = modules;
         var myModes = config.browserModes.concat([modes.CARET]);
 
         mappings.add(myModes,
@@ -231,14 +234,14 @@ var RangeFinder = Module("rangefinder", {
         mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["*"],
             "Find word under cursor",
             function () {
-                rangefinder.find(buffer.getCurrentWord(), false);
+                rangefinder.find(Buffer.currentWord(buffer.focusedFrame, true), false);
                 rangefinder.findAgain();
             });
 
         mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["#"],
             "Find word under cursor backwards",
             function () {
-                rangefinder.find(buffer.getCurrentWord(), true);
+                rangefinder.find(Buffer.currentWord(buffer.focusedFrame, true), true);
                 rangefinder.findAgain();
             });
 
