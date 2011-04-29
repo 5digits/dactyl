@@ -535,6 +535,7 @@
         <dl>
             <dt>active</dt>   <dd>Whether download is active</dd>
             <dt>complete</dt> <dd>Percent complete</dd>
+            <dt>date</dt>     <dd>Date and time the download began</dd>
             <dt>filename</dt> <dd>Target filename</dd>
             <dt>size</dt>     <dd>File size</dd>
             <dt>speed</dt>    <dd>Download speed</dd>

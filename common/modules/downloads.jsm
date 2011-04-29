@@ -124,6 +124,7 @@ var Download = Class("Download", {
     _compare: {
         active: function (a, b) a.alive - b.alive,
         complete: function (a, b) a.percentComplete - b.percentComplete,
+        date: function (a, b) a.startTime - b.startTime,
         filename: function (a, b) String.localeCompare(a.targetFile.leafName, b.targetFile.leafName),
         size: function (a, b) a.size - b.size,
         speed: function (a, b) a.speed - b.speed,
@@ -426,6 +427,7 @@ var Downloads = Module("downloads", {
                 values: {
                     active:     "Whether download is active",
                     complete:   "Percent complete",
+                    date:       "Date and time the download began",
                     filename:   "Target filename",
                     size:       "File size",
                     speed:      "Download speed",
