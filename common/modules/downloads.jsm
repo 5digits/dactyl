@@ -207,21 +207,21 @@ var DownloadList = Class("DownloadList",
 
         util.xmlToDom(<table highlight="Downloads" key="list" xmlns={XHTML}>
                         <tr highlight="DownloadHead">
-                            <span>{_("Title")}</span>
-                            <span>{_("Status")}</span>
+                            <span>{_("title.Title")}</span>
+                            <span>{_("title.Status")}</span>
                             <span/>
-                            <span>{_("Progress")}</span>
+                            <span>{_("title.Progress")}</span>
                             <span/>
-                            <span>{_("Speed")}</span>
-                            <span>{_("Time remaining")}</span>
-                            <span>{_("Source")}</span>
+                            <span>{_("title.Speed")}</span>
+                            <span>{_("title.Time remaining")}</span>
+                            <span>{_("title.Source")}</span>
                         </tr>
                         <tr highlight="Download"><span><div style="min-height: 1ex; /* FIXME */"/></span></tr>
                         <tr highlight="Download" key="totals" active="true">
                             <td><span highlight="Title">{_("title.Totals")}:</span>&#xa0;<span key="total"/></td>
                             <td/>
                             <td highlight="DownloadButtons">
-                                <a highlight="Button" key="clear">{_("Clear")}</a>
+                                <a highlight="Button" key="clear">{_("download.action.Clear")}</a>
                             </td>
                             <td highlight="DownloadProgress" key="progress">
                                 <span highlight="DownloadProgressHave" key="progressHave"
