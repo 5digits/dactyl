@@ -164,7 +164,7 @@ var Tabs = Module("tabs", {
      * @param {boolean} activate Whether to select the newly cloned tab.
      */
     cloneTab: function (tab, activate) {
-        let newTab = config.tabbrowser.addTab();
+        let newTab = config.tabbrowser.addTab("about:blank", { ownerTab: tab.dactylOwner && tab.dactylOwner.get() || tab });
         Tabs.copyTab(newTab, tab);
 
         if (activate)
