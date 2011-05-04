@@ -686,14 +686,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 '<?xml version="1.0"?>\n' +
                 '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
                 '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
-                unescape(encodeURI( // UTF-8 handling hack.
                 <document xmlns={NS}
                     name="plugins" title={config.appName + " Plugins"}>
                     <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>
                     <toc start="2"/>
 
                     {body}
-                </document>.toXMLString()));
+                </document>.toXMLString();
             fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
 
             fileMap["versions"] = function () {
@@ -792,14 +791,13 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     '<?xml version="1.0"?>\n' +
                     '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
                     '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
-                    unescape(encodeURI( // UTF-8 handling hack.
                     <document xmlns={NS} xmlns:dactyl={NS}
                         name="versions" title={config.appName + " Versions"}>
                         <h1 tag="versions news NEWS">{config.appName} Versions</h1>
                         <toc start="2"/>
 
                         {body}
-                    </document>.toXMLString()))
+                    </document>.toXMLString()
                 ];
             }
             addTags("versions", util.httpGet("dactyl://help/versions").responseXML);
@@ -810,11 +808,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             overlayMap["index"] = ['text/xml;charset=UTF-8',
                 '<?xml version="1.0"?>\n' +
                 '<overlay xmlns="' + NS + '">\n' +
-                unescape(encodeURI( // UTF-8 handling hack.
                 template.map(dactyl.indices, function ([name, iter])
                     <dl insertafter={name + "-index"}>{
                         template.map(iter(), util.identity)
-                    }</dl>, <>{"\n\n"}</>))) +
+                    }</dl>, <>{"\n\n"}</>) +
                 '\n</overlay>'];
 
             addTags("index", util.httpGet("dactyl://help-overlay/index").responseXML);

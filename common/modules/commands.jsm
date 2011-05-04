@@ -969,7 +969,7 @@ var Commands = Module("commands", {
                                     util.assert(!error, error);
 
                                     // if we add the argument to an option after a space, it MUST not be empty
-                                    if (sep != "=" && !quote && arg.length == 0)
+                                    if (sep != "=" && !quote && arg.length == 0 && !complete)
                                         arg = null;
 
                                     count++; // to compensate the "=" character

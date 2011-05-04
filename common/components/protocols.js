@@ -248,7 +248,7 @@ function LocaleChannel(pkg, path, orig) {
 
 function StringChannel(data, contentType, uri) {
     let channel = services.StreamChannel(uri);
-    channel.contentStream = services.StringStream(data);
+    channel.contentStream = services.CharsetConv("UTF-8").convertToInputStream(data);
     if (contentType)
         channel.contentType = contentType;
     channel.contentCharset = "UTF-8";
