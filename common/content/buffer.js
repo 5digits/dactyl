@@ -1752,7 +1752,7 @@ var Buffer = Module("buffer", {
             function () {
                 let url = dactyl.clipboardRead();
                 dactyl.assert(url, _("error.clipboardEmpty"));
-                dactyl.open(url);
+                dactyl.open(url.replace(/\s+/g, ""));
             });
 
         mappings.add([modes.NORMAL], ["P", "<tab-open-clipboard-url>"],
@@ -1760,7 +1760,7 @@ var Buffer = Module("buffer", {
             function () {
                 let url = dactyl.clipboardRead();
                 dactyl.assert(url, _("error.clipboardEmpty"));
-                dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB });
+                dactyl.open(url.replace(/\s+/g, ""), { from: "paste", where: dactyl.NEW_TAB });
             });
 
         // reloading

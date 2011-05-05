@@ -1307,7 +1307,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // If it starts with a valid protocol, pass it through.
             let proto = /^([-\w]+):/.exec(url);
             if (proto && "@mozilla.org/network/protocol;1?name=" + proto[1] in Cc)
-                return url.replace(/\s+/g, "");
+                return url;
 
             // Check for a matching search keyword.
             let searchURL = this.has("bookmarks") && bookmarks.getSearchURL(url, false);
@@ -1681,7 +1681,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         options.add(["urlseparator", "urlsep", "us"],
             "The regular expression used to separate multiple URLs in :open and friends",
-            "string", "\\|",
+            "string", " \\| ",
             { validator: function (value) RegExp(value) });
 
         options.add(["verbose", "vbs"],

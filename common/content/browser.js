@@ -200,9 +200,13 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             ["o"], "Open one or more URLs",
             function () { CommandExMode().open("open "); });
 
+        function decode(uri) statusline.losslessDecodeURI(uri)
+                                       .replace(/%20(?!(?:%20)*$)/g, " ")
+                                       .replace(RegExp(options["urlseparator"], "g"), encodeURIComponent);
+
         mappings.add([modes.NORMAL], ["O"],
             "Open one or more URLs, based on current location",
-            function () { CommandExMode().open("open " + buffer.uri.spec); });
+            function () { CommandExMode().open("open " + decode(buffer.uri.spec)); });
 
         mappings.add([modes.NORMAL], ["t"],
             "Open one or more URLs in a new tab",
@@ -210,7 +214,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
         mappings.add([modes.NORMAL], ["T"],
             "Open one or more URLs in a new tab, based on current location",
-            function () { CommandExMode().open("tabopen " + buffer.uri.spec); });
+            function () { CommandExMode().open("tabopen " + decode(buffer.uri.spec)); });
 
         mappings.add([modes.NORMAL], ["w"],
             "Open one or more URLs in a new window",
@@ -218,7 +222,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
         mappings.add([modes.NORMAL], ["W"],
             "Open one or more URLs in a new window, based on current location",
-            function () { CommandExMode().open("winopen " + buffer.uri.spec); });
+            function () { CommandExMode().open("winopen " + decode(buffer.uri.spec)); });
 
         mappings.add([modes.NORMAL], ["~"],
             "Open home directory",
