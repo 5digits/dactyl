@@ -1128,6 +1128,7 @@
 
         <dl dt="width: 6em;">
             <dt>g</dt>      <dd>General info</dd>
+            <dt>e</dt>      <dd>Search Engines</dd>
             <dt>f</dt>      <dd>Feeds</dd>
             <dt>m</dt>      <dd>Meta tags</dd>
             <dt>s</dt>      <dd>Security information</dd>

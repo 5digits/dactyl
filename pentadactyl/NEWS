@@ -109,7 +109,7 @@
       - Added several new options, including -javascript, to :abbreviate and
         :map. [b2]
       - Added :mksyntax command to auto-generate Vim syntax files. [b4]
-      - Added 's' flag to :pageinfo command. [b7]
+      - Added 's' and 'e' flags to :pageinfo command. [b7]
       - Added :pintab and :unpintab commands. [b7]
       - :open now only opens files beginning with /, ./, ../, or ~/ [b1]
       - :saveas now provides completions for default file names, and
@@ -148,7 +148,7 @@
         specially. Use "." instead. [b2]
       - 'extendedhinttags' is now a [regexpmap] rather than a
         string. [b2]
-      - 'guioptions' default value has changed. [b4]
+      - 'guioptions' default value has changed. [b4][b7]
       - 'hinttags' and 'extendedhinttags' now treat their values as
         CSS selectors by default. [b6]
       - 'incsearch', 'hlsearch', 'ignorecase', and 'smartcase' have

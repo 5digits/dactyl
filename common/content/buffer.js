@@ -19,6 +19,24 @@ var Buffer = Module("buffer", {
         this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};
 
+        this.addPageInfoSection("e", "Search Engines", function (verbose) {
+
+            let n = 1;
+            let nEngines = 0;
+            for (let { document: doc } in values(buffer.allFrames())) {
+                let engines = util.evaluateXPath(["link[@href and @rel='search' and @type='application/opensearchdescription+xml']"], doc);
+                nEngines += engines.snapshotLength;
+
+                if (verbose)
+                    for (let link in engines)
+                        yield [link.title || /*L*/ "Engine " + n++,
+                               <a xmlns={XHTML} href={link.href} onclick="window.external.AddSearchProvider(this.href); return false;">{link.href}</a>];
+            }
+
+            if (!verbose && nEngines)
+                yield nEngines + /*L*/" engine" + (nEngines > 1 ? "s" : "");
+        });
+
         this.addPageInfoSection("f", "Feeds", function (verbose) {
             const feedTypes = {
                 "application/rss+xml": "RSS",
@@ -1887,7 +1905,7 @@ var Buffer = Module("buffer", {
 
         options.add(["pageinfo", "pa"],
             "Define which sections are shown by the :pageinfo command",
-            "charlist", "gsfm",
+            "charlist", "gesfm",
             { get values() values(buffer.pageInfo).toObject() });
 
         options.add(["scroll", "scr"],
