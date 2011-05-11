@@ -30,7 +30,7 @@ var Buffer = Module("buffer", {
                 if (verbose)
                     for (let link in engines)
                         yield [link.title || /*L*/ "Engine " + n++,
-                               <a xmlns={XHTML} href={link.href} onclick="window.external.AddSearchProvider(this.href); return false;">{link.href}</a>];
+                               <a xmlns={XHTML} href={link.href} onclick="if (event.button == 0) { window.external.AddSearchProvider(this.href); return false; }">{link.href}</a>];
             }
 
             if (!verbose && nEngines)

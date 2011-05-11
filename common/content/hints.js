@@ -70,6 +70,15 @@ var HintSession = Class("HintSession", CommandMode, {
                 hints.setClass(this.imgSpan, this.valid ? val : null);
         },
 
+        get ambiguous() this.span.hasAttribute("ambiguous"),
+        set ambiguous(val) {
+            let meth = val ? "setAttribute" : "removeAttribute";
+            this.elem[meth]("ambiguous", "true");
+            this.span[meth]("ambiguous", "true");
+            if (this.imgSpan)
+                this.imgSpan[meth]("ambiguous", "true");
+        },
+
         get valid() this._valid,
         set valid(val) {
             this._valid = val,
@@ -153,6 +162,21 @@ var HintSession = Class("HintSession", CommandMode, {
         }
         while (n > 0);
         return res.reverse().join("");
+    },
+
+    /**
+     * The reverse of {@link #getHintString}. Given a hint string,
+     * returns its index.
+     *
+     * @param {string} str The hint's string.
+     * @returns {number} The hint's index.
+     */
+    getHintNumber: function getHintNumber(str) {
+        let base = this.hintKeys.length;
+        let res = 0;
+        for (let char in values(str))
+            res = res * base + this.hintKeys.indexOf(char);
+        return res;
     },
 
     /**
@@ -511,8 +535,10 @@ var HintSession = Class("HintSession", CommandMode, {
 
             for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
-            for (let i in util.range(start, end + 1))
+            for (let i in util.range(start, end + 1)) {
+                this.pageHints[i].ambiguous = false;
                 this.pageHints[i].valid = false;
+            }
         }
         styles.system.remove("hint-positions");
 
@@ -586,11 +612,16 @@ var HintSession = Class("HintSession", CommandMode, {
                 hint.span.setAttribute("number", str);
                 if (hint.imgSpan)
                     hint.imgSpan.setAttribute("number", str);
+
                 hint.active = activeHint == hintnum;
+
                 this.validHints.push(hint);
                 hintnum++;
             }
         }
+
+        for (let [i, hint] in Iterator(this.validHints))
+            hint.ambiguous = i * this.hintKeys.length < this.validHints.length;
 
         if (options["usermode"]) {
             let css = [];
