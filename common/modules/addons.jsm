@@ -59,12 +59,13 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
 
     },
     onUpdateAvailable: function (addon, install) {
+        util.dump("onUpdateAvailable");
         this.upgrade.push(addon);
         install.addListener(this);
         install.install();
     },
     onUpdateFinished: function (addon, error) {
-        this.remaining = this.remaining.filter(function (a) a != addon);
+        this.remaining = this.remaining.filter(function (a) a.type != addon.type || a.id != addon.id);
         if (!this.remaining.length)
             this.dactyl.echomsg(
                 this.upgrade.length

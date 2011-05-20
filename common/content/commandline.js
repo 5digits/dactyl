@@ -725,6 +725,9 @@ var CommandLine = Module("commandline", {
 
         if (flags & this.APPEND_TO_MESSAGES) {
             let message = isObject(data) ? data : { message: data };
+
+            // Make sure the memoized message property is an instance property.
+            message.message;
             this._messageHistory.add(update({ highlight: highlightGroup }, message));
             data = message.message;
         }
