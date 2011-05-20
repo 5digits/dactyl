@@ -1757,28 +1757,32 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
+        function url() {
+            let url = dactyl.clipboardRead();
+            dactyl.assert(url, _("error.clipboardEmpty"));
+
+            let proto = /^([-\w]+):/.exec(url);
+            if (proto && "@mozilla.org/network/protocol;1?name=" + proto[1] in Cc && !RegExp(options["urlseparator"]).test(url))
+                return url.replace(/\s+/g, "");
+            return url;
+        }
+
         mappings.add([modes.NORMAL], ["gP"],
             "Open (]put) a URL based on the current clipboard contents in a new buffer",
             function () {
-                let url = dactyl.clipboardRead();
-                dactyl.assert(url, _("error.clipboardEmpty"));
-                dactyl.open(url, { from: "paste", where: dactyl.NEW_TAB, background: true });
+                dactyl.open(url(), { from: "paste", where: dactyl.NEW_TAB, background: true });
             });
 
         mappings.add([modes.NORMAL], ["p", "<MiddleMouse>", "<open-clipboard-url>"],
             "Open (put) a URL based on the current clipboard contents in the current buffer",
             function () {
-                let url = dactyl.clipboardRead();
-                dactyl.assert(url, _("error.clipboardEmpty"));
-                dactyl.open(url.replace(/\s+/g, ""));
+                dactyl.open(url());
             });
 
         mappings.add([modes.NORMAL], ["P", "<tab-open-clipboard-url>"],
             "Open (put) a URL based on the current clipboard contents in a new buffer",
             function () {
-                let url = dactyl.clipboardRead();
-                dactyl.assert(url, _("error.clipboardEmpty"));
-                dactyl.open(url.replace(/\s+/g, ""), { from: "paste", where: dactyl.NEW_TAB });
+                dactyl.open(url(), { from: "paste", where: dactyl.NEW_TAB });
             });
 
         // reloading
