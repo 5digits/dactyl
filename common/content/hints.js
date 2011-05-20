@@ -1242,7 +1242,7 @@ var Hints = Module("hints", {
             "XPath string of hintable elements activated by 'f' and 'F'",
             "stringlist", "input:not([type=hidden]),a,area,iframe,textarea,button,select," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
-                          "[tabindex],[role=link],[role=button]",
+                          "[tabindex],[role=link],[role=button],[contenteditable=true]",
             {
                 setter: function (values) {
                     this.matcher = util.compileMatcher(values);
