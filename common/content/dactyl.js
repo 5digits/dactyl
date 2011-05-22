@@ -181,6 +181,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     addUsageCommand: function (params) {
+        function keys(item) (item.names || [item.name]).concat(item.description, item.columns || []);
+
         let name = commands.add(params.name, params.description,
             function (args) {
                 let results = array(params.iterate(args))
@@ -188,7 +190,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 let filters = args.map(function (arg) util.regexp("\\b" + util.regexp.escape(arg) + "\\b", "i"));
                 if (filters.length)
-                    results = results.filter(function (item) filters.every(function (re) [item.name, item.description].concat(item.columns || []).some(re.closure.test)));
+                    results = results.filter(function (item) filters.every(function (re) keys(item).some(re.closure.test)));
 
                 commandline.commandOutput(
                     template.usage(results, params.format));
@@ -199,7 +201,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     context.keys.text = util.identity;
                     context.keys.description = function () seen[this.text] + /*L*/" matching items";
                     let seen = {};
-                    context.completions = array(item.description.toLowerCase().split(/[()\s]+/)
+                    context.completions = array(keys(item).join(" ").toLowerCase().split(/[()\s]+/)
                                                 for (item in params.iterate(args)))
                         .flatten().filter(function (w) /^\w[\w-_']+$/.test(w))
                         .map(function (k) {
