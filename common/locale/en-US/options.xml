@@ -1434,6 +1434,14 @@
         <p>
             Prevent scripts from focusing input elements without user intervention.
         </p>
+
+        <p>Possible values:</p>
+
+        <dl>
+            <dt>despotic</dt>      <dd>Only allow focus changes when explicitly requested by the user</dd>
+            <dt>laissez-faire</dt> <dd>Always allow focus changes</dd>
+            <dt>moderate</dt>      <dd>Allow focus changes after user-initiated focus change</dd>
+        </dl>
     </description>
 </item>
 
