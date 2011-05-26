@@ -749,7 +749,7 @@ var ConfigBase = Class("ConfigBase", {
         HelpTag;;;FontCode                          display: inline-block; color: #527BBD; margin-left: 1ex; font-weight: normal;
         HelpTags                                    display: block; float: right; clear: right;
         HelpTopic;;;FontCode                        color: #102663;
-        HelpType;;;FontCode                         margin-right: 2ex;
+        HelpType;;;FontCode                         color: #102663 !important; margin-right: 2ex;
 
         HelpWarning                                 color: red; font-weight: bold;
 

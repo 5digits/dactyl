@@ -511,10 +511,17 @@
             <xsl:apply-templates select="@*|node()" mode="help-1"/>
         </div>
     </xsl:template>
-    <xsl:template match="dactyl:str | dactyl:type" mode="help-2">
-        <span>
-            <xsl:if test="self::dactyl:str"><xsl:attribute name="dactyl:highlight">HelpString</xsl:attribute></xsl:if>
-            <xsl:if test="self::dactyl:type"><xsl:attribute name="dactyl:highlight">HelpType</xsl:attribute></xsl:if>
+    <xsl:template match="dactyl:type" mode="help-2">
+        <a dactyl:highlight="HelpType">
+            <xsl:if test="not(. = 'boolean' or . = 'number' or . = 'string')">
+               <!-- test="contains(ancestor::*/@document-tags, concat(' ', ., ' '))" -->
+                <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
+            </xsl:if>
+            <xsl:apply-templates select="@*|node()" mode="help-1"/>
+        </a>
+    </xsl:template>
+    <xsl:template match="dactyl:str" mode="help-2">
+        <span dactyl:highlight="HelpString">
             <xsl:apply-templates select="@*|node()" mode="help-1"/>
         </span>
     </xsl:template>
