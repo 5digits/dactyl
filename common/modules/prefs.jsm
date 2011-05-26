@@ -210,11 +210,8 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {value} value The new preference value.
      */
     set: function (name, value) {
-        if (this._prefContexts.length) {
-            let val = this.get(name, null);
-            if (val != null)
-                this._prefContexts[this._prefContexts.length - 1][name] = val;
-        }
+        if (this._prefContexts.length)
+            this._prefContexts[this._prefContexts.length - 1][name] = this.get(name, null);
 
         function assertType(needType)
             util.assert(type === Ci.nsIPrefBranch.PREF_INVALID || type === needType,
@@ -240,7 +237,10 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             this.branch.setBoolPref(name, value);
             break;
         default:
-            throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
+            if (value == null && this != this.defaults)
+                this.reset(name);
+            else
+                throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
         }
     },
 

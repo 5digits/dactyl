@@ -1306,10 +1306,19 @@ var Buffer = Module("buffer", {
                 dactyl.assert(!arg || arg[0] == ">" && !util.OS.isWindows,
                               _("error.trailingCharacters"));
 
+                const PRINTER = "PostScript/default";
+                const BRANCH  = "print.printer_" + PRINTER + ".";
+
                 prefs.withContext(function () {
                     if (arg) {
-                        prefs.set("print.print_to_file", "true");
-                        prefs.set("print.print_to_filename", io.File(arg.substr(1)).path);
+                        prefs.set("print.print_printer", PRINTER);
+
+                        prefs.set(   "print.print_to_file", true);
+                        prefs.set(BRANCH + "print_to_file", true);
+
+                        prefs.set(   "print.print_to_filename", io.File(arg.substr(1)).path);
+                        prefs.set(BRANCH + "print_to_filename", io.File(arg.substr(1)).path);
+
                         dactyl.echomsg(_("print.toFile", arg.substr(1)));
                     }
                     else
