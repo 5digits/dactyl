@@ -115,6 +115,24 @@
     </description>
 </item>
 
+<p tag=":map-overview">
+    Below is an overview of which modes each map command applies to:
+</p>
+
+<dl dt="width: 20em;">
+    <dt>:map   :noremap   :unmap</dt>  <dd>Normal and Visual modes</dd>
+    <dt>:nmap  :nnoremap  :nunmap</dt> <dd>Normal mode</dd>
+    <dt>:vmap  :vnoremap  :vunmap</dt> <dd>Visual mode</dd>
+    <dt>:imap  :inoremap  :iunmap</dt> <dd>Insert mode</dd>
+    <dt>:tmap  :tnoremap  :tunmap</dt> <dd>Text Edit mode</dd>
+    <dt>:cmap  :cnoremap  :cunmap</dt> <dd>Command-line mode</dd>
+</dl>
+
+<note>
+    The <em>-modes</em> option, described below, provides a more flexible way
+    to specify the applicable modes.
+</note>
+
 <h3 tag=":map-options">Map options</h3>
 <p>
     Any of the map commands may be given the following options:
@@ -227,23 +245,6 @@
     <o>timeoutlen</o> options are used to decide what to do. See the
     documentation of those options for more information.
 </p>
-
-<h3 tag=":map-arguments">Special arguments</h3>
-
-<p>
-    Below is an overview of which modes each map command applies to:
-</p>
-
-<!-- TODO: table format -->
-
-<code>
-:map   :noremap   :unmap   :mapclear  – both Normal and Visual modes
-:nmap  :nnoremap  :nunmap  :nmapclear – Normal mode
-:vmap  :vnoremap  :vunmap  :vmapclear – Visual mode
-:imap  :inoremap  :iunmap  :imapclear – Insert mode
-:tmap  :tnoremap  :tunmap  :tmapclear – Text Edit mode
-:cmap  :cnoremap  :cunmap  :cmapclear – Command-line mode
-</code>
 
 <h3 tag="key-notation key-sequence">Key sequences</h3>
 
