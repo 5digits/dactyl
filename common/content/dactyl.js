@@ -791,7 +791,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     }
                 }
 
-                XML.prettyPrinting = XML.ignoreWhitespace = false;
                 return ["application/xml",
                     '<?xml version="1.0"?>\n' +
                     '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
