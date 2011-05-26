@@ -727,6 +727,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 default xml namespace = NS;
                 function rec(text, level, li) {
+                    XML.ignoreWhitespace = XML.prettyPrinting = false;
+
                     let res = <></>;
                     let list, space, i = 0;
 
@@ -778,6 +780,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     return res;
                 }
 
+                XML.ignoreWhitespace = XML.prettyPrinting = false;
                 let body = rec(NEWS, 0);
                 for each (let li in body..li) {
                     let list = li..li.(@NS::highlight == "HelpNewsOld");
