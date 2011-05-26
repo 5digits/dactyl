@@ -513,10 +513,14 @@
     </xsl:template>
     <xsl:template match="dactyl:type" mode="help-2">
         <a dactyl:highlight="HelpType">
-            <xsl:if test="not(. = 'boolean' or . = 'number' or . = 'string')">
-               <!-- test="contains(ancestor::*/@document-tags, concat(' ', ., ' '))" -->
-                <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
-            </xsl:if>
+            <xsl:choose>
+                <xsl:when test="contains(ancestor::*/@document-tags, concat(' ', ., ' '))">
+                    <xsl:attribute name="href">#<xsl:value-of select="."/></xsl:attribute>
+                </xsl:when>
+                <xsl:when test="not(. = 'boolean' or . = 'number' or . = 'string')">
+                    <xsl:attribute name="href">dactyl://help-tag/<xsl:value-of select="."/></xsl:attribute>
+                </xsl:when>
+            </xsl:choose>
             <xsl:apply-templates select="@*|node()" mode="help-1"/>
         </a>
     </xsl:template>
