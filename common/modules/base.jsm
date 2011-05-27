@@ -716,18 +716,28 @@ function Class() {
     if (callable(args[0]))
         superclass = args.shift();
 
-    var Constructor = eval(String.replace(<![CDATA[
-        (function constructor(PARAMS) {
+    if (loaded.util && util.haveGecko("6.0a1")) // Bug 657418.
+        var Constructor = function Constructor() {
             var self = Object.create(Constructor.prototype, {
                 constructor: { value: Constructor },
             });
             self.instance = self;
             var res = self.init.apply(self, arguments);
             return res !== undefined ? res : self;
-        })]]>,
-        "constructor", (name || superclass.className).replace(/\W/g, "_"))
-            .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]
-                                                       .replace(/\b(self|res|Constructor)\b/g, "$1_")));
+        };
+    else
+        var Constructor = eval(String.replace(<![CDATA[
+            (function constructor(PARAMS) {
+                var self = Object.create(Constructor.prototype, {
+                    constructor: { value: Constructor },
+                });
+                self.instance = self;
+                var res = self.init.apply(self, arguments);
+                return res !== undefined ? res : self;
+            })]]>,
+            "constructor", (name || superclass.className).replace(/\W/g, "_"))
+                .replace("PARAMS", /^function .*?\((.*?)\)/.exec(args[0] && args[0].init || Class.prototype.init)[1]
+                                                           .replace(/\b(self|res|Constructor)\b/g, "$1_")));
 
     Constructor.className = name || superclass.className || superclass.name;
 

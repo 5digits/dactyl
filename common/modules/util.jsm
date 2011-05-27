@@ -356,14 +356,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             ([^]*?) // 1
             (?:
                 (<\{) | // 2
-                (< ((?:[a-z]-)?[a-z-]+?) >) | // 3 4
-                (\}>) // 5
+                (< ((?:[a-z]-)?[a-z-]+?) (?:\[([0-9]+)\])? >) | // 3 4 5
+                (\}>) // 6
             )
         ]]>, "gixy");
         macro = String(macro);
         let end = 0;
         for (let match in re.iterate(macro)) {
-            let [, prefix, open, full, macro, close] = match;
+            let [, prefix, open, full, macro, idx, close] = match;
             end += match[0].length;
 
             if (prefix)
@@ -390,9 +390,17 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (set.has(defaults, name))
                     stack.top.elements.push(quote(defaults[name]));
                 else {
-                    stack.top.elements.push(update(
-                        function (obj) obj[name] != null ? quote(obj[name]) : set.has(obj, name) ? "" : unknown(full),
-                        { test: function (obj) obj[name] != null && obj[name] !== false && (!flags.e || obj[name] != "") }));
+                    if (idx) {
+                        idx = Number(idx) - 1;
+                        stack.top.elements.push(update(
+                            function (obj) obj[name] != null && idx in obj[name] ? quote(obj[name][idx]) : set.has(obj, name) ? "" : unknown(full),
+                            { test: function (obj) obj[name] != null && idx in obj[name] && obj[name][idx] !== false && (!flags.e || obj[name][idx] != "") }));
+                    }
+                    else {
+                        stack.top.elements.push(update(
+                            function (obj) obj[name] != null ? quote(obj[name]) : set.has(obj, name) ? "" : unknown(full),
+                            { test: function (obj) obj[name] != null && obj[name] !== false && (!flags.e || obj[name] != "") }));
+                    }
 
                     for (let elem in array.iterValues(stack))
                         elem.seen[name] = true;
@@ -1252,7 +1260,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 delete desc.writable;
                 desc.get = function get() value;
                 desc.set = function set(val) {
-                    if (String(val).indexOf(sentinel) < 0)
+                    if (!callable(val) || Function.prototype.toString(val).indexOf(sentinel) < 0)
                         Class.replaceProperty(this, k, val);
                     else {
                         let package_ = util.newURI(util.fixURI(Components.stack.caller.filename)).host;
