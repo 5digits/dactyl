@@ -233,6 +233,8 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         }
     },
 
+    firstRun: 0,
+
     addItem: function addItem(name, params) {
         let item = this.itemMap[name] || Item(name, params);
         this.itemMap[name] = item;
@@ -379,7 +381,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     }
 }, {
     load: function (dactyl, modules, window) {
-        if (sanitizer.runAtShutdown && !sanitizer.ranAtShutdown)
+        if (!sanitizer.firstRun++ && sanitizer.runAtShutdown && !sanitizer.ranAtShutdown)
             sanitizer.sanitizeItems(null, Range(), null, "shutdown");
         sanitizer.ranAtShutdown = false;
     },
