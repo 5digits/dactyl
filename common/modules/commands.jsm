@@ -410,10 +410,12 @@ var Ex = Module("Ex", {
                 else {
                     let opt = cmd.optionMap["-" + k];
                     let val = opt.type && opt.type.parse(v);
+
                     util.assert(val != null && (typeof val !== "number" || !isNaN(val)),
                                 _("option.noSuch", k));
-                    Class.replaceProperty(args, opt.names[0], val);
-                    args.explicitOpts[opt.names[0]] = val;
+
+                    Class.replaceProperty(res, opt.names[0], val);
+                    res.explicitOpts[opt.names[0]] = val;
                 }
         for (let [i, val] in array.iterItems(args))
             res[i] = String(val);
