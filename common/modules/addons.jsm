@@ -500,27 +500,14 @@ else
                 addon = this.wrapAddon(addon);
             return callback(addon);
         },
+
         wrapAddon: function wrapAddon(addon) {
             addon = Object.create(addon.QueryInterface(Ci.nsIUpdateItem));
-
-            function getRdfProperty(item, property) {
-                let resource = services.rdf.GetResource("urn:mozilla:item:" + item.id);
-                let value = "";
-
-                if (resource) {
-                    let target = services.extensionManager.datasource.GetTarget(resource,
-                        services.rdf.GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
-                    if (target && target instanceof Ci.nsIRDFLiteral)
-                        value = target.Value;
-                }
-
-                return value;
-            }
 
             ["aboutURL", "creator", "description", "developers",
              "homepageURL", "installDate", "optionsURL",
              "releaseNotesURI", "updateDate"].forEach(function (item) {
-                memoize(addon, item, function (item) getRdfProperty(this, item));
+                memoize(addon, item, function (item) this.getProperty(item));
             });
 
             update(addon, {
@@ -529,19 +516,33 @@ else
 
                 appDisabled: false,
 
+                getProperty: function getProperty(property) {
+                    let resource = services.rdf.GetResource("urn:mozilla:item:" + this.id);
+
+                    if (resource) {
+                        let target = services.extensionManager.datasource.GetTarget(resource,
+                            services.rdf.GetResource("http://www.mozilla.org/2004/em-rdf#" + property), true);
+
+                        if (target && target instanceof Ci.nsIRDFLiteral)
+                            return target.Value;
+                    }
+
+                    return "";
+                },
+
                 installLocation: Class.memoize(function () services.extensionManager.getInstallLocation(this.id)),
                 getResourceURI: function getResourceURI(path) {
                     let file = this.installLocation.getItemFile(this.id, path);
                     return services.io.newFileURI(file);
                 },
 
-                isActive: getRdfProperty(addon, "isDisabled") != "true",
+                get isActive() this.getProperty("isDisabled") != "true",
 
                 uninstall: function uninstall() {
                     services.extensionManager.uninstallItem(this.id);
                 },
 
-                get userDisabled() getRdfProperty(addon, "userDisabled") === "true",
+                get userDisabled() this.getProperty("userDisabled") === "true",
                 set userDisabled(val) {
                     services.extensionManager[val ? "disableItem" : "enableItem"](this.id);
                 }
@@ -549,6 +550,7 @@ else
 
             return addon;
         },
+
         getAddonsByTypes: function (types, callback) {
             let res = [];
             for (let [, type] in Iterator(types))
@@ -560,6 +562,7 @@ else
                 util.timeout(function () { callback(res); });
             return res;
         },
+
         getInstallForFile: function (file, callback, mimetype) {
             callback({
                 addListener: function () {},
@@ -568,9 +571,11 @@ else
                 }
             });
         },
+
         getInstallForURL: function (url, callback, mimetype) {
             util.assert(false, _("error.unavailable", config.host, services.runtime.version));
         },
+
         observers: [],
         addAddonListener: function (listener) {
             observer.listener = listener;

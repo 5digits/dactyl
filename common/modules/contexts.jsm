@@ -372,6 +372,7 @@ var Contexts = Module("contexts", {
 
         let rhs = args.literalArg;
         let type = ["-builtin", "-ex", "-javascript", "-keys"].reduce(function (a, b) args[b] ? b : a, default_);
+
         switch (type) {
         case "-builtin":
             let noremap = true;
@@ -385,6 +386,7 @@ var Contexts = Module("contexts", {
             }
             action.macro = util.compileMacro(rhs, true);
             break;
+
         case "-ex":
             action = function action() modules.commands
                                               .execute(action.macro, makeParams(this, arguments),
@@ -392,6 +394,7 @@ var Contexts = Module("contexts", {
             action.macro = util.compileMacro(rhs, true);
             action.context = this.context && update({}, this.context);
             break;
+
         case "-javascript":
             if (callable(params))
                 action = dactyl.userEval("(function action() { with (action.makeParams(this, arguments)) {" + args.literalArg + "} })");
@@ -402,6 +405,7 @@ var Contexts = Module("contexts", {
             action.makeParams = makeParams;
             break;
         }
+
         action.toString = function toString() (type === default_ ? "" : type + " ") + rhs;
         args = null;
         return action;

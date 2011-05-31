@@ -411,14 +411,14 @@ var Modes = Module("modes", {
             prev = stack && stack.pop || this.topOfStack;
             if (push)
                 this._modeStack.push(push);
-
-            if (stack && stack.pop)
-                for (let { obj, prop, value, test } in values(this.topOfStack.saved))
-                    if (!test || !test(stack, prev))
-                        dactyl.trapErrors(function () { obj[prop] = value });
-
-            this.show();
         });
+
+        if (stack && stack.pop)
+            for (let { obj, prop, value, test } in values(this.topOfStack.saved))
+                if (!test || !test(stack, prev))
+                    dactyl.trapErrors(function () { obj[prop] = value });
+
+        this.show();
 
         if (this.topOfStack.params.enter && prev)
             dactyl.trapErrors("enter", this.topOfStack.params,
