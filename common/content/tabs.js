@@ -778,7 +778,7 @@ var Tabs = Module("tabs", {
                     }
                     tabs.move(tabs.getTab(), arg, args.bang);
                 }, {
-                    argCount: "?",
+                    argCount: "1",
                     bang: true,
                     completer: function (context, args) completion.buffer(context, true),
                     literal: 0
