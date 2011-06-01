@@ -88,6 +88,18 @@
 
 <h2 tag="extensions add-ons">Add-ons</h2>
 
+<p>
+    The following commands manipulate the currently installed
+    add-ons. With the exception of <ex>:extadd</ex>, they all except
+    the following arguments:
+</p>
+
+<dl>
+    <dt>-types</dt> <dd>The types of add-ons to operate on, the most
+        common types being <tt>extension</tt>, <tt>theme</tt>, and <tt>plugin</tt> (short names <em>-type</em>,
+        <em>-t</em>)</dd>
+</dl>
+
 <item>
     <tags>:exta :extadd</tags>
     <spec>:exta<oa>dd</oa> <a>file|url</a></spec>

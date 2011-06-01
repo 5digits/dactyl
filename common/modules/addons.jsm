@@ -423,7 +423,7 @@ var Addons = Module("addons", {
                     else
                         dactyl.assert(name, _("error.argumentRequired"));
 
-                    AddonManager.getAddonsByTypes(["extension"], dactyl.wrapCallback(function (list) {
+                    AddonManager.getAddonsByTypes(args["-types"], dactyl.wrapCallback(function (list) {
                         if (!args.bang || command.bang) {
                             list = list.filter(function (extension) extension.name == name);
                             if (list.length == 0)
@@ -439,13 +439,22 @@ var Addons = Module("addons", {
                 }, {
                     argCount: "?", // FIXME: should be "1"
                     bang: true,
-                    completer: function (context) {
-                        completion.extension(context);
+                    completer: function (context, args) {
+                        completion.extension(context, args["-types"]);
                         context.filters.push(function ({ item }) ok(item));
                         if (command.filter)
                             context.filters.push(command.filter);
                     },
-                    literal: 0
+                    literal: 0,
+                    options: [
+                        {
+                            names: ["-types", "-type", "-t"],
+                            description: "The add-on types to operate on",
+                            default: ["extension"],
+                            completer: function (context, args) completion.addonType(context),
+                            type: CommandOption.LIST
+                        }
+                    ]
                 });
         });
     },
