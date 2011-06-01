@@ -767,7 +767,7 @@ var Tabs = Module("tabs", {
 
             // TODO: add count support
             commands.add(["tabm[ove]"],
-                "Move the current tab after tab N",
+                "Move the current tab to the position of tab N",
                 function (args) {
                     let arg = args[0];
 

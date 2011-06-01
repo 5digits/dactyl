@@ -111,6 +111,7 @@
       - Added :mksyntax command to auto-generate Vim syntax files. [b4]
       - Added 's' and 'e' flags to :pageinfo command. [b7]
       - Added :pintab and :unpintab commands. [b7]
+      - :tabmove now moves to the position of tab N, not after it. [b7]
       - :open now only opens files beginning with /, ./, ../, or ~/ [b1]
       - :saveas now provides completions for default file names, and
         automatically chooses a filename when the save target is a

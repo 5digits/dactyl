@@ -289,7 +289,7 @@
     <spec>:tabm<oa>ove</oa><oa>!</oa> <oa>+N</oa> | <oa>-N</oa></spec>
     <description>
         <p>
-            Move the current tab to a position after tab <oa>N</oa>. When <oa>N</oa> is 0, the
+            Move the current tab to the position of tab <oa>N</oa>. When <oa>N</oa> is 0, the
             current tab is made the first one. Without <oa>N</oa> the current tab is made the
             last one. <oa>N</oa> can also be prefixed with ‘+’ or ‘-’ to indicate a relative
             movement. If <oa>!</oa> is specified the movement wraps around the start or end of the
