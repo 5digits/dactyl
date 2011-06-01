@@ -477,6 +477,9 @@ var Mappings = Module("mappings", {
                     return;
                 }
 
+                if (args[1] && !args["-count"] && !args["-ex"] && !args["-javascript"])
+                    args[1] = "<count>" + args[1];
+
                 let [lhs, rhs] = args;
                 if (noremap)
                     args["-builtin"] = true;
@@ -492,7 +495,7 @@ var Mappings = Module("mappings", {
                         contexts.bindMacro(args, "-keys", function (params) params),
                         {
                             arg: args["-arg"],
-                            count: args["-count"],
+                            count: args["-count"] || !(args["-ex"] || args["-javascript"]),
                             noremap: args["-builtin"],
                             persist: !args["-nopersist"],
                             get rhs() String(this.action),
