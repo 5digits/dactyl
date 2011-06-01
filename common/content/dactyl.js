@@ -1488,7 +1488,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @property {Window[]} Returns an array of all the host application's
      *     open windows.
      */
-    get windows() [win for (win in iter(services.windowMediator.getEnumerator("navigator:browser")))],
+    get windows() [win for (win in iter(services.windowMediator.getEnumerator("navigator:browser"))) if (win.dactyl)],
 
 }, {
     // initially hide all GUI elements, they are later restored unless the user

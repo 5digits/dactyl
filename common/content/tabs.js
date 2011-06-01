@@ -228,13 +228,15 @@ var Tabs = Module("tabs", {
      * if *index* is not specified. This is a 0-based index.
      *
      * @param {number|Node} index The index of the tab required or the tab itself
+     * @param {boolean} visible If true, consider only visible tabs rather than
+     *      all tabs.
      * @returns {Object}
      */
-    getTab: function (index) {
+    getTab: function (index, visible) {
         if (index instanceof Node)
             return index;
         if (index != null)
-            return config.tabbrowser.mTabs[index];
+            return this[visible ? "visibleTabs" : "allTabs"][index];
         return config.tabbrowser.mCurrentTab;
     },
 
@@ -529,7 +531,7 @@ var Tabs = Module("tabs", {
             "Delete current buffer",
             function (args) {
                 let removed = 0;
-                for (let tab in matchTabs(args, args.bang)) {
+                for (let tab in matchTabs(args, args.bang, true)) {
                     config.removeTab(tab);
                     removed++;
                 }
@@ -548,7 +550,7 @@ var Tabs = Module("tabs", {
                 privateData: true
             });
 
-        function matchTabs(args, substr) {
+        function matchTabs(args, substr, all) {
             let filter = args[0];
 
             if (!filter && args.count == null)
@@ -556,13 +558,13 @@ var Tabs = Module("tabs", {
             else if (!filter)
                 yield dactyl.assert(tabs.getTab(args.count - 1));
             else {
-                let matches = /^(\d+):?/.exec(filter);
+                let matches = /^(\d+)(?:$|:)/.exec(filter);
                 if (matches)
                     yield dactyl.assert(args.count == null &&
-                                        tabs.getTab(parseInt(matches[1], 10) - 1));
+                                        tabs.getTab(parseInt(matches[1], 10) - 1, !all));
                 else {
                     let str = filter.toLowerCase();
-                    for (let tab in values(tabs.allTabs)) {
+                    for (let tab in values(tabs[all ? "allTabs" : "visibleTabs"])) {
                         let host, title;
                         let browser = tab.linkedBrowser;
                         let uri = browser.currentURI.spec;
@@ -589,7 +591,7 @@ var Tabs = Module("tabs", {
         commands.add(["pin[tab]"],
             "Pin tab as an application tab",
             function (args) {
-                for (let tab in matchTabs(args, true))
+                for (let tab in matchTabs(args))
                     config.browser[!args.bang || !tab.pinned ? "pinTab" : "unpinTab"](tab);
             },
             {
@@ -606,7 +608,7 @@ var Tabs = Module("tabs", {
         commands.add(["unpin[tab]"],
             "Unpin tab as an application tab",
             function (args) {
-                for (let tab in matchTabs(args, true))
+                for (let tab in matchTabs(args))
                     config.browser.unpinTab(tab);
             },
             {
@@ -771,15 +773,17 @@ var Tabs = Module("tabs", {
                 function (args) {
                     let arg = args[0];
 
-                    // FIXME: tabmove! N should probably produce an error
-                    dactyl.assert(!arg || /^([+-]?\d+)$/.test(arg),
-                                  _("error.trailingCharacters"));
-
-                    // if not specified, move to after the last tab
-                    tabs.move(config.tabbrowser.mCurrentTab, arg || "$", args.bang);
+                    if (tabs.indexFromSpec(arg) == -1) {
+                        let tabs = [tab for (tab in matchTabs(args, true))];
+                        dactyl.assert(tabs.length == 1);
+                        arg = tabs[0];
+                    }
+                    tabs.move(tabs.getTab(), arg, args.bang);
                 }, {
                     argCount: "?",
-                    bang: true
+                    bang: true,
+                    completer: function (context, args) completion.buffer(context, true),
+                    literal: 0
                 });
 
             commands.add(["tabo[nly]"],
@@ -827,16 +831,21 @@ var Tabs = Module("tabs", {
             commands.add(["taba[ttach]"],
                 "Attach the current tab to another window",
                 function (args) {
-                    dactyl.assert(args.length <= 2 && !args.some(function (i) !/^\d+$/.test(i)),
+                    dactyl.assert(args.length <= 2 && !args.some(function (i) !/^\d+(?:$|:)/.test(i)),
                                   _("error.trailingCharacters"));
 
-                    let [winIndex, tabIndex] = args.map(parseInt);
+                    let [winIndex, tabIndex] = args.map(function (arg) parseInt(arg));
                     let win = dactyl.windows[winIndex - 1];
 
                     dactyl.assert(win, _("window.noIndex", winIndex));
                     dactyl.assert(win != window, _("window.cantAttachSame"));
 
                     let browser = win.getBrowser();
+                    let tabList = browser.visibleTabs || browser.mTabs;
+                    let target  = tabList[tabIndex];
+                    if (tabIndex)
+                        dactyl.assert(target);
+
                     let dummy = browser.addTab("about:blank");
                     browser.stop();
                     // XXX: the implementation of DnD in tabbrowser.xml suggests
@@ -846,15 +855,26 @@ var Tabs = Module("tabs", {
 
                     let last = browser.mTabs.length - 1;
 
-                    browser.moveTabTo(dummy, Math.constrain(tabIndex || last, 0, last));
+                    if (tabIndex)
+                        browser.moveTabTo(dummy, Array.indexOf(browser.mTabs, target));
                     browser.selectedTab = dummy; // required
                     browser.swapBrowsersAndCloseOther(dummy, config.tabbrowser.mCurrentTab);
                 }, {
                     argCount: "+",
+                    literal: 1,
                     completer: function (context, args) {
-                        if (args.completeArg == 0) {
+                        switch (args.completeArg) {
+                        case 0:
                             context.filters.push(function ({ item }) item != window);
                             completion.window(context);
+                            break;
+                        case 1:
+                            let win = dactyl.windows[Number(args[0]) - 1];
+                            if (!win || !win.dactyl)
+                                context.message = _("Error", _("window.noIndex", winIndex));
+                            else
+                                win.dactyl.modules.commands.get("tabmove").completer(context);
+                            break;
                         }
                     }
                 });

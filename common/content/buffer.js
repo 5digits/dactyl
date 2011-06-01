@@ -1515,15 +1515,18 @@ var Buffer = Module("buffer", {
             context.completions = [[title, href.join(", ")] for ([title, href] in Iterator(styles))];
         };
 
-        completion.buffer = function buffer(context) {
+        completion.buffer = function buffer(context, visible) {
             let filter = context.filter.toLowerCase();
+
             let defItem = { parent: { getTitle: function () "" } };
+
             let tabGroups = {};
             tabs.getGroups();
-            tabs.allTabs.forEach(function (tab, i) {
+            tabs[visible ? "visibleTabs" : "allTabs"].forEach(function (tab, i) {
                 let group = (tab.tabItem || tab._tabViewTabItem || defItem).parent || defItem.parent;
                 if (!set.has(tabGroups, group.id))
                     tabGroups[group.id] = [group.getTitle(), []];
+
                 group = tabGroups[group.id];
                 group[1].push([i, tab.linkedBrowser]);
             });
@@ -1558,7 +1561,7 @@ var Buffer = Module("buffer", {
                             else if (i == tabs.index(tabs.alternate))
                                 indicator = "#";
 
-                            let tab = tabs.getTab(i);
+                            let tab = tabs.getTab(i, visible);
                             let url = browser.contentDocument.location.href;
                             i = i + 1;
 
