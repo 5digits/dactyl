@@ -58,7 +58,7 @@ var Tabs = Module("tabs", {
         }
     },
 
-    updateTabCount: function () {
+    updateTabCount: function updateTabCount() {
         for (let [i, tab] in Iterator(this.visibleTabs)) {
             if (dactyl.has("Gecko2")) {
                 let node = function node(class_) document.getAnonymousElementByAttribute(tab, "class", class_);
@@ -82,7 +82,7 @@ var Tabs = Module("tabs", {
         statusline.updateTabCount(true);
     },
 
-    _onTabSelect: function () {
+    _onTabSelect: function _onTabSelect() {
         // TODO: is all of that necessary?
         //       I vote no. --Kris
         modes.reset();
@@ -138,7 +138,7 @@ var Tabs = Module("tabs", {
     //        property doesn't. And the property is so oft-used that it's
     //        convenient. To the former question, because I think this is mainly
     //        useful for autocommands, and they get index arguments. --Kris
-    getLocalStore: function (tabIndex) {
+    getLocalStore: function getLocalStore(tabIndex) {
         let tab = this.getTab(tabIndex);
         if (!tab.dactylStore)
             tab.dactylStore = {};
@@ -163,7 +163,7 @@ var Tabs = Module("tabs", {
      * @param {Object} tab The tab to clone.
      * @param {boolean} activate Whether to select the newly cloned tab.
      */
-    cloneTab: function (tab, activate) {
+    cloneTab: function cloneTab(tab, activate) {
         let newTab = config.tabbrowser.addTab("about:blank", { ownerTab: tab.dactylOwner && tab.dactylOwner.get() || tab });
         Tabs.copyTab(newTab, tab);
 
@@ -179,7 +179,7 @@ var Tabs = Module("tabs", {
      *
      * @param {Object} tab The tab to detach.
      */
-    detachTab: function (tab) {
+    detachTab: function detachTab(tab) {
         if (!tab)
             tab = config.tabbrowser.mTabContainer.selectedItem;
 
@@ -194,7 +194,7 @@ var Tabs = Module("tabs", {
      *     document.
      */
     // FIXME: Only called once...necessary?
-    getContentIndex: function (content) {
+    getContentIndex: function getContentIndex(content) {
         for (let [i, browser] in this.browsers) {
             if (browser.contentWindow == content || browser.contentDocument == content)
                 return i;
@@ -209,7 +209,7 @@ var Tabs = Module("tabs", {
      *
      * @returns {Window}
      */
-    getGroups: function () {
+    getGroups: function getGroups() {
         if ("_groups" in this)
             return this._groups;
 
@@ -232,7 +232,7 @@ var Tabs = Module("tabs", {
      *      all tabs.
      * @returns {Object}
      */
-    getTab: function (index, visible) {
+    getTab: function getTab(index, visible) {
         if (index instanceof Node)
             return index;
         if (index != null)
@@ -248,7 +248,7 @@ var Tabs = Module("tabs", {
      * @param {boolean} visible Whether to consider only visible tabs.
      * @returns {number}
      */
-    index: function (tab, visible) {
+    index: function index(tab, visible) {
         let tabs = this[visible ? "visibleTabs" : "allTabs"];
         return tabs.indexOf(tab || config.tabbrowser.mCurrentTab);
     },
@@ -261,7 +261,7 @@ var Tabs = Module("tabs", {
      * - "-3" for the tab, which is 3 positions left of the current
      * - "$" for the last tab
      */
-    indexFromSpec: function (spec, wrap) {
+    indexFromSpec: function indexFromSpec(spec, wrap, offset) {
         if (spec instanceof Node)
             return this.allTabs.indexOf(spec);
 
@@ -274,14 +274,12 @@ var Tabs = Module("tabs", {
         if (spec === "")
             return position;
 
-        if (typeof spec === "number")
-            position = spec;
+        if (/^\d+$/.test(spec))
+            position = parseInt(spec, 10) + (offset || 0);
         else if (spec === "$")
             position = tabs.length - 1;
         else if (/^[+-]\d+$/.test(spec))
             position += parseInt(spec, 10);
-        else if (/^\d+$/.test(spec))
-            position = parseInt(spec, 10);
         else
             return -1;
 
@@ -298,7 +296,7 @@ var Tabs = Module("tabs", {
      *
      * @param {Object} tab The tab to keep.
      */
-    keepOnly: function (tab) {
+    keepOnly: function keepOnly(tab) {
         config.tabbrowser.removeAllTabsBut(tab);
     },
 
@@ -308,7 +306,7 @@ var Tabs = Module("tabs", {
      * @param {string} filter A filter matching a substring of the tab's
      *     document title or URL.
      */
-    list: function (filter) {
+    list: function list(filter) {
         completion.listCompleter("buffer", filter);
     },
 
@@ -320,8 +318,8 @@ var Tabs = Module("tabs", {
      * @param {boolean} wrap Whether an out of bounds *spec* causes the
      *     destination position to wrap around the start/end of the tab list.
      */
-    move: function (tab, spec, wrap) {
-        let index = tabs.indexFromSpec(spec, wrap);
+    move: function move(tab, spec, wrap) {
+        let index = tabs.indexFromSpec(spec, wrap, -1);
         config.tabbrowser.moveTabTo(tab, index);
     },
 
@@ -332,7 +330,7 @@ var Tabs = Module("tabs", {
      * @param {number} count How many tabs to remove.
      * @param {boolean} focusLeftTab Focus the tab to the left of the removed tab.
      */
-    remove: function (tab, count, focusLeftTab) {
+    remove: function remove(tab, count, focusLeftTab) {
         count = count || 1;
         let res = this.count > count;
 
@@ -363,7 +361,7 @@ var Tabs = Module("tabs", {
      * @param {boolean} bypassCache Whether to bypass the cache when
      *     reloading.
      */
-    reload: function (tab, bypassCache) {
+    reload: function reload(tab, bypassCache) {
         try {
             if (bypassCache) {
                 const flags = Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_PROXY | Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
@@ -381,7 +379,7 @@ var Tabs = Module("tabs", {
      * @param {boolean} bypassCache Whether to bypass the cache when
      *     reloading.
      */
-    reloadAll: function (bypassCache) {
+    reloadAll: function reloadAll(bypassCache) {
         this.visibleTabs.forEach(function (tab) {
             try {
                 tabs.reload(tab, bypassCache);
@@ -399,7 +397,7 @@ var Tabs = Module("tabs", {
      * @param {boolean} wrap Whether an out of bounds *spec* causes the
      *     selection position to wrap around the start/end of the tab list.
      */
-    select: function (spec, wrap) {
+    select: function select(spec, wrap) {
         let index = tabs.indexFromSpec(spec, wrap);
         if (index == -1)
             dactyl.beep();
@@ -410,7 +408,7 @@ var Tabs = Module("tabs", {
     /**
      * Selects the alternate tab.
      */
-    selectAlternateTab: function () {
+    selectAlternateTab: function selectAlternateTab() {
         dactyl.assert(tabs.alternate != null && tabs.getTab() != tabs.alternate,
                       _("buffer.noAlternate"));
         tabs.select(tabs.alternate);
@@ -421,7 +419,7 @@ var Tabs = Module("tabs", {
      *
      * @param {Object} tab The tab to stop loading.
      */
-    stop: function (tab) {
+    stop: function stop(tab) {
         if (config.stop)
             config.stop(tab);
         else
@@ -431,7 +429,7 @@ var Tabs = Module("tabs", {
     /**
      * Stops loading all tabs.
      */
-    stopAll: function () {
+    stopAll: function stopAll() {
         for (let [, browser] in this.browsers)
             browser.stop();
     },
@@ -450,7 +448,7 @@ var Tabs = Module("tabs", {
      *
      */
     // FIXME: help!
-    switchTo: function (buffer, allowNonUnique, count, reverse) {
+    switchTo: function switchTo(buffer, allowNonUnique, count, reverse) {
         if (buffer != null) {
             // store this command, so it can be repeated with "B"
             this._lastBufferSwitchArgs = buffer;
@@ -505,7 +503,7 @@ var Tabs = Module("tabs", {
      * @param {Array(Object)} tabs The current and alternate tab.
      * @see tabs#alternate
      */
-    updateSelectionHistory: function (tabs) {
+    updateSelectionHistory: function updateSelectionHistory(tabs) {
         if (!tabs) {
             if (this.getTab() == this._alternates[0]
                 || this.alternate && this.allTabs.indexOf(this._alternates[0]) == -1
@@ -841,10 +839,12 @@ var Tabs = Module("tabs", {
                     dactyl.assert(win != window, _("window.cantAttachSame"));
 
                     let browser = win.getBrowser();
-                    let tabList = browser.visibleTabs || browser.mTabs;
-                    let target  = tabList[tabIndex];
-                    if (tabIndex)
-                        dactyl.assert(target);
+
+                    if (args[1]) {
+                        let tabList = browser.visibleTabs || browser.mTabs;
+                        let target  = dactyl.assert(tabList[tabIndex]);
+                        tabIndex = Array.indexOf(browser.mTabs, target) - 1;
+                    }
 
                     let dummy = browser.addTab("about:blank");
                     browser.stop();
@@ -855,8 +855,8 @@ var Tabs = Module("tabs", {
 
                     let last = browser.mTabs.length - 1;
 
-                    if (tabIndex)
-                        browser.moveTabTo(dummy, Array.indexOf(browser.mTabs, target));
+                    if (args[1])
+                        browser.moveTabTo(dummy, tabIndex);
                     browser.selectedTab = dummy; // required
                     browser.swapBrowsersAndCloseOther(dummy, config.tabbrowser.mCurrentTab);
                 }, {
