@@ -332,6 +332,31 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return stack.top;
     },
 
+    /**
+     * Compiles a macro string into a function which generates a string
+     * result based on the input *macro* and its parameters. The
+     * definitive documentation for macro strings resides in :help
+     * macro-string.
+     *
+     * Macro parameters may have any of the following flags:
+     *     e: The parameter is only tested for existence. Its
+     *        interpolation is always empty.
+     *     q: The result is quoted such that it is parsed as a single
+     *        argument by the Ex argument parser.
+     *
+     * The returned function has the following additional properties:
+     *
+     *     seen {set}: The set of parameters used in this macro.
+     *
+     *     valid {function(object)}: Returns true if every parameter of
+     *          this macro is provided by the passed object.
+     *
+     * @param {string} macro The macro string to compile.
+     * @param {boolean} keepUnknown If true, unknown macro parameters
+     *      are left untouched. Otherwise, they are replaced with the null
+     *      string.
+     * @returns {function}
+     */
     compileMacro: function compileMacro(macro, keepUnknown) {
         let stack = [frame()];
         stack.__defineGetter__("top", function () this[this.length - 1]);
@@ -414,6 +439,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return stack.top;
     },
 
+    /**
+     * Compiles a CSS spec and XPath pattern matcher based on the given
+     * list. List elements prefixed with "xpath:" are parsed as XPath
+     * patterns, while other elements are parsed as CSS specs. The
+     * returned function will, given a node, return an iterator of all
+     * descendants of that node which match the given specs.
+     *
+     * @param {[string]} list The list of patterns to match.
+     * @returns {function(Node)}
+     */
     compileMatcher: function compileMatcher(list) {
         let xpath = [], css = [];
         for (let elem in values(list))
@@ -437,10 +472,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             });
     },
 
-    validateMatcher: function validateMatcher(values) {
+    /**
+     * Validates a list as input for {@link #compileMatcher}. Returns
+     * true if and only if every element of the list is a valid XPath or
+     * CSS selector.
+     *
+     * @param {[string]} list The list of patterns to test
+     * @returns {boolean} True when the patterns are all valid.
+     */
+    validateMatcher: function validateMatcher(list) {
         let evaluator = services.XPathEvaluator();
         let node = services.XMLDocument();
-        return this.testValues(values, function (value) {
+        return this.testValues(list, function (value) {
             if (/^xpath:/.test(value))
                 evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);
             else
@@ -558,6 +601,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     dequote: function dequote(pattern, chars)
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
 
+    /**
+     * Converts a given DOM Node, Range, or Selection to a string. If
+     * *html* is true, the output is HTML, otherwise it is presentation
+     * text.
+     *
+     * @param {nsIDOMNode | nsIDOMRange | nsISelection} node The node to
+     *      stringify.
+     * @param {boolean} html Whether the output should be HTML rather
+     *      than presentation text.
+     */
     domToString: function (node, html) {
         if (node instanceof Ci.nsISelection && node.isCollapsed)
             return "";
@@ -593,6 +646,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     dump: defineModule.dump,
 
+    /**
+     * Returns a list of reformatted stack frames from
+     * {@see Error#stack}.
+     *
+     * @param {string} stack The stack trace from an Error.
+     * @returns {[string]} The stack frames.
+     */
     stackLines: function (stack) {
         let lines = [];
         let match, re = /([^]*?)@([^@\n]*)(?:\n|$)/g;
@@ -982,6 +1042,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                            .map(function (node) "//" + node).join(" | ");
     },
 
+    /**
+     * Creates a DTD fragment from the given object. Each property of
+     * the object is converted to an ENTITY declaration. SGML special
+     * characters other than ' and % are left intact.
+     *
+     * @param {object} obj The object to convert.
+     * @returns {string} The DTD fragment containing entity declaration
+     *      for *obj*.
+     */
     makeDTD: function makeDTD(obj) iter(obj)
           .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : v, /['%]/g,
                                                                        function (m) ({ "'": "&apos;", "%": "&#x25;" })[m]),
@@ -1234,6 +1303,20 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }), true);
     },
 
+    /**
+     * Overlays an object with the given property overrides. Each
+     * property in *overrides* is added to *object*, replacing any
+     * original value. Functions in *overrides* are augmented with the
+     * new properties *super*, *supercall*, and *superapply*, in the
+     * same manner as class methods, so that they man call their
+     * overridden counterparts.
+     *
+     * @param {object} object The object to overlay.
+     * @param {object} overrides An object containing properties to
+     *      override.
+     * @returns {function} A function which, when called, will remove
+     *      the overlay.
+     */
     overlayObject: function (object, overrides) {
         let original = Object.create(object);
         overrides = update(Object.create(original), overrides);
@@ -1506,6 +1589,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }())
     }),
 
+    /**
+     * Reloads dactyl in entirety by disabling the add-on and
+     * re-enabling it.
+     */
     rehash: function (args) {
         JSMLoader.commandlineArgs = args;
         this.timeout(function () {
@@ -1519,6 +1606,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     errorCount: 0,
     errors: Class.memoize(function () []),
     maxErrors: 15,
+    /**
+     * Reports an error to the Error Console and the standard output,
+     * along with a stack trace and other relevant information. The
+     * error is appended to {@see #errors}.
+     */
     reportError: function (error) {
         if (error.noTrace)
             return;
@@ -1621,20 +1713,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return true;
     },
 
-    highlightFilter: function highlightFilter(str, filter, highlight) {
-        return this.highlightSubstrings(str, (function () {
-            if (filter.length == 0)
-                return;
-            let lcstr = String.toLowerCase(str);
-            let lcfilter = filter.toLowerCase();
-            let start = 0;
-            while ((start = lcstr.indexOf(lcfilter, start)) > -1) {
-                yield [start, filter.length];
-                start += filter.length;
-            }
-        })(), highlight || template.filter);
-    },
-
     /**
      * Behaves like String.split, except that when *limit* is reached,
      * the trailing element contains the entire trailing portion of the
@@ -1693,6 +1771,20 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     yielders: 0,
+    /**
+     * Yields execution to the next event in the current thread's event
+     * queue. This is a potentially dangerous operation, since any
+     * yielders higher in the event stack will prevent execution from
+     * returning to the caller until they have finished their wait. The
+     * potential for deadlock is high.
+     *
+     * @param {boolean} flush If true, flush all events in the event
+     *      queue before returning. Otherwise, wait for an event to
+     *      process before proceeding.
+     * @param {boolean} interruptable If true, this yield may be
+     *      interrupted by pressing <C-c>, in which case,
+     *      Error("Interrupted") will be thrown.
+     */
     threadYield: function (flush, interruptable) {
         this.yielders++;
         try {
@@ -1711,6 +1803,19 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
+    /**
+     * Waits for the function *test* to return true, or *timeout*
+     * milliseconds to expire.
+     *
+     * @param {function} test The predicate on which to wait.
+     * @param {object} self The 'this' object for *test*.
+     * @param {Number} timeout The maximum number of milliseconds to
+     *      wait.
+     *      @optional
+     * @param {boolean} interruptable If true, may be interrupted by
+     *      pressing <C-c>, in which case, Error("Interrupted") will be
+     *      thrown.
+     */
     waitFor: function waitFor(test, self, timeout, interruptable) {
         let end = timeout && Date.now() + timeout, result;
 
@@ -1725,6 +1830,23 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return result;
     },
 
+    /**
+     * Makes the passed function yieldable. Each time the function calls
+     * yield, execution is suspended for the yielded number of
+     * milliseconds.
+     *
+     * Example:
+     *      let func = yieldable(function () {
+     *          util.dump(Date.now()); // 0
+     *          yield 1500;
+     *          util.dump(Date.now()); // 1500
+     *      });
+     *      func();
+     *
+     * @param {function} func The function to mangle.
+     * @returns {function} A new function which may not execute
+     *      synchronously.
+     */
     yieldable: function yieldable(func)
         function magic() {
             let gen = func.apply(this, arguments);
@@ -1736,6 +1858,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             })();
         },
 
+    /**
+     * Wraps a callback function such that its errors are not lost. This
+     * is useful for DOM event listeners, which ordinarily eat errors.
+     * The passed function has the property *wrapper* set to the new
+     * wrapper function, while the wrapper has the property *wrapped*
+     * set to the original callback.
+     *
+     * @param {function} callback The callback to wrap.
+     * @returns {function}
+     */
     wrapCallback: wrapCallback,
 
     /**
@@ -1767,6 +1899,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
+    /**
+     * Returns the file path of a given *url*, for debugging purposes.
+     * If *url* points to a file (even if indirectly), the native
+     * filesystem path is returned. Otherwise, the URL itself is
+     * returned.
+     *
+     * @param {string} url The URL to mangle.
+     * @returns {string} The path to the file.
+     */
     urlPath: function urlPath(url) {
         try {
             return util.getFile(url).path;
@@ -1776,6 +1917,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
+    /**
+     * Returns a list of all domains and subdomains of documents in the
+     * given window and all of its descendant frames.
+     *
+     * @param {nsIDOMWindow} win The window for which to find domains.
+     * @returns {[string]} The visible domains.
+     */
     visibleHosts: function (win) {
         let res = [], seen = {};
         (function rec(frame) {
@@ -1788,6 +1936,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return res.filter(function (h) !set.add(seen, h));
     },
 
+    /**
+     * Returns a list of URIs of documents in the given window and all
+     * of its descendant frames.
+     *
+     * @param {nsIDOMWindow} win The window for which to find URIs.
+     * @returns {[nsIURI]} The visible URIs.
+     */
     visibleURIs: function (win) {
         let res = [], seen = {};
         (function rec(frame) {

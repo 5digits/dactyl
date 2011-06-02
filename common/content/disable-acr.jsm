@@ -14,15 +14,17 @@ const Cu = Components.utils;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
+const TOPIC = "chrome-document-global-created";
+
 function observe(window, topic, url) {
-    if (topic === "chrome-document-global-created")
+    if (topic === TOPIC)
         checkDocument(window.document);
 }
 function init(id) {
     if (id)
         ADDON_ID = id;
 
-    Services.obs[id ? "addObserver" : "removeObserver"](observe, "chrome-document-global-created", false);
+    Services.obs[id ? "addObserver" : "removeObserver"](observe, TOPIC, false);
     for (let doc in chromeDocuments())
         checkDocument(doc, !id);
 }
