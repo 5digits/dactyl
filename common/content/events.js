@@ -653,6 +653,7 @@ var Events = Module("events", {
 
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 let now = Date.now();
+                let key = events.toString(evt_obj);
                 for (let type in values(["keydown", "keypress", "keyup"])) {
                     let evt = update({}, evt_obj, { type: type });
                     if (type !== "keypress" && !evt.keyCode)
@@ -673,7 +674,8 @@ var Events = Module("events", {
                               || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
                               || doc.defaultView;
 
-                    if (target instanceof Element && !Events.isInputElement(target))
+                    if (target instanceof Element && !Events.isInputElement(target) &&
+                        ["<Return>", "<Space>"].indexOf(key) == -1)
                         target = target.ownerDocument.documentElement;
 
                     if (!evt_obj.dactylString && !mode)
