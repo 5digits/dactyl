@@ -23,7 +23,7 @@ function init(id) {
         ADDON_ID = id;
 
     Services.obs[id ? "addObserver" : "removeObserver"](observe, "chrome-document-global-created", false);
-    for (let doc in chromeDocuments)
+    for (let doc in chromeDocuments())
         checkDocument(doc, !id);
 }
 function cleanup() { init(null); }
