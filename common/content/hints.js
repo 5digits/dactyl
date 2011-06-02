@@ -620,8 +620,9 @@ var HintSession = Class("HintSession", CommandMode, {
             }
         }
 
+        let base = this.hintKeys.length;
         for (let [i, hint] in Iterator(this.validHints))
-            hint.ambiguous = i * this.hintKeys.length < this.validHints.length;
+            hint.ambiguous = (i + 1) * base <= this.validHints.length;
 
         if (options["usermode"]) {
             let css = [];
@@ -1240,7 +1241,7 @@ var Hints = Module("hints", {
 
         options.add(["hinttags", "ht"],
             "XPath string of hintable elements activated by 'f' and 'F'",
-            "stringlist", "input:not([type=hidden]),a,area,iframe,textarea,button,select," +
+            "stringlist", "input:not([type=hidden]),a[href],area,iframe,textarea,button,select," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",
             {
