@@ -152,6 +152,9 @@ var Buffer = Module("buffer", {
         });
 
         this.addPageInfoSection("m", "Meta Tags", function (verbose) {
+            if (!verbose)
+                return [];
+
             // get meta tag data, sort and put into pageMeta[]
             let metaNodes = buffer.focusedFrame.document.getElementsByTagName("meta");
 
@@ -863,7 +866,7 @@ var Buffer = Module("buffer", {
             let file = content.location.pathname.split("/").pop() || _("buffer.noName");
             let title = content.document.title || _("buffer.noTitle");
 
-            let info = template.map("gf",
+            let info = template.map(sections || options["pageinfo"],
                 function (opt) template.map(buffer.pageInfo[opt].action(), util.identity, ", "),
                 ", ");
 
