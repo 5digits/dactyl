@@ -621,7 +621,7 @@ var IO = Module("io", {
                     file.write(lines.join("\n"));
                 }
                 catch (e) {
-                    dactyl.echoerr(_("io.notWriteable"), file.path.quote());
+                    dactyl.echoerr(_("io.notWriteable", file.path.quote()));
                     dactyl.log(_("error.notWriteable", file.path, e.message)); // XXX
                 }
             }, {
