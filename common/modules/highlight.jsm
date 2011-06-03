@@ -416,10 +416,14 @@ var Highlights = Module("Highlight", {
 
             context.title = ["Color Scheme", "Runtime Path"];
             context.keys = { text: function (f) f.leafName.replace(extRe, ""), description: ".parent.path" };
-            context.completions = array.flatten(
-                io.getRuntimeDirectories("colors").map(
-                    function (dir) dir.readDirectory().filter(
-                        function (file) extRe.test(file.leafName))));
+            context.completions =
+                array.flatten(
+                        io.getRuntimeDirectories("colors").map(
+                            function (dir) dir.readDirectory().filter(
+                                function (file) extRe.test(file.leafName))))
+                     .concat([
+                        { leafName: "default", parent: { path: /*L*/"Revert to builtin colorscheme" } }
+                     ]);
 
         };
 
