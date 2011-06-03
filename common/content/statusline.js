@@ -232,9 +232,9 @@ var StatusLine = Module("statusline", {
             if (uri.equals(buffer.uri) && window.getWebNavigation) {
                 let sh = window.getWebNavigation().sessionHistory;
                 if (sh && sh.index > 0)
-                    modified += "+";
-                if (sh && sh.index < sh.count - 1)
                     modified += "-";
+                if (sh && sh.index < sh.count - 1)
+                    modified += "+";
                 if (this.bookmarked)
                     modified += UTF8("❤");
             }

@@ -255,8 +255,8 @@
     </li>
     <li>
         <em>History and bookmark status</em> (<tt>[+-❤⋯]</tt>): The position
-        of the current page in the tab's session history; <tt>+</tt> and
-        <tt>-</tt> indicate that it is possible to move backwards and forwards
+        of the current page in the tab's session history; <tt>-</tt> and
+        <tt>+</tt> indicate that it is possible to move backwards and forwards
         through the history respectively. ❤ indicates that the current page is
         bookmarked. Any other character indicates a QuickMark matching the
         current page.
