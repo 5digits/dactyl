@@ -57,7 +57,7 @@ function checkDocument(doc, disable, force) {
 }
 
 function chromeDocuments() {
-    let windows = services.windowMediator.getXULWindowEnumerator(null);
+    let windows = Services.wm.getXULWindowEnumerator(null);
     while (windows.hasMoreElements()) {
         let window = windows.getNext().QueryInterface(Ci.nsIXULWindow);
         for each (let type in ["typeChrome", "typeContent"]) {

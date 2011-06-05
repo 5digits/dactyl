@@ -1225,10 +1225,11 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
+        dactyl.assert(number < 0 ? elem.scrollLeft > 0 : elem.scrollLeft < elem.scrollWidth - elem.clientWidth);
+
         let left = elem.dactylScrollDestX !== undefined ? elem.dactylScrollDestX : elem.scrollLeft;
         elem.dactylScrollDestX = undefined;
 
-        dactyl.assert(number < 0 ? left > 0 : left < elem.scrollWidth - elem.clientWidth);
         Buffer.scrollTo(elem, left + number * increment, null);
     },
 
@@ -1253,10 +1254,11 @@ var Buffer = Module("buffer", {
         else
             throw Error();
 
+        dactyl.assert(number < 0 ? elem.scrollTop > 0 : elem.scrollTop < elem.scrollHeight - elem.clientHeight);
+
         let top = elem.dactylScrollDestY !== undefined ? elem.dactylScrollDestY : elem.scrollTop;
         elem.dactylScrollDestY = undefined;
 
-        dactyl.assert(number < 0 ? top > 0 : top < elem.scrollHeight - elem.clientHeight);
         Buffer.scrollTo(elem, null, top + number * increment);
     },
 

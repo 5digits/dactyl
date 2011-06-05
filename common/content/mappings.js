@@ -477,7 +477,8 @@ var Mappings = Module("mappings", {
                     return;
                 }
 
-                if (args[1] && !args["-count"] && !args["-ex"] && !args["-javascript"])
+                if (args[1] && !/^<nop>$/i.test(args[1])
+                    && !args["-count"] && !args["-ex"] && !args["-javascript"])
                     args[1] = "<count>" + args[1];
 
                 let [lhs, rhs] = args;
