@@ -190,7 +190,8 @@ var Contexts = Module("contexts", {
             let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
                                 : file.leafName;
 
-            self = update(args && !isArray(args) ? args : newContext.apply(null, args || [userContext]), {
+            self = args && !isArray(args) ? args : newContext.apply(null, args || [userContext]);
+            update(self, {
                 NAME: Const(name.replace(/\.[^.]*$/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
 
                 PATH: Const(file.path),
