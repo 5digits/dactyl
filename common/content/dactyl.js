@@ -1903,7 +1903,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                         action(toolbar);
                         events.checkFocus();
                     }, {
-                        argcount: "1",
+                        argCount: "1",
                         completer: function (context) {
                             completion.toolbar(context);
                             if (filter)
