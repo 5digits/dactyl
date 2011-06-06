@@ -216,11 +216,12 @@ var Contexts = Module("contexts", {
                         contexts.removeGroup(this.GROUP);
                 })
             });
+
             if (group !== this.user)
                 Class.replaceProperty(plugins, file.path, self);
 
             // This belongs elsewhere
-            if (isPlugin && args)
+            if (isPlugin)
                 Object.defineProperty(plugins, self.NAME, {
                     configurable: true,
                     enumerable: true,
@@ -355,6 +356,19 @@ var Contexts = Module("contexts", {
         if (group && hive)
             return group[hive];
         return group;
+    },
+
+    getDocs: function getDocs(context) {
+        try {
+            if (isinstance(context, ["Sandbox"])) {
+                let info = "INFO" in context && Cu.evalInSandbox("this.INFO instanceof XML && INFO.toXMLString()", context);
+                return info && XML(info);
+            }
+            if (typeof context.INFO == "xml")
+                return context.INFO;
+        }
+        catch (e) {}
+        return null;
     },
 
     bindMacro: function (args, default_, params) {

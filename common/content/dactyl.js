@@ -669,13 +669,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             let body = XML();
             for (let [, context] in Iterator(plugins.contexts))
                 try {
-                    let info;
-                    if (isinstance(context, ["Sandbox"]))
-                        info = "INFO" in context && XML(dactyl.userEval("this.INFO instanceof XML && this.INFO.toXMLString()", context));
-                    else if (context && context.INFO instanceof XML)
-                        info = context.INFO;
-
-                    if (info) {
+                    let info = contexts.getDocs(context);
+                    if (info instanceof XML) {
                         if (info.*.@lang.length()) {
                             let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
 
