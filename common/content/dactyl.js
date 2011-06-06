@@ -413,7 +413,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 ({ file: fileName, line: lineNumber, context: ctxt }) = info;
 
         if (!context && fileName && fileName[0] !== "[")
-            context = _userContext || ctxt;
+            context = ctxt || _userContext;
 
         if (isinstance(context, ["Sandbox"]))
             return Cu.evalInSandbox(str, context, "1.8", fileName, lineNumber);
@@ -668,20 +668,30 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             let body = XML();
             for (let [, context] in Iterator(plugins.contexts))
-                if (context && context.INFO instanceof XML) {
-                    let info = context.INFO;
-                    if (info.*.@lang.length()) {
-                        let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
+                try {
+                    let info;
+                    if (isinstance(context, ["Sandbox"]))
+                        info = "INFO" in context && XML(dactyl.userEval("this.INFO instanceof XML && this.INFO.toXMLString()", context));
+                    else if (context && context.INFO instanceof XML)
+                        info = context.INFO;
 
-                        info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
+                    if (info) {
+                        if (info.*.@lang.length()) {
+                            let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
 
-                        for each (let elem in info.NS::info)
-                            for each (let attr in ["@name", "@summary", "@href"])
-                                if (elem[attr].length())
-                                    info[attr] = elem[attr];
+                            info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
+
+                            for each (let elem in info.NS::info)
+                                for each (let attr in ["@name", "@summary", "@href"])
+                                    if (elem[attr].length())
+                                        info[attr] = elem[attr];
+                        }
+                        body += <h2 xmlns={NS.uri} tag={info.@name + '-plugin'}>{info.@summary}</h2> +
+                            info;
                     }
-                    body += <h2 xmlns={NS.uri} tag={context.INFO.@name + '-plugin'}>{context.INFO.@summary}</h2> +
-                        context.INFO;
+                }
+                catch (e) {
+                    util.reportError(e);
                 }
 
             let help =

@@ -317,6 +317,11 @@ var File = Class("File", {
     },
 
     /**
+     * @property {nsIFileURL} Returns the nsIFileURL object for this file.
+     */
+    get URI() services.io.newFileURI(this),
+
+    /**
      * Iterates over the objects in this directory.
      */
     iterDirectory: function () {
