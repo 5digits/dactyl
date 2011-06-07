@@ -639,7 +639,7 @@
 
         <p>
             <em>completions</em> is a two-dimensional array of the form:
-            <tt>[[arg1, description1], [arg2, description2], …]</tt>
+            <tt>[[val1, description1], [val2, description2], …]</tt>
         </p>
 
         <p>
@@ -650,11 +650,11 @@
         <p>
             Example:
             <code><ex>:command foo -nargs=? -complete custom,<str delim="'">
-    \ function (context) context.completions = [["arg1", "description1"], ["arg2", "description2"]]</str>
+    \ function (context) context.completions = [["val1", "description1"], ["val2", "description2"]]</str>
     \ <ex>:echo</ex> <str>Useless </str> + <em>&lt;q-args></em></ex>
 
 <ex>:command foo -nargs=?
-    \ -complete custom,<str delim="'">[["arg1", "description1"], ["arg2, "description2"]]</str>
+    \ -complete custom,<str delim="'">[["val1", "description1"], ["val2", "description2"]]</str>
     \ <ex>:echo</ex> <str>Same as above but simpler </str> + <em>&lt;q-args></em></ex></code>
         </p>
 

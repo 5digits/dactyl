@@ -185,6 +185,7 @@
       - Added 'banghist' option. [b1]
       - Added 'downloadsort' option. [b7]
       - Replaced 'focuscontent' with 'strictfocus'. [b1]
+      - Made 'strictfocus' a [sitemap]. [b7]
       - 'complete' now defaults to "slf" but file completion only
         triggers when the URL begins as above. [b1]
       - Added 's' flag to 'pageinfo' and changed default value. [b7]

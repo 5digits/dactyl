@@ -1813,7 +1813,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         });
 
         commands.add(["loadplugins", "lpl"],
-            "Load all plugins immediately",
+            "Load all or matching plugins",
             function (args) {
                 dactyl.loadPlugins(args.length ? args : null, args.bang);
             },

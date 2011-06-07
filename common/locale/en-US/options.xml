@@ -984,7 +984,6 @@
 </item>
 
 <item>
-    <tags>'nolpl' 'noloadplugins'</tags>
     <tags>'lpl' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
     <type>&option.loadplugins.type;</type>

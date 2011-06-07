@@ -794,7 +794,7 @@ unlet s:cpo_save
             { argCount: "0" });
 
         commands.add(["so[urce]"],
-            "Read Ex commands from a file",
+            "Read Ex commands, JavaScript or CSS from a file",
             function (args) {
                 if (args.length > 1)
                     dactyl.echoerr(_("io.oneFileAllowed"));
