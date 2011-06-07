@@ -385,7 +385,7 @@
 
 <item>
     <tags>:pin :pintab</tags>
-    <spec><oa>count</oa>pin<oa>tab</oa><oa>!</oa> <oa>arg</oa></spec>
+    <spec>:<oa>count</oa>pin<oa>tab</oa><oa>!</oa> <oa>arg</oa></spec>
     <description>
         <p>
             Pin tab as an application tab. If <oa>!</oa> is given,
@@ -397,7 +397,7 @@
 
 <item>
     <tags>:unpin :unpintab</tags>
-    <spec><oa>count</oa>pin<oa>tab</oa> <oa>arg</oa></spec>
+    <spec>:<oa>count</oa>unpin<oa>tab</oa> <oa>arg</oa></spec>
     <description>
         <p>
             Unpin tab as an application tab. Arguments and count

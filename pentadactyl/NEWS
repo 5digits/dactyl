@@ -146,8 +146,7 @@
         no longer be split at quoted commas and the option name,
         operators, and = sign may no longer be quoted. This will
         break certain automatically-generated configuration files.
-        See :help
-        [stringlist]. [b2]
+        See :help [stringlist]. [b2]
       - Boolean options no longer accept an argument. [b4]
       - 'cdpath' and 'runtimepath' no longer treat ",,"
         specially. Use "." instead. [b2]
@@ -162,7 +161,7 @@
         'guioptions'. [b4]
       - 'linksearch' has been removed.  The \l search modifier can
         still be used for this purpose. [b4]
-      - 'loadplugins' is now a regexplist option rather than
+      - 'loadplugins' is now a [regexplist] option rather than
         a boolean. [b2]
       - 'mapleader' is now an option rather than a :let
         variable. [b4]
@@ -193,7 +192,7 @@
       - Added 'passunknown' option. [b7]
       - Changed 'urlseparator' default value to "|". [b3]
       - Added "passwords" and "venkman" dialogs to :dialog. [b2]
-      - Make 'showmode' a stringlist option. [b7]
+      - Make 'showmode' a [stringlist] option. [b7]
       - Added 'wildanchor' option. [b2]
       - Added 'cookies', 'cookieaccept', and 'cookielifetime' options. [b3]
     • Added BookmarkChange, BookmarkRemove autocommands. [b2]
