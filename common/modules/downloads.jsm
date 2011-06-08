@@ -32,7 +32,7 @@ var Download = Class("Download", {
             <tr highlight="Download" key="row" xmlns:dactyl={NS} xmlns={XHTML}>
                 <td highlight="DownloadTitle">
                     <span highlight="Link">
-                        <a key="launch" dactyl:command="download.command"
+                        <a key="launch"
                            href={self.target.spec} path={self.targetFile.path}>{self.displayName}</a>
                         <span highlight="LinkInfo">{self.targetFile.path}</span>
                     </span>
@@ -56,6 +56,13 @@ var Download = Class("Download", {
                 <td><a highlight="DownloadSource" key="source" href={self.source.spec}>{self.source.spec}</a></td>
             </tr>,
             this.list.document, this.nodes);
+
+        this.nodes.launch.addEventListener("click", function (event) {
+            if (event.button == 0) {
+                event.preventDefault();
+                self.command("launch");
+            }
+        }, false);
 
         self.updateStatus();
         return self;
@@ -82,7 +89,10 @@ var Download = Class("Download", {
         util.assert(set.has(this.allowedCommands, name), _("download.unknownCommand"));
         util.assert(this.allowedCommands[name], _("download.commandNotAllowed"));
 
-        services.downloadManager[name + "Download"](this.id);
+        if (set.has(this.commands, name))
+            this.commands[name].call(this);
+        else
+            services.downloadManager[name + "Download"](this.id);
     },
 
     commands: {
