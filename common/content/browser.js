@@ -43,11 +43,17 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             title: doc.title
         };
 
-        if (dactyl.has("tabs")) {
+        if (!dactyl.has("tabs"))
+            update(args, { doc: doc, win: doc.defaultView });
+        else {
             args.tab = tabs.getContentIndex(doc) + 1;
             args.doc = {
                 valueOf: function () doc,
                 toString: function () "tabs.getTab(" + (args.tab - 1) + ").linkedBrowser.contentDocument"
+            };
+            args.win = {
+                valueOf: function () doc.defaultView,
+                toString: function () "tabs.getTab(" + (args.tab - 1) + ").linkedBrowser.contentWindow"
             };
         }
 

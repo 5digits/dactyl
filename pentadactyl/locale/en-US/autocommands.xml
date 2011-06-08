@@ -40,6 +40,7 @@
     <dt>&lt;tags></dt>      <dd>The tags applied to <em>&lt;url></em>. Only for <em>Bookmark*</em>.</dd>
     <dt>&lt;title></dt>     <dd>The page, bookmark or download title.</dd>
     <dt>&lt;url></dt>       <dd>The URL against which the event was selected.</dd>
+    <dt>&lt;win></dt>       <dd>The window for which the event occurred. Only for <em>DOMLoad</em>, <em>PageLoad</em> and <em>PageLoadPre</em>.</dd>
 </dl>
 
 </overlay>
