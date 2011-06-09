@@ -1317,6 +1317,11 @@ var Events = Module("events", {
         keyup: function onKeyUp(event) {
             this.keyEvents.push(event);
 
+            let isMacro = event.isMacro || this.feedingEvent && this.feedingEvent.isMacro;
+            if (this.lastKeyFake && !isMacro)
+                this.passing = false;
+            this.lastKeyFake = isMacro;
+
             let pass = this.passing && !event.isMacro ||
                     this.feedingEvent && this.feedingEvent.isReplay ||
                     event.isReplay ||
