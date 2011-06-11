@@ -54,7 +54,7 @@ var JavaScript = Module("javascript", {
 
     lazyInit: true,
 
-    newContext: function () this.modules.newContext(this.modules.userContext),
+    newContext: function () this.modules.newContext(this.modules.userContext, true),
 
     get completers() JavaScript.completers, // For backward compatibility
 

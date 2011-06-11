@@ -663,7 +663,9 @@ var Mappings = Module("mappings", {
         function uniqueModes(modes) {
             let chars = [k for ([k, v] in Iterator(modules.modes.modeChars))
                          if (v.every(function (mode) modes.indexOf(mode) >= 0))];
-            return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0).concat(chars));
+            return array.uniq(modes.filter(function (m) chars.indexOf(m.char) < 0)
+                                   .map(function (m) m.name.toLowerCase())
+                                   .concat(chars));
         }
 
         commands.add(["feedkeys", "fk"],

@@ -68,11 +68,9 @@ if (!Object.defineProperties)
     }
 if (!Object.freeze)
     Object.freeze = function freeze(obj) {};
-if (!Object.getOwnPropertyDescriptor)
-    Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
+if (!Object.getPropertyDescriptor)
+    Object.getPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
         try {
-            if (!hasOwnProperty.call(obj, prop))
-                return undefined;
             let desc = {
                 configurable: true,
                 enumerable: propertyIsEnumerable.call(obj, prop)
@@ -92,6 +90,11 @@ if (!Object.getOwnPropertyDescriptor)
         catch (e) {
             throw e.stack ? e : Error(e);
         }
+    };
+if (!Object.getOwnPropertyDescriptor)
+    Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
+        if (hasOwnProperty.call(obj, prop))
+            return Object.getPropertyDescriptor(obj, prop);
     };
 if (!Object.getOwnPropertyNames)
     Object.getOwnPropertyNames = function getOwnPropertyNames(obj, _debugger) {

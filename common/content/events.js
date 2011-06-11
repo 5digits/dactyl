@@ -1315,7 +1315,10 @@ var Events = Module("events", {
         },
 
         keyup: function onKeyUp(event) {
-            this.keyEvents.push(event);
+            if (this.type == "keydown")
+                this.keyEvents.push(event);
+            else
+                this.keyEvents = [];
 
             let isMacro = event.isMacro || this.feedingEvent && this.feedingEvent.isMacro;
             if (this.lastKeyFake && !isMacro)

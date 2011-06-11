@@ -1326,9 +1326,15 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (desc.value instanceof Class.Property)
                 desc = desc.value.init(k) || desc.value;
 
-            for (let obj = object; obj && !orig; obj = Object.getPrototypeOf(obj))
-                if (orig = Object.getOwnPropertyDescriptor(obj, k))
-                    Object.defineProperty(original, k, orig);
+            if (k in object) {
+                for (let obj = object; obj && !orig; obj = Object.getPrototypeOf(obj))
+                    if (orig = Object.getOwnPropertyDescriptor(obj, k))
+                        Object.defineProperty(original, k, orig);
+
+                if (!orig)
+                    if (orig = Object.getPropertyDescriptor(object, k))
+                        Object.defineProperty(original, k, orig);
+            }
 
             // Guard against horrible add-ons that use eval-based monkey
             // patching.
@@ -1668,7 +1674,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         catch (e) {}
 
         let ary = host.split(".");
-        ary = [ary.slice(i).join(".") for (i in util.range(ary.length - 1, 0, -1))];
+        ary = [ary.slice(i).join(".") for (i in util.range(ary.length, 0, -1))];
         return ary.filter(function (h) h.length >= base.length);
     },
 
@@ -1928,7 +1934,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let res = [], seen = {};
         (function rec(frame) {
             try {
-                res = res.concat(util.subdomains(frame.location.host));
+                res = res.concat(util.subdomains(frame.location.hostname));
             }
             catch (e) {}
             Array.forEach(frame.frames, rec);

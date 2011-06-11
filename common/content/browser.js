@@ -28,8 +28,11 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
         "content-document-global-created": function (win, uri) {
             let top = util.topWindow(win);
 
-            if (top == window)
-                this._triggerLoadAutocmd("PageLoadPre", win.document, win.location.href != "null" ? window.location.href : uri);
+            if (uri == "null")
+                uri = null;
+
+            if (top == window && (win.location.href || uri))
+                this._triggerLoadAutocmd("PageLoadPre", win.document, win.location.href || uri);
         }
     },
 

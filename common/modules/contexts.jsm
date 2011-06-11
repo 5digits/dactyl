@@ -374,12 +374,19 @@ var Contexts = Module("contexts", {
     bindMacro: function (args, default_, params) {
         const { dactyl, events, modules } = this.modules;
 
+        function Proxy(obj, key) Class.Property({
+            configurable: true,
+            enumerable: true,
+            get: function Proxy_get() process(obj[key]),
+            set: function Proxy_set(val) obj[key] = val
+        })
+
         let process = util.identity;
 
         if (callable(params))
             var makeParams = function makeParams(self, args)
-                iter.toObject([k, process(v)]
-                               for ([k, v] in iter(params.apply(self, args))));
+                let (obj = params.apply(self, args))
+                    iter.toObject([k, Proxy(obj, k)] for (k in properties(obj)));
         else if (params)
             makeParams = function makeParams(self, args)
                 iter.toObject([name, process(args[i])]
