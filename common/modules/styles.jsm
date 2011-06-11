@@ -561,9 +561,8 @@ var Styles = Module("Styles", {
                     if (args["-append"]) {
                         let sheet = args["-group"].get(args["-name"]);
                         if (sheet) {
-                            filter = sheet.sites.concat(filter).join(",");
+                            filter = array(sheet.sites).concat(filter).uniq().join(",");
                             css = sheet.css + " " + css;
-
                         }
                     }
                     let style = args["-group"].add(args["-name"], filter, css, args["-agent"]);
