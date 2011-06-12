@@ -671,7 +671,7 @@ var Editor = Module("editor", {
             ["<Space>", "<Return>"], "Expand insert mode abbreviation",
             function () {
                 editor.expandAbbreviation(modes.INSERT);
-                return Events.PASS;
+                return Events.PASS_THROUGH;
             });
 
         mappings.add([modes.INSERT],
