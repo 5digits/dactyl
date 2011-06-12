@@ -296,7 +296,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
         <p>
             Current history position is marked with <em>></em>.
-            Jump numbers may be used as counts for with
+            Jump numbers may be used as counts for
             <ex>:back</ex> or <ex>:forward</ex>.
         </p>
     </description>
