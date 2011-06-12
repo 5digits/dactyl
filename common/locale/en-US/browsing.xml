@@ -223,7 +223,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[<C-x>]]></tags>
+    <tags><![CDATA[<decrement-url-path> <C-x>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-x></spec>
     <description>
@@ -237,7 +237,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[<C-a>]]></tags>
+    <tags><![CDATA[<increment-url-path> <C-a>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-a></spec>
     <description>
@@ -324,7 +324,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>gu</tags>
+    <tags><![CDATA[<parent-url-path> gu]]></tags>
     <spec><oa>count</oa>gu</spec>
     <description short="true">
         <p>Go to <oa>count</oa>th parent directory.</p>
@@ -338,7 +338,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>gU</tags>
+    <tags><![CDATA[<root-url-path> gU]]></tags>
     <spec>gU</spec>
     <description short="true">
         <p>Go to the root of the web site.</p>
@@ -394,7 +394,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 <h2 tag="stopping">Stopping</h2>
 
 <item>
-    <tags><![CDATA[<C-c> :st :stop]]></tags>
+    <tags><![CDATA[<stop-load> <C-c> :st :stop]]></tags>
     <spec>&lt;C-c></spec>
     <strut/>
     <spec>:st<oa>op</oa></spec>

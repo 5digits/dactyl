@@ -1597,21 +1597,21 @@ var Buffer = Module("buffer", {
             function () { dactyl.clipboardWrite(buffer.uri.spec, true); });
 
         mappings.add([modes.NORMAL],
-            ["<C-a>"], "Increment last number in URL",
+            ["<C-a>", "<increment-url-path>"], "Increment last number in URL",
             function (args) { buffer.incrementURL(Math.max(args.count, 1)); },
             { count: true });
 
         mappings.add([modes.NORMAL],
-            ["<C-x>"], "Decrement last number in URL",
+            ["<C-x>", "<decrement-url-path>"], "Decrement last number in URL",
             function (args) { buffer.incrementURL(-Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.NORMAL], ["gu"],
+        mappings.add([modes.NORMAL], ["gu", "<parent-url-path>"],
             "Go to parent directory",
             function (args) { buffer.climbUrlPath(Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.NORMAL], ["gU"],
+        mappings.add([modes.NORMAL], ["gU", "<root-url-path>"],
             "Go to the root of the website",
             function () { buffer.climbUrlPath(-1); });
 
@@ -1629,7 +1629,7 @@ var Buffer = Module("buffer", {
             "Start caret mode",
             function () { modes.push(modes.CARET); });
 
-        mappings.add([modes.NORMAL], ["<C-c>"],
+        mappings.add([modes.NORMAL], ["<C-c>", "<stop-load>"],
             "Stop loading the current web page",
             function () { ex.stop(); });
 
