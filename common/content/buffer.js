@@ -1785,7 +1785,7 @@ var Buffer = Module("buffer", {
         }
 
         mappings.add([modes.NORMAL], ["gP"],
-            "Open (]put) a URL based on the current clipboard contents in a new buffer",
+            "Open (put) a URL based on the current clipboard contents in a new background buffer",
             function () {
                 dactyl.open(url(), { from: "paste", where: dactyl.NEW_TAB, background: true });
             });
