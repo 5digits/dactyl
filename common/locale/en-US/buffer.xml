@@ -115,7 +115,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<Home> gg]]></tags>
+    <tags><![CDATA[<scroll-top> <Home> gg]]></tags>
     <strut/>
     <spec><oa>count</oa>gg</spec>
     <description>
@@ -128,7 +128,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<End> G]]></tags>
+    <tags><![CDATA[<scroll-bottom> <End> G]]></tags>
     <strut/>
     <spec><oa>count</oa>G</spec>
     <description>

@@ -1662,12 +1662,12 @@ var Buffer = Module("buffer", {
             "Scroll to the absolute right of the document",
             function () { buffer.scrollToPercent(100, null); });
 
-        mappings.add([modes.COMMAND], ["gg", "<Home>"],
+        mappings.add([modes.COMMAND], ["gg", "<Home>", "<scroll-top>"],
             "Go to the top of the document",
             function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 0); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["G", "<End>"],
+        mappings.add([modes.COMMAND], ["G", "<End>", "<scroll-bottom>"],
             "Go to the end of the document",
             function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 100); },
             { count: true });
