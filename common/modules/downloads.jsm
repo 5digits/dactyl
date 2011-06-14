@@ -39,12 +39,12 @@ var Download = Class("Download", {
                 </td>
                 <td highlight="DownloadState" key="state"/>
                 <td highlight="DownloadButtons Buttons">
-                    <a highlight="Button" key="pause">{_("download.action.Pause")}</a>
-                    <a highlight="Button" key="remove">{_("download.action.Remove")}</a>
-                    <a highlight="Button" key="resume">{_("download.action.Resume")}</a>
-                    <a highlight="Button" key="retry">{_("download.action.Retry")}</a>
-                    <a highlight="Button" key="cancel">{_("download.action.Cancel")}</a>
-                    <a highlight="Button" key="delete">{_("download.action.Delete")}</a>
+                    <a highlight="Button" href="javascript:0" key="pause">{_("download.action.Pause")}</a>
+                    <a highlight="Button" href="javascript:0" key="remove">{_("download.action.Remove")}</a>
+                    <a highlight="Button" href="javascript:0" key="resume">{_("download.action.Resume")}</a>
+                    <a highlight="Button" href="javascript:0" key="retry">{_("download.action.Retry")}</a>
+                    <a highlight="Button" href="javascript:0" key="cancel">{_("download.action.Cancel")}</a>
+                    <a highlight="Button" href="javascript:0" key="delete">{_("download.action.Delete")}</a>
                 </td>
                 <td highlight="DownloadProgress" key="progress">
                     <span highlight="DownloadProgressHave" key="progressHave"

@@ -152,11 +152,11 @@ var Addon = Class("Addon", {
                 <td highlight="AddonVersion" key="version"/>
                 <td highlight="AddonStatus" key="status"/>
                 <td highlight="AddonButtons Buttons">
-                    <a highlight="Button" key="enable">{_("addon.action.On")}</a>
-                    <a highlight="Button" key="disable">{_("addon.action.Off")}</a>
-                    <a highlight="Button" key="delete">{_("addon.action.Delete")}</a>
-                    <a highlight="Button" key="update">{_("addon.action.Update")}</a>
-                    <a highlight="Button" key="options">{_("addon.action.Options")}</a>
+                    <a highlight="Button" href="javascript:0" key="enable">{_("addon.action.On")}</a>
+                    <a highlight="Button" href="javascript:0" key="disable">{_("addon.action.Off")}</a>
+                    <a highlight="Button" href="javascript:0" key="delete">{_("addon.action.Delete")}</a>
+                    <a highlight="Button" href="javascript:0" key="update">{_("addon.action.Update")}</a>
+                    <a highlight="Button" href="javascript:0" key="options">{_("addon.action.Options")}</a>
                 </td>
                 <td highlight="AddonDescription" key="description"/>
             </tr>,
