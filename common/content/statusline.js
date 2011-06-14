@@ -303,7 +303,7 @@ var StatusLine = Module("statusline", {
         set: function progress(progress) {
             this._progress = progress || "";
 
-            if (typeof progress == "string")
+            if (isinstance(progress, ["String", _]))
                 this.widgets.progress.value = this._progress;
             else if (typeof progress == "number") {
                 let progressStr = "";
