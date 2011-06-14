@@ -747,8 +747,9 @@ var Tabs = Module("tabs", {
                 });
 
             commands.add(["quita[ll]", "qa[ll]"],
-                "Quit " + config.appName,
-                function (args) { dactyl.quit(false, args.bang); }, {
+                "Quit this " + config.appName + " window",
+                function (args) { window.close(); },
+                {
                     argCount: "0",
                     bang: true
                 });

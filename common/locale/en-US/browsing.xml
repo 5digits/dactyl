@@ -450,6 +450,18 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 <h2 tag="quitting save-session">Quitting</h2>
 
 <item>
+    <tags>:x :exit</tags>
+    <strut/>
+    <spec>:exit</spec>
+    <description>
+        <p>
+            Quit &dactyl.appName;, no matter how many tabs/windows
+            are open. The session is not stored.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>:q :quit</tags>
     <strut/>
     <spec>:q<oa>uit</oa></spec>
@@ -467,8 +479,8 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     <spec>:quita<oa>ll</oa></spec>
     <description>
         <p>
-            Quit &dactyl.appName;, no matter how many tabs/windows
-            are open. The session is not stored.
+            Close the current &dactyl.appName; window, no matter how
+            many tabs are open.
         </p>
     </description>
 </item>

@@ -1839,6 +1839,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 literal: 0
             });
 
+        commands.add(["exit", "x"],
+            "Quit " + config.appName,
+            function (args) {
+                dactyl.quit(false, args.bang);
+            }, {
+                argCount: "0",
+                bang: true
+            });
+
         commands.add(["q[uit]"],
             dactyl.has("tabs") ? "Quit current tab" : "Quit application",
             function (args) {
