@@ -231,7 +231,7 @@ var DownloadList = Class("DownloadList",
                             <td><span highlight="Title">{_("title.Totals")}:</span>&#xa0;<span key="total"/></td>
                             <td/>
                             <td highlight="DownloadButtons">
-                                <a highlight="Button" key="clear">{_("download.action.Clear")}</a>
+                                <a highlight="Button" href="javascript:0" key="clear">{_("download.action.Clear")}</a>
                             </td>
                             <td highlight="DownloadProgress" key="progress">
                                 <span highlight="DownloadProgressHave" key="progressHave"
