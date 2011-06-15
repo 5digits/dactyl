@@ -1565,7 +1565,7 @@ var Events = Module("events", {
     mappings: function () {
 
         mappings.add([modes.MAIN],
-            ["<A-b>"], "Process the next key as a builtin mapping",
+            ["<A-b>", "<pass-next-key-builtin>"], "Process the next key as a builtin mapping",
             function () {
                 events.processor = ProcessorStack(modes.getStack(0), mappings.hives.array, true);
                 events.processor.keyEvents = events.keyEvents;

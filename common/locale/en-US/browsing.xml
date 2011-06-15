@@ -20,7 +20,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 &dactyl.host; or to a web page, you have two options:
 
 <item>
-    <tags><![CDATA[<A-b>]]></tags>
+    <tags><![CDATA[<pass-next-key-builtin> <A-b>]]></tags>
     <spec><![CDATA[<A-b>]]></spec>
     <description>
         <p>
@@ -249,7 +249,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>~</tags>
+    <tags><![CDATA[<open-home-directory> ~]]></tags>
     <spec>~</spec>
     <description short="true">
         <p>Open home directory. Equivalent to <ex>:open ~/</ex></p>
@@ -303,7 +303,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>gh</tags>
+    <tags><![CDATA[<open-homepage> gh]]></tags>
     <spec>gh</spec>
     <description short="true">
         <p>Go home. Opens the homepage in the current tab.</p>
@@ -311,7 +311,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>gH</tags>
+    <tags><![CDATA[<tab-open-homepage> gH]]></tags>
     <strut/>
     <spec>gH</spec>
     <description>
@@ -324,7 +324,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[<parent-url-path> gu]]></tags>
+    <tags><![CDATA[<open-parent-path> gu]]></tags>
     <spec><oa>count</oa>gu</spec>
     <description short="true">
         <p>Go to <oa>count</oa>th parent directory.</p>
@@ -338,7 +338,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[<root-url-path> gU]]></tags>
+    <tags><![CDATA[<open-root-path> gU]]></tags>
     <spec>gU</spec>
     <description short="true">
         <p>Go to the root of the web site.</p>

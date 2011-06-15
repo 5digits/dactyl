@@ -233,22 +233,22 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             "Open one or more URLs in a new window, based on current location",
             function () { CommandExMode().open("winopen " + decode(buffer.uri.spec)); });
 
-        mappings.add([modes.NORMAL], ["~"],
+        mappings.add([modes.NORMAL], ["<open-home-directory>", "~"],
             "Open home directory",
             function () { dactyl.open("~"); });
 
-        mappings.add([modes.NORMAL], ["gh"],
+        mappings.add([modes.NORMAL], ["<open-homepage>", "gh"],
             "Open homepage",
             function () { BrowserHome(); });
 
-        mappings.add([modes.NORMAL], ["gH"],
+        mappings.add([modes.NORMAL], ["<tab-open-homepage>", "gH"],
             "Open homepage in a new tab",
             function () {
                 let homepages = gHomeButton.getHomePage();
                 dactyl.open(homepages, { from: "homepage", where: dactyl.NEW_TAB });
             });
 
-        mappings.add([modes.MAIN], ["<C-l>"],
+        mappings.add([modes.MAIN], ["<redraw-screen>", "<C-l>"],
             "Redraw the screen",
             function () { ex.redraw(); });
     }

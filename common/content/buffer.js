@@ -1606,12 +1606,12 @@ var Buffer = Module("buffer", {
             function (args) { buffer.incrementURL(-Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.NORMAL], ["gu", "<parent-url-path>"],
+        mappings.add([modes.NORMAL], ["gu", "<open-parent-path>"],
             "Go to parent directory",
             function (args) { buffer.climbUrlPath(Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.NORMAL], ["gU", "<root-url-path>"],
+        mappings.add([modes.NORMAL], ["gU", "<open-root-path>"],
             "Go to the root of the website",
             function () { buffer.climbUrlPath(-1); });
 

@@ -55,7 +55,7 @@
 </item>
 
 <item>
-    <tags>gf</tags>
+    <tags><![CDATA[<view-source> gf]]></tags>
     <strut/>
     <spec>gf</spec>
     <description>
@@ -67,7 +67,7 @@
 </item>
 
 <item>
-    <tags>gF</tags>
+    <tags><![CDATA[<view-source-externally> gF]]></tags>
     <strut/>
     <spec>gF</spec>
     <description>

@@ -87,7 +87,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<C-l> CTRL-L :redr :redraw]]></tags>
+    <tags><![CDATA[<redraw-screen> <C-l> CTRL-L :redr :redraw]]></tags>
     <strut/>
     <spec>:redr<oa>aw</oa></spec>
     <description>
@@ -166,7 +166,7 @@
 <h2 tag="online-help">Online help</h2>
 
 <item>
-    <tags><![CDATA[<F1> :help :h help]]></tags>
+    <tags><![CDATA[<open-help> <F1> :help :h help]]></tags>
     <spec>:h<oa>elp</oa> <oa>subject</oa></spec>
     <spec>&lt;F1></spec>
     <description>
@@ -180,7 +180,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<A-F1> :helpall :helpa help-all]]></tags>
+    <tags><![CDATA[<open-single-help> <A-F1> :helpall :helpa help-all]]></tags>
     <spec>:helpa<oa>ll</oa> <oa>subject</oa></spec>
     <spec>&lt;A-F1></spec>
     <description>
