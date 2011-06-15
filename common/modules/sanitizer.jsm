@@ -18,7 +18,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("sanitizer", {
     exports: ["Range", "Sanitizer", "sanitizer"],
     use: ["config"],
-    require: ["messages", "prefs", "services", "storage", "template", "util"],
+    require: ["messages", "prefs", "services", "storage", "template", "util"]
 }, this);
 
 let tmp = {};
@@ -434,7 +434,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 if (args["-host"]) {
                     args["-host"].forEach(function (host) {
                         sanitizer.sanitizing = true;
-                        sanitizer.sanitizeItems(items, range, host)
+                        sanitizer.sanitizeItems(items, range, host);
                     });
                 }
                 else
@@ -457,7 +457,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                                 !args["-host"].some(function (host) util.isSubdomain(item.text, host)));
                             modules.completion.domain(context);
                         },
-                        type: modules.CommandOption.LIST,
+                        type: modules.CommandOption.LIST
                     }, {
                         names: ["-older", "-o"],
                         description: "Sanitize items older than timespan",

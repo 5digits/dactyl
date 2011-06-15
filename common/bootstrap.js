@@ -219,7 +219,7 @@ function init() {
                 wrappedJSObject: {}
             },
             createInstance: function () this.instance
-        })
+        });
 
     Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = JSMLoader;
 

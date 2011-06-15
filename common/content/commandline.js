@@ -852,7 +852,7 @@ var CommandLine = Module("commandline", {
                     event.target.blur();
                     dactyl.beep();
                 }
-            },
+            }
         }
     ),
 
@@ -1246,7 +1246,7 @@ var CommandLine = Module("commandline", {
                     for (let [, context] in Iterator(list)) {
                         let done = function done() !(idx >= n + context.items.length || idx == -2 && !context.items.length);
 
-                        util.waitFor(function () !context.incomplete || done())
+                        util.waitFor(function () !context.incomplete || done());
                         if (done())
                             break;
 

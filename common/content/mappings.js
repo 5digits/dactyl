@@ -649,7 +649,7 @@ var Mappings = Module("mappings", {
             validator: function (value) Array.concat(value).every(findMode),
             completer: function () [[array.compact([mode.name.toLowerCase().replace(/_/g, "-"), mode.char]), mode.description]
                                     for (mode in values(modes.all))
-                                    if (!mode.hidden)],
+                                    if (!mode.hidden)]
         };
 
         function findMode(name) {

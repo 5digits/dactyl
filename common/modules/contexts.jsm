@@ -278,7 +278,7 @@ var Contexts = Module("contexts", {
     })),
 
     matchingGroups: function (uri) Object.create(this.groupsProto, {
-        groups: { value: this.activeGroups(uri) },
+        groups: { value: this.activeGroups(uri) }
     }),
 
     activeGroups: function (uri, doc) {
@@ -313,7 +313,7 @@ var Contexts = Module("contexts", {
             if (description)
                 group.description = description;
             if (filter)
-                group.filter = filter
+                group.filter = filter;
             group.persist = persist;
         }
 
@@ -405,7 +405,7 @@ var Contexts = Module("contexts", {
             var action = function action() {
                 events.feedkeys(action.macro(makeParams(this, arguments)),
                                 noremap, silent);
-            }
+            };
             action.macro = util.compileMacro(rhs, true);
             break;
 
@@ -496,9 +496,9 @@ var Contexts = Module("contexts", {
                     if (args.has("-locations"))
                         group.filter = filter;
                     if (args.has("-description"))
-                        group.description = args["-description"]
+                        group.description = args["-description"];
                     if (args.has("-nopersist"))
-                        group.persist = !args["-nopersist"]
+                        group.persist = !args["-nopersist"];
                 }
 
                 if (!group.builtin && args.has("-args")) {

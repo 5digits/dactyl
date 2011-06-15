@@ -216,7 +216,7 @@ var IO = Module("io", {
                     defineModule.loadLog.push("done sourcing " + filename + ": " + (Date.now() - time) + "ms");
                 }
             }, this);
-        },
+        }
     }),
 
     // TODO: there seems to be no way, short of a new component, to change

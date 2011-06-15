@@ -293,12 +293,12 @@ function XMLChannel(uri, contentType) {
     if (doctype) {
         this.writes.push(doctype + "[\n");
         try {
-            this.writes.push(services.io.newChannel(url, null, null).open())
+            this.writes.push(services.io.newChannel(url, null, null).open());
         }
         catch (e) {}
         if (!open)
             this.writes.push("\n]");
-        this.writes.push(post)
+        this.writes.push(post);
     }
     this.writes.push(channelStream);
 

@@ -249,12 +249,12 @@ var ConfigBase = Class("ConfigBase", {
             </e4x>;
             for each (let [id, [name, key, uri]] in Iterator(this.sidebars)) {
                 append.XUL::menupopup[0].* +=
-                        <menuitem observes={"pentadactyl-" + id + "Sidebar"} label={name} accesskey={key} xmlns={XUL}/>
+                        <menuitem observes={"pentadactyl-" + id + "Sidebar"} label={name} accesskey={key} xmlns={XUL}/>;
                 append.XUL::broadcasterset[0].* +=
                         <broadcaster id={"pentadactyl-" + id + "Sidebar"}
                             autoCheck="false" type="checkbox" group="sidebar"
                             sidebartitle={name} sidebarurl={uri}
-                            oncommand="toggleSidebar(this.id || this.observes);" xmlns={XUL}/>
+                            oncommand="toggleSidebar(this.id || this.observes);" xmlns={XUL}/>;
             }
 
             util.overlayWindow(window, { append: append.elements() });

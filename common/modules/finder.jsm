@@ -175,7 +175,7 @@ var RangeFinder = Module("rangefinder", {
 
         modes.addMode("FIND", {
             description: "Find mode, active when typing search input",
-            bases: [modes.COMMAND_LINE],
+            bases: [modes.COMMAND_LINE]
         });
         modes.addMode("FIND_FORWARD", {
             description: "Forward Find mode, active when typing search input",
@@ -398,7 +398,7 @@ var RangeFind = Class("RangeFind", {
             var node = util.evaluateXPath(RangeFind.selectNodePath,
                                           this.lastRange.commonAncestorContainer).snapshotItem(0);
         if (node) {
-            node.focus()
+            node.focus();
             // Re-highlight collapsed selection
             this.selectedRange = this.lastRange;
         }

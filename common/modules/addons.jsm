@@ -475,8 +475,8 @@ var Addons = Module("addons", {
                                           true));
                     });
                 }
-            }
-        }
+            };
+        };
 
         completion.extension = function extension(context, types) {
             context.title = ["Extension"];

@@ -41,7 +41,7 @@ var JavaScript = Module("javascript", {
             this.window = window;
 
             init.supercall(this);
-        },
+        }
     }),
 
     globals: Class.memoize(function () [
@@ -806,7 +806,7 @@ var JavaScript = Module("javascript", {
             get completionList() this.widgets.statusbar.commandline.id,
 
             accept: function accept() {
-                dactyl.trapErrors(function () { this.repl.addOutput(this.command) }, this);
+                dactyl.trapErrors(function () { this.repl.addOutput(this.command); }, this);
 
                 this.completions.cleanup();
                 this.history.save();

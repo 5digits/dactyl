@@ -110,7 +110,7 @@ var Messages = Module("messages", {
                         if (value != null) {
                             let name = [this.constructor.className.toLowerCase(), this.identifier || this.name, prop].join(".");
                             if (!isObject(value))
-                                value = messages.get(name, value)
+                                value = messages.get(name, value);
                             else if (isArray(value))
                                 // Deprecated
                                 iter(value).forEach(function ([k, v]) {
@@ -129,7 +129,7 @@ var Messages = Module("messages", {
                     },
 
                     set: function set(val) this[_prop] = val
-                }
+                };
             }
             this.default = prop;
             this.initialized = true;

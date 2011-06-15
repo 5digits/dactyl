@@ -65,7 +65,7 @@ if (!Object.defineProperties)
     Object.defineProperties = function defineProperties(obj, props) {
         for (let [k, v] in Iterator(props))
             Object.defineProperty(obj, k, v);
-    }
+    };
 if (!Object.freeze)
     Object.freeze = function freeze(obj) {};
 if (!Object.getPropertyDescriptor)

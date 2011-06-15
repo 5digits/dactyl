@@ -113,7 +113,7 @@ var Modes = Module("modes", {
         });
         this.addMode("OUTPUT_MULTILINE", {
             description: "Active when the multi-line output buffer is open",
-            bases: [this.NORMAL],
+            bases: [this.NORMAL]
         });
 
         this.addMode("INPUT", {
@@ -267,7 +267,7 @@ var Modes = Module("modes", {
 
         let val = this._modeMap[this._main].display();
         if (val)
-            return "-- " + val + " --" + macromode;;
+            return "-- " + val + " --" + macromode;
         return macromode;
     },
 

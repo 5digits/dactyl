@@ -180,9 +180,9 @@ var Buffer = Module("buffer", {
                 yield ["Host", identity.getEffectiveHost()];
 
                 if (statusline.security === "extended")
-                    yield ["Owner", data.subjectOrg]
+                    yield ["Owner", data.subjectOrg];
                 else
-                    yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)]
+                    yield ["Owner", _("pageinfo.s.ownerUnverified", data.subjectOrg)];
 
                 if (location(data).length)
                     yield ["Location", location(data)];
@@ -192,7 +192,7 @@ var Buffer = Module("buffer", {
                 if (identity._overrideService.hasMatchingOverride(identity._lastLocation.hostname,
                                                               (identity._lastLocation.port || 443),
                                                               data.cert, {}, {}))
-                    yield ["User exception", /*L*/"true"]
+                    yield ["User exception", /*L*/"true"];
                 break;
             }
         });

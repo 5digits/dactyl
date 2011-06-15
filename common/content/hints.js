@@ -1031,7 +1031,7 @@ var Hints = Module("hints", {
             onChange: function () {
                 this.accepted = true;
                 modes.pop();
-            },
+            }
         });
     },
 

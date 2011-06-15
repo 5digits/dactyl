@@ -715,7 +715,7 @@ var Option = Class("Option", {
          type: type,
 
          _op: Option.ops[type]
-     })
+     });
 
     if (type in Option.getKey)
         class_.prototype.getKey = Option.getKey[type];
