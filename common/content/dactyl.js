@@ -38,6 +38,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         };
 
         styles.registerSheet("resource://dactyl-skin/dactyl.css");
+
+        prefs.safeSet("accessibility.typeaheadfind.autostart", false);
     },
 
     cleanup: function () {
