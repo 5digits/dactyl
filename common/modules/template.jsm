@@ -496,7 +496,7 @@ var Template = Module("Template", {
                             let (name = item.name || item.names[0], frame = item.definedAt)
                                 !frame ? name :
                                     template.helpLink(help(item), name, "Title") +
-                                    <span highlight="LinkInfo" xmlns:dactyl={NS}>{_("io.definedAt", sourceLink(frame))}</span>
+                                    <span highlight="LinkInfo" xmlns:dactyl={NS}>{_("io.definedAt")} {sourceLink(frame)}</span>
                         }</span>
                     </td>
                     { item.columns ? template.map(item.columns, function (c) <td>{c}</td>) : "" }
