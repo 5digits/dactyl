@@ -450,13 +450,13 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 <h2 tag="quitting save-session">Quitting</h2>
 
 <item>
-    <tags>:x :exit</tags>
+    <tags>ZQ :x :exit</tags>
     <strut/>
-    <spec>:exit</spec>
+    <spec>:exit<oa>!</oa></spec>
     <description>
         <p>
-            Quit &dactyl.appName;, no matter how many tabs/windows
-            are open. The session is not stored.
+            Quit &dactyl.appName;, no matter how many tabs/windows are open.
+            The session is not stored. Use <oa>!</oa> to forcibly quit.
         </p>
     </description>
 </item>
@@ -502,7 +502,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags>:xa :xall :wq :wqa :wqall</tags>
+    <tags>ZZ :xa :xall :wq :wqa :wqall</tags>
     <spec>:wqa<oa>ll</oa></spec>
     <strut/>
     <spec>:xa<oa>ll</oa></spec>
@@ -512,25 +512,6 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
             Unlike Vim, <ex>:wq</ex> closes the entire window rather
             than just the current tab.
         </note>
-    </description>
-</item>
-
-<item>
-    <tags>ZQ</tags>
-    <spec>ZQ</spec>
-    <description short="true">
-        <p>Quit and don't save the session. Works like <ex>:qall</ex>.</p>
-    </description>
-</item>
-
-<item>
-    <tags>ZZ</tags>
-    <spec>ZZ</spec>
-    <description short="true">
-        <p>
-            Quit &dactyl.appName; and save the session. Works like
-            <ex>:xall</ex>.
-        </p>
     </description>
 </item>
 
