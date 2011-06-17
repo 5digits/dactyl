@@ -1338,12 +1338,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
             // Guard against horrible add-ons that use eval-based monkey
             // patching.
+            let value = desc.value;
             if (callable(desc.value)) {
-                let value = desc.value;
-
-                let sentinel = "(function DactylOverlay() {}())"
-                value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
-                value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
 
                 delete desc.value;
                 delete desc.writable;
@@ -1359,12 +1355,37 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 };
             }
 
-            Object.defineProperty(object, k, desc);
+            try {
+                Object.defineProperty(object, k, desc);
+
+                if (callable(value)) {
+                    let sentinel = "(function DactylOverlay() {}())"
+                    value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
+                    value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
+                }
+            }
+            catch (e) {
+                try {
+                    if (value) {
+                        object[k] = value;
+                        return;
+                    }
+                }
+                catch (f) {}
+                util.reportError(e);
+            }
         }, this);
 
         return function unwrap() {
             for each (let k in Object.getOwnPropertyNames(original))
-                Object.defineProperty(object, k, Object.getOwnPropertyDescriptor(original, k));
+                if (Object.getOwnPropertyDescriptor(object, k).configurable)
+                    Object.defineProperty(object, k, Object.getOwnPropertyDescriptor(original, k));
+                else {
+                    try {
+                        object[k] = original[k];
+                    }
+                    catch (e) {}
+                }
         };
     },
 
