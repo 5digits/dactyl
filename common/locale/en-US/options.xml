@@ -78,7 +78,7 @@
     used to test whether the given parameter is empty.
 </p>
 <p>
-    Array elements, such as in the the <tt>&lt;args></tt> parameter
+    Array elements, such as in the <tt>&lt;args></tt> parameter
     of <ex>:command</ex> macros, may be accessed by appending
     <tt>[<a>n</a>]</tt>, where <a>n</a> is the one-based array
     index, to the macro name. The first argument of a command is
