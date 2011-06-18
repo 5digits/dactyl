@@ -1765,7 +1765,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 }
             }, {
                 argCount: "1",
-                bang: true,
                 completer: function (context) {
                     context.ignoreCase = true;
                     completion.dialog(context);

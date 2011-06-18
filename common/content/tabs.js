@@ -749,10 +749,7 @@ var Tabs = Module("tabs", {
             commands.add(["quita[ll]", "qa[ll]"],
                 "Quit this " + config.appName + " window",
                 function (args) { window.close(); },
-                {
-                    argCount: "0",
-                    bang: true
-                });
+                { argCount: "0" });
 
             commands.add(["reloada[ll]"],
                 "Reload all tab pages",
