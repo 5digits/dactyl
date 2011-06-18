@@ -837,7 +837,7 @@ unlet s:cpo_save
                 if (result.returnValue != 0)
                     result.output += "\n" + _("io.shellReturn", result.returnValue);
 
-                modules.commandline.command = "!" + arg;
+                modules.commandline.command = args.commandName.replace("run", "$& ") + arg;
                 modules.commandline.commandOutput(<span highlight="CmdOutput">{result.output}</span>);
 
                 modules.autocommands.trigger("ShellCmdPost", {});
