@@ -591,6 +591,7 @@ var ConfigBase = Class("ConfigBase", {
 
         Download                        display: table-row;
         Download:not([active])          color: gray;
+        Download:nth-child(2n+1)        background: rgba(0, 0, 0, .04);
 
         Download>*;;;DownloadCell
         DownloadButtons
@@ -611,6 +612,7 @@ var ConfigBase = Class("ConfigBase", {
         AddonHead>*;;;AddonCell
 
         Addon                        display: table-row;
+        Addon:nth-child(2n+1)        background: rgba(0, 0, 0, .04);
 
         Addon>*;;;AddonCell
         AddonButtons
