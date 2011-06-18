@@ -104,26 +104,29 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
     progressListener: {
         // XXX: function may later be needed to detect a canceled synchronous openURL()
         onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
-            onStateChange.superapply(this, arguments);
-            // STATE_IS_DOCUMENT | STATE_IS_WINDOW is important, because we also
-            // receive statechange events for loading images and other parts of the web page
-            if (flags & (Ci.nsIWebProgressListener.STATE_IS_DOCUMENT | Ci.nsIWebProgressListener.STATE_IS_WINDOW)) {
+            const L = Ci.nsIWebProgressListener.STATE_IS_DOCUMENT;
+
+            if (request)
                 dactyl.applyTriggerObserver("browser.stateChange", arguments);
+
+            if (flags & (L.STATE_IS_DOCUMENT | L.STATE_IS_WINDOW)) {
                 // This fires when the load event is initiated
                 // only thrown for the current tab, not when another tab changes
-                if (flags & Ci.nsIWebProgressListener.STATE_START) {
+                if (flags & L.STATE_START) {
                     while (document.commandDispatcher.focusedWindow == webProgress.DOMWindow
                            && modes.have(modes.INPUT))
                         modes.pop();
 
                 }
-                else if (flags & Ci.nsIWebProgressListener.STATE_STOP) {
+                else if (flags & L.STATE_STOP) {
                     // Workaround for bugs 591425 and 606877, dactyl bug #81
                     config.browser.mCurrentBrowser.collapsed = false;
                     if (!dactyl.focusedElement || dactyl.focusedElement === document.documentElement)
                         dactyl.focusContent();
                 }
             }
+
+            onStateChange.superapply(this, arguments);
         }),
         onSecurityChange: util.wrapCallback(function onSecurityChange(webProgress, request, state) {
             onSecurityChange.superapply(this, arguments);
