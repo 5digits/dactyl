@@ -270,7 +270,6 @@ var Marks = Module("marks", {
         completion.mark = function mark(context) {
             function percent(i) Math.round(i * 100);
 
-            // FIXME: Line/Column doesn't make sense with %
             context.title = ["Mark", "HPos VPos File"];
             context.keys.description = function ([, m]) percent(m.position.x) + "% " + percent(m.position.y) + "% " + m.location;
             context.completions = marks.all;

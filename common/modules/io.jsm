@@ -570,7 +570,6 @@ var IO = Module("io", {
 
                 // go directly to an absolute path or look for a relative path
                 // match in 'cdpath'
-                // TODO: handle ../ and ./ paths
                 if (File.isAbsolutePath(arg)) {
                     io.cwd = arg;
                     dactyl.echomsg(io.cwd.path);
@@ -788,7 +787,7 @@ unlet s:cpo_save
                 else
                     modules.commandline.commandOutput(
                         template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                            ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));  // TODO: add colon and remove column titles for pedantic Vim compatibility?
+                            ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));
 
             },
             { argCount: "0" });

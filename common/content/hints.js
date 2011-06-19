@@ -52,7 +52,7 @@ var HintSession = Class("HintSession", CommandMode, {
         }
         else if (this.validHints.length == 1 && !this.continue)
             this.process(false);
-        else // Ticket #185
+        else
             this.checkUnique();
     },
 
