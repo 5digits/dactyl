@@ -68,17 +68,20 @@ update(Sheet.prototype, {
     get fullCSS() {
         let filter = this.sites;
         let css = this.css;
+
+        let preamble = "/* " + this.uri + (this.agent ? " (agent)" : "") + " */\n\n" + namespace + "\n";
         if (filter[0] == "*")
-            return namespace + css;
+            return preamble + css;
 
         let selectors = filter.map(function (part)
-                                    (/[*]$/.test(part)   ? "url-prefix" :
-                                     /[\/:]/.test(part)  ? "url"
-                                                         : "domain")
-                                    + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
+                                    !/^(?:[a-z-]+:|[a-z-.]+$)/.test(filter) ? "regexp(" + part.quote() + ")" :
+                                       (/[*]$/.test(part)   ? "url-prefix" :
+                                        /[\/:]/.test(part)  ? "url"
+                                                            : "domain")
+                                       + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
                               .join(",\n               ");
-        return "/* " + this.uri + (this.agent ? " (agent)" : "") + " */\n\n"
-             + namespace + "\n@-moz-document " + selectors + " {\n\n" + css + "\n\n}\n";
+
+        return preamble + "@-moz-document " + selectors + " {\n\n" + css + "\n\n}\n";
     }
 });
 

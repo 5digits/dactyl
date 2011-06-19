@@ -90,6 +90,7 @@
         and linking to source code locations). [b4]
       - :downloads now opens a download list in the multi-line output
         buffer. Added -sort flag. [b6][b7]
+      - :style now supports regexp site-filters on Firefox 6+. [b7]
       - :qa closes only the current window, per Vim. [b7]
       - Added :exit command. [b7]
       - Added :dlclear command. [b7]

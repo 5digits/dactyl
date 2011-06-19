@@ -152,9 +152,9 @@
         <p>
             Add CSS styles to the browser or to web pages. <a>filter</a> is a
             comma-separated list of <t>site-filters</t> for which the style will
-            apply. Regular expression filters may not be used and the <tt>!</tt>
-            character may not be used to invert the sense of the match.
-            <oa>css</oa> is a full CSS rule set (e.g., <tt>body { color: blue; }</tt>).
+            apply. The <tt>!</tt> character may not be used to invert the sense
+            of the match. <oa>css</oa> is a full CSS rule set (e.g., <tt>body {
+            color: blue; }</tt>).
         </p>
 
         <p>The following options are available:</p>
