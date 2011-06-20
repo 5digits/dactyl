@@ -104,7 +104,7 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
     progressListener: {
         // XXX: function may later be needed to detect a canceled synchronous openURL()
         onStateChange: util.wrapCallback(function onStateChange(webProgress, request, flags, status) {
-            const L = Ci.nsIWebProgressListener.STATE_IS_DOCUMENT;
+            const L = Ci.nsIWebProgressListener;
 
             if (request)
                 dactyl.applyTriggerObserver("browser.stateChange", arguments);
