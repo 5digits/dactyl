@@ -1688,7 +1688,7 @@ var Events = Module("events", {
 
         options.add(["strictfocus", "sf"],
             "Prevent scripts from focusing input elements without user intervention",
-            "sitemap", "*:moderate",
+            "sitemap", "'chrome:*':laissez-faire,*:moderate",
             {
                 values: {
                     despotic: "Only allow focus changes when explicitly requested by the user",

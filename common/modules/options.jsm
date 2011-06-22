@@ -437,7 +437,7 @@ var Option = Class("Option", {
             bang: bang,
             filter: filter,
             result: result !== undefined ? result : !bang,
-            toString: function toString() this.bang + Option.quote(this.filter) +
+            toString: function toString() this.bang + Option.quote(this.filter, /:/) +
                 (typeof this.result === "boolean" ? "" : ":" + quote(this.result)),
         });
     },
