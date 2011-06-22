@@ -24,12 +24,6 @@ var Editor = Module("editor", {
     selectedText: function () String(Editor.getEditor(null).selection),
 
     pasteClipboard: function (clipboard, toStart) {
-        // TODO: I don't think this is needed anymore? --djk
-        if (util.OS.isWindows) {
-            this.executeCommand("cmd_paste");
-            return;
-        }
-
         let elem = dactyl.focusedElement;
         if (elem.inputField)
             elem = elem.inputField;
