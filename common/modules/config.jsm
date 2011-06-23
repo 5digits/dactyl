@@ -400,21 +400,25 @@ var ConfigBase = Class("ConfigBase", {
      */
     CSS: UTF8(String.replace(<><![CDATA[
         // <css>
-        Boolean      color: red;
-        Function     color: navy;
-        Null         color: blue;
-        Number       color: blue;
-        Object       color: maroon;
-        String       color: green; white-space: pre;
+        Boolean      /* JavaScript booleans */       color: red;
+        Function     /* JavaScript functions */      color: navy;
+        Null         /* JavaScript null values */    color: blue;
+        Number       /* JavaScript numbers */        color: blue;
+        Object       /* JavaScript objects */        color: maroon;
+        String       /* String values */             color: green; white-space: pre;
+        Comment      /* JavaScriptor CSS comments */ color: gray;
 
-        Key          font-weight: bold;
+        Key          /* Keywords */                  font-weight: bold;
 
-        Enabled      color: blue;
-        Disabled     color: red;
+        Enabled      /* Enabled item indicator text */  color: blue;
+        Disabled     /* Disabled item indicator text */ color: red;
 
-        FontFixed                            font-family: monospace !important;
-        FontCode            font-size: 9pt;  font-family: monospace !important;
-        FontProportional    font-size: 10pt; font-family: "Droid Sans", "Helvetica LT Std", Helvetica, "DejaVu Sans", Verdana, sans-serif !important;
+        FontFixed           /* The font used for fixed-width text */ \
+                                             font-family: monospace !important;
+        FontCode            /* The font used for code listings */ \
+                            font-size: 9pt;  font-family: monospace !important;
+        FontProportional    /* The font used for proportionally spaced text */ \
+                            font-size: 10pt; font-family: "Droid Sans", "Helvetica LT Std", Helvetica, "DejaVu Sans", Verdana, sans-serif !important;
 
         // Hack to give these groups slightly higher precedence
         // than their unadorned variants.
@@ -427,84 +431,129 @@ var ConfigBase = Class("ConfigBase", {
         CmdQuestion;[dactyl|highlight]   &#x0d; StatusQuestion;[dactyl|highlight]
         CmdWarningMsg;[dactyl|highlight] &#x0d; StatusWarningMsg;[dactyl|highlight]
 
-        Normal            color: black   !important; background: white       !important; font-weight: normal !important;
-        StatusNormal      color: inherit !important; background: transparent !important;
-        ErrorMsg          color: white   !important; background: red         !important; font-weight: bold !important;
-        InfoMsg           color: black   !important; background: white       !important;
-        StatusInfoMsg     color: inherit !important; background: transparent !important;
-        LineNr            color: orange  !important; background: white       !important;
-        ModeMsg           color: black   !important; background: white       !important;
-        StatusModeMsg     color: inherit !important; background: transparent !important; padding-right: 1em;
-        MoreMsg           color: green   !important; background: white       !important;
+        Normal            /* Normal text */ \
+                          color: black   !important; background: white       !important; font-weight: normal !important;
+        StatusNormal      /* Normal text in the status line */ \
+                          color: inherit !important; background: transparent !important;
+        ErrorMsg          /* Error messages */ \
+                          color: white   !important; background: red         !important; font-weight: bold !important;
+        InfoMsg           /* Information messages */ \
+                          color: black   !important; background: white       !important;
+        StatusInfoMsg     /* Information messages in the status line */ \
+                          color: inherit !important; background: transparent !important;
+        LineNr            /* The line number of an error */ \
+                          color: orange  !important; background: white       !important;
+        ModeMsg           /* The mode indicator */ \
+                          color: black   !important; background: white       !important;
+        StatusModeMsg     /* The mode indicator in the status line */ \
+                          color: inherit !important; background: transparent !important; padding-right: 1em;
+        MoreMsg           /* The indicator that there is more text to view */ \
+                          color: green   !important; background: white       !important;
         StatusMoreMsg                                background: transparent !important;
-        Message           white-space: pre-wrap !important; min-width: 100%; width: 100%; padding-left: 4em; text-indent: -4em; display: block;
-        Message String    white-space: pre-wrap;
-        NonText           color: blue; background: transparent !important;
-        *Preview          color: gray;
-        Question          color: green   !important; background: white       !important; font-weight: bold !important;
-        StatusQuestion    color: green   !important; background: transparent !important;
-        WarningMsg        color: red     !important; background: white       !important;
-        StatusWarningMsg  color: red     !important; background: transparent !important;
+        Message           /* A message as displayed in <ex>:messages</ex> */ \
+                          white-space: pre-wrap !important; min-width: 100%; width: 100%; padding-left: 4em; text-indent: -4em; display: block;
+        Message String    /* A message as displayed in <ex>:messages</ex> */ \
+                          white-space: pre-wrap;
+        NonText           /* The <em>~</em> indicators which mark blank lines in the completion list */ \
+                          color: blue; background: transparent !important;
+        *Preview          /* The completion preview displayed in the &tag.command-line; */ \
+                          color: gray;
+        Question          /* A prompt for a decision */ \
+                          color: green   !important; background: white       !important; font-weight: bold !important;
+        StatusQuestion    /* A prompt for a decision in the status line */ \
+                          color: green   !important; background: transparent !important;
+        WarningMsg        /* A warning message */ \
+                          color: red     !important; background: white       !important;
+        StatusWarningMsg  /* A warning message in the status line */ \
+                          color: red     !important; background: transparent !important;
 
-        CmdLine;>*;;FontFixed   padding: 1px !important;
+        CmdLine;>*;;FontFixed   /* The command line */ \
+                                padding: 1px !important;
         CmdPrompt;.dactyl-commandline-prompt
+                                /* The default styling form the command prompt */
         CmdInput;.dactyl-commandline-command
-        CmdOutput         white-space: pre;
+        CmdOutput         /* The output of commands executed by <ex>:run</ex> */ \
+                          white-space: pre;
 
-        CompGroup
+        CompGroup                      /* Item group in completion output */
         CompGroup:not(:first-of-type)  margin-top: .5em;
         CompGroup:last-of-type         padding-bottom: 1.5ex;
 
-        CompTitle            color: magenta; background: white; font-weight: bold;
+        CompTitle            /* Completion row titles */ \
+                             color: magenta; background: white; font-weight: bold;
         CompTitle>*          padding: 0 .5ex;
-        CompTitleSep         height: 1px; background: magenta; background: -moz-linear-gradient(60deg, magenta, white);
+        CompTitleSep         /* The element which separates the completion title from its results */ \
+                             height: 1px; background: magenta; background: -moz-linear-gradient(60deg, magenta, white);
 
-        CompMsg              font-style: italic; margin-left: 16px;
+        CompMsg              /* The message which may appear at the top of a group of completion results */ \
+                             font-style: italic; margin-left: 16px;
 
-        CompItem
+        CompItem             /* A single row of output in the completion list */
         CompItem:nth-child(2n+1)    background: rgba(0, 0, 0, .04);
-        CompItem[selected]   background: yellow;
+        CompItem[selected]   /* A selected row of completion list */ \
+                             background: yellow;
         CompItem>*           padding: 0 .5ex;
 
-        CompIcon             width: 16px; min-width: 16px; display: inline-block; margin-right: .5ex;
+        CompIcon             /* The favicon of a completion row */ \
+                             width: 16px; min-width: 16px; display: inline-block; margin-right: .5ex;
         CompIcon>img         max-width: 16px; max-height: 16px; vertical-align: middle;
 
-        CompResult           width: 36%; padding-right: 1%; overflow: hidden;
-        CompDesc             color: gray; width: 62%; padding-left: 1em;
+        CompResult           /* The result column of the completion list */ \
+                             width: 36%; padding-right: 1%; overflow: hidden;
+        CompDesc             /* The description column of the completion list */ \
+                             color: gray; width: 62%; padding-left: 1em;
 
-        CompLess             text-align: center; height: 0;    line-height: .5ex; padding-top: 1ex;
-        CompLess::after      content: "⌃";
+        CompLess             /* The indicator shown when completions may be scrolled up */ \
+                             text-align: center; height: 0;    line-height: .5ex; padding-top: 1ex;
+        CompLess::after      /* The character of indicator shown when completions may be scrolled up */ \
+                             content: "⌃";
 
-        CompMore             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
-        CompMore::after      content: "⌄";
+        CompMore             /* The indicator shown when completions may be scrolled down */ \
+                             text-align: center; height: .5ex; line-height: .5ex; margin-bottom: -.5ex;
+        CompMore::after      /* The character of indicator shown when completions may be scrolled down */ \
+                             content: "⌄";
 
-        Dense              margin-top: 0; margin-bottom: 0;
+        Dense              /* Arbitrary elements which should be packed densely together */\
+                           margin-top: 0; margin-bottom: 0;
 
-        EditorEditing;;*   background-color: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
-        EditorError;;*     background: red !important;
-        EditorBlink1;;*    background: yellow !important;
-        EditorBlink2;;*
+        EditorEditing;;*   /* Text fields for which an external editor is open */ \
+                           background-color: #bbb !important; -moz-user-input: none !important; -moz-user-modify: read-only !important;
+        EditorError;;*     /* Text fields briefly after an error has occurred running the external editor */ \
+                           background: red !important;
+        EditorBlink1;;*    /* Text fields briefly after successfully running the external editor, alternated with EditorBlink2 */ \
+                           background: yellow !important;
+        EditorBlink2;;*    /* Text fields briefly after successfully running the external editor, alternated with EditorBlink1 */
 
-        REPL                overflow: auto; max-height: 40em;
-        REPL-R;;;Question
-        REPL-E              white-space: pre-wrap;
-        REPL-P              white-space: pre-wrap; margin-bottom: 1em;
+        REPL                /* Read-Eval-Print-Loop output */ \
+                            overflow: auto; max-height: 40em;
+        REPL-R;;;Question   /* Prompts in REPL mode */
+        REPL-E              /* Evaled input in REPL mode */ \
+                            white-space: pre-wrap;
+        REPL-P              /* Evaled output in REPL mode */ \
+                            white-space: pre-wrap; margin-bottom: 1em;
 
-        Usage               width: 100%;
-        UsageBody
-        UsageHead
-        UsageItem
+        Usage               /* Output from the :*usage commands */ \
+                            width: 100%;
+        UsageHead           /* Headings in output from the :*usage commands */
+        UsageBody           /* The body of listings in output from the :*usage commands */
+        UsageItem           /* Individual items in output from the :*usage commands */
         UsageItem:nth-of-type(2n)    background: rgba(0, 0, 0, .04);
 
-        Indicator   color: blue; width: 1.5em; text-align: center;
-        Filter      font-weight: bold;
+        Indicator   /* The <em>#</em> and  <em>%</em> in the <ex>:buffers</ex> list */ \
+                    color: blue; width: 1.5em; text-align: center;
+        Filter      /* The matching text in a completion list */ \
+                    font-weight: bold;
 
-        Keyword     color: red;
-        Tag         color: blue;
+        Keyword     /* A bookmark keyword for a URL */ \
+                    color: red;
+        Tag         /* A bookmark tag for a URL */ \
+                    color: blue;
 
-        Link                        position: relative; padding-right: 2em;
+        Link                        /* A link with additional information shown on hover */ \
+                                    position: relative; padding-right: 2em;
         Link:not(:hover)>LinkInfo   opacity: 0; left: 0; width: 1px; height: 1px; overflow: hidden;
         LinkInfo                    {
+            /* Information shown when hovering over a link */
             color: black;
             position: absolute;
             left: 100%;
@@ -515,6 +564,7 @@ var ConfigBase = Class("ConfigBase", {
         }
 
         StatusLine;;;FontFixed  {
+            /* The status bar */
             -moz-appearance: none !important;
             font-weight: bold;
             background: transparent !important;
@@ -523,16 +573,24 @@ var ConfigBase = Class("ConfigBase", {
             min-height: 18px !important;
             text-shadow: none !important;
         }
-        StatusLineNormal;[dactyl|highlight]    color: white !important; background: black   !important;
-        StatusLineBroken;[dactyl|highlight]    color: black !important; background: #FFa0a0 !important; /* light-red */
-        StatusLineSecure;[dactyl|highlight]    color: black !important; background: #a0a0FF !important; /* light-blue */
-        StatusLineExtended;[dactyl|highlight]  color: black !important; background: #a0FFa0 !important; /* light-green */
+        StatusLineNormal;[dactyl|highlight]    /* The status bar for an ordinary web page */ \
+                                               color: white !important; background: black   !important;
+        StatusLineBroken;[dactyl|highlight]    /* The status bar for a broken web page */ \
+                                               color: black !important; background: #FFa0a0 !important; /* light-red */
+        StatusLineSecure;[dactyl|highlight]    /* The status bar for a secure web page */ \
+                                               color: black !important; background: #a0a0FF !important; /* light-blue */
+        StatusLineExtended;[dactyl|highlight]  /* The status bar for a secure web page with an Extended Validation (EV) certificate */ \
+                                               color: black !important; background: #a0FFa0 !important; /* light-green */
 
-        !TabClose;.tab-close-button
-        !TabIcon;.tab-icon,.tab-icon-image
-        !TabText;.tab-text
-        TabNumber                              font-weight: bold; margin: 0px; padding-right: .8ex; cursor: default;
-        TabIconNumber {
+        !TabClose;.tab-close-button            /* The close button of a browser tab */ \
+                                               /* The close button of a browser tab */
+        !TabIcon;.tab-icon,.tab-icon-image     /* The icon of a browser tab */ \
+                                               /* The icon of a browser tab */
+        !TabText;.tab-text                     /* The text of a browser tab */
+        TabNumber                              /* The number of a browser tab, next to its icon */ \
+                                               font-weight: bold; margin: 0px; padding-right: .8ex; cursor: default;
+        TabIconNumber  {
+            /* The number of a browser tab, over its icon */
             cursor: default;
             width: 16px;
             margin: 0 2px 0 -18px !important;
@@ -542,12 +600,16 @@ var ConfigBase = Class("ConfigBase", {
             text-shadow: black -1px 0 1px, black 0 1px 1px, black 1px 0 1px, black 0 -1px 1px;
         }
 
-        Title       color: magenta; font-weight: bold;
-        URL         text-decoration: none; color: green; background: inherit;
+        Title       /* The title of a listing, including <ex>:pageinfo</ex>, <ex>:jumps</ex> */ \
+                    color: magenta; font-weight: bold;
+        URL         /* A URL */ \
+                    text-decoration: none; color: green; background: inherit;
         URL:hover   text-decoration: underline; cursor: pointer;
-        URLExtra    color: gray;
+        URLExtra    /* Extra information about a URL */ \
+                    color: gray;
 
         FrameIndicator;;* {
+            /* The styling applied to briefly indicate the active frame */
             background-color: red;
             opacity: 0.5;
             z-index: 999999;
@@ -558,9 +620,11 @@ var ConfigBase = Class("ConfigBase", {
             right:    0;
         }
 
-        Bell          background-color: black !important;
+        Bell          /* &dactyl.appName;’s visual bell */ \
+                      background-color: black !important;
 
         Hint;;* {
+            /* A hint indicator. See <ex>:help hints</ex> */
             font:        bold 10px "Droid Sans Mono", monospace !important;
             margin:      -.2ex;
             padding:     0 0 0 1px;
@@ -570,48 +634,60 @@ var ConfigBase = Class("ConfigBase", {
         }
         Hint[active];;*  background: rgba(255, 253, 208, .8);
         Hint::after;;*   content: attr(text) !important;
-        HintElem;;*      background-color: yellow  !important; color: black !important;
-        HintActive;;*    background-color: #88FF00 !important; color: black !important;
-        HintImage;;*     opacity: .5 !important;
+        HintElem;;*      /* The hintable element */ \
+                         background-color: yellow  !important; color: black !important;
+        HintActive;;*    /* The hint element of link which will be followed by <k name="CR"/> */ \
+                         background-color: #88FF00 !important; color: black !important;
+        HintImage;;*     /* The indicator which floats above hinted images */ \
+                         opacity: .5 !important;
 
-        Button                  display: inline-block; font-weight: bold; cursor: pointer; color: black; text-decoration: none;
+        Button                  /* A button widget */ \
+                                display: inline-block; font-weight: bold; cursor: pointer; color: black; text-decoration: none;
         Button:hover            text-decoration: underline;
         Button[collapsed]       visibility: collapse; width: 0;
         Button::before          content: "["; color: gray; text-decoration: none !important;
         Button::after           content: "]"; color: gray; text-decoration: none !important;
         Button:not([collapsed]) ~ Button:not([collapsed])::before  content: "/[";
 
-        Buttons
+        Buttons                 /* A group of buttons */
 
-        DownloadCell                    display: table-cell; padding: 0 1ex;
+        DownloadCell                    /* A table cell in the :downloads manager */ \
+                                        display: table-cell; padding: 0 1ex;
 
-        Downloads                       display: table; margin: 0; padding: 0;
-        DownloadHead;;;CompTitle        display: table-row;
+        Downloads                       /* The :downloads manager */ \
+                                        display: table; margin: 0; padding: 0;
+        DownloadHead;;;CompTitle        /* A heading in the :downloads manager */ \
+                                        display: table-row;
         DownloadHead>*;;;DownloadCell
 
-        Download                        display: table-row;
+        Download                        /* A download in the :downloads manager */ \
+                                        display: table-row;
         Download:not([active])          color: gray;
         Download:nth-child(2n+1)        background: rgba(0, 0, 0, .04);
 
         Download>*;;;DownloadCell
-        DownloadButtons
-        DownloadPercent
-        DownloadProgress
-        DownloadProgressHave
-        DownloadProgressTotal
-        DownloadSource
-        DownloadState
-        DownloadTime
-        DownloadTitle
+        DownloadButtons                 /* A button group in the :downloads manager */
+        DownloadPercent                 /* The percentage column for a download */
+        DownloadProgress                /* The progress column for a download */
+        DownloadProgressHave            /* The completed portion of the progress column */
+        DownloadProgressTotal           /* The remaining portion of the progress column */
+        DownloadSource                  /* The download source column for a download */
+        DownloadState                   /* The download state column for a download */
+        DownloadTime                    /* The time remaining column for a download */
+        DownloadTitle                   /* The title column for a download */
         DownloadTitle>Link>a         max-width: 48ex; overflow: hidden; display: inline-block;
 
-        AddonCell                    display: table-cell; padding: 0 1ex;
+        AddonCell                    /* A cell in tell :addons manager */ \
+                                     display: table-cell; padding: 0 1ex;
 
-        Addons                       display: table; margin: 0; padding: 0;
-        AddonHead;;;CompTitle        display: table-row;
+        Addons                       /* The :addons manager */ \
+                                     display: table; margin: 0; padding: 0;
+        AddonHead;;;CompTitle        /* A heading in the :addons manager */ \
+                                     display: table-row;
         AddonHead>*;;;AddonCell
 
-        Addon                        display: table-row;
+        Addon                        /* An add-on in the :addons manager */ \
+                                     display: table-row;
         Addon:nth-child(2n+1)        background: rgba(0, 0, 0, .04);
 
         Addon>*;;;AddonCell
@@ -626,44 +702,65 @@ var ConfigBase = Class("ConfigBase", {
 
     helpCSS: UTF8(<><![CDATA[
         // <css>
-        InlineHelpLink                              font-size: inherit !important; font-family: inherit !important;
+        InlineHelpLink                              /* A help link shown in the command line or multi-line output area */ \
+                                                    font-size: inherit !important; font-family: inherit !important;
 
-        Help;;;FontProportional                     line-height: 1.4em;
+        Help;;;FontProportional                     /* A help page */ \
+                                                    line-height: 1.4em;
 
-        HelpInclude                                 margin: 2em 0;
+        HelpInclude                                 /* A help page included in the consolidated help listing */ \
+                                                    margin: 2em 0;
 
-        HelpArg;;;FontCode                          color: #6A97D4;
-        HelpOptionalArg;;;FontCode                  color: #6A97D4;
+        HelpArg;;;FontCode                          /* A required command argument indicator */ \
+                                                    color: #6A97D4;
+        HelpOptionalArg;;;FontCode                  /* An optional command argument indicator */ \
+                                                    color: #6A97D4;
 
-        HelpBody                                    display: block; margin: 1em auto; max-width: 100ex; padding-bottom: 1em; margin-bottom: 4em; border-bottom-width: 1px;
-        HelpBorder;*;dactyl://help/*                border-color: silver; border-width: 0px; border-style: solid;
-        HelpCode;;;FontCode                         display: block; white-space: pre; margin-left: 2em;
-        HelpTT;html|tt;dactyl://help/*;FontCode
+        HelpBody                                    /* The body of a help page */ \
+                                                    display: block; margin: 1em auto; max-width: 100ex; padding-bottom: 1em; margin-bottom: 4em; border-bottom-width: 1px;
+        HelpBorder;*;dactyl://help/*                /* The styling of bordered elements */ \
+                                                    border-color: silver; border-width: 0px; border-style: solid;
+        HelpCode;;;FontCode                         /* Code listings */ \
+                                                    display: block; white-space: pre; margin-left: 2em;
+        HelpTT;html|tt;dactyl://help/*;FontCode     /* Teletype text */
 
-        HelpDefault;;;FontCode                      display: inline-block; margin: -1px 1ex 0 0; white-space: pre; vertical-align: text-top;
+        HelpDefault;;;FontCode                      /* The default value of a help item */ \
+                                                    display: inline-block; margin: -1px 1ex 0 0; white-space: pre; vertical-align: text-top;
 
-        HelpDescription                             display: block; clear: right;
+        HelpDescription                             /* The description of a help item */ \
+                                                    display: block; clear: right;
         HelpDescription[short]                      clear: none;
-        HelpEm;html|em;dactyl://help/*              font-weight: bold; font-style: normal;
+        HelpEm;html|em;dactyl://help/*              /* Emphasized text */ \
+                                                    font-weight: bold; font-style: normal;
 
-        HelpEx;;;FontCode                           display: inline-block; color: #527BBD;
+        HelpEx;;;FontCode                           /* An Ex command */ \
+                                                    display: inline-block; color: #527BBD;
 
-        HelpExample                                 display: block; margin: 1em 0;
+        HelpExample                                 /* An example */ \
+                                                    display: block; margin: 1em 0;
         HelpExample::before                         content: "__MSG_help.Example__: "; font-weight: bold;
 
-        HelpInfo                                    display: block; width: 20em; margin-left: auto;
-        HelpInfoLabel                               display: inline-block; width: 6em;  color: magenta; font-weight: bold; vertical-align: text-top;
-        HelpInfoValue                               display: inline-block; width: 14em; text-decoration: none;             vertical-align: text-top;
+        HelpInfo                                    /* Arbitrary information about a help item */ \
+                                                    display: block; width: 20em; margin-left: auto;
+        HelpInfoLabel                               /* The label for a HelpInfo item */ \
+                                                    display: inline-block; width: 6em;  color: magenta; font-weight: bold; vertical-align: text-top;
+        HelpInfoValue                               /* The details for a HelpInfo item */ \
+                                                    display: inline-block; width: 14em; text-decoration: none;             vertical-align: text-top;
 
-        HelpItem                                    display: block; margin: 1em 1em 1em 10em; clear: both;
+        HelpItem                                    /* A help item */ \
+                                                    display: block; margin: 1em 1em 1em 10em; clear: both;
 
-        HelpKey;;;FontCode                          color: #102663;
-        HelpKeyword                                 font-weight: bold; color: navy;
+        HelpKey;;;FontCode                          /* A keyboard key specification */ \
+                                                    color: #102663;
+        HelpKeyword                                 /* A keyword */ \
+                                                    font-weight: bold; color: navy;
 
-        HelpLink;html|a;dactyl://help/*             text-decoration: none !important;
+        HelpLink;html|a;dactyl://help/*             /* A hyperlink */ \
+                                                    text-decoration: none !important;
         HelpLink[href]:hover                        text-decoration: underline !important;
         HelpLink[href^="mailto:"]::after            content: "✉"; padding-left: .2em;
         HelpLink[rel=external] {
+            /* A hyperlink to an external resource */
             /* Thanks, Wikipedia */
             background: transparent url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAAFVBMVEVmmcwzmcyZzP8AZswAZv////////9E6giVAAAAB3RSTlP///////8AGksDRgAAADhJREFUGFcly0ESAEAEA0Ei6/9P3sEcVB8kmrwFyni0bOeyyDpy9JTLEaOhQq7Ongf5FeMhHS/4AVnsAZubxDVmAAAAAElFTkSuQmCC) no-repeat scroll right center;
             padding-right: 13px;
@@ -674,65 +771,85 @@ var ConfigBase = Class("ConfigBase", {
         ErrorMsg HelpOption   color: inherit; background: inherit; text-decoration: underline;
         ErrorMsg HelpTopic    color: inherit; background: inherit; text-decoration: underline;
 
-        HelpTOC
-        HelpTOC>ol ol                               margin-left: -1em;
+        HelpTOC               /* The Table of Contents for a help page */
+        HelpTOC>ol ol         margin-left: -1em;
 
-        HelpOrderedList;ol;dactyl://help/*                          margin: 1em 0;
-        HelpOrderedList1;ol[level="1"],ol;dactyl://help/*           list-style: outside decimal; display: block;
-        HelpOrderedList2;ol[level="2"],ol ol;dactyl://help/*        list-style: outside upper-alpha;
-        HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*     list-style: outside lower-roman;
-        HelpOrderedList4;ol[level="4"],ol ol ol ol;dactyl://help/*  list-style: outside decimal;
+        HelpOrderedList;ol;dactyl://help/*                          /* Any ordered list */ \
+                                                                    margin: 1em 0;
+        HelpOrderedList1;ol[level="1"],ol;dactyl://help/*           /* A first-level ordered list */ \
+                                                                    list-style: outside decimal; display: block;
+        HelpOrderedList2;ol[level="2"],ol ol;dactyl://help/*        /* A second-level ordered list */ \
+                                                                    list-style: outside upper-alpha;
+        HelpOrderedList3;ol[level="3"],ol ol ol;dactyl://help/*     /* A third-level ordered list */ \
+                                                                    list-style: outside lower-roman;
+        HelpOrderedList4;ol[level="4"],ol ol ol ol;dactyl://help/*  /* A fourth-level ordered list */ \
+                                                                    list-style: outside decimal;
 
-        HelpList;html|ul;dactyl://help/*      display: block; list-style-position: outside; margin: 1em 0;
-        HelpListItem;html|li;dactyl://help/*  display: list-item;
+        HelpList;html|ul;dactyl://help/*      /* An unordered list */ \
+                                              display: block; list-style-position: outside; margin: 1em 0;
+        HelpListItem;html|li;dactyl://help/*  /* A list item, ordered or unordered */ \
+                                              display: list-item;
 
-        HelpNote                                    color: red; font-weight: bold;
+        HelpNote                                    /* The indicator for a note */ \
+                                                    color: red; font-weight: bold;
 
-        HelpOpt;;;FontCode                          color: #106326;
-        HelpOptInfo;;;FontCode                      display: block; margin-bottom: 1ex; padding-left: 4em;
+        HelpOpt;;;FontCode                          /* An option name */ \
+                                                    color: #106326;
+        HelpOptInfo;;;FontCode                      /* Information about the type and default values for an option entry */ \
+                                                    display: block; margin-bottom: 1ex; padding-left: 4em;
 
-        HelpParagraph;html|p;dactyl://help/*        display: block; margin: 1em 0em;
+        HelpParagraph;html|p;dactyl://help/*        /* An ordinary paragraph */ \
+                                                    display: block; margin: 1em 0em;
         HelpParagraph:first-child                   margin-top: 0;
         HelpParagraph:last-child                    margin-bottom: 0;
-        HelpSpec;;;FontCode                         display: block; margin-left: -10em; float: left; clear: left; color: #527BBD; margin-right: 1em;
+        HelpSpec;;;FontCode                         /* The specification for a help entry */ \
+                                                    display: block; margin-left: -10em; float: left; clear: left; color: #527BBD; margin-right: 1em;
 
-        HelpString;;;FontCode                       color: green; font-weight: normal;
+        HelpString;;;FontCode                       /* A quoted string */ \
+                                                    color: green; font-weight: normal;
         HelpString::before                          content: '"';
         HelpString::after                           content: '"';
         HelpString[delim]::before                   content: attr(delim);
         HelpString[delim]::after                    content: attr(delim);
 
-        HelpNews        position: relative;
-        HelpNewsOld     opacity: .7;
-        HelpNewsNew     font-style: italic;
-        HelpNewsTag     font-style: normal; position: absolute; left: 100%; padding-left: 1em; color: #527BBD; opacity: .6; white-space: pre;
+        HelpNews        /* A news item */           position: relative;
+        HelpNewsOld     /* An old news item */      opacity: .7;
+        HelpNewsNew     /* A new news item */       font-style: italic;
+        HelpNewsTag     /* The version tag for a news item */ \
+                        font-style: normal; position: absolute; left: 100%; padding-left: 1em; color: #527BBD; opacity: .6; white-space: pre;
 
         HelpHead;html|h1,html|h2,html|h3,html|h4;dactyl://help/* {
+            /* Any help heading */
             font-weight: bold;
             color: #527BBD;
             clear: both;
         }
         HelpHead1;html|h1;dactyl://help/* {
+            /* A first-level help heading */
             margin: 2em 0 1em;
             padding-bottom: .2ex;
             border-bottom-width: 1px;
             font-size: 2em;
         }
         HelpHead2;html|h2;dactyl://help/* {
+            /* A second-level help heading */
             margin: 2em 0 1em;
             padding-bottom: .2ex;
             border-bottom-width: 1px;
             font-size: 1.2em;
         }
         HelpHead3;html|h3;dactyl://help/* {
+            /* A third-level help heading */
             margin: 1em 0;
             padding-bottom: .2ex;
             font-size: 1.1em;
         }
         HelpHead4;html|h4;dactyl://help/* {
+            /* A fourth-level help heading */
         }
 
         HelpTab;html|dl;dactyl://help/* {
+            /* A description table */
             display: table;
             width: 100%;
             margin: 1em 0;
@@ -743,19 +860,28 @@ var ConfigBase = Class("ConfigBase", {
         }
         HelpTabColumn;html|column;dactyl://help/*   display: table-column;
         HelpTabColumn:first-child                   width: 25%;
-        HelpTabTitle;html|dt;dactyl://help/*;FontCode  display: table-cell; padding: .1ex 1ex; font-weight: bold;
-        HelpTabDescription;html|dd;dactyl://help/*  display: table-cell; padding: .3ex 1em; text-indent: -1em; border-width: 0px;
+        HelpTabTitle;html|dt;dactyl://help/*;FontCode  /* The title column of description tables */ \
+                                                    display: table-cell; padding: .1ex 1ex; font-weight: bold;
+        HelpTabDescription;html|dd;dactyl://help/*  /* The description column of description tables */ \
+                                                    display: table-cell; padding: .3ex 1em; text-indent: -1em; border-width: 0px;
         HelpTabDescription>*;;dactyl://help/*       text-indent: 0;
-        HelpTabRow;html|dl>html|tr;dactyl://help/*  display: table-row;
+        HelpTabRow;html|dl>html|tr;dactyl://help/*  /* Entire rows in description tables */ \
+                                                    display: table-row;
 
-        HelpTag;;;FontCode                          display: inline-block; color: #527BBD; margin-left: 1ex; font-weight: normal;
-        HelpTags                                    display: block; float: right; clear: right;
-        HelpTopic;;;FontCode                        color: #102663;
-        HelpType;;;FontCode                         color: #102663 !important; margin-right: 2ex;
+        HelpTag;;;FontCode                          /* A help tag */ \
+                                                    display: inline-block; color: #527BBD; margin-left: 1ex; font-weight: normal;
+        HelpTags                                    /* A group of help tags */ \
+                                                    display: block; float: right; clear: right;
+        HelpTopic;;;FontCode                        /* A link to a help topic */ \
+                                                    color: #102663;
+        HelpType;;;FontCode                         /* An option type */ \
+                                                    color: #102663 !important; margin-right: 2ex;
 
-        HelpWarning                                 color: red; font-weight: bold;
+        HelpWarning                                 /* The indicator for a warning */ \
+                                                    color: red; font-weight: bold;
 
-        HelpXML;;;FontCode                          color: #C5F779; background-color: #444444; font-family: Terminus, Fixed, monospace;
+        HelpXML;;;FontCode                          /* Highlighted XML */ \
+                                                    color: #C5F779; background-color: #444444; font-family: Terminus, Fixed, monospace;
         HelpXMLBlock {                              white-space: pre; color: #C5F779; background-color: #444444;
             border: 1px dashed #aaaaaa;
             display: block;

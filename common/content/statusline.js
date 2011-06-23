@@ -27,12 +27,14 @@ var StatusLine = Module("statusline", {
 
             highlight.loadCSS(util.compileMacro(<![CDATA[
                 !AddonBar;#addon-bar {
+                    /* The Add-on Bar */
                     padding-left: 0 !important;
                     min-height: 18px !important;
                     -moz-appearance: none !important;
                     <padding>
                 }
                 !AddonButton;#addon-bar xul|toolbarbutton {
+                    /* An Add-on Bar button */
                     -moz-appearance: none !important;
                     padding: 0 !important;
                     border-width: 0px !important;
@@ -44,7 +46,8 @@ var StatusLine = Module("statusline", {
 
             if (document.getElementById("appmenu-button"))
                 highlight.loadCSS(<![CDATA[
-                    AppmenuButton       min-width: 0 !important; padding: 0 .5em !important;
+                    AppmenuButton       /* The app-menu button */ \
+                                        min-width: 0 !important; padding: 0 .5em !important;
                 ]]>);
         }
 

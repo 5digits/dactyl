@@ -278,7 +278,8 @@ var Highlights = Module("Highlight", {
      * @param {boolean} eager When true, load all provided rules immediately.
      */
     loadCSS: function loadCSS(css, eager) {
-        String.replace(css, this.groupRegexp, function (m, m1, m2) m1 + " " + m2.replace(/\n\s*/g, " "))
+        String.replace(css, /\\\n/g, "")
+              .replace(this.groupRegexp, function (m, m1, m2) m1 + " " + m2.replace(/\n\s*/g, " "))
               .split("\n").filter(function (s) /\S/.test(s) && !/^\s*\/\//.test(s))
               .forEach(function (highlight) {
 
@@ -349,9 +350,11 @@ var Highlights = Module("Highlight", {
                             ([h.class,
                               <span style={"text-align: center; line-height: 1em;" + h.value + style}>XXX</span>,
                               template.map(h.extends, template.highlight),
-                              template.highlightRegexp(h.value, /\b[-\w]+(?=:)/g)]
-                                for (h in highlight)
-                                if (!key || h.class.indexOf(key) > -1))));
+                              template.highlightRegexp(h.value, /\b[-\w]+(?=:)|\/\*.*?\*\//g,
+                                                       function (match) <span highlight={match[0] == "/" ? "Comment" : "Key"}>{match}</span>)
+                             ]
+                             for (h in highlight)
+                             if (!key || h.class.indexOf(key) > -1))));
                 else if (!key && clear)
                     highlight.clear();
                 else if (key)

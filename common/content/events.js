@@ -73,6 +73,10 @@ var ProcessorStack = Class("ProcessorStack", {
             statusline.inputBuffer = this.processors.length ? this.buffer : "";
 
         if (!processors.some(function (p) !p.extended) && this.actions.length) {
+            // We have matching actions and no processors other than
+            // those waiting on further arguments. Execute actions as
+            // long as they continue to return PASS.
+
             for (var action in values(this.actions)) {
                 while (callable(action)) {
                     length = action.eventLength;
@@ -83,11 +87,16 @@ var ProcessorStack = Class("ProcessorStack", {
                     break;
             }
 
+            // Result is the result of the last action. Unless it's
+            // PASS, kill any remaining argument processors.
             result = action !== undefined ? action : Events.KILL;
             if (action !== Events.PASS)
                 this.processors.length = 0;
         }
         else if (this.processors.length) {
+            // We're still waiting on the longest matching processor.
+            // Kill the event, set a timeout to give up waiting if applicable.
+
             result = Events.KILL;
             if (options["timeout"])
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
@@ -95,12 +104,19 @@ var ProcessorStack = Class("ProcessorStack", {
         else if (result !== Events.KILL && !this.actions.length &&
                  !(this.events[0].isReplay || this.passUnknown
                    || this.modes.some(function (m) m.passEvent(this), this.events[0]))) {
+            // No patching processors, this isn't a fake, pass-through
+            // event, we're not in pass-through mode, and we're not
+            // choosing to pass unknown keys. Kill the event and beep.
+
             result = Events.ABORT;
             if (!Events.isEscape(this.events.slice(-1)[0]))
                 dactyl.beep();
             events.feedingKeys = false;
         }
         else if (result === undefined)
+            // No matching processors, we're willing to pass this event,
+            // and we don't have a default action from a processor. Just
+            // pass the event.
             result = Events.PASS;
 
         events.dbg("RESULT: " + length + " " + this._result(result));
@@ -154,8 +170,6 @@ var ProcessorStack = Class("ProcessorStack", {
 
             if (res === Events.KILL)
                 break;
-
-            buffer = buffer || input.inputBuffer;
 
             if (callable(res))
                 actions.push(res);

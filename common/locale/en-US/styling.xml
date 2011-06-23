@@ -57,65 +57,200 @@
 
         <p>Valid groups include:</p>
 
-        <dl>
-            <dt>Bell</dt>              <dd>&dactyl.appName;'s visual bell</dd>
-            <dt>Boolean</dt>           <dd>A JavaScript Boolean object</dd>
-            <dt>CmdLine</dt>           <dd>The command line</dd>
-            <dt>CmdOutput</dt>         <dd>The output of commands executed by <ex>:run</ex></dd>
-            <dt>CompDesc</dt>          <dd>The description column of the completion list</dd>
-            <dt>CompGroup</dt>         <dd>The top-level container for a group of completion results</dd>
-            <dt>CompIcon</dt>          <dd>The favicon of a completion row</dd>
-            <dt>CompItem</dt>          <dd>A row of completion list</dd>
-            <dt>CompItem[selected]</dt><dd>A selected row of completion list</dd>
-            <dt>CompLess::after</dt>   <dd>The character of indicator shown when completions may be scrolled up</dd>
-            <dt>CompLess</dt>          <dd>The indicator shown when completions may be scrolled up</dd>
-            <dt>CompMore::after</dt>   <dd>The character of indicator shown when completions may be scrolled down</dd>
-            <dt>CompMore</dt>          <dd>The indicator shown when completions may be scrolled down</dd>
-            <dt>CompMsg</dt>           <dd>The message which may appear at the top of a group of completion results</dd>
-            <dt>CompResult</dt>        <dd>The result column of the completion list</dd>
-            <dt>CompTitle</dt>         <dd>Completion row titles</dd>
-            <dt>CompTitleSep</dt>      <dd>The element which separates the completion title from its results</dd>
-            <dt>Disabled</dt>          <dd>Text indicating disabled status, such as of an extension or style group</dd>
-            <dt>Enabled</dt>           <dd>Text indicating enabled status, such as of an extension or style group</dd>
-            <dt>ErrorMsg</dt>          <dd>Error messages</dd>
-            <dt>Filter</dt>            <dd>The matching text in a completion list</dd>
-            <dt>Find</dt>              <dd>Text find highlighting. Only background and foreground colors apply.</dd>
-            <dt>FrameIndicator</dt>    <dd>The indicator shown when a new frame is selected</dd>
-            <dt>Function</dt>          <dd>A JavaScript Function object</dd>
-            <dt>Hint</dt>              <dd>A hint indicator. See <ex>:help hints</ex></dd>
-            <dt>HintActive</dt>        <dd>The hint element of link which will be followed by <k name="CR"/></dd>
-            <dt>HintElem</dt>          <dd>The hintable element</dd>
-            <dt>HintImage</dt>         <dd>The indicator which floats above hinted images</dd>
-            <dt>Indicator</dt>         <dd>The <em>#</em> and  <em>%</em> in the <ex>:buffers</ex> list</dd>
-            <dt>InfoMsg</dt>           <dd>Information messages</dd>
-            <dt>Key</dt>               <dd>Generally a keyword used in syntax highlighting.</dd>
-            <dt>Keyword</dt>           <dd>A bookmark keyword for a URL</dd>
-            <dt>LineNr</dt>            <dd>The line number of an error</dd>
-            <dt>Message</dt>           <dd>A message as displayed in <ex>:messages</ex></dd>
-            <dt>ModeMsg</dt>           <dd>The mode indicator in the command line</dd>
-            <dt>MoreMsg</dt>           <dd>The indicator that there is more text to view</dd>
-            <dt>NonText</dt>           <dd>The <em>~</em> indicators which mark blank lines in the completion list</dd>
-            <dt>Normal</dt>            <dd>Normal text in the command line</dd>
-            <dt>Null</dt>              <dd>A JavaScript Null object</dd>
-            <dt>Number</dt>            <dd>A JavaScript Number object</dd>
-            <dt>Object</dt>            <dd>A JavaScript Object</dd>
-            <dt>Preview</dt>           <dd>The completion preview displayed in the &tag.command-line;</dd>
-            <dt>Question</dt>          <dd>A prompt for a decision</dd>
-            <dt>StatusLine</dt>        <dd>The status bar</dd>
-            <dt>StatusLineNormal</dt>  <dd>The status bar for an ordinary web page</dd>
-            <dt>StatusLineBroken</dt>  <dd>The status bar for a broken web page</dd>
-            <dt>StatusLineExtended</dt><dd>The status bar for a secure web page with an Extended Validation (EV) certificate</dd>
-            <dt>StatusLineSecure</dt>  <dd>The status bar for a secure web page</dd>
-            <dt>String</dt>            <dd>A JavaScript String object</dd>
-            <dt>TabClose</dt>          <dd>The close button of a browser tab</dd>
-            <dt>TabIcon</dt>           <dd>The icon of a browser tab</dd>
-            <dt>TabIconNumber</dt>     <dd>The number of a browser tab, over its icon</dd>
-            <dt>TabNumber</dt>         <dd>The number of a browser tab, next to its icon</dd>
-            <dt>TabText</dt>           <dd>The text of a browser tab</dd>
-            <dt>Tag</dt>               <dd>A bookmark tag for a URL</dd>
-            <dt>Title</dt>             <dd>The title of a listing, including <ex>:pageinfo</ex>, <ex>:jumps</ex></dd>
-            <dt>URL</dt>               <dd>A URL</dd>
-            <dt>WarningMsg</dt>        <dd>A warning message</dd>
+        <dl dt="width: 12em;">
+            <dt>Addon</dt>                      <dd>An add-on in the <ex>:addons</ex> manager</dd>
+            <dt>AddonBar</dt>                   <dd></dd>
+            <dt>AddonButton</dt>                <dd></dd>
+            <dt>AddonButtons</dt>               <dd></dd>
+            <dt>AddonCell</dt>                  <dd>A cell in tell <ex>:addons</ex> manager</dd>
+            <dt>AddonDescription</dt>           <dd></dd>
+            <dt>AddonHead</dt>                  <dd>A heading in the <ex>:addons</ex> manager</dd>
+            <dt>AddonName</dt>                  <dd></dd>
+            <dt>AddonStatus</dt>                <dd></dd>
+            <dt>AddonVersion</dt>               <dd></dd>
+            <dt>Addons</dt>                     <dd>The <ex>:addons</ex> manager</dd>
+            <dt>AppmenuButton</dt>              <dd>The app-menu button</dd>
+            <dt>Bell</dt>                       <dd>&dactyl.appName;'s visual bell</dd>
+            <dt>Boolean</dt>                    <dd>JavaScript booleans</dd>
+            <dt>Button</dt>                     <dd>A button widget</dd>
+            <dt>Buttons</dt>                    <dd>A group of buttons</dd>
+            <dt>CmdCmdLine</dt>                 <dd></dd>
+            <dt>CmdErrorMsg</dt>                <dd></dd>
+            <dt>CmdInfoMsg</dt>                 <dd></dd>
+            <dt>CmdInput</dt>                   <dd></dd>
+            <dt>CmdLine</dt>                    <dd>The command line</dd>
+            <dt>CmdModeMsg</dt>                 <dd></dd>
+            <dt>CmdMoreMsg</dt>                 <dd></dd>
+            <dt>CmdNormal</dt>                  <dd></dd>
+            <dt>CmdOutput</dt>                  <dd>The output of commands executed by <ex>:run</ex></dd>
+            <dt>CmdPrompt</dt>                  <dd></dd>
+            <dt>CmdQuestion</dt>                <dd></dd>
+            <dt>CmdWarningMsg</dt>              <dd></dd>
+            <dt>Comment</dt>                    <dd>JavaScriptor CSS comments</dd>
+            <dt>CompDesc</dt>                   <dd>The description column of the completion list</dd>
+            <dt>CompGroup</dt>                  <dd>Item group in completion output</dd>
+            <dt>CompIcon</dt>                   <dd>The favicon of a completion row</dd>
+            <dt>CompIcon>img</dt>               <dd></dd>
+            <dt>CompItem</dt>                   <dd>A single row of output in the completion list</dd>
+            <dt>CompItem[selected]</dt>         <dd>A selected row of completion list</dd>
+            <dt>CompLess::after</dt>            <dd>The character of indicator shown when completions may be scrolled up</dd>
+            <dt>CompLess</dt>                   <dd>The indicator shown when completions may be scrolled up</dd>
+            <dt>CompMore::after</dt>            <dd>The character of indicator shown when completions may be scrolled down</dd>
+            <dt>CompMore</dt>                   <dd>The indicator shown when completions may be scrolled down</dd>
+            <dt>CompMsg</dt>                    <dd>The message which may appear at the top of a group of completion results</dd>
+            <dt>CompResult</dt>                 <dd>The result column of the completion list</dd>
+            <dt>CompTitle</dt>                  <dd>Completion row titles</dd>
+            <dt>CompTitleSep</dt>               <dd>The element which separates the completion title from its results</dd>
+            <dt>Dense</dt>                      <dd>Arbitrary elements which should be packed densely together</dd>
+            <dt>Disabled</dt>                   <dd>Disabled item indicator text</dd>
+            <dt>Download[active]</dt>           <dd>A currently active download</dd>
+            <dt>Download</dt>                   <dd>A download in the <ex>:downloads</ex> manager</dd>
+            <dt>DownloadButtons</dt>            <dd>A button group in the <ex>:downloads</ex> manager</dd>
+            <dt>DownloadCell</dt>               <dd>A table cell in the <ex>:downloads</ex> manager</dd>
+            <dt>DownloadHead</dt>               <dd>A heading in the <ex>:downloads</ex> manager</dd>
+            <dt>DownloadPercent</dt>            <dd>The percentage column for a download</dd>
+            <dt>DownloadProgress</dt>           <dd>The progress column for a download</dd>
+            <dt>DownloadProgressHave</dt>       <dd>The completed portion of the progress column</dd>
+            <dt>DownloadProgressTotal</dt>      <dd>The remaining portion of the progress column</dd>
+            <dt>DownloadSource</dt>             <dd>The download source column for a download</dd>
+            <dt>DownloadState</dt>              <dd>The download state column for a download</dd>
+            <dt>DownloadTime</dt>               <dd>The time remaining column for a download</dd>
+            <dt>DownloadTitle</dt>              <dd>The title column for a download</dd>
+            <dt>Downloads</dt>                  <dd>The <ex>:downloads</ex> manager</dd>
+            <dt>EditorBlink1</dt>               <dd>Text fields briefly after successfully running the external editor, alternated with EditorBlink2</dd>
+            <dt>EditorBlink2</dt>               <dd>Text fields briefly after successfully running the external editor, alternated with EditorBlink1</dd>
+            <dt>EditorEditing</dt>              <dd>Text fields for which an external editor is open</dd>
+            <dt>EditorError</dt>                <dd>Text fields briefly after an error has occurred running the external editor</dd>
+            <dt>Enabled</dt>                    <dd>Enabled item indicator text</dd>
+            <dt>ErrorMsg</dt>                   <dd>Error messages</dd>
+            <dt>Filter</dt>                     <dd>The matching text in a completion list</dd>
+            <dt>FontCode</dt>                   <dd>The font used for code listings</dd>
+            <dt>FontFixed</dt>                  <dd>The font used for fixed-width text</dd>
+            <dt>FontProportional</dt>           <dd>The font used for proportionally spaced text</dd>
+            <dt>Find</dt>                       <dd>Text find highlighting. Only background and foreground colors apply.</dd>
+            <dt>FrameIndicator</dt>             <dd>The styling applied to briefly indicate the active frame</dd>
+            <dt>Function</dt>                   <dd>JavaScript functions</dd>
+            <dt>Help</dt>                       <dd>A help page</dd>
+            <dt>HelpArg</dt>                    <dd>A required command argument indicator</dd>
+            <dt>HelpBody</dt>                   <dd>The body of a help page</dd>
+            <dt>HelpBorder</dt>                 <dd>The styling of bordered elements</dd>
+            <dt>HelpCode</dt>                   <dd>Code listings</dd>
+            <dt>HelpDefault</dt>                <dd>The default value of a help item</dd>
+            <dt>HelpDescription</dt>            <dd>The description of a help item</dd>
+            <dt>HelpDescription[short]</dt>     <dd></dd>
+            <dt>HelpEm</dt>                     <dd>Emphasized text</dd>
+            <dt>HelpEx</dt>                     <dd>An Ex command</dd>
+            <dt>HelpExample</dt>                <dd>An example</dd>
+            <dt>HelpHead1</dt>                  <dd>Any help heading</dd>
+            <dt>HelpHead2</dt>                  <dd>A first-level help heading</dd>
+            <dt>HelpHead3</dt>                  <dd>A second-level help heading</dd>
+            <dt>HelpHead4</dt>                  <dd>A third-level help heading</dd>
+            <dt>HelpHead</dt>                   <dd>A fourth-level help heading</dd>
+            <dt>HelpInclude</dt>                <dd>A help page included in the consolidated help listing</dd>
+            <dt>HelpInfo</dt>                   <dd>Arbitrary information about a help item</dd>
+            <dt>HelpInfoLabel</dt>              <dd>The label for a HelpInfo item</dd>
+            <dt>HelpInfoValue</dt>              <dd>The details for a HelpInfo item</dd>
+            <dt>HelpItem</dt>                   <dd>A help item</dd>
+            <dt>HelpKey</dt>                    <dd>A keyboard key specification</dd>
+            <dt>HelpKeyword</dt>                <dd>A keyword</dd>
+            <dt>HelpLink</dt>                   <dd>A hyperlink</dd>
+            <dt>HelpLink[rel=external]</dt>     <dd>A hyperlink to an external resource</dd>
+            <dt>HelpList</dt>                   <dd>An unordered list</dd>
+            <dt>HelpListItem</dt>               <dd>A list item, ordered or unordered</dd>
+            <dt>HelpNews</dt>                   <dd>A news item</dd>
+            <dt>HelpNewsNew</dt>                <dd>A new news item</dd>
+            <dt>HelpNewsOld</dt>                <dd>An old news item</dd>
+            <dt>HelpNewsTag</dt>                <dd>The version tag for a news item</dd>
+            <dt>HelpNote</dt>                   <dd>The indicator for a note</dd>
+            <dt>HelpOpt</dt>                    <dd>An option name</dd>
+            <dt>HelpOptInfo</dt>                <dd>Information about the type and default values for an option entry</dd>
+            <dt>HelpOptionalArg</dt>            <dd>An optional command argument indicator</dd>
+            <dt>HelpOrderedList1</dt>           <dd>A first-level ordered list</dd>
+            <dt>HelpOrderedList2</dt>           <dd>A second-level ordered list</dd>
+            <dt>HelpOrderedList3</dt>           <dd>A third-level ordered list</dd>
+            <dt>HelpOrderedList4</dt>           <dd>A fourth-level ordered list</dd>
+            <dt>HelpOrderedList</dt>            <dd>Any ordered list</dd>
+            <dt>HelpParagraph</dt>              <dd>An ordinary paragraph</dd>
+            <dt>HelpSpec</dt>                   <dd>The specification for a help entry</dd>
+            <dt>HelpString</dt>                 <dd>A quoted string</dd>
+            <dt>HelpTOC</dt>                    <dd>The Table of Contents for a help page</dd>
+            <dt>HelpTOC>ol</dt>                 <dd></dd>
+            <dt>HelpTT</dt>                     <dd>Teletype text</dd>
+            <dt>HelpTab</dt>                    <dd></dd>
+            <dt>HelpTabColumn</dt>              <dd></dd>
+            <dt>HelpTabDescription</dt>         <dd>The description column of description tables</dd>
+            <dt>HelpTabRow</dt>                 <dd>Entire rows in description tables</dd>
+            <dt>HelpTabTitle</dt>               <dd>The title column of description tables</dd>
+            <dt>HelpTag</dt>                    <dd>A help tag</dd>
+            <dt>HelpTags</dt>                   <dd>A group of help tags</dd>
+            <dt>HelpTopic</dt>                  <dd>A link to a help topic</dd>
+            <dt>HelpType</dt>                   <dd>An option type</dd>
+            <dt>HelpWarning</dt>                <dd>The indicator for a warning</dd>
+            <dt>HelpXML</dt>                    <dd>Highlighted XML</dd>
+            <dt>HelpXMLAttribute</dt>           <dd></dd>
+            <dt>HelpXMLBlock</dt>               <dd></dd>
+            <dt>HelpXMLComment</dt>             <dd></dd>
+            <dt>HelpXMLNamespace</dt>           <dd></dd>
+            <dt>HelpXMLProcessing</dt>          <dd></dd>
+            <dt>HelpXMLString</dt>              <dd></dd>
+            <dt>HelpXMLTagEnd</dt>              <dd></dd>
+            <dt>HelpXMLTagStart</dt>            <dd></dd>
+            <dt>HelpXMLText</dt>                <dd></dd>
+            <dt>Hint</dt>                       <dd></dd>
+            <dt>HintActive</dt>                 <dd>The hint element of link which will be followed by <k name="CR"/></dd>
+            <dt>HintElem</dt>                   <dd>The hintable element</dd>
+            <dt>HintImage</dt>                  <dd>The indicator which floats above hinted images</dd>
+            <dt>Hint[active]</dt>               <dd></dd>
+            <dt>Indicator</dt>                  <dd>The <em>#</em> and  <em>%</em> in the <ex>:buffers</ex> list</dd>
+            <dt>InfoMsg</dt>                    <dd>Information messages</dd>
+            <dt>InlineHelpLink</dt>             <dd>A help link shown in the command line or multi-line output area</dd>
+            <dt>Key</dt>                        <dd>Keywords</dd>
+            <dt>Keyword</dt>                    <dd>A bookmark keyword for a URL</dd>
+            <dt>LineNr</dt>                     <dd>The line number of an error</dd>
+            <dt>Link</dt>                       <dd>A link with additional information shown on hover</dd>
+            <dt>LinkInfo</dt>                   <dd>Information shown when hovering over a link</dd>
+            <dt>Message</dt>                    <dd></dd>
+            <dt>Message</dt>                    <dd>A message as displayed in <ex>:messages</ex></dd>
+            <dt>ModeMsg</dt>                    <dd>The mode indicator</dd>
+            <dt>MoreMsg</dt>                    <dd>The indicator that there is more text to view</dd>
+            <dt>NonText</dt>                    <dd>The <em>~</em> indicators which mark blank lines in the completion list</dd>
+            <dt>Normal</dt>                     <dd>Normal text</dd>
+            <dt>Null</dt>                       <dd>JavaScript null values</dd>
+            <dt>Number</dt>                     <dd>JavaScript numbers</dd>
+            <dt>Object</dt>                     <dd>JavaScript objects</dd>
+            <dt>Preview</dt>                    <dd>The completion preview displayed in the &tag.command-line;</dd>
+            <dt>Question</dt>                   <dd>A prompt for a decision</dd>
+            <dt>REPL-E</dt>                     <dd>Evaled input in REPL mode</dd>
+            <dt>REPL-P</dt>                     <dd>Evaled output in REPL mode</dd>
+            <dt>REPL-R</dt>                     <dd>Prompts in REPL mode</dd>
+            <dt>REPL</dt>                       <dd>Read-Eval-Print-Loop output</dd>
+            <dt>StatusInfoMsg</dt>              <dd>Information messages in the status line</dd>
+            <dt>StatusLine</dt>                 <dd>The status bar</dd>
+            <dt>StatusLineBroken</dt>           <dd>The status bar for a broken web page</dd>
+            <dt>StatusLineExtended</dt>         <dd>The status bar for a secure web page with an Extended Validation (EV) certificate</dd>
+            <dt>StatusLineNormal</dt>           <dd>The status bar for an ordinary web page</dd>
+            <dt>StatusLineSecure</dt>           <dd>The status bar for a secure web page</dd>
+            <dt>StatusModeMsg</dt>              <dd>The mode indicator in the status line</dd>
+            <dt>StatusMoreMsg</dt>              <dd></dd>
+            <dt>StatusNormal</dt>               <dd>Normal text in the status line</dd>
+            <dt>StatusQuestion</dt>             <dd>A prompt for a decision in the status line</dd>
+            <dt>StatusWarningMsg</dt>           <dd>A warning message in the status line</dd>
+            <dt>String</dt>                     <dd>String values</dd>
+            <dt>TabClose</dt>                   <dd>The close button of a browser tab</dd>
+            <dt>TabIcon</dt>                    <dd>The icon of a browser tab</dd>
+            <dt>TabIconNumber</dt>              <dd>The number of a browser tab, over its icon</dd>
+            <dt>TabNumber</dt>                  <dd>The number of a browser tab, next to its icon</dd>
+            <dt>TabText</dt>                    <dd>The text of a browser tab</dd>
+            <dt>Tag</dt>                        <dd>A bookmark tag for a URL</dd>
+            <dt>Title</dt>                      <dd>The title of a listing, including <ex>:pageinfo</ex>, <ex>:jumps</ex></dd>
+            <dt>URL:hover</dt>                  <dd></dd>
+            <dt>URL</dt>                        <dd>A URL</dd>
+            <dt>URLExtra</dt>                   <dd>Extra information about a URL</dd>
+            <dt>Usage</dt>                      <dd>Output from the :*usage commands</dd>
+            <dt>UsageBody</dt>                  <dd>The body of listings in output from the :*usage commands</dd>
+            <dt>UsageHead</dt>                  <dd>Headings in output from the :*usage commands</dd>
+            <dt>UsageItem</dt>                  <dd>Individual items in output from the :*usage commands</dd>
+            <dt>WarningMsg</dt>                 <dd>A warning message</dd>
         </dl>
 
         <p>

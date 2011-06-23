@@ -368,9 +368,13 @@ var Styles = Module("Styles", {
             for (let prop in Styles.propertyIter(str))
                 props[prop.name] = prop.value;
 
-        return Object.keys(props)[sort ? "sort" : "slice"]()
-                     .map(function (prop) prop + ": " + props[prop] + ";")
-                     .join(" ");
+        let val = Object.keys(props)[sort ? "sort" : "slice"]()
+                        .map(function (prop) prop + ": " + props[prop] + ";")
+                        .join(" ");
+
+        if (/^\s*(\/\*.*?\*\/)/.exec(src))
+            val = RegExp.$1 + " " + val;
+        return val;
     },
 
     completeSite: function (context, content, group) {
