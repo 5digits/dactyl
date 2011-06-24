@@ -469,8 +469,7 @@ var ConfigBase = Class("ConfigBase", {
 
         CmdLine;>*;;FontFixed   /* The command line */ \
                                 padding: 1px !important;
-        CmdPrompt;.dactyl-commandline-prompt
-                                /* The default styling form the command prompt */
+        CmdPrompt;.dactyl-commandline-prompt  /* The default styling form the command prompt */
         CmdInput;.dactyl-commandline-command
         CmdOutput         /* The output of commands executed by <ex>:run</ex> */ \
                           white-space: pre;
