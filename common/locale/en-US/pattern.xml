@@ -46,7 +46,7 @@
 
 <item>
     <tags>/</tags>
-    <spec>/<a>pattern</a><oa>/</oa><k name="CR"/></spec>
+    <spec>/<a>pattern</a><k name="CR"/></spec>
     <description>
         <p>Find <a>pattern</a> starting at the current caret position.</p>
 
@@ -76,7 +76,7 @@
 
 <item>
     <tags>?</tags>
-    <spec>?<a>pattern</a><oa>?</oa><k name="CR"/></spec>
+    <spec>?<a>pattern</a><k name="CR"/></spec>
     <description>
         <p>
             Find a pattern backward of the current caret position in exactly the
