@@ -31,6 +31,12 @@ var RangeFinder = Module("rangefinder", {
         set rangeFind(val) modules.buffer.localStore.rangeFind = val
     }),
 
+    init: function init() {
+        prefs.safeSet("accessibility.typeaheadfind.autostart", false);
+        // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
+        prefs.safeSet("accessibility.typeaheadfind", false);
+    },
+
     get commandline() this.modules.commandline,
     get modes() this.modules.modes,
     get options() this.modules.options,
@@ -249,10 +255,6 @@ var RangeFinder = Module("rangefinder", {
     options: function (dactyl, modules, window) {
         const { options, rangefinder } = modules;
         const { prefs } = require("prefs");
-
-        // prefs.safeSet("accessibility.typeaheadfind.autostart", false);
-        // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
-        prefs.safeSet("accessibility.typeaheadfind", false);
 
         options.add(["hlfind", "hlf"],
             "Highlight all /find pattern matches on the current page after submission",
