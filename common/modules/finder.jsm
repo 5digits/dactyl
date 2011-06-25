@@ -7,10 +7,13 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("finder", {
     exports: ["RangeFind", "RangeFinder", "rangefinder"],
+    require: ["prefs"],
     use: ["messages", "services", "util"]
 }, this);
 
 function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);
+
+try {
 
 /** @instance rangefinder */
 var RangeFinder = Module("rangefinder", {
@@ -33,7 +36,7 @@ var RangeFinder = Module("rangefinder", {
 
     init: function init() {
         prefs.safeSet("accessibility.typeaheadfind.autostart", false);
-        // The above should be sufficient, but: https://bugzilla.mozilla.org/show_bug.cgi?id=348187
+        // The above should be sufficient, but: http://dactyl.sf.net/bmo/348187
         prefs.safeSet("accessibility.typeaheadfind", false);
     },
 
@@ -746,6 +749,9 @@ var RangeFind = Class("RangeFind", {
     selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(function (p) "ancestor-or-self::" + p).join(" | ")
 });
 
+} catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+
 endModule();
+
 
 // vim: set fdm=marker sw=4 ts=4 et ft=javascript:
