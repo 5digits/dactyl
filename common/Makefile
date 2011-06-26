@@ -178,11 +178,11 @@ test: xpi
 xpi: $(CHROME)
 	@echo "Building XPI..."
 	mkdir -p "$(XPI_PATH)"
-	
+
 	$(AWK) -v 'name=$(NAME)' -v 'suffix=$(MANGLE)' \
 	       -f $(BASE)/process_manifest.awk \
 	       "$(TOP)/chrome.manifest" >"$(XPI_PATH)/chrome.manifest"
-	
+
 	version="$(VERSION)"; 			\
 	hg root >/dev/null 2>&1 && 		\
 	case "$$version" in			\
@@ -190,7 +190,7 @@ xpi: $(CHROME)
 	esac; 					\
 	$(SED) -e 's/(em:version(>|="))([^"<]+)/\1'"$$version/" \
 		<"$(TOP)/install.rdf" >"$(XPI_PATH)/install.rdf"
-	
+
 	$(MAKE_JAR) "$(XPI)" "$(XPI_BASES)" "$(XPI_DIRS)" "$(XPI_TEXTS)" "$(XPI_BINS)" "$(XPI_FILES)"
 	rm -r -- $(CHROME)
 	@echo "Built XPI: $(XPI)"
