@@ -427,20 +427,34 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 else
                     dactyl.assert(modules.options.get("sanitizeitems").validator(items), _("error.invalidArgument"));
 
-                if (items.indexOf("all") >= 0)
-                    items = Object.keys(sanitizer.itemMap).filter(function (k) items.indexOf(k) === -1);
-
-                sanitizer.range = range.native;
-                sanitizer.ignoreTimespan = range.min == null;
-                sanitizer.sanitizing = true;
-                if (args["-host"]) {
-                    args["-host"].forEach(function (host) {
-                        sanitizer.sanitizing = true;
-                        sanitizer.sanitizeItems(items, range, host);
-                    });
+                function sanitize(items) {
+                    sanitizer.range = range.native;
+                    sanitizer.ignoreTimespan = range.min == null;
+                    sanitizer.sanitizing = true;
+                    if (args["-host"]) {
+                        args["-host"].forEach(function (host) {
+                            sanitizer.sanitizing = true;
+                            sanitizer.sanitizeItems(items, range, host);
+                        });
+                    }
+                    else
+                        sanitizer.sanitize(items, range);
                 }
+
+                if (items.indexOf("all") >= 0)
+                    modules.commandline.input(_("sanitize.prompt.deleteAll") + " ",
+                        function (resp) {
+                            if (resp.match(/^y(es)?$/i)) {
+                                items = Object.keys(sanitizer.itemMap).filter(function (k) items.indexOf(k) === -1);
+                                sanitize(items);
+                                dactyl.echo(_("command.sanitize.allDeleted"));
+                            }
+                            else
+                                dactyl.echo(_("command.sanitize.noneDeleted"));
+                        });
                 else
-                    sanitizer.sanitize(items, range);
+                    sanitize(items);
+
             },
             {
                 argCount: "*", // FIXME: should be + and 0
