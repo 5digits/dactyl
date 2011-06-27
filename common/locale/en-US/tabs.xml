@@ -205,6 +205,7 @@
 <item>
     <tags>b :b :buffer</tags>
     <spec>:<oa>count</oa>b<oa>uffer</oa><oa>!</oa> <oa>url|index</oa></spec>
+    <spec>:<oa>count</oa>b<oa>uffer</oa><oa>!</oa> <a>match</a></spec>
     <spec><oa>count</oa>b</spec>
     <description>
         <p>
@@ -216,8 +217,9 @@
 
         <p>
             If argument is neither a full URL nor an index but uniquely identifies a
-            buffer, it is selected. With <oa>!</oa> the next buffer matching the argument is
-            selected, even if it cannot be identified uniquely. Use <k>b</k> as a
+            buffer, by a partial match with the URL or title, it is selected.
+            With <oa>!</oa> the next buffer matching the argument is selected,
+            even if it cannot be identified uniquely. Use <k>b</k> as a
             shortcut to open this prompt.
         </p>
 
@@ -285,15 +287,20 @@
 
 <item>
     <tags>:tabm :tabmove</tags>
-    <spec>:tabm<oa>ove</oa> <oa>N</oa></spec>
-    <spec>:tabm<oa>ove</oa><oa>!</oa> <oa>+N</oa> | <oa>-N</oa></spec>
+    <spec>:tabm<oa>ove</oa> <a>N</a></spec>
+    <spec>:tabm<oa>ove</oa> <a>match</a></spec>
+    <spec>:tabm<oa>ove</oa><oa>!</oa> <a>+N|-N</a></spec>
     <description>
         <p>
-            Move the current tab to the position of tab <oa>N</oa>. When
-            <oa>N</oa> is 0, the current tab is made the first one. <oa>N</oa>
-            can also be prefixed with ‘+’ or ‘-’ to indicate a relative
-            movement. If <oa>!</oa> is specified the movement wraps around the
-            start or end of the tab list.
+            Move the current tab to the position of tab <a>N</a>. When <a>N</a>
+            is <em>$</em>, the current tab is made the last one. <a>N</a> can
+            also be prefixed with <em>+</em> or <em>-</em> to indicate a
+            relative movement. If <oa>!</oa> is specified the movement wraps
+            around the start or end of the tab list.
+        </p>
+        <p>
+            The tab index may also be selected by a general <a>match</a> string
+            like <ex>:buffer</ex>.
         </p>
     </description>
 </item>

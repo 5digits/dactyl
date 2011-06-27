@@ -677,7 +677,14 @@ var tests = {
     tabdo: {},
     tabduplicate: {},
     tablast: {},
-    tabmove: {},
+    tabmove: {
+        error: [""],
+        noOutput: ["1", "$", "999", "-1", "+1", "! +1", "! -1", "-999", "+999", "! +999", "! -999"],
+        completions: [
+            ["", hasItems],
+            ["1", hasItems]
+        ]
+    },
     tabnext: {},
     tabonly: {},
     tabopen: {},

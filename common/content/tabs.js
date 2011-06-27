@@ -763,7 +763,7 @@ var Tabs = Module("tabs", {
                 function () { tabs.stopAll(); },
                 { argCount: "0" });
 
-            // TODO: add count support
+            // TODO: add count and bang multimatch support - unify with :buffer nonsense
             commands.add(["tabm[ove]"],
                 "Move the current tab to the position of tab N",
                 function (args) {
@@ -771,7 +771,8 @@ var Tabs = Module("tabs", {
 
                     if (tabs.indexFromSpec(arg) == -1) {
                         let tabs = [tab for (tab in matchTabs(args, true))];
-                        dactyl.assert(tabs.length == 1);
+                        dactyl.assert(tabs.length, _("error.invalidArgument", arg));
+                        dactyl.assert(tabs.length == 1, _("buffer.multipleMatching", arg));
                         arg = tabs[0];
                     }
                     tabs.move(tabs.getTab(), arg, args.bang);
