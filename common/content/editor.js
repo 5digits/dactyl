@@ -858,7 +858,7 @@ var Editor = Module("editor", {
     options: function () {
         options.add(["editor"],
             "The external text editor",
-            "string", "gvim -f +<line> <file>", {
+            "string", "gvim -f '+<line><{|sil! call cursor(0, <column>)}>' <file>", {
                 format: function (obj, value) {
                     let args = commands.parseArgs(value || this.value, { argCount: "*", allowUnknownOptions: true })
                                        .map(util.compileMacro).filter(function (fmt) fmt.valid(obj))

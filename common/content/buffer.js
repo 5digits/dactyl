@@ -199,7 +199,11 @@ var Buffer = Module("buffer", {
 
         dactyl.commands["buffer.viewSource"] = function (event) {
             let elem = event.originalTarget;
-            buffer.viewSource([elem.getAttribute("href"), Number(elem.getAttribute("line"))]);
+            let obj = { url: elem.getAttribute("href"), line: Number(elem.getAttribute("line")) };
+            if (elem.hasAttribute("column"))
+                obj.column = elem.getAttribute("column");
+
+            buffer.viewSource(obj);
         };
     },
 
@@ -917,26 +921,34 @@ var Buffer = Module("buffer", {
      * specified *url*. Either the default viewer or the configured external
      * editor is used.
      *
-     * @param {string} url The URL of the source.
-     * @default The current buffer.
+     * @param {string|object|null} loc If a string, the URL of the source,
+     *      otherwise an object with some or all of the following properties:
+     *
+     *          url: The URL to view.
+     *          doc: The document to view.
+     *          line: The line to select.
+     *          column: the column to select.
+     *
+     *      If no URL is provided, the current document is used.
+     *  @default The current buffer.
      * @param {boolean} useExternalEditor View the source in the external editor.
      */
-    viewSource: function viewSource(url, useExternalEditor) {
+    viewSource: function viewSource(loc, useExternalEditor) {
         let doc = this.focusedFrame.document;
 
-        if (isArray(url)) {
-            if (options.get("editor").has("line"))
-                this.viewSourceExternally(url[0] || doc, url[1]);
+        if (isObject(loc)) {
+            if (options.get("editor").has("line") || !loc.url)
+                this.viewSourceExternally(loc.doc || loc.url || doc, loc);
             else
                 window.openDialog("chrome://global/content/viewSource.xul",
                                   "_blank", "all,dialog=no",
-                                  url[0], null, null, url[1]);
+                                  loc.url, null, null, loc.line);
         }
         else {
             if (useExternalEditor)
-                this.viewSourceExternally(url || doc);
+                this.viewSourceExternally(loc || doc);
             else {
-                url = url || doc.location.href;
+                let url = loc || doc.location.href;
                 const PREFIX = "view-source:";
                 if (url.indexOf(PREFIX) == 0)
                     url = url.substr(PREFIX.length);
@@ -959,13 +971,19 @@ var Buffer = Module("buffer", {
      * immediately.
      *
      * @param {Document} doc The document to view.
+     * @param {function|object} callback If a function, the callback to be
+     *      called with two arguments: the nsIFile of the file, and temp, a
+     *      boolean which is true if the file is temporary. Otherwise, an object
+     *      with line and column properties used to determine where to open the
+     *      source.
+     *      @optional
      */
     viewSourceExternally: Class("viewSourceExternally",
         XPCOM([Ci.nsIWebProgressListener, Ci.nsISupportsWeakReference]), {
         init: function init(doc, callback) {
             this.callback = callable(callback) ? callback :
                 function (file, temp) {
-                    editor.editFileExternally({ file: file.path, line: callback },
+                    editor.editFileExternally(update({ file: file.path }, callback || {}),
                                               function () { temp && file.remove(false); });
                     return true;
                 };
