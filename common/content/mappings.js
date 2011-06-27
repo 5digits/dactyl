@@ -478,7 +478,8 @@ var Mappings = Module("mappings", {
                 }
 
                 if (args[1] && !/^<nop>$/i.test(args[1])
-                    && !args["-count"] && !args["-ex"] && !args["-javascript"])
+                    && !args["-count"] && !args["-ex"] && !args["-javascript"]
+                    && mapmodes.every(function (m) m.count))
                     args[1] = "<count>" + args[1];
 
                 let [lhs, rhs] = args;

@@ -47,6 +47,7 @@ var ProcessorStack = Class("ProcessorStack", {
     passUnknown: Class.memoize(function () options.get("passunknown").getKey(this.modes)),
 
     notify: function () {
+        events.dbg("NOTIFY()");
         events.keyEvents = [];
         events.processor = null;
         if (!this.execute(undefined, true)) {
@@ -62,7 +63,7 @@ var ProcessorStack = Class("ProcessorStack", {
                                 callable(result) ? result.toSource().substr(0, 50) : result),
 
     execute: function execute(result, force) {
-        events.dbg("EXECUTE " + this._result(result) + " " + force + " " + this.events.length + " " + this.processors.length);
+        events.dbg("EXECUTE(" + this._result(result) + ", " + force + ") events:" + this.events.length + " processors:" + this.processors.length + " actions:" + this.actions.length);
         let processors = this.processors;
         let length = 1;
 
@@ -72,7 +73,7 @@ var ProcessorStack = Class("ProcessorStack", {
         if (this.ownsBuffer)
             statusline.inputBuffer = this.processors.length ? this.buffer : "";
 
-        if (!processors.some(function (p) !p.extended) && this.actions.length) {
+        if (!this.processors.some(function (p) !p.extended) && this.actions.length) {
             // We have matching actions and no processors other than
             // those waiting on further arguments. Execute actions as
             // long as they continue to return PASS.
@@ -98,7 +99,7 @@ var ProcessorStack = Class("ProcessorStack", {
             // Kill the event, set a timeout to give up waiting if applicable.
 
             result = Events.KILL;
-            if (options["timeout"] && (this.actions.length || events.hasNativeKey(this.main, this.events[0])))
+            if (options["timeout"] && (this.actions.length || events.hasNativeKey(this.events[0], this.main, this.passUnknown)))
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
         else if (result !== Events.KILL && !this.actions.length &&
@@ -119,7 +120,7 @@ var ProcessorStack = Class("ProcessorStack", {
             // pass the event.
             result = Events.PASS;
 
-        events.dbg("RESULT: " + length + " " + this._result(result));
+        events.dbg("RESULT: " + length + " " + this._result(result) + "\n\n");
 
         if (result !== Events.PASS || this.events.length > 1)
             if (result !== Events.ABORT || !this.events[0].isReplay)
@@ -159,7 +160,7 @@ var ProcessorStack = Class("ProcessorStack", {
         let actions = [];
         let processors = [];
 
-        events.dbg("KEY: " + key + " skipmap: " + event.skipmap + " macro: " + event.isMacro + " replay: " + event.isReplay);
+        events.dbg("PROCESS(" + key + ") skipmap: " + event.skipmap + " macro: " + event.isMacro + " replay: " + event.isReplay);
 
         for (let [i, input] in Iterator(this.processors)) {
             let res = input.process(event);
@@ -182,7 +183,7 @@ var ProcessorStack = Class("ProcessorStack", {
 
         events.dbg("RESULT: " + event.getPreventDefault() + " " + this._result(result));
         events.dbg("ACTIONS: " + actions.length + " " + this.actions.length);
-        events.dbg("PROCESSORS:", processors);
+        events.dbg("PROCESSORS:", processors, "\n");
 
         this._actions = actions;
         this.actions = actions.concat(this.actions);
@@ -1067,12 +1068,16 @@ var Events = Module("events", {
      * Returns true if there's a known native key handler for the given
      * event in the given mode.
      *
-     * @param {Modes.Mode} mode The main mode.
      * @param {Event} event A keypress event.
+     * @param {Modes.Mode} mode The main mode.
+     * @param {boolean} passUnknown Whether unknown keys should be passed.
      */
-    hasNativeKey: function hasNativeKey(mode, event) {
-        if (mode.input)
-            return event.charCode && !(event.ctrlKey || event.metaKey);
+    hasNativeKey: function hasNativeKey(event, mode, passUnknown) {
+        if (mode.input && event.charCode && !(event.ctrlKey || event.metaKey))
+            return true;
+
+        if (!passUnknown)
+            return false;
 
         var elements = document.getElementsByTagNameNS(XUL, "key");
         var filters = [];
