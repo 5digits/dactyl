@@ -671,8 +671,8 @@ var Buffer = Module("buffer", {
                                   null, null, null, persist));
 
         persist.progressListener = update(Object.create(downloadListener), {
-            onStateChange: function onStateChange(progress, request, flag, status) {
-                if (callback && (flag & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
+            onStateChange: function onStateChange(progress, request, flags, status) {
+                if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
                     dactyl.trapErrors(callback, self, uri, file, progress, request, flag, status);
 
                 return onStateChange.superapply(this, arguments);
@@ -1011,8 +1011,8 @@ var Buffer = Module("buffer", {
             return null;
         },
 
-        onStateChange: function onStateChange(progress, request, flag, status) {
-            if ((flag & this.STATE_STOP) && status == 0) {
+        onStateChange: function onStateChange(progress, request, flags, status) {
+            if ((flags & this.STATE_STOP) && status == 0) {
                 try {
                     var ok = this.callback(this.file, true);
                 }

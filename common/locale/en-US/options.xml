@@ -82,7 +82,7 @@
     of <ex>:command</ex> macros, may be accessed by appending
     <tt>[<a>n</a>]</tt>, where <a>n</a> is the one-based array
     index, to the macro name. The first argument of a command is
-    therefore accessed with <tt>&lt;args[1]&lt;</tt>.
+    therefore accessed with <tt>&lt;args[1]&gt;</tt>.
 </p>
 <p>
     Any substring enclosed by <em><tt>&lt;{</tt></em> and <em><tt>}></tt></em>

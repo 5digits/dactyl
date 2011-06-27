@@ -98,7 +98,7 @@ var ProcessorStack = Class("ProcessorStack", {
             // Kill the event, set a timeout to give up waiting if applicable.
 
             result = Events.KILL;
-            if (options["timeout"])
+            if (options["timeout"] && (this.actions.length || events.hasNativeKey(this.main, this.events[0])))
                 this.timer = services.Timer(this, options["timeoutlen"], services.Timer.TYPE_ONE_SHOT);
         }
         else if (result !== Events.KILL && !this.actions.length &&
@@ -442,6 +442,7 @@ var Events = Module("events", {
         this._key_key = {};
         this._code_key = {};
         this._key_code = {};
+        this._code_nativeKey = {};
 
         for (let list in values(this._keyTable))
             for (let v in values(list)) {
@@ -451,6 +452,8 @@ var Events = Module("events", {
             }
 
         for (let [k, v] in Iterator(KeyEvent)) {
+            this._code_nativeKey[v] = k.substr(4);
+
             k = k.substr(7).toLowerCase();
             let names = [k.replace(/(^|_)(.)/g, function (m, n1, n2) n2.toUpperCase())
                           .replace(/^NUMPAD/, "k")];
@@ -1058,6 +1061,65 @@ var Events = Module("events", {
             return null;
 
         return "<" + modifier + key + ">";
+    },
+
+    /**
+     * Returns true if there's a known native key handler for the given
+     * event in the given mode.
+     *
+     * @param {Modes.Mode} mode The main mode.
+     * @param {Event} event A keypress event.
+     */
+    hasNativeKey: function hasNativeKey(mode, event) {
+        if (mode.input)
+            return event.charCode && !(event.ctrlKey || event.metaKey);
+
+        var elements = document.getElementsByTagNameNS(XUL, "key");
+        var filters = [];
+
+        if (event.keyCode)
+            filters.push(["keycode", this._code_nativeKey[event.keyCode]]);
+        if (event.charCode) {
+            let key = String.fromCharCode(event.charCode);
+            filters.push(["key", key.toUpperCase()],
+                         ["key", key.toLowerCase()]);
+        }
+
+        let accel = util.OS.isMacOSX ? "metaKey" : "ctrlKey";
+
+        let access = iter({ 1: "shiftKey", 2: "ctrlKey", 4: "altKey", 8: "metaKey" })
+                        .filter(function ([k, v]) this & k, prefs.get("ui.key.chromeAccess"))
+                        .map(function ([k, v]) [v, true])
+                        .toObject();
+
+    outer:
+        for (let [, key] in iter(elements))
+            if (filters.some(function ([k, v]) key.getAttribute(k) == v)) {
+                let keys = { ctrlKey: false, altKey: false, shiftKey: false, metaKey: false };
+                let needed = { ctrlKey: event.ctrlKey, altKey: event.altKey, shiftKey: event.shiftKey, metaKey: event.metaKey };
+
+                let modifiers = (key.getAttribute("modifiers") || "").trim().split(/[\s,]+/);
+                for (let modifier in values(modifiers))
+                    switch (modifier) {
+                        case "access": update(keys, access); break;
+                        case "accel":  keys[accel] = true; break;
+                        default:       keys[modifier + "Key"] = true; break;
+                        case "any":
+                            if (!iter.some(keys, function ([k, v]) v && needed[k]))
+                                continue outer;
+                            for (let [k, v] in iter(keys)) {
+                                if (v)
+                                    needed[k] = false;
+                                keys[k] = false;
+                            }
+                            break;
+                    }
+
+                if (iter(needed).every(function ([k, v]) v == keys[k]))
+                    return key;
+            }
+
+        return false;
     },
 
     /**
