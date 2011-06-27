@@ -328,9 +328,10 @@ var tests = {
         multiOutput: [""]
     },
     keepalt: {
-        error: [""],
+        error: ["", "some-nonexistent-command"],
         noOutput: ["js ''"],
-        anyOutput: ["echo 'foo'"]
+        anyOutput: ["echo 'foo'"],
+        completions: [["", hasItems]]
     },
     let: {}, // Deprecated. Fuck it.
     listcommands: {
@@ -671,10 +672,20 @@ var tests = {
             ["-index=", hasNItems(2)]
         ]
     },
-    tab: {},
+    tab: {
+        error: ["", "some-nonexistent-command"],
+        noOutput: ["js ''"],
+        anyOutput: ["echo 'foo'"],
+        completions: [["", hasItems]]
+    },
     tabattach: {},
     tabdetach: {},
-    tabdo: {},
+    tabdo: {
+        error: ["", "some-nonexistent-command"],
+        noOutput: ["js ''"],
+        anyOutput: ["echo 'foo'"],
+        completions: [["", hasItems]]
+    },
     tabduplicate: {},
     tablast: {},
     tabmove: {

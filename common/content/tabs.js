@@ -624,7 +624,7 @@ var Tabs = Module("tabs", {
                 let alternate = tabs.alternate;
 
                 try {
-                    commands.execute(args[0] || "", null, true);
+                    dactyl.execute(args[0], null, true);
                 }
                 finally {
                     tabs.updateSelectionHistory([tabs.getTab(), alternate]);
@@ -641,7 +641,7 @@ var Tabs = Module("tabs", {
             function (args) {
                 dactyl.withSavedValues(["forceNewTab"], function () {
                     this.forceNewTab = true;
-                    commands.execute(args[0] || "", null, true);
+                    dactyl.execute(args[0], null, true);
                 });
             }, {
                 argCount: "+",
