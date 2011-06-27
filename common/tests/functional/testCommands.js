@@ -690,7 +690,11 @@ var tests = {
     tabopen: {},
     tabprevious: {},
     tabrewind: {},
-    time: {},
+    time: {
+        error: ["", ":some-nonexistent-command"/*, "some_nonexistent_reference"*/], // FIXME
+        singleOutput: [":js null", "null"]
+
+    },
     toolbarhide: {
         init: [
             ["tbs Navigation Toolbar", toolbarState("#nav-bar", true)],

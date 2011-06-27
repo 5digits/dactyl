@@ -1960,9 +1960,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 args = args[0] || "";
 
                 if (args[0] == ":")
-                    var method = function () commands.execute(args, null, true);
+                    var func = function () commands.execute(args, null, false);
                 else
-                    method = dactyl.userFunc(args);
+                    func = dactyl.userFunc(args);
 
                 try {
                     if (count > 1) {
@@ -1971,7 +1971,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                         for (let i in util.interruptibleRange(0, count, 500)) {
                             let now = Date.now();
-                            method();
+                            func();
                             total += Date.now() - now;
                         }
 
@@ -2006,7 +2006,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     }
                     else {
                         let beforeTime = Date.now();
-                        method();
+                        func();
 
                         if (special)
                             return;
