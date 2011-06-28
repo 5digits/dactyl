@@ -638,7 +638,7 @@ var Modes = Module("modes", {
 
         options.add(["passunknown", "pu"],
             "Pass through unknown keys in these modes",
-            "stringlist", "!text_edit,!input,base",
+            "stringlist", "!text_edit,base",
             opts);
 
         options.add(["showmode", "smd"],

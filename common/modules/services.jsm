@@ -45,6 +45,7 @@ var Services = Module("Services", {
                  ["nsIBrowserHistory", "nsIGlobalHistory3", "nsINavHistoryService", "nsPIPlacesDatabase"]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                "nsIIOService");
         this.add("json",                "@mozilla.org/dom/json;1",                          "nsIJSON", "createInstance");
+        this.add("listeners",           "@mozilla.org/eventlistenerservice;1",              "nsIEventListenerService");
         this.add("livemark",            "@mozilla.org/browser/livemark-service;2",          "nsILivemarkService");
         this.add("mime",                "@mozilla.org/mime;1",                              "nsIMIMEService");
         this.add("observer",            "@mozilla.org/observer-service;1",                  "nsIObserverService");

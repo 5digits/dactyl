@@ -1955,7 +1955,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         let res = [], seen = {};
         (function rec(frame) {
             try {
-                res = res.concat(util.subdomains(frame.location.hostname));
+                if (frame.location.hostname)
+                    res = res.concat(util.subdomains(frame.location.hostname));
             }
             catch (e) {}
             Array.forEach(frame.frames, rec);
