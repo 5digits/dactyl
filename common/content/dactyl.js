@@ -1914,7 +1914,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         commands.add(["res[tart]"],
             "Force " + config.appName + " to restart",
-            function () { dactyl.restart(); });
+            function () { dactyl.restart(); },
+            { argCount: "0" });
 
         function findToolbar(name) util.evaluateXPath(
             "//*[@toolbarname=" + util.escapeString(name, "'") + "]",

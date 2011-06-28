@@ -486,7 +486,9 @@ var tests = {
     reloadall: {
         noOutput: [""]
     },
-    restart: {}, // Skip
+    restart: {
+        error: ["foo"]
+    },
     runtime: {
         init: [
             "js File('~/.pentadactyl/some-nonexistent/good.css').write('')",
