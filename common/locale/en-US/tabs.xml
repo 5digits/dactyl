@@ -82,17 +82,6 @@
     </description>
 </item>
 
-<item>
-    <tags>:tabdu :tabduplicate</tags>
-    <spec>:<oa>count</oa>tabdu<oa>plicate</oa></spec>
-    <description>
-        <p>
-            Duplicate the current tab and focus the duplicate. If
-            <oa>count</oa> is given, duplicate the tab <oa>count</oa> times.
-        </p>
-    </description>
-</item>
-
 <!-- TODO: should the tab commands be moved back here? -->
 <p>
     See <t>opening</t> for other ways to open new tabs.
