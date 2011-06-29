@@ -1620,6 +1620,7 @@ var Events = Module("events", {
                 else
                     dactyl.echoerr(_("error.argumentRequired"));
             }, {
+                argCount: "?",
                 bang: true,
                 completer: function (context) completion.macro(context),
                 literal: 0

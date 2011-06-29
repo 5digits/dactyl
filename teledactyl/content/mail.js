@@ -453,7 +453,7 @@ const Mail = Module("mail", {
             "Copy selected messages",
             function (args) { mail._moveOrCopy(true, args.literalArg); },
             {
-                argCount: 1,
+                argCount: "1",
                 completer: function (context) completion.mailFolder(context),
                 literal: 0
             });
@@ -462,7 +462,7 @@ const Mail = Module("mail", {
             "Move selected messages",
             function (args) { mail._moveOrCopy(false, args.literalArg); },
             {
-                argCount: 1,
+                argCount: "1",
                 completer: function (context) completion.mailFolder(context),
                 literal: 0
             });

@@ -45,14 +45,25 @@ function toolbarState(selector, state)
 
 var tests = {
     "!": {
+        error: [""],
         multiOutput: ["echo foo"]
     },
+    get Clistkeys() this.listcommands,
+    Cmap: {},
+    Cnoremap: {},
+    Cunmap: {},
+    get Ilistkeys() this.listcommands,
+    Imap: {},
+    Inoremap: {},
+    Iunmap: {},
     abbreviate: {
+        error: ["!"],
         someOutput: ["", "abc"],
         noOutput: ["abc def", "-js abc def"],
         completions: ["", "abc ", "-js abc "]
     },
     addons: {
+        error: ["!"],
         multiOutput: ["", "dactyl", "-type=extension", "-type=extension dactyl"],
         completions: [
             "",
@@ -75,6 +86,8 @@ var tests = {
         anyOutput: ["about:pentadactyl"],
         completions: [["", hasItems]]
     },
+    get blistkeys() this.listcommands,
+    bmap: {},
     bmark: {
         singleOutput: ["", "-tags=foo -title=bar -keyword=baz -charset=UTF-8 -post=quux about:pentadactyl"],
         error: ["-tags=foo -title=bar -keyword=baz -charset=nonExistentCharset -post=quux about:pentadactyl"],
@@ -95,6 +108,7 @@ var tests = {
             "-max=1 -keyword=foo -tags=bar -title=baz about:"
         ]
     },
+    bnoremap: {},
     buffer: {
         anyOutput: ["", "1"],
         noOutput: ["!", "! 1"],
@@ -104,15 +118,21 @@ var tests = {
         ]
     },
     buffers: {
+        error: ["!"],
         multiOutput: ["", "1"],
         completions: ["", "1"]
     },
+    bunmap: {},
     cd: {
+        error: ["!"],
         singleOutput: ["", "~/"],
         completions: ["", "~/"]
     },
+    get clistkeys() this.listcommands,
+    cmap: {},
+    cnoremap: {},
     colorscheme: {
-        error: ["", "some-nonexistent-scheme"]
+        error: ["!", "", "some-nonexistent-scheme"]
     },
     command: {
         init: ["delc!"],
@@ -131,15 +151,22 @@ var tests = {
             ["-group=user ", hasItems]
         ]
     },
-    contexts: {}, // Not testable in this manner
+    completions: {
+        error: ["!", ""]
+    },
+    contexts: { // Not testable in this manner
+        error: ["!"]
+    },
     cookies: {
         anyOutput: ["dactyl.sf.net", "dactyl.sf.net list"],
-        error: [""],
+        error: ["!", ""],
         completions: [
             "",
             ["dactyl.sf.net ", hasItems]
         ]
     },
+    cunabbreviate: {},
+    cunmap: {},
     delbmarks: { anyOutput: ["", "about:pentadactyl"] },
     delcommand: [
         {
@@ -157,8 +184,12 @@ var tests = {
             error: ["foo"]
         }
     ],
+    delgroup: {
+        error: ["!", "", "builtin"],
+        completions: [""]
+    },
     delmacros: {
-        error: [""],
+        error: ["", "! foo"],
         noOutput: ["x"],
         completions: ["", "x"]
     },
@@ -168,17 +199,27 @@ var tests = {
         completions: ["", "-name=", "-name=foo ", "-index=", "-index="]
     },
     dialog: {
+        error: ["!", ""],
         // Skip implementation for now
         completions: [
             ["", hasntNullItems]
         ]
     },
-    doautoall: {}, // Skip for now
-    doautocmd: {}, // Skip for now
+    dlclear: {
+        error: ["!"]
+    },
+    doautoall: {
+        error: ["!"]
+    },
+    doautocmd: {
+        error: ["!"]
+    },
     downloads: {
+        error: ["!"],
         multiOutput: ["", "dactyl", "dactyl"]
     },
     echo: {
+        error: ["!"],
         singleOutput: [
             ["' - '", " - "]
         ],
@@ -199,25 +240,35 @@ var tests = {
         __proto__: this.echo,
     }),
     get echomsg() this.echo,
-    else: {}, // Skip for now
-    elseif: {}, // Skip for now
+    else: {
+        error: ["!", "foo"]
+    },
+    elseif: {
+        error: ["!", ""]
+    },
     emenu: {
         noOutput: ["View.Zoom.Zoom In", "View.Zoom.Zoom Out"],
-        error: [""],
+        error: ["!", ""],
         completions: [
             ["", hasItems],
             ["View.", hasItems]
         ]
     },
-    endif: {}, // Skip for now
+    endif: {
+        error: ["!", "foo"]
+    },
     execute: {
+        error: ["!"],
         noOutput: ["", "'js " + "".quote() + "'"],
         someOutput: ["'ls'"],
         completions: [["", hasItems]]
     },
+    exit: {
+        error: ["foo"]
+    },
     extadd: {
         completions: [["", hasItems]],
-        error: [""]
+        error: ["!", ""]
     },
     extdelete: {
         completions: [["", hasItems]],
@@ -239,12 +290,14 @@ var tests = {
         noOutput: ["<Esc>"],
         error: [""]
     },
-    finish: { noOutput: [""] },
+    finish: {
+        error: ["!", "foo"],
+        noOutput: [""]
+    },
     forward: { noOutput: [""] },
-    frameonly: { noOutput: [""] },
-    delgroup: {
-        error: ["builtin"],
-        completions: [""]
+    frameonly: {
+        error: ["!", "foo"],
+        noOutput: [""]
     },
     group: {
         multiOutput: [""],
@@ -263,6 +316,7 @@ var tests = {
     },
     hardcopy: {}, // Skip for now
     help: {
+        error: ["!"],
         noOutput: ["", "intro"],
         cleanup: ["tabdelete", "tabdelete"],
         completions: [
@@ -272,6 +326,7 @@ var tests = {
     },
     get helpall() this.help,
     highlight: {
+        error: ["!"],
         multiOutput: ["", "Help"],
         noOutput: [
             "Help foo: bar;",
@@ -299,7 +354,15 @@ var tests = {
             "-sort=+date about:"
         ]
     },
-    if: {}, // Skip for now
+    if: {
+        error: ["!", ""],
+    },
+    iabbreviate: {},
+    get ilistkeys() this.listcommands,
+    imap: {},
+    inoremap: {},
+    iunabbreviate: {},
+    iunmap: {},
     javascript: {
         noOutput: ["''", "'\\n'", "<pre>foo bar</pre>", "window", "<<EOF\n''\nEOF"],
         completions: [
@@ -325,16 +388,20 @@ var tests = {
         ]
     },
     jumps: {
+        error: ["!", "foo"],
         multiOutput: [""]
     },
     keepalt: {
-        error: ["", "some-nonexistent-command"],
+        error: ["!", "", "some-nonexistent-command"],
         noOutput: ["js ''"],
         anyOutput: ["echo 'foo'"],
         completions: [["", hasItems]]
     },
-    let: {}, // Deprecated. Fuck it.
+    let: {
+        error: ["!"]
+    },
     listcommands: {
+        error: ["!"],
         anyOutput: ["", "in"],
         completions: [
             ["", hasItems],
@@ -345,10 +412,12 @@ var tests = {
     get listoptions() this.listcommands,
     loadplugins: {},
     macros: {
+        error: ["!"],
         multiOutput: [""],
         completions: [""]
     },
     map: {
+        error: ["!"],
         init: ["unmap!"],
         anyOutput: [""],
         singleOutput: ["i"],
@@ -379,21 +448,22 @@ var tests = {
         ]
     },
     mark: {
-        error: ["", "#", "xy"],
+        error: ["!", "", "#", "xy"],
         noOutput: ["y"],
         completions: [""]
     },
     marks: {
         init: ["delmarks q"],
         multiOutput: ["", "y"],
-        error: ["q", "#"],
+        error: ["!", "q", "#"],
         completions: [""]
     },
     messages: {
+        error: ["!", "foo"],
         anyOutput: ["messages"]
     },
     messclear: {
-        error: ["q"],
+        error: ["!", "foo"],
         noOutput: [""]
     },
     mkpentadactylrc: {
@@ -421,12 +491,26 @@ var tests = {
         ],
         cleanup: ["silent !rm -r some-nonexistent-pentadactyl-dir/"]
     },
+    get mlistkeys() this.listcommands,
+    mmap: {},
+    mnoremap: {},
+    munmap: {},
+    get nlistkeys() this.listcommands,
+    nmap: {},
+    nnoremap: {},
+    nohlfind: {
+        error: ["!", "foo"]
+    },
+    noremap: {},
     normal: {
+        error: [""],
         noOutput: ["<Nop>"],
         singleOutput: ["<C-g>"],
         multiOutput: ["g<C-g>"]
     },
+    nunmap: {},
     open: {
+        error: ["!"],
         noOutput: ["about:blank | about:home"],
         completions: [
             ["", hasItems],
@@ -443,13 +527,18 @@ var tests = {
     pageinfo: {
         multiOutput: ["", "fgm"],
         completions: [["", hasItems]],
-        error: ["abcdefghijklmnopqrstuvwxyz", "f g m"]
+        error: ["!", "abcdefghijklmnopqrstuvwxyz", "f g m"]
     },
     pagestyle: {
+        error: ["!"],
         completions: [""]
     },
-    preferences: {}, // Skip for now
+    pintab: {},
+    preferences: {
+        error: ["foo"]
+    },
     pwd: {
+        error: ["!", "foo"],
         singleOutput: [""]
     },
     qmark: {
@@ -457,13 +546,16 @@ var tests = {
             "m",
             "m foo bar"
         ],
-        error: ["", "#"],
+        error: ["!", "", "#"],
         completions: [
             ["", hasItems],
             ["m ", hasItems]
         ]
     },
     qmarks: [
+        {
+            error: ["!"]
+        },
         {
             init: ["delqmarks a-zA-Z0-9"],
             error: ["", "x"],
@@ -474,20 +566,29 @@ var tests = {
             completions: [["", hasItems]]
         }
     ],
-    quit: {}, // Skip for now
-    quitall: {}, // Skip for now
+    quit: {
+        error: ["foo"]
+    },
+    quitall: {
+        error: ["!", "foo"]
+    },
     redraw: {
+        error: ["!", "foo"],
         noOutput: [""]
     },
-    rehash: {}, // Skip for now
+    rehash: {
+        error: ["!"]
+    },
     reload: {
+        error: ["foo"],
         noOutput: [""]
     },
     reloadall: {
+        error: ["foo"],
         noOutput: [""]
     },
     restart: {
-        error: ["foo"]
+        error: ["!", "foo"]
     },
     runtime: {
         init: [
@@ -504,6 +605,7 @@ var tests = {
             "some-nonexistent/good.penta"
         ],
         error: [
+            "",
             "some-nonexistent/bad.js",
             "some-nonexistent/bad.penta"
         ],
@@ -542,9 +644,12 @@ var tests = {
     },
     saveas: {},
     sbclose: {
+        error: ["!", "foo"],
         noOutput: [""]
     },
-    scriptnames: {},
+    scriptnames: {
+        error: ["!", "foo"]
+    },
     set: {
         multiOutput: [
             "vb?", "cpt?", "messages?", "titlestring?", "au?", "eht?",
@@ -598,6 +703,7 @@ var tests = {
         ]
     },
     silent: {
+        error: ["!"],
         noOutput: [
             "echo 'foo'",
             "echo " + "foo\nbar".quote(),
@@ -616,6 +722,7 @@ var tests = {
             ".pentadactyl/some-nonexistent/good.penta"
         ],
         error: [
+            "",
             ".pentadactyl/some-nonexistent/really-nonexistent.js",
             "~/.pentadactyl/some-nonexistent/bad.js",
             "~/.pentadactyl/some-nonexistent/bad.penta",
@@ -632,9 +739,16 @@ var tests = {
             ["resource://dactyl/", hasItems]
         ]
     }),
-    stop: { noOutput: [""] },
-    stopall: { noOutput: [""] },
+    stop: {
+        error: ["!", "foo"],
+        noOutput: [""]
+    },
+    stopall: {
+        error: ["!", "foo"],
+        noOutput: [""]
+    },
     style: {
+        error: ["!"],
         cleanup: ["delstyle -n foo"],
         noOutput: [
             "-name=foo http://does.not.exist/* div { display: inline; }",
@@ -675,21 +789,29 @@ var tests = {
         ]
     },
     tab: {
-        error: ["", "some-nonexistent-command"],
+        error: ["!", "", "some-nonexistent-command"],
         noOutput: ["js ''"],
         anyOutput: ["echo 'foo'"],
         completions: [["", hasItems]]
     },
-    tabattach: {},
-    tabdetach: {},
+    tabattach: {
+        error: ["!", ""]
+    },
+    tabdetach: {
+        error: ["!", "foo"]
+    },
     tabdo: {
-        error: ["", "some-nonexistent-command"],
+        error: ["!", "", "some-nonexistent-command"],
         noOutput: ["js ''"],
         anyOutput: ["echo 'foo'"],
         completions: [["", hasItems]]
     },
-    tabduplicate: {},
-    tablast: {},
+    tabduplicate: {
+        error: ["foo"]
+    },
+    tablast: {
+        error: ["!", "foo"]
+    },
     tabmove: {
         error: [""],
         noOutput: ["1", "$", "999", "-1", "+1", "! +1", "! -1", "-999", "+999", "! +999", "! -999"],
@@ -698,16 +820,27 @@ var tests = {
             ["1", hasItems]
         ]
     },
-    tabnext: {},
-    tabonly: {},
+    tabnext: {
+        error: ["!", "foo"]
+    },
+    tabonly: {
+        error: ["!", "foo"]
+    },
     tabopen: {},
-    tabprevious: {},
-    tabrewind: {},
+    tabprevious: {
+        error: ["!", "foo"]
+    },
+    tabrewind: {
+        error: ["!", "foo"]
+    },
     time: {
         error: ["", ":some-nonexistent-command"/*, "some_nonexistent_reference"*/], // FIXME
         singleOutput: [":js null", "null"]
 
     },
+    get tlistkeys() this.listcommands,
+    tmap: {},
+    tnoremap: {},
     toolbarhide: {
         init: [
             ["tbs Navigation Toolbar", toolbarState("#nav-bar", true)],
@@ -718,7 +851,7 @@ var tests = {
             ["Navigation Toolbar", toolbarState("#nav-bar", false)],
             ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", false)]
         ],
-        error: ["", "foo"]
+        error: ["!", "", "foo"]
     },
     toolbarshow: {
         completions: [["", hasItems]],
@@ -726,7 +859,7 @@ var tests = {
             ["Navigation Toolbar", toolbarState("#nav-bar", true)],
             ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", true)]
         ],
-        error: ["", "foo"]
+        error: ["!", "", "foo"]
     },
     toolbartoggle: {
         completions: [["", hasItems]],
@@ -738,15 +871,25 @@ var tests = {
             ["Navigation Toolbar", toolbarState("#nav-bar", false)],
             ["Bookmarks Toolbar", toolbarState("#PersonalToolbar", false)]
         ],
-        error: ["", "foo"]
+        error: ["!", "", "foo"]
     },
+    tunmap: {},
     unabbreviate: {
         noOutput: ["abc", "! "],
         error: [""]
     },
-    undo: {},
-    undoall: {},
-    unlet: {},
+    undo: {
+        error: ["!"]
+    },
+    undoall: {
+        error: ["!", "foo"]
+    },
+    unpintab: {
+        error: ["!"]
+    },
+    unlet: {
+        error: [""],
+    },
     unmap: {
         noOutput: [
             "i",
@@ -762,8 +905,11 @@ var tests = {
             "-group="
         ]
     },
-    verbose: {},
+    verbose: {
+        error: ["!", ""]
+    },
     version: {
+        error: ["foo"],
         multiOutput: [
             ["", function (msg) {
                 var res = /(\w+dactyl) (\S+) \(([\^)]+)\) running on:\nMozilla/;
@@ -772,11 +918,25 @@ var tests = {
         ]
     },
     viewsource: {},
-    winclose: {},
-    window: {},
-    winonly: {},
-    winopen: {},
-    wqall: {},
+    get vlistkeys() this.listcommands,
+    vmap: {},
+    vnoremap: {},
+    vunmap: {},
+    winclose: {
+        error: ["!", "foo"]
+    },
+    window: {
+        error: ["!", ""]
+    },
+    winonly: {
+        error: ["!", "foo"]
+    },
+    winopen: {
+        error: ["!"]
+    },
+    wqall: {
+        error: ["!", "foo"]
+    },
     yank: {
         multiOutput: [
             ["foo".quote(), /foo/],
@@ -784,6 +944,7 @@ var tests = {
             [":addons", /Pentadactyl/]
         ],
         error: [
+            "!", "",
             ":echoerr " + "foo".quote()
         ],
         completions: [

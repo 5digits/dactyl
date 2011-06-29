@@ -841,7 +841,7 @@ unlet s:cpo_save
 
                 modules.autocommands.trigger("ShellCmdPost", {});
             }, {
-                argCount: "?", // TODO: "1" - probably not worth supporting weird Vim edge cases. The dream is dead. --djk
+                argCount: "1",
                 bang: true,
                 // This is abominably slow.
                 // completer: function (context) completion.shellCommand(context),

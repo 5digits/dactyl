@@ -621,16 +621,14 @@ var Tabs = Module("tabs", {
         commands.add(["keepa[lt]"],
             "Execute a command without changing the current alternate buffer",
             function (args) {
-                let alternate = tabs.alternate;
-
                 try {
                     dactyl.execute(args[0], null, true);
                 }
                 finally {
-                    tabs.updateSelectionHistory([tabs.getTab(), alternate]);
+                    tabs.updateSelectionHistory([tabs.getTab(), tabs.alternate]);
                 }
             }, {
-                argCount: "+",
+                argCount: "1",
                 completer: function (context) completion.ex(context),
                 literal: 0,
                 subCommand: 0
@@ -644,7 +642,7 @@ var Tabs = Module("tabs", {
                     dactyl.execute(args[0], null, true);
                 });
             }, {
-                argCount: "+",
+                argCount: "1",
                 completer: function (context) completion.ex(context),
                 literal: 0,
                 subCommand: 0

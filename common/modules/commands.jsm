@@ -1596,6 +1596,7 @@ var Commands = Module("commands", {
                 dactyl.echomsg(_("command.yank.yankedLine" + (lines == 1 ? "" : "s"), lines));
             },
             {
+                argCount: "1",
                 completer: function (context) modules.completion[/^:/.test(context.filter) ? "ex" : "javascript"](context),
                 literal: 0
             });

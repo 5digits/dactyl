@@ -248,7 +248,7 @@ var Config = Module("config", ConfigBase, {
                 });
             },
             {
-                argCount: "+",
+                argCount: "1",
                 completer: function (context) completion.ex(context),
                 literal: 0,
                 subCommand: 0

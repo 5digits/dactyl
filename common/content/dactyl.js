@@ -1886,7 +1886,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 util.rehash(args);
             },
             {
-                argCount: "0",
+                argCount: "0", // FIXME
                 options: [
                     {
                         names: ["+u"],
@@ -2024,7 +2024,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     dactyl.echoerr(e);
                 }
             }, {
-                argCount: "+",
+                argCount: "1",
                 bang: true,
                 completer: function (context) {
                     if (/^:/.test(context.filter))
@@ -2055,7 +2055,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     vbs.setFrom = setFrom;
                 }
             }, {
-                argCount: "+",
+                argCount: "1",
                 completer: function (context) completion.ex(context),
                 count: true,
                 literal: 0,

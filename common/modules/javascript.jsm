@@ -842,6 +842,7 @@ var JavaScript = Module("javascript", {
                            .open();
                 }
             }, {
+                argCount: "?",
                 bang: true,
                 completer: function (context) modules.completion.javascript(context),
                 hereDoc: true,
