@@ -673,7 +673,6 @@ var Commands = Module("commands", {
                     template.map(hives, function ([hive, cmds]) let (i = 0)
                         <tr style="height: .5ex;"/> +
                         template.map(cmds, function (cmd)
-                            template.map(cmd.names, function (name)
                             <tr>
                                 <td highlight="Title">{!i++ ? hive.name : ""}</td>
                                 <td>{cmd.bang ? "!" : " "}</td>
@@ -682,7 +681,7 @@ var Commands = Module("commands", {
                                 <td>{cmd.count ? "0c" : ""}</td>
                                 <td>{completerToString(cmd.completer)}</td>
                                 <td>{cmd.replacementText || "function () { ... }"}</td>
-                            </tr>)) +
+                            </tr>) +
                         <tr style="height: .5ex;"/>)
                 }
             </table>;
