@@ -824,7 +824,7 @@ Class.extend = function extend(subclass, superclass, overrides) {
  *
  * @param {function(string)} getter The function which returns the
  *      property's value.
- * @return {Class.Property}
+ * @returns {Class.Property}
  */
 Class.memoize = function memoize(getter, wait)
     Class.Property({

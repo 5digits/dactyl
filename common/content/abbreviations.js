@@ -8,6 +8,23 @@
 
 /** @scope modules */
 
+/**
+ * A user-defined input mode binding of a typed string to an automatically
+ * inserted expansion string.
+ *
+ * Abbreviations have a left-hand side (LHS) whose text is replaced by that of
+ * the right-hand side (RHS) when triggered by an input mode expansion key.
+ * E.g. an abbreviation with a LHS of "gop" and RHS of "Grand Old Party" will
+ * replace the former with the latter.
+ *
+ * @param {Mode[]} modes The modes in which this abbreviation is active.
+ * @param {string} lhs The left hand side of the abbreviation; the text to
+ *     be replaced.
+ * @param {string|function(nsIEditor):string} rhs The right hand side of
+ *     the abbreviation; the replacement text. This may either be a string
+ *     literal or a function that will be passed the appropriate nsIEditor.
+ * @private
+ */
 var Abbreviation = Class("Abbreviation", {
     init: function (modes, lhs, rhs) {
         this.modes = modes.sort();
@@ -15,20 +32,61 @@ var Abbreviation = Class("Abbreviation", {
         this.rhs = rhs;
     },
 
+    /**
+     * Returns true if this abbreviation's LHS and RHS are equal to those in
+     * *other*.
+     *
+     * @param {Abbreviation} other The abbreviation to test.
+     * @returns {boolean} The result of the comparison.
+     */
     equals: function (other) this.lhs == other.lhs && this.rhs == other.rhs,
 
+    /**
+     * Returns the abbreviation's expansion text.
+     *
+     * @param {nsIEditor} editor The editor in which abbreviation expansion is
+     *     occurring.
+     * @returns {string}
+     */
     expand: function (editor) String(callable(this.rhs) ? this.rhs(editor) : this.rhs),
 
+    /**
+     * Returns true if this abbreviation is defined for all *modes*.
+     *
+     * @param {Mode[]} modes The modes to test.
+     * @returns {boolean} The result of the comparison.
+     */
     modesEqual: function (modes) array.equals(this.modes, modes),
 
+    /**
+     * Returns true if this abbreviation is defined for *mode*.
+     *
+     * @param {Mode} mode The mode to test.
+     * @returns {boolean} The result of the comparison.
+     */
     inMode: function (mode) this.modes.some(function (_mode) _mode == mode),
 
+    /**
+     * Returns true if this abbreviation is defined in any of *modes*.
+     *
+     * @param {Modes[]} modes The modes to test.
+     * @returns {boolean} The result of the comparison.
+     */
     inModes: function (modes) modes.some(function (mode) this.inMode(mode), this),
 
+    /**
+     * Remove *mode* from the list of supported modes for this abbreviation.
+     *
+     * @param {Mode} mode The mode to remove.
+     */
     removeMode: function (mode) {
         this.modes = this.modes.filter(function (m) m != mode).sort();
     },
 
+    /**
+     * @property {string} The mode display characters associated with the
+     *     supported mode combination.
+     */
     get modeChar() Abbreviation.modeChar(this.modes)
 }, {
     modeChar: function (_modes) {
@@ -45,6 +103,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
         this._store = {};
     },
 
+    /** @property {boolean} True if there are no abbreviations */
     get empty() !values(this._store).nth(util.identity, 0),
 
     /**
@@ -68,6 +127,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      *
      * @param {Mode} mode The mode of the abbreviation.
      * @param {string} lhs The LHS of the abbreviation.
+     * @returns {Abbreviation} The matching abbreviation.
      */
     get: function (mode, lhs) {
         let abbrevs = this._store[mode];
@@ -245,7 +305,6 @@ var Abbreviations = Module("abbreviations", {
             context.completions = group.merged.filter(fn);
         };
     },
-
     commands: function () {
         function addAbbreviationCommands(modes, ch, modeDescription) {
             modes.sort();

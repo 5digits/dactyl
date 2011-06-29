@@ -35,7 +35,7 @@ var QuickMarks = Module("quickmarks", {
      * Returns a list of QuickMarks associates with the given URL.
      *
      * @param {string} url The url to find QuickMarks for.
-     * @return {[string]}
+     * @returns {[string]}
      */
     find: function find(url) {
         let res = [];
