@@ -1102,7 +1102,7 @@ var Buffer = Module("buffer", {
         this.setZoom(Math.round(values[i] * 100), fullZoom);
     },
 
-    getAllFrames: deprecated("buffer.allFrames", function getAllFrames() buffer.getAllFrames.apply(buffer, arguments)),
+    getAllFrames: deprecated("buffer.allFrames", "allFrames"),
     scrollTop: deprecated("buffer.scrollToPercent", function scrollTop() buffer.scrollToPercent(null, 0)),
     scrollBottom: deprecated("buffer.scrollToPercent", function scrollBottom() buffer.scrollToPercent(null, 100)),
     scrollStart: deprecated("buffer.scrollToPercent", function scrollStart() buffer.scrollToPercent(0, null)),
