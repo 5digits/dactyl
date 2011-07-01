@@ -1333,20 +1333,19 @@ var Events = Module("events", {
 
                     let ignore = false;
 
-                    if (modes.main == modes.PASS_THROUGH)
+                    if (mode.main == modes.PASS_THROUGH)
                         ignore = !Events.isEscape(key) && key != "<C-v>";
-                    else if (modes.main == modes.QUOTE) {
+                    else if (mode.main == modes.QUOTE) {
                         if (modes.getStack(1).main == modes.PASS_THROUGH) {
-                            mode.params.mainMode = modes.getStack(2).main;
+                            mode = Modes.StackElement(modes.getStack(2).main);
                             ignore = Events.isEscape(key);
                         }
                         else if (events.shouldPass(event))
-                            mode.params.mainMode = modes.getStack(1).main;
+                            mode = Modes.StackElement(modes.getStack(1).main);
                         else
                             ignore = true;
 
-                        if (ignore)
-                            modes.pop();
+                        modes.pop();
                     }
                     else if (!event.isMacro && !event.noremap && events.shouldPass(event))
                         ignore = true;
@@ -1652,7 +1651,7 @@ var Events = Module("events", {
             ["<C-z>", "<pass-all-keys>"], "Temporarily ignore all " + config.appName + " key bindings",
             function () { modes.push(modes.PASS_THROUGH); });
 
-        mappings.add([modes.MAIN],
+        mappings.add([modes.MAIN, modes.PASS_THROUGH, modes.QUOTE],
             ["<C-v>", "<pass-next-key>"], "Pass through next key",
             function () {
                 if (modes.main == modes.QUOTE)
