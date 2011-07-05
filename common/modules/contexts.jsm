@@ -570,12 +570,21 @@ var Contexts = Module("contexts", {
         commands.add(["delg[roup]"],
             "Delete a group",
             function (args) {
-                util.assert(contexts.getGroup(args[0]), _("group.noSuch", args[0]));
-                contexts.removeGroup(args[0]);
+                util.assert(args.bang ^ !!args[0], _("error.argumentOrBang"));
+
+                if (args.bang)
+                    contexts.groupList = contexts.groupList.filter(function (g) g.builtin);
+                else {
+                    util.assert(contexts.getGroup(args[0]), _("group.noSuch", args[0]));
+                    contexts.removeGroup(args[0]);
+                }
             },
             {
-                argCount: "1",
+                argCount: "?",
+                bang: true,
                 completer: function (context, args) {
+                    if (args.bang)
+                        return;
                     modules.completion.group(context);
                     context.filters.push(function ({ item }) !item.builtin);
                 }

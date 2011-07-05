@@ -189,10 +189,13 @@
 </item>
 
 <item>
+    <tags>:delgr :delgroup</tags>
     <spec>:delgr<oa>oup</oa> <a>group</a></spec>
+    <spec>:delgr<oa>oup</oa>!</spec>
     <description>
         <p>
-            Delete the specified <a>group</a>.
+            Delete the specified <a>group</a>. With <oa>!</oa> delete all
+            user groups.
         </p>
     </description>
 </item>
