@@ -1044,7 +1044,7 @@ var Completion = Module("completion", {
         };
 
         options.add(["altwildmode", "awim"],
-            "Define the behavior of the <A-Tab> key in command-line completion",
+            "Define the behavior of the c_<A-Tab> key in command-line completion",
             "stringlist", "list:full",
             wildmode);
 
@@ -1073,7 +1073,7 @@ var Completion = Module("completion", {
             });
 
         options.add(["wildmode", "wim"],
-            "Define the behavior of the <Tab> key in command-line completion",
+            "Define the behavior of the c_<Tab> key in command-line completion",
             "stringlist", "list:full",
             wildmode);
 

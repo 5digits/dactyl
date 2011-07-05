@@ -280,7 +280,7 @@ var RangeFinder = Module("rangefinder", {
             });
 
         options.add(["incfind", "if"],
-            "Find a pattern incrementally as it is typed rather than awaiting <Return>",
+            "Find a pattern incrementally as it is typed rather than awaiting c_<Return>",
             "boolean", true);
     }
 });

@@ -1240,7 +1240,7 @@ var Hints = Module("hints", {
             });
 
         options.add(["hinttags", "ht"],
-            "XPath string of hintable elements activated by 'f' and 'F'",
+            "XPath or CSS selector strings of hintable elements for hint mode",
             "stringlist", "input:not([type=hidden]),a[href],area,iframe,textarea,button,select," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",
@@ -1273,9 +1273,7 @@ var Hints = Module("hints", {
             { validator: function (value) value >= 0 });
 
         options.add(["followhints", "fh"],
-            // FIXME: this description isn't very clear but I can't think of a
-            // better one right now.
-            "Change the behavior of <Return> in hint mode",
+            "Define the conditions under which selected hints are followed",
             "number", 0,
             {
                 values: {
