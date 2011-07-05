@@ -142,7 +142,7 @@ var Command = Class("Command", {
 
     get helpTag() ":" + this.name,
 
-    get lastCommand() this._lastCommand || commandline.command,
+    get lastCommand() this._lastCommand || this.modules.commandline.command,
     set lastCommand(val) { this._lastCommand = val; },
 
     /**
