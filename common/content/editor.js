@@ -398,9 +398,9 @@ var Editor = Module("editor", {
             elem = dactyl.focusedElement || document.commandDispatcher.focusedWindow;
         dactyl.assert(elem);
 
-        if (elem instanceof Element)
-            return elem.QueryInterface(Ci.nsIDOMNSEditableElement).editor;
         try {
+            if (elem instanceof Element)
+                return elem.QueryInterface(Ci.nsIDOMNSEditableElement).editor;
             return elem.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
                        .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
                        .getEditorForWindow(elem);
