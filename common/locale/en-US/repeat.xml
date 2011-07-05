@@ -188,6 +188,14 @@
     </description>
 </item>
 
+<item>
+    <spec>:delgr<oa>oup</oa> <a>group</a></spec>
+    <description>
+        <p>
+            Delete the specified <a>group</a>.
+        </p>
+    </description>
+</item>
 
 <h2 tag="site-filter site-filters">Site Filters</h2>
 
