@@ -474,21 +474,13 @@ var tests = {
         completions: [""],
         cleanup: ["silent !rm some-nonexistent-rc.penta"]
     },
-    mksyntax: {
-        noOutput: [
-            "some-nonexistent-pentadactyl-dir/",
-            "! some-nonexistent-pentadactyl-dir/",
-            "some-nonexistent-pentadactyl-dir/foo.vim",
-            "! some-nonexistent-pentadactyl-dir/foo.vim",
-        ],
+    mkvimruntime: {
         error: [
-            "some-nonexistent-pentadactyl-dir/",
-            "some-nonexistent-pentadactyl-dir/foo.vim"
+            "some-nonexistent-pentadactyl-dir/"
         ],
         completions: [
             ["", hasItems]
-        ],
-        cleanup: ["silent !rm -r some-nonexistent-pentadactyl-dir/"]
+        ]
     },
     get mlistkeys() this.listcommands,
     mmap: {},

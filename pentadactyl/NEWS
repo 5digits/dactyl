@@ -1,4 +1,10 @@
-1.0rc1:
+1.1:
+    • Vim runtime files:
+      - renamed :mksyntax to :mkvimruntime which now generates
+        all Vim related files.
+      - Vimball packages are no longer available.
+
+1.0:
     • Extensive Firefox 4 support, including:
       - Fully restartless. Can now be installed, uninstalled,
         enabled, disabled, and upgraded without restarting Firefox.

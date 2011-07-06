@@ -73,15 +73,19 @@
 </item>
 
 <item>
-    <tags>:mks :mksyntax</tags>
-    <spec>:mks<oa>yntax</oa><oa>!</oa> <oa>path</oa></spec>
+    <tags>:mkv :mkvimruntime</tags>
+    <spec>:mkv<oa>imruntime</oa><oa>!</oa> <oa>dir</oa></spec>
     <description>
         <p>
-            Generate a Vim syntax file. If <oa>path</oa> is not given, the local
-            Vim runtime path is guessed. If <oa>path</oa> is a directory, the
-            file <str delim="">&dactyl.name;.vim</str> in that directory is
-            used. An existing file will never be overwritten unless
-            <oa>bang</oa> is given.
+            Creates and installs Vim ftdetect, ftplugin and syntax files. If
+            <oa>dir</oa> is not given, the local Vim runtime path is guessed.
+            An existing file will never be overwritten unless <oa>!</oa> is
+            given.
+        </p>
+        <p>
+            See <em>:help 'runtimepath'</em> and <em>:help after-directory</em>
+            in Vim for an explanation of how best to manage personal changes to
+            these files.
         </p>
     </description>
 </item>

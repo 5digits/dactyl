@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2008 by Martin Stubenschrott <stubenschrott@vimperator.org>
-// Copyright (c) 2007-2011 by Doug Kearns <dougkearns@gmail.com>
-// Copyright (c) 2008-2011 by Kris Maglione <maglione.k@gmail.com>
+// Copyright (c) 2007-2012 by Doug Kearns <dougkearns@gmail.com>
+// Copyright (c) 2008-2012 by Kris Maglione <maglione.k@gmail.com>
 // Some code based on Venkman
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -638,6 +638,7 @@ var IO = Module("io", {
 
                 try {
                     file.write(lines.join("\n"));
+                    dactyl.echomsg(_("io.writing", file.path.quote()), 2);
                 }
                 catch (e) {
                     dactyl.echoerr(_("io.notWriteable", file.path.quote()));
@@ -649,24 +650,66 @@ var IO = Module("io", {
                 completer: function (context) completion.file(context, true)
             });
 
-        commands.add(["mks[yntax]"],
-            "Generate a Vim syntax file",
+        commands.add(["mkv[imruntime]"],
+            "Create and install Vim runtime files for " + config.appName,
             function (args) {
-                let runtime = config.OS.isWindows ? "~/vimfiles/" : "~/.vim/";
-                let file = io.File(runtime + "syntax/" + config.name + ".vim");
-                if (args.length)
-                    file = io.File(args[0]);
+                dactyl.assert(args.length <= 1, _("io.oneFileAllowed"));
 
-                if (file.exists() && file.isDirectory() || args[0] && /\/$/.test(args[0]))
+                if (args.length) {
+                    var rtDir = io.File(args[0]);
+                    dactyl.assert(rtDir.exists(), _("io.noSuchDir", rtDir.path.quote()));
+                }
+                else
+                    rtDir = io.File(config.OS.isWindows ? "~/vimfiles/" : "~/.vim/");
+
+                dactyl.assert(!rtDir.exists() || rtDir.isDirectory(), _("io.eNotDir", rtDir.path.quote()));
+
+                let rtItems = { ftdetect: {}, ftplugin: {}, syntax: {} };
+
+                // require bang if any of the paths exist
+                for (let [type, item] in iter(rtItems)) {
+                    let file = io.File(rtDir);
+                    file.append(type);
                     file.append(config.name + ".vim");
-                dactyl.assert(!file.exists() || args.bang, _("io.exists"));
+                    dactyl.assert(!file.exists() || args.bang, _("io.exists", file.path.quote()));
+                    item.file = file;
+                }
 
-                let template = util.compileMacro(<![CDATA[
-" Vim syntax file
-" Language:         Pentadactyl configuration file
-" Maintainer:       Doug Kearns <dougkearns@gmail.com>
+                rtItems.ftdetect.template = <![CDATA[au BufNewFile,BufRead *<name>rc*,*.<fileext> set filetype=<name>]]>;
+                rtItems.ftplugin.template = // {{{
+<![CDATA[" Vim filetype plugin file
+" Language:         <appname> configuration file
+" Maintainer:       <maintainer>
+" Version:          <version>
 
-" TODO: make this <name> specific - shared dactyl config?
+if exists("b:did_ftplugin")
+  finish
+endif
+let b:did_ftplugin = 1
+
+let s:cpo_save = &cpo
+set cpo&vim
+
+let b:undo_ftplugin = "setl com< cms< fo< ofu< | unlet! b:browsefilter"
+
+setlocal comments=:\"
+setlocal commentstring=\"%s
+setlocal formatoptions-=t formatoptions+=croql
+setlocal omnifunc=syntaxcomplete#Complete
+
+if has("gui_win32") && !exists("b:browsefilter")
+    let b:browsefilter = "<appname> Config Files (*.<fileext>)\t*.<fileext>\n" .
+        \ "All Files (*.*)\t*.*\n"
+endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
+]]>;//}}}
+                rtItems.syntax.template = // {{{
+<![CDATA[" Vim syntax file
+" Language:         <appname> configuration file
+" Maintainer:       <maintainer>
+" Version:          <version>
 
 if exists("b:current_syntax")
   finish
@@ -744,10 +787,30 @@ let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " vim: tw=130 et ts=4 sw=4:
-]]>, true);
+]]>;//}}}
+
+                const { options } = modules;
+
+                let params = {//{{{
+                    version: config.version,
+                    name: config.name,
+                    appname: config.appName,
+                    fileext: config.fileExtension,
+                    maintainer: "Doug Kearns <dougkearns@gmail.com>",
+                    autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
+                                       keys(config.autocommands)),
+                    commands: wrap("syn keyword " + config.name + "Command ",
+                                  array(c.specs for (c in commands.iterator())).flatten()),
+                    options: wrap("syn keyword " + config.name + "Option ",
+                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
+                    toggleoptions: wrap("let s:toggleOptions = [",
+                                        array(o.realNames for (o in options) if (o.type == "boolean"))
+                                            .flatten().map(String.quote),
+                                        ", ") + "]"
+                };//}}}
 
                 const WIDTH = 80;
-                function wrap(prefix, items, sep) {
+                function wrap(prefix, items, sep) {//{{{
                     sep = sep || " ";
                     let width = 0;
                     let lines = [];
@@ -764,26 +827,22 @@ unlet s:cpo_save
                     }
                     lines.last.pop();
                     return lines.map(function (l) l.join("")).join("\n").replace(/\s+\n/gm, "\n");
-                }
+                }//}}}
 
-                const { commands, options } = modules;
-                file.write(template({
-                    name: config.name,
-                    autocommands: wrap("syn keyword " + config.name + "AutoEvent ",
-                                       keys(config.autocommands)),
-                    commands: wrap("syn keyword " + config.name + "Command ",
-                                  array(c.specs for (c in commands.iterator())).flatten()),
-                    options: wrap("syn keyword " + config.name + "Option ",
-                                  array(o.names for (o in options) if (o.type != "boolean")).flatten()),
-                    toggleoptions: wrap("let s:toggleOptions = [",
-                                        array(o.realNames for (o in options) if (o.type == "boolean"))
-                                            .flatten().map(String.quote),
-                                        ", ") + "]"
-                }));
+                for (let { file, template } in values(rtItems)) {
+                    try {
+                        file.write(util.compileMacro(template, true)(params));
+                        dactyl.echomsg(_("io.writing", file.path.quote()), 2);
+                    }
+                    catch (e) {
+                        dactyl.echoerr(_("io.notWriteable", file.path.quote()));
+                        dactyl.log(_("error.notWriteable", file.path, e.message));
+                    }
+                }
             }, {
                 argCount: "?",
                 bang: true,
-                completer: function (context) completion.file(context, true),
+                completer: function (context) completion.directory(context, true),
                 literal: 1
             });
 
