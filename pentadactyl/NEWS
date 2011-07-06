@@ -115,7 +115,7 @@
       - Added 's' and 'e' flags to :pageinfo command. [b7]
       - Added :pintab and :unpintab commands. [b7]
       - Extension manipulation commands, including :extenable, :extdisable,
-        and :exttoggle, now accept a -types argument.
+        and :exttoggle, now accept a -types argument. [b7]
       - :tabmove now moves to the position of tab N, not after it.
         Without arguments it no longer moves the tab to the end of
         the list. [b7]

@@ -482,7 +482,7 @@ var Buffer = Module("buffer", {
     },
 
     /**
-     * Find the counth last link on a page matching one of the given
+     * Find the *count*th last link on a page matching one of the given
      * regular expressions, or with a @rel or @rev attribute matching
      * the given relation. Each frame is searched beginning with the
      * last link and progressing to the first, once checking for
@@ -927,7 +927,7 @@ var Buffer = Module("buffer", {
      *          url: The URL to view.
      *          doc: The document to view.
      *          line: The line to select.
-     *          column: the column to select.
+     *          column: The column to select.
      *
      *      If no URL is provided, the current document is used.
      *  @default The current buffer.

@@ -103,7 +103,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
         this._store = {};
     },
 
-    /** @property {boolean} True if there are no abbreviations */
+    /** @property {boolean} True if there are no abbreviations. */
     get empty() !values(this._store).nth(util.identity, 0),
 
     /**

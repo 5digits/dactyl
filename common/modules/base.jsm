@@ -69,7 +69,7 @@ if (!Object.defineProperties)
 if (!Object.freeze)
     Object.freeze = function freeze(obj) {};
 if (!Object.getPropertyDescriptor)
-    Object.getPropertyDescriptor = function getOwnPropertyDescriptor(obj, prop) {
+    Object.getPropertyDescriptor = function getPropertyDescriptor(obj, prop) {
         try {
             let desc = {
                 configurable: true,
