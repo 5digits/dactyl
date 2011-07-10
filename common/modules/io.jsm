@@ -909,7 +909,7 @@ unlet s:cpo_save
 
             if (modules.options["wildignore"]) {
                 let wig = modules.options.get("wildignore");
-                context.filters.push(function (item) item.isdir || !wig.getKey(this.name));
+                context.filters.push(function (item) item.isdir || !wig.getKey(item.path));
             }
 
             // context.background = true;
