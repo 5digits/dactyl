@@ -45,7 +45,6 @@ function toolbarState(selector, state)
 
 var tests = {
     "!": {
-        error: [""],
         multiOutput: ["echo foo"]
     },
     get Clistkeys() this.listcommands,

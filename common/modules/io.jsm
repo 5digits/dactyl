@@ -841,7 +841,7 @@ unlet s:cpo_save
 
                 modules.autocommands.trigger("ShellCmdPost", {});
             }, {
-                argCount: "1",
+                argCount: "?",
                 bang: true,
                 // This is abominably slow.
                 // completer: function (context) completion.shellCommand(context),
