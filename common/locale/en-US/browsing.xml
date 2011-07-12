@@ -17,7 +17,7 @@
 &dactyl.appName; overrides nearly all &dactyl.host; keys in order to
 make browsing more pleasant for Vim users. On the occasions when you
 want to bypass &dactyl.appName;'s key handling and pass keys directly to
-&dactyl.host; or to a web page, you have two options:
+&dactyl.host; or to a web page, you have several options:
 
 <item>
     <tags><![CDATA[<pass-next-key-builtin> <A-b>]]></tags>
@@ -52,6 +52,11 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
         </p>
     </description>
 </item>
+
+<p>
+    See also <o>passkeys</o> and <o>passunknown</o> for ways to permanently pass
+    all or particular keys under certain conditions.
+</p>
 
 <h2 tag="opening">Opening web pages</h2>
 
