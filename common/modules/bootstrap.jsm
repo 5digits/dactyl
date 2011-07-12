@@ -6,6 +6,8 @@
 
 try {
 
+let { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
+
 var EXPORTED_SYMBOLS = ["JSMLoader"];
 
 var BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
@@ -22,15 +24,27 @@ if (JSMLoader && JSMLoader.bump === 4)
 else
     JSMLoader = {
         bump: 4,
-        builtin: Components.utils.Sandbox(this),
+
+        builtin: Cu.Sandbox(this),
+
         canonical: {},
+
         factories: [],
+
         global: this,
+
         globals: JSMLoader ? JSMLoader.globals : {},
-        io: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
-        loader: Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader),
-        manager: Components.manager.QueryInterface(Components.interfaces.nsIComponentRegistrar),
+
+        io: Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService),
+
+        loader: Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader),
+
+        manager: Components.manager.QueryInterface(Ci.nsIComponentRegistrar),
+
+        modules: JSMLoader ? JSMLoader.modules : {},
+
         stale: JSMLoader ? JSMLoader.stale : {},
+
         suffix: "",
 
         times: {
@@ -67,7 +81,7 @@ else
                 url = "resource://dactyl" + this.suffix + "/" + url;
 
             let chan = this.io.newChannel(url, null, null);
-            chan.cancel(Components.results.NS_BINDING_ABORTED);
+            chan.cancel(Cr.NS_BINDING_ABORTED);
             return chan.name;
         },
 
@@ -91,7 +105,8 @@ else
 
             try {
                 let now = Date.now();
-                let global = Components.utils.import(url, target);
+                this.modules[url] = true;
+                let global = Cu.import(url, target);
 
                 if (!(name in this.globals))
                     this.times.add("require", name, Date.now() - now);
@@ -118,25 +133,37 @@ else
         purge: function purge() {
             dump("dactyl: JSMLoader: purge\n");
 
-            for (let [url, global] in Iterator(this.globals)) {
-                if (url === "bootstrap.jsm" || url === "resource://dactyl/bootstrap.jsm")
-                    continue;
-
-                let target = this.getTarget(url);
-                this.stale[url] = target;
-                this.stale[target] = target;
-
-                for each (let prop in Object.getOwnPropertyNames(global))
+            if (Cu.unload) {
+                Object.keys(this.modules).reverse().forEach(function (url) {
                     try {
-                        if (!(prop in this.builtin) &&
-                            ["JSMLoader", "set", "EXPORTED_SYMBOLS"].indexOf(prop) < 0 &&
-                            !global.__lookupGetter__(prop))
-                            global[prop] = undefined;
+                        Cu.unload(url);
                     }
                     catch (e) {
-                        dump("Deleting property " + prop + " on " + url + ":\n    " + e + "\n");
-                        Components.utils.reportError(e);
+                        Cu.reportError(e);
                     }
+                });
+            }
+            else {
+                for (let [url, global] in Iterator(this.globals)) {
+                    if (url === "bootstrap.jsm" || url === "resource://dactyl/bootstrap.jsm")
+                        continue;
+
+                    let target = this.getTarget(url);
+                    this.stale[url] = target;
+                    this.stale[target] = target;
+
+                    for each (let prop in Object.getOwnPropertyNames(global))
+                        try {
+                            if (!(prop in this.builtin) &&
+                                ["JSMLoader", "set", "EXPORTED_SYMBOLS"].indexOf(prop) < 0 &&
+                                !global.__lookupGetter__(prop))
+                                global[prop] = undefined;
+                        }
+                        catch (e) {
+                            dump("Deleting property " + prop + " on " + url + ":\n    " + e + "\n");
+                            Cu.reportError(e);
+                        }
+                }
             }
         },
 
@@ -149,6 +176,6 @@ else
         }
     };
 
-}catch(e){ dump(e + "\n" + (e.stack || Error().stack)); Components.utils.reportError(e) }
+}catch(e){ dump(e + "\n" + (e.stack || Error().stack)); Cu.reportError(e) }
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:

@@ -1623,6 +1623,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     rehash: function (args) {
         JSMLoader.commandlineArgs = args;
         this.timeout(function () {
+            services.observer.notifyObservers(null, "startupcache-invalidate", "");
             this.rehashing = true;
             let addon = config.addon;
             addon.userDisabled = true;

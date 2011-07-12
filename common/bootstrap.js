@@ -221,7 +221,7 @@ function init() {
             createInstance: function () this.instance
         });
 
-    Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = JSMLoader;
+    Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = !Cu.unload && JSMLoader;
 
     for each (let component in components)
         component.register();
