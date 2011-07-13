@@ -1613,8 +1613,9 @@
     <default>&option.wildignore.default;</default>
     <description>
         <p>
-            List of file patterns to ignore when completing files. For example,
-            the following will ignore object files and Vim swap files:
+            List of path name patterns to ignore when completing files and
+            directories. For example, the following will ignore object files
+            and Vim swap files:
         </p>
 
         <set opt="wildignore"><str delim="'">\.o$</str>,<str delim="'">^\..*\.s[a-z]{2}$</str></set>

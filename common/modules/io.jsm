@@ -907,10 +907,8 @@ unlet s:cpo_save
             };
             context.compare = function (a, b) b.isdir - a.isdir || String.localeCompare(a.text, b.text);
 
-            if (modules.options["wildignore"]) {
-                let wig = modules.options.get("wildignore");
-                context.filters.push(function (item) item.isdir || !wig.getKey(item.path));
-            }
+            if (modules.options["wildignore"])
+                context.filters.push(function (item) !modules.options.get("wildignore").getKey(item.path));
 
             // context.background = true;
             context.key = dir;
@@ -1077,7 +1075,7 @@ unlet s:cpo_save
         options["shellcmdflag"];
 
         options.add(["wildignore", "wig"],
-            "List of file patterns to ignore when completing file names",
+            "List of path name patterns to ignore when completing files and directories",
             "regexplist", "");
     }
 });
