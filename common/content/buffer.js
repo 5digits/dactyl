@@ -1221,7 +1221,7 @@ var Buffer = Module("buffer", {
         if (top != null)
             elem.scrollTop = top;
 
-        if (util.haveGecko("4.0") && !util.haveGecko("8.0"))
+        if (util.haveGecko("2.0") && !util.haveGecko("7.*"))
             elem.ownerDocument.defaultView
                 .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                 .redraw();
