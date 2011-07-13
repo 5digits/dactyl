@@ -1220,6 +1220,11 @@ var Buffer = Module("buffer", {
             elem.scrollLeft = left;
         if (top != null)
             elem.scrollTop = top;
+
+        if (util.haveGecko("4.0") && !util.haveGecko("8.0"))
+            elem.ownerDocument.defaultView
+                .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                .redraw();
     },
 
     /**
