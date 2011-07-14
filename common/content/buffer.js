@@ -1133,7 +1133,7 @@ var Buffer = Module("buffer", {
             return "";
 
         let range = selection.getRangeAt(0).cloneRange();
-        if (range.collapsed) {
+        if (range.collapsed && range.startContainer instanceof Text) {
             let re = options.get("iskeyword").regexp;
             Editor.extendRange(range, true,  re, true);
             Editor.extendRange(range, false, re, true);

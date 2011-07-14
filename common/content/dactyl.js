@@ -361,7 +361,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     echoerr: function echoerr(str, flags) {
         flags |= commandline.APPEND_TO_MESSAGES;
 
-        if (isinstance(str, ["Error", "Exception"]) || isinstance(str, ["XPCWrappedNative_NoHelper"]) && /^\[Exception/.test(str))
+        if (isinstance(str, ["DOMException", "Error", "Exception"]) || isinstance(str, ["XPCWrappedNative_NoHelper"]) && /^\[Exception/.test(str))
             dactyl.reportError(str);
         if (isObject(str) && "echoerr" in str)
             str = str.echoerr;
