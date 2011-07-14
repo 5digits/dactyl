@@ -282,7 +282,11 @@
 
 <item>
     <tags>:sty :style</tags>
-    <spec>:sty<oa>le</oa> <oa>-name=<a>name</a></oa> <oa>-append</oa> <a>filter</a> <oa>css</oa></spec>
+    <strut/>
+    <spec>:sty<oa>le</oa> <oa>-name=<a>name</a></oa> <oa>-group=<a>name</a></oa> <oa>-agent</oa> <a>filter</a> <a>css</a></spec>
+    <spec>:sty<oa>le</oa> -name=<a>name</a> -append <a>filter</a> <a>css</a></spec>
+    <spec>:sty<oa>le</oa> <oa>-name=<a>name</a></oa> <oa>-group=<a>name</a></oa> <oa>filter</oa></spec>
+    <strut/>
     <description>
         <p>
             Add CSS styles to the browser or to web pages. <a>filter</a> is a
@@ -295,8 +299,9 @@
         <p>The following options are available:</p>
         <dl>
             <dt>-append</dt>
-            <dd>If provided along with <em>-name</em>, <oa>css</oa> and
-                <a>filter</a> are appended to its current value. (short name <em>-a</em>)</dd>
+            <dd>If provided along with <em>-name</em>, <a>css</a> and
+                <a>filter</a> are appended to its current value. (short name
+                <em>-a</em>)</dd>
 
             <dt>-agent</dt>
             <dd>If provided, the style is installed as an Agent sheet, which

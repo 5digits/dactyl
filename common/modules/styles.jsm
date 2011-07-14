@@ -299,13 +299,15 @@ var Styles = Module("Styles", {
     systemNames: Class.Property({ get: deprecated("Styles#system.names", function systemNames() this.system.names) }),
     sites: Class.Property({ get: deprecated("Styles#user.sites", function sites() this.user.sites) }),
 
-    list: function list(content, filter, name, hives) {
+    list: function list(content, sites, name, hives) {
         const { commandline, dactyl } = this.modules;
 
         hives = hives || styles.hives.filter(function (h) h.modifiable && h.sheets.length);
 
         function sheets(group)
             group.sheets.slice()
+                 .filter(function (sheet) (!name || sheet.name === name) &&
+                                          (!sites || sites.every(function (s) sheet.sites.indexOf(s) >= 0)))
                  .sort(function (a, b) a.name && b.name ? String.localeCompare(a.name, b.name)
                                                         : !!b.name - !!a.name || a.id - b.id);
 
@@ -560,7 +562,7 @@ var Styles = Module("Styles", {
                 let [filter, css] = args;
 
                 if (!css)
-                    styles.list(window.content, filter, args["-name"], args.explicitOpts["-group"] ? [args["-group"]] : null);
+                    styles.list(window.content, filter ? filter.split(",") : null, args["-name"], args.explicitOpts["-group"] ? [args["-group"]] : null);
                 else {
                     util.assert(args["-group"].modifiable && args["-group"].hive.modifiable,
                                 _("group.cantChangeBuiltin", _("style.styles")));
