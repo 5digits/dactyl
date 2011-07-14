@@ -1160,7 +1160,7 @@ var Options = Module("options", {
             if (context.filter.indexOf("=") == -1) {
                 if (false && prefix)
                     context.filters.push(function ({ item }) item.type == "boolean" || prefix == "inv" && isArray(item.values));
-                return completion.option(context, opt.scope, prefix);
+                return completion.option(context, opt.scope, opt.name == "inv" ? opt.name : prefix);
             }
 
             function error(length, message) {
