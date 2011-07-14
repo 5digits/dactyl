@@ -741,7 +741,7 @@ var Buffer = Module("buffer", {
      */
     findScrollable: function findScrollable(dir, horizontal) {
         function find(elem) {
-            while (!(elem instanceof Element) && elem.parentNode)
+            while (elem && !(elem instanceof Element) && elem.parentNode)
                 elem = elem.parentNode;
             for (; elem && elem.parentNode instanceof Element; elem = elem.parentNode)
                 if (Buffer.isScrollable(elem, dir, horizontal))
@@ -771,7 +771,7 @@ var Buffer = Module("buffer", {
                         doc.documentElement);
         }
         let doc = this.focusedFrame.document;
-        return elem || doc.body || doc.documentElement;
+        return dactyl.assert(elem || doc.body || doc.documentElement);
     },
 
     /**
