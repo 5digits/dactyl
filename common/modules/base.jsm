@@ -437,7 +437,7 @@ function set() {
 Object.keys(Set).forEach(function (meth) {
     set[meth] = function proxy() {
         deprecated.warn(proxy, "set." + meth, "Set." + meth);
-        return Set[meth].apply(this, arguments);
+        return Set[meth].apply(Set, arguments);
     };
 });
 
