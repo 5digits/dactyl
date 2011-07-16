@@ -120,7 +120,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             obj.observers = obj.observe;
 
         function register(meth) {
-            for (let target in set(["dactyl-cleanup-modules", "quit-application"].concat(Object.keys(obj.observers))))
+            for (let target in Set(["dactyl-cleanup-modules", "quit-application"].concat(Object.keys(obj.observers))))
                 try {
                     services.observer[meth](obj, target, true);
                 }
@@ -404,7 +404,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
             else {
                 let [, flags, name] = /^((?:[a-z]-)*)(.*)/.exec(macro);
-                flags = set(flags);
+                flags = Set(flags);
 
                 let quote = util.identity;
                 if (flags.q)
@@ -412,18 +412,18 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (flags.e)
                     quote = function quote(obj) "";
 
-                if (set.has(defaults, name))
+                if (Set.has(defaults, name))
                     stack.top.elements.push(quote(defaults[name]));
                 else {
                     if (idx) {
                         idx = Number(idx) - 1;
                         stack.top.elements.push(update(
-                            function (obj) obj[name] != null && idx in obj[name] ? quote(obj[name][idx]) : set.has(obj, name) ? "" : unknown(full),
+                            function (obj) obj[name] != null && idx in obj[name] ? quote(obj[name][idx]) : Set.has(obj, name) ? "" : unknown(full),
                             { test: function (obj) obj[name] != null && idx in obj[name] && obj[name][idx] !== false && (!flags.e || obj[name][idx] != "") }));
                     }
                     else {
                         stack.top.elements.push(update(
-                            function (obj) obj[name] != null ? quote(obj[name]) : set.has(obj, name) ? "" : unknown(full),
+                            function (obj) obj[name] != null ? quote(obj[name]) : Set.has(obj, name) ? "" : unknown(full),
                             { test: function (obj) obj[name] != null && obj[name] !== false && (!flags.e || obj[name] != "") }));
                     }
 
@@ -678,7 +678,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * The set of input element type attribute values that mark the element as
      * an editable field.
      */
-    editableInputs: set(["date", "datetime", "datetime-local", "email", "file",
+    editableInputs: Set(["date", "datetime", "datetime-local", "email", "file",
                          "month", "number", "password", "range", "search",
                          "tel", "text", "time", "url", "week"]),
 
@@ -1451,7 +1451,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             elems.push(encode(field.name, field.value));
 
         for (let [, elem] in iter(form.elements)) {
-            if (set.has(util.editableInputs, elem.type)
+            if (Set.has(util.editableInputs, elem.type)
                     || /^(?:hidden|textarea)$/.test(elem.type)
                     || elem.checked && /^(?:checkbox|radio)$/.test(elem.type))
                 elems.push(encode(elem.name, elem.value, elem === field));
@@ -1545,7 +1545,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         // Replace replacement <tokens>.
         if (tokens)
-            expr = String.replace(expr, /(\(?P)?<(\w+)>/g, function (m, n1, n2) !n1 && set.has(tokens, n2) ? tokens[n2].dactylSource || tokens[n2].source || tokens[n2] : m);
+            expr = String.replace(expr, /(\(?P)?<(\w+)>/g, function (m, n1, n2) !n1 && Set.has(tokens, n2) ? tokens[n2].dactylSource || tokens[n2].source || tokens[n2] : m);
 
         // Strip comments and white space.
         if (/x/.test(flags))
@@ -1962,7 +1962,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             catch (e) {}
             Array.forEach(frame.frames, rec);
         })(win);
-        return res.filter(function (h) !set.add(seen, h));
+        return res.filter(function (h) !Set.add(seen, h));
     },
 
     /**
@@ -1981,7 +1981,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             catch (e) {}
             Array.forEach(frame.frames, rec);
         })(win);
-        return res.filter(function (h) !set.add(seen, h.spec));
+        return res.filter(function (h) !Set.add(seen, h.spec));
     },
 
     /**

@@ -867,7 +867,7 @@ var Editor = Module("editor", {
                         args.push(obj["file"]);
                     return args;
                 },
-                has: function (key) set.has(util.compileMacro(this.value).seen, key),
+                has: function (key) Set.has(util.compileMacro(this.value).seen, key),
                 validator: function (value) {
                     this.format({}, value);
                     return Object.keys(util.compileMacro(value).seen).every(function (k) ["column", "file", "line"].indexOf(k) >= 0);

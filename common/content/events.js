@@ -340,7 +340,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
             [, , capture, allowUntrusted] = arguments;
         }
 
-        if (set.has(events, "input") && !set.has(events, "dactyl-input"))
+        if (Set.has(events, "input") && !Set.has(events, "dactyl-input"))
             events["dactyl-input"] = events.input;
 
         for (let [event, callback] in Iterator(events)) {
@@ -438,7 +438,7 @@ var Events = Module("events", {
             subtract: ["Minus", "Subtract"]
         };
 
-        this._pseudoKeys = set(["count", "leader", "nop", "pass"]);
+        this._pseudoKeys = Set(["count", "leader", "nop", "pass"]);
 
         this._key_key = {};
         this._code_key = {};
@@ -880,14 +880,14 @@ var Events = Module("events", {
             }
             else {
                 let [match, modifier, keyname] = evt_str.match(/^<((?:[*12CASM]-)*)(.+?)>$/i) || [false, '', ''];
-                modifier = set(modifier.toUpperCase());
+                modifier = Set(modifier.toUpperCase());
                 keyname = keyname.toLowerCase();
                 evt_obj.dactylKeyname = keyname;
                 if (/^u[0-9a-f]+$/.test(keyname))
                     keyname = String.fromCharCode(parseInt(keyname.substr(1), 16));
 
                 if (keyname && (unknownOk || keyname.length == 1 || /mouse$/.test(keyname) ||
-                                this._key_code[keyname] || set.has(this._pseudoKeys, keyname))) {
+                                this._key_code[keyname] || Set.has(this._pseudoKeys, keyname))) {
                     evt_obj.globKey  ="*" in modifier;
                     evt_obj.ctrlKey  ="C" in modifier;
                     evt_obj.altKey   ="A" in modifier;
@@ -902,7 +902,7 @@ var Events = Module("events", {
                         evt_obj.charCode = keyname.charCodeAt(0);
                         evt_obj._keyCode = this._key_code[keyname.toLowerCase()];
                     }
-                    else if (set.has(this._pseudoKeys, keyname)) {
+                    else if (Set.has(this._pseudoKeys, keyname)) {
                         evt_obj.dactylString = "<" + this._key_key[keyname] + ">";
                     }
                     else if (/mouse$/.test(keyname)) { // mouse events
@@ -1593,7 +1593,7 @@ var Events = Module("events", {
     },
 
     isInputElement: function isInputElement(elem) {
-        return elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type) ||
+        return elem instanceof HTMLInputElement && Set.has(util.editableInputs, elem.type) ||
                isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
                                  HTMLObjectElement, HTMLSelectElement,
                                  HTMLTextAreaElement,
@@ -1738,12 +1738,12 @@ var Events = Module("events", {
             "sitemap", "", {
                 flush: function flush() {
                     memoize(this, "filters", function () this.value.filter(function (f) f(buffer.documentURI)));
-                    memoize(this, "pass", function () set(array.flatten(this.filters.map(function (f) f.keys))));
+                    memoize(this, "pass", function () Set(array.flatten(this.filters.map(function (f) f.keys))));
                     memoize(this, "commandHive", function hive() Hive(this.filters, "command"));
                     memoize(this, "inputHive", function hive() Hive(this.filters, "input"));
                 },
 
-                has: function (key) set.has(this.pass, key) || set.has(this.commandHive.stack.mappings, key),
+                has: function (key) Set.has(this.pass, key) || Set.has(this.commandHive.stack.mappings, key),
 
                 get pass() (this.flush(), this.pass),
 

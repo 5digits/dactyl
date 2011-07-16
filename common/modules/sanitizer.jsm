@@ -245,7 +245,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             if (!("value" in prop) || !callable(prop.value) && !(k in item))
                 Object.defineProperty(item, k, prop);
 
-        let names = set([name].concat(params.contains || []).map(function (e) "clear-" + e));
+        let names = Set([name].concat(params.contains || []).map(function (e) "clear-" + e));
         if (params.action)
             storage.addObserver("sanitizer",
                 function (key, event, arg) {
@@ -595,7 +595,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                 get values() values(sanitizer.itemMap).toArray(),
                 has: modules.Option.has.toggleAll,
                 validator: function (values) values.length &&
-                    values.every(function (val) val === "all" || set.has(sanitizer.itemMap, val))
+                    values.every(function (val) val === "all" || Set.has(sanitizer.itemMap, val))
             });
 
         options.add(["sanitizeshutdown", "ss"],
@@ -613,10 +613,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         sanitizer.runAtShutdown = false;
                     else {
                         sanitizer.runAtShutdown = true;
-                        let have = set(value);
+                        let have = Set(value);
                         for (let item in values(sanitizer.itemMap))
                             prefs.set(item.shutdownPref,
-                                      Boolean(set.has(have, item.name) ^ set.has(have, "all")));
+                                      Boolean(Set.has(have, item.name) ^ Set.has(have, "all")));
                     }
                     return value;
                 }

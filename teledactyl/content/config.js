@@ -137,7 +137,7 @@ const Config = Module("config", ConfigBase, {
     },
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: Class.memoize(function () set(
+    features: Class.memoize(function () Set(
         this.isComposeWindow ? ["addressbook"]
                              : ["hints", "mail", "marks", "addressbook", "tabs"])),
 

@@ -218,7 +218,7 @@ defineModule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object", "Runnable",
-        "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
+        "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
         "array", "bind", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
         "deprecated", "endModule", "forEach", "isArray", "isGenerator", "isinstance", "isObject",
         "isString", "isSubclass", "iter", "iterAll", "iterOwnProperties", "keys", "memoize", "octal",
@@ -273,7 +273,7 @@ function properties(obj, prototypes, debugger_) {
     try {
         if ("dactylPropertyNames" in obj && !prototypes)
             for (let key in values(obj.dactylPropertyNames))
-                if (key in obj && !set.add(seen, key))
+                if (key in obj && !Set.add(seen, key))
                     yield key;
     }
     catch (e) {}
@@ -288,7 +288,7 @@ function properties(obj, prototypes, debugger_) {
             iter = (prop.name.stringValue for (prop in values(debuggerProperties(obj))));
 
         for (let key in iter)
-            if (!prototypes || !set.add(seen, key) && obj != orig)
+            if (!prototypes || !Set.add(seen, key) && obj != orig)
                 yield key;
     }
 }
@@ -322,14 +322,14 @@ function deprecated(alternative, fn) {
 }
 deprecated.warn = function warn(func, name, alternative, frame) {
     if (!func.seenCaller)
-        func.seenCaller = set([
+        func.seenCaller = Set([
             "resource://dactyl" + JSMLoader.suffix + "/javascript.jsm",
             "resource://dactyl" + JSMLoader.suffix + "/util.jsm"
         ]);
 
     frame = frame || Components.stack.caller.caller;
     let filename = util.fixURI(frame.filename || "unknown");
-    if (!set.add(func.seenCaller, filename))
+    if (!Set.add(func.seenCaller, filename))
         util.dactyl(func).warn([util.urlPath(filename), frame.lineNumber, " "].join(":")
                                    + require("messages")._("warn.deprecated", name, alternative));
 }
@@ -373,7 +373,7 @@ var iterAll = deprecated("iter", function iterAll() iter.apply(null, arguments))
  * @param {[string]} ary @optional
  * @returns {object}
  */
-function set(ary) {
+function Set(ary) {
     let obj = {};
     if (ary)
         for (let val in values(ary))
@@ -388,7 +388,7 @@ function set(ary) {
  * @param {string} key The key to add.
  * @returns boolean
  */
-set.add = curry(function set_add(set, key) {
+Set.add = curry(function set_add(set, key) {
     let res = this.has(set, key);
     set[key] = true;
     return res;
@@ -400,7 +400,7 @@ set.add = curry(function set_add(set, key) {
  * @param {string} key The key to check.
  * @returns {boolean}
  */
-set.has = curry(function set_has(set, key) hasOwnProperty.call(set, key) &&
+Set.has = curry(function set_has(set, key) hasOwnProperty.call(set, key) &&
                                            propertyIsEnumerable.call(set, key));
 /**
  * Returns a new set containing the members of the first argument which
@@ -409,7 +409,7 @@ set.has = curry(function set_has(set, key) hasOwnProperty.call(set, key) &&
  * @param {object} set The set.
  * @returns {object}
  */
-set.subtract = function set_subtract(set) {
+Set.subtract = function set_subtract(set) {
     set = update({}, set);
     for (let i = 1; i < arguments.length; i++)
         for (let k in keys(arguments[i]))
@@ -424,10 +424,21 @@ set.subtract = function set_subtract(set) {
  * @param {string} key The key to remove.
  * @returns boolean
  */
-set.remove = curry(function set_remove(set, key) {
+Set.remove = curry(function set_remove(set, key) {
     let res = set.has(set, key);
     delete set[key];
     return res;
+});
+
+function set() {
+    deprecated.warn(set, "set", "Set");
+    return Set.apply(this, arguments);
+}
+Object.keys(Set).forEach(function (meth) {
+    set[meth] = function proxy() {
+        deprecated.warn(proxy, "set." + meth, "Set." + meth);
+        return Set[meth].apply(this, arguments);
+    };
 });
 
 /**
@@ -671,12 +682,14 @@ function update(target) {
 
             if (typeof desc.value === "function" && target.__proto__) {
                 let func = desc.value.wrapped || desc.value;
-                func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
-                func.superapply = function superapply(self, args)
-                    let (meth = Object.getPrototypeOf(target)[k])
-                        meth && meth.apply(self, args);
-                func.supercall = function supercall(self)
-                    func.superapply(self, Array.slice(arguments, 1));
+                if (!func.superapply) {
+                    func.__defineGetter__("super", function () Object.getPrototypeOf(target)[k]);
+                    func.superapply = function superapply(self, args)
+                        let (meth = Object.getPrototypeOf(target)[k])
+                            meth && meth.apply(self, args);
+                    func.supercall = function supercall(self)
+                        func.superapply(self, Array.slice(arguments, 1));
+                }
             }
             try {
                 Object.defineProperty(target, k, desc);
@@ -768,19 +781,19 @@ function Class() {
 }
 
 if (Cu.getGlobalForObject)
-    Class.objectGlobal = function (caller) {
+    Class.objectGlobal = function (object) {
         try {
-            return Cu.getGlobalForObject(caller);
+            return Cu.getGlobalForObject(object);
         }
         catch (e) {
             return null;
         }
     };
 else
-    Class.objectGlobal = function (caller) {
-        while (caller.__parent__)
-            caller = caller.__parent__;
-        return caller;
+    Class.objectGlobal = function (object) {
+        while (object.__parent__)
+            object = object.__parent__;
+        return object;
     };
 
 /**
@@ -936,12 +949,14 @@ Class.prototype = {
 
                 if (typeof desc.value === "function") {
                     let func = desc.value.wrapped || desc.value;
-                    func.__defineGetter__("super", function () Object.getPrototypeOf(self)[k]);
-                    func.superapply = function superapply(self, args)
-                        let (meth = Object.getPrototypeOf(self)[k])
-                            meth && meth.apply(self, args);
-                    func.supercall = function supercall(self)
-                        func.superapply(self, Array.slice(arguments, 1));
+                    if (!func.superapply) {
+                        func.__defineGetter__("super", function () Object.getPrototypeOf(self)[k]);
+                        func.superapply = function superapply(self, args)
+                            let (meth = Object.getPrototypeOf(self)[k])
+                                meth && meth.apply(self, args);
+                        func.supercall = function supercall(self)
+                            func.superapply(self, Array.slice(arguments, 1));
+                    }
                 }
                 try {
                     if ("value" in desc && i in this.localizedProperties)
@@ -1440,7 +1455,7 @@ update(iter, {
     uniq: function uniq(iter) {
         let seen = {};
         for (let item in iter)
-            if (!set.add(seen, item))
+            if (!Set.add(seen, item))
                 yield item;
     },
 

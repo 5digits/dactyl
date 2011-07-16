@@ -296,7 +296,7 @@ var Command = Class("Command", {
 
                 explicitOpts: Class.memoize(function () ({})),
 
-                has: function AP_has(opt) set.has(this.explicitOpts, opt) || typeof opt === "number" && set.has(this, opt),
+                has: function AP_has(opt) Set.has(this.explicitOpts, opt) || typeof opt === "number" && Set.has(this, opt),
 
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
 
@@ -369,7 +369,7 @@ var Command = Class("Command", {
     warn: function warn(context, type, message) {
         let loc = !context ? "" : [context.file, context.line, " "].join(":");
 
-        if (!set.add(this.complained, type + ":" + (context ? context.file : "[Command Line]")))
+        if (!Set.add(this.complained, type + ":" + (context ? context.file : "[Command Line]")))
             this.modules.dactyl.warn(loc + message);
     }
 }, {
@@ -905,7 +905,7 @@ var Commands = Module("commands", {
             let matchOpts = function matchOpts(arg) {
                 // Push possible option matches into completions
                 if (complete && !onlyArgumentsRemaining)
-                    completeOpts = options.filter(function (opt) opt.multiple || !set.has(args, opt.names[0]));
+                    completeOpts = options.filter(function (opt) opt.multiple || !Set.has(args, opt.names[0]));
             };
             let resetCompletions = function resetCompletions() {
                 completeOpts = null;
@@ -1574,7 +1574,7 @@ var Commands = Module("commands", {
                 ]
             })),
             iterateIndex: function (args) let (tags = services["dactyl:"].HELP_TAGS)
-                this.iterate(args).filter(function (cmd) cmd.hive === commands.builtin || set.has(tags, cmd.helpTag)),
+                this.iterate(args).filter(function (cmd) cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag)),
             format: {
                 headings: ["Command", "Group", "Description"],
                 description: function (cmd) template.linkifyHelp(cmd.description + (cmd.replacementText ? ": " + cmd.action : "")),

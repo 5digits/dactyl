@@ -119,7 +119,7 @@ var Template = Module("Template", {
                 "click": function onClick(event) {
                     event.preventDefault();
                     if (this.commandAllowed) {
-                        if (set.has(this.target.commands || {}, this.command))
+                        if (Set.has(this.target.commands || {}, this.command))
                             this.target.commands[this.command].call(this.target);
                         else
                             this.target.command(this.command);
@@ -128,7 +128,7 @@ var Template = Module("Template", {
             },
 
             get commandAllowed() {
-                if (set.has(this.target.allowedCommands || {}, this.command))
+                if (Set.has(this.target.allowedCommands || {}, this.command))
                     return this.target.allowedCommands[this.command];
                 if ("commandAllowed" in this.target)
                     return this.target.commandAllowed(this.command);
@@ -213,7 +213,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
+        if (services["dactyl:"].initialized && !Set.has(services["dactyl:"].HELP_TAGS, topic))
             return <span highlight={type || ""}>{text || token}</span>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
@@ -233,7 +233,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (services["dactyl:"].initialized && !set.has(services["dactyl:"].HELP_TAGS, topic))
+        if (services["dactyl:"].initialized && !Set.has(services["dactyl:"].HELP_TAGS, topic))
             return <>{token}</>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;

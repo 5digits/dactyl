@@ -174,7 +174,7 @@ var Services = Module("Services", {
      *
      * @param {string} name The service's cache key.
      */
-    has: function (name) set.has(this.services, name) && this.services[name].class in Cc &&
+    has: function (name) Set.has(this.services, name) && this.services[name].class in Cc &&
         this.services[name].interfaces.every(function (iface) iface in Ci)
 }, {
 }, {

@@ -812,7 +812,7 @@ var Hints = Module("hints", {
 
         let type = elem.type;
 
-        if (elem instanceof HTMLInputElement && set.has(util.editableInputs, elem.type))
+        if (elem instanceof HTMLInputElement && Set.has(util.editableInputs, elem.type))
             return [elem.value, false];
         else {
             for (let [, option] in Iterator(options["hintinputs"])) {

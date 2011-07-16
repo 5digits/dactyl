@@ -219,7 +219,7 @@ var Bookmarks = Module("bookmarks", {
             if (!alias)
                 alias = "search"; // for search engines which we can't find a suitable alias
 
-            if (set.has(aliases, alias))
+            if (Set.has(aliases, alias))
                 alias += ++aliases[alias];
             else
                 aliases[alias] = 0;
@@ -247,7 +247,7 @@ var Bookmarks = Module("bookmarks", {
     getSuggestions: function getSuggestions(engineName, query, callback) {
         const responseType = "application/x-suggestions+json";
 
-        let engine = set.has(this.searchEngines, engineName) && this.searchEngines[engineName];
+        let engine = Set.has(this.searchEngines, engineName) && this.searchEngines[engineName];
         if (engine && engine.supportsResponseType(responseType))
             var queryURI = engine.getSubmission(query, responseType).uri.spec;
         if (!queryURI)
@@ -296,7 +296,7 @@ var Bookmarks = Module("bookmarks", {
             param = query.substr(offset + 1);
         }
 
-        var engine = set.has(bookmarks.searchEngines, keyword) && bookmarks.searchEngines[keyword];
+        var engine = Set.has(bookmarks.searchEngines, keyword) && bookmarks.searchEngines[keyword];
         if (engine) {
             if (engine.searchForm && !param)
                 return engine.searchForm;

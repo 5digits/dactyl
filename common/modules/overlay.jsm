@@ -206,8 +206,8 @@ var Overlay = Module("Overlay", {
 
                 const start = Date.now();
                 const deferredInit = { load: {} };
-                const seen = set();
-                const loaded = set();
+                const seen = Set();
+                const loaded = Set();
                 modules.loaded = loaded;
 
                 function load(module, prereq, frame) {
@@ -222,7 +222,7 @@ var Overlay = Module("Overlay", {
                             return;
                         if (module.className in seen)
                             throw Error("Module dependency loop.");
-                        set.add(seen, module.className);
+                        Set.add(seen, module.className);
 
                         for (let dep in values(module.requires))
                             load(Module.constructors[dep], module.className);
@@ -275,9 +275,9 @@ var Overlay = Module("Overlay", {
                     });
                 }
                 defineModule.modules.forEach(function defModule(mod) {
-                    let names = set(Object.keys(mod.INIT));
+                    let names = Set(Object.keys(mod.INIT));
                     if ("init" in mod.INIT)
-                        set.add(names, "init");
+                        Set.add(names, "init");
 
                     keys(names).forEach(function (name) { deferInit(name, mod.INIT, mod); });
                 });

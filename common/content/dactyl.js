@@ -236,7 +236,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let tags = services["dactyl:"].HELP_TAGS;
                 for (let obj in values(results)) {
                     let res = dactyl.generateHelp(obj, null, null, true);
-                    if (!set.has(tags, obj.helpTag))
+                    if (!Set.has(tags, obj.helpTag))
                         res[1].@tag = obj.helpTag;
 
                     yield res;
@@ -574,7 +574,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * @param {string} feature The feature name.
      * @returns {boolean}
      */
-    has: function (feature) set.has(config.features, feature),
+    has: function (feature) Set.has(config.features, feature),
 
     /**
      * Returns the URL of the specified help *topic* if it exists.
@@ -875,7 +875,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
         }
 
-        let empty = set("area base basefont br col frame hr img input isindex link meta param"
+        let empty = Set("area base basefont br col frame hr img input isindex link meta param"
                             .split(" "));
         function fix(node) {
             switch(node.nodeType) {
@@ -890,7 +890,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 for (let { name, value } in array.iterValues(node.attributes)) {
                     if (name == "dactyl:highlight") {
-                        set.add(styles, value);
+                        Set.add(styles, value);
                         name = "class";
                         value = "hl-" + value;
                     }
@@ -945,7 +945,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             addDataEntry(file + ".xhtml", data.join(""));
         }
 
-        let data = [h for (h in highlight) if (set.has(styles, h.class) || /^Help/.test(h.class))]
+        let data = [h for (h in highlight) if (Set.has(styles, h.class) || /^Help/.test(h.class))]
             .map(function (h) h.selector
                                .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
                                .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")

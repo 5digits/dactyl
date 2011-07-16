@@ -133,7 +133,7 @@ const Config = Module("config", ConfigBase, {
     },
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: set(["bookmarks", "hints", "marks", "history", "quickmarks", "session", "tabs", "player"]),
+    features: Set(["bookmarks", "hints", "marks", "history", "quickmarks", "session", "tabs", "player"]),
 
     defaults: {
         guioptions: "bCmprs",

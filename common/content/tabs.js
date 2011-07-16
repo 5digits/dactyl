@@ -1075,7 +1075,7 @@ var Tabs = Module("tabs", {
                     values: activateGroups,
                     has: Option.has.toggleAll,
                     setter: function (newValues) {
-                        let valueSet = set(newValues);
+                        let valueSet = Set(newValues);
                         for (let group in values(activateGroups))
                             if (group[2])
                                 prefs.safeSet("browser.tabs." + group[2],

@@ -155,7 +155,7 @@ else
                     for each (let prop in Object.getOwnPropertyNames(global))
                         try {
                             if (!(prop in this.builtin) &&
-                                ["JSMLoader", "set", "EXPORTED_SYMBOLS"].indexOf(prop) < 0 &&
+                                ["JSMLoader", "Set", "set", "EXPORTED_SYMBOLS"].indexOf(prop) < 0 &&
                                 !global.__lookupGetter__(prop))
                                 global[prop] = undefined;
                         }

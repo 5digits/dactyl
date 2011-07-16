@@ -506,7 +506,7 @@ var Modes = Module("modes", {
         allBases: Class.memoize(function () {
             let seen = {}, res = [], queue = this.bases.slice();
             for (let mode in array.iterValues(queue))
-                if (!set.add(seen, mode)) {
+                if (!Set.add(seen, mode)) {
                     res.push(mode);
                     queue.push.apply(queue, mode.bases);
                 }
@@ -616,7 +616,7 @@ var Modes = Module("modes", {
                     return (array.nth(this.value, function (v) val.some(function (m) m.name === v.mode), 0)
                                 || { result: default_ }).result;
 
-                return set.has(this.valueMap, val) ? this.valueMap[val] : default_;
+                return Set.has(this.valueMap, val) ? this.valueMap[val] : default_;
             },
 
             setter: function (vals) {
@@ -631,7 +631,7 @@ var Modes = Module("modes", {
                 return vals;
             },
 
-            validator: function validator(vals) vals.map(function (v) v.replace(/^!/, "")).every(set.has(this.values)),
+            validator: function validator(vals) vals.map(function (v) v.replace(/^!/, "")).every(Set.has(this.values)),
 
             get values() array.toObject([[m.name.toLowerCase(), m.description] for (m in values(modes._modes)) if (!m.hidden)])
         };

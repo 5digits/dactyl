@@ -71,22 +71,22 @@ var JavaScript = Module("javascript", {
         if (obj == null)
             return;
 
-        let seen = isinstance(obj, ["Sandbox"]) ? set(JavaScript.magicalNames) : {};
+        let seen = isinstance(obj, ["Sandbox"]) ? Set(JavaScript.magicalNames) : {};
         let globals = values(toplevel && this.window === obj ? this.globalNames : []);
 
         if (toplevel && isObject(obj) && "wrappedJSObject" in obj)
-            if (!set.add(seen, "wrappedJSObject"))
+            if (!Set.add(seen, "wrappedJSObject"))
                 yield "wrappedJSObject";
 
         for (let key in iter(globals, properties(obj, !toplevel, true)))
-            if (!set.add(seen, key))
+            if (!Set.add(seen, key))
                 yield key;
 
         // Properties aren't visible in an XPCNativeWrapper until
         // they're accessed.
         for (let key in properties(this.getKey(obj, "wrappedJSObject"), !toplevel, true))
             try {
-                if (key in obj && !set.has(seen, key))
+                if (key in obj && !Set.has(seen, key))
                     yield key;
             }
             catch (e) {}

@@ -54,7 +54,7 @@ var Option = Class("Option", {
         if (extraInfo)
             this.update(extraInfo);
 
-        if (set.has(this.modules.config.defaults, this.name))
+        if (Set.has(this.modules.config.defaults, this.name))
             defaultValue = this.modules.config.defaults[this.name];
 
         if (defaultValue !== undefined) {
@@ -621,7 +621,7 @@ var Option = Class("Option", {
 
             function uniq(ary) {
                 let seen = {};
-                return ary.filter(function (elem) !set.add(seen, elem));
+                return ary.filter(function (elem) !Set.add(seen, elem));
             }
 
             switch (operator) {
@@ -631,11 +631,11 @@ var Option = Class("Option", {
                 // NOTE: Vim doesn't prepend if there's a match in the current value
                 return uniq(Array.concat(values, this.value), true);
             case "-":
-                return this.value.filter(function (item) !set.has(this, item), set(values));
+                return this.value.filter(function (item) !Set.has(this, item), Set(values));
             case "=":
                 if (invert) {
-                    let keepValues = this.value.filter(function (item) !set.has(this, item), set(values));
-                    let addValues  = values.filter(function (item) !set.has(this, item), set(this.value));
+                    let keepValues = this.value.filter(function (item) !Set.has(this, item), Set(values));
+                    let addValues  = values.filter(function (item) !Set.has(this, item), Set(this.value));
                     return addValues.concat(keepValues);
                 }
                 return values;
@@ -689,12 +689,12 @@ var Option = Class("Option", {
         }
 
         if (isArray(acceptable))
-            acceptable = set(acceptable.map(function ([k]) k));
+            acceptable = Set(acceptable.map(function ([k]) k));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
-            return Array.concat(values).every(function (re) set.has(acceptable, re.result));
+            return Array.concat(values).every(function (re) Set.has(acceptable, re.result));
 
-        return Array.concat(values).every(set.has(acceptable));
+        return Array.concat(values).every(Set.has(acceptable));
     },
 
     types: {}
@@ -1026,12 +1026,12 @@ var Options = Module("options", {
 
             let list = [];
             function flushList() {
-                let names = set(list.map(function (opt) opt.option ? opt.option.name : ""));
+                let names = Set(list.map(function (opt) opt.option ? opt.option.name : ""));
                 if (list.length)
                     if (list.some(function (opt) opt.all))
                         options.list(function (opt) !(list[0].onlyNonDefault && opt.isDefault), list[0].scope);
                     else
-                        options.list(function (opt) set.has(names, opt.name), list[0].scope);
+                        options.list(function (opt) Set.has(names, opt.name), list[0].scope);
                 list = [];
             }
 
@@ -1200,12 +1200,12 @@ var Options = Module("options", {
 
             // Fill in the current values if we're removing
             if (opt.operator == "-" && isArray(opt.values)) {
-                let have = set([i.text for (i in values(context.allItems.items))]);
+                let have = Set([i.text for (i in values(context.allItems.items))]);
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
                 context.maxItems = optcontext.maxItems;
 
-                context.filters.push(function (i) !set.has(have, i.text));
+                context.filters.push(function (i) !Set.has(have, i.text));
                 modules.completion.optionValue(context, opt.name, opt.operator, null,
                                        function (context) {
                                            context.generate = function () option.value.map(function (o) [o, ""]);
@@ -1251,7 +1251,7 @@ var Options = Module("options", {
 
                     util.assert(scope == "g:" || scope == null,
                                 _("command.let.illegalVar", scope + name));
-                    util.assert(set.has(globalVariables, name) || (expr && !op),
+                    util.assert(Set.has(globalVariables, name) || (expr && !op),
                                 _("command.let.undefinedVar", fullName));
 
                     if (!expr)
@@ -1349,7 +1349,7 @@ var Options = Module("options", {
             function (args) {
                 for (let [, name] in args) {
                     name = name.replace(/^g:/, ""); // throw away the scope prefix
-                    if (!set.has(dactyl._globalVariables, name)) {
+                    if (!Set.has(dactyl._globalVariables, name)) {
                         if (!args.bang)
                             dactyl.echoerr(_("command.let.noSuch", name));
                         return;

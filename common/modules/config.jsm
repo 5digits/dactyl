@@ -22,9 +22,9 @@ var ConfigBase = Class("ConfigBase", {
      * initialization code. Must call superclass's init function.
      */
     init: function init() {
-        this.features.push = deprecated("set.add", function push(feature) set.add(this, feature));
+        this.features.push = deprecated("Set.add", function push(feature) Set.add(this, feature));
         if (util.haveGecko("2b"))
-            set.add(this.features, "Gecko2");
+            Set.add(this.features, "Gecko2");
 
         this.timeout(function () {
             services["dactyl:"].pages.dtd = function () [null, util.makeDTD(config.dtd)];
@@ -142,10 +142,10 @@ var ConfigBase = Class("ConfigBase", {
      * @returns {string}
      */
     bestLocale: function (list) {
-        let langs = set(list);
+        let langs = Set(list);
         return values([this.appLocale, this.appLocale.replace(/-.*/, ""),
                        "en", "en-US", iter(langs).next()])
-            .nth(function (l) set.has(langs, l), 0);
+            .nth(function (l) Set.has(langs, l), 0);
     },
 
     /**

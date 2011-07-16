@@ -162,7 +162,7 @@ var Contexts = Module("contexts", {
                                                                 { _hive: { value: name } })));
 
                 memoize(contexts.groupsProto, name,
-                        function () [group[name] for (group in values(this.groups)) if (set.has(group, name))]);
+                        function () [group[name] for (group in values(this.groups)) if (Set.has(group, name))]);
             },
 
             get toStringParams() [this.name, this.Hive]
@@ -180,10 +180,10 @@ var Contexts = Module("contexts", {
                                   0);
 
         let contextPath = file.path;
-        let self = set.has(plugins, contextPath) && plugins.contexts[contextPath];
+        let self = Set.has(plugins, contextPath) && plugins.contexts[contextPath];
 
         if (self) {
-            if (set.has(self, "onUnload"))
+            if (Set.has(self, "onUnload"))
                 self.onUnload();
         }
         else {
@@ -294,7 +294,7 @@ var Contexts = Module("contexts", {
 
     initializedGroups: function (hive)
         let (need = hive ? [hive] : Object.keys(this.hives))
-            this.groupList.filter(function (group) need.some(set.has(group))),
+            this.groupList.filter(function (group) need.some(Set.has(group))),
 
     addGroup: function addGroup(name, description, filter, persist, replace) {
         let group = this.getGroup(name);
@@ -350,7 +350,7 @@ var Contexts = Module("contexts", {
     getGroup: function getGroup(name, hive) {
         if (name === "default")
             var group = this.context && this.context.context && this.context.context.GROUP;
-        else if (set.has(this.groupMap, name))
+        else if (Set.has(this.groupMap, name))
             group = this.groupMap[name];
 
         if (group && hive)
@@ -512,7 +512,7 @@ var Contexts = Module("contexts", {
 
                 util.assert(!group.builtin ||
                                 !["-description", "-locations", "-nopersist"]
-                                    .some(set.has(args.explicitOpts)),
+                                    .some(Set.has(args.explicitOpts)),
                             _("group.cantModifyBuiltin"));
             },
             {

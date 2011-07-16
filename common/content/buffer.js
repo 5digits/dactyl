@@ -1552,7 +1552,7 @@ var Buffer = Module("buffer", {
             tabs.getGroups();
             tabs[visible ? "visibleTabs" : "allTabs"].forEach(function (tab, i) {
                 let group = (tab.tabItem || tab._tabViewTabItem || defItem).parent || defItem.parent;
-                if (!set.has(tabGroups, group.id))
+                if (!Set.has(tabGroups, group.id))
                     tabGroups[group.id] = [group.getTitle(), []];
 
                 group = tabGroups[group.id];
@@ -1779,7 +1779,7 @@ var Buffer = Module("buffer", {
                         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
                             return Editor.getEditor(elem.contentWindow);
 
-                        if (elem.readOnly || elem instanceof HTMLInputElement && !set.has(util.editableInputs, elem.type))
+                        if (elem.readOnly || elem instanceof HTMLInputElement && !Set.has(util.editableInputs, elem.type))
                             return false;
 
                         let computedStyle = util.computedStyle(elem);

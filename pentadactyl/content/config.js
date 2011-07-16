@@ -132,7 +132,7 @@ var Config = Module("config", ConfigBase, {
         titlestring: "Pentadactyl"
     },
 
-    features: set([
+    features: Set([
         "bookmarks", "hints", "history", "marks", "quickmarks", "sanitizer",
         "session", "tabs", "tabs_undo", "windows"
     ]),

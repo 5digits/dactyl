@@ -86,10 +86,10 @@ var Download = Class("Download", {
     })),
 
     command: function command(name) {
-        util.assert(set.has(this.allowedCommands, name), _("download.unknownCommand"));
+        util.assert(Set.has(this.allowedCommands, name), _("download.unknownCommand"));
         util.assert(this.allowedCommands[name], _("download.commandNotAllowed"));
 
-        if (set.has(this.commands, name))
+        if (Set.has(this.commands, name))
             this.commands[name].call(this);
         else
             services.downloadManager[name + "Download"](this.id);
@@ -446,7 +446,7 @@ var Downloads = Module("downloads", {
                 },
 
                 completer: function (context, extra) {
-                    let seen = set.has(set(extra.values.map(function (val) val.substr(1))));
+                    let seen = Set.has(Set(extra.values.map(function (val) val.substr(1))));
 
                     context.completions = iter(this.values).filter(function ([k, v]) !seen(k))
                                                            .map(function ([k, v]) [["+" + k, [v, " (", _("sort.ascending"), ")"].join("")],
@@ -458,8 +458,8 @@ var Downloads = Module("downloads", {
 
                 validator: function (value) {
                     let seen = {};
-                    return value.every(function (val) /^[+-]/.test(val) && set.has(this.values, val.substr(1))
-                                                                        && !set.add(seen, val.substr(1)),
+                    return value.every(function (val) /^[+-]/.test(val) && Set.has(this.values, val.substr(1))
+                                                                        && !Set.add(seen, val.substr(1)),
                                        this) && value.length;
                 }
             });

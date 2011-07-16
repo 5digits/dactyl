@@ -45,7 +45,7 @@ var Messages = Module("messages", {
 
         let seen = {};
         for (let { key } in this.iterate()) {
-            if (!set.add(seen, key))
+            if (!Set.add(seen, key))
                 this._[key] = this[key] = {
                     __noSuchMethod__: function __(prop, args) self._.apply(self, [prop].concat(args))
                 };
@@ -95,7 +95,7 @@ var Messages = Module("messages", {
                     return { configurable: true, enumerable: true, value: this.default, writable: true };
                 */
 
-                if (!set.has(obj, "localizedProperties"))
+                if (!Set.has(obj, "localizedProperties"))
                     obj.localizedProperties = { __proto__: obj.localizedProperties };
                 obj.localizedProperties[prop] = true;
 

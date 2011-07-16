@@ -331,7 +331,7 @@ var Mappings = Module("mappings", {
         let seen = {};
         for (let hive in this.hives.iterValues())
             for (let map in array(hive.getStack(mode)).iterValues())
-                if (!set.add(seen, map.name))
+                if (!Set.add(seen, map.name))
                     yield map;
     },
 
@@ -592,7 +592,7 @@ var Mappings = Module("mappings", {
                 let seen = {};
                 for (let stack in values(hive.stacks))
                     for (let map in array.iterValues(stack))
-                        if (!set.add(seen, map.id))
+                        if (!Set.add(seen, map.id))
                             yield map;
             }
 
@@ -704,7 +704,7 @@ var Mappings = Module("mappings", {
                     for (let hive in mappings.hives.iterValues())
                         for (let map in array.iterValues(hive.getStack(mode)))
                             for (let name in values(map.names))
-                                if (!set.add(seen, name)) {
+                                if (!Set.add(seen, name)) {
                                     yield {
                                         name: name,
                                         columns: [
@@ -750,7 +750,7 @@ var Mappings = Module("mappings", {
                                  tags = services["dactyl:"].HELP_TAGS)
                                     ({ helpTag: prefix + map.name, __proto__: map }
                                      for (map in self.iterate(args, true))
-                                     if (map.hive === mappings.builtin || set.has(tags, prefix + map.name))),
+                                     if (map.hive === mappings.builtin || Set.has(tags, prefix + map.name))),
                     description: "List all " + mode.name + " mode mappings along with their short descriptions",
                     index: mode.char + "-map",
                     getMode: function (args) mode,

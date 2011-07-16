@@ -131,7 +131,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
      */
     get: function (mode, lhs) {
         let abbrevs = this._store[mode];
-        return abbrevs && set.has(abbrevs, lhs) ? abbrevs[lhs] : null;
+        return abbrevs && Set.has(abbrevs, lhs) ? abbrevs[lhs] : null;
     },
 
     /**

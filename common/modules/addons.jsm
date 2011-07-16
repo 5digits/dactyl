@@ -118,8 +118,8 @@ var actions = {
             });
         },
         get filter() {
-            let ids = set(keys(JSON.parse(prefs.get("extensions.bootstrappedAddons", "{}"))));
-            return function ({ item }) !item.userDisabled && set.has(ids, item.id);
+            let ids = Set(keys(JSON.parse(prefs.get("extensions.bootstrappedAddons", "{}"))));
+            return function ({ item }) !item.userDisabled && Set.has(ids, item.id);
         },
         perm: "disable"
     },
@@ -166,7 +166,7 @@ var Addon = Class("Addon", {
     },
 
     commandAllowed: function commandAllowed(cmd) {
-        util.assert(set.has(actions, cmd), _("addon.unknownCommand"));
+        util.assert(Set.has(actions, cmd), _("addon.unknownCommand"));
 
         let action = actions[cmd];
         if ("perm" in action && !(this.permissions & AddonManager["PERM_CAN_" + action.perm.toUpperCase()]))
