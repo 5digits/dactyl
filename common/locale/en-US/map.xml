@@ -434,7 +434,7 @@
 
 <item>
     <tags>:ab :abbreviate</tags>
-    <spec>:ab<oa>breviate</oa> <oa>-group=<a>group</a></oa> <a>lhs</a> <a>rhs</a></spec>
+    <spec>:ab<oa>breviate</oa> <oa>-group=<a>group</a></oa> <oa>-js</oa> <a>lhs</a> <a>rhs</a></spec>
     <spec>:ab<oa>breviate</oa> <oa>-group=<a>group</a></oa> <a>lhs</a></spec>
     <spec>:ab<oa>breviate</oa> <oa>-group=<a>group</a></oa></spec>
     <description>
