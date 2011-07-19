@@ -9,7 +9,7 @@
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
-<h1 tag="quick-hints hints">Hints</h1>
+<h1 tag="hints">Hints</h1>
 <toc start="2"/>
 
 <p>
@@ -25,20 +25,20 @@
 </p>
 
 <item>
-    <tags>quick-hints</tags>
-    <tags>f QuickHint</tags>
+    <tags>quick-hints hint-mode</tags>
+    <tags>f</tags>
     <strut/>
     <spec>f<a>hint</a></spec>
     <description>
         <p>
-            Start <t>QuickHint</t> mode. In this mode, every clickable
+            Start <t>hint-mode</t>. In this mode, every clickable
             element (as defined by the <o>hinttags</o> option) is
             highlighted and numbered.  Elements can be selected
             either by typing their number, or by typing part of
             their text to narrow down the result. When an element
             has been selected, it is automatically clicked and hint
             mode ends. Additionally, the following keys have
-            special meanings in QuickHint mode:
+            special meanings in hint mode:
         </p>
         <dl>
             <dt><k name="CR"/></dt>
@@ -64,7 +64,7 @@
     <spec>F<a>hint</a></spec>
     <description>
         <p>
-            Start <t>QuickHint</t> mode, but the selected elements
+            Start <t>hint-mode</t>, but the selected elements
             are clicked with the <k name="Shift" link="false"/> key pressed,
             which has the normal effect of opening it in a new tab
             (depending on the value of the
@@ -75,13 +75,13 @@
 
 <item>
     <tags>extended-hints</tags>
-    <tags>; ExtendedHint</tags>
+    <tags>;</tags>
     <strut/>
     <spec>;<a>mode</a><a>hint</a></spec>
     <description>
         <p>
-            Start an extended hint mode. <t>ExtendedHint</t> mode is exactly
-            like <t>QuickHint</t> mode, except that each sub-mode highlights a
+            Start an extended hint mode. Extended hints are exactly like
+            <t>quick-hints</t>, except that each sub-mode highlights a
             more specialized set of elements, and performs a unique action on
             the selected link. Because of the panoply of extended hint modes
             available, after pressing <k>;</k>, pressing <k name="Tab"/> brings

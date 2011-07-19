@@ -1168,7 +1168,7 @@ var Hints = Module("hints", {
         initModes.require("commandline");
         modes.addMode("HINTS", {
             extended: true,
-            description: "Active when selecting elements in QuickHint or ExtendedHint mode",
+            description: "Active when selecting elements with hints",
             bases: [modes.COMMAND_LINE],
             input: true,
             ownsBuffer: true
@@ -1177,11 +1177,11 @@ var Hints = Module("hints", {
     mappings: function () {
         var myModes = config.browserModes.concat(modes.OUTPUT_MULTILINE);
         mappings.add(myModes, ["f"],
-            "Start QuickHint mode",
+            "Start hint mode",
             function () { hints.show("o"); });
 
         mappings.add(myModes, ["F"],
-            "Start QuickHint mode, but open link in a new tab",
+            "Start hint mode, but open link in a new tab",
             function () { hints.show(options.get("activate").has("links") ? "t" : "b"); });
 
         mappings.add(myModes, [";"],
