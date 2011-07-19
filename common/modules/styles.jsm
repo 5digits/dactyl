@@ -74,7 +74,7 @@ update(Sheet.prototype, {
             return preamble + css;
 
         let selectors = filter.map(function (part)
-                                    !/^(?:[a-z-]+[:*]|[a-z-.]+$)/i.test(part) ? "regexp(" + (".*" + part + ".*").quote() + ")" :
+                                    !/^(?:[a-z-]+[:*]|[a-z-.]+$)/i.test(part) ? "regexp(" + (".*(?:" + part + ").*").quote() + ")" :
                                        (/[*]$/.test(part)   ? "url-prefix" :
                                         /[\/:]/.test(part)  ? "url"
                                                             : "domain")
