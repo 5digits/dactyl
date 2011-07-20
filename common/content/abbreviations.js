@@ -249,13 +249,15 @@ var Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * Lists all abbreviations matching *modes* and *lhs*.
+     * Lists all abbreviations matching *modes*, *lhs*, and optionally *hives*.
      *
      * @param {Array} modes List of modes.
      * @param {string} lhs The LHS of the abbreviation.
+     * @param {Hive[]} hives List of hives.
+     * @optional
      */
-    list: function (modes, lhs) {
-        let hives = contexts.allGroups.abbrevs.filter(function (h) !h.empty);
+    list: function (modes, lhs, hives) {
+        let hives = hives || contexts.allGroups.abbrevs.filter(function (h) !h.empty);
 
         function abbrevs(hive)
             hive.merged.filter(function (abbr) (abbr.inModes(modes) && abbr.lhs.indexOf(lhs) == 0));
@@ -317,8 +319,10 @@ var Abbreviations = Module("abbreviations", {
                     dactyl.assert(!args.length || abbreviations._check.test(lhs),
                                   _("error.invalidArgument"));
 
-                    if (!rhs)
-                        abbreviations.list(modes, lhs || "");
+                    if (!rhs) {
+                        let hives = args.explicitOpts["-group"] ? [args["-group"]] : null;
+                        abbreviations.list(modes, lhs || "", hives);
+                    }
                     else {
                         if (args["-javascript"])
                             rhs = contexts.bindMacro({ literalArg: rhs }, "-javascript", ["editor"]);
