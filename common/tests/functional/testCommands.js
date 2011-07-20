@@ -184,7 +184,7 @@ var tests = {
         }
     ],
     delgroup: {
-        error: ["!", "", "builtin"],
+        error: ["", "! foo", "builtin"],
         completions: [""]
     },
     delmacros: {

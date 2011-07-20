@@ -585,8 +585,8 @@ var Contexts = Module("contexts", {
                 completer: function (context, args) {
                     if (args.bang)
                         return;
-                    modules.completion.group(context);
                     context.filters.push(function ({ item }) !item.builtin);
+                    modules.completion.group(context);
                 }
             });
 
