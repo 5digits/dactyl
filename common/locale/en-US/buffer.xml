@@ -148,7 +148,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-column-left> <Left> h]]></tags>
+    <tags><![CDATA[<scroll-left-column> <Left> h]]></tags>
     <strut/>
     <spec><oa>count</oa>h</spec>
     <description>
@@ -160,7 +160,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-line-down> <C-e> <Down> j]]></tags>
+    <tags><![CDATA[<scroll-down-line> <C-e> <Down> j]]></tags>
     <strut/>
     <spec><oa>count</oa>j</spec>
     <description>
@@ -172,7 +172,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-line-up> <C-y> <Up> k]]></tags>
+    <tags><![CDATA[<scroll-up-line> <C-y> <Up> k]]></tags>
     <strut/>
     <spec><oa>count</oa>k</spec>
     <description>
@@ -184,7 +184,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-column-right> <Right> l]]></tags>
+    <tags><![CDATA[<scroll-right-column> <Right> l]]></tags>
     <strut/>
     <spec><oa>count</oa>l</spec>
     <description>
@@ -222,7 +222,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-page-up> <S-Space> <PageUp> <C-b>]]></tags>
+    <tags><![CDATA[<scroll-up-page> <S-Space> <PageUp> <C-b>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-b></spec>
     <description>
@@ -234,7 +234,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<scroll-page-down> <Space> <PageDown> <C-f>]]></tags>
+    <tags><![CDATA[<scroll-down-page> <Space> <PageDown> <C-f>]]></tags>
     <strut/>
     <spec><oa>count</oa>&lt;C-f></spec>
     <description>

@@ -1713,7 +1713,7 @@ var Buffer = Module("buffer", {
             function (args) { buffer._scrollByScrollSize(args.count, false); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-page-up>"],
+        mappings.add([modes.COMMAND], ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-up-page>"],
             "Scroll up a full page",
             function (args) { buffer.scrollVertical("pages", -Math.max(args.count, 1)); },
             { count: true });
@@ -1727,7 +1727,7 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<C-f>", "<PageDown>", "<scroll-page-down>"],
+        mappings.add([modes.COMMAND], ["<C-f>", "<PageDown>", "<scroll-down-page>"],
             "Scroll down a full page",
             function (args) { buffer.scrollVertical("pages", Math.max(args.count, 1)); },
             { count: true });
