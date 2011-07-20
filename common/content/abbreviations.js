@@ -249,7 +249,7 @@ var Abbreviations = Module("abbreviations", {
     },
 
     /**
-     * Lists all abbreviations matching *modes*, *lhs*, and optionally *hives*.
+     * Lists all abbreviations matching *modes*, *lhs* and optionally *hives*.
      *
      * @param {Array} modes List of modes.
      * @param {string} lhs The LHS of the abbreviation.

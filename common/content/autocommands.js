@@ -84,12 +84,17 @@ var AutoCommands = Module("autocommands", {
     remove: deprecated("group.autocmd.remove", { get: function remove() autocommands.user.closure.remove }),
 
     /**
-     * Lists all autocommands with a matching *event* and *regexp*.
+     * Lists all autocommands with a matching *event*, *regexp* and optionally
+     * *hives*.
      *
      * @param {string} event The event name filter.
      * @param {string} regexp The URL pattern filter.
+     * @param {Hive[]} hives List of hives.
+     * @optional
      */
-    list: function (event, regexp) {
+    list: function (event, regexp, hives) {
+
+        let hives = hives || this.activeHives;
 
         function cmds(hive) {
             let cmds = {};
@@ -108,7 +113,7 @@ var AutoCommands = Module("autocommands", {
                     <td colspan="3">----- Auto Commands -----</td>
                 </tr>
                 {
-                    template.map(this.activeHives, function (hive)
+                    template.map(hives, function (hive)
                         <tr highlight="Title">
                             <td colspan="3">{hive.name}</td>
                         </tr> +
@@ -200,7 +205,7 @@ var AutoCommands = Module("autocommands", {
                             args["-group"].remove(event, regexp); // remove all
                     }
                     else
-                        autocommands.list(event, regexp); // list all
+                        autocommands.list(event, regexp, args.explicitOpts["-group"] ? [args["-group"]] : null); // list all
                 }
             }, {
                 bang: true,

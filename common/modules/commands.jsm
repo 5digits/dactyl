@@ -641,12 +641,15 @@ var Commands = Module("commands", {
         },
 
         /**
-         * Displays a list of user-defined commands.
+         * Lists all user-defined commands matching *filter* and optionally
+         * *hives*.
          *
          * @param {string} filter Limits the list to those commands with a name
          *     matching this anchored substring.
+         * @param {Hive[]} hives List of hives.
+         * @optional
          */
-        list: function list(filter) {
+        list: function list(filter, hives) {
             const { commandline, completion } = this.modules;
             function completerToString(completer) {
                 if (completer)
@@ -656,7 +659,7 @@ var Commands = Module("commands", {
             // TODO: allow matching of aliases?
             function cmds(hive) hive._list.filter(function (cmd) cmd.name.indexOf(filter || "") == 0)
 
-            let hives = this.userHives.map(function (h) [h, cmds(h)]).filter(function ([h, c]) c.length);
+            let hives = (hives || this.userHives).map(function (h) [h, cmds(h)]).filter(function ([h, c]) c.length);
 
             let list = <table>
                 <tr highlight="Title">
@@ -1401,7 +1404,7 @@ var Commands = Module("commands", {
                             _("command.invalidName", cmd));
 
                 if (args.length <= 1)
-                    commands.list(cmd);
+                    commands.list(cmd, args.explicitOpts["-group"] ? [args["-group"]] : null);
                 else {
                     util.assert(args["-group"].modifiable,
                                 _("group.cantChangeBuiltin", _("command.commands")));
