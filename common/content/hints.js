@@ -1182,20 +1182,20 @@ var Hints = Module("hints", {
     mappings: function () {
         var myModes = config.browserModes.concat(modes.OUTPUT_MULTILINE);
         mappings.add(myModes, ["f"],
-            "Start hint mode",
+            "Start HINTS mode",
             function () { hints.show("o"); });
 
         mappings.add(myModes, ["F"],
-            "Start hint mode, but open link in a new tab",
+            "Start HINTS mode, but open link in a new tab",
             function () { hints.show(options.get("activate").has("links") ? "t" : "b"); });
 
         mappings.add(myModes, [";"],
-            "Start an extended hint mode",
+            "Start an extended hints mode",
             function ({ count }) { hints.open(";", { count: count }); },
             { count: true });
 
         mappings.add(myModes, ["g;"],
-            "Start an extended hint mode and stay there until <Esc> is pressed",
+            "Start an extended hints mode and stay there until <Esc> is pressed",
             function ({ count }) { hints.open("g;", { continue: true, count: count }); },
             { count: true });
 

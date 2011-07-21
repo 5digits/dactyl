@@ -1860,7 +1860,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
 
         commands.add(["norm[al]"],
-            "Execute Normal mode commands",
+            "Execute NORMAL mode commands",
             function (args) { events.feedkeys(args[0], args.bang, false, modes.NORMAL); },
             {
                 argCount: "1",

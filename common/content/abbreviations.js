@@ -375,8 +375,8 @@ var Abbreviations = Module("abbreviations", {
         }
 
         addAbbreviationCommands([modes.INSERT, modes.COMMAND_LINE], "", "");
-        addAbbreviationCommands([modes.INSERT], "i", "insert");
-        addAbbreviationCommands([modes.COMMAND_LINE], "c", "command line");
+        addAbbreviationCommands([modes.INSERT], "i", "INSERT");
+        addAbbreviationCommands([modes.COMMAND_LINE], "c", "COMMAND_LINE");
     }
 });
 

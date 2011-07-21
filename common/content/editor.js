@@ -729,15 +729,15 @@ var Editor = Module("editor", {
 
         // visual mode
         mappings.add([modes.CARET, modes.TEXT_EDIT],
-            ["v"], "Start visual mode",
+            ["v"], "Start VISUAL mode",
             function () { modes.push(modes.VISUAL); });
 
         mappings.add([modes.VISUAL],
-            ["v", "V"], "End visual mode",
+            ["v", "V"], "End VISUAL mode",
             function () { modes.pop(); });
 
         mappings.add([modes.TEXT_EDIT],
-            ["V"], "Start visual line mode",
+            ["V"], "Start VISUAL LINE mode",
             function () {
                 modes.push(modes.VISUAL, modes.LINE);
                 editor.executeCommand("cmd_beginLine", 1);
@@ -882,7 +882,7 @@ var Editor = Module("editor", {
             });
 
         options.add(["insertmode", "im"],
-            "Enter Insert mode rather than Text Edit mode when focusing text areas",
+            "Enter INSERT mode rather than TEXT_EDIT mode when focusing text areas",
             "boolean", true);
     }
 });
