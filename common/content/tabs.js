@@ -155,7 +155,7 @@ var Tabs = Module("tabs", {
      * @property {Object[]} The array of closed tabs for the current
      *     session.
      */
-    get closedTabs() services.json.decode(services.sessionStore.getClosedTabData(window)),
+    get closedTabs() JSON.parse(services.sessionStore.getClosedTabData(window)),
 
     /**
      * Clones the specified *tab* and append it to the tab list.
