@@ -610,7 +610,7 @@ var IO = Module("io", {
                 dactyl.assert(!file.exists() || args.bang, _("io.exists", file.path.quote()));
 
                 // TODO: Use a set/specifiable list here:
-                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator(true)) if (cmd.serialize)];
+                let lines = [cmd.serialize().map(commands.commandToString, cmd) for (cmd in commands.iterator()) if (cmd.serialize)];
                 lines = array.flatten(lines);
 
                 lines.unshift('"' + config.version + "\n");
