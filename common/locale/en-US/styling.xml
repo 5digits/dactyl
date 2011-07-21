@@ -27,6 +27,8 @@
         <p>
             Load a color scheme. <a>name</a> is found by searching the <o>runtimepath</o> for the
             first file matching <tt>colors/<a>name</a>.&dactyl.fileExt;</tt>.
+            The special scheme <em>default</em> can be used to reload the
+            default highlight settings.
         </p>
 
         <p>
