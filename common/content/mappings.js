@@ -306,7 +306,7 @@ var Mappings = Module("mappings", {
 
     get userHives() this.allHives.filter(function (h) h !== this.builtin, this),
 
-    expandLeader: function expandLeader(keyString) keyString.replace(/<Leader>/i, options["mapleader"]),
+    expandLeader: function expandLeader(keyString) keyString.replace(/<Leader>/i, function () options["mapleader"]),
 
     prefixes: Class.memoize(function () {
         let list = Array.map("CASM", function (s) s + "-");
@@ -411,11 +411,11 @@ var Mappings = Module("mappings", {
      *
      * @param {number[]} modes An array of modes to search.
      * @param {string} filter The filter string to match.
+     * @param {[MapHive]} hives The map hives to list. @optional
      */
     list: function (modes, filter, hives) {
-        let modeSign = "";
-        modes.filter(function (m)  m.char).forEach(function (m) { modeSign += m.char; });
-        modes.filter(function (m) !m.char).forEach(function (m) { modeSign += " " + m.name; });
+        let modeSign = modes.map(function (m) m.char || "").join("")
+                     + modes.map(function (m) !m.char ? " " + m.name : "").join("");
         modeSign = modeSign.replace(/^ /, "");
 
         hives = (hives || mappings.userHives).map(function (h) [h, maps(h)])

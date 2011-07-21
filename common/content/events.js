@@ -669,6 +669,8 @@ var Events = Module("events", {
             if (quiet)
                 commandline.quiet = quiet;
 
+            keys = mappings.expandLeader(keys);
+
             for (let [, evt_obj] in Iterator(events.fromString(keys))) {
                 let now = Date.now();
                 let key = events.toString(evt_obj);
@@ -870,6 +872,7 @@ var Events = Module("events", {
         let out = [];
         for (let match in util.regexp.iterate(/<.*?>?>|[^<]|<(?!.*>)/g, input)) {
             let evt_str = match[0];
+
             let evt_obj = { ctrlKey: false, shiftKey: false, altKey: false, metaKey: false,
                             keyCode: 0, charCode: 0, type: "keypress" };
 
