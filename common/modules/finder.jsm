@@ -225,29 +225,29 @@ var RangeFinder = Module("rangefinder", {
         var myModes = config.browserModes.concat([modes.CARET]);
 
         mappings.add(myModes,
-            ["/"], "Find a pattern starting at the current caret position",
+            ["/", "<find-forward>"], "Find a pattern starting at the current caret position",
             function () { rangefinder.openPrompt(modes.FIND_FORWARD); });
 
         mappings.add(myModes,
-            ["?"], "Find a pattern backward of the current caret position",
+            ["?", "<find-backward>"], "Find a pattern backward of the current caret position",
             function () { rangefinder.openPrompt(modes.FIND_BACKWARD); });
 
         mappings.add(myModes,
-            ["n"], "Find next",
+            ["n", "<find-next>"], "Find next",
             function () { rangefinder.findAgain(false); });
 
         mappings.add(myModes,
-            ["N"], "Find previous",
+            ["N", "<find-previous>"], "Find previous",
             function () { rangefinder.findAgain(true); });
 
-        mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["*"],
+        mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["*", "<find-word-forward>"],
             "Find word under cursor",
             function () {
                 rangefinder.find(Buffer.currentWord(buffer.focusedFrame, true), false);
                 rangefinder.findAgain();
             });
 
-        mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["#"],
+        mappings.add(myModes.concat([modes.CARET, modes.TEXT_EDIT]), ["#", "<find-word-backward>"],
             "Find word under cursor backwards",
             function () {
                 rangefinder.find(Buffer.currentWord(buffer.focusedFrame, true), true);

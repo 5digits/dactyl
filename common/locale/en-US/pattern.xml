@@ -45,7 +45,7 @@
 </p>
 
 <item>
-    <tags>/</tags>
+    <tags><![CDATA[<find-forward> /]]></tags>
     <spec>/<a>pattern</a><k name="CR"/></spec>
     <description>
         <p>Find <a>pattern</a> starting at the current caret position.</p>
@@ -75,7 +75,7 @@
 </item>
 
 <item>
-    <tags>?</tags>
+    <tags><![CDATA[<find-forward> ?]]></tags>
     <spec>?<a>pattern</a><k name="CR"/></spec>
     <description>
         <p>
@@ -86,7 +86,7 @@
 </item>
 
 <item>
-    <tags>n</tags>
+    <tags><![CDATA[<find-next> n]]></tags>
     <spec>n</spec>
     <description short="true">
         <p>Find next. Repeat the last find.</p>
@@ -94,7 +94,7 @@
 </item>
 
 <item>
-    <tags>N</tags>
+    <tags><![CDATA[<find-previous> N]]></tags>
     <spec>N</spec>
     <description short="true">
         <p>Find previous. Repeat the last find in the opposite direction.</p>
@@ -102,7 +102,7 @@
 </item>
 
 <item>
-    <tags>*</tags>
+    <tags><![CDATA[<find-word-next> *]]></tags>
     <spec>*</spec>
     <description short="true">
         <p>Search forward for the next occurrence of the word under cursor.</p>
@@ -110,7 +110,7 @@
 </item>
 
 <item>
-    <tags>#</tags>
+    <tags><![CDATA[<find-word-previous> #]]></tags>
     <spec>#</spec>
     <description short="true">
         <p>Search backward for the previous occurrence of the word under cursor.</p>
