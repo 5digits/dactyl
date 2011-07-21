@@ -12,7 +12,7 @@
  * A class representing key mappings. Instances are created by the
  * {@link Mappings} class.
  *
- * @param {number[]} modes The modes in which this mapping is active.
+ * @param {Modes.Mode[]} modes The modes in which this mapping is active.
  * @param {string[]} keys The key sequences which are bound to
  *     *action*.
  * @param {string} description A short one line description of the key mapping.
@@ -53,7 +53,7 @@ var Map = Class("Map", {
 
     /** @property {number} A unique ID for this mapping. */
     id: null,
-    /** @property {number[]} All of the modes for which this mapping applies. */
+    /** @property {Modes.Mode[]} All of the modes for which this mapping applies. */
     modes: null,
     /** @property {function (number)} The function called to execute this mapping. */
     action: null,
@@ -156,7 +156,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
     /**
      * Adds a new key mapping.
      *
-     * @param {number[]} modes The modes that this mapping applies to.
+     * @param {Modes.Mode[]} modes The modes that this mapping applies to.
      * @param {string[]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
@@ -348,7 +348,7 @@ var Mappings = Module("mappings", {
     /**
      * Adds a new default key mapping.
      *
-     * @param {number[]} modes The modes that this mapping applies to.
+     * @param {Modes.Mode[]} modes The modes that this mapping applies to.
      * @param {string[]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
@@ -370,7 +370,7 @@ var Mappings = Module("mappings", {
     /**
      * Adds a new user-defined key mapping.
      *
-     * @param {number[]} modes The modes that this mapping applies to.
+     * @param {Modes.Mode[]} modes The modes that this mapping applies to.
      * @param {string[]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
@@ -387,7 +387,7 @@ var Mappings = Module("mappings", {
     /**
      * Returns the map from *mode* named *cmd*.
      *
-     * @param {number} mode The mode to search.
+     * @param {Modes.Mode} mode The mode to search.
      * @param {string} cmd The map name to match.
      * @returns {Map}
      */
@@ -397,7 +397,7 @@ var Mappings = Module("mappings", {
      * Returns an array of maps with names starting with but not equal to
      * *prefix*.
      *
-     * @param {number} mode The mode to search.
+     * @param {Modes.Mode} mode The mode to search.
      * @param {string} prefix The map prefix string to match.
      * @returns {Map[]}
      */
@@ -407,10 +407,10 @@ var Mappings = Module("mappings", {
 
     /**
      * Lists all user-defined mappings matching *filter* for the specified
-     * *modes*.
+     * *modes* in the specified *hives*.
      *
-     * @param {number[]} modes An array of modes to search.
-     * @param {string} filter The filter string to match.
+     * @param {Modes.Mode[]} modes An array of modes to search.
+     * @param {string} filter The filter string to match. @optional
      * @param {[MapHive]} hives The map hives to list. @optional
      */
     list: function (modes, filter, hives) {

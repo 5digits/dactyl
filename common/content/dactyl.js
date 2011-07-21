@@ -111,7 +111,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     }),
 
     /**
-     * @property {number} The current main mode.
+     * @property {Modes.Mode} The current main mode.
      * @see modes#mainModes
      */
     mode: deprecated("modes.main", {
