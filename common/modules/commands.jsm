@@ -161,7 +161,7 @@ var Command = Class("Command", {
         modifiers = modifiers || {};
 
         if (args.count != null && !this.count)
-            throw FailedAssertion(_("command.noRange"));
+            throw FailedAssertion(_("command.noCount"));
         if (args.bang && !this.bang)
             throw FailedAssertion(_("command.noBang"));
 
