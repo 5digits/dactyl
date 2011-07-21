@@ -69,10 +69,10 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
 
         util.addObserver(this);
 
-        services.add("contentprefs", "@mozilla.org/content-pref/service;1", Ci.nsIContentPrefService);
+        services.add("contentPrefs", "@mozilla.org/content-pref/service;1", Ci.nsIContentPrefService);
         services.add("cookies",      "@mozilla.org/cookiemanager;1",        [Ci.nsICookieManager, Ci.nsICookieManager2,
                                                                              Ci.nsICookieService]);
-        services.add("loginmanager", "@mozilla.org/login-manager;1",        Ci.nsILoginManager);
+        services.add("loginManager", "@mozilla.org/login-manager;1",        Ci.nsILoginManager);
         services.add("permissions",  "@mozilla.org/permissionmanager;1",    Ci.nsIPermissionManager);
 
         this.itemMap = {};
@@ -140,20 +140,20 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         services.permissions.remove(util.createURI(p.host), p.type);
                         services.permissions.add(util.createURI(p.host), p.type, 0);
                     }
-                    for (let p in iter(services.contentprefs.getPrefs(util.createURI(host))))
-                        services.contentprefs.removePref(util.createURI(host), p.QueryInterface(Ci.nsIProperty).name);
+                    for (let p in iter(services.contentPrefs.getPrefs(util.createURI(host))))
+                        services.contentPrefs.removePref(util.createURI(host), p.QueryInterface(Ci.nsIProperty).name);
                 }
                 else {
                     // "Allow this site to open popups" ...
                     services.permissions.removeAll();
                     // Zoom level, ...
-                    services.contentprefs.removeGroupedPrefs();
+                    services.contentPrefs.removeGroupedPrefs();
                 }
 
                 // "Never remember passwords" ...
-                for each (let domain in services.loginmanager.getAllDisabledHosts())
+                for each (let domain in services.loginManager.getAllDisabledHosts())
                     if (!host || util.isSubdomain(domain, host))
-                        services.loginmanager.setLoginSavingEnabled(host, true);
+                        services.loginManager.setLoginSavingEnabled(host, true);
             },
             override: true
         });
