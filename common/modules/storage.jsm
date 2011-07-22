@@ -431,14 +431,11 @@ var File = Class("File", {
 
         ofstream.init(this, mode, perms, 0);
         try {
-            if (callable(buf))
-                buf(ofstream.QueryInterface(Ci.nsIOutputStream));
-            else {
-                var ocstream = getStream(0);
-                ocstream.writeString(buf);
-            }
+            var ocstream = getStream(0);
+            ocstream.writeString(buf);
         }
-        catch (e if callable(buf) && e.result == Cr.NS_ERROR_LOSS_OF_SIGNIFICANT_DATA) {
+        catch (e if e.result == Cr.NS_ERROR_LOSS_OF_SIGNIFICANT_DATA) {
+            ocstream.close();
             ocstream = getStream("?".charCodeAt(0));
             ocstream.writeString(buf);
             return false;

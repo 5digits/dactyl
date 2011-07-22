@@ -7,6 +7,10 @@
     -moz-binding: url(resource://dactyl-content/bindings.xml#frame) !important;
 }
 
+[dactyl|modifiable][dactyl|modifiable] {
+    -moz-user-input: enabled !important;
+}
+
 [dactyl|highlight~=hints] {
     -moz-binding: url(resource://dactyl-content/bindings.xml#hints) !important;
     position: static !important;

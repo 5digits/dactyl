@@ -1,3 +1,4 @@
+// Copyright (c) 2008-2011 Kris Maglione <maglione.k at Gmail>
 // Copyright (c) 2006-2009 by Martin Stubenschrott <stubenschrott@vimperator.org>
 //
 // This work is licensed for reuse under an MIT license. Details are
@@ -303,8 +304,14 @@ var Editor = Module("editor", {
             lastUpdate = Date.now();
 
             let val = tmpfile.read();
-            if (textBox)
+            if (textBox) {
                 textBox.value = val;
+
+                textBox.setAttributeNS(NS, "modifiable", true);
+                util.computedStyle(textBox).MozUserInput;
+                events.dispatch(textBox, events.create(textBox.ownerDocument, "input", {}));
+                textBox.removeAttributeNS(NS, "modifiable");
+            }
             else {
                 while (editor_.rootElement.firstChild)
                     editor_.rootElement.removeChild(editor_.rootElement.firstChild);
