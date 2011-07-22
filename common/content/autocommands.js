@@ -47,7 +47,7 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
      *
      * @param {string} event The event name filter.
      * @param {string} pattern The URL pattern filter.
-     * @returns {AutoCommand[]}
+     * @returns {[AutoCommand]}
      */
     get: function (event, pattern) {
         return this._store.filter(function (autoCmd) autoCmd.match(event, regexp));
@@ -89,7 +89,7 @@ var AutoCommands = Module("autocommands", {
      *
      * @param {string} event The event name filter.
      * @param {string} regexp The URL pattern filter.
-     * @param {Hive[]} hives List of hives.
+     * @param {[Hive]} hives List of hives.
      * @optional
      */
     list: function (event, regexp, hives) {

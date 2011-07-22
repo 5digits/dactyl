@@ -94,7 +94,7 @@ update(CommandOption, {
  * A class representing Ex commands. Instances are created by
  * the {@link Commands} class.
  *
- * @param {string[]} specs The names by which this command can be invoked.
+ * @param {[string]} specs The names by which this command can be invoked.
  *     These are specified in the form "com[mand]" where "com" is a unique
  *     command name prefix.
  * @param {string} description A short one line description of the command.
@@ -209,19 +209,19 @@ var Command = Class("Command", {
     complained: Class.memoize(function () ({})),
 
     /**
-     * @property {string[]} All of this command's name specs. e.g., "com[mand]"
+     * @property {[string]} All of this command's name specs. e.g., "com[mand]"
      */
     specs: null,
-    /** @property {string[]} All of this command's short names, e.g., "com" */
+    /** @property {[string]} All of this command's short names, e.g., "com" */
     shortNames: null,
     /**
-     * @property {string[]} All of this command's long names, e.g., "command"
+     * @property {[string]} All of this command's long names, e.g., "command"
      */
     longNames: null,
 
     /** @property {string} The command's canonical name. */
     name: null,
-    /** @property {string[]} All of this command's long and short names. */
+    /** @property {[string]} All of this command's long and short names. */
     names: null,
 
     /** @property {string} This command's description, as shown in :listcommands */
@@ -464,7 +464,7 @@ var CommandHive = Class("CommandHive", Contexts.Hive, {
      * Adds a new command to the builtin hive. Accessible only to core
      * dactyl code. Plugins should use group.commands.add instead.
      *
-     * @param {string[]} specs The names by which this command can be
+     * @param {[string]} specs The names by which this command can be
      *     invoked. The first name specified is the command's canonical
      *     name.
      * @param {string} description A description of the command.
@@ -646,7 +646,7 @@ var Commands = Module("commands", {
          *
          * @param {string} filter Limits the list to those commands with a name
          *     matching this anchored substring.
-         * @param {Hive[]} hives List of hives.
+         * @param {[Hive]} hives List of hives.
          * @optional
          */
         list: function list(filter, hives) {

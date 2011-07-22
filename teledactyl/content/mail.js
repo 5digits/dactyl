@@ -129,7 +129,7 @@ const Mail = Module("mail", {
 
     get currentFolder() gFolderTreeView.getSelectedFolders()[0],
 
-    /** @property {nsISmtpServer[]} The list of configured SMTP servers. */
+    /** @property {[nsISmtpServer]} The list of configured SMTP servers. */
     get smtpServers() {
         let servers = services.smtp.smtpServers;
         let res = [];

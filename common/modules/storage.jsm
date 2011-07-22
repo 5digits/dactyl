@@ -363,7 +363,7 @@ var File = Class("File", {
      *
      * @param {boolean} sort Whether to sort the returned directory
      *     entries.
-     * @returns {nsIFile[]}
+     * @returns {[nsIFile]}
      */
     readDirectory: function (sort) {
         if (!this.isDirectory())

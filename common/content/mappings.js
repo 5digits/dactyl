@@ -12,8 +12,8 @@
  * A class representing key mappings. Instances are created by the
  * {@link Mappings} class.
  *
- * @param {Modes.Mode[]} modes The modes in which this mapping is active.
- * @param {string[]} keys The key sequences which are bound to
+ * @param {[Modes.Mode]} modes The modes in which this mapping is active.
+ * @param {[string]} keys The key sequences which are bound to
  *     *action*.
  * @param {string} description A short one line description of the key mapping.
  * @param {function} action The action invoked by each key sequence.
@@ -44,7 +44,7 @@ var Map = Class("Map", {
 
     name: Class.memoize(function () this.names[0]),
 
-    /** @property {string[]} All of this mapping's names (key sequences). */
+    /** @property {[string]} All of this mapping's names (key sequences). */
     names: Class.memoize(function () this._keys.map(function (k) events.canonicalKeys(k))),
 
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
@@ -53,7 +53,7 @@ var Map = Class("Map", {
 
     /** @property {number} A unique ID for this mapping. */
     id: null,
-    /** @property {Modes.Mode[]} All of the modes for which this mapping applies. */
+    /** @property {[Modes.Mode]} All of the modes for which this mapping applies. */
     modes: null,
     /** @property {function (number)} The function called to execute this mapping. */
     action: null,
@@ -156,8 +156,8 @@ var MapHive = Class("MapHive", Contexts.Hive, {
     /**
      * Adds a new key mapping.
      *
-     * @param {Modes.Mode[]} modes The modes that this mapping applies to.
-     * @param {string[]} keys The key sequences which are bound to *action*.
+     * @param {[Modes.Mode]} modes The modes that this mapping applies to.
+     * @param {[string]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
      * @param {Object} extra An optional extra configuration hash.
@@ -348,8 +348,8 @@ var Mappings = Module("mappings", {
     /**
      * Adds a new default key mapping.
      *
-     * @param {Modes.Mode[]} modes The modes that this mapping applies to.
-     * @param {string[]} keys The key sequences which are bound to *action*.
+     * @param {[Modes.Mode]} modes The modes that this mapping applies to.
+     * @param {[string]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
      * @param {Object} extra An optional extra configuration hash.
@@ -370,8 +370,8 @@ var Mappings = Module("mappings", {
     /**
      * Adds a new user-defined key mapping.
      *
-     * @param {Modes.Mode[]} modes The modes that this mapping applies to.
-     * @param {string[]} keys The key sequences which are bound to *action*.
+     * @param {[Modes.Mode]} modes The modes that this mapping applies to.
+     * @param {[string]} keys The key sequences which are bound to *action*.
      * @param {string} description A description of the key mapping.
      * @param {function} action The action invoked by each key sequence.
      * @param {Object} extra An optional extra configuration hash (see
@@ -399,7 +399,7 @@ var Mappings = Module("mappings", {
      *
      * @param {Modes.Mode} mode The mode to search.
      * @param {string} prefix The map prefix string to match.
-     * @returns {Map[]}
+     * @returns {[Map]}
      */
     getCandidates: function (mode, prefix)
         this.hives.map(function (h) h.getCandidates(mode, prefix))
@@ -409,7 +409,7 @@ var Mappings = Module("mappings", {
      * Lists all user-defined mappings matching *filter* for the specified
      * *modes* in the specified *hives*.
      *
-     * @param {Modes.Mode[]} modes An array of modes to search.
+     * @param {[Modes.Mode]} modes An array of modes to search.
      * @param {string} filter The filter string to match. @optional
      * @param {[MapHive]} hives The map hives to list. @optional
      */

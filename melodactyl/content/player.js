@@ -333,7 +333,7 @@ const Player = Module("player", {
     /**
      * Returns an array of all available playlists.
      *
-     * @returns {sbIMediaList[]}
+     * @returns {[sbIMediaList]}
      */
     getPlaylists: function getPlaylists() {
         let mainLibrary = LibraryUtils.mainLibrary;
@@ -367,7 +367,7 @@ const Player = Module("player", {
     /**
      * Returns an array of all available media pages.
      *
-     * @returns {sbIMediaPageInfo[]}
+     * @returns {[sbIMediaPageInfo]}
      */
     getMediaPages: function getMediaPages() {
         let list = SBGetBrowser().currentMediaPage.mediaListView.mediaList;

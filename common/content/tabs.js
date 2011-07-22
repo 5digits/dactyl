@@ -152,7 +152,7 @@ var Tabs = Module("tabs", {
     get localStore() this.getLocalStore(),
 
     /**
-     * @property {Object[]} The array of closed tabs for the current
+     * @property {[Object]} The array of closed tabs for the current
      *     session.
      */
     get closedTabs() JSON.parse(services.sessionStore.getClosedTabData(window)),

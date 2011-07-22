@@ -1510,7 +1510,7 @@ var array = Class("array", Array, {
      * as such:
      *    [["a", "b"], ["c", "d"]] -> { a: "b", c: "d" }
      *
-     * @param {Array[]} assoc
+     * @param {[Array]} assoc
      * @... {string} 0 - Key
      * @...          1 - Value
      */

@@ -665,9 +665,9 @@ var JavaScript = Module("javascript", {
      * time they are accessed, so they should be accessed
      * judiciously.
      *
-     * @param {function|function[]} funcs The functions for which to
+     * @param {function|[function]} funcs The functions for which to
      *      install the completers.
-     * @param {function[]} completers An array of completer
+     * @param {[function]} completers An array of completer
      *      functions.
      */
     setCompleter: function (funcs, completers) {

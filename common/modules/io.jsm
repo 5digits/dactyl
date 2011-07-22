@@ -105,7 +105,7 @@ var IO = Module("io", {
          * found it is sourced. Only the first file found (per specified path) is
          * sourced unless *all* is specified, then all found files are sourced.
          *
-         * @param {string[]} paths An array of relative paths to source.
+         * @param {[string]} paths An array of relative paths to source.
          * @param {boolean} all Whether all found files should be sourced.
          */
         sourceFromRuntimePath: function sourceFromRuntimePath(paths, all) {
@@ -423,7 +423,7 @@ var IO = Module("io", {
      * Runs an external program.
      *
      * @param {File|string} program The program to run.
-     * @param {string[]} args An array of arguments to pass to *program*.
+     * @param {[string]} args An array of arguments to pass to *program*.
      */
     run: function (program, args, blocking) {
         args = args || [];

@@ -1306,7 +1306,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * ['www.google.com/search?q=bla', 'www.osnews.com']
      *
      * @param {string} str
-     * @returns {string[]}
+     * @returns {[string]}
      */
     parseURLs: function parseURLs(str) {
         let urls;
@@ -1506,7 +1506,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     /**
-     * @property {Window[]} Returns an array of all the host application's
+     * @property {[Window]} Returns an array of all the host application's
      *     open windows.
      */
     get windows() [win for (win in iter(services.windowMediator.getEnumerator("navigator:browser"))) if (win.dactyl)],

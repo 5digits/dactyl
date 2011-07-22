@@ -22,7 +22,7 @@ const Library = Module("library", {
     /**
      * Returns an array of all the artist names in the main library.
      *
-     * @returns {string[]}
+     * @returns {[string]}
      */
     getArtists: function getArtists() this._toJSArray(this.MAIN_LIBRARY.getDistinctValuesForProperty(SBProperties.artistName)),
 
@@ -32,7 +32,7 @@ const Library = Module("library", {
      * library.
      *
      * @param {string} artist The artist's name.
-     * @returns {string[]}
+     * @returns {[string]}
      */
     getAlbums: function getAlbums(artist) {
         let albums = this._toJSArray(this.MAIN_LIBRARY.getItemsByProperty(SBProperties.artistName, artist))
@@ -46,7 +46,7 @@ const Library = Module("library", {
      *
      * @param {string} artist The artist's name.
      * @param {string} album The album's name.
-     * @returns {string[]}
+     * @returns {[string]}
      */
     getTracks: function getTracks(artist, album) {
         let properties = services.MutablePropertyArray();

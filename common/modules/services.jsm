@@ -125,7 +125,7 @@ var Services = Module("Services", {
      *
      * @param {string} name The service's cache key.
      * @param {string} class The class's contract ID.
-     * @param {string|string[]} ifaces The interface or array of
+     * @param {string|[string]} ifaces The interface or array of
      *     interfaces implemented by this service.
      * @param {string} meth The name of the function used to instantiate
      *     the service.
@@ -143,7 +143,7 @@ var Services = Module("Services", {
      *
      * @param {string} name The class's cache key.
      * @param {string} class_ The class's contract ID.
-     * @param {nsISupports|nsISupports[]} ifaces The interface or array of
+     * @param {nsISupports|[nsISupports]} ifaces The interface or array of
      *     interfaces implemented by this class.
      * @param {string} init Name of a property or method used to initialise the
      *     class. See {@link #_create}.

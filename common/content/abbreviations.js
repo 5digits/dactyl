@@ -17,7 +17,7 @@
  * E.g. an abbreviation with a LHS of "gop" and RHS of "Grand Old Party" will
  * replace the former with the latter.
  *
- * @param {Mode[]} modes The modes in which this abbreviation is active.
+ * @param {[Mode]} modes The modes in which this abbreviation is active.
  * @param {string} lhs The left hand side of the abbreviation; the text to
  *     be replaced.
  * @param {string|function(nsIEditor):string} rhs The right hand side of
@@ -53,7 +53,7 @@ var Abbreviation = Class("Abbreviation", {
     /**
      * Returns true if this abbreviation is defined for all *modes*.
      *
-     * @param {Mode[]} modes The modes to test.
+     * @param {[Mode]} modes The modes to test.
      * @returns {boolean} The result of the comparison.
      */
     modesEqual: function (modes) array.equals(this.modes, modes),
@@ -69,7 +69,7 @@ var Abbreviation = Class("Abbreviation", {
     /**
      * Returns true if this abbreviation is defined in any of *modes*.
      *
-     * @param {Modes[]} modes The modes to test.
+     * @param {[Modes]} modes The modes to test.
      * @returns {boolean} The result of the comparison.
      */
     inModes: function (modes) modes.some(function (mode) this.inMode(mode), this),
@@ -135,7 +135,7 @@ var AbbrevHive = Class("AbbrevHive", Contexts.Hive, {
     },
 
     /**
-     * @property {Abbreviation[]} The list of the abbreviations merged from
+     * @property {[Abbreviation]} The list of the abbreviations merged from
      *     each mode.
      */
     get merged() {
@@ -253,7 +253,7 @@ var Abbreviations = Module("abbreviations", {
      *
      * @param {Array} modes List of modes.
      * @param {string} lhs The LHS of the abbreviation.
-     * @param {Hive[]} hives List of hives.
+     * @param {[Hive]} hives List of hives.
      * @optional
      */
     list: function (modes, lhs, hives) {
