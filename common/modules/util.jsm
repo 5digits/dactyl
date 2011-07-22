@@ -1028,6 +1028,35 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
+    // ripped from Firefox; modified
+    unsafeURI: Class.memoize(function () util.regexp(String.replace(<![CDATA[
+            [
+                \s
+                // Invisible characters (bug 452979)
+                U001C U001D U001E U001F // file/group/record/unit separator
+                U00AD // Soft hyphen
+                UFEFF // BOM
+                U2060 // Word joiner
+                U2062 U2063  // Invisible times/separator
+                U200B UFFFC // Zero-width space/no-break space
+
+                // Bidi formatting characters. (RFC 3987 sections 3.2 and 4.1 paragraph 6)
+                U200E U200F U202A U202B U202C U202D U202E
+            ]
+        ]]>, /U/g, "\\u"),
+        "gx")),
+    losslessDecodeURI: function losslessDecodeURI(url) {
+        return url.split("%25").map(function (url) {
+                // Non-UTF-8 compliant URLs cause "malformed URI sequence" errors.
+                try {
+                    return decodeURI(url).replace(this.unsafeURI, encodeURIComponent);
+                }
+                catch (e) {
+                    return url;
+                }
+            }, this).join("%25");
+    },
+
     /**
      * Returns an XPath union expression constructed from the specified node
      * tests. An expression is built with node tests for both the null and
