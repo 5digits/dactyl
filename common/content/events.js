@@ -1597,7 +1597,7 @@ var Events = Module("events", {
 
     isInputElement: function isInputElement(elem) {
         return elem instanceof HTMLInputElement && Set.has(util.editableInputs, elem.type) ||
-               isinstance(elem, [HTMLIsIndexElement, HTMLEmbedElement,
+               isinstance(elem, [HTMLEmbedElement,
                                  HTMLObjectElement, HTMLSelectElement,
                                  HTMLTextAreaElement,
                                  Ci.nsIDOMXULTreeElement, Ci.nsIDOMXULTextBoxElement]) ||

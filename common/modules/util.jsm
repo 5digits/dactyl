@@ -1037,7 +1037,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 U00AD // Soft hyphen
                 UFEFF // BOM
                 U2060 // Word joiner
-                U2062 U2063  // Invisible times/separator
+                U2062 U2063 // Invisible times/separator
                 U200B UFFFC // Zero-width space/no-break space
 
                 // Bidi formatting characters. (RFC 3987 sections 3.2 and 4.1 paragraph 6)
