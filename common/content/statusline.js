@@ -39,9 +39,9 @@ var StatusLine = Module("statusline", {
                     padding: 0 !important;
                     border-width: 0px !important;
                     min-width: 0 !important;
-                    color: inherit !important;
+                    color: inherit;
                 }
-                AddonButton:not(:hover)  background: transparent !important;
+                AddonButton:not(:hover)  background: transparent;
             ]]>)({ padding: util.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
 
             if (document.getElementById("appmenu-button"))
