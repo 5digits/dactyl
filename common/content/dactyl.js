@@ -832,22 +832,25 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             overlayMap["index"] = ['text/xml;charset=UTF-8',
                 '<?xml version="1.0"?>\n' +
-                '<overlay xmlns="' + NS + '">\n' +
+                <overlay xmlns={NS}>{
                 template.map(dactyl.indices, function ([name, iter])
                     <dl insertafter={name + "-index"}>{
                         template.map(iter(), util.identity)
-                    }</dl>, <>{"\n\n"}</>) +
-                '\n</overlay>'];
+                    }</dl>, <>{"\n\n"}</>)
+                }</overlay>];
             addTags("index", util.httpGet("dactyl://help-overlay/index").responseXML);
 
             overlayMap["gui"] = ['text/xml;charset=UTF-8',
                 '<?xml version="1.0"?>\n' +
-                '<overlay xmlns="' + NS + '">\n' +
-                '<dl insertafter="dialog-list">\n' +
-                template.map(config.dialogs, function ([name, val])
-                    ((!val[2]) || (val[2] && val[2]())) &&
-                    <><dt>{name}</dt><dd>{val[0]}</dd></>, <>{"\n"}</>) +
-                '</dl>\n</overlay>'];
+                <overlay xmlns={NS}>
+                    <dl insertafter="dialog-list">{
+                    template.map(config.dialogs, function ([name, val])
+                        (!val[2] || val[2]())
+                            ? <><dt>{name}</dt><dd>{val[0]}</dd></>
+                            : undefined,
+                        <>{"\n"}</>)
+                    }</dl>
+                </overlay>];
 
 
             this.helpInitialized = true;
