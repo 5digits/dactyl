@@ -298,7 +298,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 return false;
 
             if (!rect.width || !rect.height)
-                if (!Array.some(elem.childNodes, function (elem) util.computedStyle(elem).float != "none" && isVisible(elem)))
+                if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && util.computedStyle(elem).float != "none" && isVisible(elem)))
                     return false;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
