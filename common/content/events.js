@@ -890,7 +890,7 @@ var Events = Module("events", {
                 evt_obj.shiftKey = evt_str !== evt_str.toLowerCase();
             }
             else {
-                let [match, modifier, keyname] = evt_str.match(/^<((?:[*12CASM]-)*)(.+?)>$/i) || [false, '', ''];
+                let [match, modifier, keyname] = evt_str.match(/^<((?:[*12CASM⌘]-)*)(.+?)>$/i) || [false, '', ''];
                 modifier = Set(modifier.toUpperCase());
                 keyname = keyname.toLowerCase();
                 evt_obj.dactylKeyname = keyname;
@@ -903,7 +903,7 @@ var Events = Module("events", {
                     evt_obj.ctrlKey  ="C" in modifier;
                     evt_obj.altKey   ="A" in modifier;
                     evt_obj.shiftKey ="S" in modifier;
-                    evt_obj.metaKey  ="M" in modifier;
+                    evt_obj.metaKey  ="M" in modifier || "⌘" in modifier;
                     evt_obj.dactylShift = evt_obj.shiftKey;
 
                     if (keyname.length == 1) { // normal characters
