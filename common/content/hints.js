@@ -508,13 +508,14 @@ var HintSession = Class("HintSession", CommandMode, {
                 modes.push(modes.IGNORE, modes.HINTS);
         }
 
+        dactyl.trapErrors("action", this.hintMode,
+                          elem, elem.href || elem.src || "",
+                          this.extendedhintCount, top);
+
         this.timeout(function () {
-            if ((modes.extended & modes.HINTS) && !this.continue)
+            if (modes.main == modes.IGNORE && !this.continue)
                 modes.pop();
             commandline.lastEcho = null; // Hack.
-            dactyl.trapErrors("action", this.hintMode,
-                              elem, elem.href || elem.src || "",
-                              this.extendedhintCount, top);
             if (this.continue && this.top)
                 this.show();
         }, timeout);
