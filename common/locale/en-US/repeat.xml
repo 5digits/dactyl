@@ -444,7 +444,8 @@
 
 <p tag="comments">
     Lines may be commented out by prefixing them with a <em>"</em>
-    character.
+    character. Comments and commands cannot both occur in a single command
+    line.
 </p>
 
 <code>            <hl style="color: #444">" This is a comment</hl>
