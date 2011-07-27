@@ -334,10 +334,12 @@ var ConfigBase = Class("ConfigBase", {
     /**
      * @property {Object} A map of dialogs available via the
      *      :dialog command. Property names map dialog names to an array
-     *      as follows:
+     *      with the following elements:
      *  [0] description - A description of the dialog, used in
      *                    command completion results for :dialog.
      *  [1] action - The function executed by :dialog.
+     *  [2] test - Function which returns true if the dialog is available in
+     *      the current window. @optional
      */
     dialogs: {},
 
