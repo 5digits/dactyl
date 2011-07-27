@@ -39,7 +39,7 @@ var StatusLine = Module("statusline", {
                     padding: 0 !important;
                     border-width: 0px !important;
                     min-width: 0 !important;
-                    color: inherit;
+                    color: inherit !important;
                 }
                 AddonButton:not(:hover)  background: transparent;
             ]]>)({ padding: util.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
