@@ -732,8 +732,7 @@ var Events = Module("events", {
      * @param {Object} opts The pseudo-event. @optional
      */
     create: function (doc, type, opts) {
-        opts = opts || {};
-        var DEFAULTS = {
+        const DEFAULTS = {
             HTML: {
                 type: type, bubbles: true, cancelable: false
             },
@@ -756,21 +755,30 @@ var Events = Module("events", {
                 relatedTarget: null
             }
         };
-        const TYPES = {
-            change: "", "dactyl-input": "", input: "", submit: "",
-            click: "Mouse", mousedown: "Mouse", mouseup: "Mouse",
-            mouseover: "Mouse", mouseout: "Mouse",
-            keypress: "Key", keyup: "Key", keydown: "Key"
-        };
-        var t = TYPES[type];
+
+        opts = opts || {};
+
+        var t = this._create_types[type];
         var evt = doc.createEvent((t || "HTML") + "Events");
 
         let defaults = DEFAULTS[t || "HTML"];
-        evt["init" + t + "Event"].apply(evt, Object.keys(defaults)
-                                                   .map(function (k) k in opts ? opts[k]
-                                                                               : defaults[k]));
+
+        let args = Object.keys(defaults)
+                         .map(function (k) k in opts ? opts[k] : defaults[k]);
+
+        evt["init" + t + "Event"].apply(evt, args);
         return evt;
     },
+
+    _create_types: Class.memoize(function () iter(
+        {
+            Mouse: "click mousedown mouseout mouseover mouseup",
+            Key:   "keydown keypress keyup",
+            "":    "change dactyl-input input submit"
+        }
+    ).map(function ([k, v]) v.split(" ").map(function (v) [v, k]))
+     .flatten()
+     .toObject()),
 
     /**
      * Converts a user-input string of keys into a canonical

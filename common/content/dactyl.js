@@ -1124,7 +1124,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             let loadplugins = options.get("loadplugins");
             if (args)
-                loadplugins = { __proto__: loadplugins, value: args.map(Option.parseRegexp) }
+                loadplugins = { __proto__: loadplugins, value: args.map(Option.parseRegexp) };
 
             dir.readDirectory(true).forEach(function (file) {
                 if (file.isFile() && loadplugins.getKey(file.path)
