@@ -719,7 +719,11 @@
     <type>&option.followhints.type;</type>
     <default>&option.followhints.default;</default>
     <description>
-        <p>Define the conditions under which selected hints are followed.</p>
+        <p>
+            Define the conditions under which hints selected by typing the link
+            substring are followed. Hints selected by typing their label (as
+            specified by <o>hintkeys</o>) are always followed immediately.
+        </p>
 
         <p>Possible values:</p>
 
