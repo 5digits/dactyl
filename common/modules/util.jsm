@@ -1080,9 +1080,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {string} The DTD fragment containing entity declaration
      *      for *obj*.
      */
-    makeDTD: function makeDTD(obj) iter(obj)
-          .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : v, /['%]/g,
-                                                                       function (m) ({ "'": "&apos;", "%": "&#x25;" })[m]),
+    makeDTD: let (map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" })
+        function makeDTD(obj) iter(obj)
+          .map(function ([k, v]) ["<!ENTITY ", k, " '", String.replace(v == null ? "null" : typeof v == "xml" ? v.toXMLString() : v,
+                                                                       typeof v == "xml" ? /['%]/g : /['"%&<>]/g,
+                                                                       function (m) map[m]),
                                   "'>"].join(""))
           .join("\n"),
 

@@ -238,7 +238,7 @@ var Modes = Module("modes", {
                 return <></>;
             }
 
-            return rec(roots).toXMLString();
+            return rec(roots);
         }
 
         util.timeout(function () {

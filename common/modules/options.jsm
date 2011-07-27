@@ -756,14 +756,12 @@ var Options = Module("options", {
                     opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
             }, window);
 
-            function escape(str) str.replace(/[<&]/g, function (m) ({ "&": "&amp;", "<": "&lt;" })[m]);
-
             services["dactyl:"].pages["options.dtd"] = function () [null,
                 util.makeDTD(
                     iter(([["option", o.name, "default"].join("."),
-                           escape(o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
-                                  o.value === true    ? "on"  :
-                                  o.value === false   ? "off" : o.stringDefaultValue)]
+                           o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
+                           o.value === true    ? "on"  :
+                           o.value === false   ? "off" : o.stringDefaultValue]
                           for (o in self)),
 
                          ([["option", o.name, "type"].join("."), o.type] for (o in self)),
