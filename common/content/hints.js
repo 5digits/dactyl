@@ -292,10 +292,14 @@ var HintSession = Class("HintSession", CommandMode, {
 
         function isVisible(elem) {
             let rect = elem.getBoundingClientRect();
-            if (!rect || !rect.width || !rect.height ||
+            if (!rect ||
                 rect.top > offsets.bottom || rect.bottom < offsets.top ||
                 rect.left > offsets.right || rect.right < offsets.left)
                 return false;
+
+            if (!rect.width || !rect.height)
+                if (!Array.some(elem.childNodes, function (elem) util.computedStyle(elem).float != "none" && isVisible(elem)))
+                    return false;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
             if (computedStyle.visibility != "visible" || computedStyle.display == "none")
