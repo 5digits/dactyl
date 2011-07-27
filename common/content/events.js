@@ -1420,11 +1420,6 @@ var Events = Module("events", {
             else
                 this.keyEvents = [];
 
-            let isMacro = event.isMacro || this.feedingEvent && this.feedingEvent.isMacro;
-            if (this.lastKeyFake && !isMacro)
-                this.passing = false;
-            this.lastKeyFake = isMacro;
-
             let pass = this.passing && !event.isMacro ||
                     this.feedingEvent && this.feedingEvent.isReplay ||
                     event.isReplay ||
