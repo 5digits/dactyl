@@ -150,6 +150,10 @@ var Storage = Module("Storage", {
 
     init: function () {
         this.cleanup();
+
+        if (services.bootstrap && !services.bootstrap.session)
+            services.bootstrap.session = {};
+        this.session = services.bootstrap ? services.bootstrap.session : {};
     },
 
     cleanup: function () {

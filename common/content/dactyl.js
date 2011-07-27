@@ -1894,7 +1894,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             "Reload the " + config.appName + " add-on",
             function (args) {
                 if (args.trailing)
-                    JSMLoader.rehashCmd = args.trailing; // Hack.
+                    storage.session.rehashCmd = args.trailing; // Hack.
                 args.break = true;
                 util.rehash(args);
             },
@@ -2134,7 +2134,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         dactyl.timeout(function () {
             try {
-                var args = JSMLoader.commandlineArgs || services.commandLineHandler.optionValue;
+                var args = storage.session.commandlineArgs || services.commandLineHandler.optionValue;
                 if (isString(args))
                     args = dactyl.parseCommandLine(args);
 
@@ -2225,9 +2225,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     dactyl.execute(cmd);
                 });
 
-            if (JSMLoader.rehashCmd)
-                dactyl.execute(JSMLoader.rehashCmd);
-            JSMLoader.rehashCmd = null;
+            if (storage.session.rehashCmd)
+                dactyl.execute(storage.session.rehashCmd);
+            storage.session.rehashCmd = null;
 
             dactyl.fullyInitialized = true;
             dactyl.triggerObserver("enter", null);

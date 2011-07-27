@@ -1652,7 +1652,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * re-enabling it.
      */
     rehash: function (args) {
-        JSMLoader.commandlineArgs = args;
+        storage.session.commandlineArgs = args;
         this.timeout(function () {
             services.observer.notifyObservers(null, "startupcache-invalidate", "");
             this.rehashing = true;

@@ -16,6 +16,8 @@ var ProcessorStack = Class("ProcessorStack", {
         this.buffer = "";
         this.events = [];
 
+        events.dbg("STACK " + mode);
+
         let main = { __proto__: mode.main, params: mode.params };
         this.modes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
 
@@ -28,10 +30,13 @@ var ProcessorStack = Class("ProcessorStack", {
 
         for (let [i, input] in Iterator(this.processors)) {
             let params = input.main.params;
+
             if (params.preExecute)
                 input.preExecute = params.preExecute;
+
             if (params.postExecute)
                 input.postExecute = params.postExecute;
+
             if (params.onKeyPress && input.hive === mappings.builtin)
                 input.fallthrough = function fallthrough(events) {
                     return params.onKeyPress(events) === false ? Events.KILL : Events.PASS;
@@ -39,8 +44,7 @@ var ProcessorStack = Class("ProcessorStack", {
             }
 
         let hive = options.get("passkeys")[this.main.input ? "inputHive" : "commandHive"];
-        if (!builtin && hive.active
-                && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
+        if (!builtin && hive.active && (!dactyl.focusedElement || events.isContentNode(dactyl.focusedElement)))
             this.processors.unshift(KeyProcessor(modes.BASE, hive));
     },
 
@@ -63,7 +67,9 @@ var ProcessorStack = Class("ProcessorStack", {
                                 callable(result) ? result.toSource().substr(0, 50) : result),
 
     execute: function execute(result, force) {
-        events.dbg("EXECUTE(" + this._result(result) + ", " + force + ") events:" + this.events.length + " processors:" + this.processors.length + " actions:" + this.actions.length);
+        events.dbg("EXECUTE(" + this._result(result) + ", " + force + ") events:" + this.events.length
+                   + " processors:" + this.processors.length + " actions:" + this.actions.length);
+
         let processors = this.processors;
         let length = 1;
 
@@ -126,12 +132,14 @@ var ProcessorStack = Class("ProcessorStack", {
             if (result !== Events.ABORT || !this.events[0].isReplay)
                 Events.kill(this.events[this.events.length - 1]);
 
-        if (result === Events.PASS_THROUGH) {
+        if (result === Events.PASS_THROUGH || result === Events.PASS && this.passUnknown)
             events.passing = true;
+
+        if (result === Events.PASS_THROUGH)
             events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
-        }
         else {
             let list = this.events.filter(function (e) e.getPreventDefault() && !e.dactylDefaultPrevented);
+
             if (result === Events.PASS)
                 events.dbg("PASS THROUGH: " + list.slice(0, length).filter(function (e) e.type === "keypress").map(events.closure.toString));
             if (list.length > length)
@@ -245,8 +253,10 @@ var KeyProcessor = Class("KeyProcessor", {
             function execute() {
                 if (self.preExecute)
                     self.preExecute.apply(self, args);
-                let res = map.execute.call(map, update({ self: self.main.params.mappingSelf || self.main.mappingSelf || map },
-                                                       args));
+
+                args.self = self.main.params.mappingSelf || self.main.mappingSelf || map;
+                let res = map.execute.call(map, args);
+
                 if (self.postExecute)
                     self.postExecute.apply(self, args);
                 return res;
@@ -310,6 +320,10 @@ var KeyArgProcessor = Class("KeyArgProcessor", KeyProcessor, {
     }
 });
 
+/**
+ * A hive used mainly for tracking event listeners and cleaning them up when a
+ * group is destroyed.
+ */
 var EventHive = Class("EventHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
@@ -396,9 +410,7 @@ var Events = Module("events", {
         util.overlayWindow(window, {
             append: <e4x xmlns={XUL}>
                 <window id={document.documentElement.id}>
-                    <!--this notifies us also of focus events in the XUL
-                        from: http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands !-->
-                    <!-- I don't think we really need this. ––Kris -->
+                    <!-- http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands -->
                     <commandset id="dactyl-onfocus" commandupdater="true" events="focus"
                                 oncommandupdate="dactyl.modules.events.onFocusChange(event);"/>
                     <commandset id="dactyl-onselect" commandupdater="true" events="select"
@@ -491,16 +503,6 @@ var Events = Module("events", {
         }
     },
 
-    /**
-     * Adds an event listener for this session and removes it on
-     * dactyl shutdown.
-     *
-     * @param {Element} target The element on which to listen.
-     * @param {string} event The event to listen for.
-     * @param {function} callback The function to call when the event is received.
-     * @param {boolean} capture When true, listen during the capture
-     *      phase, otherwise during the bubbling phase.
-     */
     get listen() this.builtin.closure.listen,
     addSessionListener: deprecated("events.listen", { get: function addSessionListener() this.listen }),
 
@@ -939,10 +941,10 @@ var Events = Module("events", {
             if (evt_obj.keyCode == 60 || evt_obj.charCode == 60)
                 evt_obj.charCode = evt_obj.keyCode = 60; // <lt>
 
-            evt_obj.modifiers = (evt_obj.ctrlKey && Ci.nsIDOMNSEvent.CONTROL_MASK)
-                              | (evt_obj.altKey && Ci.nsIDOMNSEvent.ALT_MASK)
+            evt_obj.modifiers = (evt_obj.ctrlKey  && Ci.nsIDOMNSEvent.CONTROL_MASK)
+                              | (evt_obj.altKey   && Ci.nsIDOMNSEvent.ALT_MASK)
                               | (evt_obj.shiftKey && Ci.nsIDOMNSEvent.SHIFT_MASK)
-                              | (evt_obj.metaKey && Ci.nsIDOMNSEvent.META_MASK);
+                              | (evt_obj.metaKey  && Ci.nsIDOMNSEvent.META_MASK);
 
             out.push(evt_obj);
         }
@@ -1139,8 +1141,8 @@ var Events = Module("events", {
     },
 
     /**
-     * Whether *key* is a key code defined to accept/execute input on the
-     * command line.
+     * Returns true if *key* is a key code defined to accept/execute input on
+     * the command line.
      *
      * @param {string} key The key code to test.
      * @returns {boolean}
@@ -1148,14 +1150,21 @@ var Events = Module("events", {
     isAcceptKey: function (key) key == "<Return>" || key == "<C-j>" || key == "<C-m>",
 
     /**
-     * Whether *key* is a key code defined to reject/cancel input on the
-     * command line.
+     * Returns true if *key* is a key code defined to reject/cancel input on
+     * the command line.
      *
      * @param {string} key The key code to test.
      * @returns {boolean}
      */
     isCancelKey: function (key) key == "<Esc>" || key == "<C-[>" || key == "<C-c>",
 
+    /**
+     * Returns true if *node* belongs to the current content document or any
+     * sub-frame thereof.
+     *
+     * @param {Node|Document|Window} node The node to test.
+     * @returns {boolean}
+     */
     isContentNode: function isContentNode(node) {
         let win = (node.ownerDocument || node).defaultView || node;
         return XPCNativeWrapper(win).top == content;
@@ -1406,10 +1415,15 @@ var Events = Module("events", {
         },
 
         keyup: function onKeyUp(event) {
-            if (this.type == "keydown")
+            if (event.type == "keydown")
                 this.keyEvents.push(event);
             else
                 this.keyEvents = [];
+
+            let isMacro = event.isMacro || this.feedingEvent && this.feedingEvent.isMacro;
+            if (this.lastKeyFake && !isMacro)
+                this.passing = false;
+            this.lastKeyFake = isMacro;
 
             let pass = this.passing && !event.isMacro ||
                     this.feedingEvent && this.feedingEvent.isReplay ||
@@ -1418,7 +1432,13 @@ var Events = Module("events", {
                     modes.main == modes.QUOTE
                         && modes.getStack(1).main !== modes.PASS_THROUGH
                         && !this.shouldPass(event) ||
-                    !modes.passThrough && this.shouldPass(event);
+                    !modes.passThrough && this.shouldPass(event) ||
+                    !this.processor && event.type === "keydown"
+                        && options.get("passunknown").getKey(modes.main.allBases)
+                        && let (key = events.toString(event))
+                            !modes.main.allBases.some(
+                                function (mode) mappings.hives.some(
+                                    function (hive) hive.get(mode, key) || hive.getCandidates(mode, key)));
 
             if (event.type === "keydown")
                 this.passing = pass;
