@@ -523,9 +523,12 @@ var RangeFind = Class("RangeFind", {
             }
             pushRange(pageStart, pageEnd);
 
-            for (let [, elem] in iter(doc.getAnonymousNodes(doc.documentElement))) {
-                let range = RangeFind.nodeContents(elem);
-                pushRange(RangeFind.endpoint(range, true), RangeFind.endpoint(range, false));
+            let anonNodes = doc.getAnonymousNodes(doc.documentElement);
+            if (anonNodes) {
+                for (let [, elem] in iter(anonNodes)) {
+                    let range = RangeFind.nodeContents(elem);
+                    pushRange(RangeFind.endpoint(range, true), RangeFind.endpoint(range, false));
+                }
             }
         }
         rec(win);
