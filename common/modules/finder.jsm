@@ -382,7 +382,7 @@ var RangeFind = Class("RangeFind", {
         let doc = range.startContainer.ownerDocument;
         let win = doc.defaultView;
         let ranges = this.ranges.filter(function (r)
-            r.window === win && RangeFind.contains(r.range, range));
+            r.window === win && RangeFind.sameDocument(r.range, range) && RangeFind.contains(r.range, range));
 
         if (this.backward)
             return ranges[ranges.length - 1];
@@ -493,7 +493,9 @@ var RangeFind = Class("RangeFind", {
                     frames.push(r);
             }
 
-            let range = start.startContainer.ownerDocument.createRange();
+            let doc = start.startContainer.ownerDocument;
+
+            let range = doc.createRange();
             range.setStart(start.startContainer, start.startOffset);
             range.setEnd(end.startContainer, end.startOffset);
 
@@ -505,7 +507,7 @@ var RangeFind = Class("RangeFind", {
         }
         function rec(win) {
             let doc = win.document;
-            let pageRange = RangeFind.nodeRange(doc.body || doc.documentElement.lastChild);
+            let pageRange = RangeFind[doc.body ? "nodeRange" : "nodeContents"](doc.body || doc.documentElement);
             backup = backup || pageRange;
             let pageStart = RangeFind.endpoint(pageRange, true);
             let pageEnd = RangeFind.endpoint(pageRange, false);
@@ -520,6 +522,11 @@ var RangeFind = Class("RangeFind", {
                 }
             }
             pushRange(pageStart, pageEnd);
+
+            for (let [, elem] in iter(doc.getAnonymousNodes(doc.documentElement))) {
+                let range = RangeFind.nodeContents(elem);
+                pushRange(RangeFind.endpoint(range, true), RangeFind.endpoint(range, false));
+            }
         }
         rec(win);
         if (frames.length == 0)
@@ -737,6 +744,14 @@ var RangeFind = Class("RangeFind", {
             return false;
         }
     },
+    nodeContents: function (node) {
+        let range = node.ownerDocument.createRange();
+        try {
+            range.selectNodeContents(node);
+        }
+        catch (e) {}
+        return range;
+    },
     nodeRange: function (node) {
         let range = node.ownerDocument.createRange();
         try {
@@ -745,7 +760,17 @@ var RangeFind = Class("RangeFind", {
         catch (e) {}
         return range;
     },
-    sameDocument: function (r1, r2) r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument,
+    sameDocument: function (r1, r2) {
+        if (!(r1 && r2 && r1.endContainer.ownerDocument == r2.endContainer.ownerDocument))
+            return false;
+        try {
+            r1.compareBoundaryPoints(r1.START_TO_START, r2);
+        }
+        catch (e if e.result == 0x80530004 /* NS_ERROR_DOM_WRONG_DOCUMENT_ERR */) {
+            return false;
+        }
+        return true;
+    },
     selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(function (p) "ancestor-or-self::" + p).join(" | ")
 });
 

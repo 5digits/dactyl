@@ -45,6 +45,16 @@ var Tabs = Module("tabs", {
                 if (contentDocument.readyState === "complete")
                     dactyl.initDocument(contentDocument);
         }, 1000);
+
+        if (window.TabsInTitlebar)
+            window.TabsInTitlebar.allowedBy("dactyl", false);
+    },
+
+    signals: {
+        enter: function enter() {
+            if (window.TabsInTitlebar)
+                window.TabsInTitlebar.allowedBy("dactyl", true);
+        }
     },
 
     _alternates: Class.memoize(function () [config.tabbrowser.mCurrentTab, null]),
