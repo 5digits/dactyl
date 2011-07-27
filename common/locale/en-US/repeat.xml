@@ -448,7 +448,7 @@
 </p>
 
 <code>            <hl style="color: #444">" This is a comment</hl>
-    foo bar <hl style="color: #444">" This is a comment</hl>
+    foo bar " This is a syntax error
             <str> This is not a comment</str>
     foo bar <str> This is not a comment</str>
 </code>
