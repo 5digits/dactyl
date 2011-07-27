@@ -349,7 +349,7 @@ var Template = Module("Template", {
 
     highlightURL: function highlightURL(str, force) {
         if (force || /^[a-zA-Z]+:\/\//.test(str))
-            return <a highlight="URL" href={str}>{str}</a>;
+            return <a highlight="URL" href={str}>{util.losslessDecodeURI(str)}</a>;
         else
             return str;
     },
@@ -373,7 +373,7 @@ var Template = Module("Template", {
                         <td class="indicator">{idx == index ? ">" : ""}</td>
                         <td>{Math.abs(idx - index)}</td>
                         <td style="width: 250px; max-width: 500px; overflow: hidden;">{val.title}</td>
-                        <td><a href={val.URI.spec} highlight="URL jump-list">{val.URI.spec}</a></td>
+                        <td><a href={val.URI.spec} highlight="URL jump-list">{util.losslessDecodeURI(val.URI.spec)}</a></td>
                     </tr>)
                 }
             </table>;
