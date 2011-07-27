@@ -671,12 +671,12 @@ var Buffer = Module("buffer", {
                                   null, null, null, persist));
 
         persist.progressListener = update(Object.create(downloadListener), {
-            onStateChange: function onStateChange(progress, request, flags, status) {
+            onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
                 if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
-                    dactyl.trapErrors(callback, self, uri, file, progress, request, flag, status);
+                    dactyl.trapErrors(callback, self, uri, file, progress, request, flags, status);
 
                 return onStateChange.superapply(this, arguments);
-            }
+            })
         });
 
         persist.saveURI(uri, null, null, null, null, file);

@@ -1417,7 +1417,7 @@ var Events = Module("events", {
         keyup: function onKeyUp(event) {
             if (event.type == "keydown")
                 this.keyEvents.push(event);
-            else
+            else if (!this.processor)
                 this.keyEvents = [];
 
             let pass = this.passing && !event.isMacro ||
