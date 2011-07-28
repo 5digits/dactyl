@@ -307,14 +307,17 @@
 
 <item>
     <tags>:set! :set-!</tags>
-    <spec>:se<oa>t</oa>! <a>preference</a>=<a>value</a></spec>
-    <spec>:se<oa>t</oa>! <a>preference</a>&amp;</spec>
+    <spec>:se<oa>t</oa>! …</spec>
     <description>
         <p>
-            Change any &dactyl.host; <a>preference</a> (those on the about:config
-            page). You can also reset/delete these preferences with
-            <ex>:set! <a>preference</a>&amp;</ex>.
+            The same as <ex>:set</ex> but operates on &dactyl.host; preferences
+            (those on the about:config page). See <ex>:set</ex> for operator
+            details.
         </p>
+        <note>
+            The <em>no</em> and <em>inv</em> prefix operators are not available
+            for setting preferences.
+        </note>
     </description>
 </item>
 
