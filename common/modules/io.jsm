@@ -699,22 +699,20 @@ execute 'syn region <name>Css matchgroup=<name>CssDelimiter'
 
 syn match <name>Notation "<[0-9A-Za-z-]\+>"
 
-syn match   <name>Comment +".*$+ contains=<name>Todo,@Spell
 syn keyword <name>Todo FIXME NOTE TODO XXX contained
 
 syn region <name>String start="\z(["']\)" end="\z1" skip="\\\\\|\\\z1" oneline
 
-syn match <name>LineComment +^\s*".*$+ contains=<name>Todo,@Spell
+syn match <name>Comment +^\s*".*$+ contains=<name>Todo,@Spell
 
 " NOTE: match vim.vim highlighting group names
 hi def link <name>AutoCmd               <name>Command
 hi def link <name>AutoEvent             Type
 hi def link <name>Command               Statement
-hi def link <name>Comment               Comment
 hi def link <name>JavaScriptDelimiter   Delimiter
 hi def link <name>CssDelimiter          Delimiter
 hi def link <name>Notation              Special
-hi def link <name>LineComment           Comment
+hi def link <name>Comment               Comment
 hi def link <name>Option                PreProc
 hi def link <name>SetMod                <name>Option
 hi def link <name>String                String
