@@ -1267,7 +1267,7 @@ var Hints = Module("hints", {
                 },
                 validator: function (value) {
                     let values = events.fromString(value).map(events.closure.toString);
-                    return Option.validIf(array.uniq(values).length === values.length,
+                    return Option.validIf(array.uniq(values).length === values.length && values.length > 1,
                                           _("option.hintkeys.duplicate"));
                 }
             });
