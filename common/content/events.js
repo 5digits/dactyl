@@ -494,7 +494,7 @@ var Events = Module("events", {
         }
 
         this._activeMenubar = false;
-        this.listen(window, this, "events", true);
+        this.listen(window, this, "events");
     },
 
     signals: {
