@@ -135,6 +135,9 @@ var ProcessorStack = Class("ProcessorStack", {
         if (result === Events.PASS_THROUGH || result === Events.PASS && this.passUnknown)
             events.passing = true;
 
+        if (result === Events.PASS_THROUGH && this.keyEvents.length)
+            events.dbg("PASS_THROUGH:\n\t" + this.keyEvents.map(function (e) [e.type, events.toString(e)]).join("\n\t"));
+
         if (result === Events.PASS_THROUGH)
             events.feedevents(null, this.keyEvents, { skipmap: true, isMacro: true, isReplay: true });
         else {
@@ -1623,7 +1626,7 @@ var Events = Module("events", {
                isinstance(elem, [HTMLEmbedElement,
                                  HTMLObjectElement, HTMLSelectElement,
                                  HTMLTextAreaElement,
-                                 Ci.nsIDOMXULTreeElement, Ci.nsIDOMXULTextBoxElement]) ||
+                                 Ci.nsIDOMXULTextBoxElement]) ||
                elem instanceof Window && Editor.getEditor(elem);
     },
 
