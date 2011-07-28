@@ -620,7 +620,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             range.selectNode(node);
             node = range;
         }
-        let doc = (node.getRangeAt ? node.getRangeAt(0) : node).startContainer.ownerDocument;
+        let doc = (node.getRangeAt ? node.getRangeAt(0) : node).startContainer;
+        doc = doc.ownerDocument || doc;
 
         let encoder = services.HtmlEncoder();
         encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);

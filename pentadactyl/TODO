@@ -31,7 +31,6 @@ FEATURES:
 8 all search commands should start searching from the top of the visible viewport
 8 <C-o>/<C-i> should work as in Vim (i.e., save page positions as well as
   locations in the history list).
-8 jump to the next heading with ]h, next image ]i, previous textbox [t and so on
 7 clean up error message codes and document
 7 add search capability to MOW
 7 describe-key command (prompt for a key and display its binding with documentation)
@@ -62,7 +61,6 @@ FEATURES:
 5 make a command to search within google search results
   (http://gadelkareem.com/2007/01/28/using-google-ajax-api-as-an-array/)
   maybe impossible, needs a per-site key from google
-4 } { should jump to the next paragraph of the page
 3 A format for 'guitablabel' and 'statusline'
 3 add a command-line window (:help cmdline-window in Vim).
 3 Splitting Windows with [:sp :vsp ctrl-w,s ctrl-w,v] and closing with [ctrl-w,q], moving with [ctrl-w,w or tab]

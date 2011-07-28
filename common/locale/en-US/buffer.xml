@@ -328,6 +328,39 @@
     </description>
 </item>
 
+<item>
+    <tags>[h [p [</tags>
+    <spec><oa>count</oa>[<a>arg</a></spec>
+    <description short="true">
+        <p>Jump to the previous element as defined by <o>jumptags</o>.</p>
+    </description>
+</item>
+
+<item>
+    <tags>]h ]p ]</tags>
+    <spec><oa>count</oa>]<a>arg</a></spec>
+    <description short="true">
+        <p>Jump to the next element as defined by <o>jumptags</o>.</p>
+    </description>
+</item>
+
+<item>
+    <tags>{</tags>
+    <spec><oa>count</oa>{</spec>
+    <description short="true">
+        <p>Jump to the previous paragraph. Identical to <k>[p</k>.</p>
+    </description>
+</item>
+
+<item>
+    <tags>}</tags>
+    <spec><oa>count</oa>}</spec>
+    <description short="true">
+        <p>Jump to the next paragraph. Identical to <k>]p</k>.</p>
+    </description>
+</item>
+
+
 <h2 tag="zooming zoom">Zooming</h2>
 
 <p>

@@ -797,6 +797,37 @@ var Buffer = Module("buffer", {
         return win;
     },
 
+    /**
+     * Finds the next visible element for the node path in 'jumptags'
+     * for *arg*.
+     *
+     * @param {string} arg The element in 'jumptags' to use for the search.
+     * @param {number} count The number of elements to jump.
+     *      @optional
+     * @param {boolean} reverse If true, search backwards. @optional
+     */
+    findJump: function findJump(arg, count, reverse) {
+        const FUDGE = 10;
+
+        let path = options["jumptags"][arg];
+        dactyl.assert(path, _("error.invalidArgument", arg));
+
+        let distance = reverse ? function (rect) -rect.top : function (rect) rect.top;
+        let elems = [[e, distance(e.getBoundingClientRect())] for (e in path.matcher(this.focusedFrame.document))]
+                        .filter(function (e) e[1] > FUDGE)
+                        .sort(function (a, b) a[1] - b[1])
+
+        let idx = Math.min((count || 1) - 1, elems.length);
+        dactyl.assert(idx in elems);
+
+        let elem = elems[idx][0];
+        elem.scrollIntoView(true);
+
+        let sel = elem.ownerDocument.defaultView.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(RangeFind.endpoint(RangeFind.nodeRange(elem), true));
+    },
+
     // TODO: allow callback for filtering out unwanted frames? User defined?
     /**
      * Shifts the focus to another frame within the buffer. Each buffer
@@ -1742,6 +1773,26 @@ var Buffer = Module("buffer", {
             function (args) { buffer.shiftFrameFocus(-Math.max(args.count, 1)); },
             { count: true });
 
+        mappings.add([modes.NORMAL], ["["],
+            "Jump to the previous element as defined by 'jumptags'",
+            function (args) { buffer.findJump(args.arg, args.count, true); },
+            { arg: true, count: true });
+
+        mappings.add([modes.NORMAL], ["]"],
+            "Jump to the next element as defined by 'jumptags'",
+            function (args) { buffer.findJump(args.arg, args.count, false); },
+            { arg: true, count: true });
+
+        mappings.add([modes.NORMAL], ["{"],
+            "Jump to the previous paragraph",
+            function (args) { buffer.findJump("p", args.count, true); },
+            { count: true });
+
+        mappings.add([modes.NORMAL], ["}"],
+            "Jump to the next paragraph",
+            function (args) { buffer.findJump("p", args.count, false); },
+            { count: true });
+
         mappings.add([modes.NORMAL], ["]]", "<next-page>"],
             "Follow the link labeled 'next' or '>' if it exists",
             function (args) {
@@ -1935,6 +1986,23 @@ var Buffer = Module("buffer", {
                     return value;
                 },
                 validator: function (value) RegExp(value)
+            });
+
+        options.add(["jumptags", "jt"],
+            "XPath or CSS selector strings of jumpable elements for extended hint modes",
+            "stringmap", {
+                "p": "p,table,ul,ol,blockquote",
+                "h": "h1,h2,h3,h4,h5,h6"
+            },
+            {
+                keepQuotes: true,
+                setter: function (vals) {
+                    for (let [k, v] in Iterator(vals))
+                        vals[k] = update(new String(v), { matcher: util.compileMatcher(Option.splitList(v)) });
+                    return vals;
+                },
+                validator: function (value) util.validateMatcher.call(this, value)
+                    && Object.keys(value).every(function (v) v.length == 1)
             });
 
         options.add(["nextpattern"],

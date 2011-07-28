@@ -988,6 +988,16 @@
 </item>
 
 <item>
+    <tags>'jt' 'jumptags'</tags>
+    <spec>'jumptags'</spec>
+    <type>&option.jumptags.type;</type>
+    <default>&option.jumptags.default;</default>
+    <description>
+        <p>XPath or CSS selector strings of jumpable elements for extended hint modes.</p>
+    </description>
+</item>
+
+<item>
     <tags>'lpl' 'loadplugins'</tags>
     <spec>'loadplugins' 'lpl'</spec>
     <type>&option.loadplugins.type;</type>

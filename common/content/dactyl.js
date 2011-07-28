@@ -1016,6 +1016,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
         }
         else if (obj instanceof Option) {
+            tag = spec = function (name) <>'{name}'</>;
             link = function (opt, name) <o>{name}</o>;
             args = { value: "", values: [] };
         }
