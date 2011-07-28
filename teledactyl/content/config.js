@@ -4,7 +4,7 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const Config = Module("config", ConfigBase, {
+var Config = Module("config", ConfigBase, {
     name: "teledactyl",
     appName: "Teledactyl",
     idName: "TELEDACTYL",
@@ -16,12 +16,16 @@ const Config = Module("config", ConfigBase, {
         init: function init() {
             init.superapply(this, arguments);
 
-            modules.__defineGetter__("content", function () window.content);
+            if (!("content" in modules))
+                modules.__defineGetter__("content", function () window.content);
 
             util.overlayWindow(window, { append: <><hbox id="statusTextBox" flex=""/></> });
         },
 
-        get browser() window.getBrowser(),
+        get browser()
+            let (tabmail = document.getElementById('tabmail'))
+                tabmail && tabmail.tabInfo.length ? tabmail.getBrowserForSelectedTab()
+                                                  : document.getElementById("messagepane"),
 
         get commandContainer() document.documentElement.id,
 
@@ -32,6 +36,8 @@ const Config = Module("config", ConfigBase, {
             get mCurrentTab() this.tabContainer.selectedItem,
             get mStrip() this.tabStrip,
             get browsers() [browser for (browser in Iterator(this.mTabs))],
+
+            removeTab: function removeTab(tab) this.closeTab(tab),
 
             loadOneTab: function loadOneTab(uri) {
                 return this.openTab("contentTab", { contentPage: uri });

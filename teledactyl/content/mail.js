@@ -4,7 +4,7 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const Mail = Module("mail", {
+var Mail = Module("mail", {
     init: function init() {
         // used for asynchronously selecting messages after wrapping folders
         this._selectMessageKeys = [];

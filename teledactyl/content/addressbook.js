@@ -4,7 +4,7 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-const Addressbook = Module("addressbook", {
+var Addressbook = Module("addressbook", {
     init: function () {
     },
 
