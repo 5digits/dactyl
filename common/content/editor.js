@@ -659,7 +659,7 @@ var Editor = Module("editor", {
              "<*-Home>", "<*-End>", "<*-PageUp>", "<*-PageDown>",
              "<M-c>", "<M-v>"],
             "Handled by " + config.host,
-            function () Events.PASS);
+            function () Events.PASS_THROUGH);
 
         mappings.add([modes.INSERT, modes.NORMAL],
             ["<Tab>"], "Select the next element in the tab sequence",
