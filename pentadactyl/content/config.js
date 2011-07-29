@@ -117,7 +117,7 @@ var Config = Module("config", ConfigBase, {
         LocationChange: "Triggered when changing tabs or when navigation to a new location",
         PageLoadPre: "Triggered after a page load is initiated",
         PageLoad: "Triggered when a page gets (re)loaded/opened",
-        PrivateMode: "Triggered when private mode is activated or deactivated",
+        PrivateMode: "Triggered when private browsing mode is activated or deactivated",
         Sanitize: "Triggered when a sanitizeable item is cleared",
         ShellCmdPost: "Triggered after executing a shell command with :!cmd",
         Enter: "Triggered after Firefox starts",

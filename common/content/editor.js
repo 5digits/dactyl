@@ -669,14 +669,14 @@ var Editor = Module("editor", {
             function () Events.PASS);
 
         mappings.add([modes.INSERT],
-            ["<Space>", "<Return>"], "Expand insert mode abbreviation",
+            ["<Space>", "<Return>"], "Expand Insert mode abbreviation",
             function () {
                 editor.expandAbbreviation(modes.INSERT);
                 return Events.PASS_THROUGH;
             });
 
         mappings.add([modes.INSERT],
-            ["<C-]>", "<C-5>"], "Expand insert mode abbreviation",
+            ["<C-]>", "<C-5>"], "Expand Insert mode abbreviation",
             function () { editor.expandAbbreviation(modes.INSERT); });
 
         // text edit mode

@@ -148,7 +148,7 @@ precommit = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</st
             <p>
                 See the <o>passkeys</o> option to automatically pass specific
                 keys on sites of your choosing, or <t>autocmd-examples</t> to
-                automatically enter <em>PASS THROUGH</em> mode for certain websites.
+                automatically enter <em>Pass Through</em> mode for certain websites.
             </p>
 
             <h3 tag="faq-passkeys-autocmd">Why doesn't my modes.passAllKeys autocmd work anymore?</h3>

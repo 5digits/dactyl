@@ -47,7 +47,7 @@
     &dactyl.appName;'s power, like Vim's, comes from its modal interface. Keys have
     different meanings depending on which mode the browser is in. &dactyl.appName; has
     several modes, but the 2 most important are <em>Normal</em> mode and
-    <em>Command-line</em> mode.
+    <em>Command Line</em> mode.
 </p>
 
 <p>
@@ -56,13 +56,13 @@
 </p>
 
 <p>
-    The other core mode of &dactyl.appName;, Command-line mode, can be entered from
+    The other core mode of &dactyl.appName;, Command Line mode, can be entered from
     Normal mode by typing a <k>:</k> (colon). You will frequently see &dactyl.appName;
     commands start with a <k>:</k>, indicating that what follows is a command.
 </p>
 
 <p>
-    To return to Normal mode from Command-line mode, type <k name="Esc"/>. Pressing
+    To return to Normal mode from Command Line mode, type <k name="Esc"/>. Pressing
     <k name="Esc"/> will also return you to Normal mode from most other modes in
     &dactyl.appName;.
 </p>
@@ -229,19 +229,19 @@
 </p>
 
 <p>
-    The most common hint mode is called <t>quick-hints</t>.
-    To activate QuickHint mode, press either <k>f</k> or <k>F</k>. The lower-case
-    <k>f</k> will open the resulting link in the current tab, while the upper-case
-    <k>F</k> will open it in a new tab.
+    To activate Hints mode, press either <k>f</k> or <k>F</k>. The lower-case
+    <k>f</k> will open the resulting link in the current tab, while the
+    upper-case <k>F</k> will open it in a new tab.
 </p>
 
 <p>
     To test it, try this link: <link topic="&dactyl.apphome;">&dactyl.appName; Homepage</link>.
-    Activate QuickHint mode with <k>f</k> or <k>F</k> to highlight all currently
+    Activate Hints mode with <k>f</k> or <k>F</k> to highlight all currently
     visible links. Then start typing the text of the link. The link should be
-    uniquely identified soon, and &dactyl.appName; will open it. Once you're done,
-    remember to use <k name="C-o"/> (<em>History Back</em>) or <k>d</k> (<em>Delete Buffer</em>)
-    to return here, depending on which key you used to activate QuickHint mode.
+    uniquely identified soon, and &dactyl.appName; will open it. Once you're
+    done, remember to use <k name="C-o"/> (<em>History Back</em>) or <k>d</k>
+    (<em>Delete Buffer</em>) to return here, depending on which key you used to
+    activate Hints mode.
 </p>
 
 <h2 tag="common-issues">Common issues</h2>

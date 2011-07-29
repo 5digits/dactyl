@@ -13,7 +13,7 @@
  * inserted expansion string.
  *
  * Abbreviations have a left-hand side (LHS) whose text is replaced by that of
- * the right-hand side (RHS) when triggered by an input mode expansion key.
+ * the right-hand side (RHS) when triggered by an Input mode expansion key.
  * E.g. an abbreviation with a LHS of "gop" and RHS of "Grand Old Party" will
  * replace the former with the latter.
  *

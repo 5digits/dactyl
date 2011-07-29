@@ -26,9 +26,9 @@
 <p>
     Key mappings are the most basic means &dactyl.appName; provides
     for altering the actions of key presses. Each key mapping is
-    associated with a mode, such as <link topic="insert-mode">insert</link>,
-    <link>normal</link>, or
-    <link topic="command-line-mode">command-line</link>, and only
+    associated with a mode, such as <link topic="insert-mode">Insert</link>,
+    <link>Normal</link>, or
+    <link topic="command-line-mode">Command Line</link>, and only
     has effect when that mode is active. Although each mode has a
     full suite of internal mappings, they may be easily augmented,
     altered, or removed with the <ex>:map</ex> command and its
@@ -54,17 +54,17 @@
     <dt>n</dt> <dd>Normal mode: When browsing normally</dd>
     <dt>v</dt> <dd>Visual mode: When selecting text with the cursor keys</dd>
     <dt>i</dt> <dd>Insert mode: When interacting with text fields on a website</dd>
-    <dt>t</dt> <dd>TextEdit mode: When editing text fields in Vim-like NORMAL mode</dd>
-    <dt>c</dt> <dd>Command-line mode: When typing into the &dactyl.appName; command line</dd>
+    <dt>t</dt> <dd>Text Edit mode: When editing text fields in Vim-like Normal mode</dd>
+    <dt>c</dt> <dd>Command Line mode: When typing into the &dactyl.appName; command line</dd>
 </dl>
 
 <p>
     The ordinary <ex>:map</ex> and <ex>:noremap</ex> commands
-    add mappings for normal and visual mode. In order to map key
+    add mappings for Normal and Visual mode. In order to map key
     bindings in a different mode, any of the mapping commands may be
     prefixed with one of the above letters. For instance,
-    <ex>:imap</ex> creates a new key mapping in insert mode, while
-    <ex>:cunmap</ex> removes a key mapping from command-line mode.
+    <ex>:imap</ex> creates a new key mapping in Insert mode, while
+    <ex>:cunmap</ex> removes a key mapping from Command Line mode.
     Other modes can be specified using the -modes option described below.
 </p>
 
@@ -78,8 +78,8 @@
 <p tag="modes">
     The following tree represents all of the modes understood by
     dactyl. Mappings for a mode also apply to its children and
-    descendants. So a mapping in the BASE mode, for instance, is
-    also active in NORMAL and EX mode.
+    descendants. So a mapping in the Base mode, for instance, is
+    also active in Normal and Ex mode.
 </p>
 
 &modes.tree;
@@ -125,7 +125,7 @@
     <dt>:vmap  :vnoremap  :vunmap</dt> <dd>Visual mode</dd>
     <dt>:imap  :inoremap  :iunmap</dt> <dd>Insert mode</dd>
     <dt>:tmap  :tnoremap  :tunmap</dt> <dd>Text Edit mode</dd>
-    <dt>:cmap  :cnoremap  :cunmap</dt> <dd>Command-line mode</dd>
+    <dt>:cmap  :cnoremap  :cunmap</dt> <dd>Command Line mode</dd>
 </dl>
 
 <note>
@@ -470,9 +470,9 @@
     <spec>:ca<oa>bbreviate</oa></spec>
     <description>
         <p>
-            Abbreviate a key sequence for Command-line mode. Same as
+            Abbreviate a key sequence for Command Line mode. Same as
             <ex>:ab<oa>breviate</oa></ex>, but for
-            <t>command-line</t> mode only.
+            <t>Command Line</t> mode only.
         </p>
     </description>
 </item>
@@ -485,7 +485,7 @@
     <description>
         <p>
             Abbreviate a key sequence for Insert mode. Same as
-            <ex>:ab<oa>breviate</oa></ex>, but for insert mode only.
+            <ex>:ab<oa>breviate</oa></ex>, but for Insert mode only.
         </p>
     </description>
 </item>
@@ -505,9 +505,9 @@
     <spec>:cuna<oa>bbreviate</oa>!</spec>
     <description>
         <p>
-            Remove abbreviation(s) for Command-line mode. Same as
+            Remove abbreviation(s) for Command Line mode. Same as
             <ex>:una<oa>bbreviate</oa></ex>, but for
-            <t>command-line</t> mode only.
+            <t>Command Line</t> mode only.
         </p>
     </description>
 </item>

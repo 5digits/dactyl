@@ -14,7 +14,7 @@
 
 <p>
     Hints are an easy way to interact with web pages without using
-    your mouse. In hint mode, &dactyl.appName; highlights and
+    your mouse. In Hints mode, &dactyl.appName; highlights and
     numbers all clickable elements. The elements can be selected
     either by typing their numbers, or typing parts of their text to
     narrow them down. While the default action is to click the
@@ -38,7 +38,7 @@
             their text to narrow down the result. When an element
             has been selected, it is automatically clicked and hint
             mode ends. Additionally, the following keys have
-            special meanings in hint mode:
+            special meanings in Hints mode:
         </p>
         <dl>
             <dt><k name="CR"/></dt>
@@ -53,7 +53,7 @@
                 value of <o>hintkeys</o>) as ordinary text</dd>
 
             <dt><k name="Esc"/></dt>
-            <dd>Exits hint mode without selecting an element</dd>
+            <dd>Exits Hints mode without selecting an element</dd>
         </dl>
     </description>
 </item>
@@ -80,12 +80,12 @@
     <spec>;<a>mode</a><a>hint</a></spec>
     <description>
         <p>
-            Start an extended hint mode. Extended hints are exactly like
+            Start an extended Hints mode. Extended hints are exactly like
             <t>quick-hints</t>, except that each sub-mode highlights a
             more specialized set of elements, and performs a unique action on
             the selected link. Because of the panoply of extended hint modes
             available, after pressing <k>;</k>, pressing <k name="Tab"/> brings
-            up the completion list with each hint mode and its description.
+            up the completion list with each hints mode and its description.
         </p>
 
         <p><a>mode</a> may be one of:</p>
@@ -129,7 +129,7 @@
     <spec>g;<a>mode</a><a>hint</a></spec>
     <description>
         <p>
-            Start an extended hint mode and stay there until
+            Start an extended hints mode and stay there until
             <k name="Esc"/> is pressed. Like <k>;</k>, except that
             after a hint is selected, hints remain visible so that
             another one can be selected with the same action as the

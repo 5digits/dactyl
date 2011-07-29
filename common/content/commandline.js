@@ -1432,7 +1432,7 @@ var CommandLine = Module("commandline", {
     mappings: function init_mappings() {
 
         mappings.add([modes.COMMAND],
-            [":"], "Enter command-line mode",
+            [":"], "Enter Command Line mode",
             function () { CommandExMode().open(""); });
 
         mappings.add([modes.INPUT_MULTILINE],

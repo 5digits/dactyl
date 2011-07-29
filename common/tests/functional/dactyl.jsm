@@ -301,7 +301,7 @@ Controller.prototype = {
     }),
 
     /**
-     * Returns dactyl to normal mode.
+     * Returns dactyl to Normal mode.
      */
     setNormalMode: wrapAssertNoErrors(function () {
         // XXX: Normal mode test
@@ -313,9 +313,9 @@ Controller.prototype = {
         utils.assert("dactyl.setNormalMode", this.modules.modes.stack.length == 1,
                      "Failed to return to Normal mode");
 
-        this.assertMessageWindowOpen(false, "Returning to normal mode: Multi-line output not closed");
-        this.assertMessageLine(function (msg) !msg, "Returning to normal mode: Message not cleared");
-    }, "Returning to normal mode"),
+        this.assertMessageWindowOpen(false, "Returning to Normal mode: Multi-line output not closed");
+        this.assertMessageLine(function (msg) !msg, "Returning to Normal mode: Message not cleared");
+    }, "Returning to Normal mode"),
 
     /**
      * Returns dactyl to Ex mode.

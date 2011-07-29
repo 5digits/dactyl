@@ -691,7 +691,7 @@ var Mappings = Module("mappings", {
             if (mode.char && !commands.get(mode.char + "map", true))
                 addMapCommands(mode.char,
                                [m.mask for (m in modes.mainModes) if (m.char == mode.char)],
-                               [mode.name]);
+                               mode.displayName);
 
         let args = {
             getMode: function (args) findMode(args["-mode"]),

@@ -701,7 +701,7 @@ var JavaScript = Module("javascript", {
         modes.addMode("REPL", {
             description: "JavaScript Read Eval Print Loop",
             bases: [modes.COMMAND_LINE],
-            displayName: "REPL"
+            displayName: Class.memoize(function () this.name)
         });
     },
     commandline: function initCommandLine(dactyl, modules, window) {

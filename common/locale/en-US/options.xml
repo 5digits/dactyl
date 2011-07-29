@@ -972,7 +972,7 @@
         </p>
 
         <p>
-            TextEdit mode can be entered with <k name="C-t" mode="I"/> from Insert mode.
+            Text Edit mode can be entered with <k name="C-t" mode="I"/> from Insert mode.
         </p>
     </description>
 </item>

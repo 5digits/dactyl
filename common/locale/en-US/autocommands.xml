@@ -89,11 +89,11 @@
 </item>
 <h2 tag="autocmd-examples">Examples</h2>
 
-<p>Enable <em>passthrough</em> mode on all Google sites:</p>
+<p>Enable <em>Pass Through</em> mode on all Google sites:</p>
 
 <code><ex>:autocmd LocationChange</ex> <str delim="">google.com</str> <ex>:normal!</ex> <k name="C-z"/></code>
 
-<p>Enable <em>passthrough</em> mode on <em>some</em> Google sites:</p>
+<p>Enable <em>Pass Through</em> mode on <em>some</em> Google sites:</p>
 
 <code><ex>:autocmd LocationChange</ex> <str delim="'">^https?://(www|mail)\.google\.com/</str> <ex>:normal!</ex> <k name="C-z"/></code>
 

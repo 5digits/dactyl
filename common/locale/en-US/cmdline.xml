@@ -9,11 +9,11 @@
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
-<h1 tag="command-line-mode command-line mode-cmdline">Command-line mode</h1>
+<h1 tag="command-line-mode command-line mode-cmdline">Command Line mode</h1>
 <toc start="2"/>
 
 <p>
-    &dactyl.appName;'s command-line mode is perhaps its most
+    &dactyl.appName;'s Command Line mode is perhaps its most
     powerful interface. In this mode, the command input bar at the
     bottom of the window is given the keyboard focus for any of a
     variety of required inputs. In addition to access to almost
@@ -27,9 +27,9 @@
 
 <p>
     Included among the several command-line modes are Ex command
-    mode (the standard mode for entering commands), find mode (for
-    searching the current page), prompt mode (for selecting files,
-    confirming actions), and hint mode (for selecting links and
+    mode (the standard mode for entering commands), Find mode (for
+    searching the current page), Prompt mode (for selecting files,
+    confirming actions), and Hints mode (for selecting links and
     other items on a page).
 </p>
 
@@ -60,7 +60,7 @@
     <tags><![CDATA[c_<C-c>]]></tags>
     <spec>&lt;C-c></spec>
     <description short="true">
-        <p>Quit Command-line mode without executing.</p>
+        <p>Quit Command Line mode without executing.</p>
     </description>
 </item>
 

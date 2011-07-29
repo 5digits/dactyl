@@ -396,7 +396,7 @@ var HintSession = Class("HintSession", CommandMode, {
     },
 
     /**
-     * Handle a hint mode event.
+     * Handle a hints mode event.
      *
      * @param {Event} event The event to handle.
      */
@@ -774,7 +774,7 @@ var Hints = Module("hints", {
     hintSession: Modes.boundProperty(),
 
     /**
-     * Creates a new hint mode.
+     * Creates a new hints mode.
      *
      * @param {string} mode The letter that identifies this mode.
      * @param {string} prompt The description to display to the user
@@ -1245,7 +1245,7 @@ var Hints = Module("hints", {
             });
 
         options.add(["hinttags", "ht"],
-            "XPath or CSS selector strings of hintable elements for hint mode",
+            "XPath or CSS selector strings of hintable elements for Hints mode",
             "stringlist", "input:not([type=hidden]),a[href],area,iframe,textarea,button,select," +
                           "[onclick],[onmouseover],[onmousedown],[onmouseup],[oncommand]," +
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",
