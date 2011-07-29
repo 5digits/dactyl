@@ -1932,7 +1932,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             { argCount: "0" });
 
         function findToolbar(name) util.evaluateXPath(
-            "//*[@toolbarname=" + util.escapeString(name, "'") + "]",
+            "//*[@toolbarname=" + util.escapeString(name, "'") + " or " +
+                "@toolbarname=" + util.escapeString(name.trim(), "'") + "]",
             document).snapshotItem(0);
 
         var toolbox = document.getElementById("navigator-toolbox");
