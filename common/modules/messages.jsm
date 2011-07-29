@@ -108,7 +108,7 @@ var Messages = Module("messages", {
                         function getter(key, default_) function getter() messages.get([name, key].join("."), default_);
 
                         if (value != null) {
-                            let name = [this.constructor.className.toLowerCase(), this.identifier || this.name, prop].join(".");
+                            var name = [this.constructor.className.toLowerCase(), this.identifier || this.name, prop].join(".");
                             if (!isObject(value))
                                 value = messages.get(name, value);
                             else if (isArray(value))

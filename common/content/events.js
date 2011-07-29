@@ -1481,8 +1481,7 @@ var Events = Module("events", {
                     modes.push(modes.MENU);
         },
 
-        popuphidden: function onPopupHidden() {
-            // gContextMenu is set to NULL, when a context menu is closed
+        popuphidden: function onPopupHidden(event) {
             if (window.gContextMenu == null && !this._activeMenubar)
                 modes.remove(modes.MENU, true);
             modes.remove(modes.AUTOCOMPLETE);

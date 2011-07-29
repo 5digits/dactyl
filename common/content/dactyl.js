@@ -135,7 +135,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     }),
 
     get menuItems() {
+        function dispatch(node, name) {
+            let event = node.ownerDocument.createEvent("Events");
+            event.initEvent(name, false, false);
+            node.dispatchEvent(event);
+        }
+
         function addChildren(node, parent) {
+            if (~["menu", "menupopup"].indexOf(node.localName) && node.children.length)
+                dispatch(node, "popupshowing");
+
             for (let [, item] in Iterator(node.childNodes)) {
                 if (item.childNodes.length == 0 && item.localName == "menuitem"
                     && !item.hidden
@@ -2118,7 +2127,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 description: function (item) item.getAttribute("label"),
                 highlight: function (item) item.disabled ? "Disabled" : ""
             };
-            context.completions = dactyl.menuItems;
+            context.generate = function () dactyl.menuItems;
         };
 
         var toolbox = document.getElementById("navigator-toolbox");
