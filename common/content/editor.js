@@ -649,6 +649,7 @@ var Editor = Module("editor", {
         mappings.add([modes.INPUT],
             ["<C-t>"], "Edit text field in Vi mode",
             function () {
+                dactyl.assert(dactyl.focusedElement);
                 dactyl.assert(!editor.isTextEdit);
                 modes.push(modes.TEXT_EDIT);
             });
