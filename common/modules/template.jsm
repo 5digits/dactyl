@@ -197,7 +197,7 @@ var Template = Module("Template", {
                       - from pushing the baseline down and enlarging
                       - the row.
                       -->
-                   <li highlight="CompResult">{text}&#xa0;</li>
+                   <li highlight={"CompResult " + item.highlight}>{text}&#xa0;</li>
                    <li highlight="CompDesc">{desc}&#xa0;</li>
                </div>;
         // </e4x>

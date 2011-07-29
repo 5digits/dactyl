@@ -119,7 +119,28 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         set: function mode(val) modes.main = val
     }),
 
-    get menuItems() Dactyl.getMenuItems(),
+    get menuItems() {
+        function addChildren(node, parent) {
+            for (let [, item] in Iterator(node.childNodes)) {
+                if (item.childNodes.length == 0 && item.localName == "menuitem"
+                    && !item.hidden
+                    && !/rdf:http:/.test(item.getAttribute("label"))) { // FIXME
+                    item.dactylPath = parent + item.getAttribute("label");
+                    items.push(item);
+                }
+                else {
+                    let path = parent;
+                    if (item.localName == "menu")
+                        path += item.getAttribute("label") + ".";
+                    addChildren(item, path);
+                }
+            }
+        }
+
+        let items = [];
+        addChildren(document.getElementById(config.guioptions["m"][1]), "");
+        return items;
+    },
 
     // Global constants
     CURRENT_TAB: "here",
@@ -1538,29 +1559,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 catch (e) {}
             });
         }
-    },
-
-    // TODO: move this
-    getMenuItems: function () {
-        function addChildren(node, parent) {
-            for (let [, item] in Iterator(node.childNodes)) {
-                if (item.childNodes.length == 0 && item.localName == "menuitem"
-                    && !/rdf:http:/.test(item.getAttribute("label"))) { // FIXME
-                    item.fullMenuPath = parent + item.getAttribute("label");
-                    items.push(item);
-                }
-                else {
-                    let path = parent;
-                    if (item.localName == "menu")
-                        path += item.getAttribute("label") + ".";
-                    addChildren(item, path);
-                }
-            }
-        }
-
-        let items = [];
-        addChildren(document.getElementById(config.guioptions["m"][1]), "");
-        return items;
     }
 }, {
     events: function () {
@@ -1787,14 +1785,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             "Execute the specified menu item from the command line",
             function (args) {
                 let arg = args[0] || "";
-                let items = Dactyl.getMenuItems();
+                let items = dactyl.menuItems;
 
-                dactyl.assert(items.some(function (i) i.fullMenuPath == arg),
+                dactyl.assert(items.some(function (i) i.dactylPath == arg),
                               _("emenu.notFound", arg));
 
                 for (let [, item] in Iterator(items)) {
-                    if (item.fullMenuPath == arg)
+                    if (item.dactylPath == arg) {
+                        dactyl.assert(!item.disabled, _("error.disabled", item.dactylPath));
                         item.doCommand();
+                    }
                 }
             }, {
                 argCount: "1",
@@ -2112,7 +2112,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         completion.menuItem = function menuItem(context) {
             context.title = ["Menu Path", "Label"];
             context.anchored = false;
-            context.keys = { text: "fullMenuPath", description: function (item) item.getAttribute("label") };
+            context.keys = {
+                text: "dactylPath",
+                description: function (item) item.getAttribute("label"),
+                highlight: function (item) item.disabled ? "Disabled" : ""
+            };
             context.completions = dactyl.menuItems;
         };
 

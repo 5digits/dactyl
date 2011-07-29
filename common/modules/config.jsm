@@ -468,6 +468,8 @@ var ConfigBase = Class("ConfigBase", {
                           color: red     !important; background: white       !important;
         StatusWarningMsg  /* A warning message in the status line */ \
                           color: red     !important; background: transparent !important;
+        Disabled          /* Disabled items */ \
+                          color: gray    !important;
 
         CmdLine;>*;;FontFixed   /* The command line */ \
                                 padding: 1px !important;

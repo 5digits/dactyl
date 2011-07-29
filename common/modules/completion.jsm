@@ -338,7 +338,7 @@ var CompletionContext = Class("CompletionContext", {
      * The prototype object for items returned by {@link items}.
      */
     get itemPrototype() {
-        let res = {};
+        let res = { highlight: "" };
         function result(quote) {
             yield ["result", quote ? function () quote[0] + util.trapErrors(1, quote, this.text) + quote[2]
                                    : function () this.text];
