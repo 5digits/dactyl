@@ -1680,7 +1680,7 @@ var Buffer = Module("buffer", {
             { count: true });
 
         mappings.add([modes.NORMAL], ["i", "<Insert>"],
-            "Start CARET mode",
+            "Start Caret mode",
             function () { modes.push(modes.CARET); });
 
         mappings.add([modes.NORMAL], ["<C-c>", "<stop-load>"],

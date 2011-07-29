@@ -729,15 +729,15 @@ var Editor = Module("editor", {
 
         // visual mode
         mappings.add([modes.CARET, modes.TEXT_EDIT],
-            ["v"], "Start VISUAL mode",
+            ["v"], "Start Visual mode",
             function () { modes.push(modes.VISUAL); });
 
         mappings.add([modes.VISUAL],
-            ["v", "V"], "End VISUAL mode",
+            ["v", "V"], "End Visual mode",
             function () { modes.pop(); });
 
         mappings.add([modes.TEXT_EDIT],
-            ["V"], "Start VISUAL LINE mode",
+            ["V"], "Start Visual Line mode",
             function () {
                 modes.push(modes.VISUAL, modes.LINE);
                 editor.executeCommand("cmd_beginLine", 1);
@@ -843,10 +843,10 @@ var Editor = Module("editor", {
         function bind() mappings.add.apply(mappings,
                                            [[modes.AUTOCOMPLETE]].concat(Array.slice(arguments)))
 
-        bind(["<Esc>"], "Return to INSERT mode",
+        bind(["<Esc>"], "Return to Insert mode",
              function () Events.PASS_THROUGH);
 
-        bind(["<C-[>"], "Return to INSERT mode",
+        bind(["<C-[>"], "Return to Insert mode",
              function () { events.feedkeys("<Esc>", { skipmap: true }); });
 
         bind(["<Up>"], "Select the previous autocomplete result",
@@ -882,7 +882,7 @@ var Editor = Module("editor", {
             });
 
         options.add(["insertmode", "im"],
-            "Enter INSERT mode rather than TEXT_EDIT mode when focusing text areas",
+            "Enter Insert mode rather than Text Edit mode when focusing text areas",
             "boolean", true);
     }
 });

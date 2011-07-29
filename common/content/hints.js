@@ -1182,11 +1182,11 @@ var Hints = Module("hints", {
     mappings: function () {
         var myModes = config.browserModes.concat(modes.OUTPUT_MULTILINE);
         mappings.add(myModes, ["f"],
-            "Start HINTS mode",
+            "Start Hints mode",
             function () { hints.show("o"); });
 
         mappings.add(myModes, ["F"],
-            "Start HINTS mode, but open link in a new tab",
+            "Start Hints mode, but open link in a new tab",
             function () { hints.show(options.get("activate").has("links") ? "t" : "b"); });
 
         mappings.add(myModes, [";"],

@@ -227,9 +227,10 @@ var Modes = Module("modes", {
                 XML.ignoreWhitespace = XML.prettyPrinting = false;
 
                 let res = <ul dactyl:highlight="Dense" xmlns:dactyl={NS}/>;
-                Object.keys(obj).sort().forEach(function (mode) {
-                    res.* += <li><em>{mode}</em>: {modes.getMode(mode).description}{
-                        rec(obj[mode])
+                Object.keys(obj).sort().forEach(function (name) {
+                    let mode = modes.getMode(name);
+                    res.* += <li><em>{mode.displayName}</em>: {mode.description}{
+                        rec(obj[name])
                     }</li>;
                 });
 
@@ -500,6 +501,8 @@ var Modes = Module("modes", {
 
         description: Messages.Localized(""),
 
+        displayName: Class.memoize(function () this.name.split("_").map(util.capitalize).join(" ")),
+
         isinstance: function isinstance(obj)
             this === obj || this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
@@ -584,7 +587,7 @@ var Modes = Module("modes", {
     mappings: function initMappings() {
         mappings.add([modes.BASE, modes.NORMAL],
             ["<Esc>", "<C-[>"],
-            "Return to NORMAL mode",
+            "Return to Normal mode",
             function () { modes.reset(); });
 
         mappings.add([modes.INPUT, modes.COMMAND, modes.PASS_THROUGH, modes.QUOTE],
@@ -592,12 +595,13 @@ var Modes = Module("modes", {
             "Return to the previous mode",
             function () { modes.pop(); });
 
+        mappings.add([modes.MENU], ["<C-c>"],
+            "Leave Menu mode",
+            function () { modes.pop(); });
+
         mappings.add([modes.MENU], ["<Esc>"],
             "Close the current popup",
-            function () {
-                modes.pop();
-                return Events.PASS_THROUGH;
-            });
+            function () { return Events.PASS_THROUGH; });
 
         mappings.add([modes.MENU], ["<C-[>"],
             "Close the current popup",

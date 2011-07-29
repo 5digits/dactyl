@@ -166,7 +166,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} str The string to capitalize
      * @returns {string}
      */
-    capitalize: function capitalize(str) str && str[0].toUpperCase() + str.slice(1),
+    capitalize: function capitalize(str) str && str[0].toUpperCase() + str.slice(1).toLowerCase(),
 
     /**
      * Returns a RegExp object that matches characters specified in the range
