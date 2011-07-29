@@ -324,7 +324,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *
      * @see #withContext
      */
-    pushContext: function () {
+    pushContext: function pushContext() {
         this._prefContexts.push({});
     },
 
@@ -333,7 +333,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *
      * @see #withContext
      */
-    popContext: function () {
+    popContext: function popContext() {
         for (let [k, v] in Iterator(this._prefContexts.pop()))
             this.set(k, v);
     },
@@ -348,7 +348,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @see #pushContext
      * @see #popContext
      */
-    withContext: function (func, self) {
+    withContext: function withContext(func, self) {
         try {
             this.pushContext();
             return func.call(self);
@@ -359,7 +359,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     }
 }, {
 }, {
-    completion: function (dactyl, modules) {
+    completion: function init_completion(dactyl, modules) {
         modules.completion.preference = function preference(context) {
             context.anchored = false;
             context.title = [config.host + " Preference", "Value"];
@@ -367,7 +367,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             context.completions = prefs.getNames();
         };
     },
-    javascript: function (dactyl, modules) {
+    javascript: function init_javascript(dactyl, modules) {
         modules.JavaScript.setCompleter([this.get, this.safeSet, this.set, this.reset, this.toggle],
                 [function (context) (context.anchored=false, this.getNames().map(function (pref) [pref, ""]))]);
     }

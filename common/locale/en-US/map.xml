@@ -471,8 +471,8 @@
     <description>
         <p>
             Abbreviate a key sequence for Command Line mode. Same as
-            <ex>:ab<oa>breviate</oa></ex>, but for
-            <t>Command Line</t> mode only.
+            <ex>:ab<oa>breviate</oa></ex>, but for &mode.command-line; mode
+            only.
         </p>
     </description>
 </item>
@@ -506,8 +506,8 @@
     <description>
         <p>
             Remove abbreviation(s) for Command Line mode. Same as
-            <ex>:una<oa>bbreviate</oa></ex>, but for
-            <t>Command Line</t> mode only.
+            <ex>:una<oa>bbreviate</oa></ex>, but for &mode.command-line; mode
+            only.
         </p>
     </description>
 </item>

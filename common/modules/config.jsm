@@ -217,6 +217,7 @@ var ConfigBase = Class("ConfigBase", {
 
         "tag.command-line": <link topic="command-line">command line</link>,
         "tag.status-line":  <link topic="status-line">status line</link>,
+        "mode.command-line": <link topic="command-line-mode">Command Line</link>,
     },
 
     dtdStrings: [
