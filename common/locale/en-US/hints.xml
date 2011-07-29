@@ -80,7 +80,7 @@
     <spec>;<a>mode</a><a>hint</a></spec>
     <description>
         <p>
-            Start an extended Hints mode. Extended hints are exactly like
+            Start an extended hints mode. Extended hints are exactly like
             <t>quick-hints</t>, except that each sub-mode highlights a
             more specialized set of elements, and performs a unique action on
             the selected link. Because of the panoply of extended hint modes
