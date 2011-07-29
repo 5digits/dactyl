@@ -78,6 +78,8 @@ var Option = Class("Option", {
             this.globalValue = this.defaultValue;
     },
 
+    magicalProperties: Set(["cleanupValue"]),
+
     /**
      * @property {string} This option's description, as shown in :listoptions.
      */
@@ -90,6 +92,13 @@ var Option = Class("Option", {
     },
 
     get isDefault() this.stringValue === this.stringDefaultValue,
+
+    /** @property {value} The value to reset this option to at cleanup time. */
+    get cleanupValue() options.cleanupPrefs.get(this.name),
+    set cleanupValue(value) {
+        if (options.cleanupPrefs.get(this.name) == null)
+            options.cleanupPrefs.set(this.name, value);
+    },
 
     /** @property {value} The option's global value. @see #scope */
     get globalValue() { try { return options.store.get(this.name, {}).value; } catch (e) { util.reportError(e); throw e; } },
@@ -281,8 +290,6 @@ var Option = Class("Option", {
      * @see Option#SCOPE_BOTH
      */
     scope: 1, // Option.SCOPE_GLOBAL // XXX set to BOTH by default someday? - kstep
-
-    cleanupValue: null,
 
     /**
      * @property {function(CompletionContext, Args)} This option's completer.
@@ -817,7 +824,7 @@ var Options = Module("options", {
         cleanup: function cleanup() {
             for (let opt in this)
                 if (opt.cleanupValue != null)
-                    opt.value = opt.parse(opt.cleanupValue);
+                    opt.stringValue = opt.cleanupValue;
         },
 
         /**
@@ -882,6 +889,13 @@ var Options = Module("options", {
     safeSetPref: deprecated("prefs.safeSet", function safeSetPref() prefs.safeSet.apply(prefs, arguments)),
     setPref: deprecated("prefs.set", function setPref() prefs.set.apply(prefs, arguments)),
     withContext: deprecated("prefs.withContext", function withContext() prefs.withContext.apply(prefs, arguments)),
+
+    cleanupPrefs: Class.memoize(function () localPrefs.Branch("cleanup.option.")),
+
+    cleanup: function cleanup(reason) {
+        if (~["disable", "uninstall"].indexOf(reason))
+            this.cleanupPrefs.resetBranch();
+    },
 
     /**
      * Returns the option with *name* in the specified *scope*.

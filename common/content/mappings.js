@@ -507,86 +507,87 @@ var Mappings = Module("mappings", {
             }
 
             const opts = {
-                    completer: function (context, args) {
-                        let mapmodes = array.uniq(args["-modes"].map(findMode));
-                        if (args.length == 1)
-                            return completion.userMapping(context, mapmodes, args["-group"]);
-                        if (args.length == 2) {
-                            if (args["-javascript"])
-                                return completion.javascript(context);
-                            if (args["-ex"])
-                                return completion.ex(context);
-                        }
-                    },
-                    hereDoc: true,
-                    literal: 1,
-                    options: [
-                        {
-                            names: ["-arg", "-a"],
-                            description: "Accept an argument after the requisite key press",
-                        },
-                        {
-                            names: ["-builtin", "-b"],
-                            description: "Execute this mapping as if there were no user-defined mappings"
-                        },
-                        {
-                            names: ["-count", "-c"],
-                            description: "Accept a count before the requisite key press"
-                        },
-                        {
-                            names: ["-description", "-desc", "-d"],
-                            description: "A description of this mapping",
-                            default: /*L*/"User-defined mapping",
-                            type: CommandOption.STRING
-                        },
-                        {
-                            names: ["-ex", "-e"],
-                            description: "Execute this mapping as an Ex command rather than keys"
-                        },
-                        contexts.GroupFlag("mappings"),
-                        {
-                            names: ["-javascript", "-js", "-j"],
-                            description: "Execute this mapping as JavaScript rather than keys"
-                        },
-                        update({}, modeFlag, {
-                            names: ["-modes", "-mode", "-m"],
-                            type: CommandOption.LIST,
-                            description: "Create this mapping in the given modes",
-                            default: mapmodes || ["n", "v"]
-                        }),
-                        {
-                            names: ["-nopersist", "-n"],
-                            description: "Do not save this mapping to an auto-generated RC file"
-                        },
-                        {
-                            names: ["-silent", "-s", "<silent>", "<Silent>"],
-                            description: "Do not echo any generated keys to the command line"
-                        }
-                    ],
-                    serialize: function () {
-                        return this.name != "map" ? [] :
-                            array(mappings.userHives)
-                                .filter(function (h) h.persist)
-                                .map(function (hive) [
-                                    {
-                                        command: "map",
-                                        options: array([
-                                            hive.name !== "user" && ["-group", hive.name],
-                                            ["-modes", uniqueModes(map.modes)],
-                                            ["-description", map.description],
-                                            map.silent && ["-silent"]])
-
-                                            .filter(util.identity)
-                                            .toObject(),
-                                        arguments: [map.names[0]],
-                                        literalArg: map.rhs,
-                                        ignoreDefaults: true
-                                    }
-                                    for (map in userMappings(hive))
-                                    if (map.persist)
-                                ])
-                                .flatten().array;
+                identifier: "map",
+                completer: function (context, args) {
+                    let mapmodes = array.uniq(args["-modes"].map(findMode));
+                    if (args.length == 1)
+                        return completion.userMapping(context, mapmodes, args["-group"]);
+                    if (args.length == 2) {
+                        if (args["-javascript"])
+                            return completion.javascript(context);
+                        if (args["-ex"])
+                            return completion.ex(context);
                     }
+                },
+                hereDoc: true,
+                literal: 1,
+                options: [
+                    {
+                        names: ["-arg", "-a"],
+                        description: "Accept an argument after the requisite key press",
+                    },
+                    {
+                        names: ["-builtin", "-b"],
+                        description: "Execute this mapping as if there were no user-defined mappings"
+                    },
+                    {
+                        names: ["-count", "-c"],
+                        description: "Accept a count before the requisite key press"
+                    },
+                    {
+                        names: ["-description", "-desc", "-d"],
+                        description: "A description of this mapping",
+                        default: /*L*/"User-defined mapping",
+                        type: CommandOption.STRING
+                    },
+                    {
+                        names: ["-ex", "-e"],
+                        description: "Execute this mapping as an Ex command rather than keys"
+                    },
+                    contexts.GroupFlag("mappings"),
+                    {
+                        names: ["-javascript", "-js", "-j"],
+                        description: "Execute this mapping as JavaScript rather than keys"
+                    },
+                    update({}, modeFlag, {
+                        names: ["-modes", "-mode", "-m"],
+                        type: CommandOption.LIST,
+                        description: "Create this mapping in the given modes",
+                        default: mapmodes || ["n", "v"]
+                    }),
+                    {
+                        names: ["-nopersist", "-n"],
+                        description: "Do not save this mapping to an auto-generated RC file"
+                    },
+                    {
+                        names: ["-silent", "-s", "<silent>", "<Silent>"],
+                        description: "Do not echo any generated keys to the command line"
+                    }
+                ],
+                serialize: function () {
+                    return this.name != "map" ? [] :
+                        array(mappings.userHives)
+                            .filter(function (h) h.persist)
+                            .map(function (hive) [
+                                {
+                                    command: "map",
+                                    options: array([
+                                        hive.name !== "user" && ["-group", hive.name],
+                                        ["-modes", uniqueModes(map.modes)],
+                                        ["-description", map.description],
+                                        map.silent && ["-silent"]])
+
+                                        .filter(util.identity)
+                                        .toObject(),
+                                    arguments: [map.names[0]],
+                                    literalArg: map.rhs,
+                                    ignoreDefaults: true
+                                }
+                                for (map in userMappings(hive))
+                                if (map.persist)
+                            ])
+                            .flatten().array;
+                }
             };
             function userMappings(hive) {
                 let seen = {};
@@ -629,6 +630,7 @@ var Mappings = Module("mappings", {
                         dactyl.echoerr(_("map.noSuch", args[0]));
                 },
                 {
+                    identifier: "unmap",
                     argCount: "?",
                     bang: true,
                     completer: opts.completer,

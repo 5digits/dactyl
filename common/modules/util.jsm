@@ -115,7 +115,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      *
      * @param {object} obj
      */
-    addObserver: function (obj) {
+    addObserver: update(function addObserver(obj) {
         if (!obj.observers)
             obj.observers = obj.observe;
 
@@ -137,7 +137,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 }
                 catch (e) {
                     if (typeof util === "undefined")
-                        dump("dactyl: error: " + e + "\n" + (e.stack || Error().stack).replace(/^/gm, "dactyl:    "));
+                        addObserver.dump("dactyl: error: " + e + "\n" + (e.stack || addObserver.Error().stack).replace(/^/gm, "dactyl:    "));
                     else
                         util.reportError(e);
                 }
@@ -145,7 +145,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         obj.observe.unregister = function () register("removeObserver");
         register("addObserver");
-    },
+    }, { dump: dump, Error: Error }),
 
     /*
      * Tests a condition and throws a FailedAssertion error on
@@ -1226,13 +1226,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     observers: {
-        "dactyl-cleanup-modules": function () {
-            defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules");
+        "dactyl-cleanup-modules": function (subject, reason) {
+            defineModule.loadLog.push("dactyl: util: observe: dactyl-cleanup-modules " + reason);
 
             for (let module in values(defineModule.modules))
                 if (module.cleanup) {
                     util.dump("cleanup: " + module.constructor.className);
-                    util.trapErrors(module.cleanup, module);
+                    util.trapErrors(module.cleanup, module, reason);
                 }
 
             JSMLoader.cleanup();
@@ -1256,6 +1256,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         "dactyl-purge": function () {
             this.rehashing = 1;
         },
+
         "toplevel-window-ready": function (window, data) {
             window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
                 if (event.originalTarget === window.document) {

@@ -241,11 +241,11 @@ function shutdown(data, reason) {
             reportError(e);
         }
 
-        if ([ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason) >= 0)
+        if (~[ADDON_UPGRADE, ADDON_DOWNGRADE, ADDON_UNINSTALL].indexOf(reason))
             Services.obs.notifyObservers(null, "dactyl-purge", null);
 
-        Services.obs.notifyObservers(null, "dactyl-cleanup", null);
-        Services.obs.notifyObservers(null, "dactyl-cleanup-modules", null);
+        Services.obs.notifyObservers(null, "dactyl-cleanup", reasonToString(reason));
+        Services.obs.notifyObservers(null, "dactyl-cleanup-modules", reasonToString(reason));
 
         JSMLoader.purge();
         for each (let [category, entry] in categories)

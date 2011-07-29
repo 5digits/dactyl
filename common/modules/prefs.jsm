@@ -20,7 +20,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     RESTORE: "extensions.dactyl.restore.",
     INIT: {},
 
-    init: function (branch, defaults) {
+    init: function init(branch, defaults) {
         this._prefContexts = [];
 
         this.branch = services.pref[defaults ? "getDefaultBranch" : "getBranch"](branch || "");
@@ -34,7 +34,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
         this._observers = {};
     },
 
-    cleanup: function cleanup() {
+    cleanup: function cleanup(reason) {
         if (this.defaults != this)
             this.defaults.cleanup();
         this._observers = {};
@@ -43,7 +43,24 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             this.observe.unregister();
             delete this.observe;
         }
+
+        if (reason == "uninstall")
+            localPrefs.resetBranch();
     },
+
+    /**
+     * Returns the full name of this object's preference branch.
+     */
+    get root() this.branch.root,
+
+    /**
+     * Returns a new Prefs instance for the sub-branch *branch* of this
+     * branch.
+     *
+     * @param {string} branch The branch to branch to.
+     * @returns {Prefs}
+     */
+    Branch: function Branch(branch) Prefs(this.root + branch),
 
     observe: null,
     observers: {
@@ -68,7 +85,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {function(object)} callback The callback, called with the
      *    new value of the preference whenever it changes.
      */
-    watch: function (pref, callback, strong) {
+    watch: function watch(pref, callback, strong) {
         if (!this.observe) {
             util.addObserver(this);
             this.branch.addObserver("", this, false);
@@ -160,9 +177,9 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} branch The branch in which to search preferences.
      *     @default ""
      */
-    getNames: function (branch) this.branch.getChildList(branch || "", { value: 0 }),
+    getNames: function getNames(branch) this.branch.getChildList(branch || "", { value: 0 }),
 
-    _checkSafe: function (name, message, value) {
+    _checkSafe: function _checkSafe(name, message, value) {
         let curval = this.get(name, null);
         if (arguments.length > 2 && curval === value)
             return;
@@ -184,7 +201,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
      */
-    safeReset: function (name, message) {
+    safeReset: function safeReset(name, message) {
         this._checkSafe(name, message);
         this.reset(name);
         this.reset(this.SAVED + name);
@@ -197,7 +214,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
      */
-    safeSet: function (name, value, message, skipSave) {
+    safeSet: function safeSet(name, value, message, skipSave) {
         this._checkSafe(name, message, value);
         this.set(name, value);
         this[skipSave ? "reset" : "set"](this.SAVED + name, value);
@@ -209,7 +226,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
      */
-    set: function (name, value) {
+    set: function set(name, value) {
         if (this._prefContexts.length)
             this._prefContexts[this._prefContexts.length - 1][name] = this.get(name, null);
 
@@ -242,6 +259,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             else
                 throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
         }
+        return value;
     },
 
     /**
@@ -250,7 +268,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *
      * @param {string} name The preference to save.
      */
-    save: function (name) {
+    save: function save(name) {
         let val = this.get(name);
         this.set(this.RESTORE + name, val);
         this.safeSet(name, val);
@@ -262,7 +280,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      * @param {string} branch The branch from which to restore
      *      preferences. @optional
      */
-    restore: function (branch) {
+    restore: function restore(branch) {
         this.getNames(this.RESTORE + (branch || "")).forEach(function (pref) {
             this.safeSet(pref.substr(this.RESTORE.length), this.get(pref), null, true);
             this.reset(pref);
@@ -274,7 +292,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *
      * @param {string} name The preference name.
      */
-    reset: function (name) {
+    reset: function reset(name) {
         try {
             this.branch.clearUserPref(name);
         }
@@ -282,11 +300,20 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     },
 
     /**
+     * Resets the preference branch *branch* to its default value.
+     *
+     * @param {string} branch The preference name. @optional
+     */
+    resetBranch: function resetBranch(branch) {
+        this.getNames(branch).forEach(this.closure.reset);
+    },
+
+    /**
      * Toggles the value of the boolean preference *name*.
      *
      * @param {string} name The preference name.
      */
-    toggle: function (name) {
+    toggle: function toggle(name) {
         util.assert(this.branch.getPrefType(name) === Ci.nsIPrefBranch.PREF_BOOL,
                     _("error.trailingCharacters", name + "!"));
         this.set(name, !this.get(name));

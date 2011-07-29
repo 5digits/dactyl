@@ -329,6 +329,7 @@ var Abbreviations = Module("abbreviations", {
                         args["-group"].add(modes, lhs, rhs);
                     }
                 }, {
+                    identifier: "abbreviate",
                     completer: function (context, args) {
                         if (args.length == 1)
                             return completion.abbreviation(context, modes, args["-group"]);

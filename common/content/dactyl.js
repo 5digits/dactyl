@@ -70,21 +70,36 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         autocommands.trigger("Leave", {});
     },
 
+    // initially hide all GUI elements, they are later restored unless the user
+    // has :set go= or something similar in his config
+    hideGUI: function () {
+        let guioptions = config.guioptions;
+        for (let option in guioptions) {
+            guioptions[option].forEach(function (elem) {
+                try {
+                    document.getElementById(elem).collapsed = true;
+                }
+                catch (e) {}
+            });
+        }
+    },
+
+
     observers: {
-        "dactyl-cleanup": function dactyl_cleanup() {
+        "dactyl-cleanup": function dactyl_cleanup(subject, reason) {
             let modules = dactyl.modules;
 
             for (let mod in values(modules.moduleList.reverse())) {
                 mod.stale = true;
                 if ("cleanup" in mod)
-                    this.trapErrors("cleanup", mod);
+                    this.trapErrors("cleanup", mod, reason);
                 if ("destroy" in mod)
-                    this.trapErrors("destroy", mod);
+                    this.trapErrors("destroy", mod, reason);
             }
 
             for (let mod in values(modules.ownPropertyValues.reverse()))
                 if (mod instanceof Class && "INIT" in mod && "cleanup" in mod.INIT)
-                    this.trapErrors(mod.cleanup, mod, dactyl, modules, window);
+                    this.trapErrors(mod.cleanup, mod, dactyl, modules, window, reason);
 
             for (let name in values(Object.getOwnPropertyNames(modules).reverse()))
                 try {
@@ -1547,19 +1562,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     get windows() [win for (win in iter(services.windowMediator.getEnumerator("navigator:browser"))) if (win.dactyl)],
 
 }, {
-    // initially hide all GUI elements, they are later restored unless the user
-    // has :set go= or something similar in his config
-    hideGUI: function () {
-        let guioptions = config.guioptions;
-        for (let option in guioptions) {
-            guioptions[option].forEach(function (elem) {
-                try {
-                    document.getElementById(elem).collapsed = true;
-                }
-                catch (e) {}
-            });
-        }
-    }
+    toolbarHidden: function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true"
 }, {
     events: function () {
         events.listen(window, "click", dactyl.closure.onClick, true);
@@ -1664,7 +1667,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 // FIXME: cleanup
                 cleanupValue: config.cleanups.guioptions ||
                     "r" + [k for ([k, v] in iter(groups[1].opts))
-                           if (!document.getElementById(v[1][0]).collapsed)].join(""),
+                           if (!Dactyl.toolbarHidden(document.getElementById(v[1][0])))].join(""),
 
                 values: array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
 
@@ -1938,8 +1941,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         var toolbox = document.getElementById("navigator-toolbox");
         if (toolbox) {
-            let hidden = function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true";
-
             let toolbarCommand = function (names, desc, action, filter) {
                 commands.add(names, desc,
                     function (args) {
@@ -1960,12 +1961,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             toolbarCommand(["toolbars[how]", "tbs[how]"], "Show the named toolbar",
                 function (toolbar) dactyl.setNodeVisible(toolbar, true),
-                function ({ item }) hidden(item));
+                function ({ item }) Dactyl.toolbarHidden(item));
             toolbarCommand(["toolbarh[ide]", "tbh[ide]"], "Hide the named toolbar",
                 function (toolbar) dactyl.setNodeVisible(toolbar, false),
-                function ({ item }) !hidden(item));
+                function ({ item }) !Dactyl.toolbarHidden(item));
             toolbarCommand(["toolbart[oggle]", "tbt[oggle]"], "Toggle the named toolbar",
-                function (toolbar) dactyl.setNodeVisible(toolbar, hidden(toolbar)));
+                function (toolbar) dactyl.setNodeVisible(toolbar, Dactyl.toolbarHidden(toolbar)));
         }
 
         commands.add(["time"],
@@ -2171,7 +2172,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             }
 
             // TODO: we should have some class where all this guioptions stuff fits well
-            // Dactyl.hideGUI();
+            // dactyl.hideGUI();
 
             if (dactyl.userEval("typeof document", null, "test.js") === "undefined")
                 jsmodules.__proto__ = XPCSafeJSObjectWrapper(window);

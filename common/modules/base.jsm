@@ -958,8 +958,9 @@ Class.prototype = {
                             func.superapply(self, Array.slice(arguments, 1));
                     }
                 }
+
                 try {
-                    if ("value" in desc && i in this.localizedProperties)
+                    if ("value" in desc && (k in this.localizedProperties || k in this.magicalProperties))
                         this[k] = desc.value;
                     else
                         Object.defineProperty(this, k, desc);
@@ -967,7 +968,9 @@ Class.prototype = {
                 catch (e) {}
             }, this);
         }
-    }
+    },
+
+    magicalProperties: {}
 };
 Class.makeClosure = function makeClosure() {
     const self = this;
