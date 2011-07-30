@@ -1,8 +1,9 @@
 Developers:
   * Kris Maglione
   * Doug Kearns <dougkearns@gmail.com>
-  * anekos <anekos@snca.net>
-  * teramako <teramako@gmail.com>
+
+Contributers:
+  * Štěpán Němec
 
 Inactive/former developers:
   * Viktor Kojouharov (Виктор Кожухаров)
@@ -14,6 +15,8 @@ Inactive/former developers:
   * janus_wel <janus.wel.3@gmail.com>
   * Martin Stubenschrott <stubenschrott@vimperator.org>
   * Conrad Irwin
+  * anekos <anekos@snca.net>
+  * teramako <teramako@gmail.com>
 
 Patches (in no special order):
   * Ruud Grosmann ('followhints' option)

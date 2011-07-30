@@ -305,6 +305,8 @@ var CommandMode = Class("CommandMode", {
         this.keepCommand = userContext.hidden_option_command_afterimage;
     },
 
+    get autocomplete() options["autocomplete"].length,
+
     get command() this.widgets.command[1],
     set command(val) this.widgets.command = val,
 
@@ -1031,7 +1033,7 @@ var CommandLine = Module("commandline", {
             this.autocompleteTimer = Timer(200, 500, function autocompleteTell(tabPressed) {
                 if (events.feedingKeys && !tabPressed)
                     this.ignoredCount++;
-                else if (options["autocomplete"].length) {
+                else if (this.session.autocomplete) {
                     this.itemList.visible = true;
                     this.complete(true, false);
                 }

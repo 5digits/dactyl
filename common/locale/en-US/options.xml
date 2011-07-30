@@ -735,7 +735,6 @@
         <dl dt="width: 6em;">
             <dt>0</dt>      <dd>Follow the first hint as soon as typed text uniquely identifies it.</dd>
             <dt>1</dt>      <dd>Follow the selected hint on <k name="CR"/>.</dd>
-            <dt>2</dt>      <dd>Follow the selected hint on <k name="CR"/> only if it's been <k name="Tab" mode="c"/>-selected.</dd>
         </dl>
     </description>
 </item>

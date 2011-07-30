@@ -463,14 +463,8 @@ var HintSession = Class("HintSession", CommandMode, {
 
         // This "followhints" option is *too* confusing. For me, and
         // presumably for users, too. --Kris
-        if (options["followhints"] > 0) {
-            if (!followFirst)
-                return; // no return hit; don't examine uniqueness
-
-            // OK. return hit. But there's more than one hint, and
-            // there's no tab-selected current link. Do not follow in mode 2
-            dactyl.assert(options["followhints"] != 2 || this.validHints.length == 1 || this.hintNumber);
-        }
+        if (options["followhints"] > 0 && !followFirst)
+            return; // no return hit; don't examine uniqueness
 
         if (!followFirst) {
             let firstHref = this.validHints[0].elem.getAttribute("href") || null;
@@ -740,16 +734,15 @@ var Hints = Module("hints", {
             events.listen(appContent, "scroll", this.resizeTimer.closure.tell, false);
 
         const Mode = Hints.Mode;
-        Mode.defaultValue("tags", function () function () options.get("hinttags").matcher);
         Mode.prototype.__defineGetter__("matcher", function ()
-            options.get("extendedhinttags").getKey(this.name, this.tags()));
+            options.get("extendedhinttags").getKey(this.name, options.get("hinttags").matcher));
 
         this.modes = {};
         this.addMode(";", "Focus hint",                           buffer.closure.focusElement);
         this.addMode("?", "Show information for hint",            function (elem) buffer.showElementInfo(elem));
         this.addMode("s", "Save hint",                            function (elem) buffer.saveLink(elem, false));
         this.addMode("f", "Focus frame",                          function (elem) dactyl.focus(elem.ownerDocument.defaultView));
-        this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, null, isScrollable);
+        this.addMode("F", "Focus frame or pseudo-frame",          buffer.closure.focusElement, isScrollable);
         this.addMode("o", "Follow hint",                          function (elem) buffer.followLink(elem, dactyl.CURRENT_TAB));
         this.addMode("t", "Follow hint in a new tab",             function (elem) buffer.followLink(elem, dactyl.NEW_TAB));
         this.addMode("b", "Follow hint in a background tab",      function (elem) buffer.followLink(elem, dactyl.NEW_BACKGROUND_TAB));
@@ -781,15 +774,22 @@ var Hints = Module("hints", {
      *     about this mode.
      * @param {function(Node)} action The function to be called with the
      *     element that matches.
-     * @param {function():string} tags The function that returns an
-     *     XPath expression to decide which elements can be hinted (the
-     *     default returns options["hinttags"]).
-     * @optional
+     * @param {function(Node):boolean} filter A function used to filter
+     *     the returned node set.
+     * @param {[string]} tags A value to add to the default
+     *     'extendedhinttags' value for this mode.
+     *     @optional
      */
-    addMode: function (mode, prompt, action, tags) {
-        dactyl.assert(mode.length == 1);
-        arguments[1] = UTF8(prompt);
-        this.modes[mode] = Hints.Mode.apply(Hints.Mode, arguments);
+    addMode: function (mode, prompt, action, filter, tags) {
+        if (tags != null) {
+            let eht = options.get("extendedhinttags");
+            let update = eht.isDefault;
+            eht.stringDefaultValue += "," + Option.quote(util.regexp.escape(mode)) + ":" + tags.map(Option.quote);
+            if (update)
+                eht.reset();
+        }
+
+        this.modes[mode] = Hints.Mode(mode, UTF8(prompt), action, filter);
     },
 
     /**
@@ -1026,6 +1026,7 @@ var Hints = Module("hints", {
     open: function open(mode, opts) {
         this._extendedhintCount = opts.count;
         commandline.input(["Normal", mode], "", {
+            autocomplete: false,
             completer: function (context) {
                 context.compare = function () 0;
                 context.completions = [[k, v.prompt] for ([k, v] in Iterator(hints.modes))];
@@ -1034,7 +1035,10 @@ var Hints = Module("hints", {
                 if (arg)
                     hints.show(arg, opts);
             },
-            onChange: function () {
+            onChange: function (arg) {
+                if (Object.keys(hints.modes).some(function (m) m != arg && m.indexOf(arg) == 0))
+                    return;
+
                 this.accepted = true;
                 modes.pop();
             }
@@ -1167,7 +1171,7 @@ var Hints = Module("hints", {
         return -1;
     },
 
-    Mode: Struct("HintMode", "name", "prompt", "action", "tags", "filter")
+    Mode: Struct("HintMode", "name", "prompt", "action", "filter")
             .localize("prompt")
 }, {
     modes: function initModes() {
@@ -1235,7 +1239,7 @@ var Hints = Module("hints", {
             {
                 keepQuotes: true,
                 getKey: function (val, default_)
-                    let (res = array.nth(this.value, function (re) re.test(val), 0))
+                    let (res = array.nth(this.value, function (re) let (match = re.exec(val)) match && match[0] == val, 0))
                         res ? res.matcher : default_,
                 setter: function (vals) {
                     for (let value in values(vals))
@@ -1285,7 +1289,6 @@ var Hints = Module("hints", {
                 values: {
                     "0": "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>.",
                     "1": "Follow the selected hint on <Return>.",
-                    "2": "Follow the selected hint on <Return> only if it's been <Tab>-selected."
                 }
             });
 

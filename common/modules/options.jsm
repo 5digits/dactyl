@@ -199,6 +199,7 @@ var Option = Class("Option", {
     set stringValue(value) this.value = this.parse(value),
 
     get stringDefaultValue() this.stringify(this.defaultValue),
+    set stringDefaultValue(val) this.defaultValue = this.parse(val),
 
     getKey: function getKey(key) undefined,
 
