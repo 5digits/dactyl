@@ -787,6 +787,7 @@ var Hints = Module("hints", {
      * @optional
      */
     addMode: function (mode, prompt, action, tags) {
+        dactyl.assert(mode.length == 1);
         arguments[1] = UTF8(prompt);
         this.modes[mode] = Hints.Mode.apply(Hints.Mode, arguments);
     },
