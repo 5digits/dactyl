@@ -781,10 +781,16 @@ var Hints = Module("hints", {
      *     @optional
      */
     addMode: function (mode, prompt, action, filter, tags) {
+        function toString(regexp) RegExp.prototype.toString.call(regexp);
+
         if (tags != null) {
             let eht = options.get("extendedhinttags");
             let update = eht.isDefault;
-            eht.stringDefaultValue += "," + Option.quote(util.regexp.escape(mode)) + ":" + tags.map(Option.quote);
+
+            let value = eht.parse(Option.quote(util.regexp.escape(mode)) + ":" + tags.map(Option.quote))[0];
+            eht.defaultValue = eht.defaultValue.filter(function (re) toString(re) != toString(value))
+                                  .concat(value);
+
             if (update)
                 eht.reset();
         }
