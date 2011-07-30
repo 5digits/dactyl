@@ -14,7 +14,6 @@
         <em:creator>Kris Maglione, Doug Kearns</em:creator>
         <em:developer>Kris Maglione</em:developer>
         <em:developer>Doug Kearns</em:developer>
-        <em:developer>Štěpán Němec</em:developer>
 
         <em:contributor>anekos</em:contributor>
         <em:contributor>teramako</em:contributor>
@@ -27,6 +26,7 @@
         <em:contributor>janus_wel</em:contributor>
         <em:contributor>Martin Stubenschrott</em:contributor>
         <em:contributor>Conrad Irwin</em:contributor>
+        <em:contributor>Štěpán Němec</em:contributor>
 
         <em:targetApplication>
             <Description
