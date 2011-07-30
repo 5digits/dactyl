@@ -1285,7 +1285,7 @@ var Hints = Module("hints", {
                 values: {
                     "0": "Follow the first hint as soon as typed text uniquely identifies it. Follow the selected hint on <Return>.",
                     "1": "Follow the selected hint on <Return>.",
-                    "2": "Follow the selected hint on <Return> only it's been <Tab>-selected."
+                    "2": "Follow the selected hint on <Return> only if it's been <Tab>-selected."
                 }
             });
 

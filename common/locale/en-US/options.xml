@@ -158,6 +158,7 @@
 </item>
 
 <item>
+    <tags>:set!=</tags>
     <spec>:se<oa>t</oa> inv<a>option</a>=<a>value</a> <oa>...</oa></spec>
     <spec>:se<oa>t</oa> <a>option</a>!=<a>value</a> <oa>...</oa></spec>
     <description>
@@ -189,6 +190,7 @@
 </item>
 
 <item>
+    <tags>:set-default-all</tags>
     <spec>:se<oa>t</oa> all&amp;</spec>
     <description>
         <p>Set all options to their default value.</p>
