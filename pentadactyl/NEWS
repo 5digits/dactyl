@@ -69,6 +69,8 @@
     • The external editor can now be configured to open to a given
       line number and column, used for opening source links and
       editing input fields with i_<C-i>. See :h 'editor'. [b4]
+    • Improved [macro-string] support, including automatic elision
+      of optional elements, and array subscripts. [b4][b7]
     • Mapping changes:
       - It's now possible to map keys in many more modes, including
         Hint, Multi-line Output, and Menu. [b4]
