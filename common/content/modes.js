@@ -328,7 +328,7 @@ var Modes = Module("modes", {
             return;
 
         let msg = null;
-        if (options.get("showmode").getKey([this.main].concat(this.main.allBases), false))
+        if (options.get("showmode").getKey(this.main.allBases, false))
             msg = this._getModeMessage();
 
         if (msg || loaded.commandline)
@@ -504,10 +504,10 @@ var Modes = Module("modes", {
         displayName: Class.memoize(function () this.name.split("_").map(util.capitalize).join(" ")),
 
         isinstance: function isinstance(obj)
-            this === obj || this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
+            this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
         allBases: Class.memoize(function () {
-            let seen = {}, res = [], queue = this.bases.slice();
+            let seen = {}, res = [], queue = [this].concat(this.bases);
             for (let mode in array.iterValues(queue))
                 if (!Set.add(seen, mode)) {
                     res.push(mode);

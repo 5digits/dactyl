@@ -19,7 +19,7 @@ var ProcessorStack = Class("ProcessorStack", {
         events.dbg("STACK " + mode);
 
         let main = { __proto__: mode.main, params: mode.params };
-        this.modes = array([mode.params.keyModes, main, mode.main.allBases]).flatten().compact();
+        this.modes = array([mode.params.keyModes, main, mode.main.allBases.slice(1)]).flatten().compact();
 
         if (builtin)
             hives = hives.filter(function (h) h.name === "builtin");

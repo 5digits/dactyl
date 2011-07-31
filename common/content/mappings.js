@@ -698,7 +698,7 @@ var Mappings = Module("mappings", {
             iterate: function (args, mainOnly) {
                 let modes = [this.getMode(args)];
                 if (!mainOnly)
-                    modes = modes.concat(modes[0].allBases);
+                    modes = modes[0].allBases;
 
                 let seen = {};
                 // Bloody hell. --Kris
