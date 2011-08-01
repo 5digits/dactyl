@@ -303,6 +303,7 @@
     <li><k name="C-␣" link="false"/>: The control or ctrl key.</li>
     <li><k name="A-␣" link="false"/>: The alt key.</li>
     <li><k name="M-␣" link="false"/>: The meta key, windows key, or command key.</li>
+    <li><k name="⌘-␣" link="false"/>: Same as <k name="M-␣" link="false"/>.</li>
     <li><k name="S-␣" link="false"/>: The shift key.</li>
 </ol>
 
@@ -321,31 +322,31 @@
 
 <dl dt="width: 10em;">
     <dt><k link="false">xc</k></dt>
-    <dd>Type the ‘X’ key followed by the ‘C’ key.</dd>
+    <dd>Press the ‘X’ key followed by the ‘C’ key.</dd>
 
     <dt><k name="C-x" link="false">c</k></dt>
     <dd>
-        Type the ‘X’ key while holding the ‘Control’ key, followed
+        Press the ‘X’ key while holding the ‘Control’ key, followed
         by the ‘C’ key.
     </dd>
 
     <dt><k name="C-2" link="false"/></dt>
-    <dd>Type the ‘2’ while holding the ‘Control’ key.</dd>
+    <dd>Type ‘2’ while holding the ‘Control’ key.</dd>
 
     <dt><k name="C-@" link="false"/></dt>
-    <dd>Type the ‘@’ key while holding the ‘Control’ key.</dd>
+    <dd>Press the ‘@’ key while holding the ‘Control’ key.</dd>
 
     <dt><k name="S-Space" link="false"/></dt>
     <dd>Press the space bar while holding the ‘Shift’ key.</dd>
 
     <dt><k name="C-A-j" link="false"/></dt>
-    <dd>Type the ‘J’ key while while holding both the ‘Control’ and ‘Alt’ keys.</dd>
+    <dd>Press the ‘J’ key while holding both the ‘Control’ and ‘Alt’ keys.</dd>
 
     <dt><k name="C-A-J" link="false"/></dt>
     <dd>Exactly the same as above.</dd>
 
     <dt><k name="C-A-S-j" link="false"/></dt>
-    <dd>Type the ‘J’ key while while holding both the ‘Control’, ‘Alt’, and ‘Shift’ keys.</dd>
+    <dd>Press the ‘J’ key while holding all of ‘Control’, ‘Alt’, and ‘Shift’ keys.</dd>
 </dl>
 
 <h3 tag=":map-special-chars">Special characters</h3>
