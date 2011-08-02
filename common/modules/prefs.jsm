@@ -16,8 +16,9 @@ defineModule("prefs", {
 }, this);
 
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
-    SAVED: "extensions.dactyl.saved.",
+    ORIGINAL: "extensions.dactyl.original.",
     RESTORE: "extensions.dactyl.restore.",
+    SAVED: "extensions.dactyl.saved.",
     INIT: {},
 
     init: function init(branch, defaults) {
@@ -28,6 +29,13 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         this.defaults = defaults ? this : this.constructor(branch, true);
 
+        this.branches = memoize({
+            __proto__: this,
+            get original() Prefs(this.ORIGINAL + this.root),
+            get restore() Prefs(this.RESTORE + this.root),
+            get saved() Prefs(this.SAVED + this.root),
+        });
+
         if (!defaults)
             this.restore();
 
@@ -37,6 +45,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     cleanup: function cleanup(reason) {
         if (this.defaults != this)
             this.defaults.cleanup();
+
         this._observers = {};
         if (this.observe) {
             this.branch.removeObserver("", this);
@@ -44,8 +53,18 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
             delete this.observe;
         }
 
-        if (reason == "uninstall")
-            localPrefs.resetBranch();
+        if (this == prefs) {
+            if (~["uninstall", "disable"].indexOf(reason)) {
+                for (let name in values(this.branches.saved.getNames()))
+                    this.safeReset(name, null, true);
+
+                this.branches.original.resetBranch();
+                this.branches.saved.resetBranch();
+            }
+
+            if (reason == "uninstall" && this == prefs)
+                localPrefs.resetBranch();
+        }
     },
 
     /**
@@ -181,10 +200,15 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     _checkSafe: function _checkSafe(name, message, value) {
         let curval = this.get(name, null);
+
+        if (this.branches.original.get(name) == null)
+            this.branches.original.set(name, curval, true);
+
         if (arguments.length > 2 && curval === value)
             return;
+
         let defval = this.defaults.get(name, null);
-        let saved  = this.get(this.SAVED + name);
+        let saved  = this.branches.saved.get(name);
 
         if (saved == null && curval != defval || saved != null && curval != saved) {
             let msg = _("pref.safeSet.warnChanged", name);
@@ -200,11 +224,13 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
+     * @param {boolean} silent Ignore errors.
      */
-    safeReset: function safeReset(name, message) {
+    safeReset: function safeReset(name, message, silent) {
         this._checkSafe(name, message);
-        this.reset(name);
-        this.reset(this.SAVED + name);
+        this.set(name, this.branches.original.get(name), silent);
+        this.branches.original.reset(name);
+        this.branches.saved.reset(name);
     },
 
     /**
@@ -217,7 +243,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
     safeSet: function safeSet(name, value, message, skipSave) {
         this._checkSafe(name, message, value);
         this.set(name, value);
-        this[skipSave ? "reset" : "set"](this.SAVED + name, value);
+        this.branches.saved[skipSave ? "reset" : "set"](name, value);
     },
 
     /**
@@ -225,8 +251,9 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
      *
      * @param {string} name The preference name.
      * @param {value} value The new preference value.
+     * @param {boolean} silent Ignore errors.
      */
-    set: function set(name, value) {
+    set: function set(name, value, silent) {
         if (this._prefContexts.length)
             this._prefContexts[this._prefContexts.length - 1][name] = this.get(name, null);
 
@@ -237,28 +264,31 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                                 : /*L*/"E474: Invalid argument: " + name + "=" + value);
 
         let type = this.branch.getPrefType(name);
-        switch (typeof value) {
-        case "string":
-            assertType(Ci.nsIPrefBranch.PREF_STRING);
+        try {
+            switch (typeof value) {
+            case "string":
+                assertType(Ci.nsIPrefBranch.PREF_STRING);
 
-            this.branch.setComplexValue(name, Ci.nsISupportsString, services.String(value));
-            break;
-        case "number":
-            assertType(Ci.nsIPrefBranch.PREF_INT);
+                this.branch.setComplexValue(name, Ci.nsISupportsString, services.String(value));
+                break;
+            case "number":
+                assertType(Ci.nsIPrefBranch.PREF_INT);
 
-            this.branch.setIntPref(name, value);
-            break;
-        case "boolean":
-            assertType(Ci.nsIPrefBranch.PREF_BOOL);
+                this.branch.setIntPref(name, value);
+                break;
+            case "boolean":
+                assertType(Ci.nsIPrefBranch.PREF_BOOL);
 
-            this.branch.setBoolPref(name, value);
-            break;
-        default:
-            if (value == null && this != this.defaults)
-                this.reset(name);
-            else
-                throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
+                this.branch.setBoolPref(name, value);
+                break;
+            default:
+                if (value == null && this != this.defaults)
+                    this.reset(name);
+                else
+                    throw FailedAssertion("Unknown preference type: " + typeof value + " (" + name + "=" + value + ")");
+            }
         }
+        catch (e if silent) {}
         return value;
     },
 

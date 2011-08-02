@@ -611,7 +611,7 @@ function call(fn) {
  */
 function memoize(obj, key, getter) {
     if (arguments.length == 1) {
-        obj = update({}, obj);
+        obj = update({ __proto__: obj.__proto__ }, obj);
         for (let prop in Object.getOwnPropertyNames(obj)) {
             let get = __lookupGetter__.call(obj, prop);
             if (get)
