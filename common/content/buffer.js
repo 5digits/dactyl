@@ -667,11 +667,12 @@ var Buffer = Module("buffer", {
                              | persist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
 
         let downloadListener = new window.DownloadListener(window,
-                services.Transfer(uri, services.io.newFileURI(file), "",
+                services.Transfer(uri, File(file).URI, "",
                                   null, null, null, persist));
 
         persist.progressListener = update(Object.create(downloadListener), {
             onStateChange: util.wrapCallback(function onStateChange(progress, request, flags, status) {
+                util.dump(status, [k for ([k, v] in iter(Ci.nsIWebProgressListener)) if (v & flags)].join("|"))
                 if (callback && (flags & Ci.nsIWebProgressListener.STATE_STOP) && status == 0)
                     dactyl.trapErrors(callback, self, uri, file, progress, request, flags, status);
 
