@@ -416,9 +416,9 @@ var Buffer = Module("buffer", {
         let doc = elem.ownerDocument || elem.document || elem;
         switch (options.get("strictfocus").getKey(doc.documentURIObject || util.newURI(doc.documentURI), "moderate")) {
         case "despotic":
-            return elem.dactylFocusAllowed;
+            return elem.dactylFocusAllowed || elem.frameElement && elem.frameElement.dactylFocusAllowed;
         case "moderate":
-            return doc.dactylFocusAllowed;
+            return doc.dactylFocusAllowed || elem.frameElement && elem.frameElement.ownerDocument.dactylFocusAllowed;
         default:
             return true;
         }
