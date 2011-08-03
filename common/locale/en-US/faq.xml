@@ -65,8 +65,8 @@
             <h3 tag="faq-statussymbols">What do the "[-+♥]" symbols in the status bar mean?</h3>
             <p>
                 These indicate that you can move backward through history,
-                that you can move forward through history, and that the page
-                is bookmarked, respectively. See also <ex>:help</ex>
+                that you can move forward through history, and that the page is
+                bookmarked, respectively. See also <ex>:help</ex>
                 <t>status-line</t>.
             </p>
 
@@ -81,37 +81,37 @@
                 <ex>:help</ex> <t>pattern</t>.
             </p>
 
-            <h3 tag="faq-autocomplete">How can I prevent the command line completion list showing until I press <k name="Tab"/>?</h3>
+            <h3 tag="faq-autocomplete"><strut/>How can I prevent the command line completion list showing until I press <k name="Tab"/>?</h3>
             <p>
-                You can disable it entirely with <ex>:set autocomplete=</ex>
-                or for specific types of command completion by
-                choosing more restrictive values. See <ex>:help</ex>
-                <o>autocomplete</o> and <o>wildmode</o>.
+                You can disable it entirely with <se opt="autocomplete"/> or for
+                specific types of command completion by choosing more
+                restrictive values. See <ex>:help</ex> <o>autocomplete</o> and
+                <o>wildmode</o>.
             </p>
 
             <h3 tag="faq-editor-fork">Why doesn't external input field editing work with my <o>editor</o> setting?</h3>
             <p>
-                Unfortunately, external editors which return immediately,
-                before editing is complete, are not supported. This means that
-                gvim, for instance, must be run with the <em>-f</em> flag, and
-                editors run from a terminal must not connect to a remote
-                process. In the case of Rxvt-unicode, this means that the
-                urxvtc program is not an option, and Gnome Terminal is very
-                likely not useable under any circumstances.
+                Unfortunately, external editors which return immediately, before
+                editing is complete, are not supported. This means that
+                <tt>gvim</tt>, for instance, must be run with the <em>-f</em>
+                flag, and editors run from a terminal must not connect to a
+                remote process. In the case of Rxvt-unicode, this means that the
+                <tt>urxvtc</tt> program is not an option, and Gnome Terminal is
+                very likely not useable under any circumstances.
             </p>
             <note>
-                If you are using a version of Firefox newer than 4.0
-                beta 7 and a version of Pentadactyl less than 1.0
-                βeta 4, you'll need to upgrade the latter.
+                If you are using a version of Firefox newer than 4.0 beta 7 and
+                a version of Pentadactyl less than 1.0 βeta 4, you'll need to
+                upgrade the latter.
             </note>
 
             <h3 tag="faq-symlinks">Why can't I build/install from the Mercurial repository on Windows®?</h3>
             <p>
                 We use symbolic links in our repository to deal with certain
-                files which are common across projects. Mercurial for
-                Windows®, unfortunately, doesn't deal with these very well.
-                However, adding the following lines to the <tt>.hg\hgrc</tt>
-                file in your repository should make things work:
+                files which are common across projects. Mercurial for Windows®,
+                unfortunately, doesn't deal with these very well. However,
+                adding the following lines to the <tt>.hg\hgrc</tt> file in your
+                repository should make things work:
             </p>
             <code><hl key="Key">[hooks]</hl>
 update = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</str>
@@ -140,7 +140,7 @@ precommit = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</st
                 engines are hidden after an update. This can be remedied by
                 invoking
 
-                <code style="position: relative"><ex>:js</ex> services.get(<str>browserSearch</str>).getEngines().forEach(<em>function</em> (e) e.hidden = <hl key="Boolean">false</hl>)</code>
+                <code style="position: relative"><ex>:js</ex> services.browserSearch.getEngines().forEach(<em>function</em> (e) e.hidden = <hl key="Boolean">false</hl>)</code>
             </p>
 
             <h2 tag="faq-keys">Key bindings</h2>
@@ -158,7 +158,7 @@ precommit = <str delim="">python:common/contrib/fix_symlinks.py:fix_symlinks</st
             <h3 tag="faq-hintkeys">How can I use keys other than numbers for hinting?</h3>
             <p>Use the <o>hintkeys</o> option.</p>
 
-            <h3 tag="faq-hintkeys-uppercase">How can I display my hints in upper case but type them in lower case?</h3>
+            <h3 tag="faq-hintkeys-uppercase"><strut/>How can I display my hints in upper case but type them in lower case?</h3>
             <p>
                 If you use alphabetic characters for your <o>hintkeys</o> and
                 would like to be able to type them in lower case but still have
