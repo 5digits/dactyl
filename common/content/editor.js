@@ -658,16 +658,9 @@ var Editor = Module("editor", {
         mappings.add([modes.INPUT, modes.CARET],
             ["<*-CR>", "<*-BS>", "<*-Del>", "<*-Left>", "<*-Right>", "<*-Up>", "<*-Down>",
              "<*-Home>", "<*-End>", "<*-PageUp>", "<*-PageDown>",
-             "<M-c>", "<M-v>"],
+             "<M-c>", "<M-v>", "<*-Tab>"],
             "Handled by " + config.host,
             function () Events.PASS_THROUGH);
-
-        mappings.add([modes.INSERT, modes.NORMAL],
-            ["<Tab>"], "Select the next element in the tab sequence",
-            function () Events.PASS);
-        mappings.add([modes.INSERT, modes.NORMAL],
-            ["<S-Tab>"], "Select the previous element in the tab sequence",
-            function () Events.PASS);
 
         mappings.add([modes.INSERT],
             ["<Space>", "<Return>"], "Expand Insert mode abbreviation",
