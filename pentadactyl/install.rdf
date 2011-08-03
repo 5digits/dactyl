@@ -5,7 +5,7 @@
         em:id="pentadactyl@dactyl.googlecode.com"
         em:type="2"
         em:name="Pentadactyl"
-        em:version="1.0b7pre"
+        em:version="1.0b7"
         em:description="Firefox for Vim and Links addicts"
         em:homepageURL="http://dactyl.sourceforge.net/pentadactyl"
         em:iconURL="resource://dactyl-local-skin/icon.png"
@@ -32,7 +32,7 @@
             <Description
                 em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                 em:minVersion="3.6"
-                em:maxVersion="8.*"/>
+                em:maxVersion="8.0a1"/>
         </em:targetApplication>
     </Description>
 </RDF>
