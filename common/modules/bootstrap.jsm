@@ -19,11 +19,11 @@ if (!JSMLoader && "@mozilla.org/fuel/application;1" in Components.classes)
                           .getService(Components.interfaces.extIApplication)
                           .storage.get("dactyl.JSMLoader", null);
 
-if (JSMLoader && JSMLoader.bump === 4)
+if (JSMLoader && JSMLoader.bump === 5)
     JSMLoader.global = this;
 else
     JSMLoader = {
-        bump: 4,
+        bump: 5,
 
         builtin: Cu.Sandbox(this),
 
@@ -41,7 +41,7 @@ else
 
         manager: Components.manager.QueryInterface(Ci.nsIComponentRegistrar),
 
-        modules: JSMLoader ? JSMLoader.modules : {},
+        modules: JSMLoader && JSMLoader.modules || {},
 
         stale: JSMLoader ? JSMLoader.stale : {},
 

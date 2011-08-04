@@ -29,6 +29,8 @@ const resourceProto = Services.io.getProtocolHandler("resource")
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 
+const BOOTSTRAP_JSM = "resource://dactyl/bootstrap.jsm";
+
 const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 JSMLoader = JSMLoader || BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 
@@ -194,16 +196,23 @@ function init() {
         reportError(e);
     }
 
-    if (JSMLoader && JSMLoader.bump !== 4) // Temporary hack
-        Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
-            Cu.import("resource://dactyl/bootstrap.jsm", global));
+    if (JSMLoader) {
+        if (Cu.unload) {
+            Cu.unload(BOOTSTRAP_JSM);
+            for (let [name] in Iterator(JSMLoader.globals))
+                Cu.unload(~name.indexOf(":") ? name : "resource://dactyl" + JSMLoader.suffix + "/" + name);
+        }
+        else if (JSMLoader.bump != 5) // Temporary hack
+            Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
+                Cu.import(BOOTSTRAP_JSM, global));
+    }
 
-    if (!JSMLoader || JSMLoader.bump !== 4)
-        Cu.import("resource://dactyl/bootstrap.jsm", global);
+    if (!JSMLoader || JSMLoader.bump !== 5 || Cu.unload)
+        Cu.import(BOOTSTRAP_JSM, global);
 
     JSMLoader.bootstrap = this;
 
-    JSMLoader.load("resource://dactyl/bootstrap.jsm", global);
+    JSMLoader.load(BOOTSTRAP_JSM, global);
 
     JSMLoader.init(suffix);
     JSMLoader.load("base.jsm", global);
