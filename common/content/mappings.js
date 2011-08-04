@@ -753,7 +753,7 @@ var Mappings = Module("mappings", {
                                     ({ helpTag: prefix + map.name, __proto__: map }
                                      for (map in self.iterate(args, true))
                                      if (map.hive === mappings.builtin || Set.has(tags, prefix + map.name))),
-                    description: "List all " + mode.name + " mode mappings along with their short descriptions",
+                    description: "List all " + mode.displayName + " mode mappings along with their short descriptions",
                     index: mode.char + "-map",
                     getMode: function (args) mode,
                     options: []
