@@ -31,9 +31,9 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
         this.branches = memoize({
             __proto__: this,
-            get original() Prefs(this.ORIGINAL + this.root),
-            get restore() Prefs(this.RESTORE + this.root),
-            get saved() Prefs(this.SAVED + this.root),
+            get original() this.constructor(this.ORIGINAL + this.root),
+            get restore() this.constructor(this.RESTORE + this.root),
+            get saved() this.constructor(this.SAVED + this.root),
         });
 
         if (!defaults)
