@@ -171,7 +171,7 @@ var Template = Module("Template", {
                     <>&#xa0;</>)
                 })&#xa0;</span>
         }
-        <a xmlns:dactyl={NS} identifier={item.id || ""} dactyl:command={item.command || ""}
+        <a xmlns:dactyl={NS} identifier={item.id == null ? "" : item.id} dactyl:command={item.command || ""}
            href={item.item.url} highlight="URL">{text || ""}</a>
     </>,
 

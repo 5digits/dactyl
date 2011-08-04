@@ -32,7 +32,7 @@ var Tabs = Module("tabs", {
                                           false, true);
 
         dactyl.commands["tabs.select"] = function (event) {
-            tabs.select(event.originalTarget.getAttribute("identifier"));
+            tabs.switchTo(event.originalTarget.getAttribute("identifier"));
         };
 
         this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", String.replace(<><![CDATA[

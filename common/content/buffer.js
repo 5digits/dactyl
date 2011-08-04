@@ -1627,7 +1627,7 @@ var Buffer = Module("buffer", {
                             return {
                                 text: [i + ": " + (tab.label || /*L*/"(Untitled)"), i + ": " + url],
                                 tab: tab,
-                                id: i - 1,
+                                id: i,
                                 url: url,
                                 icon: tab.image || DEFAULT_FAVICON
                             };
