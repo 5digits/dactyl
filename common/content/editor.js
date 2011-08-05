@@ -540,8 +540,10 @@ var Editor = Module("editor", {
         function addMotionMap(key, desc, select, cmd, mode) {
             mappings.add([modes.OPERATOR], [key],
                 desc,
-                function ({ count,  motion, command }) {
+                function ({ count,  motion }) {
                     modes.push(modes.OPERATOR, null, {
+                        count: count,
+
                         leave: function leave(stack) {
                             if (stack.push)
                                 return;
