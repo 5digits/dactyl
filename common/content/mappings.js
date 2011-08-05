@@ -17,7 +17,7 @@
  *     *action*.
  * @param {string} description A short one line description of the key mapping.
  * @param {function} action The action invoked by each key sequence.
- * @param {Object} extraInfo An optional extra configuration hash. The
+ * @param {Object} info An optional extra configuration hash. The
  *     following properties are supported.
  *         arg     - see {@link Map#arg}
  *         count   - see {@link Map#count}
@@ -29,7 +29,7 @@
  * @private
  */
 var Map = Class("Map", {
-    init: function (modes, keys, description, action, extraInfo) {
+    init: function (modes, keys, description, action, info) {
         this.id = ++Map.id;
         this.modes = modes;
         this._keys = keys;
@@ -38,8 +38,11 @@ var Map = Class("Map", {
 
         Object.freeze(this.modes);
 
-        if (extraInfo)
-            this.update(extraInfo);
+        if (info) {
+            if (Set.has(Map.types, info.type))
+                this.update(Map.types[info.type]);
+            this.update(info);
+        }
     },
 
     name: Class.memoize(function () this.names[0]),
@@ -69,12 +72,24 @@ var Map = Class("Map", {
      *     as an argument.
      */
     motion: false,
+
     /** @property {boolean} Whether the RHS of the mapping should expand mappings recursively. */
     noremap: false,
+
+    /** @property {function(object)} A function to be executed before this mapping. */
+    preExecute: function preExecute(args) {},
+    /** @property {function(object)} A function to be executed after this mapping. */
+    postExecute: function postExecute(args) {},
+
     /** @property {boolean} Whether any output from the mapping should be echoed on the command line. */
     silent: false,
+
     /** @property {string} The literal RHS expansion of this mapping. */
     rhs: null,
+
+    /** @property {string} The type of this mapping. */
+    type: "",
+
     /**
      * @property {boolean} Specifies whether this is a user mapping. User
      *     mappings may be created by plugins, or directly by users. Users and
@@ -118,6 +133,7 @@ var Map = Class("Map", {
         dactyl.assert(!this.executing, _("map.recursive", args.command));
 
         try {
+            this.preExecute(args);
             this.executing = true;
             var res = repeat();
         }
@@ -127,12 +143,15 @@ var Map = Class("Map", {
         }
         finally {
             this.executing = false;
+            this.postExecute(args);
         }
         return res;
     }
 
 }, {
-    id: 0
+    id: 0,
+
+    types: {}
 });
 
 var MapHive = Class("MapHive", Contexts.Hive, {

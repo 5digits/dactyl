@@ -74,6 +74,7 @@
     • Mapping changes:
       - It's now possible to map keys in many more modes, including
         Hint, Multi-line Output, and Menu. [b4]
+      - Added Operator mode for motion maps, per Vim. [b8]
       - Added site-specific mapping groups and related command
         changes. [b6]
       - Added 'timeout' and 'timeoutlen' options. [b6]

@@ -774,7 +774,14 @@ var RangeFind = Class("RangeFind", {
         }
         return true;
     },
-    selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(function (p) "ancestor-or-self::" + p).join(" | ")
+    selectNodePath: ["a", "xhtml:a", "*[@onclick]"].map(function (p) "ancestor-or-self::" + p).join(" | "),
+    union: function union(a, b) {
+        let start = a.compareBoundaryPoints(a.START_TO_START, b) < 0 ? a : b;
+        let end   = a.compareBoundaryPoints(a.END_TO_END, b) > 0 ? a : b;
+        let res   = start.cloneRange();
+        res.setEnd(end.startContainer, end.endOffset);
+        return res;
+    }
 });
 
 } catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }

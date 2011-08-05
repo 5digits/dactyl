@@ -92,68 +92,6 @@ var Editor = Module("editor", {
         }
     },
 
-    // cmd = y, d, c
-    // motion = b, 0, gg, G, etc.
-    selectMotion: function selectMotion(cmd, motion, count) {
-        // XXX: better as a precondition
-        if (count == null)
-            count = 1;
-
-        if (cmd == motion) {
-            motion = "j";
-            count--;
-        }
-
-        if (modes.main != modes.VISUAL)
-            modes.push(modes.VISUAL);
-
-        switch (motion) {
-        case "j":
-            this.executeCommand("cmd_beginLine", 1);
-            this.executeCommand("cmd_selectLineNext", count + 1);
-            break;
-        case "k":
-            this.executeCommand("cmd_beginLine", 1);
-            this.executeCommand("cmd_lineNext", 1);
-            this.executeCommand("cmd_selectLinePrevious", count + 1);
-            break;
-        case "h":
-            this.executeCommand("cmd_selectCharPrevious", count);
-            break;
-        case "l":
-            this.executeCommand("cmd_selectCharNext", count);
-            break;
-        case "e":
-        case "w":
-            this.executeCommand("cmd_selectWordNext", count);
-            break;
-        case "b":
-            this.executeCommand("cmd_selectWordPrevious", count);
-            break;
-        case "0":
-        case "^":
-            this.executeCommand("cmd_selectBeginLine", 1);
-            break;
-        case "$":
-            this.executeCommand("cmd_selectEndLine", 1);
-            break;
-        case "gg":
-            this.executeCommand("cmd_endLine", 1);
-            this.executeCommand("cmd_selectTop", 1);
-            this.executeCommand("cmd_selectBeginLine", 1);
-            break;
-        case "G":
-            this.executeCommand("cmd_beginLine", 1);
-            this.executeCommand("cmd_selectBottom", 1);
-            this.executeCommand("cmd_selectEndLine", 1);
-            break;
-
-        default:
-            dactyl.beep();
-            return;
-        }
-    },
-
     // This function will move/select up to given "pos"
     // Simple setSelectionRange() would be better, but we want to maintain the correct
     // order of selectionStart/End (a Gecko bug always makes selectionStart <= selectionEnd)
@@ -427,11 +365,27 @@ var Editor = Module("editor", {
 }, {
     mappings: function () {
 
+        Map.types["editor"] = {
+            preExecute: function preExecute(args) {
+                Editor.getEditor(null).beginTransaction();
+            },
+            postExecute: function preExecute(args) {
+                Editor.getEditor(null).endTransaction();
+            },
+        };
+        Map.types["operator"] = {
+            postExecute: function preExecute(args) {
+                if (modes.main == modes.OPERATOR)
+                    modes.pop();
+            },
+        };
+
         // add mappings for commands like h,j,k,l,etc. in CARET, VISUAL and TEXT_EDIT mode
         function addMovementMap(keys, description, hasCount, caretModeMethod, caretModeArg, textEditCommand, visualTextEditCommand) {
-            let extraInfo = {};
-            if (hasCount)
-                extraInfo.count = true;
+            let extraInfo = {
+                count: !!hasCount,
+                type: "operator"
+            };
 
             function caretExecute(arg, again) {
                 function fixSelection() {
@@ -486,7 +440,7 @@ var Editor = Module("editor", {
                 },
                 extraInfo);
 
-            mappings.add([modes.TEXT_EDIT], keys, description,
+            mappings.add([modes.OPERATOR], keys, description,
                 function ({ count }) {
                     if (!count)
                         count = 1;
@@ -503,7 +457,8 @@ var Editor = Module("editor", {
                     commands.forEach(function (cmd)
                         editor.executeCommand(cmd, 1));
                     modes.push(modes.INSERT);
-                });
+                },
+                { type: "editor" });
         }
 
         function selectPreviousLine() {
@@ -582,77 +537,89 @@ var Editor = Module("editor", {
         addBeginInsertModeMap(["S"],             ["cmd_deleteToEndOfLine", "cmd_deleteToBeginningOfLine"], "Delete the current line and start insert");
         addBeginInsertModeMap(["C"],             ["cmd_deleteToEndOfLine"], "Delete from the cursor to the end of the line and start insert");
 
-        function addMotionMap(key, desc, cmd, mode) {
-            mappings.add([modes.TEXT_EDIT], [key],
+        function addMotionMap(key, desc, select, cmd, mode) {
+            mappings.add([modes.OPERATOR], [key],
                 desc,
-                function ({ count,  motion }) {
-                    editor.selectMotion(key, motion, Math.max(count, 1));
-                    if (callable(cmd))
-                        cmd.call(events, Editor.getEditor(null));
-                    else {
-                        editor.executeCommand(cmd, 1);
-                        modes.pop(modes.TEXT_EDIT);
-                    }
-                    if (mode)
-                        modes.push(mode);
+                function ({ count,  motion, command }) {
+                    modes.push(modes.OPERATOR, null, {
+                        leave: function leave(stack) {
+                            if (stack.push)
+                                return;
+
+                            try {
+                                editor.beginTransaction();
+
+                                let range = RangeFind.union(start, sel.getRangeAt(0));
+                                sel.removeAllRanges();
+                                sel.addRange(select ? range : start);
+                                cmd(editor, range);
+                            }
+                            finally {
+                                editor.endTransaction();
+                            }
+
+                            modes.delay(function () {
+                                if (mode)
+                                    modes.push(mode);
+                            });
+                        }
+                    });
+
+                    let editor = Editor.getEditor(null);
+                    let sel    = editor.selection;
+                    let start  = sel.getRangeAt(0).cloneRange();
                 },
-                { count: true, motion: true });
+                { count: true, type: "motion" });
         }
 
-        addMotionMap("d", "Delete motion", "cmd_delete");
-        addMotionMap("c", "Change motion", "cmd_delete", modes.INSERT);
-        addMotionMap("y", "Yank motion",   "cmd_copy");
+        addMotionMap("d", "Delete motion", true,  function (editor) { editor.cut(); });
+        addMotionMap("c", "Change motion", true,  function (editor) { editor.cut(); }, modes.INSERT);
+        addMotionMap("y", "Yank motion",   false, function (editor, range) { dactyl.clipboardWrite(util.domToString(range)) });
 
-        mappings.add([modes.INPUT],
-            ["<C-w>"], "Delete previous word",
-            function () { editor.executeCommand("cmd_deleteWordBackward", 1); });
+        let bind = function bind(names, description, action, params)
+            mappings.add([modes.INPUT], names, description,
+                         action, update({ type: "editor" }, params));
 
-        mappings.add([modes.INPUT],
-            ["<C-u>"], "Delete until beginning of current line",
-            function () {
-                // Deletes the whole line. What the hell.
-                // editor.executeCommand("cmd_deleteToBeginningOfLine", 1);
+        bind(["<C-w>"], "Delete previous word",
+             function () { editor.executeCommand("cmd_deleteWordBackward", 1); });
 
-                editor.executeCommand("cmd_selectBeginLine", 1);
-                if (Editor.getController().isCommandEnabled("cmd_delete"))
-                    editor.executeCommand("cmd_delete", 1);
-            });
+        bind(["<C-u>"], "Delete until beginning of current line",
+             function () {
+                 // Deletes the whole line. What the hell.
+                 // editor.executeCommand("cmd_deleteToBeginningOfLine", 1);
 
-        mappings.add([modes.INPUT],
-            ["<C-k>"], "Delete until end of current line",
-            function () { editor.executeCommand("cmd_deleteToEndOfLine", 1); });
+                 editor.executeCommand("cmd_selectBeginLine", 1);
+                 if (Editor.getController().isCommandEnabled("cmd_delete"))
+                     editor.executeCommand("cmd_delete", 1);
+             });
 
-        mappings.add([modes.INPUT],
-            ["<C-a>"], "Move cursor to beginning of current line",
-            function () { editor.executeCommand("cmd_beginLine", 1); });
+        bind(["<C-k>"], "Delete until end of current line",
+             function () { editor.executeCommand("cmd_deleteToEndOfLine", 1); });
 
-        mappings.add([modes.INPUT],
-            ["<C-e>"], "Move cursor to end of current line",
-            function () { editor.executeCommand("cmd_endLine", 1); });
+        bind(["<C-a>"], "Move cursor to beginning of current line",
+             function () { editor.executeCommand("cmd_beginLine", 1); });
 
-        mappings.add([modes.INPUT],
-            ["<C-h>"], "Delete character to the left",
-            function () { events.feedkeys("<BS>", true); });
+        bind(["<C-e>"], "Move cursor to end of current line",
+             function () { editor.executeCommand("cmd_endLine", 1); });
 
-        mappings.add([modes.INPUT],
-            ["<C-d>"], "Delete character to the right",
-            function () { editor.executeCommand("cmd_deleteCharForward", 1); });
+        bind(["<C-h>"], "Delete character to the left",
+             function () { events.feedkeys("<BS>", true); });
 
-        mappings.add([modes.INPUT],
-            ["<S-Insert>"], "Insert clipboard/selection",
-            function () { editor.pasteClipboard(); });
+        bind(["<C-d>"], "Delete character to the right",
+             function () { editor.executeCommand("cmd_deleteCharForward", 1); });
 
-        mappings.add([modes.INPUT, modes.TEXT_EDIT],
-            ["<C-i>"], "Edit text field with an external editor",
-            function () { editor.editFieldExternally(); });
+        bind(["<S-Insert>"], "Insert clipboard/selection",
+             function () { editor.pasteClipboard(); });
 
-        mappings.add([modes.INPUT],
-            ["<C-t>"], "Edit text field in Vi mode",
-            function () {
-                dactyl.assert(dactyl.focusedElement);
-                dactyl.assert(!editor.isTextEdit);
-                modes.push(modes.TEXT_EDIT);
-            });
+        bind(["<C-i>"], "Edit text field with an external editor",
+             function () { editor.editFieldExternally(); });
+
+        bind(["<C-t>"], "Edit text field in Vi mode",
+             function () {
+                 dactyl.assert(dactyl.focusedElement);
+                 dactyl.assert(!editor.isTextEdit);
+                 modes.push(modes.TEXT_EDIT);
+             });
 
         // Ugh.
         mappings.add([modes.INPUT, modes.CARET],
@@ -673,6 +640,10 @@ var Editor = Module("editor", {
             ["<C-]>", "<C-5>"], "Expand Insert mode abbreviation",
             function () { editor.expandAbbreviation(modes.INSERT); });
 
+        let bind = function bind(names, description, action, params)
+            mappings.add([modes.TEXT_EDIT], names, description,
+                         action, update({ type: "editor" }, params));
+
         // text edit mode
         mappings.add([modes.TEXT_EDIT],
             ["u"], "Undo changes",
@@ -690,9 +661,8 @@ var Editor = Module("editor", {
             },
             { count: true });
 
-        mappings.add([modes.TEXT_EDIT],
-            ["D"], "Delete the characters under the cursor until the end of the line",
-            function () { editor.executeCommand("cmd_deleteToEndOfLine"); });
+        bind(["D"], "Delete the characters under the cursor until the end of the line",
+             function () { editor.executeCommand("cmd_deleteToEndOfLine"); });
 
         mappings.add([modes.TEXT_EDIT],
             ["o"], "Open line below current",
@@ -711,14 +681,12 @@ var Editor = Module("editor", {
                 editor.executeCommand("cmd_linePrevious", 1);
             });
 
-        mappings.add([modes.TEXT_EDIT],
-            ["X"], "Delete character to the left",
-            function (args) { editor.executeCommand("cmd_deleteCharBackward", Math.max(args.count, 1)); },
+        bind(["X"], "Delete character to the left",
+             function (args) { editor.executeCommand("cmd_deleteCharBackward", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.TEXT_EDIT],
-            ["x"], "Delete character to the right",
-            function (args) { editor.executeCommand("cmd_deleteCharForward", Math.max(args.count, 1)); },
+        bind(["x"], "Delete character to the right",
+             function (args) { editor.executeCommand("cmd_deleteCharForward", Math.max(args.count, 1)); },
             { count: true });
 
         // visual mode
@@ -764,51 +732,58 @@ var Editor = Module("editor", {
                     dactyl.clipboardWrite(buffer.currentWord, true);
             });
 
-        mappings.add([modes.VISUAL, modes.TEXT_EDIT],
-            ["p"], "Paste clipboard contents",
-            function ({ count }) {
+        bind(["p"], "Paste clipboard contents",
+             function ({ count }) {
                 dactyl.assert(!editor.isCaret);
                 editor.executeCommand("cmd_paste", count || 1);
                 modes.pop(modes.TEXT_EDIT);
             },
             { count: true });
 
+        let bind = function bind(names, description, action, params)
+            mappings.add([modes.OPERATOR], names, description,
+                         action, update({ type: "editor" }, params));
+
         // finding characters
-        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
-            ["f"], "Move to a character on the current line after the cursor",
-            function ({ arg, count }) {
-                let pos = editor.findChar(arg, Math.max(count, 1));
-                if (pos >= 0)
-                    editor.moveToPosition(pos, true, modes.main == modes.VISUAL);
-            },
-            { arg: true, count: true });
+        function offset(backward, before, pos) {
+            if (!backward && modes.main != modes.TEXT_EDIT)
+                pos += 1;
+            if (before)
+                pos += backward ? +1 : -1;
+            return pos;
+        }
 
-        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
-            ["F"], "Move to a character on the current line before the cursor",
-            function ({ arg, count }) {
-                let pos = editor.findChar(arg, Math.max(count, 1), true);
-                if (pos >= 0)
-                    editor.moveToPosition(pos, false, modes.main == modes.VISUAL);
-            },
-            { arg: true, count: true });
+        bind(["f"], "Move to a character on the current line after the cursor",
+             function ({ arg, count }) {
+                 let pos = editor.findChar(arg, Math.max(count, 1));
+                 if (pos >= 0)
+                     editor.moveToPosition(offset(false, false, pos), true, modes.main == modes.VISUAL);
+             },
+             { arg: true, count: true, type: "operator" });
 
-        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
-            ["t"], "Move before a character on the current line",
-            function ({ arg, count }) {
-                let pos = editor.findChar(arg, Math.max(count, 1));
-                if (pos >= 0)
-                    editor.moveToPosition(pos - 1, true, modes.main == modes.VISUAL);
-            },
-            { arg: true, count: true });
+        bind(["F"], "Move to a character on the current line before the cursor",
+             function ({ arg, count }) {
+                 let pos = editor.findChar(arg, Math.max(count, 1), true);
+                 if (pos >= 0)
+                     editor.moveToPosition(offset(true, false, pos), false, modes.main == modes.VISUAL);
+             },
+             { arg: true, count: true, type: "operator" });
 
-        mappings.add([modes.TEXT_EDIT, modes.VISUAL],
-            ["T"], "Move before a character on the current line, backwards",
-            function ({ arg, count }) {
-                let pos = editor.findChar(arg, Math.max(count, 1), true);
-                if (pos >= 0)
-                    editor.moveToPosition(pos + 1, false, modes.main == modes.VISUAL);
-            },
-            { arg: true, count: true });
+        bind(["t"], "Move before a character on the current line",
+             function ({ arg, count }) {
+                 let pos = editor.findChar(arg, Math.max(count, 1));
+                 if (pos >= 0)
+                     editor.moveToPosition(offset(false, true, pos), true, modes.main == modes.VISUAL);
+             },
+             { arg: true, count: true, type: "operator" });
+
+        bind(["T"], "Move before a character on the current line, backwards",
+             function ({ arg, count }) {
+                 let pos = editor.findChar(arg, Math.max(count, 1), true);
+                 if (pos >= 0)
+                     editor.moveToPosition(offset(true, true, pos), false, modes.main == modes.VISUAL);
+             },
+             { arg: true, count: true, type: "operator" });
 
         // text edit and visual mode
         mappings.add([modes.TEXT_EDIT, modes.VISUAL],
@@ -834,8 +809,8 @@ var Editor = Module("editor", {
             },
             { count: true });
 
-        function bind() mappings.add.apply(mappings,
-                                           [[modes.AUTOCOMPLETE]].concat(Array.slice(arguments)))
+        let bind = function bind() mappings.add.apply(mappings,
+                                                      [[modes.AUTOCOMPLETE]].concat(Array.slice(arguments)))
 
         bind(["<Esc>"], "Return to Insert mode",
              function () Events.PASS_THROUGH);

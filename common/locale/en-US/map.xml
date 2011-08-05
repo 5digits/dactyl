@@ -56,6 +56,7 @@
     <dt>i</dt> <dd>Insert mode: When interacting with text fields on a website</dd>
     <dt>t</dt> <dd>Text Edit mode: When editing text fields in Vim-like Normal mode</dd>
     <dt>c</dt> <dd>Command Line mode: When typing into the &dactyl.appName; command line</dd>
+    <dt>o</dt> <dd>Operator mode: When moving the cursor</dd>
 </dl>
 
 <p>

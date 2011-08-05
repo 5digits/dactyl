@@ -57,11 +57,16 @@ var Modes = Module("modes", {
             description: "Active when nothing is focused",
             bases: [this.COMMAND]
         });
+        this.addMode("OPERATOR", {
+            char: "o",
+            description: "Mappings which move the cursor",
+            bases: []
+        });
         this.addMode("VISUAL", {
             char: "v",
             description: "Active when text is selected",
             display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : ""),
-            bases: [this.COMMAND],
+            bases: [this.COMMAND, this.OPERATOR],
             ownsFocus: true
         }, {
             leave: function (stack, newMode) {
@@ -97,7 +102,7 @@ var Modes = Module("modes", {
         this.addMode("TEXT_EDIT", {
             char: "t",
             description: "Vim-like editing of input elements",
-            bases: [this.COMMAND],
+            bases: [this.OPERATOR, this.COMMAND],
             ownsFocus: true
         }, {
             onKeyPress: function (eventList) {
@@ -489,7 +494,7 @@ var Modes = Module("modes", {
         init: function init(name, options, params) {
             if (options.bases)
                 util.assert(options.bases.every(function (m) m instanceof this, this.constructor),
-                           _("mode.invalidBases"), true);
+                           _("mode.invalidBases"), false);
 
             this.update({
                 id: 1 << Modes.Mode._id++,
@@ -647,7 +652,7 @@ var Modes = Module("modes", {
 
         options.add(["showmode", "smd"],
             "Show the current mode in the command line when it matches this expression",
-            "stringlist", "caret,output_multiline,!normal,base",
+            "stringlist", "caret,output_multiline,!normal,base,operator",
             opts);
     },
     prefs: function initPrefs() {

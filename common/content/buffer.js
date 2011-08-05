@@ -1688,12 +1688,12 @@ var Buffer = Module("buffer", {
             function () { ex.stop(); });
 
         // scrolling
-        mappings.add([modes.COMMAND], ["j", "<Down>", "<C-e>", "<scroll-down-line>"],
+        mappings.add([modes.NORMAL], ["j", "<Down>", "<C-e>", "<scroll-down-line>"],
             "Scroll document down",
             function (args) { buffer.scrollVertical("lines", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["k", "<Up>", "<C-y>", "<scroll-up-line>"],
+        mappings.add([modes.NORMAL], ["k", "<Up>", "<C-y>", "<scroll-up-line>"],
             "Scroll document up",
             function (args) { buffer.scrollVertical("lines", -Math.max(args.count, 1)); },
             { count: true });
@@ -1703,30 +1703,30 @@ var Buffer = Module("buffer", {
             function (args) { buffer.scrollHorizontal("columns", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], dactyl.has("mail") ? ["l", "<scroll-right-column>"] : ["l", "<Right>", "<scroll-right-column>"],
+        mappings.add([modes.NORMAL], dactyl.has("mail") ? ["l", "<scroll-right-column>"] : ["l", "<Right>", "<scroll-right-column>"],
             "Scroll document to the right",
             function (args) { buffer.scrollHorizontal("columns", Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["0", "^", "<scroll-begin>"],
+        mappings.add([modes.NORMAL], ["0", "^", "<scroll-begin>"],
             "Scroll to the absolute left of the document",
             function () { buffer.scrollToPercent(0, null); });
 
-        mappings.add([modes.COMMAND], ["$", "<scroll-end>"],
+        mappings.add([modes.NORMAL], ["$", "<scroll-end>"],
             "Scroll to the absolute right of the document",
             function () { buffer.scrollToPercent(100, null); });
 
-        mappings.add([modes.COMMAND], ["gg", "<Home>", "<scroll-top>"],
+        mappings.add([modes.NORMAL], ["gg", "<Home>", "<scroll-top>"],
             "Go to the top of the document",
             function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 0); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["G", "<End>", "<scroll-bottom>"],
+        mappings.add([modes.NORMAL], ["G", "<End>", "<scroll-bottom>"],
             "Go to the end of the document",
             function (args) { buffer.scrollToPercent(null, args.count != null ? args.count : 100); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["%", "<scroll-percent>"],
+        mappings.add([modes.NORMAL], ["%", "<scroll-percent>"],
             "Scroll to {count} percent of the document",
             function (args) {
                 dactyl.assert(args.count > 0 && args.count <= 100);
@@ -1734,22 +1734,22 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<C-d>", "<scroll-down>"],
+        mappings.add([modes.NORMAL], ["<C-d>", "<scroll-down>"],
             "Scroll window downwards in the buffer",
             function (args) { buffer._scrollByScrollSize(args.count, true); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<C-u>", "<scroll-up>"],
+        mappings.add([modes.NORMAL], ["<C-u>", "<scroll-up>"],
             "Scroll window upwards in the buffer",
             function (args) { buffer._scrollByScrollSize(args.count, false); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-up-page>"],
+        mappings.add([modes.NORMAL], ["<C-b>", "<PageUp>", "<S-Space>", "<scroll-up-page>"],
             "Scroll up a full page",
             function (args) { buffer.scrollVertical("pages", -Math.max(args.count, 1)); },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<Space>"],
+        mappings.add([modes.NORMAL], ["<Space>"],
             "Scroll down a full page",
             function (args) {
                 if (isinstance(content.document.activeElement, [HTMLInputElement, HTMLButtonElement]))
@@ -1758,7 +1758,7 @@ var Buffer = Module("buffer", {
             },
             { count: true });
 
-        mappings.add([modes.COMMAND], ["<C-f>", "<PageDown>", "<scroll-down-page>"],
+        mappings.add([modes.NORMAL], ["<C-f>", "<PageDown>", "<scroll-down-page>"],
             "Scroll down a full page",
             function (args) { buffer.scrollVertical("pages", Math.max(args.count, 1)); },
             { count: true });
@@ -1969,7 +1969,7 @@ var Buffer = Module("buffer", {
                     try {
                         config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
                         PlacesUtils.history.setCharsetForURI(getWebNavigation().currentURI, val);
-                        getWebNavigation().reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
+                        window.getWebNavigation().reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
                     }
                     catch (e) { dactyl.reportError(e); }
                     return null;
