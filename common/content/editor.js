@@ -861,7 +861,14 @@ var Editor = Module("editor", {
             "string", config.locale,
             {
                 initValue: function () {},
-                getter: function getter() services.spell.dictionary || "",
+                getter: function getter() {
+                    try {
+                        return services.spell.dictionary || "";
+                    }
+                    catch (e) {
+                        return "";
+                    }
+                },
                 setter: function setter(val) { services.spell.dictionary = val; },
                 completer: function completer(context) {
                     let res = {};

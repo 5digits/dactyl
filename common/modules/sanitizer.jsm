@@ -407,7 +407,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             function (args) {
                 dactyl.assert(!modules.options['private'], _("command.sanitize.privateMode"));
 
-                if (args["-host"] && !args.length)
+                if (args["-host"] && !args.length && !args.bang)
                     args[0] = "all";
 
                 let timespan = args["-timespan"] || modules.options["sanitizetimespan"];
@@ -418,15 +418,15 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     match ? 1000 * (Date.now() - 1000 * parseInt(num, 10) * { m: 60, h: 3600, d: 3600 * 24, w: 3600 * 24 * 7 }[unit])
                           : (timespan[0] == "s" ? sanitizer.sessionStart : null);
 
-                let items = args.slice();
-
-                if (args.bang) {
+                let opt = modules.options.get("sanitizeitems");
+                if (args.bang)
                     dactyl.assert(args.length == 0, _("error.trailingCharacters"));
-                    items = Object.keys(sanitizer.itemMap).filter(
-                        function (k) modules.options.get("sanitizeitems").has(k));
+                else {
+                    dactyl.assert(opt.validator(args), _("error.invalidArgument"));
+                    opt = { __proto__: opt, value: args.slice() };
                 }
-                else
-                    dactyl.assert(modules.options.get("sanitizeitems").validator(items), _("error.invalidArgument"));
+
+                let items = Object.keys(sanitizer.itemMap).slice(1).filter(opt.has, opt);
 
                 function sanitize(items) {
                     sanitizer.range = range.native;
@@ -442,13 +442,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         sanitizer.sanitize(items, range);
                 }
 
-                if (items.indexOf("all") >= 0 && !args["-host"])
+                if (array.nth(opt.value, function (i) i == "all" || /^!/.test(i), 0) == "all" && !args["-host"])
                     modules.commandline.input(_("sanitize.prompt.deleteAll") + " ",
                         function (resp) {
                             if (resp.match(/^y(es)?$/i)) {
-                                items = Object.keys(sanitizer.itemMap).filter(function (k) items.indexOf(k) === -1);
                                 sanitize(items);
-                                dactyl.echo(_("command.sanitize.allDeleted"));
+                                dactyl.echomsg(_("command.sanitize.allDeleted"));
                             }
                             else
                                 dactyl.echo(_("command.sanitize.noneDeleted"));
@@ -594,9 +593,19 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             "stringlist", "all",
             {
                 get values() values(sanitizer.itemMap).toArray(),
-                has: modules.Option.has.toggleAll,
+
+                completer: function completer(context, extra) {
+                    if (context.filter[0] == "!")
+                        context.advance(1);
+                    return completer.superapply(this, arguments);
+                },
+
+                has: function has(val)
+                    let (res = array.nth(this.value, function (v) v == "all" || v.replace(/^!/, "") == val, 0))
+                        res && !/^!/.test(res),
+
                 validator: function (values) values.length &&
-                    values.every(function (val) val === "all" || Set.has(sanitizer.itemMap, val))
+                    values.every(function (val) val === "all" || Set.has(sanitizer.itemMap, val.replace(/^!/, "")))
             });
 
         options.add(["sanitizeshutdown", "ss"],

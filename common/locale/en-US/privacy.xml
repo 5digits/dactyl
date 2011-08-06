@@ -76,6 +76,13 @@
         </dl>
 
         <p>
+            Items may be excluded by prefixing them with a <tt>!</tt>. The first
+            matching item takes precedence. Therefore, the value
+            <tt>!commandline all</tt> will sanitize all items but the command
+            line. A value of <tt>all !commandline</tt> will sanitize all items.
+        </p>
+
+        <p>
             When <em>history</em> items are sanitized, all command-line
             history items containing URLs or page titles (other than bookmark
             commands) are additionally cleared. Invocations of the

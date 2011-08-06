@@ -1321,7 +1321,10 @@
     <description>
         <p>
             The default list of private items to sanitize. See
-            <ex>:sanitize</ex> for a list and explanation of possible values.
+            <ex>:sanitize</ex> for a list and explanation of possible values. A
+            value of <str>all</str> will cause all items to be sanitized. Items
+            may be excluded by prefixing them with a <tt>!</tt>. The first
+            matching item takes precedence.
         </p>
     </description>
 </item>
