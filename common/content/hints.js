@@ -1077,11 +1077,17 @@ var Hints = Module("hints", {
         this.hintSession = HintSession(mode, opts);
     }
 }, {
-    isVisible: function isVisible(elem) {
+    isVisible: function isVisible(elem, offScreen) {
         let rect = elem.getBoundingClientRect();
         if (!rect.width || !rect.height)
             if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && util.computedStyle(elem).float != "none" && isVisible(elem)))
                 return false;
+
+        let win = elem.ownerDocument.defaultView;
+        if (offScreen && (rect.top + win.scrollY < 0 || rect.left + win.scrollX < 0 ||
+                          rect.bottom + win.scrollY > win.scrolMaxY + win.innerHeight ||
+                          rect.right + win.scrollX > win.scrolMaxX + win.innerWidth))
+            return false;
 
         let computedStyle = util.computedStyle(elem, null);
         if (computedStyle.visibility != "visible" || computedStyle.display == "none")

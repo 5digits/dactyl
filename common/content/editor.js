@@ -62,7 +62,7 @@ var Editor = Module("editor", {
     // count is optional, defaults to 1
     executeCommand: function (cmd, count) {
         let editor = Editor.getEditor(null);
-        let controller = Editor.getController();
+        let controller = Editor.getController(cmd);
         dactyl.assert(callable(cmd) ||
                           controller &&
                           controller.supportsCommand(cmd) &&
@@ -355,12 +355,13 @@ var Editor = Module("editor", {
         }
     },
 
-    getController: function () {
-        let ed = dactyl.focusedElement;
+    getController: function (cmd) {
+        let win = document.commandDispatcher.focusedWindow;
+        let ed = dactyl.focusedElement || Editor.getEditor(win) && win;
         if (!ed || !ed.controllers)
             return null;
 
-        return ed.controllers.getControllerForCommand("cmd_beginLine");
+        return ed.controllers.getControllerForCommand(cmd || "cmd_beginLine");
     }
 }, {
     mappings: function () {
@@ -395,7 +396,7 @@ var Editor = Module("editor", {
                         true));
                 }
 
-                let controller = buffer.selectionController;
+                let controller = util.selectionController(document.commandDispatcher.focusedWindow);
                 let sel = controller.getSelection(controller.SELECTION_NORMAL);
                 if (!sel.rangeCount) // Hack.
                     fixSelection();
@@ -410,42 +411,38 @@ var Editor = Module("editor", {
                 }
             }
 
-            mappings.add([modes.CARET], keys, description,
-                function ({ count }) {
-                    if (!count)
-                       count = 1;
-
-                    while (count--)
-                        caretExecute(false, true);
-                },
-                extraInfo);
-
             mappings.add([modes.VISUAL], keys, description,
                 function ({ count }) {
                     if (!count)
                         count = 1;
 
+                    let caret = !dactyl.focusedElement;
                     let editor_ = Editor.getEditor(null);
                     let controller = buffer.selectionController;
                     while (count-- && modes.main == modes.VISUAL) {
-                        if (editor.isTextEdit) {
+                        if (caret)
+                            caretExecute(true, true);
+                        else {
                             if (callable(visualTextEditCommand))
                                 visualTextEditCommand(editor_);
                             else
                                 editor.executeCommand(visualTextEditCommand);
                         }
-                        else
-                            caretExecute(true, true);
                     }
                 },
                 extraInfo);
 
-            mappings.add([modes.TEXT_EDIT, modes.OPERATOR], keys, description,
+            mappings.add([modes.CARET, modes.TEXT_EDIT, modes.OPERATOR], keys, description,
                 function ({ count }) {
                     if (!count)
                         count = 1;
 
-                    editor.executeCommand(textEditCommand, count);
+                    if (Editor.getEditor(null))
+                        editor.executeCommand(textEditCommand, count);
+                    else {
+                        while (count--)
+                            caretExecute(false, true);
+                    }
                 },
                 extraInfo);
         }
@@ -618,8 +615,11 @@ var Editor = Module("editor", {
 
         bind(["<C-t>"], "Edit text field in Vi mode",
              function () {
-                 dactyl.assert(dactyl.focusedElement);
-                 dactyl.assert(!editor.isTextEdit);
+                 dactyl.assert(!editor.isTextEdit && Editor.getEditor(null));
+                 dactyl.assert(dactyl.focusedElement ||
+                               let (f = document.commandDispatcher.focusedWindow.frameElement)
+                                    f && Hints.isVisible(f, true));
+
                  modes.push(modes.TEXT_EDIT);
              });
 

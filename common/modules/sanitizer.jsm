@@ -369,10 +369,12 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
 
     iterCookies: function iterCookies(host) {
-        let iterator = host ? services.cookies.getCookiesFromHost(host)
-                            : services.cookies;
-        for (let c in iter(iterator))
-            yield c.QueryInterface(Ci.nsICookie2);
+        for (let c in iter(services.cookies)) {
+            c.QueryInterface(Ci.nsICookie2);
+            if (!host || util.isSubdomain(c.rawHost, host) || c.host[0] == "." && c.host.length < host.length && host.indexOf(c.host) == host.length - c.host.length)
+                yield c;
+        }
+
     },
     iterPermissions: function iterPermissions(host) {
         for (let p in iter(services.permissions)) {
