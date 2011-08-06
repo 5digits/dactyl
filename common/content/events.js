@@ -231,7 +231,7 @@ var KeyProcessor = Class("KeyProcessor", {
 
     countStr: "",
     command: "",
-    get count() this.countStr ? Number(this.countStr) : this.main.params.count,
+    get count() this.countStr ? Number(this.countStr) : this.main.params.count || null,
 
     append: function append(event) {
         this.events.push(event);
