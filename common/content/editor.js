@@ -440,7 +440,7 @@ var Editor = Module("editor", {
                 },
                 extraInfo);
 
-            mappings.add([modes.OPERATOR], keys, description,
+            mappings.add([modes.TEXT_EDIT, modes.OPERATOR], keys, description,
                 function ({ count }) {
                     if (!count)
                         count = 1;
@@ -538,14 +538,14 @@ var Editor = Module("editor", {
         addBeginInsertModeMap(["C"],             ["cmd_deleteToEndOfLine"], "Delete from the cursor to the end of the line and start insert");
 
         function addMotionMap(key, desc, select, cmd, mode) {
-            mappings.add([modes.OPERATOR], [key],
+            mappings.add([modes.TEXT_EDIT], [key],
                 desc,
                 function ({ count,  motion }) {
                     modes.push(modes.OPERATOR, null, {
                         count: count,
 
                         leave: function leave(stack) {
-                            if (stack.push)
+                            if (stack.push || stack.fromEscape)
                                 return;
 
                             try {
@@ -743,7 +743,7 @@ var Editor = Module("editor", {
             { count: true });
 
         let bind = function bind(names, description, action, params)
-            mappings.add([modes.OPERATOR], names, description,
+            mappings.add([modes.TEXT_EDIT, modes.OPERATOR], names, description,
                          action, update({ type: "editor" }, params));
 
         // finding characters

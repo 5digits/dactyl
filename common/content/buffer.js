@@ -1753,11 +1753,7 @@ var Buffer = Module("buffer", {
         mappings.add([modes.NORMAL], ["<Space>"],
             "Scroll down a full page",
             function (args) {
-                if (isinstance(services.focus.activeWindow.document.activeElement,
-                               [HTMLInputElement, HTMLButtonElement, Ci.nsIDOMXULButtonElement]))
-                    return Events.PASS;
-
-                if (isinstance(buffer.focusedFrame.document.activeElement,
+                if (isinstance((services.focus.focusedWindow || content).document.activeElement,
                                [HTMLInputElement, HTMLButtonElement, Ci.nsIDOMXULButtonElement]))
                     return Events.PASS;
 

@@ -66,7 +66,7 @@ var Modes = Module("modes", {
             char: "v",
             description: "Active when text is selected",
             display: function () "VISUAL" + (this._extended & modes.LINE ? " LINE" : ""),
-            bases: [this.COMMAND, this.OPERATOR],
+            bases: [this.COMMAND],
             ownsFocus: true
         }, {
             leave: function (stack, newMode) {
@@ -102,7 +102,7 @@ var Modes = Module("modes", {
         this.addMode("TEXT_EDIT", {
             char: "t",
             description: "Vim-like editing of input elements",
-            bases: [this.OPERATOR, this.COMMAND],
+            bases: [this.COMMAND],
             ownsFocus: true
         }, {
             onKeyPress: function (eventList) {
@@ -452,8 +452,7 @@ var Modes = Module("modes", {
         while (this._modeStack.length > 1 && this.main != mode) {
             let a = this._modeStack.pop();
             this.set(this.topOfStack.main, this.topOfStack.extended, this.topOfStack.params,
-                     update({ pop: a },
-                            args || {}));
+                     update({ pop: a }, args));
 
             if (mode == null)
                 return;
@@ -595,10 +594,10 @@ var Modes = Module("modes", {
             "Return to Normal mode",
             function () { modes.reset(); });
 
-        mappings.add([modes.INPUT, modes.COMMAND, modes.PASS_THROUGH, modes.QUOTE],
+        mappings.add([modes.INPUT, modes.COMMAND, modes.OPERATOR, modes.PASS_THROUGH, modes.QUOTE],
             ["<Esc>", "<C-[>"],
             "Return to the previous mode",
-            function () { modes.pop(); });
+            function () { modes.pop(null, { fromEscape: true }); });
 
         mappings.add([modes.MENU], ["<C-c>"],
             "Leave Menu mode",
