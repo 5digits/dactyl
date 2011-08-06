@@ -407,6 +407,9 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
             function (args) {
                 dactyl.assert(!modules.options['private'], _("command.sanitize.privateMode"));
 
+                if (args["-host"] && !args.length)
+                    args[0] = "all";
+
                 let timespan = args["-timespan"] || modules.options["sanitizetimespan"];
 
                 let range = Range();
@@ -416,8 +419,6 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                           : (timespan[0] == "s" ? sanitizer.sessionStart : null);
 
                 let items = args.slice();
-                if (args["-host"] && !args.length)
-                    args[0] = "all";
 
                 if (args.bang) {
                     dactyl.assert(args.length == 0, _("error.trailingCharacters"));
@@ -441,7 +442,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                         sanitizer.sanitize(items, range);
                 }
 
-                if (items.indexOf("all") >= 0)
+                if (items.indexOf("all") >= 0 && !args["-host"])
                     modules.commandline.input(_("sanitize.prompt.deleteAll") + " ",
                         function (resp) {
                             if (resp.match(/^y(es)?$/i)) {
