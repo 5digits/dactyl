@@ -1653,13 +1653,20 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     }),
 
     /**
+     * Flushes the startup cache.
+     */
+    flushCache: function flushCache() {
+        services.observer.notifyObservers(null, "startupcache-invalidate", "");
+    },
+
+    /**
      * Reloads dactyl in entirety by disabling the add-on and
      * re-enabling it.
      */
     rehash: function (args) {
         storage.session.commandlineArgs = args;
         this.timeout(function () {
-            services.observer.notifyObservers(null, "startupcache-invalidate", "");
+            this.flushCache();
             this.rehashing = true;
             let addon = config.addon;
             addon.userDisabled = true;

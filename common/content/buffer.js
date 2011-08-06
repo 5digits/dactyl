@@ -1756,6 +1756,11 @@ var Buffer = Module("buffer", {
                 if (isinstance(services.focus.activeWindow.document.activeElement,
                                [HTMLInputElement, HTMLButtonElement, Ci.nsIDOMXULButtonElement]))
                     return Events.PASS;
+
+                if (isinstance(buffer.focusedFrame.document.activeElement,
+                               [HTMLInputElement, HTMLButtonElement, Ci.nsIDOMXULButtonElement]))
+                    return Events.PASS;
+
                 buffer.scrollVertical("pages", Math.max(args.count, 1));
             },
             { count: true });

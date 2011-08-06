@@ -170,6 +170,9 @@ var IO = Module("io", {
                     if (/\.js$/.test(filename)) {
                         try {
                             var context = contexts.Script(file, params.group);
+                            if (Set.has(this._scriptNames, file.path))
+                                util.flushCache();
+
                             dactyl.loadScript(uri.spec, context);
                             dactyl.helpInitialized = false;
                         }
@@ -198,8 +201,7 @@ var IO = Module("io", {
                         });
                     }
 
-                    if (this._scriptNames.indexOf(file.path) == -1)
-                        this._scriptNames.push(file.path);
+                    Set.add(this._scriptNames, file.path);
 
                     dactyl.echomsg(_("io.sourcingEnd", filename.quote()), 2);
                     dactyl.log(_("dactyl.sourced", filename), 3);
@@ -780,12 +782,13 @@ unlet s:cpo_save
         commands.add(["scrip[tnames]"],
             "List all sourced script names",
             function () {
-                if (!io._scriptNames.length)
+                let names = Object.keys(io._scriptNames);
+                if (!names.length)
                     dactyl.echomsg(_("command.scriptnames.none"));
                 else
                     modules.commandline.commandOutput(
                         template.tabular(["<SNR>", "Filename"], ["text-align: right; padding-right: 1em;"],
-                            ([i + 1, file] for ([i, file] in Iterator(io._scriptNames)))));
+                            ([i + 1, file] for ([i, file] in Iterator(names)))));
 
             },
             { argCount: "0" });
