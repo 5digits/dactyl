@@ -345,7 +345,7 @@ var Config = Module("config", ConfigBase, {
     mappings: function initMappings(dactyl, modules, window) {
         const { Events, mappings, modes } = modules;
         mappings.add([modes.NORMAL],
-                     ["<Return>", "<Space>", "<Up>", "<Down>"],
+                     ["<Return>", "<Up>", "<Down>"],
                      "Handled by " + config.host,
                      function () Events.PASS_THROUGH);
     },

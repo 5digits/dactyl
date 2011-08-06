@@ -1753,7 +1753,8 @@ var Buffer = Module("buffer", {
         mappings.add([modes.NORMAL], ["<Space>"],
             "Scroll down a full page",
             function (args) {
-                if (isinstance(content.document.activeElement, [HTMLInputElement, HTMLButtonElement]))
+                if (isinstance(services.focus.activeWindow.document.activeElement,
+                               [HTMLInputElement, HTMLButtonElement, Ci.nsIDOMXULButtonElement]))
                     return Events.PASS;
                 buffer.scrollVertical("pages", Math.max(args.count, 1));
             },
