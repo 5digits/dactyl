@@ -201,6 +201,7 @@
       - Added 'passunknown' option. [b7]
       - Changed 'urlseparator' default value to "|". [b3]
       - Added "passwords" and "venkman" dialogs to :dialog. [b2]
+      - Added 'spelllang' option. [b8]
       - Make 'showmode' a [stringlist] option. [b7]
       - Added 'wildanchor' option. [b2]
     • Added BookmarkChange, BookmarkRemove autocommands. [b2]

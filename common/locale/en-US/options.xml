@@ -1327,6 +1327,16 @@
 </item>
 
 <item>
+    <tags>'spl' 'spelllang'</tags>
+    <spec>'spelllang'</spec>
+    <type>&option.spelllang.type;</type>
+    <default>&option.spelllang.default;</default>
+    <description short="true">
+        <p>The language used by the spell checker.</p>
+    </description>
+</item>
+
+<item>
     <tags>'ss' 'sanitizeshutdown'</tags>
     <spec>'sanitizeshutdown' 'ss'</spec>
     <type>&option.sanitizeshutdown.type;</type>

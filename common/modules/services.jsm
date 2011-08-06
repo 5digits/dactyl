@@ -57,6 +57,7 @@ var Services = Module("Services", {
         this.add("runtime",             "@mozilla.org/xre/runtime;1",                       ["nsIXULAppInfo", "nsIXULRuntime"]);
         this.add("rdf",                 "@mozilla.org/rdf/rdf-service;1",                   "nsIRDFService");
         this.add("sessionStore",        "@mozilla.org/browser/sessionstore;1",              "nsISessionStore");
+        this.add("spell",               "@mozilla.org/spellchecker/engine;1",               "mozISpellCheckingEngine");
         this.add("stringBundle",        "@mozilla.org/intl/stringbundle;1",                 "nsIStringBundleService");
         this.add("stylesheet",          "@mozilla.org/content/style-sheet-service;1",       "nsIStyleSheetService");
         this.add("subscriptLoader",     "@mozilla.org/moz/jssubscript-loader;1",            "mozIJSSubScriptLoader");

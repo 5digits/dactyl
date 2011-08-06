@@ -855,6 +855,21 @@ var Editor = Module("editor", {
         options.add(["insertmode", "im"],
             "Enter Insert mode rather than Text Edit mode when focusing text areas",
             "boolean", true);
+
+        options.add(["spelllang", "spl"],
+            "The language used by the spell checker",
+            "string", config.locale,
+            {
+                initValue: function () {},
+                getter: function getter() services.spell.dictionary || "",
+                setter: function setter(val) { services.spell.dictionary = val; },
+                completer: function completer(context) {
+                    let res = {};
+                    services.spell.getDictionaryList(res, {});
+                    context.completions = res.value;
+                    context.keys = { text: util.identity, description: util.identity };
+                }
+            });
     }
 });
 
