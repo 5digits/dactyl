@@ -498,10 +498,6 @@ var Buffer = Module("buffer", {
      * @param {bool} follow Whether to follow the matching link.
      * @param {string} path The CSS to use for the search. @optional
      */
-    followDocumentRelationship: deprecated("buffer.findLink",
-        function followDocumentRelationship(rel) {
-            this.findLink(rel, options[rel + "pattern"], 0, true);
-        }),
     findLink: function findLink(rel, regexps, count, follow, path) {
         let selector = path || options.get("hinttags").stringDefaultValue;
 
@@ -520,15 +516,16 @@ var Buffer = Module("buffer", {
             for (let elem in iter(elems))
                 yield elem;
 
-            let res = frame.document.querySelectorAll(selector);
-            for (let regexp in values(regexps)) {
-                for (let i in util.range(res.length, 0, -1)) {
-                    let elem = res[i];
-                    if (regexp.test(elem.textContent) === regexp.result || regexp.test(elem.title) === regexp.result ||
-                            Array.some(elem.childNodes, function (child) regexp.test(child.alt) === regexp.result))
-                        yield elem;
-                }
-            }
+            function a(regexp, elem) regexp.test(elem.textContent) === regexp.result ||
+                            Array.some(elem.childNodes, function (child) regexp.test(child.alt) === regexp.result);
+            function b(regexp, elem) regexp.test(elem.title);
+
+            let res = Array.filter(frame.document.querySelectorAll(selector), Hints.isVisible);
+            for (let test in values([a, b]))
+                for (let regexp in values(regexps))
+                    for (let i in util.range(res.length, 0, -1))
+                        if (test(regexp, res[i]))
+                            yield res[i];
         }
 
         for (let frame in values(this.allFrames(null, true)))
@@ -542,6 +539,10 @@ var Buffer = Module("buffer", {
         if (follow)
             dactyl.beep();
     },
+    followDocumentRelationship: deprecated("buffer.findLink",
+        function followDocumentRelationship(rel) {
+            this.findLink(rel, options[rel + "pattern"], 0, true);
+        }),
 
     /**
      * Fakes a click on a link.

@@ -1077,6 +1077,18 @@ var Hints = Module("hints", {
         this.hintSession = HintSession(mode, opts);
     }
 }, {
+    isVisible: function isVisible(elem) {
+        let rect = elem.getBoundingClientRect();
+        if (!rect.width || !rect.height)
+            if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && util.computedStyle(elem).float != "none" && isVisible(elem)))
+                return false;
+
+        let computedStyle = util.computedStyle(elem, null);
+        if (computedStyle.visibility != "visible" || computedStyle.display == "none")
+            return false;
+        return true;
+    },
+
     translitTable: Class.memoize(function () {
         const table = {};
         [

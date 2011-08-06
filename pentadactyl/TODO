@@ -16,7 +16,6 @@ FEATURES:
   locations in the history list).
 9 clean up error message codes and document
 9 option groups, including buffer-local and site-specific
-9 proper motion maps
 8 wherever possible: get rid of dialogs and ask console-like dialog questions
   or write error prompts directly on the webpage or with :echo()
 8 add search capability to MOW
