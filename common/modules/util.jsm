@@ -773,7 +773,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     if (elem.namespaceURI in this.namespaceNames)
                         name = this.namespaceNames[elem.namespaceURI] + ":" + name;
                     else
-                        name = "*:" + name + "[namespace-uri()=" + quote(elem.namespaceURI) + "]";
+                        name = "*[local-name()=" + quote(name) + " and namespace-uri()=" + quote(elem.namespaceURI) + "]";
 
                 res.push(name + "[" + (1 + iter(this.evaluateXPath("./" + name, elem.parentNode)).indexOf(elem)) + "]");
                 continue;
@@ -786,8 +786,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
     namespaces: {
         xul: XUL.uri,
-        html: XHTML.uri,
         xhtml: XHTML.uri,
+        html: XHTML.uri,
         xhtml2: "http://www.w3.org/2002/06/xhtml2",
         dactyl: NS.uri
     },

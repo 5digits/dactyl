@@ -2168,17 +2168,15 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             dactyl.log(_("dactyl.commandlineOpts", util.objectToString(dactyl.commandLineOptions)), 3);
 
-            // first time intro message
-            const firstTime = "extensions." + config.name + ".firsttime";
-            if (prefs.get(firstTime, true)) {
+            if (localPrefs.get("first-run", true))
                 dactyl.timeout(function () {
+                    localPrefs.set("first-run", false);
                     this.withSavedValues(["forceNewTab"], function () {
                         this.forceNewTab = true;
                         this.help();
                         prefs.set(firstTime, false);
                     });
                 }, 1000);
-            }
 
             // TODO: we should have some class where all this guioptions stuff fits well
             // dactyl.hideGUI();
