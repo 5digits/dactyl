@@ -49,15 +49,27 @@ var Marks = Module("marks", {
         let doc = win.document;
 
         let position = buffer.scrollPosition;
+        let path = util.generateXPath(buffer.findScrollable(0, position.x));
 
         if (Marks.isURLMark(mark)) {
-            let res = this._urlMarks.set(mark, { location: doc.documentURI, offset: position, tab: Cu.getWeakReference(tabs.getTab()), timestamp: Date.now()*1000 });
+            let res = this._urlMarks.set(mark, {
+                location: doc.documentURI,
+                offset: position,
+                xpath: path,
+                tab: Cu.getWeakReference(tabs.getTab()),
+                timestamp: Date.now()*1000
+            });
             if (!silent)
                 dactyl.log(_("mark.addURL", Marks.markToString(mark, res)), 5);
         }
         else if (Marks.isLocalMark(mark)) {
             let marks = this._localMarks.get(doc.documentURI, {});
-            marks[mark] = { location: doc.documentURI, offset: position, timestamp: Date.now()*1000 };
+            marks[mark] = {
+                location: doc.documentURI,
+                offset: position,
+                xpath: path,
+                timestamp: Date.now()*1000
+            };
             this._localMarks.changed();
             if (!silent)
                 dactyl.log(_("mark.addLocal", Marks.markToString(mark, marks[mark])), 5);
@@ -155,10 +167,19 @@ var Marks = Module("marks", {
     },
 
     _scrollTo: function _scrollTo(mark) {
+        if (!mark.xpath)
+            var node = buffer.findScrollable(0, (mark.offset || mark.position).x)
+        else
+            for (node in util.evaluateXPath(mark.xpath, buffer.focusedFrame.document))
+                ;
+
+        util.assert(node);
+        util.scrollIntoView(node, true);
+
         if (mark.position)
-            buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
+            Buffer.scrollToPercent(node, mark.position.x * 100, mark.position.y * 100);
         else if (mark.offset)
-            buffer.scrollToPosition(mark.offset.x, mark.offset.y);
+            Buffer.scrollToPosition(node, mark.offset.x, mark.offset.y);
     },
 
     /**
