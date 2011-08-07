@@ -353,6 +353,12 @@ var Buffer = Module("buffer", {
     },
 
     /**
+     * @property {{ x: number, y: number }} The buffer's current scroll position
+     * as reported by {@link Buffer.getScrollPosition}.
+     */
+    get scrollPosition() Buffer.getScrollPosition(this.findScrollable(0, false)),
+
+    /**
      * Adds a new section to the page information output.
      *
      * @param {string} option The section's value in 'pageinfo'.
@@ -704,6 +710,14 @@ var Buffer = Module("buffer", {
      */
     scrollToPercent: function scrollToPercent(horizontal, vertical)
         Buffer.scrollToPercent(this.findScrollable(0, vertical == null), horizontal, vertical),
+
+    /**
+     * Scrolls the currently active element to the given horizontal and
+     * vertical positions. See {@link Buffer.scrollToPosition} for
+     * parameters.
+     */
+    scrollToPosition: function scrollToPosition(horizontal, vertical)
+        Buffer.scrollToPosition(this.findScrollable(0, vertical == null), horizontal, vertical),
 
     _scrollByScrollSize: function _scrollByScrollSize(count, direction) {
         if (count > 0)
@@ -1248,6 +1262,7 @@ var Buffer = Module("buffer", {
         // Temporary hack. Should be done better.
         if (elem.ownerDocument == buffer.focusedFrame.document)
             marks.add("'");
+
         if (left != null)
             elem.scrollLeft = left;
         if (top != null)
@@ -1301,7 +1316,7 @@ var Buffer = Module("buffer", {
      *   given direction.
      */
     scrollVertical: function scrollVertical(elem, increment, number) {
-        let fontSize = parseInt(util.computedStyle(elem).fontSize);
+        let fontSize = parseInt(util.computedStyle(elem).lineHeight);
         if (increment == "lines")
             increment = fontSize;
         else if (increment == "pages")
@@ -1335,6 +1350,50 @@ var Buffer = Module("buffer", {
                                            : (elem.scrollWidth - elem.clientWidth) * (horizontal / 100),
                         vertical   == null ? null
                                            : (elem.scrollHeight - elem.clientHeight) * (vertical / 100));
+    },
+
+    /**
+     * Scrolls the currently active element to the given horizontal and
+     * vertical position.
+     *
+     * @param {Element} elem The element to scroll.
+     * @param {number|null} horizontal The possibly fractional
+     *      line ordinal to scroll to.
+     * @param {number|null} vertical The possibly fractional
+     *      column ordinal to scroll to.
+     */
+    scrollToPosition: function scrollToPosition(elem, horizontal, vertical) {
+        let style = util.computedStyle(elem);
+        Buffer.scrollTo(elem,
+                        horizontal == null ? null :
+                        horizontal == 0    ? 0    : this._exWidth(elem) * horizontal,
+                        vertical   == null ? null : parseFloat(style.lineHeight) * vertical);
+    },
+
+    /**
+     * Returns the current scroll position as understood by
+     * {@link #scrollToPosition}.
+     *
+     * @param {Element} elem The element to scroll.
+     */
+    getScrollPosition: function getPosition(elem) {
+        let style = util.computedStyle(elem);
+        return {
+            x: elem.scrollLeft && elem.scrollLeft / this._exWidth(elem),
+            y: elem.scrollTop / parseFloat(style.lineHeight)
+        }
+    },
+
+    _exWidth: function _exWidth(elem) {
+        let div = elem.appendChild(
+            util.xmlToDom(<elem style="width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;"/>,
+                          elem.ownerDocument));
+        try {
+            return parseFloat(util.computedStyle(div).width);
+        }
+        finally {
+            div.parentNode.removeChild(div);
+        }
     },
 
     openUploadPrompt: function openUploadPrompt(elem) {
@@ -2010,12 +2069,12 @@ var Buffer = Module("buffer", {
 
         options.add(["nextpattern"],
             "Patterns to use when guessing the next page in a document sequence",
-            "regexplist", UTF8("'\\bnext\\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\\bmore\\b'"),
+            "regexplist", UTF8(/'\bnext\b',^>$,^(>>|»)$,^(>|»),(>|»)$,'\bmore\b'/.source),
             { regexpFlags: "i" });
 
         options.add(["previouspattern"],
             "Patterns to use when guessing the previous page in a document sequence",
-            "regexplist", UTF8("'\\bprev|previous\\b',^<$,^(<<|«)$,^(<|«),(<|«)$"),
+            "regexplist", UTF8(/'\bprev|previous\b',^<$,^(<<|«)$,^(<|«),(<|«)$/.source),
             { regexpFlags: "i" });
 
         options.add(["pageinfo", "pa"],

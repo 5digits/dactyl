@@ -48,16 +48,16 @@ var Marks = Module("marks", {
         let win = buffer.focusedFrame;
         let doc = win.document;
 
-        let position = { x: buffer.scrollXPercent / 100, y: buffer.scrollYPercent / 100 };
+        let position = buffer.scrollPosition;
 
         if (Marks.isURLMark(mark)) {
-            let res = this._urlMarks.set(mark, { location: doc.documentURI, position: position, tab: Cu.getWeakReference(tabs.getTab()), timestamp: Date.now()*1000 });
+            let res = this._urlMarks.set(mark, { location: doc.documentURI, offset: position, tab: Cu.getWeakReference(tabs.getTab()), timestamp: Date.now()*1000 });
             if (!silent)
                 dactyl.log(_("mark.addURL", Marks.markToString(mark, res)), 5);
         }
         else if (Marks.isLocalMark(mark)) {
             let marks = this._localMarks.get(doc.documentURI, {});
-            marks[mark] = { location: doc.documentURI, position: position, timestamp: Date.now()*1000 };
+            marks[mark] = { location: doc.documentURI, offset: position, timestamp: Date.now()*1000 };
             this._localMarks.changed();
             if (!silent)
                 dactyl.log(_("mark.addLocal", Marks.markToString(mark, marks[mark])), 5);
@@ -116,7 +116,7 @@ var Marks = Module("marks", {
                 let doc = tab.linkedBrowser.contentDocument;
                 if (doc.documentURI == mark.location) {
                     dactyl.log(_("mark.jumpingToURL", Marks.markToString(char, mark)), 5);
-                    buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
+                    this._scrollTo(mark);
                 }
                 else {
                     this._pendingJumps.push(mark);
@@ -147,11 +147,18 @@ var Marks = Module("marks", {
             dactyl.assert(mark, _("mark.unset", char));
 
             dactyl.log(_("mark.jumpingToLocal", Marks.markToString(char, mark)), 5);
-            buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
+            this._scrollTo(mark);
         }
         else
             dactyl.echoerr(_("mark.invalid"));
 
+    },
+
+    _scrollTo: function _scrollTo(mark) {
+        if (mark.position)
+            buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
+        else if (mark.offset)
+            buffer.scrollToPosition(mark.offset.x, mark.offset.y);
     },
 
     /**
@@ -174,18 +181,20 @@ var Marks = Module("marks", {
             template.tabular(
                 ["Mark",   "HPos",              "VPos",              "File"],
                 ["",       "text-align: right", "text-align: right", "color: green"],
-                ([mark[0],
-                  Math.round(mark[1].position.x * 100) + "%",
-                  Math.round(mark[1].position.y * 100) + "%",
-                  mark[1].location]
-                  for ([, mark] in Iterator(marks)))));
+                ([name,
+                  mark.position ? Math.round(mark.position.x * 100) + "%"
+                                : Math.round(mark.offset.x),
+                  mark.position ? Math.round(mark.position.y * 100) + "%"
+                                : Math.round(mark.offset.y),
+                  mark.location]
+                  for ([, [name, mark]] in Iterator(marks)))));
     },
 
     _onPageLoad: function _onPageLoad(event) {
         let win = event.originalTarget.defaultView;
         for (let [i, mark] in Iterator(this._pendingJumps)) {
             if (win && win.location.href == mark.location) {
-                buffer.scrollToPercent(mark.position.x * 100, mark.position.y * 100);
+                this._scrollTo(mark);
                 this._pendingJumps.splice(i, 1);
                 return;
             }
@@ -194,10 +203,18 @@ var Marks = Module("marks", {
 }, {
     markToString: function markToString(name, mark) {
         let tab = mark.tab && mark.tab.get();
-        return name + ", " + mark.location +
-                ", (" + Math.round(mark.position.x * 100) +
-                "%, " + Math.round(mark.position.y * 100) + "%)" +
-                (tab ? ", tab: " + tabs.index(tab) : "");
+        if (mark.position)
+            return [name, mark.location,
+                    "(" + Math.round(mark.position.x * 100) + "%",
+                          Math.round(mark.position.y * 100) + "%)",
+                    (tab && "tab: " + tabs.index(tab))
+            ].filter(util.identity).join(", ");
+
+        return [name, mark.location,
+                "(" + Math.round(mark.offset.x * 100),
+                      Math.round(mark.offset.y * 100) + ")",
+                (tab && "tab: " + tabs.index(tab))
+        ].filter(util.identity).join(", ");
     },
 
     isLocalMark: function isLocalMark(mark) /^[a-z`']$/.test(mark),
