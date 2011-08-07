@@ -307,6 +307,12 @@ var Option = Class("Option", {
             context.completions = this.values;
     },
 
+    _completions: function _completions(extra) {
+        let context = CompletionContext("");
+        return context.fork("", 0, this, this.completer, extra) ||
+               context.allItems.items.map(function (item) [item.text]);
+    },
+
     /**
      * @property {[[string, string]]} This option's possible values.
      * @see CompletionContext
@@ -689,23 +695,26 @@ var Option = Class("Option", {
      * @param {value|[string]} values The value or array of values to validate.
      * @returns {boolean}
      */
-    validateCompleter: function validateCompleter(values) {
+    validateCompleter: function validateCompleter(vals) {
+        if (isObject(vals) && !isArray(vals)) {
+            let k = values(this._completions({ values: {} })).toObject();
+            let v = values(this._completions({ value: "" })).toObject();
+            util.dump(k, v);
+            return Object.keys(vals).every(Set.has(k)) && values(vals).every(Set.has(v));
+        }
+
         if (this.values)
             var acceptable = this.values.array || this.values;
-        else {
-            let context = CompletionContext("");
-            acceptable = context.fork("", 0, this, this.completer);
-            if (!acceptable)
-                acceptable = context.allItems.items.map(function (item) [item.text]);
-        }
+        else
+            acceptable = this._completions();
 
         if (isArray(acceptable))
             acceptable = Set(acceptable.map(function ([k]) k));
 
         if (this.type === "regexpmap" || this.type === "sitemap")
-            return Array.concat(values).every(function (re) Set.has(acceptable, re.result));
+            return Array.concat(vals).every(function (re) Set.has(acceptable, re.result));
 
-        return Array.concat(values).every(Set.has(acceptable));
+        return Array.concat(vals).every(Set.has(acceptable));
     },
 
     types: {}
