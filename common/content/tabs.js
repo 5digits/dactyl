@@ -127,12 +127,7 @@ var Tabs = Module("tabs", {
     /**
      * @property {Object} The local options store for the current tab.
      */
-    get options() {
-        let store = this.localStore;
-        if (!("options" in store))
-            store.options = {};
-        return store.options;
-    },
+    get options() this.localStore.options,
 
     get visibleTabs() config.tabbrowser.visibleTabs || this.allTabs.filter(function (tab) !tab.hidden),
 
@@ -151,8 +146,8 @@ var Tabs = Module("tabs", {
     getLocalStore: function getLocalStore(tabIndex) {
         let tab = this.getTab(tabIndex);
         if (!tab.dactylStore)
-            tab.dactylStore = {};
-        return tab.dactylStore;
+            tab.dactylStore = Object.create(this.localStorePrototype);
+        return tab.dactylStore.instance = tab.dactylStore;
     },
 
     /**
@@ -160,6 +155,11 @@ var Tabs = Module("tabs", {
      *     tab.
      */
     get localStore() this.getLocalStore(),
+
+    localStorePrototype: memoize({
+        instance: {},
+        get options() ({})
+    }),
 
     /**
      * @property {[Object]} The array of closed tabs for the current

@@ -77,6 +77,7 @@
     • Mapping changes:
       - It's now possible to map keys in many more modes, including
         Hint, Multi-line Output, and Menu. [b4]
+      - <C-o> and <C-i> now behave more like Vim. [b8]
       - Added Operator mode for motion maps, per Vim. [b8]
       - Added site-specific mapping groups and related command
         changes. [b6]

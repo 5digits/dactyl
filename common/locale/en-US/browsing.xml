@@ -264,10 +264,9 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 <h2 tag="navigating">Navigating</h2>
 
 <item>
-    <tags><![CDATA[H <C-o> CTRL-O :ba :back]]></tags>
+    <tags><![CDATA[H CTRL-O :ba :back]]></tags>
     <spec>:<oa>count</oa>ba<oa>ck</oa> <oa>url</oa></spec>
     <spec>:ba<oa>ck</oa>!</spec>
-    <spec><oa>count</oa>&lt;C-o></spec>
     <description>
         <p>
             Go <oa>count</oa> pages back in the browser history. If
@@ -279,16 +278,35 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[L <C-i> CTRL-I :fo :fw :forward]]></tags>
+    <tags><![CDATA[L CTRL-I :fo :fw :forward]]></tags>
     <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
     <spec>:fo<oa>rward</oa>!</spec>
-    <spec><oa>count</oa>&lt;C-i></spec>
     <description>
         <p>
             Go <oa>count</oa> pages forward in the browser history.
             If <oa>url</oa> is specified go forward to the first
             matching URL. The special version <ex>:forward!</ex>
             goes to the end of the browser history.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[<C-o>]]></tags>
+    <spec><oa>count</oa>&lt;C-o></spec>
+    <description>
+        <p>
+            Go <oa>count</oa> steps back in the jumps stack.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[<C-i>]]></tags>
+    <spec><oa>count</oa>&lt;C-i></spec>
+    <description>
+        <p>
+            Go <oa>count</oa> steps forward in the jumps stack.
         </p>
     </description>
 </item>

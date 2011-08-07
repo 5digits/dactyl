@@ -63,7 +63,20 @@ var History = Module("history", {
         return obj;
     },
 
-    stepTo: function stepTo(steps) {
+    /**
+     * Step to the given offset in the history stack.
+     *
+     * @param {number} steps The possibly negative number of steps to
+     *      step.
+     * @param {boolean} jumps If true, take into account jumps in the
+     *      marks stack. @optional
+     */
+    stepTo: function stepTo(steps, jumps) {
+        if (jumps)
+            steps -= marks.jump(steps);
+        if (steps == 0)
+            return;
+
         let start = 0;
         let end = window.getWebNavigation().sessionHistory.count - 1;
         let current = window.getWebNavigation().sessionHistory.index;
@@ -274,12 +287,12 @@ var History = Module("history", {
 
         mappings.add(myModes,
             ["<C-o>"], "Go to an older position in the jump list",
-            function (args) { history.stepTo(-Math.max(args.count, 1)); },
+            function (args) { history.stepTo(-Math.max(args.count, 1), true); },
             { count: true });
 
         mappings.add(myModes,
             ["<C-i>"], "Go to a newer position in the jump list",
-            function (args) { history.stepTo(Math.max(args.count, 1)); },
+            function (args) { history.stepTo(Math.max(args.count, 1), true); },
             { count: true });
 
         mappings.add(myModes,

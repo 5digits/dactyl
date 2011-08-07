@@ -270,10 +270,17 @@ var Buffer = Module("buffer", {
      *     tab.
      */
     get localStore() {
-        if (!content.document.dactylStore)
-            content.document.dactylStore = {};
-        return content.document.dactylStore;
+        let doc = content.document;
+        if (!doc.dactylStore || !buffer.localStorePrototype.isPrototypeOf(doc.dactylStore))
+            doc.dactylStore = Object.create(buffer.localStorePrototype);
+        return doc.dactylStore.instance = doc.dactylStore;
     },
+
+    localStorePrototype: memoize({
+        instance: {},
+        get jumps() [],
+        jumpsIndex: 0
+    }),
 
     /**
      * @property {Node} The last focused input field in the buffer. Used
@@ -1263,9 +1270,8 @@ var Buffer = Module("buffer", {
      *   null, to not alter the vertical scroll offset.
      */
     scrollTo: function scrollTo(elem, left, top) {
-        // Temporary hack. Should be done better.
         if (elem.ownerDocument == buffer.focusedFrame.document)
-            marks.add("'");
+            marks.push();
 
         if (left != null)
             elem.scrollLeft = left;

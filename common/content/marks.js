@@ -34,6 +34,19 @@ var Marks = Module("marks", {
 
     get localURI() buffer.focusedFrame.document.documentURI,
 
+    Mark: function Mark(params) {
+        let win = buffer.focusedFrame;
+        let doc = win.document;
+
+        params = params || {};
+
+        params.location = doc.documentURI,
+        params.offset = buffer.scrollPosition;
+        params.path = util.generateXPath(buffer.findScrollable(0, params.offset.x));
+        params.timestamp = Date.now() * 1000;
+        return params;
+    },
+
     /**
      * Add a named mark for the current buffer, at its current position.
      * If mark matches [A-Z], it's considered a URL mark, and will jump to
@@ -41,39 +54,58 @@ var Marks = Module("marks", {
      * selected from. If it matches [a-z], it's a local mark, and can
      * only be recalled from a buffer with a matching URL.
      *
-     * @param {string} mark The mark name.
+     * @param {string} name The mark name.
      * @param {boolean} silent Whether to output error messages.
      */
-    add: function (mark, silent) {
-        let win = buffer.focusedFrame;
-        let doc = win.document;
+    add: function (name, silent) {
+        let mark = this.Mark();
 
-        let position = buffer.scrollPosition;
-        let path = util.generateXPath(buffer.findScrollable(0, position.x));
-
-        if (Marks.isURLMark(mark)) {
-            let res = this._urlMarks.set(mark, {
-                location: doc.documentURI,
-                offset: position,
-                xpath: path,
-                tab: Cu.getWeakReference(tabs.getTab()),
-                timestamp: Date.now()*1000
-            });
-            if (!silent)
-                dactyl.log(_("mark.addURL", Marks.markToString(mark, res)), 5);
+        if (Marks.isURLMark(name)) {
+            mark.tab = Cu.getWeakReference(tabs.getTab());
+            this._urlMarks.set(name, mark);
+            var message = "mark.addURL";
         }
-        else if (Marks.isLocalMark(mark)) {
-            let marks = this._localMarks.get(doc.documentURI, {});
-            marks[mark] = {
-                location: doc.documentURI,
-                offset: position,
-                xpath: path,
-                timestamp: Date.now()*1000
-            };
+        else if (Marks.isLocalMark(name)) {
+            this._localMarks.get(mark.location, {})[name] = mark;
             this._localMarks.changed();
-            if (!silent)
-                dactyl.log(_("mark.addLocal", Marks.markToString(mark, marks[mark])), 5);
+            message = "mark.addLocal";
         }
+
+        if (!silent)
+            dactyl.log(_(message, Marks.markToString(name, mark)), 5);
+        return mark;
+    },
+
+    /**
+     * Push the current buffer position onto the jump stack.
+     */
+    push: function push() {
+        if (!this.jumping) {
+            let mark = this.add("'");
+            let store = buffer.localStore;
+            store.jumps[store.jumpsIndex++] = mark;
+            store.jumps.length = store.jumpsIndex;
+        }
+    },
+
+    /**
+     * Jump to the given offset in the jump stack.
+     *
+     * @param {number} offset The offset from the current position in
+     *      the jump stack to jump to.
+     * @returns {number} The actual change in offset.
+     */
+    jump: function jump(offset) {
+        return this.withSavedValues(["jumping"], function _jump() {
+            this.jumping = true;
+            let store = buffer.localStore;
+            let idx = Math.constrain(store.jumpsIndex + offset, 0, store.jumps.length - 1);
+            let orig = store.jumpsIndex;
+
+            if (idx in store.jumps && !dactyl.trapErrors("_scrollTo", this, store.jumps[idx]))
+                store.jumpsIndex = idx;
+            return store.jumpsIndex - orig;
+        });
     },
 
     /**
@@ -176,10 +208,10 @@ var Marks = Module("marks", {
         util.assert(node);
         util.scrollIntoView(node);
 
-        if (mark.position)
-            Buffer.scrollToPercent(node, mark.position.x * 100, mark.position.y * 100);
-        else if (mark.offset)
+        if (mark.offset)
             Buffer.scrollToPosition(node, mark.offset.x, mark.offset.y);
+        else if (mark.position)
+            Buffer.scrollToPercent(node, mark.position.x * 100, mark.position.y * 100);
     },
 
     /**
@@ -203,10 +235,10 @@ var Marks = Module("marks", {
                 ["Mark",   "HPos",              "VPos",              "File"],
                 ["",       "text-align: right", "text-align: right", "color: green"],
                 ([name,
-                  mark.position ? Math.round(mark.position.x * 100) + "%"
-                                : Math.round(mark.offset.x),
-                  mark.position ? Math.round(mark.position.y * 100) + "%"
-                                : Math.round(mark.offset.y),
+                  mark.offset ? Math.round(mark.offset.x)
+                              : Math.round(mark.position.x * 100) + "%",
+                  mark.offset ? Math.round(mark.offset.y)
+                              : Math.round(mark.position.y * 100) + "%",
                   mark.location]
                   for ([, [name, mark]] in Iterator(marks)))));
     },
@@ -224,6 +256,13 @@ var Marks = Module("marks", {
 }, {
     markToString: function markToString(name, mark) {
         let tab = mark.tab && mark.tab.get();
+        if (mark.offset)
+            return [name, mark.location,
+                    "(" + Math.round(mark.offset.x * 100),
+                          Math.round(mark.offset.y * 100) + ")",
+                    (tab && "tab: " + tabs.index(tab))
+            ].filter(util.identity).join(", ");
+
         if (mark.position)
             return [name, mark.location,
                     "(" + Math.round(mark.position.x * 100) + "%",
@@ -231,11 +270,6 @@ var Marks = Module("marks", {
                     (tab && "tab: " + tabs.index(tab))
             ].filter(util.identity).join(", ");
 
-        return [name, mark.location,
-                "(" + Math.round(mark.offset.x * 100),
-                      Math.round(mark.offset.y * 100) + ")",
-                (tab && "tab: " + tabs.index(tab))
-        ].filter(util.identity).join(", ");
     },
 
     isLocalMark: function isLocalMark(mark) /^[a-z`']$/.test(mark),
@@ -309,7 +343,9 @@ var Marks = Module("marks", {
             function percent(i) Math.round(i * 100);
 
             context.title = ["Mark", "HPos VPos File"];
-            context.keys.description = function ([, m]) percent(m.position.x) + "% " + percent(m.position.y) + "% " + m.location;
+            context.keys.description = function ([, m]) (m.offset ? Math.round(m.offset.x) + " " + Math.round(m.offset.y)
+                                                                  : percent(m.position.x) + "% " + percent(m.position.y) + "%"
+                                                        ) + " " + m.location;
             context.completions = marks.all;
         };
     },
