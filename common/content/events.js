@@ -1494,6 +1494,7 @@ var Events = Module("events", {
                 dactyl.triggerObserver("fullscreen", this._fullscreen);
                 autocommands.trigger("Fullscreen", { url: this._fullscreen ? "on" : "off", state: this._fullscreen });
             }
+            statusline.updateZoomLevel();
         }
     },
 
