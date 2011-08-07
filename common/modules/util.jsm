@@ -748,13 +748,52 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             }
         },
         {
-            resolver: function lookupNamespaceURI(prefix) ({
-                    xul: XUL.uri,
-                    xhtml: XHTML.uri,
-                    xhtml2: "http://www.w3.org/2002/06/xhtml2",
-                    dactyl: NS.uri
-                }[prefix] || null)
+            resolver: function lookupNamespaceURI(prefix) (util.namespaces[prefix] || null)
         }),
+
+    /**
+     * Generates an XPath expression for the given element.
+     *
+     * @param {Element} elem The element for which to generate an XPath.
+     * @returns {string}
+     */
+    generateXPath: function generateXPath(elem) {
+        function quote(val) "'" + val.replace(/[\\']/g, "\\$&") + "'";
+
+        let res = [];
+        let doc = elem.ownerDocument;
+        for (;; elem = elem.parentNode) {
+            if (!(elem instanceof Ci.nsIDOMElement))
+                res.push("");
+            else if (elem.id)
+                res.push("id(" + quote(elem.id) + ")");
+            else {
+                let name = elem.localName;
+                if (elem.namespaceURI && (elem.namespaceURI != XHTML || doc.xmlVersion))
+                    if (elem.namespaceURI in this.namespaceNames)
+                        name = this.namespaceNames[elem.namespaceURI] + ":" + name;
+                    else
+                        name = "*:" + name + "[namespace-uri()=" + quote(elem.namespaceURI) + "]";
+
+                res.push(name + "[" + (1 + iter(this.evaluateXPath("./" + name, elem.parentNode)).indexOf(elem)) + "]");
+                continue;
+            }
+            break;
+        }
+
+        return res.reverse().join("/");
+    },
+
+    namespaces: {
+        xul: XUL.uri,
+        html: XHTML.uri,
+        xhtml: XHTML.uri,
+        xhtml2: "http://www.w3.org/2002/06/xhtml2",
+        dactyl: NS.uri
+    },
+
+    namespaceNames: Class.memoize(function ()
+        iter(this.namespaces).map(function ([k, v]) [v, k]).toObject()),
 
     extend: function extend(dest) {
         Array.slice(arguments, 1).filter(util.identity).forEach(function (src) {
@@ -1131,7 +1170,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return String(object);
 
         function namespaced(node) {
-            var ns = NAMESPACES[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
+            var ns = util.namespaceNames[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
             if (!ns)
                 return node.localName;
             if (color)
@@ -1140,11 +1179,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
 
         if (object instanceof Ci.nsIDOMElement) {
-            const NAMESPACES = array.toObject([
-                [NS, "dactyl"],
-                [XHTML, "html"],
-                [XUL, "xul"]
-            ]);
             let elem = object;
             if (elem.nodeType == elem.TEXT_NODE)
                 return elem.data;
