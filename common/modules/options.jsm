@@ -307,12 +307,6 @@ var Option = Class("Option", {
             context.completions = this.values;
     },
 
-    _completions: function _completions(extra) {
-        let context = CompletionContext("");
-        return context.fork("", 0, this, this.completer, extra) ||
-               context.allItems.items.map(function (item) [item.text]);
-    },
-
     /**
      * @property {[[string, string]]} This option's possible values.
      * @see CompletionContext
@@ -696,9 +690,15 @@ var Option = Class("Option", {
      * @returns {boolean}
      */
     validateCompleter: function validateCompleter(vals) {
+        function completions(extra) {
+            let context = CompletionContext("");
+            return context.fork("", 0, this, this.completer, extra) ||
+                   context.allItems.items.map(function (item) [item.text]);
+        };
+
         if (isObject(vals) && !isArray(vals)) {
-            let k = values(this._completions({ values: {} })).toObject();
-            let v = values(this._completions({ value: "" })).toObject();
+            let k = values(completions.call(this, { values: {} })).toObject();
+            let v = values(completions.call(this, { value: "" })).toObject();
             util.dump(k, v);
             return Object.keys(vals).every(Set.has(k)) && values(vals).every(Set.has(v));
         }
@@ -706,7 +706,7 @@ var Option = Class("Option", {
         if (this.values)
             var acceptable = this.values.array || this.values;
         else
-            acceptable = this._completions();
+            acceptable = completions.call(this);
 
         if (isArray(acceptable))
             acceptable = Set(acceptable.map(function ([k]) k));
