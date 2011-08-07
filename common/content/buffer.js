@@ -820,8 +820,9 @@ var Buffer = Module("buffer", {
      * @param {number} count The number of elements to jump.
      *      @optional
      * @param {boolean} reverse If true, search backwards. @optional
+     * @param {boolean} offScreen If true, include only off-screen elements. @optional
      */
-    findJump: function findJump(arg, count, reverse) {
+    findJump: function findJump(arg, count, reverse, offScreen) {
         const FUDGE = 10;
 
         let path = options["jumptags"][arg];
@@ -831,6 +832,9 @@ var Buffer = Module("buffer", {
         let elems = [[e, distance(e.getBoundingClientRect())] for (e in path.matcher(this.focusedFrame.document))]
                         .filter(function (e) e[1] > FUDGE)
                         .sort(function (a, b) a[1] - b[1])
+
+        if (offScreen && !reverse)
+            elems = elems.filter(function (e) e[1] > this, window.innerHeight);
 
         let idx = Math.min((count || 1) - 1, elems.length);
         dactyl.assert(idx in elems);
@@ -1838,6 +1842,11 @@ var Buffer = Module("buffer", {
         mappings.add([modes.NORMAL], ["["],
             "Jump to the previous element as defined by 'jumptags'",
             function (args) { buffer.findJump(args.arg, args.count, true); },
+            { arg: true, count: true });
+
+        mappings.add([modes.NORMAL], ["g]"],
+            "Jump to the next off-screen element as defined by 'jumptags'",
+            function (args) { buffer.findJump(args.arg, args.count, false, true); },
             { arg: true, count: true });
 
         mappings.add([modes.NORMAL], ["]"],

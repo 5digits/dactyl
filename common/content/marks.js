@@ -171,10 +171,10 @@ var Marks = Module("marks", {
             var node = buffer.findScrollable(0, (mark.offset || mark.position).x)
         else
             for (node in util.evaluateXPath(mark.xpath, buffer.focusedFrame.document))
-                ;
+                break;
 
         util.assert(node);
-        util.scrollIntoView(node, true);
+        util.scrollIntoView(node);
 
         if (mark.position)
             Buffer.scrollToPercent(node, mark.position.x * 100, mark.position.y * 100);
