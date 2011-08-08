@@ -21,22 +21,13 @@ FEATURES:
 8 add search capability to MOW
 8 registers
 8 Document Caret and Visual modes.
-8 replace global variables with plugin scoped user options
-8 adaptive timeout for auto-completions, :set completions can be updated more often than
-  :open foo
 8 add support for filename special characters such as %
 8 :redir and 'verbosefile'
 8 middleclick in content == p, and if command line is open, paste there the clipboard buffer
 8 all search commands should start searching from the top of the visible viewport
 8 Add information to dactyl/HACKING file about testing and optimization
 7 describe-key command (prompt for a key and display its binding with documentation)
-7 Specify all INSERT mode mappings rather than falling through to the host apps
-  mystery meat mappings.
 7 use ctrl-n/p in insert mode for word completion
-7 implement QuickFix window based on ItemList
-7 [d could go to the last domain in the history stack. So if I browse from
-  google to another page and click 10 links there, [d would take me back to the google page
-  opera's fast forward does something like this
 7 make an option to disable session saving by default when you close Firefox
 7 :grep support (needs location list)
 6 :mksession

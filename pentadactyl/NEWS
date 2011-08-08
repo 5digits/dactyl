@@ -83,6 +83,7 @@
         changes. [b6]
       - Added 'timeout' and 'timeoutlen' options. [b6]
       - Added n_{, n_}, n_[, n_], and n_g] mappings. [b7]
+      - Added n_[d and n_]d. [b8]
       - Added <A-b> to execute a builtin mapping. [b6]
       - Added <A-m>l and <A-m>s to aid in the construction of
         macros. [b6]

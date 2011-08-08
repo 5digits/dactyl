@@ -50,10 +50,14 @@ var History = Module("history", {
     },
 
     get session() {
-        let sh = window.getWebNavigation().sessionHistory;
+        let webNav = window.getWebNavigation()
+        let sh = webNav.sessionHistory;
+
         let obj = [];
-        obj.index = sh.index;
+        obj.__defineGetter__("index", function () sh.index);
+        obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val) });
         obj.__iterator__ = function () array.iterItems(this);
+
         for (let i in util.range(0, sh.count)) {
             obj[i] = update(Object.create(sh.getEntryAtIndex(i, false)),
                             { index: i });
@@ -77,19 +81,46 @@ var History = Module("history", {
         if (steps == 0)
             return;
 
-        let start = 0;
-        let end = window.getWebNavigation().sessionHistory.count - 1;
-        let current = window.getWebNavigation().sessionHistory.index;
+        let sh = this.session;
+        dactyl.assert(steps > 0 && sh.index < sh.length - 1 || steps < 0 && sh.index > 0);
 
-        if (current == start && steps < 0 || current == end && steps > 0)
-            dactyl.beep();
-        else {
-            let index = Math.constrain(current + steps, start, end);
-            try {
-                window.getWebNavigation().gotoIndex(index);
-            }
-            catch (e) {} // We get NS_ERROR_FILE_NOT_FOUND if files in history don't exist
+        try {
+            sh.index = Math.constrain(sh.index + steps, 0, sh.length - 1);
         }
+        catch (e) {} // We get NS_ERROR_FILE_NOT_FOUND if files in history don't exist
+    },
+
+    /**
+     * Search for the *steps*th next *item* in the history list.
+     *
+     * @param {string} item The nebulously defined item to search for.
+     * @param {number} steps The number of steps to step.
+     */
+    search: function search(item, steps) {
+        var ctxt;
+        var filter = function (item) true;
+        if (item == "domain")
+            var filter = function (item) {
+                let res = item.URI.hostPort != ctxt;
+                ctxt = item.URI.hostPort;
+                return res;
+            };
+
+        let sh = this.session;
+        let idx;
+        let sign = steps / Math.abs(steps);
+
+        filter(sh[sh.index]);
+        for (let i = sh.index + sign; steps && i >= 0 && i < sh.length; i += sign)
+            if (filter(sh[i])) {
+                idx = i;
+                steps -= sign;
+            }
+
+        util.dump(idx, sh.index, sh.length, steps);
+
+        dactyl.assert(idx != null);
+        sh.index = idx;
     },
 
     goToStart: function goToStart() {
@@ -283,27 +314,31 @@ var History = Module("history", {
         completion.addUrlCompleter("h", "History", completion.history);
     },
     mappings: function () {
-        var myModes = config.browserModes;
+        function bind() mappings.add.apply(mappings, [config.browserModes].concat(Array.slice(arguments)));
 
-        mappings.add(myModes,
-            ["<C-o>"], "Go to an older position in the jump list",
-            function (args) { history.stepTo(-Math.max(args.count, 1), true); },
-            { count: true });
+        bind(["<C-o>"], "Go to an older position in the jump list",
+             function ({ count }) { history.stepTo(-Math.max(count, 1), true); },
+             { count: true });
 
-        mappings.add(myModes,
-            ["<C-i>"], "Go to a newer position in the jump list",
-            function (args) { history.stepTo(Math.max(args.count, 1), true); },
-            { count: true });
+        bind(["<C-i>"], "Go to a newer position in the jump list",
+             function ({ count }) { history.stepTo(Math.max(count, 1), true); },
+             { count: true });
 
-        mappings.add(myModes,
-            ["H", "<A-Left>", "<M-Left>"], "Go back in the browser history",
-            function (args) { history.stepTo(-Math.max(args.count, 1)); },
-            { count: true });
+        bind(["H", "<A-Left>", "<M-Left>"], "Go back in the browser history",
+             function ({ count }) { history.stepTo(-Math.max(count, 1)); },
+             { count: true });
 
-        mappings.add(myModes,
-            ["L", "<A-Right>", "<M-Right>"], "Go forward in the browser history",
-            function (args) { history.stepTo(Math.max(args.count, 1)); },
-            { count: true });
+        bind(["L", "<A-Right>", "<M-Right>"], "Go forward in the browser history",
+             function ({ count }) { history.stepTo(Math.max(count, 1)); },
+             { count: true });
+
+        bind(["[d"], "Go back to the previous domain in the browser history",
+             function ({ count }) { history.search("domain", -Math.max(count, 1)) },
+             { count: true });
+
+        bind(["]d"], "Go forward to the next domain in the browser history",
+             function ({ count }) { history.search("domain", Math.max(count, 1)) },
+             { count: true });
     }
 });
 

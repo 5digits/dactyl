@@ -292,6 +292,26 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
+    <tags><![CDATA[[d]]></tags>
+    <spec><oa>count</oa>[d</spec>
+    <description>
+        <p>
+            Go to the <oa>count</oa>th previous domain in the history stack.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[]d]]></tags>
+    <spec><oa>count</oa>]d</spec>
+    <description>
+        <p>
+            Go to the <oa>count</oa>th next domain in the history stack.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags><![CDATA[<C-o>]]></tags>
     <spec><oa>count</oa>&lt;C-o></spec>
     <description>
