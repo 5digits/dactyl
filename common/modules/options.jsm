@@ -428,6 +428,7 @@ var Option = Class("Option", {
         let re = util.regexp(Option.dequote(val), flags);
         re.bang = bang;
         re.result = result !== undefined ? result : !bang;
+        re.key = re.bang + Option.quote(util.regexp.getSource(re), /^!|:/);
         re.toString = function () Option.unparseRegexp(this, keepQuotes);
         return re;
     },
@@ -1453,6 +1454,25 @@ var Options = Module("options", {
             // TODO: Highlight when invalid
             context.advance(Option._splitAt);
             context.filter = Option.dequote(context.filter);
+
+            function val(obj) {
+                if (isArray(opt.defaultValue)) {
+                    let val = array.nth(obj, function (re) re.key == extra.key, 0);
+                    return val && val.result;
+                }
+                if (Set.has(opt.defaultValue, extra.key))
+                    return obj[extra.key];
+            }
+
+            if (extra.key && extra.value != null) {
+                context.fork("default", 0, this, function (context) {
+                    context.completions = [
+                            [val(opt.value), _("option.currentValue")],
+                            [val(opt.defaultValue), _("option.defaultValue")]
+                    ].filter(function (f) f[0] !== "" && f[0] != null);
+                });
+                context = context.fork("stuff", 0);
+            }
 
             context.title = ["Option Value"];
             context.quote = Commands.complQuote[Option._quote] || Commands.complQuote[""];

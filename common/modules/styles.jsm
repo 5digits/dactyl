@@ -434,6 +434,7 @@ var Styles = Module("Styles", {
         else
             test = function test(uri) { try { return util.isSubdomain(uri.host, filter); } catch (e) { return false; } };
         test.toString = function toString() filter;
+        test.key = filter;
         if (arguments.length < 2)
             return test;
         return test(arguments[1]);
