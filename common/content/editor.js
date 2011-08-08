@@ -188,6 +188,7 @@ var Editor = Module("editor", {
 
         let textBox = config.isComposeWindow ? null : dactyl.focusedElement;
         let line, column;
+        let keepFocus = modes.stack.some(function (m) isinstance(m.main, modes.COMMAND_LINE));
 
         if (!forceEditing && textBox && textBox.type == "password") {
             commandline.input(_("editor.prompt.editPassword") + " ",
@@ -228,7 +229,8 @@ var Editor = Module("editor", {
                 tmpfile.remove(false);
 
             if (textBox) {
-                dactyl.focus(textBox);
+                if (!keepFocus)
+                    dactyl.focus(textBox);
                 for (let group in values(blink.concat(blink, ""))) {
                     highlight.highlightNode(textBox, origGroup + " " + group);
                     yield 100;
@@ -245,10 +247,12 @@ var Editor = Module("editor", {
             if (textBox) {
                 textBox.value = val;
 
+                if (false) {
                 textBox.setAttributeNS(NS, "modifiable", true);
                 util.computedStyle(textBox).MozUserInput;
                 events.dispatch(textBox, events.create(textBox.ownerDocument, "input", {}));
                 textBox.removeAttributeNS(NS, "modifiable");
+                }
             }
             else {
                 while (editor_.rootElement.firstChild)
@@ -258,13 +262,15 @@ var Editor = Module("editor", {
         }
 
         try {
+            util.dump(textBox);
             var tmpfile = io.createTempFile();
             if (!tmpfile)
                 throw Error(_("io.cantCreateTempFile"));
 
             if (textBox) {
                 highlight.highlightNode(textBox, origGroup + " EditorEditing");
-                textBox.blur();
+                if (!keepFocus)
+                    textBox.blur();
             }
 
             if (!tmpfile.write(text))
@@ -368,10 +374,14 @@ var Editor = Module("editor", {
 
         Map.types["editor"] = {
             preExecute: function preExecute(args) {
-                Editor.getEditor(null).beginTransaction();
+                let editor = Editor.getEditor(null)
+                if (editor)
+                    editor.beginTransaction();
             },
             postExecute: function preExecute(args) {
-                Editor.getEditor(null).endTransaction();
+                let editor = Editor.getEditor(null)
+                if (editor)
+                    editor.endTransaction();
             },
         };
         Map.types["operator"] = {

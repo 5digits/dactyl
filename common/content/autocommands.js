@@ -152,10 +152,12 @@ var AutoCommands = Module("autocommands", {
         else
             var { uri, doc } = buffer;
 
+        let baseArgs = update({ doc: doc }, arguments[1]);
+
         event = event.toLowerCase();
         for (let hive in values(this.matchingHives(uri, doc))) {
             let args = update({},
-                              hive.argsExtra(arguments[1]),
+                              hive.argsExtra(baseArgs),
                               arguments[1]);
 
             for (let autoCmd in values(hive._store))
