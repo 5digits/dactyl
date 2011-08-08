@@ -27,8 +27,7 @@
     <description>
         <p>
             Repeat the last keyboard mapping <oa>count</oa> times. Note that,
-            unlike in Vim, this does not apply solely to editing commands,
-            mainly because &dactyl.appName; doesn't have them.
+            unlike in Vim, this also applies to other than editing commands.
         </p>
     </description>
 </item>
@@ -166,7 +165,7 @@
 
         <dl>
             <dt>builtin</dt> <dd>The default group for builtin items. Can not be modified in any way by scripts.</dd>
-            <dt>default</dt> <dd>The default group for this script.</dd>
+            <dt>default</dt> <dd>The default group for the script containing this <tt>:group</tt> command.</dd>
             <dt>user</dt> <dd>The default group for the command line and <t>&dactyl.name;rc</t>.</dd>
         </dl>
 

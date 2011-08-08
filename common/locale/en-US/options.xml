@@ -14,7 +14,7 @@
 
 <p>
     &dactyl.appName; has a number of internal variables and switches which can be set to
-    achieve special effects. These options come in 8 forms:
+    achieve special effects. These options come in the following forms:
 </p>
 
 <dl dt="width: 10em;">
@@ -53,7 +53,7 @@
     <dt/><dd tag="regexpmap"/>
     <dt>regexpmap</dt>
     <dd>
-        A combination of a <em>stringmap</em> and a <em>regexplist</em>. Each key
+        A combination of a <t>stringmap</t> and a <t>regexplist</t>. Each key
         in the <a>key</a>:<a>value</a> pair is a regexp. If the regexp begins with a
         <tt>!</tt>, the sense of the match is negated, such that a non-matching
         expression will be considered a match and <html:i>vice versa</html:i>.
@@ -472,7 +472,7 @@
 
 <item>
     <tags>'cl' 'cookielifetime'</tags>
-    <spec>'cookielifetime'</spec>
+    <spec>'cookielifetime' 'cl'</spec>
     <type>&option.cookielifetime.type;</type>
     <default>&option.cookielifetime.default;</default>
     <description>
@@ -533,7 +533,7 @@
 
 <item>
     <tags>'dls' 'dlsort' 'downloadsort'</tags>
-    <spec>'downloadsort'</spec>
+    <spec>'downloadsort' 'dlsort' 'dls'</spec>
     <type>stringlist</type>
     <default>-active,+filename</default>
     <description>
@@ -993,7 +993,7 @@
 
 <item>
     <tags>'jt' 'jumptags'</tags>
-    <spec>'jumptags'</spec>
+    <spec>'jumptags' 'jt'</spec>
     <type>&option.jumptags.type;</type>
     <default>&option.jumptags.default;</default>
     <description>
@@ -1331,7 +1331,7 @@
 
 <item>
     <tags>'spl' 'spelllang'</tags>
-    <spec>'spelllang'</spec>
+    <spec>'spelllang' 'spl'</spec>
     <type>&option.spelllang.type;</type>
     <default>&option.spelllang.default;</default>
     <description short="true">

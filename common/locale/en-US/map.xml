@@ -66,7 +66,7 @@
     prefixed with one of the above letters. For instance,
     <ex>:imap</ex> creates a new key mapping in Insert mode, while
     <ex>:cunmap</ex> removes a key mapping from Command Line mode.
-    Other modes can be specified using the -modes option described below.
+    Other modes can be specified using the <em>-modes</em> option described below.
 </p>
 
 <warning>
@@ -601,7 +601,7 @@
 
         <p>
             By default, user commands accept no arguments. This can be changed by specifying
-            the <tt>-nargs</tt> option.
+            the <em>-nargs</em> option.
         </p>
 
         <p>The valid values are:</p>
@@ -619,7 +619,7 @@
         <p>
             Completion for arguments to user-defined commands is not available by default.
             Completion can be enabled by specifying one of the following arguments to the
-            -complete option when defining the command.
+            <em>-complete</em> option when defining the command.
         </p>
 
         <dl tag=":command-complete-arg-list"/>
@@ -628,7 +628,7 @@
 
         <p>
             Custom completion can be provided by specifying the
-            <str>custom,<a>thing</a></str> argument to <tt>-complete</tt>. If
+            <str>custom,<a>thing</a></str> argument to <em>-complete</em>. If
             <a>thing</a> evaluates to a function (i.e., it is a variable holding
             a function value, or a string containing the definition itself), it
             is called with two arguments: a completion context, and an object
@@ -664,7 +664,7 @@
         <h3 tag="E177 E178 :command-count">Count handling</h3>
 
         <p>
-            By default, user commands do not accept a count. Use the -count option if
+            By default, user commands do not accept a count. Use the <em>-count</em> option if
             you'd like to have a count passed to your user command. This will then be
             available for expansion as &lt;count> in the replacement.
         </p>
@@ -673,14 +673,14 @@
 
         <p>
             By default, a user command does not have a special version, i.e. a version
-            executed with the ! modifier. Providing the -bang option will enable this
+            executed with the ! modifier. Providing the <em>-bang</em> option will enable this
             and &lt;bang> will be available in the replacement.
         </p>
 
         <h3 tag=":command-description">Command description</h3>
 
         <p>
-            The command's description text can be set with -description. Otherwise it will
+            The command's description text can be set with <em>-description</em>. Otherwise it will
             default to "User-defined command".
         </p>
 
