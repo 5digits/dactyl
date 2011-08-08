@@ -119,9 +119,12 @@ var Map = Class("Map", {
                 .map(function ([i, prop]) [prop, this[i]], arguments)
                 .toObject();
 
-        args = update({ context: contexts.context },
-                      this.hive.argsExtra(args),
-                      args);
+        let orig = args;
+        args = update({
+                          context: contexts.context,
+                          doc: this.hive.group.lastDocument
+                      }, args);
+        update(args, this.hive.argsExtra(args), orig);
 
         let self = this;
         function repeat() self.action(args)

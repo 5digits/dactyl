@@ -25,6 +25,9 @@ var Group = Class("Group", {
         this.hives = [];
     },
 
+    set lastDocument(val) { this._lastDocument = val && Cu.getWeakReference(val); },
+    get lastDocument() this._lastDocument && this._lastDocument.get(),
+
     modifiable: true,
 
     cleanup: function cleanup() {
@@ -271,7 +274,7 @@ var Contexts = Module("contexts", {
         return frame;
     },
 
-    groups: Class.memoize(function () this.matchingGroups(this.modules.buffer.uri)),
+    groups: Class.memoize(function () this.matchingGroups()),
 
     allGroups: Class.memoize(function () Object.create(this.groupsProto, {
         groups: { value: this.initializedGroups() }
@@ -283,8 +286,14 @@ var Contexts = Module("contexts", {
 
     activeGroups: function (uri, doc) {
         if (!uri)
-            ({ uri, doc }) = this.modules.buffer;
-        return this.initializedGroups().filter(function (g) uri && g.filter(uri, doc));
+            var { uri, doc } = this.modules.buffer;
+
+        return this.initializedGroups().filter(function (g) {
+            let res = uri && g.filter(uri, doc);
+            if (doc)
+                g.lastDocument = res && doc;
+            return res;
+        });
     },
 
     flush: function flush() {

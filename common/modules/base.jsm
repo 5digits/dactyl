@@ -611,12 +611,13 @@ function call(fn) {
  */
 function memoize(obj, key, getter) {
     if (arguments.length == 1) {
+        let res = Object.create(obj);
         for each (let prop in Object.getOwnPropertyNames(obj)) {
             let get = __lookupGetter__.call(obj, prop);
             if (get)
-                memoize(obj, prop, get);
+                memoize(res, prop, get);
         }
-        return obj;
+        return res;
     }
 
     try {
