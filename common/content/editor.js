@@ -262,7 +262,6 @@ var Editor = Module("editor", {
         }
 
         try {
-            util.dump(textBox);
             var tmpfile = io.createTempFile();
             if (!tmpfile)
                 throw Error(_("io.cantCreateTempFile"));
