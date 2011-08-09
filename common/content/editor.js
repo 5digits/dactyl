@@ -619,8 +619,9 @@ var Editor = Module("editor", {
         bind(["<S-Insert>"], "Insert clipboard/selection",
              function () { editor.pasteClipboard(); });
 
-        bind(["<C-i>"], "Edit text field with an external editor",
-             function () { editor.editFieldExternally(); });
+        mappings.add([modes.INPUT],
+           ["<C-i>"], "Edit text field with an external editor",
+           function () { editor.editFieldExternally(); });
 
         bind(["<C-t>"], "Edit text field in Vi mode",
              function () {
