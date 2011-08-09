@@ -78,15 +78,31 @@ var Marks = Module("marks", {
 
     /**
      * Push the current buffer position onto the jump stack.
+     *
+     * @param {string} reason The reason for this scroll event. Multiple
+     *      scroll events for the same reason are coalesced. @optional
      */
-    push: function push() {
+    push: function push(reason) {
+        let store = buffer.localStore;
+        let jump  = store.jumps[store.jumpsIndex];
+
+        if (reason && jump && jump.reason == reason)
+            return;
+
+        let mark = this.add("'");
+
         if (!this.jumping) {
-            let mark = this.add("'");
-            let store = buffer.localStore;
-            store.jumps[store.jumpsIndex++] = mark;
-            store.jumps.length = store.jumpsIndex;
+            store.jumps[++store.jumpsIndex] = { mark: mark, reason: reason };
+            store.jumps.length = store.jumpsIndex + 1;
+
+            if (store.jumps.length > this.maxJumps) {
+                store.jumps = store.jumps.slice(-this.maxJumps);
+                store.jumpsIndex = store.jumps.length - 1;
+            }
         }
     },
+
+    maxJumps: 200,
 
     /**
      * Jump to the given offset in the jump stack.
@@ -96,13 +112,16 @@ var Marks = Module("marks", {
      * @returns {number} The actual change in offset.
      */
     jump: function jump(offset) {
+        let store = buffer.localStore;
+        if (offset < 0 && store.jumpsIndex == store.jumps.length - 1)
+            this.push();
+
         return this.withSavedValues(["jumping"], function _jump() {
             this.jumping = true;
-            let store = buffer.localStore;
             let idx = Math.constrain(store.jumpsIndex + offset, 0, store.jumps.length - 1);
             let orig = store.jumpsIndex;
 
-            if (idx in store.jumps && !dactyl.trapErrors("_scrollTo", this, store.jumps[idx]))
+            if (idx in store.jumps && !dactyl.trapErrors("_scrollTo", this, store.jumps[idx].mark))
                 store.jumpsIndex = idx;
             return store.jumpsIndex - orig;
         });

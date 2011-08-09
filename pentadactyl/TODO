@@ -12,6 +12,7 @@ BUGS:
 - RC file is sourced once per window
 
 FEATURES:
+9 Add more tests.
 9 <C-o>/<C-i> should work as in Vim (i.e., save page positions as well as
   locations in the history list).
 9 clean up error message codes and document

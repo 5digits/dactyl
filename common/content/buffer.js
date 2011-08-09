@@ -279,7 +279,7 @@ var Buffer = Module("buffer", {
     localStorePrototype: memoize({
         instance: {},
         get jumps() [],
-        jumpsIndex: 0
+        jumpsIndex: -1
     }),
 
     /**
@@ -1268,10 +1268,12 @@ var Buffer = Module("buffer", {
      *   null, to not alter the horizontal scroll offset.
      * @param {number|null} top The top absolute pixel offset. If
      *   null, to not alter the vertical scroll offset.
+     * @param {string} reason The reason for the scroll event. See
+     *  {@link marks.push}. @optional
      */
-    scrollTo: function scrollTo(elem, left, top) {
+    scrollTo: function scrollTo(elem, left, top, reason) {
         if (elem.ownerDocument == buffer.focusedFrame.document)
-            marks.push();
+            marks.push(reason);
 
         if (left != null)
             elem.scrollLeft = left;
@@ -1288,7 +1290,7 @@ var Buffer = Module("buffer", {
      * Scrolls the currently given element horizontally.
      *
      * @param {Element} elem The element to scroll.
-     * @param {string} increment The increment by which to scroll.
+     * @param {string} unit The increment by which to scroll.
      *   Possible values are: "columns", "pages"
      * @param {number} number The possibly fractional number of
      *   increments to scroll. Positive values scroll to the right while
@@ -1296,11 +1298,12 @@ var Buffer = Module("buffer", {
      * @throws {FailedAssertion} if scrolling is not possible in the
      *   given direction.
      */
-    scrollHorizontal: function scrollHorizontal(elem, increment, number) {
+    scrollHorizontal: function scrollHorizontal(elem, unit, number) {
         let fontSize = parseInt(util.computedStyle(elem).fontSize);
-        if (increment == "columns")
+        let increment;
+        if (unit == "columns")
             increment = fontSize; // Good enough, I suppose.
-        else if (increment == "pages")
+        else if (unit == "pages")
             increment = elem.clientWidth - fontSize;
         else
             throw Error();
@@ -1310,14 +1313,14 @@ var Buffer = Module("buffer", {
         let left = elem.dactylScrollDestX !== undefined ? elem.dactylScrollDestX : elem.scrollLeft;
         elem.dactylScrollDestX = undefined;
 
-        Buffer.scrollTo(elem, left + number * increment, null);
+        Buffer.scrollTo(elem, left + number * increment, null, "h-" + unit);
     },
 
     /**
      * Scrolls the currently given element vertically.
      *
      * @param {Element} elem The element to scroll.
-     * @param {string} increment The increment by which to scroll.
+     * @param {string} unit The increment by which to scroll.
      *   Possible values are: "lines", "pages"
      * @param {number} number The possibly fractional number of
      *   increments to scroll. Positive values scroll upward while
@@ -1325,11 +1328,12 @@ var Buffer = Module("buffer", {
      * @throws {FailedAssertion} if scrolling is not possible in the
      *   given direction.
      */
-    scrollVertical: function scrollVertical(elem, increment, number) {
+    scrollVertical: function scrollVertical(elem, unit, number) {
         let fontSize = parseInt(util.computedStyle(elem).lineHeight);
-        if (increment == "lines")
+        let increment;
+        if (unit == "lines")
             increment = fontSize;
-        else if (increment == "pages")
+        else if (unit == "pages")
             increment = elem.clientHeight - fontSize;
         else
             throw Error();
@@ -1339,7 +1343,7 @@ var Buffer = Module("buffer", {
         let top = elem.dactylScrollDestY !== undefined ? elem.dactylScrollDestY : elem.scrollTop;
         elem.dactylScrollDestY = undefined;
 
-        Buffer.scrollTo(elem, null, top + number * increment);
+        Buffer.scrollTo(elem, null, top + number * increment, "v-" + unit);
     },
 
     /**
