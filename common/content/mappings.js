@@ -595,6 +595,7 @@ var Mappings = Module("mappings", {
                                     command: "map",
                                     options: array([
                                         hive.name !== "user" && ["-group", hive.name],
+                                        map.count && ["-count"],
                                         ["-modes", uniqueModes(map.modes)],
                                         ["-description", map.description],
                                         map.silent && ["-silent"]])

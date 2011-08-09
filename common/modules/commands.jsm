@@ -165,8 +165,11 @@ var Command = Class("Command", {
         if (args.bang && !this.bang)
             throw FailedAssertion(_("command.noBang"));
 
+        args.doc = this.hive.group.lastDocument;
+
         return !dactyl.trapErrors(function exec() {
             let extra = this.hive.argsExtra(args);
+
             for (let k in properties(extra))
                 if (!(k in args))
                     Object.defineProperty(args, k, Object.getOwnPropertyDescriptor(extra, k));
