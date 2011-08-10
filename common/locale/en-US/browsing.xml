@@ -263,6 +263,117 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
 <h2 tag="navigating">Navigating</h2>
 
+<item>
+    <tags><![CDATA[<C-o>]]></tags>
+    <strut/>
+    <spec><oa>count</oa><![CDATA[<C-o>]]></spec>
+    <description>
+        <p>
+            Go to an older position in the jump list.
+            If <oa>count</oa> is specified, jump <oa>count</oa> positions backward.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[<C-i>]]></tags>
+    <strut/>
+    <spec><oa>count</oa><![CDATA[<C-i>]]></spec>
+    <description>
+        <p>
+            Go to a newer position in the jump list.
+            If <oa>count</oa> is specified, jump <oa>count</oa> positions forward.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[<M-Left> <A-Left> H]]></tags>
+    <strut/>
+    <spec>[count]H</spec>
+    <description>
+        <p>
+            Go back in the browser history. If <oa>count</oa> is specified, go
+            back <oa>count</oa> pages.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[<M-Right> <A-Right> L]]></tags>
+    <strut/>
+    <spec><oa>count</oa>L</spec>
+    <description>
+        <p>
+            Go forward in the browser history. If <oa>count</oa> is specified,
+            go forward <oa>count</oa> pages.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:ba :back</tags>
+    <spec>:<oa>count</oa>ba<oa>ck</oa> <oa>url</oa></spec>
+    <spec>:<oa>count</oa>ba<oa>ck</oa>!</spec>
+    <description>
+        <p>
+            Go back in the browser history. If <oa>count</oa> is specified, go
+            back <oa>count</oa> pages.
+        </p>
+        <p>
+            The special version <ex>:back!</ex> goes to the beginning of the browser history.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:fw :fo :forward</tags>
+    <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
+    <spec>:<oa>count</oa>fo<oa>rward</oa>!</spec>
+    <description>
+        <p>
+            Go forward in the browser history. If <oa>count</oa> is specified,
+            go forward <oa>count</oa> pages.
+        </p>
+        <p>
+            The special version <ex>:forward!</ex> goes to the end of the browser history.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags>:hs :hist :history</tags>
+    <spec>:hist<oa>ory</oa><oa>!</oa> <oa>filter</oa></spec>
+    <description>
+        <p>
+            Show recently visited URLs. Opens the message window at the bottom of the screen
+            with all history items whose page titles or URLs match
+            <oa>filter</oa>.
+        </p>
+
+        <p>
+            The special version <ex>:history!</ex> works the same as
+            <ex>:history</ex> except that it opens all matching
+            pages in new tabs rather than listing them.
+        </p>
+
+        <p>The pages may also be filtered via the following options,</p>
+
+        <dl dt="width: 8em;">
+            <dt>-max</dt>
+            <dd>
+                The maximum number of items to list or open
+                (short name <em>-m</em>).
+            </dd>
+            <dt>-sort</dt>
+            <dd>
+                The sort order of the results
+                (short name <em>-s</em>).
+            </dd>
+        </dl>
+    </description>
+</item>
+
 <p>
     In addition to the <t>history</t> commands, the following navigational
     commands are available:

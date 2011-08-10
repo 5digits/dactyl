@@ -14,7 +14,7 @@
 
 <p>
     &dactyl.appName; supports a number of different methods of
-    marking your place, in order to easily return later,
+    marking your place, in order to easily return later:
 </p>
 
 <ul>
@@ -22,7 +22,6 @@
     <li><em>QuickMarks</em> allow you to quickly save and return to as many as 62 (a-zA-Z0-9) different web sites with a quick keyboard shortcut.</li>
     <li><em>Local marks</em> allow you to store and return to a position within the current web page.</li>
     <li><em>URL marks</em> allow you to store and return to the position and URL of the current web page.</li>
-    <li><em>History</em> marks every opened page with data on when and how often it has been visited.</li>
 </ul>
 
 <h2 tag="bookmarks">Bookmarks</h2>
@@ -171,129 +170,6 @@
     </description>
 </item>
 
-<h2 tag="history">History</h2>
-
-<p>
-    Though not traditionally considered a mark, history behaves very
-    similarly to bookmarks both in &dactyl.host; and
-    &dactyl.appName;. Every visited page is marked and weighted by
-    when and how often it is visited, and can be retrieved both in
-    history list and location completions. Indeed, the ‘frecency’
-    algorithm used to determine the results of location completions
-    (see the <o>complete</o> option) means that history is often a
-    more effective type of mark than bookmarks themselves.
-</p>
-
-<item>
-    <tags><![CDATA[<C-o>]]></tags>
-    <strut/>
-    <spec><oa>count</oa><![CDATA[<C-o>]]></spec>
-    <description>
-        <p>
-            Go to an older position in the jump list.
-            If <oa>count</oa> is specified, jump <oa>count</oa> positions backward.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[<C-i>]]></tags>
-    <strut/>
-    <spec><oa>count</oa><![CDATA[<C-i>]]></spec>
-    <description>
-        <p>
-            Go to a newer position in the jump list.
-            If <oa>count</oa> is specified, jump <oa>count</oa> positions forward.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[<M-Left> <A-Left> H]]></tags>
-    <strut/>
-    <spec>[count]H</spec>
-    <description>
-        <p>
-            Go back in the browser history. If <oa>count</oa> is specified, go
-            back <oa>count</oa> pages.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[<M-Right> <A-Right> L]]></tags>
-    <strut/>
-    <spec><oa>count</oa>L</spec>
-    <description>
-        <p>
-            Go forward in the browser history. If <oa>count</oa> is specified,
-            go forward <oa>count</oa> pages.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags>:ba :back</tags>
-    <spec>:<oa>count</oa>ba<oa>ck</oa> <oa>url</oa></spec>
-    <spec>:<oa>count</oa>ba<oa>ck</oa>!</spec>
-    <description>
-        <p>
-            Go back in the browser history. If <oa>count</oa> is specified, go
-            back <oa>count</oa> pages.
-        </p>
-        <p>
-            The special version <ex>:back!</ex> goes to the beginning of the browser history.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags>:fw :fo :forward</tags>
-    <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
-    <spec>:<oa>count</oa>fo<oa>rward</oa>!</spec>
-    <description>
-        <p>
-            Go forward in the browser history. If <oa>count</oa> is specified,
-            go forward <oa>count</oa> pages.
-        </p>
-        <p>
-            The special version <ex>:forward!</ex> goes to the end of the browser history.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags>:hs :hist :history</tags>
-    <spec>:hist<oa>ory</oa><oa>!</oa> <oa>filter</oa></spec>
-    <description>
-        <p>
-            Show recently visited URLs. Opens the message window at the bottom of the screen
-            with all history items whose page titles or URLs match
-            <oa>filter</oa>.
-        </p>
-
-        <p>
-            The special version <ex>:history!</ex> works the same as
-            <ex>:history</ex> except that it opens all matching
-            pages in new tabs rather than listing them.
-        </p>
-
-        <p>The pages may also be filtered via the following options,</p>
-
-        <dl dt="width: 8em;">
-            <dt>-max</dt>
-            <dd>
-                The maximum number of items to list or open
-                (short name <em>-m</em>).
-            </dd>
-            <dt>-sort</dt>
-            <dd>
-                The sort order of the results
-                (short name <em>-s</em>).
-            </dd>
-        </dl>
-    </description>
-</item>
 
 <h2 tag="quickmarks">QuickMarks</h2>
 
