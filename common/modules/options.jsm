@@ -700,7 +700,6 @@ var Option = Class("Option", {
         if (isObject(vals) && !isArray(vals)) {
             let k = values(completions.call(this, { values: {} })).toObject();
             let v = values(completions.call(this, { value: "" })).toObject();
-            util.dump(k, v);
             return Object.keys(vals).every(Set.has(k)) && values(vals).every(Set.has(v));
         }
 
