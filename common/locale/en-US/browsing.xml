@@ -253,15 +253,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-<item>
-    <tags><![CDATA[<open-home-directory> ~]]></tags>
-    <spec>~</spec>
-    <description short="true">
-        <p>Open home directory. Equivalent to <ex>:open ~/</ex></p>
-    </description>
-</item>
-
-<h2 tag="navigating">Navigating</h2>
+<h2 tag="history">History</h2>
 
 <item>
     <tags><![CDATA[<C-o>]]></tags>
@@ -374,10 +366,15 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
     </description>
 </item>
 
-<p>
-    In addition to the <t>history</t> commands, the following navigational
-    commands are available:
-</p>
+<h2 tag="navigating">Navigating</h2>
+
+<item>
+    <tags><![CDATA[<open-home-directory> ~]]></tags>
+    <spec>~</spec>
+    <description short="true">
+        <p>Open home directory. Equivalent to <ex>:open ~/</ex></p>
+    </description>
+</item>
 
 <item>
     <tags><![CDATA[<open-homepage> gh]]></tags>
