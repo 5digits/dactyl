@@ -408,6 +408,52 @@
     </description>
 </item>
 
+<h2 tag="bypassing-&dactyl.name;">Bypassing &dactyl.appName;</h2>
+
+&dactyl.appName; overrides nearly all &dactyl.host; keys in order to
+make browsing more pleasant for Vim users. On the occasions when you
+want to bypass &dactyl.appName;'s key handling and pass keys directly to
+&dactyl.host; or to a web page, you have several options:
+
+<item>
+    <tags><![CDATA[<pass-next-key-builtin> <A-b>]]></tags>
+    <spec><![CDATA[<A-b>]]></spec>
+    <description>
+        <p>
+            Process the next key as a builtin mapping, ignoring any user defined
+            mappings and <o>passkeys</o> settings.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[send-key <pass-next-key> <C-v>]]></tags>
+    <spec><![CDATA[<C-v>]]></spec>
+    <description>
+        <p>
+            Pass the next key press directly to &dactyl.host;.
+        </p>
+    </description>
+</item>
+
+<item>
+    <tags><![CDATA[pass-through <pass-all-keys> <C-z>]]></tags>
+    <spec><![CDATA[<C-z>]]></spec>
+    <description>
+        <p>
+            Pass all keys except for <k name="Esc"/> directly to
+            &dactyl.host;. When <k name="Esc"/> is pressed,
+            resume normal key handling. This is especially useful
+            for web sites which make heavy use of key bindings.
+        </p>
+    </description>
+</item>
+
+<p>
+    See also <o>passkeys</o> and <o>passunknown</o> for ways to permanently pass
+    all or particular keys under certain conditions.
+</p>
+
 <h2 tag="abbreviations">Abbreviations</h2>
 
 <p>
