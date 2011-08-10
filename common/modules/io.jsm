@@ -427,7 +427,7 @@ var IO = Module("io", {
      * @param {File|string} program The program to run.
      * @param {[string]} args An array of arguments to pass to *program*.
      */
-    run: function (program, args, blocking) {
+    run: function (program, args, blocking, self) {
         args = args || [];
 
         let file = this.pathSearch(program);
@@ -447,7 +447,7 @@ var IO = Module("io", {
                     function () {
                         if (!process.isRunning) {
                             timer.cancel();
-                            util.trapErrors(blocking);
+                            util.trapErrors(blocking, self, process.exitValue);
                         }
                     },
                     100, services.Timer.TYPE_REPEATING_SLACK);
@@ -471,18 +471,34 @@ var IO = Module("io", {
      *
      * @param {string} command The command to run.
      * @param {string} input Any input to be provided to the command on stdin.
-     * @returns {object}
+     * @param {function(object)} callback A callback to be called when
+     *      the command completes. @optional
+     * @returns {object|null}
      */
-    system: function (command, input) {
+    system: function (command, input, callback) {
         util.dactyl.echomsg(_("io.callingShell", command), 4);
 
-        function escape(str) '"' + str.replace(/[\\"$]/g, "\\$&") + '"';
+        function escape(str) '"' + String.replace(str, /[\\"$]/g, "\\$&") + '"';
 
         return this.withTempFiles(function (stdin, stdout, cmd) {
             if (input instanceof File)
                 stdin = input;
             else if (input)
                 stdin.write(input);
+
+            function result(status, output) ({
+                __noSuchMethod__: function (meth, args) this.output[meth].apply(this.output, args),
+                valueOf: function () this.output,
+                output: output.replace(/^(.*)\n$/, "$1"),
+                returnValue: status,
+                toString: function () this.output
+            });
+
+            function async(status) {
+                let output = stdout.read();
+                [stdin, stdout, cmd].forEach(function (f) f.exists() && f.remove(false));
+                callback(result(status, output));
+            }
 
             let shell = io.pathSearch(storage["options"].get("shell").value);
             let shcf = storage["options"].get("shellcmdflag").value;
@@ -494,23 +510,17 @@ var IO = Module("io", {
             // TODO: implement 'shellredir'
             if (util.OS.isWindows && !/sh/.test(shell.leafName)) {
                 command = "cd /D " + this.cwd.path + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
-                var res = this.run(shell, shcf.split(/\s+/).concat(command), true);
+                var res = this.run(shell, shcf.split(/\s+/).concat(command), callback ? async : true);
             }
             else {
                 cmd.write("cd " + escape(this.cwd.path) + "\n" +
                         ["exec", ">" + escape(stdout.path), "2>&1", "<" + escape(stdin.path),
                          escape(shell.path), shcf, escape(command)].join(" "));
-                res = this.run("/bin/sh", ["-e", cmd.path], true);
+                res = this.run("/bin/sh", ["-e", cmd.path], callback ? async : true);
             }
 
-            return {
-                __noSuchMethod__: function (meth, args) this.output[meth].apply(this.output, args),
-                valueOf: function () this.output,
-                output: stdout.read().replace(/^(.*)\n$/, "$1"),
-                returnValue: res,
-                toString: function () this.output
-            };
-        }) || "";
+            return callback ? true : result(res, stdout.read());
+        }, this, true);
     },
 
     /**
@@ -533,7 +543,7 @@ var IO = Module("io", {
         }
         finally {
             if (!checked || res !== true)
-                args.forEach(function (f) f && f.remove(false));
+                args.forEach(function (f) f.remove(false));
         }
         return res;
     }

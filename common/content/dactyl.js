@@ -2170,7 +2170,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
             if (localPrefs.get("first-run", true))
                 dactyl.timeout(function () {
-                    localPrefs.set("first-run", config.version);
+                    localPrefs.set("first-run", false);
                     this.withSavedValues(["forceNewTab"], function () {
                         this.forceNewTab = true;
                         this.help();

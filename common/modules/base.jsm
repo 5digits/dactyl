@@ -616,6 +616,8 @@ function memoize(obj, key, getter) {
             let get = __lookupGetter__.call(obj, prop);
             if (get)
                 memoize(res, prop, get);
+            else if (obj[prop] instanceof Class.Property)
+                Object.defineProperty(res, prop, obj[prop].init(prop, obj) || obj[prop]);
         }
         return res;
     }
