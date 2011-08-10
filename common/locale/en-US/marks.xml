@@ -190,10 +190,8 @@
     <spec><![CDATA[[count]<C-o>]]></spec>
     <description>
         <p>
-            Go to an older position in the jump list. This currently
-            entails moving backward in page history, but in the
-            future will take into account page positions as well.
-            If <oa>count</oa> is specified go back <oa>count</oa> pages.
+            Go to an older position in the jump list.
+            If <oa>count</oa> is specified, jump <oa>count</oa> positions backward.
         </p>
     </description>
 </item>
@@ -204,10 +202,8 @@
     <spec><![CDATA[[count]<C-i>]]></spec>
     <description>
         <p>
-            Go to an newer position in the jump list. This currently
-            entails moving forward in page history, but in the
-            future will take into account page positions as well.
-            If <oa>count</oa> is specified go forward <oa>count</oa> pages.
+            Go to a newer position in the jump list.
+            If <oa>count</oa> is specified, jump <oa>count</oa> positions forward.
         </p>
     </description>
 </item>
@@ -217,7 +213,10 @@
     <strut/>
     <spec>[count]H</spec>
     <description>
-        <p>Go back in the browser history. If <oa>count</oa> is specified go back <oa>count</oa> pages.</p>
+        <p>
+            Go back in the browser history. If <oa>count</oa> is specified, go
+            back <oa>count</oa> pages.
+        </p>
     </description>
 </item>
 
@@ -227,8 +226,8 @@
     <spec><oa>count</oa>L</spec>
     <description>
         <p>
-            Go forward in the browser history. If <oa>count</oa> is specified go forward <oa>count</oa>
-            pages.
+            Go forward in the browser history. If <oa>count</oa> is specified,
+            go forward <oa>count</oa> pages.
         </p>
     </description>
 </item>
@@ -239,7 +238,8 @@
     <spec>:<oa>count</oa>ba<oa>ck</oa>!</spec>
     <description>
         <p>
-            Go back in the browser history. If <oa>count</oa> is specified go back <oa>count</oa> pages.
+            Go back in the browser history. If <oa>count</oa> is specified, go
+            back <oa>count</oa> pages.
         </p>
         <p>
             The special version <ex>:back!</ex> goes to the beginning of the browser history.
@@ -253,8 +253,8 @@
     <spec>:<oa>count</oa>fo<oa>rward</oa>!</spec>
     <description>
         <p>
-            Go forward in the browser history. If <oa>count</oa> is specified go forward <oa>count</oa>
-            pages.
+            Go forward in the browser history. If <oa>count</oa> is specified,
+            go forward <oa>count</oa> pages.
         </p>
         <p>
             The special version <ex>:forward!</ex> goes to the end of the browser history.

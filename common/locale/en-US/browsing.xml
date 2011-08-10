@@ -31,7 +31,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[send-key <pass-next-key> <C-v> CTRL-V]]></tags>
+    <tags><![CDATA[send-key <pass-next-key> <C-v>]]></tags>
     <spec><![CDATA[<C-v>]]></spec>
     <description>
         <p>
@@ -41,7 +41,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[pass-through <pass-all-keys> <C-z> CTRL-Z]]></tags>
+    <tags><![CDATA[pass-through <pass-all-keys> <C-z>]]></tags>
     <spec><![CDATA[<C-z>]]></spec>
     <description>
         <p>
@@ -264,7 +264,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 <h2 tag="navigating">Navigating</h2>
 
 <item>
-    <tags><![CDATA[H CTRL-O :ba :back]]></tags>
+    <tags><![CDATA[H :ba :back]]></tags>
     <spec>:<oa>count</oa>ba<oa>ck</oa> <oa>url</oa></spec>
     <spec>:ba<oa>ck</oa>!</spec>
     <description>
@@ -278,7 +278,7 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 </item>
 
 <item>
-    <tags><![CDATA[L CTRL-I :fo :fw :forward]]></tags>
+    <tags><![CDATA[L :fo :fw :forward]]></tags>
     <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
     <spec>:fo<oa>rward</oa>!</spec>
     <description>

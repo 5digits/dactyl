@@ -9,11 +9,10 @@
     xmlns="&xmlns.dactyl;"
     xmlns:html="&xmlns.html;">
 
-<!-- Initial revision: Sun Jun  8 10:07:05 UTC 2008 (penryu) -->
 <h1 tag="tutorial">Quick-start tutorial</h1>
 
 <note>
-    This is a quickstart tutorial to help new users get up and running
+    This is a quick-start tutorial to help new users get up and running
     in &dactyl.appName;. It is not intended as a full reference explaining all
     features.
 </note>
@@ -31,14 +30,14 @@
 <p>
     where <k name="CR"/> represents pressing the <k name="Enter" link="false"/>
     or <k name="Return" link="false"/> key. If you're a veteran Vim user, this
-    may look familiar. It should.
+    should look familiar.
 </p>
 
 <p>
     However, in this author's opinion, the best way to get familiar with
-    &dactyl.appName; is to leave these disabled for now. (The above action can be
-    reversed with <se opt="go" op="&amp;"/><k name="CR"/>) You can look at the entry
-    for <o>guioptions</o> in <t>options</t> for more information on this.
+    &dactyl.appName; is to leave these disabled for now. (The above action can
+    be reversed with <se opt="go" op="&amp;"/><k name="CR"/>) You can have a
+    look at the <o>guioptions</o> help entry for more information on this.
 </p>
 
 <h2 tag="modal">&dactyl.appName;'s modal interface</h2>
@@ -47,7 +46,7 @@
     &dactyl.appName;'s power, like Vim's, comes from its modal interface. Keys have
     different meanings depending on which mode the browser is in. &dactyl.appName; has
     several modes, but the 2 most important are <em>Normal</em> mode and
-    <em>Command Line</em> mode.
+    <em>Command Line</em> mode (see <t>modes</t> for the full picture).
 </p>
 
 <p>
@@ -62,9 +61,9 @@
 </p>
 
 <p>
-    To return to Normal mode from Command Line mode, type <k name="Esc"/>. Pressing
-    <k name="Esc"/> will also return you to Normal mode from most other modes in
-    &dactyl.appName;.
+    To return to Normal mode from Command Line mode, type <k name="Esc"/>.
+    Pressing <k name="Esc"/> will also return you to Normal mode from most
+    other &dactyl.appName; modes.
 </p>
 
 <h2 tag="getting-help">Getting help</h2>
@@ -103,7 +102,7 @@
 
 <h2 tag="living-mouseless">Mouseless</h2>
 
-<em>– or how I learned to stop worrying and love the 80+ buttons I already have.</em>
+<em>— or how I learned to stop worrying and love the 80+ buttons I already have.</em>
 
 <p>
     The efficiency of &dactyl.appName;, as with the legendary editor it was inspired by,
@@ -133,7 +132,7 @@
     <dd>
         scroll window left/right
     </dd>
-    <dt><k name="Space"/>/<k name="C-b"/></dt>
+    <dt><k name="C-f"/>/<k name="C-b"/></dt>
     <dd>
         scroll down/up by one page
     </dd>
@@ -151,20 +150,24 @@
 <h2 tag="history-navigation tab-navigation">History and tabs</h2>
 
 <p>
-    History navigation (e.g., <em>Back</em>, <em>Forward</em>) are done similarly to
+    History navigation (e.g., <em>Back</em>, <em>Forward</em>) is done similarly to
     scrolling.
 </p>
 
 <dl>
+    <dt><k>H</k>/<k>L</k></dt>
+    <dd>
+        move back/forward in the current tab's history
+    </dd>
     <dt><k name="C-o"/>/<k name="C-i"/></dt>
     <dd>
-        move Back/Forward in the current window/tab's history, respectively
+        move back/forward in the current tab's jump list
     </dd>
 </dl>
 
 <p>
-    Move between tabs using these keystrokes which may also be familiar to tabbing
-    Vimmers.
+    Move between tabs using these keystrokes which may also be familiar to
+    tabbing Vimmers:
 </p>
 
 <dl>
@@ -187,7 +190,7 @@
 </dl>
 
 <p>
-    To open a web page in a new tab, use the <ex>:tabopen <a>url</a></ex>. To open a URL in
+    To open a web page in a new tab, use <ex>:tabopen <a>url</a></ex>. To open a URL in
     the current tab, use <ex>:open</ex>. The Normal mode mappings <k>t</k> and <k>o</k>,
     respectively, map to these commands, so the following pairs of sequences are
     equivalent:
@@ -210,9 +213,10 @@
 </p>
 
 <p>
-    The answer is <em>hints</em>. Activating hints displays a number next to every link
-    &dactyl.appName; can find. To follow the link, simply type the number corresponding
-    to the hint.
+    The answer is <t>hints</t>. Activating hints displays a number next to
+    every link (or other element, depending on the mode) &dactyl.appName; can
+    find. To act on the element (e.g., follow or save a link), simply type
+    the number corresponding to the hint.
 </p>
 
 <p>
@@ -235,38 +239,26 @@
 </p>
 
 <p>
+    Extended hint modes, started by <k>;</k> or <k>g;</k>, provide a richer way
+    to interact with various elements, not limited to following links.
+</p>
+
+<p>
     To test it, try this link: <link topic="&dactyl.apphome;">&dactyl.appName; Homepage</link>.
     Activate Hints mode with <k>f</k> or <k>F</k> to highlight all currently
     visible links. Then start typing the text of the link. The link should be
     uniquely identified soon, and &dactyl.appName; will open it. Once you're
-    done, remember to use <k name="C-o"/> (<em>History Back</em>) or <k>d</k>
+    done, remember to use <k>H</k> (<em>History Back</em>) or <k>d</k>
     (<em>Delete Buffer</em>) to return here, depending on which key you used to
     activate Hints mode.
 </p>
 
-<h2 tag="common-issues">Common issues</h2>
-
-<p>
-    Say you get half-way done typing in a new URL, only to remember that you've
-    already got that page open in the previous tab. Your command line might look
-    something like this:
-</p>
-
-<code><ex>:open my.partial.url/fooba</ex></code>
-
-<p>
-    You can exit the command line and access the already loaded page with the
-    following:
-</p>
-
-<code><k name="Esc"/></code>
-
-<h2 tag="pentadactylrc">Saving for posterity—<tt>pentadactylrc</tt></h2>
+<h2 tag="saving-customization">Saving for posterity—<tt>pentadactylrc</tt></h2>
 
 <p>
     Once you get &dactyl.appName; set up with your desired options, maps, and commands,
     you'll probably want them to be available the next time you open &dactyl.appName;.
-    Continuing the Vim theme, this is done with a <tt>pentadactylrc</tt> file.
+    Continuing the Vim theme, this is done with a <tt><t>pentadactylrc</t></tt> file.
 </p>
 
 <p>
@@ -289,11 +281,11 @@
 <dl>
     <dt><ex>:xall</ex></dt>
     <dd>
-        command to quit and save the current browsing session for next time; the default.
+        quit and save the current browsing session for next time; the default
     </dd>
-    <dt><ex>:qall</ex></dt>
+    <dt><ex>:exit</ex></dt>
     <dd>
-        command to quit <em>without</em> saving the session
+        quit <em>without</em> saving the session
     </dd>
     <dt><k>ZZ</k></dt>
     <dd>
@@ -301,17 +293,17 @@
     </dd>
     <dt><k>ZQ</k></dt>
     <dd>
-        Normal mode mapping equivalent to <ex>:qall</ex>
+        Normal mode mapping equivalent to <ex>:exit</ex>
     </dd>
 </dl>
 
 <h2 tag="whither-&dactyl.host;">Where did &dactyl.host; go?</h2>
 
 <p>
-    You might feel pretty disoriented now. Don't worry. This is still &dactyl.host;
-    underneath. Here are some ways &dactyl.appName; allows &dactyl.host; to shine through. See
-    the <ex>:help</ex> for these commands and mappings for more information on how to
-    make the best use of them.
+    You might feel pretty disoriented now. Don't worry. This is still
+    &dactyl.host; underneath. Here are some ways &dactyl.appName; allows
+    &dactyl.host; to shine through (see the <ex>:help</ex> for these commands
+    and mappings for more information on how to make the best use of them):
 </p>
 
 <dl>
@@ -338,11 +330,9 @@
 </dl>
 
 <p>
-    Feel free to explore at this point. If you use the <ex>:tabopen</ex> command,
-    remember to use the <k>gt</k>/<k>gT</k> mappings to get back to this page. If
-    using the <ex>:open</ex> command, use the history keys (e.g., <k>H</k>) to return.
-    If you get hopelessly lost, just type <ex>:help<k name="CR"/></ex> and click the
-    <em>Tutorial</em> link to return.
+    Feel free to explore at this point. If you get hopelessly lost, just type
+    <ex>:help<k name="CR"/></ex> and click the <em>Quick-start tutorial</em>
+    link to return here.
 </p>
 
 <!-- TODO: other sections? -->
@@ -350,30 +340,35 @@
 <h2 tag="removal">Get me out of here!</h2>
 
 <p>
-    If you've given it a fair shot and determined … TODO
+    If you've given it a fair shot and determined that &dactyl.appName; is not
+    for you after all, you might want to disable it.
 </p>
 
 <p>
-    The &dactyl.appName; way to do this is with the command <ex>:addons</ex>. Issuing this
-    command brings up the &dactyl.host; Add-ons dialog window; you can then remove it as
-    normal, selecting &dactyl.appName; from the list and clicking (yes, clicking)
-    <em>Uninstall</em>.
+    The &dactyl.appName; way to do this is with the command <ex>:addons</ex>,
+    which displays a list of all installed extensions. You can use hints or
+    mouse to click on <em>Off</em> or <em>Del</em> to disable or remove
+    &dactyl.appName;, respectively.
 </p>
 
 <p>
     Alternatively, you can do this the old-fashioned way: re-enable the menubar,
-    as above, with <se opt="go" op="+=">m</se>, and select <em>Add-ons</em> from the <em>Tools</em> menu.
+    as above, with <se opt="go" op="+=">m</se>, and select <em>Add-ons</em>
+    from the <em>Tools</em> menu. You can also use <ex>:dialog addons</ex> to
+    get to the interface.
 </p>
 
 <h2 tag="support">I'm interested… but lost!</h2>
 
 <p>
-    &dactyl.appName; has an energetic and growing user base. If you've run into a problem
-    that you can't seem to solve with &dactyl.appName;, or if you think you might have
-    found a bug, please let us know! There is support available on the
-    <link topic="http://code.google.com/p/dactyl/w/list?q=label%3Aproject-&dactyl.name;">wiki</link>
+    &dactyl.appName; has an energetic and growing user base. If you've run into
+    a problem that you can't seem to solve with &dactyl.appName;, or if you
+    think you might have found a bug, please let us know! There is support
+    available on the <link topic="&dactyl.list.href;">mailing list</link>
+    (mirrored on <link topic="http://dir.gmane.org/gmane.comp.mozilla.firefox.pentadactyl">Gmane</link>)
     or in the <link topic="irc://irc.oftc.net/pentadactyl">#pentadactyl</link> IRC
-    channel on <link topic="http://oftc.net/">OFTC</link>.
+    channel on <link topic="http://oftc.net/">OFTC</link>. See also
+    <t>contact</t>.
 </p>
 
 <p>
@@ -381,7 +376,7 @@
     hear from you as well. Developers work on &dactyl.appName; whenever possible, but we
     are neither infinite nor omnipotent; please bear with us. If you can't wait for
     us to get around to it, rest assured patches are welcome! See the
-    <link topic="developer">developer</link> page for more information.
+    <t>developer</t> page for more information.
 </p>
 
 </document>

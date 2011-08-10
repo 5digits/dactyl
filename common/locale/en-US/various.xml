@@ -87,7 +87,7 @@
 </item>
 
 <item>
-    <tags><![CDATA[<redraw-screen> <C-l> CTRL-L :redr :redraw]]></tags>
+    <tags><![CDATA[<redraw-screen> <C-l> :redr :redraw]]></tags>
     <strut/>
     <spec>:redr<oa>aw</oa></spec>
     <description>
