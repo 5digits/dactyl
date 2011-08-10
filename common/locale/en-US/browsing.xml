@@ -263,87 +263,10 @@ want to bypass &dactyl.appName;'s key handling and pass keys directly to
 
 <h2 tag="navigating">Navigating</h2>
 
-<item>
-    <tags><![CDATA[H :ba :back]]></tags>
-    <spec>:<oa>count</oa>ba<oa>ck</oa> <oa>url</oa></spec>
-    <spec>:ba<oa>ck</oa>!</spec>
-    <description>
-        <p>
-            Go <oa>count</oa> pages back in the browser history. If
-            <oa>url</oa> is specified go back to the first matching
-            URL. The special version <ex>:back!</ex> goes to the
-            beginning of the browser history.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[L :fo :fw :forward]]></tags>
-    <spec>:<oa>count</oa>fo<oa>rward</oa> <oa>url</oa></spec>
-    <spec>:fo<oa>rward</oa>!</spec>
-    <description>
-        <p>
-            Go <oa>count</oa> pages forward in the browser history.
-            If <oa>url</oa> is specified go forward to the first
-            matching URL. The special version <ex>:forward!</ex>
-            goes to the end of the browser history.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[[d]]></tags>
-    <spec><oa>count</oa>[d</spec>
-    <description>
-        <p>
-            Go to the <oa>count</oa>th previous domain in the history stack.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[]d]]></tags>
-    <spec><oa>count</oa>]d</spec>
-    <description>
-        <p>
-            Go to the <oa>count</oa>th next domain in the history stack.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[<C-o>]]></tags>
-    <spec><oa>count</oa>&lt;C-o></spec>
-    <description>
-        <p>
-            Go <oa>count</oa> steps back in the jumps stack.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags><![CDATA[<C-i>]]></tags>
-    <spec><oa>count</oa>&lt;C-i></spec>
-    <description>
-        <p>
-            Go <oa>count</oa> steps forward in the jumps stack.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags>:ju :jumps</tags>
-    <spec>:ju<oa>mps</oa></spec>
-    <description>
-        <p>List all jumps, i.e., the current tab's session history.</p>
-
-        <p>
-            Current history position is marked with <em>></em>.
-            Jump numbers may be used as counts for
-            <ex>:back</ex> or <ex>:forward</ex>.
-        </p>
-    </description>
-</item>
+<p>
+    In addition to the <t>history</t> commands, the following navigational
+    commands are available:
+</p>
 
 <item>
     <tags><![CDATA[<open-homepage> gh]]></tags>

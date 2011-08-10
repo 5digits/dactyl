@@ -187,7 +187,7 @@
 <item>
     <tags><![CDATA[<C-o>]]></tags>
     <strut/>
-    <spec><![CDATA[[count]<C-o>]]></spec>
+    <spec><oa>count</oa><![CDATA[<C-o>]]></spec>
     <description>
         <p>
             Go to an older position in the jump list.
@@ -199,7 +199,7 @@
 <item>
     <tags><![CDATA[<C-i>]]></tags>
     <strut/>
-    <spec><![CDATA[[count]<C-i>]]></spec>
+    <spec><oa>count</oa><![CDATA[<C-i>]]></spec>
     <description>
         <p>
             Go to a newer position in the jump list.
