@@ -1939,7 +1939,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             });
 
         commands.add(["res[tart]"],
-            "Force " + config.appName + " to restart",
+            "Force " + config.host + " to restart",
             function () { dactyl.restart(); },
             { argCount: "0" });
 
