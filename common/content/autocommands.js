@@ -13,7 +13,7 @@ update(AutoCommand.prototype, {
     eventName: Class.memoize(function () this.event.toLowerCase()),
 
     match: function (event, pattern) {
-        return (!event || this.eventName == event.toLowerCase()) && (!pattern || String(this.filter) === pattern);
+        return (!event || this.eventName == event.toLowerCase()) && (!pattern || String(this.filter) === String(pattern));
     }
 });
 
@@ -43,24 +43,26 @@ var AutoCmdHive = Class("AutoCmdHive", Contexts.Hive, {
     },
 
     /**
-     * Returns all autocommands with a matching *event* and *regexp*.
+     * Returns all autocommands with a matching *event* and *filter*.
      *
      * @param {string} event The event name filter.
-     * @param {string} pattern The URL pattern filter.
+     * @param {string} filter The URL pattern filter.
      * @returns {[AutoCommand]}
      */
-    get: function (event, pattern) {
-        return this._store.filter(function (autoCmd) autoCmd.match(event, regexp));
+    get: function (event, filter) {
+        filter = filter && String(Group.compileFilter(filter));
+        return this._store.filter(function (autoCmd) autoCmd.match(event, filter));
     },
 
     /**
-     * Deletes all autocommands with a matching *event* and *regexp*.
+     * Deletes all autocommands with a matching *event* and *filter*.
      *
      * @param {string} event The event name filter.
-     * @param {string} regexp The URL pattern filter.
+     * @param {string} filter The URL pattern filter.
      */
-    remove: function (event, regexp) {
-        this._store = this._store.filter(function (autoCmd) !autoCmd.match(event, regexp));
+    remove: function (event, filter) {
+        filter = filter && String(Group.compileFilter(filter));
+        this._store = this._store.filter(function (autoCmd) !autoCmd.match(event, filter));
     },
 });
 
@@ -178,7 +180,7 @@ var AutoCommands = Module("autocommands", {
         commands.add(["au[tocmd]"],
             "Execute commands automatically on events",
             function (args) {
-                let [event, regexp, cmd] = args;
+                let [event, filter, cmd] = args;
                 let events = [];
 
                 if (event) {
@@ -193,9 +195,9 @@ var AutoCommands = Module("autocommands", {
 
                 if (args.length > 2) { // add new command, possibly removing all others with the same event/pattern
                     if (args.bang)
-                        args["-group"].remove(event, regexp);
+                        args["-group"].remove(event, filter);
                     cmd = contexts.bindMacro(args, "-ex", function (params) params);
-                    args["-group"].add(events, regexp, cmd);
+                    args["-group"].add(events, filter, cmd);
                 }
                 else {
                     if (event == "*")
@@ -204,10 +206,10 @@ var AutoCommands = Module("autocommands", {
                     if (args.bang) {
                         // TODO: "*" only appears to work in Vim when there is a {group} specified
                         if (args[0] != "*" || args.length > 1)
-                            args["-group"].remove(event, regexp); // remove all
+                            args["-group"].remove(event, filter); // remove all
                     }
                     else
-                        autocommands.list(event, regexp, args.explicitOpts["-group"] ? [args["-group"]] : null); // list all
+                        autocommands.list(event, filter, args.explicitOpts["-group"] ? [args["-group"]] : null); // list all
                 }
             }, {
                 bang: true,

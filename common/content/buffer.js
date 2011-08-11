@@ -832,6 +832,8 @@ var Buffer = Module("buffer", {
     findJump: function findJump(arg, count, reverse, offScreen) {
         const FUDGE = 10;
 
+        marks.push();
+
         let path = options["jumptags"][arg];
         dactyl.assert(path, _("error.invalidArgument", arg));
 

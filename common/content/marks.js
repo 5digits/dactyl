@@ -44,6 +44,10 @@ var Marks = Module("marks", {
         params.offset = buffer.scrollPosition;
         params.path = util.generateXPath(buffer.findScrollable(0, params.offset.x));
         params.timestamp = Date.now() * 1000;
+        params.equals = function (m) this.location == m.location
+                                  && this.offset.x == m.offset.x
+                                  && this.offset.y == m.offset.y
+                                  && this.path == m.path;
         return params;
     },
 
@@ -90,6 +94,8 @@ var Marks = Module("marks", {
             return;
 
         let mark = this.add("'");
+        if (jump && mark.equals(jump.mark))
+            return;
 
         if (!this.jumping) {
             store.jumps[++store.jumpsIndex] = { mark: mark, reason: reason };

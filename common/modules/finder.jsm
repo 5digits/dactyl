@@ -45,6 +45,7 @@ var RangeFinder = Module("rangefinder", {
     get options() this.modules.options,
 
     openPrompt: function (mode) {
+        this.modules.marks.push();
         this.commandline;
         this.CommandMode(mode).open();
 
@@ -103,6 +104,7 @@ var RangeFinder = Module("rangefinder", {
     },
 
     find: function (pattern, backwards) {
+        this.modules.marks.push();
         let str = this.bootstrap(pattern, backwards);
         if (!this.rangeFind.find(str))
             this.dactyl.echoerr(_("finder.notFound", pattern),
@@ -112,6 +114,7 @@ var RangeFinder = Module("rangefinder", {
     },
 
     findAgain: function (reverse) {
+        this.modules.marks.push();
         if (!this.rangeFind)
             this.find(this.lastFindPattern);
         else if (!this.rangeFind.find(null, reverse))
