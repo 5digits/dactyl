@@ -87,12 +87,38 @@
 </item>
 
 <item>
+    <tags>O</tags>
+    <spec>O</spec>
+    <description short="true">
+        <p>
+            Open an <ex>:open</ex> prompt followed by the current URL.
+        </p>
+    </description>
+</item>
+
+<item>
     <tags>T</tags>
     <spec>T</spec>
     <description short="true">
         <p>
             Open a <ex>:tabopen</ex> prompt followed by the current URL.
         </p>
+    </description>
+</item>
+
+<item>
+    <tags>s</tags>
+    <spec>s</spec>
+    <description short="true">
+        <p>Open a search prompt.</p>
+    </description>
+</item>
+
+<item>
+    <tags>S</tags>
+    <spec>S</spec>
+    <description short="true">
+        <p>Open a search prompt for a new tab.</p>
     </description>
 </item>
 
@@ -104,16 +130,6 @@
             Duplicates current tab <oa>count</oa> times. The first
             new tab is activated if <o>activate</o> contains
             <str>tabopen</str> or <oa>!</oa> is provided.
-        </p>
-    </description>
-</item>
-
-<item>
-    <tags>O</tags>
-    <spec>O</spec>
-    <description short="true">
-        <p>
-            Open an <ex>:open</ex> prompt followed by the current URL.
         </p>
     </description>
 </item>

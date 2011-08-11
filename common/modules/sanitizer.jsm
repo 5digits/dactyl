@@ -369,19 +369,17 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
     prefToArg: function (pref) pref.replace(/.*\./, "").toLowerCase(),
 
     iterCookies: function iterCookies(host) {
-        for (let c in iter(services.cookies)) {
-            c.QueryInterface(Ci.nsICookie2);
-            if (!host || util.isSubdomain(c.rawHost, host) || c.host[0] == "." && c.host.length < host.length && host.indexOf(c.host) == host.length - c.host.length)
+        for (let c in iter(services.cookies, Ci.nsICookie2))
+            if (!host || util.isSubdomain(c.rawHost, host) ||
+                    c.host[0] == "." && c.host.length < host.length
+                        && host.indexOf(c.host) == host.length - c.host.length)
                 yield c;
-        }
 
     },
     iterPermissions: function iterPermissions(host) {
-        for (let p in iter(services.permissions)) {
-            p.QueryInterface(Ci.nsIPermission);
+        for (let p in iter(services.permissions, Ci.nsIPermission))
             if (!host || util.isSubdomain(p.host, host))
                 yield p;
-        }
     }
 }, {
     load: function (dactyl, modules, window) {
@@ -390,16 +388,18 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         sanitizer.ranAtShutdown = false;
     },
     autocommands: function (dactyl, modules, window) {
+        const { autocommands } = modules;
+
         storage.addObserver("private-mode",
             function (key, event, value) {
-                modules.autocommands.trigger("PrivateMode", { state: value });
+                autocommands.trigger("PrivateMode", { state: value });
             }, window);
         storage.addObserver("sanitizer",
             function (key, event, value) {
                 if (event == "domain")
-                    modules.autocommands.trigger("SanitizeDomain", { domain: value });
+                    autocommands.trigger("SanitizeDomain", { domain: value });
                 else if (!value[1])
-                    modules.autocommands.trigger("Sanitize", { name: event.substr("clear-".length), domain: value[1] });
+                    autocommands.trigger("Sanitize", { name: event.substr("clear-".length), domain: value[1] });
             }, window);
     },
     commands: function (dactyl, modules, window) {

@@ -1297,9 +1297,13 @@ function octal(decimal) parseInt(decimal, 8);
  * function.
  *
  * @param {object} obj
+ * @param {nsIJSIID} iface The interface to which to query all elements.
  * @returns {Generator}
  */
-function iter(obj) {
+function iter(obj, iface) {
+    if (arguments.length == 2 && iface instanceof Ci.nsIJSIID)
+        return iter(obj).map(function (item) item.QueryInterface(iface));
+
     let args = arguments;
     let res = Iterator(obj);
 

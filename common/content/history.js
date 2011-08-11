@@ -21,19 +21,18 @@ var History = Module("history", {
         for (let [k, v] in Iterator(filter))
             query[k] = v;
 
-        order = order || "+date";
-        dactyl.assert((order = /^([+-])(.+)/.exec(order)) &&
-                      (order = "SORT_BY_" + order[2].toUpperCase() + "_" +
-                        (order[1] == "+" ? "ASCENDING" : "DESCENDING")) &&
-                      order in options,
-                     _("error.invalidSort", order));
+        let _order = /^([+-])(.+)/.exec(order || "+date");
+        dactyl.assert(_order, _("error.invalidSort", order));
 
-        options.sortingMode = options[order];
+        _order = "SORT_BY_" + _order[2].toUpperCase() + "_" +
+                    (_order[1] == "+" ? "ASCENDING" : "DESCENDING");
+        dactyl.assert(_order in options, _("error.invalidSort", order));
+
+        options.sortingMode = options[_order];
         options.resultType = options.RESULTS_AS_URI;
         if (maxItems > 0)
             options.maxResults = maxItems;
 
-        // execute the query
         let root = services.history.executeQuery(query, options).root;
         root.containerOpen = true;
         let items = iter(util.range(0, root.childCount)).map(function (i) {
@@ -44,7 +43,7 @@ var History = Module("history", {
                 icon: node.icon ? node.icon : DEFAULT_FAVICON
             };
         }).toArray();
-        root.containerOpen = false; // close a container after using it!
+        root.containerOpen = false;
 
         return items;
     },
@@ -58,12 +57,11 @@ var History = Module("history", {
         obj.__defineSetter__("index", function (val) { webNav.gotoIndex(val) });
         obj.__iterator__ = function () array.iterItems(this);
 
-        for (let i in util.range(0, sh.count)) {
-            obj[i] = update(Object.create(sh.getEntryAtIndex(i, false)),
-                            { index: i });
-            memoize(obj[i], "icon",
-                function () services.favicon.getFaviconImageForPage(this.URI).spec);
-        }
+        for (let item in iter(sh.SHistoryEnumerator, Ci.nsIHistoryEntry))
+            obj.push(update(Object.create(item), {
+                index: obj.length,
+                icon: Class.memoize(function () services.favicon.getFaviconImageForPage(this.URI).spec)
+            }));
         return obj;
     },
 
@@ -87,7 +85,7 @@ var History = Module("history", {
         try {
             sh.index = Math.constrain(sh.index + steps, 0, sh.length - 1);
         }
-        catch (e) {} // We get NS_ERROR_FILE_NOT_FOUND if files in history don't exist
+        catch (e if e.result == Cr.NS_ERROR_FILE_NOT_FOUND) {}
     },
 
     /**

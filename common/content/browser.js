@@ -220,6 +220,14 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             "Open one or more URLs, based on current location",
             function () { CommandExMode().open("open " + decode(buffer.uri.spec)); });
 
+        mappings.add([modes.NORMAL], ["s"],
+            "Open a search prompt",
+            function () { CommandExMode().open("open " + options["defsearch"] + " "); });
+
+        mappings.add([modes.NORMAL], ["S"],
+            "Open a search prompt for a new tab",
+            function () { CommandExMode().open("tabopen " + options["defsearch"] + " "); });
+
         mappings.add([modes.NORMAL], ["t"],
             "Open one or more URLs in a new tab",
             function () { CommandExMode().open("tabopen "); });
