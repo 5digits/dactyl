@@ -1004,12 +1004,12 @@ var Tabs = Module("tabs", {
                 { count: true });
 
             mappings.add([modes.NORMAL], ["gb"],
-                "Repeat last :buffer[!] command",
+                "Repeat last :buffer command",
                 function ({ count }) { tabs.switchTo(null, null, count, false); },
                 { count: true });
 
             mappings.add([modes.NORMAL], ["gB"],
-                "Repeat last :buffer[!] command in reverse direction",
+                "Repeat last :buffer command in reverse direction",
                 function ({ count }) { tabs.switchTo(null, null, count, true); },
                 { count: true });
 

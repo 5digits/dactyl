@@ -346,7 +346,7 @@
 
 <item>
     <tags>g]</tags>
-    <spec><oa>count</oa>]<a>arg</a></spec>
+    <spec><oa>count</oa>g]<a>arg</a></spec>
     <description short="true">
         <p>Jump to the next off-screen element as defined by <o>jumptags</o>.</p>
     </description>

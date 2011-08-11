@@ -95,8 +95,8 @@
     <spec><oa>count</oa>gb</spec>
     <description>
         <p>
-            Repeat last <ex>:buffer<oa>!</oa></ex> command. This is useful to quickly jump between
-            buffers which have a similar URL or title.
+            Repeat last <ex>:buffer</ex> command. This is useful to quickly
+            jump between buffers which have a similar URL or title.
         </p>
     </description>
 </item>
@@ -107,7 +107,7 @@
     <spec><oa>count</oa>gB</spec>
     <description>
         <p>
-            Repeat last <ex>:buffer<oa>!</oa></ex> command in the reverse direction.
+            Repeat last <ex>:buffer</ex> command in the reverse direction.
         </p>
     </description>
 </item>
