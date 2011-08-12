@@ -853,6 +853,9 @@ var Options = Module("options", {
          */
         add: function add(names, description, type, defaultValue, extraInfo) {
             const self = this;
+            util.assert(type in Option.types,
+                        _("option.noSuchType", type),
+                        true);
 
             if (!extraInfo)
                 extraInfo = {};

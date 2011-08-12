@@ -71,6 +71,7 @@
       editing input fields with i_<C-i>. See :h 'editor'. [b4]
     • Improved [macro-string] support, including automatic elision
       of optional elements, and array subscripts. [b4][b7]
+    • Add -pentadactyl-remote command-line option. [b8]
     • Improvements to marks:
       - Marks are now stored as line and column ordinals rather than percentages. [b8]
       - Marks now store the marked element and ensure its visibility when followed. [b8]

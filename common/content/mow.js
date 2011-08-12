@@ -135,7 +135,7 @@ var MOW = Module("mow", {
             this.messages.push(data);
         }
         else {
-            let style = isString(data) ? "pre" : "nowrap";
+            let style = isString(data) ? "pre-wrap" : "nowrap";
             this.lastOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{data}</div>;
 
             var output = util.xmlToDom(this.lastOutput, this.document);

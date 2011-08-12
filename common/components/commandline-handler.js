@@ -40,8 +40,26 @@ CommandLineHandler.prototype = {
     QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsICommandLineHandler]),
 
     handle: function (commandLine) {
+        try {
+            var remote = commandLine.handleFlagWithParam(config.name + "-remote", false);
+        }
+        catch (e) {
+            util.dump("option '-" + config.name + "-remote' requires an argument\n");
+        }
 
-        // TODO: handle remote launches differently?
+        try {
+            if (remote) {
+                commandLine.preventDefault = true;
+                require(global, "services");
+                let win = services.windowMediator.getMostRecentWindow("navigator:browser");
+                if (win && win.dactyl)
+                    win.dactyl.execute(remote);
+            }
+        }
+        catch(e) {
+            util.reportError(e)
+        };
+
         try {
             this.optionValue = commandLine.handleFlagWithParam(config.name, false);
         }

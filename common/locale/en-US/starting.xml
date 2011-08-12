@@ -15,9 +15,14 @@
 <h2 tag="startup-options">Command-line options</h2>
 
 <p>
-    Command-line options can be passed to &dactyl.appName; via the -&dactyl.name; &dactyl.host;
+    Command-line options can be passed to &dactyl.appName; via the <em>-&dactyl.name;</em> &dactyl.host;
     option. These are passed as single string argument.
     E.g., <tt>&dactyl.hostbin; -&dactyl.name; <str><t>++cmd</t> 'set exrc' <t>+u</t> 'tempRcFile' <t>++noplugin</t></str></tt>
+</p>
+
+<p>
+    The <em>-&dactyl.name;-remote</em> command-line option can be used to
+    execute a single Ex command in an already running Pentadactyl instance.
 </p>
 
 <item>

@@ -26,6 +26,7 @@ defineModule("commands", {
  * @property {number} type The option's value type. This is one of:
  *         (@link CommandOption.NOARG),
  *         (@link CommandOption.STRING),
+ *         (@link CommandOption.STRINGMAP),
  *         (@link CommandOption.BOOL),
  *         (@link CommandOption.INT),
  *         (@link CommandOption.FLOAT),
@@ -72,6 +73,11 @@ update(CommandOption, {
      * @final
      */
     STRING: ArgType("string", function (val) val),
+    /**
+     * @property {object} The option accepts a stringmap argument.
+     * @final
+     */
+    STRINGMAP: ArgType("stringmap", function (val, quoted) Option.parse.stringmap(quoted)),
     /**
      * @property {object} The option accepts an integer argument.
      * @final
@@ -765,7 +771,7 @@ var Commands = Module("commands", {
         let str = args.literalArg;
         if (str)
             res.push(!/\n/.test(str) ? str :
-                     this.hereDoc && false ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
+                     this.serializeHereDoc ? "<<EOF\n" + String.replace(str, /\n$/, "") + "\nEOF"
                                            : String.replace(str, /\n/g, "\n" + res[0].replace(/./g, " ").replace(/.$/, "\\")));
         return res.join(" ");
     },

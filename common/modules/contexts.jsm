@@ -516,8 +516,11 @@ var Contexts = Module("contexts", {
                     group.args = args["-args"];
                 }
 
-                if (args.context)
+                if (args.context) {
                     args.context.group = group;
+                    if (args.context.context)
+                        args.context.context.group = group;
+                }
 
                 util.assert(!group.builtin ||
                                 !["-description", "-locations", "-nopersist"]
