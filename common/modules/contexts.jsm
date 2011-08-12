@@ -182,20 +182,24 @@ var Contexts = Module("contexts", {
                                   function (dir) dir.contains(file, true),
                                   0);
 
+        let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
+                            : file.leafName;
+        let id   = name.replace(/\.[^.]*$/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase());
+
         let contextPath = file.path;
         let self = Set.has(plugins, contextPath) && plugins.contexts[contextPath];
+
+        if (!self && isPlugin)
+            self = Set.has(plugins, id) && plugins[id];
 
         if (self) {
             if (Set.has(self, "onUnload"))
                 self.onUnload();
         }
         else {
-            let name = isPlugin ? file.getRelativeDescriptor(isPlugin).replace(File.PATH_SEP, "-")
-                                : file.leafName;
-
             self = args && !isArray(args) ? args : newContext.apply(null, args || [userContext]);
             update(self, {
-                NAME: Const(name.replace(/\.[^.]*$/, "").replace(/-([a-z])/g, function (m, n1) n1.toUpperCase())),
+                NAME: Const(id),
 
                 PATH: Const(file.path),
 
