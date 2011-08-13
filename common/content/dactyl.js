@@ -249,7 +249,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let results = array(params.iterate(args))
                     .sort(function (a, b) String.localeCompare(a.name, b.name));
 
-                let filters = args.map(function (arg) util.regexp("\\b" + util.regexp.escape(arg) + "\\b", "i"));
+                let filters = args.map(function (arg) let (re = util.regexp.escape(arg))
+                                        util.regexp("\\b" + re + "\\b|(?:^|[()\\s])" + re + "(?:$|[()\\s])", "i"));
                 if (filters.length)
                     results = results.filter(function (item) filters.every(function (re) keys(item).some(re.closure.test)));
 
@@ -261,10 +262,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 completer: function (context, args) {
                     context.keys.text = util.identity;
                     context.keys.description = function () seen[this.text] + /*L*/" matching items";
+                    context.ignoreCase = true;
                     let seen = {};
                     context.completions = array(keys(item).join(" ").toLowerCase().split(/[()\s]+/)
                                                 for (item in params.iterate(args)))
-                        .flatten().filter(function (w) /^\w[\w-_']+$/.test(w))
+                        .flatten()
                         .map(function (k) {
                             seen[k] = (seen[k] || 0) + 1;
                             return k;
