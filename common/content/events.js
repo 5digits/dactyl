@@ -641,8 +641,8 @@ var Events = Module("events", {
             let elem = target || event.originalTarget;
             if (elem) {
                 let doc = elem.ownerDocument || elem.document || elem;
-                let evt = events.create(doc, event.type, event);
-                events.dispatch(elem, evt, extra);
+                let evt = DOM.Event(doc, event.type, event);
+                DOM.Event.dispatch(elem, evt, extra);
             }
             else if (i > 0 && event.type === "keypress")
                 events.events.keypress.call(events, event);
@@ -691,10 +691,10 @@ var Events = Module("events", {
                     evt.isMacro = true;
                     evt.dactylMode = mode;
                     evt.dactylSavedEvents = savedEvents;
-                    this.feedingEvent = evt;
+                    DOM.Event.feedingEvent = evt;
 
                     let doc = document.commandDispatcher.focusedWindow.document;
-                    let event = events.create(doc, type, evt);
+
                     let target = dactyl.focusedElement
                               || ["complete", "interactive"].indexOf(doc.readyState) >= 0 && doc.documentElement
                               || doc.defaultView;
@@ -703,6 +703,7 @@ var Events = Module("events", {
                         ["<Return>", "<Space>"].indexOf(key) == -1)
                         target = target.ownerDocument.documentElement;
 
+                    let event = DOM.Event(doc, type, evt);
                     if (!evt_obj.dactylString && !mode)
                         events.dispatch(target, event, evt);
                     else if (type === "keypress")
@@ -717,7 +718,7 @@ var Events = Module("events", {
             util.reportError(e);
         }
         finally {
-            this.feedingEvent = null;
+            DOM.Event.feedingEvent = null;
             this.feedingKeys = wasFeeding;
             if (quiet)
                 commandline.quiet = wasQuiet;
@@ -726,64 +727,8 @@ var Events = Module("events", {
         return true;
     },
 
-    /**
-     * Creates an actual event from a pseudo-event object.
-     *
-     * The pseudo-event object (such as may be retrieved from events.fromString)
-     * should have any properties you want the event to have.
-     *
-     * @param {Document} doc The DOM document to associate this event with
-     * @param {Type} type The type of event (keypress, click, etc.)
-     * @param {Object} opts The pseudo-event. @optional
-     */
-    create: function (doc, type, opts) {
-        const DEFAULTS = {
-            HTML: {
-                type: type, bubbles: true, cancelable: false
-            },
-            Key: {
-                type: type,
-                bubbles: true, cancelable: true,
-                view: doc.defaultView,
-                ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
-                keyCode: 0, charCode: 0
-            },
-            Mouse: {
-                type: type,
-                bubbles: true, cancelable: true,
-                view: doc.defaultView,
-                detail: 1,
-                screenX: 0, screenY: 0,
-                clientX: 0, clientY: 0,
-                ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
-                button: 0,
-                relatedTarget: null
-            }
-        };
-
-        opts = opts || {};
-
-        var t = this._create_types[type];
-        var evt = doc.createEvent((t || "HTML") + "Events");
-
-        let defaults = DEFAULTS[t || "HTML"];
-
-        let args = Object.keys(defaults)
-                         .map(function (k) k in opts ? opts[k] : defaults[k]);
-
-        evt["init" + t + "Event"].apply(evt, args);
-        return evt;
-    },
-
-    _create_types: Class.memoize(function () iter(
-        {
-            Mouse: "click mousedown mouseout mouseover mouseup",
-            Key:   "keydown keypress keyup",
-            "":    "change dactyl-input input submit"
-        }
-    ).map(function ([k, v]) v.split(" ").map(function (v) [v, k]))
-     .flatten()
-     .toObject()),
+    create: deprecated("DOM.Event", function create() DOM.Event.apply(null, arguments)),
+    dispatch: deprecated("DOM.Event.dispatch", function dispatch() DOM.Event.dispatch.apply(DOM.Event, arguments)),
 
     /**
      * Converts a user-input string of keys into a canonical
@@ -816,44 +761,6 @@ var Events = Module("events", {
         while (match = re.exec(keys))
             yield match[0];
     }()),
-
-    /**
-     * Dispatches an event to an element as if it were a native event.
-     *
-     * @param {Node} target The DOM node to which to dispatch the event.
-     * @param {Event} event The event to dispatch.
-     */
-    dispatch: Class.memoize(function ()
-        util.haveGecko("2b")
-            ? function dispatch(target, event, extra) {
-                try {
-                    this.feedingEvent = extra;
-                    if (target instanceof Element)
-                        // This causes a crash on Gecko<2.0, it seems.
-                        return (target.ownerDocument || target.document || target).defaultView
-                               .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
-                               .dispatchDOMEventViaPresShell(target, event, true);
-                    else {
-                        target.dispatchEvent(event);
-                        return !event.getPreventDefault();
-                    }
-                }
-                catch (e) {
-                    util.reportError(e);
-                }
-                finally {
-                    this.feedingEvent = null;
-                }
-            }
-            : function dispatch(target, event, extra) {
-                try {
-                    this.feedingEvent = extra;
-                    target.dispatchEvent(update(event, extra));
-                }
-                finally {
-                    this.feedingEvent = null;
-                }
-            }),
 
     get defaultTarget() dactyl.focusedElement || content.document.body || document.documentElement,
 
@@ -1306,11 +1213,11 @@ var Events = Module("events", {
             let duringFeed = this.duringFeed || [];
             this.duringFeed = [];
             try {
-                if (this.feedingEvent)
-                    for (let [k, v] in Iterator(this.feedingEvent))
+                if (DOM.Event.feedingEvent)
+                    for (let [k, v] in Iterator(DOM.Event.feedingEvent))
                         if (!(k in event))
                             event[k] = v;
-                this.feedingEvent = null;
+                DOM.Event.feedingEvent = null;
 
                 let key = events.toString(event);
 
@@ -1321,7 +1228,7 @@ var Events = Module("events", {
                     elem.dactylKeyPress = elem.value;
                     util.timeout(function () {
                         if (elem.dactylKeyPress !== undefined && elem.value !== elem.dactylKeyPress)
-                            events.dispatch(elem, events.create(elem.ownerDocument, "dactyl-input"));
+                            DOM(elem).dactylInput();
                         elem.dactylKeyPress = undefined;
                     });
                 }
@@ -1425,7 +1332,7 @@ var Events = Module("events", {
                 this.keyEvents = [];
 
             let pass = this.passing && !event.isMacro ||
-                    this.feedingEvent && this.feedingEvent.isReplay ||
+                    DOM.Event.feedingEvent && DOM.Event.feedingEvent.isReplay ||
                     event.isReplay ||
                     modes.main == modes.PASS_THROUGH ||
                     modes.main == modes.QUOTE

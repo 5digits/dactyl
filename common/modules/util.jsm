@@ -11,7 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
     let frag=1;
 defineModule("util", {
-    exports: ["frag", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
+    exports: ["$", "DOM", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
     use: ["commands", "config", "highlight", "messages", "storage", "template"]
 }, this);
@@ -37,15 +37,16 @@ var FailedAssertion = Class("FailedAssertion", ErrorBase, {
 var Point = Struct("x", "y");
 
 var wrapCallback = function wrapCallback(fn) {
-    fn.wrapper = function wrappedCallback () {
-        try {
-            return fn.apply(this, arguments);
-        }
-        catch (e) {
-            util.reportError(e);
-            return undefined;
-        }
-    };
+    if (!fn.wrapper)
+        fn.wrapper = function wrappedCallback() {
+            try {
+                return fn.apply(this, arguments);
+            }
+            catch (e) {
+                util.reportError(e);
+                return undefined;
+            }
+        };
     fn.wrapper.wrapped = fn;
     return fn.wrapper;
 }
@@ -160,6 +161,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             throw FailedAssertion(message, 1, quiet === undefined ? true : quiet);
         return condition;
     },
+
+    /**
+     * CamelCases a -non-camel-cased identifier name.
+     *
+     * @param {string} name The name to mangle.
+     * @returns {string} The mangled name.
+     */
+    camelCase: function camelCase(name) String.replace(name, /-(.)/g, function (m, m1) m1.toUpperCase()),
 
     /**
      * Capitalizes the first character of the given string.
@@ -2126,6 +2135,552 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 }, {
     Array: array
 });
+
+var DOM = Class("DOM", {
+    init: function init(val, context) {
+        let self;
+        let length = 0;
+
+        if (context instanceof Ci.nsIDOMDocument)
+            this.document = context;
+
+        if (typeof val == "string")
+            val = context.querySelectorAll(val);
+
+        if (val == null)
+            ;
+        else if (typeof val == "xml")
+            this[length++] = util.xmlToDom(val, context);
+        else if (val instanceof Ci.nsIDOMNode)
+            this[length++] = val;
+        else if ("length" in val)
+            for (let i = 0; i < val.length; i++)
+                this[length++] = val[i];
+
+        this.length = length;
+        return self || this;
+    },
+
+    __iterator__: function __iterator__() {
+        for (let i = 0; i < this.length; i++)
+            yield this[i];
+    },
+
+    Empty: function Empty() this.constructor(null, this.document),
+
+    get items() {
+        for (let i = 0; i < this.length; i++)
+            yield this.eq(i);
+    },
+
+    get document() this._document || this[0].ownerDocument,
+    set document(val) this._document = val,
+
+    attrHooks: array.toObject([
+        ["", {
+            href: { get: function (elem) elem.href },
+            src:  { get: function (elem) elem.src }
+        }]
+    ]),
+
+    matcher: function matcher(sel) {
+        let res;
+
+        if (/^([a-z0-9_-]+)$/i.exec(sel))
+            res = function (elem) elem.localName == val;
+        else if (/^#([a-z0-9:_-]+)$/i.exec(sel))
+            res = function (elem) elem.id == val;
+        else if (/^\.([a-z0-9:_-]+)$/i.exec(sel))
+            res = function (elem) elem.classList.contains(val);
+        else if (/^\[([a-z0-9:_-]+)\]$/i.exec(sel))
+            res = function (elem) elem.hasAttribute(val);
+        else
+            res = function (elem) ~Array.indexOf(elem.parentNode.querySelectorAll(sel),
+                                                 elem);
+
+        let val = RegExp.$1;
+        return res;
+    },
+
+    each: function each(fn, self) {
+        let obj = self || this.Empty();
+        for (let i = 0; i < this.length; i++)
+            fn.call(self || update(obj, [this[i]]), this[i], i);
+        return this;
+    },
+
+    eachDOM: function eachDOM(val, fn, self) {
+        if (typeof val == "xml")
+            return this.each(function (elem, i) {
+                fn.call(this, util.xmlToDom(val, elem.ownerDocument), elem, i);
+            }, self || this);
+
+        let dom = this;
+        function munge(val) {
+            if (typeof val == "xml")
+                val = dom.constructor(val, dom.document);
+
+            if (isObject(val) && "length" in val) {
+                let frag = dom.document.createDocumentFragment();
+                for (let i = 0; i < val.length; i++)
+                    frag.appendChild(val[i]);
+                return frag;
+            }
+            return val;
+        }
+
+        if (callable(val))
+            return this.each(function (elem, i) {
+                fn.call(this, munge(val.call(this, elem, i)), elem, i);
+            }, self || this);
+
+        fn.call(self || this, munge(val), this[0], 0);
+        return this;
+    },
+
+    eq: function eq(idx) {
+        return this.constructor(this[idx >= 0 ? idx : this.length + idx]);
+    },
+
+    find: function find(val) {
+        return this.map(function (elem) elem.querySelectorAll(val));
+    },
+
+    filter: function filter(val, self) {
+        let res = this.Empty();
+
+        if (!callable(val))
+            val = this.matcher(val);
+
+        this.constructor(Array.filter(this, val, self || this));
+        for (let i = 0; i < this.length; i++)
+            if (val.call(self, this[i], i))
+                res[res.length++] = this[i];
+
+        return res;
+    },
+
+    is: function is(val) {
+        return this.some(this.matcher(val));
+    },
+
+    reverse: function reverse() {
+        Array.reverse(this);
+        return this;
+    },
+
+    all: function all(fn, self) {
+        let res = this.Empty();
+
+        this.each(function (elem) {
+            while((elem = fn.call(this, elem)) instanceof Ci.nsIDOMElement)
+                res[res.length++] = elem;
+        }, self || this);
+        return res;
+    },
+
+    map: function map(fn, self) {
+        let res = this.Empty();
+        let obj = self || this.Empty();
+
+        for (let i = 0; i < this.length; i++) {
+            let tmp = fn.call(self || update(obj, [this[i]]), this[i], i);
+            if ("length" in tmp)
+                for (let j = 0; j < tmp.length; j++)
+                    res[res.length++] = tmp[j];
+            else
+                res[res.length++] = tmp;
+        }
+
+        return res;
+    },
+
+    slice: function eq(start, end) {
+        return this.constructor(Array.slice(this, start, end));
+    },
+
+    some: function some(fn, self) {
+        for (let i = 0; i < this.length; i++)
+            if (fn.call(self || this, this[i], i))
+                return true;
+        return false;
+    },
+
+    get parent() this.map(function (elem) elem.parentNode, this),
+
+    get ancestors() this.all(function (elem) elem.parentNode),
+
+    get children() this.map(function (elem) Array.filter(elem.childNodes,
+                                                         function (e) e instanceof Ci.nsIDOMElement),
+                            this),
+
+    get contents() this.map(function (elem) elem.childNodes, this),
+
+    get siblings() this.map(function (elem) Array.filter(elem.parentNode.childNodes,
+                                                         function (e) e != elem && e instanceof Ci.nsIDOMElement),
+                            this),
+
+    get siblingsBefore() this.all(function (elem) elem.previousElementSibling),
+    get siblingsAfter() this.all(function (elem) elem.nextElementSibling),
+
+    get class() let (self = this) ({
+        toString: function () self[0].className,
+
+        get list() Array.slice(self[0].classList),
+        set list(val) self.attr("class", val.join(" ")),
+
+        each: function each(meth, arg) {
+            return self.each(function (elem) {
+                elem.classList[meth](arg);
+            })
+        },
+
+        add: function add(cls) this.each("add", cls),
+        remove: function remove(cls) this.each("remove", cls),
+        toggle: function toggle(cls) this.each("toggle", cls),
+
+        has: function has(cls) this[0].classList.has(cls)
+    }),
+
+    get highlight() let (self = this) ({
+        toString: function () self.attrNS(NS, "highlight") || "",
+
+        get list() this.toString().trim().split(/\s+/),
+        set list(val) self.attrNS(NS, "highlight", val.join(" ")),
+
+        has: function has(hl) ~this.list.indexOf(hl),
+
+        add: function add(hl) self.each(function () {
+            this.attrNS(NS, "highlight",
+                        array.uniq(this.highlight.list.concat(hl)).join(" "));
+        }),
+
+        remove: function remove(hl) self.each(function () {
+            this.attrNS(NS, "highlight",
+                        this.highlight.list.filter(function (h) h != hl));
+        }),
+
+        toggle: function toggle(hl) self.each(function () {
+            let { highlight } = this;
+            highlight[highlight.has(hl) ? "remove" : "add"](hl)
+        }),
+    }),
+
+    get rect() this[0].getBoundingClientRect(),
+
+    get style() util.computedStyle(this[0]),
+
+    attr: function attr(key, val) {
+        return this.attrNS("", key, val);
+    },
+
+    attrNS: function attrNS(ns, key, val) {
+        if (val !== undefined)
+            key = array.toObject([[key, val]]);
+
+        let hooks = this.attrHooks[ns] || {};
+
+        if (isObject(key))
+            return this.each(function (elem) {
+                for (let [k, v] in Iterator(key))
+                    if (Set.has(hooks, k) && hooks[k].set)
+                        hooks[k].set.call(this, elem, v);
+                    else if (v == null)
+                        elem.removeAttributeNS(ns, k);
+                    else
+                        elem.setAttributeNS(ns, k, v);
+            });
+
+        if (Set.has(hooks, k) && hooks[k].get)
+            return hooks[k].get.call(this, elem);
+
+        if (!this[0].hasAttributeNS(ns, key))
+            return null;
+
+        return this[0].getAttributeNS(ns, key);
+    },
+
+    css: update(function css(key, val) {
+        if (val !== undefined)
+            key = array.toObject([[key, val]]);
+
+        if (isObject(key))
+            return this.each(function (elem) {
+                for (let [k, v] in Iterator(key))
+                    elem.style[css.property(k)] = v;
+            });
+
+        return this[0].style[css.property(key)];
+    }, {
+        name: function (property) property.replace(/[A-Z]/g, function (m0) "-" + m0.toLowerCase()),
+
+        property: function (name) name.replace(/-(.)/g, function (m0, m1) m1.toUpperCase())
+    }),
+
+    append: function append(val) {
+        return this.eachDOM(val, function (elem, target) {
+            target.appendChild(elem);
+        });
+    },
+
+    prepend: function prepend(val) {
+        return this.eachDOM(val, function (elem, target) {
+            target.insertBefore(elem, target.firstChild);
+        });
+    },
+
+    before: function before(val) {
+        return this.eachDOM(val, function (elem, target) {
+            target.parentNode.insertBefore(elem, target);
+        });
+    },
+
+    after: function after(val) {
+        return this.eachDOM(val, function (elem, target) {
+            target.parentNode.insertBefore(elem, target.nextSibling);
+        });
+    },
+
+    appendTo: function appendTo(elem) {
+        if (!(elem instanceof this.constructor))
+            elem = this.constructor(elem, this.document);
+        elem.append(this);
+        return this;
+    },
+
+    prependTo: function appendTo(elem) {
+        if (!(elem instanceof this.constructor))
+            elem = this.constructor(elem, this.document);
+        elem.prepend(this);
+        return this;
+    },
+
+    insertBefore: function insertBefore(elem) {
+        if (!(elem instanceof this.constructor))
+            elem = this.constructor(elem, this.document);
+        elem.before(this);
+        return this;
+    },
+
+    insertAfter: function insertAfter(elem) {
+        if (!(elem instanceof this.constructor))
+            elem = this.constructor(elem, this.document);
+        elem.after(this);
+        return this;
+    },
+
+    remove: function remove() {
+        return this.each(function (elem) {
+            if (elem.parentNode)
+                elem.parentNode.removeChild(elem);
+        }, this);
+    },
+
+    empty: function empty() {
+        return this.each(function (elem) {
+            while (elem.firstChild)
+                elem.removeChild(elem.firstChild);
+        }, this);
+    },
+
+    toggle: function toggle(val) {
+        if (arguments.length)
+            return this[val ? "show" : "hide"]();
+        return this.each(function (elem) {
+            elem.style.display = this.style.display == "none" ? "block" : "none";
+        });
+    },
+    hide: function hide() {
+        return this.each(function (elem) { elem.style.display = "none"; }, this);
+    },
+    show: function show() {
+        return this.each(function (elem) { elem.style.display = "block"; }, this);
+    },
+
+    getSet: function getSet(args, get, set) {
+        if (!args.length)
+            return get.call(this, this[0]);
+
+        let [fn, self] = args;
+        if (!callable(fn))
+            fn = function () args[0];
+
+        return this.each(function (elem, i) {
+            set.call(this, elem, fn.call(self || this, elem, i));
+        }, this);
+    },
+
+    html: function html(txt, self) {
+        return this.getSet(arguments,
+                           function (elem) elem.innerHTML,
+                           function (elem, val) { elem.innerHTML = val });
+    },
+
+    text: function text(txt, self) {
+        return this.getSet(arguments,
+                           function (elem) elem.textContent,
+                           function (elem, val) { elem.textContent = val });
+    },
+
+    val: function val(txt) {
+        return this.getSet(arguments,
+                           function (elem) elem.value,
+                           function (elem, val) { elem.value = val });
+    },
+
+    listen: function listen(event, listener, capture) {
+        if (isObject(event))
+            capture = listener;
+        else
+            event = array.toObject([[event, listener]]);
+
+        for (let [k, v] in Iterator(event))
+            event[k] = util.wrapCallback(v);
+
+        return this.each(function (elem) {
+            for (let [k, v] in Iterator(event))
+                elem.addEventListener(k, v, capture);
+        });
+    },
+    unlisten: function unlisten(event, listener, capture) {
+        if (isObject(event))
+            capture = listener;
+        else
+            event = array.toObject([[key, val]]);
+
+        return this.each(function (elem) {
+            for (let [k, v] in Iterator(event))
+                elem.removeEventListener(k, v.wrapper || v, capture);
+        });
+    },
+
+    dispatch: function dispatch(event, params, extraProps) {
+        return this.each(function (elem) {
+            let evt = DOM.Event(this.document, event, params);
+            DOM.Event.dispatch(elem, evt, extraProps);
+        }, this);
+    },
+
+    focus: function focus(arg, extra) {
+        if (callable(arg))
+            return this.listen("focus", arg, extra);
+        services.focus.setFocus(this[0], extra || services.focus.FLAG_BYMOUSE);
+        return this;
+    },
+    blur: function blur(arg, extra) {
+        if (callable(arg))
+            return this.listen("blur", arg, extra);
+        return this.each(function (elem) { elem.blur(); }, this);
+    }
+}, {
+    /**
+     * Creates an actual event from a pseudo-event object.
+     *
+     * The pseudo-event object (such as may be retrieved from events.fromString)
+     * should have any properties you want the event to have.
+     *
+     * @param {Document} doc The DOM document to associate this event with
+     * @param {Type} type The type of event (keypress, click, etc.)
+     * @param {Object} opts The pseudo-event. @optional
+     */
+    Event: Class("Event", {
+        init: function Event(doc, type, opts) {
+            const DEFAULTS = {
+                HTML: {
+                    type: type, bubbles: true, cancelable: false
+                },
+                Key: {
+                    type: type,
+                    bubbles: true, cancelable: true,
+                    view: doc.defaultView,
+                    ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
+                    keyCode: 0, charCode: 0
+                },
+                Mouse: {
+                    type: type,
+                    bubbles: true, cancelable: true,
+                    view: doc.defaultView,
+                    detail: 1,
+                    screenX: 0, screenY: 0,
+                    clientX: 0, clientY: 0,
+                    ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
+                    button: 0,
+                    relatedTarget: null
+                }
+            };
+
+            opts = opts || {};
+
+            var t = this.constructor.types[type];
+            var evt = doc.createEvent((t || "HTML") + "Events");
+
+            let defaults = DEFAULTS[t || "HTML"];
+
+            let args = Object.keys(defaults)
+                             .map(function (k) k in opts ? opts[k] : defaults[k]);
+
+            evt["init" + t + "Event"].apply(evt, args);
+            return evt;
+        }
+    }, {
+        types: Class.memoize(function () iter(
+            {
+                Mouse: "click mousedown mouseout mouseover mouseup",
+                Key:   "keydown keypress keyup",
+                "":    "change dactyl-input input submit"
+            }
+        ).map(function ([k, v]) v.split(" ").map(function (v) [v, k]))
+         .flatten()
+         .toObject()),
+
+        /**
+         * Dispatches an event to an element as if it were a native event.
+         *
+         * @param {Node} target The DOM node to which to dispatch the event.
+         * @param {Event} event The event to dispatch.
+         */
+        dispatch: Class.memoize(function ()
+            util.haveGecko("2b")
+                ? function dispatch(target, event, extra) {
+                    try {
+                        this.feedingEvent = extra;
+
+                        if (target instanceof Ci.nsIDOMElement)
+                            // This causes a crash on Gecko<2.0, it seems.
+                            return (target.ownerDocument || target.document || target).defaultView
+                                   .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+                                   .dispatchDOMEventViaPresShell(target, event, true);
+                        else {
+                            target.dispatchEvent(event);
+                            return !event.getPreventDefault();
+                        }
+                    }
+                    catch (e) {
+                        util.reportError(e);
+                    }
+                    finally {
+                        this.feedingEvent = null;
+                    }
+                }
+                : function dispatch(target, event, extra) {
+                    try {
+                        this.feedingEvent = extra;
+                        target.dispatchEvent(update(event, extra));
+                    }
+                    finally {
+                        this.feedingEvent = null;
+                    }
+                })
+    })
+});
+
+Object.keys(DOM.Event.types).forEach(function (event) {
+    DOM.prototype[util.camelCase(event)] = function _event(arg, extra) {
+        return this[callable(arg) ? "listen" : "dispatch"](event, arg, extra);
+    };
+});
+
+var $ = DOM;
 
 /**
  * Math utility methods.

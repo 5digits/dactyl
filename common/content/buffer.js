@@ -491,7 +491,7 @@ var Buffer = Module("buffer", {
                 try {
                     let [x, y] = elem.getAttribute("coords").split(",").map(parseFloat);
 
-                    events.dispatch(elem, events.create(elem.ownerDocument, "mouseover", { screenX: x, screenY: y }));
+                    DOM(elem).mouseover({ screenX: x, screenY: y });
                 }
                 catch (e) {}
             }
@@ -606,13 +606,15 @@ var Buffer = Module("buffer", {
 
         prefs.withContext(function () {
             prefs.set("browser.tabs.loadInBackground", true);
-            ["mousedown", "mouseup", "click"].slice(0, util.haveGecko("2b") ? 2 : 3)
-                .forEach(function (event) {
-                events.dispatch(elem, events.create(doc, event, {
-                    screenX: offsetX, screenY: offsetY,
-                    ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: ctrlKey
-                }));
-            });
+            let params = {
+                screenX: offsetX, screenY: offsetY,
+                ctrlKey: ctrlKey, shiftKey: shiftKey, metaKey: ctrlKey
+            };
+
+            DOM(elem).mousedown(params).mouseup(params);
+            if (!util.haveGecko("2b"))
+                DOM(elem).click(params);
+
             let sel = util.selectionController(win);
             sel.getSelection(sel.SELECTION_FOCUS_REGION).collapseToStart();
         });
@@ -1422,8 +1424,7 @@ var Buffer = Module("buffer", {
                 let file = io.File(path);
                 dactyl.assert(file.exists());
 
-                elem.value = file.path;
-                events.dispatch(elem, events.create(elem.ownerDocument, "change", {}));
+                DOM(elem).val(file.path).change();
             }
         }).open(elem.value);
     }

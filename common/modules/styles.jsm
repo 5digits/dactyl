@@ -731,8 +731,10 @@ var Styles = Module("Styles", {
         template.highlightCSS = function highlightCSS(css) {
             XML.prettyPrinting = XML.ignoreWhitespace = false;
 
-            return this.highlightRegexp(css, patterns.property, function (match) <>{
-                match.preSpace}{template.filter(match.name)}: {
+            return this.highlightRegexp(css, patterns.property, function (match) {
+                if (!match.length)
+                    return <></>;
+                return <>{match.preSpace}{template.filter(match.name)}: {
 
                     template.highlightRegexp(match.value, patterns.token, function (match) {
                         if (match.function)
@@ -749,7 +751,7 @@ var Styles = Module("Styles", {
                     })
 
                 }{ match.postSpace }</>
-            )
+            })
         }
     },
 });

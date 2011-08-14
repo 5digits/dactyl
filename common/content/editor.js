@@ -55,7 +55,7 @@ var Editor = Module("editor", {
             elem.scrollTop = top;
             elem.scrollLeft = left;
 
-            events.dispatch(elem, events.create(elem.ownerDocument, "input"));
+            DOM(elem).input();
         }
     },
 
@@ -248,10 +248,10 @@ var Editor = Module("editor", {
                 textBox.value = val;
 
                 if (false) {
-                textBox.setAttributeNS(NS, "modifiable", true);
-                util.computedStyle(textBox).MozUserInput;
-                events.dispatch(textBox, events.create(textBox.ownerDocument, "input", {}));
-                textBox.removeAttributeNS(NS, "modifiable");
+                    let elem = DOM(textBox);
+                    elem.attrNS(NS, "modifiable", true)
+                        .style.MozUserInput;
+                    elem.input().attrNS(NS, "modifiable", null);
                 }
             }
             else {
