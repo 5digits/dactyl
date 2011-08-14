@@ -1246,6 +1246,7 @@ var Events = Module("events", {
         focus: function onFocus(event) {
             let elem = event.originalTarget;
 
+            elem.dactylHadFocus = true;
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
                 if (Events.isHidden(elem, true))
                     elem.blur();
