@@ -445,6 +445,9 @@ var Modes = Module("modes", {
     },
 
     push: function push(mainMode, extendedMode, params) {
+        if (this.main == this.IGNORE)
+            this.pop();
+
         this.set(mainMode, extendedMode, params, { push: this.topOfStack });
     },
 

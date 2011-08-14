@@ -310,8 +310,13 @@ var CommandMode = Class("CommandMode", {
     get command() this.widgets.command[1],
     set command(val) this.widgets.command = val,
 
-    get prompt() this.widgets.prompt,
-    set prompt(val) this.widgets.prompt = val,
+    get prompt() this._open ? this.widgets.prompt : this._prompt,
+    set prompt(val) {
+        if (this._open)
+            this.widgets.prompt = val;
+        else
+            this._prompt = val;
+    },
 
     open: function CM_open(command) {
         dactyl.assert(isinstance(this.mode, modes.COMMAND_LINE),
@@ -323,6 +328,8 @@ var CommandMode = Class("CommandMode", {
         this.widgets.active.commandline.collapsed = false;
         this.widgets.prompt = this.prompt;
         this.widgets.command = command || "";
+
+        this._open = true;
 
         this.input = this.widgets.active.command.inputField;
         if (this.historyKey)
