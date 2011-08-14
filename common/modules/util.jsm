@@ -66,6 +66,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         this.addObserver(this);
         this.overlays = {};
+        this.windows = [];
     },
 
     cleanup: function cleanup() {
@@ -84,14 +85,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
-    // FIXME: Only works for Pentadactyl
-    get activeWindow() services.windowMediator.getMostRecentWindow("navigator:browser"),
+    get activeWindow() this.windows[0],
+
     dactyl: update(function dactyl(obj) {
         if (obj)
             var global = Class.objectGlobal(obj);
+
         return {
             __noSuchMethod__: function (meth, args) {
                 let win = util.activeWindow;
+
                 var dactyl = global && global.dactyl || win && win.dactyl;
                 if (!dactyl)
                     return null;

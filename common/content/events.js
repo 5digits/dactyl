@@ -495,6 +495,12 @@ var Events = Module("events", {
 
         this._activeMenubar = false;
         this.listen(window, this, "events");
+
+        util.windows = [window].concat(util.windows);
+    },
+
+    destroy: function destroy() {
+        util.windows = util.windows.filter(function (w) w != window);
     },
 
     signals: {
@@ -705,7 +711,7 @@ var Events = Module("events", {
 
                     let event = DOM.Event(doc, type, evt);
                     if (!evt_obj.dactylString && !mode)
-                        events.dispatch(target, event, evt);
+                        DOM.Event.dispatch(target, event, evt);
                     else if (type === "keypress")
                         events.events.keypress.call(events, event);
                 }
@@ -1152,6 +1158,9 @@ var Events = Module("events", {
         // TODO: Merge with onFocusChange
         focus: function onFocus(event) {
             let elem = event.originalTarget;
+
+            if (elem == window)
+                util.windows = [window].concat(util.windows.filter(function (w) w != window));
 
             elem.dactylHadFocus = true;
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)

@@ -51,9 +51,7 @@ CommandLineHandler.prototype = {
             if (remote) {
                 commandLine.preventDefault = true;
                 require(global, "services");
-                let win = services.windowMediator.getMostRecentWindow("navigator:browser");
-                if (win && win.dactyl)
-                    win.dactyl.execute(remote);
+                util.dactyl.execute(remote);
             }
         }
         catch(e) {
