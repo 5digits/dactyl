@@ -38,7 +38,7 @@ var Bookmarks = Module("bookmarks", {
     get format() ({
         anchored: false,
         title: ["URL", "Info"],
-        keys: { text: "url", description: "title", icon: "icon", extra: "extra", tags: "tags" },
+        keys: { text: "url", description: "title", icon: "icon", extra: "extra", tags: "tags", isURI: function () true },
         process: [template.icon, template.bookmarkDescription]
     }),
 

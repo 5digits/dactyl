@@ -273,11 +273,11 @@ var Template = Module("Template", {
             case "boolean":
                 return <span highlight="Boolean">{str}</span>;
             case "function":
-                // Vim generally doesn't like /foo*/, because */ looks like a comment terminator.
-                // Using /foo*(:?)/ instead.
+                str = str.replace("/* use strict */ \n", "/* use strict */ ");
                 if (processStrings)
                     return <span highlight="Function">{str.replace(/\{(.|\n)*(?:)/g, "{ ... }")}</span>;
                     <>}</>; /* Vim */
+                arg = String(arg).replace("/* use strict */ \n", "/* use strict */ ");
                 return <>{arg}</>;
             case "undefined":
                 return <span highlight="Null">{arg}</span>;
@@ -302,7 +302,10 @@ var Template = Module("Template", {
         }
     },
 
-    highlightFilter: function highlightFilter(str, filter, highlight) {
+    highlightFilter: function highlightFilter(str, filter, highlight, isURI) {
+        if (isURI)
+            str = util.losslessDecodeURI(str);
+
         return this.highlightSubstrings(str, (function () {
             if (filter.length == 0)
                 return;

@@ -469,7 +469,7 @@ var CompletionContext = Class("CompletionContext", {
         this.processor = Array.slice(this.process);
         if (!this.anchored)
             this.processor[0] = function (item, text) self.process[0].call(self, item,
-                    template.highlightFilter(item.text, self.filter));
+                    template.highlightFilter(item.text, self.filter, null, item.isURI));
 
         try {
             // Item prototypes

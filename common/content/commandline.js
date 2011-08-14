@@ -1343,8 +1343,8 @@ var CommandLine = Module("commandline", {
         arg = dactyl.userEval(arg);
         if (isObject(arg))
             arg = util.objectToString(arg, useColor);
-        else
-            arg = String(arg);
+        else if (!isString(arg) && useColor)
+            arg = template.highlight(arg);
         return arg;
     }
 }, {

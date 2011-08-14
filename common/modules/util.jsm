@@ -1094,7 +1094,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 catch (e) {
                     return url;
                 }
-            }, this).join("%25");
+            }, this).join("%25").replace(/[\s.,>)]$/, encodeURIComponent);
     },
 
     /**
