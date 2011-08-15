@@ -495,12 +495,6 @@ var Events = Module("events", {
 
         this._activeMenubar = false;
         this.listen(window, this, "events");
-
-        util.windows = [window].concat(util.windows);
-    },
-
-    destroy: function destroy() {
-        util.windows = util.windows.filter(function (w) w != window);
     },
 
     signals: {
@@ -922,14 +916,14 @@ var Events = Module("events", {
             //         https://bugzilla.mozilla.org/show_bug.cgi?id=432951
             // ---
             //
-            // The following fixes are only activated if util.OS.isMacOSX.
+            // The following fixes are only activated if config.OS.isMacOSX.
             // Technically, they prevent mappings from <C-Esc> (and
             // <C-C-]> if your fancy keyboard permits such things<?>), but
             // these <C-control> mappings are probably pathological (<C-Esc>
             // certainly is on Windows), and so it is probably
-            // harmless to remove the util.OS.isMacOSX if desired.
+            // harmless to remove the config.OS.isMacOSX if desired.
             //
-            else if (util.OS.isMacOSX && event.ctrlKey && charCode >= 27 && charCode <= 31) {
+            else if (config.OS.isMacOSX && event.ctrlKey && charCode >= 27 && charCode <= 31) {
                 if (charCode == 27) { // [Ctrl-Bug 1/5] the <C-[> bug
                     key = "Esc";
                     modifier = modifier.replace("C-", "");
@@ -1019,7 +1013,7 @@ var Events = Module("events", {
                          ["key", key.toLowerCase()]);
         }
 
-        let accel = util.OS.isMacOSX ? "metaKey" : "ctrlKey";
+        let accel = config.OS.isMacOSX ? "metaKey" : "ctrlKey";
 
         let access = iter({ 1: "shiftKey", 2: "ctrlKey", 4: "altKey", 8: "metaKey" })
                         .filter(function ([k, v]) this & k, prefs.get("ui.key.chromeAccess"))
@@ -1160,7 +1154,7 @@ var Events = Module("events", {
             let elem = event.originalTarget;
 
             if (elem == window)
-                util.windows = [window].concat(util.windows.filter(function (w) w != window));
+                overlay.activeWindow = window;
 
             elem.dactylHadFocus = true;
             if (event.target instanceof Ci.nsIDOMXULTextBoxElement)
@@ -1444,7 +1438,7 @@ var Events = Module("events", {
             let haveInput = modes.stack.some(function (m) m.main.input);
 
             if (elem instanceof HTMLTextAreaElement
-               || elem instanceof Element && util.computedStyle(elem).MozUserModify === "read-write"
+               || elem instanceof Element && DOM(elem).style.MozUserModify === "read-write"
                || elem == null && win && Editor.getEditor(win)) {
 
                 if (modes.main == modes.VISUAL && elem.selectionEnd == elem.selectionStart)
@@ -1525,7 +1519,7 @@ var Events = Module("events", {
             key === "<Esc>" || key === "<C-[>",
 
     isHidden: function isHidden(elem, aggressive) {
-        if (util.computedStyle(elem).visibility !== "visible")
+        if (DOM(elem).style.visibility !== "visible")
             return true;
 
         if (aggressive)
@@ -1539,12 +1533,9 @@ var Events = Module("events", {
     },
 
     isInputElement: function isInputElement(elem) {
-        return elem instanceof HTMLInputElement && Set.has(util.editableInputs, elem.type) ||
-               isinstance(elem, [HTMLEmbedElement,
-                                 HTMLObjectElement, HTMLSelectElement,
-                                 HTMLTextAreaElement,
-                                 Ci.nsIDOMXULTextBoxElement]) ||
-               elem instanceof Window && Editor.getEditor(elem);
+        return DOM(elem).isEditable ||
+               isinstance(elem, [HTMLEmbedElement, HTMLObjectElement,
+                                 HTMLSelectElement])
     },
 
     kill: function kill(event) {

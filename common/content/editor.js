@@ -209,7 +209,7 @@ var Editor = Module("editor", {
             var editor_ = window.GetCurrentEditor ? GetCurrentEditor()
                                                   : Editor.getEditor(document.commandDispatcher.focusedWindow);
             dactyl.assert(editor_);
-            text = Array.map(editor_.rootElement.childNodes, function (e) util.domToString(e, true)).join("");
+            text = Array.map(editor_.rootElement.childNodes, function (e) DOM.stringify(e, true)).join("");
         }
 
         let origGroup = textBox && textBox.getAttributeNS(NS, "highlight") || "";
@@ -348,16 +348,7 @@ var Editor = Module("editor", {
             elem = dactyl.focusedElement || document.commandDispatcher.focusedWindow;
         dactyl.assert(elem);
 
-        try {
-            if (elem instanceof Element)
-                return elem.QueryInterface(Ci.nsIDOMNSEditableElement).editor;
-            return elem.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
-                       .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
-                       .getEditorForWindow(elem);
-        }
-        catch (e) {
-            return null;
-        }
+        return DOM(elem).editor;
     },
 
     getController: function (cmd) {
@@ -582,7 +573,7 @@ var Editor = Module("editor", {
 
         addMotionMap("d", "Delete motion", true,  function (editor) { editor.cut(); });
         addMotionMap("c", "Change motion", true,  function (editor) { editor.cut(); }, modes.INSERT);
-        addMotionMap("y", "Yank motion",   false, function (editor, range) { dactyl.clipboardWrite(util.domToString(range)) });
+        addMotionMap("y", "Yank motion",   false, function (editor, range) { dactyl.clipboardWrite(DOM.stringify(range)) });
 
         let bind = function bind(names, description, action, params)
             mappings.add([modes.INPUT], names, description,

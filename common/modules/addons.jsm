@@ -111,7 +111,7 @@ var actions = {
         name: "extr[ehash]",
         description: "Reload an extension",
         action: function (addon) {
-            util.assert(util.haveGecko("2b"), _("command.notUseful", config.host));
+            util.assert(config.haveGecko("2b"), _("command.notUseful", config.host));
             util.timeout(function () {
                 addon.userDisabled = true;
                 addon.userDisabled = false;

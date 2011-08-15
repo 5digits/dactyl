@@ -144,6 +144,7 @@ function defineModule(name, params, module) {
             use[mod] = use[mod] || [];
             use[mod].push(module);
         }
+    module._lastModule = currentModule;
     currentModule = module;
     module.startTime = Date.now();
 }
@@ -190,6 +191,7 @@ function endModule() {
         require(mod, currentModule.NAME, "use");
 
     loaded[currentModule.NAME] = 1;
+    currentModule = currentModule._lastModule;
 }
 
 function require(obj, name, from) {
@@ -732,7 +734,7 @@ function Class() {
     if (callable(args[0]))
         superclass = args.shift();
 
-    if (loaded.util && util.haveGecko("6.0a1")) // Bug 657418.
+    if (loaded.config && config.haveGecko("6.0a1")) // Bug 657418.
         var Constructor = function Constructor() {
             var self = Object.create(Constructor.prototype, {
                 constructor: { value: Constructor },

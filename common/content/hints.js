@@ -255,7 +255,7 @@ var HintSession = Class("HintSession", CommandMode, {
     getContainerOffsets: function _getContainerOffsets(doc) {
         let body = doc.body || doc.documentElement;
         // TODO: getComputedStyle returns null for Facebook channel_iframe doc - probable Gecko bug.
-        let style = util.computedStyle(body);
+        let style = DOM(body).style;
 
         if (style && /^(absolute|fixed|relative)$/.test(style.position)) {
             let rect = body.getClientRects()[0];
@@ -298,7 +298,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 return false;
 
             if (!rect.width || !rect.height)
-                if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && util.computedStyle(elem).float != "none" && isVisible(elem)))
+                if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
                     return false;
 
             let computedStyle = doc.defaultView.getComputedStyle(elem, null);
@@ -309,12 +309,11 @@ var HintSession = Class("HintSession", CommandMode, {
 
         let body = doc.body || doc.querySelector("body");
         if (body) {
-            let fragment = util.xmlToDom(<div highlight="hints"/>, doc);
-            body.appendChild(fragment);
-            util.computedStyle(fragment).height; // Force application of binding.
-            let container = doc.getAnonymousElementByAttribute(fragment, "anonid", "hints") || fragment;
+            let fragment = DOM(<div highlight="hints"/>, doc).appendTo(body);
+            fragment.style.height; // Force application of binding.
+            let container = doc.getAnonymousElementByAttribute(fragment[0], "anonid", "hints") || fragment[0];
 
-            let baseNodeAbsolute = util.xmlToDom(<span highlight="Hint" style="display: none;"/>, doc);
+            let baseNode = DOM(<span highlight="Hint" style="display: none;"/>, doc)[0];
 
             let mode = this.hintMode;
             let res = mode.matcher(doc);
@@ -342,7 +341,7 @@ var HintSession = Class("HintSession", CommandMode, {
                 else
                     hint.text = elem.textContent.toLowerCase();
 
-                hint.span = baseNodeAbsolute.cloneNode(false);
+                hint.span = baseNode.cloneNode(false);
 
                 let leftPos = Math.max((rect.left + offsetX), offsetX);
                 let topPos  = Math.max((rect.top + offsetY), offsetY);
@@ -532,7 +531,7 @@ var HintSession = Class("HintSession", CommandMode, {
             // Goddamn stupid fucking Gecko 1.x security manager bullshit.
             try { delete doc.dactylLabels; } catch (e) { doc.dactylLabels = undefined; }
 
-            for (let elem in util.evaluateXPath("//*[@dactyl:highlight='hints']", doc))
+            for (let elem in DOM.XPath("//*[@dactyl:highlight='hints']", doc))
                 elem.parentNode.removeChild(elem);
             for (let i in util.range(start, end + 1)) {
                 this.pageHints[i].ambiguous = false;
@@ -824,7 +823,7 @@ var Hints = Module("hints", {
 
         let type = elem.type;
 
-        if (elem instanceof HTMLInputElement && Set.has(util.editableInputs, elem.type))
+        if (DOM(elem).isInput)
             return [elem.value, false];
         else {
             for (let [, option] in Iterator(options["hintinputs"])) {
@@ -1080,7 +1079,7 @@ var Hints = Module("hints", {
     isVisible: function isVisible(elem, offScreen) {
         let rect = elem.getBoundingClientRect();
         if (!rect.width || !rect.height)
-            if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && util.computedStyle(elem).float != "none" && isVisible(elem)))
+            if (!Array.some(elem.childNodes, function (elem) elem instanceof Element && DOM(elem).style.float != "none" && isVisible(elem)))
                 return false;
 
         let win = elem.ownerDocument.defaultView;
@@ -1089,8 +1088,7 @@ var Hints = Module("hints", {
                           rect.right + win.scrollX > win.scrolMaxX + win.innerWidth))
             return false;
 
-        let computedStyle = util.computedStyle(elem, null);
-        if (computedStyle.visibility != "visible" || computedStyle.display == "none")
+        if (!DOM(elem).isVisible)
             return false;
         return true;
     },
@@ -1249,8 +1247,6 @@ var Hints = Module("hints", {
             function ({ self }) { self.escapeNumbers = !self.escapeNumbers; });
     },
     options: function () {
-        function xpath(arg) util.makeXPath(arg);
-
         options.add(["extendedhinttags", "eht"],
             "XPath or CSS selector strings of hintable elements for extended hint modes",
             "regexpmap", {
@@ -1267,10 +1263,10 @@ var Hints = Module("hints", {
                         res ? res.matcher : default_,
                 setter: function (vals) {
                     for (let value in values(vals))
-                        value.matcher = util.compileMatcher(Option.splitList(value.result));
+                        value.matcher = DOM.compileMatcher(Option.splitList(value.result));
                     return vals;
                 },
-                validator: util.validateMatcher
+                validator: DOM.validateMatcher
             });
 
         options.add(["hinttags", "ht"],
@@ -1280,10 +1276,10 @@ var Hints = Module("hints", {
                           "[tabindex],[role=link],[role=button],[contenteditable=true]",
             {
                 setter: function (values) {
-                    this.matcher = util.compileMatcher(values);
+                    this.matcher = DOM.compileMatcher(values);
                     return values;
                 },
-                validator: util.validateMatcher
+                validator: DOM.validateMatcher
             });
 
         options.add(["hintkeys", "hk"],

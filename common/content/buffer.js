@@ -16,7 +16,6 @@
  */
 var Buffer = Module("buffer", {
     init: function init() {
-        this.evaluateXPath = util.evaluateXPath;
         this.pageInfo = {};
 
         this.addPageInfoSection("e", "Search Engines", function (verbose) {
@@ -24,8 +23,8 @@ var Buffer = Module("buffer", {
             let n = 1;
             let nEngines = 0;
             for (let { document: doc } in values(buffer.allFrames())) {
-                let engines = util.evaluateXPath(["link[@href and @rel='search' and @type='application/opensearchdescription+xml']"], doc);
-                nEngines += engines.snapshotLength;
+                let engines = DOM("link[href][rel=search][type='application/opensearchdescription+xml']", doc);
+                nEngines += engines.length;
 
                 if (verbose)
                     for (let link in engines)
@@ -79,7 +78,7 @@ var Buffer = Module("buffer", {
             for (let [i, win] in Iterator(buffer.allFrames())) {
                 let doc = win.document;
 
-                for (let link in util.evaluateXPath(["link[@href and (@rel='feed' or (@rel='alternate' and @type))]"], doc)) {
+                for (let link in DOM("link[href][rel=feed], link[href][rel=alternate][type]", doc)) {
                     let rel = link.rel.toLowerCase();
                     let feed = { title: link.title, href: link.href, type: link.type || "" };
                     if (isValidFeed(feed, doc.nodePrincipal, rel == "feed")) {
@@ -612,7 +611,7 @@ var Buffer = Module("buffer", {
             };
 
             DOM(elem).mousedown(params).mouseup(params);
-            if (!util.haveGecko("2b"))
+            if (!config.haveGecko("2b"))
                 DOM(elem).click(params);
 
             let sel = util.selectionController(win);
@@ -855,7 +854,7 @@ var Buffer = Module("buffer", {
         dactyl.assert(idx in elems);
 
         let elem = elems[idx][0];
-        elem.scrollIntoView(true);
+        DOM(elem).scrollIntoView();
 
         let sel = elem.ownerDocument.defaultView.getSelection();
         sel.removeAllRanges();
@@ -897,7 +896,7 @@ var Buffer = Module("buffer", {
         // focus next frame and scroll into view
         dactyl.focus(frames[next]);
         if (frames[next] != content)
-            frames[next].frameElement.scrollIntoView(false);
+            DOM(frames[next].frameElement).scrollIntoView();
 
         // add the frame indicator
         let doc = frames[next].document;
@@ -1207,7 +1206,7 @@ var Buffer = Module("buffer", {
             selection.removeAllRanges();
             selection.addRange(range);
         }
-        return util.domToString(range);
+        return DOM.stringify(range);
     },
 
     getDefaultNames: function getDefaultNames(node) {
@@ -1242,7 +1241,7 @@ var Buffer = Module("buffer", {
         names.push([decodeURIComponent(url.replace(/.*?([^\/]*)\/*$/, "$1")), "File Name"]);
 
         return names.filter(function ([leaf, title]) leaf)
-                    .map(function ([leaf, title]) [leaf.replace(util.OS.illegalCharacters, encodeURIComponent)
+                    .map(function ([leaf, title]) [leaf.replace(config.OS.illegalCharacters, encodeURIComponent)
                                                        .replace(re, ext), title]);
     },
 
@@ -1256,7 +1255,7 @@ var Buffer = Module("buffer", {
             pos = "scrollLeft", size = "clientWidth", max = "scrollWidth", layoutSize = "offsetWidth",
             overflow = "overflowX", border1 = "borderLeftWidth", border2 = "borderRightWidth";
 
-        let style = util.computedStyle(elem);
+        let style = DOM(elem).style;
         let borderSize = Math.round(parseFloat(style[border1]) + parseFloat(style[border2]));
         let realSize = elem[size];
         // Stupid Gecko eccentricities. May fail for quirks mode documents.
@@ -1288,7 +1287,7 @@ var Buffer = Module("buffer", {
         if (top != null)
             elem.scrollTop = top;
 
-        if (util.haveGecko("2.0") && !util.haveGecko("7.*"))
+        if (config.haveGecko("2.0") && !util.haveGecko("7.*"))
             elem.ownerDocument.defaultView
                 .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
                 .redraw();
@@ -1307,7 +1306,7 @@ var Buffer = Module("buffer", {
      *   given direction.
      */
     scrollHorizontal: function scrollHorizontal(elem, unit, number) {
-        let fontSize = parseInt(util.computedStyle(elem).fontSize);
+        let fontSize = parseInt(DOM(elem).style.fontSize);
         let increment;
         if (unit == "columns")
             increment = fontSize; // Good enough, I suppose.
@@ -1337,7 +1336,7 @@ var Buffer = Module("buffer", {
      *   given direction.
      */
     scrollVertical: function scrollVertical(elem, unit, number) {
-        let fontSize = parseInt(util.computedStyle(elem).lineHeight);
+        let fontSize = parseInt(DOM(elem).style.lineHeight);
         let increment;
         if (unit == "lines")
             increment = fontSize;
@@ -1385,7 +1384,7 @@ var Buffer = Module("buffer", {
      *      column ordinal to scroll to.
      */
     scrollToPosition: function scrollToPosition(elem, horizontal, vertical) {
-        let style = util.computedStyle(elem);
+        let style = DOM(elem).style;
         Buffer.scrollTo(elem,
                         horizontal == null ? null :
                         horizontal == 0    ? 0    : this._exWidth(elem) * horizontal,
@@ -1399,7 +1398,7 @@ var Buffer = Module("buffer", {
      * @param {Element} elem The element to scroll.
      */
     getScrollPosition: function getPosition(elem) {
-        let style = util.computedStyle(elem);
+        let style = DOM(elem).style;
         return {
             x: elem.scrollLeft && elem.scrollLeft / this._exWidth(elem),
             y: elem.scrollTop / parseFloat(style.lineHeight)
@@ -1407,14 +1406,13 @@ var Buffer = Module("buffer", {
     },
 
     _exWidth: function _exWidth(elem) {
-        let div = elem.appendChild(
-            util.xmlToDom(<elem style="width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;"/>,
-                          elem.ownerDocument));
+        let div = DOM(<elem style="width: 1ex !important; position: absolute !important; padding: 0 !important; display: block;"/>,
+                      elem.ownerDocument).appendTo(elem);
         try {
-            return parseFloat(util.computedStyle(div).width);
+            return parseFloat(div.style.width);
         }
         finally {
-            div.parentNode.removeChild(div);
+            div.remove();
         }
     },
 
@@ -1443,7 +1441,7 @@ var Buffer = Module("buffer", {
                 let arg = args[0];
 
                 // FIXME: arg handling is a bit of a mess, check for filename
-                dactyl.assert(!arg || arg[0] == ">" && !util.OS.isWindows,
+                dactyl.assert(!arg || arg[0] == ">" && !config.OS.isWindows,
                               _("error.trailingCharacters"));
 
                 const PRINTER = "PostScript/default";
@@ -1913,18 +1911,20 @@ var Buffer = Module("buffer", {
 
                     let frames = buffer.allFrames(null, true);
 
-                    let elements = array.flatten(frames.map(function (win) [m for (m in util.evaluateXPath(xpath, win.document))]))
+                    let elements = array.flatten(frames.map(function (win) [m for (m in DOM.XPath(xpath, win.document))]))
                                         .filter(function (elem) {
                         if (isinstance(elem, [HTMLFrameElement, HTMLIFrameElement]))
                             return Editor.getEditor(elem.contentWindow);
 
-                        if (elem.readOnly || elem instanceof HTMLInputElement && !Set.has(util.editableInputs, elem.type))
+                        elem = DOM(elem);
+
+                        if (elem[0].readOnly || !DOM(elem).isEditable)
                             return false;
 
-                        let computedStyle = util.computedStyle(elem);
-                        let rect = elem.getBoundingClientRect();
-                        return computedStyle.visibility != "hidden" && computedStyle.display != "none" &&
-                            (elem instanceof Ci.nsIDOMXULTextBoxElement || computedStyle.MozUserFocus != "ignore") &&
+                        let style = elem.style;
+                        let rect = elem.rect;
+                        return elem.isVisible &&
+                            (elem[0] instanceof Ci.nsIDOMXULTextBoxElement || style.MozUserFocus != "ignore") &&
                             rect.width && rect.height;
                     });
 
@@ -1932,7 +1932,7 @@ var Buffer = Module("buffer", {
                     elem = elements[Math.constrain(args.count, 1, elements.length) - 1];
                 }
                 buffer.focusElement(elem);
-                util.scrollIntoView(elem);
+                DOM(elem).scrollIntoView();
             },
             { count: true });
 
@@ -2086,10 +2086,10 @@ var Buffer = Module("buffer", {
                 keepQuotes: true,
                 setter: function (vals) {
                     for (let [k, v] in Iterator(vals))
-                        vals[k] = update(new String(v), { matcher: util.compileMatcher(Option.splitList(v)) });
+                        vals[k] = update(new String(v), { matcher: DOM.compileMatcher(Option.splitList(v)) });
                     return vals;
                 },
-                validator: function (value) util.validateMatcher.call(this, value)
+                validator: function (value) DOM.validateMatcher.call(this, value)
                     && Object.keys(value).every(function (v) v.length == 1)
             });
 

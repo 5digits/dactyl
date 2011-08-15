@@ -403,8 +403,8 @@ var RangeFind = Class("RangeFind", {
 
     focus: function focus() {
         if (this.lastRange)
-            var node = util.evaluateXPath(RangeFind.selectNodePath,
-                                          this.lastRange.commonAncestorContainer).snapshotItem(0);
+            var node = DOM.XPath(RangeFind.selectNodePath,
+                                 this.lastRange.commonAncestorContainer).snapshotItem(0);
         if (node) {
             node.focus();
             // Re-highlight collapsed selection
@@ -517,7 +517,7 @@ var RangeFind = Class("RangeFind", {
 
             for (let frame in array.iterValues(win.frames)) {
                 let range = doc.createRange();
-                if (util.computedStyle(frame.frameElement).visibility == "visible") {
+                if (DOM(frame.frameElement).style.visibility == "visible") {
                     range.selectNode(frame.frameElement);
                     pushRange(pageStart, RangeFind.endpoint(range, true));
                     pageStart = RangeFind.endpoint(range, false);

@@ -42,7 +42,7 @@ var Marks = Module("marks", {
 
         params.location = doc.documentURI,
         params.offset = buffer.scrollPosition;
-        params.path = util.generateXPath(buffer.findScrollable(0, params.offset.x));
+        params.path = DOM(buffer.findScrollable(0, params.offset.x)).xpath;
         params.timestamp = Date.now() * 1000;
         params.equals = function (m) this.location == m.location
                                   && this.offset.x == m.offset.x
@@ -227,11 +227,11 @@ var Marks = Module("marks", {
         if (!mark.xpath)
             var node = buffer.findScrollable(0, (mark.offset || mark.position).x)
         else
-            for (node in util.evaluateXPath(mark.xpath, buffer.focusedFrame.document))
+            for (node in DOM.XPath(mark.xpath, buffer.focusedFrame.document))
                 break;
 
         util.assert(node);
-        util.scrollIntoView(node);
+        DOM(node).scrollIntoView();
 
         if (mark.offset)
             Buffer.scrollToPosition(node, mark.offset.x, mark.offset.y);

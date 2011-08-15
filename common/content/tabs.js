@@ -37,7 +37,7 @@ var Tabs = Module("tabs", {
 
         this.tabBinding = styles.system.add("tab-binding", "chrome://browser/content/browser.xul", String.replace(<><![CDATA[
                 xul|tab { -moz-binding: url(chrome://dactyl/content/bindings.xml#tab) !important; }
-            ]]></>, /tab-./g, function (m) util.OS.isMacOSX ? "tab-mac" : m),
+            ]]></>, /tab-./g, function (m) config.OS.isMacOSX ? "tab-mac" : m),
             false, true);
 
         this.timeout(function () {
@@ -75,14 +75,12 @@ var Tabs = Module("tabs", {
                 if (!node("dactyl-tab-number")) {
                     let img = node("tab-icon-image");
                     if (img) {
-                        let nodes = {};
-                        let dom = util.xmlToDom(<xul xmlns:xul={XUL} xmlns:html={XHTML}
+                        let dom = DOM(<xul xmlns:xul={XUL} xmlns:html={XHTML}
                             ><xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-icon-number"/></xul:hbox
                             ><xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber" class="dactyl-tab-number"/></xul:hbox
-                        ></xul>.*, document, nodes);
-                        img.parentNode.appendChild(dom);
-                        tab.__defineGetter__("dactylOrdinal", function () Number(nodes.icon.value));
-                        tab.__defineSetter__("dactylOrdinal", function (i) nodes.icon.value = nodes.label.textContent = i);
+                        ></xul>.*, document).appendTo(img.parentNode);
+                        tab.__defineGetter__("dactylOrdinal", function () Number(dom.nodes.icon.value));
+                        tab.__defineSetter__("dactylOrdinal", function (i) dom.nodes.icon.value = dom.nodes.label.textContent = i);
                     }
                 }
             }

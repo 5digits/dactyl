@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("util", {
     exports: ["$", "DOM", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
-    use: ["commands", "config", "highlight", "messages", "storage", "template"]
+    use: ["commands", "config", "highlight", "messages", "overlay", "storage", "template"]
 }, this);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");
@@ -85,7 +85,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         }
     },
 
-    get activeWindow() this.windows[0],
+    activeWindow: deprecated("overlay.activeWindow", { get: function activeWindow() overlay.activeWindow }),
 
     dactyl: update(function dactyl(obj) {
         if (obj)
@@ -93,7 +93,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
 
         return {
             __noSuchMethod__: function (meth, args) {
-                let win = util.activeWindow;
+                let win = overlay.activeWindow;
 
                 var dactyl = global && global.dactyl || win && win.dactyl;
                 if (!dactyl)
@@ -202,55 +202,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                         _("error.invalidCharacterRange", list.slice(list.indexOf(match))));
 
         return RegExp("[" + util.regexp.escape(list) + "]");
-    },
-
-    get chromePackages() {
-        // Horrible hack.
-        let res = {};
-        function process(manifest) {
-            for each (let line in manifest.split(/\n+/)) {
-                let match = /^\s*(content|skin|locale|resource)\s+([^\s#]+)\s/.exec(line);
-                if (match)
-                    res[match[2]] = true;
-            }
-        }
-        function processJar(file) {
-            let jar = services.ZipReader(file);
-            if (jar) {
-                if (jar.hasEntry("chrome.manifest"))
-                    process(File.readStream(jar.getInputStream("chrome.manifest")));
-                jar.close();
-            }
-        }
-
-        for each (let dir in ["UChrm", "AChrom"]) {
-            dir = File(services.directory.get(dir, Ci.nsIFile));
-            if (dir.exists() && dir.isDirectory())
-                for (let file in dir.iterDirectory())
-                    if (/\.manifest$/.test(file.leafName))
-                        process(file.read());
-
-            dir = File(dir.parent);
-            if (dir.exists() && dir.isDirectory())
-                for (let file in dir.iterDirectory())
-                    if (/\.jar$/.test(file.leafName))
-                        processJar(file);
-
-            dir = dir.child("extensions");
-            if (dir.exists() && dir.isDirectory())
-                for (let ext in dir.iterDirectory()) {
-                    if (/\.xpi$/.test(ext.leafName))
-                        processJar(ext);
-                    else {
-                        if (ext.isFile())
-                            ext = File(ext.read().replace(/\n*$/, ""));
-                        let mf = ext.child("chrome.manifest");
-                        if (mf.exists())
-                            process(mf.read());
-                    }
-                }
-        }
-        return Object.keys(res).sort();
     },
 
     /**
@@ -451,79 +402,24 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         return stack.top;
     },
 
-    /**
-     * Compiles a CSS spec and XPath pattern matcher based on the given
-     * list. List elements prefixed with "xpath:" are parsed as XPath
-     * patterns, while other elements are parsed as CSS specs. The
-     * returned function will, given a node, return an iterator of all
-     * descendants of that node which match the given specs.
-     *
-     * @param {[string]} list The list of patterns to match.
-     * @returns {function(Node)}
-     */
-    compileMatcher: function compileMatcher(list) {
-        let xpath = [], css = [];
-        for (let elem in values(list))
-            if (/^xpath:/.test(elem))
-                xpath.push(elem.substr(6));
-            else
-                css.push(elem);
+    compileMatcher: deprecated("DOM.compileMatcher", { get: function compileMatcher() DOM.compileMatcher }),
+    computedStyle: deprecated("DOM#style", function computedStyle(elem) DOM(elem).style),
+    domToString: deprecated("DOM.stringify", { get: function domToString() DOM.stringify }),
+    editableInputs: deprecated("DOM.editableInputs", { get: function editableInputs(elem) DOM.editableInputs }),
+    escapeHTML: deprecated("DOM.escapeHTML", { get: function escapeHTML(elem) DOM.escapeHTML }),
+    evaluateXPath: deprecated("DOM.XPath",
+        function evaluateXPath(path, elem, asIterator) DOM.XPath(path, elem || util.activeWindow.content.document, asIterator)),
+    isVisible: deprecated("DOM#isVisible", function isVisible(elem) DOM(elem).isVisible),
+    makeXPath: deprecated("DOM.makeXPath", { get: function makeXPath(elem) DOM.makeXPath }),
+    namespaces: deprecated("DOM.namespaces", { get: function namespaces(elem) DOM.namespaces }),
+    namespaceNames: deprecated("DOM.namespaceNames", { get: function namespaceNames(elem) DOM.namespaceNames }),
+    parseForm: deprecated("DOM#formData", function parseForm(elem) values(DOM(elem).formData).toArray()),
+    scrollIntoView: deprecated("DOM#scrollIntoView", function scrollIntoView(elem, alignWithTop) DOM(elem).scrollIntoView(alignWithTop)),
+    validateMatcher: deprecated("DOM.validateMatcher", { get: function validateMatcher() DOM.validateMatcher }),
 
-        return update(
-            function matcher(node) {
-                if (matcher.xpath)
-                    for (let elem in util.evaluateXPath(matcher.xpath, node))
-                        yield elem;
-
-                if (matcher.css)
-                    for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
-                        yield elem;
-            }, {
-                css: css.join(", "),
-                xpath: xpath.join(" | ")
-            });
-    },
-
-    /**
-     * Validates a list as input for {@link #compileMatcher}. Returns
-     * true if and only if every element of the list is a valid XPath or
-     * CSS selector.
-     *
-     * @param {[string]} list The list of patterns to test
-     * @returns {boolean} True when the patterns are all valid.
-     */
-    validateMatcher: function validateMatcher(list) {
-        let evaluator = services.XPathEvaluator();
-        let node = services.XMLDocument();
-        return this.testValues(list, function (value) {
-            if (/^xpath:/.test(value))
-                evaluator.createExpression(value.substr(6), util.evaluateXPath.resolver);
-            else
-                node.querySelector(value);
-            return true;
-        });
-    },
-
-    /**
-     * Returns an object representing a Node's computed CSS style.
-     *
-     * @param {Node} node
-     * @returns {Object}
-     */
-    computedStyle: function computedStyle(node) {
-        while (!(node instanceof Ci.nsIDOMElement) && node.parentNode)
-            node = node.parentNode;
-        try {
-            var res = node.ownerDocument.defaultView.getComputedStyle(node, null);
-        }
-        catch (e) {}
-        if (res == null) {
-            util.dumpStack(_("error.nullComputedStyle", node));
-            Cu.reportError(Error(_("error.nullComputedStyle", node)));
-            return {};
-        }
-        return res;
-    },
+    chromePackages: deprecated("config.chromePackages", { get: function chromePackages() config.chromePackages }),
+    haveGecko: deprecated("config.haveGecko", { get: function haveGecko() config.closure.haveGecko }),
+    OS: deprecated("config.OS", { get: function OS() config.OS }),
 
     /**
      * Converts any arbitrary string into an URI object. Returns null on
@@ -614,44 +510,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
 
     /**
-     * Converts a given DOM Node, Range, or Selection to a string. If
-     * *html* is true, the output is HTML, otherwise it is presentation
-     * text.
-     *
-     * @param {nsIDOMNode | nsIDOMRange | nsISelection} node The node to
-     *      stringify.
-     * @param {boolean} html Whether the output should be HTML rather
-     *      than presentation text.
-     */
-    domToString: function (node, html) {
-        if (node instanceof Ci.nsISelection && node.isCollapsed)
-            return "";
-
-        if (node instanceof Ci.nsIDOMNode) {
-            let range = node.ownerDocument.createRange();
-            range.selectNode(node);
-            node = range;
-        }
-        let doc = (node.getRangeAt ? node.getRangeAt(0) : node).startContainer;
-        doc = doc.ownerDocument || doc;
-
-        let encoder = services.HtmlEncoder();
-        encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
-        if (node instanceof Ci.nsISelection)
-            encoder.setSelection(node);
-        else if (node instanceof Ci.nsIDOMRange)
-            encoder.setRange(node);
-
-        let str = services.String(encoder.encodeToString());
-        if (html)
-            return str.data;
-
-        let [result, length] = [{}, {}];
-        services.HtmlConverter().convert("text/html", str, str.data.length*2, "text/unicode", result, length);
-        return result.value.QueryInterface(Ci.nsISupportsString).data;
-    },
-
-    /**
      * Prints a message to the console. If *msg* is an object it is pretty
      * printed.
      *
@@ -688,25 +546,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
-     * The set of input element type attribute values that mark the element as
-     * an editable field.
-     */
-    editableInputs: Set(["date", "datetime", "datetime-local", "email", "file",
-                         "month", "number", "password", "range", "search",
-                         "tel", "text", "time", "url", "week"]),
-
-    /**
-     * Converts HTML special characters in *str* to the equivalent HTML
-     * entities.
-     *
-     * @param {string} str
-     * @returns {string}
-     */
-    escapeHTML: function escapeHTML(str) {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-    },
-
-    /**
      * Escapes quotes, newline and tab characters in *str*. The returned string
      * is delimited by *delimiter* or " if *delimiter* is not specified.
      * {@see String#quote}.
@@ -720,92 +559,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             delimiter = '"';
         return delimiter + str.replace(/([\\'"])/g, "\\$1").replace("\n", "\\n", "g").replace("\t", "\\t", "g") + delimiter;
     },
-
-    /**
-     * Evaluates an XPath expression in the current or provided
-     * document. It provides the xhtml, xhtml2 and dactyl XML
-     * namespaces. The result may be used as an iterator.
-     *
-     * @param {string} expression The XPath expression to evaluate.
-     * @param {Node} elem The context element.
-     * @default The current document.
-     * @param {boolean} asIterator Whether to return the results as an
-     *     XPath iterator.
-     * @returns {Object} Iterable result of the evaluation.
-     */
-    evaluateXPath: update(
-        function evaluateXPath(expression, elem, asIterator) {
-            try {
-                if (!elem)
-                    elem = util.activeWindow.content.document;
-                let doc = elem.ownerDocument || elem;
-                if (isArray(expression))
-                    expression = util.makeXPath(expression);
-
-                let result = doc.evaluate(expression, elem,
-                    evaluateXPath.resolver,
-                    asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                    null
-                );
-
-                return Object.create(result, {
-                    __iterator__: {
-                        value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
-                                          : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
-                    }
-                });
-            }
-            catch (e) {
-                throw e.stack ? e : Error(e);
-            }
-        },
-        {
-            resolver: function lookupNamespaceURI(prefix) (util.namespaces[prefix] || null)
-        }),
-
-    /**
-     * Generates an XPath expression for the given element.
-     *
-     * @param {Element} elem The element for which to generate an XPath.
-     * @returns {string}
-     */
-    generateXPath: function generateXPath(elem) {
-        function quote(val) "'" + val.replace(/[\\']/g, "\\$&") + "'";
-
-        let res = [];
-        let doc = elem.ownerDocument;
-        for (;; elem = elem.parentNode) {
-            if (!(elem instanceof Ci.nsIDOMElement))
-                res.push("");
-            else if (elem.id)
-                res.push("id(" + quote(elem.id) + ")");
-            else {
-                let name = elem.localName;
-                if (elem.namespaceURI && (elem.namespaceURI != XHTML || doc.xmlVersion))
-                    if (elem.namespaceURI in this.namespaceNames)
-                        name = this.namespaceNames[elem.namespaceURI] + ":" + name;
-                    else
-                        name = "*[local-name()=" + quote(name) + " and namespace-uri()=" + quote(elem.namespaceURI) + "]";
-
-                res.push(name + "[" + (1 + iter(this.evaluateXPath("./" + name, elem.parentNode)).indexOf(elem)) + "]");
-                continue;
-            }
-            break;
-        }
-
-        return res.reverse().join("/");
-    },
-
-    namespaces: {
-        xul: XUL.uri,
-        xhtml: XHTML.uri,
-        html: XHTML.uri,
-        xhtml2: "http://www.w3.org/2002/06/xhtml2",
-        dactyl: NS.uri
-    },
-
-    namespaceNames: Class.memoize(function ()
-        iter(this.namespaces).map(function ([k, v]) [v, k]).toObject()),
 
     extend: function extend(dest) {
         Array.slice(arguments, 1).filter(util.identity).forEach(function (src) {
@@ -925,15 +678,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
-     * Returns true if the current Gecko runtime is of the given version
-     * or greater.
-     *
-     * @param {string} ver The required version.
-     * @returns {boolean}
-     */
-    haveGecko: function (ver) services.versionCompare.compare(services.runtime.platformVersion, ver) >= 0,
-
-    /**
      * Sends a synchronous or asynchronous HTTP request to *url* and returns
      * the XMLHttpRequest object. If *callback* is specified the request is
      * asynchronous and the *callback* is invoked with the object as its
@@ -1017,24 +761,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     isDomainURL: function isDomainURL(url, domain) util.isSubdomain(util.getHost(url), domain),
 
-    /** Dactyl's notion of the current operating system platform. */
-    OS: memoize({
-        _arch: services.runtime.OS,
-        /**
-         * @property {string} The normalised name of the OS. This is one of
-         *     "Windows", "Mac OS X" or "Unix".
-         */
-        get name() this.isWindows ? "Windows" : this.isMacOSX ? "Mac OS X" : "Unix",
-        /** @property {boolean} True if the OS is Windows. */
-        get isWindows() this._arch == "WINNT",
-        /** @property {boolean} True if the OS is Mac OS X. */
-        get isMacOSX() this._arch == "Darwin",
-        /** @property {boolean} True if the OS is some other *nix variant. */
-        get isUnix() !this.isWindows && !this.isMacOSX,
-        /** @property {RegExp} A RegExp which matches illegal characters in path components. */
-        get illegalCharacters() this.isWindows ? /[<>:"/\\|?*\x00-\x1f]/g : /\//g
-    }),
-
     /**
      * Returns true if *host* is a subdomain of *domain*.
      *
@@ -1047,17 +773,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             return false;
         let idx = host.lastIndexOf(domain);
         return idx > -1 && idx + domain.length == host.length && (idx == 0 || host[idx - 1] == ".");
-    },
-
-    /**
-     * Returns true if the given DOM node is currently visible.
-     *
-     * @param {Node} node
-     * @returns {boolean}
-     */
-    isVisible: function (node) {
-        let style = util.computedStyle(node);
-        return style.visibility == "visible" && style.display != "none";
     },
 
     /**
@@ -1110,20 +825,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
-     * Returns an XPath union expression constructed from the specified node
-     * tests. An expression is built with node tests for both the null and
-     * XHTML namespaces. See {@link Buffer#evaluateXPath}.
-     *
-     * @param nodes {Array(string)}
-     * @returns {string}
-     */
-    makeXPath: function makeXPath(nodes) {
-        return array(nodes).map(util.debrace).flatten()
-                           .map(function (node) /^[a-z]+:/.test(node) ? node : [node, "xhtml:" + node]).flatten()
-                           .map(function (node) "//" + node).join(" | ");
-    },
-
-    /**
      * Creates a DTD fragment from the given object. Each property of
      * the object is converted to an ENTITY declaration. SGML special
      * characters other than ' and % are left intact.
@@ -1150,7 +851,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} uri
      * @returns {nsIURI}
      */
-    // FIXME: createURI needed too?
     newURI: function newURI(uri, charset, base) this.withProperErrors("newURI", services.io, uri, charset, base),
 
     /**
@@ -1181,43 +881,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (!isObject(object))
             return String(object);
 
-        function namespaced(node) {
-            var ns = util.namespaceNames[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
-            if (!ns)
-                return node.localName;
-            if (color)
-                return <><span highlight="HelpXMLNamespace">{ns}</span>{node.localName}</>
-            return ns + ":" + node.localName;
-        }
-
         if (object instanceof Ci.nsIDOMElement) {
             let elem = object;
             if (elem.nodeType == elem.TEXT_NODE)
                 return elem.data;
 
-            try {
-                let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling)
-                if (color)
-                    return <span highlight="HelpXMLBlock"><span highlight="HelpXMLTagStart">&lt;{
-                            namespaced(elem)} {
-                                template.map(array.iterValues(elem.attributes),
-                                    function (attr)
-                                        <span highlight="HelpXMLAttribute">{namespaced(attr)}</span> +
-                                        <span highlight="HelpXMLString">{attr.value}</span>,
-                                    <> </>)
-                            }{ !hasChildren ? "/>" : ">"
-                        }</span>{ !hasChildren ? "" : <>...</> +
-                            <span highlight="HtmlTagEnd">&lt;{namespaced(elem)}></span>
-                    }</span>;
-
-                let tag = "<" + [namespaced(elem)].concat(
-                    [namespaced(a) + "=" + template.highlight(a.value, true)
-                     for ([i, a] in array.iterItems(elem.attributes))]).join(" ");
-                return tag + (!hasChildren ? "/>" : ">...</" + namespaced(elem) + ">");
-            }
-            catch (e) {
-                return {}.toString.call(elem);
-            }
+            return DOM(elem).repr(color);
         }
 
         try { // for window.JSON
@@ -1487,68 +1156,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
-     * Parses the fields of a form and returns a URL/POST-data pair
-     * that is the equivalent of submitting the form.
-     *
-     * @param {nsINode} field One of the fields of the given form.
-     * @returns {array}
-     */
-    // Nuances gleaned from browser.jar/content/browser/browser.js
-    parseForm: function parseForm(field) {
-        function encode(name, value, param) {
-            param = param ? "%s" : "";
-            if (post)
-                return name + "=" + encodeComponent(value + param);
-            return encodeComponent(name) + "=" + encodeComponent(value) + param;
-        }
-
-        let form = field.form;
-        let doc = form.ownerDocument;
-
-        let charset = doc.characterSet;
-        let converter = services.CharsetConv(charset);
-        for each (let cs in form.acceptCharset.split(/\s*,\s*|\s+/)) {
-            let c = services.CharsetConv(cs);
-            if (c) {
-                converter = services.CharsetConv(cs);
-                charset = cs;
-            }
-        }
-
-        let uri = util.newURI(doc.baseURI.replace(/\?.*/, ""), charset);
-        let url = util.newURI(form.action, charset, uri).spec;
-
-        let post = form.method.toUpperCase() == "POST";
-
-        let encodeComponent = encodeURIComponent;
-        if (charset !== "UTF-8")
-            encodeComponent = function encodeComponent(str)
-                escape(converter.ConvertFromUnicode(str) + converter.Finish());
-
-        let elems = [];
-        if (field instanceof Ci.nsIDOMHTMLInputElement && field.type == "submit")
-            elems.push(encode(field.name, field.value));
-
-        for (let [, elem] in iter(form.elements))
-            if (elem.name && !elem.disabled) {
-                if (Set.has(util.editableInputs, elem.type)
-                        || /^(?:hidden|textarea)$/.test(elem.type)
-                        || elem.type == "submit" && elem == field
-                        || elem.checked && /^(?:checkbox|radio)$/.test(elem.type))
-                    elems.push(encode(elem.name, elem.value, elem === field));
-                else if (elem instanceof Ci.nsIDOMHTMLSelectElement) {
-                    for (let [, opt] in Iterator(elem.options))
-                        if (opt.selected)
-                            elems.push(encode(elem.name, opt.value));
-                }
-            }
-
-        if (post)
-            return [url, elems.join('&'), charset, elems];
-        return [url + "?" + elems.join('&'), null, charset, elems];
-    },
-
-    /**
      * A generator that returns the values between *start* and *end*, in *step*
      * increments.
      *
@@ -1790,19 +1397,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     },
 
     /**
-     * Scrolls an element into view if and only if it's not already
-     * fully visible.
-     *
-     * @param {Node} elem The element to make visible.
-     */
-    scrollIntoView: function scrollIntoView(elem, alignWithTop) {
-        let win = elem.ownerDocument.defaultView;
-        let rect = elem.getBoundingClientRect();
-        if (!(rect && rect.bottom <= win.innerHeight && rect.top >= 0 && rect.left < win.innerWidth && rect.right > 0))
-            elem.scrollIntoView(arguments.length > 1 ? alignWithTop : Math.abs(rect.top) < Math.abs(win.innerHeight - rect.bottom));
-    },
-
-    /**
      * Returns the selection controller for the given window.
      *
      * @param {Window} window
@@ -1812,6 +1406,12 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
            .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay)
            .QueryInterface(Ci.nsISelectionController),
+
+    /**
+     * Escapes a string against shell meta-characters and argument
+     * separators.
+     */
+    shellEscape: function shellEscape(str) '"' + String.replace(str, /[\\"$]/g, "\\$&") + '"',
 
     /**
      * Suspend execution for at least *delay* milliseconds. Functions by
@@ -2139,6 +1739,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     Array: array
 });
 
+
+/**
+ * @class
+ *
+ * A jQuery-inspired DOM utility framework.
+ *
+ * Please note that while this currently implements an Array-like
+ * interface, this is *not a defined interface* and is very likely to
+ * change in the near future.
+ */
 var DOM = Class("DOM", {
     init: function init(val, context) {
         let self;
@@ -2153,12 +1763,15 @@ var DOM = Class("DOM", {
         if (val == null)
             ;
         else if (typeof val == "xml")
-            this[length++] = util.xmlToDom(val, context);
-        else if (val instanceof Ci.nsIDOMNode)
+            this[length++] = util.xmlToDom(val, context, this.nodes);
+        else if (val instanceof Ci.nsIDOMNode || val instanceof Ci.nsIDOMWindow)
             this[length++] = val;
         else if ("length" in val)
             for (let i = 0; i < val.length; i++)
                 this[length++] = val[i];
+        else if ("__iterator__" in val)
+            for (let elem in val)
+                this[length++] = elem;
 
         this.length = length;
         return self || this;
@@ -2170,6 +1783,8 @@ var DOM = Class("DOM", {
     },
 
     Empty: function Empty() this.constructor(null, this.document),
+
+    nodes: Class.memoize(function () ({})),
 
     get items() {
         for (let i = 0; i < this.length; i++)
@@ -2234,10 +1849,10 @@ var DOM = Class("DOM", {
 
         if (callable(val))
             return this.each(function (elem, i) {
-                fn.call(this, munge(val.call(this, elem, i)), elem, i);
+                util.withProperErrors(fn, this, munge(val.call(this, elem, i)), elem, i);
             }, self || this);
 
-        fn.call(self || this, munge(val), this[0], 0);
+        util.withProperErrors(fn, self || this, munge(val), this[0], 0);
         return this;
     },
 
@@ -2276,8 +1891,16 @@ var DOM = Class("DOM", {
         let res = this.Empty();
 
         this.each(function (elem) {
-            while((elem = fn.call(this, elem)) instanceof Ci.nsIDOMElement)
-                res[res.length++] = elem;
+            while(true) {
+                elem = fn.call(this, elem)
+                if (elem instanceof Ci.nsIDOMElement)
+                    res[res.length++] = elem;
+                else if (elem && "length" in elem)
+                    for (let i = 0; i < tmp.length; i++)
+                        res[res.length++] = tmp[j];
+                else
+                    break;
+            }
         }, self || this);
         return res;
     },
@@ -2288,10 +1911,10 @@ var DOM = Class("DOM", {
 
         for (let i = 0; i < this.length; i++) {
             let tmp = fn.call(self || update(obj, [this[i]]), this[i], i);
-            if ("length" in tmp)
+            if (tmp && "length" in tmp)
                 for (let j = 0; j < tmp.length; j++)
                     res[res.length++] = tmp[j];
-            else
+            else if (tmp !== undefined)
                 res[res.length++] = tmp;
         }
 
@@ -2310,6 +1933,15 @@ var DOM = Class("DOM", {
     },
 
     get parent() this.map(function (elem) elem.parentNode, this),
+
+    get offsetParent() this.map(function (elem) {
+        do {
+            var parent = elem.offsetParent;
+            if (parent instanceof Ci.nsIDOMElement && DOM(parent).position != "static")
+                return parent;
+        }
+        while (parent);
+    }, this),
 
     get ancestors() this.all(function (elem) elem.parentNode),
 
@@ -2354,6 +1986,7 @@ var DOM = Class("DOM", {
         has: function has(hl) ~this.list.indexOf(hl),
 
         add: function add(hl) self.each(function () {
+            highlight.loaded[hl] = true;
             this.attrNS(NS, "highlight",
                         array.uniq(this.highlight.list.concat(hl)).join(" "));
         }),
@@ -2371,7 +2004,213 @@ var DOM = Class("DOM", {
 
     get rect() this[0].getBoundingClientRect(),
 
-    get style() util.computedStyle(this[0]),
+    get viewport() {
+        let r = this.rect;
+        return {
+            width: this[0].clientWidth,
+            height: this[0].clientHeight,
+            top: r.top + this[0].clientTop,
+            get bottom() this.top + this.height,
+            left: r.left + this[0].clientLeft,
+            get right() this.left + this.width
+        }
+    },
+
+    /**
+     * Returns true if the given DOM node is currently visible.
+     * @returns {boolean}
+     */
+    get isVisible() {
+        let style = this.style;
+        return style.visibility == "visible" && style.display != "none";
+    },
+
+    get editor() {
+        this[0] instanceof Ci.nsIDOMNSEditableElement;
+        if (this[0].editor instanceof Ci.nsIEditor)
+            return this[0].editor;
+
+        try {
+            return this[0].QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                          .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIEditingSession)
+                          .getEditorForWindow(this[0]);
+        }
+        catch (e) {}
+
+        return null;
+    },
+
+    get isEditable() !!this.editor,
+
+    get isInput() this[0] instanceof Ci.nsIDOMHTMLInputElement && this.isEditable,
+
+    /**
+     * Returns an object representing a Node's computed CSS style.
+     * @returns {Object}
+     */
+    get style() {
+        let node = this[0];
+        while (!(node instanceof Ci.nsIDOMElement) && node.parentNode)
+            node = node.parentNode;
+
+        try {
+            var res = node.ownerDocument.defaultView.getComputedStyle(node, null);
+        }
+        catch (e) {}
+
+        if (res == null) {
+            util.dumpStack(_("error.nullComputedStyle", node));
+            Cu.reportError(Error(_("error.nullComputedStyle", node)));
+            return {};
+        }
+        return res;
+    },
+
+    /**
+     * Parses the fields of a form and returns a URL/POST-data pair
+     * that is the equivalent of submitting the form.
+     *
+     * @returns {object} An object with the following elements:
+     *      url: The URL the form points to.
+     *      postData: A string containing URL-encoded post data, if this
+     *                form is to be POSTed
+     *      charset: The character set of the GET or POST data.
+     *      elements: The key=value pairs used to generate query information.
+     */
+    // Nuances gleaned from browser.jar/content/browser/browser.js
+    get formData() {
+        function encode(name, value, param) {
+            param = param ? "%s" : "";
+            if (post)
+                return name + "=" + encodeComponent(value + param);
+            return encodeComponent(name) + "=" + encodeComponent(value) + param;
+        }
+
+        let field = this[0];
+        let form = field.form;
+        let doc = form.ownerDocument;
+
+        let charset = doc.characterSet;
+        let converter = services.CharsetConv(charset);
+        for each (let cs in form.acceptCharset.split(/\s*,\s*|\s+/)) {
+            let c = services.CharsetConv(cs);
+            if (c) {
+                converter = services.CharsetConv(cs);
+                charset = cs;
+            }
+        }
+
+        let uri = util.newURI(doc.baseURI.replace(/\?.*/, ""), charset);
+        let url = util.newURI(form.action, charset, uri).spec;
+
+        let post = form.method.toUpperCase() == "POST";
+
+        let encodeComponent = encodeURIComponent;
+        if (charset !== "UTF-8")
+            encodeComponent = function encodeComponent(str)
+                escape(converter.ConvertFromUnicode(str) + converter.Finish());
+
+        let elems = [];
+        if (field instanceof Ci.nsIDOMHTMLInputElement && field.type == "submit")
+            elems.push(encode(field.name, field.value));
+
+        for (let [, elem] in iter(form.elements))
+            if (elem.name && !elem.disabled) {
+                if (DOM(elem).isInput
+                        || /^(?:hidden|textarea)$/.test(elem.type)
+                        || elem.type == "submit" && elem == field
+                        || elem.checked && /^(?:checkbox|radio)$/.test(elem.type))
+                    elems.push(encode(elem.name, elem.value, elem === field));
+                else if (elem instanceof Ci.nsIDOMHTMLSelectElement) {
+                    for (let [, opt] in Iterator(elem.options))
+                        if (opt.selected)
+                            elems.push(encode(elem.name, opt.value));
+                }
+            }
+
+        if (post)
+            return { url: url, postData: elems.join('&'), charset: charset, elements: elems };
+        return { url: url + "?" + elems.join('&'), postData: null, charset: charset, elements: elems };
+    },
+
+    /**
+     * Generates an XPath expression for the given element.
+     *
+     * @returns {string}
+     */
+    get xpath() {
+        function quote(val) "'" + val.replace(/[\\']/g, "\\$&") + "'";
+
+        let res = [];
+        let doc = this.document;
+        for (let elem = this[0];; elem = elem.parentNode) {
+            if (!(elem instanceof Ci.nsIDOMElement))
+                res.push("");
+            else if (elem.id)
+                res.push("id(" + quote(elem.id) + ")");
+            else {
+                let name = elem.localName;
+                if (elem.namespaceURI && (elem.namespaceURI != XHTML || doc.xmlVersion))
+                    if (elem.namespaceURI in DOM.namespaceNames)
+                        name = DOM.namespaceNames[elem.namespaceURI] + ":" + name;
+                    else
+                        name = "*[local-name()=" + quote(name) + " and namespace-uri()=" + quote(elem.namespaceURI) + "]";
+
+                res.push(name + "[" + (1 + iter(DOM.XPath("./" + name, elem.parentNode)).indexOf(elem)) + "]");
+                continue;
+            }
+            break;
+        }
+
+        return res.reverse().join("/");
+    },
+
+    /**
+     * Returns a string or XML representation of this node.
+     *
+     * @param {boolean} color If true, return a colored, XML
+     *  representation of this node.
+     */
+    repr: function repr(color) {
+        function namespaced(node) {
+            var ns = DOM.namespaceNames[node.namespaceURI] || /^(?:(.*?):)?/.exec(node.name)[0];
+            if (!ns)
+                return node.localName;
+            if (color)
+                return <><span highlight="HelpXMLNamespace">{ns}</span>{node.localName}</>
+            return ns + ":" + node.localName;
+        }
+
+        let res = [];
+        this.each(function (elem) {
+            try {
+                let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling)
+                if (color)
+                    res.push(<span highlight="HelpXMLBlock"><span highlight="HelpXMLTagStart">&lt;{
+                            namespaced(elem)} {
+                                template.map(array.iterValues(elem.attributes),
+                                    function (attr)
+                                        <span highlight="HelpXMLAttribute">{namespaced(attr)}</span> +
+                                        <span highlight="HelpXMLString">{attr.value}</span>,
+                                    <> </>)
+                            }{ !hasChildren ? "/>" : ">"
+                        }</span>{ !hasChildren ? "" : <>...</> +
+                            <span highlight="HtmlTagEnd">&lt;{namespaced(elem)}></span>
+                    }</span>);
+                else {
+                    let tag = "<" + [namespaced(elem)].concat(
+                        [namespaced(a) + "=" + template.highlight(a.value, true)
+                         for ([i, a] in array.iterItems(elem.attributes))]).join(" ");
+
+                    res.push(tag + (!hasChildren ? "/>" : ">...</" + namespaced(elem) + ">"));
+                }
+            }
+            catch (e) {
+                res.push({}.toString.call(elem));
+            }
+        }, this);
+        return template.map(res, util.identity, <>,</>);
+    },
 
     attr: function attr(key, val) {
         return this.attrNS("", key, val);
@@ -2574,7 +2413,32 @@ var DOM = Class("DOM", {
         if (callable(arg))
             return this.listen("blur", arg, extra);
         return this.each(function (elem) { elem.blur(); }, this);
-    }
+    },
+
+    /**
+     * Scrolls an element into view if and only if it's not already
+     * fully visible.
+     */
+    scrollIntoView: function scrollIntoView(alignWithTop) {
+        return this.each(function (elem) {
+            let rect = this.rect;
+
+            let force = false;
+            if (rect)
+                for (let parent in this.ancestors.items) {
+                    let isect = util.intersection(rect, parent.viewport);
+                    force = isect.width != rect.width || isect.height != rect.height;
+                    if (force)
+                        break;
+                }
+
+            let win = this.document.defaultView;
+
+            if (force || !(rect && rect.bottom <= win.innerHeight && rect.top >= 0 && rect.left < win.innerWidth && rect.right > 0))
+                elem.scrollIntoView(arguments.length ? alignWithTop
+                                                     : Math.abs(rect.top) < Math.abs(win.innerHeight - rect.bottom));
+        });
+    },
 }, {
     /**
      * Creates an actual event from a pseudo-event object.
@@ -2643,7 +2507,7 @@ var DOM = Class("DOM", {
          * @param {Event} event The event to dispatch.
          */
         dispatch: Class.memoize(function ()
-            util.haveGecko("2b")
+            config.haveGecko("2b")
                 ? function dispatch(target, event, extra) {
                     try {
                         this.feedingEvent = extra;
@@ -2674,7 +2538,184 @@ var DOM = Class("DOM", {
                         this.feedingEvent = null;
                     }
                 })
-    })
+    }),
+
+    /**
+     * The set of input element type attribute values that mark the element as
+     * an editable field.
+     */
+    editableInputs: Set(["date", "datetime", "datetime-local", "email", "file",
+                         "month", "number", "password", "range", "search",
+                         "tel", "text", "time", "url", "week"]),
+
+    /**
+     * Converts a given DOM Node, Range, or Selection to a string. If
+     * *html* is true, the output is HTML, otherwise it is presentation
+     * text.
+     *
+     * @param {nsIDOMNode | nsIDOMRange | nsISelection} node The node to
+     *      stringify.
+     * @param {boolean} html Whether the output should be HTML rather
+     *      than presentation text.
+     */
+    stringify: function stringify(node, html) {
+        if (node instanceof Ci.nsISelection && node.isCollapsed)
+            return "";
+
+        if (node instanceof Ci.nsIDOMNode) {
+            let range = node.ownerDocument.createRange();
+            range.selectNode(node);
+            node = range;
+        }
+        let doc = (node.getRangeAt ? node.getRangeAt(0) : node).startContainer;
+        doc = doc.ownerDocument || doc;
+
+        let encoder = services.HtmlEncoder();
+        encoder.init(doc, "text/unicode", encoder.OutputRaw|encoder.OutputPreformatted);
+        if (node instanceof Ci.nsISelection)
+            encoder.setSelection(node);
+        else if (node instanceof Ci.nsIDOMRange)
+            encoder.setRange(node);
+
+        let str = services.String(encoder.encodeToString());
+        if (html)
+            return str.data;
+
+        let [result, length] = [{}, {}];
+        services.HtmlConverter().convert("text/html", str, str.data.length*2, "text/unicode", result, length);
+        return result.value.QueryInterface(Ci.nsISupportsString).data;
+    },
+
+    /**
+     * Compiles a CSS spec and XPath pattern matcher based on the given
+     * list. List elements prefixed with "xpath:" are parsed as XPath
+     * patterns, while other elements are parsed as CSS specs. The
+     * returned function will, given a node, return an iterator of all
+     * descendants of that node which match the given specs.
+     *
+     * @param {[string]} list The list of patterns to match.
+     * @returns {function(Node)}
+     */
+    compileMatcher: function compileMatcher(list) {
+        let xpath = [], css = [];
+        for (let elem in values(list))
+            if (/^xpath:/.test(elem))
+                xpath.push(elem.substr(6));
+            else
+                css.push(elem);
+
+        return update(
+            function matcher(node) {
+                if (matcher.xpath)
+                    for (let elem in DOM.XPath(matcher.xpath, node))
+                        yield elem;
+
+                if (matcher.css)
+                    for (let [, elem] in iter(node.querySelectorAll(matcher.css)))
+                        yield elem;
+            }, {
+                css: css.join(", "),
+                xpath: xpath.join(" | ")
+            });
+    },
+
+    /**
+     * Validates a list as input for {@link #compileMatcher}. Returns
+     * true if and only if every element of the list is a valid XPath or
+     * CSS selector.
+     *
+     * @param {[string]} list The list of patterns to test
+     * @returns {boolean} True when the patterns are all valid.
+     */
+    validateMatcher: function validateMatcher(list) {
+        let evaluator = services.XPathEvaluator();
+        let node = services.XMLDocument();
+        return this.testValues(list, function (value) {
+            if (/^xpath:/.test(value))
+                evaluator.createExpression(value.substr(6), DOM.XPath.resolver);
+            else
+                node.querySelector(value);
+            return true;
+        });
+    },
+
+    /**
+     * Converts HTML special characters in *str* to the equivalent HTML
+     * entities.
+     *
+     * @param {string} str
+     * @returns {string}
+     */
+    escapeHTML: function escapeHTML(str) {
+        let map = { "'": "&apos;", '"': "&quot;", "%": "&#x25;", "&": "&amp;", "<": "&lt;", ">": "&gt;" };
+        return str.replace(/['"&<>]/g, function (m) map[m]);
+    },
+
+
+    /**
+     * Evaluates an XPath expression in the current or provided
+     * document. It provides the xhtml, xhtml2 and dactyl XML
+     * namespaces. The result may be used as an iterator.
+     *
+     * @param {string} expression The XPath expression to evaluate.
+     * @param {Node} elem The context element.
+     * @param {boolean} asIterator Whether to return the results as an
+     *     XPath iterator.
+     * @returns {Object} Iterable result of the evaluation.
+     */
+    XPath: update(
+        function XPath(expression, elem, asIterator) {
+            try {
+                let doc = elem.ownerDocument || elem;
+
+                if (isArray(expression))
+                    expression = DOM.makeXPath(expression);
+
+                let result = doc.evaluate(expression, elem,
+                    XPath.resolver,
+                    asIterator ? Ci.nsIDOMXPathResult.ORDERED_NODE_ITERATOR_TYPE : Ci.nsIDOMXPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                    null
+                );
+
+                return Object.create(result, {
+                    __iterator__: {
+                        value: asIterator ? function () { let elem; while ((elem = this.iterateNext())) yield elem; }
+                                          : function () { for (let i = 0; i < this.snapshotLength; i++) yield this.snapshotItem(i); }
+                    }
+                });
+            }
+            catch (e) {
+                throw e.stack ? e : Error(e);
+            }
+        },
+        {
+            resolver: function lookupNamespaceURI(prefix) (DOM.namespaces[prefix] || null)
+        }),
+
+    /**
+     * Returns an XPath union expression constructed from the specified node
+     * tests. An expression is built with node tests for both the null and
+     * XHTML namespaces. See {@link DOM.XPath}.
+     *
+     * @param nodes {Array(string)}
+     * @returns {string}
+     */
+    makeXPath: function makeXPath(nodes) {
+        return array(nodes).map(util.debrace).flatten()
+                           .map(function (node) /^[a-z]+:/.test(node) ? node : [node, "xhtml:" + node]).flatten()
+                           .map(function (node) "//" + node).join(" | ");
+    },
+
+    namespaces: {
+        xul: XUL.uri,
+        xhtml: XHTML.uri,
+        html: XHTML.uri,
+        xhtml2: "http://www.w3.org/2002/06/xhtml2",
+        dactyl: NS.uri
+    },
+
+    namespaceNames: Class.memoize(function ()
+        iter(this.namespaces).map(function ([k, v]) [v, k]).toObject()),
 });
 
 Object.keys(DOM.Event.types).forEach(function (event) {

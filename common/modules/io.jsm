@@ -299,7 +299,7 @@ var IO = Module("io", {
         let rcFile1 = dir.child("." + config.name + "rc");
         let rcFile2 = dir.child("_" + config.name + "rc");
 
-        if (util.OS.isWindows)
+        if (config.OS.isWindows)
             [rcFile1, rcFile2] = [rcFile2, rcFile1];
 
         if (rcFile1.exists() && rcFile1.isFile())
@@ -393,9 +393,9 @@ var IO = Module("io", {
         if (bin instanceof File || File.isAbsolutePath(bin))
             return this.File(bin);
 
-        let dirs = services.environment.get("PATH").split(util.OS.isWindows ? ";" : ":");
+        let dirs = services.environment.get("PATH").split(config.OS.isWindows ? ";" : ":");
         // Windows tries the CWD first TODO: desirable?
-        if (util.OS.isWindows)
+        if (config.OS.isWindows)
             dirs = [io.cwd].concat(dirs);
 
         for (let [, dir] in Iterator(dirs))
@@ -408,7 +408,7 @@ var IO = Module("io", {
 
                 // TODO: couldn't we just palm this off to the start command?
                 // automatically try to add the executable path extensions on windows
-                if (util.OS.isWindows) {
+                if (config.OS.isWindows) {
                     let extensions = services.environment.get("PATHEXT").split(";");
                     for (let [, extension] in Iterator(extensions)) {
                         file = dir.child(bin + extension);
@@ -478,7 +478,7 @@ var IO = Module("io", {
     system: function (command, input, callback) {
         util.dactyl.echomsg(_("io.callingShell", command), 4);
 
-        function escape(str) '"' + String.replace(str, /[\\"$]/g, "\\$&") + '"';
+        let { shellEscape } = util.closure;
 
         return this.withTempFiles(function (stdin, stdout, cmd) {
             if (input instanceof File)
@@ -505,17 +505,17 @@ var IO = Module("io", {
             util.assert(shell, _("error.invalid", "'shell'"));
 
             if (isArray(command))
-                command = command.map(escape).join(" ");
+                command = command.map(shellEscape).join(" ");
 
             // TODO: implement 'shellredir'
-            if (util.OS.isWindows && !/sh/.test(shell.leafName)) {
+            if (config.OS.isWindows && !/sh/.test(shell.leafName)) {
                 command = "cd /D " + this.cwd.path + " && " + command + " > " + stdout.path + " 2>&1" + " < " + stdin.path;
                 var res = this.run(shell, shcf.split(/\s+/).concat(command), callback ? async : true);
             }
             else {
-                cmd.write("cd " + escape(this.cwd.path) + "\n" +
-                        ["exec", ">" + escape(stdout.path), "2>&1", "<" + escape(stdin.path),
-                         escape(shell.path), shcf, escape(command)].join(" "));
+                cmd.write("cd " + shellEscape(this.cwd.path) + "\n" +
+                        ["exec", ">" + shellEscape(stdout.path), "2>&1", "<" + shellEscape(stdin.path),
+                         shellEscape(shell.path), shcf, shellEscape(command)].join(" "));
                 res = this.run("/bin/sh", ["-e", cmd.path], callback ? async : true);
             }
 
@@ -556,7 +556,7 @@ var IO = Module("io", {
         const rtpvar = config.idName + "_RUNTIME";
         let rtp = services.environment.get(rtpvar);
         if (!rtp) {
-            rtp = "~/" + (util.OS.isWindows ? "" : ".") + config.name;
+            rtp = "~/" + (config.OS.isWindows ? "" : ".") + config.name;
             services.environment.set(rtpvar, rtp);
         }
         return rtp;
@@ -644,7 +644,7 @@ var IO = Module("io", {
         commands.add(["mks[yntax]"],
             "Generate a Vim syntax file",
             function (args) {
-                let runtime = util.OS.isWindows ? "~/vimfiles/" : "~/.vim/";
+                let runtime = config.OS.isWindows ? "~/vimfiles/" : "~/.vim/";
                 let file = io.File(runtime + "syntax/" + config.name + ".vim");
                 if (args.length)
                     file = io.File(args[0]);
@@ -886,7 +886,7 @@ unlet s:cpo_save
         completion.environment = function environment(context) {
             context.title = ["Environment Variable", "Value"];
             context.generate = function ()
-                io.system(util.OS.isWindows ? "set" : "env")
+                io.system(config.OS.isWindows ? "set" : "env")
                   .output.split("\n")
                   .filter(function (line) line.indexOf("=") > 0)
                   .map(function (line) line.match(/([^=]+)=(.*)/).slice(1));
@@ -956,7 +956,7 @@ unlet s:cpo_save
         completion.shellCommand = function shellCommand(context) {
             context.title = ["Shell Command", "Path"];
             context.generate = function () {
-                let dirNames = services.environment.get("PATH").split(util.OS.isWindows ? ";" : ":");
+                let dirNames = services.environment.get("PATH").split(config.OS.pathListSep);
                 let commands = [];
 
                 for (let [, dirName] in Iterator(dirNames)) {
@@ -987,7 +987,7 @@ unlet s:cpo_save
                 if (!match.path) {
                     context.key = match.proto;
                     context.advance(match.proto.length);
-                    context.generate = function () util.chromePackages.map(function (p) [p, match.proto + p + "/"]);
+                    context.generate = function () config.chromePackages.map(function (p) [p, match.proto + p + "/"]);
                 }
                 else if (match.scheme === "chrome") {
                     context.key = match.prefix;
@@ -1001,7 +1001,7 @@ unlet s:cpo_save
             }
             if (!match || match.scheme === "resource" && match.path)
                 if (/^(\.{0,2}|~)\/|^file:/.test(context.filter)
-                    || util.OS.isWindows && /^[a-z]:/i.test(context.filter)
+                    || config.OS.isWindows && /^[a-z]:/i.test(context.filter)
                     || util.getFile(context.filter)
                     || io.isJarURL(context.filter))
                     completion.file(context, full);
@@ -1030,7 +1030,7 @@ unlet s:cpo_save
         const { completion, options } = modules;
 
         var shell, shellcmdflag;
-        if (util.OS.isWindows) {
+        if (config.OS.isWindows) {
             shell = "cmd.exe";
             shellcmdflag = "/c";
         }
@@ -1077,7 +1077,7 @@ unlet s:cpo_save
             "string", shellcmdflag,
             {
                 getter: function (value) {
-                    if (this.hasChanged || !util.OS.isWindows)
+                    if (this.hasChanged || !config.OS.isWindows)
                         return value;
                     return /sh/.test(options["shell"]) ? "-c" : "/c";
                 }

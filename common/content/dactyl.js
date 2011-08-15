@@ -698,7 +698,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
             // Find the tags in the document.
             let addTags = function addTags(file, doc) {
-                for (let elem in util.evaluateXPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
+                for (let elem in DOM.XPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
                     for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
                         tagMap[tag] = file;
             };
@@ -716,7 +716,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             tagMap["all"] = tagMap["all.xml"] = "all";
             tagMap["versions"] = tagMap["versions.xml"] = "versions";
             let files = findHelpFile("all").map(function (doc)
-                    [f.value for (f in util.evaluateXPath("//dactyl:include/@href", doc))]);
+                    [f.value for (f in DOM.XPath("//dactyl:include/@href", doc))]);
 
             // Scrape the tags from the rest of the help files.
             array.flatten(files).forEach(function (file) {
@@ -1255,10 +1255,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
      * Opens one or more URLs. Returns true when load was initiated, or
      * false on error.
      *
-     * @param {string|Array} urls A representation of the URLs to open. May be
+     * @param {string|object|Array} urls A representation of the URLs to open. May be
      *     either a string, which will be passed to
-     *     {@see Dactyl#parseURLs}, or an array in the same format as
-     *     would be returned by the same.
+     *     {@link Dactyl#parseURLs}, an array in the same format as
+     *     would be returned by the same, or an object as returned by
+     *     {@link DOM#formData}.
      * @param {object} params A set of parameters specifying how to open the
      *     URLs. The following properties are recognized:
      *
@@ -1312,21 +1313,23 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return;
 
         let browser = config.tabbrowser;
-        function open(urls, where) {
+        function open(loc, where) {
             try {
-                let url = Array.concat(urls)[0];
-                let postdata = Array.concat(urls)[1];
+                if (isArray(loc))
+                    loc = { url: loc[0], postData: loc[1] };
+                else if (isString(loc))
+                    loc = { url: loc };
 
                 // decide where to load the first url
                 switch (where) {
 
                 case dactyl.NEW_TAB:
                     if (!dactyl.has("tabs"))
-                        return open(urls, dactyl.NEW_WINDOW);
+                        return open(loc, dactyl.NEW_WINDOW);
 
                     return prefs.withContext(function () {
                         prefs.set("browser.tabs.loadInBackground", true);
-                        return browser.loadOneTab(url, null, null, postdata, background).linkedBrowser.contentDocument;
+                        return browser.loadOneTab(loc.url, null, null, loc.postData, background).linkedBrowser.contentDocument;
                     });
 
                 case dactyl.NEW_WINDOW:
@@ -1335,7 +1338,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     browser = win.dactyl && win.dactyl.modules.config.tabbrowser || win.getBrowser();
                     // FALLTHROUGH
                 case dactyl.CURRENT_TAB:
-                    browser.loadURIWithFlags(url, flags, null, null, postdata);
+                    browser.loadURIWithFlags(loc.url, flags, null, null, loc.postData);
                     return browser.contentWindow;
                 }
             }
@@ -1380,7 +1383,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         return urls.map(function (url) {
             url = url.trim();
 
-            if (/^(\.{0,2}|~)(\/|$)/.test(url) || util.OS.isWindows && /^[a-z]:/i.test(url)) {
+            if (/^(\.{0,2}|~)(\/|$)/.test(url) || config.OS.isWindows && /^[a-z]:/i.test(url)) {
                 try {
                     // Try to find a matching file.
                     let file = io.File(url);
@@ -1945,7 +1948,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function () { dactyl.restart(); },
             { argCount: "0" });
 
-        function findToolbar(name) util.evaluateXPath(
+        function findToolbar(name) DOM.XPath(
             "//*[@toolbarname=" + util.escapeString(name, "'") + " or " +
                 "@toolbarname=" + util.escapeString(name.trim(), "'") + "]",
             document).snapshotItem(0);
@@ -2136,7 +2139,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         completion.toolbar = function toolbar(context) {
             context.title = ["Toolbar"];
             context.keys = { text: function (item) item.getAttribute("toolbarname"), description: function () "" };
-            context.completions = util.evaluateXPath("//*[@toolbarname]", document);
+            context.completions = DOM.XPath("//*[@toolbarname]", document);
         };
 
         completion.window = function window(context) {

@@ -42,7 +42,7 @@ var StatusLine = Module("statusline", {
                     color: inherit !important;
                 }
                 AddonButton:not(:hover)  background: transparent;
-            ]]>)({ padding: util.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
+            ]]>)({ padding: config.OS.isMacOSX ? "padding-right: 10px !important;" : "" }));
 
             if (document.getElementById("appmenu-button"))
                 highlight.loadCSS(<![CDATA[

@@ -116,13 +116,13 @@ var Bookmarks = Module("bookmarks", {
      */
     addSearchKeyword: function addSearchKeyword(elem) {
         if (elem instanceof HTMLFormElement || elem.form)
-            var [url, post, charset] = util.parseForm(elem);
+            var { url, postData, charset } = DOM(elem).formData;
         else
-            var [url, post, charset] = [elem.href || elem.src, null, elem.ownerDocument.characterSet];
+            var [url, postData, charset] = [elem.href || elem.src, null, elem.ownerDocument.characterSet];
 
         let options = { "-title": "Search " + elem.ownerDocument.title };
-        if (post != null)
-            options["-post"] = post;
+        if (postData != null)
+            options["-postData"] = postData;
         if (charset != null && charset !== "UTF-8")
             options["-charset"] = charset;
 

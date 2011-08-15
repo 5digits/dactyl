@@ -24,7 +24,7 @@ var MOW = Module("mow", {
                 if (options["more"] && this.isScrollable(1)) {
                     // start the last executed command's output at the top of the screen
                     let elements = this.document.getElementsByClassName("ex-command-output");
-                    elements[elements.length - 1].scrollIntoView(true);
+                    DOM(elements[elements.length - 1]).scrollIntoView(true);
                 }
                 else
                     this.body.scrollTop = this.body.scrollHeight;
@@ -37,7 +37,7 @@ var MOW = Module("mow", {
         events.listen(window, this, "windowEvents");
 
         modules.mow = this;
-        let fontSize = util.computedStyle(document.documentElement).fontSize;
+        let fontSize = DOM(document.documentElement).style.fontSize;
         styles.system.add("font-size", "dactyl://content/buffer.xhtml",
                           "body { font-size: " + fontSize + "; } \
                            html|html > xul|scrollbar { visibility: collapse !important; }",
@@ -94,7 +94,7 @@ var MOW = Module("mow", {
      * @param {string} highlightGroup
      */
     echo: function echo(data, highlightGroup, silent) {
-        let body = this.document.body;
+        let body = DOM(this.document.body);
 
         this.widgets.message = null;
         if (!commandline.commandVisible)
@@ -122,11 +122,11 @@ var MOW = Module("mow", {
         if (isObject(data) && !isinstance(data, _)) {
             this.lastOutput = null;
 
-            var output = util.xmlToDom(<div class="ex-command-output" style="white-space: nowrap" highlight={highlightGroup}/>,
-                                       this.document);
+            var output = DOM(<div class="ex-command-output" style="white-space: nowrap" highlight={highlightGroup}/>,
+                             this.document);
             data.document = this.document;
             try {
-                output.appendChild(data.message);
+                output.append(data.message);
             }
             catch (e) {
                 util.reportError(e);
@@ -138,17 +138,17 @@ var MOW = Module("mow", {
             let style = isString(data) ? "pre-wrap" : "nowrap";
             this.lastOutput = <div class="ex-command-output" style={"white-space: " + style} highlight={highlightGroup}>{data}</div>;
 
-            var output = util.xmlToDom(this.lastOutput, this.document);
+            var output = DOM(this.lastOutput, this.document);
         }
 
         // FIXME: need to make sure an open MOW is closed when commands
         //        that don't generate output are executed
         if (!this.visible) {
             this.body.scrollTop = 0;
-            body.textContent = "";
+            body.empty();
         }
 
-        body.appendChild(output);
+        body.append(output);
 
         let str = typeof data !== "xml" && data.message || data;
         if (!silent)

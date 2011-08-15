@@ -279,7 +279,7 @@ var CommandWidgets = Class("CommandWidgets", {
             // some host apps use "hostPrefixContext-copy" ids
             let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
             document.getElementById("dactyl-context-" + tail).style.listStyleImage =
-                util.computedStyle(util.evaluateXPath(xpath, document).snapshotItem(0)).listStyleImage;
+                DOM(DOM.XPath(xpath, document).snapshotItem(0)).style.listStyleImage;
         });
         return document.getElementById("dactyl-contextmenu");
     }),
@@ -899,7 +899,7 @@ var CommandLine = Module("commandline", {
         this.savingOutput = true;
         dactyl.trapErrors.apply(dactyl, [fn, self].concat(Array.slice(arguments, 2)));
         this.savingOutput = false;
-        return output.map(function (elem) elem instanceof Node ? util.domToString(elem) : elem)
+        return output.map(function (elem) elem instanceof Node ? DOM.stringify(elem) : elem)
                      .join("\n");
     }
 }, {
@@ -1641,8 +1641,10 @@ var ItemList = Class("ItemList", {
     _init: function _init() {
         this._div = this._dom(
             <div class="ex-command-output" highlight="Normal" style="white-space: nowrap">
-                <div highlight="Completions" key="noCompletions"><span highlight="Title">{_("completion.noCompletions")}</span></div>
-                <div key="completions"/>
+                <div key="wrapper">
+                    <div highlight="Completions" key="noCompletions"><span highlight="Title">{_("completion.noCompletions")}</span></div>
+                    <div key="completions"/>
+                </div>
                 <div highlight="Completions">
                 {
                     template.map(util.range(0, options["maxitems"] * 2), function (i)
@@ -1653,7 +1655,7 @@ var ItemList = Class("ItemList", {
                 </div>
             </div>, this._divNodes);
         this._doc.body.replaceChild(this._div, this._doc.body.firstChild);
-        util.scrollIntoView(this._div, true);
+        DOM(this._divNodes.wrapper).scrollIntoView(true);
 
         this._items.contextList.forEach(function init_eachContext(context) {
             delete context.cache.nodes;
@@ -1758,7 +1760,7 @@ var ItemList = Class("ItemList", {
 
         this._divNodes.noCompletions.style.display = haveCompletions ? "none" : "block";
 
-        this._completionElements = util.evaluateXPath("//xhtml:div[@dactyl:highlight='CompItem']", this._doc);
+        this._completionElements = DOM.XPath("//xhtml:div[@dactyl:highlight='CompItem']", this._doc);
 
         return true;
     },
@@ -1828,7 +1830,7 @@ var ItemList = Class("ItemList", {
         if (index >= 0) {
             this._getCompletion(index).setAttribute("selected", "true");
             if (this._container.height != 0)
-                util.scrollIntoView(this._getCompletion(index));
+                DOM(this._getCompletion(index)).scrollIntoView();
         }
 
         //if (index == 0)

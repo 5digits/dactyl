@@ -8,7 +8,7 @@ try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("overlay", {
-    exports: ["ModuleBase"],
+    exports: ["ModuleBase", "overlay"],
     require: ["config", "io", "services", "util"]
 }, this);
 
@@ -28,11 +28,13 @@ var ModuleBase = Class("ModuleBase", {
 
 var Overlay = Module("Overlay", {
     init: function init() {
+        let overlay = this;
+
         services["dactyl:"]; // Hack. Force module initialization.
 
         config.loadStyles();
 
-        util.overlayWindow(config.overlayChrome, function overlay(window) ({
+        util.overlayWindow(config.overlayChrome, function _overlay(window) ({
             init: function onInit(document) {
                 /**
                  * @constructor Module
@@ -308,8 +310,14 @@ var Overlay = Module("Overlay", {
 
                 defineModule.loadLog.push("Loaded in " + (Date.now() - start) + "ms");
 
+                util.dump(overlay);
+
+                overlay.windows = array.uniq(overlay.windows.concat(window), true);
+
                 modules.events.listen(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
+
+                    overlay.windows = overlay.windows.filter(function (w) w != window);
 
                     for each (let mod in modules.moduleList.reverse()) {
                         mod.stale = true;
@@ -320,7 +328,19 @@ var Overlay = Module("Overlay", {
                 }, false);
             }
         }));
-    }
+    },
+
+    /**
+     * The most recently active dactyl window.
+     */
+    get activeWindow() this.windows[0],
+
+    set activeWindow(win) this.windows = [win].concat(this.windows.filter(function (w) w != win)),
+
+    /**
+     * A list of extant dactyl windows.
+     */
+    windows: Class.memoize(function () [])
 });
 
 endModule();

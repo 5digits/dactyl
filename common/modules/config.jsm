@@ -23,7 +23,7 @@ var ConfigBase = Class("ConfigBase", {
      */
     init: function init() {
         this.features.push = deprecated("Set.add", function push(feature) Set.add(this, feature));
-        if (util.haveGecko("2b"))
+        if (this.haveGecko("2b"))
             Set.add(this.features, "Gecko2");
 
         this.timeout(function () {
@@ -40,7 +40,7 @@ var ConfigBase = Class("ConfigBase", {
         highlight.loadCSS(this.CSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
         highlight.loadCSS(this.helpCSS.replace(/__MSG_(.*?)__/g, function (m0, m1) _(m1)));
 
-        if (!util.haveGecko("2b"))
+        if (!this.haveGecko("2b"))
             highlight.loadCSS(<![CDATA[
                 !TabNumber               font-weight: bold; margin: 0px; padding-right: .8ex;
                 !TabIconNumber {
@@ -60,12 +60,12 @@ var ConfigBase = Class("ConfigBase", {
 
             let elem = services.appShell.hiddenDOMWindow.document.createElement("div");
             elem.style.cssText = this.cssText;
-            let style = util.computedStyle(elem);
 
             let keys = iter(Styles.propertyIter(this.cssText)).map(function (p) p.name).toArray();
             let bg = keys.some(function (k) /^background/.test(k));
             let fg = keys.indexOf("color") >= 0;
 
+            let style = DOM(elem).style;
             prefs[bg ? "safeSet" : "safeReset"]("ui.textHighlightBackground", hex(style.backgroundColor));
             prefs[fg ? "safeSet" : "safeReset"]("ui.textHighlightForeground", hex(style.color));
         };
@@ -147,6 +147,87 @@ var ConfigBase = Class("ConfigBase", {
                        "en", "en-US", iter(langs).next()])
             .nth(function (l) Set.has(langs, l), 0);
     },
+
+    /**
+     * A list of all known registered chrome and resource packages.
+     */
+    get chromePackages() {
+        // Horrible hack.
+        let res = {};
+        function process(manifest) {
+            for each (let line in manifest.split(/\n+/)) {
+                let match = /^\s*(content|skin|locale|resource)\s+([^\s#]+)\s/.exec(line);
+                if (match)
+                    res[match[2]] = true;
+            }
+        }
+        function processJar(file) {
+            let jar = services.ZipReader(file);
+            if (jar) {
+                if (jar.hasEntry("chrome.manifest"))
+                    process(File.readStream(jar.getInputStream("chrome.manifest")));
+                jar.close();
+            }
+        }
+
+        for each (let dir in ["UChrm", "AChrom"]) {
+            dir = File(services.directory.get(dir, Ci.nsIFile));
+            if (dir.exists() && dir.isDirectory())
+                for (let file in dir.iterDirectory())
+                    if (/\.manifest$/.test(file.leafName))
+                        process(file.read());
+
+            dir = File(dir.parent);
+            if (dir.exists() && dir.isDirectory())
+                for (let file in dir.iterDirectory())
+                    if (/\.jar$/.test(file.leafName))
+                        processJar(file);
+
+            dir = dir.child("extensions");
+            if (dir.exists() && dir.isDirectory())
+                for (let ext in dir.iterDirectory()) {
+                    if (/\.xpi$/.test(ext.leafName))
+                        processJar(ext);
+                    else {
+                        if (ext.isFile())
+                            ext = File(ext.read().replace(/\n*$/, ""));
+                        let mf = ext.child("chrome.manifest");
+                        if (mf.exists())
+                            process(mf.read());
+                    }
+                }
+        }
+        return Object.keys(res).sort();
+    },
+
+    /**
+     * Returns true if the current Gecko runtime is of the given version
+     * or greater.
+     *
+     * @param {string} ver The required version.
+     * @returns {boolean}
+     */
+    haveGecko: function (ver) services.versionCompare.compare(services.runtime.platformVersion, ver) >= 0,
+
+    /** Dactyl's notion of the current operating system platform. */
+    OS: memoize({
+        _arch: services.runtime.OS,
+        /**
+         * @property {string} The normalised name of the OS. This is one of
+         *     "Windows", "Mac OS X" or "Unix".
+         */
+        get name() this.isWindows ? "Windows" : this.isMacOSX ? "Mac OS X" : "Unix",
+        /** @property {boolean} True if the OS is Windows. */
+        get isWindows() this._arch == "WINNT",
+        /** @property {boolean} True if the OS is Mac OS X. */
+        get isMacOSX() this._arch == "Darwin",
+        /** @property {boolean} True if the OS is some other *nix variant. */
+        get isUnix() !this.isWindows && !this.isMacOSX,
+        /** @property {RegExp} A RegExp which matches illegal characters in path components. */
+        get illegalCharacters() this.isWindows ? /[<>:"/\\|?*\x00-\x1f]/g : /\//g,
+
+        get pathListSep() this.isWindows ? ";" : ":"
+    }),
 
     /**
      * @property {string} The pathname of the VCS repository clone's root

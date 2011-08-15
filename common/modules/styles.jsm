@@ -702,7 +702,7 @@ var Styles = Module("Styles", {
             }));
     },
     completion: function (dactyl, modules, window) {
-        const names = Array.slice(util.computedStyle(window.document.createElement("div")));
+        const names = Array.slice(DOM(<div/>, window.document).style);
         modules.completion.css = function (context) {
             context.title = ["CSS Property"];
             context.keys = { text: function (p) p + ":", description: function () "" };
