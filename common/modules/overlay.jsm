@@ -45,6 +45,10 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
         config.loadStyles();
 
+        this.timeout(this.initialize);
+    },
+
+    initialize: function () {
         this.overlayWindow(config.overlayChrome, function _overlay(window) ({
             init: function onInit(document) {
                 /**

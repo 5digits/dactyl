@@ -202,7 +202,7 @@ function require(obj, name, from) {
         let caller = Components.stack.caller;
 
         if (!loaded[name])
-            defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + (obj.NAME || caller.filename + ":" + caller.lineNumber));
+            defineModule.loadLog.push("  " + (from || "require") + ": loading " + name + " into " + (obj.NAME || caller.filename + ":" + caller.lineNumber));
 
         JSMLoader.load(name + ".jsm", obj);
         return obj;
@@ -1069,8 +1069,9 @@ function Module(name, prototype) {
     let proto = arguments[callable(prototype) ? 2 : 1];
 
     proto._metaInit_ = function () {
+        dump("_metaInit_ " + name + " " + currentModule.NAME + " " + this + "\n");
         delete module.prototype._metaInit_;
-        currentModule[name.toLowerCase()] = instance;
+        currentModule[name.toLowerCase()] = this;
     };
 
     const module = Class.apply(Class, Array.slice(arguments, 0, init));
