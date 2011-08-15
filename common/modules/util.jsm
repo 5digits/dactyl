@@ -1585,7 +1585,7 @@ var DOM = Class("DOM", {
             yield this.eq(i);
     },
 
-    get document() this._document || this[0].ownerDocument,
+    get document() this._document || this[0].ownerDocument || this[0].document || this[0],
     set document(val) this._document = val,
 
     attrHooks: array.toObject([
@@ -2191,9 +2191,11 @@ var DOM = Class("DOM", {
     },
 
     dispatch: function dispatch(event, params, extraProps) {
+        this.canceled = false;
         return this.each(function (elem) {
             let evt = DOM.Event(this.document, event, params);
-            DOM.Event.dispatch(elem, evt, extraProps);
+            if (!DOM.Event.dispatch(elem, evt, extraProps))
+                this.canceled = true;
         }, this);
     },
 
@@ -2271,24 +2273,30 @@ var DOM = Class("DOM", {
             };
 
             opts = opts || {};
-
             var t = this.constructor.types[type];
             var evt = doc.createEvent((t || "HTML") + "Events");
 
             let defaults = DEFAULTS[t || "HTML"];
+            update(defaults, this.constructor.defaults[type]);
 
             let args = Object.keys(defaults)
-                             .map(function (k) k in opts ? opts[k] : defaults[k]);
+                             .map(function (k) k in opts ? opts[k] : defaults[k])
 
             evt["init" + t + "Event"].apply(evt, args);
             return evt;
         }
     }, {
+        defaults: {
+            load:   { bubbles: false },
+            submit: { cancelable: true }
+        },
+
         types: Class.memoize(function () iter(
             {
                 Mouse: "click mousedown mouseout mouseover mouseup",
                 Key:   "keydown keypress keyup",
-                "":    "change dactyl-input input submit"
+                "":    "change dactyl-input input submit " +
+                       "load unload pageshow pagehide DOMContentLoaded"
             }
         ).map(function ([k, v]) v.split(" ").map(function (v) [v, k]))
          .flatten()

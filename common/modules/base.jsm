@@ -1069,7 +1069,6 @@ function Module(name, prototype) {
     let proto = arguments[callable(prototype) ? 2 : 1];
 
     proto._metaInit_ = function () {
-        dump("_metaInit_ " + name + " " + currentModule.NAME + " " + this + "\n");
         delete module.prototype._metaInit_;
         currentModule[name.toLowerCase()] = this;
     };

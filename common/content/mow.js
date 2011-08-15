@@ -294,7 +294,7 @@ var MOW = Module("mow", {
             if (!value && elem && elem.contentWindow == document.commandDispatcher.focusedWindow) {
 
                 let focused = content.document.activeElement;
-                if (Events.isInputElement(focused))
+                if (focused && Events.isInputElement(focused))
                     focused.blur();
 
                 document.commandDispatcher.focusedWindow = content;
