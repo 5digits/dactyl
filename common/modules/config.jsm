@@ -31,6 +31,44 @@ var ConfigBase = Class("ConfigBase", {
         });
     },
 
+    modules: {
+        global: ["addons",
+                 "base",
+                 "io",
+                 "commands",
+                 "completion",
+                 "config",
+                 "contexts",
+                 "downloads",
+                 "finder",
+                 "highlight",
+                 "javascript",
+                 "messages",
+                 "options",
+                 "overlay",
+                 "prefs",
+                 "sanitizer",
+                 "services",
+                 "storage",
+                 "styles",
+                 "template",
+                 "util"],
+
+        window: ["dactyl",
+                 "modes",
+                 "commandline",
+                 "abbreviations",
+                 "autocommands",
+                 "buffer",
+                 "editor",
+                 "events",
+                 "hints",
+                 "mappings",
+                 "marks",
+                 "mow",
+                 "statusline"]
+    },
+
     loadStyles: function loadStyles(force) {
         const { highlight } = require("highlight");
         const { _ } = require("messages");

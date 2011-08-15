@@ -410,7 +410,7 @@ var Events = Module("events", {
         EventHive.prototype.wrapListener = this.closure.wrapListener;
 
         XML.ignoreWhitespace = true;
-        util.overlayWindow(window, {
+        overlay.overlayWindow(window, {
             append: <e4x xmlns={XUL}>
                 <window id={document.documentElement.id}>
                     <!-- http://developer.mozilla.org/en/docs/XUL_Tutorial:Updating_Commands -->

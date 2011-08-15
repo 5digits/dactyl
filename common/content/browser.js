@@ -13,8 +13,8 @@
  */
 var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     init: function init() {
-        this.cleanupProgressListener = util.overlayObject(window.XULBrowserWindow,
-                                                          this.progressListener);
+        this.cleanupProgressListener = overlay.overlayObject(window.XULBrowserWindow,
+                                                             this.progressListener);
         util.addObserver(this);
     },
 

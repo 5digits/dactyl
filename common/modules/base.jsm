@@ -740,6 +740,10 @@ function Class() {
                 constructor: { value: Constructor },
             });
             self.instance = self;
+
+            if ("_metaInit_" in self && self._metaInit_)
+                self._metaInit_.apply(self, arguments);
+
             var res = self.init.apply(self, arguments);
             return res !== undefined ? res : self;
         };
@@ -1062,6 +1066,13 @@ var ErrorBase = Class("ErrorBase", Error, {
  */
 function Module(name, prototype) {
     let init = callable(prototype) ? 4 : 3;
+    let proto = arguments[callable(prototype) ? 2 : 1];
+
+    proto._metaInit_ = function () {
+        delete module.prototype._metaInit_;
+        currentModule[name.toLowerCase()] = instance;
+    };
+
     const module = Class.apply(Class, Array.slice(arguments, 0, init));
     let instance = module();
     module.className = name.toLowerCase();

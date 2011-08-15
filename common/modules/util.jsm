@@ -51,41 +51,17 @@ var wrapCallback = function wrapCallback(fn) {
     return fn.wrapper;
 }
 
-var getAttr = function getAttr(elem, ns, name)
-    elem.hasAttributeNS(ns, name) ? elem.getAttributeNS(ns, name) : null;
-var setAttr = function setAttr(elem, ns, name, val) {
-    if (val == null)
-        elem.removeAttributeNS(ns, name);
-    else
-        elem.setAttributeNS(ns, name, val);
-}
-
 var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {
     init: function () {
         this.Array = array;
 
         this.addObserver(this);
-        this.overlays = {};
         this.windows = [];
     },
 
-    cleanup: function cleanup() {
-        for (let { document: doc } in iter(services.windowMediator.getEnumerator(null))) {
-            for (let elem in values(doc.dactylOverlayElements || []))
-                if (elem.parentNode)
-                    elem.parentNode.removeChild(elem);
-
-            for (let [elem, ns, name, orig, value] in values(doc.dactylOverlayAttributes || []))
-                if (getAttr(elem, ns, name) === value)
-                    setAttr(elem, ns, name, orig);
-
-            delete doc.dactylOverlayElements;
-            delete doc.dactylOverlayAttributes;
-            delete doc.dactylOverlays;
-        }
-    },
-
     activeWindow: deprecated("overlay.activeWindow", { get: function activeWindow() overlay.activeWindow }),
+    overlayObject: deprecated("overlay.overlayObject", { get: function overlayObject() overlay.closure.overlayObject }),
+    overlayWindow: deprecated("overlay.overlayWindow", { get: function overlayWindow() overlay.closure.overlayWindow }),
 
     dactyl: update(function dactyl(obj) {
         if (obj)
@@ -971,188 +947,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         "dactyl-purge": function () {
             this.rehashing = 1;
         },
-
-        "toplevel-window-ready": function (window, data) {
-            window.addEventListener("DOMContentLoaded", wrapCallback(function listener(event) {
-                if (event.originalTarget === window.document) {
-                    window.removeEventListener("DOMContentLoaded", listener.wrapper, true);
-                    util._loadOverlays(window);
-                }
-            }), true);
-        },
-        "chrome-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
-        "content-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); }
-    },
-
-    _loadOverlays: function _loadOverlays(window) {
-        if (!window.dactylOverlays)
-            window.dactylOverlays = [];
-
-        for each (let obj in util.overlays[window.document.documentURI] || []) {
-            if (window.dactylOverlays.indexOf(obj) >= 0)
-                continue;
-            window.dactylOverlays.push(obj);
-            this._loadOverlay(window, obj(window));
-        }
-    },
-
-    _loadOverlay: function _loadOverlay(window, obj) {
-        let doc = window.document;
-        if (!doc.dactylOverlayElements) {
-            doc.dactylOverlayElements = [];
-            doc.dactylOverlayAttributes = [];
-        }
-
-        function overlay(key, fn) {
-            if (obj[key]) {
-                let iterator = Iterator(obj[key]);
-                if (!isObject(obj[key]))
-                    iterator = ([elem.@id, elem.elements(), elem.@*::*.(function::name() != "id")] for each (elem in obj[key]));
-
-                for (let [elem, xml, attr] in iterator) {
-                    if (elem = doc.getElementById(elem)) {
-                        let node = util.xmlToDom(xml, doc, obj.objects);
-                        if (!(node instanceof Ci.nsIDOMDocumentFragment))
-                            doc.dactylOverlayElements.push(node);
-                        else
-                            for (let n in array.iterValues(node.childNodes))
-                                doc.dactylOverlayElements.push(n);
-
-                        fn(elem, node);
-                        for each (let attr in attr || []) {
-                            let ns = attr.namespace(), name = attr.localName();
-                            doc.dactylOverlayAttributes.push([elem, ns, name, getAttr(elem, ns, name), String(attr)]);
-                            if (attr.name() != "highlight")
-                                elem.setAttributeNS(ns, name, String(attr));
-                            else
-                                highlight.highlightNode(elem, String(attr));
-                        }
-                    }
-                }
-            }
-        }
-
-        overlay("before", function (elem, dom) elem.parentNode.insertBefore(dom, elem));
-        overlay("after", function (elem, dom) elem.parentNode.insertBefore(dom, elem.nextSibling));
-        overlay("append", function (elem, dom) elem.appendChild(dom));
-        overlay("prepend", function (elem, dom) elem.insertBefore(dom, elem.firstChild));
-        if (obj.init)
-            obj.init(window);
-
-        if (obj.load)
-            if (doc.readyState === "complete")
-                obj.load(window);
-            else
-                doc.addEventListener("load", wrapCallback(function load(event) {
-                    if (event.originalTarget === event.target) {
-                        doc.removeEventListener("load", load.wrapper, true);
-                        obj.load(window, event);
-                    }
-                }), true);
-    },
-
-    /**
-     * Overlays an object with the given property overrides. Each
-     * property in *overrides* is added to *object*, replacing any
-     * original value. Functions in *overrides* are augmented with the
-     * new properties *super*, *supercall*, and *superapply*, in the
-     * same manner as class methods, so that they man call their
-     * overridden counterparts.
-     *
-     * @param {object} object The object to overlay.
-     * @param {object} overrides An object containing properties to
-     *      override.
-     * @returns {function} A function which, when called, will remove
-     *      the overlay.
-     */
-    overlayObject: function (object, overrides) {
-        let original = Object.create(object);
-        overrides = update(Object.create(original), overrides);
-
-        Object.getOwnPropertyNames(overrides).forEach(function (k) {
-            let orig, desc = Object.getOwnPropertyDescriptor(overrides, k);
-            if (desc.value instanceof Class.Property)
-                desc = desc.value.init(k) || desc.value;
-
-            if (k in object) {
-                for (let obj = object; obj && !orig; obj = Object.getPrototypeOf(obj))
-                    if (orig = Object.getOwnPropertyDescriptor(obj, k))
-                        Object.defineProperty(original, k, orig);
-
-                if (!orig)
-                    if (orig = Object.getPropertyDescriptor(object, k))
-                        Object.defineProperty(original, k, orig);
-            }
-
-            // Guard against horrible add-ons that use eval-based monkey
-            // patching.
-            let value = desc.value;
-            if (callable(desc.value)) {
-
-                delete desc.value;
-                delete desc.writable;
-                desc.get = function get() value;
-                desc.set = function set(val) {
-                    if (!callable(val) || Function.prototype.toString(val).indexOf(sentinel) < 0)
-                        Class.replaceProperty(this, k, val);
-                    else {
-                        let package_ = util.newURI(util.fixURI(Components.stack.caller.filename)).host;
-                        util.reportError(Error(_("error.monkeyPatchOverlay", package_)));
-                        util.dactyl.echoerr(_("error.monkeyPatchOverlay", package_));
-                    }
-                };
-            }
-
-            try {
-                Object.defineProperty(object, k, desc);
-
-                if (callable(value)) {
-                    let sentinel = "(function DactylOverlay() {}())"
-                    value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
-                    value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
-                }
-            }
-            catch (e) {
-                try {
-                    if (value) {
-                        object[k] = value;
-                        return;
-                    }
-                }
-                catch (f) {}
-                util.reportError(e);
-            }
-        }, this);
-
-        return function unwrap() {
-            for each (let k in Object.getOwnPropertyNames(original))
-                if (Object.getOwnPropertyDescriptor(object, k).configurable)
-                    Object.defineProperty(object, k, Object.getOwnPropertyDescriptor(original, k));
-                else {
-                    try {
-                        object[k] = original[k];
-                    }
-                    catch (e) {}
-                }
-        };
-    },
-
-    overlayWindow: function (url, fn) {
-        if (url instanceof Ci.nsIDOMWindow)
-            util._loadOverlay(url, fn);
-        else {
-            Array.concat(url).forEach(function (url) {
-                if (!this.overlays[url])
-                    this.overlays[url] = [];
-                this.overlays[url].push(fn);
-            }, this);
-
-            for (let doc in util.iterDocuments())
-                if (["interactive", "complete"].indexOf(doc.readyState) >= 0)
-                    this._loadOverlays(doc.defaultView);
-                else
-                    this.observe(doc.defaultView, "toplevel-window-ready");
-        }
     },
 
     /**

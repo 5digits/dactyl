@@ -23,7 +23,7 @@ var StatusLine = Module("statusline", {
                 #addon-bar > xul|toolbarspring { visibility: collapse; }
             ]]></css>);
 
-            util.overlayWindow(window, { append: <><statusbar id="status-bar" ordinal="0"/></> });
+            overlay.overlayWindow(window, { append: <><statusbar id="status-bar" ordinal="0"/></> });
 
             highlight.loadCSS(util.compileMacro(<![CDATA[
                 !AddonBar;#addon-bar {
@@ -83,7 +83,7 @@ var StatusLine = Module("statusline", {
         for each (let attr in prepend..@key)
             attr.parent().@id = "dactyl-statusline-field-" + attr;
 
-        util.overlayWindow(window, {
+        overlay.overlayWindow(window, {
             objects: this.widgets = { get status() this.container },
             prepend: prepend.elements()
         });

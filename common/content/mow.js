@@ -44,7 +44,7 @@ var MOW = Module("mow", {
                           true);
 
         XML.ignoreWhitespace = true;
-        util.overlayWindow(window, {
+        overlay.overlayWindow(window, {
             objects: {
                 eventTarget: this
             },

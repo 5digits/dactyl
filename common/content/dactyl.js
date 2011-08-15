@@ -40,7 +40,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         styles.registerSheet("resource://dactyl-skin/dactyl.css");
 
         this.cleanups = [];
-        this.cleanups.push(util.overlayObject(window, {
+        this.cleanups.push(overlay.overlayObject(window, {
             focusAndSelectUrlBar: function focusAndSelectUrlBar() {
                 switch (options.get("strictfocus").getKey(document.documentURIObject || util.newURI(document.documentURI), "moderate")) {
                 case "laissez-faire":
@@ -305,7 +305,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             };
             XML.ignoreWhitespace = true;
             if (!elems.bell)
-                util.overlayWindow(window, {
+                overlay.overlayWindow(window, {
                     objects: elems,
                     prepend: <>
                         <window id={document.documentElement.id} xmlns={XUL}>

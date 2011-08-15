@@ -15,7 +15,7 @@ var CommandWidgets = Class("CommandWidgets", {
         let s = "dactyl-statusline-field-";
 
         XML.ignoreWhitespace = true;
-        util.overlayWindow(window, {
+        overlay.overlayWindow(window, {
             objects: {
                 eventTarget: commandline
             },
