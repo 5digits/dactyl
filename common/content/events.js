@@ -1684,18 +1684,23 @@ var Events = Module("events", {
 
                 get pass() (this.flush(), this.pass),
 
-                keepQuotes: true,
-
-                setter: function (values) {
-                    values.forEach(function (filter) {
+                parse: function parse() {
+                    let value = parse.superapply(this, arguments);
+                    value.forEach(function (filter) {
                         let vals = Option.splitList(filter.result);
                         filter.keys = events.fromString(vals[0]).map(events.closure.toString);
 
                         filter.commandKeys = vals.slice(1).map(events.closure.canonicalKeys);
                         filter.inputKeys = filter.commandKeys.filter(bind("test", /^<[ACM]-/));
                     });
+                    return value;
+                },
+
+                keepQuotes: true,
+
+                setter: function (value) {
                     this.flush();
-                    return values;
+                    return value;
                 }
             });
 

@@ -463,7 +463,10 @@ var Buffer = Module("buffer", {
             else
                 flags = services.focus.FLAG_SHOWRING;
 
-            if (!elem.dactylHadFocus && elem.value && elem.selectionStart == elem.selectionEnd)
+            if (!elem.dactylHadFocus && elem.value &&
+                    elem instanceof HTMLInputElement &&
+                    elem.selectionStart != null &&
+                    elem.selectionStart == elem.selectionEnd)
                 elem.selectionStart = elem.selectionEnd = elem.value.length;
 
             dactyl.focus(elem, flags);

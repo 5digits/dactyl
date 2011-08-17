@@ -45,6 +45,11 @@ var Group = Class("Group", {
 
     argsExtra: function argsExtra() ({}),
 
+    makeArgs: function makeArgs(doc, context, args) {
+        let res = update({ doc: doc, context: context }, args);
+        return update(this.argsExtra(res), args);
+    },
+
     get toStringParams() [this.name],
 
     get builtin() this.modules.contexts.builtinGroups.indexOf(this) >= 0,
@@ -288,7 +293,10 @@ var Contexts = Module("contexts", {
         groups: { value: this.activeGroups(uri) }
     }),
 
-    activeGroups: function (uri, doc) {
+    activeGroups: function (uri) {
+        if (uri instanceof Ci.nsIDOMDocument)
+            var [doc, uri] = [uri, uri.documentURIObject || util.newURI(uri.documentURI)];
+
         if (!uri)
             var { uri, doc } = this.modules.buffer;
 
@@ -463,6 +471,7 @@ var Contexts = Module("contexts", {
         get modifiable() this.group.modifiable,
 
         get argsExtra() this.group.argsExtra,
+        get makeArgs() this.group.makeArgs,
         get builtin() this.group.builtin,
 
         get name() this.group.name,

@@ -11,7 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("options", {
     exports: ["Option", "Options", "ValueError", "options"],
-    require: ["messages", "storage"],
+    require: ["contexts", "messages", "storage"],
     use: ["commands", "completion", "config", "prefs", "services", "styles", "template", "util"]
 }, this);
 
@@ -757,6 +757,18 @@ var Option = Class("Option", {
     EXPORTED_SYMBOLS.push(class_.className);
 }, this);
 
+var OptionHive = Class("OptionHive", Contexts.Hive, {
+    init: function init(group) {
+        init.supercall(this, group);
+        this.values = {};
+        this.has = Set.has(this.values);
+    },
+
+    add: function add(names, description, type, defaultValue, extraInfo) {
+        return this.modules.options.add(names, description, type, defaultValue, extraInfo);
+    }
+});
+
 /**
  * @instance options
  */
@@ -764,6 +776,12 @@ var Options = Module("options", {
     Local: function Local(dactyl, modules, window) let ({ contexts } = modules) ({
         init: function init() {
             const self = this;
+
+            update(this, {
+                hives: contexts.Hives("options", Class("OptionHive", OptionHive, { modules: modules })),
+                user: contexts.hives.options.user
+            });
+
             this.needInit = [];
             this._options = [];
             this._optionMap = {};
@@ -853,6 +871,10 @@ var Options = Module("options", {
          */
         add: function add(names, description, type, defaultValue, extraInfo) {
             const self = this;
+
+            if (!util.isDactyl(Components.stack.caller))
+                deprecated.warn(add, "options.add", "group.options.add");
+
             util.assert(type in Option.types,
                         _("option.noSuchType", type),
                         true);
