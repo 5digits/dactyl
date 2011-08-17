@@ -58,7 +58,7 @@ var Tabs = Module("tabs", {
 
         "mappings.executed": function mappings_executed() {
             if (this._mappingCount && !--this._mappingCount)
-                dactyl.forceTarget = this._originalTarget;
+                dactyl.forceTarget = null;
         },
     },
 
@@ -959,8 +959,7 @@ var Tabs = Module("tabs", {
         mappings.add([modes.COMMAND], ["<C-t>", "<new-tab-next>"],
             "Execute the next mapping in a new tab",
             function ({ count }) {
-                tabs._mappingCount += (count || 1) + 1;
-                tabs._originalTarget = dactyl.forceTarget;
+                tabs._mappingCount = (count || 1) + 1;
                 dactyl.forceTarget = dactyl.NEW_TAB;
             },
             { count: true });
