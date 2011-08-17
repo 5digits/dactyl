@@ -172,8 +172,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     NEW_BACKGROUND_TAB: "background-tab",
     NEW_WINDOW: "window",
 
-    forceNewTab: false,
-    forceNewWindow: false,
+    forceTarget: null,
 
     version: deprecated("config.version", { get: function version() config.version }),
 
@@ -215,7 +214,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             this._observers[type] = this._observers[type].filter(function (c) c.get() != callback);
     },
 
-    // TODO: "zoom": if the zoom value of the current buffer changed
     applyTriggerObserver: function triggerObserver(type, args) {
         if (type in this._observers)
             this._observers[type] = this._observers[type].filter(function (callback) {
@@ -1237,8 +1235,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 event.preventDefault();
 
                 if (dactyl.commands[command])
-                    dactyl.withSavedValues(["forceNewTab"], function () {
-                        dactyl.forceNewTab = event.ctrlKey || event.shiftKey || event.button == 1;
+                    dactyl.withSavedValues(["forceTarget"], function () {
+                        if (event.ctrlKey || event.shiftKey || event.button == 1)
+                            dactyl.forceTarget = dactyl.NEW_TAB;
                         dactyl.commands[command](event);
                     });
             }
@@ -1348,10 +1347,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             // any genuine errors go unreported.
         }
 
-        if (dactyl.forceNewTab)
-            where = dactyl.NEW_TAB;
-        else if (dactyl.forceNewWindow)
-            where = dactyl.NEW_WINDOW;
+        if (dactyl.forceTarget)
+            where = dactyl.forceTarget;
         else if (!where)
             where = dactyl.CURRENT_TAB;
 
@@ -1553,7 +1550,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
     wrapCallback: function (callback, self) {
         self = self || this;
-        let save = ["forceNewTab", "forceNewWindow"];
+        let save = ["forceTarget"];
         let saved = save.map(function (p) dactyl[p]);
         return function wrappedCallback() {
             let args = arguments;
@@ -2176,8 +2173,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             if (localPrefs.get("first-run", true))
                 dactyl.timeout(function () {
                     localPrefs.set("first-run", false);
-                    this.withSavedValues(["forceNewTab"], function () {
-                        this.forceNewTab = true;
+                    this.withSavedValues(["forceTarget"], function () {
+                        this.forceTarget = dactyl.NEW_TAB;
                         this.help();
                     });
                 }, 1000);

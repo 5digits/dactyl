@@ -242,8 +242,8 @@ var Config = Module("config", ConfigBase, {
         commands.add(["wind[ow]"],
             "Execute a command and tell it to output in a new window",
             function (args) {
-                dactyl.withSavedValues(["forceNewWindow"], function () {
-                    this.forceNewWindow = true;
+                dactyl.withSavedValues(["forceTarget"], function () {
+                    this.forceTarget = dactyl.NEW_WINDOW;
                     this.execute(args[0], null, true);
                 });
             },

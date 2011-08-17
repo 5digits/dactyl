@@ -59,6 +59,15 @@
 <h2 tag="opening-tabs">Opening tabs</h2>
 
 <item>
+    <tags><![CDATA[<new-tab-next> <C-t>]]></tags>
+    <spec><oa>count</oa><![CDATA[<C-t>]]></spec>
+    <description>
+        <p>Execute the next <oa>count</oa> mappings in a new tab.</p>
+    </description>
+</item>
+
+
+<item>
     <tags>:tab</tags>
     <strut/>
     <spec>:tab <a>cmd</a></spec>

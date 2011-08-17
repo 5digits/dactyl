@@ -128,9 +128,10 @@ var Map = Class("Map", {
         if (this.names[0] != ".") // FIXME: Kludge.
             mappings.repeat = repeat;
 
-        if (this.executing)
+        if (this.executing) {
             util.dumpStack(_("map.recursive", args.command));
-        dactyl.assert(!this.executing, _("map.recursive", args.command));
+            throw AssertionError(_("map.recursive", args.command));
+        }
 
         try {
             this.preExecute(args);
@@ -144,6 +145,7 @@ var Map = Class("Map", {
         finally {
             this.executing = false;
             this.postExecute(args);
+            dactyl.triggerObserver("mappings.executed", this, args);
         }
         return res;
     }

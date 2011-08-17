@@ -54,8 +54,15 @@ var Tabs = Module("tabs", {
         enter: function enter() {
             if (window.TabsInTitlebar)
                 window.TabsInTitlebar.allowedBy("dactyl", true);
-        }
+        },
+
+        "mappings.executed": function mappings_executed() {
+            if (this._mappingCount && !--this._mappingCount)
+                dactyl.forceTarget = this._originalTarget;
+        },
     },
+
+    _mappingCount: 0,
 
     _alternates: Class.memoize(function () [config.tabbrowser.mCurrentTab, null]),
 
@@ -645,8 +652,8 @@ var Tabs = Module("tabs", {
         commands.add(["tab"],
             "Execute a command and tell it to output in a new tab",
             function (args) {
-                dactyl.withSavedValues(["forceNewTab"], function () {
-                    this.forceNewTab = true;
+                dactyl.withSavedValues(["forceTarget"], function () {
+                    this.forceTarget = dactyl.NEW_TAB;
                     dactyl.execute(args[0], null, true);
                 });
             }, {
@@ -948,6 +955,16 @@ var Tabs = Module("tabs", {
         events.listen(tabContainer, "TabSelect", tabs.closure._onTabSelect, false);
     },
     mappings: function () {
+
+        mappings.add([modes.COMMAND], ["<C-t>", "<new-tab-next>"],
+            "Execute the next mapping in a new tab",
+            function ({ count }) {
+                tabs._mappingCount += (count || 1) + 1;
+                tabs._originalTarget = dactyl.forceTarget;
+                dactyl.forceTarget = dactyl.NEW_TAB;
+            },
+            { count: true });
+
         mappings.add([modes.NORMAL], ["g0", "g^"],
             "Go to the first tab",
             function () { tabs.select(0); });
