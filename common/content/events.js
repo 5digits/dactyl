@@ -1412,7 +1412,7 @@ var Events = Module("events", {
     // argument "event" is deliberately not used, as i don't seem to have
     // access to the real focus target
     // Huh? --djk
-    onFocusChange: function onFocusChange(event) {
+    onFocusChange: util.wrapCallback(function onFocusChange(event) {
         function hasHTMLDocument(win) win && win.document && win.document instanceof HTMLDocument
         if (dactyl.ignoreFocus)
             return;
@@ -1458,7 +1458,7 @@ var Events = Module("events", {
                 return;
             }
 
-            if (Events.isInputElement(elem)) {
+            if (elem && Events.isInputElement(elem)) {
                 if (!haveInput)
                     modes.push(modes.INSERT);
 
@@ -1486,7 +1486,7 @@ var Events = Module("events", {
             if (modes.main.ownsFocus)
                 modes.topOfStack.params.ownsFocus = elem;
         }
-    },
+    }),
 
     onSelectionChange: function onSelectionChange(event) {
         let controller = document.commandDispatcher.getControllerForCommand("cmd_copy");
