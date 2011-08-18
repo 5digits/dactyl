@@ -465,6 +465,7 @@ var Buffer = Module("buffer", {
 
             if (!elem.dactylHadFocus && elem.value &&
                     elem instanceof HTMLInputElement &&
+                    Editor.getEditor(elem) &&
                     elem.selectionStart != null &&
                     elem.selectionStart == elem.selectionEnd)
                 elem.selectionStart = elem.selectionEnd = elem.value.length;
