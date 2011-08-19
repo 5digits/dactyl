@@ -1586,7 +1586,10 @@ var Events = Module("events", {
 
         mappings.add([modes.MAIN],
             ["<C-z>", "<pass-all-keys>"], "Temporarily ignore all " + config.appName + " key bindings",
-            function () { modes.push(modes.PASS_THROUGH); });
+            function () {
+                if (modes.main != modes.PASS_THROUGH)
+                    modes.push(modes.PASS_THROUGH);
+            });
 
         mappings.add([modes.MAIN, modes.PASS_THROUGH, modes.QUOTE],
             ["<C-v>", "<pass-next-key>"], "Pass through next key",

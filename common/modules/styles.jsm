@@ -74,11 +74,11 @@ update(Sheet.prototype, {
             return preamble + css;
 
         let selectors = filter.map(function (part)
-                                    !/^(?:[a-z-]+[:*]|[a-z-.]+$)/i.test(part) ? "regexp(" + (".*(?:" + part + ").*").quote() + ")" :
+                                    !/^(?:[a-z-]+[:*]|[a-z-.]+$)/i.test(part) ? "regexp(" + Styles.quote(".*(?:" + part + ").*") + ")" :
                                        (/[*]$/.test(part)   ? "url-prefix" :
                                         /[\/:]/.test(part)  ? "url"
                                                             : "domain")
-                                       + '("' + part.replace(/"/g, "%22").replace(/\*$/, "") + '")')
+                                       + '(' + Styles.quote(part.replace(/\*$/, "")) + ')')
                               .join(",\n               ");
 
         return preamble + "@-moz-document " + selectors + " {\n\n" + css + "\n\n}\n";
@@ -530,7 +530,17 @@ var Styles = Module("Styles", {
                 | [^;}\s]+
             )
         ]]>, "gix", this)
-    })
+    }),
+
+    /**
+     * Quotes a string for use in CSS stylesheets.
+     *
+     * @param {string} str
+     * @returns {string}
+     */
+    quote: function quote(str) {
+        return '"' + str.replace(/([\\"])/g, "\\$1").replace(/\n/g, "\\00000a") + '"';
+    },
 }, {
     commands: function (dactyl, modules, window) {
         const { commands, contexts, styles } = modules;

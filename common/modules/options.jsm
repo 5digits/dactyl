@@ -798,8 +798,8 @@ var Options = Module("options", {
                 util.makeDTD(
                     iter(([["option", o.name, "default"].join("."),
                            o.type === "string" ? o.defaultValue.replace(/'/g, "''") :
-                           o.value === true    ? "on"  :
-                           o.value === false   ? "off" : o.stringDefaultValue]
+                           o.defaultValue === true  ? "on"  :
+                           o.defaultValue === false ? "off" : o.stringDefaultValue]
                           for (o in self)),
 
                          ([["option", o.name, "type"].join("."), o.type] for (o in self)),

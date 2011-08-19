@@ -47,7 +47,7 @@ var Group = Class("Group", {
 
     makeArgs: function makeArgs(doc, context, args) {
         let res = update({ doc: doc, context: context }, args);
-        return update(this.argsExtra(res), args);
+        return update(res, this.argsExtra(res), args);
     },
 
     get toStringParams() [this.name],
@@ -194,7 +194,7 @@ var Contexts = Module("contexts", {
         let contextPath = file.path;
         let self = Set.has(plugins, contextPath) && plugins.contexts[contextPath];
 
-        if (!self && isPlugin)
+        if (!self && isPlugin && false)
             self = Set.has(plugins, id) && plugins[id];
 
         if (self) {
