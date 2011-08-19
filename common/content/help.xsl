@@ -95,6 +95,7 @@
     <xsl:template match="@*|node()" mode="overlay">
         <xsl:apply-templates select="." mode="overlay-2"/>
     </xsl:template>
+    <xsl:template match="@*[starts-with(local-name(), 'on')]|*[local-name() = 'script']" mode="overlay-2"/>
     <xsl:template match="@*|node()" mode="overlay-2">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()" mode="overlay"/>
@@ -232,7 +233,7 @@
     <xsl:template match="dactyl:default[not(@type='plain')]" mode="help-2">
         <xsl:variable name="type" select="preceding-sibling::dactyl:type[1] | following-sibling::dactyl:type[1]"/>
         <span dactyl:highlight="HelpDefault">
-            <xsl:copy-of select="@*"/>
+            <xsl:copy-of select="@*[not(starts-with(local-name(), 'on'))]"/>
             <xsl:text>(default: </xsl:text>
             <xsl:choose>
                 <xsl:when test="$type = 'string'">
@@ -486,7 +487,7 @@
                     <xsl:when test="@op and @op != ''"><xsl:value-of select="@op"/></xsl:when>
                     <xsl:otherwise>=</xsl:otherwise>
                 </xsl:choose>
-                <xsl:copy-of select="@*|node()"/>
+                <xsl:copy-of select="@*[not(starts-with(local-name(), 'on'))]|node()[local-name() != 'script']"/>
             </html:span>
         </xsl:variable>
         <xsl:apply-templates select="exsl:node-set($nodes)" mode="help-1"/>
@@ -496,7 +497,7 @@
         <xsl:variable name="nodes">
             <code xmlns="&xmlns.dactyl;">
                 <se opt="{@opt}" op="{@op}" link="{@link}">
-                    <xsl:copy-of select="@*|node()"/>
+                    <xsl:copy-of select="@*[not(starts-with(local-name(), 'on'))]|node()[local-name() != 'script']"/>
                 </se>
             </code>
         </xsl:variable>
@@ -605,6 +606,7 @@
 
     <!-- Process Tree {{{1 -->
 
+    <xsl:template match="@*[starts-with(local-name(), 'on')]|*[local-name() = 'script']" mode="help-2"/>
     <xsl:template match="@*|node()" mode="help-2">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()" mode="help-1"/>
