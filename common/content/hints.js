@@ -17,6 +17,8 @@ var HintSession = Class("HintSession", CommandMode, {
 
         opts = opts || {};
 
+        this.forceOpen = opts.forceOpen || dactyl.forceOpen;
+
         // Hack.
         if (!opts.window && modes.main == modes.OUTPUT_MULTILINE)
             opts.window = commandline.widgets.multilineOutput.contentWindow;
@@ -505,9 +507,12 @@ var HintSession = Class("HintSession", CommandMode, {
                 modes.push(modes.IGNORE, modes.HINTS);
         }
 
-        dactyl.trapErrors("action", this.hintMode,
-                          elem, elem.href || elem.src || "",
-                          this.extendedhintCount, top);
+        dactyl.withSavedValues(["forceOpen"], function () {
+            dactyl.forceOpen = this.forceOpen;
+            dactyl.trapErrors("action", this.hintMode,
+                              elem, elem.href || elem.src || "",
+                              this.extendedhintCount, top);
+        }, this);
 
         this.timeout(function () {
             if (modes.main == modes.IGNORE && !this.continue)
@@ -1030,6 +1035,11 @@ var Hints = Module("hints", {
 
     open: function open(mode, opts) {
         this._extendedhintCount = opts.count;
+
+        opts = opts || {};
+        if (!Set.has(opts, "forceOpen"))
+            opts.forceOpen = dactyl.forceOpen;
+
         commandline.input(["Normal", mode], "", {
             autocomplete: false,
             completer: function (context) {

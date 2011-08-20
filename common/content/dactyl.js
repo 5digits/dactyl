@@ -172,7 +172,16 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     NEW_BACKGROUND_TAB: "background-tab",
     NEW_WINDOW: "window",
 
+    forceBackground: null,
     forceTarget: null,
+
+    get forceOpen() ({ background: this.forceBackground,
+                       target: this.forceTarget }),
+    set forceOpen(val) {
+        for (let [k, v] in Iterator({ background: "forceBackground", target: "forceTarget" }))
+            if (k in val)
+                this[v] = val[k];
+    },
 
     version: deprecated("config.version", { get: function version() config.version }),
 
@@ -1038,11 +1047,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let args = null;
 
         if (obj instanceof Command) {
-            link = function (cmd) <ex>{cmd}</ex>;
+            link = function (cmd) <ex>:{cmd}</ex>;
             args = obj.parseArgs("", CompletionContext(str || ""));
+            tag  = function (cmd) <>:{cmd}</>;
             spec = function (cmd) <>{
                     obj.count ? <oa>count</oa> : <></>
-                }{
+                }:{
                     cmd
                 }{
                     obj.bang ? <oa>!</oa> : <></>
@@ -1228,26 +1238,28 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
-    onClick: function onClick(event) {
-        if (event.originalTarget instanceof Element) {
-            let command = event.originalTarget.getAttributeNS(NS, "command");
-            if (command && event.button == 0) {
-                event.preventDefault();
+    events: {
+        click: function onClick(event) {
+            if (event.originalTarget instanceof Element) {
+                let command = event.originalTarget.getAttributeNS(NS, "command");
+                if (command && event.button == 0) {
+                    event.preventDefault();
 
-                if (dactyl.commands[command])
-                    dactyl.withSavedValues(["forceTarget"], function () {
-                        if (event.ctrlKey || event.shiftKey || event.button == 1)
-                            dactyl.forceTarget = dactyl.NEW_TAB;
-                        dactyl.commands[command](event);
-                    });
+                    if (dactyl.commands[command])
+                        dactyl.withSavedValues(["forceTarget"], function () {
+                            if (event.ctrlKey || event.shiftKey || event.button == 1)
+                                dactyl.forceTarget = dactyl.NEW_TAB;
+                            dactyl.commands[command](event);
+                        });
+                }
             }
-        }
-    },
+        },
 
-    onExecute: function onExecute(event) {
-        let cmd = event.originalTarget.getAttribute("dactyl-execute");
-        commands.execute(cmd, null, false, null,
-                         { file: /*L*/"[Command Line]", line: 1 });
+        "dactyl.execute": function onExecute(event) {
+            let cmd = event.originalTarget.getAttribute("dactyl-execute");
+            commands.execute(cmd, null, false, null,
+                             { file: /*L*/"[Command Line]", line: 1 });
+        }
     },
 
     /**
@@ -1299,8 +1311,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             flags |= params[opt] && Ci.nsIWebNavigation["LOAD_FLAGS_" + flag];
 
         let where = params.where || dactyl.CURRENT_TAB;
-        let background = ("background" in params) ? params.background
-                                                  : params.where == dactyl.NEW_BACKGROUND_TAB;
+        let background = dactyl.forceBackground != null ? dactyl.forceBackground :
+                         ("background" in params)       ? params.background
+                                                        : params.where == dactyl.NEW_BACKGROUND_TAB;
 
         if (params.from && dactyl.has("tabs")) {
             if (!params.where && options.get("newtab").has(params.from))
@@ -1547,10 +1560,9 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             return [];
         }
     },
-
     wrapCallback: function (callback, self) {
         self = self || this;
-        let save = ["forceTarget"];
+        let save = ["forceOpen"];
         let saved = save.map(function (p) dactyl[p]);
         return function wrappedCallback() {
             let args = arguments;
@@ -1576,8 +1588,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     toolbarHidden: function hidden(elem) (elem.getAttribute("autohide") || elem.getAttribute("collapsed")) == "true"
 }, {
     events: function () {
-        events.listen(window, "click", dactyl.closure.onClick, true);
-        events.listen(window, "dactyl.execute", dactyl.closure.onExecute, true);
+        events.listen(window, dactyl, "events", true);
     },
     // Only general options are added here, which are valid for all Dactyl extensions
     options: function () {

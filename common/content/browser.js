@@ -207,26 +207,39 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
             { argCount: "0" });
     },
     mappings: function initMappings(dactyl, modules, window) {
-        // opening websites
-        mappings.add([modes.NORMAL],
-            ["o"], "Open one or more URLs",
-            function () { CommandExMode().open("open "); });
+        let openModes = array.toObject([
+            [dactyl.CURRENT_TAB, ""],
+            [dactyl.NEW_TAB, "tab"],
+            [dactyl.NEW_BACKGROUND_TAB, "background tab"],
+            [dactyl.NEW_WINDOW, "win"]
+        ]);
+
+        function open(mode, args) {
+            if (dactyl.forceTarget in openModes)
+                mode = openModes[dactyl.forceTarget];
+
+            CommandExMode().open(mode + "open " + (args || ""))
+        }
 
         function decode(uri) util.losslessDecodeURI(uri)
                                  .replace(/%20(?!(?:%20)*$)/g, " ")
                                  .replace(RegExp(options["urlseparator"], "g"), encodeURIComponent);
 
+        mappings.add([modes.NORMAL],
+            ["o"], "Open one or more URLs",
+            function () { open(""); });
+
         mappings.add([modes.NORMAL], ["O"],
             "Open one or more URLs, based on current location",
-            function () { CommandExMode().open("open " + decode(buffer.uri.spec)); });
+            function () { open("", decode(buffer.uri.spec)); });
 
         mappings.add([modes.NORMAL], ["s"],
             "Open a search prompt",
-            function () { CommandExMode().open("open " + options["defsearch"] + " "); });
+            function () { open("", options["defsearch"] + " "); });
 
         mappings.add([modes.NORMAL], ["S"],
             "Open a search prompt for a new tab",
-            function () { CommandExMode().open("tabopen " + options["defsearch"] + " "); });
+            function () { open("tab", options["defsearch"] + " "); });
 
         mappings.add([modes.NORMAL], ["t"],
             "Open one or more URLs in a new tab",
@@ -234,15 +247,15 @@ var Browser = Module("browser", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), 
 
         mappings.add([modes.NORMAL], ["T"],
             "Open one or more URLs in a new tab, based on current location",
-            function () { CommandExMode().open("tabopen " + decode(buffer.uri.spec)); });
+            function () { open("tab", decode(buffer.uri.spec)); });
 
         mappings.add([modes.NORMAL], ["w"],
             "Open one or more URLs in a new window",
-            function () { CommandExMode().open("winopen "); });
+            function () { open("win"); });
 
         mappings.add([modes.NORMAL], ["W"],
             "Open one or more URLs in a new window, based on current location",
-            function () { CommandExMode().open("winopen " + decode(buffer.uri.spec)); });
+            function () { open("win", decode(buffer.uri.spec)); });
 
         mappings.add([modes.NORMAL], ["<open-home-directory>", "~"],
             "Open home directory",

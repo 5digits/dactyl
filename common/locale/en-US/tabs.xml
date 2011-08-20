@@ -66,6 +66,14 @@
     </description>
 </item>
 
+<item>
+    <tags>:bg :background</tags>
+    <spec>:background</spec>
+    <description>
+        <p>Execute a command opening any new tabs in the background.</p>
+    </description>
+</item>
+
 
 <item>
     <tags>:tab</tags>

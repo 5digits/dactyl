@@ -592,11 +592,12 @@ var Buffer = Module("buffer", {
         }
 
         let ctrlKey = false, shiftKey = false;
-        switch (where) {
+        switch (dactyl.forceTarget || where) {
         case dactyl.NEW_TAB:
         case dactyl.NEW_BACKGROUND_TAB:
             ctrlKey = true;
-            shiftKey = (where != dactyl.NEW_BACKGROUND_TAB);
+            shiftKey = dactyl.forceBackground != null ? dactyl.forceBackground
+                                                      : where != dactyl.NEW_BACKGROUND_TAB;
             break;
         case dactyl.NEW_WINDOW:
             shiftKey = true;

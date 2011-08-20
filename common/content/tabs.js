@@ -663,6 +663,20 @@ var Tabs = Module("tabs", {
                 subCommand: 0
             });
 
+        commands.add(["background", "bg"],
+            "Execute a command opening any new tabs in the background",
+            function (args) {
+                dactyl.withSavedValues(["forceBackground"], function () {
+                    this.forceBackground = true;
+                    dactyl.execute(args[0], null, true);
+                });
+            }, {
+                argCount: "1",
+                completer: function (context) completion.ex(context),
+                literal: 0,
+                subCommand: 0
+            });
+
         commands.add(["tabd[o]", "bufd[o]"],
             "Execute a command in each tab",
             function (args) {

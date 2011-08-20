@@ -104,6 +104,7 @@
         buffer. Added -sort flag. [b6][b7]
       - :style now supports regexp site-filters on Firefox 6+. [b7]
       - :qa closes only the current window, per Vim. [b7]
+      - Added :background command. [b8]
       - Added :exit command. [b7]
       - Added :dlclear command. [b7]
       - :extensions has been replaced with a more powerful :addons. [b6]

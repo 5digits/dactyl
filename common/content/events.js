@@ -352,10 +352,8 @@ var EventHive = Class("EventHive", Contexts.Hive, {
     listen: function (target, event, callback, capture, allowUntrusted) {
         if (!isObject(event))
             var [self, events] = [null, array.toObject([[event, callback]])];
-        else {
+        else
             [self, events] = [event, event[callback || "events"]];
-            [, , capture, allowUntrusted] = arguments;
-        }
 
         if (Set.has(events, "input") && !Set.has(events, "dactyl-input"))
             events["dactyl-input"] = events.input;
@@ -494,7 +492,7 @@ var Events = Module("events", {
         }
 
         this._activeMenubar = false;
-        this.listen(window, this, "events");
+        this.listen(window, this, "events", true);
     },
 
     signals: {

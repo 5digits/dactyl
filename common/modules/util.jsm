@@ -9,7 +9,6 @@
 try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
-    let frag=1;
 defineModule("util", {
     exports: ["$", "DOM", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
     require: ["services"],
@@ -1705,7 +1704,7 @@ var DOM = Class("DOM", {
 
         for (let i = 0; i < this.length; i++) {
             let tmp = fn.call(self || update(obj, [this[i]]), this[i], i);
-            if (tmp && "length" in tmp)
+            if (isObject(tmp) && "length" in tmp)
                 for (let j = 0; j < tmp.length; j++)
                     res[res.length++] = tmp[j];
             else if (tmp !== undefined)
@@ -2027,8 +2026,8 @@ var DOM = Class("DOM", {
                         elem.setAttributeNS(ns, k, v);
             });
 
-        if (Set.has(hooks, k) && hooks[k].get)
-            return hooks[k].get.call(this, elem);
+        if (Set.has(hooks, key) && hooks[key].get)
+            return hooks[key].get.call(this, this[0]);
 
         if (!this[0].hasAttributeNS(ns, key))
             return null;
@@ -2119,18 +2118,36 @@ var DOM = Class("DOM", {
         }, this);
     },
 
-    toggle: function toggle(val) {
+    toggle: function toggle(val, self) {
+        if (callable(val))
+            return this.each(function (elem, i) {
+                this[val.call(self || this, elem, i) ? "show" : "hide"]();
+            });
+
         if (arguments.length)
             return this[val ? "show" : "hide"]();
-        return this.each(function (elem) {
-            elem.style.display = this.style.display == "none" ? "block" : "none";
+
+        let hidden = this.map(function (elem) elem.style.display == "none");
+        return this.each(function (elem, i) {
+            this[hidden[i] ? "show" : "hide"]();
         });
     },
     hide: function hide() {
         return this.each(function (elem) { elem.style.display = "none"; }, this);
     },
     show: function show() {
-        return this.each(function (elem) { elem.style.display = "block"; }, this);
+        for (let i = 0; i < this.length; i++)
+            if (!this[i].dactylDefaultDisplay && this[i].style.display)
+                this[i].style.display = "";
+
+        this.each(function (elem) {
+            if (!elem.dactylDefaultDisplay)
+                elem.dactylDefaultDisplay = this.style.display;
+        });
+
+        return this.each(function (elem) {
+            elem.style.display = elem.dactylDefaultDisplay == "none" ? "block" : "";
+        }, this);
     },
 
     getSet: function getSet(args, get, set) {

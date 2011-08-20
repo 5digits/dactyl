@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2010 Kris Maglione <maglione.k at Gmail>
+// Copyright (c) 2008-2011 Kris Maglione <maglione.k at Gmail>
 //
 // This work is licensed for reuse under an MIT license. Details are
 // given in the LICENSE.txt file included with this file.
@@ -7,14 +7,6 @@ function reportError(e) {
     dump("dactyl: protocols: " + e + "\n" + (e.stack || Error().stack));
     Cu.reportError(e);
 }
-
-/* Adds support for data: URIs with chrome privileges
- * and fragment identifiers.
- *
- * "chrome-data:" <content-type> [; <flag>]* "," [<data>]
- *
- * By Kris Maglione, ideas from Ed Anuff's nsChromeExtensionHandler.
- */
 
 var NAME = "protocols";
 var global = this;
@@ -76,6 +68,13 @@ function Factory(clas) ({
     }
 });
 
+/* Adds support for data: URIs with chrome privileges
+ * and fragment identifiers.
+ *
+ * "chrome-data:" <content-type> [; <flag>]* "," [<data>]
+ *
+ * By Kris Maglione, ideas from Ed Anuff's nsChromeExtensionHandler.
+ */
 function ChromeData() {}
 ChromeData.prototype = {
     contractID:       "@mozilla.org/network/protocol;1?name=chrome-data",
