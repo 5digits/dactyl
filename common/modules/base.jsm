@@ -1033,11 +1033,12 @@ function XPCOM(interfaces, superClass) {
     let shim = interfaces.reduce(function (shim, iface) shim.QueryInterface(iface),
                                  XPCOMShim());
 
-    let res = Class("XPCOM(" + interfaces + ")", superClass || Class, update(
-        iter.toObject([k, v === undefined || callable(v) ? function stub() null : v]
-                      for ([k, v] in Iterator(shim))),
-        { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
-    shim = interfaces = null;
+    let res = Class("XPCOM(" + interfaces + ")", superClass || Class,
+        update(iter([k,
+                     v === undefined || callable(v) ? stub : v]
+                     for ([k, v] in Iterator(shim))).toObject(),
+               { QueryInterface: XPCOMUtils.generateQI(interfaces) }));
+
     return res;
 }
 function XPCOMShim() {
@@ -1052,6 +1053,7 @@ function XPCOMShim() {
     });
     return ip.data;
 };
+function stub() null;
 
 /**
  * An abstract base class for classes that wish to inherit from Error.

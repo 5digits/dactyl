@@ -87,6 +87,7 @@ var Services = Module("Services", {
         this.addClass("StringStream", "@mozilla.org/io/string-input-stream;1",     "nsIStringInputStream", "data");
         this.addClass("Transfer",     "@mozilla.org/transfer;1",                   "nsITransfer", "init");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      "nsITimer", "initWithCallback");
+        this.addClass("URL",          "@mozilla.org/network/standard-url;1",       ["nsIStandardURL", "nsIURL"], "init");
         this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   "nsIXMLHttpRequest");
         this.addClass("XPathEvaluator", "@mozilla.org/dom/xpath-evaluator;1",      "nsIDOMXPathEvaluator");
         this.addClass("XMLDocument",  "@mozilla.org/xml/xml-document;1",           ["nsIDOMXMLDocument", "nsIDOMNodeSelector"]);

@@ -13,7 +13,6 @@ defineModule("protocol", {
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
 var DNE = "resource://gre/does/not/exist";
-var _DNE;
 
 function Channel(url, orig, noFake) {
     try {
@@ -60,7 +59,7 @@ function Protocol(scheme, classID, contentBase) {
 
         contentBase: contentBase,
 
-        _xpcom_factory:         JSMLoader.Factory(Protocol),
+        _xpcom_factory: JSMLoader.Factory(Protocol),
     };
     return Protocol;
 }
@@ -83,13 +82,10 @@ ProtocolBase.prototype = {
          | Ci.nsIProtocolHandler.URI_IS_LOCAL_RESOURCE,
 
     newURI: function newURI(spec, charset, baseURI) {
-        var uri = Cc["@mozilla.org/network/standard-url;1"]
-                        .createInstance(Ci.nsIStandardURL)
-                        .QueryInterface(Ci.nsIURI);
         if (baseURI && baseURI.host === "data")
             baseURI = null;
-        uri.init(uri.URLTYPE_STANDARD, this.defaultPort, spec, charset, baseURI);
-        return uri;
+        return services.URL(services.URL.URLTYPE_STANDARD,
+                            this.defaultPort, spec, charset, baseURI);
     },
 
     newChannel: function newChannel(uri) {
