@@ -1866,10 +1866,14 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             function (args) {
                 if (args.bang)
                     dactyl.open("about:");
-                else
-                    commandline.commandOutput(<>
-                        {config.appName} {config.version} running on:<br/>{navigator.userAgent}
-                    </>);
+                else {
+                    let date = config.buildDate;
+                    date = date ? " (" + date + ")" : "";
+
+                    commandline.commandOutput(
+                        <div>{config.appName} {config.version}{date} running on: </div> +
+                        <div>{navigator.userAgent}</div>)
+                }
             }, {
                 argCount: "0",
                 bang: true

@@ -309,11 +309,17 @@ var ConfigBase = Class("ConfigBase", {
     version: Class.memoize(function () {
         if (this.VCSPath)
             return io.system(["hg", "-R", this.VCSPath, "log", "-r.",
-                              "--template=hg{rev}-" + this.branch + " ({date|isodate})"]).output;
-        let version = this.addon.version;
+                              "--template=hg{rev}." + this.branch]).output;
+
+        return this.addon.version;
+    }),
+
+    buildDate: Class.memoize(function () {
+        if (this.VCSPath)
+            return io.system(["hg", "-R", this.VCSPath, "log", "-r.",
+                              "--template={date|isodate}"]).output;
         if ("@DATE@" !== "@" + "DATE@")
-            version += " " + _("dactyl.created", "@DATE@");
-        return version;
+            return _("dactyl.created", "@DATE@");
     }),
 
     get fileExt() this.name.slice(0, -6),
