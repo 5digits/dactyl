@@ -102,7 +102,7 @@ ProtocolBase.prototype = {
             case "data":
                 try {
                     var channel = services.io.newChannel(uri.path.replace(/^\/(.*)(?:#.*)?/, "data:$1"),
-                                                       null, null);
+                                                         null, null);
                 }
                 catch (e) {
                     var error = e;

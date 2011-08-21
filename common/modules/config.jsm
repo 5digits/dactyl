@@ -140,21 +140,11 @@ var ConfigBase = Class("ConfigBase", {
     },
 
     get addonID() this.name + "@dactyl.googlecode.com",
-    addon: Class.memoize(function () {
-        let addon;
-        do {
-            addon = (JSMLoader.bootstrap || {}).addon;
-            if (addon && !addon.getResourceURI) {
-                util.reportError(Error(_("addon.unavailable")));
-                yield 10;
-            }
-        }
-        while (addon && !addon.getResourceURI);
 
-        if (!addon)
-            addon = require("addons").AddonManager.getAddonByID(this.addonID);
-        yield addon;
-    }, true),
+    addon: Class.memoize(function () {
+        return (JSMLoader.bootstrap || {}).addon ||
+                    require("addons").AddonManager.getAddonByID(this.addonID);
+    }),
 
     /**
      * The current application locale.
@@ -187,18 +177,10 @@ var ConfigBase = Class("ConfigBase", {
                         if (f.isDirectory())).array;
         }
 
-        function exists(pkg) {
-            try {
-                services["resource:"].getSubstitution(pkg);
-                return true;
-            }
-            catch (e) {
-                return false;
-            }
-        }
+        function exists(pkg) services["resource:"].hasSubstitution("dactyl-locale-" + pkg);
 
         return array.uniq([this.appLocale, this.appLocale.replace(/-.*/, "")]
-                            .filter(function (locale) exists("dactyl-locale-" + locale))
+                            .filter(exists)
                             .concat(res));
     }),
 
@@ -210,10 +192,9 @@ var ConfigBase = Class("ConfigBase", {
      * @returns {string}
      */
     bestLocale: function (list) {
-        let langs = Set(list);
         return values([this.appLocale, this.appLocale.replace(/-.*/, ""),
-                       "en", "en-US", iter(langs).next()])
-            .nth(function (l) Set.has(langs, l), 0);
+                       "en", "en-US", list[0]])
+            .nth(Set.has(Set(list)), 0);
     },
 
     /**

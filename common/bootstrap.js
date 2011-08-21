@@ -65,6 +65,9 @@ let components = {};
 let resources = [];
 let getURI = null;
 
+/**
+ * Performs necessary migrations after a version change.
+ */
 function updateVersion() {
     try {
         function isDev(ver) /^hg|pre$/.test(ver);
@@ -77,6 +80,11 @@ function updateVersion() {
 
         localPrefs.set("lastVersion", addon.version);
 
+        // We're switching from a nightly version to a stable or
+        // semi-stable version or vice versa.
+        //
+        // Disable automatic updates when switching to nightlies,
+        // restore the default action when switching to stable.
         if (!config.lastVersion || isDev(config.lastVersion) != isDev(addon.version))
             addon.applyBackgroundUpdates = AddonManager[isDev(addon.version) ? "AUTOUPDATE_DISABLE" : "AUTOUPDATE_DEFAULT"];
     }
@@ -99,6 +107,8 @@ function startup(data, reason) {
         AddonManager.getAddonByID(addon.id, function (a) {
             addon = a;
             updateVersion();
+            if (typeof require !== "undefined")
+                require(global, "overlay");
         });
 
         if (basePath.isDirectory())
@@ -120,6 +130,14 @@ function startup(data, reason) {
     }
 }
 
+/**
+ * An XPCOM class factory proxy. Loads the JavaScript module at *url*
+ * when an instance is to be created and calls its NSGetFactory method
+ * to obtain the actual factory.
+ *
+ * @param {string} url The URL of the module housing the real factory.
+ * @param {string} classID The CID of the class this factory represents.
+ */
 function FactoryProxy(url, classID) {
     this.url = url;
     this.classID = Components.ID(classID);
@@ -197,14 +215,20 @@ function init() {
     }
 
     if (JSMLoader) {
+        // Temporary hacks until platforms and dactyl releases that don't
+        // support Cu.unload are phased out.
         if (Cu.unload) {
+            // Upgrading from dactyl release without Cu.unload support.
             Cu.unload(BOOTSTRAP_JSM);
             for (let [name] in Iterator(JSMLoader.globals))
                 Cu.unload(~name.indexOf(":") ? name : "resource://dactyl" + JSMLoader.suffix + "/" + name);
         }
-        else if (JSMLoader.bump != 6) // Temporary hack
+        else if (JSMLoader.bump != 6) {
+            // We're in a version without Cu.unload support and the
+            // JSMLoader interface has changed. Bump off the old one.
             Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
                 Cu.import(BOOTSTRAP_JSM, global));
+        }
     }
 
     if (!JSMLoader || JSMLoader.bump !== 6 || Cu.unload)
@@ -227,7 +251,9 @@ function init() {
                 contractID: BOOTSTRAP_CONTRACT,
                 wrappedJSObject: {}
             },
-            createInstance: function () this.instance
+            // Use Sandbox to prevent closure over this scope
+            createInstance: Cu.evalInSandbox("(function () this.instance)",
+                                             Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].getService()))
         });
 
     Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = !Cu.unload && JSMLoader;
@@ -237,7 +263,9 @@ function init() {
 
     Services.obs.notifyObservers(null, "dactyl-rehash", null);
     updateVersion();
-    require(global, "overlay");
+
+    if (addon !== addonData)
+        require(global, "overlay");
 }
 
 function shutdown(data, reason) {
