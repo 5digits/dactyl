@@ -56,6 +56,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         delete window.dactyl;
         delete window.liberator;
 
+        // Prevents box ordering bugs after our stylesheet is removed.
         styles.system.add("cleanup-sheet", config.styleableChrome, <![CDATA[
             #TabsToolbar tab { display: none; }
         ]]>);

@@ -72,6 +72,9 @@ var Tabs = Module("tabs", {
             for (let elem in values(["dactyl-tab-icon-number", "dactyl-tab-number"].map(node)))
                 if (elem)
                     elem.parentNode.parentNode.removeChild(elem.parentNode);
+
+            delete tab.dactylOrdinal;
+            tab.removeAttribute("dactylOrdinal");
         }
     },
 
@@ -82,16 +85,21 @@ var Tabs = Module("tabs", {
                 if (!node("dactyl-tab-number")) {
                     let img = node("tab-icon-image");
                     if (img) {
-                        let dom = DOM(<xul xmlns:xul={XUL} xmlns:html={XHTML}
-                            ><xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-icon-number"/></xul:hbox
-                            ><xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber" class="dactyl-tab-number"/></xul:hbox
-                        ></xul>.*, document).appendTo(img.parentNode);
-                        tab.__defineGetter__("dactylOrdinal", function () Number(dom.nodes.icon.value));
-                        tab.__defineSetter__("dactylOrdinal", function (i) dom.nodes.icon.value = dom.nodes.label.textContent = i);
+                        let dom = DOM(<xul xmlns:xul={XUL} xmlns:html={XHTML}>
+                            <xul:hbox highlight="tab-number"><xul:label key="icon" align="center" highlight="TabIconNumber" class="dactyl-tab-icon-number"/></xul:hbox>
+                            <xul:hbox highlight="tab-number"><html:div key="label" highlight="TabNumber" class="dactyl-tab-number"/></xul:hbox>
+                        </xul>.elements(), document).appendTo(img.parentNode);
+
+                        update(tab, {
+                            get dactylOrdinal() Number(dom.nodes.icon.value),
+                            set dactylOrdinal(i) {
+                                dom.nodes.icon.value = dom.nodes.label.textContent = i;
+                                this.setAttribute("dactylOrdinal", i);
+                            }
+                        });
                     }
                 }
             }
-            tab.setAttribute("dactylOrdinal", i + 1);
             tab.dactylOrdinal = i + 1;
         }
         statusline.updateTabCount(true);

@@ -41,6 +41,8 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         util.addObserver(this);
         this.overlays = {};
 
+        this.onWindowVisible = [];
+
         config.loadStyles();
 
         this.timeout(this.initialize);
@@ -287,13 +289,20 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                         });
                 });
 
-                // Module.list.forEach(load);
-                frob("load");
-                modules.times = update({}, defineModule.times);
+                function finish() {
+                    // Module.list.forEach(load);
+                    frob("load");
+                    modules.times = update({}, defineModule.times);
 
-                defineModule.loadLog.push("Loaded in " + (Date.now() - start) + "ms");
+                    defineModule.loadLog.push("Loaded in " + (Date.now() - start) + "ms");
 
-                overlay.windows = array.uniq(overlay.windows.concat(window), true);
+                    overlay.windows = array.uniq(overlay.windows.concat(window), true);
+                }
+
+                if (overlay.onWindowVisible)
+                    overlay.onWindowVisible.push(finish);
+                else
+                    finish();
 
                 modules.events.listen(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
@@ -337,7 +346,13 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             }), true);
         },
         "chrome-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
-        "content-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); }
+        "content-document-global-created": function (window, uri) { this.observe(window, "toplevel-window-ready", null); },
+        "xul-window-visible": function () {
+            if (this.onWindowVisible) {
+                this.onWindowVisible.forEach(function (f) f.call(this), this);
+                this.onWindowVisible = null;
+            }
+        }
     },
 
     overlayWindow: function (url, fn) {
@@ -351,8 +366,10 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             }, this);
 
             for (let doc in util.iterDocuments())
-                if (["interactive", "complete"].indexOf(doc.readyState) >= 0)
+                if (~["interactive", "complete"].indexOf(doc.readyState)) {
+                    this.onWindowVisible = null;
                     this._loadOverlays(doc.defaultView);
+                }
                 else
                     this.observe(doc.defaultView, "toplevel-window-ready");
         }
@@ -363,7 +380,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             window.dactylOverlays = [];
 
         for each (let obj in overlay.overlays[window.document.documentURI] || []) {
-            if (window.dactylOverlays.indexOf(obj) >= 0)
+            if (~window.dactylOverlays.indexOf(obj))
                 continue;
             window.dactylOverlays.push(obj);
             this._loadOverlay(window, obj(window));

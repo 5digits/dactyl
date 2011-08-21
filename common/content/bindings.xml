@@ -26,6 +26,10 @@
 
     <binding id="tab" display="xul:hbox"
              extends="chrome://browser/content/tabbrowser.xml#tabbrowser-tab">
+        <implementation>
+            <property name="dactylOrdinal" onget="parseInt(this.getAttribute('dactylOrdinal'))"
+                                           onset="this.setAttribute('dactylOrdinal', val)"/>
+        </implementation>
         <content closetabtext="Close Tab">
             <xul:stack class="tab-icon dactyl-tab-stack">
                 <xul:image xbl:inherits="validate,src=image" role="presentation" class="tab-icon-image"/>
@@ -45,6 +49,10 @@
 
     <binding id="tab-mac"
              extends="chrome://browser/content/tabbrowser.xml#tabbrowser-tab">
+        <implementation>
+            <property name="dactylOrdinal" onget="parseInt(this.getAttribute('dactylOrdinal'))"
+                                           onset="this.setAttribute('dactylOrdinal', val)"/>
+        </implementation>
         <content chromedir="ltr" closetabtext="Close Tab">
             <xul:hbox class="tab-image-left" xbl:inherits="selected"/>
             <xul:hbox class="tab-image-middle" flex="1" align="center" xbl:inherits="selected">
