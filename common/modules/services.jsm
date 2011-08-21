@@ -81,7 +81,7 @@ var Services = Module("Services", {
         this.addClass("Pipe",         "@mozilla.org/pipe;1",                       "nsIPipe", "init");
         this.addClass("Process",      "@mozilla.org/process/util;1",               "nsIProcess", "init");
         this.addClass("StreamChannel","@mozilla.org/network/input-stream-channel;1",
-                      ["nsIChannel", "nsIInputStreamChannel", "nsIRequest"], "setURI");
+                      ["nsIInputStreamChannel", "nsIChannel"], "setURI");
         this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1","nsIAsyncStreamCopier", "init");
         this.addClass("String",       "@mozilla.org/supports-string;1",            "nsISupportsString", "data");
         this.addClass("StringStream", "@mozilla.org/io/string-input-stream;1",     "nsIStringInputStream", "data");

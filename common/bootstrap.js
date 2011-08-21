@@ -202,12 +202,12 @@ function init() {
             for (let [name] in Iterator(JSMLoader.globals))
                 Cu.unload(~name.indexOf(":") ? name : "resource://dactyl" + JSMLoader.suffix + "/" + name);
         }
-        else if (JSMLoader.bump != 5) // Temporary hack
+        else if (JSMLoader.bump != 6) // Temporary hack
             Services.scriptloader.loadSubScript("resource://dactyl" + suffix + "/bootstrap.jsm",
                 Cu.import(BOOTSTRAP_JSM, global));
     }
 
-    if (!JSMLoader || JSMLoader.bump !== 5 || Cu.unload)
+    if (!JSMLoader || JSMLoader.bump !== 6 || Cu.unload)
         Cu.import(BOOTSTRAP_JSM, global);
 
     JSMLoader.bootstrap = this;

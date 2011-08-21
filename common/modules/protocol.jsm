@@ -84,7 +84,7 @@ ProtocolBase.prototype = {
     newURI: function newURI(spec, charset, baseURI) {
         if (baseURI && baseURI.host === "data")
             baseURI = null;
-        return services.URL(services.URL.URLTYPE_STANDARD,
+        return services.URL(services.URL.URLTYPE_AUTHORITY,
                             this.defaultPort, spec, charset, baseURI);
     },
 
