@@ -4,15 +4,12 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-var Cc = Components.classes;
-var Ci = Components.interfaces;
-var Cr = Components.results;
-var Cu = Components.utils;
+var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 try {
     var ctypes;
-    Components.utils.import("resource://gre/modules/ctypes.jsm");
+    Cu.import("resource://gre/modules/ctypes.jsm");
 }
 catch (e) {}
 
@@ -1030,8 +1027,7 @@ memoize(Class.prototype, "closure", Class.makeClosure);
 function XPCOM(interfaces, superClass) {
     interfaces = Array.concat(interfaces);
 
-    let shim = interfaces.reduce(function (shim, iface) shim.QueryInterface(iface),
-                                 XPCOMShim());
+    let shim = XPCOMShim(interfaces);
 
     let res = Class("XPCOM(" + interfaces + ")", superClass || Class,
         update(iter([k,
@@ -1041,17 +1037,18 @@ function XPCOM(interfaces, superClass) {
 
     return res;
 }
-function XPCOMShim() {
+function XPCOMShim(interfaces) {
     let ip = services.InterfacePointer({
         QueryInterface: function (iid) {
             if (iid.equals(Ci.nsISecurityCheckedComponent))
-                throw Components.results.NS_ERROR_NO_INTERFACE;
+                throw Cr.NS_ERROR_NO_INTERFACE;
             return this;
         },
         getHelperForLanguage: function () null,
         getInterfaces: function (count) { count.value = 0; }
     });
-    return ip.data;
+    return (interfaces || []).reduce(function (shim, iface) shim.QueryInterface(Ci[iface]),
+                                     ip.data)
 };
 function stub() null;
 

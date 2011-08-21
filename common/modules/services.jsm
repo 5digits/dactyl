@@ -88,7 +88,7 @@ var Services = Module("Services", {
         this.addClass("Transfer",     "@mozilla.org/transfer;1",                   "nsITransfer", "init");
         this.addClass("Timer",        "@mozilla.org/timer;1",                      "nsITimer", "initWithCallback");
         this.addClass("URL",          "@mozilla.org/network/standard-url;1",       ["nsIStandardURL", "nsIURL"], "init");
-        this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   "nsIXMLHttpRequest");
+        this.addClass("Xmlhttp",      "@mozilla.org/xmlextras/xmlhttprequest;1",   "nsIXMLHttpRequest", "open");
         this.addClass("XPathEvaluator", "@mozilla.org/dom/xpath-evaluator;1",      "nsIDOMXPathEvaluator");
         this.addClass("XMLDocument",  "@mozilla.org/xml/xml-document;1",           ["nsIDOMXMLDocument", "nsIDOMNodeSelector"]);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          "nsIZipReader", "open");
@@ -96,22 +96,20 @@ var Services = Module("Services", {
     },
     reinit: function () {},
 
-    _create: function (classes, ifaces, meth, init, args) {
+    _create: function (name, args) {
         try {
-            let res = Cc[classes][meth || "getService"]();
-            if (!ifaces)
-                return res["wrapped" + "JSObject"]; // Kill stupid validator warning
-            Array.concat(ifaces).forEach(function (iface) res.QueryInterface(Ci[iface]));
-            if (init && args.length) {
-                try {
-                    var isCallable = callable(res[init]);
-                }
-                catch (e) {} // Ugh.
+            var service = this.services[name];
 
-                if (isCallable)
-                    res[init].apply(res, args);
+            let res = Cc[service.class][service.method || "getService"]();
+            if (!service.interfaces.length)
+                return res.wrappedJSObject;
+
+            service.interfaces.forEach(function (iface) res.QueryInterface(Ci[iface]));
+            if (service.init && args.length) {
+                if (service.callable)
+                    res[service.init].apply(res, args);
                 else
-                    res[init] = args[0];
+                    res[service.init] = args[0];
             }
             return res;
         }
@@ -119,7 +117,7 @@ var Services = Module("Services", {
             if (typeof util !== "undefined")
                 util.reportError(e);
             else
-                dump("dactyl: Service creation failed for '" + classes + "': " + e + "\n" + (e.stack || Error(e).stack));
+                dump("dactyl: Service creation failed for '" + service.class + "': " + e + "\n" + (e.stack || Error(e).stack));
             return null;
         }
     },
@@ -136,10 +134,10 @@ var Services = Module("Services", {
      */
     add: function (name, class_, ifaces, meth) {
         const self = this;
-        this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []) };
+        this.services[name] = { method: meth, class: class_, interfaces: Array.concat(ifaces || []) };
         if (name in this && ifaces && !this.__lookupGetter__(name) && !(this[name] instanceof Ci.nsISupports))
             throw TypeError();
-        memoize(this, name, function () self._create(class_, ifaces, meth));
+        memoize(this, name, function () self._create(name));
     },
 
     /**
@@ -147,14 +145,19 @@ var Services = Module("Services", {
      *
      * @param {string} name The class's cache key.
      * @param {string} class_ The class's contract ID.
-     * @param {nsISupports|[nsISupports]} ifaces The interface or array of
+     * @param {string|[string]} ifaces The interface or array of
      *     interfaces implemented by this class.
-     * @param {string} init Name of a property or method used to initialise the
-     *     class. See {@link #_create}.
+     * @param {string} init Name of a property or method used to initialize the
+     *     class.
      */
     addClass: function (name, class_, ifaces, init) {
         const self = this;
-        this[name] = function () self._create(class_, ifaces, "createInstance", init, arguments);
+        this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []), method: "createInstance", init: init };
+        if (init)
+            memoize(this.services[name], "callable",
+                    function () callable(XPCOMShim(this.interfaces)[this.init]));
+
+        this[name] = function () self._create(name, arguments);
         update.apply(null, [this[name]].concat([Ci[i] for each (i in Array.concat(ifaces))]));
         return this[name];
     },
@@ -164,14 +167,14 @@ var Services = Module("Services", {
      *
      * @param {string} name The class's cache key.
      */
-    create: function (name) this[name[0].toUpperCase() + name.substr(1)],
+    create: deprecated("services.*name*()", function create(name) this[util.capitalize(name)]()),
 
     /**
      * Returns the cached service with the specified name.
      *
      * @param {string} name The service's cache key.
      */
-    get: function (name) this[name],
+    get: deprecated("services.*name*", function get(name) this[name]),
 
     /**
      * Returns true if the given service is available.
