@@ -75,6 +75,7 @@ var Services = Module("Services", {
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        "nsIFind");
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", "nsIFormatConverter");
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     "nsIDocumentEncoder");
+        this.addClass("InterfacePointer", "@mozilla.org/supports-interface-pointer;1", "nsISupportsInterfacePointer", "data");
         this.addClass("InputStream",  "@mozilla.org/scriptableinputstream;1",      "nsIScriptableInputStream", "init");
         this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", "nsIWebBrowserPersist");
         this.addClass("Pipe",         "@mozilla.org/pipe;1",                       "nsIPipe", "init");

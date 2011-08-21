@@ -29,10 +29,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         this._observers = {};
         util.addObserver(this);
 
-        this.commands["dactyl.help"] = function (event) {
-            let elem = event.originalTarget;
-            dactyl.help(elem.getAttribute("tag") || elem.textContent);
-        };
         this.commands["dactyl.restart"] = function (event) {
             dactyl.restart();
         };
@@ -287,10 +283,10 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 let results = array((params.iterateIndex || params.iterate).call(params, commands.get(name).newArgs()))
                         .array.sort(function (a, b) String.localeCompare(a.name, b.name));
 
-                let tags = services["dactyl:"].HELP_TAGS;
+                let haveTag = Set.has(help.tags);
                 for (let obj in values(results)) {
                     let res = dactyl.generateHelp(obj, null, null, true);
-                    if (!Set.has(tags, obj.helpTag))
+                    if (!haveTag(obj.helpTag))
                         res[1].@tag = obj.helpTag;
 
                     yield res;
@@ -631,33 +627,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     has: function (feature) Set.has(config.features, feature),
 
     /**
-     * Returns the URL of the specified help *topic* if it exists.
-     *
-     * @param {string} topic The help topic to look up.
-     * @param {boolean} consolidated Whether to search the consolidated help page.
-     * @returns {string}
-     */
-    findHelp: function (topic, consolidated) {
-        if (!consolidated && topic in services["dactyl:"].FILE_MAP)
-            return topic;
-        let items = completion._runCompleter("help", topic, null, !!consolidated).items;
-        let partialMatch = null;
-
-        function format(item) item.description + "#" + encodeURIComponent(item.text);
-
-        for (let [i, item] in Iterator(items)) {
-            if (item.text == topic)
-                return format(item);
-            else if (!partialMatch && topic)
-                partialMatch = item;
-        }
-
-        if (partialMatch)
-            return format(partialMatch);
-        return null;
-    },
-
-    /**
      * @private
      */
     initDocument: function initDocument(doc) {
@@ -672,243 +641,89 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }
     },
 
+    help: deprecated("help.help", { get: function help() modules.help.closure.help }),
+    findHelp: deprecated("help.findHelp", { get: function findHelp() help.closure.findHelp }),
+
     /**
      * @private
      * Initialize the help system.
      */
-    initHelp: function (force) {
-        // Waits for the add-on to become available, if necessary.
-        config.addon;
-        config.version;
+    initHelp: function initHelp(force) {
+        if ("noscriptOverlay" in window)
+            noscriptOverlay.safeAllow("dactyl:", true, false);
 
-        if (force || !this.helpInitialized) {
-            if ("noscriptOverlay" in window) {
-                noscriptOverlay.safeAllow("chrome-data:", true, false);
-                noscriptOverlay.safeAllow("dactyl:", true, false);
+        if (!force && help.initialized)
+            return;
+
+        help.initialize(force);
+
+        // Process plugin help entries.
+        XML.ignoreWhiteSpace = XML.prettyPrinting = false;
+
+        let body = XML();
+        for (let [, context] in Iterator(plugins.contexts))
+            try {
+                let info = contexts.getDocs(context);
+                if (info instanceof XML) {
+                    if (info.*.@lang.length()) {
+                        let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
+
+                        info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
+
+                        for each (let elem in info.NS::info)
+                            for each (let attr in ["@name", "@summary", "@href"])
+                                if (elem[attr].length())
+                                    info[attr] = elem[attr];
+                    }
+                    body += <h2 xmlns={NS.uri} tag={info.@name + '-plugin'}>{info.@summary}</h2> +
+                        info;
+                }
+            }
+            catch (e) {
+                util.reportError(e);
             }
 
-            // Find help and overlay files with the given name.
-            let findHelpFile = function findHelpFile(file) {
-                let result = [];
-                for (let [, namespace] in Iterator(namespaces)) {
-                    let url = ["dactyl://", namespace, "/", file, ".xml"].join("");
-                    let res = util.httpGet(url);
-                    if (res) {
-                        if (res.responseXML.documentElement.localName == "document")
-                            fileMap[file] = url;
-                        if (res.responseXML.documentElement.localName == "overlay")
-                            overlayMap[file] = url;
-                        result.push(res.responseXML);
-                    }
-                }
-                return result;
-            };
-            // Find the tags in the document.
-            let addTags = function addTags(file, doc) {
-                for (let elem in DOM.XPath("//@tag|//dactyl:tags/text()|//dactyl:tag/text()", doc))
-                    for (let tag in values((elem.value || elem.textContent).split(/\s+/)))
-                        tagMap[tag] = file;
-            };
+        help.files["plugins"] = function () ['text/xml;charset=UTF-8',
+            '<?xml version="1.0"?>\n' +
+            '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
+            '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
+            <document xmlns={NS}
+                name="plugins" title={config.appName + " Plugins"}>
+                <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>
+                <toc start="2"/>
 
-            let namespaces = ["locale-local", "locale"];
-            services["dactyl:"].init({});
-
-            let tagMap = services["dactyl:"].HELP_TAGS;
-            let fileMap = services["dactyl:"].FILE_MAP;
-            let overlayMap = services["dactyl:"].OVERLAY_MAP;
-
-            // Scrape the list of help files from all.xml
-            // Manually process main and overlay files, since XSLTProcessor and
-            // XMLHttpRequest don't allow access to chrome documents.
-            tagMap["all"] = tagMap["all.xml"] = "all";
-            tagMap["versions"] = tagMap["versions.xml"] = "versions";
-            let files = findHelpFile("all").map(function (doc)
-                    [f.value for (f in DOM.XPath("//dactyl:include/@href", doc))]);
-
-            // Scrape the tags from the rest of the help files.
-            array.flatten(files).forEach(function (file) {
-                tagMap[file + ".xml"] = file;
-                findHelpFile(file).forEach(function (doc) {
-                    addTags(file, doc);
-                });
-            });
-
-            // Process plugin help entries.
-            XML.ignoreWhiteSpace = XML.prettyPrinting = false;
-
-            let body = XML();
-            for (let [, context] in Iterator(plugins.contexts))
-                try {
-                    let info = contexts.getDocs(context);
-                    if (info instanceof XML) {
-                        if (info.*.@lang.length()) {
-                            let lang = config.bestLocale(String(a) for each (a in info.*.@lang));
-
-                            info.* = info.*.(function::attribute("lang").length() == 0 || @lang == lang);
-
-                            for each (let elem in info.NS::info)
-                                for each (let attr in ["@name", "@summary", "@href"])
-                                    if (elem[attr].length())
-                                        info[attr] = elem[attr];
-                        }
-                        body += <h2 xmlns={NS.uri} tag={info.@name + '-plugin'}>{info.@summary}</h2> +
-                            info;
-                    }
-                }
-                catch (e) {
-                    util.reportError(e);
-                }
-
-            let help =
-                '<?xml version="1.0"?>\n' +
-                '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
-                <document xmlns={NS}
-                    name="plugins" title={config.appName + " Plugins"}>
-                    <h1 tag="using-plugins">{_("help.title.Using Plugins")}</h1>
-                    <toc start="2"/>
-
-                    {body}
-                </document>.toXMLString();
-            fileMap["plugins"] = function () ['text/xml;charset=UTF-8', help];
-
-            fileMap["versions"] = function () {
-                let NEWS = util.httpGet(config.addon.getResourceURI("NEWS").spec,
-                                        { mimeType: "text/plain;charset=UTF-8" })
-                               .responseText;
-
-                let re = util.regexp(<![CDATA[
-                      ^ (?P<comment> \s* # .*\n)
-
-                    | ^ (?P<space> \s*)
-                        (?P<char>  [-•*+]) \ //
-                      (?P<content> .*\n
-                         (?: \2\ \ .*\n | \s*\n)* )
-
-                    | (?P<par>
-                          (?: ^ [^\S\n]*
-                              (?:[^-•*+\s] | [-•*+]\S)
-                              .*\n
-                          )+
-                      )
-
-                    | (?: ^ [^\S\n]* \n) +
-                ]]>, "gmxy");
-
-                let betas = util.regexp(/\[(b\d)\]/, "gx");
-
-                let beta = array(betas.iterate(NEWS))
-                            .map(function (m) m[1]).uniq().slice(-1)[0];
-
-                default xml namespace = NS;
-                function rec(text, level, li) {
-                    XML.ignoreWhitespace = XML.prettyPrinting = false;
-
-                    let res = <></>;
-                    let list, space, i = 0;
-
-                    for (let match in re.iterate(text)) {
-                        if (match.comment)
-                            continue;
-                        else if (match.char) {
-                            if (!list)
-                                res += list = <ul/>;
-                            let li = <li/>;
-                            li.* += rec(match.content.replace(RegExp("^" + match.space, "gm"), ""), level + 1, li);
-                            list.* += li;
-                        }
-                        else if (match.par) {
-                            let [, par, tags] = /([^]*?)\s*((?:\[[^\]]+\])*)\n*$/.exec(match.par);
-                            let t = tags;
-                            tags = array(betas.iterate(tags)).map(function (m) m[1]);
-
-                            let group = !tags.length                       ? "" :
-                                        !tags.some(function (t) t == beta) ? "HelpNewsOld" : "HelpNewsNew";
-                            if (i === 0 && li) {
-                                li.@highlight = group;
-                                group = "";
-                            }
-
-                            list = null;
-                            if (level == 0 && /^.*:\n$/.test(match.par)) {
-                                let text = par.slice(0, -1);
-                                res += <h2 tag={"news-" + text}>{template.linkifyHelp(text, true)}</h2>;
-                            }
-                            else {
-                                let [, a, b] = /^(IMPORTANT:?)?([^]*)/.exec(par);
-                                res += <p highlight={group + " HelpNews"}>{
-                                    !tags.length ? "" :
-                                    <hl key="HelpNewsTag">{tags.join(" ")}</hl>
-                                }{
-                                    a ? <hl key="HelpWarning">{a}</hl> : ""
-                                }{
-                                    template.linkifyHelp(b, true)
-                                }</p>;
-                            }
-                        }
-                        i++;
-                    }
-                    for each (let attr in res..@highlight) {
-                        attr.parent().@NS::highlight = attr;
-                        delete attr.parent().@highlight;
-                    }
-                    return res;
-                }
-
-                XML.ignoreWhitespace = XML.prettyPrinting = false;
-                let body = rec(NEWS, 0);
-                for each (let li in body..li) {
-                    let list = li..li.(@NS::highlight == "HelpNewsOld");
-                    if (list.length() && list.length() == li..li.(@NS::highlight != "").length()) {
-                        for each (let li in list)
-                            li.@NS::highlight = "";
-                        li.@NS::highlight = "HelpNewsOld";
-                    }
-                }
-
-                return ["application/xml",
-                    '<?xml version="1.0"?>\n' +
-                    '<?xml-stylesheet type="text/xsl" href="dactyl://content/help.xsl"?>\n' +
-                    '<!DOCTYPE document SYSTEM "resource://dactyl-content/dactyl.dtd">\n' +
-                    <document xmlns={NS} xmlns:dactyl={NS}
-                        name="versions" title={config.appName + " Versions"}>
-                        <h1 tag="versions news NEWS">{config.appName} Versions</h1>
-                        <toc start="2"/>
-
-                        {body}
-                    </document>.toXMLString()
-                ];
-            }
-            addTags("versions", util.httpGet("dactyl://help/versions").responseXML);
-            addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
-
-            default xml namespace = NS;
-
-            overlayMap["index"] = ['text/xml;charset=UTF-8',
-                '<?xml version="1.0"?>\n' +
-                <overlay xmlns={NS}>{
-                template.map(dactyl.indices, function ([name, iter])
-                    <dl insertafter={name + "-index"}>{
-                        template.map(iter(), util.identity)
-                    }</dl>, <>{"\n\n"}</>)
-                }</overlay>];
-            addTags("index", util.httpGet("dactyl://help-overlay/index").responseXML);
-
-            overlayMap["gui"] = ['text/xml;charset=UTF-8',
-                '<?xml version="1.0"?>\n' +
-                <overlay xmlns={NS}>
-                    <dl insertafter="dialog-list">{
-                    template.map(config.dialogs, function ([name, val])
-                        (!val[2] || val[2]())
-                            ? <><dt>{name}</dt><dd>{val[0]}</dd></>
-                            : undefined,
-                        <>{"\n"}</>)
-                    }</dl>
-                </overlay>];
+                {body}
+            </document>.toXMLString()];
 
 
-            this.helpInitialized = true;
-        }
+        default xml namespace = NS;
+
+        help.overlays["index"] = ['text/xml;charset=UTF-8',
+            '<?xml version="1.0"?>\n' +
+            <overlay xmlns={NS}>{
+            template.map(dactyl.indices, function ([name, iter])
+                <dl insertafter={name + "-index"}>{
+                    template.map(iter(), util.identity)
+                }</dl>, <>{"\n\n"}</>)
+            }</overlay>];
+
+        help.overlays["gui"] = ['text/xml;charset=UTF-8',
+            '<?xml version="1.0"?>\n' +
+            <overlay xmlns={NS}>
+                <dl insertafter="dialog-list">{
+                template.map(config.dialogs, function ([name, val])
+                    (!val[2] || val[2]())
+                        ? <><dt>{name}</dt><dd>{val[0]}</dd></>
+                        : undefined,
+                    <>{"\n"}</>)
+                }</dl>
+            </overlay>];
+
+        help.tags["plugins"] = help.tags["plugins.xml"] = "plugins";
+        help.tags["index"] = help.tags["index.xml"] = "index";
+
+        help.addTags("plugins", util.httpGet("dactyl://help/plugins").responseXML);
+        help.addTags("index", util.httpGet("dactyl://help-overlay/index").responseXML);
     },
 
     stringifyXML: function (xml) {
@@ -995,7 +810,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
         let chromeFiles = {};
         let styles = {};
-        for (let [file, ] in Iterator(services["dactyl:"].FILE_MAP)) {
+        for (let [file, ] in Iterator(help.files)) {
             let url = "dactyl://help/" + file;
             dactyl.open(url);
             util.waitFor(function () content.location.href == url && buffer.loaded
@@ -1018,7 +833,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             .join("\n");
         addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
 
-        addDataEntry("tag-map.json", JSON.stringify(services["dactyl:"].HELP_TAGS));
+        addDataEntry("tag-map.json", JSON.stringify(help.tags));
 
         let m, re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
         while ((m = re.exec(data)))
@@ -1047,12 +862,12 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         let args = null;
 
         if (obj instanceof Command) {
-            link = function (cmd) <ex>:{cmd}</ex>;
+            link = function (cmd) <ex>{cmd}</ex>;
             args = obj.parseArgs("", CompletionContext(str || ""));
             tag  = function (cmd) <>:{cmd}</>;
             spec = function (cmd) <>{
                     obj.count ? <oa>count</oa> : <></>
-                }:{
+                }{
                     cmd
                 }{
                     obj.bang ? <oa>!</oa> : <></>
@@ -1085,7 +900,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     </>;
 
         let res = <res>
-                <dt>{link(obj.helpTag || obj.name, obj.name)}</dt> <dd>{
+                <dt>{link(obj.helpTag || tag(obj.name), obj.name)}</dt> <dd>{
                     template.linkifyHelp(obj.description ? obj.description.replace(/\.$/, "") : "", true)
                 }</dd></res>;
         if (specOnly)
@@ -1095,9 +910,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             <item>
                 <tags>{template.map(obj.names.slice().reverse(), tag, " ")}</tags>
                 <spec>{
-                    spec(template.highlightRegexp((obj.specs || obj.names)[0],
-                                                  /\[(.*?)\]/g,
-                                                  function (m, n0) <oa>{n0}</oa>))
+                    let (name = (obj.specs || obj.names)[0])
+                        spec(template.highlightRegexp(tag(name),
+                                                      /\[(.*?)\]/g,
+                                                      function (m, n0) <oa>{n0}</oa>),
+                             name)
                 }</spec>{
                 !obj.type ? "" : <>
                 <type>{obj.type}</type>
@@ -1136,30 +953,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                   .replace(' xmlns="' + NS + '"', "", "g")
                   .replace(/^ {12}|[ \t]+$/gm, "")
                   .replace(/^\s*\n|\n\s*$/g, "") + "\n";
-    },
-
-    /**
-     * Opens the help page containing the specified *topic* if it exists.
-     *
-     * @param {string} topic The help topic to open.
-     * @param {boolean} consolidated Whether to use the consolidated help page.
-     */
-    help: function (topic, consolidated) {
-        dactyl.initHelp();
-        if (!topic) {
-            let helpFile = consolidated ? "all" : options["helpfile"];
-
-            if (helpFile in services["dactyl:"].FILE_MAP)
-                dactyl.open("dactyl://help/" + helpFile, { from: "help" });
-            else
-                dactyl.echomsg(_("help.noFile", helpFile.quote()));
-            return;
-        }
-
-        let page = this.findHelp(topic, consolidated);
-        dactyl.assert(page != null, _("help.noTopic", topic));
-
-        dactyl.open("dactyl://help/" + page, { from: "help" });
     },
 
     /**
@@ -1764,14 +1557,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     mappings: function () {
-        mappings.add([modes.MAIN], ["<open-help>", "<F1>"],
-            "Open the introductory help page",
-            function () { dactyl.help(); });
-
-        mappings.add([modes.MAIN], ["<open-single-help>", "<A-F1>"],
-            "Open the single, consolidated help page",
-            function () { ex.helpall(); });
-
         if (dactyl.has("session"))
             mappings.add([modes.NORMAL], ["ZQ"],
                 "Quit and don't save the session",
@@ -1841,30 +1626,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                 completer: function (context) completion.javascript(context),
                 literal: 0
             });
-
-        [
-            {
-                name: "h[elp]",
-                description: "Open the introductory help page"
-            }, {
-                name: "helpa[ll]",
-                description: "Open the single consolidated help page"
-            }
-        ].forEach(function (command) {
-            let consolidated = command.name == "helpa[ll]";
-
-            commands.add([command.name],
-                command.description,
-                function (args) {
-                    dactyl.assert(!args.bang, _("help.dontPanic"));
-                    dactyl.help(args.literalArg, consolidated);
-                }, {
-                    argCount: "?",
-                    bang: true,
-                    completer: function (context) completion.help(context, consolidated),
-                    literal: 0
-                });
-        });
 
         commands.add(["loadplugins", "lpl"],
             "Load all or matching plugins",
@@ -2123,15 +1884,6 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
             context.completions = [[k, v[0], v[2]] for ([k, v] in Iterator(config.dialogs))];
         };
 
-        completion.help = function help(context, consolidated) {
-            dactyl.initHelp();
-            context.title = ["Help"];
-            context.anchored = false;
-            context.completions = services["dactyl:"].HELP_TAGS;
-            if (consolidated)
-                context.keys = { text: 0, description: function () "all" };
-        };
-
         completion.menuItem = function menuItem(context) {
             context.title = ["Menu Path", "Label"];
             context.anchored = false;
@@ -2186,7 +1938,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
                     localPrefs.set("first-run", false);
                     this.withSavedValues(["forceTarget"], function () {
                         this.forceTarget = dactyl.NEW_TAB;
-                        this.help();
+                        help.help();
                     });
                 }, 1000);
 

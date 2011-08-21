@@ -133,7 +133,8 @@ function defineModule(name, params, module) {
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
-    defineModule.loadLog.push("defineModule " + name);
+    defineModule.loadLog.push("[Begin " + name + "]");
+    defineModule.prefix += "  ";
     for (let [, mod] in Iterator(params.require || []))
         require(module, mod);
 
@@ -152,11 +153,13 @@ function defineModule(name, params, module) {
 defineModule.loadLog = [];
 Object.defineProperty(defineModule.loadLog, "push", {
     value: function (val) {
+        val = defineModule.prefix + val;
         if (true)
             defineModule.dump(val + "\n");
         this[this.length] = Date.now() + " " + val;
     }
 });
+defineModule.prefix = "";
 defineModule.dump = function dump_() {
     let msg = Array.map(arguments, function (msg) {
         if (loaded.util && typeof msg == "object")
@@ -185,7 +188,8 @@ defineModule.time = function time(major, minor, func, self) {
 }
 
 function endModule() {
-    defineModule.loadLog.push("endModule " + currentModule.NAME);
+    defineModule.prefix = defineModule.prefix.slice(0, -2);
+    defineModule.loadLog.push("(End   " + currentModule.NAME + ")");
 
     for (let [, mod] in Iterator(use[currentModule.NAME] || []))
         require(mod, currentModule.NAME, "use");
@@ -202,7 +206,7 @@ function require(obj, name, from) {
         let caller = Components.stack.caller;
 
         if (!loaded[name])
-            defineModule.loadLog.push("  " + (from || "require") + ": loading " + name + " into " + (obj.NAME || caller.filename + ":" + caller.lineNumber));
+            defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + (obj.NAME || caller.filename + ":" + caller.lineNumber));
 
         JSMLoader.load(name + ".jsm", obj);
         return obj;
@@ -220,11 +224,12 @@ defineModule("base", {
     // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
         "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object", "Runnable",
-        "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMUtils", "XPCSafeJSObjectWrapper",
-        "array", "bind", "call", "callable", "ctypes", "curry", "debuggerProperties", "defineModule",
-        "deprecated", "endModule", "forEach", "isArray", "isGenerator", "isinstance", "isObject",
-        "isString", "isSubclass", "iter", "iterAll", "iterOwnProperties", "keys", "memoize", "octal",
-        "properties", "require", "set", "update", "values", "withCallerGlobal"
+        "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
+        "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable", "ctypes", "curry",
+        "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
+        "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
+        "iterOwnProperties", "keys", "memoize", "octal", "properties", "require", "set", "update",
+        "values", "withCallerGlobal"
     ],
     use: ["config", "services", "util"]
 }, this);
@@ -754,6 +759,10 @@ function Class() {
                     constructor: { value: Constructor },
                 });
                 self.instance = self;
+
+                if ("_metaInit_" in self && self._metaInit_)
+                    self._metaInit_.apply(self, arguments);
+
                 var res = self.init.apply(self, arguments);
                 return res !== undefined ? res : self;
             })]]>,
@@ -1022,7 +1031,7 @@ function XPCOM(interfaces, superClass) {
     interfaces = Array.concat(interfaces);
 
     let shim = interfaces.reduce(function (shim, iface) shim.QueryInterface(iface),
-                                 Cc["@dactyl.googlecode.com/base/xpc-interface-shim"].createInstance());
+                                 XPCOMShim());
 
     let res = Class("XPCOM(" + interfaces + ")", superClass || Class, update(
         iter.toObject([k, v === undefined || callable(v) ? function stub() null : v]
@@ -1031,6 +1040,18 @@ function XPCOM(interfaces, superClass) {
     shim = interfaces = null;
     return res;
 }
+function XPCOMShim() {
+    let ip = services.InterfacePointer({
+        QueryInterface: function (iid) {
+            if (iid.equals(Ci.nsISecurityCheckedComponent))
+                throw Components.results.NS_ERROR_NO_INTERFACE;
+            return this;
+        },
+        getHelperForLanguage: function () null,
+        getInterfaces: function (count) { count.value = 0; }
+    });
+    return ip.data;
+};
 
 /**
  * An abstract base class for classes that wish to inherit from Error.
@@ -1065,24 +1086,32 @@ var ErrorBase = Class("ErrorBase", Error, {
  * @returns {Class}
  */
 function Module(name, prototype) {
-    let init = callable(prototype) ? 4 : 3;
-    let proto = arguments[callable(prototype) ? 2 : 1];
+    try {
+        let init = callable(prototype) ? 4 : 3;
+        let proto = arguments[callable(prototype) ? 2 : 1];
 
-    proto._metaInit_ = function () {
-        delete module.prototype._metaInit_;
-        currentModule[name.toLowerCase()] = this;
-    };
+        proto._metaInit_ = function () {
+            delete module.prototype._metaInit_;
+            currentModule[name.toLowerCase()] = this;
+        };
 
-    const module = Class.apply(Class, Array.slice(arguments, 0, init));
-    let instance = module();
-    module.className = name.toLowerCase();
+        const module = Class.apply(Class, Array.slice(arguments, 0, init));
+        let instance = module();
+        module.className = name.toLowerCase();
 
-    instance.INIT = update(Object.create(Module.INIT),
-                           arguments[init] || {});
+        instance.INIT = update(Object.create(Module.INIT),
+                               arguments[init] || {});
 
-    currentModule[module.className] = instance;
-    defineModule.modules.push(instance);
-    return module;
+        currentModule[module.className] = instance;
+        defineModule.modules.push(instance);
+        return module;
+    }
+    catch (e) {
+        if (typeof e === "string")
+            e = Error(e);
+
+        dump(e.fileName + ":" + e.lineNumber + ": " + e + "\n" + (e.stack || Error().stack));
+    }
 }
 Module.INIT = {
     init: function Module_INIT_init(dactyl, modules, window) {

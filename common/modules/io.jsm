@@ -13,7 +13,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("io", {
     exports: ["IO", "io"],
     require: ["services"],
-    use: ["config", "messages", "storage", "styles", "template", "util"]
+    use: ["config", "help", "messages", "storage", "styles", "template", "util"]
 }, this);
 
 // TODO: why are we passing around strings rather than file objects?
@@ -174,7 +174,7 @@ var IO = Module("io", {
                                 util.flushCache();
 
                             dactyl.loadScript(uri.spec, context);
-                            dactyl.helpInitialized = false;
+                            help.initialized = false;
                         }
                         catch (e) {
                             if (e.fileName)

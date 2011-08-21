@@ -8,7 +8,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("template", {
     exports: ["Binding", "Template", "template"],
     require: ["util"],
-    use: ["messages", "services"]
+    use: ["help", "messages", "services"]
 }, this);
 
 default xml namespace = XHTML;
@@ -204,7 +204,7 @@ var Template = Module("Template", {
     },
 
     helpLink: function (token, text, type) {
-        if (!services["dactyl:"].initialized)
+        if (!help.initialized)
             util.dactyl.initHelp();
 
         let topic = token; // FIXME: Evil duplication!
@@ -213,7 +213,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (services["dactyl:"].initialized && !Set.has(services["dactyl:"].HELP_TAGS, topic))
+        if (help.initialized && !Set.has(help.tags, topic))
             return <span highlight={type || ""}>{text || token}</span>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
@@ -224,7 +224,7 @@ var Template = Module("Template", {
         return <a highlight={"InlineHelpLink " + type} tag={topic} href={"dactyl://help-tag/" + topic} dactyl:command="dactyl.help" xmlns:dactyl={NS}>{text || topic}</a>;
     },
     HelpLink: function (token) {
-        if (!services["dactyl:"].initialized)
+        if (!help.initialized)
             util.dactyl.initHelp();
 
         let topic = token; // FIXME: Evil duplication!
@@ -233,7 +233,7 @@ var Template = Module("Template", {
         else if (/^n_/.test(topic))
             topic = topic.slice(2);
 
-        if (services["dactyl:"].initialized && !Set.has(services["dactyl:"].HELP_TAGS, topic))
+        if (help.initialized && !Set.has(help.tags, topic))
             return <>{token}</>;
 
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;

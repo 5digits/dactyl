@@ -11,35 +11,54 @@ function reportError(e) {
 
 var global = this;
 var NAME = "command-line-handler";
-var Cc = Components.classes;
-var Ci = Components.interfaces;
-var Cu = Components.utils;
+var { classes: Cc, interfaces: Ci, utils: Cu } = Components;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
+function init() {
+    Cu.import("resource://dactyl/bootstrap.jsm");
+    if (!JSMLoader.initialized)
+        JSMLoader.init();
+    Cu.import("resource://dactyl/base.jsm");
+    require(global, "config");
+    require(global, "util");
+}
+
 function CommandLineHandler() {
     this.wrappedJSObject = this;
-
-    Cu.import("resource://dactyl/base.jsm");
-    require(global, "util");
-    require(global, "config");
 }
 CommandLineHandler.prototype = {
 
-    classDescription: "Dactyl Command-line Handler",
+    classDescription: "Dactyl command line Handler",
 
     classID: Components.ID("{16dc34f7-6d22-4aa4-a67f-2921fb5dcb69}"),
 
     contractID: "@mozilla.org/commandlinehandler/general-startup;1?type=dactyl",
 
-    _xpcom_categories: [{
-        category: "command-line-handler",
-        entry: "m-dactyl"
-    }],
+    _xpcom_categories: [
+        {
+            category: "command-line-handler",
+            entry: "m-dactyl"
+        },
 
-    QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsICommandLineHandler]),
+        // FIXME: Belongs elsewhere
+         {
+            category: "profile-after-change",
+            entry: "m-dactyl"
+        }
+    ],
+
+    observe: function observe(subject, topic, data) {
+        if (topic === "profile-after-change") {
+            init();
+            require(global, "overlay");
+        }
+    },
+
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver, Ci.nsICommandLineHandler]),
 
     handle: function (commandLine) {
+        init();
         try {
             var remote = commandLine.handleFlagWithParam(config.name + "-remote", false);
         }

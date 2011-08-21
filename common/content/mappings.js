@@ -130,7 +130,7 @@ var Map = Class("Map", {
 
         if (this.executing) {
             util.dumpStack(_("map.recursive", args.command));
-            throw AssertionError(_("map.recursive", args.command));
+            throw FailedAssertion(_("map.recursive", args.command));
         }
 
         try {
@@ -771,10 +771,10 @@ var Mappings = Module("mappings", {
                     name: [mode.char + "listk[eys]", mode.char + "lk"],
                     iterateIndex: function (args)
                             let (self = this, prefix = /^[bCmn]$/.test(mode.char) ? "" : mode.char + "_",
-                                 tags = services["dactyl:"].HELP_TAGS)
+                                 haveTag = Set.has(help.tags))
                                     ({ helpTag: prefix + map.name, __proto__: map }
                                      for (map in self.iterate(args, true))
-                                     if (map.hive === mappings.builtin || Set.has(tags, prefix + map.name))),
+                                     if (map.hive === mappings.builtin || haveTag(prefix + map.name))),
                     description: "List all " + mode.displayName + " mode mappings along with their short descriptions",
                     index: mode.char + "-map",
                     getMode: function (args) mode,

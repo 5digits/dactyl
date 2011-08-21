@@ -12,7 +12,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("commands", {
     exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
     require: ["contexts", "messages", "util"],
-    use: ["config", "options", "services", "template"]
+    use: ["config", "help", "options", "services", "template"]
 }, this);
 
 /**
@@ -1585,7 +1585,7 @@ var Commands = Module("commands", {
                     cmd.hive == commands.builtin ? "" : <span highlight="Object" style="padding-right: 1em;">{cmd.hive.name}</span>
                 ]
             })),
-            iterateIndex: function (args) let (tags = services["dactyl:"].HELP_TAGS)
+            iterateIndex: function (args) let (tags = help.tags)
                 this.iterate(args).filter(function (cmd) cmd.hive === commands.builtin || Set.has(tags, cmd.helpTag)),
             format: {
                 headings: ["Command", "Group", "Description"],

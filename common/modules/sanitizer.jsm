@@ -656,7 +656,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         options.add(["cookies", "ck"],
             "The default mode for newly added cookie permissions",
             "stringlist", "session",
-            { get values() iter(Sanitizer.COMMANDS) });
+            { get values() Sanitizer.COMMANDS });
 
         options.add(["cookieaccept", "ca"],
             "When to accept cookies",

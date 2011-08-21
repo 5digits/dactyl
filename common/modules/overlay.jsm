@@ -9,7 +9,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("overlay", {
     exports: ["ModuleBase", "overlay"],
-    require: ["config", "highlight", "io", "services", "util"]
+    require: ["config", "help", "highlight", "io", "services", "util"]
 }, this);
 
 /**
@@ -40,8 +40,6 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     init: function init() {
         util.addObserver(this);
         this.overlays = {};
-
-        services["dactyl:"]; // Hack. Force module initialization.
 
         config.loadStyles();
 

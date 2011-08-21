@@ -19,11 +19,11 @@ if (!JSMLoader && "@mozilla.org/fuel/application;1" in Components.classes)
                           .getService(Components.interfaces.extIApplication)
                           .storage.get("dactyl.JSMLoader", null);
 
-if (JSMLoader && JSMLoader.bump === 5)
+if (JSMLoader && JSMLoader.bump === 6)
     JSMLoader.global = this;
 else
     JSMLoader = {
-        bump: 5,
+        bump: 6,
 
         builtin: Cu.Sandbox(this),
 
@@ -166,6 +166,24 @@ else
                 }
             }
         },
+
+        Factory: function Factory(clas) ({
+            __proto__: clas.prototype,
+
+            createInstance: function (outer, iid) {
+                try {
+                    if (outer != null)
+                        throw Cr.NS_ERROR_NO_AGGREGATION;
+                    if (!clas.instance)
+                        clas.instance = new clas();
+                    return clas.instance.QueryInterface(iid);
+                }
+                catch (e) {
+                    Cu.reportError(e);
+                    throw e;
+                }
+            }
+        }),
 
         registerFactory: function registerFactory(factory) {
             this.manager.registerFactory(factory.classID,

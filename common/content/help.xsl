@@ -296,14 +296,18 @@
     <xsl:template name="linkify-tag">
         <xsl:param name="contents" select="text()"/>
         <xsl:variable name="tag" select="$contents"/>
+        <xsl:variable name="tag-url" select="
+          regexp:replace(regexp:replace($tag, '%', 'g', '%25'),
+                         '#', 'g', '%23')"/>
+
         <a style="color: inherit;">
             <xsl:if test="not(@link) or @link != 'false'">
                 <xsl:choose>
                     <xsl:when test="contains(ancestor::*/@document-tags, concat(' ', $tag, ' '))">
-                        <xsl:attribute name="href">#<xsl:value-of select="$tag"/></xsl:attribute>
+                        <xsl:attribute name="href">#<xsl:value-of select="$tag-url"/></xsl:attribute>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href">dactyl://help-tag/<xsl:value-of select="$tag"/></xsl:attribute>
+                        <xsl:attribute name="href">dactyl://help-tag/<xsl:value-of select="$tag-url"/></xsl:attribute>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:if>

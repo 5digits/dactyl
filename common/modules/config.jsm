@@ -6,15 +6,33 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
-try {
-
 let global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
-    require: ["services", "storage", "util", "template"],
+    require: ["protocol", "services", "storage", "util", "template"],
     use: ["io", "messages", "prefs", "styles"]
 }, this);
+
+function AboutHandler() {}
+AboutHandler.prototype = {
+    get classDescription() "About " + config.appName + " Page",
+
+    classID: Components.ID("81495d80-89ee-4c36-a88d-ea7c4e5ac63f"),
+
+    get contractID() "@mozilla.org/network/protocol/about;1?what=" + config.name,
+
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
+
+    newChannel: function (uri) {
+        let channel = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
+                          .newChannel("dactyl://content/about.xul", null, null);
+        channel.originalURI = uri;
+        return channel;
+    },
+
+    getURIFlags: function (uri) Ci.nsIAboutModule.ALLOW_SCRIPT,
+};
 
 var ConfigBase = Class("ConfigBase", {
     /**
@@ -26,8 +44,18 @@ var ConfigBase = Class("ConfigBase", {
         if (this.haveGecko("2b"))
             Set.add(this.features, "Gecko2");
 
+        JSMLoader.registerFactory(JSMLoader.Factory(AboutHandler));
+        JSMLoader.registerFactory(JSMLoader.Factory(
+            Protocol("dactyl", "{9c8f2530-51c8-4d41-b356-319e0b155c44}",
+                     "resource://dactyl-content/")));
+
         this.timeout(function () {
             services["dactyl:"].pages.dtd = function () [null, util.makeDTD(config.dtd)];
+        });
+
+        update(services["dactyl:"].providers, {
+            "locale": function (uri, path) LocaleChannel("dactyl-locale", config.locale, path, uri),
+            "locale-local": function (uri, path) LocaleChannel("dactyl-local-locale", config.locale, path, uri)
         });
     },
 
@@ -41,12 +69,14 @@ var ConfigBase = Class("ConfigBase", {
                  "contexts",
                  "downloads",
                  "finder",
+                 "help",
                  "highlight",
                  "javascript",
                  "messages",
                  "options",
                  "overlay",
                  "prefs",
+                 "protocol",
                  "sanitizer",
                  "services",
                  "storage",
@@ -1065,6 +1095,6 @@ config.INIT = update(Object.create(config.INIT), config.INIT, {
 
 endModule();
 
-} catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+// catch(e){ if (typeof e === "string") e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:

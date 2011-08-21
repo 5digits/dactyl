@@ -140,7 +140,7 @@
 </item>
 
 <item>
-    <tags>&lt;scroll-percent> N%</tags>
+    <tags>&lt;scroll-percent> N% %</tags>
     <spec><a>count</a>%</spec>
     <description short="true">
         <p>Scroll to <a>count</a> percent of the document.</p>
