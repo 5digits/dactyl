@@ -1589,8 +1589,8 @@ var DOM = Class("DOM", {
 
     attrHooks: array.toObject([
         ["", {
-            href: { get: function (elem) elem.href },
-            src:  { get: function (elem) elem.src }
+            href: { get: function (elem) elem.href || elem.getAttribute("href") },
+            src:  { get: function (elem) elem.src || elem.getAttribute("src") }
         }]
     ]),
 
@@ -1843,7 +1843,7 @@ var DOM = Class("DOM", {
      */
     get style() {
         let node = this[0];
-        while (!(node instanceof Ci.nsIDOMElement) && node.parentNode)
+        while (node && !(node instanceof Ci.nsIDOMElement) && node.parentNode)
             node = node.parentNode;
 
         try {

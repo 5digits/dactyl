@@ -12,7 +12,6 @@ var StatusLine = Module("statusline", {
     init: function init() {
         this._statusLine = document.getElementById("status-bar");
         this.statusBar = document.getElementById("addon-bar") || this._statusLine;
-        this.statusBar.collapsed = true;
         this.baseGroup = this.statusBar == this._statusLine ? "StatusLine " : "";
 
         if (this.statusBar.localName == "toolbar") {

@@ -12,12 +12,10 @@ defineModule("protocol", {
 
 var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].getService(Ci.nsIPrincipal);
 
-var DNE = "resource://gre/does/not/exist";
-
-function Channel(url, orig, noFake) {
+function Channel(url, orig, noErrorChannel) {
     try {
         if (url == null)
-            return noFake ? null : FakeChannel(orig);
+            return noErrorChannel ? null : NetError(orig);
 
         if (url instanceof Ci.nsIChannel)
             return url;
@@ -29,17 +27,28 @@ function Channel(url, orig, noFake) {
             return let ([type, data] = url) StringChannel(data, type, orig);
 
         let uri = services.io.newURI(url, null, null);
-        return (new XMLChannel(uri, null, noFake)).channel;
+        return (new XMLChannel(uri, null, noErrorChannel)).channel;
     }
     catch (e) {
         util.reportError(e);
+        util.dump(url);
         throw e;
     }
 }
-function FakeChannel(orig) {
-    let channel = services.io.newChannel(DNE, null, null);
-    channel.originalURI = orig;
-    return channel;
+function NetError(orig, error) {
+    return services.InterfacePointer({
+        QueryInterface: XPCOMUtils.generateQI([Ci.nsIChannel]),
+
+        name: orig.spec,
+
+        URI: orig,
+
+        originalURI: orig,
+
+        asyncOpen: function () { throw error || Cr.NS_ERROR_FILE_NOT_FOUND },
+
+        open: function () { throw error || Cr.NS_ERROR_FILE_NOT_FOUND }
+    }).data.QueryInterface(Ci.nsIChannel);
 }
 function RedirectChannel(to, orig, time) {
     let html = <html><head><meta http-equiv="Refresh" content={(time || 0) + ";" + to}/></head></html>.toXMLString();
@@ -68,7 +77,19 @@ function ProtocolBase() {
     this.wrappedJSObject = this;
 
     this.pages = {};
-    this.providers = {};
+    this.providers = {
+        "content": function (uri, path) this.pages[path] || this.contentBase + path,
+
+        "data": function (uri) {
+            var channel = services.io.newChannel(uri.path.replace(/^\/(.*)(?:#.*)?/, "data:$1"),
+                                                 null, null);
+
+            channel.contentCharset = "UTF-8";
+            channel.owner = systemPrincipal;
+            channel.originalURI = uri;
+            return channel;
+        }
+    };
 }
 ProtocolBase.prototype = {
     get contractID()        "@mozilla.org/network/protocol;1?name=" + this.scheme,
@@ -92,34 +113,17 @@ ProtocolBase.prototype = {
         try {
             uri.QueryInterface(Ci.nsIURL);
 
+            let path = decodeURIComponent(uri.filePath.substr(1));
             if (uri.host in this.providers)
-                return Channel(this.providers[uri.host](uri, uri.filePath.substr(1)), uri);
+                return Channel(this.providers[uri.host].call(this, uri, path),
+                               uri);
 
-            let path = decodeURIComponent(uri.path.replace(/^\/|#.*/g, ""));
-            switch(uri.host) {
-            case "content":
-                return Channel(this.pages[path] || this.contentBase + path, uri);
-            case "data":
-                try {
-                    var channel = services.io.newChannel(uri.path.replace(/^\/(.*)(?:#.*)?/, "data:$1"),
-                                                         null, null);
-                }
-                catch (e) {
-                    var error = e;
-                    break;
-                }
-                channel.contentCharset = "UTF-8";
-                channel.owner = systemPrincipal;
-                channel.originalURI = uri;
-                return channel;
-            }
+            return NetError(uri);
         }
         catch (e) {
             util.reportError(e);
+            throw e;
         }
-        if (error)
-            throw error;
-        return FakeChannel(uri);
     }
 };
 
@@ -131,7 +135,7 @@ function LocaleChannel(pkg, locale, path, orig) {
                 return channel;
         }
 
-    return FakeChannel(orig);
+    return NetError(orig);
 }
 
 function StringChannel(data, contentType, uri) {
@@ -146,13 +150,13 @@ function StringChannel(data, contentType, uri) {
     return channel;
 }
 
-function XMLChannel(uri, contentType, noFake) {
+function XMLChannel(uri, contentType, noErrorChannel) {
     try {
         var channel = services.io.newChannelFromURI(uri);
         var channelStream = channel.open();
     }
     catch (e) {
-        this.channel = noFake ? null : FakeChannel(uri);
+        this.channel = noErrorChannel ? null : NetError(uri);
         return;
     }
 

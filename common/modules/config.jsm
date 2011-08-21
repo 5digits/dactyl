@@ -309,7 +309,7 @@ var ConfigBase = Class("ConfigBase", {
     version: Class.memoize(function () {
         if (this.VCSPath)
             return io.system(["hg", "-R", this.VCSPath, "log", "-r.",
-                              "--template=hg{rev}." + this.branch]).output;
+                              "--template=hg{rev}-{branch}"]).output;
 
         return this.addon.version;
     }),
@@ -503,13 +503,6 @@ var ConfigBase = Class("ConfigBase", {
      *     extension. E.g., "Firefox" or "XULRunner".
      */
     host: null,
-
-    /**
-     * @property {[[]]} An array of application specific mode specifications.
-     *     The values of each mode are passed to modes.addMode during
-     *     dactyl startup.
-     */
-    modes: [],
 
     /**
      * @property {string} The name of the extension.

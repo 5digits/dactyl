@@ -851,7 +851,7 @@ Class.extend = function extend(subclass, superclass, overrides) {
  *      property's value.
  * @returns {Class.Property}
  */
-Class.memoize = function memoize(getter, wait)
+Class.Memoize = Class.memoize = function Memoize(getter, wait)
     Class.Property({
         configurable: true,
         enumerable: true,
@@ -890,6 +890,19 @@ Class.memoize = function memoize(getter, wait)
                 };
 
             this.set = function replace(val) Class.replaceProperty(this.instance || this, val);
+        }
+    });
+
+/**
+ * Updates the given object with the object in the target class's
+ * prototype.
+ */
+Class.Update = function Update(obj)
+    Class.Property({
+        configurable: true,
+        enumerable: true,
+        init: function (key, target) {
+            this.value = update({}, target[key], obj);
         }
     });
 

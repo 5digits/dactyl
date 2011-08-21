@@ -14,11 +14,6 @@ var BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 var JSMLoader = BOOTSTRAP_CONTRACT in Components.classes &&
     Components.classes[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 
-if (!JSMLoader && "@mozilla.org/fuel/application;1" in Components.classes)
-    JSMLoader = Components.classes["@mozilla.org/fuel/application;1"]
-                          .getService(Components.interfaces.extIApplication)
-                          .storage.get("dactyl.JSMLoader", null);
-
 if (JSMLoader && JSMLoader.bump === 6)
     JSMLoader.global = this;
 else
@@ -132,6 +127,8 @@ else
 
         purge: function purge() {
             dump("dactyl: JSMLoader: purge\n");
+
+            this.bootstrap = null;
 
             if (Cu.unload) {
                 Object.keys(this.modules).reverse().forEach(function (url) {

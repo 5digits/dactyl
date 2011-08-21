@@ -254,12 +254,14 @@ var Styles = Module("Styles", {
         this.cleanup();
         this.allSheets = {};
 
-        services["dactyl:"].providers["style"] = function styleProvider(uri) {
-            let id = /^\/(\d*)/.exec(uri.path)[1];
-            if (Set.has(styles.allSheets, id))
-                return ["text/css", styles.allSheets[id].fullCSS];
-            return null;
-        };
+        update(services["dactyl:"].providers, {
+            "style": function styleProvider(uri, path) {
+                let id = parseInt(path);
+                if (Set.has(styles.allSheets, id))
+                    return ["text/css", styles.allSheets[id].fullCSS];
+                return null;
+            }
+        });
     },
 
     cleanup: function cleanup() {

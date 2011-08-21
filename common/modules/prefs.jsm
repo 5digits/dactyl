@@ -44,7 +44,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
 
     cleanup: function cleanup(reason) {
         if (this.defaults != this)
-            this.defaults.cleanup();
+            this.defaults.cleanup(reason);
 
         this._observers = {};
         if (this.observe) {
@@ -62,7 +62,7 @@ var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference])
                 this.branches.saved.resetBranch();
             }
 
-            if (reason == "uninstall" && this == prefs)
+            if (reason == "uninstall")
                 localPrefs.resetBranch();
         }
     },

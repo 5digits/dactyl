@@ -32,16 +32,8 @@ const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 const BOOTSTRAP_JSM = "resource://dactyl/bootstrap.jsm";
 
 const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
-JSMLoader = JSMLoader || BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 
-var JSMLoader = BOOTSTRAP_CONTRACT in Components.classes &&
-    Components.classes[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
-
-// Temporary migration code.
-if (!JSMLoader && "@mozilla.org/fuel/application;1" in Components.classes)
-    JSMLoader = Components.classes["@mozilla.org/fuel/application;1"]
-                          .getService(Components.interfaces.extIApplication)
-                          .storage.get("dactyl.JSMLoader", null);
+var JSMLoader = BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
 
 function reportError(e) {
     dump("\ndactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
@@ -119,7 +111,8 @@ function startup(data, reason) {
             };
         else
             getURI = function getURI(path)
-                Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec + "!/" + path, null, null);
+                Services.io.newURI("jar:" + Services.io.newFileURI(basePath).spec.replace(/!/g, "%21") + "!" +
+                                   "/" + path, null, null);
 
         try {
             init();
@@ -243,7 +236,7 @@ function init() {
 
     if (!(BOOTSTRAP_CONTRACT in Cc))
         manager.registerFactory(Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}"),
-                                String("{f541c8b0-fe26-4621-a30b-e77d21721fb5}"),
+                                "{f541c8b0-fe26-4621-a30b-e77d21721fb5}",
                                 BOOTSTRAP_CONTRACT, {
             QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory]),
             instance: {
@@ -292,6 +285,12 @@ function shutdown(data, reason) {
     }
 }
 
+function uninstall(data, reason) {
+    dump("dactyl: bootstrap: uninstall " + reasonToString(reason) + "\n");
+    if (reason == ADDON_UNINSTALL)
+        Services.prefs.deleteBranch("extensions.dactyl.");
+}
+
 function reasonToString(reason) {
     for each (let name in ["disable", "downgrade", "enable",
                            "install", "shutdown", "startup",
@@ -302,6 +301,5 @@ function reasonToString(reason) {
 }
 
 function install(data, reason) { dump("dactyl: bootstrap: install " + reasonToString(reason) + "\n"); }
-function uninstall(data, reason) { dump("dactyl: bootstrap: uninstall " + reasonToString(reason) + "\n"); }
 
 // vim: set fdm=marker sw=4 ts=4 et:

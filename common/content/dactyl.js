@@ -56,7 +56,11 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         delete window.dactyl;
         delete window.liberator;
 
+        styles.system.add("cleanup-sheet", config.styleableChrome, <![CDATA[
+            #TabsToolbar tab { display: none; }
+        ]]>);
         styles.unregisterSheet("resource://dactyl-skin/dactyl.css");
+        DOM('#TabsToolbar tab', document).style.display;
     },
 
     destroy: function () {

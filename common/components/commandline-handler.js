@@ -19,7 +19,7 @@ function init() {
     Cu.import("resource://dactyl/bootstrap.jsm");
     if (!JSMLoader.initialized)
         JSMLoader.init();
-    Cu.import("resource://dactyl/base.jsm");
+    JSMLoader.load("base.jsm", global);
     require(global, "config");
     require(global, "util");
 }

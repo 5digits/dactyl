@@ -21,10 +21,17 @@ var setupTest = function (test) {
 
 function urlTarget(url) Services.io.newChannel(url, null, null).name;
 
-__defineGetter__("doesNotExist", function () {
-    delete this.doesNotExist;
-    return this.doesNotExist = urlTarget("dactyl://help-tag/non-existent-help-tag-url-thingy");
-});
+function urlExists(url) {
+    try {
+        let chan = Services.io.newChannel(url);
+        chan.open();
+        try { chan.cancel(Cr.NS_BINDING_ABORTED) } catch (e) {}
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+}
 
 const HELP_FILES = ["all", "tutorial", "intro", "starting", "browsing",
     "buffer", "cmdline", "editing", "options", "pattern", "tabs", "hints",
@@ -70,7 +77,7 @@ var testExHelpCommand_PageTagArg_OpensHelpPageContainingTag = function () {
 
         let links = controller.tabs.activeTab.querySelectorAll("a[href^='dactyl:']");
 
-        let missing = Array.filter(links, function (link) urlTarget(link.href) === doesNotExist)
+        let missing = Array.filter(links, function (link) urlExists(link.href))
                            .map(function (link) link.textContent + " -> " + link.href);
 
         utils.assertEqual("testHelpCommands.assertNoDeadLinks", 0, missing.length,

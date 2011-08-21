@@ -18,7 +18,7 @@ var Config = Module("config", ConfigBase, {
     Local: function Local(dactyl, modules, window)
         let ({ config } = modules) ({
 
-        completers: Class.memoize(function () update({ sidebar: "sidebar", window: "window" }, this.__proto__.completers)),
+        completers: Class.Update({ sidebar: "sidebar", window: "window" }),
 
         dialogs: {
             about: ["About Firefox",
@@ -278,7 +278,7 @@ var Config = Module("config", ConfigBase, {
         const { CompletionContext, bookmarkcache, completion } = modules;
         const { document } = window;
 
-        var searchRunning = null; // only until Firefox fixes https://bugzilla.mozilla.org/show_bug.cgi?id=510589
+        var searchRunning = null;
         completion.location = function location(context) {
             if (!services.autoCompleteSearch)
                 return;
@@ -349,13 +349,9 @@ var Config = Module("config", ConfigBase, {
                      "Handled by " + config.host,
                      function () Events.PASS_THROUGH);
     },
-    modes: function (dactyl, modules, window) {
-        const { modes } = modules;
-        config.modes.forEach(function (mode) { modes.addMode.apply(this, mode); });
-    },
     options: function (dactyl, modules, window) {
         modules.options.add(["online"],
-            "Set the 'work offline' option",
+            "Enables or disables offline mode",
             "boolean", true,
             {
                 setter: function (value) {
