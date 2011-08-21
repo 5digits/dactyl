@@ -76,7 +76,7 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
 
 var actions = {
     delete: {
-        name: "extde[lete]",
+        name: ["extde[lete]", "extrm"],
         description: "Uninstall an extension",
         action: callResult("uninstall"),
         perm: "uninstall"
