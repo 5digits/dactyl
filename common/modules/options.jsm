@@ -11,8 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("options", {
     exports: ["Option", "Options", "ValueError", "options"],
-    require: ["contexts", "messages", "storage"],
-    use: ["commands", "completion", "config", "prefs", "services", "styles", "template", "util"]
+    require: ["contexts", "messages", "storage"]
 }, this);
 
 /** @scope modules */

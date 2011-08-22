@@ -6,8 +6,7 @@
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("downloads", {
-    exports: ["Download", "Downloads", "downloads"],
-    use: ["io", "messages", "prefs", "services", "util"]
+    exports: ["Download", "Downloads", "downloads"]
 }, this);
 
 Cu.import("resource://gre/modules/DownloadUtils.jsm", this);

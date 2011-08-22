@@ -9,8 +9,7 @@ try {
 var global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("services", {
-    exports: ["services"],
-    use: ["util"]
+    exports: ["services"]
 }, this);
 
 /**

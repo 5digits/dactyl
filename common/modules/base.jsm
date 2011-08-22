@@ -122,6 +122,7 @@ if (!Object.keys)
 
 let getGlobalForObject = Cu.getGlobalForObject || function (obj) obj.__parent__;
 
+let jsmodules = {};
 let use = {};
 let loaded = {};
 let currentModule;
@@ -132,18 +133,15 @@ function defineModule(name, params, module) {
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
+    delete module.File;
+
     defineModule.loadLog.push("[Begin " + name + "]");
     defineModule.prefix += "  ";
-    for (let [, mod] in Iterator(params.require || []))
-        require(module, mod);
 
-    for (let [, mod] in Iterator(params.use || []))
-        if (loaded.hasOwnProperty(mod))
-            require(module, mod, "use");
-        else {
-            use[mod] = use[mod] || [];
-            use[mod].push(module);
-        }
+    for (let [, mod] in Iterator(params.require || []))
+        require(jsmodules, mod, null, name);
+    module.__proto__ = jsmodules;
+
     module._lastModule = currentModule;
     currentModule = module;
     module.startTime = Date.now();
@@ -189,14 +187,12 @@ function endModule() {
     defineModule.prefix = defineModule.prefix.slice(0, -2);
     defineModule.loadLog.push("(End   " + currentModule.NAME + ")");
 
-    for (let [, mod] in Iterator(use[currentModule.NAME] || []))
-        require(mod, currentModule.NAME, "use");
-
     loaded[currentModule.NAME] = 1;
+    require(jsmodules, currentModule.NAME);
     currentModule = currentModule._lastModule;
 }
 
-function require(obj, name, from) {
+function require(obj, name, from, targetName) {
     try {
         if (arguments.length === 1)
             [obj, name] = [{}, obj];
@@ -204,7 +200,8 @@ function require(obj, name, from) {
         let caller = Components.stack.caller;
 
         if (!loaded[name])
-            defineModule.loadLog.push((from || "require") + ": loading " + name + " into " + (obj.NAME || caller.filename + ":" + caller.lineNumber));
+            defineModule.loadLog.push((from || "require") + ": loading " + name +
+                                      " into " + (targetName || obj.NAME || caller.filename + ":" + caller.lineNumber));
 
         JSMLoader.load(name + ".jsm", obj);
         return obj;
@@ -228,8 +225,7 @@ defineModule("base", {
         "isGenerator", "isinstance", "isObject", "isString", "isSubclass", "iter", "iterAll",
         "iterOwnProperties", "keys", "memoize", "octal", "properties", "require", "set", "update",
         "values", "withCallerGlobal"
-    ],
-    use: ["config", "services", "util"]
+    ]
 }, this);
 
 function Runnable(self, func, args) {

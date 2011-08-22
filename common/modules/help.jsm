@@ -7,8 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("help", {
     exports: ["help"],
-    require: ["dom", "protocol", "services", "util"],
-    use: ["config", "highlight", "messages", "template"]
+    require: ["dom", "protocol", "services", "util"]
 }, this);
 
 var Help = Module("Help", {

@@ -10,8 +10,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("addons", {
     exports: ["AddonManager", "Addons", "Addon", "addons"],
-    require: ["services"],
-    use: ["completion", "config", "io", "messages", "prefs", "template", "util"]
+    require: ["services"]
 }, this);
 
 var callResult = function callResult(method) {

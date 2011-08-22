@@ -8,11 +8,11 @@
 
 try {
 
+    let global=this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("util", {
     exports: ["DOM", "$", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
-    require: ["dom", "services"],
-    use: ["commands", "config", "highlight", "messages", "overlay", "storage", "template"]
+    require: ["dom", "services"]
 }, this);
 
 var FailedAssertion = Class("FailedAssertion", ErrorBase, {

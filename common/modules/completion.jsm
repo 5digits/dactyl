@@ -10,8 +10,7 @@ try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("completion", {
-    exports: ["CompletionContext", "Completion", "completion"],
-    use: ["config", "messages", "template", "util"]
+    exports: ["CompletionContext", "Completion", "completion"]
 }, this);
 
 /**

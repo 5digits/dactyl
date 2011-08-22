@@ -8,8 +8,7 @@ try {
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("contexts", {
-    exports: ["Contexts", "Group", "contexts"],
-    use: ["commands", "messages", "options", "services", "storage", "styles", "template", "util"]
+    exports: ["Contexts", "Group", "contexts"]
 }, this);
 
 var Const = function Const(val) Class.Property({ enumerable: true, value: val });

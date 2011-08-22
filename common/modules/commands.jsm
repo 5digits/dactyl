@@ -11,8 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("commands", {
     exports: ["ArgType", "Command", "Commands", "CommandOption", "Ex", "commands"],
-    require: ["contexts", "messages", "util"],
-    use: ["config", "help", "options", "services", "template"]
+    require: ["contexts", "messages", "util"]
 }, this);
 
 /**

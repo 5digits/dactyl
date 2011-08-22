@@ -7,8 +7,7 @@
 
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("dom", {
-    exports: ["$", "DOM", "NS", "XBL", "XHTML", "XUL"],
-    use: ["config", "highlight", "template", "util"],
+    exports: ["$", "DOM", "NS", "XBL", "XHTML", "XUL"]
 }, this);
 
 var XBL = Namespace("xbl", "http://www.mozilla.org/xbl");

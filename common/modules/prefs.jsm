@@ -11,8 +11,7 @@ try {
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("prefs", {
     exports: ["Prefs", "localPrefs", "prefs"],
-    require: ["services", "util"],
-    use: ["config", "messages", "template"]
+    require: ["services", "util"]
 }, this);
 
 var Prefs = Module("prefs", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), {

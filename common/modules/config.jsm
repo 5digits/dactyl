@@ -10,8 +10,7 @@ let global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
-    require: ["dom", "protocol", "services", "storage", "util", "template"],
-    use: ["io", "messages", "prefs", "styles"]
+    require: ["dom", "protocol", "services", "storage", "util", "template"]
 }, this);
 
 function AboutHandler() {}

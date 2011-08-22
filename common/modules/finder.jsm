@@ -7,8 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("finder", {
     exports: ["RangeFind", "RangeFinder", "rangefinder"],
-    require: ["prefs"],
-    use: ["dom", "messages", "services", "util"]
+    require: ["prefs"]
 }, this);
 
 function equals(a, b) XPCNativeWrapper(a) == XPCNativeWrapper(b);

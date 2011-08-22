@@ -293,7 +293,7 @@ var Storage = Module("Storage", {
  * @param {boolean} checkPWD Whether to allow expansion relative to the
  *          current directory. @default true
  */
-var File = Class("File", {
+this.File = Class("File", {
     init: function (path, checkPWD) {
         let file = services.File();
 
@@ -621,6 +621,6 @@ var File = Class("File", {
 
 endModule();
 
-// catch(e){dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack);}
+// catch(e){ dump(e + "\n" + (e.stack || Error().stack)); Components.utils.reportError(e) }
 
 // vim: set fdm=marker sw=4 sts=4 et ft=javascript:

@@ -7,8 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("highlight", {
     exports: ["Highlight", "Highlights", "highlight"],
-    require: ["services", "styles", "util"],
-    use: ["messages", "template"]
+    require: ["services", "styles", "util"]
 }, this);
 
 var Highlight = Struct("class", "selector", "sites",
