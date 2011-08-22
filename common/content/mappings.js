@@ -45,10 +45,10 @@ var Map = Class("Map", {
         }
     },
 
-    name: Class.memoize(function () this.names[0]),
+    name: Class.Memoize(function () this.names[0]),
 
     /** @property {[string]} All of this mapping's names (key sequences). */
-    names: Class.memoize(function () this._keys.map(function (k) events.canonicalKeys(k))),
+    names: Class.Memoize(function () this._keys.map(function (k) events.canonicalKeys(k))),
 
     get toStringParams() [this.modes.map(function (m) m.name), this.names.map(String.quote)],
 
@@ -293,7 +293,7 @@ var MapHive = Class("MapHive", Contexts.Hive, {
             delete this.states;
         },
 
-        states: Class.memoize(function () {
+        states: Class.Memoize(function () {
             var states = {
                 candidates: {},
                 mappings: {}
@@ -329,7 +329,7 @@ var Mappings = Module("mappings", {
 
     expandLeader: function expandLeader(keyString) keyString.replace(/<Leader>/i, function () options["mapleader"]),
 
-    prefixes: Class.memoize(function () {
+    prefixes: Class.Memoize(function () {
         let list = Array.map("CASM", function (s) s + "-");
 
         return iter(util.range(0, 1 << list.length)).map(function (mask)

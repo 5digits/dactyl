@@ -432,7 +432,7 @@ var Bookmarks = Module("bookmarks", {
                 return bookmarks.get(args.join(" "), args["-tags"], null, { keyword: context.filter, title: args["-title"] });
             },
             type: CommandOption.STRING,
-            validator: function (arg) /^\S+$/.test(arg)
+            validator: bind("test", /^\S+$/)
         };
 
         commands.add(["bma[rk]"],

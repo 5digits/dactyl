@@ -74,7 +74,7 @@ var Download = Class("Download", {
 
     get alive() this.inState(["downloading", "notstarted", "paused", "queued", "scanning"]),
 
-    allowedCommands: Class.memoize(function () let (self = this) ({
+    allowedCommands: Class.Memoize(function () let (self = this) ({
         get cancel() self.cancelable && self.inState(["downloading", "paused", "starting"]),
         get delete() !this.cancel && self.targetFile.exists(),
         get launch() self.targetFile.exists() && self.inState(["finished"]),
@@ -213,7 +213,7 @@ var DownloadList = Class("DownloadList",
         services.downloadManager.removeListener(this);
     },
 
-    message: Class.memoize(function () {
+    message: Class.Memoize(function () {
 
         util.xmlToDom(<table highlight="Downloads" key="list" xmlns={XHTML}>
                         <tr highlight="DownloadHead">
@@ -280,7 +280,7 @@ var DownloadList = Class("DownloadList",
             this.cleanup();
     },
 
-    allowedCommands: Class.memoize(function () let (self = this) ({
+    allowedCommands: Class.Memoize(function () let (self = this) ({
         get clear() values(self.downloads).some(function (dl) dl.allowedCommands.remove)
     })),
 

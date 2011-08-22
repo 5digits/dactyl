@@ -252,10 +252,10 @@ var CommandWidgets = Class("CommandWidgets", {
         [this.commandbar.container, this.statusbar.container].forEach(check);
     },
 
-    active: Class.memoize(Object),
-    activeGroup: Class.memoize(Object),
-    commandbar: Class.memoize(function () ({ group: "Cmd" })),
-    statusbar: Class.memoize(function ()  ({ group: "Status" })),
+    active: Class.Memoize(Object),
+    activeGroup: Class.Memoize(Object),
+    commandbar: Class.Memoize(function () ({ group: "Cmd" })),
+    statusbar: Class.Memoize(function ()  ({ group: "Status" })),
 
     _ready: function _ready(elem) {
         return elem.contentDocument.documentURI === elem.getAttribute("src") &&
@@ -272,9 +272,9 @@ var CommandWidgets = Class("CommandWidgets", {
         yield elem;
     },
 
-    completionContainer: Class.memoize(function () this.completionList.parentNode),
+    completionContainer: Class.Memoize(function () this.completionList.parentNode),
 
-    contextMenu: Class.memoize(function () {
+    contextMenu: Class.Memoize(function () {
         ["copy", "copylink", "selectall"].forEach(function (tail) {
             // some host apps use "hostPrefixContext-copy" ids
             let xpath = "//xul:menuitem[contains(@id, '" + "ontext-" + tail + "') and not(starts-with(@id, 'dactyl-'))]";
@@ -284,15 +284,15 @@ var CommandWidgets = Class("CommandWidgets", {
         return document.getElementById("dactyl-contextmenu");
     }),
 
-    multilineOutput: Class.memoize(function () this._whenReady("dactyl-multiline-output", function (elem) {
+    multilineOutput: Class.Memoize(function () this._whenReady("dactyl-multiline-output", function (elem) {
         elem.contentWindow.addEventListener("unload", function (event) { event.preventDefault(); }, true);
         elem.contentDocument.documentElement.id = "dactyl-multiline-output-top";
         elem.contentDocument.body.id = "dactyl-multiline-output-content";
     }), true),
 
-    multilineInput: Class.memoize(function () document.getElementById("dactyl-multiline-input")),
+    multilineInput: Class.Memoize(function () document.getElementById("dactyl-multiline-input")),
 
-    mowContainer: Class.memoize(function () document.getElementById("dactyl-multiline-output-container"))
+    mowContainer: Class.Memoize(function () document.getElementById("dactyl-multiline-output-container"))
 }, {
     getEditor: function getEditor(elem) {
         elem.inputField.QueryInterface(Ci.nsIDOMNSEditableElement);
@@ -584,7 +584,7 @@ var CommandLine = Module("commandline", {
         }, this);
     },
 
-    widgets: Class.memoize(function () CommandWidgets()),
+    widgets: Class.Memoize(function () CommandWidgets()),
 
     runSilently: function runSilently(func, self) {
         this.withSavedValues(["silent"], function () {

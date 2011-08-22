@@ -10,7 +10,7 @@
 
 var AutoCommand = Struct("event", "filter", "command");
 update(AutoCommand.prototype, {
-    eventName: Class.memoize(function () this.event.toLowerCase()),
+    eventName: Class.Memoize(function () this.event.toLowerCase()),
 
     match: function (event, pattern) {
         return (!event || this.eventName == event.toLowerCase()) && (!pattern || String(this.filter) === String(pattern));

@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("help", {
     exports: ["help"],
-    require: ["protocol", "services", "util"],
+    require: ["dom", "protocol", "services", "util"],
     use: ["config", "highlight", "messages", "template"]
 }, this);
 
@@ -21,7 +21,8 @@ var Help = Module("Help", {
         function Loop(fn)
             function (uri, path) {
                 if (!help.initialized)
-                    return RedirectChannel(uri.spec, uri, 1);
+                    return RedirectChannel(uri.spec, uri, 2,
+                                           "Initializing. Please wait...");
                 return fn.apply(this, arguments);
             }
 

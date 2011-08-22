@@ -59,7 +59,6 @@ var updateAddons = Class("UpgradeListener", AddonListener, {
 
     },
     onUpdateAvailable: function (addon, install) {
-        util.dump("onUpdateAvailable");
         this.upgrade.push(addon);
         install.addListener(this);
         install.install();
@@ -278,7 +277,7 @@ var AddonList = Class("AddonList", {
         this.update();
     },
 
-    message: Class.memoize(function () {
+    message: Class.Memoize(function () {
 
         XML.ignoreWhitespace = true;
         util.xmlToDom(<table highlight="Addons" key="list" xmlns={XHTML}>
@@ -348,7 +347,7 @@ var AddonList = Class("AddonList", {
 });
 
 var Addons = Module("addons", {
-    errors: Class.memoize(function ()
+    errors: Class.Memoize(function ()
             array(["ERROR_NETWORK_FAILURE", "ERROR_INCORRECT_HASH",
                    "ERROR_CORRUPT_FILE", "ERROR_FILE_ACCESS"])
                 .map(function (e) [AddonManager[e], _("AddonManager." + e)])
@@ -539,7 +538,7 @@ else
                     return "";
                 },
 
-                installLocation: Class.memoize(function () services.extensionManager.getInstallLocation(this.id)),
+                installLocation: Class.Memoize(function () services.extensionManager.getInstallLocation(this.id)),
                 getResourceURI: function getResourceURI(path) {
                     let file = this.installLocation.getItemFile(this.id, path);
                     return services.io.newFileURI(file);

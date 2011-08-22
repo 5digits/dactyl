@@ -539,7 +539,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     /**
      * A list of extant dactyl windows.
      */
-    windows: Class.memoize(function () [])
+    windows: Class.Memoize(function () [])
 });
 
 endModule();

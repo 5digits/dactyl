@@ -8,7 +8,7 @@ Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("styles", {
     exports: ["Style", "Styles", "styles"],
     require: ["services", "util"],
-    use: ["contexts", "messages", "template"]
+    use: ["contexts", "dom", "messages", "template"]
 }, this);
 
 function cssUri(css) "chrome-data:text/css," + encodeURI(css);

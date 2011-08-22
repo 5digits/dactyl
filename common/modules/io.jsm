@@ -269,7 +269,7 @@ var IO = Module("io", {
      * @property {function} File class.
      * @final
      */
-    File: Class.memoize(function () let (io = this)
+    File: Class.Memoize(function () let (io = this)
         Class("File", File, {
             init: function init(path, checkCWD)
                 init.supercall(this, path, (arguments.length < 2 || checkCWD) && io.cwd)
@@ -826,12 +826,12 @@ unlet s:cpo_save
                 if (args.bang)
                     arg = "!" + arg;
 
-                // NOTE: Vim doesn't replace ! preceded by 2 or more backslashes and documents it - desirable?
-                // pass through a raw bang when escaped or substitute the last command
-
-                // This is an asinine and irritating feature when we have searchable
+                // This is an asinine and irritating "feature" when we have searchable
                 // command-line history. --Kris
                 if (modules.options["banghist"]) {
+                    // NOTE: Vim doesn't replace ! preceded by 2 or more backslashes and documents it - desirable?
+                    // pass through a raw bang when escaped or substitute the last command
+
                     // replaceable bang and no previous command?
                     dactyl.assert(!/((^|[^\\])(\\\\)*)!/.test(arg) || io._lastRunCommand,
                         _("command.run.noPrevious"));
@@ -1041,7 +1041,7 @@ unlet s:cpo_save
 
         options.add(["banghist", "bh"],
             "Replace occurrences of ! with the previous command when executing external commands",
-            "boolean", true);
+            "boolean", false);
 
         options.add(["fileencoding", "fenc"],
             "The character encoding used when reading and writing files",

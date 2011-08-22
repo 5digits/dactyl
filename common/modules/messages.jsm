@@ -30,7 +30,7 @@ var Messages = Module("messages", {
             init: function _(message) {
                 this.args = arguments;
             },
-            message: Class.memoize(function () {
+            message: Class.Memoize(function () {
                 let message = this.args[0];
 
                 if (this.args.length > 1) {

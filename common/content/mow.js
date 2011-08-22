@@ -81,9 +81,9 @@ var MOW = Module("mow", {
     __noSuchMethod__: function (meth, args) Buffer[meth].apply(Buffer, [this.body].concat(args)),
 
     get widget() this.widgets.multilineOutput,
-    widgets: Class.memoize(function widgets() commandline.widgets),
+    widgets: Class.Memoize(function widgets() commandline.widgets),
 
-    body: Class.memoize(function body() this.widget.contentDocument.documentElement),
+    body: Class.Memoize(function body() this.widget.contentDocument.documentElement),
     get document() this.widget.contentDocument,
     get window() this.widget.contentWindow,
 

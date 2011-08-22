@@ -928,7 +928,7 @@ var Options = Module("options", {
     setPref: deprecated("prefs.set", function setPref() prefs.set.apply(prefs, arguments)),
     withContext: deprecated("prefs.withContext", function withContext() prefs.withContext.apply(prefs, arguments)),
 
-    cleanupPrefs: Class.memoize(function () localPrefs.Branch("cleanup.option.")),
+    cleanupPrefs: Class.Memoize(function () localPrefs.Branch("cleanup.option.")),
 
     cleanup: function cleanup(reason) {
         if (~["disable", "uninstall"].indexOf(reason))

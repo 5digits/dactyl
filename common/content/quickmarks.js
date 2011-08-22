@@ -99,9 +99,9 @@ var QuickMarks = Module("quickmarks", {
      */
     list: function list(filter) {
         let marks = [k for ([k, v] in this._qmarks)];
-        let lowercaseMarks = marks.filter(function (x) /[a-z]/.test(x)).sort();
-        let uppercaseMarks = marks.filter(function (x) /[A-Z]/.test(x)).sort();
-        let numberMarks    = marks.filter(function (x) /[0-9]/.test(x)).sort();
+        let lowercaseMarks = marks.filter(bind("test", /[a-z]/)).sort();
+        let uppercaseMarks = marks.filter(bind("test", /[A-Z]/)).sort();
+        let numberMarks    = marks.filter(bind("test", /[0-9]/)).sort();
 
         marks = Array.concat(lowercaseMarks, uppercaseMarks, numberMarks);
 

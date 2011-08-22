@@ -6,6 +6,7 @@
 
 var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
+Cu.import("resource://dactyl/bootstrap.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 try {
     var ctypes;
@@ -14,7 +15,8 @@ try {
 catch (e) {}
 
 let objproto = Object.prototype;
-let { __lookupGetter__, __lookupSetter__, hasOwnProperty, propertyIsEnumerable } = objproto;
+let { __lookupGetter__, __lookupSetter__, __defineGetter__, __defineSetter__,
+      hasOwnProperty, propertyIsEnumerable } = objproto;
 
 if (typeof XPCSafeJSObjectWrapper === "undefined")
     this.XPCSafeJSObjectWrapper = XPCNativeWrapper;
@@ -44,15 +46,15 @@ if (!Object.defineProperty)
                     }
                     catch (e if e instanceof TypeError) {}
                 else {
-                    objproto.__defineGetter__.call(obj, prop, function () value);
+                    __defineGetter__.call(obj, prop, function () value);
                     if (desc.writable)
-                        objproto.__defineSetter__.call(obj, prop, function (val) { value = val; });
+                        __defineSetter__.call(obj, prop, function (val) { value = val; });
                 }
 
             if ("get" in desc)
-                objproto.__defineGetter__.call(obj, prop, desc.get);
+                __defineGetter__.call(obj, prop, desc.get);
             if ("set" in desc)
-                objproto.__defineSetter__.call(obj, prop, desc.set);
+                __defineSetter__.call(obj, prop, desc.set);
         }
         catch (e) {
             throw e.stack ? e : Error(e);
@@ -163,9 +165,8 @@ defineModule.dump = function dump_() {
             msg = util.objectToString(msg);
         return msg;
     }).join(", ");
-    let name = loaded.config ? config.name : "dactyl";
     dump(String.replace(msg, /\n?$/, "\n")
-               .replace(/^./gm, name + ": $&"));
+               .replace(/^./gm, JSMLoader.name + ": $&"));
 }
 defineModule.modules = [];
 defineModule.time = function time(major, minor, func, self) {
@@ -851,7 +852,7 @@ Class.extend = function extend(subclass, superclass, overrides) {
  *      property's value.
  * @returns {Class.Property}
  */
-Class.Memoize = Class.memoize = function Memoize(getter, wait)
+Class.Memoize = Class.Memoize = function Memoize(getter, wait)
     Class.Property({
         configurable: true,
         enumerable: true,
@@ -1265,7 +1266,7 @@ var Timer = Class("Timer", {
         }
         catch (e) {
             if (typeof util === "undefined")
-                dump("dactyl: " + e + "\n" + (e.stack || Error().stack));
+                dump(JSMLoader.name + ": " + e + "\n" + (e.stack || Error().stack));
             else
                 util.reportError(e);
         }

@@ -508,12 +508,12 @@ var Modes = Module("modes", {
 
         description: Messages.Localized(""),
 
-        displayName: Class.memoize(function () this.name.split("_").map(util.capitalize).join(" ")),
+        displayName: Class.Memoize(function () this.name.split("_").map(util.capitalize).join(" ")),
 
         isinstance: function isinstance(obj)
             this.allBases.indexOf(obj) >= 0 || callable(obj) && this instanceof obj,
 
-        allBases: Class.memoize(function () {
+        allBases: Class.Memoize(function () {
             let seen = {}, res = [], queue = [this].concat(this.bases);
             for (let mode in array.iterValues(queue))
                 if (!Set.add(seen, mode)) {
@@ -527,7 +527,7 @@ var Modes = Module("modes", {
 
         get count() !this.insert,
 
-        _display: Class.memoize(function _display() this.name.replace("_", " ", "g")),
+        _display: Class.Memoize(function _display() this.name.replace("_", " ", "g")),
 
         display: function display() this._display,
 
@@ -535,15 +535,15 @@ var Modes = Module("modes", {
 
         hidden: false,
 
-        input: Class.memoize(function input() this.insert || this.bases.length && this.bases.some(function (b) b.input)),
+        input: Class.Memoize(function input() this.insert || this.bases.length && this.bases.some(function (b) b.input)),
 
-        insert: Class.memoize(function insert() this.bases.length && this.bases.some(function (b) b.insert)),
+        insert: Class.Memoize(function insert() this.bases.length && this.bases.some(function (b) b.insert)),
 
-        ownsFocus: Class.memoize(function ownsFocus() this.bases.length && this.bases.some(function (b) b.ownsFocus)),
+        ownsFocus: Class.Memoize(function ownsFocus() this.bases.length && this.bases.some(function (b) b.ownsFocus)),
 
         passEvent: function passEvent(event) this.input && event.charCode && !(event.ctrlKey || event.altKey || event.metaKey),
 
-        passUnknown: Class.memoize(function () options.get("passunknown").getKey(this.name)),
+        passUnknown: Class.Memoize(function () options.get("passunknown").getKey(this.name)),
 
         get mask() this,
 

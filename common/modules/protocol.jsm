@@ -50,8 +50,9 @@ function NetError(orig, error) {
         open: function () { throw error || Cr.NS_ERROR_FILE_NOT_FOUND }
     }).data.QueryInterface(Ci.nsIChannel);
 }
-function RedirectChannel(to, orig, time) {
-    let html = <html><head><meta http-equiv="Refresh" content={(time || 0) + ";" + to}/></head></html>.toXMLString();
+function RedirectChannel(to, orig, time, message) {
+    let html = <html><head><meta http-equiv="Refresh" content={(time || 0) + ";" + to}/></head>
+                     <body><h2 style="text-align: center">{message || ""}</h2></body></html>.toXMLString();
     return StringChannel(html, "text/html", services.io.newURI(to, null, null));
 }
 

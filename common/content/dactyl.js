@@ -112,7 +112,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
     },
 
     /** @property {string} The name of the current user profile. */
-    profileName: Class.memoize(function () {
+    profileName: Class.Memoize(function () {
         // NOTE: services.profile.selectedProfile.name doesn't return
         // what you might expect. It returns the last _actively_ selected
         // profile (i.e. via the Profile Manager or -P option) rather than the
@@ -1221,7 +1221,7 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
         }, this);
     },
     stringToURLArray: deprecated("dactyl.parseURLs", "parseURLs"),
-    urlish: Class.memoize(function () util.regexp(<![CDATA[
+    urlish: Class.Memoize(function () util.regexp(<![CDATA[
             ^ (
                 <domain>+ (:\d+)? (/ .*) |
                 <domain>+ (:\d+) |

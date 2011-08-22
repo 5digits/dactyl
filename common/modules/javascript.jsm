@@ -44,13 +44,13 @@ var JavaScript = Module("javascript", {
         }
     }),
 
-    globals: Class.memoize(function () [
+    globals: Class.Memoize(function () [
        [this.modules.userContext, /*L*/"Global Variables"],
        [this.modules, "modules"],
        [this.window, "window"]
     ]),
 
-    toplevel: Class.memoize(function () this.modules.jsmodules),
+    toplevel: Class.Memoize(function () this.modules.jsmodules),
 
     lazyInit: true,
 
@@ -612,13 +612,13 @@ var JavaScript = Module("javascript", {
         return null;
     },
 
-    magicalNames: Class.memoize(function () Object.getOwnPropertyNames(Cu.Sandbox(this.window), true).sort()),
+    magicalNames: Class.Memoize(function () Object.getOwnPropertyNames(Cu.Sandbox(this.window), true).sort()),
 
     /**
      * A list of properties of the global object which are not
      * enumerable by any standard method.
      */
-    globalNames: Class.memoize(function () let (self = this) array.uniq([
+    globalNames: Class.Memoize(function () let (self = this) array.uniq([
         "Array", "ArrayBuffer", "AttributeName", "Boolean", "Components",
         "CSSFontFaceStyleDecl", "CSSGroupRuleRuleList", "CSSNameSpaceRule",
         "CSSRGBColor", "CSSRect", "ComputedCSSStyleDeclaration", "Date",
@@ -700,7 +700,7 @@ var JavaScript = Module("javascript", {
         modes.addMode("REPL", {
             description: "JavaScript Read Eval Print Loop",
             bases: [modes.COMMAND_LINE],
-            displayName: Class.memoize(function () this.name)
+            displayName: Class.Memoize(function () this.name)
         });
     },
     commandline: function initCommandLine(dactyl, modules, window) {
@@ -746,7 +746,7 @@ var JavaScript = Module("javascript", {
 
             count: 0,
 
-            message: Class.memoize(function () {
+            message: Class.Memoize(function () {
                 default xml namespace = XHTML;
                 util.xmlToDom(<div highlight="REPL" key="rootNode"/>,
                               this.document, this);

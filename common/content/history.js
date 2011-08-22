@@ -60,7 +60,7 @@ var History = Module("history", {
         for (let item in iter(sh.SHistoryEnumerator, Ci.nsIHistoryEntry))
             obj.push(update(Object.create(item), {
                 index: obj.length,
-                icon: Class.memoize(function () services.favicon.getFaviconImageForPage(this.URI).spec)
+                icon: Class.Memoize(function () services.favicon.getFaviconImageForPage(this.URI).spec)
             }));
         return obj;
     },

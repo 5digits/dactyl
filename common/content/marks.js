@@ -297,9 +297,9 @@ var Marks = Module("marks", {
 
     },
 
-    isLocalMark: function isLocalMark(mark) /^[a-z`']$/.test(mark),
+    isLocalMark: bind("test", /^[a-z`']$/),
 
-    isURLMark: function isURLMark(mark) /^[A-Z]$/.test(mark)
+    isURLMark: bind("test", /^[A-Z]$/)
 }, {
     events: function () {
         let appContent = document.getElementById("appcontent");

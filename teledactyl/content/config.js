@@ -83,7 +83,7 @@ var Config = Module("config", ConfigBase, {
                 dactyl.beep();
         },
 
-        completers: Class.memoize(function () update({ mailfolder: "mailFolder" }, this.__proto__.completers)),
+        completers: Class.Memoize(function () update({ mailfolder: "mailFolder" }, this.__proto__.completers)),
 
         dialogs: {
             about: ["About Thunderbird",
@@ -143,7 +143,7 @@ var Config = Module("config", ConfigBase, {
     },
 
     /*** optional options, there are checked for existence and a fallback provided  ***/
-    features: Class.memoize(function () Set(
+    features: Class.Memoize(function () Set(
         this.isComposeWindow ? ["addressbook"]
                              : ["hints", "mail", "marks", "addressbook", "tabs"])),
 

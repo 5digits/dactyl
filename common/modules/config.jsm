@@ -10,7 +10,7 @@ let global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("config", {
     exports: ["ConfigBase", "Config", "config"],
-    require: ["protocol", "services", "storage", "util", "template"],
+    require: ["dom", "protocol", "services", "storage", "util", "template"],
     use: ["io", "messages", "prefs", "styles"]
 }, this);
 
@@ -67,6 +67,7 @@ var ConfigBase = Class("ConfigBase", {
                  "completion",
                  "config",
                  "contexts",
+                 "dom",
                  "downloads",
                  "finder",
                  "help",
@@ -130,7 +131,7 @@ var ConfigBase = Class("ConfigBase", {
             elem.style.cssText = this.cssText;
 
             let keys = iter(Styles.propertyIter(this.cssText)).map(function (p) p.name).toArray();
-            let bg = keys.some(function (k) /^background/.test(k));
+            let bg = keys.some(bind("test", /^background/));
             let fg = keys.indexOf("color") >= 0;
 
             let style = DOM(elem).style;
@@ -141,7 +142,7 @@ var ConfigBase = Class("ConfigBase", {
 
     get addonID() this.name + "@dactyl.googlecode.com",
 
-    addon: Class.memoize(function () {
+    addon: Class.Memoize(function () {
         return (JSMLoader.bootstrap || {}).addon ||
                     require("addons").AddonManager.getAddonByID(this.addonID);
     }),
@@ -149,17 +150,17 @@ var ConfigBase = Class("ConfigBase", {
     /**
      * The current application locale.
      */
-    appLocale: Class.memoize(function () services.chromeRegistry.getSelectedLocale("global")),
+    appLocale: Class.Memoize(function () services.chromeRegistry.getSelectedLocale("global")),
 
     /**
      * The current dactyl locale.
      */
-    locale: Class.memoize(function () this.bestLocale(this.locales)),
+    locale: Class.Memoize(function () this.bestLocale(this.locales)),
 
     /**
      * The current application locale.
      */
-    locales: Class.memoize(function () {
+    locales: Class.Memoize(function () {
         // TODO: Merge with completion.file code.
         function getDir(str) str.match(/^(?:.*[\/\\])?/)[0];
 
@@ -283,7 +284,7 @@ var ConfigBase = Class("ConfigBase", {
      *     directory if the application is running from one via an extension
      *     proxy file.
      */
-    VCSPath: Class.memoize(function () {
+    VCSPath: Class.Memoize(function () {
         if (/pre$/.test(this.addon.version)) {
             let uri = util.newURI(this.addon.getResourceURI("").spec + "../.hg");
             if (uri instanceof Ci.nsIFileURL &&
@@ -299,14 +300,14 @@ var ConfigBase = Class("ConfigBase", {
      *     running from if using an extension proxy file or was built from if
      *     installed as an XPI.
      */
-    branch: Class.memoize(function () {
+    branch: Class.Memoize(function () {
         if (this.VCSPath)
             return io.system(["hg", "-R", this.VCSPath, "branch"]).output;
         return (/pre-hg\d+-(\S*)/.exec(this.version) || [])[1];
     }),
 
     /** @property {string} The Dactyl version string. */
-    version: Class.memoize(function () {
+    version: Class.Memoize(function () {
         if (this.VCSPath)
             return io.system(["hg", "-R", this.VCSPath, "log", "-r.",
                               "--template=hg{rev}-{branch}"]).output;
@@ -314,7 +315,7 @@ var ConfigBase = Class("ConfigBase", {
         return this.addon.version;
     }),
 
-    buildDate: Class.memoize(function () {
+    buildDate: Class.Memoize(function () {
         if (this.VCSPath)
             return io.system(["hg", "-R", this.VCSPath, "log", "-r.",
                               "--template={date|isodate}"]).output;
@@ -324,7 +325,7 @@ var ConfigBase = Class("ConfigBase", {
 
     get fileExt() this.name.slice(0, -6),
 
-    dtd: Class.memoize(function ()
+    dtd: Class.Memoize(function ()
         iter(this.dtdExtra,
              (["dactyl." + k, v] for ([k, v] in iter(config.dtdDactyl))),
              (["dactyl." + s, config[s]] for each (s in config.dtdStrings)))
@@ -339,10 +340,10 @@ var ConfigBase = Class("ConfigBase", {
         get plugins() "http://dactyl.sf.net/" + this.name + "/plugins",
         get faq() this.home + this.name + "/faq",
 
-        "list.mailto": Class.memoize(function () config.name + "@googlegroups.com"),
-        "list.href": Class.memoize(function () "http://groups.google.com/group/" + config.name),
+        "list.mailto": Class.Memoize(function () config.name + "@googlegroups.com"),
+        "list.href": Class.Memoize(function () "http://groups.google.com/group/" + config.name),
 
-        "hg.latest": Class.memoize(function () this.code + "source/browse/"), // XXX
+        "hg.latest": Class.Memoize(function () this.code + "source/browse/"), // XXX
         "irc": "irc://irc.oftc.net/#pentadactyl",
     }),
 
@@ -397,8 +398,8 @@ var ConfigBase = Class("ConfigBase", {
             util.overlayWindow(window, { append: append.elements() });
         },
 
-        browser: Class.memoize(function () window.gBrowser),
-        tabbrowser: Class.memoize(function () window.gBrowser),
+        browser: Class.Memoize(function () window.gBrowser),
+        tabbrowser: Class.Memoize(function () window.gBrowser),
 
         get browserModes() [modules.modes.NORMAL],
 
@@ -413,7 +414,7 @@ var ConfigBase = Class("ConfigBase", {
          */
         get outputHeight() this.browser.mPanelContainer.boxObject.height,
 
-        tabStrip: Class.memoize(function () window.document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
+        tabStrip: Class.Memoize(function () window.document.getElementById("TabsToolbar") || this.tabbrowser.mTabContainer),
     }),
 
     /**

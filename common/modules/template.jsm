@@ -57,7 +57,7 @@ var Binding = Class("Binding", {
         }
     },
 
-    events: Class.memoize(function () {
+    events: Class.Memoize(function () {
         let res = [];
         for (let obj in this.bindings)
             if (Object.getOwnPropertyDescriptor(obj, "events"))
@@ -66,7 +66,7 @@ var Binding = Class("Binding", {
         return res;
     }),
 
-    properties: Class.memoize(function () {
+    properties: Class.Memoize(function () {
         let res = {};
         for (let obj in this.bindings)
             for (let prop in properties(obj)) {

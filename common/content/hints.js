@@ -1103,7 +1103,7 @@ var Hints = Module("hints", {
         return true;
     },
 
-    translitTable: Class.memoize(function () {
+    translitTable: Class.Memoize(function () {
         const table = {};
         [
             [0x00c0, 0x00c6, ["A"]], [0x00c7, 0x00c7, ["C"]],

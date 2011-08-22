@@ -510,13 +510,13 @@ var File = Class("File", {
     /**
      * @property {string} The current platform's path separator.
      */
-    PATH_SEP: Class.memoize(function () {
+    PATH_SEP: Class.Memoize(function () {
         let f = services.directory.get("CurProcD", Ci.nsIFile);
         f.append("foo");
         return f.path.substr(f.parent.path.length, 1);
     }),
 
-    pathSplit: Class.memoize(function () util.regexp("(?:/|" + util.regexp.escape(this.PATH_SEP) + ")", "g")),
+    pathSplit: Class.Memoize(function () util.regexp("(?:/|" + util.regexp.escape(this.PATH_SEP) + ")", "g")),
 
     DoesNotExist: function (path, error) ({
         path: path,

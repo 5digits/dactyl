@@ -405,7 +405,7 @@ var CompletionContext = Class("CompletionContext", {
         this.noUpdate = false;
     },
 
-    ignoreCase: Class.memoize(function () {
+    ignoreCase: Class.Memoize(function () {
         let mode = this.wildcase;
         if (mode == "match")
             return false;

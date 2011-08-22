@@ -215,7 +215,7 @@ var Command = Class("Command", {
         extra: extra
     }),
 
-    complained: Class.memoize(function () ({})),
+    complained: Class.Memoize(function () ({})),
 
     /**
      * @property {[string]} All of this command's name specs. e.g., "com[mand]"
@@ -286,7 +286,7 @@ var Command = Class("Command", {
      */
     options: [],
 
-    optionMap: Class.memoize(function () array(this.options)
+    optionMap: Class.Memoize(function () array(this.options)
                 .map(function (opt) opt.names.map(function (name) [name, opt]))
                 .flatten().toObject()),
 
@@ -297,19 +297,19 @@ var Command = Class("Command", {
         return res;
     },
 
-    argsPrototype: Class.memoize(function argsPrototype() {
+    argsPrototype: Class.Memoize(function argsPrototype() {
         let res = update([], {
                 __iterator__: function AP__iterator__() array.iterItems(this),
 
                 command: this,
 
-                explicitOpts: Class.memoize(function () ({})),
+                explicitOpts: Class.Memoize(function () ({})),
 
                 has: function AP_has(opt) Set.has(this.explicitOpts, opt) || typeof opt === "number" && Set.has(this, opt),
 
                 get literalArg() this.command.literal != null && this[this.command.literal] || "",
 
-                // TODO: string: Class.memoize(function () { ... }),
+                // TODO: string: Class.Memoize(function () { ... }),
 
                 verify: function verify() {
                     if (this.command.argCount) {
@@ -1175,9 +1175,9 @@ var Commands = Module("commands", {
         ]]>, /U/g, "\\u"), "x")
     }),
 
-    validName: Class.memoize(function validName() util.regexp("^" + this.nameRegexp.source + "$")),
+    validName: Class.Memoize(function validName() util.regexp("^" + this.nameRegexp.source + "$")),
 
-    commandRegexp: Class.memoize(function commandRegexp() util.regexp(<![CDATA[
+    commandRegexp: Class.Memoize(function commandRegexp() util.regexp(<![CDATA[
             ^
             (?P<spec>
                 (?P<prespace> [:\s]*)
@@ -1514,7 +1514,7 @@ var Commands = Module("commands", {
                                     ["+", "One or more arguments are allowed"]],
                         default: "0",
                         type: CommandOption.STRING,
-                        validator: function (arg) /^[01*?+]$/.test(arg)
+                        validator: bind("test", /^[01*?+]$/)
                     },
                     {
                         names: ["-nopersist", "-n"],

@@ -26,6 +26,8 @@ else
 
         factories: [],
 
+        name: "dactyl",
+
         global: this,
 
         globals: JSMLoader ? JSMLoader.globals : {},

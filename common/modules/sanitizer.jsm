@@ -348,7 +348,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
         session: 8
     },
 
-    UNPERMS: Class.memoize(function () iter(this.PERMS).map(Array.reverse).toObject()),
+    UNPERMS: Class.Memoize(function () iter(this.PERMS).map(Array.reverse).toObject()),
 
     COMMANDS: {
         unset:   /*L*/"Unset",
@@ -650,7 +650,7 @@ var Sanitizer = Module("sanitizer", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakRef
                     "1d":      "Past day",
                     "1w":      "Past week"
                 },
-                validator: function (value) /^(a(ll)?|s(ession)|\d+[mhdw])$/.test(value)
+                validator: bind("test", /^(a(ll)?|s(ession)|\d+[mhdw])$/)
             });
 
         options.add(["cookies", "ck"],

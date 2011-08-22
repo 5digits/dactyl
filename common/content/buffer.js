@@ -1184,8 +1184,8 @@ var Buffer = Module("buffer", {
     PageInfo: Struct("PageInfo", "name", "title", "action")
                         .localize("title"),
 
-    ZOOM_MIN: Class.memoize(function () prefs.get("zoom.minPercent")),
-    ZOOM_MAX: Class.memoize(function () prefs.get("zoom.maxPercent")),
+    ZOOM_MIN: Class.Memoize(function () prefs.get("zoom.minPercent")),
+    ZOOM_MAX: Class.Memoize(function () prefs.get("zoom.maxPercent")),
 
     setZoom: deprecated("buffer.setZoom", function setZoom() buffer.setZoom.apply(buffer, arguments)),
     bumpZoomLevel: deprecated("buffer.bumpZoomLevel", function bumpZoomLevel() buffer.bumpZoomLevel.apply(buffer, arguments)),

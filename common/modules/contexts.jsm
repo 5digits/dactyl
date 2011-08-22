@@ -75,7 +75,7 @@ var Group = Class("Group", {
         });
     },
 
-    defaultFilter: Class.memoize(function () this.compileFilter(["*"]))
+    defaultFilter: Class.Memoize(function () this.compileFilter(["*"]))
 });
 
 var Contexts = Module("contexts", {
@@ -283,9 +283,9 @@ var Contexts = Module("contexts", {
         return frame;
     },
 
-    groups: Class.memoize(function () this.matchingGroups()),
+    groups: Class.Memoize(function () this.matchingGroups()),
 
-    allGroups: Class.memoize(function () Object.create(this.groupsProto, {
+    allGroups: Class.Memoize(function () Object.create(this.groupsProto, {
         groups: { value: this.initializedGroups() }
     })),
 
@@ -486,7 +486,7 @@ var Contexts = Module("contexts", {
         get persist() this.group.persist,
         set persist(val) this.group.persist = val,
 
-        prefix: Class.memoize(function () this.name === "builtin" ? "" : this.name + ":"),
+        prefix: Class.Memoize(function () this.name === "builtin" ? "" : this.name + ":"),
 
         get toStringParams() [this.name]
     })

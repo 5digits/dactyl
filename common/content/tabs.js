@@ -64,7 +64,7 @@ var Tabs = Module("tabs", {
 
     _mappingCount: 0,
 
-    _alternates: Class.memoize(function () [config.tabbrowser.mCurrentTab, null]),
+    _alternates: Class.Memoize(function () [config.tabbrowser.mCurrentTab, null]),
 
     cleanup: function cleanup() {
         for (let [i, tab] in Iterator(this.allTabs)) {

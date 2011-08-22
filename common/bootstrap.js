@@ -34,10 +34,14 @@ const BOOTSTRAP_JSM = "resource://dactyl/bootstrap.jsm";
 const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 
 var JSMLoader = BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
+var name = "dactyl";
 
 function reportError(e) {
-    dump("\ndactyl: bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
+    dump("\n" + name + ": bootstrap: " + e + "\n" + (e.stack || Error().stack) + "\n");
     Cu.reportError(e);
+}
+function debug(msg) {
+    dump(name + ": " + msg + "\n");
 }
 
 function httpGet(url) {
@@ -86,16 +90,17 @@ function updateVersion() {
 }
 
 function startup(data, reason) {
-    dump("dactyl: bootstrap: startup " + reasonToString(reason) + "\n");
+    debug("bootstrap: startup " + reasonToString(reason));
     basePath = data.installPath;
 
     if (!initialized) {
         initialized = true;
 
-        dump("dactyl: bootstrap: init" + " " + data.id + "\n");
+        debug("bootstrap: init" + " " + data.id);
 
         addonData = data;
         addon = data;
+        name = data.id.replace(/@.*/, "");
         AddonManager.getAddonByID(addon.id, function (a) {
             addon = a;
             updateVersion();
@@ -138,12 +143,12 @@ function FactoryProxy(url, classID) {
 FactoryProxy.prototype = {
     QueryInterface: XPCOMUtils.generateQI(Ci.nsIFactory),
     register: function () {
-        dump("dactyl: bootstrap: register: " + this.classID + " " + this.contractID + "\n");
+        debug("bootstrap: register: " + this.classID + " " + this.contractID);
 
         JSMLoader.registerFactory(this);
     },
     get module() {
-        dump("dactyl: bootstrap: create module: " + this.contractID + "\n");
+        debug("bootstrap: create module: " + this.contractID);
 
         Object.defineProperty(this, "module", { value: {}, enumerable: true });
         JSMLoader.load(this.url, this.module);
@@ -156,7 +161,7 @@ FactoryProxy.prototype = {
 }
 
 function init() {
-    dump("dactyl: bootstrap: init\n");
+    debug("bootstrap: init");
 
     let manifestURI = getURI("chrome.manifest");
     let manifest = httpGet(manifestURI.spec)
@@ -227,6 +232,7 @@ function init() {
     if (!JSMLoader || JSMLoader.bump !== 6 || Cu.unload)
         Cu.import(BOOTSTRAP_JSM, global);
 
+    JSMLoader.name = name;
     JSMLoader.bootstrap = this;
 
     JSMLoader.load(BOOTSTRAP_JSM, global);
@@ -262,7 +268,7 @@ function init() {
 }
 
 function shutdown(data, reason) {
-    dump("dactyl: bootstrap: shutdown " + reasonToString(reason) + "\n");
+    debug("bootstrap: shutdown " + reasonToString(reason));
     if (reason != APP_SHUTDOWN) {
         try {
             module("resource://dactyl-content/disable-acr.jsm").cleanup();
@@ -286,7 +292,7 @@ function shutdown(data, reason) {
 }
 
 function uninstall(data, reason) {
-    dump("dactyl: bootstrap: uninstall " + reasonToString(reason) + "\n");
+    debug("bootstrap: uninstall " + reasonToString(reason));
     if (reason == ADDON_UNINSTALL)
         Services.prefs.deleteBranch("extensions.dactyl.");
 }
@@ -300,6 +306,6 @@ function reasonToString(reason) {
             return name;
 }
 
-function install(data, reason) { dump("dactyl: bootstrap: install " + reasonToString(reason) + "\n"); }
+function install(data, reason) { debug("bootstrap: install " + reasonToString(reason)); }
 
 // vim: set fdm=marker sw=4 ts=4 et:
