@@ -898,7 +898,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 keys.push([i, <>{key}{noVal ? "" : <>: {value}</>}&#x0a;</>]);
             }
         }
-        catch (e) {}
+        catch (e) {
+            util.reportError(e);
+        }
 
         function compare(a, b) {
             if (!isNaN(a[0]) && !isNaN(b[0]))

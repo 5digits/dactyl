@@ -255,13 +255,32 @@ var Template = Module("Template", {
         })(), template[help ? "HelpLink" : "helpLink"]);
     },
 
+    // Fixes some strange stack rewinds on NS_ERROR_OUT_OF_MEMORY
+    // exceptions that we can't catch.
+    stringify: function (arg) {
+        if (!callable(arg))
+            return String(arg);
+
+        try {
+            this._sandbox.arg = arg;
+            return Cu.evalInSandbox("String(arg)", this._sandbox);
+        }
+        finally {
+            this._sandbox.arg = null;
+        }
+    },
+
+    _sandbox: Class.Memoize(function () Cu.Sandbox(this, { wantXrays: false })),
+
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n
     highlight: function highlight(arg, processStrings, clip) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // some objects like window.JSON or getBrowsers()._browsers need the try/catch
         try {
-            let str = clip ? util.clip(String(arg), clip) : String(arg);
+            let str = this.stringify(arg);
+            if (clip)
+                str = util.clip(str, clip);
             switch (arg == null ? "undefined" : typeof arg) {
             case "number":
                 return <span highlight="Number">{str}</span>;
