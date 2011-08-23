@@ -1486,8 +1486,8 @@ var Dactyl = Module("dactyl", XPCOM(Ci.nsISupportsWeakReference, ModuleBase), {
 
                 // FIXME: cleanup
                 cleanupValue: config.cleanups.guioptions ||
-                    "r" + [k for ([k, v] in iter(groups[1].opts))
-                           if (!Dactyl.toolbarHidden(document.getElementById(v[1][0])))].join(""),
+                    "rb" + [k for ([k, v] in iter(groups[1].opts))
+                            if (!Dactyl.toolbarHidden(document.getElementById(v[1][0])))].join(""),
 
                 values: array(groups).map(function (g) [[k, v[0]] for ([k, v] in Iterator(g.opts))]).flatten(),
 

@@ -4,6 +4,7 @@
 // given in the LICENSE.txt file included with this file.
 "use strict";
 
+let global = this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("template", {
     exports: ["Binding", "Template", "template"],
@@ -270,7 +271,7 @@ var Template = Module("Template", {
         }
     },
 
-    _sandbox: Class.Memoize(function () Cu.Sandbox(this, { wantXrays: false })),
+    _sandbox: Class.Memoize(function () Cu.Sandbox(global, { wantXrays: false })),
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n
