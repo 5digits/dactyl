@@ -258,7 +258,7 @@ var Template = Module("Template", {
 
     // Fixes some strange stack rewinds on NS_ERROR_OUT_OF_MEMORY
     // exceptions that we can't catch.
-    stringify: function (arg) {
+    stringify: function stringify(arg) {
         if (!callable(arg))
             return String(arg);
 

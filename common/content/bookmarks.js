@@ -627,6 +627,7 @@ var Bookmarks = Module("bookmarks", {
                 context.fork("keyword/" + keyword, keyword.length + space.length, null, function (context) {
                     context.format = history.format;
                     context.title = [/*L*/keyword + " Quick Search"];
+                    context.keys = { text: "url", description: "title", icon: "icon" };
                     // context.background = true;
                     context.compare = CompletionContext.Sort.unsorted;
                     context.generate = function () {
