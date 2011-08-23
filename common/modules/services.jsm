@@ -42,7 +42,7 @@ var Services = Module("Services", {
         this.add("file:",               "@mozilla.org/network/protocol;1?name=file",        "nsIFileProtocolHandler");
         this.add("focus",               "@mozilla.org/focus-manager;1",                     "nsIFocusManager");
         this.add("history",             "@mozilla.org/browser/global-history;2",
-                 ["nsIBrowserHistory", "nsIGlobalHistory3", "nsINavHistoryService", "nsPIPlacesDatabase"]);
+                 ["nsIBrowserHistory", "nsIGlobalHistory2", "nsINavHistoryService", "nsPIPlacesDatabase"]);
         this.add("io",                  "@mozilla.org/network/io-service;1",                "nsIIOService");
         this.add("json",                "@mozilla.org/dom/json;1",                          "nsIJSON", "createInstance");
         this.add("listeners",           "@mozilla.org/eventlistenerservice;1",              "nsIEventListenerService");
