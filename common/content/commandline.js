@@ -243,7 +243,7 @@ var CommandWidgets = Class("CommandWidgets", {
         // Might possibly be better to use a deck and programmatically
         // choose which element to select.
         function check(node) {
-            if (util.computedStyle(node).display === "-moz-stack") {
+            if (DOM(node).style.display === "-moz-stack") {
                 let nodes = Array.filter(node.children, function (n) !n.collapsed && n.boxObject.height);
                 nodes.forEach(function (node, i) node.style.opacity = (i == nodes.length - 1) ? "" : "0");
             }
