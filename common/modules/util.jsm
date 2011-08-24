@@ -897,7 +897,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     i = parseInt(i);
                 else if (/^[A-Z_]+$/.test(i))
                     i = "";
-                keys.push([i, noVal ? value : <>{key}: {value}&#x0a;</>]);
+                keys.push([i, <>{noVal ? value : <>{key}: {value}</>}&#x0a;</>]);
             }
         }
         catch (e) {
