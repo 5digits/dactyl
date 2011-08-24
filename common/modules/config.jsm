@@ -1042,6 +1042,8 @@ var ConfigBase = Class("ConfigBase", {
         HelpXMLTagStart                             color: #FFF796; white-space: normal; display: inline-block; text-indent: -1.5em; padding-left: 1.5em;
         HelpXMLTagEnd                               color: #71BEBE;
         HelpXMLText                                 color: #E5E5E5;
+
+        CompItem HelpXMLTagStart                    white-space: pre;
         // </css>
     ]]></>)
 }, {
