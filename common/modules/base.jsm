@@ -1500,6 +1500,8 @@ update(iter, {
     nth: function nth(iter, pred, n, self) {
         if (typeof pred === "number")
             [pred, n] = [function () true, pred]; // Hack.
+        if (n === undefined)
+            n = 0;
 
         for (let elem in iter)
             if (pred.call(self, elem) && n-- === 0)
@@ -1641,6 +1643,8 @@ var array = Class("array", Array, {
      * given predicate.
      */
     nth: function nth(ary, pred, n, self) {
+        if (n === undefined)
+            n = 0;
         for (let elem in values(ary))
             if (pred.call(self, elem) && n-- === 0)
                 return elem;

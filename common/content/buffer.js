@@ -1887,14 +1887,16 @@ var Buffer = Module("buffer", {
         mappings.add([modes.NORMAL], ["]]", "<next-page>"],
             "Follow the link labeled 'next' or '>' if it exists",
             function (args) {
-                buffer.findLink("next", options["nextpattern"], (args.count || 1) - 1, true);
+                buffer.findLink("next", options.get("nextpattern").get(buffer.focusedFrame),
+                                (args.count || 1) - 1, true);
             },
             { count: true });
 
         mappings.add([modes.NORMAL], ["[[", "<previous-page>"],
             "Follow the link labeled 'prev', 'previous' or '<' if it exists",
             function (args) {
-                buffer.findLink("previous", options["previouspattern"], (args.count || 1) - 1, true);
+                buffer.findLink("previous", options.get("previouspattern").get(buffer.focusedFrame),
+                                (args.count || 1) - 1, true);
             },
             { count: true });
 
@@ -2052,19 +2054,23 @@ var Buffer = Module("buffer", {
             "The current buffer's character encoding",
             "string", "UTF-8",
             {
-                scope: Option.SCOPE_LOCAL,
-                getter: function () config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset,
-                setter: function (val) {
+                scope: Option.SCOPE_BUFFER,
+                getter: function (val, context) util.docShell(context.content).QueryInterface(Ci.nsIDocCharset).charset,
+                setter: function (val, context) {
                     if (options["encoding"] == val)
                         return val;
 
                     // Stolen from browser.jar/content/browser/browser.js, more or less.
                     try {
-                        config.browser.docShell.QueryInterface(Ci.nsIDocCharset).charset = val;
-                        PlacesUtils.history.setCharsetForURI(getWebNavigation().currentURI, val);
-                        window.getWebNavigation().reload(Ci.nsIWebNavigation.LOAD_FLAGS_CHARSET_CHANGE);
+                        let docShell = util.docShell(context.content).QueryInterface(Ci.nsIDocCharset);
+
+                        docShell.charset = val;
+                        PlacesUtils.history.setCharsetForURI(docShell.currentURI, val);
+                        docShell.reload(docShell.LOAD_FLAGS_CHARSET_CHANGE);
                     }
-                    catch (e) { dactyl.reportError(e); }
+                    catch (e) {
+                        dactyl.reportError(e);
+                    }
                     return null;
                 },
                 completer: function (context) completion.charset(context)
@@ -2133,8 +2139,12 @@ var Buffer = Module("buffer", {
             "Show current website without styling defined by the author",
             "boolean", false,
             {
-                setter: function (value) config.browser.markupDocumentViewer.authorStyleDisabled = value,
-                getter: function () config.browser.markupDocumentViewer.authorStyleDisabled
+                scope: Option.SCOPE_TAB,
+                setter: function (value, context) {
+                    if (context.browser)
+                        context.browser.markupDocumentViewer.authorStyleDisabled = value
+                },
+                getter: function (value, context) context.browser && context.browser.markupDocumentViewer.authorStyleDisabled
             });
     }
 });

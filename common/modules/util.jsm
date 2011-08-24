@@ -479,6 +479,16 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         pattern.replace(/\\(.)/, function (m0, m1) chars.indexOf(m1) >= 0 ? m1 : m0),
 
     /**
+     * Returns the nsIDocShell for a given window.
+     *
+     * @param {Window} win The window.
+     * @returns {nsIDocShell}
+     */
+    docShell: function docShell(win)
+                win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                   .QueryInterface(Ci.nsIDocShell),
+
+    /**
      * Prints a message to the console. If *msg* is an object it is pretty
      * printed.
      *
@@ -748,11 +758,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Iterates over all currently open documents, including all
      * top-level window and sub-frames thereof.
      */
-    iterDocuments: function iterDocuments() {
+    iterDocuments: function iterDocuments(types) {
+        types = types || ["chrome", "content"];
+        types = types.map(function (t) "type" + util.capitalize(t));
+
         let windows = services.windowMediator.getXULWindowEnumerator(null);
         while (windows.hasMoreElements()) {
             let window = windows.getNext().QueryInterface(Ci.nsIXULWindow);
-            for each (let type in ["typeChrome", "typeContent"]) {
+            for each (let type in types) {
                 let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
                                                                       Ci.nsIDocShell.ENUMERATE_FORWARDS);
                 while (docShells.hasMoreElements())
