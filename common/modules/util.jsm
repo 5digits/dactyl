@@ -885,8 +885,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 if (!hasValue) {
                     if (isArray(i) && i.length == 2)
                         [i, value] = i;
-                    else
+                    else {
                         var noVal = true;
+                        value = i;
+                    }
                 }
 
                 value = template.highlight(value, true, 150);
@@ -895,7 +897,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     i = parseInt(i);
                 else if (/^[A-Z_]+$/.test(i))
                     i = "";
-                keys.push([i, <>{key}{noVal ? "" : <>: {value}</>}&#x0a;</>]);
+                keys.push([i, noVal ? value : <>{key}: {value}&#x0a;</>]);
             }
         }
         catch (e) {

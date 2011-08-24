@@ -464,7 +464,7 @@ var DOM = Class("DOM", {
             try {
                 let hasChildren = elem.firstChild && (!/^\s*$/.test(elem.firstChild) || elem.firstChild.nextSibling)
                 if (color)
-                    res.push(<span highlight="HelpXMLBlock"><span highlight="HelpXMLTagStart">&lt;{
+                    res.push(<span highlight="HelpXML"><span highlight="HelpXMLTagStart">&lt;{
                             namespaced(elem)} {
                                 template.map(array.iterValues(elem.attributes),
                                     function (attr)
@@ -724,7 +724,15 @@ var DOM = Class("DOM", {
             let force = false;
             if (rect)
                 for (let parent in this.ancestors.items) {
+                    if (!parent[0].clientWidth || !parent[0].clientHeight)
+                        continue;
+
                     let isect = util.intersection(rect, parent.viewport);
+
+                    if (parent[0].clientWidth < rect.width && isect.width ||
+                        parent[0].clientHeight < rect.height && isect.height)
+                        continue;
+
                     force = Math.round(isect.width - rect.width) || Math.round(isect.height - rect.height);
                     if (force)
                         break;

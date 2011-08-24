@@ -1013,13 +1013,18 @@ var ConfigBase = Class("ConfigBase", {
         HelpWarning                                 /* The indicator for a warning */ \
                                                     color: red; font-weight: bold;
 
-        HelpXML;;;FontCode                          /* Highlighted XML */ \
-                                                    color: #C5F779; background-color: #444444; font-family: Terminus, Fixed, monospace;
-        HelpXMLBlock {                              white-space: pre; color: #C5F779; background-color: #444444;
+        HelpXML;;;FontCode  {
+            /* Highlighted XML */
+            white-space: pre;
+            display: inline-block;
+            color: #C5F779;
+            background-color: #444444;
             border: 1px dashed #aaaaaa;
+            font-family: Terminus, Fixed, monospace;
+        }
+        HelpXMLBlock;;;HelpXML {
             display: block;
             margin-left: 2em;
-            font-family: Terminus, Fixed, monospace;
         }
         HelpXMLAttribute                            color: #C5F779;
         HelpXMLAttribute::after                     color: #E5E5E5; content: "=";

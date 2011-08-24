@@ -302,7 +302,7 @@ var Template = Module("Template", {
                 return <span highlight="Null">{arg}</span>;
             case "object":
                 if (arg instanceof Ci.nsIDOMElement)
-                    return util.objectToString(arg, false);
+                    return util.objectToString(arg, true);
                 // for java packages value.toString() would crash so badly
                 // that we cannot even try/catch it
                 if (/^\[JavaPackage.*\]$/.test(arg))
