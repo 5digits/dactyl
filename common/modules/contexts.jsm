@@ -97,15 +97,13 @@ var Contexts = Module("contexts", {
             this.builtin.modifiable = false;
 
             this.GroupFlag = Class("GroupFlag", CommandOption, {
-                init: function (name, defaultValue) {
+                init: function (name) {
                     this.name = name;
 
                     this.type = ArgType("group", function (group) {
                         return isString(group) ? contexts.getGroup(group, name)
                                                : group[name];
                     });
-
-                    this.defaultValue = defaultValue;
                 },
 
                 get toStringParams() [this.name],
@@ -114,9 +112,7 @@ var Contexts = Module("contexts", {
 
                 description: "Group to which to add",
 
-                get default() let (group = contexts.context && contexts.context.group)
-                    !group && this.defaultValue !== undefined ? this.defaultValue
-                                                              : (group || contexts.user)[this.name],
+                get default() (contexts.context && contexts.context.group || contexts.user)[this.name],
 
                 completer: function (context) modules.completion.group(context)
             });

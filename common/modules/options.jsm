@@ -102,11 +102,9 @@ var Option = Class("Option", {
             options.cleanupPrefs.set(this.name, value);
     },
 
-    /** @property {Window|OptionHive|null} The default context for this option. */
-    context: null,
-
-    /** @property {[OptionHive]|null} The default hives for this option. */
-    hives: null,
+    /** @property {value} The option's global value. @see #scope */
+    get globalValue() { try { return options.store.get(this.name, {}).value; } catch (e) { util.reportError(e); throw e; } },
+    set globalValue(val) { options.store.set(this.name, { value: val, time: Date.now() }); },
 
     /**
      * Returns *value* as an array of parsed values if the option type is
@@ -126,140 +124,64 @@ var Option = Class("Option", {
     stringify: function stringify(vals) Commands.quote(vals),
 
     /**
-     * Returns a context object for the given window.
-     *
-     * @param {Window} context The context for which to get this option value.
-     *     @optional
-     * @returns {object}
-     *     window:  The global window for which to get the value.
-     *     tab:     The tab for which to get the value.
-     *     content: The content window for which to get the value.
-     *     hive:    The option hive containing the value.
-     */
-    getContext: function getContext(context) {
-        if (context instanceof OptionHive)
-            context = undefined;
-
-        if (context === undefined)
-            context = this.modules.content;
-
-        if (!context && this.scope & Option.SCOPE_BUFFER)
-            context = this.modules.buffer.focusedFrame;
-
-        let res = {};
-        if (context) {
-            if (this.scope & Option.SCOPE_WINDOW)
-                res.window = util.topWindow(context);
-            if (this.scope & Option.SCOPE_BUFFER)
-                res.content = context;
-            if (this.scope & Option.SCOPE_TAB) {
-                res.tab = array.nth(this.modules.tabs.allTabs,
-                                    function (tab) tab.linkedBrowser.contentWindow
-                                                        == this,
-                                    0, context.top);
-                res.browser = res.tab && res.tab.linkedBrowser;
-            }
-        }
-        return res;
-    },
-
-    /**
      * Returns the option's value as an array of parsed values if the option
      * type is "charlist" or "stringlist" or else the simple value.
      *
-     * @param {Window|OptionHive} context The context for which to get this option value.
-     *     @optional
-     * @param {boolean} skipGetter If true, return the saved value, not
-     *      the return value from the getter.
-     * @see #getContext
+     * @param {number} scope The scope to return these values from (see
+     *     {@link Option#scope}).
+     * @returns {value|[string]}
      */
-    get: function get(context, skipGetter) {
-        if (context === undefined)
-            context = this.context;
+    get: function get(scope) {
+        if (scope) {
+            if ((scope & this.scope) == 0) // option doesn't exist in this scope
+                return null;
+        }
+        else
+            scope = this.scope;
 
-        let hive = this._valueHive(context);
-        let value = hive ? hive.values[this.name] : this.globalValue;
-        if (this.getter && !skipGetter)
-            return util.trapErrors(this.getter, this, value,
-                                   this.getContext(context));
+        let values;
 
-        return value;
-    },
+        /*
+        if (config.has("tabs") && (scope & Option.SCOPE_LOCAL))
+            values = tabs.options[this.name];
+         */
+        if ((scope & Option.SCOPE_GLOBAL) && (values == undefined))
+            values = this.globalValue;
 
-    _valueHive: function _valueHive(context) {
-        let { contexts, options } = this.modules;
-        let hives = this.hives || options.hives;
+        if (this.getter)
+            return util.trapErrors(this.getter, this, values);
 
-        context = context || this.context;
-        if (context instanceof Ci.nsIDOMWindow)
-            hives = array(contexts.matchingGroups(null, context.document).options);
-        else if (context instanceof OptionHive)
-            hives = array([context]);
-
-        return hives.nth(function (h) h.has(this), 0, this.name);
+        return values;
     },
 
     /**
      * Sets the option's value from an array of values if the option type is
      * "charlist" or "stringlist" or else the simple value.
      *
-     * @param {OptionHive} hive The hive for which to set this value.
-     *      @optional
-     * @see #getContext
+     * @param {number} scope The scope to apply these values to (see
+     *     {@link Option#scope}).
      */
-    set: function set(newValue, hive) {
+    set: function set(newValues, scope, skipGlobal) {
+        scope = scope || this.scope;
+        if ((scope & this.scope) == 0) // option doesn't exist in this scope
+            return;
 
-        hive = hive || this.hives && this.hives[0];
-        if (hive) {
-            hive.values[this.name] = newValue;
-            hive.setFrom[this.name] = null;
-        }
-        else {
-            this.globalValue = newValue;
-        }
+        if (this.setter)
+            newValues = this.setter(newValues);
+        if (newValues === undefined)
+            return;
 
-
-        this.runSetters(hive);
+        /*
+        if (config.has("tabs") && (scope & Option.SCOPE_LOCAL))
+            tabs.options[this.name] = newValues;
+        */
+        if ((scope & Option.SCOPE_GLOBAL) && !skipGlobal)
+            this.globalValue = newValues;
 
         this.hasChanged = true;
-    },
+        this.setFrom = null;
 
-    _runSetter: function _setter(window) {
-        let opt = util.topWindow(window).dactyl.modules.options.get(this.name);
-        if (opt) {
-            let context = opt.getContext(window);
-            let value = opt.get(window, true)
-            if (!opt.getter || value != opt.getter(value, context))
-                opt.setter(value, context);
-        }
-    },
-
-    runSetters: function runSetters(hive) {
-        if (this.setter) {
-            if (this.scope & Option.SCOPE_GLOBAL)
-                this.setter(this.get(null, true), this.getContext(null));
-
-            if (this.scope & Option.SCOPE_WINDOW)
-                for (let window in values(overlay.windows))
-                    this._runSetter(window);
-
-            if (this.scope & Option.SCOPE_TAB)
-                for (let window in values(overlay.windows))
-                    for (let tab in values(window.dactyl.modules.tabs.allTabs))
-                        this._runSetter(tab.linkedBrowser.contentWindow);
-
-            if (this.scope & Option.SCOPE_BUFFER)
-                if (hive)
-                    for (let doc in util.iterDocuments(["content"])) {
-                        let win = doc.defaultView;
-                        if ("dactyl" in util.topWindow(win) &&
-                                hive.filter(doc.documentURIObject || util.newURI(doc.documentURI),
-                                            doc))
-                            this._runSetter(win);
-                    }
-                else
-                    this._runSetter(this.modules.buffer.focusedFrame);
-        }
+        // dactyl.triggerObserver("options." + this.name, newValues);
     },
 
     getValues: deprecated("Option#get", "get"),
@@ -364,9 +286,13 @@ var Option = Class("Option", {
     type: null,
 
     /**
-     * @property {number} The scope of the option.
+     * @property {number} The scope of the option. This can be local, global,
+     *     or both.
+     * @see Option#SCOPE_LOCAL
+     * @see Option#SCOPE_GLOBAL
+     * @see Option#SCOPE_BOTH
      */
-    scope: Class.Memoize(function () Option.SCOPE_WINDOW),
+    scope: 1, // Option.SCOPE_GLOBAL // XXX set to BOTH by default someday? - kstep
 
     /**
      * @property {function(CompletionContext, Args)} This option's completer.
@@ -453,37 +379,37 @@ var Option = Class("Option", {
      */
     hasChanged: false,
 
-    _set: function _set(obj) {
-        update(options.store.get(this.name, {}), obj);
-    },
-
-    /** @property {value} The option's global value. */
-    get globalValue() { try { return options.store.get(this.name, {}).value; } catch (e) { util.reportError(e); throw e; } },
-    set globalValue(val) { this._set({ value: val, time: Date.now() }); },
-
     /**
      * Returns the timestamp when the option's value was last changed.
      */
     get lastSet() options.store.get(this.name).time,
-    set lastSet(val) { this._set({ time: Date.now() }); },
+    set lastSet(val) { options.store.set(this.name, { value: this.globalValue, time: Date.now() }); },
 
     /**
      * @property {nsIFile} The script in which this option was last set. null
      *     implies an interactive command.
      */
-    get setFrom() let (hive = this._valueHive())
-        hive ? hive.setFrom[this.name]
-             : options.store.get(this.name, {}).setFrom,
-
-    set setFrom(val) let (hive = this._valueHive())
-        hive ? (hive.setFrom[this.name] = val)
-             : this._set({ setFrom: val })
+    setFrom: null
 
 }, {
+    /**
+     * @property {number} Global option scope.
+     * @final
+     */
     SCOPE_GLOBAL: 1,
-    SCOPE_WINDOW: 2,
-    SCOPE_TAB: 3,
-    SCOPE_BUFFER: 4,
+
+    /**
+     * @property {number} Local option scope. Options in this scope only
+     *     apply to the current tab/buffer.
+     * @final
+     */
+    SCOPE_LOCAL: 2,
+
+    /**
+     * @property {number} Both local and global option scope.
+     * @final
+     */
+    SCOPE_BOTH: 3,
 
     has: {
         toggleAll: function toggleAll() toggleAll.supercall(this, "all") ^ !!toggleAll.superapply(this, arguments),
@@ -834,7 +760,6 @@ var OptionHive = Class("OptionHive", Contexts.Hive, {
     init: function init(group) {
         init.supercall(this, group);
         this.values = {};
-        this.setFrom = {};
         this.has = Set.has(this.values);
     },
 
@@ -861,6 +786,12 @@ var Options = Module("options", {
             this._optionMap = {};
 
             storage.newMap("options", { store: false });
+            storage.addObserver("options", function optionObserver(key, event, option) {
+                // Trigger any setters.
+                let opt = self.get(option);
+                if (event == "change" && opt)
+                    opt.set(opt.globalValue, Option.SCOPE_GLOBAL, true);
+            }, window);
 
             services["dactyl:"].pages["options.dtd"] = function () [null,
                 util.makeDTD(
@@ -882,8 +813,13 @@ var Options = Module("options", {
          * *onlyNonDefault* is specified.
          *
          * @param {function(Option)} filter Limit the list
+         * @param {number} scope Only list options in this scope (see
+         *     {@link Option#scope}).
          */
-        list: function list(filter) {
+        list: function list(filter, scope) {
+            if (!scope)
+                scope = Option.SCOPE_BOTH;
+
             function opts(opt) {
                 for (let opt in Iterator(this)) {
                     let option = {
@@ -895,6 +831,8 @@ var Options = Module("options", {
                     };
 
                     if (filter && !filter(opt))
+                        continue;
+                    if (!(opt.scope & scope))
                         continue;
 
                     if (opt.type == "boolean") {
@@ -997,26 +935,20 @@ var Options = Module("options", {
     },
 
     /**
-     * Returns the option with *name* in the specified *context*.
+     * Returns the option with *name* in the specified *scope*.
      *
      * @param {string} name The option's name.
-     * @param {Window|OptionHive} context The context for which to get
-     *      this option.
+     * @param {number} scope The option's scope (see {@link Option#scope}).
+     * @optional
      * @returns {Option} The matching option.
      */
-    get: function get(name, context) {
-        let opt = null;
-        if (Set.has(this._optionMap, name)) {
-            opt = this._optionMap[name];
+    get: function get(name, scope) {
+        if (!scope)
+            scope = Option.SCOPE_BOTH;
 
-            if (context) {
-                opt = Object.create(opt);
-                if (context instanceof OptionHive)
-                    opt.hives = array([context]);
-                opt.context = context;
-            }
-        }
-        return opt;
+        if (this._optionMap[name] && (this._optionMap[name].scope & scope))
+            return this._optionMap[name];
+        return null;
     },
 
     /**
@@ -1029,28 +961,25 @@ var Options = Module("options", {
      * @returns {Object} The parsed command object.
      */
     parseOpt: function parseOpt(args, modifiers) {
-        modifiers = modifiers || {};
-
         let res = {};
         let matches, prefix, postfix;
 
-        [matches, prefix, res.name, postfix, res.valueGiven, res.operator, res.stringValue] =
+        [matches, prefix, res.name, postfix, res.valueGiven, res.operator, res.value] =
         args.match(/^\s*(no|inv)?([^=]+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/) || [];
 
         res.args = args;
         res.onlyNonDefault = false; // used for :set to print non-default options
-        res.context = modifiers.context;
         if (!args) {
             res.name = "all";
             res.onlyNonDefault = true;
         }
 
         if (matches) {
-            if (res.option = this.get(res.name, res.context)) {
+            if (res.option = this.get(res.name, res.scope)) {
                 if (prefix === "no" && res.option.type !== "boolean")
                     res.option = null;
             }
-            else if (res.option = this.get(prefix + res.name, res.context)) {
+            else if (res.option = this.get(prefix + res.name, res.scope)) {
                 res.name = prefix + res.name;
                 prefix = "";
             }
@@ -1065,16 +994,18 @@ var Options = Module("options", {
         res.reset = (postfix == "&");
         res.unsetBoolean = (prefix == "no");
 
+        res.scope = modifiers && modifiers.scope;
+
         if (!res.option)
             return res;
 
-        if (res.stringValue === undefined)
-            res.stringValue = "";
+        if (res.value === undefined)
+            res.value = "";
 
-        res.optionValue = res.option.get(res.context);
+        res.optionValue = res.option.get(res.scope);
 
         try {
-            res.value = res.option.parse(res.stringValue);
+            res.values = res.option.parse(res.value);
         }
         catch (e) {
             res.error = e;
@@ -1137,55 +1068,7 @@ var Options = Module("options", {
             }
         });
 
-        commands.add(["se[t]"],
-            "Set an option",
-            function (args) {
-                setAction(args);
-            },
-            {
-                bang: true,
-
-                completer: setCompleter,
-
-                domains: function domains(args) array.flatten(args.map(function (spec) {
-                    try {
-                        let opt = modules.options.parseOpt(spec);
-                        if (opt.option && opt.option.domains)
-                            return opt.option.domains(opt.value);
-                    }
-                    catch (e) {
-                        util.reportError(e);
-                    }
-                    return [];
-                })),
-
-                keepQuotes: true,
-
-                options: [
-                    contexts.GroupFlag("options", null),
-                ],
-
-                privateData: function privateData(args) args.some(function (spec) {
-                    let opt = modules.options.parseOpt(spec);
-                    return opt.option && opt.option.privateData &&
-                        (!callable(opt.option.privateData) ||
-                         opt.option.privateData(opt.value));
-                }),
-
-                serialize: function () [
-                    {
-                        command: this.name,
-                        literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
-                                                           : opt.name + "=" + opt.stringValue]
-                    }
-                    for (opt in modules.options)
-                    if (!opt.getter)
-                ]
-            });
-
         function setAction(args, modifiers) {
-            modifiers = modifiers || {};
-
             let bang = args.bang;
             if (!args.length)
                 args[0] = "";
@@ -1253,7 +1136,6 @@ var Options = Module("options", {
                     return;
                 }
 
-                modifiers.context = args["-group"];
                 let opt = modules.options.parseOpt(arg, modifiers);
                 util.assert(opt, _("command.set.errorParsing", arg));
                 util.assert(!opt.error, _("command.set.errorParsing", opt.error));
@@ -1280,13 +1162,13 @@ var Options = Module("options", {
                     flushList();
                     if (opt.option.type === "boolean") {
                         util.assert(!opt.valueGiven, _("error.invalidArgument", arg));
-                        opt.value = !opt.unsetBoolean;
+                        opt.values = !opt.unsetBoolean;
                     }
                     else if (/^(string|number)$/.test(opt.option.type) && opt.invert)
-                        opt.value = Option.splitList(opt.stringValue);
+                        opt.values = Option.splitList(opt.value);
                     try {
-                        var res = opt.option.op(opt.operator || "=", opt.value, opt.scope, opt.invert,
-                                                opt.stringValue);
+                        var res = opt.option.op(opt.operator || "=", opt.values, opt.scope, opt.invert,
+                                                opt.value);
                     }
                     catch (e) {
                         res = e;
@@ -1301,7 +1183,6 @@ var Options = Module("options", {
 
         function setCompleter(context, args, modifiers) {
             const { completion } = modules;
-            modifiers = modifiers || {}
 
             let filter = context.filter;
 
@@ -1312,8 +1193,8 @@ var Options = Module("options", {
 
                     context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
                     context.completions = [
-                        [prefs.get(filter), _("option.currentValue")],
-                        [prefs.defaults.get(filter), _("option.defaultValue")]
+                            [prefs.get(filter), _("option.currentValue")],
+                            [prefs.defaults.get(filter), _("option.defaultValue")]
                     ].filter(function (k) k[0] != null);
                     return null;
                 }
@@ -1351,13 +1232,13 @@ var Options = Module("options", {
             if (opt.get || opt.reset || !option || prefix)
                 return null;
 
-            if (!opt.stringValue && !opt.operator && !opt.invert) {
+            if (!opt.value && !opt.operator && !opt.invert) {
                 context.fork("default", 0, this, function (context) {
                     context.title = ["Extra Completions"];
                     context.pushProcessor(0, function (item, text, next) next(item, text.substr(0, 100)));
                     context.completions = [
-                        [option.stringValue, _("option.currentValue")],
-                        [option.stringDefaultValue, _("option.defaultValue")]
+                            [option.stringValue, _("option.currentValue")],
+                            [option.stringDefaultValue, _("option.defaultValue")]
                     ].filter(function (f) f[0] !== "");
                     context.quote = ["", util.identity, ""];
                 });
@@ -1367,7 +1248,7 @@ var Options = Module("options", {
             modules.completion.optionValue(optcontext, opt.name, opt.operator);
 
             // Fill in the current values if we're removing
-            if (opt.operator == "-" && isArray(opt.value)) {
+            if (opt.operator == "-" && isArray(opt.values)) {
                 let have = Set([i.text for (i in values(context.allItems.items))]);
                 context = context.fork("current-values", 0);
                 context.anchored = optcontext.anchored;
@@ -1454,6 +1335,64 @@ var Options = Module("options", {
             }
         );
 
+        [
+            {
+                names: ["setl[ocal]"],
+                description: "Set local option",
+                modifiers: { scope: Option.SCOPE_LOCAL }
+            },
+            {
+                names: ["setg[lobal]"],
+                description: "Set global option",
+                modifiers: { scope: Option.SCOPE_GLOBAL }
+            },
+            {
+                names: ["se[t]"],
+                description: "Set an option",
+                modifiers: {},
+                extra: {
+                    serialize: function () [
+                        {
+                            command: this.name,
+                            literalArg: [opt.type == "boolean" ? (opt.value ? "" : "no") + opt.name
+                                                               : opt.name + "=" + opt.stringValue]
+                        }
+                        for (opt in modules.options)
+                        if (!opt.getter && !opt.isDefault && (opt.scope & Option.SCOPE_GLOBAL))
+                    ]
+                }
+            }
+        ].forEach(function (params) {
+            commands.add(params.names, params.description,
+                function (args, modifiers) {
+                    setAction(args, update(modifiers, params.modifiers));
+                },
+                update({
+                    bang: true,
+                    completer: setCompleter,
+                    domains: function domains(args) array.flatten(args.map(function (spec) {
+                        try {
+                            let opt = modules.options.parseOpt(spec);
+                            if (opt.option && opt.option.domains)
+                                return opt.option.domains(opt.values);
+                        }
+                        catch (e) {
+                            util.reportError(e);
+                        }
+                        return [];
+                    })),
+                    keepQuotes: true,
+                    privateData: function privateData(args) args.some(function (spec) {
+                        let opt = modules.options.parseOpt(spec);
+                        return opt.option && opt.option.privateData &&
+                            (!callable(opt.option.privateData) ||
+                             opt.option.privateData(opt.values));
+                    })
+                }, params.extra || {}));
+        });
+
+        // TODO: deprecated. This needs to support "g:"-prefixed globals at a
+        // minimum for now.
         commands.add(["unl[et]"],
             "Delete a variable",
             function (args) {

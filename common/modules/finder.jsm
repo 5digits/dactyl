@@ -673,7 +673,8 @@ var RangeFind = Class("RangeFind", {
             this.range = range;
             this.document = range.startContainer.ownerDocument;
             this.window = this.document.defaultView;
-            this.docShell = util.docShell(this.window);
+            this.docShell = this.window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+                                       .QueryInterface(Ci.nsIDocShell);
 
             if (this.selection == null)
                 return false;

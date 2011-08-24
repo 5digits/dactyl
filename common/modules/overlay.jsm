@@ -299,10 +299,10 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                     overlay.windows = array.uniq(overlay.windows.concat(window), true);
                 }
 
-                if (window.dactylWindowVisible)
-                    finish();
-                else
+                if (overlay.onWindowVisible)
                     overlay.onWindowVisible.push(finish);
+                else
+                    finish();
 
                 modules.events.listen(window, "unload", function onUnload() {
                     window.removeEventListener("unload", onUnload.wrapped, false);
@@ -350,7 +350,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         "xul-window-visible": function () {
             if (this.onWindowVisible) {
                 this.onWindowVisible.forEach(function (f) f.call(this), this);
-                this.onWindowVisible = [];
+                this.onWindowVisible = null;
             }
         }
     },
@@ -367,7 +367,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
             for (let doc in util.iterDocuments())
                 if (~["interactive", "complete"].indexOf(doc.readyState)) {
-                    doc.defaultView.dactylWindowVisible = true;
+                    this.onWindowVisible = null;
                     this._loadOverlays(doc.defaultView);
                 }
                 else
