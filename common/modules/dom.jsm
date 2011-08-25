@@ -741,7 +741,9 @@ var DOM = Class("DOM", {
             let win = this.document.defaultView;
 
             if (force || !(rect && rect.bottom <= win.innerHeight && rect.top >= 0 && rect.left < win.innerWidth && rect.right > 0))
-                elem.scrollIntoView(alignWithTop !== undefined ? alignWithTop
+                elem.scrollIntoView(alignWithTop !== undefined ? alignWithTop :
+                                    rect.bottom < 0            ? true         :
+                                    rect.top > win.innerHeight ? false
                                                                : Math.abs(rect.top) < Math.abs(win.innerHeight - rect.bottom));
         });
     },

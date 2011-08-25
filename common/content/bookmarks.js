@@ -63,49 +63,54 @@ var Bookmarks = Module("bookmarks", {
      *      Otherwise, if a bookmark for the given URL exists it is
      *      updated instead.
      *      @optional
-     * @returns {boolean} True if the bookmark was added or updated
-     *      successfully.
+     * @returns {boolean} True if the bookmark was updated, false if a
+     *      new bookmark was added.
      */
     add: function add(unfiled, title, url, keyword, tags, force) {
         // FIXME
         if (isObject(unfiled))
-            var { unfiled, title, url, keyword, tags, post, charset, force } = unfiled;
+            var { id, unfiled, title, url, keyword, tags, post, charset, force } = unfiled;
 
-        try {
-            let uri = util.createURI(url);
-            if (!force && bookmarkcache.isBookmarked(uri))
-                for (var bmark in bookmarkcache)
-                    if (bmark.url == uri.spec) {
-                        if (title)
-                            bmark.title = title;
+        let uri = util.createURI(url);
+        if (id != null)
+            var bmark = bookmarkcache.bookmarks[id];
+        else if (!force) {
+            if (keyword && Set.has(bookmarkcache.keywords, keyword))
+                bmark = bookmarkcache.keywords[keyword];
+            else if (bookmarkcache.isBookmarked(uri))
+                for (bmark in bookmarkcache)
+                    if (bmark.url == uri.spec)
                         break;
-                    }
-
-            if (tags) {
-                PlacesUtils.tagging.untagURI(uri, null);
-                PlacesUtils.tagging.tagURI(uri, tags);
-            }
-            if (bmark == undefined)
-                bmark = bookmarkcache.bookmarks[
-                    services.bookmarks.insertBookmark(
-                         services.bookmarks[unfiled ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
-                         uri, -1, title || url)];
-            if (!bmark)
-                return false;
-
-            if (charset !== undefined)
-                bmark.charset = charset;
-            if (post !== undefined)
-                bmark.post = post;
-            if (keyword)
-                bmark.keyword = keyword;
-        }
-        catch (e) {
-            util.reportError(e);
-            return false;
         }
 
-        return true;
+        if (tags) {
+            PlacesUtils.tagging.untagURI(uri, null);
+            PlacesUtils.tagging.tagURI(uri, tags);
+        }
+
+        let updated = !!bmark;
+        if (bmark == undefined)
+            bmark = bookmarkcache.bookmarks[
+                services.bookmarks.insertBookmark(
+                     services.bookmarks[unfiled ? "unfiledBookmarksFolder" : "bookmarksMenuFolder"],
+                     uri, -1, title || url)];
+        else {
+            if (title)
+                bmark.title = title;
+            if (!uri.equals(bmark.uri))
+                bmark.uri = uri;
+        }
+
+        util.assert(bmark);
+
+        if (charset !== undefined)
+            bmark.charset = charset;
+        if (post !== undefined)
+            bmark.post = post;
+        if (keyword)
+            bmark.keyword = keyword;
+
+        return updated;
     },
 
     /**
@@ -163,6 +168,7 @@ var Bookmarks = Module("bookmarks", {
             let extra = "";
             if (title != url)
                 extra = " (" + title + ")";
+
             this.add({ unfiled: true, title: title, url: url });
             dactyl.echomsg({ domains: [util.getHost(url)], message: _("bookmark.added", url + extra) });
         }
@@ -438,9 +444,13 @@ var Bookmarks = Module("bookmarks", {
         commands.add(["bma[rk]"],
             "Add a bookmark",
             function (args) {
+                dactyl.assert(!args.bang || args["-id"] == null,
+                              _("bookmark.bangOrID"));
+
                 let opts = {
                     force: args.bang,
                     unfiled: false,
+                    id: args["-id"],
                     keyword: args["-keyword"] || null,
                     charset: args["-charset"],
                     post: args["-post"],
@@ -449,13 +459,13 @@ var Bookmarks = Module("bookmarks", {
                     url: args.length === 0 ? buffer.uri.spec : args[0]
                 };
 
-                if (bookmarks.add(opts)) {
-                    let extra = (opts.title == opts.url) ? "" : " (" + opts.title + ")";
-                    dactyl.echomsg({ domains: [util.getHost(opts.url)], message: _("bookmark.added", opts.url + extra) },
-                                   1, commandline.FORCE_SINGLELINE);
-                }
-                else
-                    dactyl.echoerr(_("bookmark.cantAdd", opts.title.quote()));
+                let updated = bookmarks.add(opts);
+                let action  = updated ? "updated" : "added";
+
+                let extra   = (opts.title == opts.url) ? "" : " (" + opts.title + ")";
+
+                dactyl.echomsg({ domains: [util.getHost(opts.url)], message: _("bookmark." + action, opts.url + extra) },
+                               1, commandline.FORCE_SINGLELINE);
             }, {
                 argCount: "?",
                 bang: true,
@@ -477,6 +487,11 @@ var Bookmarks = Module("bookmarks", {
                         type: CommandOption.STRING,
                         completer: function (context) completion.charset(context),
                         validator: Option.validateCompleter
+                    },
+                    {
+                        names: ["-id"],
+                        description: "The ID of the bookmark to update",
+                        type: CommandOption.INT
                     }
                 ]
             });
@@ -553,6 +568,7 @@ var Bookmarks = Module("bookmarks", {
                 if (bmarks.length == 1) {
                     let bmark = bmarks[0];
 
+                    options["-id"] = bmark.id;
                     options["-title"] = bmark.title;
                     if (bmark.charset)
                         options["-charset"] = bmark.charset;

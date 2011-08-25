@@ -52,6 +52,10 @@
                 sites that require query parameters in encodings other than
                 UTF-8 (short name <em>-c</em>).
             </dd>
+            <dt>-id</dt>
+            <dd>
+                The numerical ID of a bookmark to update.
+            </dd>
             <dt>-keyword</dt>
             <dd>
                 A keyword which may be used to open the bookmark via
@@ -88,7 +92,7 @@
         <p>
             If <oa>!</oa> is present, a new bookmark is always
             added. Otherwise, the first bookmark matching
-            <oa>url</oa> is updated.
+            <oa>id</oa>, <oa>keyword</oa>, or <oa>url</oa> is updated.
         </p>
     </description>
 </item>

@@ -20,6 +20,12 @@ update(Bookmark.prototype, {
     ].filter(function (item) item[1]),
 
     get uri() util.newURI(this.url),
+    set uri(uri) {
+        let tags = this.tags;
+        this.tags = null;
+        services.bookmarks.changeBookmarkURI(this.id, uri);
+        this.tags = tags;
+    },
 
     encodeURIComponent: function _encodeURIComponent(str) {
         if (!this.charset || this.charset === "UTF-8")
@@ -28,15 +34,9 @@ update(Bookmark.prototype, {
         return escape(conv.ConvertFromUnicode(str) + conv.Finish());
     }
 })
+Bookmark.prototype.members.uri = Bookmark.prototype.members.url;
 Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
-Bookmark.setter("url", function (val) {
-    if (isString(val))
-        val = util.newURI(val);
-    let tags = this.tags;
-    this.tags = null;
-    services.bookmarks.changeBookmarkURI(this.id, val);
-    this.tags = tags;
-});
+Bookmark.setter("url", function (val) { this.uri = isString(val) ? util.newURI(val) : val; });
 Bookmark.setter("title", function (val) { services.bookmarks.setItemTitle(this.id, val); });
 Bookmark.setter("post", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.POST, val); });
 Bookmark.setter("charset", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.CHARSET, val); });
