@@ -733,7 +733,7 @@ function Class() {
     if (callable(args[0]))
         superclass = args.shift();
 
-    if (loaded.config && (config.haveGecko("5.*", "6.0") || config.haveGecko("8.0"))) // Bug 657418.
+    if (loaded.config && (config.haveGecko("5.*", "6.0") || config.haveGecko("6.*"))) // Bug 657418.
         var Constructor = function Constructor() {
             var self = Object.create(Constructor.prototype);
             self.instance = self;
