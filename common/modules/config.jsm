@@ -253,10 +253,14 @@ var ConfigBase = Class("ConfigBase", {
      * Returns true if the current Gecko runtime is of the given version
      * or greater.
      *
-     * @param {string} ver The required version.
+     * @param {string} min The minimum required version. @optional
+     * @param {string} max The maximum required version. @optional
      * @returns {boolean}
      */
-    haveGecko: function (ver) services.versionCompare.compare(services.runtime.platformVersion, ver) >= 0,
+    haveGecko: function (min, max) let ({ compare } = services.versionCompare,
+                                        { platformVersion } = services.runtime)
+        (min == null || compare(platformVersion, min) >= 0) &&
+        (max == null || compare(platformVersion, max) < 0),
 
     /** Dactyl's notion of the current operating system platform. */
     OS: memoize({

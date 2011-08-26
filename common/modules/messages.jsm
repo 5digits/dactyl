@@ -17,19 +17,13 @@ var Messages = Module("messages", {
 
     init: function init(name) {
         let self = this;
-        name = name || "messages";
-
-        this.bundles = array.uniq([JSMLoader.getTarget("dactyl://locale/" + name + ".properties"),
-                                   JSMLoader.getTarget("dactyl://locale-local/" + name + ".properties"),
-                                   "resource://dactyl-locale/en-US/" + name + ".properties",
-                                   "resource://dactyl-locale-local/en-US/" + name + ".properties"])
-                            .map(services.stringBundle.createBundle)
-                            .filter(function (bundle) { try { bundle.getSimpleEnumeration(); return true; } catch (e) { return false; } });
+        this.name = name || "messages";
 
         this._ = Class("_", String, {
             init: function _(message) {
                 this.args = arguments;
             },
+            instance: {},
             message: Class.Memoize(function () {
                 let message = this.args[0];
 
@@ -42,18 +36,23 @@ var Messages = Module("messages", {
             valueOf: function valueOf() this.message,
             toString: function toString() this.message
         });
-
-        let seen = {};
-        for (let { key } in this.iterate()) {
-            if (!Set.add(seen, key))
-                this._[key] = this[key] = {
-                    __noSuchMethod__: function __(prop, args) self._.apply(self, [prop].concat(args))
-                };
-        }
     },
 
-    iterate: function () let (bundle = this.bundles[0])
-        iter(prop.QueryInterface(Ci.nsIPropertyElement) for (prop in iter(bundle.getSimpleEnumeration()))),
+    bundles: Class.Memoize(function ()
+        array.uniq([JSMLoader.getTarget("dactyl://locale/" + this.name + ".properties"),
+                    JSMLoader.getTarget("dactyl://locale-local/" + this.name + ".properties"),
+                    "resource://dactyl-locale/en-US/" + this.name + ".properties",
+                    "resource://dactyl-locale-local/en-US/" + this.name + ".properties"])
+             .map(services.stringBundle.createBundle)
+             .filter(function (bundle) { try { bundle.getSimpleEnumeration(); return true; } catch (e) { return false; } })),
+
+    iterate: function () {
+        let seen = {};
+        for (let bundle in values(this.bundles))
+            for (let { key, value } in iter(bundle.getSimpleEnumeration(), Ci.nsIPropertyElement))
+                if (!Set.add(seen, key))
+                    yield [key, value];
+    },
 
     cleanup: function cleanup() {
         services.stringBundle.flushBundles();

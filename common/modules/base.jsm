@@ -733,11 +733,9 @@ function Class() {
     if (callable(args[0]))
         superclass = args.shift();
 
-    if (loaded.config && config.haveGecko("6.0a1")) // Bug 657418.
+    if (loaded.config && (config.haveGecko("5.*", "6.0") || config.haveGecko("8.0"))) // Bug 657418.
         var Constructor = function Constructor() {
-            var self = Object.create(Constructor.prototype, {
-                constructor: { value: Constructor },
-            });
+            var self = Object.create(Constructor.prototype);
             self.instance = self;
 
             if ("_metaInit_" in self && self._metaInit_)
@@ -749,9 +747,7 @@ function Class() {
     else
         var Constructor = eval(String.replace(<![CDATA[
             (function constructor(PARAMS) {
-                var self = Object.create(Constructor.prototype, {
-                    constructor: { value: Constructor },
-                });
+                var self = Object.create(Constructor.prototype);
                 self.instance = self;
 
                 if ("_metaInit_" in self && self._metaInit_)
@@ -779,9 +775,10 @@ function Class() {
 
     Class.extend(Constructor, superclass, args[0]);
     update(Constructor, args[1]);
+
     Constructor.__proto__ = superclass;
-    args = args.slice(2);
-    Array.forEach(args, function (obj) {
+
+    args.slice(2).forEach(function (obj) {
         if (callable(obj))
             obj = obj.prototype;
         update(Constructor.prototype, obj);
@@ -914,6 +911,9 @@ Class.prototype = {
      * when new instances are created.
      */
     init: function c_init() {},
+
+    get instance() ({}),
+    set instance(val) Class.replaceProperty(this, "instance", val),
 
     withSavedValues: function withSavedValues(names, callback, self) {
         let vals = names.map(function (name) this[name], this);
