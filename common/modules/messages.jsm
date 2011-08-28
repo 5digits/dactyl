@@ -12,7 +12,6 @@ defineModule("messages", {
     require: ["services", "util"]
 }, this);
 
-// TODO: Lazy instantiation
 var Messages = Module("messages", {
 
     init: function init(name) {

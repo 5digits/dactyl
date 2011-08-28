@@ -302,6 +302,9 @@ var DOM = Class("DOM", {
     },
 
     get editor() {
+        if (!this.length)
+            return;
+
         this[0] instanceof Ci.nsIDOMNSEditableElement;
         if (this[0].editor instanceof Ci.nsIEditor)
             return this[0].editor;
@@ -510,6 +513,9 @@ var DOM = Class("DOM", {
                     else
                         elem.setAttributeNS(ns, k, v);
             });
+
+        if (!this.length)
+            return null;
 
         if (Set.has(hooks, key) && hooks[key].get)
             return hooks[key].get.call(this, this[0]);

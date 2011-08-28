@@ -498,7 +498,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                 Object.defineProperty(object, k, desc);
 
                 if (callable(value)) {
-                    let sentinel = "(function DactylOverlay() {}())"
+                    var sentinel = "(function DactylOverlay() {}())"
                     value.toString = function toString() toString.toString.call(this).replace(/\}?$/, sentinel + "; $&");
                     value.toSource = function toSource() toSource.toSource.call(this).replace(/\}?$/, sentinel + "; $&");
                 }
