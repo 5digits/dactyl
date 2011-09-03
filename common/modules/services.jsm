@@ -70,7 +70,10 @@ var Services = Module("Services", {
         this.add("zipReader",           "@mozilla.org/libjar/zip-reader-cache;1",           "nsIZipReaderCache");
 
         this.addClass("CharsetConv",  "@mozilla.org/intl/scriptableunicodeconverter", "nsIScriptableUnicodeConverter", "charset");
+        this.addClass("CharsetStream","@mozilla.org/intl/converter-input-stream;1",   ["nsIConverterInputStream",
+                                                                                       "nsIUnicharLineInputStream"], "init");
         this.addClass("File",         "@mozilla.org/file/local;1",                 "nsILocalFile");
+        this.addClass("FileInStream", "@mozilla.org/network/file-input-stream;1",  "nsIFileInputStream", "init", false);
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        "nsIFind");
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", "nsIFormatConverter");
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     "nsIDocumentEncoder");
@@ -79,6 +82,7 @@ var Services = Module("Services", {
         this.addClass("Persist",      "@mozilla.org/embedding/browser/nsWebBrowserPersist;1", "nsIWebBrowserPersist");
         this.addClass("Pipe",         "@mozilla.org/pipe;1",                       "nsIPipe", "init");
         this.addClass("Process",      "@mozilla.org/process/util;1",               "nsIProcess", "init");
+        this.addClass("Pump",         "@mozilla.org/network/input-stream-pump;1",  "nsIInputStreamPump", "init")
         this.addClass("StreamChannel","@mozilla.org/network/input-stream-channel;1",
                       ["nsIInputStreamChannel", "nsIChannel"], "setURI");
         this.addClass("StreamCopier", "@mozilla.org/network/async-stream-copier;1","nsIAsyncStreamCopier", "init");
@@ -91,7 +95,7 @@ var Services = Module("Services", {
         this.addClass("XPathEvaluator", "@mozilla.org/dom/xpath-evaluator;1",      "nsIDOMXPathEvaluator");
         this.addClass("XMLDocument",  "@mozilla.org/xml/xml-document;1",           ["nsIDOMXMLDocument", "nsIDOMNodeSelector"]);
         this.addClass("ZipReader",    "@mozilla.org/libjar/zip-reader;1",          "nsIZipReader", "open");
-        this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  "nsIZipWriter");
+        this.addClass("ZipWriter",    "@mozilla.org/zipwriter;1",                  "nsIZipWriter", "open");
     },
     reinit: function () {},
 
@@ -112,7 +116,7 @@ var Services = Module("Services", {
             }
             return res;
         }
-        catch (e) {
+        catch (e if service.quiet !== false) {
             if (typeof util !== "undefined")
                 util.reportError(e);
             else
@@ -149,9 +153,9 @@ var Services = Module("Services", {
      * @param {string} init Name of a property or method used to initialize the
      *     class.
      */
-    addClass: function (name, class_, ifaces, init) {
+    addClass: function (name, class_, ifaces, init, quiet) {
         const self = this;
-        this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []), method: "createInstance", init: init };
+        this.services[name] = { class: class_, interfaces: Array.concat(ifaces || []), method: "createInstance", init: init, quiet: quiet };
         if (init)
             memoize(this.services[name], "callable",
                     function () callable(XPCOMShim(this.interfaces)[this.init]));

@@ -216,9 +216,9 @@ function require(obj, name, from, targetName) {
 }
 
 defineModule("base", {
-    // sed -n 's/^(const|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
+    // sed -n 's/^(const|var|function) ([a-zA-Z0-9_]+).*/	"\2",/p' base.jsm | sort | fmt
     exports: [
-        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object", "Runnable",
+        "ErrorBase", "Cc", "Ci", "Class", "Cr", "Cu", "Module", "JSMLoader", "Object",
         "Set", "Struct", "StructBase", "Timer", "UTF8", "XPCOM", "XPCOMShim", "XPCOMUtils",
         "XPCSafeJSObjectWrapper", "array", "bind", "call", "callable", "ctypes", "curry",
         "debuggerProperties", "defineModule", "deprecated", "endModule", "forEach", "isArray",
@@ -227,14 +227,6 @@ defineModule("base", {
         "values", "withCallerGlobal"
     ]
 }, this);
-
-function Runnable(self, func, args) {
-    return {
-        __proto__: Runnable.prototype,
-        run: function () { func.apply(self, args || []); }
-    };
-}
-Runnable.prototype.QueryInterface = XPCOMUtils.generateQI([Ci.nsIRunnable]);
 
 /**
  * Returns a list of all of the top-level properties of an object, by
@@ -845,7 +837,7 @@ Class.extend = function extend(subclass, superclass, overrides) {
  *      property's value.
  * @returns {Class.Property}
  */
-Class.Memoize = Class.Memoize = function Memoize(getter, wait)
+Class.Memoize = function Memoize(getter, wait)
     Class.Property({
         configurable: true,
         enumerable: true,
@@ -886,6 +878,8 @@ Class.Memoize = Class.Memoize = function Memoize(getter, wait)
             this.set = function replace(val) Class.replaceProperty(this.instance || this, val);
         }
     });
+
+Class.memoize = deprecated("Class.Memoize", function memoize() Class.Memoize.apply(this, arguments));
 
 /**
  * Updates the given object with the object in the target class's
@@ -1184,7 +1178,7 @@ function Struct() {
     });
     return Struct;
 }
-let StructBase = Class("StructBase", Array, {
+var StructBase = Class("StructBase", Array, {
     init: function struct_init() {
         for (let i = 0; i < arguments.length; i++)
             if (arguments[i] != undefined)

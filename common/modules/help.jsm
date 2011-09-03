@@ -7,7 +7,7 @@
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("help", {
     exports: ["help"],
-    require: ["dom", "protocol", "services", "util"]
+    require: ["dom", "javascript", "protocol", "services", "util"]
 }, this);
 
 var Help = Module("Help", {
@@ -95,7 +95,120 @@ var Help = Module("Help", {
             dactyl.assert(page != null, _("help.noTopic", topic));
 
             dactyl.open("dactyl://help/" + page, { from: "help" });
-        }
+        },
+
+        exportHelp: JavaScript.setCompleter(function (path) {
+            const FILE = io.File(path);
+            const PATH = FILE.leafName.replace(/\..*/, "") + "/";
+            const TIME = Date.now();
+
+            if (!FILE.exists() && (/\/$/.test(path) && !/\./.test(FILE.leafName)))
+                FILE.create(FILE.DIRECTORY_TYPE, octal(755));
+
+            dactyl.initHelp();
+            if (FILE.isDirectory()) {
+                var addDataEntry = function addDataEntry(file, data) FILE.child(file).write(data);
+                var addURIEntry  = function addURIEntry(file, uri) addDataEntry(file, util.httpGet(uri).responseText);
+            }
+            else {
+                var zip = services.ZipWriter(FILE, File.MODE_CREATE | File.MODE_WRONLY | File.MODE_TRUNCATE);
+
+                addURIEntry = function addURIEntry(file, uri)
+                    zip.addEntryChannel(PATH + file, TIME, 9,
+                        services.io.newChannel(uri, null, null), false);
+                addDataEntry = function addDataEntry(file, data) // Unideal to an extreme.
+                    addURIEntry(file, "data:text/plain;charset=UTF-8," + encodeURI(data));
+            }
+
+            let empty = Set("area base basefont br col frame hr img input isindex link meta param"
+                                .split(" "));
+            function fix(node) {
+                switch(node.nodeType) {
+                case Node.ELEMENT_NODE:
+                    if (isinstance(node, [HTMLBaseElement]))
+                        return;
+
+                    data.push("<"); data.push(node.localName);
+                    if (node instanceof HTMLHtmlElement)
+                        data.push(" xmlns=" + XHTML.uri.quote(),
+                                  " xmlns:dactyl=" + NS.uri.quote());
+
+                    for (let { name, value } in array.iterValues(node.attributes)) {
+                        if (name == "dactyl:highlight") {
+                            Set.add(styles, value);
+                            name = "class";
+                            value = "hl-" + value;
+                        }
+                        if (name == "href") {
+                            value = node.href || value;
+                            if (value.indexOf("dactyl://help-tag/") == 0) {
+                                let uri = services.io.newChannel(value, null, null).originalURI;
+                                value = uri.spec == value ? "javascript:;" : uri.path.substr(1);
+                            }
+                            if (!/^#|[\/](#|$)|^[a-z]+:/.test(value))
+                                value = value.replace(/(#|$)/, ".xhtml$1");
+                        }
+                        if (name == "src" && value.indexOf(":") > 0) {
+                            chromeFiles[value] = value.replace(/.*\//, "");
+                            value = value.replace(/.*\//, "");
+                        }
+
+                        data.push(" ", name, '="',
+                                  <>{value}</>.toXMLString().replace(/"/g, "&quot;"),
+                                  '"');
+                    }
+                    if (node.localName in empty)
+                        data.push(" />");
+                    else {
+                        data.push(">");
+                        if (node instanceof HTMLHeadElement)
+                            data.push(<link rel="stylesheet" type="text/css" href="help.css"/>.toXMLString());
+                        Array.map(node.childNodes, fix);
+                        data.push("</", node.localName, ">");
+                    }
+                    break;
+                case Node.TEXT_NODE:
+                    data.push(<>{node.textContent}</>.toXMLString());
+                }
+            }
+
+            let chromeFiles = {};
+            let styles = {};
+            for (let [file, ] in Iterator(help.files)) {
+                let url = "dactyl://help/" + file;
+                dactyl.open(url);
+                util.waitFor(function () content.location.href == url && buffer.loaded
+                                && content.document.documentElement instanceof HTMLHtmlElement,
+                             15000);
+                events.waitForPageLoad();
+                var data = [
+                    '<?xml version="1.0" encoding="UTF-8"?>\n',
+                    '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n',
+                    '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+                ];
+                fix(content.document.documentElement);
+                addDataEntry(file + ".xhtml", data.join(""));
+            }
+
+            let data = [h for (h in highlight) if (Set.has(styles, h.class) || /^Help/.test(h.class))]
+                .map(function (h) h.selector
+                                   .replace(/^\[.*?=(.*?)\]/, ".hl-$1")
+                                   .replace(/html\|/g, "") + "\t" + "{" + h.cssText + "}")
+                .join("\n");
+            addDataEntry("help.css", data.replace(/chrome:[^ ")]+\//g, ""));
+
+            addDataEntry("tag-map.json", JSON.stringify(help.tags));
+
+            let m, re = /(chrome:[^ ");]+\/)([^ ");]+)/g;
+            while ((m = re.exec(data)))
+                chromeFiles[m[0]] = m[2];
+
+            for (let [uri, leaf] in Iterator(chromeFiles))
+                addURIEntry(leaf, uri);
+
+            if (zip)
+                zip.close();
+        }, [function (context, args) completion.file(context)]),
 
     }),
 

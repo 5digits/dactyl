@@ -381,7 +381,7 @@ var EventHive = Class("EventHive", Contexts.Hive, {
      */
     unlisten: function (target, event, callback, capture) {
         this.sessionListeners = this.sessionListeners.filter(function (args) {
-            if (target == null || args[0].get() == target && args[1] == event && args[2] == callback && args[3] == capture) {
+            if (target == null || args[0].get() == target && args[1] == event && args[2].wrapped == callback && args[3] == capture) {
                 args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
                 return false;
             }
@@ -1161,7 +1161,7 @@ var Events = Module("events", {
 
             let win = (elem.ownerDocument || elem).defaultView || elem;
 
-            if (!(services.focus.getLastFocusMethod(win) & 0x7000)
+            if (!(services.focus.getLastFocusMethod(win) & 0x3000)
                 && events.isContentNode(elem)
                 && !buffer.focusAllowed(elem)
                 && isinstance(elem, [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, Window])) {

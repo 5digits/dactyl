@@ -1351,7 +1351,7 @@ var CommandLine = Module("commandline", {
         if (isObject(arg))
             arg = util.objectToString(arg, useColor);
         else if (callable(arg))
-            arg = String(arg);
+            arg = String.replace(arg, "/* use strict */ \n", "/* use strict */ ");
         else if (!isString(arg) && useColor)
             arg = template.highlight(arg);
         return arg;

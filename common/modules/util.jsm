@@ -8,7 +8,6 @@
 
 try {
 
-    let global=this;
 Components.utils.import("resource://dactyl/bootstrap.jsm");
 defineModule("util", {
     exports: ["DOM", "$", "FailedAssertion", "Math", "NS", "Point", "Util", "XBL", "XHTML", "XUL", "util"],
@@ -399,7 +398,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      */
     createURI: function createURI(str) {
         try {
-            return services.urifixup.createFixupURI(str, services.urifixup.FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP);
+            let uri = services.urifixup.createFixupURI(str, services.urifixup.FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP);
+            uri instanceof Ci.nsIURL;
+            return uri;
         }
         catch (e) {
             return null;
@@ -673,6 +674,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (params.mimeType)
                 xmlhttp.overrideMimeType(params.mimeType);
 
+            if (params.responseType)
+                xmlhttp.responseType = params.responseType;
+
             xmlhttp.open(params.method || "GET", url, async,
                          params.user, params.pass);
 
@@ -748,11 +752,14 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * Iterates over all currently open documents, including all
      * top-level window and sub-frames thereof.
      */
-    iterDocuments: function iterDocuments() {
+    iterDocuments: function iterDocuments(types) {
+        types = types ? types.map(function (s) "type" + util.capitalize(s))
+                      : ["typeChrome", "typeContent"];
+
         let windows = services.windowMediator.getXULWindowEnumerator(null);
         while (windows.hasMoreElements()) {
             let window = windows.getNext().QueryInterface(Ci.nsIXULWindow);
-            for each (let type in ["typeChrome", "typeContent"]) {
+            for each (let type in types) {
                 let docShells = window.docShell.getDocShellEnumerator(Ci.nsIDocShellTreeItem[type],
                                                                       Ci.nsIDocShell.ENUMERATE_FORWARDS);
                 while (docShells.hasMoreElements())
@@ -820,7 +827,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @param {string} uri
      * @returns {nsIURI}
      */
-    newURI: function newURI(uri, charset, base) this.withProperErrors("newURI", services.io, uri, charset, base),
+    newURI: function newURI(uri, charset, base) {
+        let res = this.withProperErrors("newURI", services.io, uri, charset, base);
+        res instanceof Ci.nsIURL;
+        return res;
+    },
 
     /**
      * Removes leading garbage prepended to URIs by the subscript
@@ -1133,8 +1144,11 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
         if (isString(error))
             error = Error(error);
 
-        if (Cu.reportError)
-            Cu.reportError(error);
+        Cu.reportError(error);
+        try {
+            services.console.logStringMessage(error.stack || Error().stack);
+        }
+        catch (e) {}
 
         try {
             this.errorCount++;

@@ -9,10 +9,7 @@
 const NAME = "bootstrap";
 const global = this;
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cu = Components.utils;
-const Cr = Components.results;
+var { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
 function module(uri) {
     let obj = {};
@@ -29,8 +26,8 @@ const resourceProto = Services.io.getProtocolHandler("resource")
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 
-const BOOTSTRAP_JSM = "resource://dactyl/bootstrap.jsm";
-
+const DISABLE_ACR        = "resource://dactyl-content/disable-acr.jsm";
+const BOOTSTRAP_JSM      = "resource://dactyl/bootstrap.jsm";
 const BOOTSTRAP_CONTRACT = "@dactyl.googlecode.com/base/bootstrap";
 
 var JSMLoader = BOOTSTRAP_CONTRACT in Cc && Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader;
@@ -206,7 +203,7 @@ function init() {
     }
 
     try {
-        module("resource://dactyl-content/disable-acr.jsm").init(addon.id);
+        module(DISABLE_ACR).init(addon.id);
     }
     catch (e) {
         reportError(e);
@@ -240,20 +237,21 @@ function init() {
     JSMLoader.init(suffix);
     JSMLoader.load("base.jsm", global);
 
-    if (!(BOOTSTRAP_CONTRACT in Cc))
-        manager.registerFactory(Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}"),
-                                "{f541c8b0-fe26-4621-a30b-e77d21721fb5}",
-                                BOOTSTRAP_CONTRACT, {
+    if (!(BOOTSTRAP_CONTRACT in Cc)) {
+        let factory = {
+            classID: Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}"),
+            contractID: BOOTSTRAP_CONTRACT,
             QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory]),
-            instance: {
-                QueryInterface: XPCOMUtils.generateQI([]),
-                contractID: BOOTSTRAP_CONTRACT,
-                wrappedJSObject: {}
-            },
-            // Use Sandbox to prevent closure over this scope
-            createInstance: Cu.evalInSandbox("(function () this.instance)",
+
+            // Use Sandbox to prevent closures over this scope
+            createInstance: Cu.evalInSandbox("(function () this)",
                                              Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].getService()))
-        });
+        };
+        factory.wrappedJSObject = factory;
+
+        manager.registerFactory(factory.classID, String(factory.classID),
+                                BOOTSTRAP_CONTRACT, factory);
+    }
 
     Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject.loader = !Cu.unload && JSMLoader;
 
@@ -271,7 +269,9 @@ function shutdown(data, reason) {
     debug("bootstrap: shutdown " + reasonToString(reason));
     if (reason != APP_SHUTDOWN) {
         try {
-            module("resource://dactyl-content/disable-acr.jsm").cleanup();
+            module(DISABLE_ACR).cleanup();
+            if (Cu.unload)
+                Cu.unload(DISABLE_ACR);
         }
         catch (e) {
             reportError(e);
@@ -293,8 +293,14 @@ function shutdown(data, reason) {
 
 function uninstall(data, reason) {
     debug("bootstrap: uninstall " + reasonToString(reason));
-    if (reason == ADDON_UNINSTALL)
+    if (reason == ADDON_UNINSTALL) {
         Services.prefs.deleteBranch("extensions.dactyl.");
+
+        if (BOOTSTRAP_CONTRACT in Cc) {
+            let service = Cc[BOOTSTRAP_CONTRACT].getService().wrappedJSObject;
+            manager.unregisterFactory(service.classID, service);
+        }
+    }
 }
 
 function reasonToString(reason) {

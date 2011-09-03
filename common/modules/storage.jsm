@@ -292,10 +292,17 @@ var Storage = Module("Storage", {
  * @param {nsIFile|string} path Expanded according to {@link IO#expandPath}
  * @param {boolean} checkPWD Whether to allow expansion relative to the
  *          current directory. @default true
+ * @param {string} charset The charset of the file. @default File.defaultEncoding
  */
 this.File = Class("File", {
-    init: function (path, checkPWD) {
+    init: function (path, checkPWD, charset) {
         let file = services.File();
+
+        if (charset)
+            this.charset = charset;
+
+        if (path instanceof Ci.nsIFileURL)
+            path = path.file;
 
         if (path instanceof Ci.nsIFile)
             file = path.clone();
@@ -320,10 +327,12 @@ this.File = Class("File", {
         return self;
     },
 
+    charset: Class.Memoize(function () File.defaultEncoding),
+
     /**
      * @property {nsIFileURL} Returns the nsIFileURL object for this file.
      */
-    get URI() services.io.newFileURI(this),
+    get URI() services.io.newFileURI(this).QueryInterface(Ci.nsIFileURL),
 
     /**
      * Iterates over the objects in this directory.
@@ -348,18 +357,23 @@ this.File = Class("File", {
     },
 
     /**
+     * Returns an iterator for all lines in a file.
+     */
+    get lines() File.readLines(services.FileInStream(this, -1, 0, 0),
+                               this.charset),
+
+    /**
      * Reads this file's entire contents in "text" mode and returns the
      * content as a string.
      *
      * @param {string} encoding The encoding from which to decode the file.
-     *          @default options["fileencoding"]
+     *          @default #charset
      * @returns {string}
      */
     read: function (encoding) {
-        let ifstream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
-        ifstream.init(this, -1, 0, 0);
+        let ifstream = services.FileInStream(this, -1, 0, 0);
 
-        return File.readStream(ifstream, encoding);
+        return File.readStream(ifstream, encoding || this.charset);
     },
 
     /**
@@ -408,7 +422,7 @@ this.File = Class("File", {
      *     permissions if the file exists.
      * @default 0644
      * @param {string} encoding The encoding to used to write the file.
-     * @default options["fileencoding"]
+     * @default #charset
      */
     write: function (buf, mode, perms, encoding) {
         let ofstream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
@@ -421,7 +435,7 @@ this.File = Class("File", {
             buf = buf.read();
 
         if (!encoding)
-            encoding = File.defaultEncoding;
+            encoding = this.charset;
 
         if (mode == ">>")
             mode = File.MODE_WRONLY | File.MODE_CREATE | File.MODE_APPEND;
@@ -579,9 +593,10 @@ this.File = Class("File", {
 
     readStream: function (ifstream, encoding) {
         try {
-            var icstream = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
-            icstream.init(ifstream, encoding || File.defaultEncoding, 4096, // 4096 bytes buffering
-                          Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+            var icstream = services.CharsetStream(
+                    ifstream, encoding || File.defaultEncoding, 4096, // buffer size
+                    services.CharsetStream.DEFAULT_REPLACEMENT_CHARACTER);
+
             let buffer = [];
             let str = {};
             while (icstream.readString(4096, str) != 0)
@@ -593,6 +608,23 @@ this.File = Class("File", {
             ifstream.close();
         }
     },
+
+    readLines: function (ifstream, encoding) {
+        try {
+            var icstream = services.CharsetStream(
+                    ifstream, encoding || File.defaultEncoding, 4096, // buffer size
+                    services.CharsetStream.DEFAULT_REPLACEMENT_CHARACTER);
+
+            var value = {};
+            while (icstream.readLine(value))
+                yield value.value;
+        }
+        finally {
+            icstream.close();
+            ifstream.close();
+        }
+    },
+
 
     isAbsolutePath: function (path) {
         try {

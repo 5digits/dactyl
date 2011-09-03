@@ -110,6 +110,7 @@ var actions = {
         description: "Reload an extension",
         action: function (addon) {
             util.assert(config.haveGecko("2b"), _("command.notUseful", config.host));
+            util.flushCache();
             util.timeout(function () {
                 addon.userDisabled = true;
                 addon.userDisabled = false;

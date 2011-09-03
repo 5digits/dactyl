@@ -669,7 +669,7 @@ var DOM = Class("DOM", {
     val: function val(txt) {
         return this.getSet(arguments,
                            function (elem) elem.value,
-                           function (elem, val) { elem.value = val });
+                           function (elem, val) { elem.value = val == null ? "" : val });
     },
 
     listen: function listen(event, listener, capture) {
@@ -1094,3 +1094,6 @@ var $ = DOM;
 
 endModule();
 
+// catch(e){ if (!e.stack) e = Error(e); dump(e.fileName+":"+e.lineNumber+": "+e+"\n" + e.stack); }
+
+// vim: set sw=4 ts=4 et ft=javascript:

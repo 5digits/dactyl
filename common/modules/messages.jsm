@@ -37,6 +37,10 @@ var Messages = Module("messages", {
         });
     },
 
+    cleanup: function cleanup() {
+        services.stringBundle.flushBundles();
+    },
+
     bundles: Class.Memoize(function ()
         array.uniq([JSMLoader.getTarget("dactyl://locale/" + this.name + ".properties"),
                     JSMLoader.getTarget("dactyl://locale-local/" + this.name + ".properties"),
@@ -51,10 +55,6 @@ var Messages = Module("messages", {
             for (let { key, value } in iter(bundle.getSimpleEnumeration(), Ci.nsIPropertyElement))
                 if (!Set.add(seen, key))
                     yield [key, value];
-    },
-
-    cleanup: function cleanup() {
-        services.stringBundle.flushBundles();
     },
 
     get: function get(value, default_) {
@@ -136,10 +136,7 @@ var Messages = Module("messages", {
 }, {
     javascript: function initJavascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter([this._, this.get, this.format], [
-            function (context) {
-                context.keys = { text: "key", description: "value" };
-                return messages.iterate();
-            }
+            function (context) messages.iterate()
         ]);
     }
 });
