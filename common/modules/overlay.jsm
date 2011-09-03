@@ -48,6 +48,8 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
         this.timeout(this.initialize);
     },
 
+    id: Class.Memoize(function () config.addon.id),
+
     initialize: function () {
         this.overlayWindow(config.overlayChrome, function _overlay(window) ({
             init: function onInit(document) {
@@ -318,17 +320,16 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     cleanup: function cleanup() {
         for (let doc in util.iterDocuments()) {
-            for (let elem in values(doc.dactylOverlayElements || []))
+            for (let elem in values(this.getData(doc, "overlayElements")))
                 if (elem.parentNode)
                     elem.parentNode.removeChild(elem);
 
-            for (let [elem, ns, name, orig, value] in values(doc.dactylOverlayAttributes || []))
+            for (let [elem, ns, name, orig, value] in values(this.getData(doc, "overlayAttributes")))
                 if (getAttr(elem, ns, name) === value)
                     setAttr(elem, ns, name, orig);
 
-            delete doc.dactylOverlayElements;
-            delete doc.dactylOverlayAttributes;
-            delete doc.dactylOverlays;
+            delete doc[this.id];
+            delete doc.defaultView[this.id];
         }
     },
 
@@ -348,6 +349,27 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                 this.onWindowVisible.forEach(function (f) f.call(this), this);
             this.onWindowVisible = null;
         }
+    },
+
+    getData: function getData(obj, key, constructor) {
+        let { id } = this;
+
+        if (!(id in obj))
+            obj[id] = {};
+
+        if (!(key in obj[id]))
+            obj[id][key] = (constructor || Array)();
+
+        return obj[id][key];
+    },
+
+    setData: function setData(obj, key, val) {
+        let { id } = this;
+
+        if (!(id in obj))
+            obj[id] = {};
+
+        return obj[id][key] = val;
     },
 
     overlayWindow: function (url, fn) {
@@ -374,23 +396,20 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
     },
 
     _loadOverlays: function _loadOverlays(window) {
-        if (!window.dactylOverlays)
-            window.dactylOverlays = [];
+        let overlays = this.getData(window, "overlays");
 
         for each (let obj in overlay.overlays[window.document.documentURI] || []) {
-            if (~window.dactylOverlays.indexOf(obj))
+            if (~overlays.indexOf(obj))
                 continue;
-            window.dactylOverlays.push(obj);
+            overlays.push(obj);
             this._loadOverlay(window, obj(window));
         }
     },
 
     _loadOverlay: function _loadOverlay(window, obj) {
         let doc = window.document;
-        if (!doc.dactylOverlayElements) {
-            doc.dactylOverlayElements = [];
-            doc.dactylOverlayAttributes = [];
-        }
+        let elems = this.getData(doc, "overlayElements");
+        let attrs = this.getData(doc, "overlayAttributes");
 
         function insert(key, fn) {
             if (obj[key]) {
@@ -402,15 +421,15 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                     if (elem = doc.getElementById(elem)) {
                         let node = util.xmlToDom(xml, doc, obj.objects);
                         if (!(node instanceof Ci.nsIDOMDocumentFragment))
-                            doc.dactylOverlayElements.push(node);
+                            elems.push(node);
                         else
                             for (let n in array.iterValues(node.childNodes))
-                                doc.dactylOverlayElements.push(n);
+                                elems.push(n);
 
                         fn(elem, node);
                         for each (let attr in attr || []) {
                             let ns = attr.namespace(), name = attr.localName();
-                            doc.dactylOverlayAttributes.push([elem, ns, name, getAttr(elem, ns, name), String(attr)]);
+                            attrs.push([elem, ns, name, getAttr(elem, ns, name), String(attr)]);
                             if (attr.name() != "highlight")
                                 elem.setAttributeNS(ns, name, String(attr));
                             else
