@@ -21,14 +21,14 @@ defineModule("io", {
  * @instance io
  */
 var IO = Module("io", {
-    init: function () {
+    init: function init() {
         this._processDir = services.directory.get("CurWorkD", Ci.nsIFile);
         this._cwd = this._processDir.path;
         this._oldcwd = null;
         this.config = config;
     },
 
-    Local: function (dactyl, modules, window) let ({ io, plugins } = modules) ({
+    Local: function Local(dactyl, modules, window) let ({ io, plugins } = modules) ({
 
         init: function init() {
             this.config = modules.config;
@@ -292,7 +292,7 @@ var IO = Module("io", {
      * @default $HOME.
      * @returns {nsIFile} The RC file or null if none is found.
      */
-    getRCFile: function (dir, always) {
+    getRCFile: function getRCFile(dir, always) {
         dir = this.File(dir || "~");
 
         let rcFile1 = dir.child("." + config.name + "rc");
@@ -316,7 +316,7 @@ var IO = Module("io", {
      *
      * @returns {File}
      */
-    createTempFile: function () {
+    createTempFile: function createTempFile() {
         let file = services.directory.get("TmpD", Ci.nsIFile);
         file.append(this.config.tempFile);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(600));
@@ -337,6 +337,9 @@ var IO = Module("io", {
     isJarURL: function isJarURL(url) {
         try {
             let uri = util.newURI(util.fixURI(url));
+            if (uri instanceof Ci.nsIJARURI)
+                return uri;
+
             let channel = services.io.newChannelFromURI(uri);
             channel.cancel(Cr.NS_BINDING_ABORTED);
             if (channel instanceof Ci.nsIJARChannel)
@@ -373,7 +376,7 @@ var IO = Module("io", {
         }
     },
 
-    readHeredoc: function (end) {
+    readHeredoc: function readHeredoc(end) {
         return "";
     },
 
@@ -387,8 +390,9 @@ var IO = Module("io", {
      * name and searched for in turn.
      *
      * @param {string} bin The name of the executable to find.
+     * @returns {File|null}
      */
-    pathSearch: function (bin) {
+    pathSearch: function pathSearch(bin) {
         if (bin instanceof File || File.isAbsolutePath(bin))
             return this.File(bin);
 
@@ -426,7 +430,7 @@ var IO = Module("io", {
      * @param {File|string} program The program to run.
      * @param {[string]} args An array of arguments to pass to *program*.
      */
-    run: function (program, args, blocking, self) {
+    run: function run(program, args, blocking, self) {
         args = args || [];
 
         let file = this.pathSearch(program);
@@ -474,7 +478,7 @@ var IO = Module("io", {
      *      the command completes. @optional
      * @returns {object|null}
      */
-    system: function (command, input, callback) {
+    system: function system(command, input, callback) {
         util.dactyl.echomsg(_("io.callingShell", command), 4);
 
         let { shellEscape } = util.closure;
@@ -533,7 +537,7 @@ var IO = Module("io", {
      * @returns {boolean} false if temp files couldn't be created,
      *     otherwise, the return value of *func*.
      */
-    withTempFiles: function (func, self, checked) {
+    withTempFiles: function withTempFiles(func, self, checked) {
         let args = array(util.range(0, func.length)).map(this.closure.createTempFile).array;
         try {
             if (!args.every(util.identity))
@@ -566,7 +570,7 @@ var IO = Module("io", {
      */
     PATH_SEP: deprecated("File.PATH_SEP", { get: function PATH_SEP() File.PATH_SEP })
 }, {
-    commands: function (dactyl, modules, window) {
+    commands: function init_commands(dactyl, modules, window) {
         const { commands, completion, io } = modules;
 
         commands.add(["cd", "chd[ir]"],
@@ -858,7 +862,7 @@ unlet s:cpo_save
                 literal: 0
             });
     },
-    completion: function (dactyl, modules, window) {
+    completion: function init_completion(dactyl, modules, window) {
         const { completion, io } = modules;
 
         completion.charset = function (context) {
@@ -1006,7 +1010,7 @@ unlet s:cpo_save
                     completion.file(context, full);
         });
     },
-    javascript: function (dactyl, modules, window) {
+    javascript: function init_javascript(dactyl, modules, window) {
         modules.JavaScript.setCompleter([File, File.expandPath],
             [function (context, obj, args) {
                 context.quote[2] = "";
@@ -1025,7 +1029,7 @@ unlet s:cpo_save
             input: true
         });
     },
-    options: function (dactyl, modules, window) {
+    options: function init_options(dactyl, modules, window) {
         const { completion, options } = modules;
 
         var shell, shellcmdflag;

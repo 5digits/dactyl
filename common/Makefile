@@ -40,7 +40,7 @@ CHROME	      = $(MANGLE)/
 JAR           = $(CHROME)$(NAME).jar
 
 XPI_BASES     = $(JAR_BASES) $(TOP)/..
-XPI_FILES     = bootstrap.js TODO AUTHORS Donors NEWS LICENSE.txt
+XPI_FILES     = icon.png icon64.png bootstrap.js TODO AUTHORS Donors NEWS LICENSE.txt
 XPI_DIRS      = components $(MANGLE) defaults
 XPI_TEXTS     = js jsm $(JAR_TEXTS)
 XPI_BINS      = $(JAR_BINS)

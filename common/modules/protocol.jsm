@@ -104,7 +104,7 @@ ProtocolBase.prototype = {
          | Ci.nsIProtocolHandler.URI_IS_LOCAL_RESOURCE,
 
     newURI: function newURI(spec, charset, baseURI) {
-        if (baseURI && baseURI.host === "data")
+        if (baseURI && (!(baseURI instanceof Ci.nsIURL) || baseURI.host === "data"))
             baseURI = null;
         return services.URL(services.URL.URLTYPE_AUTHORITY,
                             this.defaultPort, spec, charset, baseURI);

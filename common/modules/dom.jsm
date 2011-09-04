@@ -16,6 +16,16 @@ var XUL = Namespace("xul", "http://www.mozilla.org/keymaster/gatekeeper/there.is
 var NS = Namespace("dactyl", "http://vimperator.org/namespaces/liberator");
 default xml namespace = XHTML;
 
+function BooleanAttribute(attr) ({
+    get: function (elem) elem.getAttribute(attr) == "true",
+    set: function (elem, val) {
+        if (val === "false" || !val)
+            elem.removeAttribute(attr);
+        else
+            elem.setAttribute(attr, true);
+    }
+});
+
 /**
  * @class
  *
@@ -73,7 +83,11 @@ var DOM = Class("DOM", {
     attrHooks: array.toObject([
         ["", {
             href: { get: function (elem) elem.href || elem.getAttribute("href") },
-            src:  { get: function (elem) elem.src || elem.getAttribute("src") }
+            src:  { get: function (elem) elem.src || elem.getAttribute("src") },
+            collapsed: BooleanAttribute("collapsed"),
+            disabled: BooleanAttribute("disabled"),
+            hidden: BooleanAttribute("hidden"),
+            readonly: BooleanAttribute("readonly")
         }]
     ]),
 
@@ -138,6 +152,10 @@ var DOM = Class("DOM", {
 
     find: function find(val) {
         return this.map(function (elem) elem.querySelectorAll(val));
+    },
+
+    findAnon: function findAnon(attr, val) {
+        return this.map(function (elem) elem.ownerDocument.getAnonymousElementByAttribute(elem, attr, val));
     },
 
     filter: function filter(val, self) {
@@ -507,7 +525,7 @@ var DOM = Class("DOM", {
             return this.each(function (elem) {
                 for (let [k, v] in Iterator(key))
                     if (Set.has(hooks, k) && hooks[k].set)
-                        hooks[k].set.call(this, elem, v);
+                        hooks[k].set.call(this, elem, v, k);
                     else if (v == null)
                         elem.removeAttributeNS(ns, k);
                     else
@@ -518,13 +536,14 @@ var DOM = Class("DOM", {
             return null;
 
         if (Set.has(hooks, key) && hooks[key].get)
-            return hooks[key].get.call(this, this[0]);
+            return hooks[key].get.call(this, this[0], key);
 
         if (!this[0].hasAttributeNS(ns, key))
             return null;
 
         return this[0].getAttributeNS(ns, key);
     },
+
 
     css: update(function css(key, val) {
         if (val !== undefined)
@@ -811,9 +830,10 @@ var DOM = Class("DOM", {
 
         types: Class.Memoize(function () iter(
             {
-                Mouse: "click mousedown mouseout mouseover mouseup",
+                Mouse: "click mousedown mouseout mouseover mouseup " +
+                       "popupshowing popupshown popuphiding popuphidden",
                 Key:   "keydown keypress keyup",
-                "":    "change dactyl-input input submit " +
+                "":    "change command dactyl-input input submit " +
                        "load unload pageshow pagehide DOMContentLoaded"
             }
         ).map(function ([k, v]) v.split(" ").map(function (v) [v, k]))

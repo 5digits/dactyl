@@ -460,9 +460,9 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
             if (doc.readyState === "complete")
                 load();
             else
-                doc.addEventListener("load", util.wrapCallback(function onLoad(event) {
-                    if (event.originalTarget === event.target) {
-                        doc.removeEventListener("load", onLoad.wrapper, true);
+                window.addEventListener("load", util.wrapCallback(function onLoad(event) {
+                    if (event.originalTarget === doc) {
+                        window.removeEventListener("load", onLoad.wrapper, true);
                         load(event);
                     }
                 }), true);

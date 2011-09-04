@@ -624,6 +624,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             if (uri instanceof Ci.nsIFileURL)
                 return File(uri.file);
 
+            if (uri instanceof Ci.nsIFile)
+                return File(uri);
+
             let channel = services.io.newChannelFromURI(uri);
             channel.cancel(Cr.NS_BINDING_ABORTED);
             if (channel instanceof Ci.nsIFileChannel)
@@ -902,7 +905,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     }
                 }
 
-                value = template.highlight(value, true, 150);
+                value = template.highlight(value, true, 150, !color);
                 let key = <span highlight="Key">{i}</span>;
                 if (!isNaN(i))
                     i = parseInt(i);
@@ -1137,7 +1140,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * along with a stack trace and other relevant information. The
      * error is appended to {@see #errors}.
      */
-    reportError: function (error) {
+    reportError: function reportError(error) {
         if (error.noTrace)
             return;
 

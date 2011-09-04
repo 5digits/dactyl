@@ -275,7 +275,7 @@ var Template = Module("Template", {
 
     // if "processStrings" is true, any passed strings will be surrounded by " and
     // any line breaks are displayed as \n
-    highlight: function highlight(arg, processStrings, clip) {
+    highlight: function highlight(arg, processStrings, clip, bw) {
         XML.ignoreWhitespace = false; XML.prettyPrinting = false;
         // some objects like window.JSON or getBrowsers()._browsers need the try/catch
         try {
@@ -302,7 +302,8 @@ var Template = Module("Template", {
                 return <span highlight="Null">{arg}</span>;
             case "object":
                 if (arg instanceof Ci.nsIDOMElement)
-                    return util.objectToString(arg, true);
+                    return util.objectToString(arg, !bw);
+
                 // for java packages value.toString() would crash so badly
                 // that we cannot even try/catch it
                 if (/^\[JavaPackage.*\]$/.test(arg))
