@@ -142,7 +142,8 @@ var DOM = Class("DOM", {
                 util.withProperErrors(fn, this, munge(val.call(this, elem, i)), elem, i);
             }, self || this);
 
-        util.withProperErrors(fn, self || this, munge(val), this[0], 0);
+        if (this.length)
+            util.withProperErrors(fn, self || this, munge(val), this[0], 0);
         return this;
     },
 
@@ -266,7 +267,7 @@ var DOM = Class("DOM", {
 
         add: function add(cls) this.each("add", cls),
         remove: function remove(cls) this.each("remove", cls),
-        toggle: function toggle(cls) this.each("toggle", cls),
+        toggle: function toggle(cls, val) this.each(val == null ? "toggle" : val ? "add" : "remove", cls),
 
         has: function has(cls) this[0].classList.has(cls)
     }),
@@ -290,9 +291,9 @@ var DOM = Class("DOM", {
                         this.highlight.list.filter(function (h) h != hl));
         }),
 
-        toggle: function toggle(hl) self.each(function () {
+        toggle: function toggle(hl, val) self.each(function () {
             let { highlight } = this;
-            highlight[highlight.has(hl) ? "remove" : "add"](hl)
+            highlight[val == null ? highlight.has(hl) : val ? "remove" : "add"](hl)
         }),
     }),
 
@@ -523,13 +524,17 @@ var DOM = Class("DOM", {
 
         if (isObject(key))
             return this.each(function (elem) {
-                for (let [k, v] in Iterator(key))
+                for (let [k, v] in Iterator(key)) {
+                    if (callable(v))
+                        v = v.call(this, elem, i);
+
                     if (Set.has(hooks, k) && hooks[k].set)
                         hooks[k].set.call(this, elem, v, k);
                     else if (v == null)
                         elem.removeAttributeNS(ns, k);
                     else
                         elem.setAttributeNS(ns, k, v);
+                }
             });
 
         if (!this.length)
@@ -593,7 +598,7 @@ var DOM = Class("DOM", {
         return this;
     },
 
-    prependTo: function appendTo(elem) {
+    prependTo: function prependTo(elem) {
         if (!(elem instanceof this.constructor))
             elem = this.constructor(elem, this.document);
         elem.prepend(this);
@@ -662,7 +667,7 @@ var DOM = Class("DOM", {
 
     getSet: function getSet(args, get, set) {
         if (!args.length)
-            return get.call(this, this[0]);
+            return this[0] && get.call(this, this[0]);
 
         let [fn, self] = args;
         if (!callable(fn))
@@ -698,7 +703,7 @@ var DOM = Class("DOM", {
             event = array.toObject([[event, listener]]);
 
         for (let [k, v] in Iterator(event))
-            event[k] = util.wrapCallback(v);
+            event[k] = util.wrapCallback(v, true);
 
         return this.each(function (elem) {
             for (let [k, v] in Iterator(event))

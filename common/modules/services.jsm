@@ -37,6 +37,7 @@ var Services = Module("Services", {
         this.add("downloadManager",     "@mozilla.org/download-manager;1",                  "nsIDownloadManager");
         this.add("environment",         "@mozilla.org/process/environment;1",               "nsIEnvironment");
         this.add("extensionManager",    "@mozilla.org/extensions/manager;1",                "nsIExtensionManager");
+        this.add("externalApp",         "@mozilla.org/uriloader/external-helper-app-service;1", "nsPIExternalAppLauncher")
         this.add("externalProtocol",    "@mozilla.org/uriloader/external-protocol-service;1", "nsIExternalProtocolService");
         this.add("favicon",             "@mozilla.org/browser/favicon-service;1",           "nsIFaviconService");
         this.add("file:",               "@mozilla.org/network/protocol;1?name=file",        "nsIFileProtocolHandler");
@@ -72,8 +73,10 @@ var Services = Module("Services", {
         this.addClass("CharsetConv",  "@mozilla.org/intl/scriptableunicodeconverter", "nsIScriptableUnicodeConverter", "charset");
         this.addClass("CharsetStream","@mozilla.org/intl/converter-input-stream;1",   ["nsIConverterInputStream",
                                                                                        "nsIUnicharLineInputStream"], "init");
+        this.addClass("ConvOutStream","@mozilla.org/intl/converter-output-stream;1", "nsIConverterOutputStream", "init", false);
         this.addClass("File",         "@mozilla.org/file/local;1",                 "nsILocalFile");
         this.addClass("FileInStream", "@mozilla.org/network/file-input-stream;1",  "nsIFileInputStream", "init", false);
+        this.addClass("FileOutStream","@mozilla.org/network/file-output-stream;1", "nsIFileOutputStream", "init", false);
         this.addClass("Find",         "@mozilla.org/embedcomp/rangefind;1",        "nsIFind");
         this.addClass("HtmlConverter","@mozilla.org/widget/htmlformatconverter;1", "nsIFormatConverter");
         this.addClass("HtmlEncoder",  "@mozilla.org/layout/htmlCopyEncoder;1",     "nsIDocumentEncoder");

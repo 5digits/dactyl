@@ -425,11 +425,8 @@ this.File = Class("File", {
      * @default #charset
      */
     write: function (buf, mode, perms, encoding) {
-        let ofstream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
         function getStream(defaultChar) {
-            let stream = Cc["@mozilla.org/intl/converter-output-stream;1"].createInstance(Ci.nsIConverterOutputStream);
-            stream.init(ofstream, encoding, 0, defaultChar);
-            return stream;
+            return services.ConvOutStream(ofstream, encoding, 0, defaultChar);
         }
         if (buf instanceof File)
             buf = buf.read();
@@ -447,7 +444,7 @@ this.File = Class("File", {
         if (!this.exists()) // OCREAT won't create the directory
             this.create(this.NORMAL_FILE_TYPE, perms);
 
-        ofstream.init(this, mode, perms, 0);
+        let ofstream = services.FileOutStream(this, mode, perms, 0);
         try {
             var ocstream = getStream(0);
             ocstream.writeString(buf);

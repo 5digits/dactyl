@@ -761,7 +761,7 @@ var JavaScript = Module("javascript", {
                 init.supercall(this);
 
                 let self = this;
-                let sandbox = isinstance(context, ["Sandbox"]);
+                let sandbox = true || isinstance(context, ["Sandbox"]);
 
                 this.context = modules.newContext(context, !sandbox);
                 this.js = modules.JavaScript();

@@ -28,11 +28,16 @@ var FailedAssertion = Class("FailedAssertion", ErrorBase, {
 
 var Point = Struct("x", "y");
 
-var wrapCallback = function wrapCallback(fn) {
+var wrapCallback = function wrapCallback(fn, isEvent) {
     if (!fn.wrapper)
         fn.wrapper = function wrappedCallback() {
             try {
-                return fn.apply(this, arguments);
+                let res = fn.apply(this, arguments);
+                if (isEvent && res === false) {
+                    arguments[0].preventDefault();
+                    arguments[0].stopPropagation();
+                }
+                return res;
             }
             catch (e) {
                 util.reportError(e);

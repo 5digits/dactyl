@@ -316,13 +316,16 @@ var IO = Module("io", {
      *
      * @returns {File}
      */
-    createTempFile: function createTempFile() {
-        let file = services.directory.get("TmpD", Ci.nsIFile);
-        file.append(this.config.tempFile);
+    createTempFile: function createTempFile(name) {
+        if (name instanceof Ci.nsIFile)
+            var file = name.clone();
+        else {
+            file = services.directory.get("TmpD", Ci.nsIFile);
+            file.append(name || config.addon.name);
+        }
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, octal(600));
 
-        Cc["@mozilla.org/uriloader/external-helper-app-service;1"]
-            .getService(Ci.nsPIExternalAppLauncher).deleteTemporaryFileOnExit(file);
+        services.externalApp.deleteTemporaryFileOnExit(file);
 
         return File(file);
     },
