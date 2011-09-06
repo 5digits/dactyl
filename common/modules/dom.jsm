@@ -84,6 +84,7 @@ var DOM = Class("DOM", {
         ["", {
             href: { get: function (elem) elem.href || elem.getAttribute("href") },
             src:  { get: function (elem) elem.src || elem.getAttribute("src") },
+            checked: { get: function (elem) elem.checked, set: function (elem, val) elem.checked = val },
             collapsed: BooleanAttribute("collapsed"),
             disabled: BooleanAttribute("disabled"),
             hidden: BooleanAttribute("hidden"),
@@ -209,7 +210,7 @@ var DOM = Class("DOM", {
             if (isObject(tmp) && "length" in tmp)
                 for (let j = 0; j < tmp.length; j++)
                     res[res.length++] = tmp[j];
-            else if (tmp !== undefined)
+            else if (tmp != null)
                 res[res.length++] = tmp;
         }
 

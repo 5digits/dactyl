@@ -1318,7 +1318,7 @@ var Events = Module("events", {
                 else
                     for (let event in values(duringFeed))
                         try {
-                            this.dispatch(event.originalTarget, event, event);
+                            DOM.Event.dispatch(event.originalTarget, event, event);
                         }
                         catch (e) {
                             util.reportError(e);

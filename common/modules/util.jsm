@@ -422,8 +422,9 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns [string] The resulting strings.
      */
     debrace: function debrace(pattern) {
+        let res = [];
+
         if (isArray(pattern)) {
-            let res = [];
             let rec = function rec(acc) {
                 let vals;
 
@@ -454,6 +455,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             res.push(pattern.substr(end));
             return res.map(function (s) util.dequote(s, dequote));
         }
+
         let patterns = [];
         let substrings = split(pattern, /((?:[^\\{]|\\.)*)\{((?:[^\\}]|\\.)*)\}/gy,
             function (match) {
@@ -461,7 +463,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                     null, ",{}"));
             }, "{}");
 
-        let res = [];
         function rec(acc) {
             if (acc.length == patterns.length)
                 res.push(array(substrings).zip(acc).flatten().join(""));
@@ -1153,10 +1154,6 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
             error = Error(error);
 
         Cu.reportError(error);
-        try {
-            services.console.logStringMessage(error.stack || Error().stack);
-        }
-        catch (e) {}
 
         try {
             this.errorCount++;
@@ -1165,6 +1162,8 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
                 toString: function () String(error),
                 stack: <>{util.stackLines(String(error.stack || Error().stack)).join("\n").replace(/^/mg, "\t")}</>
             });
+
+            services.console.logStringMessage(obj.stack);
 
             this.errors.push([new Date, obj + "\n" + obj.stack]);
             this.errors = this.errors.slice(-this.maxErrors);
