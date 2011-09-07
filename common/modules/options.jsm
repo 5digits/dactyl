@@ -1096,7 +1096,7 @@ var Options = Module("options", {
                     }
                     else {
                         var [matches, name, postfix, valueGiven, operator, value] =
-                            arg.match(/^\s*?([^=]+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/);
+                            arg.match(/^\s*?((?:[^=\\']|\\.|'[^']*')+?)([?&!])?\s*(([-+^]?)=(.*))?\s*$/);
                         reset = (postfix == "&");
                         invertBoolean = (postfix == "!");
                     }
