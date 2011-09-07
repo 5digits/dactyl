@@ -422,7 +422,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns [string] The resulting strings.
      */
     debrace: function debrace(pattern) {
-        let res = [];
+        var res = [];
 
         if (isArray(pattern)) {
             let rec = function rec(acc) {
@@ -1117,10 +1117,13 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     }),
 
     /**
-     * Flushes the startup cache.
+     * Flushes the startup or jar cache.
      */
-    flushCache: function flushCache() {
-        services.observer.notifyObservers(null, "startupcache-invalidate", "");
+    flushCache: function flushCache(file) {
+        if (file)
+            services.observer.notifyObservers(file, "flush-cache-entry", "");
+        else
+            services.observer.notifyObservers(null, "startupcache-invalidate", "");
     },
 
     /**

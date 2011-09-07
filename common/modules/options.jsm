@@ -1101,6 +1101,7 @@ var Options = Module("options", {
                         invertBoolean = (postfix == "!");
                     }
 
+                    name = Option.dequote(name);
                     if (name == "all" && reset)
                         modules.commandline.input(_("pref.prompt.resetAll", config.host) + " ",
                             function (resp) {

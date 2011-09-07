@@ -238,15 +238,13 @@ function init() {
     JSMLoader.load("base.jsm", global);
 
     if (!(BOOTSTRAP_CONTRACT in Cc)) {
-        let factory = {
-            classID: Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}"),
-            contractID: BOOTSTRAP_CONTRACT,
-            QueryInterface: XPCOMUtils.generateQI([Ci.nsIFactory]),
+        // Use Sandbox to prevent closures over this scope
+        let sandbox = Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].getService());
+        let factory = Cu.evalInSandbox("({ createInstance: function () this })", sandbox);
 
-            // Use Sandbox to prevent closures over this scope
-            createInstance: Cu.evalInSandbox("(function () this)",
-                                             Cu.Sandbox(Cc["@mozilla.org/systemprincipal;1"].getService()))
-        };
+        factory.classID         = Components.ID("{f541c8b0-fe26-4621-a30b-e77d21721fb5}");
+        factory.contractID      = BOOTSTRAP_CONTRACT;
+        factory.QueryInterface  = XPCOMUtils.generateQI([Ci.nsIFactory]);
         factory.wrappedJSObject = factory;
 
         manager.registerFactory(factory.classID, String(factory.classID),
