@@ -12,7 +12,7 @@ defineModule("main", {
     require: ["config", "help", "highlight", "io", "overlay", "services", "util"]
 }, this);
 
-const BASE = "resource://dactyl-content/";
+var BASE = "resource://dactyl-content/";
 
 /**
  * @class ModuleBase
@@ -56,10 +56,10 @@ var Modules = function Modules(window) {
      *     module constructor.
      *     @optional
      * @param {Object} moduleInit The module initialization functions
-     *     for the new module. Each function is called as soon as the named module
-     *     has been initialized, but after the module itself. The constructors are
-     *     guaranteed to be called in the same order that the dependent modules
-     *     were initialized.
+     *     for the new module. Each function is called as soon as the
+     *     named module has been initialized. The constructors are
+     *     guaranteed to be called in the same order that the dependent
+     *     modules were initialized.
      *     @optional
      *
      * @returns {function} The constructor for the resulting module.
