@@ -820,6 +820,7 @@ var Events = Module("events", {
                         if (evt_obj.shiftKey)
                             keyname = keyname.toUpperCase();
 
+                        evt_obj.dactylShift = evt_obj.shiftKey && keyname.toUpperCase() == keyname.toLowerCase();
                         evt_obj.charCode = keyname.charCodeAt(0);
                         evt_obj._keyCode = this._key_code[keyname.toLowerCase()];
                     }

@@ -770,15 +770,6 @@ var DOM = Class("DOM", {
                         continue;
 
                     force = Math.round(isect.width - rect.width) || Math.round(isect.height - rect.height);
-                    let vp = parent.viewport;
-                    if (force)
-                        util.dump(vp,
-                                  rect.left - vp.left,
-                                  rect.right - vp.right,
-                                  rect.top - vp.top,
-                                  rect.bottom - vp.bottom,
-                                  isect.width - rect.width, isect.height - rect.height,
-                                  parent[0]);
                     if (force)
                         break;
                 }
