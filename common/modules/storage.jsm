@@ -294,7 +294,7 @@ var Storage = Module("Storage", {
  *          current directory. @default true
  * @param {string} charset The charset of the file. @default File.defaultEncoding
  */
-this.File = Class("File", {
+var File = Class("File", {
     init: function (path, checkPWD, charset) {
         let file = services.File();
 

@@ -10,6 +10,8 @@ defineModule("bookmarkcache", {
     require: ["services", "storage", "util"]
 }, this);
 
+function newURI(url, charset, base) services.io.newURI(url, charset, base);
+
 var Bookmark = Struct("url", "title", "icon", "post", "keyword", "tags", "charset", "id");
 var Keyword = Struct("keyword", "title", "icon", "url");
 Bookmark.defaultValue("icon", function () BookmarkCache.getFavicon(this.url));
@@ -19,7 +21,7 @@ update(Bookmark.prototype, {
         ["tags",    this.tags.join(", "), "Tag"]
     ].filter(function (item) item[1]),
 
-    get uri() util.newURI(this.url),
+    get uri() newURI(this.url),
     set uri(uri) {
         let tags = this.tags;
         this.tags = null;
@@ -36,7 +38,7 @@ update(Bookmark.prototype, {
 })
 Bookmark.prototype.members.uri = Bookmark.prototype.members.url;
 Bookmark.setter = function (key, func) this.prototype.__defineSetter__(key, func);
-Bookmark.setter("url", function (val) { this.uri = isString(val) ? util.newURI(val) : val; });
+Bookmark.setter("url", function (val) { this.uri = isString(val) ? newURI(val) : val; });
 Bookmark.setter("title", function (val) { services.bookmarks.setItemTitle(this.id, val); });
 Bookmark.setter("post", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.POST, val); });
 Bookmark.setter("charset", function (val) { bookmarkcache.annotate(this.id, bookmarkcache.CHARSET, val); });
@@ -79,7 +81,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     _loadBookmark: function loadBookmark(node) {
         if (node.uri == null) // How does this happen?
             return false;
-        let uri = util.newURI(node.uri);
+        let uri = newURI(node.uri);
         let keyword = services.bookmarks.getKeywordForBookmark(node.itemId);
         let tags = services.tagging.getTagsForURI(uri, {}) || [];
         let post = BookmarkCache.getAnnotation(node.itemId, this.POST);
@@ -96,7 +98,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     },
 
     get: function (url) {
-        let ids = services.bookmarks.getBookmarkIdsForURI(util.newURI(url), {});
+        let ids = services.bookmarks.getBookmarkIdsForURI(newURI(url), {});
         for (let id in values(ids))
             if (id in this.bookmarks)
                 return this.bookmarks[id];
@@ -129,7 +131,7 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
      */
     isBookmarked: function isBookmarked(uri) {
         if (isString(uri))
-            uri = util.newURI(uri);
+            uri = newURI(uri);
 
         try {
             return services.bookmarks
@@ -221,9 +223,10 @@ var BookmarkCache = Module("BookmarkCache", XPCOM(Ci.nsINavBookmarkObserver), {
     getAnnotation: function getAnnotation(item, anno)
         services.annotation.itemHasAnnotation(item, anno) ?
         services.annotation.getItemAnnotation(item, anno) : null,
+
     getFavicon: function getFavicon(uri) {
         try {
-            return services.favicon.getFaviconImageForPage(util.newURI(uri)).spec;
+            return services.favicon.getFaviconImageForPage(newURI(uri)).spec;
         }
         catch (e) {
             return "";

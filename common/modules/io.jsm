@@ -339,7 +339,7 @@ var IO = Module("io", {
      */
     isJarURL: function isJarURL(url) {
         try {
-            let uri = util.newURI(util.fixURI(url));
+            let uri = util.newURI(url);
             if (uri instanceof Ci.nsIJARURI)
                 return uri;
 

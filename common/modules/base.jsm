@@ -133,7 +133,8 @@ function defineModule(name, params, module) {
 
     module.NAME = name;
     module.EXPORTED_SYMBOLS = params.exports || [];
-    delete module.File;
+    if (!~module.EXPORTED_SYMBOLS.indexOf("File"))
+        delete module.File;
 
     defineModule.loadLog.push("[Begin " + name + "]");
     defineModule.prefix += "  ";

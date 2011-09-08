@@ -629,7 +629,7 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
     getFile: function getFile(uri) {
         try {
             if (isString(uri))
-                uri = util.newURI(util.fixURI(uri));
+                uri = util.newURI(uri);
 
             if (uri instanceof Ci.nsIFileURL)
                 return File(uri.file);
@@ -837,6 +837,10 @@ var Util = Module("Util", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReference]), 
      * @returns {nsIURI}
      */
     newURI: function newURI(uri, charset, base) {
+        let idx = uri.lastIndexOf(" -> ");
+        if (~idx)
+            uri = uri.slice(idx + 4);
+
         let res = this.withProperErrors("newURI", services.io, uri, charset, base);
         res instanceof Ci.nsIURL;
         return res;

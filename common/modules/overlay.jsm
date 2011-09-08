@@ -52,6 +52,63 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
     id: Class.Memoize(function () config.addon.id),
 
+    /**
+     * Adds an event listener for this session and removes it on
+     * dactyl shutdown.
+     *
+     * @param {Element} target The element on which to listen.
+     * @param {string} event The event to listen for.
+     * @param {function} callback The function to call when the event is received.
+     * @param {boolean} capture When true, listen during the capture
+     *      phase, otherwise during the bubbling phase.
+     * @param {boolean} allowUntrusted When true, allow capturing of
+     *      untrusted events.
+     */
+    listen: function (target, event, callback, capture, allowUntrusted) {
+        let doc = target.ownerDocument || target.document || target;
+        let listeners = this.getData(doc, "listeners");
+
+        if (!isObject(event))
+            var [self, events] = [null, array.toObject([[event, callback]])];
+        else
+            [self, events] = [event, event[callback || "events"]];
+
+        for (let [event, callback] in Iterator(events)) {
+            let args = [Cu.getWeakReference(target),
+                        event,
+                        util.wrapCallback(callback, self),
+                        capture,
+                        allowUntrusted];
+
+            target.addEventListener.apply(target, args.slice(1));
+            listeners.push(args);
+        }
+    },
+
+    /**
+     * Remove an event listener.
+     *
+     * @param {Element} target The element on which to listen.
+     * @param {string} event The event to listen for.
+     * @param {function} callback The function to call when the event is received.
+     * @param {boolean} capture When true, listen during the capture
+     *      phase, otherwise during the bubbling phase.
+     */
+    unlisten: function (target, event, callback, capture) {
+        let doc = target.ownerDocument || target.document || target;
+        let listeners = this.getData(doc, "listeners");
+        if (event === true)
+            target = null;
+
+        this.setData(doc, "listeners", listeners.filter(function (args) {
+            if (target == null || args[0].get() == target && args[1] == event && args[2].wrapped == callback && args[3] == capture) {
+                args[0].get().removeEventListener.apply(args[0].get(), args.slice(1));
+                return false;
+            }
+            return !args[0].get();
+        }));
+    },
+
     cleanup: function cleanup(reason) {
         for (let doc in util.iterDocuments()) {
             for (let elem in values(this.getData(doc, "overlayElements")))
@@ -64,6 +121,8 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
 
             for (let callback in values(this.getData(doc, "cleanup")))
                 util.trapErrors(callback, doc, reason);
+
+            this.unlisten(doc, true);
 
             delete doc[this.id];
             delete doc.defaultView[this.id];
@@ -265,7 +324,7 @@ var Overlay = Module("Overlay", XPCOM([Ci.nsIObserver, Ci.nsISupportsWeakReferen
                     if (!callable(val) || Function.prototype.toString(val).indexOf(sentinel) < 0)
                         Class.replaceProperty(this, k, val);
                     else {
-                        let package_ = util.newURI(util.fixURI(Components.stack.caller.filename)).host;
+                        let package_ = util.newURI(Components.stack.caller.filename).host;
                         util.reportError(Error(_("error.monkeyPatchOverlay", package_)));
                         util.dactyl.echoerr(_("error.monkeyPatchOverlay", package_));
                     }
